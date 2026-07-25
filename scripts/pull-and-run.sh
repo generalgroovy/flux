@@ -3,14 +3,15 @@
 set -Eeuo pipefail
 
 readonly REPOSITORY="${DIFF_REPOSITORY:-https://github.com/generalgroovy/diff.git}"
-readonly BRANCH="${DIFF_BRANCH:-main}"
 readonly PROJECTS_DIR="${HOME}/Projects"
 readonly DEFAULT_DIR="${PROJECTS_DIR}/diff"
 
-if [[ $# -gt 1 ]]; then
-  printf 'Usage: %s [repository-directory]\n' "$0" >&2
+if [[ $# -gt 2 ]]; then
+  printf 'Usage: %s [repository-directory] [branch]\n' "$0" >&2
   exit 2
 fi
+
+readonly BRANCH="${2:-${DIFF_BRANCH:-main}}"
 
 if [[ ! "${BRANCH}" =~ ^[A-Za-z0-9._/-]+$ ]] || [[ "${BRANCH}" == -* ]] || [[ "${BRANCH}" == *..* ]]; then
   printf 'DIFF_BRANCH is not a safe Git branch name: %s\n' "${BRANCH}" >&2

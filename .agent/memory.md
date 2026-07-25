@@ -5,7 +5,8 @@
 - **Player-facing problem:** The safe launcher always selected `main` in
   `~/Projects/diff`, while this system runs the newer verified build from
   `/home/otp/Projects/outskilled` on `agent/prototype-loop`.
-- **Implemented solution:** Added validated `DIFF_BRANCH` selection across
+- **Implemented solution:** Added a validated branch argument (with
+  `DIFF_BRANCH` fallback) across
   clone, fetch, switch, tracking, and fast-forward pull operations; documented
   the exact local command; generalized the GitHub CLI install hint; and ignored
   Aider's local history/cache artifacts so they remain on disk without falsely

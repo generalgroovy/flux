@@ -80,7 +80,7 @@ DIFF_HOST=0.0.0.0 bash scripts/pull-and-run.sh
 To update and run a specific development checkout/branch, pass both explicitly:
 
 ```bash
-DIFF_BRANCH=agent/prototype-loop bash scripts/pull-and-run.sh /home/otp/Projects/outskilled
+bash scripts/pull-and-run.sh /home/otp/Projects/outskilled agent/prototype-loop
 ```
 
 It refuses dirty or diverged work instead of hiding local changes.

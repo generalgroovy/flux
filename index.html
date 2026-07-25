@@ -5,63 +5,440 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="DIFF — a minimal, high-expression 2D top-down arena fighter."
+      content="DIFF — a deep, minimal 2D skill arena shooter/fighter."
     />
-    <title>DIFF — Fundamentals</title>
+    <meta name="theme-color" content="#070a10" />
+    <title>DIFF — Dodging Instinct. Fighting Finesse.</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main id="game-shell">
-      <canvas id="game" aria-label="DIFF fundamentals arena"></canvas>
+    <main id="app" data-view="menu" data-panel="home">
+      <canvas id="arena" aria-label="DIFF arena"></canvas>
 
-      <header id="hud" aria-live="polite">
-        <div class="identity">
-          <div class="brand"><i aria-hidden="true"></i><strong>DIFF</strong></div>
-          <p><span>KITE</span> / MOBILITY DUELIST</p>
-          <div id="health" aria-label="Health">
-            <b id="health-value">100</b>
-            <i><span id="health-fill"></span></i>
+      <section id="hud" class="hud" aria-live="polite">
+        <div class="score score-alpha">
+          <span>ALPHA</span>
+          <strong id="score-alpha">0</strong>
+        </div>
+        <div class="match-readout">
+          <span id="mode-label">FIRST CONTACT · BREAKLINE</span>
+          <strong id="match-clock">03:00</strong>
+          <span id="network-readout">LOCAL · 120 TICK</span>
+        </div>
+        <div class="score score-beta">
+          <span>BETA</span>
+          <strong id="score-beta">0</strong>
+        </div>
+        <div id="roster-hud" class="roster-hud"></div>
+      </section>
+
+      <div id="game-tools" class="game-tools">
+        <button
+          id="info-toggle"
+          class="button button-quiet info-toggle"
+          type="button"
+          aria-controls="info-overlay"
+          aria-expanded="false"
+        >
+          Field info <kbd>F1</kbd>
+        </button>
+      </div>
+
+      <aside
+        id="info-overlay"
+        class="info-overlay hidden"
+        aria-label="Live field information"
+      >
+        <header>
+          <div>
+            <span class="eyebrow">LIVE FIELD INFO</span>
+            <h2 id="info-operation">FIRST CONTACT</h2>
+          </div>
+          <button
+            id="info-close"
+            class="icon-button"
+            type="button"
+            aria-label="Close field information"
+          >
+            ×
+          </button>
+        </header>
+        <div class="info-readout">
+          <section>
+            <span>Current read</span>
+            <strong id="info-objective">Learn the four-action language.</strong>
+            <p id="info-status">Round 1 · BREAKLINE</p>
+          </section>
+          <section class="info-agent">
+            <span id="info-agent-glyph" aria-hidden="true">◇</span>
+            <div>
+              <strong id="info-agent-name">KITE</strong>
+              <p id="info-agent-role">Mobility duelist</p>
+            </div>
+          </section>
+        </div>
+        <div id="info-kit" class="info-kit"></div>
+        <dl class="info-controls">
+          <div><dt>Move / aim</dt><dd><kbd>WASD</kbd> / mouse</dd></div>
+          <div><dt>Actions</dt><dd><kbd>MB1</kbd><kbd>E</kbd><kbd>Q</kbd><kbd>Shift</kbd></dd></div>
+          <div><dt>Reset / pause</dt><dd><kbd>R</kbd> / <kbd>Esc</kbd></dd></div>
+        </dl>
+        <p class="info-hint">Press <kbd>F1</kbd> at any time to close this panel. Combat continues.</p>
+      </aside>
+
+      <section id="coach" class="coach" aria-live="polite">
+        <span class="eyebrow">LIVE READ</span>
+        <strong id="coach-text">Move, aim, and fire. The arena never waits.</strong>
+        <button id="skip-coach" type="button">Skip intro</button>
+      </section>
+
+      <section id="ability-bar" class="ability-bar" aria-label="Abilities">
+        <div class="ability" data-ability="primary">
+          <kbd>MB1</kbd>
+          <span><b id="primary-name">NEEDLE</b><small id="primary-detail">Precision fire</small></span>
+          <i id="primary-charge"></i>
+        </div>
+        <div class="ability" data-ability="special">
+          <kbd>E</kbd>
+          <span><b id="special-name">SHEAR</b><small id="special-detail">Close strike</small></span>
+          <i id="special-charge"></i>
+        </div>
+        <div class="ability" data-ability="defense">
+          <kbd>Q</kbd>
+          <span><b id="defense-name">SLIP</b><small id="defense-detail">Return fire</small></span>
+          <i id="defense-charge"></i>
+        </div>
+        <div class="ability" data-ability="mobility">
+          <kbd>⇧</kbd>
+          <span><b id="mobility-name">VECTOR</b><small id="mobility-detail">Directional dash</small></span>
+          <i id="mobility-charge"></i>
+        </div>
+      </section>
+
+      <div id="toast-stack" class="toast-stack" aria-live="assertive"></div>
+
+      <section id="match-overlay" class="match-overlay hidden" aria-modal="true">
+        <span class="eyebrow">OPERATION COMPLETE</span>
+        <h2 id="result-title">ALPHA DIFFERENCE</h2>
+        <p id="result-copy">The read was made. Run it back.</p>
+        <div class="button-row">
+          <button class="button button-primary" id="rematch" type="button">Rematch <kbd>R</kbd></button>
+          <button class="button" data-action="menu" type="button">Main menu</button>
+        </div>
+      </section>
+
+      <section id="pause-overlay" class="pause-overlay hidden" aria-modal="true">
+        <span class="eyebrow">TACTICAL PAUSE</span>
+        <h2 id="pause-title">Operation held</h2>
+        <p id="pause-copy">Local simulation is frozen.</p>
+        <div class="button-stack">
+          <button class="button button-primary" data-action="resume" type="button">Resume <kbd>Esc</kbd></button>
+          <button class="button" data-action="restart" type="button">Restart match</button>
+          <button class="button" data-action="online" type="button">Lobby browser</button>
+          <button class="button button-quiet" data-action="menu" type="button">Leave to menu</button>
+        </div>
+      </section>
+
+      <section id="front-end" class="front-end">
+        <header class="topbar">
+          <a class="wordmark" href="#" data-panel="home" aria-label="DIFF home">
+            <b>DIFF</b>
+            <span>Dodging Instinct.<br />Fighting Finesse.</span>
+          </a>
+          <div class="server-status" id="server-status">
+            <i></i>
+            <span>LOCAL SYSTEM READY</span>
+          </div>
+          <button class="icon-button" id="menu-close" type="button" aria-label="Resume game" hidden>×</button>
+        </header>
+
+        <div class="menu-layout">
+          <nav class="primary-nav" aria-label="Main menu">
+            <button class="nav-item active" data-panel="home" type="button">
+              <span>01</span><b>Operations</b>
+            </button>
+            <button class="nav-item" data-panel="play" type="button">
+              <span>02</span><b>Play</b>
+            </button>
+            <button class="nav-item" data-panel="online" type="button">
+              <span>03</span><b>Host / Join</b><em>REMOTE</em>
+            </button>
+            <button class="nav-item" data-panel="agents" type="button">
+              <span>04</span><b>Agents</b><em>8</em>
+            </button>
+            <button class="nav-item" data-panel="arenas" type="button">
+              <span>05</span><b>Maps & Modes</b>
+            </button>
+            <button class="nav-item" data-panel="guide" type="button">
+              <span>06</span><b>Controls</b>
+            </button>
+            <button class="nav-item" data-panel="settings" type="button">
+              <span>07</span><b>Configuration</b>
+            </button>
+          </nav>
+
+          <div class="panel-stage">
+            <article class="menu-panel active" data-menu-panel="home">
+              <div class="hero">
+                <div>
+                  <span class="eyebrow">SKILL ARENA / BUILD 0.9.1</span>
+                  <h1>Find the<br /><em>difference.</em></h1>
+                  <p>
+                    Eight complete agents. Five clean rulesets. One shared language:
+                    aim, space, timing, prediction, commitment, counterplay.
+                  </p>
+                  <div class="button-row">
+                    <button class="button button-primary button-large" data-quick-start type="button">
+                      First contact <kbd>↵</kbd>
+                    </button>
+                    <button class="button button-large" data-panel="play" type="button">Choose operation</button>
+                  </div>
+                  <div class="operation-shortcuts" aria-label="Quick operations">
+                    <button type="button" data-launch-mode="duel"><b>DIFFERENCE</b><span>Duel</span></button>
+                    <button type="button" data-launch-mode="control"><b>FAULTLINE</b><span>Control</span></button>
+                    <button type="button" data-launch-mode="convergence"><b>CONVERGENCE</b><span>PvPvE</span></button>
+                    <button type="button" data-launch-mode="survival"><b>PRESSURE TEST</b><span>Co-op PvE</span></button>
+                  </div>
+                </div>
+                <div class="hero-mark" aria-hidden="true">
+                  <span>D</span><span>I</span><span>F</span><span>F</span>
+                </div>
+              </div>
+              <div class="feature-strip">
+                <div><b>8</b><span>non-overlapping agents</span></div>
+                <div><b>4</b><span>authored arenas</span></div>
+                <div><b>5</b><span>solo / PvP / PvPvE / PvE modes</span></div>
+                <div><b>120</b><span>authoritative simulation tick</span></div>
+              </div>
+            </article>
+
+            <article class="menu-panel" data-menu-panel="play" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">DEPLOYMENT</span><h2>Build the match</h2></div>
+                <p>Defaults are tuned for immediate play. Every choice has a clean counter-read.</p>
+              </header>
+              <form id="match-form" class="match-builder">
+                <fieldset>
+                  <legend>Format</legend>
+                  <div class="segmented">
+                    <label><input type="radio" name="format" value="solo" checked /><span>Solo + bots</span></label>
+                    <label><input type="radio" name="format" value="local" /><span>Local 2P</span></label>
+                  </div>
+                </fieldset>
+                <fieldset>
+                  <legend>Mode</legend>
+                  <div id="mode-options" class="choice-grid mode-options"></div>
+                </fieldset>
+                <fieldset>
+                  <legend>Agent — Player 1</legend>
+                  <div id="agent-options" class="agent-picker"></div>
+                </fieldset>
+                <fieldset id="player-two-field" hidden>
+                  <legend>Agent — Player 2</legend>
+                  <div id="agent-two-options" class="agent-picker"></div>
+                </fieldset>
+                <fieldset>
+                  <legend>Arena</legend>
+                  <div id="map-options" class="choice-grid map-options"></div>
+                </fieldset>
+                <fieldset id="bot-field">
+                  <legend>Opposition</legend>
+                  <label class="range-setting">
+                    <span><b>Bot count</b><small>More bodies, same rules.</small></span>
+                    <input id="bot-count" type="range" min="1" max="5" value="1" />
+                    <output id="bot-count-output">1</output>
+                  </label>
+                </fieldset>
+                <div class="deployment-action">
+                  <span><b>READY</b><small id="deployment-summary">DIFFERENCE · KITE · BREAKLINE</small></span>
+                  <button class="button button-primary button-large deploy-button" type="submit">
+                    Enter arena
+                  </button>
+                </div>
+              </form>
+            </article>
+
+            <article class="menu-panel" data-menu-panel="online" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">AUTHORITATIVE NETWORK</span><h2>Remote lobbies</h2></div>
+                <p>Host, discover, or join a live match. Late joins are protected and immediate.</p>
+              </header>
+              <div class="online-layout">
+                <section class="network-card identity-card">
+                  <h3>Identity</h3>
+                  <label>
+                    <span>Callsign</span>
+                    <input id="online-name" type="text" maxlength="20" value="PLAYER" />
+                  </label>
+                  <label>
+                    <span>Agent</span>
+                    <select id="online-agent"></select>
+                  </label>
+                  <label>
+                    <span>Server address</span>
+                    <input id="server-address" type="url" placeholder="http://host:8000" />
+                  </label>
+                  <small>Use the host’s address. Internet play requires a reachable server port or VPN.</small>
+                </section>
+                <section class="network-card">
+                  <h3>Host a lobby</h3>
+                  <label>
+                    <span>Lobby name</span>
+                    <input id="lobby-name" type="text" maxlength="30" value="OPEN ARENA" />
+                  </label>
+                  <div class="form-split">
+                    <label><span>Mode</span><select id="online-mode"></select></label>
+                    <label><span>Map</span><select id="online-map"></select></label>
+                  </div>
+                  <label class="toggle-setting">
+                    <span><b>Public listing</b><small>Visible in the lobby browser.</small></span>
+                    <input id="lobby-public" type="checkbox" checked />
+                  </label>
+                  <button class="button button-primary" id="host-lobby" type="button">Create and deploy</button>
+                </section>
+                <section class="network-card">
+                  <h3>Join by code</h3>
+                  <div class="join-row">
+                    <input id="join-code" class="code-input" type="text" maxlength="6" placeholder="ABC234" />
+                    <button class="button" id="join-lobby" type="button">Join</button>
+                  </div>
+                  <button class="button button-quiet" id="reconnect-lobby" type="button" hidden>
+                    Reconnect last session
+                  </button>
+                  <div id="network-message" class="network-message">Not connected.</div>
+                </section>
+                <section class="network-card lobby-browser">
+                  <div class="section-title">
+                    <h3>Live public lobbies</h3>
+                    <button class="text-button" id="refresh-lobbies" type="button">Refresh</button>
+                  </div>
+                  <div id="lobby-list" class="lobby-list">
+                    <p class="empty-state">Refresh to scan this server.</p>
+                  </div>
+                </section>
+              </div>
+            </article>
+
+            <article class="menu-panel" data-menu-panel="agents" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">ROSTER</span><h2>Eight ways to outplay</h2></div>
+                <p>Each agent owns one readable strength, one real weakness, and four counterable actions.</p>
+              </header>
+              <div id="agent-codex" class="agent-codex"></div>
+            </article>
+
+            <article class="menu-panel" data-menu-panel="arenas" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">FIELD INTELLIGENCE</span><h2>Maps & modes</h2></div>
+                <p>Geometry and objectives change decisions, never the core rules.</p>
+              </header>
+              <h3 class="section-heading">Arenas</h3>
+              <div id="map-codex" class="codex-grid"></div>
+              <h3 class="section-heading">Rulesets</h3>
+              <div id="mode-codex" class="codex-grid"></div>
+            </article>
+
+            <article class="menu-panel" data-menu-panel="guide" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">FIELD GUIDE</span><h2>One language, every agent</h2></div>
+                <p>Actions keep the same input across the roster. Learn intent once; master expression forever.</p>
+              </header>
+              <div class="guide-grid">
+                <section>
+                  <h3>Player 1</h3>
+                  <dl class="control-list">
+                    <div><dt>Move</dt><dd><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dd></div>
+                    <div><dt>Aim</dt><dd>Mouse</dd></div>
+                    <div><dt>Primary</dt><dd><kbd>MB1</kbd> / <kbd>Space</kbd></dd></div>
+                    <div><dt>Special</dt><dd><kbd>MB2</kbd> / <kbd>E</kbd></dd></div>
+                    <div><dt>Defense</dt><dd><kbd>Q</kbd></dd></div>
+                    <div><dt>Mobility</dt><dd><kbd>Shift</kbd></dd></div>
+                  </dl>
+                </section>
+                <section>
+                  <h3>Player 2</h3>
+                  <dl class="control-list">
+                    <div><dt>Move</dt><dd>Arrow keys</dd></div>
+                    <div><dt>Aim</dt><dd><kbd>I</kbd><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd></dd></div>
+                    <div><dt>Primary</dt><dd><kbd>U</kbd></dd></div>
+                    <div><dt>Special</dt><dd><kbd>O</kbd></dd></div>
+                    <div><dt>Defense</dt><dd><kbd>P</kbd></dd></div>
+                    <div><dt>Mobility</dt><dd><kbd>Enter</kbd></dd></div>
+                  </dl>
+                </section>
+                <section>
+                  <h3>Gamepad</h3>
+                  <dl class="control-list">
+                    <div><dt>Move / aim</dt><dd>Left / right stick</dd></div>
+                    <div><dt>Primary</dt><dd>Right trigger</dd></div>
+                    <div><dt>Special</dt><dd>West button</dd></div>
+                    <div><dt>Defense</dt><dd>Left trigger</dd></div>
+                    <div><dt>Mobility</dt><dd>South button</dd></div>
+                  </dl>
+                </section>
+                <section>
+                  <h3>System</h3>
+                  <dl class="control-list">
+                    <div><dt>Pause / network menu</dt><dd><kbd>Esc</kbd></dd></div>
+                    <div><dt>Instant restart</dt><dd><kbd>R</kbd></dd></div>
+                    <div><dt>Skip introduction</dt><dd><kbd>T</kbd></dd></div>
+                    <div><dt>Toggle field info</dt><dd><kbd>F1</kbd></dd></div>
+                  </dl>
+                </section>
+              </div>
+              <div class="principles">
+                <article><b>Shots clash</b><span>Equal projectiles erase; heavy shots win the lane.</span></article>
+                <article><b>Cover is absolute</b><span>No attacks or movement tunnel through geometry.</span></article>
+                <article><b>Defense is specific</b><span>Reflect, guard, phase, absorb, and counter demand different reads.</span></article>
+                <article><b>Spawns are protected</b><span>Joining and resetting never hands out a free hit.</span></article>
+              </div>
+            </article>
+
+            <article class="menu-panel" data-menu-panel="settings" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">CONFIGURATION</span><h2>Clarity without compromise</h2></div>
+                <p>Safe presentation settings apply live and persist locally.</p>
+              </header>
+              <form id="settings-form" class="settings-grid">
+                <label class="range-setting">
+                  <span><b>Screen response</b><small>Impact shake strength.</small></span>
+                  <input name="screenShake" type="range" min="0" max="100" value="55" />
+                  <output>55</output>
+                </label>
+                <label class="range-setting">
+                  <span><b>Interface scale</b><small>HUD and crosshair size.</small></span>
+                  <input name="interfaceScale" type="range" min="80" max="130" value="100" />
+                  <output>100</output>
+                </label>
+                <label class="range-setting">
+                  <span><b>Sound</b><small>Procedural feedback volume.</small></span>
+                  <input name="sound" type="range" min="0" max="100" value="45" />
+                  <output>45</output>
+                </label>
+                <label class="toggle-setting">
+                  <span><b>Live coaching</b><small>Short behavior-driven hints.</small></span>
+                  <input name="coaching" type="checkbox" checked />
+                </label>
+                <label class="toggle-setting">
+                  <span><b>Reduced motion</b><small>Removes shake and long trails.</small></span>
+                  <input name="reducedMotion" type="checkbox" />
+                </label>
+                <label class="toggle-setting">
+                  <span><b>High contrast</b><small>Stronger team and hazard edges.</small></span>
+                  <input name="highContrast" type="checkbox" />
+                </label>
+                <button class="button" id="reset-settings" type="button">Reset presentation defaults</button>
+              </form>
+            </article>
           </div>
         </div>
 
-        <div class="mission">
-          <p id="objective">Break all targets</p>
-          <strong id="timer">00.00</strong>
-          <div id="progress" aria-label="Training progress"></div>
-        </div>
-
-        <div class="location">
-          <strong>BREAKLINE</strong>
-          <p>FUNDAMENTALS / 01</p>
-        </div>
-      </header>
-
-      <section id="coach" aria-live="polite">
-        <p class="eyebrow">Live brief</p>
-        <strong id="hint">WASD — MOVE</strong>
+        <footer class="menu-footer">
+          <span>DIFF / DODGING INSTINCT. FIGHTING FINESSE.</span>
+          <span id="build-diagnostic">OFFLINE READY · NO INSTALL STEP</span>
+        </footer>
       </section>
-
-      <section id="ability">
-        <span>SHIFT</span>
-        <div>
-          <strong>DASH</strong>
-          <i><b id="dash-charge"></b></i>
-        </div>
-      </section>
-
-      <section id="result" class="panel hidden" aria-hidden="true">
-        <p id="result-label" class="eyebrow">Field clear</p>
-        <h1 id="result-time">00.00</h1>
-        <p id="result-message">Movement. Aim. Timing. Again.</p>
-        <button id="restart" type="button">Run it back <kbd>R</kbd></button>
-      </section>
-
-      <p id="controls">
-        <b>WASD</b> MOVE <span>·</span> <b>MOUSE</b> AIM <span>·</span>
-        <b>CLICK / SPACE</b> FIRE <span>·</span> <b>SHIFT</b> DASH
-      </p>
     </main>
-
     <script type="module" src="./src/game.mjs"></script>
   </body>
 </html>

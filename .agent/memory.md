@@ -1,5 +1,33 @@
 # DIFF agent memory
 
+## 2026-07-26 — DIFF 0.9.2 first-contact clarity and arena atmosphere
+
+- **Player-facing problem:** FIRST CONTACT described a four-action language but
+  never verified the character special, and its single rotating sentence gave
+  weak progress feedback. Fixed-aspect arenas left unused display space as a
+  flat void, making presentation feel less authored on non-16:9 screens.
+- **Implemented solution:** Reworked onboarding into three compact behavioral
+  reads with a persistent, non-color-only checklist: move/fire, mobility/defense,
+  then special commitment under live pressure. The deterministic simulation now
+  records and confirms all four actions and emits explicit step/completion
+  feedback. Added validated per-map floor, void, grid, and accent palettes plus
+  restrained ambient overscan lines that fill the physical canvas while keeping
+  competitive map bounds and visibility unchanged for local and remote play.
+- **Files changed:** `src/content.mjs`, `src/match.mjs`, `src/game.mjs`,
+  `index.html`, `styles.css`, `tests/match.test.mjs`,
+  `tests/game-dom.test.mjs`, release/version files, `README.md`, backlog, and
+  this memory.
+- **Commands run:** `npm ci`; `npm test` with localhost WebSocket access;
+  syntax checks for all source/server modules; shell syntax checks; diff checks.
+- **Tests passed:** 35/35, including the real DOM/canvas controller, explicit
+  three-beat four-action tutorial progression and bot-ownership isolation, all 160 content combinations,
+  eight-agent soak, and complete WebSocket lobby/reconnect/spectator coverage.
+- **Known limitations:** No browser executable is installed in this runtime, so
+  final color, density, feel, gamepad, and physical multiplayer judgment still
+  require the Garuda/Windows acceptance pass.
+- **Recommended next task:** Add deterministic latency/jitter/loss simulation
+  diagnostics and an in-game network quality read before expanding content.
+
 ## 2026-07-25T18:10:00Z — DIFF 0.9.1 actionable front end and agent identity
 
 - **Player-facing problem:** The first external play pass reported that agents

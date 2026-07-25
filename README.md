@@ -7,6 +7,11 @@ spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
+Build 0.9.2 streamlines **FIRST CONTACT** into a three-beat behavioral read of
+movement/primary, mobility/defense, and special commitment. Each arena now has
+an authored ambient palette that fills the display beyond its fixed competitive
+bounds without changing visibility, collision, or multiplayer authority.
+
 ## Run
 
 Requires Node.js 20.19 or newer and a current desktop browser.

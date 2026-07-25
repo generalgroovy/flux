@@ -143,6 +143,11 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.equal(app.dataset.view, "game");
   assert.equal(window.DIFF_DEBUG.getState().modeId, "training");
   assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "kite");
+  assert.equal(document.getElementById("coach-progress").hidden, false);
+  assert.equal(
+    document.querySelector('[data-coach-step="0"]').classList.contains("active"),
+    true,
+  );
   assert.equal(typeof queuedFrame, "function");
   queuedFrame(performance.now() + 16);
   assert.ok(drawCalls.some((call) => call[0] === "fillRect"));

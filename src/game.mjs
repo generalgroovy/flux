@@ -754,17 +754,31 @@ function updateCoach(mode) {
   coach.classList.remove("hidden");
   const text = element("coach-text");
   const skip = element("skip-coach");
+  const progress = element("coach-progress");
   if (mode.id === "training" && !matchState.tutorial.skipped) {
     skip.hidden = false;
+    progress.hidden = false;
+    for (const item of progress.children) {
+      const itemStep = Number(item.dataset.coachStep);
+      item.classList.toggle("complete", itemStep < matchState.tutorial.step);
+      item.classList.toggle("active", itemStep === matchState.tutorial.step);
+      item.setAttribute(
+        "aria-label",
+        `${item.textContent.trim()} — ${itemStep < matchState.tutorial.step ? "complete" : itemStep === matchState.tutorial.step ? "current" : "upcoming"}`,
+      );
+    }
     if (matchState.tutorial.step === 0) {
-      text.textContent = "Move with WASD. Aim and fire with the mouse.";
+      text.textContent = "MOVE while aiming. Land pressure with MB1.";
     } else if (matchState.tutorial.step === 1) {
-      text.textContent = "Shift changes the angle. Q answers incoming pressure.";
+      text.textContent = "SHIFT changes the angle. Q answers incoming pressure.";
+    } else if (matchState.tutorial.step === 2) {
+      text.textContent = "Commit E up close. Miss, and you surrender tempo.";
     } else {
-      text.textContent = "Combine your four actions. Eliminate the spar.";
+      text.textContent = "Language learned. Read the spar and finish the fight.";
     }
   } else {
     skip.hidden = true;
+    progress.hidden = true;
     if (matchState.status === "round-over") {
       text.textContent = "Resetting positions. The next read starts clean.";
     } else if (matchState.objective.contested) {
@@ -825,6 +839,10 @@ function processEvents(events, tick) {
       tone(190, 0.025, "square", 0.035);
     } else if (event.type === "roundStart") {
       toast(`ROUND ${event.round}`);
+    } else if (event.type === "tutorialStep") {
+      toast(`READ ${event.step + 1} / 3`);
+    } else if (event.type === "tutorialComplete") {
+      toast("FOUR-ACTION LANGUAGE ONLINE");
     } else if (event.type === "stateRepair") {
       toast("Simulation recovered an invalid entity state.", "error");
     }
@@ -913,8 +931,7 @@ function render(time) {
     0,
     0,
   );
-  context.fillStyle = "#05070b";
-  context.fillRect(0, 0, viewport.width, viewport.height);
+  drawBackdrop(map, time);
   const shakeStrength =
     settings.reducedMotion || app.dataset.view === "menu"
       ? 0
@@ -942,11 +959,33 @@ function render(time) {
   }
 }
 
+function drawBackdrop(map, time) {
+  context.fillStyle = map.visual.void;
+  context.fillRect(0, 0, viewport.width, viewport.height);
+  context.save();
+  try {
+    context.globalAlpha = settings.highContrast ? 0.28 : 0.13;
+    context.strokeStyle = map.visual.accent;
+    context.lineWidth = 1;
+    context.setLineDash([2, 18]);
+    context.lineDashOffset = settings.reducedMotion ? 0 : -time * 8;
+    const spacing = 72;
+    for (let offset = -viewport.height; offset < viewport.width; offset += spacing) {
+      context.beginPath();
+      context.moveTo(offset, viewport.height);
+      context.lineTo(offset + viewport.height, 0);
+      context.stroke();
+    }
+  } finally {
+    context.restore();
+  }
+}
+
 function drawArena(map, time) {
   const { width, height, inset } = map.size;
-  context.fillStyle = "#0a111a";
+  context.fillStyle = map.visual.floor;
   context.fillRect(0, 0, width, height);
-  context.strokeStyle = settings.highContrast ? "#33475d" : "#142131";
+  context.strokeStyle = settings.highContrast ? "#52677e" : map.visual.grid;
   context.lineWidth = 1;
   context.beginPath();
   for (let x = inset; x <= width - inset; x += 80) {
@@ -958,14 +997,16 @@ function drawArena(map, time) {
     context.lineTo(width - inset, y);
   }
   context.stroke();
-  context.strokeStyle = "#53697f";
+  context.strokeStyle = map.visual.accent;
   context.lineWidth = 2;
   context.strokeRect(inset, inset, width - inset * 2, height - inset * 2);
-  context.strokeStyle = "#77f7ce1b";
+  context.globalAlpha = 0.22;
+  context.strokeStyle = map.visual.accent;
   context.setLineDash([18, 22]);
   context.lineDashOffset = -time * 30;
   context.strokeRect(inset + 10, inset + 10, width - inset * 2 - 20, height - inset * 2 - 20);
   context.setLineDash([]);
+  context.globalAlpha = 1;
 }
 
 function drawObjective(map, time) {

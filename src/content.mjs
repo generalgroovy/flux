@@ -471,6 +471,7 @@ export const MAPS = Object.freeze([
     id: "breakline",
     name: "BREAKLINE",
     identity: "Twin rotations around a lethal central seam.",
+    visual: { floor: "#0a1720", void: "#03090e", grid: "#173343", accent: "#45d9ff" },
     size: { width: 1600, height: 900, inset: 44 },
     spawns: [
       { x: 175, y: 450 },
@@ -505,6 +506,7 @@ export const MAPS = Object.freeze([
     id: "crosswind",
     name: "CROSSWIND",
     identity: "Long sightlines broken by offset pockets.",
+    visual: { floor: "#121521", void: "#070811", grid: "#2c2947", accent: "#c38cff" },
     size: { width: 1600, height: 900, inset: 44 },
     spawns: [
       { x: 170, y: 170 },
@@ -526,6 +528,7 @@ export const MAPS = Object.freeze([
     id: "crown",
     name: "CROWN",
     identity: "A contested center with four readable entry gates.",
+    visual: { floor: "#17150d", void: "#0c0904", grid: "#42371b", accent: "#ffca4f" },
     size: { width: 1600, height: 900, inset: 44 },
     spawns: [
       { x: 180, y: 450 },
@@ -547,6 +550,7 @@ export const MAPS = Object.freeze([
     id: "undercurrent",
     name: "UNDERCURRENT",
     identity: "Three lanes whose side currents pulse out of phase.",
+    visual: { floor: "#091a18", void: "#030c0b", grid: "#17443b", accent: "#77f7ce" },
     size: { width: 1600, height: 900, inset: 44 },
     spawns: [
       { x: 165, y: 450 },
@@ -725,6 +729,11 @@ export function validateContent({
   }
 
   for (const map of maps) {
+    for (const key of ["floor", "void", "grid", "accent"]) {
+      if (!/^#[0-9a-f]{6}$/i.test(map.visual?.[key] ?? "")) {
+        errors.push(`${map.id}.visual.${key} must be a six-digit hex color`);
+      }
+    }
     if (!Array.isArray(map.spawns) || map.spawns.length < 2) {
       errors.push(`${map.id} needs at least two spawns`);
     }

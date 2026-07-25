@@ -121,6 +121,7 @@ export function createMatch(options = {}) {
       fired: false,
       mobility: false,
       defended: false,
+      special: false,
     },
     overtime: false,
     survival: {
@@ -314,7 +315,9 @@ function updateEntity(state, entity, command, delta, map) {
     entity.facingX = command.aimX;
     entity.facingY = command.aimY;
   }
-  if (command.moveX !== 0 || command.moveY !== 0) state.tutorial.moved = true;
+  if (entity.human && (command.moveX !== 0 || command.moveY !== 0)) {
+    state.tutorial.moved = true;
+  }
 
   if (command.mobility && entity.mobilityCooldown === 0) {
     startMobility(state, entity, command, agent, map);
@@ -323,7 +326,7 @@ function updateEntity(state, entity, command, delta, map) {
   if (command.defend && entity.defenseCooldown === 0) {
     entity.defenseRemaining = agent.defense.duration;
     entity.defenseCooldown = agent.defense.cooldown;
-    state.tutorial.defended = true;
+    if (entity.human) state.tutorial.defended = true;
     state.events.push({
       type: "defense",
       entityId: entity.id,
@@ -334,11 +337,12 @@ function updateEntity(state, entity, command, delta, map) {
   }
   if (command.special && entity.specialCooldown === 0) {
     useSpecial(state, entity, agent, map);
+    if (entity.human) state.tutorial.special = true;
   }
   if (command.fire && entity.primaryCooldown === 0) {
     firePattern(state, entity, agent.primary, "primary");
     entity.primaryCooldown = agent.primary.cooldown;
-    state.tutorial.fired = true;
+    if (entity.human) state.tutorial.fired = true;
   }
 }
 
@@ -357,7 +361,7 @@ function startMobility(state, entity, command, agent, map) {
   entity.mobilityX = direction.x;
   entity.mobilityY = direction.y;
   entity.dashHitIds = [];
-  state.tutorial.mobility = true;
+  if (entity.human) state.tutorial.mobility = true;
 
   if (mobility.kind === "blink") {
     const result = moveCircleSwept(
@@ -1114,6 +1118,9 @@ function updateTutorial(state) {
   ) {
     state.tutorial.step = 2;
     state.events.push({ type: "tutorialStep", step: 2 });
+  } else if (state.tutorial.step === 2 && state.tutorial.special) {
+    state.tutorial.step = 3;
+    state.events.push({ type: "tutorialComplete" });
   }
 }
 

@@ -331,6 +331,51 @@ test("training opponent stays non-lethal until movement and defense are taught",
   assert.equal(state.entities[0].health, state.entities[0].maxHealth);
 });
 
+test("first contact verifies the complete four-action language in three beats", () => {
+  const state = createMatch({
+    modeId: "training",
+    mapId: "breakline",
+    characterId: "kite",
+    botCount: 1,
+  });
+  stepMatch(state, { p1: { ...idle, moveX: 1, fire: true } }, FIXED_DELTA);
+  assert.equal(state.tutorial.step, 1);
+  assert.equal(state.tutorial.moved, true);
+  assert.equal(state.tutorial.fired, true);
+
+  stepMatch(
+    state,
+    { p1: { ...idle, moveY: 1, mobility: true, defend: true } },
+    FIXED_DELTA,
+  );
+  assert.equal(state.tutorial.step, 2);
+  assert.equal(state.tutorial.mobility, true);
+  assert.equal(state.tutorial.defended, true);
+
+  stepMatch(state, { p1: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(state.tutorial.step, 3);
+  assert.equal(state.tutorial.special, true);
+  assert.equal(
+    state.events.some((event) => event.type === "tutorialComplete"),
+    true,
+  );
+});
+
+test("bot actions cannot complete a human first-contact read", () => {
+  const state = createMatch({ modeId: "training", botCount: 1 });
+  const player = state.entities.find((entity) => entity.human);
+  const bot = state.entities.find((entity) => entity.bot);
+  state.tutorial.step = 2;
+  bot.x = player.x + 40;
+  bot.y = player.y;
+  bot.botThinkRemaining = 0;
+  bot.specialCooldown = 0;
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.ok(bot.specialCooldown > 0);
+  assert.equal(state.tutorial.special, false);
+  assert.equal(state.tutorial.step, 2);
+});
+
 test("duel overtime ends on the next elimination instead of starting another round", () => {
   const state = duel({ leftCharacter: "volt", rightCharacter: "echo" });
   state.elapsed = getModeById("duel").timeLimit - FIXED_DELTA;

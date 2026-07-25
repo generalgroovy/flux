@@ -10,7 +10,7 @@ again for a better time.
 Requirements:
 
 - a current desktop browser
-- Python 3 (only for the local static server)
+- Node.js 20 or newer
 
 ```bash
 npm start
@@ -19,12 +19,10 @@ npm start
 Open <http://localhost:8000>. Move with **WASD** or the **arrow keys** and press
 **R** to restart at any time.
 
-No package installation or build step is required. The game runs from the same
-source on Linux and Windows.
+No package installation or build step is required. The dependency-free local
+server and game run from the same source on Linux and Windows.
 
 ## Verify
-
-The simulation tests require Node.js 20 or newer:
 
 ```bash
 npm test

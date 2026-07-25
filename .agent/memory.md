@@ -9,12 +9,12 @@
   first-use guidance, a completion timer, and immediate restart.
 - **Files changed:** `index.html`, `styles.css`, `package.json`,
   `src/config.mjs`, `src/simulation.mjs`, `src/game.mjs`,
-  `tests/simulation.test.mjs`, `README.md`, `.agent/backlog.md`,
-  `.agent/memory.md`.
+  `scripts/serve.mjs`, `tests/simulation.test.mjs`, `README.md`,
+  `.agent/backlog.md`, `.agent/memory.md`.
 - **Commands run:** `npm test`; `node --check src/config.mjs`;
   `node --check src/simulation.mjs`; `node --check src/game.mjs`;
-  `python3 -m http.server 8000`; HTTP checks against `/` and `/src/game.mjs`
-  with `curl`.
+  `node --check scripts/serve.mjs`; `npm start`; HTTP checks against `/` and
+  `/src/game.mjs` with `curl`.
 - **Tests passed:** 7/7 Node simulation tests; syntax checks for all JavaScript
   modules; local HTTP smoke check returned `200 OK` and served the game module.
 - **Tests failed:** None.

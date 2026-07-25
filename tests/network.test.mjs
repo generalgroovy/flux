@@ -31,12 +31,11 @@ test(
     const health = await fetch(`${origin}/__diff_health`).then((response) =>
       response.json(),
     );
-    assert.deepEqual(health, {
-      product: "DIFF",
-      status: "ready",
-      version: "0.9.3",
-      protocol: 2,
-    });
+    assert.equal(health.product, "DIFF");
+    assert.equal(health.status, "ready");
+    assert.equal(health.version, "0.9.3");
+    assert.equal(health.protocol, 2);
+    assert.match(health.instance, /^[0-9a-f-]{36}$/i);
     const initialList = await fetch(`${origin}/api/lobbies`).then((response) =>
       response.json(),
     );

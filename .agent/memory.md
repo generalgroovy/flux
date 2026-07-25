@@ -1,5 +1,22 @@
 # DIFF agent memory
 
+## 2026-07-26 — Safe server cleanup and self-updating desktop launchers
+
+- **Player-facing problem:** Repeated test launches could leave occupied ports,
+  and testing from a desktop icon was not available on either target desktop OS.
+- **Implemented solution:** DIFF servers now register PID, checkout, port,
+  version, and an unguessable instance token in the OS temp directory and clean
+  the record on shutdown. `npm run stop` verifies the live health token before
+  signaling only servers from this checkout. Added an opt-in browser handoff,
+  a validated Linux desktop-entry installer, and native PowerShell update/test/
+  launch plus Windows shortcut installers.
+- **Verification:** Deterministic server registration/cleanup integration,
+  Linux shell and desktop-entry validation, JavaScript syntax, and the complete
+  regression suite. PowerShell execution remains a Windows acceptance item
+  because PowerShell is unavailable in this Linux runtime.
+- **Recommended next task:** Add one universal movement resource with visible
+  commitment and counterplay, then teach it through FIRST CONTACT.
+
 ## 2026-07-26 — DIFF 0.9.3 truthful remote quality diagnostics
 
 - **Player-facing problem:** The remote HUD presented snapshot age as latency,

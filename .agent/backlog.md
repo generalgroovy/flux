@@ -6,6 +6,7 @@
    FIRST CONTACT reads, launch all five home shortcuts, use every main-menu
    panel, toggle field info with `F1`, and verify
    all eight smaller silhouettes remain readable during dense combat.
+   Verify both installed desktop launchers update, test, open, and shut down.
 2. Run a 30-minute two-device remote soak through the intended VPN/router path;
    require clean join-in-progress, host migration, rematch, and disconnect
    recovery under real latency.

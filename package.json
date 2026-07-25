@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node scripts/serve.mjs",
     "start:remote": "node scripts/serve.mjs --host=0.0.0.0",
+    "stop": "node scripts/stop-servers.mjs",
     "test": "node --test"
   },
   "engines": {

@@ -1,8 +1,8 @@
 import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
-import { readFile } from "node:fs/promises";
-import { extname, resolve, sep } from "node:path";
-import { networkInterfaces } from "node:os";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
+import { extname, join, resolve, sep } from "node:path";
+import { networkInterfaces, tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 
@@ -22,6 +22,9 @@ const host =
   "127.0.0.1";
 const healthPath = "/__diff_health";
 const lobbyPath = "/api/lobbies";
+const instanceId = randomUUID();
+const registryDirectory = join(tmpdir(), "diff-arena-servers");
+const registryPath = join(registryDirectory, `${sanitizeRegistryPart(host)}-${port}.json`);
 const publicFiles = new Set([
   "/index.html",
   "/styles.css",
@@ -75,6 +78,7 @@ const server = createServer(async (request, response) => {
           status: "ready",
           version: serverVersion,
           protocol: protocolVersion,
+          instance: instanceId,
         }),
       );
       return;
@@ -205,7 +209,8 @@ const tickInterval = setInterval(
 );
 tickInterval.unref();
 
-server.listen(port, host, () => {
+server.listen(port, host, async () => {
+  await registerServer();
   console.log(`DIFF is running at http://${displayHost(host)}:${port}`);
   if (host === "0.0.0.0" || host === "::") {
     console.log("Remote lobbies enabled on all network interfaces.");
@@ -215,7 +220,12 @@ server.listen(port, host, () => {
   }
 });
 
-server.on("close", () => clearInterval(tickInterval));
+server.on("close", () => {
+  clearInterval(tickInterval);
+  void removeServerRegistration();
+});
+process.once("SIGINT", shutdown);
+process.once("SIGTERM", shutdown);
 
 function respond(response, status, message) {
   response.writeHead(status, {
@@ -280,6 +290,44 @@ function argumentValue(name) {
   const prefix = `${name}=`;
   const match = process.argv.find((argument) => argument.startsWith(prefix));
   return match?.slice(prefix.length);
+}
+
+async function registerServer() {
+  await mkdir(registryDirectory, { recursive: true });
+  await writeFile(
+    registryPath,
+    JSON.stringify({
+      product: "DIFF",
+      pid: process.pid,
+      root,
+      host,
+      port,
+      version: serverVersion,
+      startedAt: new Date().toISOString(),
+      instance: instanceId,
+    }),
+    { encoding: "utf8", mode: 0o600 },
+  );
+}
+
+async function removeServerRegistration() {
+  try {
+    await unlink(registryPath);
+  } catch (error) {
+    if (error?.code !== "ENOENT") console.error("Could not remove DIFF server record:", error);
+  }
+}
+
+function shutdown() {
+  for (const client of webSockets.clients) client.terminate();
+  webSockets.close();
+  server.close(() => {
+    void removeServerRegistration().finally(() => process.exit(0));
+  });
+}
+
+function sanitizeRegistryPart(value) {
+  return String(value).replace(/[^a-z0-9.-]+/gi, "_");
 }
 
 function localNetworkAddresses() {

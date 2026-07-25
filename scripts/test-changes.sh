@@ -16,10 +16,11 @@ printf 'Installing locked dependencies...\n'
 env npm_config_cache="${TMPDIR:-/tmp}/diff-npm-cache" npm ci --ignore-scripts
 
 printf 'Checking source syntax...\n'
-for source_file in src/*.mjs scripts/serve.mjs; do
+for source_file in src/*.mjs scripts/*.mjs; do
   node --check "${source_file}"
 done
 bash -n scripts/pull-and-run.sh
+bash -n scripts/install-desktop-linux.sh
 bash -n scripts/test-changes.sh
 
 printf 'Running the full DIFF regression suite...\n'

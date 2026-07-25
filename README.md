@@ -88,6 +88,39 @@ bash scripts/pull-and-run.sh /home/otp/Projects/outskilled agent/prototype-loop
 
 It refuses dirty or diverged work instead of hiding local changes.
 
+### Desktop launchers and cleanup
+
+Install a Linux desktop entry for the current checkout and branch:
+
+```bash
+bash scripts/install-desktop-linux.sh
+```
+
+It opens a terminal, fast-forwards the selected branch, installs locked
+dependencies, runs all tests, starts DIFF on a free port, and then opens the
+browser. The terminal owns the server; close it or press `Ctrl+C` to stop.
+
+On Windows, run these once from PowerShell to create the equivalent desktop
+shortcut:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install-desktop-windows.ps1
+```
+
+The shortcut uses `scripts\pull-and-run.ps1` to perform the same guarded
+update, test, free-port, health-check, browser-open, and shutdown flow natively.
+
+To stop registered DIFF servers belonging to this checkout without touching
+unrelated Node processes:
+
+```bash
+npm run stop
+```
+
+Server records include the checkout root and a per-process instance token, so
+stale PID files cannot target another application. Servers from builds older
+than 0.9.3 are not registered and must be closed from their original terminal.
+
 ## Controls
 
 | Action | Player 1 | Player 2 | Gamepad |
@@ -166,7 +199,9 @@ node --check src/match.mjs
 node --check src/lobbies.mjs
 node --check src/game.mjs
 node --check scripts/serve.mjs
+node --check scripts/stop-servers.mjs
 bash -n scripts/pull-and-run.sh
+bash -n scripts/install-desktop-linux.sh
 bash -n scripts/test-changes.sh
 ```
 

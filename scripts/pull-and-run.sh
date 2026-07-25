@@ -224,5 +224,14 @@ if [[ "${ready}" != true ]]; then
 fi
 
 printf '\nDIFF is ready at %s\n' "${url}"
+if [[ "${DIFF_OPEN_BROWSER:-0}" == 1 ]]; then
+  if command -v xdg-open >/dev/null 2>&1; then
+    if ! xdg-open "${url}" >/dev/null 2>&1; then
+      printf 'Desktop browser handoff failed; open %s manually.\n' "${url}" >&2
+    fi
+  else
+    printf 'xdg-open is unavailable; open %s manually.\n' "${url}" >&2
+  fi
+fi
 printf 'Open that address in your browser. Press Ctrl+C here to stop DIFF.\n'
 wait "${server_pid}"

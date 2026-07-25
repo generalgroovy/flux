@@ -1,5 +1,20 @@
 # DIFF agent memory
 
+## 2026-07-26 — Branch-aware pull-and-run handoff
+
+- **Player-facing problem:** The safe launcher always selected `main` in
+  `~/Projects/diff`, while this system runs the newer verified build from
+  `/home/otp/Projects/outskilled` on `agent/prototype-loop`.
+- **Implemented solution:** Added validated `DIFF_BRANCH` selection across
+  clone, fetch, switch, tracking, and fast-forward pull operations; documented
+  the exact local command; generalized the GitHub CLI install hint; and ignored
+  Aider's local history/cache artifacts so they remain on disk without falsely
+  making the guarded checkout dirty.
+- **Verification:** Shell syntax, invalid-branch rejection, full deterministic
+  suite, and an end-to-end clean-checkout pull/test/server-ready smoke.
+- **Recommended next task:** Complete the physical browser and two-device 0.9.2
+  acceptance passes recorded in the release backlog.
+
 ## 2026-07-26 — DIFF 0.9.2 first-contact clarity and arena atmosphere
 
 - **Player-facing problem:** FIRST CONTACT described a four-action language but

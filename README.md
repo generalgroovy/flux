@@ -40,8 +40,12 @@ node scripts/serve.mjs --host=0.0.0.0 --port=8010
 Remote matches support public/private rooms, live discovery, join-in-progress,
 protected late spawns, authoritative input validation, 20 Hz snapshots,
 client prediction/reconciliation, rate limits, disconnect cleanup, host
-migration, and host-controlled rematches. The server owns position, damage,
-cooldowns, projectiles, hazards, objectives, score, and outcomes.
+migration, and host-controlled rematches. A dropped player has 30 seconds to
+reclaim the exact authoritative entity through a locally retained, rotated
+reconnect token. Public lobbies also offer read-only **Watch** slots that receive
+the live state without consuming a player slot or gaining input authority. The
+server owns position, damage, cooldowns, projectiles, hazards, objectives,
+score, and outcomes.
 
 ### Pull, verify, and run on Linux
 
@@ -141,5 +145,6 @@ The suite covers the real DOM/canvas controller, all agent/map/mode
 combinations, wall and corner dash stress, blink obstruction, unit collision,
 all defense types, projectile interaction, mines, hazards, death/reset,
 overtime, control, PvE waves, join-in-progress, discovery, input sequencing,
-snapshots, disconnects, host migration, route allowlisting, security headers,
-and an eight-agent two-minute deterministic combat soak.
+snapshots, disconnect/reconnect identity, spectator isolation, host migration,
+route allowlisting, security headers, and an eight-agent two-minute
+deterministic combat soak.

@@ -7,8 +7,7 @@
 2. Run a 30-minute two-device remote soak through the intended VPN/router path;
    require clean join-in-progress, host migration, rematch, and disconnect
    recovery under real latency.
-3. Add persistent reconnect tokens and a spectator slot without weakening
-   server authority or lobby limits.
+3. Add input remapping and explicit latency/jitter/loss simulation diagnostics.
 
 ## Gate 1 — Fundamentals implemented
 
@@ -18,6 +17,7 @@
 ## Gate 2 — PvP implemented; external soak pending
 
 - Local duel/control and public/private authoritative remote lobbies are live.
+- Persistent reconnect identity and isolated spectator slots are live.
 - Next acceptance: input remapping and latency/jitter simulation diagnostics.
 
 ## Gate 3 — PvPvE foundation implemented

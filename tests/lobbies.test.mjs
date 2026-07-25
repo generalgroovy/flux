@@ -13,6 +13,7 @@ function serviceFixture() {
     service: new LobbyService({
       now: () => now,
       codeFactory: () => codes[codeIndex++],
+      tokenFactory: () => `token-${codeIndex}-${now}`,
     }),
     advance(milliseconds) {
       now += milliseconds;
@@ -174,5 +175,107 @@ test("joining a completed lobby starts a clean rematch for every member", () => 
     [...lobby.members.values()].every((member) =>
       lobby.state.entities.some((entity) => entity.id === member.entityId),
     ),
+  );
+});
+
+test("disconnect reserves an exact player session and reconnect restores it", () => {
+  const { service, advance } = serviceFixture();
+  const hosted = service.host(
+    "host",
+    { characterId: "volt", botCount: 0 },
+    () => {},
+  );
+  const lobby = service.lobbies.get(hosted.lobby.code);
+  const entity = lobby.state.entities.find(
+    (candidate) => candidate.id === hosted.entityId,
+  );
+  entity.health = 37;
+  service.tick(1 / MATCH_TUNING.tickRate);
+  const elapsed = lobby.state.elapsed;
+
+  assert.equal(service.disconnect("host"), true);
+  assert.equal(service.list()[0].connectedPlayers, 0);
+  advance(5_000);
+  const resumed = service.reconnect(
+    "host-new-socket",
+    hosted.reconnectToken,
+    () => {},
+  );
+  assert.equal(resumed.ok, true);
+  assert.notEqual(resumed.reconnectToken, hosted.reconnectToken);
+  assert.equal(resumed.entityId, hosted.entityId);
+  assert.equal(resumed.snapshot.state.elapsed, elapsed);
+  assert.equal(
+    resumed.snapshot.state.entities.find(
+      (candidate) => candidate.id === hosted.entityId,
+    ).health,
+    37,
+  );
+  assert.equal(service.list()[0].hostId, "host-new-socket");
+  assert.equal(
+    service.input("host-new-socket", 1, { moveX: 1 }).ok,
+    true,
+  );
+});
+
+test("expired reconnect reservations are removed deterministically", () => {
+  const { service, advance } = serviceFixture();
+  const hosted = service.host("host", { botCount: 0 }, () => {});
+  service.disconnect("host");
+  advance(30_001);
+  service.tick(1 / MATCH_TUNING.tickRate);
+  assert.deepEqual(service.list(), []);
+  assert.equal(
+    service.reconnect("new-socket", hosted.reconnectToken, () => {}).code,
+    "invalid-token",
+  );
+});
+
+test("spectators receive snapshots without consuming or controlling player slots", () => {
+  const { service } = serviceFixture();
+  const messages = [];
+  const hosted = service.host("host", { maxPlayers: 2, botCount: 0 }, () => {});
+  const watched = service.spectate(
+    "observer",
+    hosted.lobby.code,
+    { name: "Caster" },
+    (message) => messages.push(message),
+  );
+  assert.equal(watched.ok, true);
+  assert.equal(watched.role, "spectator");
+  assert.equal(watched.entityId, null);
+  assert.equal(service.list()[0].players, 1);
+  assert.equal(service.list()[0].spectators, 1);
+  assert.equal(
+    service.input("observer", 1, { fire: true }).code,
+    "spectator-read-only",
+  );
+  assert.equal(
+    service.changeAgent("observer", "echo").code,
+    "spectator-read-only",
+  );
+  service.tick(1 / 20);
+  assert.ok(messages.some((message) => message.type === "snapshot"));
+  assert.equal(service.join("guest", hosted.lobby.code, {}, () => {}).ok, true);
+});
+
+test("a playerless lobby closes instead of stranding observers", () => {
+  const { service } = serviceFixture();
+  const observerMessages = [];
+  const hosted = service.host("host", { botCount: 0 }, () => {});
+  service.spectate(
+    "observer",
+    hosted.lobby.code,
+    {},
+    (message) => observerMessages.push(message),
+  );
+  assert.equal(service.leave("host"), true);
+  assert.deepEqual(service.list(), []);
+  assert.ok(
+    observerMessages.some((message) => message.type === "lobby-closed"),
+  );
+  assert.equal(
+    service.input("observer", 1, {}).code,
+    "not-in-lobby",
   );
 });

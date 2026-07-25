@@ -1,5 +1,41 @@
 # DIFF agent memory
 
+## 2026-07-25T17:22:49Z — DIFF 0.9 live lobby continuity
+
+- **Player-facing problem:** Remote sessions were lost permanently when a
+  socket dropped, and live matches could not be watched without consuming and
+  controlling a player slot.
+- **Implemented solution:** Added a 30-second authoritative reservation window
+  with opaque reconnect tokens stored only in the local browser. Reconnecting
+  rebinds the new socket to the exact entity and match state, resets input
+  sequencing, and rotates the bearer token. Host migration remains immediate
+  when another connected player exists. Added eight read-only spectator slots
+  per lobby; observers receive the same snapshot stream but own no entity,
+  cannot send input or change agents, do not consume player capacity, and
+  cannot inherit host authority. The lobby browser now exposes Join and Watch,
+  reconnect recovery is discoverable, observer HUD state is explicit, and
+  playerless lobbies close instead of stranding watchers. Bumped the network
+  contract to DIFF 0.9 / protocol 2 so the launcher cannot reuse a stale 0.8
+  process.
+- **Files changed:** `src/lobbies.mjs`, `scripts/serve.mjs`, `src/game.mjs`,
+  `index.html`, `styles.css`, `tests/lobbies.test.mjs`,
+  `tests/network.test.mjs`, `scripts/pull-and-run.sh`, `package.json`,
+  `package-lock.json`, `README.md`, `.agent/backlog.md`, and this file.
+- **Commands run:** `npm test`; targeted lobby/network tests; syntax checks for
+  the lobby, browser, and server modules.
+- **Tests passed:** 33/33. New coverage verifies exact reconnect identity and
+  health/state continuity, token rotation, expiry cleanup, zero-capacity-cost
+  observers, rejected spectator input/agent mutations, snapshot delivery,
+  playerless-lobby cleanup, and real WebSocket disconnect → host migration →
+  reconnect with a second client and live observer.
+- **Tests failed:** None in the full suite.
+- **Known limitations:** Physical two-device latency and browser/gamepad feel
+  still require the external Garuda/Windows acceptance pass. Reconnect
+  reservations are intentionally server-memory-only and expire after 30
+  seconds; a server restart ends them.
+- **Recommended next task:** Add configurable input remapping plus deterministic
+  latency, jitter, and packet-loss diagnostics before expanding PvPvE content.
+
 ## 2026-07-25T16:06:41Z — DIFF 0.8 complete arena and remote-lobby pass
 
 - **Player-facing problem:** The shipped fundamentals build had one agent and one

@@ -10,8 +10,8 @@ import { MATCH_TUNING } from "../src/content.mjs";
 import { LobbyService } from "../src/lobbies.mjs";
 
 const root = resolve(fileURLToPath(new URL("../", import.meta.url)));
-const serverVersion = "0.8.0";
-const protocolVersion = 1;
+const serverVersion = "0.9.0";
+const protocolVersion = 2;
 const requestedPort =
   argumentValue("--port") ?? process.env.PORT ?? process.env.DIFF_PORT ?? "8000";
 const port = Number.parseInt(requestedPort, 10);
@@ -194,8 +194,8 @@ webSockets.on("connection", (webSocket) => {
     }
   });
 
-  webSocket.on("close", () => lobbyService.leave(clientId));
-  webSocket.on("error", () => lobbyService.leave(clientId));
+  webSocket.on("close", () => lobbyService.disconnect(clientId));
+  webSocket.on("error", () => lobbyService.disconnect(clientId));
 });
 
 const tickInterval = setInterval(
@@ -236,6 +236,12 @@ function handleClientMessage(service, clientId, message, send) {
   }
   if (message.type === "join") {
     return service.join(clientId, message.code, message.options, send);
+  }
+  if (message.type === "spectate") {
+    return service.spectate(clientId, message.code, message.options, send);
+  }
+  if (message.type === "reconnect") {
+    return service.reconnect(clientId, message.token, send);
   }
   if (message.type === "leave") {
     return { ok: service.leave(clientId) };

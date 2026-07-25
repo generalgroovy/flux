@@ -12,11 +12,18 @@ import {
 const LOBBY_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const MAX_MESSAGE_RATE = 180;
 const MAX_LOBBIES_PER_CLIENT = 2;
+const MAX_SPECTATORS = 8;
+const RECONNECT_GRACE_MS = 30_000;
 
 export class LobbyService {
-  constructor({ now = () => Date.now(), codeFactory = createLobbyCode } = {}) {
+  constructor({
+    now = () => Date.now(),
+    codeFactory = createLobbyCode,
+    tokenFactory = createReconnectToken,
+  } = {}) {
     this.now = now;
     this.codeFactory = codeFactory;
+    this.tokenFactory = tokenFactory;
     this.lobbies = new Map();
     this.clientLobby = new Map();
     this.clientRate = new Map();
@@ -41,7 +48,12 @@ export class LobbyService {
     const code = this.uniqueCode();
     const mode = getMode(candidate.modeId);
     const map = getMap(candidate.mapId);
-    const member = normalizeMember(clientId, candidate, send);
+    const member = normalizeMember(
+      clientId,
+      candidate,
+      send,
+      this.tokenFactory(),
+    );
     const maxPlayers = clampInteger(candidate.maxPlayers, 2, 4, 4);
     const state = createMatch({
       modeId: mode.id,
@@ -75,6 +87,8 @@ export class LobbyService {
     return success({
       lobby: this.describe(lobby),
       entityId: member.entityId,
+      role: member.role,
+      reconnectToken: member.reconnectToken,
       snapshot: createNetworkSnapshot(lobby, member),
     });
   }
@@ -83,11 +97,16 @@ export class LobbyService {
     const code = String(codeCandidate ?? "").trim().toUpperCase();
     const lobby = this.lobbies.get(code);
     if (!lobby) return failure("not-found", "Lobby not found or already closed.");
-    if (lobby.members.size >= lobby.maxPlayers) {
+    if (playerCount(lobby) >= lobby.maxPlayers) {
       return failure("full", "That lobby is full.");
     }
     this.leave(clientId);
-    const member = normalizeMember(clientId, candidate, send);
+    const member = normalizeMember(
+      clientId,
+      candidate,
+      send,
+      this.tokenFactory(),
+    );
     if (lobby.state.status === "match-over") {
       this.restartLobby(lobby, [...lobby.members.values(), member]);
     } else {
@@ -112,8 +131,121 @@ export class LobbyService {
     return success({
       lobby: this.describe(lobby),
       entityId: member.entityId,
+      role: member.role,
+      reconnectToken: member.reconnectToken,
       snapshot: createNetworkSnapshot(lobby, member),
     });
+  }
+
+  spectate(clientId, codeCandidate, candidate = {}, send = () => {}) {
+    const code = String(codeCandidate ?? "").trim().toUpperCase();
+    const lobby = this.lobbies.get(code);
+    if (!lobby) return failure("not-found", "Lobby not found or already closed.");
+    if (spectatorCount(lobby) >= MAX_SPECTATORS) {
+      return failure("spectator-full", "That lobby has no spectator slots left.");
+    }
+    this.leave(clientId);
+    const member = normalizeMember(
+      clientId,
+      candidate,
+      send,
+      this.tokenFactory(),
+      "spectator",
+    );
+    lobby.members.set(clientId, member);
+    this.clientLobby.set(clientId, code);
+    this.broadcast(lobby, {
+      type: "presence",
+      action: "watching",
+      name: member.name,
+      players: playerCount(lobby),
+      spectators: spectatorCount(lobby),
+    });
+    return success({
+      lobby: this.describe(lobby),
+      entityId: null,
+      role: member.role,
+      reconnectToken: member.reconnectToken,
+      snapshot: createNetworkSnapshot(lobby, member),
+    });
+  }
+
+  reconnect(clientId, tokenCandidate, send = () => {}) {
+    const token = String(tokenCandidate ?? "");
+    if (!token) return failure("invalid-token", "Reconnect token required.");
+    for (const lobby of this.lobbies.values()) {
+      const found = [...lobby.members.entries()].find(
+        ([, member]) => member.reconnectToken === token,
+      );
+      if (!found) continue;
+      const [previousClientId, member] = found;
+      if (member.connected) {
+        return failure("already-connected", "That session is already connected.");
+      }
+      if (
+        member.disconnectedAt === null ||
+        this.now() - member.disconnectedAt > RECONNECT_GRACE_MS
+      ) {
+        this.removeMember(lobby, previousClientId, "expired");
+        return failure("expired-token", "Reconnect window expired.");
+      }
+      this.leave(clientId);
+      lobby.members.delete(previousClientId);
+      this.clientLobby.delete(previousClientId);
+      member.clientId = clientId;
+      member.reconnectToken = this.tokenFactory();
+      member.connected = true;
+      member.disconnectedAt = null;
+      member.send = send;
+      member.command = sanitizeCommand({});
+      member.lastSequence = -1;
+      member.lastInputAt = this.now();
+      lobby.members.set(clientId, member);
+      this.clientLobby.set(clientId, lobby.code);
+      if (lobby.hostId === previousClientId) lobby.hostId = clientId;
+      const entity = lobby.state.entities.find(
+        (candidate) => candidate.id === member.entityId,
+      );
+      if (entity) entity.clientId = clientId;
+      this.broadcast(lobby, {
+        type: "presence",
+        action: "reconnected",
+        name: member.name,
+        players: playerCount(lobby),
+        spectators: spectatorCount(lobby),
+      });
+      return success({
+        lobby: this.describe(lobby),
+        entityId: member.entityId,
+        role: member.role,
+        reconnectToken: member.reconnectToken,
+        snapshot: createNetworkSnapshot(lobby, member),
+      });
+    }
+    return failure("invalid-token", "Reconnect session was not found.");
+  }
+
+  disconnect(clientId) {
+    const code = this.clientLobby.get(clientId);
+    this.clientLobby.delete(clientId);
+    this.clientRate.delete(clientId);
+    if (!code) return false;
+    const lobby = this.lobbies.get(code);
+    const member = lobby?.members.get(clientId);
+    if (!lobby || !member || !member.connected) return false;
+    member.connected = false;
+    member.disconnectedAt = this.now();
+    member.command = sanitizeCommand({});
+    member.send = () => {};
+    if (lobby.hostId === clientId) this.migrateHost(lobby, clientId);
+    this.broadcast(lobby, {
+      type: "presence",
+      action: "disconnected",
+      name: member.name,
+      players: playerCount(lobby),
+      spectators: spectatorCount(lobby),
+    });
+    return true;
   }
 
   leave(clientId) {
@@ -123,33 +255,16 @@ export class LobbyService {
     if (!code) return false;
     const lobby = this.lobbies.get(code);
     if (!lobby) return false;
-    const member = lobby.members.get(clientId);
-    lobby.members.delete(clientId);
-    if (member?.entityId) removeMatchPlayer(lobby.state, member.entityId);
-    if (lobby.members.size === 0) {
-      this.lobbies.delete(code);
-      return true;
-    }
-    if (lobby.hostId === clientId) {
-      lobby.hostId = lobby.members.keys().next().value;
-      this.broadcast(lobby, {
-        type: "host-migrated",
-        hostId: lobby.hostId,
-      });
-    }
-    this.broadcast(lobby, {
-      type: "presence",
-      action: "left",
-      name: member?.name ?? "Player",
-      players: lobby.members.size,
-    });
-    return true;
+    return this.removeMember(lobby, clientId, "left");
   }
 
   input(clientId, sequence, candidate) {
     const lobby = this.lobbies.get(this.clientLobby.get(clientId));
     const member = lobby?.members.get(clientId);
     if (!lobby || !member) return failure("not-in-lobby", "Join a lobby first.");
+    if (member.role === "spectator") {
+      return failure("spectator-read-only", "Spectators cannot send gameplay input.");
+    }
     if (!Number.isInteger(sequence) || sequence <= member.lastSequence) {
       return failure("stale-input", "Input sequence must increase.");
     }
@@ -168,6 +283,9 @@ export class LobbyService {
     const entity = lobby?.state.entities.find(
       (candidate) => candidate.id === member?.entityId,
     );
+    if (member?.role === "spectator") {
+      return failure("spectator-read-only", "Spectators do not select active agents.");
+    }
     if (!member || !entity) return failure("not-in-lobby", "Join a lobby first.");
     if (entity.alive && lobby.state.status === "playing") {
       return failure("in-progress", "Change agent after an elimination or rematch.");
@@ -192,9 +310,20 @@ export class LobbyService {
   }
 
   tick(delta) {
-    for (const lobby of this.lobbies.values()) {
+    for (const lobby of [...this.lobbies.values()]) {
+      for (const [clientId, member] of [...lobby.members.entries()]) {
+        if (
+          !member.connected &&
+          member.disconnectedAt !== null &&
+          this.now() - member.disconnectedAt > RECONNECT_GRACE_MS
+        ) {
+          this.removeMember(lobby, clientId, "expired");
+        }
+      }
+      if (!this.lobbies.has(lobby.code)) continue;
       const commands = {};
       for (const member of lobby.members.values()) {
+        if (member.role === "spectator" || !member.connected) continue;
         commands[member.entityId] =
           this.now() - member.lastInputAt <= 1_500
             ? member.command
@@ -218,7 +347,9 @@ export class LobbyService {
       name: lobby.name,
       public: lobby.public,
       hostId: lobby.hostId,
-      players: lobby.members.size,
+      players: playerCount(lobby),
+      connectedPlayers: connectedPlayerCount(lobby),
+      spectators: spectatorCount(lobby),
       maxPlayers: lobby.maxPlayers,
       modeId: mode.id,
       modeName: mode.name,
@@ -232,6 +363,7 @@ export class LobbyService {
 
   broadcastSnapshots(lobby, immediate = false) {
     for (const member of lobby.members.values()) {
+      if (!member.connected) continue;
       member.send({
         type: "snapshot",
         immediate,
@@ -241,12 +373,15 @@ export class LobbyService {
   }
 
   broadcast(lobby, message) {
-    for (const member of lobby.members.values()) member.send(message);
+    for (const member of lobby.members.values()) {
+      if (member.connected) member.send(message);
+    }
   }
 
   restartLobby(lobby, members) {
     const oldState = lobby.state;
-    const playerSpecs = members.map((member, index) => ({
+    const players = members.filter((member) => member.role === "player");
+    const playerSpecs = players.map((member, index) => ({
       id: member.entityId ?? `remote-${shortId(member.clientId)}`,
       clientId: member.clientId,
       name: member.name,
@@ -268,7 +403,7 @@ export class LobbyService {
         oldState.entities.filter((entity) => entity.bot && !entity.neutral).length,
       ),
     });
-    for (const member of members) {
+    for (const member of players) {
       const entity = lobby.state.entities.find(
         (candidate) => candidate.clientId === member.clientId,
       );
@@ -276,6 +411,53 @@ export class LobbyService {
       member.command = sanitizeCommand({});
       member.lastSequence = -1;
     }
+  }
+
+  migrateHost(lobby, previousHostId) {
+    const replacement = [...lobby.members.values()].find(
+      (member) => member.role === "player" && member.connected,
+    );
+    if (!replacement) return;
+    lobby.hostId = replacement.clientId;
+    this.broadcast(lobby, {
+      type: "host-migrated",
+      previousHostId,
+      hostId: lobby.hostId,
+    });
+  }
+
+  removeMember(lobby, clientId, action) {
+    const member = lobby.members.get(clientId);
+    if (!member) return false;
+    lobby.members.delete(clientId);
+    this.clientLobby.delete(clientId);
+    this.clientRate.delete(clientId);
+    if (member.entityId) removeMatchPlayer(lobby.state, member.entityId);
+    if (lobby.members.size === 0) {
+      this.lobbies.delete(lobby.code);
+      return true;
+    }
+    if (playerCount(lobby) === 0) {
+      this.broadcast(lobby, {
+        type: "lobby-closed",
+        reason: "No active or reserved players remain.",
+      });
+      for (const remainingId of lobby.members.keys()) {
+        this.clientLobby.delete(remainingId);
+        this.clientRate.delete(remainingId);
+      }
+      this.lobbies.delete(lobby.code);
+      return true;
+    }
+    if (lobby.hostId === clientId) this.migrateHost(lobby, clientId);
+    this.broadcast(lobby, {
+      type: "presence",
+      action,
+      name: member.name,
+      players: playerCount(lobby),
+      spectators: spectatorCount(lobby),
+    });
+    return true;
   }
 
   allowMessage(clientId) {
@@ -298,12 +480,22 @@ export class LobbyService {
   }
 }
 
-function normalizeMember(clientId, candidate, send) {
+function normalizeMember(
+  clientId,
+  candidate,
+  send,
+  reconnectToken,
+  role = "player",
+) {
   return {
     clientId,
     entityId: null,
+    role,
     name: cleanText(candidate.playerName ?? candidate.name, "PLAYER", 20),
     characterId: getCharacter(candidate.characterId).id,
+    reconnectToken,
+    connected: true,
+    disconnectedAt: null,
     command: sanitizeCommand({}),
     lastSequence: -1,
     lastInputAt: 0,
@@ -333,6 +525,27 @@ function createLobbyCode() {
   let code = "";
   for (const byte of bytes) code += LOBBY_CODE_ALPHABET[byte % LOBBY_CODE_ALPHABET.length];
   return code;
+}
+
+function createReconnectToken() {
+  return randomBytes(24).toString("base64url");
+}
+
+function playerCount(lobby) {
+  return [...lobby.members.values()].filter((member) => member.role === "player")
+    .length;
+}
+
+function connectedPlayerCount(lobby) {
+  return [...lobby.members.values()].filter(
+    (member) => member.role === "player" && member.connected,
+  ).length;
+}
+
+function spectatorCount(lobby) {
+  return [...lobby.members.values()].filter(
+    (member) => member.role === "spectator" && member.connected,
+  ).length;
 }
 
 function cleanText(value, fallback, maximumLength) {

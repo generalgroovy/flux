@@ -17,6 +17,7 @@ import {
 
 const FIXED_DELTA = 1 / MATCH_TUNING.tickRate;
 const SETTINGS_KEY = "diff.presentation.v2";
+const RECONNECT_KEY = "diff.remote.session.v1";
 const DEFAULT_SETTINGS = Object.freeze({
   screenShake: 55,
   interfaceScale: 100,
@@ -72,6 +73,7 @@ let pendingInputs = [];
 let lastSnapshotAt = 0;
 let remoteHostId = null;
 let clientId = null;
+let remoteRole = "player";
 let viewport = {
   pixelRatio: 1,
   width: 1,
@@ -136,6 +138,7 @@ element("host-lobby").addEventListener("click", hostLobby);
 element("join-lobby").addEventListener("click", () =>
   joinLobby(element("join-code").value),
 );
+element("reconnect-lobby").addEventListener("click", reconnectLastSession);
 element("refresh-lobbies").addEventListener("click", refreshLobbies);
 element("rematch").addEventListener("click", restartMatch);
 
@@ -348,7 +351,12 @@ function handleOverlayClick(event) {
   if (action === "resume") resumeGame();
   else if (action === "restart") restartMatch();
   else if (action === "menu") leaveToMenu("home");
-  else if (action === "online") leaveToMenu("online");
+  else if (action === "online") {
+    const preserveReconnect =
+      matchKind === "remote" &&
+      (!socket || socket.readyState !== WebSocket.OPEN);
+    leaveToMenu("online", preserveReconnect);
+  }
 }
 
 function showPanel(panel) {
@@ -365,6 +373,7 @@ function showPanel(panel) {
     navigation.classList.toggle("active", navigation.dataset.panel === panel);
   }
   if (panel === "online") refreshLobbies();
+  if (panel === "online") refreshReconnectButton();
 }
 
 function quickStart() {
@@ -496,8 +505,8 @@ async function restartMatch() {
   if (lastLocalOptions) startLocal(lastLocalOptions);
 }
 
-function leaveToMenu(panel = "home") {
-  leaveRemote();
+function leaveToMenu(panel = "home", preserveReconnect = false) {
+  leaveRemote(!preserveReconnect);
   matchKind = "none";
   paused = false;
   app.dataset.view = "menu";
@@ -531,13 +540,15 @@ function updateInterface() {
       : formatClock(remaining);
   element("network-readout").textContent =
     matchKind === "remote"
-      ? `REMOTE ${remoteLobby?.code ?? "------"} · ${Math.round(performance.now() - lastSnapshotAt)} MS · S${remoteSequence}`
+      ? `${remoteRole === "spectator" ? "WATCH" : "REMOTE"} ${remoteLobby?.code ?? "------"} · ${Math.round(performance.now() - lastSnapshotAt)} MS · S${remoteSequence}`
       : "LOCAL · 120 TICK";
   updateRoster();
   updateAbilities();
   updateCoach(mode);
 
   const matchOver = matchState.status === "match-over";
+  element("rematch").disabled =
+    matchKind === "remote" && remoteHostId !== clientId;
   matchOverlay.classList.toggle(
     "hidden",
     !matchOver || app.dataset.view !== "game",
@@ -1290,21 +1301,75 @@ async function joinLobby(code) {
   }
 }
 
+async function spectateLobby(code) {
+  const normalizedCode = String(code ?? "").trim().toUpperCase();
+  if (!normalizedCode) return;
+  setNetworkMessage(`Opening observer feed for ${normalizedCode}…`);
+  try {
+    const base = readServerBase();
+    await connectNetwork(base);
+    const result = await sendRequest("spectate", {
+      code: normalizedCode,
+      options: { name: element("online-name").value },
+    });
+    if (!result.ok) throw new Error(result.message);
+    beginRemote(result);
+    toast(`WATCHING ${result.lobby.code} · read-only observer`);
+  } catch (error) {
+    setNetworkMessage(error.message, "error");
+  }
+}
+
+async function reconnectLastSession() {
+  const session = readReconnectSession();
+  if (!session) {
+    refreshReconnectButton();
+    setNetworkMessage("No recoverable remote session.", "error");
+    return;
+  }
+  setNetworkMessage(`Reconnecting to ${session.code}…`);
+  try {
+    element("server-address").value = session.base;
+    await connectNetwork(session.base);
+    const result = await sendRequest("reconnect", { token: session.token });
+    if (!result.ok) throw new Error(result.message);
+    beginRemote(result);
+    toast(
+      result.role === "spectator"
+        ? "Observer feed restored."
+        : "Authoritative player session restored.",
+    );
+  } catch (error) {
+    if (/expired|not found|invalid/i.test(error.message)) clearReconnectSession();
+    setNetworkMessage(error.message, "error");
+  }
+}
+
 function beginRemote(result) {
   matchKind = "remote";
   lastLocalOptions = null;
   remoteEntityId = result.entityId;
+  remoteRole = result.role ?? (result.entityId ? "player" : "spectator");
   remoteLobby = result.lobby;
   remoteHostId = result.lobby.hostId;
   remoteSequence = 0;
   pendingInputs = [];
   matchState = structuredClone(result.snapshot.state);
+  app.dataset.spectating = String(remoteRole === "spectator");
   lastSnapshotAt = performance.now();
   lastProcessedTick = matchState.tick - 1;
   setNetworkMessage(
-    `Connected to ${result.lobby.name} · code ${result.lobby.code}`,
+    `${remoteRole === "spectator" ? "Watching" : "Connected to"} ${result.lobby.name} · code ${result.lobby.code}`,
     "success",
   );
+  if (result.reconnectToken) {
+    writeReconnectSession({
+      base: socketBase,
+      code: result.lobby.code,
+      token: result.reconnectToken,
+      role: remoteRole,
+    });
+  }
   clearEffects();
   enterGame();
 }
@@ -1350,13 +1415,21 @@ function renderLobbyList(lobbies) {
     const detail = document.createElement("span");
     detail.textContent = `${lobby.modeName} · ${lobby.mapName} · ${lobby.players}/${lobby.maxPlayers} · ${lobby.status}`;
     copy.append(name, detail);
+    const actions = document.createElement("div");
+    actions.className = "lobby-actions";
     const join = document.createElement("button");
     join.className = "button";
     join.type = "button";
     join.textContent = `Join ${lobby.code}`;
     join.disabled = lobby.players >= lobby.maxPlayers;
     join.addEventListener("click", () => joinLobby(lobby.code));
-    entry.append(copy, join);
+    const watch = document.createElement("button");
+    watch.className = "button button-quiet";
+    watch.type = "button";
+    watch.textContent = "Watch";
+    watch.addEventListener("click", () => spectateLobby(lobby.code));
+    actions.append(join, watch);
+    entry.append(copy, actions);
     list.append(entry);
   }
 }
@@ -1377,7 +1450,7 @@ async function connectNetwork(base) {
   ) {
     return;
   }
-  leaveRemote();
+  leaveRemote(false);
   socketBase = base;
   const webSocketUrl = new URL(base);
   webSocketUrl.protocol = webSocketUrl.protocol === "https:" ? "wss:" : "ws:";
@@ -1416,7 +1489,7 @@ async function connectNetwork(base) {
         pauseOverlay.classList.remove("hidden");
         element("pause-title").textContent = "Connection lost";
         element("pause-copy").textContent =
-          "The last confirmed state is preserved. Return to the lobby browser to reconnect.";
+          "Your slot is reserved for 30 seconds. Open Host / Join and reconnect the last session.";
       }
     });
   });
@@ -1455,6 +1528,9 @@ function handleSocketMessage(event) {
         ? "You are now the lobby host."
         : "Lobby host migrated cleanly.",
     );
+  } else if (message.type === "lobby-closed") {
+    toast(message.reason ?? "Lobby closed.", "error");
+    leaveToMenu("online");
   } else if (message.type === "error") {
     toast(message.message, "error");
   }
@@ -1504,7 +1580,7 @@ function sendRequest(type, payload = {}) {
   });
 }
 
-function leaveRemote() {
+function leaveRemote(forgetSession = true) {
   if (socket && socket.readyState === WebSocket.OPEN && matchKind === "remote") {
     socket.send(JSON.stringify({ type: "leave" }));
   }
@@ -1518,7 +1594,56 @@ function leaveRemote() {
   remoteEntityId = null;
   remoteLobby = null;
   remoteHostId = null;
+  remoteRole = "player";
   pendingInputs = [];
+  app.dataset.spectating = "false";
+  if (forgetSession) clearReconnectSession();
+  else refreshReconnectButton();
+}
+
+function writeReconnectSession(session) {
+  try {
+    localStorage.setItem(RECONNECT_KEY, JSON.stringify(session));
+  } catch {
+    // Remote play remains available when storage is blocked.
+  }
+  refreshReconnectButton();
+}
+
+function readReconnectSession() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(RECONNECT_KEY) ?? "null");
+    if (
+      parsed &&
+      typeof parsed.base === "string" &&
+      typeof parsed.code === "string" &&
+      typeof parsed.token === "string"
+    ) {
+      return parsed;
+    }
+  } catch {
+    // Invalid or unavailable storage means there is no resumable session.
+  }
+  return null;
+}
+
+function clearReconnectSession() {
+  try {
+    localStorage.removeItem(RECONNECT_KEY);
+  } catch {
+    // Nothing else is required when storage is blocked.
+  }
+  refreshReconnectButton();
+}
+
+function refreshReconnectButton() {
+  const button = element("reconnect-lobby");
+  if (!button) return;
+  const session = readReconnectSession();
+  button.hidden = !session;
+  if (session) {
+    button.textContent = `Reconnect ${session.code}${session.role === "spectator" ? " as observer" : ""}`;
+  }
 }
 
 function setNetworkMessage(message, type = "") {

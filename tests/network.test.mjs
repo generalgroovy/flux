@@ -6,7 +6,7 @@ import { createServer } from "node:net";
 import WebSocket from "ws";
 
 test(
-  "shipped server supports discovery, host, live join, input snapshots, and host migration",
+  "shipped server supports discovery, live join, spectators, reconnect, and host migration",
   { timeout: 12_000 },
   async (t) => {
     const port = await freePort();
@@ -34,8 +34,8 @@ test(
     assert.deepEqual(health, {
       product: "DIFF",
       status: "ready",
-      version: "0.8.0",
-      protocol: 1,
+      version: "0.9.0",
+      protocol: 2,
     });
     const initialList = await fetch(`${origin}/api/lobbies`).then((response) =>
       response.json(),
@@ -106,6 +106,20 @@ test(
       (entity) => entity.clientId === guest.clientId,
     ), true);
 
+    const observer = await TestClient.connect(`ws://127.0.0.1:${port}/ws`);
+    const watched = await observer.request("spectate", {
+      code: hosted.lobby.code,
+      options: { name: "Caster" },
+    });
+    assert.equal(watched.ok, true);
+    assert.equal(watched.role, "spectator");
+    assert.equal(watched.entityId, null);
+    const spectatorInput = await observer.request("input", {
+      sequence: 1,
+      command: { fire: true },
+    });
+    assert.equal(spectatorInput.code, "spectator-read-only");
+
     guest.send({
       type: "input",
       sequence: 1,
@@ -137,6 +151,24 @@ test(
       (response) => response.json(),
     );
     assert.equal(afterMigration.lobbies[0].hostId, guest.clientId);
+
+    const returningHost = await TestClient.connect(
+      `ws://127.0.0.1:${port}/ws`,
+    );
+    const reconnected = await returningHost.request("reconnect", {
+      token: hosted.reconnectToken,
+    });
+    assert.equal(reconnected.ok, true);
+    assert.equal(reconnected.entityId, hosted.entityId);
+    assert.equal(reconnected.lobby.hostId, guest.clientId);
+    assert.equal(
+      reconnected.snapshot.state.entities.some(
+        (entity) => entity.id === hosted.entityId,
+      ),
+      true,
+    );
+    returningHost.close();
+    observer.close();
     guest.close();
   },
 );

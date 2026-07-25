@@ -82,7 +82,13 @@ test("content ships eight complete agents, four maps, and all five mode gates", 
     new Set(MODES.map((mode) => mode.id)),
     new Set(["training", "duel", "control", "convergence", "survival"]),
   );
+  assert.equal(
+    new Set(CHARACTERS.map((agent) => agent.silhouette)).size,
+    CHARACTERS.length,
+  );
   for (const agent of CHARACTERS) {
+    assert.ok(agent.radius < 21);
+    assert.ok(agent.glyph);
     assert.ok(agent.primary.name);
     assert.ok(agent.special.name);
     assert.ok(agent.defense.name);

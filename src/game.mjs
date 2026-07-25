@@ -14,6 +14,14 @@ import {
   skipTutorial,
   stepMatch,
 } from "./match.mjs";
+import {
+  NETWORK_PROBE_INTERVAL_MS,
+  beginNetworkProbe,
+  createNetworkDiagnostics,
+  expireNetworkProbes,
+  receiveNetworkProbe,
+  summarizeNetworkDiagnostics,
+} from "./network-quality.mjs";
 
 const FIXED_DELTA = 1 / MATCH_TUNING.tickRate;
 const SETTINGS_KEY = "diff.presentation.v2";
@@ -74,6 +82,7 @@ let remoteLobby = null;
 let remoteSequence = 0;
 let pendingInputs = [];
 let lastSnapshotAt = 0;
+let networkDiagnostics = createNetworkDiagnostics();
 let remoteHostId = null;
 let clientId = null;
 let remoteRole = "player";
@@ -153,6 +162,7 @@ function frame(now) {
   const rawDelta = Math.max(0, (now - frameTime) / 1000);
   const delta = Math.min(rawDelta, MATCH_TUNING.maxFrameDelta);
   frameTime = now;
+  updateNetworkProbes(now);
   if (app.dataset.view === "game" && !paused) {
     accumulator += delta;
     let steps = 0;
@@ -669,10 +679,7 @@ function updateInterface() {
     remaining === 0 && matchState.status === "playing"
       ? "OT"
       : formatClock(remaining);
-  element("network-readout").textContent =
-    matchKind === "remote"
-      ? `${remoteRole === "spectator" ? "WATCH" : "REMOTE"} ${remoteLobby?.code ?? "------"} · ${Math.round(performance.now() - lastSnapshotAt)} MS · S${remoteSequence}`
-      : "LOCAL · 120 TICK";
+  updateNetworkReadout();
   updateRoster();
   updateAbilities();
   updateCoach(mode);
@@ -698,6 +705,26 @@ function updateInterface() {
         ? "Waiting for the current host to run it back."
         : "The read was made. Run it back instantly.";
   }
+}
+
+function updateNetworkReadout() {
+  const readout = element("network-readout");
+  if (matchKind !== "remote") {
+    readout.textContent = "LOCAL · 120 TICK";
+    readout.dataset.quality = "local";
+    readout.title = "Local deterministic simulation";
+    return;
+  }
+  const summary = summarizeNetworkDiagnostics(networkDiagnostics);
+  const role = remoteRole === "spectator" ? "WATCH" : "REMOTE";
+  const stale = performance.now() - lastSnapshotAt > 500;
+  const metrics =
+    summary.rtt === null
+      ? "MEASURING"
+      : `${Math.round(summary.rtt)} MS · J${Math.round(summary.jitter)} · L${Math.round(summary.loss)}%`;
+  readout.textContent = `${role} ${remoteLobby?.code ?? "------"} · ${stale ? "STALE" : summary.quality.toUpperCase()} · ${metrics}`;
+  readout.dataset.quality = stale ? "poor" : summary.quality;
+  readout.title = "Round-trip latency · jitter · recent probe loss";
 }
 
 function updateRoster() {
@@ -1767,7 +1794,13 @@ function handleSocketMessage(event) {
   }
   if (message.type === "hello") {
     clientId = message.clientId;
+    networkDiagnostics = createNetworkDiagnostics();
+    sendNetworkProbe(performance.now());
     socketHelloResolver?.();
+    return;
+  }
+  if (message.type === "probe") {
+    receiveNetworkProbe(networkDiagnostics, message.sequence, performance.now());
     return;
   }
   if (message.type === "result") {
@@ -1843,6 +1876,22 @@ function sendRequest(type, payload = {}) {
   });
 }
 
+function updateNetworkProbes(now) {
+  expireNetworkProbes(networkDiagnostics, now);
+  if (
+    socket?.readyState === WebSocket.OPEN &&
+    now - networkDiagnostics.lastProbeAt >= NETWORK_PROBE_INTERVAL_MS
+  ) {
+    sendNetworkProbe(now);
+  }
+}
+
+function sendNetworkProbe(now) {
+  if (!socket || socket.readyState !== WebSocket.OPEN) return;
+  const sequence = beginNetworkProbe(networkDiagnostics, now);
+  socket.send(JSON.stringify({ type: "probe", sequence }));
+}
+
 function leaveRemote(forgetSession = true) {
   if (socket && socket.readyState === WebSocket.OPEN && matchKind === "remote") {
     socket.send(JSON.stringify({ type: "leave" }));
@@ -1859,6 +1908,7 @@ function leaveRemote(forgetSession = true) {
   remoteHostId = null;
   remoteRole = "player";
   pendingInputs = [];
+  networkDiagnostics = createNetworkDiagnostics();
   app.dataset.spectating = "false";
   if (forgetSession) clearReconnectSession();
   else refreshReconnectButton();

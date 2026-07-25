@@ -34,7 +34,7 @@ test(
     assert.deepEqual(health, {
       product: "DIFF",
       status: "ready",
-      version: "0.9.2",
+      version: "0.9.3",
       protocol: 2,
     });
     const initialList = await fetch(`${origin}/api/lobbies`).then((response) =>
@@ -47,6 +47,7 @@ test(
       "/src/content.mjs",
       "/src/game.mjs",
       "/src/match.mjs",
+      "/src/network-quality.mjs",
     ]) {
       const response = await fetch(`${origin}${route}`);
       assert.equal(response.status, 200, route);
@@ -71,6 +72,11 @@ test(
     }
 
     const host = await TestClient.connect(`ws://127.0.0.1:${port}/ws`);
+    host.send({ type: "probe", sequence: 7 });
+    const probe = await host.waitFor(
+      (message) => message.type === "probe" && message.sequence === 7,
+    );
+    assert.deepEqual(probe, { type: "probe", sequence: 7 });
     const hosted = await host.request("host", {
       options: {
         name: "Network Proof",

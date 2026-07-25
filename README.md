@@ -7,10 +7,13 @@ spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
-Build 0.9.2 streamlines **FIRST CONTACT** into a three-beat behavioral read of
+Build 0.9.3 streamlines **FIRST CONTACT** into a three-beat behavioral read of
 movement/primary, mobility/defense, and special commitment. Each arena now has
 an authored ambient palette that fills the display beyond its fixed competitive
 bounds without changing visibility, collision, or multiplayer authority.
+Remote matches now report measured round-trip latency, jitter, recent probe
+loss, snapshot staleness, and a plain-language quality state instead of
+mislabeling snapshot age as latency.
 
 ## Run
 

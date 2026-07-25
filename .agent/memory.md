@@ -1,5 +1,21 @@
 # DIFF agent memory
 
+## 2026-07-26 — DIFF 0.9.3 truthful remote quality diagnostics
+
+- **Player-facing problem:** The remote HUD presented snapshot age as latency,
+  so players and testers could not distinguish a healthy connection from
+  delayed, jittery, lossy, or stale delivery.
+- **Implemented solution:** Added bounded application-level probes outside match
+  authority, a pure rolling diagnostic model, and a compact remote readout with
+  measured round-trip latency, inter-sample jitter, recent probe loss, snapshot
+  staleness, and explicit GOOD/FAIR/POOR/MEASURING text states. Probe sequences
+  are validated and remain under the existing transport rate ceiling.
+- **Tests passed:** 37/37, including deterministic good/loss/expiry model
+  coverage, live probe echo, browser controller, authoritative lobby lifecycle,
+  all content combinations, and the eight-agent soak.
+- **Recommended next task:** Add safe server cleanup and self-updating Linux and
+  Windows desktop launch surfaces, then deterministic adverse-network controls.
+
 ## 2026-07-26 — Branch-aware pull-and-run handoff
 
 - **Player-facing problem:** The safe launcher always selected `main` in

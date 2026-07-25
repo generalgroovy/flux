@@ -1576,6 +1576,18 @@ select {
   color: #4f6074;
 }
 
+#network-readout[data-quality="good"] {
+  color: var(--mint);
+}
+
+#network-readout[data-quality="fair"] {
+  color: var(--amber);
+}
+
+#network-readout[data-quality="poor"] {
+  color: var(--red);
+}
+
 .roster-hud {
   display: flex;
   grid-column: 1 / -1;

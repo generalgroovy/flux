@@ -10,7 +10,7 @@ import { MATCH_TUNING } from "../src/content.mjs";
 import { LobbyService } from "../src/lobbies.mjs";
 
 const root = resolve(fileURLToPath(new URL("../", import.meta.url)));
-const serverVersion = "0.9.2";
+const serverVersion = "0.9.3";
 const protocolVersion = 2;
 const requestedPort =
   argumentValue("--port") ?? process.env.PORT ?? process.env.DIFF_PORT ?? "8000";
@@ -28,6 +28,7 @@ const publicFiles = new Set([
   "/src/content.mjs",
   "/src/game.mjs",
   "/src/match.mjs",
+  "/src/network-quality.mjs",
 ]);
 const contentTypes = new Map([
   [".css", "text/css; charset=utf-8"],
@@ -230,6 +231,13 @@ function handleClientMessage(service, clientId, message, send) {
   }
   if (message.type === "list") {
     return { ok: true, lobbies: service.list() };
+  }
+  if (message.type === "probe") {
+    if (!Number.isInteger(message.sequence) || message.sequence < 1 || message.sequence > 1_000_000_000) {
+      return { ok: false, code: "invalid-probe", message: "Probe sequence must be a positive integer." };
+    }
+    send({ type: "probe", sequence: message.sequence });
+    return null;
   }
   if (message.type === "host") {
     return service.host(clientId, message.options, send);

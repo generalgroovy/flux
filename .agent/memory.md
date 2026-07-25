@@ -50,10 +50,13 @@
   balance, perceived input feel, physical gamepads, and audio still need
   hands-on play on the target machines. Internet reachability depends on the
   host's TCP port forwarding or VPN; NAT traversal and durable reconnect
-  identity are not yet built. The supplied workspace still has no usable Git
-  object database, so publication requires the connected GitHub workflow.
-- **Recommended next task:** Publish this atomic release, then run the Garuda
-  Sway/Windows and real two-device acceptance passes before adding content.
+  identity are not yet built.
+- **Publication:** Staged from exact `main@a0d79ca` on an isolated release
+  branch, read back all 19 shipped files byte-for-byte, confirmed three legacy
+  files absent and a 21-commit fast-forward with zero commits behind, then moved
+  `main` without force to `af8e9c87128de22e0eba05897e08b0ef4c423354`.
+- **Recommended next task:** Run the Garuda Sway/Windows and real two-device
+  acceptance passes before adding content.
 
 ## 2026-07-25T15:09:31Z — Reliable Sway launch handoff
 

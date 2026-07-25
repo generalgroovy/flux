@@ -51,7 +51,11 @@ diff_is_ready() {
       .then(async (response) => {
         const body = await response.json();
         process.exit(
-          response.ok && body.product === "DIFF" && body.status === "ready"
+          response.ok &&
+            body.product === "DIFF" &&
+            body.status === "ready" &&
+            body.version === "0.8.0" &&
+            body.protocol === 1
             ? 0
             : 1
         );

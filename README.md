@@ -18,6 +18,15 @@ npm start
 ```
 
 Open <http://127.0.0.1:8000>. The game starts in its main menu.
+The home screen launches every offline ruleset directly; **Choose operation**
+keeps agent, arena, format, and bot setup available in one builder.
+
+To verify a local working copy and launch it on the first free port from
+`8000`–`8100`:
+
+```bash
+bash scripts/test-changes.sh
+```
 
 ### Remote multiplayer
 
@@ -78,8 +87,11 @@ It refuses dirty or diverged work instead of hiding local changes.
 | Pause / network menu | `Escape` | `Escape` | — |
 | Instant restart | `R` | `R` | — |
 | Skip introduction | `T` | — | — |
+| Toggle live field info | `F1` | `F1` | — |
 
 Every agent uses this shared input language.
+The live field panel shows the active objective, map, health, role, full kit,
+and essential controls without pausing combat.
 
 ## Agents
 
@@ -98,6 +110,8 @@ Shots clash, heavy projectiles win light clashes, reflections change ownership,
 cover blocks every projectile and movement type, mines interact with hostile
 positioning, and dash contact, unit collision, defenses, hazards, knockback,
 death, and respawn all share one simulation authority.
+Each agent also has a smaller collision body, unique oriented silhouette, glyph,
+color, role, and readable kit identity.
 
 ## Maps and modes
 
@@ -139,6 +153,7 @@ node --check src/lobbies.mjs
 node --check src/game.mjs
 node --check scripts/serve.mjs
 bash -n scripts/pull-and-run.sh
+bash -n scripts/test-changes.sh
 ```
 
 The suite covers the real DOM/canvas controller, all agent/map/mode
@@ -147,4 +162,6 @@ all defense types, projectile interaction, mines, hazards, death/reset,
 overtime, control, PvE waves, join-in-progress, discovery, input sequencing,
 snapshots, disconnect/reconnect identity, spectator isolation, host migration,
 route allowlisting, security headers, and an eight-agent two-minute
-deterministic combat soak.
+deterministic combat soak. It also clicks every main menu, launches all five
+rulesets through the shipped interface, toggles live field info, and verifies
+agent/map shortcuts update the deployment builder.

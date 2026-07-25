@@ -1,0 +1,1583 @@
+import {
+  CHARACTERS,
+  MATCH_TUNING,
+  getCharacter,
+  getMap,
+  getMode,
+} from "./content.mjs";
+
+const EPSILON = 1e-8;
+const IDLE_COMMAND = Object.freeze({
+  moveX: 0,
+  moveY: 0,
+  aimX: 1,
+  aimY: 0,
+  fire: false,
+  special: false,
+  defend: false,
+  mobility: false,
+});
+
+export function createMatch(options = {}) {
+  const mode = getMode(options.modeId);
+  const map = getMap(options.mapId);
+  const seed = finiteInteger(options.seed, 1);
+  const playerSpecs =
+    Array.isArray(options.players) && options.players.length > 0
+      ? options.players
+      : [
+          {
+            id: "p1",
+            name: "PLAYER 1",
+            characterId: options.characterId ?? "kite",
+            team: "alpha",
+            human: true,
+            localSlot: 0,
+          },
+        ];
+  const entities = [];
+  for (const [index, spec] of playerSpecs.entries()) {
+    entities.push(createEntity(spec, index, map));
+  }
+
+  const requestedBots = Number.isInteger(options.botCount)
+    ? clamp(options.botCount, 0, 7)
+    : mode.botCount;
+  const humanTeams = new Set(entities.map((entity) => entity.team));
+  for (let index = 0; index < requestedBots; index += 1) {
+    const team =
+      mode.id === "survival"
+        ? "beta"
+        : humanTeams.size === 1 && humanTeams.has("alpha")
+          ? "beta"
+          : index % 2 === 0
+            ? "beta"
+            : "alpha";
+    entities.push(
+      createEntity(
+        {
+          id: `bot-${index + 1}`,
+          name: `SPAR ${index + 1}`,
+          characterId:
+            options.botCharacterIds?.[index] ??
+            CHARACTERS[(index + 1) % CHARACTERS.length].id,
+          team,
+          bot: true,
+        },
+        entities.length,
+        map,
+      ),
+    );
+  }
+
+  const neutralCount = mode.neutralCount ?? 0;
+  for (let index = 0; index < neutralCount; index += 1) {
+    entities.push(
+      createEntity(
+        {
+          id: `neutral-${index + 1}`,
+          name: `WARD ${index + 1}`,
+          characterId: index % 2 === 0 ? "bulwark" : "rook",
+          team: "neutral",
+          bot: true,
+          neutral: true,
+        },
+        entities.length,
+        map,
+      ),
+    );
+  }
+
+  const state = {
+    version: 1,
+    seed,
+    tick: 0,
+    elapsed: 0,
+    status: "playing",
+    modeId: mode.id,
+    mapId: map.id,
+    entities,
+    projectiles: [],
+    mines: [],
+    hazards: map.hazards.map((hazard) => ({
+      ...hazard,
+      phase: "cooldown",
+      remaining: hazard.initial,
+      hitIds: [],
+    })),
+    score: { alpha: 0, beta: 0 },
+    round: 1,
+    roundRemaining: 0,
+    winner: null,
+    objective: {
+      controllingTeam: null,
+      contested: false,
+      progress: { alpha: 0, beta: 0 },
+    },
+    tutorial: {
+      skipped: mode.id !== "training",
+      step: mode.id === "training" ? 0 : 3,
+      moved: false,
+      fired: false,
+      mobility: false,
+      defended: false,
+    },
+    overtime: false,
+    survival: {
+      wave: 1,
+    },
+    nextProjectileId: 1,
+    nextMineId: 1,
+    events: [],
+  };
+  state.events.push({ type: "matchStart", modeId: mode.id, mapId: map.id });
+  return state;
+}
+
+function createEntity(spec, index, map) {
+  const agent = getCharacter(spec.characterId);
+  const spawnIndex = finiteInteger(spec.spawnIndex, index) % map.spawns.length;
+  const spawn = map.spawns[(spawnIndex + map.spawns.length) % map.spawns.length];
+  const facingX = spawn.x < map.size.width / 2 ? 1 : -1;
+  return {
+    id: String(spec.id ?? `player-${index + 1}`),
+    clientId: spec.clientId ? String(spec.clientId) : null,
+    name: cleanName(spec.name ?? `PLAYER ${index + 1}`),
+    characterId: agent.id,
+    team: spec.team === "beta" || spec.team === "neutral" ? spec.team : "alpha",
+    human: spec.human === true,
+    bot: spec.bot === true,
+    neutral: spec.neutral === true,
+    localSlot: Number.isInteger(spec.localSlot) ? spec.localSlot : null,
+    spawnIndex,
+    x: spawn.x,
+    y: spawn.y,
+    lastSafeX: spawn.x,
+    lastSafeY: spawn.y,
+    vx: 0,
+    vy: 0,
+    facingX,
+    facingY: 0,
+    health: agent.health,
+    maxHealth: agent.health,
+    alive: true,
+    respawnRemaining: 0,
+    spawnProtection: MATCH_TUNING.spawnProtection,
+    damageInvulnerability: 0,
+    hitFlash: 0,
+    primaryCooldown: 0,
+    specialCooldown: 0,
+    defenseCooldown: 0,
+    defenseRemaining: 0,
+    mobilityCooldown: 0,
+    mobilityRemaining: 0,
+    mobilityX: facingX,
+    mobilityY: 0,
+    dashHitIds: [],
+    kills: 0,
+    deaths: 0,
+    lives: 3,
+    lastAttackerId: null,
+    botThinkRemaining: 0,
+    botCommand: { ...IDLE_COMMAND },
+  };
+}
+
+export function addMatchPlayer(state, spec = {}) {
+  if (!state || state.status === "match-over") return null;
+  const map = getMap(state.mapId);
+  const usedIds = new Set(state.entities.map((entity) => entity.id));
+  const baseId = String(spec.id ?? `player-${state.entities.length + 1}`);
+  let id = baseId;
+  let suffix = 2;
+  while (usedIds.has(id)) {
+    id = `${baseId}-${suffix}`;
+    suffix += 1;
+  }
+  const alphaCount = state.entities.filter(
+    (entity) => entity.team === "alpha" && !entity.neutral,
+  ).length;
+  const betaCount = state.entities.filter(
+    (entity) => entity.team === "beta" && !entity.neutral,
+  ).length;
+  const entity = createEntity(
+    {
+      ...spec,
+      id,
+      human: true,
+      bot: false,
+      team: spec.team ?? (alphaCount <= betaCount ? "alpha" : "beta"),
+      spawnIndex: state.entities.length,
+    },
+    state.entities.length,
+    map,
+  );
+  state.entities.push(entity);
+  state.events.push({ type: "playerJoined", entityId: entity.id });
+  return entity;
+}
+
+export function removeMatchPlayer(state, entityId) {
+  const entity = state.entities.find((candidate) => candidate.id === entityId);
+  if (!entity) return false;
+  state.entities = state.entities.filter((candidate) => candidate !== entity);
+  state.projectiles = state.projectiles.filter(
+    (projectile) => projectile.ownerId !== entityId,
+  );
+  state.mines = state.mines.filter((mine) => mine.ownerId !== entityId);
+  state.events.push({ type: "playerLeft", entityId });
+  return true;
+}
+
+export function sanitizeCommand(candidate) {
+  const source = candidate && typeof candidate === "object" ? candidate : {};
+  const move = normalizeDirection(source.moveX, source.moveY);
+  const rawAim = normalizeDirection(source.aimX, source.aimY);
+  return {
+    moveX: move.x,
+    moveY: move.y,
+    aimX: rawAim.x,
+    aimY: rawAim.y,
+    fire: source.fire === true,
+    special: source.special === true,
+    defend: source.defend === true,
+    mobility: source.mobility === true,
+  };
+}
+
+export function stepMatch(
+  state,
+  commands = {},
+  delta = 1 / MATCH_TUNING.tickRate,
+) {
+  state.events = [];
+  if (
+    state.status === "match-over" ||
+    !Number.isFinite(delta) ||
+    delta <= 0
+  ) {
+    return state;
+  }
+  const boundedDelta = Math.min(delta, MATCH_TUNING.maxFrameDelta);
+  const mode = getMode(state.modeId);
+  const map = getMap(state.mapId);
+  state.tick += 1;
+
+  if (state.status === "round-over") {
+    state.roundRemaining = Math.max(0, state.roundRemaining - boundedDelta);
+    if (state.roundRemaining === 0) resetRound(state, map, mode);
+    return state;
+  }
+
+  for (const entity of state.entities) tickEntity(entity, boundedDelta);
+  for (const entity of state.entities) {
+    if (!entity.alive) {
+      updateRespawn(state, entity, boundedDelta, map, mode);
+      continue;
+    }
+    const command = entity.bot
+      ? updateBotCommand(state, entity, boundedDelta, map)
+      : sanitizeCommand(commands[entity.id]);
+    updateEntity(state, entity, command, boundedDelta, map);
+  }
+
+  resolveUnitCollisions(state, map);
+  updateMines(state, boundedDelta, map);
+  updateProjectiles(state, boundedDelta, map);
+  updateHazards(state, boundedDelta);
+  updateObjective(state, boundedDelta, mode, map);
+  updateTutorial(state, commands);
+  updateMatchClock(state, boundedDelta, mode);
+  repairState(state, map);
+  return state;
+}
+
+function tickEntity(entity, delta) {
+  for (const key of [
+    "primaryCooldown",
+    "specialCooldown",
+    "defenseCooldown",
+    "defenseRemaining",
+    "mobilityCooldown",
+    "mobilityRemaining",
+    "damageInvulnerability",
+    "spawnProtection",
+    "hitFlash",
+  ]) {
+    entity[key] = Math.max(0, finite(entity[key]) - delta);
+  }
+}
+
+function updateEntity(state, entity, command, delta, map) {
+  const agent = getCharacter(entity.characterId);
+  if (command.aimX !== 0 || command.aimY !== 0) {
+    entity.facingX = command.aimX;
+    entity.facingY = command.aimY;
+  }
+  if (command.moveX !== 0 || command.moveY !== 0) state.tutorial.moved = true;
+
+  if (command.mobility && entity.mobilityCooldown === 0) {
+    startMobility(state, entity, command, agent, map);
+  }
+  moveEntity(state, entity, command, agent, delta, map);
+  if (command.defend && entity.defenseCooldown === 0) {
+    entity.defenseRemaining = agent.defense.duration;
+    entity.defenseCooldown = agent.defense.cooldown;
+    state.tutorial.defended = true;
+    state.events.push({
+      type: "defense",
+      entityId: entity.id,
+      kind: agent.defense.kind,
+      x: entity.x,
+      y: entity.y,
+    });
+  }
+  if (command.special && entity.specialCooldown === 0) {
+    useSpecial(state, entity, agent, map);
+  }
+  if (command.fire && entity.primaryCooldown === 0) {
+    firePattern(state, entity, agent.primary, "primary");
+    entity.primaryCooldown = agent.primary.cooldown;
+    state.tutorial.fired = true;
+  }
+}
+
+function startMobility(state, entity, command, agent, map) {
+  const mobility = agent.mobility;
+  let direction =
+    command.moveX !== 0 || command.moveY !== 0
+      ? { x: command.moveX, y: command.moveY }
+      : { x: entity.facingX, y: entity.facingY };
+  if (mobility.kind === "recoil") {
+    direction = { x: -entity.facingX, y: -entity.facingY };
+  }
+  direction = normalizeDirection(direction.x, direction.y);
+  if (direction.x === 0 && direction.y === 0) direction = { x: 1, y: 0 };
+  entity.mobilityCooldown = mobility.cooldown;
+  entity.mobilityX = direction.x;
+  entity.mobilityY = direction.y;
+  entity.dashHitIds = [];
+  state.tutorial.mobility = true;
+
+  if (mobility.kind === "blink") {
+    const result = moveCircleSwept(
+      entity,
+      direction.x * mobility.distance,
+      direction.y * mobility.distance,
+      agent.radius,
+      map,
+    );
+    entity.vx = 0;
+    entity.vy = 0;
+    state.events.push({
+      type: result.hitWall ? "blinkBlocked" : "blink",
+      entityId: entity.id,
+      x: entity.x,
+      y: entity.y,
+    });
+    return;
+  }
+
+  entity.mobilityRemaining = mobility.duration;
+  state.events.push({
+    type: "mobility",
+    entityId: entity.id,
+    kind: mobility.kind,
+    x: entity.x,
+    y: entity.y,
+  });
+}
+
+function moveEntity(state, entity, command, agent, delta, map) {
+  let moveX = command.moveX;
+  let moveY = command.moveY;
+  if (entity.mobilityRemaining > 0) {
+    entity.vx = entity.mobilityX * agent.mobility.speed;
+    entity.vy = entity.mobilityY * agent.mobility.speed;
+  } else {
+    const desiredX = moveX * agent.speed;
+    const desiredY = moveY * agent.speed;
+    const rate =
+      moveX !== 0 || moveY !== 0 ? agent.acceleration : agent.deceleration;
+    approachVelocity(entity, desiredX, desiredY, rate * delta);
+  }
+
+  const result = moveCircleSwept(
+    entity,
+    entity.vx * delta,
+    entity.vy * delta,
+    agent.radius,
+    map,
+  );
+  if (result.hitWall && entity.mobilityRemaining > 0) {
+    entity.mobilityRemaining = 0;
+    entity.vx = 0;
+    entity.vy = 0;
+    state.events.push({
+      type: "dashImpact",
+      entityId: entity.id,
+      x: entity.x,
+      y: entity.y,
+    });
+  }
+}
+
+export function moveCircleSwept(circle, dx, dy, radius, map) {
+  const safeDx = finite(dx);
+  const safeDy = finite(dy);
+  const distance = Math.hypot(safeDx, safeDy);
+  const steps = clamp(
+    Math.ceil(distance / Math.max(radius * 0.42, 1)),
+    1,
+    MATCH_TUNING.maxMoveSubsteps,
+  );
+  const stepX = safeDx / steps;
+  const stepY = safeDy / steps;
+  let hitWall = false;
+
+  for (let step = 0; step < steps; step += 1) {
+    const beforeX = circle.x;
+    const beforeY = circle.y;
+    circle.x += stepX;
+    circle.y += stepY;
+    constrainCircle(circle, radius, map.size);
+    for (let pass = 0; pass < 3; pass += 1) {
+      let collided = false;
+      for (const obstacle of map.obstacles) {
+        collided = resolveCircleRectangle(circle, radius, obstacle) || collided;
+      }
+      if (!collided) break;
+      hitWall = true;
+    }
+    constrainCircle(circle, radius, map.size);
+    if (!Number.isFinite(circle.x) || !Number.isFinite(circle.y)) {
+      circle.x = Number.isFinite(beforeX) ? beforeX : map.spawns[0].x;
+      circle.y = Number.isFinite(beforeY) ? beforeY : map.spawns[0].y;
+      hitWall = true;
+      break;
+    }
+  }
+  return { hitWall };
+}
+
+function useSpecial(state, entity, agent, map) {
+  const special = agent.special;
+  entity.specialCooldown = special.cooldown;
+  state.events.push({
+    type: "special",
+    entityId: entity.id,
+    kind: special.kind,
+    x: entity.x,
+    y: entity.y,
+  });
+  if (special.kind === "cone") {
+    for (const target of opponentsOf(state, entity)) {
+      const offsetX = target.x - entity.x;
+      const offsetY = target.y - entity.y;
+      const distance = Math.hypot(offsetX, offsetY);
+      const direction = normalizeDirection(offsetX, offsetY);
+      const dot =
+        direction.x * entity.facingX + direction.y * entity.facingY;
+      if (
+        distance <= special.range + getCharacter(target.characterId).radius &&
+        dot >= Math.cos(special.halfAngle)
+      ) {
+        damageEntity(state, target, special.damage, entity, {
+          source: "special",
+          knockback: special.knockback,
+          direction,
+        });
+      }
+    }
+  } else if (special.kind === "blast") {
+    damageRadius(state, entity, special.range, special.damage, special.knockback);
+  } else if (special.kind === "rail") {
+    const end = clippedRayEnd(entity, special.range, map);
+    for (const target of opponentsOf(state, entity)) {
+      if (
+        segmentCircleHit(
+          entity.x,
+          entity.y,
+          end.x,
+          end.y,
+          target.x,
+          target.y,
+          getCharacter(target.characterId).radius + special.width,
+        )
+      ) {
+        damageEntity(state, target, special.damage, entity, {
+          source: "rail",
+          knockback: special.knockback,
+          direction: { x: entity.facingX, y: entity.facingY },
+        });
+      }
+    }
+    state.events.push({
+      type: "rail",
+      entityId: entity.id,
+      x: entity.x,
+      y: entity.y,
+      endX: end.x,
+      endY: end.y,
+    });
+  } else if (special.kind === "mine") {
+    state.mines = state.mines.filter(
+      (mine) => mine.ownerId !== entity.id || mine.remaining > special.duration / 2,
+    );
+    state.mines.push({
+      id: state.nextMineId,
+      ownerId: entity.id,
+      team: entity.team,
+      x: entity.x,
+      y: entity.y,
+      armedIn: special.armTime,
+      remaining: special.duration,
+      triggerRadius: special.triggerRadius,
+      blastRadius: special.blastRadius,
+      damage: special.damage,
+      knockback: special.knockback,
+    });
+    state.nextMineId += 1;
+  } else if (special.kind === "pull") {
+    for (const target of opponentsOf(state, entity)) {
+      const distance = Math.hypot(entity.x - target.x, entity.y - target.y);
+      if (distance > special.range) continue;
+      const direction = normalizeDirection(entity.x - target.x, entity.y - target.y);
+      damageEntity(state, target, special.damage, entity, {
+        source: "pull",
+        knockback: -special.pull,
+        direction: { x: -direction.x, y: -direction.y },
+      });
+    }
+  } else if (special.kind === "heal") {
+    const before = entity.health;
+    entity.health = Math.min(entity.maxHealth, entity.health + special.amount);
+    state.events.push({
+      type: "heal",
+      entityId: entity.id,
+      amount: entity.health - before,
+      x: entity.x,
+      y: entity.y,
+    });
+  } else if (special.kind === "volley") {
+    firePattern(state, entity, special, "special");
+  }
+}
+
+function firePattern(state, entity, weapon, source) {
+  const count = Math.max(1, finiteInteger(weapon.count, 1));
+  for (let shot = 0; shot < count; shot += 1) {
+    const offset = count === 1 ? 0 : shot - (count - 1) / 2;
+    const angle = Math.atan2(entity.facingY, entity.facingX) + offset * weapon.spread;
+    const direction = { x: Math.cos(angle), y: Math.sin(angle) };
+    const spawnOffset = getCharacter(entity.characterId).radius + weapon.radius + 4;
+    state.projectiles.push({
+      id: state.nextProjectileId,
+      ownerId: entity.id,
+      team: entity.team,
+      source,
+      x: entity.x + direction.x * spawnOffset,
+      y: entity.y + direction.y * spawnOffset,
+      previousX: entity.x,
+      previousY: entity.y,
+      vx: direction.x * weapon.speed,
+      vy: direction.y * weapon.speed,
+      radius: weapon.radius,
+      damage: weapon.damage,
+      lifetime: weapon.lifetime,
+      knockback: weapon.knockback ?? 0,
+      pierce: weapon.pierce ?? 0,
+      heavy: weapon.heavy === true,
+      reflected: false,
+    });
+    state.nextProjectileId += 1;
+  }
+  state.events.push({
+    type: "shot",
+    entityId: entity.id,
+    source,
+    x: entity.x,
+    y: entity.y,
+  });
+}
+
+function updateMines(state, delta) {
+  const survivors = [];
+  for (const mine of state.mines) {
+    mine.armedIn = Math.max(0, mine.armedIn - delta);
+    mine.remaining -= delta;
+    if (mine.remaining <= 0) continue;
+    const owner = state.entities.find((entity) => entity.id === mine.ownerId);
+    const target = state.entities.find(
+      (entity) =>
+        entity.alive &&
+        hostileTeams(mine.team, entity.team) &&
+        Math.hypot(entity.x - mine.x, entity.y - mine.y) <= mine.triggerRadius,
+    );
+    if (mine.armedIn === 0 && target) {
+      for (const entity of state.entities) {
+        if (!entity.alive || !hostileTeams(mine.team, entity.team)) continue;
+        const distance = Math.hypot(entity.x - mine.x, entity.y - mine.y);
+        if (distance > mine.blastRadius) continue;
+        const direction = normalizeDirection(entity.x - mine.x, entity.y - mine.y);
+        damageEntity(state, entity, mine.damage, owner, {
+          source: "mine",
+          knockback: mine.knockback,
+          direction,
+        });
+      }
+      state.events.push({ type: "mineBlast", x: mine.x, y: mine.y });
+      continue;
+    }
+    survivors.push(mine);
+  }
+  state.mines = survivors;
+}
+
+function updateProjectiles(state, delta, map) {
+  for (const projectile of state.projectiles) {
+    projectile.previousX = projectile.x;
+    projectile.previousY = projectile.y;
+    projectile.x += finite(projectile.vx) * delta;
+    projectile.y += finite(projectile.vy) * delta;
+    projectile.lifetime -= delta;
+  }
+
+  const removed = new Set();
+  if (MATCH_TUNING.projectileClashes) {
+    for (let left = 0; left < state.projectiles.length; left += 1) {
+      const a = state.projectiles[left];
+      if (removed.has(a.id)) continue;
+      for (let right = left + 1; right < state.projectiles.length; right += 1) {
+        const b = state.projectiles[right];
+        if (
+          removed.has(b.id) ||
+          !hostileTeams(a.team, b.team) ||
+          !projectilesCross(a, b)
+        ) {
+          continue;
+        }
+        if (a.heavy && !b.heavy) removed.add(b.id);
+        else if (b.heavy && !a.heavy) removed.add(a.id);
+        else {
+          removed.add(a.id);
+          removed.add(b.id);
+        }
+        state.events.push({
+          type: "projectileClash",
+          x: (a.x + b.x) / 2,
+          y: (a.y + b.y) / 2,
+        });
+      }
+    }
+  }
+
+  const survivors = [];
+  for (const projectile of state.projectiles) {
+    if (
+      removed.has(projectile.id) ||
+      projectile.lifetime <= 0 ||
+      !insideArena(projectile, map.size)
+    ) {
+      continue;
+    }
+    if (
+      map.obstacles.some((obstacle) =>
+        segmentRectangleHit(
+          projectile.previousX,
+          projectile.previousY,
+          projectile.x,
+          projectile.y,
+          obstacle,
+          projectile.radius,
+        ),
+      )
+    ) {
+      state.events.push({
+        type: "projectileBlocked",
+        x: projectile.x,
+        y: projectile.y,
+      });
+      continue;
+    }
+
+    const target = state.entities.find(
+      (entity) =>
+        entity.alive &&
+        entity.id !== projectile.ownerId &&
+        hostileTeams(projectile.team, entity.team) &&
+        segmentCircleHit(
+          projectile.previousX,
+          projectile.previousY,
+          projectile.x,
+          projectile.y,
+          entity.x,
+          entity.y,
+          getCharacter(entity.characterId).radius + projectile.radius,
+        ),
+    );
+    if (!target) {
+      survivors.push(projectile);
+      continue;
+    }
+    const interaction = defendAgainstProjectile(state, target, projectile);
+    if (interaction === "pass") {
+      survivors.push(projectile);
+      continue;
+    }
+    if (interaction === "reflect") {
+      survivors.push(projectile);
+      continue;
+    }
+    if (interaction === "consume") continue;
+
+    const direction = normalizeDirection(projectile.vx, projectile.vy);
+    damageEntity(
+      state,
+      target,
+      projectile.damage,
+      state.entities.find((entity) => entity.id === projectile.ownerId),
+      {
+        source: projectile.source,
+        knockback: projectile.knockback,
+        direction,
+      },
+    );
+    if (projectile.pierce > 0) {
+      projectile.pierce -= 1;
+      projectile.ownerId = `${projectile.ownerId}:spent:${target.id}`;
+      survivors.push(projectile);
+    }
+  }
+  state.projectiles = survivors;
+}
+
+function defendAgainstProjectile(state, target, projectile) {
+  if (target.spawnProtection > 0) return "consume";
+  if (target.defenseRemaining <= 0) return "hit";
+  const defense = getCharacter(target.characterId).defense;
+  if (defense.kind === "phase") {
+    return "pass";
+  }
+  if (defense.kind === "reflect") {
+    projectile.ownerId = target.id;
+    projectile.team = target.team;
+    projectile.vx *= -1;
+    projectile.vy *= -1;
+    projectile.previousX = target.x;
+    projectile.previousY = target.y;
+    projectile.x =
+      target.x + normalizeDirection(projectile.vx, projectile.vy).x * 38;
+    projectile.y =
+      target.y + normalizeDirection(projectile.vx, projectile.vy).y * 38;
+    projectile.reflected = true;
+    state.events.push({
+      type: "reflect",
+      entityId: target.id,
+      x: target.x,
+      y: target.y,
+    });
+    return "reflect";
+  }
+  if (defense.kind === "absorb") {
+    target.health = Math.min(target.maxHealth, target.health + defense.heal);
+    target.specialCooldown = Math.max(0, target.specialCooldown - defense.refund);
+    state.events.push({
+      type: "absorb",
+      entityId: target.id,
+      x: target.x,
+      y: target.y,
+    });
+    return "consume";
+  }
+  if (defense.kind === "counter") {
+    const owner = state.entities.find((entity) => entity.id === projectile.ownerId);
+    const direction = owner
+      ? normalizeDirection(owner.x - target.x, owner.y - target.y)
+      : { x: target.facingX, y: target.facingY };
+    fireCounter(state, target, defense, direction);
+    return "consume";
+  }
+  return "hit";
+}
+
+function fireCounter(state, entity, defense, direction) {
+  state.projectiles.push({
+    id: state.nextProjectileId,
+    ownerId: entity.id,
+    team: entity.team,
+    source: "counter",
+    x: entity.x + direction.x * 30,
+    y: entity.y + direction.y * 30,
+    previousX: entity.x,
+    previousY: entity.y,
+    vx: direction.x * defense.counterSpeed,
+    vy: direction.y * defense.counterSpeed,
+    radius: 5,
+    damage: defense.counterDamage,
+    lifetime: 1.4,
+    knockback: 110,
+    pierce: 0,
+    heavy: false,
+    reflected: false,
+  });
+  state.nextProjectileId += 1;
+  state.events.push({ type: "counter", entityId: entity.id, x: entity.x, y: entity.y });
+}
+
+function updateHazards(state, delta) {
+  for (const hazard of state.hazards) {
+    hazard.remaining -= delta;
+    if (hazard.remaining <= 0) {
+      if (hazard.phase === "cooldown") {
+        hazard.phase = "warning";
+        hazard.remaining = hazard.warning;
+        hazard.hitIds = [];
+        state.events.push({ type: "hazardWarning", hazardId: hazard.id });
+      } else if (hazard.phase === "warning") {
+        hazard.phase = "active";
+        hazard.remaining = hazard.active;
+        state.events.push({ type: "hazardActive", hazardId: hazard.id });
+      } else {
+        hazard.phase = "cooldown";
+        hazard.remaining = hazard.cooldown;
+        state.events.push({ type: "hazardClear", hazardId: hazard.id });
+      }
+    }
+    if (hazard.phase !== "active") continue;
+    for (const entity of state.entities) {
+      if (
+        !entity.alive ||
+        hazard.hitIds.includes(entity.id) ||
+        !circleRectangleOverlap(
+          entity,
+          getCharacter(entity.characterId).radius,
+          hazard,
+        )
+      ) {
+        continue;
+      }
+      hazard.hitIds.push(entity.id);
+      damageEntity(state, entity, hazard.damage, null, { source: "hazard" });
+    }
+  }
+}
+
+function damageEntity(state, target, rawDamage, attacker, options = {}) {
+  if (
+    !target?.alive ||
+    target.spawnProtection > 0 ||
+    target.damageInvulnerability > 0
+  ) {
+    return false;
+  }
+  const agent = getCharacter(target.characterId);
+  let damage = Math.max(0, finite(rawDamage));
+  if (target.defenseRemaining > 0 && agent.defense.kind === "guard") {
+    const sourceDirection = options.direction ?? { x: 0, y: 0 };
+    const incomingDot =
+      -sourceDirection.x * target.facingX - sourceDirection.y * target.facingY;
+    if (incomingDot >= agent.defense.frontalDot) {
+      damage *= 1 - agent.defense.reduction;
+      state.events.push({ type: "guarded", entityId: target.id });
+    }
+  }
+  damage = Math.max(1, Math.round(damage));
+  target.health = Math.max(0, target.health - damage);
+  target.hitFlash = MATCH_TUNING.hitFlash;
+  target.damageInvulnerability = agent.damageInvulnerability;
+  target.lastAttackerId = attacker?.id ?? null;
+  if (options.knockback && options.direction) {
+    target.vx += options.direction.x * options.knockback;
+    target.vy += options.direction.y * options.knockback;
+  }
+  state.events.push({
+    type: "hit",
+    entityId: target.id,
+    attackerId: attacker?.id ?? null,
+    damage,
+    source: options.source ?? "unknown",
+    x: target.x,
+    y: target.y,
+  });
+  if (target.health === 0) eliminateEntity(state, target, attacker);
+  return true;
+}
+
+function eliminateEntity(state, target, attacker) {
+  target.alive = false;
+  target.deaths += 1;
+  target.respawnRemaining = 1.55;
+  target.vx = 0;
+  target.vy = 0;
+  target.mobilityRemaining = 0;
+  if (attacker && attacker !== target) attacker.kills += 1;
+  state.events.push({
+    type: "elimination",
+    entityId: target.id,
+    attackerId: attacker?.id ?? null,
+    team: attacker?.team ?? null,
+  });
+  const mode = getMode(state.modeId);
+  if (mode.id === "duel" || mode.id === "training") {
+    const scoringTeam = attacker?.team;
+    if (scoringTeam === "alpha" || scoringTeam === "beta") {
+      state.score[scoringTeam] += 1;
+    }
+    if (
+      mode.id === "training" ||
+      state.overtime ||
+      state.score[scoringTeam] >= mode.scoreLimit
+    ) {
+      finishMatch(state, scoringTeam ?? oppositeTeam(target.team));
+    } else {
+      state.status = "round-over";
+      state.roundRemaining = MATCH_TUNING.roundResetDelay;
+      state.winner = scoringTeam ?? null;
+      state.events.push({ type: "roundOver", winner: state.winner });
+    }
+  } else if (mode.id === "survival") {
+    if (target.team === "alpha") {
+      target.lives -= 1;
+      if (target.lives <= 0) {
+        const livingHumans = state.entities.some(
+          (entity) =>
+            entity.team === "alpha" && entity.human && entity.lives > 0,
+        );
+        if (!livingHumans) finishMatch(state, "beta");
+      }
+    } else if (
+      target.team === "beta" &&
+      !state.entities.some(
+        (entity) => entity.team === "beta" && entity.alive,
+      )
+    ) {
+      state.score.alpha = state.survival.wave;
+      if (state.survival.wave >= mode.scoreLimit) {
+        finishMatch(state, "alpha");
+      } else {
+        state.status = "round-over";
+        state.roundRemaining = 1.6;
+        state.winner = "alpha";
+        state.events.push({
+          type: "waveClear",
+          wave: state.survival.wave,
+        });
+      }
+    }
+  } else if (attacker?.team === "alpha" || attacker?.team === "beta") {
+    state.score[attacker.team] += target.neutral ? 3 : 6;
+    if (state.score[attacker.team] >= mode.scoreLimit) {
+      state.score[attacker.team] = mode.scoreLimit;
+      finishMatch(state, attacker.team);
+    }
+  }
+}
+
+function updateRespawn(state, entity, delta, map, mode) {
+  if (state.status !== "playing") return;
+  if (mode.id === "duel" || mode.id === "training") return;
+  if (mode.id === "survival" && entity.team === "beta") return;
+  if (mode.id === "survival" && entity.team === "alpha" && entity.lives <= 0) {
+    return;
+  }
+  entity.respawnRemaining = Math.max(0, entity.respawnRemaining - delta);
+  if (entity.respawnRemaining > 0) return;
+  respawnEntity(entity, map);
+  state.events.push({ type: "respawn", entityId: entity.id });
+}
+
+function respawnEntity(entity, map) {
+  const spawn = map.spawns[entity.spawnIndex % map.spawns.length];
+  const agent = getCharacter(entity.characterId);
+  entity.x = spawn.x;
+  entity.y = spawn.y;
+  entity.lastSafeX = spawn.x;
+  entity.lastSafeY = spawn.y;
+  entity.vx = 0;
+  entity.vy = 0;
+  entity.health = agent.health;
+  entity.maxHealth = agent.health;
+  entity.alive = true;
+  entity.spawnProtection = MATCH_TUNING.spawnProtection;
+  entity.damageInvulnerability = 0;
+  entity.defenseRemaining = 0;
+  entity.mobilityRemaining = 0;
+  entity.primaryCooldown = 0;
+  entity.specialCooldown = 0;
+  entity.defenseCooldown = 0;
+  entity.mobilityCooldown = 0;
+}
+
+function resetRound(state, map, mode) {
+  state.round += 1;
+  state.status = "playing";
+  state.winner = null;
+  state.roundRemaining = 0;
+  state.projectiles = [];
+  state.mines = [];
+  if (mode.id === "survival") {
+    state.survival.wave += 1;
+    const enemyCount = state.entities.filter(
+      (entity) => entity.team === "beta",
+    ).length;
+    if (enemyCount < Math.min(7, state.survival.wave + 1)) {
+      state.entities.push(
+        createEntity(
+          {
+            id: `wave-${state.survival.wave}-${enemyCount + 1}`,
+            name: `PRESSURE ${enemyCount + 1}`,
+            characterId:
+              CHARACTERS[(state.survival.wave + enemyCount) % CHARACTERS.length]
+                .id,
+            team: "beta",
+            bot: true,
+          },
+          state.entities.length,
+          map,
+        ),
+      );
+    }
+  }
+  for (const entity of state.entities) respawnEntity(entity, map);
+  for (const hazard of state.hazards) {
+    hazard.phase = "cooldown";
+    hazard.remaining = hazard.initial;
+    hazard.hitIds = [];
+  }
+  state.events.push({ type: "roundStart", round: state.round });
+  if (mode.id === "survival") {
+    state.events.push({ type: "waveStart", wave: state.survival.wave });
+  }
+}
+
+function updateObjective(state, delta, mode, map) {
+  if (mode.id !== "control" && mode.id !== "convergence") return;
+  const occupants = new Set(
+    state.entities
+      .filter(
+        (entity) =>
+          entity.alive &&
+          entity.team !== "neutral" &&
+          Math.hypot(
+            entity.x - map.objective.x,
+            entity.y - map.objective.y,
+          ) <=
+            map.objective.radius + getCharacter(entity.characterId).radius,
+      )
+      .map((entity) => entity.team),
+  );
+  state.objective.contested = occupants.size > 1;
+  state.objective.controllingTeam =
+    occupants.size === 1 ? [...occupants][0] : null;
+  if (!state.objective.controllingTeam) return;
+  const team = state.objective.controllingTeam;
+  const gain = MATCH_TUNING.controlScorePerSecond * delta;
+  state.score[team] = Math.min(mode.scoreLimit, state.score[team] + gain);
+  state.objective.progress[team] = state.score[team] / mode.scoreLimit;
+  if (state.score[team] >= mode.scoreLimit) finishMatch(state, team);
+}
+
+function updateMatchClock(state, delta, mode) {
+  state.elapsed += delta;
+  if (state.elapsed < mode.timeLimit || state.status !== "playing") return;
+  if (mode.id === "survival") {
+    finishMatch(state, "beta");
+    return;
+  }
+  if (state.score.alpha === state.score.beta) {
+    if (!state.overtime) {
+      state.overtime = true;
+      state.events.push({ type: "overtime" });
+    }
+    return;
+  }
+  finishMatch(state, state.score.alpha > state.score.beta ? "alpha" : "beta");
+}
+
+function finishMatch(state, team) {
+  state.status = "match-over";
+  state.winner = team ?? null;
+  state.projectiles = [];
+  state.events.push({ type: "matchOver", winner: state.winner });
+}
+
+function updateTutorial(state) {
+  if (state.tutorial.skipped || state.modeId !== "training") return;
+  if (state.tutorial.step === 0 && state.tutorial.moved && state.tutorial.fired) {
+    state.tutorial.step = 1;
+    state.events.push({ type: "tutorialStep", step: 1 });
+  } else if (
+    state.tutorial.step === 1 &&
+    state.tutorial.mobility &&
+    state.tutorial.defended
+  ) {
+    state.tutorial.step = 2;
+    state.events.push({ type: "tutorialStep", step: 2 });
+  }
+}
+
+export function skipTutorial(state) {
+  state.tutorial.skipped = true;
+  state.tutorial.step = 3;
+  state.events.push({ type: "tutorialSkipped" });
+}
+
+function updateBotCommand(state, entity, delta, map) {
+  entity.botThinkRemaining -= delta;
+  if (entity.botThinkRemaining > 0) return entity.botCommand;
+  entity.botThinkRemaining = MATCH_TUNING.bot.thinkInterval;
+  const targets = opponentsOf(state, entity);
+  if (targets.length === 0) {
+    entity.botCommand = { ...IDLE_COMMAND };
+    return entity.botCommand;
+  }
+  const target = targets.reduce((nearest, candidate) =>
+    squaredDistance(entity, candidate) < squaredDistance(entity, nearest)
+      ? candidate
+      : nearest,
+  );
+  const dx = target.x - entity.x;
+  const dy = target.y - entity.y;
+  const distance = Math.hypot(dx, dy);
+  const aim = normalizeDirection(dx, dy);
+  const strafeSign = hashSign(entity.id, state.tick);
+  let moveX = aim.x;
+  let moveY = aim.y;
+  if (distance < MATCH_TUNING.bot.preferredDistance * 0.7) {
+    moveX = -aim.x + -aim.y * strafeSign * 0.55;
+    moveY = -aim.y + aim.x * strafeSign * 0.55;
+  } else if (distance < MATCH_TUNING.bot.preferredDistance * 1.25) {
+    moveX = -aim.y * strafeSign;
+    moveY = aim.x * strafeSign;
+  }
+  if (state.modeId === "control" || state.modeId === "convergence") {
+    const objectiveDistance = Math.hypot(
+      map.objective.x - entity.x,
+      map.objective.y - entity.y,
+    );
+    if (objectiveDistance > map.objective.radius * 0.75) {
+      const objectiveDirection = normalizeDirection(
+        map.objective.x - entity.x,
+        map.objective.y - entity.y,
+      );
+      moveX = moveX * 0.45 + objectiveDirection.x * 0.85;
+      moveY = moveY * 0.45 + objectiveDirection.y * 0.85;
+    }
+  }
+  const move = normalizeDirection(moveX, moveY);
+  const closeProjectile = state.projectiles.some(
+    (projectile) =>
+      hostileTeams(entity.team, projectile.team) &&
+      Math.hypot(projectile.x - entity.x, projectile.y - entity.y) < 125,
+  );
+  const agent = getCharacter(entity.characterId);
+  entity.botCommand = {
+    moveX: move.x,
+    moveY: move.y,
+    aimX: aim.x,
+    aimY: aim.y,
+    fire: distance < agent.primary.speed * agent.primary.lifetime * 0.82,
+    special:
+      entity.specialCooldown === 0 &&
+      (distance < (agent.special.range ?? 180) || agent.special.kind === "mine"),
+    defend: closeProjectile && entity.defenseCooldown === 0,
+    mobility:
+      entity.mobilityCooldown === 0 &&
+      (distance > MATCH_TUNING.bot.preferredDistance * 1.65 ||
+        entity.health / entity.maxHealth < MATCH_TUNING.bot.retreatHealthRatio),
+  };
+  if (
+    state.modeId === "training" &&
+    !state.tutorial.skipped &&
+    state.tutorial.step < 2
+  ) {
+    entity.botCommand.fire = false;
+    entity.botCommand.special = false;
+    entity.botCommand.defend = false;
+    entity.botCommand.mobility = false;
+  }
+  return entity.botCommand;
+}
+
+function resolveUnitCollisions(state, map) {
+  const alive = state.entities.filter((entity) => entity.alive);
+  for (let pass = 0; pass < MATCH_TUNING.unitCollisionIterations; pass += 1) {
+    for (let left = 0; left < alive.length; left += 1) {
+      for (let right = left + 1; right < alive.length; right += 1) {
+        const a = alive[left];
+        const b = alive[right];
+        const aRadius = getCharacter(a.characterId).radius;
+        const bRadius = getCharacter(b.characterId).radius;
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        let distance = Math.hypot(dx, dy);
+        const required = aRadius + bRadius;
+        if (distance >= required) continue;
+        if (distance <= EPSILON) {
+          dx = a.id.localeCompare(b.id) <= 0 ? 1 : -1;
+          dy = 0;
+          distance = 1;
+        }
+        const overlap = required - distance;
+        const nx = dx / distance;
+        const ny = dy / distance;
+        a.x -= nx * overlap * 0.5;
+        a.y -= ny * overlap * 0.5;
+        b.x += nx * overlap * 0.5;
+        b.y += ny * overlap * 0.5;
+        moveCircleSwept(a, 0, 0, aRadius, map);
+        moveCircleSwept(b, 0, 0, bRadius, map);
+        resolveDashContact(state, a, b, nx, ny);
+        resolveDashContact(state, b, a, -nx, -ny);
+      }
+    }
+  }
+}
+
+function resolveDashContact(state, attacker, target, nx, ny) {
+  if (
+    attacker.mobilityRemaining <= 0 ||
+    attacker.dashHitIds.includes(target.id) ||
+    !hostileTeams(attacker.team, target.team)
+  ) {
+    return;
+  }
+  const mobility = getCharacter(attacker.characterId).mobility;
+  if (!mobility.contactDamage) return;
+  attacker.dashHitIds.push(target.id);
+  damageEntity(state, target, mobility.contactDamage, attacker, {
+    source: "charge",
+    knockback: mobility.knockback,
+    direction: { x: nx, y: ny },
+  });
+}
+
+function damageRadius(state, source, range, damage, knockback) {
+  for (const target of opponentsOf(state, source)) {
+    const distance = Math.hypot(target.x - source.x, target.y - source.y);
+    if (distance > range) continue;
+    const direction = normalizeDirection(target.x - source.x, target.y - source.y);
+    damageEntity(state, target, damage, source, {
+      source: "blast",
+      knockback,
+      direction,
+    });
+  }
+}
+
+function opponentsOf(state, entity) {
+  return state.entities.filter(
+    (candidate) =>
+      candidate.alive &&
+      candidate !== entity &&
+      hostileTeams(entity.team, candidate.team),
+  );
+}
+
+function hostileTeams(left, right) {
+  return left !== right && (left === "neutral" || right === "neutral" || left !== right);
+}
+
+function repairState(state, map) {
+  for (const entity of state.entities) {
+    const agent = getCharacter(entity.characterId);
+    if (Number.isFinite(entity.x) && Number.isFinite(entity.y)) {
+      entity.lastSafeX = entity.x;
+      entity.lastSafeY = entity.y;
+    } else {
+      entity.x = Number.isFinite(entity.lastSafeX)
+        ? entity.lastSafeX
+        : map.spawns[entity.spawnIndex % map.spawns.length].x;
+      entity.y = Number.isFinite(entity.lastSafeY)
+        ? entity.lastSafeY
+        : map.spawns[entity.spawnIndex % map.spawns.length].y;
+      entity.vx = 0;
+      entity.vy = 0;
+      entity.mobilityRemaining = 0;
+      state.events.push({ type: "stateRepair", entityId: entity.id });
+    }
+    entity.facingX = finite(entity.facingX, 1);
+    entity.facingY = finite(entity.facingY);
+    const facing = normalizeDirection(entity.facingX, entity.facingY);
+    if (facing.x === 0 && facing.y === 0) {
+      entity.facingX = 1;
+      entity.facingY = 0;
+    } else {
+      entity.facingX = facing.x;
+      entity.facingY = facing.y;
+    }
+    constrainCircle(entity, agent.radius, map.size);
+  }
+  state.projectiles = state.projectiles.filter(
+    (projectile) =>
+      Number.isFinite(projectile.x) &&
+      Number.isFinite(projectile.y) &&
+      Number.isFinite(projectile.vx) &&
+      Number.isFinite(projectile.vy),
+  );
+}
+
+export function matchInvariantErrors(state) {
+  const errors = [];
+  const map = getMap(state.mapId);
+  const ids = state.entities.map((entity) => entity.id);
+  if (new Set(ids).size !== ids.length) errors.push("entity ids must be unique");
+  for (const entity of state.entities) {
+    const radius = getCharacter(entity.characterId).radius;
+    for (const key of [
+      "x",
+      "y",
+      "vx",
+      "vy",
+      "facingX",
+      "facingY",
+      "health",
+      "primaryCooldown",
+      "specialCooldown",
+      "defenseCooldown",
+      "mobilityCooldown",
+    ]) {
+      if (!Number.isFinite(entity[key])) errors.push(`${entity.id}.${key} is not finite`);
+    }
+    if (
+      entity.x < map.size.inset + radius - 0.01 ||
+      entity.x > map.size.width - map.size.inset - radius + 0.01 ||
+      entity.y < map.size.inset + radius - 0.01 ||
+      entity.y > map.size.height - map.size.inset - radius + 0.01
+    ) {
+      errors.push(`${entity.id} left arena bounds`);
+    }
+    for (const obstacle of map.obstacles) {
+      if (circleRectangleOverlap(entity, radius - 0.01, obstacle)) {
+        errors.push(`${entity.id} overlaps cover`);
+      }
+    }
+  }
+  return errors;
+}
+
+export function normalizeDirection(x, y) {
+  const safeX = finite(x);
+  const safeY = finite(y);
+  const magnitude = Math.hypot(safeX, safeY);
+  if (magnitude <= EPSILON) return { x: 0, y: 0 };
+  return { x: safeX / magnitude, y: safeY / magnitude };
+}
+
+export function resolveCircleRectangle(circle, radius, rectangle) {
+  const closestX = clamp(circle.x, rectangle.x, rectangle.x + rectangle.width);
+  const closestY = clamp(circle.y, rectangle.y, rectangle.y + rectangle.height);
+  let dx = circle.x - closestX;
+  let dy = circle.y - closestY;
+  let distance = Math.hypot(dx, dy);
+  if (distance >= radius) return false;
+
+  if (distance <= EPSILON) {
+    const candidates = [
+      { gap: Math.abs(circle.x - rectangle.x), x: rectangle.x - radius, y: circle.y, axis: "x" },
+      {
+        gap: Math.abs(rectangle.x + rectangle.width - circle.x),
+        x: rectangle.x + rectangle.width + radius,
+        y: circle.y,
+        axis: "x",
+      },
+      { gap: Math.abs(circle.y - rectangle.y), x: circle.x, y: rectangle.y - radius, axis: "y" },
+      {
+        gap: Math.abs(rectangle.y + rectangle.height - circle.y),
+        x: circle.x,
+        y: rectangle.y + rectangle.height + radius,
+        axis: "y",
+      },
+    ].sort((a, b) => a.gap - b.gap);
+    circle.x = candidates[0].x;
+    circle.y = candidates[0].y;
+    if (candidates[0].axis === "x") circle.vx = 0;
+    else circle.vy = 0;
+    return true;
+  }
+
+  dx /= distance;
+  dy /= distance;
+  const correction = radius - distance;
+  circle.x += dx * correction;
+  circle.y += dy * correction;
+  const velocityIntoSurface = finite(circle.vx) * dx + finite(circle.vy) * dy;
+  if (velocityIntoSurface < 0) {
+    circle.vx -= velocityIntoSurface * dx;
+    circle.vy -= velocityIntoSurface * dy;
+  }
+  return true;
+}
+
+export function segmentCircleHit(x1, y1, x2, y2, cx, cy, radius) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const lengthSquared = dx * dx + dy * dy;
+  if (lengthSquared <= EPSILON) return Math.hypot(cx - x1, cy - y1) <= radius;
+  const t = clamp(((cx - x1) * dx + (cy - y1) * dy) / lengthSquared, 0, 1);
+  return Math.hypot(x1 + dx * t - cx, y1 + dy * t - cy) <= radius;
+}
+
+function segmentRectangleHit(x1, y1, x2, y2, rectangle, padding = 0) {
+  const expanded = {
+    x: rectangle.x - padding,
+    y: rectangle.y - padding,
+    width: rectangle.width + padding * 2,
+    height: rectangle.height + padding * 2,
+  };
+  if (
+    x1 >= expanded.x &&
+    x1 <= expanded.x + expanded.width &&
+    y1 >= expanded.y &&
+    y1 <= expanded.y + expanded.height
+  ) {
+    return true;
+  }
+  const edges = [
+    [expanded.x, expanded.y, expanded.x + expanded.width, expanded.y],
+    [
+      expanded.x + expanded.width,
+      expanded.y,
+      expanded.x + expanded.width,
+      expanded.y + expanded.height,
+    ],
+    [
+      expanded.x + expanded.width,
+      expanded.y + expanded.height,
+      expanded.x,
+      expanded.y + expanded.height,
+    ],
+    [expanded.x, expanded.y + expanded.height, expanded.x, expanded.y],
+  ];
+  return edges.some((edge) => segmentsIntersect(x1, y1, x2, y2, ...edge));
+}
+
+function segmentsIntersect(ax, ay, bx, by, cx, cy, dx, dy) {
+  const denominator = (bx - ax) * (dy - cy) - (by - ay) * (dx - cx);
+  if (Math.abs(denominator) <= EPSILON) return false;
+  const t = ((cx - ax) * (dy - cy) - (cy - ay) * (dx - cx)) / denominator;
+  const u = ((cx - ax) * (by - ay) - (cy - ay) * (bx - ax)) / denominator;
+  return t >= 0 && t <= 1 && u >= 0 && u <= 1;
+}
+
+function projectilesCross(a, b) {
+  return (
+    segmentCircleHit(
+      a.previousX,
+      a.previousY,
+      a.x,
+      a.y,
+      b.x,
+      b.y,
+      a.radius + b.radius,
+    ) ||
+    segmentCircleHit(
+      b.previousX,
+      b.previousY,
+      b.x,
+      b.y,
+      a.x,
+      a.y,
+      a.radius + b.radius,
+    )
+  );
+}
+
+function clippedRayEnd(entity, range, map) {
+  const steps = Math.ceil(range / 8);
+  let end = { x: entity.x, y: entity.y };
+  for (let step = 1; step <= steps; step += 1) {
+    const distance = Math.min(range, step * 8);
+    const point = {
+      x: entity.x + entity.facingX * distance,
+      y: entity.y + entity.facingY * distance,
+    };
+    if (
+      !insideArena(point, map.size) ||
+      map.obstacles.some((obstacle) =>
+        circleRectangleOverlap(point, 1, obstacle),
+      )
+    ) {
+      break;
+    }
+    end = point;
+  }
+  return end;
+}
+
+function circleRectangleOverlap(circle, radius, rectangle) {
+  const closestX = clamp(circle.x, rectangle.x, rectangle.x + rectangle.width);
+  const closestY = clamp(circle.y, rectangle.y, rectangle.y + rectangle.height);
+  return Math.hypot(circle.x - closestX, circle.y - closestY) < radius;
+}
+
+function constrainCircle(circle, radius, size) {
+  const minimumX = size.inset + radius;
+  const maximumX = size.width - size.inset - radius;
+  const minimumY = size.inset + radius;
+  const maximumY = size.height - size.inset - radius;
+  const previousX = circle.x;
+  const previousY = circle.y;
+  circle.x = clamp(finite(circle.x, minimumX), minimumX, maximumX);
+  circle.y = clamp(finite(circle.y, minimumY), minimumY, maximumY);
+  if (circle.x !== previousX) circle.vx = 0;
+  if (circle.y !== previousY) circle.vy = 0;
+}
+
+function insideArena(point, size) {
+  return (
+    point.x >= size.inset &&
+    point.x <= size.width - size.inset &&
+    point.y >= size.inset &&
+    point.y <= size.height - size.inset
+  );
+}
+
+function approachVelocity(entity, targetX, targetY, maximumDelta) {
+  const dx = targetX - finite(entity.vx);
+  const dy = targetY - finite(entity.vy);
+  const distance = Math.hypot(dx, dy);
+  if (distance <= maximumDelta || distance <= EPSILON) {
+    entity.vx = targetX;
+    entity.vy = targetY;
+    return;
+  }
+  entity.vx += (dx / distance) * maximumDelta;
+  entity.vy += (dy / distance) * maximumDelta;
+}
+
+function squaredDistance(left, right) {
+  const dx = left.x - right.x;
+  const dy = left.y - right.y;
+  return dx * dx + dy * dy;
+}
+
+function hashSign(id, tick) {
+  let hash = tick >> 5;
+  for (const character of id) hash = (hash * 31 + character.charCodeAt(0)) | 0;
+  return hash % 2 === 0 ? 1 : -1;
+}
+
+function oppositeTeam(team) {
+  return team === "alpha" ? "beta" : "alpha";
+}
+
+function cleanName(name) {
+  return String(name)
+    .replace(/[^\p{L}\p{N} ._-]/gu, "")
+    .trim()
+    .slice(0, 20) || "PLAYER";
+}
+
+function finite(value, fallback = 0) {
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function finiteInteger(value, fallback) {
+  return Number.isInteger(value) ? value : fallback;
+}
+
+function clamp(value, minimum, maximum) {
+  return Math.max(minimum, Math.min(maximum, value));
+}

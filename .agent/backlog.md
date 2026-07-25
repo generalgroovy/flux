@@ -1,24 +1,33 @@
 # DIFF backlog
 
-## Gate 1 — Fundamentals
+## Release acceptance
 
-1. Add a telegraphed sentry attack, player health, damage, death, and instant retry.
-2. Add KITE's close-range secondary and one defensive action with clear counterplay.
-3. Turn BREAKLINE targets into a short combined encounter with spawn and pacing rules.
-4. Add a compact in-game tuning panel with validated resettable character/map values.
-5. Add control remapping, reduced-flash options, aim sensitivity, and contrast controls.
+1. Hands-on playtest every agent on Garuda Sway and Windows; fix only observed
+   readability, input, layout, audio, or feel failures.
+2. Run a 30-minute two-device remote soak through the intended VPN/router path;
+   require clean join-in-progress, host migration, rematch, and disconnect
+   recovery under real latency.
+3. Add persistent reconnect tokens and a spectator slot without weakening
+   server authority or lobby limits.
 
-## Gate 2 — PvP
+## Gate 1 — Fundamentals implemented
 
-6. Implement a deterministic local duel/round ruleset and regression bot harness.
-7. Complete two counterplay-focused characters before expanding the roster further.
-8. Complete two additional maps with distinct routes, cover, and spawn logic.
-9. Add authoritative host/join only after local duel acceptance checks pass.
+- Complete eight-agent shared-input combat, four maps, short introduction,
+  hazards, bots, death/reset, accessibility, validation, and combination tests.
 
-## Gate 3 — PvPvE
+## Gate 2 — PvP implemented; external soak pending
 
-10. Add one neutral objective/threat prototype to the proven PvP ruleset.
+- Local duel/control and public/private authoritative remote lobbies are live.
+- Next acceptance: input remapping and latency/jitter simulation diagnostics.
 
-## Gate 4 — PvE
+## Gate 3 — PvPvE foundation implemented
 
-11. Expand the threat harness into enemy families, encounters, progression, and bosses.
+- CONVERGENCE has neutral hostile sentinels and a shared control objective.
+- Next acceptance: add one neutral objective family whose reward changes route
+  choice without increasing player damage or health.
+
+## Gate 4 — PvE foundation implemented
+
+- PRESSURE TEST has cooperative lives, bounded wave clears, escalation, and loss.
+- Next acceptance: add authored scout/anchor/artillery enemy families, one elite,
+  and a boss after real-player combat tuning is stable.

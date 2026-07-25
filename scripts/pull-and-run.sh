@@ -67,9 +67,12 @@ for command_name in git node npm; do
   fi
 done
 
-node_major="$(node -p 'Number(process.versions.node.split(".")[0])')"
-if (( node_major < 20 )); then
-  printf 'DIFF requires Node.js 20 or newer; found %s\n' "$(node --version)" >&2
+node_compatible="$(node -p '
+  const [major, minor] = process.versions.node.split(".").map(Number);
+  Number(major > 20 || (major === 20 && minor >= 19));
+')"
+if [[ "${node_compatible}" != 1 ]]; then
+  printf 'DIFF requires Node.js 20.19 or newer; found %s\n' "$(node --version)" >&2
   exit 1
 fi
 

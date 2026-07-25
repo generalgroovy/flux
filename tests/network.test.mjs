@@ -34,7 +34,7 @@ test(
     assert.deepEqual(health, {
       product: "DIFF",
       status: "ready",
-      version: "0.9.0",
+      version: "0.9.1",
       protocol: 2,
     });
     const initialList = await fetch(`${origin}/api/lobbies`).then((response) =>

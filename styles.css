@@ -77,6 +77,44 @@ button {
   box-shadow: 0 0 16px #77f7ce73;
 }
 
+#health {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: min(12rem, 20vw);
+  margin-top: 0.65rem;
+}
+
+#health > b {
+  width: 1.7rem;
+  color: #f4f8ff;
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+#health > i {
+  width: 100%;
+  height: 0.26rem;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: #6a829d35;
+}
+
+#health-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #77f7ce;
+  box-shadow: 0 0 8px #77f7ce88;
+  transform-origin: left;
+  transition: transform 120ms ease, background 120ms ease;
+}
+
+#health-fill.critical {
+  background: #ff5d73;
+  box-shadow: 0 0 8px #ff5d7388;
+}
+
 .mission {
   display: grid;
   grid-template-columns: 1fr auto;

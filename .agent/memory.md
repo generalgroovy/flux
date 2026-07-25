@@ -1,5 +1,33 @@
 # DIFF agent memory
 
+## 2026-07-26 — Readable sentry threat and defeat loop
+
+- **Player-facing problem:** BREAKLINE let players shoot inert targets without
+  receiving pressure, so cover, evasive movement, health, damage, death, and
+  recovery had no gameplay meaning.
+- **Implemented solution:** Added a deterministic sentry that locks the player's
+  position with a long, patterned beam telegraph before firing. Moving off the
+  lock or breaking its line through map cover avoids all damage. Added KITE's
+  health, bounded post-hit protection, readable hit feedback, defeat panel,
+  contextual threat coaching, and immediate keyboard/button retry.
+- **Files changed:** `README.md`, `package.json`, `index.html`, `styles.css`,
+  `src/config.mjs`, `src/simulation.mjs`, `src/game.mjs`,
+  `tests/simulation.test.mjs`, `.agent/backlog.md`, `.agent/memory.md`.
+- **Commands run:** `npm test`; syntax checks for all four JavaScript modules;
+  `node scripts/serve.mjs`; HTTP checks against `/` and `/src/game.mjs`;
+  `git diff --check`; browser executable discovery.
+- **Tests passed:** All Node tests, including new deterministic coverage for
+  telegraph-before-damage timing, fixed-point evasion, cover interception,
+  repeated damage/death, frozen terminal state, and segment/rectangle geometry;
+  all syntax checks; local server returned `200 OK` and served the game module.
+- **Tests not run:** Interactive browser play verification could not run because
+  no Chromium/Chrome executable is installed in this environment.
+- **Known limitations:** The sentry is an intentionally narrow Gate 1 threat
+  harness with fixed pacing. KITE still lacks a secondary attack and a dedicated
+  defensive action; there is no audio layer or controller input yet.
+- **Recommended next task:** Add KITE's close-range secondary and a defensive
+  action with distinct risk, readable counterplay, and combined sentry tests.
+
 ## 2026-07-25T14:05:37Z — DIFF fundamentals combat slice
 
 - **Player-facing problem:** The first build only tested movement and carried the

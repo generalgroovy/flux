@@ -37,6 +37,8 @@ server and game use identical source on Linux and Windows.
 - pointer aim and cooldown-bounded projectile primary
 - swept projectile/target collision and cover interception
 - directional dash with readable cooldown feedback
+- telegraphed sentry locks that reward movement and use authored cover
+- player health, hit protection, damage feedback, defeat, and instant retry
 - KITE character identity and BREAKLINE map identity
 - reactive targets with health, hit confirmation, destruction, and screen feedback
 - behavior-driven onboarding that teaches without pausing play

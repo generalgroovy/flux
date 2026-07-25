@@ -16,6 +16,17 @@ export function createInitialState(config = CONFIG) {
       dashRemaining: 0,
       dashX: 1,
       dashY: 0,
+      health: config.character.maxHealth,
+      hitInvulnerability: 0,
+    },
+    sentry: {
+      x: config.map.sentry.x,
+      y: config.map.sentry.y,
+      cooldown: config.sentry.initialDelay,
+      telegraphRemaining: 0,
+      aimX: config.map.spawn.x,
+      aimY: config.map.spawn.y,
+      flash: 0,
     },
     projectiles: [],
     targets: config.map.targets.map((target) => ({
@@ -29,6 +40,7 @@ export function createInitialState(config = CONFIG) {
       fired: false,
       hit: false,
       dashed: false,
+      threatened: false,
     },
     elapsed: 0,
     status: "playing",
@@ -68,6 +80,7 @@ export function stepSimulation(state, input, delta, config = CONFIG) {
   tryFire(state, input, config);
   updateProjectiles(state, delta, config);
   updateTargets(state, delta);
+  updateSentry(state, delta, config);
   updateCompletion(state);
 
   if (state.started) state.elapsed += delta;
@@ -77,6 +90,7 @@ export function stepSimulation(state, input, delta, config = CONFIG) {
 function tickCooldowns(state, delta) {
   state.player.fireCooldown = Math.max(0, state.player.fireCooldown - delta);
   state.player.dashCooldown = Math.max(0, state.player.dashCooldown - delta);
+  state.player.hitInvulnerability = Math.max(0, state.player.hitInvulnerability - delta);
 }
 
 function tryDash(state, input, movement, config) {
@@ -243,7 +257,81 @@ function updateTargets(state, delta) {
   }
 }
 
+function updateSentry(state, delta, config) {
+  const sentry = state.sentry;
+  sentry.flash = Math.max(0, sentry.flash - delta);
+  if (!state.started) return;
+
+  if (sentry.telegraphRemaining > 0) {
+    sentry.telegraphRemaining -= delta;
+    if (sentry.telegraphRemaining > 0) return;
+
+    const blocked = config.map.obstacles.some((obstacle) =>
+      segmentIntersectsRectangle(sentry.x, sentry.y, sentry.aimX, sentry.aimY, obstacle),
+    );
+    const hit =
+      !blocked &&
+      segmentCircleHit(
+        sentry.x,
+        sentry.y,
+        sentry.aimX,
+        sentry.aimY,
+        state.player.x,
+        state.player.y,
+        config.character.radius + config.sentry.beamWidth * 0.5,
+      );
+    sentry.flash = 0.12;
+    sentry.cooldown = config.sentry.cooldown;
+    state.events.push({
+      type: "sentryShot",
+      x: sentry.x,
+      y: sentry.y,
+      targetX: sentry.aimX,
+      targetY: sentry.aimY,
+      blocked,
+      hit,
+    });
+    if (hit) damagePlayer(state, config);
+    return;
+  }
+
+  sentry.cooldown = Math.max(0, sentry.cooldown - delta);
+  if (sentry.cooldown > 0) return;
+  sentry.aimX = state.player.x;
+  sentry.aimY = state.player.y;
+  sentry.telegraphRemaining = config.sentry.telegraphDuration;
+  state.tutorial.threatened = true;
+  state.events.push({
+    type: "sentryWarning",
+    x: sentry.x,
+    y: sentry.y,
+    targetX: sentry.aimX,
+    targetY: sentry.aimY,
+  });
+}
+
+function damagePlayer(state, config) {
+  const player = state.player;
+  if (player.hitInvulnerability > 0) return;
+  player.health = Math.max(0, player.health - config.sentry.damage);
+  player.hitInvulnerability = config.character.hitInvulnerability;
+  state.events.push({
+    type: "playerHit",
+    x: player.x,
+    y: player.y,
+    damage: config.sentry.damage,
+    health: player.health,
+  });
+  if (player.health === 0) {
+    state.status = "defeated";
+    player.vx = 0;
+    player.vy = 0;
+    state.events.push({ type: "defeated", x: player.x, y: player.y });
+  }
+}
+
 function updateCompletion(state) {
+  if (state.status !== "playing") return;
   if (state.targets.every((target) => target.destroyed) && state.tutorial.dashed) {
     state.status = "complete";
     state.player.vx = 0;
@@ -334,6 +422,35 @@ export function segmentCircleHit(x1, y1, x2, y2, cx, cy, radius) {
   const closestX = x1 + dx * projection;
   const closestY = y1 + dy * projection;
   return Math.hypot(closestX - cx, closestY - cy) <= radius;
+}
+
+export function segmentIntersectsRectangle(x1, y1, x2, y2, rectangle) {
+  if (
+    x1 >= rectangle.x &&
+    x1 <= rectangle.x + rectangle.width &&
+    y1 >= rectangle.y &&
+    y1 <= rectangle.y + rectangle.height
+  ) return true;
+
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  let near = 0;
+  let far = 1;
+  for (const [origin, direction, min, max] of [
+    [x1, dx, rectangle.x, rectangle.x + rectangle.width],
+    [y1, dy, rectangle.y, rectangle.y + rectangle.height],
+  ]) {
+    if (Math.abs(direction) <= EPSILON) {
+      if (origin < min || origin > max) return false;
+      continue;
+    }
+    const first = (min - origin) / direction;
+    const second = (max - origin) / direction;
+    near = Math.max(near, Math.min(first, second));
+    far = Math.min(far, Math.max(first, second));
+    if (near > far) return false;
+  }
+  return true;
 }
 
 export function formatTime(seconds) {

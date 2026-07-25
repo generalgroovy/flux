@@ -9,6 +9,7 @@ import {
   normalizeDirection,
   resolveCircleRectangle,
   segmentCircleHit,
+  segmentIntersectsRectangle,
   stepSimulation,
 } from "../src/simulation.mjs";
 
@@ -85,6 +86,12 @@ test("cover resolves player overlap and blocks projectile-sized circles", () => 
 test("segment collision catches fast projectiles crossing a target", () => {
   assert.equal(segmentCircleHit(0, 0, 200, 0, 100, 0, 10), true);
   assert.equal(segmentCircleHit(0, 30, 200, 30, 100, 0, 10), false);
+});
+
+test("line segments identify cover between a sentry and its lock point", () => {
+  const cover = { x: 90, y: 40, width: 20, height: 40 };
+  assert.equal(segmentIntersectsRectangle(0, 50, 200, 50, cover), true);
+  assert.equal(segmentIntersectsRectangle(0, 10, 200, 10, cover), false);
 });
 
 test("primary fire uses facing, emits a shot, and respects cooldown", () => {
@@ -167,6 +174,69 @@ test("clearing targets requires the taught dash before completing", () => {
   stepSimulation(state, { ...idle, dash: true }, 1 / 120);
   assert.equal(state.status, "complete");
   assert.equal(state.events.some((event) => event.type === "complete"), true);
+});
+
+test("the sentry telegraphs a locked position before dealing damage", () => {
+  const config = structuredClone(CONFIG);
+  config.map.obstacles = [];
+  config.map.sentry = { x: 500, y: 450 };
+  config.sentry.initialDelay = 0.1;
+  config.sentry.telegraphDuration = 0.2;
+  const state = createInitialState(config);
+  state.started = true;
+
+  stepSimulation(state, idle, 0.1, config);
+  assert.equal(state.events.some((event) => event.type === "sentryWarning"), true);
+  assert.equal(state.player.health, config.character.maxHealth);
+
+  stepSimulation(state, idle, 0.2, config);
+  assert.equal(state.events.some((event) => event.type === "sentryShot"), true);
+  assert.equal(state.events.some((event) => event.type === "playerHit"), true);
+  assert.equal(state.player.health, config.character.maxHealth - config.sentry.damage);
+});
+
+test("moving away from the locked point or using cover avoids sentry damage", () => {
+  const config = structuredClone(CONFIG);
+  config.map.sentry = { x: 500, y: 450 };
+  config.sentry.initialDelay = 0.1;
+  config.sentry.telegraphDuration = 0.2;
+  const state = createInitialState(config);
+  state.started = true;
+  stepSimulation(state, idle, 0.1, config);
+  state.player.y += 100;
+  stepSimulation(state, idle, 0.2, config);
+  assert.equal(state.player.health, config.character.maxHealth);
+
+  const coveredConfig = structuredClone(config);
+  coveredConfig.map.obstacles = [{ x: 300, y: 400, width: 40, height: 100 }];
+  const covered = createInitialState(coveredConfig);
+  covered.started = true;
+  stepSimulation(covered, idle, 0.1, coveredConfig);
+  stepSimulation(covered, idle, 0.2, coveredConfig);
+  assert.equal(covered.player.health, coveredConfig.character.maxHealth);
+  assert.equal(covered.events.find((event) => event.type === "sentryShot")?.blocked, true);
+});
+
+test("repeated readable sentry hits end the run and freeze simulation", () => {
+  const config = structuredClone(CONFIG);
+  config.map.obstacles = [];
+  config.map.sentry = { x: 500, y: 450 };
+  config.sentry.initialDelay = 0.01;
+  config.sentry.telegraphDuration = 0.01;
+  config.sentry.cooldown = 0.01;
+  config.character.hitInvulnerability = 0.01;
+  const state = createInitialState(config);
+  state.started = true;
+  for (let tick = 0; tick < 30 && state.status === "playing"; tick += 1) {
+    stepSimulation(state, idle, 0.01, config);
+  }
+
+  assert.equal(state.status, "defeated");
+  assert.equal(state.player.health, 0);
+  const elapsed = state.elapsed;
+  stepSimulation(state, { ...idle, moveX: 1, fire: true }, 1, config);
+  assert.equal(state.elapsed, elapsed);
+  assert.equal(state.projectiles.length, 0);
 });
 
 test("the timer waits for action and formatting is HUD-stable", () => {

@@ -10,11 +10,15 @@ const context = canvas.getContext("2d");
 const objective = document.querySelector("#objective");
 const timer = document.querySelector("#timer");
 const progress = document.querySelector("#progress");
+const healthValue = document.querySelector("#health-value");
+const healthFill = document.querySelector("#health-fill");
 const coach = document.querySelector("#coach");
 const hint = document.querySelector("#hint");
 const dashCharge = document.querySelector("#dash-charge");
 const result = document.querySelector("#result");
 const resultTime = document.querySelector("#result-time");
+const resultLabel = document.querySelector("#result-label");
+const resultMessage = document.querySelector("#result-message");
 const restartButton = document.querySelector("#restart");
 
 const keys = new Set();
@@ -170,19 +174,32 @@ function updateInterface() {
   const dashRatio =
     1 - state.player.dashCooldown / CONFIG.character.dash.cooldown;
   dashCharge.style.transform = `scaleX(${Math.max(0, Math.min(1, dashRatio))})`;
+  const healthRatio = state.player.health / CONFIG.character.maxHealth;
+  healthValue.textContent = String(state.player.health);
+  healthFill.style.transform = `scaleX(${healthRatio})`;
+  healthFill.classList.toggle("critical", healthRatio <= 0.34);
 
-  const isComplete = state.status === "complete";
-  result.classList.toggle("hidden", !isComplete);
-  result.setAttribute("aria-hidden", String(!isComplete));
-  if (isComplete) resultTime.textContent = formatTime(state.elapsed);
+  const hasResult = state.status !== "playing";
+  result.classList.toggle("hidden", !hasResult);
+  result.setAttribute("aria-hidden", String(!hasResult));
+  if (hasResult) {
+    const defeated = state.status === "defeated";
+    resultLabel.textContent = defeated ? "Signal lost" : "Field clear";
+    resultTime.textContent = defeated ? "DOWN" : formatTime(state.elapsed);
+    resultMessage.textContent = defeated
+      ? "Read the lock. Break line or move before discharge."
+      : "Movement. Aim. Timing. Again.";
+  }
 }
 
 function getCoachHint() {
-  if (state.status === "complete") return "";
+  if (state.status !== "playing") return "";
   if (!state.tutorial.moved) return "WASD — MOVE";
   if (!state.tutorial.fired) return "MOUSE + CLICK — FIRE";
   if (!state.tutorial.hit) return "TRACK THE GOLD TARGETS";
   if (!state.tutorial.dashed) return "SHIFT — DASH";
+  if (!state.tutorial.threatened) return "WATCH THE RED SENTRY";
+  if (state.sentry.telegraphRemaining > 0) return "BREAK LINE OR EVADE THE LOCK";
   if (state.targets.some((target) => !target.destroyed)) return "CLEAR THE FIELD";
   return "";
 }
@@ -202,6 +219,16 @@ function processEvents() {
     } else if (event.type === "dash") {
       burst(event.x, event.y, CONFIG.presentation.playerAccent, 8, 130, 0.3);
       screenShake = Math.max(screenShake, reducedMotion ? 0 : 2);
+    } else if (event.type === "sentryWarning") {
+      burst(event.x, event.y, CONFIG.presentation.danger, 6, 75, 0.3);
+    } else if (event.type === "sentryShot") {
+      burst(event.targetX, event.targetY, event.blocked ? "#8295a8" : CONFIG.presentation.danger, 10, 190, 0.3);
+      screenShake = Math.max(screenShake, reducedMotion ? 0 : 4);
+    } else if (event.type === "playerHit") {
+      burst(event.x, event.y, CONFIG.presentation.danger, 16, 230, 0.42);
+      screenShake = Math.max(screenShake, reducedMotion ? 0 : 9);
+    } else if (event.type === "defeated") {
+      screenShake = Math.max(screenShake, reducedMotion ? 0 : 12);
     } else if (event.type === "complete") {
       screenShake = Math.max(screenShake, reducedMotion ? 0 : 5);
     }
@@ -283,13 +310,56 @@ function render(time) {
 
   drawArena();
   drawFlowLines(time);
+  drawSentryBeam();
   drawObstacles();
+  drawSentry(time);
   drawTargets(time);
   drawTrail();
   drawProjectiles();
   drawPlayer();
   drawEffects();
   drawCrosshair();
+  context.restore();
+}
+
+function drawSentryBeam() {
+  const sentry = state.sentry;
+  if (sentry.telegraphRemaining <= 0 && sentry.flash <= 0) return;
+  const warning = sentry.telegraphRemaining > 0;
+  const progress = warning
+    ? 1 - sentry.telegraphRemaining / CONFIG.sentry.telegraphDuration
+    : 1;
+  context.save();
+  context.strokeStyle = warning ? `${CONFIG.presentation.danger}99` : "#fff4f6";
+  context.lineWidth = warning ? 2 + progress * 4 : CONFIG.sentry.beamWidth;
+  context.setLineDash(warning ? [9, Math.max(3, 18 - progress * 14)] : []);
+  context.shadowColor = CONFIG.presentation.danger;
+  context.shadowBlur = warning ? 7 + progress * 12 : 24;
+  context.beginPath();
+  context.moveTo(sentry.x, sentry.y);
+  context.lineTo(sentry.aimX, sentry.aimY);
+  context.stroke();
+  context.restore();
+}
+
+function drawSentry(time) {
+  const sentry = state.sentry;
+  const warning = sentry.telegraphRemaining > 0;
+  const angle = Math.atan2(sentry.aimY - sentry.y, sentry.aimX - sentry.x);
+  context.save();
+  context.translate(sentry.x, sentry.y);
+  context.rotate(angle);
+  context.fillStyle = warning ? "#ff5d7338" : "#111c27";
+  context.strokeStyle = warning || sentry.flash > 0 ? CONFIG.presentation.danger : "#8fa8c0";
+  context.lineWidth = 4;
+  context.shadowColor = CONFIG.presentation.danger;
+  context.shadowBlur = warning ? 18 + Math.sin(time * 22) * 5 : 5;
+  context.beginPath();
+  context.arc(0, 0, CONFIG.sentry.radius, 0, Math.PI * 2);
+  context.fill();
+  context.stroke();
+  context.fillStyle = context.strokeStyle;
+  context.fillRect(5, -5, CONFIG.sentry.radius + 13, 10);
   context.restore();
 }
 
@@ -458,6 +528,9 @@ function drawPlayer() {
   const player = state.player;
   const angle = Math.atan2(player.facingY, player.facingX);
   context.save();
+  if (player.hitInvulnerability > 0 && Math.floor(player.hitInvulnerability * 24) % 2 === 0) {
+    context.globalAlpha = 0.42;
+  }
   context.translate(player.x, player.y);
   context.rotate(angle);
   context.fillStyle = CONFIG.presentation.player;

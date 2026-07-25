@@ -19,6 +19,8 @@ const RAW_CONFIG = {
     name: "KITE",
     role: "Mobility duelist",
     radius: 21,
+    maxHealth: 100,
+    hitInvulnerability: 0.55,
     maxSpeed: 430,
     acceleration: 2800,
     deceleration: 3400,
@@ -41,10 +43,19 @@ const RAW_CONFIG = {
     health: 60,
     hitFlashDuration: 0.11,
   },
+  sentry: {
+    radius: 27,
+    damage: 34,
+    initialDelay: 1.4,
+    cooldown: 2.15,
+    telegraphDuration: 0.82,
+    beamWidth: 9,
+  },
   map: {
     id: "breakline",
     name: "BREAKLINE",
     spawn: { x: 180, y: 450 },
+    sentry: { x: 1420, y: 450 },
     obstacles: [
       { x: 510, y: 150, width: 72, height: 250 },
       { x: 510, y: 500, width: 72, height: 250 },
@@ -69,6 +80,7 @@ const RAW_CONFIG = {
     target: "#ffca4f",
     targetDamage: "#ff5d73",
     projectile: "#e8fff8",
+    danger: "#ff5d73",
   },
 };
 
@@ -82,6 +94,8 @@ export function validateConfig(config) {
   positive(config?.arena?.width, "arena.width");
   positive(config?.arena?.height, "arena.height");
   positive(config?.character?.radius, "character.radius");
+  positive(config?.character?.maxHealth, "character.maxHealth");
+  positive(config?.character?.hitInvulnerability, "character.hitInvulnerability");
   positive(config?.character?.maxSpeed, "character.maxSpeed");
   positive(config?.character?.weapon?.damage, "character.weapon.damage");
   positive(config?.character?.weapon?.cooldown, "character.weapon.cooldown");
@@ -90,6 +104,16 @@ export function validateConfig(config) {
   positive(config?.character?.dash?.duration, "character.dash.duration");
   positive(config?.character?.dash?.cooldown, "character.dash.cooldown");
   positive(config?.target?.health, "target.health");
+  positive(config?.sentry?.radius, "sentry.radius");
+  positive(config?.sentry?.damage, "sentry.damage");
+  positive(config?.sentry?.initialDelay, "sentry.initialDelay");
+  positive(config?.sentry?.cooldown, "sentry.cooldown");
+  positive(config?.sentry?.telegraphDuration, "sentry.telegraphDuration");
+  positive(config?.sentry?.beamWidth, "sentry.beamWidth");
+
+  if (!Number.isFinite(config?.map?.sentry?.x) || !Number.isFinite(config?.map?.sentry?.y)) {
+    errors.push("map.sentry must contain finite x and y coordinates");
+  }
 
   if (!Array.isArray(config?.map?.targets) || config.map.targets.length === 0) {
     errors.push("map.targets must contain at least one target");

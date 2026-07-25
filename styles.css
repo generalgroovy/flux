@@ -1,0 +1,251 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #070a12;
+  color: #f2f7ff;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#game-shell {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background:
+    radial-gradient(circle at 50% 40%, #152238 0%, #070a12 62%),
+    #070a12;
+}
+
+button {
+  font: inherit;
+}
+
+#game {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+#hud {
+  position: fixed;
+  inset: 0 0 auto;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 2rem;
+  padding: 1.25rem 1.5rem;
+  pointer-events: none;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.brand-mark {
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 2px solid #ffce48;
+  transform: rotate(45deg);
+  box-shadow: 0 0 14px #ffce4880;
+}
+
+.run-info {
+  display: flex;
+  min-width: min(34rem, 50vw);
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 0.72rem 1rem;
+  border: 1px solid #88a8d926;
+  border-radius: 0.45rem;
+  background: #0a101dcc;
+  backdrop-filter: blur(8px);
+}
+
+#timer {
+  color: #ffce48;
+  font-variant-numeric: tabular-nums;
+}
+
+#progress {
+  justify-self: end;
+  display: flex;
+  gap: 0.45rem;
+  padding-top: 0.75rem;
+}
+
+.progress-pip {
+  width: 1.3rem;
+  height: 0.22rem;
+  border-radius: 1rem;
+  background: #8ba8cc40;
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.progress-pip.complete {
+  background: #6ef7c8;
+  box-shadow: 0 0 10px #6ef7c888;
+}
+
+.panel {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: min(34rem, calc(100vw - 2rem));
+  padding: 2rem;
+  border: 1px solid #9cb9e32e;
+  border-radius: 0.8rem;
+  background: linear-gradient(145deg, #101a2aeb, #090e19e8);
+  box-shadow:
+    0 1.4rem 5rem #0009,
+    inset 0 1px #ffffff12;
+  text-align: center;
+  transform: translate(-50%, -50%);
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+  pointer-events: none;
+}
+
+.panel.hidden {
+  opacity: 0;
+  transform: translate(-50%, calc(-50% + 1rem));
+  visibility: hidden;
+}
+
+.eyebrow {
+  margin: 0 0 0.65rem;
+  color: #6ef7c8;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+h1,
+h2 {
+  margin: 0;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 7vw, 5.6rem);
+}
+
+h2 {
+  color: #ffce48;
+  font-size: clamp(3.5rem, 10vw, 7rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.panel > p:not(.eyebrow) {
+  margin: 1rem 0 0;
+  color: #adbed3;
+}
+
+#prompt.dismissed {
+  opacity: 0;
+  transform: translate(-50%, calc(-50% - 1rem));
+  visibility: hidden;
+}
+
+#result {
+  pointer-events: auto;
+}
+
+#restart {
+  margin-top: 1.4rem;
+  padding: 0.8rem 1.1rem;
+  border: 1px solid #ffce4873;
+  border-radius: 0.45rem;
+  background: #ffce48;
+  color: #11151d;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+#restart:hover,
+#restart:focus-visible {
+  background: #ffe18c;
+  outline: 3px solid #ffce4840;
+  outline-offset: 3px;
+}
+
+kbd {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid #11151d66;
+  border-radius: 0.25rem;
+  font: inherit;
+  font-size: 0.75em;
+}
+
+#controls {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  margin: 0;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid #88a8d91f;
+  border-radius: 999px;
+  background: #080d17bb;
+  color: #dce9f7;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  transform: translateX(-50%);
+  backdrop-filter: blur(7px);
+}
+
+#controls span {
+  color: #7188a5;
+}
+
+@media (max-width: 640px) {
+  #hud {
+    grid-template-columns: 1fr auto;
+    padding: 0.8rem;
+  }
+
+  .run-info {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-width: 0;
+    width: 100%;
+  }
+
+  #progress {
+    grid-column: 2;
+    grid-row: 1;
+    padding-top: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

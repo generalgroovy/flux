@@ -28,6 +28,15 @@ test(
     });
     await waitForHealth(origin, child, () => serverOutput);
 
+    const health = await fetch(`${origin}/__diff_health`).then((response) =>
+      response.json(),
+    );
+    assert.deepEqual(health, {
+      product: "DIFF",
+      status: "ready",
+      version: "0.8.0",
+      protocol: 1,
+    });
     const initialList = await fetch(`${origin}/api/lobbies`).then((response) =>
       response.json(),
     );

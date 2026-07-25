@@ -5,41 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Outskilled — a fast, skill-driven top-down arena prototype."
+      content="DIFF — a minimal, high-expression 2D top-down arena fighter."
     />
-    <title>Outskilled — Movement Trial</title>
+    <title>DIFF — Fundamentals</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main id="game-shell">
-      <canvas id="game" aria-label="Outskilled movement training arena"></canvas>
+      <canvas id="game" aria-label="DIFF fundamentals arena"></canvas>
 
-      <section id="hud" aria-live="polite">
-        <div class="brand">
-          <span class="brand-mark" aria-hidden="true"></span>
-          <span>OUTSKILLED</span>
+      <header id="hud" aria-live="polite">
+        <div class="identity">
+          <div class="brand"><i aria-hidden="true"></i><strong>DIFF</strong></div>
+          <p><span>KITE</span> / MOBILITY DUELIST</p>
         </div>
-        <div class="run-info">
-          <span id="objective">Reach the first signal</span>
-          <span id="timer">00.00</span>
+
+        <div class="mission">
+          <p id="objective">Break all targets</p>
+          <strong id="timer">00.00</strong>
+          <div id="progress" aria-label="Training progress"></div>
         </div>
-        <div id="progress" aria-label="Course progress"></div>
+
+        <div class="location">
+          <strong>BREAKLINE</strong>
+          <p>FUNDAMENTALS / 01</p>
+        </div>
+      </header>
+
+      <section id="coach" aria-live="polite">
+        <p class="eyebrow">Live brief</p>
+        <strong id="hint">WASD — MOVE</strong>
       </section>
 
-      <section id="prompt" class="panel">
-        <p class="eyebrow">Movement trial</p>
-        <h1>Find your line.</h1>
-        <p id="hint">Move with WASD or the arrow keys.</p>
+      <section id="ability">
+        <span>SHIFT</span>
+        <div>
+          <strong>DASH</strong>
+          <i><b id="dash-charge"></b></i>
+        </div>
       </section>
 
       <section id="result" class="panel hidden" aria-hidden="true">
-        <p class="eyebrow">Trial clear</p>
-        <h2 id="result-time">00.00</h2>
-        <p>Clean run. Now make it faster.</p>
-        <button id="restart" type="button">Run again <kbd>R</kbd></button>
+        <p class="eyebrow">Field clear</p>
+        <h1 id="result-time">00.00</h1>
+        <p>Movement. Aim. Timing. Again.</p>
+        <button id="restart" type="button">Run it back <kbd>R</kbd></button>
       </section>
 
-      <p id="controls">WASD / ARROWS <span>MOVE</span> · R <span>RESTART</span></p>
+      <p id="controls">
+        <b>WASD</b> MOVE <span>·</span> <b>MOUSE</b> AIM <span>·</span>
+        <b>CLICK / SPACE</b> FIRE <span>·</span> <b>SHIFT</b> DASH
+      </p>
     </main>
 
     <script type="module" src="./src/game.mjs"></script>

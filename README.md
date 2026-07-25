@@ -1,9 +1,11 @@
-# Outskilled
+# DIFF
 
-Outskilled is an original 2D top-down skill arena shooter/fighter in active
-prototyping. The current build is a movement trial: accelerate through four
-signals, learn the arena's handling, finish the route, and immediately run it
-again for a better time.
+**Dodging Instinct. Fighting Finesse.**
+
+DIFF is an original 2D top-down skill arena shooter/fighter targeting AAA-grade
+responsiveness through a deliberately minimal visual language. The current
+fundamentals slice puts **KITE**, a mobility duelist, into **BREAKLINE**, a
+cover-based training arena.
 
 ## Play
 
@@ -16,31 +18,54 @@ Requirements:
 npm start
 ```
 
-Open <http://localhost:8000>. Move with **WASD** or the **arrow keys** and press
-**R** to restart at any time.
+Open <http://127.0.0.1:8000>.
+
+| Action | Input |
+| --- | --- |
+| Move | `WASD` or arrow keys |
+| Aim | Mouse |
+| Primary fire | Left click or `Space` |
+| Dash | `Shift` |
+| Restart | `R` |
 
 No package installation or build step is required. The dependency-free local
-server and game run from the same source on Linux and Windows.
+server and game use identical source on Linux and Windows.
+
+## Current foundation
+
+- fixed-tick acceleration, deceleration, bounds, and cover collision
+- pointer aim and cooldown-bounded projectile primary
+- swept projectile/target collision and cover interception
+- directional dash with readable cooldown feedback
+- KITE character identity and BREAKLINE map identity
+- reactive targets with health, hit confirmation, destruction, and screen feedback
+- behavior-driven onboarding that teaches without pausing play
+- clear completion, time, progress, and instant restart loop
+- centralized, validated, deeply frozen gameplay configuration
+- deterministic tests for mechanics, collision, combat, progression, and timing
 
 ## Verify
 
 ```bash
 npm test
+node --check src/config.mjs
+node --check src/simulation.mjs
+node --check src/game.mjs
+node --check scripts/serve.mjs
 ```
 
-Core movement uses a fixed simulation tick. Gameplay values live in
-[`src/config.mjs`](src/config.mjs); rendering and browser input are kept in
-[`src/game.mjs`](src/game.mjs), while deterministic movement, bounds, progression,
-and time formatting live in [`src/simulation.mjs`](src/simulation.mjs).
+Simulation and presentation are separated: deterministic gameplay lives in
+[`src/simulation.mjs`](src/simulation.mjs), data and safe defaults in
+[`src/config.mjs`](src/config.mjs), and browser input/rendering/feedback in
+[`src/game.mjs`](src/game.mjs).
 
-## Current thin slice
+## Delivery order
 
-- responsive acceleration and deceleration with normalized diagonal input
-- mouse-facing player indicator
-- ordered, readable movement signals
-- contextual first-use prompt
-- completion timer and one-button restart flow
-- responsive canvas presentation with reduced-motion support
-- deterministic tests for movement, bounds, progression, and timer formatting
+1. fundamentals: mechanics, first character, first map, readable combat
+2. PvP: duel rules, roster/map counterplay, then authoritative host/join
+3. PvPvE: shared objectives and neutral threats built on proven PvP rules
+4. PvE: expanded enemy families, encounters, progression, and bosses
 
-See [`.agent/backlog.md`](.agent/backlog.md) for the next prioritized iteration.
+Future autonomous iterations follow [`AGENTS.md`](AGENTS.md), record results in
+[`.agent/memory.md`](.agent/memory.md), and pull the next verified task from
+[`.agent/backlog.md`](.agent/backlog.md).

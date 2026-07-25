@@ -37,6 +37,8 @@ const matchOverlay = element("match-overlay");
 const menuClose = element("menu-close");
 const rosterHud = element("roster-hud");
 const toastStack = element("toast-stack");
+const infoOverlay = element("info-overlay");
+const infoToggle = element("info-toggle");
 const settingsForm = element("settings-form");
 const matchForm = element("match-form");
 const pointer = { x: 0, y: 0, active: false };
@@ -57,6 +59,7 @@ let matchState = createMatch({
 let matchKind = "none";
 let lastLocalOptions = null;
 let paused = false;
+let infoOpen = false;
 let frameTime = performance.now();
 let accumulator = 0;
 let interfaceAccumulator = 0;
@@ -141,6 +144,8 @@ element("join-lobby").addEventListener("click", () =>
 element("reconnect-lobby").addEventListener("click", reconnectLastSession);
 element("refresh-lobbies").addEventListener("click", refreshLobbies);
 element("rematch").addEventListener("click", restartMatch);
+infoToggle.addEventListener("click", () => toggleInfo());
+element("info-close").addEventListener("click", () => toggleInfo(false));
 
 requestAnimationFrame(frame);
 
@@ -177,6 +182,12 @@ function frame(now) {
 
 function handleKeyDown(event) {
   const key = event.key.toLowerCase();
+  if (key === "f1") {
+    event.preventDefault();
+    if (app.dataset.view === "game") toggleInfo();
+    else showPanel("guide");
+    return;
+  }
   if (
     app.dataset.view === "game" &&
     [
@@ -192,7 +203,8 @@ function handleKeyDown(event) {
   }
   if (event.repeat && ["escape", "r", "t"].includes(key)) return;
   if (key === "escape") {
-    if (app.dataset.view === "game") openPause();
+    if (infoOpen) toggleInfo(false);
+    else if (app.dataset.view === "game") openPause();
     else if (matchKind !== "none") resumeGame();
     return;
   }
@@ -334,6 +346,25 @@ function predictRemoteTick() {
 }
 
 function handleMenuClick(event) {
+  const launchButton = event.target.closest("[data-launch-mode]");
+  if (launchButton) {
+    launchMode(launchButton.dataset.launchMode);
+    return;
+  }
+  const agentButton = event.target.closest("[data-select-agent]");
+  if (agentButton) {
+    selectMatchChoice("character", agentButton.dataset.selectAgent);
+    showPanel("play");
+    toast(`${getCharacter(agentButton.dataset.selectAgent).name} selected.`);
+    return;
+  }
+  const mapButton = event.target.closest("[data-select-map]");
+  if (mapButton) {
+    selectMatchChoice("map", mapButton.dataset.selectMap);
+    showPanel("play");
+    toast(`${getMap(mapButton.dataset.selectMap).name} selected.`);
+    return;
+  }
   const quickButton = event.target.closest("[data-quick-start]");
   if (quickButton) {
     quickStart();
@@ -386,6 +417,28 @@ function quickStart() {
         id: "p1",
         name: "PLAYER 1",
         characterId: "kite",
+        team: "alpha",
+        human: true,
+        localSlot: 0,
+      },
+    ],
+  });
+}
+
+function launchMode(modeId) {
+  const mode = getMode(modeId);
+  const mapId = selectedMatchChoice("map", "breakline");
+  const characterId = selectedMatchChoice("character", "kite");
+  selectMatchChoice("mode", mode.id);
+  startLocal({
+    modeId: mode.id,
+    mapId,
+    botCount: mode.botCount,
+    players: [
+      {
+        id: "p1",
+        name: "PLAYER 1",
+        characterId,
         team: "alpha",
         human: true,
         localSlot: 0,
@@ -455,6 +508,7 @@ function startLocal(options) {
 
 function enterGame() {
   app.dataset.view = "game";
+  toggleInfo(false);
   pauseOverlay.classList.add("hidden");
   matchOverlay.classList.add("hidden");
   menuClose.hidden = false;
@@ -510,6 +564,7 @@ function leaveToMenu(panel = "home", preserveReconnect = false) {
   matchKind = "none";
   paused = false;
   app.dataset.view = "menu";
+  toggleInfo(false);
   pauseOverlay.classList.add("hidden");
   matchOverlay.classList.add("hidden");
   menuClose.hidden = true;
@@ -523,7 +578,83 @@ function handleMatchFormChange(event) {
     const local = event.target.value === "local";
     element("player-two-field").hidden = !local;
     element("bot-field").hidden = local;
+    if (local && !getMode(selectedMatchChoice("mode", "duel")).allowLocal) {
+      selectMatchChoice("mode", "duel");
+      toast("FIRST CONTACT is solo; DIFFERENCE selected for local 2P.");
+    }
   }
+  updateDeploymentSummary();
+}
+
+function selectedMatchChoice(name, fallback) {
+  return (
+    [...matchForm.querySelectorAll(`input[name="${name}"]`)].find(
+      (input) => input.checked,
+    )?.value ?? fallback
+  );
+}
+
+function selectMatchChoice(name, value) {
+  const inputs = [
+    ...matchForm.querySelectorAll(`input[name="${name}"]`),
+  ];
+  const input = inputs.find((candidate) => candidate.value === value);
+  if (!input) return false;
+  for (const candidate of inputs) candidate.checked = candidate === input;
+  input.checked = true;
+  updateDeploymentSummary();
+  return true;
+}
+
+function updateDeploymentSummary() {
+  const mode = getMode(selectedMatchChoice("mode", "duel"));
+  const agent = getCharacter(selectedMatchChoice("character", "kite"));
+  const map = getMap(selectedMatchChoice("map", "breakline"));
+  element("deployment-summary").textContent =
+    `${mode.name} · ${agent.name} · ${map.name}`;
+}
+
+function toggleInfo(force = !infoOpen) {
+  infoOpen = Boolean(force) && app.dataset.view === "game";
+  infoOverlay.classList.toggle("hidden", !infoOpen);
+  infoToggle.setAttribute("aria-expanded", String(infoOpen));
+  if (infoOpen) {
+    updateInfoOverlay(getMode(matchState.modeId), getMap(matchState.mapId));
+  }
+}
+
+function updateInfoOverlay(mode, map) {
+  if (!infoOpen) return;
+  const player =
+    localPlayer() ??
+    matchState.entities.find((entity) => entity.human) ??
+    matchState.entities[0];
+  if (!player) return;
+  const agent = getCharacter(player.characterId);
+  element("info-operation").textContent = mode.name;
+  element("info-objective").textContent =
+    matchState.status === "round-over"
+      ? "Resetting clean positions for the next read."
+      : matchState.status === "match-over"
+        ? "Operation complete. Rematch or return to menu."
+        : mode.description;
+  element("info-status").textContent =
+    `Round ${matchState.round} · ${map.name} · ${Math.ceil(player.health)}/${player.maxHealth} HP`;
+  element("info-agent-glyph").textContent = agent.glyph;
+  element("info-agent-glyph").style.color = agent.accent;
+  element("info-agent-name").textContent = agent.name;
+  element("info-agent-role").textContent = agent.role;
+  element("info-kit").innerHTML = [
+    ["MB1", agent.primary],
+    ["E", agent.special],
+    ["Q", agent.defense],
+    ["⇧", agent.mobility],
+  ]
+    .map(
+      ([key, ability]) =>
+        `<div><kbd>${key}</kbd><b>${ability.name}</b><span>${ability.detail}</span></div>`,
+    )
+    .join("");
 }
 
 function updateInterface() {
@@ -545,6 +676,7 @@ function updateInterface() {
   updateRoster();
   updateAbilities();
   updateCoach(mode);
+  updateInfoOverlay(mode, map);
 
   const matchOver = matchState.status === "match-over";
   element("rematch").disabled =
@@ -1076,39 +1208,124 @@ function drawEntities(time) {
       context.lineWidth = settings.highContrast ? 5 : 3;
       context.shadowColor = agent.accent;
       context.shadowBlur = entity.mobilityRemaining > 0 ? 20 : 7;
-      context.beginPath();
-      context.arc(0, 0, agent.radius, 0, Math.PI * 2);
-      context.fill();
-      context.stroke();
-
-      context.rotate(Math.atan2(entity.facingY, entity.facingX));
-      context.fillStyle = agent.accent;
-      context.beginPath();
-      context.moveTo(agent.radius + 12, 0);
-      context.lineTo(agent.radius - 5, -7);
-      context.lineTo(agent.radius - 5, 7);
-      context.closePath();
-      context.fill();
-      context.rotate(-Math.atan2(entity.facingY, entity.facingX));
+      context.save();
+      try {
+        context.rotate(Math.atan2(entity.facingY, entity.facingX));
+        traceAgentBody(agent);
+        context.fill();
+        context.stroke();
+        context.shadowBlur = 0;
+        context.fillStyle = agent.accent;
+        context.font = `900 ${Math.max(11, agent.radius * 0.78)}px ui-monospace, monospace`;
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(agent.glyph, 0, 0);
+      } finally {
+        context.restore();
+      }
 
       const healthRatio = clamp(entity.health / entity.maxHealth, 0, 1);
       context.fillStyle = "#06080c";
-      context.fillRect(-25, -agent.radius - 17, 50, 5);
+      context.fillRect(-23, -agent.radius - 16, 46, 4);
       context.fillStyle =
         healthRatio > 0.5 ? teamColor : healthRatio > 0.25 ? "#ffca4f" : "#ff5d73";
-      context.fillRect(-25, -agent.radius - 17, 50 * healthRatio, 5);
+      context.fillRect(-23, -agent.radius - 16, 46 * healthRatio, 4);
       context.fillStyle = "#cbd5df";
-      context.font = "700 11px ui-monospace, monospace";
+      context.font = "700 10px ui-monospace, monospace";
+      context.textBaseline = "alphabetic";
       context.textAlign = "center";
       context.fillText(
         `${entity.name} · ${agent.name}`,
         0,
-        agent.radius + 23,
+        agent.radius + 21,
       );
     } finally {
       context.restore();
     }
   }
+}
+
+function traceAgentBody(agent) {
+  const radius = agent.radius;
+  if (agent.silhouette === "kite") {
+    tracePolygon([
+      [radius * 1.18, 0],
+      [0, radius * 0.78],
+      [-radius * 0.92, 0],
+      [0, -radius * 0.78],
+    ]);
+  } else if (agent.silhouette === "block") {
+    tracePolygon([
+      [radius * 0.82, -radius * 0.72],
+      [radius, -radius * 0.32],
+      [radius, radius * 0.62],
+      [radius * 0.42, radius],
+      [-radius * 0.78, radius * 0.76],
+      [-radius, 0],
+      [-radius * 0.78, -radius * 0.76],
+    ]);
+  } else if (agent.silhouette === "split") {
+    context.beginPath();
+    context.arc(-radius * 0.34, 0, radius * 0.72, 0, Math.PI * 2);
+    context.moveTo(radius * 1.06, 0);
+    context.arc(radius * 0.34, 0, radius * 0.72, 0, Math.PI * 2);
+  } else if (agent.silhouette === "bolt") {
+    tracePolygon([
+      [radius * 1.18, -radius * 0.2],
+      [radius * 0.18, radius * 0.08],
+      [radius * 0.62, radius],
+      [-radius * 1.02, radius * 0.2],
+      [-radius * 0.12, -radius * 0.08],
+      [-radius * 0.5, -radius],
+    ]);
+  } else if (agent.silhouette === "flare") {
+    const points = [];
+    for (let index = 0; index < 16; index += 1) {
+      const angle = (index / 16) * Math.PI * 2;
+      const extent = index % 2 === 0 ? radius : radius * 0.72;
+      points.push([Math.cos(angle) * extent, Math.sin(angle) * extent]);
+    }
+    tracePolygon(points);
+  } else if (agent.silhouette === "cross") {
+    const inner = radius * 0.42;
+    tracePolygon([
+      [inner, -radius],
+      [inner, -inner],
+      [radius, -inner],
+      [radius, inner],
+      [inner, inner],
+      [inner, radius],
+      [-inner, radius],
+      [-inner, inner],
+      [-radius, inner],
+      [-radius, -inner],
+      [-inner, -inner],
+      [-inner, -radius],
+    ]);
+  } else if (agent.silhouette === "rook") {
+    tracePolygon([
+      [radius, 0],
+      [radius * 0.62, radius * 0.84],
+      [-radius * 0.58, radius * 0.84],
+      [-radius, radius * 0.32],
+      [-radius, -radius * 0.84],
+      [-radius * 0.35, -radius * 0.58],
+      [0, -radius],
+      [radius * 0.35, -radius * 0.58],
+    ]);
+  } else {
+    context.beginPath();
+    context.arc(0, 0, radius, 0, Math.PI * 2);
+  }
+}
+
+function tracePolygon(points) {
+  context.beginPath();
+  for (const [index, point] of points.entries()) {
+    if (index === 0) context.moveTo(point[0], point[1]);
+    else context.lineTo(point[0], point[1]);
+  }
+  context.closePath();
 }
 
 function drawEffects() {
@@ -1196,6 +1413,7 @@ function buildContentInterface() {
         <em>${map.hazards.length ? "ACTIVE FIELD" : "GEOMETRY FIELD"}</em>
         <b>${map.name}</b>
         <p>${map.identity} ${map.obstacles.length} pieces of hard cover, ${map.spawns.length} protected spawn anchors.</p>
+        <button class="text-button codex-action" type="button" data-select-map="${map.id}">Select arena →</button>
       </article>`,
   ).join("");
   element("mode-codex").innerHTML = MODES.map(
@@ -1204,6 +1422,7 @@ function buildContentInterface() {
         <em>${mode.category}</em>
         <b>${mode.name}</b>
         <p>${mode.description} Target: ${mode.scoreLimit}; time limit: ${Math.round(mode.timeLimit / 60)} minutes.</p>
+        <button class="text-button codex-action" type="button" data-launch-mode="${mode.id}">Play now →</button>
       </article>`,
   ).join("");
   const agentOptions = CHARACTERS.map(
@@ -1219,6 +1438,7 @@ function buildContentInterface() {
     (map) => `<option value="${map.id}">${map.name}</option>`,
   ).join("");
   element("server-address").value = location.origin;
+  updateDeploymentSummary();
 }
 
 function agentPicker(name, selected) {
@@ -1226,6 +1446,7 @@ function agentPicker(name, selected) {
     (agent) => `
       <label class="agent-choice" style="--agent-color:${agent.accent}">
         <input type="radio" name="${name}" value="${agent.id}" ${agent.id === selected ? "checked" : ""}>
+        <span class="agent-choice-glyph" aria-hidden="true">${agent.glyph}</span>
         <b>${agent.name}</b>
       </label>`,
   ).join("");
@@ -1234,7 +1455,7 @@ function agentPicker(name, selected) {
 function agentCard(agent) {
   return `
     <article class="agent-card" style="--agent-color:${agent.accent};--agent-wash:${agent.accent}22">
-      <div class="agent-identity"><b>${agent.name}</b><span>${agent.role} · ${"◆".repeat(agent.difficulty)}</span></div>
+      <div class="agent-identity"><i class="agent-glyph" aria-hidden="true">${agent.glyph}</i><b>${agent.name}</b><span>${agent.role} · ${"◆".repeat(agent.difficulty)}</span></div>
       <div class="agent-data">
         <p>${agent.style}</p>
         <div class="kit-list">
@@ -1250,6 +1471,7 @@ function agentCard(agent) {
             )
             .join("")}
         </div>
+        <button class="text-button codex-action" type="button" data-select-agent="${agent.id}">Select agent →</button>
       </div>
     </article>`;
 }
@@ -1803,6 +2025,14 @@ function element(id) {
 window.DIFF_DEBUG = Object.freeze({
   getState: () => structuredClone(matchState),
   getInvariantErrors: () => matchInvariantErrors(matchState),
+  getInterfaceState: () => ({
+    infoOpen,
+    menuPanel,
+    matchKind,
+    view: app.dataset.view,
+  }),
+  launchMode,
   quickStart,
   showPanel,
+  toggleInfo,
 });

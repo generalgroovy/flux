@@ -17,6 +17,9 @@
   WebSocket lobbies with discovery, code join, join-in-progress, protected
   spawns, validated sequenced commands, server snapshots, client reconciliation,
   rate limits, disconnect cleanup, host migration, and rematches.
+  The launch health contract is versioned, so a stale DIFF process cannot be
+  mistaken for the current lobby-capable server; the launcher selects a new
+  port instead.
 - **Files changed:** Added `.gitignore`, `package-lock.json`,
   `src/content.mjs`, `src/match.mjs`, `src/lobbies.mjs`,
   `tests/game-dom.test.mjs`, `tests/match.test.mjs`,

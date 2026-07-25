@@ -1,5 +1,51 @@
 # DIFF agent memory
 
+## 2026-07-25T18:10:00Z — DIFF 0.9.1 actionable front end and agent identity
+
+- **Player-facing problem:** The first external play pass reported that agents
+  felt too large and visually interchangeable, only the introduction appeared
+  launchable, menu content did not feel actionable, and there was no toggleable
+  in-match information surface.
+- **Implemented solution:** Reduced all eight agent collision bodies from the
+  old 21-unit circle to bounded 17–19.5-unit profiles and added eight unique,
+  facing-oriented geometric silhouettes plus persistent glyph identities.
+  Added direct home and ruleset-card launch actions for every mode, agent/map
+  actions that update the match builder, a sticky deployment summary/action,
+  and explicit validation for all main-menu routes. Added a non-pausing live
+  field panel on the HUD, toggled by its button or `F1`, with objective, round,
+  arena, health, role, complete kit, and controls. Versioned the health contract
+  as 0.9.1 so an old 0.9 server cannot be reused. Added a dirty-tree-safe
+  `scripts/test-changes.sh` that installs locked dependencies with a disposable
+  cache, checks syntax, runs the full suite, chooses a free port, and launches
+  the tested build.
+- **Files changed:** `src/content.mjs`, `src/game.mjs`, `index.html`,
+  `styles.css`, `tests/game-dom.test.mjs`, `tests/match.test.mjs`,
+  `tests/network.test.mjs`, `scripts/serve.mjs`,
+  `scripts/pull-and-run.sh`, `scripts/test-changes.sh`, `package.json`,
+  `package-lock.json`, `README.md`, `.agent/backlog.md`, and this file.
+- **Commands run:** Baseline and repeated `npm test`; syntax checks; full
+  `scripts/test-changes.sh` path; HTTP health/static/404 smoke on port 8766.
+- **Tests passed:** 33/33. The browser controller test now opens all seven menu
+  panels, confirms Host/Join actions are live, launches introduction plus duel,
+  control, PvPvE, and PvE from visible UI actions, opens/closes field info,
+  selects VOLT and CROWN from their overview cards, starts local 2P, renders,
+  pauses, and resets. Existing 160-combination and two-minute eight-agent stress
+  coverage remains green. Health returned DIFF 0.9.1/protocol 2; index, game,
+  and CSS returned 200; a missing route returned 404.
+- **Tests failed and fixed:** Linkedom does not update `:checked` from radio
+  properties like a browser, exposing an avoidable selector dependency; choice
+  reads now use explicit checked properties and selections clear their group.
+  Exercising the online menu initially allowed a real asynchronous fetch after
+  the DOM test ended; the test now owns a deterministic lobby response. The
+  first full script run could not write the runtime's `/root/.npm`; the script
+  now uses a disposable temp cache and its complete second run reached the
+  server before the intentional test timeout stopped it.
+- **Known limitations:** No browser executable is installed in this runtime, so
+  final pixel/feel judgment for the new silhouettes, responsive layout, and
+  pointer interaction still requires the user's Garuda/Windows play pass.
+- **Recommended next task:** Use the external playtest notes to tune silhouette
+  scale and HUD density, then run a real two-device remote lobby soak.
+
 ## 2026-07-25T17:22:49Z — DIFF 0.9 live lobby continuity
 
 - **Player-facing problem:** Remote sessions were lost permanently when a

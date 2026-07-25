@@ -5,6 +5,9 @@ const character = ({
   style,
   color,
   accent,
+  glyph,
+  silhouette,
+  radius = 18,
   difficulty,
   health,
   speed,
@@ -19,8 +22,10 @@ const character = ({
   style,
   color,
   accent,
+  glyph,
+  silhouette,
   difficulty,
-  radius: 21,
+  radius,
   health,
   speed,
   acceleration: speed * 6.6,
@@ -40,6 +45,9 @@ export const CHARACTERS = Object.freeze([
     style: "Thread angles, return fire, finish up close.",
     color: "#f4f8ff",
     accent: "#77f7ce",
+    glyph: "◇",
+    silhouette: "kite",
+    radius: 17.5,
     difficulty: 2,
     health: 100,
     speed: 430,
@@ -89,6 +97,9 @@ export const CHARACTERS = Object.freeze([
     style: "Own a lane, absorb pressure, punish entry.",
     color: "#fff4db",
     accent: "#ffb86b",
+    glyph: "▣",
+    silhouette: "block",
+    radius: 19.5,
     difficulty: 1,
     health: 145,
     speed: 340,
@@ -142,6 +153,9 @@ export const CHARACTERS = Object.freeze([
     style: "Overload reads with spread and discontinuous movement.",
     color: "#f7efff",
     accent: "#c38cff",
+    glyph: "◐",
+    silhouette: "split",
+    radius: 17,
     difficulty: 3,
     health: 84,
     speed: 465,
@@ -188,6 +202,9 @@ export const CHARACTERS = Object.freeze([
     style: "Build rhythm, pierce lines, steal momentum.",
     color: "#effcff",
     accent: "#45d9ff",
+    glyph: "ϟ",
+    silhouette: "bolt",
+    radius: 17.5,
     difficulty: 3,
     health: 94,
     speed: 445,
@@ -239,6 +256,9 @@ export const CHARACTERS = Object.freeze([
     style: "Shape routes, bait pursuit, detonate commitment.",
     color: "#fff1ef",
     accent: "#ff6e5f",
+    glyph: "✦",
+    silhouette: "flare",
+    radius: 18,
     difficulty: 2,
     health: 102,
     speed: 380,
@@ -291,6 +311,9 @@ export const CHARACTERS = Object.freeze([
     style: "Displace enemies and bend projectile lanes.",
     color: "#eef5ff",
     accent: "#7aa8ff",
+    glyph: "◎",
+    silhouette: "ring",
+    radius: 18.5,
     difficulty: 3,
     health: 108,
     speed: 390,
@@ -339,6 +362,9 @@ export const CHARACTERS = Object.freeze([
     style: "Recover between reads and protect a narrow advantage.",
     color: "#effff3",
     accent: "#75e891",
+    glyph: "+",
+    silhouette: "cross",
+    radius: 18,
     difficulty: 1,
     health: 112,
     speed: 405,
@@ -387,6 +413,9 @@ export const CHARACTERS = Object.freeze([
     style: "Control long sightlines and punish predictable exits.",
     color: "#f5f7eb",
     accent: "#d3e56b",
+    glyph: "♜",
+    silhouette: "rook",
+    radius: 18.5,
     difficulty: 2,
     health: 96,
     speed: 365,
@@ -670,6 +699,16 @@ export function validateContent({
   }
 
   for (const agent of characters) {
+    if (
+      !["kite", "block", "split", "bolt", "flare", "ring", "cross", "rook"].includes(
+        agent.silhouette,
+      )
+    ) {
+      errors.push(`${agent.id}.silhouette is unsupported`);
+    }
+    if (!Number.isFinite(agent.radius) || agent.radius < 15 || agent.radius > 20) {
+      errors.push(`${agent.id}.radius must stay within the readable 15–20 range`);
+    }
     for (const path of [
       ["health", agent.health],
       ["speed", agent.speed],

@@ -32,6 +32,60 @@
         <div id="roster-hud" class="roster-hud"></div>
       </section>
 
+      <div id="game-tools" class="game-tools">
+        <button
+          id="info-toggle"
+          class="button button-quiet info-toggle"
+          type="button"
+          aria-controls="info-overlay"
+          aria-expanded="false"
+        >
+          Field info <kbd>F1</kbd>
+        </button>
+      </div>
+
+      <aside
+        id="info-overlay"
+        class="info-overlay hidden"
+        aria-label="Live field information"
+      >
+        <header>
+          <div>
+            <span class="eyebrow">LIVE FIELD INFO</span>
+            <h2 id="info-operation">FIRST CONTACT</h2>
+          </div>
+          <button
+            id="info-close"
+            class="icon-button"
+            type="button"
+            aria-label="Close field information"
+          >
+            ×
+          </button>
+        </header>
+        <div class="info-readout">
+          <section>
+            <span>Current read</span>
+            <strong id="info-objective">Learn the four-action language.</strong>
+            <p id="info-status">Round 1 · BREAKLINE</p>
+          </section>
+          <section class="info-agent">
+            <span id="info-agent-glyph" aria-hidden="true">◇</span>
+            <div>
+              <strong id="info-agent-name">KITE</strong>
+              <p id="info-agent-role">Mobility duelist</p>
+            </div>
+          </section>
+        </div>
+        <div id="info-kit" class="info-kit"></div>
+        <dl class="info-controls">
+          <div><dt>Move / aim</dt><dd><kbd>WASD</kbd> / mouse</dd></div>
+          <div><dt>Actions</dt><dd><kbd>MB1</kbd><kbd>E</kbd><kbd>Q</kbd><kbd>Shift</kbd></dd></div>
+          <div><dt>Reset / pause</dt><dd><kbd>R</kbd> / <kbd>Esc</kbd></dd></div>
+        </dl>
+        <p class="info-hint">Press <kbd>F1</kbd> at any time to close this panel. Combat continues.</p>
+      </aside>
+
       <section id="coach" class="coach" aria-live="polite">
         <span class="eyebrow">LIVE READ</span>
         <strong id="coach-text">Move, aim, and fire. The arena never waits.</strong>
@@ -127,7 +181,7 @@
             <article class="menu-panel active" data-menu-panel="home">
               <div class="hero">
                 <div>
-                  <span class="eyebrow">SKILL ARENA / BUILD 0.9</span>
+                  <span class="eyebrow">SKILL ARENA / BUILD 0.9.1</span>
                   <h1>Find the<br /><em>difference.</em></h1>
                   <p>
                     Eight complete agents. Five clean rulesets. One shared language:
@@ -138,6 +192,12 @@
                       First contact <kbd>↵</kbd>
                     </button>
                     <button class="button button-large" data-panel="play" type="button">Choose operation</button>
+                  </div>
+                  <div class="operation-shortcuts" aria-label="Quick operations">
+                    <button type="button" data-launch-mode="duel"><b>DIFFERENCE</b><span>Duel</span></button>
+                    <button type="button" data-launch-mode="control"><b>FAULTLINE</b><span>Control</span></button>
+                    <button type="button" data-launch-mode="convergence"><b>CONVERGENCE</b><span>PvPvE</span></button>
+                    <button type="button" data-launch-mode="survival"><b>PRESSURE TEST</b><span>Co-op PvE</span></button>
                   </div>
                 </div>
                 <div class="hero-mark" aria-hidden="true">
@@ -189,9 +249,12 @@
                     <output id="bot-count-output">1</output>
                   </label>
                 </fieldset>
-                <button class="button button-primary button-large deploy-button" type="submit">
-                  Enter arena
-                </button>
+                <div class="deployment-action">
+                  <span><b>READY</b><small id="deployment-summary">DIFFERENCE · KITE · BREAKLINE</small></span>
+                  <button class="button button-primary button-large deploy-button" type="submit">
+                    Enter arena
+                  </button>
+                </div>
               </form>
             </article>
 
@@ -319,6 +382,7 @@
                     <div><dt>Pause / network menu</dt><dd><kbd>Esc</kbd></dd></div>
                     <div><dt>Instant restart</dt><dd><kbd>R</kbd></dd></div>
                     <div><dt>Skip introduction</dt><dd><kbd>T</kbd></dd></div>
+                    <div><dt>Toggle field info</dt><dd><kbd>F1</kbd></dd></div>
                   </dl>
                 </section>
               </div>

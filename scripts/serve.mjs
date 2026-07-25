@@ -10,6 +10,8 @@ import { MATCH_TUNING } from "../src/content.mjs";
 import { LobbyService } from "../src/lobbies.mjs";
 
 const root = resolve(fileURLToPath(new URL("../", import.meta.url)));
+const serverVersion = "0.8.0";
+const protocolVersion = 1;
 const requestedPort =
   argumentValue("--port") ?? process.env.PORT ?? process.env.DIFF_PORT ?? "8000";
 const port = Number.parseInt(requestedPort, 10);
@@ -66,7 +68,14 @@ const server = createServer(async (request, response) => {
         "Cache-Control": "no-store",
         "Content-Type": "application/json; charset=utf-8",
       });
-      response.end(JSON.stringify({ product: "DIFF", status: "ready" }));
+      response.end(
+        JSON.stringify({
+          product: "DIFF",
+          status: "ready",
+          version: serverVersion,
+          protocol: protocolVersion,
+        }),
+      );
       return;
     }
 
@@ -149,7 +158,13 @@ webSockets.on("connection", (webSocket) => {
       webSocket.send(JSON.stringify(message));
     }
   };
-  send({ type: "hello", clientId, protocol: 1, tickRate: MATCH_TUNING.tickRate });
+  send({
+    type: "hello",
+    clientId,
+    protocol: protocolVersion,
+    version: serverVersion,
+    tickRate: MATCH_TUNING.tickRate,
+  });
 
   webSocket.on("message", (raw, binary) => {
     const now = Date.now();

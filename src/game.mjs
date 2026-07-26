@@ -24,6 +24,14 @@ import {
   receiveNetworkProbe,
   summarizeNetworkDiagnostics,
 } from "./network-quality.mjs";
+import {
+  conditionPacket,
+  configurePacketConditioner,
+  createPacketConditioner,
+  drainPackets,
+  isFreshServerTick,
+  networkLabActive,
+} from "./network-conditioner.mjs";
 
 const FIXED_DELTA = 1 / MATCH_TUNING.tickRate;
 const SETTINGS_KEY = "diff.presentation.v2";
@@ -97,6 +105,9 @@ const DEFAULT_SETTINGS = Object.freeze({
   reducedMotion: false,
   highContrast: false,
   bindings: DEFAULT_BINDINGS,
+  networkLatency: 0,
+  networkJitter: 0,
+  networkLoss: 0,
 });
 
 const app = element("app");
@@ -149,6 +160,8 @@ let remoteSequence = 0;
 let pendingInputs = [];
 let lastSnapshotAt = 0;
 let networkDiagnostics = createNetworkDiagnostics();
+let networkConditioner = createPacketConditioner();
+let lastAuthoritativeTick = -1;
 let remoteHostId = null;
 let clientId = null;
 let remoteRole = "player";
@@ -251,6 +264,7 @@ function runFrame(now) {
   const delta = Math.min(rawDelta, MATCH_TUNING.maxFrameDelta);
   frameTime = now;
   updateNetworkProbes(now);
+  flushConditionedNetwork(now);
   if (app.dataset.view === "game" && !paused) {
     accumulator += delta;
     let steps = 0;
@@ -452,14 +466,42 @@ function predictRemoteTick() {
   if (pendingInputs.length > MATCH_TUNING.tickRate * 2) {
     pendingInputs.splice(0, pendingInputs.length - MATCH_TUNING.tickRate * 2);
   }
-  socket.send(
-    JSON.stringify({
-      type: "input",
-      sequence: remoteSequence,
-      command,
-    }),
-  );
+  sendGameplayInput({
+    type: "input",
+    sequence: remoteSequence,
+    command,
+  }, performance.now());
   stepMatch(matchState, { [remoteEntityId]: command }, FIXED_DELTA);
+}
+
+function networkLabConfig() {
+  return {
+    latency: settings.networkLatency,
+    jitter: settings.networkJitter,
+    loss: settings.networkLoss,
+  };
+}
+
+function sendGameplayInput(message, now) {
+  if (!socket || socket.readyState !== WebSocket.OPEN) return;
+  if (!networkLabActive(networkLabConfig())) {
+    socket.send(JSON.stringify(message));
+    return;
+  }
+  conditionPacket(networkConditioner, "outgoing", message, now);
+  flushConditionedNetwork(now);
+}
+
+function flushConditionedNetwork(now) {
+  if (!networkLabActive(networkLabConfig())) return;
+  if (socket?.readyState === WebSocket.OPEN) {
+    for (const message of drainPackets(networkConditioner, "outgoing", now)) {
+      socket.send(JSON.stringify(message));
+    }
+  }
+  for (const message of drainPackets(networkConditioner, "incoming", now)) {
+    deliverSocketMessage(message);
+  }
 }
 
 function handleMenuClick(event) {
@@ -921,14 +963,21 @@ function updateNetworkReadout() {
   }
   const summary = summarizeNetworkDiagnostics(networkDiagnostics);
   const role = remoteRole === "spectator" ? "WATCH" : "REMOTE";
-  const stale = performance.now() - lastSnapshotAt > 500;
+  const lab = networkLabConfig();
+  const labActive = networkLabActive(lab);
+  const stale = performance.now() - lastSnapshotAt > 500 + lab.latency + lab.jitter;
   const metrics =
     summary.rtt === null
       ? "MEASURING"
       : `${Math.round(summary.rtt)} MS · J${Math.round(summary.jitter)} · L${Math.round(summary.loss)}%`;
-  readout.textContent = `${role} ${remoteLobby?.code ?? "------"} · ${stale ? "STALE" : summary.quality.toUpperCase()} · ${metrics}`;
+  const labCopy = labActive
+    ? ` · LAB +${lab.latency}±${lab.jitter}MS/${lab.loss}%`
+    : "";
+  readout.textContent = `${role} ${remoteLobby?.code ?? "------"} · ${stale ? "STALE" : summary.quality.toUpperCase()} · ${metrics}${labCopy}`;
   readout.dataset.quality = stale ? "poor" : summary.quality;
-  readout.title = "Round-trip latency · jitter · recent probe loss";
+  readout.title = labActive
+    ? `Real round-trip metrics · deterministic gameplay lab · ${networkConditioner.dropped} dropped / ${networkConditioner.delivered} delivered`
+    : "Round-trip latency · jitter · recent probe loss";
 }
 
 function updateRoster() {
@@ -2380,6 +2429,10 @@ function beginRemote(result) {
   remoteHostId = result.lobby.hostId;
   remoteSequence = 0;
   pendingInputs = [];
+  configurePacketConditioner(networkConditioner, networkLabConfig());
+  lastAuthoritativeTick = Number.isInteger(result.snapshot.serverTick)
+    ? result.snapshot.serverTick
+    : -1;
   matchState = structuredClone(result.snapshot.state);
   app.dataset.spectating = String(remoteRole === "spectator");
   lastSnapshotAt = performance.now();
@@ -2528,6 +2581,19 @@ function handleSocketMessage(event) {
   } catch {
     return;
   }
+  if (
+    message.type === "snapshot" && matchKind === "remote" &&
+    networkLabActive(networkLabConfig())
+  ) {
+    const now = performance.now();
+    conditionPacket(networkConditioner, "incoming", message, now);
+    flushConditionedNetwork(now);
+    return;
+  }
+  deliverSocketMessage(message);
+}
+
+function deliverSocketMessage(message) {
   if (message.type === "hello") {
     clientId = message.clientId;
     networkDiagnostics = createNetworkDiagnostics();
@@ -2569,6 +2635,8 @@ function handleSocketMessage(event) {
 }
 
 function acceptRemoteSnapshot(message) {
+  if (!isFreshServerTick(lastAuthoritativeTick, message.serverTick)) return;
+  lastAuthoritativeTick = message.serverTick;
   const authoritative = structuredClone(message.state);
   remoteLobby = message.lobby;
   remoteHostId = message.lobby.hostId;
@@ -2644,6 +2712,8 @@ function leaveRemote(forgetSession = true) {
   remoteHostId = null;
   remoteRole = "player";
   pendingInputs = [];
+  configurePacketConditioner(networkConditioner, networkLabConfig());
+  lastAuthoritativeTick = -1;
   networkDiagnostics = createNetworkDiagnostics();
   app.dataset.spectating = "false";
   if (forgetSession) clearReconnectSession();
@@ -2717,6 +2787,9 @@ function updateSettings() {
     reducedMotion: data.get("reducedMotion") === "on",
     highContrast: data.get("highContrast") === "on",
     bindings: settings.bindings,
+    networkLatency: Number(data.get("networkLatency")),
+    networkJitter: Number(data.get("networkJitter")),
+    networkLoss: Number(data.get("networkLoss")),
   });
   for (const input of settingsForm.querySelectorAll('input[type="range"]')) {
     input.parentElement.querySelector("output").value = input.value;
@@ -2757,6 +2830,14 @@ function applySettings() {
   app.classList.toggle("reduced-motion", settings.reducedMotion);
   syncBindingLabels();
   syncBindingButtons();
+  const lab = networkLabConfig();
+  if (
+    networkConditioner.config.latency !== lab.latency ||
+    networkConditioner.config.jitter !== lab.jitter ||
+    networkConditioner.config.loss !== lab.loss
+  ) {
+    configurePacketConditioner(networkConditioner, lab);
+  }
 }
 
 function loadSettings() {
@@ -2782,6 +2863,9 @@ function normalizeSettings(candidate) {
     highContrast:
       typeof source.highContrast === "boolean" ? source.highContrast : false,
     bindings: normalizeBindings(source.bindings),
+    networkLatency: boundedNumber(source.networkLatency, 0, 250, 0),
+    networkJitter: boundedNumber(source.networkJitter, 0, 100, 0),
+    networkLoss: boundedNumber(source.networkLoss, 0, 20, 0),
   };
 }
 

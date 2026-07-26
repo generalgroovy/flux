@@ -10,7 +10,7 @@ import { MATCH_TUNING } from "../src/content.mjs";
 import { LobbyService } from "../src/lobbies.mjs";
 
 const root = resolve(fileURLToPath(new URL("../", import.meta.url)));
-const serverVersion = "0.28.0";
+const serverVersion = "0.29.0";
 const protocolVersion = 2;
 const requestedPort =
   argumentValue("--port") ?? process.env.PORT ?? process.env.DIFF_PORT ?? "8000";
@@ -31,6 +31,7 @@ const publicFiles = new Set([
   "/src/content.mjs",
   "/src/game.mjs",
   "/src/match.mjs",
+  "/src/network-conditioner.mjs",
   "/src/network-quality.mjs",
 ]);
 const contentTypes = new Map([

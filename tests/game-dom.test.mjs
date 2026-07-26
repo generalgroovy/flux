@@ -183,6 +183,18 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     JSON.parse(storage.get("diff.presentation.v2")).bindings.tactical,
     "q",
   );
+  const networkLatency = settingsForm.querySelector('[name="networkLatency"]');
+  const networkJitter = settingsForm.querySelector('[name="networkJitter"]');
+  const networkLoss = settingsForm.querySelector('[name="networkLoss"]');
+  networkLatency.value = "120";
+  networkJitter.value = "35";
+  networkLoss.value = "8";
+  networkLoss.dispatchEvent(new window.Event("input", { bubbles: true }));
+  const savedNetworkLab = JSON.parse(storage.get("diff.presentation.v2"));
+  assert.equal(savedNetworkLab.networkLatency, 120);
+  assert.equal(savedNetworkLab.networkJitter, 35);
+  assert.equal(savedNetworkLab.networkLoss, 8);
+  assert.equal(networkLoss.parentElement.querySelector("output").value, "8");
 
   document.querySelector('[data-panel="agents"]').click();
   assert.equal(app.dataset.panel, "agents");
@@ -270,6 +282,9 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     JSON.parse(storage.get("diff.presentation.v2")).bindings.sprint,
     "alt",
   );
+  assert.equal(networkLatency.value, "0");
+  assert.equal(networkJitter.value, "0");
+  assert.equal(networkLoss.value, "0");
 
   for (const modeId of ["duel", "control", "convergence", "survival"]) {
     document.querySelector(`[data-launch-mode="${modeId}"]`).click();

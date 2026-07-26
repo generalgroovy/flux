@@ -10,6 +10,13 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
+Build 0.29.0 adds an opt-in **Deterministic network lab** under Settings. It
+applies 0–250 ms seeded latency, 0–100 ms jitter, and 0–20% loss only to remote
+inputs and snapshots; zero bypasses the conditioner. Real probe diagnostics stay
+honest while the HUD names the synthetic profile and packet counts. Incoming
+server ticks must advance monotonically, preventing jitter-reordered snapshots
+from rolling prediction backward. Control/lobby traffic remains reliable.
+
 Build 0.28.0 adds persistent Player 1 keyboard remapping in **Settings**. Choose
 an action and press a key; duplicates swap, while system and Player 2 keys remain
 protected. Old settings migrate to safe defaults, corrupt/duplicate maps reset,
@@ -333,6 +340,7 @@ Modes:
 - [`src/content.mjs`](src/content.mjs) — validated champions, races, maps, modes, and tuning
 - [`src/match.mjs`](src/match.mjs) — fixed-tick simulation and collision authority
 - [`src/lobbies.mjs`](src/lobbies.mjs) — lobby lifecycle and remote command ownership
+- [`src/network-conditioner.mjs`](src/network-conditioner.mjs) — seeded adverse-network scheduling and tick freshness
 - [`src/game.mjs`](src/game.mjs) — input, prediction, menus, HUD, feedback, and rendering
 - [`scripts/serve.mjs`](scripts/serve.mjs) — allowlisted static server, lobby API, and WebSockets
 
@@ -348,6 +356,7 @@ npm test
 node --check src/content.mjs
 node --check src/match.mjs
 node --check src/lobbies.mjs
+node --check src/network-conditioner.mjs
 node --check src/game.mjs
 node --check scripts/serve.mjs
 node --check scripts/stop-servers.mjs

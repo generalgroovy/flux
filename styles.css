@@ -1543,6 +1543,20 @@ select {
   color: var(--mint);
 }
 
+.network-lab-settings {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.network-lab-settings > p {
+  margin-bottom: 0.4rem;
+}
+
+.network-lab-settings .range-setting {
+  min-height: 3.4rem;
+  background: #0d151e;
+}
+
 .hud {
   position: fixed;
   z-index: 8;

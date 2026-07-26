@@ -1,13 +1,13 @@
 {
   "name": "hex-arena",
-  "version": "0.28.0",
+  "version": "0.29.0",
   "private": true,
   "type": "module",
   "scripts": {
     "start": "node scripts/serve.mjs",
     "start:remote": "node scripts/serve.mjs --host=0.0.0.0",
     "stop": "node scripts/stop-servers.mjs",
-    "test": "node --test --test-concurrency=1 tests/game-dom.test.mjs tests/lobbies.test.mjs tests/match.test.mjs tests/network-quality.test.mjs && node --test tests/network.test.mjs && node --test tests/server-control.test.mjs"
+    "test": "node --test --test-concurrency=1 tests/game-dom.test.mjs tests/lobbies.test.mjs tests/match.test.mjs tests/network-conditioner.test.mjs tests/network-quality.test.mjs && node --test tests/network.test.mjs && node --test tests/server-control.test.mjs"
   },
   "engines": {
     "node": ">=20.19.0"

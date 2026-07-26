@@ -1060,3 +1060,31 @@
   hands-on keyboard-layout, responsive layout, controller, and audio verification
   remain pending. Next add deterministic latency/jitter/loss simulation for
   repeatable reconciliation tuning.
+
+## 2026-07-26 — Deterministic adverse-network lab
+
+- **Player-facing/QA problem:** Real RTT diagnostics identified poor links but
+  could not reproduce latency, jitter, loss, or snapshot reordering on demand.
+- **Implemented solution:** HEX 0.29.0 adds bounded persisted network-lab sliders
+  for 0–250 ms latency, 0–100 ms jitter, and 0–20% loss. A pure seeded scheduler
+  conditions only outgoing gameplay inputs and incoming authoritative snapshots;
+  zero uses the original direct path. Control requests and real probes remain
+  immediate. The HUD distinguishes real measurements from the active LAB profile
+  and reports delivered/dropped counts. Match, disconnect, reset, and config
+  boundaries clear queued packets.
+- **Synchronization hardening:** Authoritative server ticks now advance
+  monotonically on the client, so jitter-reordered or duplicate snapshots cannot
+  roll prediction backward. Pending-input replay and server ownership are
+  otherwise unchanged.
+- **Verification:** Source/launcher syntax and diff checks passed. `npm test`
+  passed 69/69 checks: 67 deterministic/DOM/lobby/conditioner/diagnostic checks,
+  one live WebSocket lifecycle, and one isolated cleanup check. New coverage
+  proves bounds, zero bypass configuration, seeded reproducibility, directional
+  queues, time order, clean resets, stale-tick rejection, persistence, and the
+  allowlisted browser module. Server smoke on port 8127 reported HEX
+  0.29.0/protocol 2; `/`, `/src/game.mjs`, and
+  `/src/network-conditioner.mjs` returned `200 OK` with security headers, then
+  stopped cleanly.
+- **Known limitation / next task:** No browser executable or second real device is
+  available here; hands-on feel under impairment remains pending. Use the lab for
+  reconciliation tuning, then add one behavior-driven elemental interaction trial.

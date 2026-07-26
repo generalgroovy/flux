@@ -33,7 +33,7 @@ test(
     );
     assert.equal(health.product, "DIFF");
     assert.equal(health.status, "ready");
-    assert.equal(health.version, "0.28.0");
+    assert.equal(health.version, "0.29.0");
     assert.equal(health.protocol, 2);
     assert.match(health.instance, /^[0-9a-f-]{36}$/i);
     const initialList = await fetch(`${origin}/api/lobbies`).then((response) =>
@@ -46,6 +46,7 @@ test(
       "/src/content.mjs",
       "/src/game.mjs",
       "/src/match.mjs",
+      "/src/network-conditioner.mjs",
       "/src/network-quality.mjs",
     ]) {
       const response = await fetch(`${origin}${route}`);

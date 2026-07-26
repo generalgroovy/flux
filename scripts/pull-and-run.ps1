@@ -50,7 +50,7 @@ try {
   function Test-DiffReady([int]$CandidatePort) {
     try {
       $health = Invoke-RestMethod -Uri "http://127.0.0.1:$CandidatePort/__diff_health" -TimeoutSec 1
-      return $health.product -eq "DIFF" -and $health.status -eq "ready" -and $health.version -eq "0.28.0"
+      return $health.product -eq "DIFF" -and $health.status -eq "ready" -and $health.version -eq "0.29.0"
     } catch { return $false }
   }
   function Test-PortUsed([int]$CandidatePort) {

@@ -2,7 +2,7 @@
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.28.0 on Garuda Sway and Windows: remap movement and
+1. Hands-on accept HEX 0.29.0 on Garuda Sway and Windows: remap movement and
    every action, confirm duplicate swaps and reserved-key feedback, relaunch to
    verify persistence, and confirm HUD, guide, live info, and FIRST RITE labels
    always match. Then complete all four
@@ -25,7 +25,10 @@
 2. Run a 30-minute two-device remote soak through the intended VPN/router path;
    require clean join-in-progress, host migration, rematch, and disconnect
    recovery under real latency.
-3. Add deterministic latency/jitter/loss simulation controls.
+3. Exercise the deterministic network lab at 80/20/3 and 180/60/10
+   latency/jitter/loss profiles; require stable reconciliation, no backward
+   snapshots, honest real metrics, explicit LAB state, and clean zero-profile
+   behavior after reset.
 4. Hands-on tune the 1.7× counter-strafe control rate on normal ground and ice;
    require sharp reversals without instant direction changes or animation noise.
 5. Hands-on tune 35%/180-unit hop carry through diagonal escape, wall-kick, ice,
@@ -57,9 +60,9 @@
 - Persistent reconnect identity and isolated spectator slots are live.
 - Accurate live RTT/jitter/loss/staleness diagnostics are implemented.
 - Persistent, conflict-safe Player 1 remapping and input-aware teaching are live.
+- Deterministic adverse-network conditioning and stale-snapshot rejection are live.
 - Next acceptance: hands-on FLOW/Flux tuning, behavior-driven discipline trials,
-  share-link testing across Linux/Windows, and deterministic adverse-network
-  simulation.
+  share-link testing across Linux/Windows, and network-lab reconciliation tuning.
 
 ## Expansion acceptance — not exposed until complete
 

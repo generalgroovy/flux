@@ -2,7 +2,8 @@
 
 set -Eeuo pipefail
 
-repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+script_path="$(realpath -- "${BASH_SOURCE[0]}")"
+repo_dir="$(cd -- "$(dirname -- "${script_path}")/.." && pwd -P)"
 cd -- "${repo_dir}"
 
 for command_name in aider flock git timeout; do

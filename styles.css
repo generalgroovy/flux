@@ -1802,6 +1802,21 @@ select {
   border-left-color: var(--red);
 }
 
+.toast.comic {
+  width: max-content;
+  max-width: 100%;
+  transform: rotate(-1deg);
+  border: 2px solid #070a0f;
+  border-radius: 48% 42% 46% 38%;
+  background: #f7f1d2;
+  box-shadow: 4px 4px 0 #070a0f, inset 0 0 0 2px #ffffff88;
+  color: #111722;
+  font-size: 0.7rem;
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
 @keyframes toast-in {
   from {
     opacity: 0;

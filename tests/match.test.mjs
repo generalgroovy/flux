@@ -103,7 +103,113 @@ test("content ships eight complete agents, four maps, and all five mode gates", 
     assert.ok(agent.special.name);
     assert.ok(agent.defense.name);
     assert.ok(agent.mobility.name);
+    assert.ok(agent.affinity.id);
+    assert.ok(["element", "edge"].includes(agent.affinity.kind));
   }
+});
+
+test("elemental specials author persistent, counterable arena state", () => {
+  const wind = duel({ leftCharacter: "kite", rightCharacter: "rook" });
+  stepMatch(wind, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(wind.elementFields.some((field) => field.element === "wind"), true);
+  stepMatch(wind, {}, FIXED_DELTA);
+  assert.ok(wind.entities[0].elementForceX > 0);
+
+  const earth = duel({ leftCharacter: "bulwark", rightCharacter: "rook" });
+  earth.entities[0].y = 700;
+  earth.entities[1].y = 700;
+  stepMatch(earth, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(earth.elementFields.some((field) => field.element === "earth"), true);
+
+  const ice = duel({ leftCharacter: "echo", rightCharacter: "rook" });
+  stepMatch(ice, { left: { ...idle, special: true } }, FIXED_DELTA);
+  stepMatch(ice, {}, FIXED_DELTA);
+  assert.equal(ice.entities[0].surface, "ice");
+
+  const lightning = duel({ leftCharacter: "volt", rightCharacter: "rook" });
+  stepMatch(lightning, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.ok(lightning.entities[1].interruptRemaining > 0);
+  assert.equal(
+    lightning.events.some((event) => event.type === "elementInterrupt"),
+    true,
+  );
+});
+
+test("water douses fire and rewards allied FLOW positioning", () => {
+  const state = duel({ leftCharacter: "mend", rightCharacter: "cinder" });
+  const mend = state.entities[0];
+  mend.flow = 20;
+  state.elementFields.push({
+    id: "test-fire",
+    ownerId: state.entities[1].id,
+    team: "beta",
+    element: "fire",
+    x: mend.x,
+    y: mend.y,
+    radius: 80,
+    duration: 2,
+    pulseRemaining: 0,
+  });
+  stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.equal(state.elementFields.some((field) => field.element === "fire"), false);
+  assert.ok(mend.flow > 20);
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "elementReaction" && event.reaction === "douse",
+    ),
+    true,
+  );
+});
+
+test("element fields resolve physical reactions deterministically", () => {
+  const state = duel();
+  const base = {
+    ownerId: state.entities[0].id,
+    team: "alpha",
+    x: 800,
+    y: 700,
+    radius: 80,
+    duration: 2,
+    pulseRemaining: 0,
+  };
+  state.elementFields = [
+    { ...base, id: "fire", element: "fire" },
+    { ...base, id: "ice", element: "ice" },
+  ];
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.equal(state.elementFields.length, 0);
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "elementReaction" && event.reaction === "melt",
+    ),
+    true,
+  );
+
+  state.elementFields = [
+    { ...base, id: "water", element: "water" },
+    { ...base, id: "ice-2", element: "ice" },
+  ];
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.deepEqual(state.elementFields.map((field) => field.element), ["ice"]);
+  assert.equal(
+    state.events.some((event) => event.reaction === "freeze"),
+    true,
+  );
+
+  state.elementFields = [
+    {
+      ...base,
+      id: "wind",
+      element: "wind",
+      directionX: 1,
+      directionY: 0,
+    },
+    { ...base, id: "carried-fire", element: "fire" },
+  ];
+  stepMatch(state, {}, FIXED_DELTA);
+  const carriedFire = state.elementFields.find((field) => field.element === "fire");
+  assert.ok(carriedFire.x > base.x);
 });
 
 test("commands reject non-finite movement and aim without poisoning state", () => {
@@ -302,6 +408,7 @@ test("Cinder mines arm, detect hostile proximity, and apply one stable blast", (
   assert.equal(blasted, true);
   assert.ok(right.health < right.maxHealth);
   assert.equal(state.mines.length, 0);
+  assert.equal(state.elementFields.some((field) => field.element === "fire"), true);
 });
 
 test("death creates a bounded duel round break and clean reset", () => {

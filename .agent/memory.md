@@ -1,5 +1,35 @@
 # DIFF agent memory
 
+## 2026-07-26 — DIFF 0.11.0 physical element fields
+
+- **Player-facing problem:** Character powers did damage or displacement but did
+  not persistently alter routes, combine into readable reactions, or establish
+  elements as a core spatial decision system. High-speed movement also lacked a
+  subtle trace for opponents to read.
+- **Implemented solution:** Declared wind, earth, ice, lightning, fire, and water
+  affinities plus explicit non-element gravity/ballistics edges. Specials now
+  author bounded authoritative fields: force channels, dynamic collision walls,
+  slippery ground, short interruption/conduction, pulsed burning terrain, and
+  allied FLOW/cleanse water. Added wind→fire carry, water→fire douse, fire→ice
+  melt, ice→water freeze, lightning→water conduct, and explosion→earth shatter;
+  explosion remains a reaction mechanic rather than an element. Fields combine
+  hue with geometry, marks, audio signatures, and comic reaction callouts. Agent
+  velocity now drives a restrained directional trail.
+- **Verification:** Final `npm test` passed 43/43, including deterministic
+  field/reaction coverage, all content combinations, the eight-agent two-minute
+  soak, browser shell, authoritative remote lifecycle, and server cleanup. The
+  first final run exposed that cleanup and networking integration files could
+  race when parallel because both register the same checkout; test-file
+  concurrency is now one, preserving every check without cross-test process
+  termination. All source/shell syntax and diff checks passed. A live 0.11.0
+  server returned its health payload and HTTP 200 for the shell and game module,
+  then shut down cleanly. Physical audio/visual/feel acceptance remains pending
+  on the installed Linux and Windows launchers because no browser executable is
+  available in this runtime.
+- **Recommended next task:** Add optional short element trials that teach one
+  interaction through movement and observation, then add destructible frozen
+  environment props without reducing aim or FLOW importance.
+
 ## 2026-07-26 — DIFF 0.10.0 universal FLOW movement
 
 - **Player-facing problem:** Universal movement ended at ordinary acceleration

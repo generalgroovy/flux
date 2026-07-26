@@ -7,13 +7,19 @@ spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
-Build 0.10.0 adds **FLOW**, a universal movement resource shared by every agent.
-Sprint for sustained space control, hop to redirect momentum, and turn a recent
-wall contact into a faster angled wall kick. These options spend or delay FLOW,
-so evasive movement creates readable commitment instead of free safety. FIRST
-CONTACT teaches FLOW before aim and the character kit, while the in-match meter
-shows its cost and recovery. Remote matches continue to report measured RTT,
-jitter, loss, snapshot staleness, and plain-language connection quality.
+Build 0.11.0 makes **elements spatial**. Wind creates force channels and carries
+fire; earth raises temporary collision cover; ice creates low-control momentum
+ground; lightning briefly interrupts and conducts through water; fire persists
+as bounded damage terrain; water restores allied FLOW and changes other fields.
+Fire melts ice, ice freezes water, water douses fire, and explosive mechanics
+shatter earth. Explosion is deliberately a reaction, not an element. ORBIT and
+ROOK instead declare extreme gravity and ballistic advantages. Every field uses
+shape/text cues, a distinct audio signature, and an authoritative short lifetime.
+Aim, movement, timing, and FLOW remain the way players convert those windows.
+
+Movement is traceable through a restrained team-shaped trail whose length and
+weight scale with actual velocity, making sprints, hops, knockback, and evasive
+reversals readable without filling the arena with effects.
 
 ## Run
 

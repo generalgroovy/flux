@@ -101,6 +101,7 @@ export function createMatch(options = {}) {
     entities,
     projectiles: [],
     mines: [],
+    elementFields: [],
     hazards: map.hazards.map((hazard) => ({
       ...hazard,
       phase: "cooldown",
@@ -133,6 +134,7 @@ export function createMatch(options = {}) {
     },
     nextProjectileId: 1,
     nextMineId: 1,
+    nextElementFieldId: 1,
     events: [],
   };
   state.events.push({ type: "matchStart", modeId: mode.id, mapId: map.id });
@@ -189,6 +191,10 @@ function createEntity(spec, index, map) {
     wallContactRemaining: 0,
     wallX: 0,
     wallY: 0,
+    surface: "normal",
+    elementForceX: 0,
+    elementForceY: 0,
+    interruptRemaining: 0,
     dashHitIds: [],
     kills: 0,
     deaths: 0,
@@ -288,6 +294,8 @@ export function stepMatch(
   }
 
   for (const entity of state.entities) tickEntity(entity, boundedDelta);
+  updateElementFields(state, boundedDelta);
+  const activeMap = withElementGeometry(map, state.elementFields);
   for (const entity of state.entities) {
     if (!entity.alive) {
       updateRespawn(state, entity, boundedDelta, map, mode);
@@ -296,12 +304,13 @@ export function stepMatch(
     const command = entity.bot
       ? updateBotCommand(state, entity, boundedDelta, map)
       : sanitizeCommand(commands[entity.id]);
-    updateEntity(state, entity, command, boundedDelta, map);
+    updateEntity(state, entity, command, boundedDelta, activeMap);
   }
 
-  resolveUnitCollisions(state, map);
-  updateMines(state, boundedDelta, map);
-  updateProjectiles(state, boundedDelta, map);
+  resolveUnitCollisions(state, activeMap);
+  resolveMapCollisions(state, activeMap);
+  updateMines(state, boundedDelta, activeMap);
+  updateProjectiles(state, boundedDelta, activeMap);
   updateHazards(state, boundedDelta);
   updateObjective(state, boundedDelta, mode, map);
   updateTutorial(state, commands);
@@ -325,6 +334,7 @@ function tickEntity(entity, delta) {
     "hopCooldown",
     "hopRemaining",
     "wallContactRemaining",
+    "interruptRemaining",
   ]) {
     entity[key] = Math.max(0, finite(entity[key]) - delta);
   }
@@ -333,6 +343,10 @@ function tickEntity(entity, delta) {
 
 function updateEntity(state, entity, command, delta, map) {
   const agent = getCharacter(entity.characterId);
+  if (entity.interruptRemaining > 0) {
+    moveEntity(state, entity, IDLE_COMMAND, agent, delta, map);
+    return;
+  }
   if (command.aimX !== 0 || command.aimY !== 0) {
     entity.facingX = command.aimX;
     entity.facingY = command.aimY;
@@ -479,10 +493,11 @@ function moveEntity(state, entity, command, agent, delta, map) {
     const moving = moveX !== 0 || moveY !== 0;
     const sprinting = command.sprint && moving && entity.flow > 0;
     const speed = agent.speed * (sprinting ? MATCH_TUNING.flow.sprintMultiplier : 1);
-    const desiredX = moveX * speed;
-    const desiredY = moveY * speed;
+    const desiredX = moveX * speed + entity.elementForceX;
+    const desiredY = moveY * speed + entity.elementForceY;
     const rate =
-      moving ? agent.acceleration : agent.deceleration;
+      (moving ? agent.acceleration : agent.deceleration) *
+      (entity.surface === "ice" ? MATCH_TUNING.elements.iceControl : 1);
     approachVelocity(entity, desiredX, desiredY, rate * delta);
     entity.sprinting = sprinting;
     if (sprinting) {
@@ -579,6 +594,145 @@ export function moveCircleSwept(circle, dx, dy, radius, map) {
   return { hitWall, wallX, wallY };
 }
 
+function createElementField(state, owner, element, spec) {
+  const field = {
+    id: `element-${state.nextElementFieldId}`,
+    ownerId: owner.id,
+    team: owner.team,
+    element,
+    pulseRemaining: 0,
+    ...spec,
+  };
+  state.nextElementFieldId += 1;
+  state.elementFields.push(field);
+  state.events.push({
+    type: "elementField",
+    fieldId: field.id,
+    element,
+    x: spec.x,
+    y: spec.y,
+  });
+}
+
+function withElementGeometry(map, fields) {
+  const earth = fields
+    .filter((field) => field.element === "earth")
+    .map((field) => ({
+      x: field.x,
+      y: field.y,
+      width: field.width,
+      height: field.height,
+    }));
+  if (earth.length === 0) return map;
+  return { ...map, obstacles: [...map.obstacles, ...earth] };
+}
+
+function updateElementFields(state, delta) {
+  for (const entity of state.entities) {
+    entity.surface = "normal";
+    entity.elementForceX = 0;
+    entity.elementForceY = 0;
+  }
+  for (const field of state.elementFields) {
+    field.duration -= delta;
+    field.pulseRemaining = Math.max(0, field.pulseRemaining - delta);
+  }
+  const waterFields = state.elementFields.filter(
+    (field) => field.element === "water" && field.duration > 0,
+  );
+  const removed = new Set();
+  const overlaps = (left, right) =>
+    Math.hypot(left.x - right.x, left.y - right.y) <=
+    (left.radius ?? 0) + (right.radius ?? 0);
+  for (const wind of state.elementFields.filter((field) => field.element === "wind")) {
+    for (const fire of state.elementFields.filter((field) => field.element === "fire")) {
+      if (!overlaps(wind, fire)) continue;
+      fire.x += wind.directionX * MATCH_TUNING.elements.windForce * delta * 0.32;
+      fire.y += wind.directionY * MATCH_TUNING.elements.windForce * delta * 0.32;
+    }
+  }
+  for (const fire of state.elementFields.filter((field) => field.element === "fire")) {
+    for (const ice of state.elementFields.filter((field) => field.element === "ice")) {
+      if (removed.has(fire.id) || removed.has(ice.id) || !overlaps(fire, ice)) continue;
+      removed.add(fire.id);
+      removed.add(ice.id);
+      state.events.push({ type: "elementReaction", reaction: "melt", x: ice.x, y: ice.y });
+    }
+  }
+  for (const water of waterFields) {
+    for (const ice of state.elementFields.filter((field) => field.element === "ice")) {
+      if (removed.has(water.id) || removed.has(ice.id) || !overlaps(water, ice)) continue;
+      removed.add(water.id);
+      ice.duration = Math.min(
+        MATCH_TUNING.elements.iceDuration * 1.35,
+        ice.duration + water.duration * 0.5,
+      );
+      state.events.push({ type: "elementReaction", reaction: "freeze", x: water.x, y: water.y });
+    }
+  }
+  state.elementFields = state.elementFields.filter((field) => {
+    if (removed.has(field.id)) return false;
+    if (field.duration <= 0) {
+      state.events.push({ type: "elementClear", fieldId: field.id, element: field.element });
+      return false;
+    }
+    if (
+      field.element === "fire" &&
+      waterFields.some(
+        (water) =>
+          Math.hypot(water.x - field.x, water.y - field.y) <=
+          water.radius + field.radius,
+      )
+    ) {
+      state.events.push({
+        type: "elementReaction",
+        reaction: "douse",
+        x: field.x,
+        y: field.y,
+      });
+      return false;
+    }
+    return true;
+  });
+  for (const field of state.elementFields) {
+    if (field.element === "earth") continue;
+    for (const entity of state.entities) {
+      if (
+        !entity.alive ||
+        Math.hypot(entity.x - field.x, entity.y - field.y) >
+          field.radius + getCharacter(entity.characterId).radius
+      ) {
+        continue;
+      }
+      if (field.element === "ice") entity.surface = "ice";
+      if (field.element === "wind") {
+        entity.elementForceX += field.directionX * MATCH_TUNING.elements.windForce;
+        entity.elementForceY += field.directionY * MATCH_TUNING.elements.windForce;
+      }
+      if (field.element === "water" && entity.team === field.team) {
+        entity.flow = Math.min(
+          MATCH_TUNING.flow.maximum,
+          entity.flow + MATCH_TUNING.elements.waterFlowPerSecond * delta,
+        );
+        entity.interruptRemaining = 0;
+      }
+      if (
+        field.element === "fire" &&
+        hostileTeams(field.team, entity.team) &&
+        field.pulseRemaining === 0
+      ) {
+        const owner = state.entities.find((candidate) => candidate.id === field.ownerId);
+        damageEntity(state, entity, MATCH_TUNING.elements.fireDamage, owner, {
+          source: "fire",
+        });
+      }
+    }
+    if (field.element === "fire" && field.pulseRemaining === 0) {
+      field.pulseRemaining = MATCH_TUNING.elements.firePulse;
+    }
+  }
+}
+
 function useSpecial(state, entity, agent, map) {
   const special = agent.special;
   entity.specialCooldown = special.cooldown;
@@ -608,8 +762,49 @@ function useSpecial(state, entity, agent, map) {
         });
       }
     }
+    if (agent.affinity.id === "wind") {
+      createElementField(state, entity, "wind", {
+        x: entity.x + entity.facingX * special.range * 0.72,
+        y: entity.y + entity.facingY * special.range * 0.72,
+        radius: MATCH_TUNING.elements.windRadius,
+        duration: MATCH_TUNING.elements.windDuration,
+        directionX: entity.facingX,
+        directionY: entity.facingY,
+      });
+    } else if (agent.affinity.id === "earth") {
+      const length = MATCH_TUNING.elements.earthLength;
+      const thickness = MATCH_TUNING.elements.earthThickness;
+      const centerX = entity.x + entity.facingX * (special.range + thickness) * 0.58;
+      const centerY = entity.y + entity.facingY * (special.range + thickness) * 0.58;
+      const wall = {
+        x: centerX - Math.abs(entity.facingY) * length / 2 - Math.abs(entity.facingX) * thickness / 2,
+        y: centerY - Math.abs(entity.facingX) * length / 2 - Math.abs(entity.facingY) * thickness / 2,
+        width: Math.abs(entity.facingY) * length + Math.abs(entity.facingX) * thickness,
+        height: Math.abs(entity.facingX) * length + Math.abs(entity.facingY) * thickness,
+        duration: MATCH_TUNING.elements.earthDuration,
+      };
+      const blocked = map.obstacles.some((obstacle) =>
+        rectanglesOverlap(wall, obstacle, 42),
+      ) || state.entities.some((candidate) =>
+        candidate.alive &&
+        circleRectangleOverlap(
+          candidate,
+          getCharacter(candidate.characterId).radius + 4,
+          wall,
+        ),
+      );
+      if (!blocked) createElementField(state, entity, "earth", wall);
+    }
   } else if (special.kind === "blast") {
     damageRadius(state, entity, special.range, special.damage, special.knockback);
+    if (agent.affinity.id === "ice") {
+      createElementField(state, entity, "ice", {
+        x: entity.x,
+        y: entity.y,
+        radius: MATCH_TUNING.elements.iceRadius,
+        duration: MATCH_TUNING.elements.iceDuration,
+      });
+    }
   } else if (special.kind === "rail") {
     const end = clippedRayEnd(entity, special.range, map);
     for (const target of opponentsOf(state, entity)) {
@@ -629,6 +824,43 @@ function useSpecial(state, entity, agent, map) {
           knockback: special.knockback,
           direction: { x: entity.facingX, y: entity.facingY },
         });
+        if (agent.affinity.id === "lightning") {
+          target.interruptRemaining = Math.max(
+            target.interruptRemaining,
+            MATCH_TUNING.elements.lightningInterrupt,
+          );
+          state.events.push({
+            type: "elementInterrupt",
+            element: "lightning",
+            entityId: target.id,
+            x: target.x,
+            y: target.y,
+          });
+          const conductingWater = state.elementFields.find(
+            (field) =>
+              field.element === "water" &&
+              Math.hypot(target.x - field.x, target.y - field.y) <= field.radius,
+          );
+          if (conductingWater) {
+            for (const conducted of opponentsOf(state, entity)) {
+              if (
+                Math.hypot(conducted.x - conductingWater.x, conducted.y - conductingWater.y) <=
+                conductingWater.radius + getCharacter(conducted.characterId).radius
+              ) {
+                conducted.interruptRemaining = Math.max(
+                  conducted.interruptRemaining,
+                  MATCH_TUNING.elements.lightningInterrupt,
+                );
+              }
+            }
+            state.events.push({
+              type: "elementReaction",
+              reaction: "conduct",
+              x: conductingWater.x,
+              y: conductingWater.y,
+            });
+          }
+        }
       }
     }
     state.events.push({
@@ -678,9 +910,26 @@ function useSpecial(state, entity, agent, map) {
       x: entity.x,
       y: entity.y,
     });
+    if (agent.affinity.id === "water") {
+      createElementField(state, entity, "water", {
+        x: entity.x,
+        y: entity.y,
+        radius: MATCH_TUNING.elements.waterRadius,
+        duration: MATCH_TUNING.elements.waterDuration,
+      });
+    }
   } else if (special.kind === "volley") {
     firePattern(state, entity, special, "special");
   }
+}
+
+function rectanglesOverlap(left, right, padding = 0) {
+  return (
+    left.x < right.x + right.width + padding &&
+    left.x + left.width + padding > right.x &&
+    left.y < right.y + right.height + padding &&
+    left.y + left.height + padding > right.y
+  );
 }
 
 function firePattern(state, entity, weapon, source) {
@@ -746,6 +995,31 @@ function updateMines(state, delta) {
         });
       }
       state.events.push({ type: "mineBlast", x: mine.x, y: mine.y });
+      const earthBefore = state.elementFields.length;
+      state.elementFields = state.elementFields.filter(
+        (field) =>
+          field.element !== "earth" ||
+          Math.hypot(
+            mine.x - (field.x + field.width / 2),
+            mine.y - (field.y + field.height / 2),
+          ) > mine.blastRadius + Math.max(field.width, field.height) / 2,
+      );
+      if (state.elementFields.length < earthBefore) {
+        state.events.push({
+          type: "elementReaction",
+          reaction: "shatter",
+          x: mine.x,
+          y: mine.y,
+        });
+      }
+      if (owner && getCharacter(owner.characterId).affinity.id === "fire") {
+        createElementField(state, owner, "fire", {
+          x: mine.x,
+          y: mine.y,
+          radius: MATCH_TUNING.elements.fireRadius,
+          duration: MATCH_TUNING.elements.fireDuration,
+        });
+      }
       continue;
     }
     survivors.push(mine);
@@ -1131,6 +1405,10 @@ function respawnEntity(entity, map) {
   entity.wallContactRemaining = 0;
   entity.wallX = 0;
   entity.wallY = 0;
+  entity.surface = "normal";
+  entity.elementForceX = 0;
+  entity.elementForceY = 0;
+  entity.interruptRemaining = 0;
   entity.primaryCooldown = 0;
   entity.specialCooldown = 0;
   entity.defenseCooldown = 0;
@@ -1144,6 +1422,7 @@ function resetRound(state, map, mode) {
   state.roundRemaining = 0;
   state.projectiles = [];
   state.mines = [];
+  state.elementFields = [];
   if (mode.id === "survival") {
     state.survival.wave += 1;
     const enemyCount = state.entities.filter(
@@ -1382,6 +1661,19 @@ function resolveUnitCollisions(state, map) {
   }
 }
 
+function resolveMapCollisions(state, map) {
+  for (const entity of state.entities) {
+    if (!entity.alive) continue;
+    moveCircleSwept(
+      entity,
+      0,
+      0,
+      getCharacter(entity.characterId).radius,
+      map,
+    );
+  }
+}
+
 function resolveDashContact(state, attacker, target, nx, ny) {
   if (
     attacker.mobilityRemaining <= 0 ||
@@ -1489,6 +1781,9 @@ export function matchInvariantErrors(state) {
       "hopCooldown",
       "hopRemaining",
       "wallContactRemaining",
+      "elementForceX",
+      "elementForceY",
+      "interruptRemaining",
     ]) {
       if (!Number.isFinite(entity[key])) errors.push(`${entity.id}.${key} is not finite`);
     }
@@ -1500,10 +1795,15 @@ export function matchInvariantErrors(state) {
     ) {
       errors.push(`${entity.id} left arena bounds`);
     }
-    for (const obstacle of map.obstacles) {
+    for (const obstacle of withElementGeometry(map, state.elementFields).obstacles) {
       if (circleRectangleOverlap(entity, radius - 0.01, obstacle)) {
         errors.push(`${entity.id} overlaps cover`);
       }
+    }
+  }
+  for (const field of state.elementFields) {
+    for (const key of ["x", "y", "duration"]) {
+      if (!Number.isFinite(field[key])) errors.push(`${field.id}.${key} is not finite`);
     }
   }
   return errors;

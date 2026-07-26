@@ -668,7 +668,8 @@ function updateInfoOverlay(mode, map) {
   element("info-agent-glyph").textContent = agent.glyph;
   element("info-agent-glyph").style.color = agent.accent;
   element("info-agent-name").textContent = agent.name;
-  element("info-agent-role").textContent = agent.role;
+  element("info-agent-role").textContent =
+    `${agent.role} · ${agent.affinity.id.toUpperCase()} ${agent.affinity.kind === "edge" ? "EDGE" : "ELEMENT"}`;
   element("info-kit").innerHTML = [
     ["MB1", agent.primary],
     ["E", agent.special],
@@ -889,6 +890,24 @@ function processEvents(events, tick) {
       toast("CORE MOVEMENT + COMBAT ONLINE");
     } else if (event.type === "wallKick") {
       toast("WALL KICK · ANGLE STOLEN");
+    } else if (event.type === "elementField") {
+      const cue = {
+        wind: [520, "sine"],
+        earth: [105, "square"],
+        ice: [760, "triangle"],
+        fire: [165, "sawtooth"],
+        water: [410, "sine"],
+      }[event.element] ?? [300, "sine"];
+      tone(cue[0], 0.09, cue[1], 0.055);
+      toast(`${event.element.toUpperCase()} · TERRAIN CHANGED`, "comic");
+    } else if (event.type === "elementInterrupt") {
+      tone(920, 0.055, "square", 0.05);
+      burst(event.x, event.y, "#45d9ff", 12);
+      toast("ZAKK! · INTERRUPTED", "comic");
+    } else if (event.type === "elementReaction") {
+      tone(280, 0.12, "sine", 0.05);
+      burst(event.x, event.y, "#d9f7ff", 14);
+      toast(`${event.reaction.toUpperCase()}! · FIELD CLEARED`, "comic");
     } else if (event.type === "stateRepair") {
       toast("Simulation recovered an invalid entity state.", "error");
     }
@@ -990,6 +1009,7 @@ function render(time) {
     context.scale(viewport.scale, viewport.scale);
     drawArena(map, time);
     drawObjective(map, time);
+    drawElementFields(time);
     drawHazards(time);
     drawObstacles(map);
     drawMines(time);
@@ -1134,6 +1154,46 @@ function drawHazards(time) {
   }
 }
 
+function drawElementFields(time) {
+  const colors = {
+    wind: "#b8ffe8",
+    earth: "#d6a769",
+    ice: "#9fe7ff",
+    fire: "#ff795c",
+    water: "#5cbcff",
+  };
+  const marks = { wind: ">>>", earth: "###", ice: "* *", fire: "^^^", water: "~~~" };
+  for (const field of matchState.elementFields ?? []) {
+    context.save();
+    try {
+      const color = colors[field.element] ?? "#fff";
+      context.fillStyle = `${color}24`;
+      context.strokeStyle = color;
+      context.lineWidth = settings.highContrast ? 4 : 2;
+      context.setLineDash(field.element === "ice" ? [8, 7] : []);
+      context.lineDashOffset = settings.reducedMotion ? 0 : -time * 28;
+      context.beginPath();
+      if (field.element === "earth") {
+        context.rect(field.x, field.y, field.width, field.height);
+      } else {
+        context.arc(field.x, field.y, field.radius, 0, Math.PI * 2);
+      }
+      context.fill();
+      context.stroke();
+      context.setLineDash([]);
+      context.fillStyle = color;
+      context.font = "700 13px ui-monospace, monospace";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      const labelX = field.element === "earth" ? field.x + field.width / 2 : field.x;
+      const labelY = field.element === "earth" ? field.y + field.height / 2 : field.y;
+      context.fillText(marks[field.element] ?? field.element, labelX, labelY);
+    } finally {
+      context.restore();
+    }
+  }
+}
+
 function drawObstacles(map) {
   for (const obstacle of map.obstacles) {
     context.fillStyle = "#182534";
@@ -1262,6 +1322,19 @@ function drawEntities(time) {
           : entity.team === "beta"
             ? "#ff5d73"
             : "#ffca4f";
+      const speed = Math.hypot(entity.vx, entity.vy);
+      if (speed > 70) {
+        const direction = normalize(entity.vx, entity.vy);
+        const length = Math.min(46, 8 + speed * 0.045);
+        context.strokeStyle = teamColor;
+        context.globalAlpha = Math.min(0.42, 0.12 + speed / 2400);
+        context.lineWidth = Math.min(5, 1.5 + speed / 420);
+        context.beginPath();
+        context.moveTo(-direction.x * agent.radius * 0.5, -direction.y * agent.radius * 0.5);
+        context.lineTo(-direction.x * length, -direction.y * length);
+        context.stroke();
+        context.globalAlpha = 1;
+      }
       if (entity.hopRemaining > 0) {
         const progress = 1 - entity.hopRemaining / MATCH_TUNING.flow.hopDuration;
         const lift = Math.sin(progress * Math.PI) * 11;
@@ -1562,6 +1635,7 @@ function agentCard(agent) {
       <div class="agent-identity"><i class="agent-glyph" aria-hidden="true">${agent.glyph}</i><b>${agent.name}</b><span>${agent.role} · ${"◆".repeat(agent.difficulty)}</span></div>
       <div class="agent-data">
         <p>${agent.style}</p>
+        <p><strong>${agent.affinity.id.toUpperCase()} ${agent.affinity.kind === "edge" ? "EDGE" : "ELEMENT"}</strong> · ${agent.affinity.edge}</p>
         <div class="kit-list">
           ${[
             agent.primary,

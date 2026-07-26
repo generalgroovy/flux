@@ -79,9 +79,9 @@
         </div>
         <div id="info-kit" class="info-kit"></div>
         <dl class="info-controls">
-          <div><dt>Move / aim</dt><dd><kbd>WASD</kbd> / mouse</dd></div>
-          <div><dt>Flow movement</dt><dd><kbd>Alt</kbd> sprint / <kbd>C</kbd> hop</dd></div>
-          <div><dt>Actions</dt><dd><kbd>MB1</kbd><kbd>E</kbd><kbd>Q</kbd><kbd>Shift</kbd><kbd>F</kbd></dd></div>
+          <div><dt>Move / aim</dt><dd><kbd data-binding-summary="move">WASD</kbd> / mouse</dd></div>
+          <div><dt>Flow movement</dt><dd><kbd data-binding-label="sprint">Alt</kbd> sprint / <kbd data-binding-label="hop">C</kbd> hop</dd></div>
+          <div><dt>Actions</dt><dd><kbd>MB1</kbd><kbd data-binding-label="tactical">E</kbd><kbd data-binding-label="defense">Q</kbd><kbd data-binding-label="mobility">Shift</kbd><kbd data-binding-label="ultimate">F</kbd></dd></div>
           <div><dt>Reset / pause</dt><dd><kbd>R</kbd> / <kbd>Esc</kbd></dd></div>
         </dl>
         <p class="info-hint">Press <kbd>F1</kbd> at any time to close this panel. Combat continues.</p>
@@ -92,16 +92,16 @@
         <strong id="coach-text">Move, aim, and fire. The arena never waits.</strong>
         <button id="skip-coach" type="button">Skip intro</button>
         <div id="coach-progress" class="coach-progress" aria-label="Introduction progress">
-          <span data-coach-step="0"><i>01</i><b>Sprint + hop / slide</b></span>
-          <span data-coach-step="1"><i>02</i><b>Move + fire</b></span>
-          <span data-coach-step="2"><i>03</i><b>Evade + answer</b></span>
-          <span data-coach-step="3"><i>04</i><b>Commit tactical</b></span>
+          <span data-coach-step="0"><i>01</i><b data-binding-summary="coachFlow">ALT + C / slide</b></span>
+          <span data-coach-step="1"><i>02</i><b data-binding-summary="coachFire">Move + SPACE</b></span>
+          <span data-coach-step="2"><i>03</i><b data-binding-summary="coachDefense">SHIFT + Q</b></span>
+          <span data-coach-step="3"><i>04</i><b data-binding-summary="coachTactical">Commit E</b></span>
         </div>
       </section>
 
       <section id="ability-bar" class="ability-bar" aria-label="Abilities">
         <div class="ability flow-ability" data-ability="flow">
-          <kbd>ALT/C</kbd>
+          <kbd data-binding-summary="flow">ALT/C</kbd>
           <span><b>FLOW</b><small id="flow-detail">Sprint / hop</small></span>
           <i id="flow-charge"></i>
         </div>
@@ -111,27 +111,27 @@
           <i id="flux-charge"></i>
         </div>
         <div class="ability" data-ability="primary">
-          <kbd>MB1</kbd>
+          <kbd data-binding-summary="primary">MB1/SPACE</kbd>
           <span><b id="primary-name">NEEDLE</b><small id="primary-detail">Precision fire</small></span>
           <i id="primary-charge"></i>
         </div>
         <div class="ability" data-ability="special">
-          <kbd>E</kbd>
+          <kbd data-binding-label="tactical">E</kbd>
           <span><b id="special-name">SHEAR</b><small id="special-detail">Close strike</small></span>
           <i id="special-charge"></i>
         </div>
         <div class="ability" data-ability="defense">
-          <kbd>Q</kbd>
+          <kbd data-binding-label="defense">Q</kbd>
           <span><b id="defense-name">SLIP</b><small id="defense-detail">Return fire</small></span>
           <i id="defense-charge"></i>
         </div>
         <div class="ability" data-ability="mobility">
-          <kbd>⇧</kbd>
+          <kbd data-binding-label="mobility">SHIFT</kbd>
           <span><b id="mobility-name">VECTOR</b><small id="mobility-detail">Directional dash</small></span>
           <i id="mobility-charge"></i>
         </div>
         <div id="ultimate-ability" class="ability ultimate-ability" data-ability="ultimate" hidden>
-          <kbd>F</kbd>
+          <kbd data-binding-label="ultimate">F</kbd>
           <span><b id="ultimate-name">ULTIMATE</b><small id="ultimate-detail">Earn through active combat</small></span>
           <i id="ultimate-charge"></i>
         </div>
@@ -203,7 +203,7 @@
             <article class="menu-panel active" data-menu-panel="home">
               <div class="hero">
                 <div>
-                  <span class="eyebrow">OLD-WORLD FLUX ARENA / BUILD 0.27.0</span>
+                  <span class="eyebrow">OLD-WORLD FLUX ARENA / BUILD 0.28.0</span>
                   <h1>Shape the field.<br /><em>Execute the read.</em></h1>
                   <p>
                     Ten race champions. Five proven contests. One magical language:
@@ -393,14 +393,14 @@
                 <section>
                   <h3>Player 1</h3>
                   <dl class="control-list">
-                    <div><dt>Move</dt><dd><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dd></div>
-                    <div><dt>Sprint / hop / slide</dt><dd><kbd>Alt</kbd> / <kbd>C</kbd> / both</dd></div>
+                    <div><dt>Move</dt><dd><kbd data-binding-label="moveUp">W</kbd><kbd data-binding-label="moveLeft">A</kbd><kbd data-binding-label="moveDown">S</kbd><kbd data-binding-label="moveRight">D</kbd></dd></div>
+                    <div><dt>Sprint / hop / slide</dt><dd><kbd data-binding-label="sprint">Alt</kbd> / <kbd data-binding-label="hop">C</kbd> / both</dd></div>
                     <div><dt>Aim</dt><dd>Mouse</dd></div>
-                    <div><dt>Primary</dt><dd><kbd>MB1</kbd> / <kbd>Space</kbd></dd></div>
-                    <div><dt>Tactical</dt><dd><kbd>MB2</kbd> / <kbd>E</kbd></dd></div>
-                    <div><dt>Ultimate</dt><dd><kbd>F</kbd></dd></div>
-                    <div><dt>Defense</dt><dd><kbd>Q</kbd></dd></div>
-                    <div><dt>Mobility</dt><dd><kbd>Shift</kbd></dd></div>
+                    <div><dt>Primary</dt><dd><kbd>MB1</kbd> / <kbd data-binding-label="fire">Space</kbd></dd></div>
+                    <div><dt>Tactical</dt><dd><kbd>MB2</kbd> / <kbd data-binding-label="tactical">E</kbd></dd></div>
+                    <div><dt>Ultimate</dt><dd><kbd data-binding-label="ultimate">F</kbd></dd></div>
+                    <div><dt>Defense</dt><dd><kbd data-binding-label="defense">Q</kbd></dd></div>
+                    <div><dt>Mobility</dt><dd><kbd data-binding-label="mobility">Shift</kbd></dd></div>
                   </dl>
                 </section>
                 <section>
@@ -459,7 +459,7 @@
             <article class="menu-panel" data-menu-panel="settings" hidden>
               <header class="panel-header">
                 <div><span class="eyebrow">CONFIGURATION</span><h2>Clarity without compromise</h2></div>
-                <p>Safe presentation settings apply live and persist locally.</p>
+                <p>Presentation and Player 1 keyboard bindings apply live and persist locally.</p>
               </header>
               <form id="settings-form" class="settings-grid">
                 <label class="range-setting">
@@ -489,7 +489,25 @@
                   <span><b>High contrast</b><small>Stronger team and hazard edges.</small></span>
                   <input name="highContrast" type="checkbox" />
                 </label>
-                <button class="button" id="reset-settings" type="button">Reset presentation defaults</button>
+                <fieldset class="binding-settings">
+                  <legend>Player 1 keyboard</legend>
+                  <p>Choose an action, then press a key. Existing assignments swap; match and Player 2 keys stay protected.</p>
+                  <div class="binding-grid">
+                    <label><span>Move up</span><button type="button" data-bind-action="moveUp">W</button></label>
+                    <label><span>Move left</span><button type="button" data-bind-action="moveLeft">A</button></label>
+                    <label><span>Move down</span><button type="button" data-bind-action="moveDown">S</button></label>
+                    <label><span>Move right</span><button type="button" data-bind-action="moveRight">D</button></label>
+                    <label><span>Primary key</span><button type="button" data-bind-action="fire">SPACE</button></label>
+                    <label><span>Tactical</span><button type="button" data-bind-action="tactical">E</button></label>
+                    <label><span>Defense</span><button type="button" data-bind-action="defense">Q</button></label>
+                    <label><span>Mobility</span><button type="button" data-bind-action="mobility">SHIFT</button></label>
+                    <label><span>Sprint</span><button type="button" data-bind-action="sprint">ALT</button></label>
+                    <label><span>Hop</span><button type="button" data-bind-action="hop">C</button></label>
+                    <label><span>Ultimate</span><button type="button" data-bind-action="ultimate">F</button></label>
+                  </div>
+                  <output id="binding-status" aria-live="polite">Select an action to rebind.</output>
+                </fieldset>
+                <button class="button" id="reset-settings" type="button">Reset all defaults</button>
               </form>
             </article>
           </div>

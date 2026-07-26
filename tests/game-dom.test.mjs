@@ -9,6 +9,17 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   const { window } = parseHTML(html);
   const { document } = window;
   const storage = new Map();
+  storage.set("diff.presentation.v2", JSON.stringify({
+    screenShake: 55,
+    interfaceScale: 100,
+    sound: 45,
+    coaching: true,
+    bindings: {
+      moveUp: "w", moveLeft: "w", moveDown: "w", moveRight: "w",
+      fire: "w", tactical: "w", defense: "w", mobility: "w",
+      sprint: "w", hop: "w", ultimate: "w",
+    },
+  }));
   const drawCalls = [];
   const mockContext = new Proxy(
     {},
@@ -132,6 +143,47 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.equal(document.getElementById("host-lobby").disabled, false);
   assert.equal(document.getElementById("join-lobby").disabled, false);
 
+  document.querySelector('[data-panel="settings"]').click();
+  const tacticalBinding = document.querySelector('[data-bind-action="tactical"]');
+  const defenseBinding = document.querySelector('[data-bind-action="defense"]');
+  assert.equal(tacticalBinding.textContent, "E");
+  assert.equal(defenseBinding.textContent, "Q");
+  tacticalBinding.click();
+  assert.equal(tacticalBinding.classList.contains("capturing"), true);
+  const bindQ = new window.Event("keydown");
+  Object.defineProperty(bindQ, "key", { value: "q" });
+  window.dispatchEvent(bindQ);
+  assert.equal(tacticalBinding.textContent, "Q");
+  assert.equal(defenseBinding.textContent, "E");
+  assert.match(document.getElementById("binding-status").textContent, /Defense moved to E/);
+
+  const hopBinding = document.querySelector('[data-bind-action="hop"]');
+  hopBinding.click();
+  const reserved = new window.Event("keydown");
+  Object.defineProperty(reserved, "key", { value: "ArrowLeft" });
+  window.dispatchEvent(reserved);
+  assert.equal(hopBinding.classList.contains("capturing"), true);
+  assert.match(document.getElementById("binding-status").textContent, /reserved/);
+  const cancelBinding = new window.Event("keydown");
+  Object.defineProperty(cancelBinding, "key", { value: "Escape" });
+  window.dispatchEvent(cancelBinding);
+  assert.equal(hopBinding.textContent, "C");
+
+  const sprintBinding = document.querySelector('[data-bind-action="sprint"]');
+  sprintBinding.click();
+  const bindX = new window.Event("keydown");
+  Object.defineProperty(bindX, "key", { value: "x" });
+  window.dispatchEvent(bindX);
+  assert.equal(sprintBinding.textContent, "X");
+  assert.equal(
+    document.querySelector('[data-binding-summary="flow"]').textContent,
+    "X/C",
+  );
+  assert.equal(
+    JSON.parse(storage.get("diff.presentation.v2")).bindings.tactical,
+    "q",
+  );
+
   document.querySelector('[data-panel="agents"]').click();
   assert.equal(app.dataset.panel, "agents");
   assert.equal(
@@ -148,8 +200,30 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     document.querySelector('[data-coach-step="0"]').classList.contains("active"),
     true,
   );
+  assert.match(document.getElementById("coach-text").textContent, /Hold X/);
+  assert.equal(
+    document.querySelector('[data-ability="special"] > kbd').textContent,
+    "Q",
+  );
+  assert.equal(
+    document.querySelector('[data-ability="defense"] > kbd').textContent,
+    "E",
+  );
+  const moveDown = new window.Event("keydown");
+  Object.defineProperty(moveDown, "key", { value: "d" });
+  window.dispatchEvent(moveDown);
+  const sprintDown = new window.Event("keydown");
+  Object.defineProperty(sprintDown, "key", { value: "x" });
+  window.dispatchEvent(sprintDown);
   assert.equal(typeof queuedFrame, "function");
   queuedFrame(performance.now() + 16);
+  assert.equal(window.DIFF_DEBUG.getState().tutorial.sprinted, true);
+  const moveUp = new window.Event("keyup");
+  Object.defineProperty(moveUp, "key", { value: "d" });
+  window.dispatchEvent(moveUp);
+  const sprintUp = new window.Event("keyup");
+  Object.defineProperty(sprintUp, "key", { value: "x" });
+  window.dispatchEvent(sprintUp);
   assert.ok(drawCalls.some((call) => call[0] === "fillRect"));
   assert.deepEqual(window.DIFF_DEBUG.getInvariantErrors(), []);
 
@@ -187,6 +261,15 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   document.querySelector('#pause-overlay [data-action="menu"]').click();
   assert.equal(app.dataset.view, "menu");
   assert.equal(app.dataset.panel, "home");
+  document.querySelector('[data-panel="settings"]').click();
+  document.getElementById("reset-settings").click();
+  assert.equal(tacticalBinding.textContent, "E");
+  assert.equal(defenseBinding.textContent, "Q");
+  assert.equal(sprintBinding.textContent, "ALT");
+  assert.equal(
+    JSON.parse(storage.get("diff.presentation.v2")).bindings.sprint,
+    "alt",
+  );
 
   for (const modeId of ["duel", "control", "convergence", "survival"]) {
     document.querySelector(`[data-launch-mode="${modeId}"]`).click();

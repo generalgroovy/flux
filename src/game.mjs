@@ -28,6 +28,67 @@ import {
 const FIXED_DELTA = 1 / MATCH_TUNING.tickRate;
 const SETTINGS_KEY = "diff.presentation.v2";
 const RECONNECT_KEY = "diff.remote.session.v1";
+const BINDING_ACTIONS = Object.freeze([
+  "moveUp",
+  "moveLeft",
+  "moveDown",
+  "moveRight",
+  "fire",
+  "tactical",
+  "defense",
+  "mobility",
+  "sprint",
+  "hop",
+  "ultimate",
+]);
+const DEFAULT_BINDINGS = Object.freeze({
+  moveUp: "w",
+  moveLeft: "a",
+  moveDown: "s",
+  moveRight: "d",
+  fire: " ",
+  tactical: "e",
+  defense: "q",
+  mobility: "shift",
+  sprint: "alt",
+  hop: "c",
+  ultimate: "f",
+});
+const BINDING_NAMES = Object.freeze({
+  moveUp: "Move up",
+  moveLeft: "Move left",
+  moveDown: "Move down",
+  moveRight: "Move right",
+  fire: "Primary",
+  tactical: "Tactical",
+  defense: "Defense",
+  mobility: "Mobility",
+  sprint: "Sprint",
+  hop: "Hop",
+  ultimate: "Ultimate",
+});
+const PROTECTED_BINDING_KEYS = new Set([
+  "escape",
+  "f1",
+  "r",
+  "t",
+  "tab",
+  "enter",
+  "arrowleft",
+  "arrowright",
+  "arrowup",
+  "arrowdown",
+  "i",
+  "j",
+  "k",
+  "l",
+  "u",
+  "o",
+  "p",
+  "h",
+  ",",
+  ".",
+]);
 const DEFAULT_SETTINGS = Object.freeze({
   screenShake: 55,
   interfaceScale: 100,
@@ -35,6 +96,7 @@ const DEFAULT_SETTINGS = Object.freeze({
   coaching: true,
   reducedMotion: false,
   highContrast: false,
+  bindings: DEFAULT_BINDINGS,
 });
 
 const app = element("app");
@@ -60,6 +122,7 @@ const rings = [];
 const trails = new Map();
 
 let settings = loadSettings();
+let bindingCapture = null;
 let menuPanel = "home";
 let atlasScope = "realm";
 let matchState = createMatch({
@@ -117,7 +180,7 @@ window.addEventListener("blur", () => {
   mouseButtons.clear();
 });
 window.addEventListener("keydown", handleKeyDown);
-window.addEventListener("keyup", (event) => keys.delete(event.key.toLowerCase()));
+window.addEventListener("keyup", (event) => keys.delete(normalizeInputKey(event.key)));
 canvas.addEventListener("contextmenu", (event) => event.preventDefault());
 canvas.addEventListener("pointermove", (event) => {
   pointer.x = event.clientX;
@@ -150,6 +213,7 @@ element("bot-count").addEventListener("input", () => {
   element("bot-count-output").value = element("bot-count").value;
 });
 settingsForm.addEventListener("input", updateSettings);
+settingsForm.addEventListener("click", handleBindingClick);
 element("reset-settings").addEventListener("click", resetSettings);
 element("skip-coach").addEventListener("click", () => {
   skipTutorial(matchState);
@@ -214,7 +278,11 @@ function runFrame(now) {
 }
 
 function handleKeyDown(event) {
-  const key = event.key.toLowerCase();
+  const key = normalizeInputKey(event.key);
+  if (bindingCapture) {
+    captureBinding(event, key);
+    return;
+  }
   if (key === "f1") {
     event.preventDefault();
     if (app.dataset.view === "game") toggleInfo();
@@ -223,7 +291,7 @@ function handleKeyDown(event) {
   }
   if (
     app.dataset.view === "game" &&
-    [
+    ([
       " ",
       "arrowup",
       "arrowdown",
@@ -231,7 +299,7 @@ function handleKeyDown(event) {
       "arrowright",
       "tab",
       "alt",
-    ].includes(key)
+    ].includes(key) || Object.values(settings.bindings).includes(key))
   ) {
     event.preventDefault();
   }
@@ -276,7 +344,13 @@ function readCommands() {
 }
 
 function readPlayerOne(entity) {
-  const movement = directionFromKeys("a", "d", "w", "s");
+  const binding = settings.bindings;
+  const movement = directionFromKeys(
+    binding.moveLeft,
+    binding.moveRight,
+    binding.moveUp,
+    binding.moveDown,
+  );
   let aim = { x: entity.facingX, y: entity.facingY };
   if (pointer.active) {
     const world = screenToWorld(pointer.x, pointer.y);
@@ -286,13 +360,13 @@ function readPlayerOne(entity) {
     ...movement,
     aimX: aim.x,
     aimY: aim.y,
-    fire: mouseButtons.has(0) || keys.has(" "),
-    special: mouseButtons.has(2) || keys.has("e"),
-    defend: keys.has("q"),
-    mobility: keys.has("shift"),
-    sprint: keys.has("alt"),
-    hop: keys.has("c"),
-    ultimate: keys.has("f"),
+    fire: mouseButtons.has(0) || keys.has(binding.fire),
+    special: mouseButtons.has(2) || keys.has(binding.tactical),
+    defend: keys.has(binding.defense),
+    mobility: keys.has(binding.mobility),
+    sprint: keys.has(binding.sprint),
+    hop: keys.has(binding.hop),
+    ultimate: keys.has(binding.ultimate),
   });
 }
 
@@ -428,6 +502,58 @@ function handleMenuClick(event) {
   }
 }
 
+function handleBindingClick(event) {
+  const button = event.target.closest("[data-bind-action]");
+  if (!button) return;
+  event.preventDefault();
+  const action = button.dataset.bindAction;
+  if (!BINDING_ACTIONS.includes(action)) return;
+  bindingCapture = action;
+  keys.clear();
+  syncBindingButtons();
+  const status = element("binding-status");
+  status.textContent = `${BINDING_NAMES[action]}: press a key · Esc cancels`;
+  status.dataset.tone = "waiting";
+}
+
+function captureBinding(event, key) {
+  event.preventDefault();
+  event.stopPropagation?.();
+  if (key === "escape") {
+    bindingCapture = null;
+    syncBindingButtons();
+    const status = element("binding-status");
+    status.textContent = "Binding unchanged.";
+    status.dataset.tone = "";
+    return;
+  }
+  if (!isBindableKey(key) || PROTECTED_BINDING_KEYS.has(key)) {
+    const status = element("binding-status");
+    status.textContent = "That key is reserved for match control or Player 2. Try another.";
+    status.dataset.tone = "error";
+    return;
+  }
+
+  const action = bindingCapture;
+  const oldKey = settings.bindings[action];
+  const occupiedAction = BINDING_ACTIONS.find(
+    (candidate) => candidate !== action && settings.bindings[candidate] === key,
+  );
+  const bindings = { ...settings.bindings, [action]: key };
+  if (occupiedAction) bindings[occupiedAction] = oldKey;
+  settings = normalizeSettings({ ...settings, bindings });
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  bindingCapture = null;
+  keys.clear();
+  syncBindingLabels();
+  syncBindingButtons();
+  const status = element("binding-status");
+  status.textContent = occupiedAction
+    ? `${BINDING_NAMES[action]} is ${keyLabel(key)}; ${BINDING_NAMES[occupiedAction]} moved to ${keyLabel(oldKey)}.`
+    : `${BINDING_NAMES[action]} is now ${keyLabel(key)}.`;
+  status.dataset.tone = "success";
+}
+
 function handleOverlayClick(event) {
   const action = event.target.closest("[data-action]")?.dataset.action;
   if (action === "resume") resumeGame();
@@ -444,6 +570,12 @@ function handleOverlayClick(event) {
 function showPanel(panel) {
   const candidate = document.querySelector(`[data-menu-panel="${panel}"]`);
   if (!candidate) return;
+  if (panel !== "settings" && bindingCapture) {
+    bindingCapture = null;
+    syncBindingButtons();
+    element("binding-status").textContent = "Binding unchanged.";
+    element("binding-status").dataset.tone = "";
+  }
   menuPanel = panel;
   app.dataset.panel = panel;
   for (const menuPanelElement of document.querySelectorAll("[data-menu-panel]")) {
@@ -725,11 +857,11 @@ function updateInfoOverlay(mode, map) {
     `${race.name} · ${agent.role} · ${agent.affinity.name} ELEMENT`;
   const kit = [
     ...(agent.passive ? [["PASSIVE", agent.passive]] : []),
-    ["MB1", agent.primary],
-    ["E", agent.tactical],
-    ["Q", agent.defense],
-    ["⇧", agent.mobility],
-    ...(agent.ultimate ? [["F", agent.ultimate]] : []),
+    [`MB1/${keyLabel(settings.bindings.fire)}`, agent.primary],
+    [`MB2/${keyLabel(settings.bindings.tactical)}`, agent.tactical],
+    [keyLabel(settings.bindings.defense), agent.defense],
+    [keyLabel(settings.bindings.mobility), agent.mobility],
+    ...(agent.ultimate ? [[keyLabel(settings.bindings.ultimate), agent.ultimate]] : []),
   ];
   element("info-kit").innerHTML = kit
     .map(
@@ -896,18 +1028,18 @@ function updateCoach(mode) {
     }
     if (matchState.tutorial.step === 0) {
       text.textContent = !matchState.tutorial.sprinted
-        ? "Hold ALT while moving to build sprint speed."
+        ? `Hold ${keyLabel(settings.bindings.sprint)} while moving to build sprint speed.`
         : !matchState.tutorial.slid
-          ? "At speed, hold ALT + C together to commit to a slide."
+          ? `At speed, hold ${keyLabel(settings.bindings.sprint)} + ${keyLabel(settings.bindings.hop)} together to commit to a slide.`
           : !matchState.tutorial.hopped
-            ? "Release ALT, then tap C to hop and carry your angle."
+            ? `Release ${keyLabel(settings.bindings.sprint)}, then tap ${keyLabel(settings.bindings.hop)} to hop and carry your angle.`
             : "FLOW chain learned.";
     } else if (matchState.tutorial.step === 1) {
-      text.textContent = "MOVE while aiming. Land pressure with MB1.";
+      text.textContent = `MOVE while aiming. Land pressure with MB1 or ${keyLabel(settings.bindings.fire)}.`;
     } else if (matchState.tutorial.step === 2) {
-      text.textContent = "SHIFT changes the angle. Q answers incoming pressure.";
+      text.textContent = `${keyLabel(settings.bindings.mobility)} changes the angle. ${keyLabel(settings.bindings.defense)} answers incoming pressure.`;
     } else if (matchState.tutorial.step === 3) {
-      text.textContent = "Commit tactical E up close. Miss, and you surrender tempo.";
+      text.textContent = `Commit tactical ${keyLabel(settings.bindings.tactical)} up close. Miss, and you surrender tempo.`;
     } else {
       text.textContent = "Language learned. Read the spar and finish the fight.";
     }
@@ -2584,6 +2716,7 @@ function updateSettings() {
     coaching: data.get("coaching") === "on",
     reducedMotion: data.get("reducedMotion") === "on",
     highContrast: data.get("highContrast") === "on",
+    bindings: settings.bindings,
   });
   for (const input of settingsForm.querySelectorAll('input[type="range"]')) {
     input.parentElement.querySelector("output").value = input.value;
@@ -2593,11 +2726,14 @@ function updateSettings() {
 }
 
 function resetSettings() {
-  settings = { ...DEFAULT_SETTINGS };
+  bindingCapture = null;
+  settings = { ...DEFAULT_SETTINGS, bindings: { ...DEFAULT_BINDINGS } };
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   syncSettingsForm();
   applySettings();
-  toast("Presentation defaults restored.");
+  element("binding-status").textContent = "Default controls restored.";
+  element("binding-status").dataset.tone = "success";
+  toast("Presentation and controls restored.");
 }
 
 function syncSettingsForm() {
@@ -2619,13 +2755,15 @@ function applySettings() {
   );
   app.classList.toggle("high-contrast", settings.highContrast);
   app.classList.toggle("reduced-motion", settings.reducedMotion);
+  syncBindingLabels();
+  syncBindingButtons();
 }
 
 function loadSettings() {
   try {
     return normalizeSettings(JSON.parse(localStorage.getItem(SETTINGS_KEY)));
   } catch {
-    return { ...DEFAULT_SETTINGS };
+    return { ...DEFAULT_SETTINGS, bindings: { ...DEFAULT_BINDINGS } };
   }
 }
 
@@ -2643,7 +2781,75 @@ function normalizeSettings(candidate) {
         : false,
     highContrast:
       typeof source.highContrast === "boolean" ? source.highContrast : false,
+    bindings: normalizeBindings(source.bindings),
   };
+}
+
+function normalizeBindings(candidate) {
+  if (!candidate || typeof candidate !== "object") {
+    return { ...DEFAULT_BINDINGS };
+  }
+  const bindings = {};
+  for (const action of BINDING_ACTIONS) {
+    const key = normalizeInputKey(candidate[action]);
+    if (!isBindableKey(key) || PROTECTED_BINDING_KEYS.has(key)) {
+      return { ...DEFAULT_BINDINGS };
+    }
+    bindings[action] = key;
+  }
+  if (new Set(Object.values(bindings)).size !== BINDING_ACTIONS.length) {
+    return { ...DEFAULT_BINDINGS };
+  }
+  return bindings;
+}
+
+function normalizeInputKey(value) {
+  return typeof value === "string" ? value.toLowerCase() : "";
+}
+
+function isBindableKey(key) {
+  return key.length === 1 || ["shift", "alt", "control", "backspace"].includes(key);
+}
+
+function keyLabel(key) {
+  const named = {
+    " ": "SPACE",
+    shift: "SHIFT",
+    alt: "ALT",
+    control: "CTRL",
+    backspace: "BACKSPACE",
+  };
+  return named[key] ?? key.toUpperCase();
+}
+
+function syncBindingButtons() {
+  for (const button of settingsForm.querySelectorAll("[data-bind-action]")) {
+    const action = button.dataset.bindAction;
+    const capturing = bindingCapture === action;
+    button.textContent = capturing ? "PRESS KEY" : keyLabel(settings.bindings[action]);
+    button.classList.toggle("capturing", capturing);
+    button.setAttribute("aria-pressed", String(capturing));
+  }
+}
+
+function syncBindingLabels() {
+  for (const label of document.querySelectorAll("[data-binding-label]")) {
+    label.textContent = keyLabel(settings.bindings[label.dataset.bindingLabel]);
+  }
+  const summaries = {
+    move: ["moveUp", "moveLeft", "moveDown", "moveRight"]
+      .map((action) => keyLabel(settings.bindings[action]))
+      .join("/"),
+    flow: `${keyLabel(settings.bindings.sprint)}/${keyLabel(settings.bindings.hop)}`,
+    primary: `MB1/${keyLabel(settings.bindings.fire)}`,
+    coachFlow: `${keyLabel(settings.bindings.sprint)} + ${keyLabel(settings.bindings.hop)} / slide`,
+    coachFire: `Move + ${keyLabel(settings.bindings.fire)}`,
+    coachDefense: `${keyLabel(settings.bindings.mobility)} + ${keyLabel(settings.bindings.defense)}`,
+    coachTactical: `Commit ${keyLabel(settings.bindings.tactical)}`,
+  };
+  for (const label of document.querySelectorAll("[data-binding-summary]")) {
+    label.textContent = summaries[label.dataset.bindingSummary] ?? label.textContent;
+  }
 }
 
 function ensureAudio() {

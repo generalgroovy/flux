@@ -10,6 +10,14 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
+Build 0.28.0 adds persistent Player 1 keyboard remapping in **Settings**. Choose
+an action and press a key; duplicates swap, while system and Player 2 keys remain
+protected. Old settings migrate to safe defaults, corrupt/duplicate maps reset,
+and one reset restores presentation plus controls. The ability bar, field guide,
+live field panel, and behavior-driven First Rite always show the active bindings.
+Mouse, gamepad, Player 2, semantic commands, prediction, and server authority are
+unchanged.
+
 Build 0.27.0 completes **Aerwyn** as the third production champion. A successful
 Turning Leaf reflection primes **Thread the Turn**: one 8%-slower Wind Needle
 steers toward her live aim for 0.58 seconds at a bounded turn rate without added
@@ -268,6 +276,8 @@ Every champion uses this shared input language. Sprint and hop draw from FLOW;
 touch cover, then hop during the brief contact window to kick away from it.
 The live field panel shows the active objective, map, health, role, full kit,
 and essential controls without pausing combat.
+Player 1 keyboard bindings can be changed under **Settings**; the table lists
+defaults. Reserved match and Player 2 keys cannot be stolen.
 
 ## Race champions
 

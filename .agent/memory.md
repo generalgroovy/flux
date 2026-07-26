@@ -1035,3 +1035,28 @@
 - **Recommended next task:** With three production champions complete, add
   deterministic latency/jitter/loss simulation and input remapping before further
   roster multiplication, then use those tools to tune movement and spell reads.
+
+## 2026-07-26 — Persistent input-aware controls
+
+- **Player-facing problem:** Fixed Player 1 keys limited accessibility and made
+  teaching copy unreliable as soon as controls changed.
+- **Implemented solution:** HEX 0.28.0 adds live keyboard capture for movement and
+  all seven combat actions. Assigning an occupied key swaps the two actions;
+  match-control and fixed Player 2 keys are rejected with text feedback; Escape
+  cancels; reset restores every default. Valid unique bindings persist inside the
+  existing settings record, while older or corrupt records migrate safely.
+- **Discoverability:** Settings use obvious focus/capture/error/success states.
+  The HUD, ability bar, field guide, live field panel, codex kit, and every First
+  Rite instruction/progress label derive from the active bindings. Mouse, gamepad,
+  Player 2, simulation commands, prediction, and network authority are unchanged.
+- **Commands/results:** All source and launcher syntax checks and `git diff
+  --check` passed. The first sandboxed network subprocess reproduced the known
+  loopback `EPERM`; the unchanged escalated `npm test` passed 65/65 checks. DOM
+  coverage proves swap, reserved-key rejection, cancellation, persistence, reset,
+  visible label updates, and a remapped sprint advancing authoritative tutorial
+  state. Server smoke on port 8126 reported HEX 0.28.0/protocol 2; `/` and
+  `/src/game.mjs` returned `200 OK` with all security headers, then stopped cleanly.
+- **Known limitation / next task:** No browser executable is installed here, so
+  hands-on keyboard-layout, responsive layout, controller, and audio verification
+  remain pending. Next add deterministic latency/jitter/loss simulation for
+  repeatable reconciliation tuning.

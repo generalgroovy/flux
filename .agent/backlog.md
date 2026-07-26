@@ -9,6 +9,10 @@ Visual/combat review should now explicitly test compact projectile lanes,
 weapon cadence, pixel-scale silhouettes, impact confirmation, and dense-fight
 clarity using only broad lessons from Enter the Gungeon—not copied content.
 
+Local-agent handoff is configured for Odysseus and Aider. Periodically verify
+both YOLO launchers still refuse `main` and dirty trees, share their lock, load
+the FLUX context, run the actual suite, and push only the active agent branch.
+
 ## Release acceptance
 
 1. Hands-on accept FLUX 0.33.0 on Garuda Sway and Windows: navigate the main

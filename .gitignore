@@ -6,3 +6,7 @@ npm-debug.log*
 .aider.chat.history.md
 .aider.input.history
 .aider.tags.cache.v4/
+.agent/agent.lock
+.agent/STOP
+.agent/logs/*.log
+.odysseus/AUDIT.jsonl

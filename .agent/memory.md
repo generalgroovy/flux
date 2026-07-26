@@ -1385,3 +1385,23 @@
 - **Recommended next task:** Extract the now-growing chemistry resolver from
   `match.mjs`, then introduce one destructible prop family whose lifecycle and
   elemental outcomes are authoritative, deterministic, and visually explicit.
+
+# 2026-07-26 — Local Odysseus and Aider unrestricted handoff
+
+- **Implemented solution:** Added tracked shared context, Aider configuration,
+  resumable Odysseus state/decisions/tests, an interactive Aider YOLO launcher,
+  and a persistent Odysseus-style supervisor that runs bounded Aider iterations,
+  verifies, commits, and pushes the active agent branch. Both use the installed
+  local Qwen 2.5 Coder 7B model, share a file lock, refuse `main`, and refuse a
+  dirty starting tree. Repaired the broken user-local `odysseus` dispatcher
+  symlink and installed the **FLUX Principal Agent** Odysseus preset without
+  storing credentials.
+- **Safety boundary:** “YOLO” accepts shell/edit prompts inside this checkout;
+  it does not permit force-push, history rewriting, credential access, releases,
+  destructive system changes, or unrelated external mutation.
+- **Verification:** Aider 0.86.2 parsed `.aider.conf.yml` with the local
+  `ollama_chat/qwen2.5-coder:7b-instruct` model; Odysseus 0.1.0 dispatch and the
+  FLUX preset round-trip passed; both shell launchers passed syntax checks.
+- **Recommended next task:** Use one launcher at a time for the chemistry-module
+  extraction and destructible-prop slice; stop autonomous work through
+  `.agent/STOP` before manual edits.

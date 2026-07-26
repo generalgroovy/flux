@@ -319,6 +319,29 @@ unrelated Node processes:
 npm run stop
 ```
 
+## Local AI handoff
+
+The repository includes a shared FLUX handoff for the installed local Odysseus
+workspace and Aider. Both launchers intentionally enable unrestricted/
+always-accept operation inside this checkout, share a concurrency lock, refuse
+`main`, and refuse to absorb an already dirty worktree.
+
+Interactive Aider:
+
+```bash
+flux-aider-yolo
+```
+
+Persistent Odysseus-supervised implementation → test → commit → push cycles:
+
+```bash
+flux-odysseus-yolo
+```
+
+Stop the supervisor with `touch .agent/STOP` or `Ctrl+C`. Configuration and
+resumable context live in `.aider.conf.yml`, `.agent/HANDOFF.md`, and
+`.odysseus/`. The Odysseus UI preset is named **FLUX Principal Agent**.
+
 Server records include the checkout root and a per-process instance token, so
 stale PID files cannot target another application. Servers from builds older
 than 0.9.3 are not registered and must be closed from their original terminal.

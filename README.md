@@ -10,7 +10,13 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
-Build 0.17.0 adds the first movement-reactive world objective. The Broken
+Build 0.18.0 deepens universal footwork with counter-strafing. Reversing against
+committed momentum brakes and redirects at a bounded 1.7× control rate, creating
+sharper bait-and-repeek decisions without erasing acceleration. A restrained
+comic/audio cue teaches the successful cut; ice still reduces the maneuver's
+authority, so elemental terrain and movement mastery remain physically coherent.
+
+Build 0.17.0 added the first movement-reactive world objective. The Broken
 Covenant shrine in Oathscar Vale restores bounded Flux only when a fighter who
 has spent magic crosses it at high speed. Its exposed central route, strict
 entry-speed read, visible seven-second shared lockout, and zero direct damage

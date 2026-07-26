@@ -2,7 +2,7 @@
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.17.0 on Garuda Sway and Windows: complete all four
+1. Hands-on accept HEX 0.18.0 on Garuda Sway and Windows: complete all four
    FIRST RITE reads; chain sprint, hop, and wall kicks around cover; verify
    FLOW cost/recovery; launch all five home shortcuts; use every main-menu
    panel, toggle field info with `F1`, and verify
@@ -13,6 +13,8 @@
    require clean join-in-progress, host migration, rematch, and disconnect
    recovery under real latency.
 3. Add input remapping and deterministic latency/jitter/loss simulation controls.
+4. Hands-on tune the 1.7× counter-strafe control rate on normal ground and ice;
+   require sharp reversals without instant direction changes or animation noise.
 
 ## Gate 1 — Fundamentals implemented
 

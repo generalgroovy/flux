@@ -944,6 +944,9 @@ function processEvents(events, tick) {
       toast("CORE MOVEMENT + COMBAT ONLINE");
     } else if (event.type === "wallKick") {
       toast("WALL KICK · ANGLE STOLEN");
+    } else if (event.type === "counterStrafe") {
+      tone(240, 0.045, "triangle", 0.035);
+      toast("COUNTER-STRAFE · MOMENTUM CUT", "comic");
     } else if (event.type === "elementField") {
       const cue = {
         wind: [520, "sine"],

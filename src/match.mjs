@@ -210,6 +210,7 @@ function createEntity(spec, index, map) {
     maxFlux,
     fluxRecoveryDelay: 0,
     fluxWarningCooldown: 0,
+    counterStrafeCooldown: 0,
     surface: "normal",
     elementForceX: 0,
     elementForceY: 0,
@@ -389,6 +390,7 @@ function tickEntity(entity, delta) {
     "interruptRemaining",
     "fluxRecoveryDelay",
     "fluxWarningCooldown",
+    "counterStrafeCooldown",
   ]) {
     entity[key] = Math.max(0, finite(entity[key]) - delta);
   }
@@ -598,9 +600,21 @@ function moveEntity(state, entity, command, agent, delta, map) {
       (sprinting ? MATCH_TUNING.flow.sprintMultiplier : 1);
     const desiredX = moveX * speed + entity.elementForceX;
     const desiredY = moveY * speed + entity.elementForceY;
+    const currentSpeed = Math.hypot(entity.vx, entity.vy);
+    const opposing = moving && currentSpeed > EPSILON
+      ? (entity.vx * moveX + entity.vy * moveY) / currentSpeed < -0.55
+      : false;
     const rate =
       (moving ? agent.acceleration : agent.deceleration) *
-      (entity.surface === "ice" ? MATCH_TUNING.elements.iceControl : 1);
+      (entity.surface === "ice" ? MATCH_TUNING.elements.iceControl : 1) *
+      (opposing ? MATCH_TUNING.flow.counterStrafeMultiplier : 1);
+    if (
+      opposing && currentSpeed >= MATCH_TUNING.flow.counterStrafeCueSpeed &&
+      entity.counterStrafeCooldown === 0
+    ) {
+      entity.counterStrafeCooldown = MATCH_TUNING.flow.counterStrafeCueCooldown;
+      state.events.push({ type: "counterStrafe", entityId: entity.id, x: entity.x, y: entity.y });
+    }
     approachVelocity(entity, desiredX, desiredY, rate * delta);
     entity.sprinting = sprinting;
     if (sprinting) {
@@ -1595,6 +1609,7 @@ function respawnEntity(entity, map) {
   entity.flux = entity.maxFlux;
   entity.fluxRecoveryDelay = 0;
   entity.fluxWarningCooldown = 0;
+  entity.counterStrafeCooldown = 0;
   entity.surface = "normal";
   entity.elementForceX = 0;
   entity.elementForceY = 0;
@@ -1986,6 +2001,7 @@ export function matchInvariantErrors(state) {
       "speedScale",
       "fluxRecoveryDelay",
       "fluxWarningCooldown",
+      "counterStrafeCooldown",
     ]) {
       if (!Number.isFinite(entity[key])) errors.push(`${entity.id}.${key} is not finite`);
     }

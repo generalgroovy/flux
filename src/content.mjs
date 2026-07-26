@@ -841,6 +841,9 @@ export const MATCH_TUNING = Object.freeze({
   flow: {
     maximum: 100,
     sprintMultiplier: 1.28,
+    counterStrafeMultiplier: 1.7,
+    counterStrafeCueSpeed: 220,
+    counterStrafeCueCooldown: 0.7,
     sprintDrainPerSecond: 34,
     recoveryPerSecond: 27,
     recoveryDelay: 0.38,
@@ -939,6 +942,9 @@ export function validateContent({
   for (const key of [
     "maximum",
     "sprintMultiplier",
+    "counterStrafeMultiplier",
+    "counterStrafeCueSpeed",
+    "counterStrafeCueCooldown",
     "sprintDrainPerSecond",
     "recoveryPerSecond",
     "recoveryDelay",
@@ -958,6 +964,9 @@ export function validateContent({
   }
   if (flow.sprintMultiplier < 1 || flow.sprintMultiplier > 2) {
     errors.push("flow.sprintMultiplier must stay within 1–2");
+  }
+  if (flow.counterStrafeMultiplier < 1 || flow.counterStrafeMultiplier > 2.5) {
+    errors.push("flow.counterStrafeMultiplier must stay within 1–2.5");
   }
   if (flow.wallKickSpeed < flow.hopSpeed) {
     errors.push("flow.wallKickSpeed must reward wall commitment");

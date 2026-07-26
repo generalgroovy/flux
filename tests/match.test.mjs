@@ -607,6 +607,21 @@ test("training opponent stays non-lethal until movement and defense are taught",
   assert.equal(state.entities[0].health, state.entities[0].maxHealth);
 });
 
+test("counter-strafing cuts committed momentum with a readable skill cue", () => {
+  const state = duel();
+  const runner = state.entities[0];
+  for (let tick = 0; tick < 24; tick += 1) {
+    stepMatch(state, { [runner.id]: { ...idle, moveX: 1 } });
+  }
+  const forwardVelocity = runner.vx;
+  stepMatch(state, { [runner.id]: { ...idle, moveX: -1 } });
+  assert.ok(forwardVelocity >= MATCH_TUNING.flow.counterStrafeCueSpeed);
+  assert.ok(runner.vx < forwardVelocity);
+  assert.ok(state.events.some((event) => event.type === "counterStrafe"));
+  assert.ok(runner.counterStrafeCooldown > 0);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
 test("flow sprint, hop, and wall kick are bounded universal movement", () => {
   const state = duel({ mapId: "crosswind" });
   const player = state.entities[0];

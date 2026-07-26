@@ -727,3 +727,26 @@
   no browser executable is installed in this environment.
 - **Recommended next task:** Add a short optional First Rite shrine trial that
   teaches sprint-versus-dash threshold reads without adding another text step.
+
+## 2026-07-26 — Universal counter-strafe expression
+
+- **Player-facing problem:** Acceleration gave movement weight, but reversing
+  direction could feel uniformly sluggish and offered no explicit mastery point
+  for baiting shots or changing a peek.
+- **Implemented solution:** Added centralized counter-strafe tuning. A genuine
+  reversal against meaningful velocity gains a bounded 1.7× control rate, while
+  perpendicular steering and ordinary acceleration remain unchanged. Ice still
+  scales the resulting control down. Added a speed-gated, cooldown-throttled
+  simulation event with concise comic/audio feedback and guide text.
+- **Commands run:** Syntax checks for content, simulation, and controller;
+  `git diff --check`; focused match suite; `npm test`; clean server launch on
+  port 8116; HTTP health/shell/module smoke; clean shutdown.
+- **Tests passed:** 51/51 checks, including tuning validation, true-reversal
+  detection, faster momentum cut, cue throttling state, seven-map combination
+  stress, authoritative networking, and isolated cleanup.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.18.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Known limitation:** The multiplier needs hands-on mouse/keyboard and gamepad
+  tuning; no browser executable is installed here.
+- **Recommended next task:** Make hop landings preserve a bounded fraction of
+  entry momentum and test hop-to-counter-strafe, hop-to-wall-kick, and ice chains.

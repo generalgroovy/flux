@@ -21,7 +21,7 @@
           <strong id="score-alpha">0</strong>
         </div>
         <div class="match-readout">
-          <span id="mode-label">FIRST CONTACT · BREAKLINE</span>
+          <span id="mode-label">THE FIRST RITE · THE SUNDERED ROAD</span>
           <strong id="match-clock">03:00</strong>
           <span id="network-readout">LOCAL · 120 TICK</span>
         </div>
@@ -52,7 +52,7 @@
         <header>
           <div>
             <span class="eyebrow">LIVE FIELD INFO</span>
-            <h2 id="info-operation">FIRST CONTACT</h2>
+            <h2 id="info-operation">THE FIRST RITE</h2>
           </div>
           <button
             id="info-close"
@@ -67,13 +67,13 @@
           <section>
             <span>Current read</span>
             <strong id="info-objective">Learn the four-action language.</strong>
-            <p id="info-status">Round 1 · BREAKLINE</p>
+            <p id="info-status">Round 1 · THE SUNDERED ROAD</p>
           </section>
           <section class="info-agent">
             <span id="info-agent-glyph" aria-hidden="true">◇</span>
             <div>
-              <strong id="info-agent-name">KITE</strong>
-              <p id="info-agent-role">Mobility duelist</p>
+              <strong id="info-agent-name">AERWYN</strong>
+              <p id="info-agent-role">Briar gale duelist</p>
             </div>
           </section>
         </div>
@@ -135,8 +135,8 @@
       <div id="toast-stack" class="toast-stack" aria-live="assertive"></div>
 
       <section id="match-overlay" class="match-overlay hidden" aria-modal="true">
-        <span class="eyebrow">OPERATION COMPLETE</span>
-        <h2 id="result-title">ALPHA DIFFERENCE</h2>
+        <span class="eyebrow">CONTEST COMPLETE</span>
+        <h2 id="result-title">OATH CLAIMED</h2>
         <p id="result-copy">The read was made. Run it back.</p>
         <div class="button-row">
           <button class="button button-primary" id="rematch" type="button">Rematch <kbd>R</kbd></button>
@@ -181,7 +181,7 @@
               <span>03</span><b>Host / Join</b><em>REMOTE</em>
             </button>
             <button class="nav-item" data-panel="agents" type="button">
-              <span>04</span><b>Agents</b><em>8</em>
+              <span>04</span><b>Champions</b><em>8</em>
             </button>
             <button class="nav-item" data-panel="arenas" type="button">
               <span>05</span><b>Maps & Modes</b>
@@ -198,31 +198,31 @@
             <article class="menu-panel active" data-menu-panel="home">
               <div class="hero">
                 <div>
-                  <span class="eyebrow">SYSTEMIC ARENA / BUILD 0.13.0</span>
+                  <span class="eyebrow">OLD-WORLD FLUX ARENA / BUILD 0.14.0</span>
                   <h1>Shape the field.<br /><em>Execute the read.</em></h1>
                   <p>
-                    Eight complete agents. Five clean rulesets. One shared language:
+                    Eight race champions. Five proven contests. One magical language:
                     aim, space, timing, prediction, commitment, counterplay.
                   </p>
                   <div class="button-row">
                     <button class="button button-primary button-large" data-quick-start type="button">
                       First contact <kbd>↵</kbd>
                     </button>
-                    <button class="button button-large" data-panel="play" type="button">Choose operation</button>
+                    <button class="button button-large" data-panel="play" type="button">Choose contest</button>
                   </div>
                   <div class="operation-shortcuts" aria-label="Quick operations">
-                    <button type="button" data-launch-mode="duel"><b>DIFFERENCE</b><span>Duel</span></button>
-                    <button type="button" data-launch-mode="control"><b>FAULTLINE</b><span>Control</span></button>
-                    <button type="button" data-launch-mode="convergence"><b>CONVERGENCE</b><span>PvPvE</span></button>
-                    <button type="button" data-launch-mode="survival"><b>PRESSURE TEST</b><span>Co-op PvE</span></button>
+                    <button type="button" data-launch-mode="duel"><b>OATH DUEL</b><span>Duel</span></button>
+                    <button type="button" data-launch-mode="control"><b>RUNEHOLD</b><span>Control</span></button>
+                    <button type="button" data-launch-mode="convergence"><b>WILDMARCH</b><span>PvPvE</span></button>
+                    <button type="button" data-launch-mode="survival"><b>NIGHT SIEGE</b><span>Co-op PvE</span></button>
                   </div>
                 </div>
                 <div class="hero-mark" aria-hidden="true">
-                  <span>D</span><span>I</span><span>F</span><span>F</span>
+                  <span>H</span><span>E</span><span>X</span>
                 </div>
               </div>
               <div class="feature-strip">
-                <div><b>8</b><span>non-overlapping agents</span></div>
+                <div><b>8</b><span>race-bound champions</span></div>
                 <div><b>4</b><span>authored arenas</span></div>
                 <div><b>5</b><span>solo / PvP / PvPvE / PvE modes</span></div>
                 <div><b>120</b><span>authoritative simulation tick</span></div>
@@ -231,7 +231,7 @@
 
             <article class="menu-panel" data-menu-panel="play" hidden>
               <header class="panel-header">
-                <div><span class="eyebrow">DEPLOYMENT</span><h2>Build the match</h2></div>
+                <div><span class="eyebrow">MUSTER HALL</span><h2>Prepare the contest</h2></div>
                 <p>Defaults are tuned for immediate play. Every choice has a clean counter-read.</p>
               </header>
               <form id="match-form" class="match-builder">
@@ -251,13 +251,13 @@
                   <div id="race-options" class="race-picker"></div>
                 </fieldset>
                 <fieldset>
-                  <legend>Agent — Player 1</legend>
+                  <legend>Champion — Player 1</legend>
                   <div id="agent-options" class="agent-picker"></div>
                 </fieldset>
                 <fieldset id="player-two-field" hidden>
-                  <legend>Race + agent — Player 2</legend>
+                  <legend>Ancestry + champion — Player 2</legend>
                   <div id="race-two-options" class="race-picker"></div>
-                  <h3>Agent</h3>
+                  <h3>Champion</h3>
                   <div id="agent-two-options" class="agent-picker"></div>
                 </fieldset>
                 <fieldset>
@@ -273,7 +273,7 @@
                   </label>
                 </fieldset>
                 <div class="deployment-action">
-                  <span><b>READY</b><small id="deployment-summary">DIFFERENCE · KITE · BREAKLINE</small></span>
+                  <span><b>READY</b><small id="deployment-summary">OATH DUEL · AERWYN · THE SUNDERED ROAD</small></span>
                   <button class="button button-primary button-large deploy-button" type="submit">
                     Enter arena
                   </button>
@@ -294,7 +294,7 @@
                     <input id="online-name" type="text" maxlength="20" value="PLAYER" />
                   </label>
                   <label>
-                    <span>Agent</span>
+                    <span>Champion</span>
                     <select id="online-agent"></select>
                   </label>
                   <label>
@@ -356,8 +356,8 @@
 
             <article class="menu-panel" data-menu-panel="agents" hidden>
               <header class="panel-header">
-                <div><span class="eyebrow">ROSTER</span><h2>Eight ways to outplay</h2></div>
-                <p>Each agent owns one readable strength, one real weakness, and four counterable actions.</p>
+                <div><span class="eyebrow">CHAMPION CHRONICLE</span><h2>Eight old-world disciplines</h2></div>
+                <p>Each champion belongs to a people, shapes one discipline, and carries four readable commitments.</p>
               </header>
               <div id="agent-codex" class="agent-codex"></div>
             </article>
@@ -375,7 +375,7 @@
 
             <article class="menu-panel" data-menu-panel="guide" hidden>
               <header class="panel-header">
-                <div><span class="eyebrow">FIELD GUIDE</span><h2>One language, every agent</h2></div>
+                <div><span class="eyebrow">FIELD GUIDE</span><h2>One language, every champion</h2></div>
                 <p>Actions keep the same input across the roster. Learn intent once; master expression forever.</p>
               </header>
               <div class="guide-grid">
@@ -429,7 +429,7 @@
                 <article><b>Cover is absolute</b><span>No attacks or movement tunnel through geometry.</span></article>
                 <article><b>Defense is specific</b><span>Reflect, guard, phase, absorb, and counter demand different reads.</span></article>
                 <article><b>Spawns are protected</b><span>Joining and resetting never hands out a free hit.</span></article>
-                <article><b>Flow is universal</b><span>Sprint, hop, and wall-kick spend one shared resource on every agent.</span></article>
+                <article><b>Flow is universal</b><span>Sprint, hop, and wall-kick spend one shared resource on every champion.</span></article>
                 <article><b>Flux is commitment</b><span>Special, defense, and character mobility compete for raw magic; primary and FLOW remain available when dry.</span></article>
                 <article><b>Elements alter routes</b><span>Wind carries fire; water douses fire; fire melts ice; ice freezes water.</span></article>
                 <article><b>Reactions stay readable</b><span>Lightning conducts through water. Explosive mechanics shatter earth; explosion is not an element.</span></article>

@@ -10,12 +10,18 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
-Build 0.13.0 adds twelve playable fantasy races as a second, bounded build axis:
+Build 0.14.0 completes the first old-world identity pass. Eight named champions
+now belong to the peoples and regions that shaped their magic; contests,
+arenas, interface materials, and spell language use an illuminated chronicle
+and woven-banner vocabulary instead of modern operators and deployments.
+Stable internal identifiers remain intact for saved settings and network peers.
+
+Build 0.13.0 added twelve playable fantasy races as a second, bounded build axis:
 Human, Iron Orc, Moss Troll, Briar Elf, Gloam Elf, Forge Dwarf, Copper Gnome,
 Ash Revenant, Cloud Sylph, Reefborn, Cairnkin, and Cinderling. Each trades no
 more than 10% across health, speed, Flux, and FLOW, advertises its boon and
 drawback before selection, and remains authoritative through remote joins and
-rematches. Race columns sit above the difficulty-ordered agent grid. Arena
+rematches. Race columns sit above the difficulty-ordered champion grid. Arena
 selection is now a spatial atlas with authored region/scale coordinates and
 hover/focus summaries, establishing the UI contract for nested world regions.
 
@@ -50,8 +56,8 @@ npm start
 ```
 
 Open <http://127.0.0.1:8000>. The game starts in its main menu.
-The home screen launches every offline ruleset directly; **Choose operation**
-keeps agent, arena, format, and bot setup available in one builder.
+The home screen launches every offline ruleset directly; **Choose contest**
+keeps champion, ancestry, arena, format, and bot setup available in one builder.
 
 To verify a local working copy and launch it on the first free port from
 `8000`–`8100`:
@@ -162,51 +168,51 @@ than 0.9.3 are not registered and must be closed from their original terminal.
 | Skip introduction | `T` | — | — |
 | Toggle live field info | `F1` | `F1` | — |
 
-Every agent uses this shared input language. Sprint and hop draw from FLOW;
+Every champion uses this shared input language. Sprint and hop draw from FLOW;
 touch cover, then hop during the brief contact window to kick away from it.
 The live field panel shows the active objective, map, health, role, full kit,
 and essential controls without pausing combat.
 
-## Agents
+## Race champions
 
-| Agent | Role | Primary | Special | Defense | Mobility |
+| Champion | People / discipline | Primary | Special | Defense | Mobility |
 | --- | --- | --- | --- | --- | --- |
-| KITE | Mobility duelist | Needle | Shear | Slip reflection | Vector dash |
-| BULWARK | Space anchor | Rivet | Breach | Brace guard | Ram charge |
-| ECHO | Feint skirmisher | Triplet | Afterimage | Null phase | Skip blink |
-| VOLT | Tempo striker | Spark | Linebreak rail | Ground absorb | Surge dash |
-| CINDER | Trap zoner | Ember | Kindle mine | Temper guard | Backdraft recoil |
-| ORBIT | Field controller | Gravity | Well pull | Sling reflect | Apogee blink |
-| MEND | Sustain tactician | Suture | Second Wind | Triage absorb | Transfer slide |
-| ROOK | Range sentinel | Mark | Crosscut volley | Check counter | Castle sidestep |
+| AERWYN | Briar Elf / Gale | Wind Needle | Shearwind | Turning Leaf | Gale Step |
+| GORUM | Iron Orc / Stone | Slingstone | Faultline | Ironroot | War Tusk |
+| VELLYN | Gloam Elf / Veil | Moon Shards | Mirror Wraith | Dusk Mantle | Shadow Step |
+| NIM COPPERSPARK | Copper Gnome / Volt | Quick Arc | Chain Rune | Grounding Sigil | Storm Hop |
+| SEREK ASHBORN | Cinderling / Ember | Coal Star | Hearth Trap | Ashen Ward | Backblast |
+| MORCANT | Ash Revenant / Null | Grave Orb | Silence Well | Spellturn | Grave Step |
+| NERIS PEARLDIVE | Reefborn / Tide | Dew Lance | Wellspring | Tideshield | Current Step |
+| BRANNA RUNESIGHT | Forge Dwarf / Prism | Rune Ray | Sunsplit | Facet Parry | Runestep |
 
 Shots clash, heavy projectiles win light clashes, reflections change ownership,
 cover blocks every projectile and movement type, mines interact with hostile
 positioning, and dash contact, unit collision, defenses, hazards, knockback,
 death, and respawn all share one simulation authority.
-Each agent also has a smaller collision body, unique oriented silhouette, glyph,
+Each champion also has a compact collision body, unique oriented silhouette, glyph,
 color, role, and readable kit identity.
 
 ## Maps and modes
 
 Maps:
 
-- **BREAKLINE** — twin rotations around a telegraphed central seam
-- **CROSSWIND** — long sightlines broken by offset cover pockets
-- **CROWN** — a contested center with four readable gates
-- **UNDERCURRENT** — three lanes with out-of-phase side hazards
+- **THE SUNDERED ROAD** — twin rotations around a telegraphed central seam
+- **WINDGLASS MOOR** — long sightlines broken by offset cover pockets
+- **THE OLD CROWN** — a contested center with four readable gates
+- **DROWNED HALLS** — three lanes with out-of-phase side hazards
 
 Modes:
 
-- **FIRST CONTACT** — short, skippable, behavior-driven introduction
-- **DIFFERENCE** — first-to-five duel with clean rounds and overtime
-- **FAULTLINE** — objective control with contested-state scoring
-- **CONVERGENCE** — PvPvE control with hostile neutral sentinels
-- **PRESSURE TEST** — solo/local/remote cooperative escalating PvE waves
+- **THE FIRST RITE** — short, skippable, behavior-driven introduction
+- **OATH DUEL** — first-to-five duel with clean rounds and overtime
+- **RUNEHOLD** — objective control with contested-state scoring
+- **WILDMARCH** — PvPvE control with hostile wild wardens
+- **NIGHT SIEGE** — solo/local/remote cooperative escalating PvE waves
 
 ## Architecture
 
-- [`src/content.mjs`](src/content.mjs) — validated agents, maps, modes, and tuning
+- [`src/content.mjs`](src/content.mjs) — validated champions, races, maps, modes, and tuning
 - [`src/match.mjs`](src/match.mjs) — fixed-tick simulation and collision authority
 - [`src/lobbies.mjs`](src/lobbies.mjs) — lobby lifecycle and remote command ownership
 - [`src/game.mjs`](src/game.mjs) — input, prediction, menus, HUD, feedback, and rendering
@@ -232,12 +238,12 @@ bash -n scripts/install-desktop-linux.sh
 bash -n scripts/test-changes.sh
 ```
 
-The suite covers the real DOM/canvas controller, all agent/map/mode
+The suite covers the real DOM/canvas controller, all champion/map/mode
 combinations, wall and corner dash stress, blink obstruction, unit collision,
 all defense types, projectile interaction, mines, hazards, death/reset,
 overtime, control, PvE waves, join-in-progress, discovery, input sequencing,
 snapshots, disconnect/reconnect identity, spectator isolation, host migration,
-route allowlisting, security headers, and an eight-agent two-minute
+route allowlisting, security headers, and an eight-champion two-minute
 deterministic combat soak. It also clicks every main menu, launches all five
 rulesets through the shipped interface, toggles live field info, and verifies
-agent/map shortcuts update the deployment builder.
+champion/map shortcuts update the contest builder.

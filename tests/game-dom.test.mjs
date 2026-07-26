@@ -202,12 +202,12 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     assert.equal(
       document.getElementById("info-operation").textContent,
       window.DIFF_DEBUG.getState().modeId === "duel"
-        ? "DIFFERENCE"
+        ? "OATH DUEL"
         : window.DIFF_DEBUG.getState().modeId === "control"
-          ? "FAULTLINE"
+          ? "RUNEHOLD"
           : window.DIFF_DEBUG.getState().modeId === "convergence"
-            ? "CONVERGENCE"
-            : "PRESSURE TEST",
+            ? "WILDMARCH"
+            : "NIGHT SIEGE",
     );
     const fieldInfo = new window.Event("keydown");
     Object.defineProperty(fieldInfo, "key", { value: "F1" });
@@ -238,7 +238,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   );
   assert.match(
     document.getElementById("deployment-summary").textContent,
-    /VOLT · CROWN/,
+    /NIM COPPERSPARK · THE OLD CROWN/,
   );
 
   document.querySelector('[data-panel="play"]').click();

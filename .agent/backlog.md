@@ -2,8 +2,8 @@
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.13.0 on Garuda Sway and Windows: complete all four
-   FIRST CONTACT reads; chain sprint, hop, and wall kicks around cover; verify
+1. Hands-on accept HEX 0.14.0 on Garuda Sway and Windows: complete all four
+   FIRST RITE reads; chain sprint, hop, and wall kicks around cover; verify
    FLOW cost/recovery; launch all five home shortcuts; use every main-menu
    panel, toggle field info with `F1`, and verify
    all eight smaller silhouettes, speed trails, field patterns, reaction
@@ -16,7 +16,7 @@
 
 ## Gate 1 — Fundamentals implemented
 
-- Complete eight-agent shared-input combat, universal FLOW sprint/hop/wall-kick
+- Complete eight-champion shared-input combat, universal FLOW sprint/hop/wall-kick
   movement, eight Flux disciplines, interacting terrain fields, four
   maps, short introduction, hazards, bots, death/reset, accessibility,
   validation, and combination tests.
@@ -34,7 +34,7 @@
 
 - Twelve bounded race modifiers and their local/remote selector are live. Next:
   hands-on matchup tuning, then race-specific mechanics one paired matchup at a
-  time; do not expand to twelve agents per discipline through numerical reskins.
+  time; do not expand to twelve champions per discipline through numerical reskins.
 - Build the first zoomable world region with one complete nested sub-map at each
   supported scale before multiplying it across twelve race territories.
 - Add one pre-match knowledge branch with mutually exclusive tradeoffs before
@@ -46,12 +46,12 @@
 
 ## Gate 3 — PvPvE foundation implemented
 
-- CONVERGENCE has neutral hostile sentinels and a shared control objective.
+- WILDMARCH has neutral hostile wardens and a shared control objective.
 - Next acceptance: add one neutral objective family whose reward changes route
   choice without increasing player damage or health.
 
 ## Gate 4 — PvE foundation implemented
 
-- PRESSURE TEST has cooperative lives, bounded wave clears, escalation, and loss.
+- NIGHT SIEGE has cooperative lives, bounded wave clears, escalation, and loss.
 - Next acceptance: add authored scout/anchor/artillery enemy families, one elite,
   and a boss after real-player combat tuning is stable.

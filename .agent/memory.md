@@ -617,3 +617,31 @@
   interactive browser was not available for hands-on play verification.
 - **Recommended next task:** Add one immediate primary attack and one reactive
   target with clear hit confirmation, while preserving the movement trial.
+
+## 2026-07-26 — HEX old-world Flux identity migration
+
+- **Player-facing problem:** The playable systems had moved toward Flux, races,
+  and elemental geometry while the roster, modes, arenas, and interface still
+  spoke in modern operator language. The conflicting identity obscured the
+  intended magic-world fantasy.
+- **Implemented solution:** Recast all eight shipped kits as named champions
+  native to eight established peoples, with old-world roles, spell names, and
+  biographies. Renamed every visible contest and arena without changing stable
+  simulation identifiers. Champion choice now selects native ancestry by
+  default while preserving ancestry as a deliberate build override. Reworked
+  the primary shell toward aged parchment, woven banners, gilt bevels, serif
+  display type, and pixel-crisp field rendering. Updated product guidance,
+  documentation, browser assertions, and release metadata to HEX 0.14.0.
+- **Compatibility:** Internal character, mode, map, launcher, health-product,
+  and debug identifiers remain stable so saved settings, join URLs, remote
+  protocol checks, and existing automation continue to work.
+- **Commands run:** `rg` identity sweeps; `git diff --check`; syntax checks for
+  `src/content.mjs` and `src/game.mjs`; `npm test`.
+- **Tests passed:** 47/47 tests: 45 deterministic DOM/lobby/match/network-quality
+  checks, the complete shipped-server network test, and isolated server cleanup.
+- **Known limitations:** No browser executable is installed in this environment,
+  so physical visual acceptance remains pending. Four arenas establish the
+  world atlas but do not yet constitute the requested nested continent.
+- **Recommended next task:** Make one existing arena the first fully illustrated
+  nested territory: region lore, readable landmark silhouettes, scale-aware
+  atlas zoom, and one environmental Flux interaction with deterministic tests.

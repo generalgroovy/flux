@@ -392,9 +392,11 @@ function handleMenuClick(event) {
   }
   const agentButton = event.target.closest("[data-select-agent]");
   if (agentButton) {
-    selectMatchChoice("character", agentButton.dataset.selectAgent);
+    const selected = getCharacter(agentButton.dataset.selectAgent);
+    selectMatchChoice("character", selected.id);
+    selectMatchChoice("race", selected.homeRaceId);
     showPanel("play");
-    toast(`${getCharacter(agentButton.dataset.selectAgent).name} selected.`);
+    toast(`${getCharacter(agentButton.dataset.selectAgent).name} chosen.`);
     return;
   }
   const mapButton = event.target.closest("[data-select-map]");
@@ -499,7 +501,7 @@ function startConfiguredMatch(event) {
   const raceId = String(data.get("race") ?? "human");
   if (format === "local" && !getMode(modeId).allowLocal) {
     modeId = "duel";
-    toast("FIRST CONTACT is solo; switched to DIFFERENCE for local 2P.");
+    toast("THE FIRST RITE is solo; switched to OATH DUEL for local 2P.");
   }
   const players = [
     {
@@ -619,13 +621,18 @@ function leaveToMenu(panel = "home", preserveReconnect = false) {
 }
 
 function handleMatchFormChange(event) {
+  if (event.target.name === "character") {
+    selectMatchChoice("race", getCharacter(event.target.value).homeRaceId);
+  } else if (event.target.name === "characterTwo") {
+    selectMatchChoice("raceTwo", getCharacter(event.target.value).homeRaceId);
+  }
   if (event.target.name === "format") {
     const local = event.target.value === "local";
     element("player-two-field").hidden = !local;
     element("bot-field").hidden = local;
     if (local && !getMode(selectedMatchChoice("mode", "duel")).allowLocal) {
       selectMatchChoice("mode", "duel");
-      toast("FIRST CONTACT is solo; DIFFERENCE selected for local 2P.");
+      toast("THE FIRST RITE is solo; OATH DUEL selected for local 2P.");
     }
   }
   updateDeploymentSummary();
@@ -751,7 +758,7 @@ function updateInterface() {
         : matchState.winner === "beta"
           ? "BETA"
           : "NO ONE";
-    element("result-title").textContent = `${winner} MADE THE DIFFERENCE`;
+    element("result-title").textContent = `${winner} CLAIMS THE OATH`;
     element("result-copy").textContent =
       matchKind === "remote" && remoteHostId !== clientId
         ? "Waiting for the current host to run it back."
@@ -1695,7 +1702,7 @@ function buildContentInterface() {
 function agentPicker(name, selected) {
   return CHARACTERS.map(
     (agent) => `
-      <label class="agent-choice" style="--agent-color:${agent.accent}" title="${agent.role} · ${agent.affinity.name}: ${agent.style}">
+      <label class="agent-choice" style="--agent-color:${agent.accent}" title="${getRace(agent.homeRaceId).name} · ${agent.role} · ${agent.affinity.name}: ${agent.style}">
         <input type="radio" name="${name}" value="${agent.id}" ${agent.id === selected ? "checked" : ""}>
         <span class="agent-choice-glyph" aria-hidden="true">${agent.glyph}</span>
         <b>${agent.name}</b>
@@ -1716,7 +1723,7 @@ function racePicker(name, selected) {
 function agentCard(agent) {
   return `
     <article class="agent-card" style="--agent-color:${agent.accent};--agent-wash:${agent.accent}22">
-      <div class="agent-identity"><i class="agent-glyph" aria-hidden="true">${agent.glyph}</i><b>${agent.name}</b><span>${agent.role} · ${"◆".repeat(agent.difficulty)}</span></div>
+      <div class="agent-identity"><i class="agent-glyph" aria-hidden="true">${agent.glyph}</i><b>${agent.name}</b><span>${getRace(agent.homeRaceId).name} · ${agent.role} · ${"◆".repeat(agent.difficulty)}</span></div>
       <div class="agent-data">
         <p>${agent.style}</p>
         <p><strong>${agent.affinity.name} ELEMENT</strong> · ${agent.affinity.edge}</p>
@@ -1733,7 +1740,7 @@ function agentCard(agent) {
             )
             .join("")}
         </div>
-        <button class="text-button codex-action" type="button" data-select-agent="${agent.id}">Select agent →</button>
+        <button class="text-button codex-action" type="button" data-select-agent="${agent.id}">Select champion →</button>
       </div>
     </article>`;
 }

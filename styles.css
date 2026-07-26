@@ -1,21 +1,20 @@
 :root {
   color-scheme: dark;
-  --ink: #f4f8ff;
-  --muted: #8593a5;
-  --dim: #4e5b6b;
-  --void: #05070b;
-  --panel: #0a0f17;
-  --panel-soft: #0e1520;
-  --line: #293546;
-  --line-soft: #182332;
-  --mint: #77f7ce;
-  --amber: #ffca4f;
-  --red: #ff5d73;
-  --blue: #70a9ff;
+  --ink: #f1dfac;
+  --muted: #b6a77b;
+  --dim: #746746;
+  --void: #110f0a;
+  --panel: #211b11;
+  --panel-soft: #2a2114;
+  --line: #806b36;
+  --line-soft: #493b20;
+  --mint: #d3b65b;
+  --amber: #efbf48;
+  --red: #c85b45;
+  --blue: #6e9a9b;
   --scale: 1;
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+    Georgia, "Times New Roman", ui-serif, serif;
   font-size: calc(16px * var(--scale));
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -90,7 +89,8 @@ kbd {
   inset: 0;
   isolation: isolate;
   background:
-    radial-gradient(circle at 70% 30%, #18304228, transparent 42%),
+    repeating-linear-gradient(45deg, #c3a35b05 0 2px, transparent 2px 7px),
+    radial-gradient(circle at 70% 30%, #70562928, transparent 42%),
     var(--void);
 }
 
@@ -101,11 +101,12 @@ kbd {
   height: 100%;
   cursor: crosshair;
   touch-action: none;
+  image-rendering: pixelated;
 }
 
 #app[data-view="menu"] #arena {
   opacity: 0.3;
-  filter: blur(3px) saturate(0.45);
+  filter: blur(2px) sepia(0.42) saturate(0.62);
   pointer-events: none;
 }
 
@@ -135,10 +136,10 @@ kbd {
   justify-content: center;
   gap: 0.65rem;
   padding: 0.76rem 1rem;
-  border: 1px solid #354357;
-  border-radius: 0.25rem;
-  background: #121a25;
-  color: #dce5ef;
+  border: 1px solid #91763b;
+  border-radius: 0;
+  background: linear-gradient(#3c301b, #21190f);
+  color: #f1dfac;
   cursor: pointer;
   font-size: 0.72rem;
   font-weight: 800;
@@ -152,9 +153,9 @@ kbd {
 }
 
 .button:hover {
-  border-color: #70849b;
-  background: #182331;
-  color: white;
+  border-color: #e2c56b;
+  background: linear-gradient(#534323, #2c2112);
+  color: #fff2c9;
   transform: translateY(-1px);
 }
 
@@ -163,15 +164,15 @@ kbd {
 }
 
 .button-primary {
-  border-color: var(--mint);
-  background: var(--mint);
-  color: #06110e;
+  border-color: #f0d47a;
+  background: linear-gradient(#b88b32, #6f4d1d);
+  color: #1a1107;
 }
 
 .button-primary:hover {
-  border-color: #c2ffe9;
-  background: #a4ffe1;
-  color: #06110e;
+  border-color: #fff0a4;
+  background: linear-gradient(#d2aa4d, #805a22);
+  color: #1a1107;
 }
 
 .button-quiet {
@@ -224,8 +225,9 @@ kbd {
   display: grid;
   grid-template-rows: 4.8rem minmax(0, 1fr) 2.8rem;
   background:
-    linear-gradient(90deg, #05080df7 0 27%, #07101ae6 70%, #061019e8),
-    radial-gradient(circle at 82% 22%, #28547335, transparent 30%);
+    repeating-linear-gradient(0deg, #c9ab6505 0 1px, transparent 1px 5px),
+    linear-gradient(90deg, #151108fa 0 27%, #211a0eea 70%, #19130ae8),
+    radial-gradient(circle at 82% 22%, #9b743335, transparent 30%);
   transition:
     opacity 180ms ease,
     visibility 180ms ease;
@@ -248,8 +250,8 @@ kbd {
   justify-content: space-between;
   padding: 0 2.25rem;
   border-bottom: 1px solid var(--line-soft);
-  background: #070b11dc;
-  backdrop-filter: blur(18px);
+  background: #1a140bdd;
+  box-shadow: inset 0 -2px 0 #9b7d3b33;
 }
 
 .wordmark {

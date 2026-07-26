@@ -2,15 +2,18 @@
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.25.0 on Garuda Sway and Windows: complete all four
+1. Hands-on accept HEX 0.26.0 on Garuda Sway and Windows: complete all four
    FIRST RITE reads; chain sprint, hop, and wall kicks around cover; verify
    FLOW cost/recovery; play Yrsa until THE WHITE HUNT is earned; verify its
    fixed lane tell, reduced channel movement, cover clipping, Volt cancel,
    Ember/Tide/Null field reactions, and passive conversion from both wall kick
    and landing cut. Launch all five home shortcuts; use every main-menu
    panel, toggle field info with `F1`, and verify
-   all eight smaller silhouettes, speed trails, field patterns, reaction
+   all ten silhouettes, speed trails, field patterns, reaction
    callouts, and distinct elemental audio cues remain readable during dense combat.
+   Then play Varka into Tide, Gale, Null, and Volt: require obvious Pyre-Forged
+   weight/speed trade, douseable Furrow, six readable Crown seams, accurate
+   distant target tell, and no visual overload when the ring intersects hazards.
    Verify both installed desktop launchers update, test, open, and shut down.
 2. Run a 30-minute two-device remote soak through the intended VPN/router path;
    require clean join-in-progress, host migration, rematch, and disconnect
@@ -52,11 +55,11 @@
 ## Expansion acceptance — not exposed until complete
 
 - Thirteen races and their local/remote selector are live. Wyrmbound is the first
-  expansion culture shipped with a native champion, mechanical ancestry, home
-  battleground, and complete champion contract. Next: hands-on Yrsa tuning, then
-  add her mechanically opposed Wyrmbound counterpart as the second complete
-  culture champion; do not expand to twelve champions per discipline through
-  numerical reskins.
+  expansion culture with a mechanical ancestry, home battleground, and opposed
+  complete-champion pair: Yrsa's movement/ice conversion versus Varka's
+  terrain/Ember conversion. Next: hands-on tune the paired matchup, then author a
+  third Wyrmbound decision profile only if it adds a genuinely new team/utility
+  axis; do not expand toward twelve through numerical reskins.
 - The realm chart and The Fracture's complete duel/small/medium/large region
   ladder now establish zoom, lore, terrain, heraldry, landmark, route, and hazard
   contracts. Next: hands-on tune all four Fracture scales before applying the

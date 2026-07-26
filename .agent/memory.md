@@ -944,3 +944,50 @@
   her mechanically opposed Wyrmbound counterpart as the second complete champion
   contract, proving a different passive/ultimate kind rather than cloning the
   line-volley implementation.
+
+## 2026-07-26 — Opposed Wyrmbound pair: Varka Ashmaw
+
+- **Player-facing problem:** Wyrmbound had one complete champion, but not the
+  contrasting decision profile needed to prove that the new passive/ultimate
+  contract could support a race roster without reskins.
+- **Implemented solution:** HEX 0.26.0 adds Varka Ashmaw, Yrsa's oath-broken Ember
+  counterpart. Cinder Tooth is an exact medium projectile. Pyre Furrow authors
+  three short-lived, douseable fire fields. While Varka occupies allied fire,
+  Pyre-Forged keeps the same 23 damage but trades 32% projectile speed for a 50%
+  larger heavy spell and 2.1× knockback. Smoke Shed phases through a committed
+  spell; Talon Vault recoils from the aimed threat. This creates direct-aim versus
+  predictive-clash choices without an elemental damage bonus.
+- **Ultimate and counterplay:** Combat damage earns The Ashen Crown. Its fixed
+  distant target is shown for 0.72 seconds while Varka moves at 50% speed; six
+  52-radius fire sigils sit on a 180-radius ring with validation-enforced open
+  seams. Tide douses breaches, Gale redirects fire, Null clears the ring from its
+  center, Volt cancels the spent windup, and cover clips target acquisition.
+  Ultimate-authored fire cannot recharge the same meter.
+- **Presentation and authority:** Added a unique oriented maw silhouette, active
+  passive mark, element-colored HUD state, crown target line, six exact field
+  previews, progress ring, distinct comic/audio feedback, codex/selection copy,
+  bot use, remote command coverage, reset/repair state, and bounded validation.
+- **Regression caught:** The first crown test expected its fire pulse one tick
+  after the observation loop; the simulation had correctly pulsed during the
+  post-cast ticks. The test observation window was corrected without changing or
+  weakening gameplay.
+- **Commands run:** syntax checks for content, match, controller, server, and
+  shell launchers; `git diff --check`; focused Varka/crown/bot suites; combined
+  DOM/lobby/match suite; fully escalated `npm test`; clean server launch on port
+  8124; health, HTML, and module HTTP smoke; clean shutdown.
+- **Tests passed:** 63/63 checks: 61 DOM/lobby/match/network-quality checks, one
+  live authoritative WebSocket lifecycle check, and one isolated cleanup check.
+  Coverage includes ordinary/tempered damage equality, projectile tradeoffs,
+  allied-field ownership, Tide dousing, crown seam geometry, fire pulse, no
+  ultimate self-charge, Null erasure, bot activation, DOM/codex discovery,
+  ten-champion stress, and both ultimate kinds through remote authority.
+- **Launch smoke:** Health reported HEX 0.26.0/protocol 2; `/` and
+  `/src/game.mjs` returned `200 OK` with all shipped security headers, then the
+  server stopped cleanly.
+- **Known limitation:** No browser executable is installed here. Hands-on
+  readability, audio mix, controller feel, and real-device remote prediction
+  remain pending; deterministic DOM/canvas and network harnesses passed.
+- **Recommended next task:** Hands-on tune the Yrsa/Varka matchup where available;
+  meanwhile promote a third mechanically distinct champion to the production
+  contract so Gate 2 has three complete high-depth matchup anchors before further
+  roster multiplication.

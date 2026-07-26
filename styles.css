@@ -1868,18 +1868,19 @@ select {
 }
 
 .ultimate-ability {
-  border-color: #9fd8de88;
+  border-color: var(--ultimate-color, #9fd8de);
   background: linear-gradient(135deg, #10161ce8, #17272be8);
 }
 
 .ultimate-ability i {
   height: 3px;
-  background: #9fd8de;
+  background: var(--ultimate-color, #9fd8de);
 }
 
 .ultimate-ability.ready {
   border-style: double;
   border-width: 3px;
+  border-color: var(--ultimate-color, #9fd8de);
   box-shadow: inset 0 0 0 1px #f1dfac44, 0 0 1rem #9fd8de22;
   animation: ultimate-ready 1.1s steps(2, end) infinite;
 }

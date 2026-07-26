@@ -239,6 +239,22 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   document.querySelector('#pause-overlay [data-action="menu"]').click();
 
   document.querySelector('[data-panel="agents"]').click();
+  document.querySelector('[data-select-agent="ashmaw"]').click();
+  document.querySelector('[data-launch-mode="duel"]').click();
+  assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "ashmaw");
+  assert.equal(document.getElementById("ultimate-ability").hidden, false);
+  assert.equal(
+    document.getElementById("ultimate-name").textContent,
+    "THE ASHEN CROWN",
+  );
+  document.getElementById("info-toggle").click();
+  assert.match(document.getElementById("info-kit").textContent, /PYRE-FORGED/);
+  assert.match(document.getElementById("info-kit").textContent, /THE ASHEN CROWN/);
+  window.dispatchEvent(escape);
+  window.dispatchEvent(escape);
+  document.querySelector('#pause-overlay [data-action="menu"]').click();
+
+  document.querySelector('[data-panel="agents"]').click();
   document.querySelector('[data-select-agent="volt"]').click();
   assert.equal(app.dataset.panel, "play");
   assert.equal(

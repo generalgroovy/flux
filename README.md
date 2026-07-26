@@ -10,6 +10,17 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
+Build 0.26.0 expands Wyrmbound into an opposed champion pair. **Varka Ashmaw**
+uses Ember to inscribe a douseable Pyre Furrow; while standing in allied fire,
+**Pyre-Forged** trades Cinder Tooth speed for size, knockback, and heavy-spell
+clash weight without adding damage. **The Ashen Crown** spends combat-earned
+charge on a 0.72-second distant ring tell whose six fire sigils deliberately
+leave escape seams. Tide opens breaches, Gale moves the fire, Null can erase the
+ring, Volt can interrupt the commitment, cover limits its target, and its damage
+cannot recharge itself. Varka has a unique maw silhouette, authored bot use,
+conditional HUD/codex state, and the same authoritative local/remote rules as
+Yrsa.
+
 Build 0.25.0 establishes the production passive/tactical/ultimate contract with
 Yrsa as its first complete champion. **Ridgeline Hunt** turns a demonstrated wall
 kick or landing cut into one faster, tighter Rime Fangs cast without adding
@@ -262,6 +273,7 @@ and essential controls without pausing combat.
 | NERIS PEARLDIVE | Reefborn / Tide | Dew Lance | Wellspring | Tideshield | Current Step | — |
 | BRANNA RUNESIGHT | Forge Dwarf / Prism | Rune Ray | Sunsplit | Facet Parry | Runestep | — |
 | YRSA RIMEWING | Wyrmbound / Tide-Frost | Rime Fangs | White Breath | Scale Turn | Wyrmbound | Ridgeline Hunt / The White Hunt |
+| VARKA ASHMAW | Wyrmbound / Ember | Cinder Tooth | Pyre Furrow | Smoke Shed | Talon Vault | Pyre-Forged / The Ashen Crown |
 
 Shots clash, heavy projectiles win light clashes, reflections change ownership,
 cover blocks every projectile and movement type, mines interact with hostile

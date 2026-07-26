@@ -852,10 +852,13 @@ function updateAbilities() {
     const ready = player.ultimateCharge >= agent.ultimate.chargeRequired;
     const channeling = player.ultimateWindupRemaining > 0;
     element("ultimate-name").textContent = agent.ultimate.name;
+    ultimateSlot.style.setProperty("--ultimate-color", agent.accent);
     element("ultimate-detail").textContent = channeling
       ? `Committed · ${player.ultimateWindupRemaining.toFixed(1)}s`
       : ready
-        ? "READY · fixed lane"
+        ? agent.ultimate.kind === "field-crown"
+          ? "READY · ring with escape seams"
+          : "READY · fixed lane"
         : `${Math.floor(player.ultimateCharge)} / ${agent.ultimate.chargeRequired} · deal damage`;
     element("ultimate-charge").style.transform =
       `scaleX(${clamp(player.ultimateCharge / agent.ultimate.chargeRequired, 0, 1)})`;
@@ -863,6 +866,7 @@ function updateAbilities() {
     ultimateSlot.classList.toggle("channeling", channeling);
   } else {
     ultimateSlot.classList.remove("ready", "channeling");
+    ultimateSlot.style.removeProperty("--ultimate-color");
   }
 }
 
@@ -986,6 +990,9 @@ function processEvents(events, tick) {
     } else if (event.type === "passiveSpent") {
       tone(710, 0.045, "triangle", 0.04);
       toast("FANGS HONED!", "comic");
+    } else if (event.type === "passiveConverted") {
+      tone(155, 0.065, "sawtooth", 0.045);
+      toast("KLANG! · PYRE-FORGED", "comic");
     } else if (event.type === "ultimateReady") {
       if (event.entityId === localPlayer()?.id) {
         tone(440, 0.12, "triangle", 0.06);
@@ -993,15 +1000,24 @@ function processEvents(events, tick) {
       }
     } else if (event.type === "ultimateTell") {
       tone(96, 0.22, "sawtooth", 0.07);
-      toast(`${event.name} · LANE MARKED!`, "comic");
+      toast(
+        `${event.name} · ${event.kind === "field-crown" ? "RING" : "LANE"} MARKED!`,
+        "comic",
+      );
     } else if (event.type === "ultimateCast") {
-      tone(740, 0.16, "triangle", 0.08);
-      burst(event.x, event.y, "#cceff3", 24);
+      const ember = event.element === "fire";
+      tone(ember ? 145 : 740, 0.16, ember ? "sawtooth" : "triangle", 0.08);
+      burst(
+        event.kind === "field-crown" ? event.endX : event.x,
+        event.kind === "field-crown" ? event.endY : event.y,
+        ember ? "#e87b52" : "#cceff3",
+        24,
+      );
       screenShake = Math.max(screenShake, 8);
-      toast("KRAA! · THE WHITE HUNT", "comic");
+      toast(`KRAA! · ${event.name}`, "comic");
     } else if (event.type === "ultimateInterrupted") {
       tone(70, 0.12, "square", 0.055);
-      toast("BREAK! · HUNT INTERRUPTED", "comic");
+      toast(`BREAK! · ${event.name} INTERRUPTED`, "comic");
     } else if (event.type === "slide") {
       tone(135, 0.07, "sawtooth", 0.04);
       toast("SLIDE · LOW LINE", "comic");
@@ -1547,7 +1563,7 @@ function drawEntities(time) {
         context.setLineDash([]);
         context.restore();
       }
-      if (entity.passiveRemaining > 0) {
+      if (entity.passiveRemaining > 0 || entity.passiveActive) {
         context.save();
         context.strokeStyle = agent.accent;
         context.lineWidth = 2;
@@ -1559,25 +1575,63 @@ function drawEntities(time) {
       }
       if (agent.ultimate && entity.ultimateWindupRemaining > 0) {
         const progress = 1 - entity.ultimateWindupRemaining / agent.ultimate.windup;
-        const angle = Math.atan2(entity.ultimateAimY, entity.ultimateAimX);
         context.save();
-        context.rotate(angle);
         context.fillStyle = `${agent.accent}20`;
         context.strokeStyle = agent.accent;
         context.lineWidth = settings.highContrast ? 5 : 3;
         context.setLineDash([12, 8]);
         context.lineDashOffset = settings.reducedMotion ? 0 : -time * 35;
-        context.beginPath();
-        context.moveTo(agent.radius + 4, -32);
-        context.lineTo(agent.ultimate.range, -72);
-        context.lineTo(agent.ultimate.range, 72);
-        context.lineTo(agent.radius + 4, 32);
-        context.closePath();
-        context.fill();
-        context.stroke();
+        if (agent.ultimate.kind === "line-volley") {
+          context.rotate(Math.atan2(entity.ultimateAimY, entity.ultimateAimX));
+          context.beginPath();
+          context.moveTo(agent.radius + 4, -32);
+          context.lineTo(agent.ultimate.range, -72);
+          context.lineTo(agent.ultimate.range, 72);
+          context.lineTo(agent.radius + 4, 32);
+          context.closePath();
+          context.fill();
+          context.stroke();
+          context.setLineDash([]);
+          context.fillStyle = agent.accent;
+          context.fillRect(
+            agent.radius + 6,
+            -3,
+            (agent.ultimate.range - agent.radius - 6) * progress,
+            6,
+          );
+        } else if (agent.ultimate.kind === "field-crown") {
+          const targetX = entity.ultimateTargetX - entity.x;
+          const targetY = entity.ultimateTargetY - entity.y;
+          context.beginPath();
+          context.moveTo(0, 0);
+          context.lineTo(targetX, targetY);
+          context.stroke();
+          for (let index = 0; index < agent.ultimate.fieldCount; index += 1) {
+            const mark = (index / agent.ultimate.fieldCount) * Math.PI * 2;
+            context.beginPath();
+            context.arc(
+              targetX + Math.cos(mark) * agent.ultimate.crownRadius,
+              targetY + Math.sin(mark) * agent.ultimate.crownRadius,
+              agent.ultimate.fieldRadius,
+              0,
+              Math.PI * 2,
+            );
+            context.fill();
+            context.stroke();
+          }
+          context.setLineDash([]);
+          context.lineWidth = 6;
+          context.beginPath();
+          context.arc(
+            targetX,
+            targetY,
+            agent.ultimate.crownRadius,
+            -Math.PI / 2,
+            -Math.PI / 2 + Math.PI * 2 * progress,
+          );
+          context.stroke();
+        }
         context.setLineDash([]);
-        context.fillStyle = agent.accent;
-        context.fillRect(agent.radius + 6, -3, (agent.ultimate.range - agent.radius - 6) * progress, 6);
         context.restore();
       }
       if (entity.hopRemaining > 0) {
@@ -1777,6 +1831,21 @@ function traceAgentBody(agent) {
       [0, -radius * 0.55],
       [radius * 0.72, -radius],
       [radius * 0.35, -radius * 0.28],
+    ]);
+  } else if (agent.silhouette === "maw") {
+    tracePolygon([
+      [radius * 1.12, -radius * 0.34],
+      [radius * 0.38, -radius * 0.18],
+      [radius * 0.82, -radius],
+      [-radius * 0.2, -radius * 0.62],
+      [-radius, -radius * 0.8],
+      [-radius * 0.68, 0],
+      [-radius, radius * 0.8],
+      [-radius * 0.2, radius * 0.62],
+      [radius * 0.82, radius],
+      [radius * 0.38, radius * 0.18],
+      [radius * 1.12, radius * 0.34],
+      [radius * 0.62, 0],
     ]);
   } else {
     context.beginPath();

@@ -82,9 +82,9 @@ function duel({
   return state;
 }
 
-test("content ships nine complete champions, thirteen races, eight maps, and all five mode gates", () => {
+test("content ships ten playable champions, thirteen races, eight maps, and all five mode gates", () => {
   assert.deepEqual(validateContent(), []);
-  assert.equal(CHARACTERS.length, 9);
+  assert.equal(CHARACTERS.length, 10);
   assert.equal(RACES.length, 13);
   assert.ok(MAPS.length >= 8);
   assert.deepEqual(
@@ -118,6 +118,9 @@ test("content ships nine complete champions, thirteen races, eight maps, and all
   assert.equal(yrsa.passive.kind, "movement-prime");
   assert.equal(yrsa.ultimate.kind, "line-volley");
   assert.equal(yrsa.ultimate.chargeRequired, MATCH_TUNING.ultimate.maximum);
+  const varka = getCharacter("ashmaw");
+  assert.equal(varka.passive.kind, "field-temper");
+  assert.equal(varka.ultimate.kind, "field-crown");
 });
 
 test("every arena is an authored old-world place rather than a bare combat grid", () => {
@@ -315,6 +318,168 @@ test("Volt interruption cancels The White Hunt during its visible commitment", (
   assert.equal(
     state.projectiles.some((projectile) => projectile.source === "ultimate"),
     false,
+  );
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("Varka trades projectile speed for weight only while owning Ember terrain", () => {
+  const state = duel({ leftCharacter: "ashmaw", rightCharacter: "mend" });
+  const [varka, tide] = state.entities;
+  const kit = getCharacter("ashmaw");
+  stepMatch(state, { left: { ...idle, fire: true } }, FIXED_DELTA);
+  const ordinary = state.projectiles.find(
+    (projectile) => projectile.ownerId === varka.id,
+  );
+  assert.equal(ordinary.heavy, false);
+  state.projectiles = [];
+
+  varka.primaryCooldown = 0;
+  stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
+  const furrow = state.elementFields.filter(
+    (field) => field.ownerId === varka.id && field.source === "tactical",
+  );
+  assert.equal(furrow.length, kit.tactical.fieldCount);
+  varka.x = furrow[0].x;
+  varka.y = furrow[0].y;
+  varka.lastSafeX = varka.x;
+  varka.lastSafeY = varka.y;
+  const healthBefore = varka.health;
+  stepMatch(state, { left: idle }, FIXED_DELTA);
+  assert.equal(varka.passiveActive, true);
+  assert.equal(varka.health, healthBefore);
+
+  varka.primaryCooldown = 0;
+  stepMatch(state, { left: { ...idle, fire: true } }, FIXED_DELTA);
+  const tempered = state.projectiles.find(
+    (projectile) => projectile.ownerId === varka.id,
+  );
+  assert.equal(tempered.heavy, true);
+  assert.equal(tempered.damage, ordinary.damage);
+  assert.ok(Math.hypot(tempered.vx, tempered.vy) < Math.hypot(ordinary.vx, ordinary.vy));
+  assert.ok(tempered.radius > ordinary.radius);
+  assert.ok(tempered.knockback > ordinary.knockback);
+  assert.equal(state.events.some((event) => event.type === "passiveConverted"), true);
+
+  tide.x = furrow[0].x;
+  tide.y = furrow[0].y;
+  tide.lastSafeX = tide.x;
+  tide.lastSafeY = tide.y;
+  stepMatch(state, { right: { ...idle, special: true } }, FIXED_DELTA);
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.ok(
+    state.elementFields.filter(
+      (field) => field.ownerId === varka.id && field.source === "tactical",
+    ).length < furrow.length,
+  );
+  assert.equal(
+    state.events.some(
+      (event) => ["douse", "redirect"].includes(event.reaction),
+    ),
+    true,
+  );
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("The Ashen Crown telegraphs open seams, cannot self-charge, and yields to Null", () => {
+  const state = duel({ leftCharacter: "ashmaw", rightCharacter: "orbit" });
+  const [varka, nullCantor] = state.entities;
+  const ultimate = getCharacter("ashmaw").ultimate;
+  varka.ultimateCharge = varka.maxUltimate;
+  stepMatch(state, { left: { ...idle, ultimate: true } }, FIXED_DELTA);
+  assert.equal(varka.ultimateCharge, 0);
+  assert.ok(varka.ultimateTargetX > varka.x);
+  assert.equal(state.events.some((event) => event.type === "ultimateTell"), true);
+  nullCantor.x = varka.ultimateTargetX + ultimate.crownRadius;
+  nullCantor.y = varka.ultimateTargetY;
+  nullCantor.lastSafeX = nullCantor.x;
+  nullCantor.lastSafeY = nullCantor.y;
+  const healthBefore = nullCantor.health;
+
+  let cast = false;
+  for (let tick = 0; tick < Math.ceil(ultimate.windup / FIXED_DELTA) + 3; tick += 1) {
+    stepMatch(state, {}, FIXED_DELTA);
+    cast ||= state.events.some((event) => event.type === "ultimateCast");
+  }
+  assert.equal(cast, true);
+  const crown = state.elementFields.filter(
+    (field) => field.ownerId === varka.id && field.source === "ultimate",
+  );
+  assert.equal(crown.length, ultimate.fieldCount);
+  assert.ok(
+    crown.every(
+      (field) =>
+        Math.abs(
+          Math.hypot(
+            field.x - varka.ultimateTargetX,
+            field.y - varka.ultimateTargetY,
+          ) - ultimate.crownRadius,
+        ) < 0.001,
+    ),
+  );
+  assert.ok(
+    ultimate.fieldRadius * 2 * ultimate.fieldCount <
+      Math.PI * 2 * ultimate.crownRadius * 0.72,
+  );
+  assert.ok(nullCantor.health < healthBefore);
+  assert.equal(varka.ultimateCharge, 0);
+
+  nullCantor.x = varka.ultimateTargetX;
+  nullCantor.y = varka.ultimateTargetY;
+  nullCantor.lastSafeX = nullCantor.x;
+  nullCantor.lastSafeY = nullCantor.y;
+  nullCantor.specialCooldown = 0;
+  stepMatch(state, { right: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(
+    state.elementFields.some(
+      (field) => field.ownerId === varka.id && field.source === "ultimate",
+    ),
+    false,
+  );
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "elementReaction" && event.reaction === "nullify",
+    ),
+    true,
+  );
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("bots commit authored crown ultimates through the shared command path", () => {
+  const state = createMatch({
+    modeId: "duel",
+    mapId: "crosswind",
+    botCount: 1,
+    botCharacterIds: ["ashmaw"],
+    players: [
+      {
+        id: "human",
+        characterId: "kite",
+        raceId: "human",
+        team: "alpha",
+        human: true,
+      },
+    ],
+  });
+  const human = state.entities.find((entity) => entity.human);
+  const varka = state.entities.find((entity) => entity.bot);
+  human.x = 350;
+  human.y = 450;
+  human.lastSafeX = human.x;
+  human.lastSafeY = human.y;
+  varka.x = 600;
+  varka.y = 450;
+  varka.lastSafeX = varka.x;
+  varka.lastSafeY = varka.y;
+  varka.ultimateCharge = varka.maxUltimate;
+  varka.botThinkRemaining = 0;
+  stepMatch(state, { human: idle }, FIXED_DELTA);
+  assert.equal(varka.ultimateCharge, 0);
+  assert.ok(varka.ultimateWindupRemaining > 0);
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "ultimateTell" && event.entityId === varka.id,
+    ),
+    true,
   );
   assert.deepEqual(matchInvariantErrors(state), []);
 });

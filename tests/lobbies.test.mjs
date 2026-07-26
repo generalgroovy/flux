@@ -110,28 +110,30 @@ test("lobby input requires monotonic sequences and enforces server sanitization"
   assert.deepEqual(matchInvariantErrors(lobby.state), []);
 });
 
-test("ultimate commands remain server-authoritative through the lobby protocol", () => {
-  const { service } = serviceFixture();
-  service.host(
-    "host",
-    { characterId: "rimewing", raceId: "wyrmbound", botCount: 0 },
-    () => {},
-  );
-  const lobby = [...service.lobbies.values()][0];
-  const member = lobby.members.get("host");
-  const entity = lobby.state.entities.find(
-    (candidate) => candidate.id === member.entityId,
-  );
-  entity.ultimateCharge = entity.maxUltimate;
-  assert.equal(service.input("host", 1, { ultimate: true }).ok, true);
-  service.tick(1 / MATCH_TUNING.tickRate);
-  assert.equal(entity.ultimateCharge, 0);
-  assert.ok(entity.ultimateWindupRemaining > 0);
-  assert.equal(
-    lobby.state.events.some((event) => event.type === "ultimateTell"),
-    true,
-  );
-  assert.deepEqual(matchInvariantErrors(lobby.state), []);
+test("distinct ultimate commands remain server-authoritative through the lobby protocol", () => {
+  for (const characterId of ["rimewing", "ashmaw"]) {
+    const { service } = serviceFixture();
+    service.host(
+      "host",
+      { characterId, raceId: "wyrmbound", botCount: 0 },
+      () => {},
+    );
+    const lobby = [...service.lobbies.values()][0];
+    const member = lobby.members.get("host");
+    const entity = lobby.state.entities.find(
+      (candidate) => candidate.id === member.entityId,
+    );
+    entity.ultimateCharge = entity.maxUltimate;
+    assert.equal(service.input("host", 1, { ultimate: true }).ok, true);
+    service.tick(1 / MATCH_TUNING.tickRate);
+    assert.equal(entity.ultimateCharge, 0);
+    assert.ok(entity.ultimateWindupRemaining > 0);
+    assert.equal(
+      lobby.state.events.some((event) => event.type === "ultimateTell"),
+      true,
+    );
+    assert.deepEqual(matchInvariantErrors(lobby.state), []);
+  }
 });
 
 test("full and missing lobbies fail explicitly", () => {

@@ -197,12 +197,16 @@ function createEntity(spec, index, map) {
     mobilityX: facingX,
     mobilityY: 0,
     passiveRemaining: 0,
+    passiveActive: false,
+    passiveCueCooldown: 0,
     ultimateCharge: 0,
     maxUltimate: agent.ultimate?.chargeRequired ?? 0,
     ultimateWindupRemaining: 0,
     ultimateResolvePending: false,
     ultimateAimX: facingX,
     ultimateAimY: 0,
+    ultimateTargetX: spawn.x,
+    ultimateTargetY: spawn.y,
     flow: maxFlow,
     maxFlow,
     flowRecoveryDelay: 0,
@@ -414,6 +418,7 @@ function tickEntity(entity, delta) {
     "fluxWarningCooldown",
     "counterStrafeCooldown",
     "passiveRemaining",
+    "passiveCueCooldown",
     "ultimateWindupRemaining",
   ]) {
     entity[key] = Math.max(0, finite(entity[key]) - delta);
@@ -475,7 +480,7 @@ function updateEntity(state, entity, command, delta, map) {
   if (entity.human && (command.moveX !== 0 || command.moveY !== 0)) {
     state.tutorial.moved = true;
   }
-  if (tryStartUltimate(state, entity, command, agent)) {
+  if (tryStartUltimate(state, entity, command, agent, map)) {
     moveEntity(
       state,
       entity,
@@ -538,6 +543,24 @@ function updateEntity(state, entity, command, delta, map) {
         x: entity.x,
         y: entity.y,
       });
+    } else if (agent.passive?.kind === "field-temper" && entity.passiveActive) {
+      primary = {
+        ...primary,
+        speed: primary.speed * agent.passive.speedMultiplier,
+        radius: primary.radius * agent.passive.radiusMultiplier,
+        knockback: primary.knockback * agent.passive.knockbackMultiplier,
+        heavy: true,
+      };
+      if (entity.passiveCueCooldown === 0) {
+        entity.passiveCueCooldown = 0.7;
+        state.events.push({
+          type: "passiveConverted",
+          entityId: entity.id,
+          name: agent.passive.name,
+          x: entity.x,
+          y: entity.y,
+        });
+      }
     }
     firePattern(state, entity, primary, "primary");
     entity.primaryCooldown = agent.primary.cooldown;
@@ -910,7 +933,7 @@ function primeMovementPassive(state, entity, agent, trigger) {
   });
 }
 
-function tryStartUltimate(state, entity, command, agent) {
+function tryStartUltimate(state, entity, command, agent, map) {
   const ultimate = agent.ultimate;
   if (
     !command.ultimate || !ultimate ||
@@ -925,6 +948,14 @@ function tryStartUltimate(state, entity, command, agent) {
   entity.ultimateWindupRemaining = ultimate.windup;
   entity.ultimateAimX = entity.facingX;
   entity.ultimateAimY = entity.facingY;
+  if (ultimate.kind === "field-crown") {
+    const target = clippedRayEnd(entity, ultimate.targetRange, map);
+    entity.ultimateTargetX = target.x;
+    entity.ultimateTargetY = target.y;
+  } else {
+    entity.ultimateTargetX = entity.x;
+    entity.ultimateTargetY = entity.y;
+  }
   entity.sprinting = false;
   state.events.push({
     type: "ultimateTell",
@@ -935,6 +966,9 @@ function tryStartUltimate(state, entity, command, agent) {
     y: entity.y,
     dx: entity.ultimateAimX,
     dy: entity.ultimateAimY,
+    targetX: entity.ultimateTargetX,
+    targetY: entity.ultimateTargetY,
+    kind: ultimate.kind,
   });
   return true;
 }
@@ -944,26 +978,46 @@ function resolveUltimate(state, entity, agent, map) {
   if (!ultimate) return;
   entity.facingX = entity.ultimateAimX;
   entity.facingY = entity.ultimateAimY;
-  const end = clippedRayEnd(entity, ultimate.range, map);
-  for (let index = 0; index < ultimate.fieldCount; index += 1) {
-    const fraction = (index + 1) / ultimate.fieldCount;
-    createElementField(
-      state,
-      entity,
-      "ice",
-      {
-        x: entity.x + (end.x - entity.x) * fraction,
-        y: entity.y + (end.y - entity.y) * fraction,
-        radius: ultimate.fieldRadius,
-        duration: ultimate.fieldDuration,
-        directionX: entity.ultimateAimX,
-        directionY: entity.ultimateAimY,
-        source: "ultimate",
-      },
-      false,
-    );
+  let end = { x: entity.ultimateTargetX, y: entity.ultimateTargetY };
+  if (ultimate.kind === "line-volley") {
+    end = clippedRayEnd(entity, ultimate.range, map);
+    for (let index = 0; index < ultimate.fieldCount; index += 1) {
+      const fraction = (index + 1) / ultimate.fieldCount;
+      createElementField(
+        state,
+        entity,
+        "ice",
+        {
+          x: entity.x + (end.x - entity.x) * fraction,
+          y: entity.y + (end.y - entity.y) * fraction,
+          radius: ultimate.fieldRadius,
+          duration: ultimate.fieldDuration,
+          directionX: entity.ultimateAimX,
+          directionY: entity.ultimateAimY,
+          source: "ultimate",
+        },
+        false,
+      );
+    }
+    firePattern(state, entity, ultimate, "ultimate");
+  } else if (ultimate.kind === "field-crown") {
+    for (let index = 0; index < ultimate.fieldCount; index += 1) {
+      const angle = (index / ultimate.fieldCount) * Math.PI * 2;
+      createElementField(
+        state,
+        entity,
+        "fire",
+        {
+          x: end.x + Math.cos(angle) * ultimate.crownRadius,
+          y: end.y + Math.sin(angle) * ultimate.crownRadius,
+          radius: ultimate.fieldRadius,
+          duration: ultimate.fieldDuration,
+          source: "ultimate",
+        },
+        false,
+      );
+    }
   }
-  firePattern(state, entity, ultimate, "ultimate");
   state.events.push({
     type: "ultimateCast",
     entityId: entity.id,
@@ -972,6 +1026,8 @@ function resolveUltimate(state, entity, agent, map) {
     y: entity.y,
     endX: end.x,
     endY: end.y,
+    kind: ultimate.kind,
+    element: agent.affinity.id,
   });
 }
 
@@ -993,6 +1049,7 @@ function updateElementFields(state, delta) {
     entity.surface = "normal";
     entity.elementForceX = 0;
     entity.elementForceY = 0;
+    entity.passiveActive = false;
   }
   for (const field of state.elementFields) {
     field.duration -= delta;
@@ -1083,6 +1140,12 @@ function updateElementFields(state, delta) {
         continue;
       }
       if (field.element === "ice") entity.surface = "ice";
+      if (
+        field.element === "fire" && field.team === entity.team &&
+        getCharacter(entity.characterId).passive?.kind === "field-temper"
+      ) {
+        entity.passiveActive = true;
+      }
       if (field.element === "wind") {
         entity.elementForceX += field.directionX * MATCH_TUNING.elements.windForce;
         entity.elementForceY += field.directionY * MATCH_TUNING.elements.windForce;
@@ -1101,7 +1164,7 @@ function updateElementFields(state, delta) {
       ) {
         const owner = state.entities.find((candidate) => candidate.id === field.ownerId);
         damageEntity(state, entity, MATCH_TUNING.elements.fireDamage, owner, {
-          source: "fire",
+          source: field.source === "ultimate" ? "ultimate" : "fire",
         });
       }
     }
@@ -1126,7 +1189,27 @@ function useSpecial(state, entity, agent, map) {
     x: entity.x,
     y: entity.y,
   });
-  if (special.kind === "cone") {
+  if (special.kind === "trail") {
+    const end = clippedRayEnd(entity, special.range, map);
+    for (let index = 0; index < special.fieldCount; index += 1) {
+      const fraction = (index + 1) / special.fieldCount;
+      createElementField(
+        state,
+        entity,
+        "fire",
+        {
+          x: entity.x + (end.x - entity.x) * fraction,
+          y: entity.y + (end.y - entity.y) * fraction,
+          radius: special.fieldRadius,
+          duration: special.fieldDuration,
+          directionX: entity.facingX,
+          directionY: entity.facingY,
+          source: "tactical",
+        },
+        index === 0,
+      );
+    }
+  } else if (special.kind === "cone") {
     for (const target of opponentsOf(state, entity)) {
       const offsetX = target.x - entity.x;
       const offsetY = target.y - entity.y;
@@ -1782,6 +1865,7 @@ function eliminateEntity(state, target, attacker) {
   target.vy = 0;
   target.mobilityRemaining = 0;
   target.passiveRemaining = 0;
+  target.passiveActive = false;
   target.ultimateWindupRemaining = 0;
   target.ultimateResolvePending = false;
   if (attacker && attacker !== target) attacker.kills += 1;
@@ -1878,12 +1962,16 @@ function respawnEntity(entity, map) {
   entity.defenseRemaining = 0;
   entity.mobilityRemaining = 0;
   entity.passiveRemaining = 0;
+  entity.passiveActive = false;
+  entity.passiveCueCooldown = 0;
   entity.maxUltimate = agent.ultimate?.chargeRequired ?? 0;
   entity.ultimateCharge = clamp(entity.ultimateCharge, 0, entity.maxUltimate);
   entity.ultimateWindupRemaining = 0;
   entity.ultimateResolvePending = false;
   entity.ultimateAimX = entity.facingX;
   entity.ultimateAimY = entity.facingY;
+  entity.ultimateTargetX = entity.x;
+  entity.ultimateTargetY = entity.y;
   entity.maxFlow = MATCH_TUNING.flow.maximum * race.flow;
   entity.flow = entity.maxFlow;
   entity.flowRecoveryDelay = 0;
@@ -2124,7 +2212,7 @@ function updateBotCommand(state, entity, delta, map) {
       Boolean(agent.ultimate) &&
       entity.ultimateCharge >= (agent.ultimate?.chargeRequired ?? Infinity) &&
       distance >= 150 &&
-      distance <= (agent.ultimate?.range ?? 0) * 0.92,
+      distance <= (agent.ultimate?.range ?? agent.ultimate?.targetRange ?? 0) * 0.92,
   };
   if (
     state.modeId === "training" &&
@@ -2267,6 +2355,8 @@ function repairState(state, map) {
       0,
       agent.passive?.duration ?? 0,
     );
+    entity.passiveActive = entity.passiveActive === true;
+    entity.passiveCueCooldown = clamp(finite(entity.passiveCueCooldown), 0, 1);
     entity.maxUltimate = agent.ultimate?.chargeRequired ?? 0;
     entity.ultimateCharge = clamp(
       finite(entity.ultimateCharge),
@@ -2280,6 +2370,8 @@ function repairState(state, map) {
     );
     entity.ultimateAimX = finite(entity.ultimateAimX, entity.facingX);
     entity.ultimateAimY = finite(entity.ultimateAimY, entity.facingY);
+    entity.ultimateTargetX = finite(entity.ultimateTargetX, entity.x);
+    entity.ultimateTargetY = finite(entity.ultimateTargetY, entity.y);
     constrainCircle(entity, agent.radius, map.size);
   }
   state.projectiles = state.projectiles.filter(
@@ -2333,11 +2425,14 @@ export function matchInvariantErrors(state) {
       "fluxWarningCooldown",
       "counterStrafeCooldown",
       "passiveRemaining",
+      "passiveCueCooldown",
       "ultimateCharge",
       "maxUltimate",
       "ultimateWindupRemaining",
       "ultimateAimX",
       "ultimateAimY",
+      "ultimateTargetX",
+      "ultimateTargetY",
     ]) {
       if (!Number.isFinite(entity[key])) errors.push(`${entity.id}.${key} is not finite`);
     }

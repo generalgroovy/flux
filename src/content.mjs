@@ -595,6 +595,81 @@ export const CHARACTERS = Object.freeze([
       knockback: 95,
     },
   }),
+  character({
+    id: "ashmaw",
+    homeRaceId: "wyrmbound",
+    affinity: { kind: "element", id: "fire", name: "EMBER", edge: "Douseable route pressure and clash conversion" },
+    name: "VARKA ASHMAW",
+    role: "Wyrmbound pyre exile",
+    style: "Yrsa's oath-broken counterpart authors dangerous ground, trades projectile speed for clash weight, and crowns an escape route instead of chasing it.",
+    color: "#f2dfca",
+    accent: "#e87b52",
+    glyph: "ᚴ",
+    silhouette: "maw",
+    radius: 19.5,
+    difficulty: 3,
+    health: 110,
+    speed: 405,
+    passive: {
+      name: "PYRE-FORGED",
+      detail: "From allied fire, Cinder Tooth becomes slower, wider, and heavy without gaining damage.",
+      kind: "field-temper",
+      speedMultiplier: 0.68,
+      radiusMultiplier: 1.5,
+      knockbackMultiplier: 2.1,
+    },
+    primary: {
+      name: "CINDER TOOTH",
+      detail: "Exact ember that can be tempered through owned ground.",
+      damage: 23,
+      cooldown: 0.22,
+      speed: 920,
+      lifetime: 1.3,
+      radius: 6,
+      count: 1,
+      spread: 0,
+      knockback: 65,
+    },
+    special: {
+      name: "PYRE FURROW",
+      detail: "Inscribe a narrow, douseable fire route.",
+      kind: "trail",
+      cooldown: 1.45,
+      range: 280,
+      fieldCount: 3,
+      fieldRadius: 58,
+      fieldDuration: 2.2,
+    },
+    defense: {
+      name: "SMOKE SHED",
+      detail: "Briefly shed form and let the committed spell pass.",
+      kind: "phase",
+      duration: 0.17,
+      cooldown: 1.5,
+    },
+    mobility: {
+      name: "TALON VAULT",
+      detail: "Recoil from the aimed threat without turning away.",
+      kind: "recoil",
+      speed: 1020,
+      duration: 0.12,
+      cooldown: 1.15,
+    },
+    ultimate: {
+      name: "THE ASHEN CROWN",
+      detail: "Mark a distant ring, then kindle six sigils with readable escape seams.",
+      kind: "field-crown",
+      chargeRequired: 100,
+      chargePerDamage: 0.78,
+      windup: 0.72,
+      moveScale: 0.5,
+      targetRange: 340,
+      crownRadius: 180,
+      fieldCount: 6,
+      fieldRadius: 52,
+      fieldDuration: 3.2,
+    },
+  }),
 ]);
 
 export const MAPS = Object.freeze([
@@ -1174,7 +1249,7 @@ export function validateContent({
       errors.push(`${agent.id}.tactical must retain the stable special wire alias`);
     }
     if (
-      !["kite", "block", "split", "bolt", "flare", "ring", "cross", "rook", "wing"].includes(
+      !["kite", "block", "split", "bolt", "flare", "ring", "cross", "rook", "wing", "maw"].includes(
         agent.silhouette,
       )
     ) {
@@ -1205,37 +1280,77 @@ export function validateContent({
         errors.push(`${agent.id}.${ability.name}.fluxCost must be payable`);
       }
     }
+    if (
+      agent.tactical.kind === "trail" &&
+      (!Number.isFinite(agent.tactical.range) || agent.tactical.range <= 0 ||
+        !Number.isInteger(agent.tactical.fieldCount) ||
+        agent.tactical.fieldCount < 2 || agent.tactical.fieldCount > 4 ||
+        !Number.isFinite(agent.tactical.fieldRadius) ||
+        agent.tactical.fieldRadius <= 0 ||
+        !Number.isFinite(agent.tactical.fieldDuration) ||
+        agent.tactical.fieldDuration <= 0)
+    ) {
+      errors.push(`${agent.id}.trail tactical must author a bounded route`);
+    }
     if (agent.passive) {
-      if (
-        !agent.passive.name || !agent.passive.detail ||
-        agent.passive.kind !== "movement-prime" ||
-        !Number.isFinite(agent.passive.duration) || agent.passive.duration <= 0 ||
-        !Number.isFinite(agent.passive.speedMultiplier) ||
-        agent.passive.speedMultiplier <= 1 || agent.passive.speedMultiplier > 1.3 ||
-        !Number.isFinite(agent.passive.spreadMultiplier) ||
-        agent.passive.spreadMultiplier <= 0 || agent.passive.spreadMultiplier >= 1
+      const passive = agent.passive;
+      if (!passive.name || !passive.detail) {
+        errors.push(`${agent.id}.passive needs a name and readable detail`);
+      } else if (
+        passive.kind === "movement-prime" &&
+        (!Number.isFinite(passive.duration) || passive.duration <= 0 ||
+          !Number.isFinite(passive.speedMultiplier) ||
+          passive.speedMultiplier <= 1 || passive.speedMultiplier > 1.3 ||
+          !Number.isFinite(passive.spreadMultiplier) ||
+          passive.spreadMultiplier <= 0 || passive.spreadMultiplier >= 1)
       ) {
-        errors.push(`${agent.id}.passive must be a bounded movement-prime contract`);
+        errors.push(`${agent.id}.passive movement prime must remain bounded`);
+      } else if (
+        passive.kind === "field-temper" &&
+        (!Number.isFinite(passive.speedMultiplier) ||
+          passive.speedMultiplier < 0.5 || passive.speedMultiplier >= 1 ||
+          !Number.isFinite(passive.radiusMultiplier) ||
+          passive.radiusMultiplier <= 1 || passive.radiusMultiplier > 1.75 ||
+          !Number.isFinite(passive.knockbackMultiplier) ||
+          passive.knockbackMultiplier <= 1 || passive.knockbackMultiplier > 2.5)
+      ) {
+        errors.push(`${agent.id}.passive field temper must trade speed for bounded weight`);
+      } else if (!["movement-prime", "field-temper"].includes(passive.kind)) {
+        errors.push(`${agent.id}.passive kind is unsupported`);
       }
     }
     if (agent.ultimate) {
       const ultimate = agent.ultimate;
       if (
-        !ultimate.name || !ultimate.detail || ultimate.kind !== "line-volley" ||
+        !ultimate.name || !ultimate.detail ||
         ultimate.chargeRequired !== tuning.ultimate.maximum ||
         !Number.isFinite(ultimate.chargePerDamage) || ultimate.chargePerDamage <= 0 ||
         ultimate.windup < tuning.ultimate.minimumWindup ||
         ultimate.windup > tuning.ultimate.maximumWindup ||
         !Number.isFinite(ultimate.moveScale) || ultimate.moveScale <= 0 ||
-        ultimate.moveScale > 0.5 || !Number.isFinite(ultimate.range) ||
-        ultimate.range <= 0 || !Number.isInteger(ultimate.fieldCount) ||
-        ultimate.fieldCount < 1 || ultimate.fieldCount > 4 ||
+        ultimate.moveScale > 0.5 || !Number.isInteger(ultimate.fieldCount) ||
+        ultimate.fieldCount < 1 || ultimate.fieldCount > 8 ||
         !Number.isFinite(ultimate.fieldRadius) || ultimate.fieldRadius <= 0 ||
-        !Number.isFinite(ultimate.fieldDuration) || ultimate.fieldDuration <= 0 ||
-        !Number.isFinite(ultimate.damage) || ultimate.damage <= 0 ||
-        !Number.isInteger(ultimate.count) || ultimate.count < 1 || ultimate.count > 7
+        !Number.isFinite(ultimate.fieldDuration) || ultimate.fieldDuration <= 0
       ) {
-        errors.push(`${agent.id}.ultimate must be a bounded, telegraphed line-volley`);
+        errors.push(`${agent.id}.ultimate needs bounded charge, tell, movement, and fields`);
+      } else if (
+        ultimate.kind === "line-volley" &&
+        (!Number.isFinite(ultimate.range) || ultimate.range <= 0 ||
+          !Number.isFinite(ultimate.damage) || ultimate.damage <= 0 ||
+          !Number.isInteger(ultimate.count) || ultimate.count < 1 || ultimate.count > 7)
+      ) {
+        errors.push(`${agent.id}.line-volley ultimate must remain bounded`);
+      } else if (
+        ultimate.kind === "field-crown" &&
+        (!Number.isFinite(ultimate.targetRange) || ultimate.targetRange <= 0 ||
+          !Number.isFinite(ultimate.crownRadius) || ultimate.crownRadius <= 0 ||
+          ultimate.fieldRadius * 2 * ultimate.fieldCount >=
+            Math.PI * 2 * ultimate.crownRadius * 0.72)
+      ) {
+        errors.push(`${agent.id}.field-crown ultimate must preserve readable escape seams`);
+      } else if (!["line-volley", "field-crown"].includes(ultimate.kind)) {
+        errors.push(`${agent.id}.ultimate kind is unsupported`);
       }
     }
   }

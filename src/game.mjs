@@ -865,7 +865,13 @@ function updateCoach(mode) {
       );
     }
     if (matchState.tutorial.step === 0) {
-      text.textContent = "Hold ALT to sprint. Tap C to hop; press both at speed to commit to a slide.";
+      text.textContent = !matchState.tutorial.sprinted
+        ? "Hold ALT while moving to build sprint speed."
+        : !matchState.tutorial.slid
+          ? "At speed, hold ALT + C together to commit to a slide."
+          : !matchState.tutorial.hopped
+            ? "Release ALT, then tap C to hop and carry your angle."
+            : "FLOW chain learned.";
     } else if (matchState.tutorial.step === 1) {
       text.textContent = "MOVE while aiming. Land pressure with MB1.";
     } else if (matchState.tutorial.step === 2) {

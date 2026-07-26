@@ -10,7 +10,12 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
-Build 0.22.0 completes the first universal movement-grammar pass with a one-use
+Build 0.23.0 streamlines the First Rite around demonstrated FLOW behavior. Its
+opening read now requires a real sprint, committed slide, and separate hop while
+keeping the existing four-stage structure. The live prompt names only the next
+missing behavior; bots cannot complete it, and players may still skip instantly.
+
+Build 0.22.0 completed the first universal movement-grammar pass with a one-use
 landing cut. After a hop fully resolves, a 110 ms true reversal gains 18% extra
 counter-strafe authority and immediately consumes the window. It never shortens
 the hop, inherits ice's reduced control, and cannot be held for repeated turns.

@@ -130,6 +130,7 @@ export function createMatch(options = {}) {
       step: mode.id === "training" ? 0 : 4,
       sprinted: false,
       hopped: false,
+      slid: false,
       moved: false,
       fired: false,
       mobility: false,
@@ -492,6 +493,7 @@ function trySlide(state, entity, command) {
   entity.slideY = direction.y;
   entity.sprinting = false;
   state.tutorial.sprinted ||= entity.human;
+  state.tutorial.slid ||= entity.human;
   state.events.push({
     type: "slide", entityId: entity.id,
     x: entity.x, y: entity.y, dx: direction.x, dy: direction.y,
@@ -579,6 +581,7 @@ function tryHop(state, entity, command) {
     !command.hop ||
     entity.hopCooldown > 0 ||
     entity.hopRemaining > 0 ||
+    entity.slideRemaining > 0 ||
     entity.flow < flow.hopCost
   ) {
     return;
@@ -1818,7 +1821,10 @@ function finishMatch(state, team) {
 
 function updateTutorial(state) {
   if (state.tutorial.skipped || state.modeId !== "training") return;
-  if (state.tutorial.step === 0 && state.tutorial.sprinted && state.tutorial.hopped) {
+  if (
+    state.tutorial.step === 0 && state.tutorial.sprinted &&
+    state.tutorial.hopped && state.tutorial.slid
+  ) {
     state.tutorial.step = 1;
     state.events.push({ type: "tutorialStep", step: 1 });
   } else if (

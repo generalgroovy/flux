@@ -846,3 +846,29 @@
 - **Recommended next task:** Add deterministic chain tests for slide→hop,
   wall-kick→slide, hop→landing-cut, and shrine traversal, then lock the movement
   grammar before expanding champion ultimates.
+
+## 2026-07-26 — Adaptive First Rite FLOW chain
+
+- **Player-facing problem:** The opening rite advanced after only one sprint tick
+  and one hop, leaving the new committed slide untaught and presenting the whole
+  instruction at once.
+- **Implemented solution:** The same first of four reads now observes a genuine
+  sprint, completed slide, and separate hop. The live prompt adapts to the next
+  missing behavior, while skip remains immediate and bot actions remain excluded.
+  Slide and hop cannot overlap, preventing accidental completion through a held
+  chord.
+- **Commands run:** Syntax checks for simulation and controller; `git diff
+  --check`; focused match suite twice around the repaired flag; `npm test`; clean
+  server launch on port 8121; HTTP health/shell/module smoke; clean shutdown.
+- **Tests passed:** 55/55 checks, including behavior order, real slide activation,
+  separate hop, adaptive state, bot exclusion, expanded stress, networking, and
+  cleanup.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.23.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Regression repaired:** The first implementation placed the slide-observed flag
+  in sprint recovery; review caught it, moved it to successful slide start, and
+  reran the complete focused suite.
+- **Known limitation:** New-player observation remains pending because no browser
+  executable or external playtester is available here.
+- **Recommended next task:** Add the movement-chain regression matrix, then begin
+  the production passive/tactical/ultimate schema with Yrsa as the first pilot.

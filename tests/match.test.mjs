@@ -766,8 +766,20 @@ test("first contact teaches flow before the complete combat language", () => {
     characterId: "kite",
     botCount: 1,
   });
-  stepMatch(state, { p1: { ...idle, moveX: 1, sprint: true } }, FIXED_DELTA);
+  for (let tick = 0; tick < 16; tick += 1) {
+    stepMatch(state, { p1: { ...idle, moveX: 1, sprint: true } }, FIXED_DELTA);
+  }
   assert.equal(state.tutorial.step, 0);
+  stepMatch(
+    state,
+    { p1: { ...idle, moveX: 1, sprint: true, hop: true } },
+    FIXED_DELTA,
+  );
+  assert.equal(state.tutorial.step, 0);
+  assert.equal(state.tutorial.slid, true);
+  for (let tick = 0; tick < 40; tick += 1) {
+    stepMatch(state, { p1: idle }, FIXED_DELTA);
+  }
   stepMatch(state, { p1: { ...idle, moveX: 1, hop: true } }, FIXED_DELTA);
   assert.equal(state.tutorial.step, 1);
   assert.equal(state.tutorial.sprinted, true);

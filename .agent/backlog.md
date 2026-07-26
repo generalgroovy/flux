@@ -1,11 +1,19 @@
 # HEX backlog
 
+Priority remains fundamentals → compact PvP → PvPvE → PvE. Add race champions
+only as complete contrasting kits inside those proven loops. Keep Battle Royale
+and other scale-heavy variants unexposed until combat, authority, objectives,
+recovery, and performance are accepted at smaller scales.
+
 ## Release acceptance
 
-1. Hands-on accept HEX 0.30.0 on Garuda Sway and Windows: complete the FIRST
+1. Hands-on accept HEX 0.31.0 on Garuda Sway and Windows: complete the FIRST
    RITE defense read with reflection, guard, phase, absorb, and counter; require
    one obvious gold-diamond practice spell, restrained comic/audio feedback,
    no accidental button-only completion, no elimination, and an immediate skip.
+   Repeat the final trial across terrain creation, Veil, aimed Volt/Prism, Null,
+   and armed Ember; require tailored copy, no pass on a miss or blocked Stone,
+   safe spar behavior, and a clear comic/audio completion cue.
    Then remap movement and
    every action, confirm duplicate swaps and reserved-key feedback, relaunch to
    verify persistence, and confirm HUD, guide, live info, and FIRST RITE labels
@@ -68,7 +76,9 @@
 - Deterministic adverse-network conditioning and stale-snapshot rejection are live.
 - First Rite requires an actual safe, telegraphed defense interaction across all
   five shipped defense families; a button press alone cannot advance it.
-- Next acceptance: hands-on FLOW/Flux tuning, behavior-driven discipline trials,
+- Its final stage now proves each shipped tactical's real world-state, timing, or
+  impact contract instead of accepting an empty cast.
+- Next acceptance: hands-on FLOW/Flux and discipline-trial tuning,
   share-link testing across Linux/Windows, and network-lab reconciliation tuning.
 
 ## Expansion acceptance — not exposed until complete

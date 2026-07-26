@@ -1117,3 +1117,36 @@
   comfort, and impaired-network play remain pending. Next build one similarly
   behavior-driven Flux/element reaction trial without lengthening the rite or
   blocking immediate skip.
+
+## 2026-07-26 — First Rite discipline proof
+
+- **Player-facing problem:** The rite's final stage still completed on an empty
+  tactical key press. It did not teach that Flux magic must create world state,
+  connect through geometry, or survive a timing commitment.
+- **Implemented solution:** HEX 0.31.0 replaces that input check with production
+  outcomes. Gale, Stone, Tide, Rime, and Ember terrain must be created validly;
+  Veil must author a decoy; aimed Volt and Prism must hit; Null must catch a
+  nearby target; and Cinder's trap must finish arming. Tailored input-aware copy
+  explains each proof. Misses
+  and blocked Stone do not advance. The spar retains movement but cannot fire or
+  use abilities through the unfinished final stage, preserving safe practice.
+  Completion has a concise comic/audio cue and the rite still has four stages and
+  an immediate skip.
+- **Verification:** Source/server and shell syntax plus `git diff --check` passed.
+  Focused simulation coverage passed 51/51. Full `npm test` passed 75/75 checks:
+  73 deterministic/DOM/lobby/network-conditioner/diagnostic checks, one live
+  authoritative WebSocket lifecycle check, and one isolated cleanup check. New
+  coverage proves every tactical family, real miss rejection, delayed trap arm,
+  three seconds of restrained spar safety, invariant health, and existing combat
+  stress/soak behavior.
+- **Launch smoke:** Port 8129 reported HEX 0.31.0/protocol 2; `/` and
+  `/src/game.mjs` returned `200 OK` with all security headers. Ctrl+C exited the
+  server with status 0, and a failed health request confirmed the port closed.
+  A subsequent shipped `npm stop` found no registered instances, the registry
+  directory was empty, and `ps -C node` found no remaining Node process. Socket
+  enumeration itself was unavailable inside the restricted sandbox.
+- **Known limitation / next task:** No browser executable or second device is
+  installed here. Hands-on trial pacing, copy legibility, sound mix, and remote
+  prediction remain pending. Next add a short optional interaction drill where
+  two elements combine through geometry, starting with Gale bending a hostile
+  spell or Tide redirecting Ember, without adding elemental damage bonuses.

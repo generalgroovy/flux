@@ -1092,7 +1092,7 @@ function updateCoach(mode) {
           ? `The spar marks a safe spell. Time ${keyLabel(settings.bindings.defense)} as it arrives.`
           : "Defense read proven.";
     } else if (matchState.tutorial.step === 3) {
-      text.textContent = `Commit tactical ${keyLabel(settings.bindings.tactical)} up close. Miss, and you surrender tempo.`;
+      text.textContent = tacticalTrialCopy(localPlayer());
     } else {
       text.textContent = "Language learned. Read the spar and finish the fight.";
     }
@@ -1112,6 +1112,24 @@ function updateCoach(mode) {
           : mode.description;
     }
   }
+}
+
+function tacticalTrialCopy(player) {
+  const key = keyLabel(settings.bindings.tactical);
+  const prompts = {
+    kite: `Aim ${key} into open ground. Carve a Gale channel that changes the next trajectory.`,
+    bulwark: `Aim ${key} into open ground. Raise Stone cover that changes the route.`,
+    echo: `Cast ${key} to leave a Veil double. Recast later to swap positions.`,
+    volt: `Line up the spar and land ${key}. Volt rewards exact interruption timing.`,
+    cinder: `Plant ${key} in the spar's route. Hold space until the Ember rune arms.`,
+    orbit: `Close the gap, then catch the spar with ${key}. Null needs a punishable window.`,
+    mend: `Spend ${key} to shape Tide terrain. It redirects Ember and restores allied FLOW.`,
+    rook: `Aim ${key} and land one split Prism ray. Angles create the conversion.`,
+    rimewing: `Aim ${key} across the route. Rime trades traction for space control.`,
+    ashmaw: `Aim ${key} to inscribe a douseable Ember route with open exits.`,
+  };
+  return prompts[player?.characterId] ??
+    `Commit ${key} where its geometry changes the exchange.`;
 }
 
 function localPlayer() {
@@ -1162,13 +1180,17 @@ function processEvents(events, tick) {
     } else if (event.type === "tutorialStep") {
       toast(`READ ${event.step + 1} / 4`);
     } else if (event.type === "tutorialComplete") {
-      toast("CORE MOVEMENT + COMBAT ONLINE");
+      tone(760, 0.12, "triangle", 0.06);
+      toast("PROVEN! · CORE LANGUAGE ONLINE", "comic");
     } else if (event.type === "trainingPressure") {
       tone(285, 0.09, "triangle", 0.045);
       toast("READ! · DEFEND THE MARKED SPELL", "comic");
     } else if (event.type === "defenseRead") {
       tone(690, 0.08, "triangle", 0.055);
       toast("TURN! · DEFENSE READ PROVEN", "comic");
+    } else if (event.type === "mineArmed") {
+      tone(185, 0.08, "square", 0.045);
+      toast("TICK! · EMBER RUNE ARMED", "comic");
     } else if (event.type === "wallKick") {
       toast("WALL KICK · ANGLE STOLEN");
     } else if (event.type === "counterStrafe") {

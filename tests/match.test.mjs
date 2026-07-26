@@ -1486,7 +1486,112 @@ test("every defense family proves the First Rite only on a real incoming spell",
   }
 });
 
-test("bot actions cannot complete a human first-contact read", () => {
+test("field, Veil, and Tide tacticals prove authored world state", () => {
+  for (const characterId of [
+    "kite",
+    "bulwark",
+    "echo",
+    "mend",
+    "rimewing",
+    "ashmaw",
+  ]) {
+    const state = createMatch({
+      modeId: "training",
+      mapId: "breakline",
+      characterId,
+      botCount: 1,
+    });
+    const player = playerFor(state);
+    const spar = state.entities.find((entity) => entity.bot);
+    state.tutorial.step = 3;
+    player.x = 200;
+    player.y = 450;
+    spar.x = 720;
+    spar.y = 450;
+    stepMatch(
+      state,
+      { p1: { ...idle, aimX: 1, special: true } },
+      FIXED_DELTA,
+    );
+    assert.equal(state.tutorial.special, true, characterId);
+    assert.equal(state.tutorial.step, 4, characterId);
+    assert.equal(
+      state.events.some((event) => event.type === "tacticalProof"),
+      true,
+      characterId,
+    );
+    assert.deepEqual(matchInvariantErrors(state), []);
+  }
+});
+
+test("aimed tacticals need a real impact to prove the First Rite", () => {
+  for (const characterId of ["volt", "orbit", "rook"]) {
+    const state = createMatch({
+      modeId: "training",
+      mapId: "breakline",
+      characterId,
+      botCount: 1,
+    });
+    const player = playerFor(state);
+    const spar = state.entities.find((entity) => entity.bot);
+    state.tutorial.step = 3;
+    player.x = 200;
+    player.y = 450;
+    player.spawnProtection = 0;
+    spar.x = characterId === "orbit" ? 500 : 320;
+    spar.y = 450;
+    spar.spawnProtection = 0;
+
+    stepMatch(
+      state,
+      { p1: { ...idle, aimX: -1, special: true } },
+      FIXED_DELTA,
+    );
+    assert.equal(state.tutorial.special, false, `${characterId} missed`);
+    player.specialCooldown = 0;
+    spar.x = 320;
+    for (let tick = 0; tick < 24 && !state.tutorial.special; tick += 1) {
+      stepMatch(
+        state,
+        { p1: { ...idle, aimX: 1, special: tick === 0 } },
+        FIXED_DELTA,
+      );
+    }
+    assert.equal(state.tutorial.special, true, characterId);
+    assert.equal(state.tutorial.step, 4, characterId);
+    assert.deepEqual(matchInvariantErrors(state), []);
+  }
+});
+
+test("Cinder proves trap timing only after the Ember rune arms", () => {
+  const state = createMatch({
+    modeId: "training",
+    mapId: "breakline",
+    characterId: "cinder",
+    botCount: 1,
+  });
+  const player = playerFor(state);
+  const spar = state.entities.find((entity) => entity.bot);
+  state.tutorial.step = 3;
+  player.x = 200;
+  player.y = 450;
+  spar.x = 720;
+  spar.y = 450;
+  stepMatch(state, { p1: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(state.tutorial.special, false);
+  assert.equal(state.mines.length, 1);
+  let armedCue = false;
+  for (let tick = 0; tick < 90 && !state.tutorial.special; tick += 1) {
+    stepMatch(state, { p1: idle }, FIXED_DELTA);
+    armedCue ||= state.events.some((event) => event.type === "mineArmed");
+  }
+  assert.equal(armedCue, true);
+  assert.equal(state.tutorial.special, true);
+  assert.equal(state.tutorial.step, 4);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("training spar stays restrained and cannot complete a human tactical proof", () => {
   const state = createMatch({ modeId: "training", botCount: 1 });
   const player = state.entities.find((entity) => entity.human);
   const bot = state.entities.find((entity) => entity.bot);
@@ -1495,8 +1600,17 @@ test("bot actions cannot complete a human first-contact read", () => {
   bot.y = player.y;
   bot.botThinkRemaining = 0;
   bot.specialCooldown = 0;
-  stepMatch(state, {}, FIXED_DELTA);
-  assert.ok(bot.specialCooldown > 0);
+  const health = player.health;
+  let hostileAction = false;
+  for (let tick = 0; tick < 180; tick += 1) {
+    stepMatch(state, {}, FIXED_DELTA);
+    hostileAction ||= state.events.some(
+      (event) => event.entityId === bot.id && ["shot", "special"].includes(event.type),
+    );
+  }
+  assert.equal(bot.specialCooldown, 0);
+  assert.equal(hostileAction, false);
+  assert.equal(player.health, health);
   assert.equal(state.tutorial.special, false);
   assert.equal(state.tutorial.step, 3);
 });

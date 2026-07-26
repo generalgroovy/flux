@@ -524,7 +524,6 @@ function updateEntity(state, entity, command, delta, map) {
     spendFlux(state, entity, agent.special)
   ) {
     useSpecial(state, entity, agent, map);
-    if (entity.human) state.tutorial.special = true;
   }
   if (command.fire && entity.primaryCooldown === 0) {
     let primary = agent.primary;
@@ -927,6 +926,9 @@ function createElementField(state, owner, element, spec, announce = true) {
   };
   state.nextElementFieldId += 1;
   state.elementFields.push(field);
+  if (field.source === "tactical") {
+    markTutorialTacticalProof(state, owner, `${element}-terrain`);
+  }
   if (announce) {
     state.events.push({
       type: "elementField",
@@ -1304,6 +1306,7 @@ function useSpecial(state, entity, agent, map) {
         duration: MATCH_TUNING.elements.windDuration,
         directionX: entity.facingX,
         directionY: entity.facingY,
+        source: "tactical",
       });
     } else if (agent.affinity.id === "earth") {
       const length = MATCH_TUNING.elements.earthLength;
@@ -1316,6 +1319,7 @@ function useSpecial(state, entity, agent, map) {
         width: Math.abs(entity.facingY) * length + Math.abs(entity.facingX) * thickness,
         height: Math.abs(entity.facingX) * length + Math.abs(entity.facingY) * thickness,
         duration: MATCH_TUNING.elements.earthDuration,
+        source: "tactical",
       };
       const blocked = map.obstacles.some((obstacle) =>
         rectanglesOverlap(wall, obstacle, 42),
@@ -1336,6 +1340,7 @@ function useSpecial(state, entity, agent, map) {
         duration: MATCH_TUNING.elements.iceDuration,
         directionX: entity.facingX,
         directionY: entity.facingY,
+        source: "tactical",
       });
     }
   } else if (special.kind === "blast") {
@@ -1363,6 +1368,7 @@ function useSpecial(state, entity, agent, map) {
           facingY: entity.facingY,
           duration: 3,
         });
+        markTutorialTacticalProof(state, entity, "veil-decoy");
         state.events.push({ type: "veilDecoy", entityId: entity.id, x: entity.x, y: entity.y });
       }
     }
@@ -1468,6 +1474,7 @@ function useSpecial(state, entity, agent, map) {
       return Math.hypot(centerX - entity.x, centerY - entity.y) > special.range;
     });
     if (state.elementFields.length < fieldsBefore) {
+      markTutorialTacticalProof(state, entity, "nullify");
       state.events.push({
         type: "elementReaction",
         reaction: "nullify",
@@ -1493,6 +1500,7 @@ function useSpecial(state, entity, agent, map) {
         duration: MATCH_TUNING.elements.waterDuration,
         directionX: entity.facingX,
         directionY: entity.facingY,
+        source: "tactical",
       });
     }
   } else if (special.kind === "volley") {
@@ -1557,10 +1565,21 @@ function firePattern(state, entity, weapon, source) {
 function updateMines(state, delta) {
   const survivors = [];
   for (const mine of state.mines) {
+    const wasArmed = mine.armedIn === 0;
     mine.armedIn = Math.max(0, mine.armedIn - delta);
     mine.remaining -= delta;
     if (mine.remaining <= 0) continue;
     const owner = state.entities.find((entity) => entity.id === mine.ownerId);
+    if (!wasArmed && mine.armedIn === 0 && owner) {
+      markTutorialTacticalProof(state, owner, "armed-trap");
+      state.events.push({
+        type: "mineArmed",
+        entityId: owner.id,
+        mineId: mine.id,
+        x: mine.x,
+        y: mine.y,
+      });
+    }
     const target = state.entities.find(
       (entity) =>
         entity.alive &&
@@ -1854,6 +1873,21 @@ function markTutorialDefenseRead(state, target, kind) {
   });
 }
 
+function markTutorialTacticalProof(state, entity, kind) {
+  if (
+    state.modeId !== "training" || state.tutorial.skipped ||
+    state.tutorial.step !== 3 || !entity?.human || state.tutorial.special
+  ) return;
+  state.tutorial.special = true;
+  state.events.push({
+    type: "tacticalProof",
+    entityId: entity.id,
+    kind,
+    x: entity.x,
+    y: entity.y,
+  });
+}
+
 function fireCounter(state, entity, defense, direction) {
   state.projectiles.push({
     id: state.nextProjectileId,
@@ -1956,6 +1990,9 @@ function damageEntity(state, target, rawDamage, attacker, options = {}) {
     x: target.x,
     y: target.y,
   });
+  if (["special", "rail", "pull", "mine"].includes(options.source)) {
+    markTutorialTacticalProof(state, attacker, `${options.source}-impact`);
+  }
   if (
     attacker && attacker !== target &&
     !["ultimate", "training"].includes(options.source)
@@ -2348,7 +2385,7 @@ function updateBotCommand(state, entity, delta, map) {
   if (
     state.modeId === "training" &&
     !state.tutorial.skipped &&
-    state.tutorial.step < 3
+    state.tutorial.step < 4
   ) {
     entity.botCommand.fire = state.tutorial.step === 2 && entity.botCommand.fire;
     entity.botCommand.special = false;

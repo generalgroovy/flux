@@ -10,6 +10,15 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
+Build 0.31.0 makes the final **First Rite discipline trial** behavior-driven.
+Each champion receives short input-aware coaching for their real tactical:
+terrain-shapers must author valid ground, Veil must leave a decoy, aimed Volt
+and Prism casts must connect, Null must catch a nearby target, and Ember's trap
+must finish arming. Empty or blocked casts do not pass. The spar stays
+ability-restrained and nonlethal until
+the proof resolves, then a comic/audio completion cue returns the player to the
+full fight. This uses production simulation rules and adds no tutorial stage.
+
 Build 0.30.0 makes the **First Rite defense read real**. Its spar now fires a
 gold-diamond marked practice spell only after movement is demonstrated. The
 spell deals at most 6 damage, applies no knockback, cannot eliminate or build

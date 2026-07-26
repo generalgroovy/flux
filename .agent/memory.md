@@ -1524,5 +1524,7 @@
   resolved; current build/test markers were present; `git diff --check` passed;
   and the full suite passed 94/94. GitHub CLI confirmed the repository remains
   private, authenticated, and release-empty.
-- **Next task:** Review the final documentation diff, commit/push the active
-  branch, and open or update its draft PR without modifying `main`.
+- **Repository sync:** Documentation commit `5cf23f1` was pushed to
+  `agent/prototype-loop`, and draft PR #5 targets `main` without modifying it.
+- **Next task:** Obtain explicit authorization for the preferred public binary
+  distribution model and relay, then implement and test that release path.

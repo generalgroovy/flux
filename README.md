@@ -7,6 +7,190 @@ spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
+## Current status
+
+The current playable build is **0.34.2** on `agent/prototype-loop`. It opens as
+a sandboxed fullscreen desktop application and has a functioning Play flow from
+Muster Hall selection through match launch. The deterministic and integration
+suite passes **94/94** checks.
+
+| Surface | Current state |
+| --- | --- |
+| Linux desktop | AppImage built, launch-tested, pointer-tested, and shutdown-tested on Sway |
+| Windows desktop | Complete x64 portable directory and test archive assembled; physical Windows acceptance and signing remain pending |
+| Friend hosting | Temporary HTTPS/WebSocket Quick Tunnel and `flux://` invite flow implemented |
+| GitHub downloads | Not available: the repository is private and has no releases |
+| Automatic updates | Client is configured, but no signed player-accessible release feed exists yet |
+| Stable public relay | Not deployed; Quick Tunnels are a development/test fallback |
+
+### Functionality that works
+
+- **Desktop and interface:** mandatory fullscreen with compositor recovery,
+  pointer/keyboard/gamepad menu traversal, readable grid-based Muster Hall,
+  champion/map codices, persistent settings, remappable Player 1 controls,
+  compact/detailed HUD modes, pause/rematch/menu flow, and safe owned-process
+  shutdown.
+- **Combat:** aim-driven primary fire, tactical, distinct defense, champion
+  mobility, health, death, protected respawn, projectile clashes, reflection,
+  cover collision, knockback, hazards, mines, hit feedback, authored passives,
+  and three combat-earned ultimates. Damage never receives an automatic
+  elemental matchup bonus.
+- **Movement:** acceleration, counter-strafing, FLOW sprint, momentum-carrying
+  hops, wall kicks, committed ground slides, one-use landing cuts, and
+  Edgeweave rewards for fast hostile-spell near-misses. Wall running is not yet
+  shipped.
+- **Flux chemistry:** persistent Gale, Stone, Frost, Volt, Ember, Tide, Veil,
+  Prism, and Null effects; Tide can redirect or douse Ember, direct Tide–Ember
+  overlap creates neutral damaging vapor, Stone–Ember creates neutral
+  non-damaging magma slow, Gale moves Ember, Volt conducts through Tide, Ember
+  melts Frost, Frost freezes Tide, explosions shatter Stone, and Null erases
+  nearby constructs during its paid commitment.
+- **Playable content:** ten complete race-bound champions, thirteen represented
+  peoples, eight authored battlegrounds, selectable hazards, bots, and five
+  modes: First Rite, Oath Duel, Runehold, Wildmarch, and Night Siege.
+- **Multiplayer:** local two-player play; authoritative public/private lobbies;
+  discovery and code join; join-in-progress; protected late spawns; spectators;
+  input sequencing and rate limits; snapshots, prediction, reconciliation, and
+  stale-snapshot rejection; reconnect reservations; host migration; rematches;
+  explicit host shutdown; live RTT/jitter/loss/staleness diagnostics; and a
+  deterministic latency/jitter/loss lab.
+- **Onboarding and feedback:** skippable behavior-driven First Rite, adaptive
+  control prompts, distinct element words/colors/marks, silhouettes, trails,
+  telegraphs, restrained shake, comic cues, and audio hooks.
+
+General destructible scenery, wall running, a signed Windows installer, a public
+download page, production auto-update, and a dependable owned relay are not
+currently shipped. Do not describe those as complete when sharing a test build.
+
+## Share a test build with friends
+
+GitHub cannot currently serve downloads to ordinary testers because
+`generalgroovy/flux` is private and has no release. For immediate testing,
+transfer the relevant build through a file-sharing service and send its SHA-256
+through a separate channel. All players should use the same build.
+
+The listed packages are ignored build outputs, not files stored in Git. A
+maintainer can recreate them from the locked source tree with:
+
+```bash
+npm ci
+npm run dist:linux
+./node_modules/.bin/electron-builder --win dir
+(cd dist/win-unpacked && 7z a -tzip -mx=7 ../FLUX-Arena-0.34.2-windows-x64-portable.zip ./*)
+sha256sum dist/FLUX-Arena-0.34.2-linux-x86_64.AppImage \
+  dist/FLUX-Arena-0.34.2-windows-x64-portable.zip
+```
+
+Rebuilt packages may have different checksums; publish the newly computed
+values with those exact files rather than reusing the values below.
+
+### Linux AppImage
+
+Share this complete file:
+
+```text
+dist/FLUX-Arena-0.34.2-linux-x86_64.AppImage
+```
+
+Verified SHA-256:
+
+```text
+caf478a42fce7f9179a43440654dfd84ea42bc2d14de37abeed4b768a5db2f2a
+```
+
+The recipient verifies and launches it with:
+
+```bash
+sha256sum FLUX-Arena-0.34.2-linux-x86_64.AppImage
+chmod +x FLUX-Arena-0.34.2-linux-x86_64.AppImage
+./FLUX-Arena-0.34.2-linux-x86_64.AppImage
+```
+
+### Windows portable test build
+
+Share the archive below, not `FLUX Arena.exe` by itself. Electron requires the
+DLLs, resources, locales, and ASAR content beside the executable.
+
+```text
+dist/FLUX-Arena-0.34.2-windows-x64-portable.zip
+```
+
+Verified SHA-256:
+
+```text
+cffbf82a1510451c93bc31d449b46435e007e9c6685c04c6f3dc8238f3e0e2ec
+```
+
+The recipient verifies the archive, extracts the complete directory, and runs
+`FLUX Arena.exe`. This is an unsigned test payload, not an installer; Windows
+may show a SmartScreen warning. Only accept it after verifying the checksum
+received from the project owner.
+
+```powershell
+Get-FileHash .\FLUX-Arena-0.34.2-windows-x64-portable.zip -Algorithm SHA256
+Expand-Archive .\FLUX-Arena-0.34.2-windows-x64-portable.zip .\FLUX-Arena
+& '.\FLUX-Arena\FLUX Arena.exe'
+```
+
+### Host an internet test
+
+The host starts the packaged app in friend mode:
+
+```bash
+./FLUX-Arena-0.34.2-linux-x86_64.AppImage --friends
+```
+
+```powershell
+& '.\FLUX Arena.exe' --friends
+```
+
+On first use, FLUX downloads roughly 40 MB of official `cloudflared` tunnel
+tooling and verifies its published SHA-256 before execution. Then:
+
+1. Open **Host / Join**.
+2. Choose callsign, champion, mode, map, listing, and hazard rules.
+3. Select **Create and deploy**.
+4. Send the copied `flux://` invitation to each tester.
+5. Keep the host window open; closing it deliberately ends the temporary route
+   and tells connected clients that the host shut down.
+
+Guests should launch FLUX once before opening the invitation so the packaged
+protocol handler can register. If clicking the invitation does not invoke the
+application, pass the entire quoted URI as an argument:
+
+```bash
+./FLUX-Arena-0.34.2-linux-x86_64.AppImage 'flux://join?server=https%3A%2F%2Fexample.trycloudflare.com&code=ABC234'
+```
+
+```powershell
+& '.\FLUX Arena.exe' 'flux://join?server=https%3A%2F%2Fexample.trycloudflare.com&code=ABC234'
+```
+
+Quick Tunnel hostname publication can fail intermittently. If FLUX reports that
+the friend route is unreachable, close it, confirm every FLUX process exits,
+and retry once. This path is suitable for short tests, not dependable hosting.
+
+Close normally with the window close command or `Alt+F4`. FLUX asks only its
+owned authority and tunnel children to stop, waits for a bounded grace period,
+and never uses system-wide process-kill commands.
+
+### Enable real downloads and updates
+
+The recommended release arrangement is a separate public binary repository,
+for example `generalgroovy/flux-releases`, while source remains private. A real
+release must provide the Linux AppImage and update metadata plus a signed
+Windows NSIS installer and its update metadata. `package.json` must then point
+the updater at that public repository. Creating a public repository or changing
+visibility is an external publication decision and is intentionally not done by
+the build scripts.
+
+For a closed test group, an alternative is to add every tester as a collaborator
+and publish a private GitHub release. That permits authenticated manual
+downloads, but it does not make unattended player auto-update work without a
+secure authenticated feed.
+
+## Build history
+
 Build 0.34.2 gives the fullscreen **Muster Hall** a measured readability floor.
 Mode, champion, race, map, setting, and launch copy now stays near or above 12
 pixels at the default scale; mode choices wrap by available width, champion
@@ -22,7 +206,7 @@ Build 0.34.0 makes the desktop application the primary play surface. Electron
 owns one sandboxed FLUX window and a separately isolated loopback authority;
 the renderer has no Node access, device/data-read permissions, popups, webviews,
 or external navigation. Only sanitized invite-link clipboard writes from the
-exact local game origin are allowed. Linux AppImage and Windows NSIS builds share the same runtime and
+exact local game origin are allowed. Linux AppImage and Windows NSIS targets share the same runtime and
 probe their configured packaged-update feed when opened. **Play with Friends** creates a private
 lobby path through a temporary HTTPS/WebSocket tunnel and copies a `flux://`
 desktop invite, so guests join in their own FLUX window without port forwarding
@@ -241,7 +425,7 @@ Movement is traceable through a restrained team-shaped trail whose length and
 weight scale with actual velocity, making sprints, hops, knockback, and evasive
 reversals readable without filling the arena with effects.
 
-## Run
+## Run from source
 
 Requires Node.js 20.19 or newer when running from source.
 
@@ -327,7 +511,7 @@ FLUX_DESKTOP=0 FLUX_HOST=0.0.0.0 bash scripts/pull-and-run.sh
 To update and run a specific development checkout/branch, pass both explicitly:
 
 ```bash
-bash scripts/pull-and-run.sh /home/otp/Projects/outskilled agent/prototype-loop
+bash scripts/pull-and-run.sh /home/otp/Projects/flux agent/prototype-loop
 ```
 
 It refuses dirty or diverged work instead of hiding local changes.
@@ -344,6 +528,8 @@ It installs two launchers. Both fast-forward the selected branch, install locked
 dependencies, and run all tests before opening FLUX in its own window. **FLUX
 Arena · Play with Friends** additionally creates the private invite path.
 Closing the game stops only the authority and tunnel processes owned by it.
+Because the source repository is private, these update-first launchers require a
+GitHub account with repository access and an authenticated `gh` installation.
 
 On Windows, run these once from PowerShell to create the equivalent desktop
 shortcut:
@@ -363,7 +549,7 @@ unrelated Node processes:
 npm run stop
 ```
 
-## Local AI handoff
+## Maintainer-only local AI handoff
 
 The repository includes a shared FLUX handoff for the installed local Odysseus
 workspace and Aider. Both launchers intentionally enable unrestricted/
@@ -384,7 +570,8 @@ flux-odysseus-yolo
 
 Stop the supervisor with `touch .agent/STOP` or `Ctrl+C`. Configuration and
 resumable context live in `.aider.conf.yml`, `.agent/HANDOFF.md`, and
-`.odysseus/`. The Odysseus UI preset is named **FLUX Principal Agent**.
+`.odysseus/`. This unrestricted maintainer workflow is not required to download,
+host, join, or play FLUX.
 
 Server records include the checkout root and a per-process instance token, so
 stale PID files cannot target another application. Servers from builds older
@@ -475,6 +662,9 @@ Modes:
 - [`src/network/quality.mjs`](src/network/quality.mjs) — rolling application-level connection diagnostics
 - [`src/game.mjs`](src/game.mjs) — input, prediction, menus, HUD, feedback, and rendering
 - [`scripts/serve.mjs`](scripts/serve.mjs) — allowlisted static server, lobby API, and WebSockets
+- [`desktop/main.mjs`](desktop/main.mjs) — sandboxed fullscreen window, owned authority/tunnel lifecycle, protocol handling, and updates
+- [`desktop/runtime.mjs`](desktop/runtime.mjs) — loopback reservation, launch-token readiness, navigation trust, and invite parsing
+- [`desktop/tunnel.mjs`](desktop/tunnel.mjs) — checksum-verified temporary friend transport
 
 Rendering never owns game rules. All commands are normalized, entity identifiers
 are stable, non-finite state is repaired at the simulation boundary, movement is
@@ -507,3 +697,8 @@ route allowlisting, security headers, and an eight-fighter two-minute
 deterministic combat soak. It also clicks every main menu, launches all five
 rulesets through the shipped interface, toggles live field info, and verifies
 champion/map shortcuts update the contest builder.
+
+The current suite contains 94 passing checks. Release verification also builds
+the Linux AppImage and Windows x64 directory, physically launches the AppImage,
+clicks Play and Enter Arena through real pointer events, forces and verifies
+fullscreen recovery, and confirms normal close leaves no FLUX process tree.

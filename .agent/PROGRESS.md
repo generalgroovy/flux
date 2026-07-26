@@ -1,4 +1,4 @@
-# DIFF Codex Iteration Progress
+# FLUX Codex Iteration Progress
 
 The active Codex agent updates this file with:
 - current objective

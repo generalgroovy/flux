@@ -22,7 +22,9 @@ the FLUX context, run the actual suite, and push only the active agent branch.
    updater, or Electron children. The Linux AppImage builds and launches; the
    Windows bundle assembles, but NSIS creation still needs a Windows runner or
    Wine plus a real signing identity. The current private/no-release GitHub feed
-   returns 404 and is not release-ready.
+   returns 404 and is not release-ready. A verified Linux AppImage and complete
+   Windows portable test archive can be shared out of band with the checksums in
+   `README.md`; they are intentionally ignored build outputs, not Git history.
 2. Complete two-device desktop invite acceptance. The host must choose **Play
    with Friends**, create a private lobby, and send one `flux://` invite; the
    guest must launch into the same authoritative match without a browser, VPN,

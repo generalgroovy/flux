@@ -16,7 +16,7 @@ Read, in order, before editing:
 5. `.odysseus/STATE.md`
 6. Git status, current branch, and recent history
 
-FLUX is a deterministic browser arena game. Preserve simulation authority,
+FLUX is a deterministic fullscreen desktop arena game. Preserve simulation authority,
 stable identifiers, Linux/Windows parity, old-world pixel readability, and
 small implementation → test → review → commit cycles.
 
@@ -25,12 +25,17 @@ small implementation → test → review → commit cycles.
 - Product and repository are named FLUX.
 - Canonical checkout and remote paths use `flux`; DIFF names are compatibility
   aliases only.
-- Keyboard/gamepad menu traversal, neutral Tide–Ember vapor, neutral
-  Stone–Ember magma, and the `src/network/` boundary are implemented.
-- Verification command: `npm test` (82 tests at handoff).
-- Launch command: `npm start`; health: `/__flux_health`.
-- Highest-value next slice: extract growing chemistry resolution from
-  `src/match.mjs`, then introduce one deterministic destructible prop family.
+- Build 0.34.2 has a working fullscreen Muster Hall → match launch flow,
+  keyboard/gamepad/pointer navigation, neutral Tide–Ember vapor, neutral
+  Stone–Ember magma, and explicit `src/network/` plus `desktop/` boundaries.
+- Verification command: `npm test` (94/94 checks at current handoff).
+- Desktop launch command: `npm start`; friend host: `npm run start:friends`;
+  health: `/__flux_health`.
+- Linux AppImage launch, fullscreen recovery, pointer deployment, and exact-child
+  shutdown passed. Windows x64 portable files assemble but still need physical
+  Windows acceptance and signing.
+- GitHub is private with no releases. Public download/update publication and a
+  stable authenticated relay require explicit user authorization/product choice.
 
 ## Operating contract
 

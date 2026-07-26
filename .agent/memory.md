@@ -1499,3 +1499,30 @@
   closed without a remaining renderer, authority, or AppImage process.
 - **Next task:** Continue the signed update feed and stable authenticated relay
   acceptance work, followed by the two-device Linux/Windows invite soak.
+
+# 2026-07-26 — FLUX 0.34.2 tester distribution handoff
+
+- **Documentation problem:** The README led with chronological build notes and
+  implied downloadable Windows/auto-update readiness without clearly stating
+  that GitHub is private, has no releases, and only the Linux AppImage has been
+  physically launch-tested. Friends lacked one complete download, checksum,
+  host, invite, fallback, and shutdown path.
+- **Implemented solution:** Added a current-status matrix, complete functioning
+  feature inventory, explicit unshipped boundaries, Linux and Windows portable
+  test-package instructions, verified SHA-256 values, packaged `--friends`
+  hosting, quoted `flux://` guest fallback, Quick Tunnel limitations, safe-close
+  behavior, and public/private release-feed options. Generated and validated a
+  complete 134 MB Windows portable archive from the assembled directory; build
+  outputs remain ignored. Updated source paths, desktop architecture, maintainer
+  handoff, Odysseus state, backlog, and verification language to build 0.34.2.
+- **Distribution truth:** `generalgroovy/flux` remains private with no GitHub
+  releases. Publishing a public binary repository, changing visibility, adding
+  testers, or creating a release remains an explicit external decision rather
+  than an inferred documentation action.
+- **Verification:** Both documented SHA-256 values matched the local artifacts;
+  `7z t` validated all 74 Windows payload entries; all ten relative README links
+  resolved; current build/test markers were present; `git diff --check` passed;
+  and the full suite passed 94/94. GitHub CLI confirmed the repository remains
+  private, authenticated, and release-empty.
+- **Next task:** Review the final documentation diff, commit/push the active
+  branch, and open or update its draft PR without modifying `main`.

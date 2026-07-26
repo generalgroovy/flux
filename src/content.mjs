@@ -1125,6 +1125,10 @@ export const MATCH_TUNING = Object.freeze({
     minimumWindup: 0.35,
     maximumWindup: 0.9,
   },
+  training: {
+    pressureDamage: 6,
+    pressureCooldown: 1.1,
+  },
   controlScorePerSecond: 12,
   controlOvertimeGrace: 2.5,
   bot: {
@@ -1261,6 +1265,11 @@ export function validateContent({
   for (const [key, value] of Object.entries(tuning.ultimate ?? {})) {
     if (!Number.isFinite(value) || value <= 0) {
       errors.push(`ultimate.${key} must be positive`);
+    }
+  }
+  for (const [key, value] of Object.entries(tuning.training ?? {})) {
+    if (!Number.isFinite(value) || value <= 0) {
+      errors.push(`training.${key} must be positive`);
     }
   }
 

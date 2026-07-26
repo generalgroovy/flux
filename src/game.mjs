@@ -1086,7 +1086,11 @@ function updateCoach(mode) {
     } else if (matchState.tutorial.step === 1) {
       text.textContent = `MOVE while aiming. Land pressure with MB1 or ${keyLabel(settings.bindings.fire)}.`;
     } else if (matchState.tutorial.step === 2) {
-      text.textContent = `${keyLabel(settings.bindings.mobility)} changes the angle. ${keyLabel(settings.bindings.defense)} answers incoming pressure.`;
+      text.textContent = !matchState.tutorial.mobility
+        ? `Tap ${keyLabel(settings.bindings.mobility)} to evade and reset the angle.`
+        : !matchState.tutorial.defended
+          ? `The spar marks a safe spell. Time ${keyLabel(settings.bindings.defense)} as it arrives.`
+          : "Defense read proven.";
     } else if (matchState.tutorial.step === 3) {
       text.textContent = `Commit tactical ${keyLabel(settings.bindings.tactical)} up close. Miss, and you surrender tempo.`;
     } else {
@@ -1159,6 +1163,12 @@ function processEvents(events, tick) {
       toast(`READ ${event.step + 1} / 4`);
     } else if (event.type === "tutorialComplete") {
       toast("CORE MOVEMENT + COMBAT ONLINE");
+    } else if (event.type === "trainingPressure") {
+      tone(285, 0.09, "triangle", 0.045);
+      toast("READ! · DEFEND THE MARKED SPELL", "comic");
+    } else if (event.type === "defenseRead") {
+      tone(690, 0.08, "triangle", 0.055);
+      toast("TURN! · DEFENSE READ PROVEN", "comic");
     } else if (event.type === "wallKick") {
       toast("WALL KICK · ANGLE STOLEN");
     } else if (event.type === "counterStrafe") {
@@ -1727,6 +1737,18 @@ function drawProjectiles() {
       context.beginPath();
       context.arc(0, 0, projectile.radius, 0, Math.PI * 2);
       context.fill();
+      if (projectile.source === "training") {
+        context.shadowBlur = 0;
+        context.strokeStyle = "#ffca4f";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.moveTo(0, -projectile.radius - 8);
+        context.lineTo(projectile.radius + 8, 0);
+        context.lineTo(0, projectile.radius + 8);
+        context.lineTo(-projectile.radius - 8, 0);
+        context.closePath();
+        context.stroke();
+      }
       const direction = normalize(projectile.vx, projectile.vy);
       context.strokeStyle = color;
       context.globalAlpha = 0.42;

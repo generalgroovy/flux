@@ -10,6 +10,14 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
+Build 0.30.0 makes the **First Rite defense read real**. Its spar now fires a
+gold-diamond marked practice spell only after movement is demonstrated. The
+spell deals at most 6 damage, applies no knockback, cannot eliminate or build
+ultimate, and repeats no faster than every 1.1 seconds. A player advances only
+by actually reflecting, guarding, phasing, absorbing, or countering the incoming
+spell; adaptive input-aware coaching, comic feedback, and distinct audio expose
+the timing without completing it for them. The rite remains instantly skippable.
+
 Build 0.29.0 adds an opt-in **Deterministic network lab** under Settings. It
 applies 0–250 ms seeded latency, 0–100 ms jitter, and 0–20% loss only to remote
 inputs and snapshots; zero bypasses the conditioner. Real probe diagnostics stay

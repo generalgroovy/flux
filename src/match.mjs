@@ -510,7 +510,6 @@ function updateEntity(state, entity, command, delta, map) {
   ) {
     entity.defenseRemaining = agent.defense.duration;
     entity.defenseCooldown = agent.defense.cooldown;
-    if (entity.human) state.tutorial.defended = true;
     state.events.push({
       type: "defense",
       entityId: entity.id,
@@ -579,7 +578,10 @@ function updateEntity(state, entity, command, delta, map) {
       }
     }
     firePattern(state, entity, primary, "primary");
-    entity.primaryCooldown = agent.primary.cooldown;
+    entity.primaryCooldown =
+      state.modeId === "training" && entity.bot && state.tutorial.step === 2
+        ? MATCH_TUNING.training.pressureCooldown
+        : agent.primary.cooldown;
     if (entity.human) state.tutorial.fired = true;
   }
 }
@@ -1508,6 +1510,8 @@ function rectanglesOverlap(left, right, padding = 0) {
 }
 
 function firePattern(state, entity, weapon, source) {
+  const trainingPressure =
+    state.modeId === "training" && entity.bot && state.tutorial.step === 2;
   const count = Math.max(1, finiteInteger(weapon.count, 1));
   for (let shot = 0; shot < count; shot += 1) {
     const offset = count === 1 ? 0 : shot - (count - 1) / 2;
@@ -1518,7 +1522,7 @@ function firePattern(state, entity, weapon, source) {
       id: state.nextProjectileId,
       ownerId: entity.id,
       team: entity.team,
-      source,
+      source: trainingPressure ? "training" : source,
       x: entity.x + direction.x * spawnOffset,
       y: entity.y + direction.y * spawnOffset,
       previousX: entity.x,
@@ -1526,9 +1530,11 @@ function firePattern(state, entity, weapon, source) {
       vx: direction.x * weapon.speed,
       vy: direction.y * weapon.speed,
       radius: weapon.radius,
-      damage: weapon.damage,
+      damage: trainingPressure
+        ? Math.min(weapon.damage, MATCH_TUNING.training.pressureDamage)
+        : weapon.damage,
       lifetime: weapon.lifetime,
-      knockback: weapon.knockback ?? 0,
+      knockback: trainingPressure ? 0 : weapon.knockback ?? 0,
       pierce: weapon.pierce ?? 0,
       heavy: weapon.heavy === true,
       reflected: false,
@@ -1540,7 +1546,7 @@ function firePattern(state, entity, weapon, source) {
     state.nextProjectileId += 1;
   }
   state.events.push({
-    type: "shot",
+    type: trainingPressure ? "trainingPressure" : "shot",
     entityId: entity.id,
     source,
     x: entity.x,
@@ -1781,6 +1787,7 @@ function defendAgainstProjectile(state, target, projectile) {
   if (target.defenseRemaining <= 0) return "hit";
   const defense = getCharacter(target.characterId).defense;
   if (defense.kind === "phase") {
+    markTutorialDefenseRead(state, target, defense.kind);
     return "pass";
   }
   if (defense.kind === "reflect") {
@@ -1799,6 +1806,7 @@ function defendAgainstProjectile(state, target, projectile) {
     projectile.guidedRemaining = 0;
     projectile.turnRate = 0;
     primeReflectPassive(state, target);
+    markTutorialDefenseRead(state, target, defense.kind);
     state.events.push({
       type: "reflect",
       entityId: target.id,
@@ -1816,6 +1824,7 @@ function defendAgainstProjectile(state, target, projectile) {
       x: target.x,
       y: target.y,
     });
+    markTutorialDefenseRead(state, target, defense.kind);
     return "consume";
   }
   if (defense.kind === "counter") {
@@ -1824,9 +1833,25 @@ function defendAgainstProjectile(state, target, projectile) {
       ? normalizeDirection(owner.x - target.x, owner.y - target.y)
       : { x: target.facingX, y: target.facingY };
     fireCounter(state, target, defense, direction);
+    markTutorialDefenseRead(state, target, defense.kind);
     return "consume";
   }
   return "hit";
+}
+
+function markTutorialDefenseRead(state, target, kind) {
+  if (
+    state.modeId !== "training" || state.tutorial.skipped ||
+    state.tutorial.step !== 2 || !target.human
+  ) return;
+  state.tutorial.defended = true;
+  state.events.push({
+    type: "defenseRead",
+    entityId: target.id,
+    kind,
+    x: target.x,
+    y: target.y,
+  });
 }
 
 function fireCounter(state, entity, defense, direction) {
@@ -1908,10 +1933,12 @@ function damageEntity(state, target, rawDamage, attacker, options = {}) {
     if (incomingDot >= agent.defense.frontalDot) {
       damage *= 1 - agent.defense.reduction;
       state.events.push({ type: "guarded", entityId: target.id });
+      markTutorialDefenseRead(state, target, agent.defense.kind);
     }
   }
   damage = Math.max(1, Math.round(damage));
-  target.health = Math.max(0, target.health - damage);
+  const healthFloor = options.source === "training" ? 1 : 0;
+  target.health = Math.max(healthFloor, target.health - damage);
   target.hitFlash = MATCH_TUNING.hitFlash;
   target.damageInvulnerability = agent.damageInvulnerability;
   target.lastAttackerId = attacker?.id ?? null;
@@ -1929,7 +1956,10 @@ function damageEntity(state, target, rawDamage, attacker, options = {}) {
     x: target.x,
     y: target.y,
   });
-  if (attacker && attacker !== target && options.source !== "ultimate") {
+  if (
+    attacker && attacker !== target &&
+    !["ultimate", "training"].includes(options.source)
+  ) {
     gainUltimateCharge(state, attacker, damage);
   }
   if (target.health === 0) eliminateEntity(state, target, attacker);
@@ -2320,7 +2350,7 @@ function updateBotCommand(state, entity, delta, map) {
     !state.tutorial.skipped &&
     state.tutorial.step < 3
   ) {
-    entity.botCommand.fire = false;
+    entity.botCommand.fire = state.tutorial.step === 2 && entity.botCommand.fire;
     entity.botCommand.special = false;
     entity.botCommand.defend = false;
     entity.botCommand.mobility = false;

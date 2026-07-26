@@ -1088,3 +1088,32 @@
 - **Known limitation / next task:** No browser executable or second real device is
   available here; hands-on feel under impairment remains pending. Use the lab for
   reconciliation tuning, then add one behavior-driven elemental interaction trial.
+
+## 2026-07-26 — First Rite defensive interaction trial
+
+- **Player-facing problem:** The defense stage advanced from pressing the defense
+  key while its spar was forbidden to attack, so it taught input recall rather
+  than timing, threat reading, or each champion's actual defense contract.
+- **Implemented solution:** HEX 0.30.0 lets the spar cast one visually marked
+  practice spell during the defense stage. It is capped at 6 damage, has no
+  knockback, cannot eliminate the learner or build ultimate charge, and repeats
+  no faster than 1.1 seconds. Empty defense presses no longer count. Reflection,
+  guard, phase, absorb, and counter advance the rite only when they resolve an
+  incoming spell. Input-aware coaching first asks for mobility, then the timed
+  answer; a gold diamond, restrained tone, and comic callout communicate the read.
+- **Verification:** Source/server and shell syntax checks plus `git diff --check`
+  passed. Focused match coverage passed 48/48. The final complete `npm test`
+  passed 72/72 checks: 70 deterministic/DOM/lobby/network-conditioner/diagnostic checks,
+  one live authoritative WebSocket lifecycle check, and one isolated cleanup
+  check. New tests prove every defense family, reject empty-button completion,
+  enforce nonlethal/no-knockback/no-ultimate training pressure, and preserve the
+  full interaction and two-minute combat soaks.
+- **Launch smoke:** The release server on port 8128 reported HEX 0.30.0/protocol
+  2; `/` and `/src/game.mjs` returned `200 OK` with all security headers. The
+  shipped cleanup command then stopped PID 212439 and a failed health request
+  confirmed the port was closed.
+- **Known limitation / next task:** No browser executable or second device is
+  installed here. Hands-on timing, gold-mark visibility, audio mix, remapped-key
+  comfort, and impaired-network play remain pending. Next build one similarly
+  behavior-driven Flux/element reaction trial without lengthening the rite or
+  blocking immediate skip.

@@ -2,7 +2,11 @@
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.29.0 on Garuda Sway and Windows: remap movement and
+1. Hands-on accept HEX 0.30.0 on Garuda Sway and Windows: complete the FIRST
+   RITE defense read with reflection, guard, phase, absorb, and counter; require
+   one obvious gold-diamond practice spell, restrained comic/audio feedback,
+   no accidental button-only completion, no elimination, and an immediate skip.
+   Then remap movement and
    every action, confirm duplicate swaps and reserved-key feedback, relaunch to
    verify persistence, and confirm HUD, guide, live info, and FIRST RITE labels
    always match. Then complete all four
@@ -37,8 +41,9 @@
    commitment, and 32% steering; verify readable cover impacts and no hold exploit.
 7. Hands-on tune the 110 ms/18% one-use landing cut across normal ground, ice,
    slide links, wall kicks, and high-latency remote prediction.
-8. Observe new players completing the adaptive sprint→slide→hop First Rite read;
-   require comprehension without coaching repetition or accidental completion.
+8. Observe new players completing the adaptive sprint→slide→hop→real defense
+   First Rite reads; require comprehension without coaching repetition or
+   accidental completion.
 9. Universal movement commitment boundaries and a 600-tick chain ceiling are now
    deterministic; so are the three production champion contracts. Next
    acceptance remains hands-on feel and remote prediction.
@@ -61,6 +66,8 @@
 - Accurate live RTT/jitter/loss/staleness diagnostics are implemented.
 - Persistent, conflict-safe Player 1 remapping and input-aware teaching are live.
 - Deterministic adverse-network conditioning and stale-snapshot rejection are live.
+- First Rite requires an actual safe, telegraphed defense interaction across all
+  five shipped defense families; a button press alone cannot advance it.
 - Next acceptance: hands-on FLOW/Flux tuning, behavior-driven discipline trials,
   share-link testing across Linux/Windows, and network-lab reconciliation tuning.
 

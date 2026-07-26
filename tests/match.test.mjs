@@ -82,6 +82,36 @@ function duel({
   return state;
 }
 
+function playerFor(state) {
+  return state.entities.find((entity) => entity.human);
+}
+
+function trainingProjectile(state, player, spar) {
+  return {
+    id: state.nextProjectileId++,
+    ownerId: spar.id,
+    team: spar.team,
+    source: "training",
+    x: player.x + 20,
+    y: player.y,
+    previousX: player.x + 25,
+    previousY: player.y,
+    vx: -600,
+    vy: 0,
+    radius: 5,
+    damage: MATCH_TUNING.training.pressureDamage,
+    lifetime: 1,
+    knockback: 0,
+    pierce: 0,
+    heavy: false,
+    reflected: false,
+    fieldIds: [],
+    guidedBy: null,
+    guidedRemaining: 0,
+    turnRate: 0,
+  };
+}
+
 test("content ships ten playable champions, thirteen races, eight maps, and all five mode gates", () => {
   assert.deepEqual(validateContent(), []);
   assert.equal(CHARACTERS.length, 10);
@@ -1128,6 +1158,64 @@ test("training opponent stays non-lethal until movement and defense are taught",
   assert.equal(state.entities[0].health, state.entities[0].maxHealth);
 });
 
+test("First Rite spar authors its own bounded marked pressure", () => {
+  const state = createMatch({
+    modeId: "training",
+    mapId: "breakline",
+    characterId: "kite",
+    botCount: 1,
+  });
+  const player = playerFor(state);
+  const spar = state.entities.find((entity) => entity.bot);
+  state.tutorial.step = 2;
+  state.tutorial.mobility = true;
+  player.x = 430;
+  player.y = 280;
+  player.spawnProtection = 0;
+  spar.x = 650;
+  spar.y = 280;
+  spar.primaryCooldown = 0;
+  spar.botThinkRemaining = 0;
+
+  stepMatch(state, {}, FIXED_DELTA);
+
+  assert.equal(
+    state.events.some((event) => event.type === "trainingPressure"),
+    true,
+  );
+  const marked = state.projectiles.find(
+    (projectile) => projectile.source === "training",
+  );
+  assert.ok(marked);
+  assert.equal(marked.damage, MATCH_TUNING.training.pressureDamage);
+  assert.equal(marked.knockback, 0);
+  assert.equal(spar.primaryCooldown, MATCH_TUNING.training.pressureCooldown);
+  assert.equal(spar.ultimateCharge, 0);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("marked First Rite pressure is low damage and cannot eliminate the learner", () => {
+  const state = createMatch({
+    modeId: "training",
+    mapId: "breakline",
+    characterId: "kite",
+    botCount: 1,
+  });
+  const player = playerFor(state);
+  const spar = state.entities.find((entity) => entity.bot);
+  state.tutorial.step = 2;
+  state.tutorial.mobility = true;
+  player.spawnProtection = 0;
+  player.health = 4;
+  state.projectiles.push(trainingProjectile(state, player, spar));
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.equal(player.health, 1);
+  assert.equal(player.alive, true);
+  assert.equal(state.status, "playing");
+  assert.equal(state.tutorial.defended, false);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
 test("counter-strafing cuts committed momentum with a readable skill cue", () => {
   const state = duel();
   const runner = state.entities[0];
@@ -1341,14 +1429,24 @@ test("first contact teaches flow before the complete combat language", () => {
   assert.equal(state.tutorial.moved, true);
   assert.equal(state.tutorial.fired, true);
 
+  stepMatch(state, { p1: { ...idle, defend: true } }, FIXED_DELTA);
+  assert.equal(state.tutorial.step, 2);
+  assert.equal(state.tutorial.defended, false);
+  playerFor(state).defenseCooldown = 0;
   stepMatch(
     state,
-    { p1: { ...idle, moveY: 1, mobility: true, defend: true } },
+    { p1: { ...idle, moveY: 1, mobility: true } },
     FIXED_DELTA,
   );
-  assert.equal(state.tutorial.step, 3);
   assert.equal(state.tutorial.mobility, true);
+  const player = playerFor(state);
+  const spar = state.entities.find((entity) => entity.bot);
+  player.spawnProtection = 0;
+  state.projectiles.push(trainingProjectile(state, player, spar));
+  stepMatch(state, { p1: { ...idle, defend: true } }, FIXED_DELTA);
+  assert.equal(state.tutorial.step, 3);
   assert.equal(state.tutorial.defended, true);
+  assert.equal(state.events.some((event) => event.type === "defenseRead"), true);
 
   stepMatch(state, { p1: { ...idle, special: true } }, FIXED_DELTA);
   assert.equal(state.tutorial.step, 4);
@@ -1357,6 +1455,35 @@ test("first contact teaches flow before the complete combat language", () => {
     state.events.some((event) => event.type === "tutorialComplete"),
     true,
   );
+});
+
+test("every defense family proves the First Rite only on a real incoming spell", () => {
+  for (const characterId of ["kite", "bulwark", "echo", "volt", "rook"]) {
+    const state = createMatch({
+      modeId: "training",
+      mapId: "breakline",
+      characterId,
+      botCount: 1,
+    });
+    const player = playerFor(state);
+    const spar = state.entities.find((entity) => entity.bot);
+    state.tutorial.step = 2;
+    state.tutorial.mobility = true;
+    player.spawnProtection = 0;
+    stepMatch(state, { p1: { ...idle, defend: true } }, FIXED_DELTA);
+    assert.equal(state.tutorial.defended, false, `${characterId} empty defense`);
+    player.defenseCooldown = 0;
+    state.projectiles.push(trainingProjectile(state, player, spar));
+    stepMatch(state, { p1: { ...idle, defend: true } }, FIXED_DELTA);
+    assert.equal(state.tutorial.defended, true, characterId);
+    assert.equal(state.tutorial.step, 3, characterId);
+    assert.equal(
+      state.events.some((event) => event.type === "defenseRead"),
+      true,
+      characterId,
+    );
+    assert.deepEqual(matchInvariantErrors(state), []);
+  }
 });
 
 test("bot actions cannot complete a human first-contact read", () => {

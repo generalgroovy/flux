@@ -104,6 +104,7 @@ const DEFAULT_SETTINGS = Object.freeze({
   coaching: true,
   reducedMotion: false,
   highContrast: false,
+  hudDetailed: false,
   bindings: DEFAULT_BINDINGS,
   networkLatency: 0,
   networkJitter: 0,
@@ -122,6 +123,7 @@ const rosterHud = element("roster-hud");
 const toastStack = element("toast-stack");
 const infoOverlay = element("info-overlay");
 const infoToggle = element("info-toggle");
+const hudDetailToggle = element("hud-detail-toggle");
 const settingsForm = element("settings-form");
 const matchForm = element("match-form");
 const pointer = { x: 0, y: 0, active: false };
@@ -241,7 +243,9 @@ element("reconnect-lobby").addEventListener("click", reconnectLastSession);
 element("refresh-lobbies").addEventListener("click", refreshLobbies);
 element("rematch").addEventListener("click", restartMatch);
 infoToggle.addEventListener("click", () => toggleInfo());
+hudDetailToggle.addEventListener("click", toggleHudDetail);
 element("info-close").addEventListener("click", () => toggleInfo(false));
+element("online-agent").addEventListener("change", syncOnlineRace);
 
 requestAnimationFrame(frame);
 let lastFrameErrorAt = Number.NEGATIVE_INFINITY;
@@ -520,7 +524,6 @@ function handleMenuClick(event) {
   if (agentButton) {
     const selected = getCharacter(agentButton.dataset.selectAgent);
     selectMatchChoice("character", selected.id);
-    selectMatchChoice("race", selected.homeRaceId);
     showPanel("play");
     toast(`${getCharacter(agentButton.dataset.selectAgent).name} chosen.`);
     return;
@@ -633,6 +636,7 @@ function showPanel(panel) {
 }
 
 function quickStart() {
+  const agent = getCharacter("kite");
   startLocal({
     modeId: "training",
     mapId: "breakline",
@@ -642,7 +646,7 @@ function quickStart() {
         id: "p1",
         name: "PLAYER 1",
         characterId: "kite",
-        raceId: "human",
+        raceId: agent.homeRaceId,
         team: "alpha",
         human: true,
         localSlot: 0,
@@ -655,7 +659,7 @@ function launchMode(modeId) {
   const mode = getMode(modeId);
   const mapId = selectedMatchChoice("map", "breakline");
   const characterId = selectedMatchChoice("character", "kite");
-  const raceId = selectedMatchChoice("race", "human");
+  const raceId = getCharacter(characterId).homeRaceId;
   selectMatchChoice("mode", mode.id);
   startLocal({
     modeId: mode.id,
@@ -682,7 +686,7 @@ function startConfiguredMatch(event) {
   let modeId = String(data.get("mode") ?? "duel");
   const mapId = String(data.get("map") ?? "breakline");
   const characterId = String(data.get("character") ?? "kite");
-  const raceId = String(data.get("race") ?? "human");
+  const raceId = getCharacter(characterId).homeRaceId;
   if (format === "local" && !getMode(modeId).allowLocal) {
     modeId = "duel";
     toast("THE FIRST RITE is solo; switched to OATH DUEL for local 2P.");
@@ -703,7 +707,7 @@ function startConfiguredMatch(event) {
       id: "p2",
       name: "PLAYER 2",
       characterId: String(data.get("characterTwo") ?? "bulwark"),
-      raceId: String(data.get("raceTwo") ?? "orc"),
+      raceId: getCharacter(String(data.get("characterTwo") ?? "bulwark")).homeRaceId,
       team: modeId === "survival" ? "alpha" : "beta",
       human: true,
       localSlot: 1,
@@ -712,6 +716,7 @@ function startConfiguredMatch(event) {
   startLocal({
     modeId,
     mapId,
+    hazardsEnabled: data.get("hazards") === "on",
     players,
     botCount:
       format === "local"
@@ -805,15 +810,11 @@ function leaveToMenu(panel = "home", preserveReconnect = false) {
 }
 
 function handleMatchFormChange(event) {
-  if (event.target.name === "character") {
-    selectMatchChoice("race", getCharacter(event.target.value).homeRaceId);
-  } else if (event.target.name === "characterTwo") {
-    selectMatchChoice("raceTwo", getCharacter(event.target.value).homeRaceId);
-  }
   if (event.target.name === "format") {
     const local = event.target.value === "local";
     element("player-two-field").hidden = !local;
     element("bot-field").hidden = local;
+    element("arena-step-label").textContent = `${local ? 5 : 4} · Battleground`;
     if (local && !getMode(selectedMatchChoice("mode", "duel")).allowLocal) {
       selectMatchChoice("mode", "duel");
       toast("THE FIRST RITE is solo; OATH DUEL selected for local 2P.");
@@ -845,10 +846,23 @@ function selectMatchChoice(name, value) {
 function updateDeploymentSummary() {
   const mode = getMode(selectedMatchChoice("mode", "duel"));
   const agent = getCharacter(selectedMatchChoice("character", "kite"));
-  const race = getRace(selectedMatchChoice("race", "human"));
+  const race = getRace(agent.homeRaceId);
   const map = getMap(selectedMatchChoice("map", "breakline"));
   element("deployment-summary").textContent =
     `${mode.name} · ${race.name} ${agent.name} · ${map.name}`;
+  element("selected-champion-name").textContent = agent.name;
+  element("selected-champion-line").textContent = `${race.name} · ${race.feature}`;
+  element("selected-champion-glyph").textContent = agent.glyph;
+  element("selected-mode-name").textContent = mode.name;
+  element("selected-map-name").textContent = map.name;
+  element("selected-element-name").textContent = `${agent.affinity.name} · ${agent.affinity.edge}`;
+  element("selected-champion").dataset.element = agent.affinity.id;
+}
+
+function toggleHudDetail() {
+  settings = normalizeSettings({ ...settings, hudDetailed: !settings.hudDetailed });
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  applySettings();
 }
 
 function toggleInfo(force = !infoOpen) {
@@ -872,7 +886,9 @@ function updateInfoOverlay(mode, map) {
   const flowRatio = clamp(player.flow / player.maxFlow, 0, 1);
   element("flow-charge").style.transform = `scaleX(${flowRatio})`;
   element("flow-detail").textContent =
-    player.hopCooldown > 0
+    player.grazeCooldown > 0
+      ? `Edgeweave ${player.grazeCooldown.toFixed(1)}s`
+      : player.hopCooldown > 0
       ? `Hop ${player.hopCooldown.toFixed(1)}s`
       : player.sprinting
         ? "Sprinting"
@@ -1143,6 +1159,13 @@ function localPlayer() {
   );
 }
 
+function locallyControlled(entityId) {
+  if (matchKind === "remote") return entityId === remoteEntityId;
+  return matchState.entities.some(
+    (entity) => entity.id === entityId && entity.human,
+  );
+}
+
 function processEvents(events, tick) {
   if (tick <= lastProcessedTick) return;
   lastProcessedTick = tick;
@@ -1191,6 +1214,12 @@ function processEvents(events, tick) {
     } else if (event.type === "mineArmed") {
       tone(185, 0.08, "square", 0.045);
       toast("TICK! · EMBER RUNE ARMED", "comic");
+    } else if (event.type === "spellGraze") {
+      if (locallyControlled(event.entityId)) {
+        tone(585, 0.055, "triangle", 0.04);
+        burst(event.x, event.y, "#77f7ce", 7);
+        toast(`EDGEWEAVE! · +${Math.round(event.amount)} FLOW`, "comic");
+      }
     } else if (event.type === "wallKick") {
       toast("WALL KICK · ANGLE STOLEN");
     } else if (event.type === "counterStrafe") {
@@ -1803,6 +1832,7 @@ function drawProjectiles() {
 function drawEntities(time) {
   for (const entity of matchState.entities) {
     const agent = getCharacter(entity.characterId);
+    const race = getRace(entity.raceId ?? agent.homeRaceId);
     context.save();
     try {
       context.translate(entity.x, entity.y);
@@ -2002,6 +2032,7 @@ function drawEntities(time) {
         context.fill();
         context.stroke();
         context.shadowBlur = 0;
+        drawRaceFeature(race, agent.radius, teamColor);
         context.fillStyle = agent.accent;
         context.font = `900 ${Math.max(11, agent.radius * 0.78)}px ui-monospace, monospace`;
         context.textAlign = "center";
@@ -2022,7 +2053,7 @@ function drawEntities(time) {
       context.textBaseline = "alphabetic";
       context.textAlign = "center";
       context.fillText(
-        `${entity.name} · ${getRace(entity.raceId).name} ${agent.name}`,
+        `${entity.name} · ${race.name} ${agent.name}`,
         0,
         agent.radius + 21,
       );
@@ -2047,6 +2078,7 @@ function drawDecoys(time) {
       traceAgentBody(agent);
       context.fill();
       context.stroke();
+      drawRaceFeature(getRace(decoy.raceId ?? agent.homeRaceId), agent.radius, agent.accent);
       context.setLineDash([]);
       context.rotate(-Math.atan2(decoy.facingY, decoy.facingX));
       context.fillStyle = "#fff";
@@ -2161,6 +2193,88 @@ function traceAgentBody(agent) {
   }
 }
 
+function drawRaceFeature(race, radius, teamColor) {
+  context.save();
+  context.shadowBlur = 0;
+  context.strokeStyle = "#fff1c7";
+  context.fillStyle = teamColor;
+  context.lineWidth = settings.highContrast ? 3 : 2;
+  context.lineCap = "round";
+  context.lineJoin = "round";
+  context.beginPath();
+  if (race.id === "human") {
+    context.arc(radius * 0.18, 0, radius * 0.48, -0.85, 0.85);
+  } else if (race.id === "orc") {
+    context.moveTo(radius * 0.62, -radius * 0.48);
+    context.lineTo(radius * 1.12, -radius * 0.25);
+    context.lineTo(radius * 0.72, -radius * 0.12);
+    context.moveTo(radius * 0.62, radius * 0.48);
+    context.lineTo(radius * 1.12, radius * 0.25);
+    context.lineTo(radius * 0.72, radius * 0.12);
+  } else if (race.id === "troll") {
+    context.moveTo(-radius * 0.25, -radius * 0.62);
+    context.lineTo(-radius * 0.62, -radius * 1.1);
+    context.lineTo(-radius * 0.82, -radius * 0.78);
+    context.moveTo(-radius * 0.25, radius * 0.62);
+    context.lineTo(-radius * 0.62, radius * 1.1);
+    context.lineTo(-radius * 0.82, radius * 0.78);
+  } else if (race.id === "wood_elf" || race.id === "night_elf") {
+    const reach = race.id === "wood_elf" ? 1.42 : 1.25;
+    context.moveTo(0, -radius * 0.7);
+    context.lineTo(-radius * 0.2, -radius * reach);
+    context.lineTo(radius * 0.42, -radius * 0.72);
+    context.moveTo(0, radius * 0.7);
+    context.lineTo(-radius * 0.2, radius * reach);
+    context.lineTo(radius * 0.42, radius * 0.72);
+  } else if (race.id === "dwarf") {
+    context.moveTo(radius * 0.22, -radius * 0.48);
+    context.lineTo(radius * 0.82, 0);
+    context.lineTo(radius * 0.22, radius * 0.48);
+    context.moveTo(radius * 0.42, -radius * 0.26);
+    context.lineTo(radius * 0.1, 0);
+    context.lineTo(radius * 0.42, radius * 0.26);
+  } else if (race.id === "gnome") {
+    context.moveTo(-radius * 0.45, -radius * 0.45);
+    context.lineTo(radius * 0.62, 0);
+    context.lineTo(-radius * 0.45, radius * 0.45);
+    context.closePath();
+  } else if (race.id === "undead") {
+    for (let row = -1; row <= 1; row += 1) {
+      context.moveTo(-radius * 0.5, row * radius * 0.3);
+      context.lineTo(radius * 0.38, row * radius * 0.3);
+    }
+  } else if (race.id === "sylph") {
+    context.moveTo(-radius * 0.42, -radius * 0.5);
+    context.quadraticCurveTo(-radius * 1.4, -radius, -radius * 1.05, -radius * 1.35);
+    context.moveTo(-radius * 0.42, radius * 0.5);
+    context.quadraticCurveTo(-radius * 1.4, radius, -radius * 1.05, radius * 1.35);
+  } else if (race.id === "tideborn") {
+    context.moveTo(radius * 0.1, -radius * 0.72);
+    context.lineTo(-radius * 0.38, -radius * 1.18);
+    context.lineTo(radius * 0.55, -radius * 0.82);
+    context.moveTo(radius * 0.1, radius * 0.72);
+    context.lineTo(-radius * 0.38, radius * 1.18);
+    context.lineTo(radius * 0.55, radius * 0.82);
+  } else if (race.id === "stonekin") {
+    context.rect(-radius * 0.42, -radius * 1.08, radius * 0.72, radius * 0.42);
+    context.rect(-radius * 0.42, radius * 0.66, radius * 0.72, radius * 0.42);
+  } else if (race.id === "ashling") {
+    context.moveTo(-radius * 0.45, 0);
+    context.lineTo(-radius * 0.85, -radius * 0.36);
+    context.lineTo(-radius * 1.18, 0);
+    context.lineTo(-radius * 0.85, radius * 0.36);
+  } else if (race.id === "wyrmbound") {
+    context.moveTo(-radius * 0.25, -radius * 0.55);
+    context.lineTo(-radius * 1.18, -radius * 1.18);
+    context.lineTo(-radius * 0.82, -radius * 0.22);
+    context.moveTo(-radius * 0.25, radius * 0.55);
+    context.lineTo(-radius * 1.18, radius * 1.18);
+    context.lineTo(-radius * 0.82, radius * 0.22);
+  }
+  context.stroke();
+  context.restore();
+}
+
 function tracePolygon(points) {
   context.beginPath();
   for (const [index, point] of points.entries()) {
@@ -2235,13 +2349,11 @@ function buildContentInterface() {
       </label>`,
   ).join("");
   renderMapOptions();
-  element("agent-options").innerHTML = agentPicker("character", "kite");
-  element("race-options").innerHTML = racePicker("race", "human");
-  element("agent-two-options").innerHTML = agentPicker(
+  element("agent-options").innerHTML = raceChampionMatrix("character", "kite");
+  element("agent-two-options").innerHTML = raceChampionMatrix(
     "characterTwo",
     "bulwark",
   );
-  element("race-two-options").innerHTML = racePicker("raceTwo", "orc");
   element("agent-codex").innerHTML = CHARACTERS.map(agentCard).join("");
   element("map-codex").innerHTML = MAPS.map(
     (map) => `
@@ -2269,6 +2381,7 @@ function buildContentInterface() {
   element("online-race").innerHTML = RACES.map(
     (race) => `<option value="${race.id}">${race.name} — ${race.trait}</option>`,
   ).join("");
+  syncOnlineRace();
   element("online-mode").innerHTML = MODES.filter(
     (mode) => mode.id !== "training",
   )
@@ -2305,25 +2418,38 @@ function renderMapOptions() {
     : "The known realm · choose a region or descend into The Fracture";
 }
 
-function agentPicker(name, selected) {
-  return CHARACTERS.map(
-    (agent) => `
-      <label class="agent-choice" style="--agent-color:${agent.accent}" title="${getRace(agent.homeRaceId).name} · ${agent.role} · ${agent.affinity.name}: ${agent.style}">
-        <input type="radio" name="${name}" value="${agent.id}" ${agent.id === selected ? "checked" : ""}>
-        <span class="agent-choice-glyph" aria-hidden="true">${agent.glyph}</span>
-        <b>${agent.name}</b>
-      </label>`,
-  ).join("");
+function raceChampionMatrix(name, selected) {
+  return RACES.map((race) => {
+    const champions = CHARACTERS
+      .filter((agent) => agent.homeRaceId === race.id)
+      .sort((left, right) => left.difficulty - right.difficulty || left.name.localeCompare(right.name));
+    return `
+      <section class="race-column" aria-label="${race.name} champions">
+        <header title="${race.trait}: ${race.boon}; ${race.drawback}">
+          <i aria-hidden="true">${race.featureGlyph}</i>
+          <b>${race.name}</b>
+          <span>${race.trait} · ${race.feature}</span>
+          <small>${race.boon} / ${race.drawback}</small>
+        </header>
+        <div class="race-column-roster">
+          ${champions.length ? champions.map((agent) => `
+            <label class="agent-choice" data-element="${agent.affinity.id}" style="--agent-color:${agent.accent}" title="${agent.role} · ${agent.affinity.name}: ${agent.style}">
+              <input type="radio" name="${name}" value="${agent.id}" ${agent.id === selected ? "checked" : ""}>
+              <span class="agent-choice-glyph" aria-hidden="true">${agent.glyph}</span>
+              <b>${agent.name}</b>
+              <small>${agent.affinity.name} · ${"◆".repeat(agent.difficulty)}</small>
+            </label>`).join("") : `<p class="empty-roster">No sworn champion yet</p>`}
+        </div>
+      </section>`;
+  }).join("");
 }
 
-function racePicker(name, selected) {
-  return RACES.map(
-    (race) => `
-      <label class="race-choice" title="${race.trait}: ${race.boon}; ${race.drawback}">
-        <input type="radio" name="${name}" value="${race.id}" ${race.id === selected ? "checked" : ""}>
-        <b>${race.name}</b><span>${race.boon}</span><small>${race.drawback}</small>
-      </label>`,
-  ).join("");
+function syncOnlineRace() {
+  const champion = getCharacter(element("online-agent").value || "kite");
+  for (const option of element("online-race").querySelectorAll("option")) {
+    if (option.value === champion.homeRaceId) option.setAttribute("selected", "");
+    else option.removeAttribute("selected");
+  }
 }
 
 function agentCard(agent) {
@@ -2830,6 +2956,7 @@ function updateSettings() {
     coaching: data.get("coaching") === "on",
     reducedMotion: data.get("reducedMotion") === "on",
     highContrast: data.get("highContrast") === "on",
+    hudDetailed: settings.hudDetailed,
     bindings: settings.bindings,
     networkLatency: Number(data.get("networkLatency")),
     networkJitter: Number(data.get("networkJitter")),
@@ -2872,6 +2999,9 @@ function applySettings() {
   );
   app.classList.toggle("high-contrast", settings.highContrast);
   app.classList.toggle("reduced-motion", settings.reducedMotion);
+  app.classList.toggle("hud-detailed", settings.hudDetailed);
+  hudDetailToggle.textContent = settings.hudDetailed ? "Compact HUD" : "Show details";
+  hudDetailToggle.setAttribute("aria-pressed", String(settings.hudDetailed));
   syncBindingLabels();
   syncBindingButtons();
   const lab = networkLabConfig();
@@ -2906,6 +3036,8 @@ function normalizeSettings(candidate) {
         : false,
     highContrast:
       typeof source.highContrast === "boolean" ? source.highContrast : false,
+    hudDetailed:
+      typeof source.hudDetailed === "boolean" ? source.hudDetailed : false,
     bindings: normalizeBindings(source.bindings),
     networkLatency: boundedNumber(source.networkLatency, 0, 250, 0),
     networkJitter: boundedNumber(source.networkJitter, 0, 100, 0),

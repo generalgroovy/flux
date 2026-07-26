@@ -10,6 +10,26 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
+Build 0.33.0 rebuilds the **Muster Hall** around a wide, usable configuration
+flow. Every race owns one column and its difficulty-ordered champion rows;
+champion ancestry is now bound consistently through local, quick, bot, and
+online presentation instead of being an incoherent second selector. A persistent
+summary keeps rite, field, element, bots, hazard rules, and the launch action in
+view. The compact HUD can reveal full detail on demand, body text is larger, and
+comic callouts use a 31% fill (69% transparency) with contrast preserved by
+edges, blur, and shadow. Element labels pair a stable palette with words and
+marks, while every race declares and renders a distinct physical feature such
+as leaf-point ears, tusks, antlers, fins, rune ribs, or scaled wings. Empty race
+columns are honest and non-interactive until complete champion kits ship.
+
+Build 0.32.0 adds **Edgeweave**, a universal movement read. Passing through the
+narrow outer edge of a hostile spell at 260+ movement speed restores 9 FLOW.
+Actual hits, marked practice pressure, stationary proximity, full FLOW, and
+repeated projectiles inside a 0.22-second lockout grant nothing. Each projectile
+can reward each fighter only once. The server-owned swept-path check works at
+120 ticks through the existing snapshot protocol; a restrained trail burst,
+comic/audio cue, live field status, and guide entry make the success legible.
+
 Build 0.31.0 makes the final **First Rite discipline trial** behavior-driven.
 Each champion receives short input-aware coaching for their real tactical:
 terrain-shapers must author valid ground, Veil must leave a decoy, aimed Volt
@@ -147,7 +167,9 @@ Human, Iron Orc, Moss Troll, Briar Elf, Gloam Elf, Forge Dwarf, Copper Gnome,
 Ash Revenant, Cloud Sylph, Reefborn, Cairnkin, and Cinderling. Each trades no
 more than 10% across health, speed, Flux, and FLOW, advertises its boon and
 drawback before selection, and remains authoritative through remote joins and
-rematches. Race columns sit above the difficulty-ordered champion grid. Arena
+rematches. Build 0.33.0 supersedes that independent build axis: each race now
+owns a column of difficulty-ordered home champions, keeping ancestry and
+silhouette coherent across every launch path. Arena
 selection is now a spatial atlas with authored region/scale coordinates and
 hover/focus summaries, establishing the UI contract for nested world regions.
 

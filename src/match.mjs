@@ -153,7 +153,7 @@ export function createMatch(options = {}) {
 
 function createEntity(spec, index, map) {
   const agent = getCharacter(spec.characterId);
-  const race = getRace(spec.raceId);
+  const race = getRace(spec.raceId ?? agent.homeRaceId);
   const maxHealth = Math.round(agent.health * race.health);
   const maxFlow = MATCH_TUNING.flow.maximum * race.flow;
   const maxFlux = MATCH_TUNING.flux.maximum * race.flux;
@@ -231,6 +231,7 @@ function createEntity(spec, index, map) {
     fluxRecoveryDelay: 0,
     fluxWarningCooldown: 0,
     counterStrafeCooldown: 0,
+    grazeCooldown: 0,
     surface: "normal",
     elementForceX: 0,
     elementForceY: 0,
@@ -417,6 +418,7 @@ function tickEntity(entity, delta) {
     "fluxRecoveryDelay",
     "fluxWarningCooldown",
     "counterStrafeCooldown",
+    "grazeCooldown",
     "passiveRemaining",
     "passiveCueCooldown",
     "ultimateWindupRemaining",
@@ -1765,6 +1767,7 @@ function updateProjectiles(state, delta, map) {
           getCharacter(entity.characterId).radius + projectile.radius,
         ),
     );
+    resolveProjectileGrazes(state, projectile, target?.id ?? null);
     if (!target) {
       survivors.push(projectile);
       continue;
@@ -1799,6 +1802,58 @@ function updateProjectiles(state, delta, map) {
     }
   }
   state.projectiles = survivors;
+}
+
+function resolveProjectileGrazes(state, projectile, hitEntityId) {
+  if (projectile.source === "training") return;
+  projectile.grazedIds ??= [];
+  for (const entity of state.entities) {
+    if (
+      !entity.alive || entity.id === hitEntityId ||
+      !hostileTeams(projectile.team, entity.team) ||
+      entity.spawnProtection > 0 || entity.grazeCooldown > 0 ||
+      projectile.grazedIds.includes(entity.id) ||
+      Math.hypot(entity.vx, entity.vy) < MATCH_TUNING.flow.grazeMinimumSpeed ||
+      entity.flow >= entity.maxFlow
+    ) continue;
+    const hitRadius = getCharacter(entity.characterId).radius + projectile.radius;
+    if (
+      segmentCircleHit(
+        projectile.previousX,
+        projectile.previousY,
+        projectile.x,
+        projectile.y,
+        entity.x,
+        entity.y,
+        hitRadius,
+      ) ||
+      !segmentCircleHit(
+        projectile.previousX,
+        projectile.previousY,
+        projectile.x,
+        projectile.y,
+        entity.x,
+        entity.y,
+        hitRadius + MATCH_TUNING.flow.grazeMargin,
+      )
+    ) continue;
+    const amount = Math.min(
+      MATCH_TUNING.flow.grazeReward,
+      entity.maxFlow - entity.flow,
+    );
+    entity.flow += amount;
+    entity.flowRecoveryDelay = MATCH_TUNING.flow.recoveryDelay;
+    entity.grazeCooldown = MATCH_TUNING.flow.grazeCooldown;
+    projectile.grazedIds.push(entity.id);
+    state.events.push({
+      type: "spellGraze",
+      entityId: entity.id,
+      projectileId: projectile.id,
+      amount,
+      x: entity.x,
+      y: entity.y,
+    });
+  }
 }
 
 function defendAgainstProjectile(state, target, projectile) {
@@ -2162,6 +2217,7 @@ function respawnEntity(entity, map) {
   entity.fluxRecoveryDelay = 0;
   entity.fluxWarningCooldown = 0;
   entity.counterStrafeCooldown = 0;
+  entity.grazeCooldown = 0;
   entity.surface = "normal";
   entity.elementForceX = 0;
   entity.elementForceY = 0;
@@ -2592,6 +2648,7 @@ export function matchInvariantErrors(state) {
       "fluxRecoveryDelay",
       "fluxWarningCooldown",
       "counterStrafeCooldown",
+      "grazeCooldown",
       "passiveRemaining",
       "passiveCueCooldown",
       "ultimateCharge",

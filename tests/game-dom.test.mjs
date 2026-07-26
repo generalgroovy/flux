@@ -123,6 +123,14 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   const app = document.getElementById("app");
   assert.equal(app.dataset.view, "menu");
   assert.deepEqual(window.DIFF_DEBUG.getInvariantErrors(), []);
+  assert.equal(document.querySelectorAll("#agent-options .race-column").length, 13);
+  assert.equal(document.querySelectorAll('#agent-options input[name="character"]').length, 10);
+  assert.equal(document.querySelectorAll('#agent-options input[name="race"]').length, 0);
+  assert.match(
+    document.querySelector('#agent-options .race-column[aria-label="Briar Elf champions"] header').textContent,
+    /leaf-point ears/,
+  );
+  assert.equal(document.getElementById("online-race").disabled, true);
 
   for (const panel of [
     "home",
@@ -207,6 +215,12 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.equal(app.dataset.view, "game");
   assert.equal(window.DIFF_DEBUG.getState().modeId, "training");
   assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "kite");
+  assert.equal(window.DIFF_DEBUG.getState().entities[0].raceId, "wood_elf");
+  assert.equal(app.classList.contains("hud-detailed"), false);
+  document.getElementById("hud-detail-toggle").click();
+  assert.equal(app.classList.contains("hud-detailed"), true);
+  assert.equal(document.getElementById("hud-detail-toggle").textContent, "Compact HUD");
+  assert.equal(JSON.parse(storage.get("diff.presentation.v2")).hudDetailed, true);
   assert.equal(document.getElementById("coach-progress").hidden, false);
   assert.equal(
     document.querySelector('[data-coach-step="0"]').classList.contains("active"),
@@ -399,6 +413,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   local.checked = true;
   local.dispatchEvent(new window.Event("change", { bubbles: true }));
   assert.equal(document.getElementById("player-two-field").hidden, false);
+  document.getElementById("match-hazards").checked = false;
   const form = document.getElementById("match-form");
   form.dispatchEvent(
     new window.Event("submit", { bubbles: true, cancelable: true }),
@@ -409,6 +424,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     localState.entities.filter((entity) => entity.human).length,
     2,
   );
+  assert.equal(localState.rules.hazardsEnabled, false);
   assert.deepEqual(window.DIFF_DEBUG.getInvariantErrors(), []);
 
   queuedFrame(performance.now() + 32);

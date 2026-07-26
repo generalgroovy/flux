@@ -34,6 +34,14 @@
 
       <div id="game-tools" class="game-tools">
         <button
+          id="hud-detail-toggle"
+          class="button button-quiet info-toggle"
+          type="button"
+          aria-pressed="false"
+        >
+          Show details
+        </button>
+        <button
           id="info-toggle"
           class="button button-quiet info-toggle"
           type="button"
@@ -203,7 +211,7 @@
             <article class="menu-panel active" data-menu-panel="home">
               <div class="hero">
                 <div>
-                  <span class="eyebrow">OLD-WORLD FLUX ARENA / BUILD 0.31.0</span>
+                  <span class="eyebrow">OLD-WORLD FLUX ARENA / BUILD 0.33.0</span>
                   <h1>Shape the field.<br /><em>Execute the read.</em></h1>
                   <p>
                     Ten race champions. Five proven contests. One magical language:
@@ -240,55 +248,72 @@
                 <p>Defaults are tuned for immediate play. Every choice has a clean counter-read.</p>
               </header>
               <form id="match-form" class="match-builder">
-                <fieldset>
-                  <legend>Format</legend>
-                  <div class="segmented">
-                    <label><input type="radio" name="format" value="solo" checked /><span>Solo + bots</span></label>
-                    <label><input type="radio" name="format" value="local" /><span>Local 2P</span></label>
-                  </div>
-                </fieldset>
-                <fieldset>
-                  <legend>Mode</legend>
-                  <div id="mode-options" class="choice-grid mode-options"></div>
-                </fieldset>
-                <fieldset>
-                  <legend>Race — Player 1</legend>
-                  <div id="race-options" class="race-picker"></div>
-                </fieldset>
-                <fieldset>
-                  <legend>Champion — Player 1</legend>
-                  <div id="agent-options" class="agent-picker"></div>
-                </fieldset>
-                <fieldset id="player-two-field" hidden>
-                  <legend>Ancestry + champion — Player 2</legend>
-                  <div id="race-two-options" class="race-picker"></div>
-                  <h3>Champion</h3>
-                  <div id="agent-two-options" class="agent-picker"></div>
-                </fieldset>
-                <fieldset>
-                  <legend>Arena</legend>
-                  <div class="atlas-toolbar" aria-label="Realm chart depth">
-                    <button class="text-button active" type="button" data-atlas-scope="realm">Realm</button>
-                    <span aria-hidden="true">›</span>
-                    <button class="text-button" type="button" data-atlas-scope="fracture">The Fracture</button>
-                    <small id="atlas-caption">Choose a region, or enter The Fracture for four battle scales.</small>
-                  </div>
-                  <div id="map-options" class="choice-grid map-options"></div>
-                </fieldset>
-                <fieldset id="bot-field">
-                  <legend>Opposition</legend>
-                  <label class="range-setting">
-                    <span><b>Bot count</b><small>More bodies, same rules.</small></span>
-                    <input id="bot-count" type="range" min="1" max="5" value="1" />
-                    <output id="bot-count-output">1</output>
-                  </label>
-                </fieldset>
-                <div class="deployment-action">
-                  <span><b>READY</b><small id="deployment-summary">OATH DUEL · AERWYN · THE SUNDERED ROAD</small></span>
-                  <button class="button button-primary button-large deploy-button" type="submit">
-                    Enter arena
-                  </button>
+                <div class="muster-flow">
+                  <section class="muster-section match-rules">
+                    <fieldset>
+                      <legend>1 · Contestants</legend>
+                      <div class="segmented">
+                        <label><input type="radio" name="format" value="solo" checked /><span>Solo + bots</span></label>
+                        <label><input type="radio" name="format" value="local" /><span>Local 2P</span></label>
+                      </div>
+                    </fieldset>
+                    <fieldset>
+                      <legend>2 · Rite</legend>
+                      <div id="mode-options" class="choice-grid mode-options"></div>
+                    </fieldset>
+                  </section>
+
+                  <fieldset class="muster-section champion-field">
+                    <legend>3 · Player 1 champion</legend>
+                    <p class="field-guidance">Each race is a column; its champions run from approachable to demanding. Ancestry and silhouette travel with the champion.</p>
+                    <div id="agent-options" class="race-champion-matrix"></div>
+                  </fieldset>
+
+                  <fieldset id="player-two-field" class="muster-section champion-field" hidden>
+                    <legend>4 · Player 2 champion</legend>
+                    <div id="agent-two-options" class="race-champion-matrix"></div>
+                  </fieldset>
+
+                  <fieldset class="muster-section arena-field">
+                    <legend id="arena-step-label">4 · Battleground</legend>
+                    <div class="atlas-toolbar" aria-label="Realm chart depth">
+                      <button class="text-button active" type="button" data-atlas-scope="realm">Realm</button>
+                      <span aria-hidden="true">›</span>
+                      <button class="text-button" type="button" data-atlas-scope="fracture">The Fracture</button>
+                      <small id="atlas-caption">Choose a region, or enter The Fracture for four battle scales.</small>
+                    </div>
+                    <div id="map-options" class="choice-grid map-options"></div>
+                  </fieldset>
                 </div>
+
+                <aside class="deployment-sidebar" aria-label="Match configuration summary">
+                  <span class="eyebrow">MUSTER SUMMARY</span>
+                  <div id="selected-champion" class="selected-champion" data-element="gale">
+                    <span id="selected-champion-glyph" aria-hidden="true">◇</span>
+                    <div><b id="selected-champion-name">AERWYN</b><small id="selected-champion-line">Briar Elf · Gale</small></div>
+                  </div>
+                  <dl class="deployment-readout">
+                    <div><dt>Rite</dt><dd id="selected-mode-name">Oath Duel</dd></div>
+                    <div><dt>Field</dt><dd id="selected-map-name">The Sundered Road</dd></div>
+                    <div><dt>Element</dt><dd id="selected-element-name">Gale · curved force</dd></div>
+                  </dl>
+                  <fieldset id="bot-field">
+                    <legend>Opposition</legend>
+                    <label class="range-setting compact-setting">
+                      <span><b>Bot count</b><small>More bodies, same rules.</small></span>
+                      <input id="bot-count" type="range" min="1" max="5" value="1" />
+                      <output id="bot-count-output">1</output>
+                    </label>
+                  </fieldset>
+                  <label class="toggle-setting compact-setting">
+                    <span><b>Map hazards</b><small>Disable authored hazards, never cover.</small></span>
+                    <input id="match-hazards" name="hazards" type="checkbox" checked />
+                  </label>
+                  <div class="deployment-action">
+                    <span><b>READY</b><small id="deployment-summary">OATH DUEL · BRIAR ELF AERWYN · THE SUNDERED ROAD</small></span>
+                    <button class="button button-primary button-large deploy-button" type="submit">Enter arena</button>
+                  </div>
+                </aside>
               </form>
             </article>
 
@@ -309,9 +334,10 @@
                     <select id="online-agent"></select>
                   </label>
                   <label>
-                    <span>Race</span>
-                    <select id="online-race"></select>
+                    <span>Champion ancestry</span>
+                    <select id="online-race" disabled aria-describedby="online-race-note"></select>
                   </label>
+                  <small id="online-race-note">Bound to the selected champion for a readable silhouette and fair racial tradeoff.</small>
                   <label>
                     <span>Server address</span>
                     <input id="server-address" type="url" placeholder="http://host:8000" />
@@ -448,6 +474,7 @@
                 <article><b>Carry a curve</b><span>Hop across your travel line to preserve bounded lateral momentum into evasive arcs and wall approaches.</span></article>
                 <article><b>Cut the landing</b><span>Reverse once in the brief post-hop window to steal a sharper turn. The window is consumed immediately.</span></article>
                 <article><b>Commit low</b><span>While moving fast, hold sprint and hop together to slide. Steering is limited and cover breaks the attempt.</span></article>
+                <article><b>Thread the edge</b><span>Move at committed speed through a hostile spell's narrow miss band to restore 9 FLOW. Hits, practice marks, and repeated fan shots do not pay.</span></article>
                 <article><b>Flux is commitment</b><span>Tactical, defense, and character mobility compete for raw magic; primary and FLOW remain available when dry.</span></article>
                 <article><b>Shrines answer movement</b><span>Cross a ready covenant at high speed while missing Flux. The exposed route restores magic, then locks for everyone.</span></article>
                 <article><b>Elements alter routes</b><span>Wind carries fire; water douses fire; fire melts ice; ice freezes water.</span></article>

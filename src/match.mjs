@@ -481,7 +481,8 @@ function trySlide(state, entity, command) {
   if (!wantsSlide) return false;
   if (
     entity.slideCooldown > 0 || entity.slideRemaining > 0 ||
-    entity.hopRemaining > 0 || entity.flow < MATCH_TUNING.flow.slideCost ||
+    entity.hopRemaining > 0 || entity.mobilityRemaining > 0 ||
+    entity.flow < MATCH_TUNING.flow.slideCost ||
     Math.hypot(entity.vx, entity.vy) < MATCH_TUNING.flow.slideEntrySpeed
   ) return true;
   const direction = normalizeDirection(command.moveX, command.moveY);
@@ -582,6 +583,7 @@ function tryHop(state, entity, command) {
     entity.hopCooldown > 0 ||
     entity.hopRemaining > 0 ||
     entity.slideRemaining > 0 ||
+    entity.mobilityRemaining > 0 ||
     entity.flow < flow.hopCost
   ) {
     return;

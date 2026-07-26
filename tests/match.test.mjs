@@ -709,6 +709,59 @@ test("sprint slides spend FLOW, steer with commitment, and break on cover", () =
   assert.deepEqual(matchInvariantErrors(state), []);
 });
 
+test("movement chains respect commitment boundaries and remain speed-bounded", () => {
+  const state = duel({ mapId: "oathscar_vale" });
+  const runner = state.entities[0];
+  let peakSpeed = 0;
+  for (let tick = 0; tick < 24; tick += 1) {
+    stepMatch(state, { [runner.id]: { ...idle, moveX: 1, sprint: true } });
+  }
+  stepMatch(state, {
+    [runner.id]: { ...idle, moveX: 1, sprint: true, hop: true },
+  });
+  assert.ok(runner.slideRemaining > 0);
+  stepMatch(state, { [runner.id]: { ...idle, moveY: 1, hop: true } });
+  assert.equal(runner.hopRemaining, 0, "a slide cannot be silently hop-cancelled");
+  while (runner.slideRemaining > 0) {
+    stepMatch(state, { [runner.id]: { ...idle, moveX: 1 } });
+    peakSpeed = Math.max(peakSpeed, Math.hypot(runner.vx, runner.vy));
+  }
+  runner.hopCooldown = 0;
+  stepMatch(state, { [runner.id]: { ...idle, moveY: 1, hop: true } });
+  assert.ok(runner.hopRemaining > 0, "a completed slide can route into a hop");
+
+  runner.mobilityRemaining = 0.1;
+  runner.mobilityX = 1;
+  runner.mobilityY = 0;
+  runner.hopRemaining = 0;
+  runner.hopCooldown = 0;
+  runner.slideCooldown = 0;
+  stepMatch(state, {
+    [runner.id]: { ...idle, moveX: 1, sprint: true, hop: true },
+  });
+  assert.equal(runner.slideRemaining, 0);
+  assert.equal(runner.hopRemaining, 0, "universal movement cannot overlap character mobility");
+  runner.mobilityRemaining = 0;
+  runner.vx = 0;
+  runner.vy = 0;
+
+  for (let tick = 0; tick < 600; tick += 1) {
+    const phase = tick % 120;
+    stepMatch(state, {
+      [runner.id]: {
+        ...idle,
+        moveX: phase < 60 ? 1 : -1,
+        moveY: phase >= 30 && phase < 90 ? 1 : 0,
+        sprint: phase < 36,
+        hop: phase === 28 || phase === 88,
+      },
+    });
+    peakSpeed = Math.max(peakSpeed, Math.hypot(runner.vx, runner.vy));
+    assert.deepEqual(matchInvariantErrors(state), []);
+  }
+  assert.ok(peakSpeed <= MATCH_TUNING.flow.wallKickSpeed + MATCH_TUNING.flow.hopCarryLimit + 0.01);
+});
+
 test("flow sprint, hop, and wall kick are bounded universal movement", () => {
   const state = duel({ mapId: "crosswind" });
   const player = state.entities[0];

@@ -2,7 +2,7 @@
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.23.0 on Garuda Sway and Windows: complete all four
+1. Hands-on accept HEX 0.24.0 on Garuda Sway and Windows: complete all four
    FIRST RITE reads; chain sprint, hop, and wall kicks around cover; verify
    FLOW cost/recovery; launch all five home shortcuts; use every main-menu
    panel, toggle field info with `F1`, and verify
@@ -23,6 +23,8 @@
    slide links, wall kicks, and high-latency remote prediction.
 8. Observe new players completing the adaptive sprint→slide→hop First Rite read;
    require comprehension without coaching repetition or accidental completion.
+9. Universal movement commitment boundaries and a 600-tick chain ceiling are now
+   deterministic. Next acceptance remains hands-on feel and remote prediction.
 
 ## Gate 1 — Fundamentals implemented
 

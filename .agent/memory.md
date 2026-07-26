@@ -872,3 +872,28 @@
   executable or external playtester is available here.
 - **Recommended next task:** Add the movement-chain regression matrix, then begin
   the production passive/tactical/ultimate schema with Yrsa as the first pilot.
+
+## 2026-07-26 — Locked universal movement-chain boundaries
+
+- **Player-facing problem:** Individual movement verbs were tested, but their
+  transitions could still hide overlapping state or an unbounded chain exploit.
+- **Implemented solution:** Added deterministic slide→hop, mobility-exclusion,
+  held-input, commitment, and 600-tick adversarial speed/invariant coverage.
+  Universal slide or hop can no longer begin under active character mobility;
+  slides cannot be silently hop-cancelled, while completed slides route into hops.
+- **Regression found and repaired:** The new matrix exposed universal states
+  starting beneath character mobility. Both entry paths now reject the overlap.
+- **Commands run:** Syntax and diff checks; focused chain test; initial sandboxed
+  full suite; escalated full suite with loopback access; clean server launch on
+  port 8122; HTTP health/shell/module smoke; clean shutdown.
+- **Tests passed:** 56/56 checks with required loopback access, including chain
+  matrix, commitment boundaries, speed ceiling, expanded stress, authoritative
+  networking, and cleanup.
+- **Environment diagnosis:** The first full run's server test failed because this
+  turn's sandbox denied `listen(127.0.0.1)` with `EPERM`. A temporary port-retry
+  idea was removed after direct diagnosis; the unchanged strict test passed under
+  its project-scoped loopback permission.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.24.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Recommended next task:** Begin the production passive/tactical/ultimate
+  schema with Yrsa as the first fully wired champion pilot.

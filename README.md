@@ -10,7 +10,13 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
-Build 0.23.0 streamlines the First Rite around demonstrated FLOW behavior. Its
+Build 0.24.0 locks the first movement grammar with deterministic chain and exploit
+coverage. Slides cannot be hop-cancelled before commitment ends; completed slides
+can route into hops; and neither hop nor slide can start invisibly beneath a
+character mobility action. A 600-tick adversarial chain remains finite,
+collision-safe, and within the universal speed ceiling.
+
+Build 0.23.0 streamlined the First Rite around demonstrated FLOW behavior. Its
 opening read now requires a real sprint, committed slide, and separate hop while
 keeping the existing four-stage structure. The live prompt names only the next
 missing behavior; bots cannot complete it, and players may still skip instantly.

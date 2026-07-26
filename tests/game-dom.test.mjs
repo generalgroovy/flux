@@ -230,6 +230,11 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     true,
   );
   document.querySelector('[data-panel="arenas"]').click();
+  document.querySelector('[data-atlas-scope="fracture"]').click();
+  assert.equal(document.getElementById("map-options").dataset.scope, "fracture");
+  assert.ok(document.querySelector('input[name="map"][value="ashen_ford"]'));
+  document.querySelector('[data-atlas-scope="realm"]').click();
+  assert.equal(document.getElementById("map-options").dataset.scope, "realm");
   document.querySelector('[data-select-map="crown"]').click();
   assert.equal(app.dataset.panel, "play");
   assert.equal(

@@ -81,11 +81,11 @@ function duel({
   return state;
 }
 
-test("content ships eight complete agents, four maps, and all five mode gates", () => {
+test("content ships eight complete champions, seven maps, and all five mode gates", () => {
   assert.deepEqual(validateContent(), []);
   assert.equal(CHARACTERS.length, 8);
   assert.equal(RACES.length, 12);
-  assert.ok(MAPS.length >= 4);
+  assert.ok(MAPS.length >= 7);
   assert.deepEqual(
     new Set(MODES.map((mode) => mode.id)),
     new Set(["training", "duel", "control", "convergence", "survival"]),
@@ -123,6 +123,17 @@ test("every arena is an authored old-world place rather than a bare combat grid"
     assert.ok(map.landmarks.length >= 2);
     assert.ok(map.landmarks.some((landmark) => landmark.type === "rune"));
   }
+});
+
+test("The Fracture ships a complete nested scale ladder", () => {
+  const fractureMaps = MAPS.filter((map) => map.regionId === "fracture");
+  assert.deepEqual(
+    new Set(fractureMaps.map((map) => map.scale)),
+    new Set(["duel", "small", "medium", "large"]),
+  );
+  assert.equal(new Set(fractureMaps.map((map) => map.id)).size, 4);
+  assert.ok(fractureMaps.every((map) => Number.isFinite(map.atlas.regionX)));
+  assert.ok(fractureMaps.every((map) => Number.isFinite(map.atlas.regionY)));
 });
 
 test("race tradeoffs alter bounded resources without replacing character kits", () => {

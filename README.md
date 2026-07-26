@@ -10,7 +10,14 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
-Build 0.15.0 turns the arena atlas into the first authored realm chart. Every
+Build 0.16.0 completes the first nested region. Enter **The Fracture** from the
+realm chart to choose a full gameplay-scale ladder: Sundered Road for duel,
+Ashen Ford for small fights, Pilgrim Steps for medium contests, and Oathscar Vale
+for large encounters. Each is fully selectable in solo, local, and remote play;
+each has authored routes, safe spawns, cover, landmarks, and deterministic
+hazards where the route decision benefits from one.
+
+Build 0.15.0 turned the arena atlas into the first authored realm chart. Every
 shipped battleground now declares terrain, regional lore, heraldry, and layered
 landmarks. The field renderer replaces its technical grid and synthetic cover
 with quiet tile marks, roads, courts, moors, water halls, runic sites, and stone
@@ -204,11 +211,15 @@ color, role, and readable kit identity.
 Maps:
 
 - **THE SUNDERED ROAD** — twin rotations around a telegraphed central seam
+- **ASHEN FORD** — three fast crossings around an intermittently kindled ford
+- **PILGRIM STEPS** — offset terraces with exposed climbs and rapid flanks
+- **OATHSCAR VALE** — four long rotations around a dangerous covenant ring
 - **WINDGLASS MOOR** — long sightlines broken by offset cover pockets
 - **THE OLD CROWN** — a contested center with four readable gates
 - **DROWNED HALLS** — three lanes with out-of-phase side hazards
 
-Each battleground is located on the interactive realm chart and carries an
+Each battleground is located on the interactive realm chart; The Fracture can be
+opened as its own regional chart. Every location carries an
 authored terrain identity, short history, regional heraldry, and at least two
 field landmarks. These layers are readable orientation anchors only; hard cover,
 hazards, elemental constructs, and objectives retain distinct gameplay edges.

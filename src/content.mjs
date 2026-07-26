@@ -504,9 +504,10 @@ export const CHARACTERS = Object.freeze([
 export const MAPS = Object.freeze([
   {
     id: "breakline",
+    regionId: "fracture",
     region: "The Fracture",
     scale: "duel",
-    atlas: { x: 22, y: 54 },
+    atlas: { x: 22, y: 54, regionX: 49, regionY: 55 },
     name: "THE SUNDERED ROAD",
     terrain: "Broken imperial causeway",
     identity: "Twin rotations around a cursed central scar.",
@@ -548,7 +549,104 @@ export const MAPS = Object.freeze([
     objective: { x: 800, y: 450, radius: 118 },
   },
   {
+    id: "ashen_ford",
+    regionId: "fracture",
+    region: "The Fracture",
+    scale: "small",
+    atlas: { x: 22, y: 54, regionX: 24, regionY: 68 },
+    name: "ASHEN FORD",
+    terrain: "Shallow cinder ford",
+    identity: "A fast three-route crossing with exposed stepping stones.",
+    lore: "Pilgrims once washed oath-ash from their hands here. The ford now kindles at dusk, forcing travelers to choose water, bridge, or broken bank.",
+    heraldry: "THE BLACK HERON",
+    visual: { floor: "#30251a", void: "#100b08", grid: "#55402c", accent: "#c47d48" },
+    size: { width: 1600, height: 900, inset: 44 },
+    spawns: [
+      { x: 170, y: 450 }, { x: 1430, y: 450 }, { x: 310, y: 150 }, { x: 1290, y: 750 },
+    ],
+    obstacles: [
+      { x: 420, y: 250, width: 170, height: 80 },
+      { x: 420, y: 570, width: 170, height: 80 },
+      { x: 720, y: 370, width: 160, height: 160 },
+      { x: 1010, y: 250, width: 170, height: 80 },
+      { x: 1010, y: 570, width: 170, height: 80 },
+    ],
+    hazards: [{
+      id: "ford-kindle", x: 630, y: 420, width: 340, height: 60,
+      warning: 0.9, active: 0.42, cooldown: 3.1, initial: 1.6, damage: 18,
+    }],
+    landmarks: [
+      { type: "water", x: 120, y: 390, width: 1360, height: 120, label: "ASHEN FORD" },
+      { type: "rune", x: 800, y: 450, radius: 92, label: "HERON STONES" },
+    ],
+    objective: { x: 800, y: 450, radius: 126 },
+  },
+  {
+    id: "pilgrim_steps",
+    regionId: "fracture",
+    region: "The Fracture",
+    scale: "medium",
+    atlas: { x: 22, y: 54, regionX: 71, regionY: 30 },
+    name: "PILGRIM STEPS",
+    terrain: "Terraced oath-road",
+    identity: "Offset terraces reward height-line control and rapid flanks.",
+    lore: "Seven terraces climb toward a shrine that no longer exists. Stone pilgrims point along false paths, turning every ascent into a contest of reads.",
+    heraldry: "THE SEVEN KEYS",
+    visual: { floor: "#342b1d", void: "#110e09", grid: "#5d4c31", accent: "#c2a466" },
+    size: { width: 1600, height: 900, inset: 44 },
+    spawns: [
+      { x: 170, y: 170 }, { x: 1430, y: 730 }, { x: 170, y: 730 }, { x: 1430, y: 170 },
+    ],
+    obstacles: [
+      { x: 330, y: 210, width: 300, height: 70 },
+      { x: 330, y: 620, width: 300, height: 70 },
+      { x: 720, y: 300, width: 160, height: 70 },
+      { x: 720, y: 530, width: 160, height: 70 },
+      { x: 970, y: 210, width: 300, height: 70 },
+      { x: 970, y: 620, width: 300, height: 70 },
+    ],
+    hazards: [],
+    landmarks: [
+      { type: "road", x: 210, y: 110, width: 1180, height: 680, label: "SEVEN TERRACES" },
+      { type: "rune", x: 800, y: 450, radius: 130, label: "KEYLESS SHRINE" },
+    ],
+    objective: { x: 800, y: 450, radius: 138 },
+  },
+  {
+    id: "oathscar_vale",
+    regionId: "fracture",
+    region: "The Fracture",
+    scale: "large",
+    atlas: { x: 22, y: 54, regionX: 55, regionY: 82 },
+    name: "OATHSCAR VALE",
+    terrain: "Ruined valley crossroads",
+    identity: "Four rotations converge through a dangerous open covenant ring.",
+    lore: "The whole valley bears the failed oath like a wound. Watchtowers guard long rotations while the central covenant tempts the bold into open ground.",
+    heraldry: "THE BROKEN COVENANT",
+    visual: { floor: "#2d281d", void: "#0e0c09", grid: "#514a36", accent: "#b89b58" },
+    size: { width: 1600, height: 900, inset: 44 },
+    spawns: [
+      { x: 145, y: 450 }, { x: 1455, y: 450 }, { x: 800, y: 115 }, { x: 800, y: 785 },
+    ],
+    obstacles: [
+      { x: 280, y: 180, width: 210, height: 90 }, { x: 280, y: 630, width: 210, height: 90 },
+      { x: 1110, y: 180, width: 210, height: 90 }, { x: 1110, y: 630, width: 210, height: 90 },
+      { x: 570, y: 330, width: 120, height: 80 }, { x: 910, y: 490, width: 120, height: 80 },
+      { x: 570, y: 490, width: 120, height: 80 }, { x: 910, y: 330, width: 120, height: 80 },
+    ],
+    hazards: [{
+      id: "covenant-pulse", x: 735, y: 385, width: 130, height: 130,
+      warning: 1.05, active: 0.36, cooldown: 3.4, initial: 2.3, damage: 24,
+    }],
+    landmarks: [
+      { type: "road", x: 105, y: 410, width: 1390, height: 80, label: "VALE CROSSING" },
+      { type: "rune", x: 800, y: 450, radius: 190, label: "COVENANT RING" },
+    ],
+    objective: { x: 800, y: 450, radius: 155 },
+  },
+  {
     id: "crosswind",
+    regionId: "gale_reach",
     region: "Gale Reach",
     scale: "medium",
     atlas: { x: 48, y: 27 },
@@ -581,6 +679,7 @@ export const MAPS = Object.freeze([
   },
   {
     id: "crown",
+    regionId: "cairn_crown",
     region: "Cairn Crown",
     scale: "small",
     atlas: { x: 72, y: 48 },
@@ -613,6 +712,7 @@ export const MAPS = Object.freeze([
   },
   {
     id: "undercurrent",
+    regionId: "tide_hollows",
     region: "Tide Hollows",
     scale: "large",
     atlas: { x: 54, y: 76 },
@@ -911,10 +1011,13 @@ export function validateContent({
 
   for (const map of maps) {
     if (
+      !map.regionId ||
       !map.region ||
       !["duel", "small", "medium", "large", "world"].includes(map.scale) ||
       !Number.isFinite(map.atlas?.x) ||
-      !Number.isFinite(map.atlas?.y)
+      !Number.isFinite(map.atlas?.y) ||
+      (map.regionId === "fracture" &&
+        (!Number.isFinite(map.atlas?.regionX) || !Number.isFinite(map.atlas?.regionY)))
     ) {
       errors.push(`${map.id} needs valid region, scale, and atlas coordinates`);
     }

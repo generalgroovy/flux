@@ -61,6 +61,7 @@ const trails = new Map();
 
 let settings = loadSettings();
 let menuPanel = "home";
+let atlasScope = "realm";
 let matchState = createMatch({
   modeId: "training",
   mapId: "breakline",
@@ -385,6 +386,12 @@ function predictRemoteTick() {
 }
 
 function handleMenuClick(event) {
+  const atlasButton = event.target.closest("[data-atlas-scope]");
+  if (atlasButton) {
+    atlasScope = atlasButton.dataset.atlasScope === "fracture" ? "fracture" : "realm";
+    renderMapOptions();
+    return;
+  }
   const launchButton = event.target.closest("[data-launch-mode]");
   if (launchButton) {
     launchMode(launchButton.dataset.launchMode);
@@ -1688,15 +1695,7 @@ function buildContentInterface() {
         <em>${mode.category}</em>
       </label>`,
   ).join("");
-  element("map-options").innerHTML = MAPS.map(
-    (map, index) => `
-      <label class="choice-card atlas-node" style="--atlas-x:${map.atlas.x}%;--atlas-y:${map.atlas.y}%;--atlas-color:${map.visual.accent}" title="${map.region} · ${map.terrain} · ${map.identity} ${map.lore}">
-        <input type="radio" name="map" value="${map.id}" ${index === 0 ? "checked" : ""}>
-        <b>${map.name}</b>
-        <small>${map.region} · ${map.scale} · ${map.terrain}</small>
-        <em>${map.heraldry}</em>
-      </label>`,
-  ).join("");
+  renderMapOptions();
   element("agent-options").innerHTML = agentPicker("character", "kite");
   element("race-options").innerHTML = racePicker("race", "human");
   element("agent-two-options").innerHTML = agentPicker(
@@ -1741,6 +1740,30 @@ function buildContentInterface() {
   ).join("");
   element("server-address").value = location.origin;
   updateDeploymentSummary();
+}
+
+function renderMapOptions() {
+  const selected = selectedMatchChoice("map", "breakline");
+  const maps = atlasScope === "fracture"
+    ? MAPS.filter((map) => map.regionId === "fracture")
+    : MAPS.filter((map) => map.regionId !== "fracture" || map.id === "breakline");
+  const visibleSelected = maps.some((map) => map.id === selected) ? selected : maps[0].id;
+  element("map-options").dataset.scope = atlasScope;
+  element("map-options").innerHTML = maps.map(
+    (map, index) => `
+      <label class="choice-card atlas-node" style="--atlas-x:${atlasScope === "fracture" ? map.atlas.regionX : map.atlas.x}%;--atlas-y:${atlasScope === "fracture" ? map.atlas.regionY : map.atlas.y}%;--atlas-color:${map.visual.accent}" title="${map.region} · ${map.terrain} · ${map.identity} ${map.lore}">
+        <input type="radio" name="map" value="${map.id}" ${map.id === visibleSelected || (!visibleSelected && index === 0) ? "checked" : ""}>
+        <b>${map.name}</b>
+        <small>${map.region} · ${map.scale} · ${map.terrain}</small>
+        <em>${map.heraldry}</em>
+      </label>`,
+  ).join("");
+  for (const button of document.querySelectorAll("[data-atlas-scope]")) {
+    button.classList.toggle("active", button.dataset.atlasScope === atlasScope);
+  }
+  element("atlas-caption").textContent = atlasScope === "fracture"
+    ? "The Fracture · duel, small, medium, and large battlegrounds"
+    : "The known realm · choose a region or descend into The Fracture";
 }
 
 function agentPicker(name, selected) {

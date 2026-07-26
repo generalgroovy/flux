@@ -672,3 +672,30 @@
 - **Recommended next task:** Add scale-aware chart zoom into The Fracture and one
   new small Sundered Road sub-map with its own route decision and deterministic
   spawn/combination stress coverage.
+
+## 2026-07-26 — Complete Fracture region ladder
+
+- **Player-facing problem:** The realm chart had authored destinations but no
+  actual hierarchy, and The Fracture existed only as a duel arena despite being
+  presented as a world region.
+- **Implemented solution:** Added realm/Fracture chart depth controls and three
+  complete battlegrounds beside Sundered Road: Ashen Ford (small), Pilgrim Steps
+  (medium), and Oathscar Vale (large). Each has distinct route grammar, lore,
+  heraldry, cover, safe spawn anchors, landmarks, objective placement, and
+  restrained telegraphed hazards where appropriate. All seven maps populate
+  local and remote selectors from the same validated definitions.
+- **Commands run:** syntax checks for content and controller; `git diff --check`;
+  focused DOM and deterministic match suites; `npm test`; clean server launch on
+  port 8114; HTTP health/shell/module smoke; clean shutdown.
+- **Tests passed:** 49/49 checks. Realm/region navigation and selection, Fracture
+  scale completeness, all seven maps across the full deterministic character/mode
+  interaction matrix and combat soak, authoritative network lifecycle, and
+  isolated server cleanup all passed.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.16.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Known limitations:** Hands-on visual and route tuning remains pending because
+  no browser executable is available here. Other world regions intentionally
+  remain single destinations until this hierarchy receives real-player tuning.
+- **Recommended next task:** Hands-on tune Fracture routes, hazard cadence, and
+  atlas legibility; then add the first movement-reactive environmental Flux
+  shrine as a fully counterable objective rather than passive map power.

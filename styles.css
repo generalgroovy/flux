@@ -654,11 +654,35 @@ legend,
   grid-template-columns: repeat(5, minmax(8rem, 1fr));
 }
 
+.atlas-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.55rem;
+  color: var(--dim);
+}
+
+.atlas-toolbar .text-button {
+  padding: 0.3rem 0.45rem;
+  border-bottom: 1px solid transparent;
+  color: var(--muted);
+}
+
+.atlas-toolbar .text-button.active {
+  border-bottom-color: var(--amber);
+  color: var(--amber);
+}
+
+.atlas-toolbar small {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.65rem;
+}
+
 .map-options {
   position: relative;
   min-height: 25rem;
   overflow: hidden;
-  border: 1px solid var(--line-soft);
   border: 2px solid #7c6230;
   border-radius: 0;
   background:
@@ -669,6 +693,13 @@ legend,
     repeating-linear-gradient(12deg, #563f1b0c 0 1px, transparent 1px 8px),
     linear-gradient(145deg, #3a2c17, #20170d 58%, #332619);
   box-shadow: inset 0 0 0 7px #17100766, inset 0 0 4rem #08060399;
+}
+
+.map-options[data-scope="fracture"] {
+  background:
+    radial-gradient(circle at 49% 55%, #8a612f50 0 10%, transparent 11%),
+    repeating-linear-gradient(28deg, #b58a4410 0 1px, transparent 1px 10px),
+    linear-gradient(145deg, #422f18, #23150b 58%, #362313);
 }
 
 .map-options::before {

@@ -855,6 +855,12 @@ export const MATCH_TUNING = Object.freeze({
     hopDuration: 0.16,
     hopCooldown: 0.5,
     wallMemory: 0.16,
+    slideCost: 22,
+    slideEntrySpeed: 250,
+    slideSpeed: 720,
+    slideDuration: 0.3,
+    slideCooldown: 0.78,
+    slideSteering: 0.32,
   },
   elements: {
     windDuration: 1.8,
@@ -958,6 +964,12 @@ export function validateContent({
     "hopDuration",
     "hopCooldown",
     "wallMemory",
+    "slideCost",
+    "slideEntrySpeed",
+    "slideSpeed",
+    "slideDuration",
+    "slideCooldown",
+    "slideSteering",
   ]) {
     if (!Number.isFinite(flow[key]) || flow[key] <= 0) {
       errors.push(`flow.${key} must be positive`);
@@ -965,6 +977,15 @@ export function validateContent({
   }
   if (flow.hopCost > flow.maximum) {
     errors.push("flow.hopCost must not exceed flow.maximum");
+  }
+  if (
+    flow.slideCost > flow.maximum || flow.slideSpeed <= flow.hopSpeed ||
+    flow.slideEntrySpeed >= flow.slideSpeed
+  ) {
+    errors.push("flow slide must be payable and faster than a hop");
+  }
+  if (flow.slideSteering > 0.5) {
+    errors.push("flow.slideSteering must preserve slide commitment");
   }
   if (flow.sprintMultiplier < 1 || flow.sprintMultiplier > 2) {
     errors.push("flow.sprintMultiplier must stay within 1–2");

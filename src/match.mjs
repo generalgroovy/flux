@@ -205,6 +205,10 @@ function createEntity(spec, index, map) {
     hopCarryX: 0,
     hopCarryY: 0,
     hopWallKick: false,
+    slideCooldown: 0,
+    slideRemaining: 0,
+    slideX: facingX,
+    slideY: 0,
     wallContactRemaining: 0,
     wallX: 0,
     wallY: 0,
@@ -388,6 +392,8 @@ function tickEntity(entity, delta) {
     "flowRecoveryDelay",
     "hopCooldown",
     "hopRemaining",
+    "slideCooldown",
+    "slideRemaining",
     "wallContactRemaining",
     "interruptRemaining",
     "fluxRecoveryDelay",
@@ -427,7 +433,9 @@ function updateEntity(state, entity, command, delta, map) {
   ) {
     startMobility(state, entity, command, agent, map);
   }
-  if (!command.mobility) tryHop(state, entity, command);
+  if (!command.mobility && !trySlide(state, entity, command)) {
+    tryHop(state, entity, command);
+  }
   moveEntity(state, entity, command, agent, delta, map);
   if (
     command.defend &&
@@ -458,6 +466,31 @@ function updateEntity(state, entity, command, delta, map) {
     entity.primaryCooldown = agent.primary.cooldown;
     if (entity.human) state.tutorial.fired = true;
   }
+}
+
+function trySlide(state, entity, command) {
+  const wantsSlide = command.sprint && command.hop &&
+    (command.moveX !== 0 || command.moveY !== 0);
+  if (!wantsSlide) return false;
+  if (
+    entity.slideCooldown > 0 || entity.slideRemaining > 0 ||
+    entity.hopRemaining > 0 || entity.flow < MATCH_TUNING.flow.slideCost ||
+    Math.hypot(entity.vx, entity.vy) < MATCH_TUNING.flow.slideEntrySpeed
+  ) return true;
+  const direction = normalizeDirection(command.moveX, command.moveY);
+  entity.flow -= MATCH_TUNING.flow.slideCost;
+  entity.flowRecoveryDelay = MATCH_TUNING.flow.recoveryDelay;
+  entity.slideCooldown = MATCH_TUNING.flow.slideCooldown;
+  entity.slideRemaining = MATCH_TUNING.flow.slideDuration;
+  entity.slideX = direction.x;
+  entity.slideY = direction.y;
+  entity.sprinting = false;
+  state.tutorial.sprinted ||= entity.human;
+  state.events.push({
+    type: "slide", entityId: entity.id,
+    x: entity.x, y: entity.y, dx: direction.x, dy: direction.y,
+  });
+  return true;
 }
 
 function spendFlux(state, entity, ability) {
@@ -599,6 +632,19 @@ function moveEntity(state, entity, command, agent, delta, map) {
     entity.vx = entity.mobilityX * agent.mobility.speed;
     entity.vy = entity.mobilityY * agent.mobility.speed;
     entity.sprinting = false;
+  } else if (entity.slideRemaining > 0) {
+    if (moveX !== 0 || moveY !== 0) {
+      const steering = MATCH_TUNING.flow.slideSteering;
+      const direction = normalizeDirection(
+        entity.slideX * (1 - steering) + moveX * steering,
+        entity.slideY * (1 - steering) + moveY * steering,
+      );
+      entity.slideX = direction.x;
+      entity.slideY = direction.y;
+    }
+    entity.vx = entity.slideX * MATCH_TUNING.flow.slideSpeed;
+    entity.vy = entity.slideY * MATCH_TUNING.flow.slideSpeed;
+    entity.sprinting = false;
   } else if (entity.hopRemaining > 0) {
     const speed = entity.hopWallKick
       ? MATCH_TUNING.flow.wallKickSpeed
@@ -665,6 +711,11 @@ function moveEntity(state, entity, command, agent, delta, map) {
       x: entity.x,
       y: entity.y,
     });
+  } else if (result.hitWall && entity.slideRemaining > 0) {
+    entity.slideRemaining = 0;
+    entity.vx = 0;
+    entity.vy = 0;
+    state.events.push({ type: "slideImpact", entityId: entity.id, x: entity.x, y: entity.y });
   }
 }
 
@@ -1616,6 +1667,10 @@ function respawnEntity(entity, map) {
   entity.hopCooldown = 0;
   entity.hopRemaining = 0;
   entity.hopWallKick = false;
+  entity.slideCooldown = 0;
+  entity.slideRemaining = 0;
+  entity.slideX = entity.facingX;
+  entity.slideY = entity.facingY;
   entity.hopCarryX = 0;
   entity.hopCarryY = 0;
   entity.wallContactRemaining = 0;
@@ -2008,6 +2063,10 @@ export function matchInvariantErrors(state) {
       "flowRecoveryDelay",
       "hopCooldown",
       "hopRemaining",
+      "slideCooldown",
+      "slideRemaining",
+      "slideX",
+      "slideY",
       "hopCarryX",
       "hopCarryY",
       "wallContactRemaining",

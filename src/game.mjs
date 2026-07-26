@@ -865,7 +865,7 @@ function updateCoach(mode) {
       );
     }
     if (matchState.tutorial.step === 0) {
-      text.textContent = "Hold ALT to sprint. Tap C to preserve momentum through a hop.";
+      text.textContent = "Hold ALT to sprint. Tap C to hop; press both at speed to commit to a slide.";
     } else if (matchState.tutorial.step === 1) {
       text.textContent = "MOVE while aiming. Land pressure with MB1.";
     } else if (matchState.tutorial.step === 2) {
@@ -947,6 +947,12 @@ function processEvents(events, tick) {
     } else if (event.type === "counterStrafe") {
       tone(240, 0.045, "triangle", 0.035);
       toast("COUNTER-STRAFE · MOMENTUM CUT", "comic");
+    } else if (event.type === "slide") {
+      tone(135, 0.07, "sawtooth", 0.04);
+      toast("SLIDE · LOW LINE", "comic");
+    } else if (event.type === "slideImpact") {
+      tone(82, 0.06, "square", 0.045);
+      toast("THUD! · SLIDE BROKEN", "comic");
     } else if (event.type === "elementField") {
       const cue = {
         wind: [520, "sine"],
@@ -1489,6 +1495,9 @@ function drawEntities(time) {
         );
         context.fill();
         context.translate(0, -lift);
+      } else if (entity.slideRemaining > 0) {
+        context.rotate(Math.atan2(entity.slideY, entity.slideX));
+        context.scale(1.28, 0.72);
       }
       const defense = agent.defense;
       if (entity.spawnProtection > 0) {

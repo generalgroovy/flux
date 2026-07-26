@@ -10,7 +10,14 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
-Build 0.19.0 adds bounded hop momentum carry. Crossing the hop direction with
+Build 0.20.0 adds universal ground slides without another input binding. Hold
+sprint and hop together after building speed to spend 22 FLOW on a fast 0.3
+second low line. Slides steer only 32%, break on cover, have a clear cooldown,
+and cannot replace ordinary hops unless both inputs remain intentionally held.
+The simulation, networking, silhouette, trail, comic/audio feedback, controls,
+and First Rite all share the same rule.
+
+Build 0.19.0 added bounded hop momentum carry. Crossing the hop direction with
 existing velocity preserves up to 35% of that lateral motion, capped at 180
 units. Players can shape evasive arcs and wall approaches, but cannot stack
 unbounded speed; collision, ice control, FLOW cost, and authoritative state all
@@ -194,6 +201,7 @@ than 0.9.3 are not registered and must be closed from their original terminal.
 | Mobility | `Shift` | `Enter` | South button |
 | Sprint | `Alt` | `,` | Left shoulder |
 | Hop / wall kick | `C` | `.` | Right shoulder |
+| Slide | Sprint + hop | Sprint + hop | Both shoulders |
 | Pause / network menu | `Escape` | `Escape` | — |
 | Instant restart | `R` | `R` | — |
 | Skip introduction | `T` | — | — |

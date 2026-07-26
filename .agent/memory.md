@@ -773,3 +773,28 @@
   browser executable is installed here.
 - **Recommended next task:** Add a landing micro-window that permits one readable
   counter-strafe cancel without reducing hop commitment or enabling spam.
+
+## 2026-07-26 — Universal committed ground slide
+
+- **Player-facing problem:** Sprint, hop, wall kick, and character mobility left
+  no universal low-line commitment for crossing exposed space or changing the
+  opponent's aim height and timing.
+- **Implemented solution:** Sprint+hop now starts a ground slide only after 250
+  speed. It costs 22 FLOW, travels at 720 for 0.3 seconds, steers at 32%, and has
+  a 0.78-second cooldown. Holding the chord suppresses accidental follow-up hops;
+  cover ends the slide with an explicit impact. Added authoritative state,
+  respawn reset, validation, silhouette squash, audio/comic cues, controls,
+  guide copy, and First Rite instruction.
+- **Commands run:** Syntax checks for content, simulation, and controller;
+  `git diff --check`; focused match suite; `npm test`; clean server launch on
+  port 8118; HTTP health/shell/module smoke; clean shutdown.
+- **Tests passed:** 53/53 checks, including entry threshold, FLOW cost, hop
+  exclusion, committed steering, cover termination, seven-map stress,
+  authoritative networking, and isolated cleanup.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.20.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Known limitation:** Hands-on feel and controller-chord tuning remain pending
+  because no browser executable is installed here.
+- **Recommended next task:** Add one landing micro-cancel after a completed hop,
+  then validate slide→hop, hop→counter-strafe, and wall-kick→slide chains as a
+  single bounded movement grammar.

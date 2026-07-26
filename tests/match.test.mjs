@@ -639,6 +639,36 @@ test("hops preserve bounded lateral momentum without speed stacking", () => {
   assert.deepEqual(matchInvariantErrors(state), []);
 });
 
+test("sprint slides spend FLOW, steer with commitment, and break on cover", () => {
+  const state = duel();
+  const runner = state.entities[0];
+  for (let tick = 0; tick < 16; tick += 1) {
+    stepMatch(state, { [runner.id]: { ...idle, moveX: 1, sprint: true } });
+  }
+  const flowBefore = runner.flow;
+  stepMatch(state, { [runner.id]: { ...idle, moveX: 1, sprint: true, hop: true } });
+  assert.ok(runner.slideRemaining > 0);
+  assert.equal(runner.hopRemaining, 0);
+  assert.ok(runner.flow <= flowBefore - MATCH_TUNING.flow.slideCost + 0.01);
+  assert.ok(Math.hypot(runner.vx, runner.vy) >= MATCH_TUNING.flow.slideSpeed - 0.01);
+  stepMatch(state, { [runner.id]: { ...idle, moveX: -1, sprint: true, hop: true } });
+  assert.ok(runner.vx > 0, "one frame cannot reverse a committed slide");
+
+  runner.x = 680;
+  runner.y = 450;
+  runner.lastSafeX = runner.x;
+  runner.lastSafeY = runner.y;
+  runner.slideX = 1;
+  runner.slideY = 0;
+  runner.slideRemaining = MATCH_TUNING.flow.slideDuration;
+  for (let tick = 0; tick < 30 && runner.slideRemaining > 0; tick += 1) {
+    stepMatch(state, { [runner.id]: { ...idle, moveX: 1 } });
+  }
+  assert.equal(runner.slideRemaining, 0);
+  assert.ok(state.events.some((event) => event.type === "slideImpact"));
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
 test("flow sprint, hop, and wall kick are bounded universal movement", () => {
   const state = duel({ mapId: "crosswind" });
   const player = state.entities[0];

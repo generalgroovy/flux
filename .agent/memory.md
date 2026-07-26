@@ -1150,3 +1150,35 @@
   prediction remain pending. Next add a short optional interaction drill where
   two elements combine through geometry, starting with Gale bending a hostile
   spell or Tide redirecting Ember, without adding elemental damage bonuses.
+
+## 2026-07-26 — Universal Edgeweave near-miss
+
+- **Player-facing problem:** Universal movement offered strong traversal and
+  escape routes but no precise, systemic reward for deliberately staying close
+  to hostile pressure instead of simply disengaging.
+- **Implemented solution:** HEX 0.32.0 adds Edgeweave. A swept hostile projectile
+  path inside a 16-unit outer miss band rewards a fighter moving at 260+ speed
+  with 9 FLOW. The inner hit volume never pays; marked First Rite pressure,
+  stationary proximity, full FLOW, and a 0.22-second per-fighter lockout do not
+  pay. Each projectile records rewarded fighter IDs, preventing repeat farming.
+  The result is damage-neutral and discipline-neutral. A small trail-colored
+  burst, local comic/audio cue, live lockout read, and field-guide entry expose
+  the mechanic without adding input or screen clutter.
+- **Verification:** Source/server and shell syntax plus `git diff --check` passed.
+  Focused match coverage passed 53/53. Full `npm test` passed 77/77 checks: 75
+  deterministic/DOM/lobby/network-conditioner/diagnostic checks, one live
+  authoritative WebSocket lifecycle check, and one isolated cleanup check. New
+  coverage proves exact swept near-misses, one reward across simultaneous fan
+  shots, no hit reward, no stationary reward, no training reward, resource and
+  cooldown bounds, and invariant stability through the existing stress/soak. A
+  final local-only cue scoping pass retained clean syntax/diff checks and passed
+  the DOM/canvas smoke 1/1.
+- **Launch and cleanup:** Port 8130 reported HEX 0.32.0/protocol 2; `/` and
+  `/src/game.mjs` returned `200 OK` with all security headers. The shipped stopper
+  terminated PID 229345. Health then refused connection, `ps -C node` returned no
+  process, and the server registry was empty.
+- **Known limitation / next task:** No browser executable or second device is
+  installed here. Hands-on tuning must validate whether the 16-unit band,
+  260-speed floor, 9-FLOW return, cue mix, and high-latency prediction feel fair.
+  Next prioritize one additional complete contrasting champion for an existing
+  race and validate it in compact PvP before expanding PvPvE content.

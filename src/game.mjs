@@ -872,7 +872,9 @@ function updateInfoOverlay(mode, map) {
   const flowRatio = clamp(player.flow / player.maxFlow, 0, 1);
   element("flow-charge").style.transform = `scaleX(${flowRatio})`;
   element("flow-detail").textContent =
-    player.hopCooldown > 0
+    player.grazeCooldown > 0
+      ? `Edgeweave ${player.grazeCooldown.toFixed(1)}s`
+      : player.hopCooldown > 0
       ? `Hop ${player.hopCooldown.toFixed(1)}s`
       : player.sprinting
         ? "Sprinting"
@@ -1143,6 +1145,13 @@ function localPlayer() {
   );
 }
 
+function locallyControlled(entityId) {
+  if (matchKind === "remote") return entityId === remoteEntityId;
+  return matchState.entities.some(
+    (entity) => entity.id === entityId && entity.human,
+  );
+}
+
 function processEvents(events, tick) {
   if (tick <= lastProcessedTick) return;
   lastProcessedTick = tick;
@@ -1191,6 +1200,12 @@ function processEvents(events, tick) {
     } else if (event.type === "mineArmed") {
       tone(185, 0.08, "square", 0.045);
       toast("TICK! · EMBER RUNE ARMED", "comic");
+    } else if (event.type === "spellGraze") {
+      if (locallyControlled(event.entityId)) {
+        tone(585, 0.055, "triangle", 0.04);
+        burst(event.x, event.y, "#77f7ce", 7);
+        toast(`EDGEWEAVE! · +${Math.round(event.amount)} FLOW`, "comic");
+      }
     } else if (event.type === "wallKick") {
       toast("WALL KICK · ANGLE STOLEN");
     } else if (event.type === "counterStrafe") {

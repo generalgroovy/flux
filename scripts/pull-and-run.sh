@@ -61,7 +61,7 @@ diff_is_ready() {
           response.ok &&
             body.product === "DIFF" &&
             body.status === "ready" &&
-            body.version === "0.31.0" &&
+            body.version === "0.32.0" &&
             body.protocol === 2
             ? 0
             : 1

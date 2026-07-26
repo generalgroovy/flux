@@ -1091,6 +1091,10 @@ export const MATCH_TUNING = Object.freeze({
     slideDuration: 0.3,
     slideCooldown: 0.78,
     slideSteering: 0.32,
+    grazeMargin: 16,
+    grazeMinimumSpeed: 260,
+    grazeReward: 9,
+    grazeCooldown: 0.22,
   },
   elements: {
     windDuration: 1.8,
@@ -1220,6 +1224,10 @@ export function validateContent({
     "slideDuration",
     "slideCooldown",
     "slideSteering",
+    "grazeMargin",
+    "grazeMinimumSpeed",
+    "grazeReward",
+    "grazeCooldown",
   ]) {
     if (!Number.isFinite(flow[key]) || flow[key] <= 0) {
       errors.push(`flow.${key} must be positive`);
@@ -1236,6 +1244,12 @@ export function validateContent({
   }
   if (flow.slideSteering > 0.5) {
     errors.push("flow.slideSteering must preserve slide commitment");
+  }
+  if (
+    flow.grazeMargin > 24 || flow.grazeReward > flow.maximum * 0.12 ||
+    flow.grazeMinimumSpeed < flow.slideEntrySpeed || flow.grazeCooldown < 0.12
+  ) {
+    errors.push("flow graze must require committed movement and stay bounded");
   }
   if (flow.sprintMultiplier < 1 || flow.sprintMultiplier > 2) {
     errors.push("flow.sprintMultiplier must stay within 1–2");

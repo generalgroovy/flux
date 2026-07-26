@@ -7,7 +7,11 @@ recovery, and performance are accepted at smaller scales.
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.31.0 on Garuda Sway and Windows: complete the FIRST
+1. Hands-on accept HEX 0.32.0 on Garuda Sway and Windows: earn EDGEWEAVE through
+   sprint, hop, slide, and wall-kick near-misses; require a narrow but learnable
+   band, no reward on hits or stationary proximity, one reward across a tight
+   fan, clear local comic/audio feedback, and no dense-fight visual noise.
+   Then complete the FIRST
    RITE defense read with reflection, guard, phase, absorb, and counter; require
    one obvious gold-diamond practice spell, restrained comic/audio feedback,
    no accidental button-only completion, no elimination, and an immediate skip.
@@ -78,6 +82,8 @@ recovery, and performance are accepted at smaller scales.
   five shipped defense families; a button press alone cannot advance it.
 - Its final stage now proves each shipped tactical's real world-state, timing, or
   impact contract instead of accepting an empty cast.
+- Universal Edgeweave rewards committed hostile-spell near-misses with a bounded
+  FLOW return; hits, training marks, stationary play, and fan farming do not pay.
 - Next acceptance: hands-on FLOW/Flux and discipline-trial tuning,
   share-link testing across Linux/Windows, and network-lab reconciliation tuning.
 

@@ -10,6 +10,14 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
+Build 0.32.0 adds **Edgeweave**, a universal movement read. Passing through the
+narrow outer edge of a hostile spell at 260+ movement speed restores 9 FLOW.
+Actual hits, marked practice pressure, stationary proximity, full FLOW, and
+repeated projectiles inside a 0.22-second lockout grant nothing. Each projectile
+can reward each fighter only once. The server-owned swept-path check works at
+120 ticks through the existing snapshot protocol; a restrained trail burst,
+comic/audio cue, live field status, and guide entry make the success legible.
+
 Build 0.31.0 makes the final **First Rite discipline trial** behavior-driven.
 Each champion receives short input-aware coaching for their real tactical:
 terrain-shapers must author valid ground, Veil must leave a decoy, aimed Volt

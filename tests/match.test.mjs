@@ -1019,6 +1019,116 @@ test("opposing projectiles clash under shared simulation ownership", () => {
   assert.equal(state.entities[1].health, state.entities[1].maxHealth);
 });
 
+test("EDGEWEAVE rewards one fast hostile near-miss without rewarding hits", () => {
+  const state = duel();
+  const [runner, shooter] = state.entities;
+  runner.x = 350;
+  runner.y = 100;
+  runner.vx = 400;
+  runner.vy = 0;
+  runner.flow = 50;
+  runner.flowRecoveryDelay = 1;
+  runner.grazeCooldown = 0;
+  shooter.x = 180;
+  shooter.y = 100;
+  const hitRadius = getCharacter(runner.characterId).radius + 5;
+  const makeProjectile = (id, yOffset, source = "primary") => ({
+    id,
+    ownerId: shooter.id,
+    team: shooter.team,
+    source,
+    x: runner.x - 30,
+    y: runner.y + yOffset,
+    previousX: runner.x - 30,
+    previousY: runner.y + yOffset,
+    vx: 3600,
+    vy: 0,
+    radius: 5,
+    damage: 20,
+    lifetime: 1,
+    knockback: 0,
+    pierce: 0,
+    heavy: false,
+    reflected: false,
+    fieldIds: [],
+    guidedBy: null,
+    guidedRemaining: 0,
+    turnRate: 0,
+  });
+  state.projectiles.push(
+    makeProjectile(9001, hitRadius + MATCH_TUNING.flow.grazeMargin * 0.55),
+    makeProjectile(9002, hitRadius + MATCH_TUNING.flow.grazeMargin * 0.55),
+  );
+
+  stepMatch(state, { left: idle, right: idle }, FIXED_DELTA);
+
+  assert.equal(runner.flow, 50 + MATCH_TUNING.flow.grazeReward);
+  assert.equal(
+    state.events.filter((event) => event.type === "spellGraze").length,
+    1,
+  );
+  assert.equal(runner.health, runner.maxHealth);
+  assert.ok(runner.grazeCooldown > 0);
+
+  runner.grazeCooldown = 0;
+  runner.flow = 50;
+  runner.vx = 400;
+  state.projectiles = [makeProjectile(9003, 0)];
+  stepMatch(state, { left: idle, right: idle }, FIXED_DELTA);
+  assert.equal(runner.flow, 50);
+  assert.ok(runner.health < runner.maxHealth);
+  assert.equal(
+    state.events.some((event) => event.type === "spellGraze"),
+    false,
+  );
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("EDGEWEAVE rejects stationary movement and marked training pressure", () => {
+  for (const source of ["primary", "training"]) {
+    const state = duel();
+    const [runner, shooter] = state.entities;
+    runner.x = 350;
+    runner.y = 100;
+    runner.vx = source === "primary" ? 0 : 400;
+    runner.vy = 0;
+    runner.flow = 50;
+    runner.flowRecoveryDelay = 1;
+    const hitRadius = getCharacter(runner.characterId).radius + 5;
+    state.projectiles.push({
+      id: 9100,
+      ownerId: shooter.id,
+      team: shooter.team,
+      source,
+      x: runner.x - 30,
+      y: runner.y + hitRadius + MATCH_TUNING.flow.grazeMargin * 0.55,
+      previousX: runner.x - 30,
+      previousY: runner.y,
+      vx: 3600,
+      vy: 0,
+      radius: 5,
+      damage: 6,
+      lifetime: 1,
+      knockback: 0,
+      pierce: 0,
+      heavy: false,
+      reflected: false,
+      fieldIds: [],
+      guidedBy: null,
+      guidedRemaining: 0,
+      turnRate: 0,
+    });
+    stepMatch(state, { left: idle, right: idle }, FIXED_DELTA);
+    assert.equal(runner.flow, 50, source);
+    assert.equal(
+      state.events.some((event) => event.type === "spellGraze"),
+      false,
+      source,
+    );
+    assert.deepEqual(matchInvariantErrors(state), []);
+  }
+});
+
 test("reflect, guard, phase, absorb, and counter defenses have distinct outcomes", () => {
   const cases = [
     { id: "kite", event: "reflect", health: "full" },

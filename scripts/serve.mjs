@@ -10,7 +10,7 @@ import { MATCH_TUNING } from "../src/content.mjs";
 import { LobbyService } from "../src/lobbies.mjs";
 
 const root = resolve(fileURLToPath(new URL("../", import.meta.url)));
-const serverVersion = "0.11.1";
+const serverVersion = "0.12.0";
 const protocolVersion = 2;
 const requestedPort =
   argumentValue("--port") ?? process.env.PORT ?? process.env.DIFF_PORT ?? "8000";
@@ -209,9 +209,20 @@ const tickInterval = setInterval(
 );
 tickInterval.unref();
 
+server.once("error", (error) => {
+  clearInterval(tickInterval);
+  const address = `http://${displayHost(host)}:${port}`;
+  if (error?.code === "EADDRINUSE") {
+    console.error(`Cannot start HEX at ${address}: that port is already in use.`);
+  } else {
+    console.error(`Cannot start HEX at ${address}: ${error?.message ?? error}`);
+  }
+  process.exitCode = 1;
+});
+
 server.listen(port, host, async () => {
   await registerServer();
-  console.log(`DIFF is running at http://${displayHost(host)}:${port}`);
+  console.log(`HEX is running at http://${displayHost(host)}:${port}`);
   if (host === "0.0.0.0" || host === "::") {
     console.log("Remote lobbies enabled on all network interfaces.");
     for (const address of localNetworkAddresses()) {

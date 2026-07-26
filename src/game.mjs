@@ -101,6 +101,12 @@ applySettings();
 showPanel("home");
 resize();
 updateInterface();
+const linkedLobbyCode = new URLSearchParams(location.search ?? "").get("join");
+if (linkedLobbyCode) {
+  showPanel("online");
+  element("join-code").value = linkedLobbyCode.toUpperCase();
+  window.setTimeout(() => joinLobby(linkedLobbyCode), 0);
+}
 
 window.addEventListener("resize", resize);
 window.addEventListener("blur", () => {
@@ -147,6 +153,7 @@ element("skip-coach").addEventListener("click", () => {
   updateInterface();
 });
 element("host-lobby").addEventListener("click", hostLobby);
+element("copy-share-link").addEventListener("click", copyShareLink);
 element("join-lobby").addEventListener("click", () =>
   joinLobby(element("join-code").value),
 );
@@ -669,6 +676,12 @@ function updateInfoOverlay(mode, map) {
       : player.sprinting
         ? "Sprinting"
         : "Sprint / hop";
+  const fluxRatio = clamp(player.flux / MATCH_TUNING.flux.maximum, 0, 1);
+  element("flux-charge").style.transform = `scaleX(${fluxRatio})`;
+  element("flux-detail").textContent =
+    player.fluxRecoveryDelay > 0
+      ? `${Math.ceil(player.flux)} · committed`
+      : `${Math.ceil(player.flux)} · shaping`;
   element("info-operation").textContent = mode.name;
   element("info-objective").textContent =
     matchState.status === "round-over"
@@ -787,7 +800,10 @@ function updateAbilities() {
     ["mobility", agent.mobility],
   ]) {
     element(`${key}-name`).textContent = ability.name;
-    element(`${key}-detail`).textContent = ability.detail;
+    element(`${key}-detail`).textContent =
+      ability.fluxCost > 0
+        ? `${ability.detail} · ${ability.fluxCost} Flux`
+        : ability.detail;
     const cooldown =
       key === "primary"
         ? player.primaryCooldown
@@ -913,6 +929,15 @@ function processEvents(events, tick) {
       }[event.element] ?? [300, "sine"];
       tone(cue[0], 0.09, cue[1], 0.055);
       toast(`${event.element.toUpperCase()} · TERRAIN CHANGED`, "comic");
+    } else if (event.type === "fluxDry") {
+      tone(72, 0.08, "square", 0.04);
+      toast(`LOW FLUX · NEED ${Math.ceil(event.required)}`, "comic");
+    } else if (event.type === "veilDecoy") {
+      tone(330, 0.08, "sine", 0.045);
+      toast("VEIL · INTENT SPLIT", "comic");
+    } else if (event.type === "veilSwap") {
+      tone(610, 0.06, "triangle", 0.05);
+      toast("FLIP! · POSITION SWAPPED", "comic");
     } else if (event.type === "elementInterrupt") {
       tone(920, 0.055, "square", 0.05);
       burst(event.x, event.y, "#45d9ff", 12);
@@ -1028,6 +1053,7 @@ function render(time) {
     drawMines(time);
     drawTrails();
     drawProjectiles();
+    drawDecoys(time);
     drawEntities(time);
     drawEffects();
   } finally {
@@ -1427,6 +1453,33 @@ function drawEntities(time) {
   }
 }
 
+function drawDecoys(time) {
+  for (const decoy of matchState.decoys ?? []) {
+    const agent = getCharacter(decoy.characterId);
+    context.save();
+    try {
+      context.translate(decoy.x, decoy.y);
+      context.rotate(Math.atan2(decoy.facingY, decoy.facingX));
+      context.globalAlpha = 0.38 + Math.sin(time * 7) * 0.08;
+      context.fillStyle = `${agent.accent}33`;
+      context.strokeStyle = agent.accent;
+      context.lineWidth = 2;
+      context.setLineDash([5, 4]);
+      traceAgentBody(agent);
+      context.fill();
+      context.stroke();
+      context.setLineDash([]);
+      context.rotate(-Math.atan2(decoy.facingY, decoy.facingX));
+      context.fillStyle = "#fff";
+      context.font = "800 9px ui-monospace, monospace";
+      context.textAlign = "center";
+      context.fillText("DECOY", 0, agent.radius + 16);
+    } finally {
+      context.restore();
+    }
+  }
+}
+
 function traceAgentBody(agent) {
   const radius = agent.radius;
   if (agent.silhouette === "kite") {
@@ -1671,15 +1724,32 @@ async function hostLobby() {
         mapId: element("online-map").value,
         characterId: element("online-agent").value,
         public: element("lobby-public").checked,
+        hazardsEnabled: element("lobby-hazards").checked,
         maxPlayers: 4,
         botCount: 1,
       },
     });
     if (!result.ok) throw new Error(result.message);
     beginRemote(result);
-    toast(`LOBBY ${result.lobby.code} · share this code`);
+    const shareUrl = new URL("/", readServerBase());
+    shareUrl.searchParams.set("join", result.lobby.code);
+    element("share-link").value = shareUrl.href;
+    element("share-link-row").hidden = false;
+    await copyShareLink();
+    toast(`LOBBY ${result.lobby.code} · LINK READY`);
   } catch (error) {
     setNetworkMessage(error.message, "error");
+  }
+}
+
+async function copyShareLink() {
+  const value = element("share-link").value;
+  if (!value) return;
+  try {
+    await navigator.clipboard?.writeText(value);
+    setNetworkMessage(`Share link ready: ${value}`);
+  } catch {
+    setNetworkMessage(`Copy this link: ${value}`);
   }
 }
 

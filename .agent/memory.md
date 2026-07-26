@@ -1,4 +1,33 @@
-# DIFF agent memory
+# HEX agent memory
+
+## 2026-07-26 — HEX 0.12.0 Flux commitments and seamless lobby links
+
+- **Player-facing problem:** Element powers were cooldown-only, leaving no
+  shared magical resource read; the revised discipline vocabulary lacked VEIL
+  and NULL mechanics; and lobby hosts shared a code without an immediate link.
+- **Implemented solution:** Migrated the visible working identity to HEX — Hunt.
+  Evade. eXecute. Added independently tuned Flux with costs on special, defense,
+  and character mobility, delayed recovery, dry feedback, HUD state, bot-safe
+  authority, reset semantics, and invariant coverage. Primary fire and universal
+  FLOW remain available while dry. Mapped the eight complete fighters to EMBER,
+  TIDE, GALE, STONE, VOLT, VEIL, PRISM, and NULL. VEIL now plants a readable
+  decoy and swaps on recast; NULL deletes nearby fields during its paid special;
+  Gale deflects projectiles and Tide can redirect or douse Ember. Hosting now
+  supports an authoritative hazards toggle and produces a copyable auto-join
+  URL with query-link startup handling.
+- **Scope discipline:** Twelve races, forty-eight race characters, eighty spells,
+  skill forests, Battle Royale, and combinable roguelike rules are product-scale
+  expansions. They remain acceptance-driven backlog work instead of visible
+  placeholders; the next slice should prove one race matchup and one meaningful
+  knowledge branch end to end.
+- **Verification:** Final phased `npm test` passed 46/46. Pure/browser tests,
+  live networking, and destructive server cleanup now run as separate processes
+  so cleanup cannot terminate another test server; all coverage remains enabled.
+  Syntax and diff checks passed. A live 0.12.0 server
+  returned valid health and HTTP 200 for an auto-join URL and game module, then
+  shut down cleanly. The smoke also exposed an occupied-port stack trace; startup
+  now reports that condition concisely. Cross-device link reachability, Flux
+  feel, audio, and visual density remain physical desktop acceptance items.
 
 ## 2026-07-26 — DIFF 0.11.1 frame recovery and elemental disciplines
 

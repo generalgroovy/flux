@@ -6,13 +6,13 @@ param(
 $ErrorActionPreference = "Stop"
 if ([string]::IsNullOrWhiteSpace($Branch)) { throw "Cannot install from a detached Git checkout." }
 $desktop = [Environment]::GetFolderPath("Desktop")
-$shortcutPath = Join-Path $desktop "DIFF Arena.lnk"
+$shortcutPath = Join-Path $desktop "HEX Arena.lnk"
 $launcherPath = Join-Path $RepositoryDirectory "scripts\pull-and-run.ps1"
 $shell = New-Object -ComObject WScript.Shell
 $shortcut = $shell.CreateShortcut($shortcutPath)
 $shortcut.TargetPath = "powershell.exe"
 $shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$launcherPath`" -RepositoryDirectory `"$RepositoryDirectory`" -Branch `"$Branch`""
 $shortcut.WorkingDirectory = $RepositoryDirectory
-$shortcut.Description = "Update, verify, and launch DIFF"
+$shortcut.Description = "Update, verify, and launch HEX"
 $shortcut.Save()
-Write-Host "Installed DIFF desktop launcher: $shortcutPath"
+Write-Host "Installed HEX desktop launcher: $shortcutPath"

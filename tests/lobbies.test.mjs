@@ -60,6 +60,25 @@ test("public lobbies can be hosted, listed, and joined in progress", () => {
   assert.deepEqual(matchInvariantErrors(joined.snapshot.state), []);
 });
 
+test("host hazard configuration is authoritative and survives rematches", () => {
+  const { service } = serviceFixture();
+  const hosted = service.host("host", {
+    modeId: "duel",
+    mapId: "breakline",
+    hazardsEnabled: false,
+    botCount: 0,
+  });
+  assert.equal(hosted.ok, true);
+  assert.equal(hosted.snapshot.state.rules.hazardsEnabled, false);
+  assert.equal(hosted.snapshot.state.hazards.length, 0);
+  const lobby = service.lobbies.get(hosted.lobby.code);
+  lobby.state.status = "match-over";
+  const rematch = service.rematch("host");
+  assert.equal(rematch.ok, true);
+  assert.equal(lobby.state.rules.hazardsEnabled, false);
+  assert.equal(lobby.state.hazards.length, 0);
+});
+
 test("private lobbies stay out of discovery but remain joinable by code", () => {
   const { service } = serviceFixture();
   const hosted = service.host("host", { public: false }, () => {});

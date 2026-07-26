@@ -22,8 +22,8 @@ mkdir -p -- "${applications_dir}"
     '[Desktop Entry]' \
     'Type=Application' \
     'Version=1.0' \
-    'Name=DIFF Arena' \
-    'Comment=Update, verify, and launch DIFF' \
+    'Name=HEX Arena' \
+    'Comment=Update, verify, and launch HEX' \
     "Exec=env DIFF_OPEN_BROWSER=1 bash \"${repo_dir}/scripts/pull-and-run.sh\" \"${repo_dir}\" \"${branch}\"" \
     "Path=${repo_dir}" \
     'Terminal=true' \
@@ -35,4 +35,4 @@ chmod 0644 "${desktop_file}"
 if command -v desktop-file-validate >/dev/null 2>&1; then
   desktop-file-validate "${desktop_file}"
 fi
-printf 'Installed DIFF desktop launcher: %s\n' "${desktop_file}"
+printf 'Installed HEX desktop launcher: %s\n' "${desktop_file}"

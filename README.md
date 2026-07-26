@@ -1,22 +1,30 @@
-# DIFF
+# HEX
 
-**Dodging Instinct. Fighting Finesse.**
+**Hunt. Evade. eXecute.**
 
-DIFF is a complete, minimal 2D top-down skill arena shooter/fighter. Aim,
+HEX is a complete, minimal 2D top-down systemic skill arena. Aim,
 spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
-Build 0.11.1 makes **elements spatial**. Wind creates force channels and carries
-fire; earth raises temporary collision cover; ice creates low-control momentum
-ground; lightning briefly interrupts and conducts through water; fire persists
-as bounded damage terrain; water restores allied FLOW and changes other fields.
-Fire melts ice, ice freezes water, water douses fire, and explosive mechanics
-shatter earth. Explosion is deliberately a reaction, not an element. The eight
-shipped disciplines are GALE, STONE, FROST, SPARK, FLAME, FORCE, TIDE, and
-PRISM; each owns a different positioning or projectile rule. Every field uses
-shape/text cues, a distinct audio signature, and an authoritative short lifetime.
-Aim, movement, timing, and FLOW remain the way players convert those windows.
+The current launcher and network protocol retain their DIFF compatibility names
+while the working product identity migrates to HEX.
+
+Build 0.12.0 introduces **Flux**, raw magic separate from universal movement
+FLOW. Special, defense, and character mobility now compete for a visible,
+recovering Flux pool; dry fighters retain aim, primary fire, sprint, hops, and
+wall kicks, so fundamentals always offer a route back. The eight current
+disciplines are EMBER, TIDE, GALE, STONE, VOLT, VEIL, PRISM, and NULL. VEIL can
+plant and recast-swap with a readable decoy. NULL erases nearby constructs only
+during a paid, punishable special. Gale fields bend projectiles, Tide can douse
+or redirect Ember, Volt conducts through Tide, and explosive mechanics shatter
+Stone without becoming an element themselves. Every field uses shape/text cues,
+distinct audio, authoritative lifetimes, and geometry rather than passive damage
+bonuses. Aim, movement, timing, and resource reads still convert every advantage.
+
+Hosts can disable authored map hazards and receive a shareable `?join=` URL that
+opens the lobby screen and joins automatically. The link must use a server
+address reachable by the other player—LAN/VPN address or a public forwarded URL.
 
 Movement is traceable through a restrained team-shaped trail whose length and
 weight scale with actual velocity, making sprints, hops, knockback, and evasive

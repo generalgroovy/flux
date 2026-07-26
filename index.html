@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="DIFF — a deep, minimal 2D skill arena shooter/fighter."
+      content="HEX — Hunt. Evade. eXecute. A systemic skill arena."
     />
     <meta name="theme-color" content="#070a10" />
-    <title>DIFF — Dodging Instinct. Fighting Finesse.</title>
+    <title>HEX — Hunt. Evade. eXecute.</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main id="app" data-view="menu" data-panel="home">
-      <canvas id="arena" aria-label="DIFF arena"></canvas>
+      <canvas id="arena" aria-label="HEX arena"></canvas>
 
       <section id="hud" class="hud" aria-live="polite">
         <div class="score score-alpha">
@@ -105,6 +105,11 @@
           <span><b>FLOW</b><small id="flow-detail">Sprint / hop</small></span>
           <i id="flow-charge"></i>
         </div>
+        <div class="ability flux-ability" data-ability="flux">
+          <kbd>CAST</kbd>
+          <span><b>FLUX</b><small id="flux-detail">Raw magic 100</small></span>
+          <i id="flux-charge"></i>
+        </div>
         <div class="ability" data-ability="primary">
           <kbd>MB1</kbd>
           <span><b id="primary-name">NEEDLE</b><small id="primary-detail">Precision fire</small></span>
@@ -153,9 +158,9 @@
 
       <section id="front-end" class="front-end">
         <header class="topbar">
-          <a class="wordmark" href="#" data-panel="home" aria-label="DIFF home">
-            <b>DIFF</b>
-            <span>Dodging Instinct.<br />Fighting Finesse.</span>
+          <a class="wordmark" href="#" data-panel="home" aria-label="HEX home">
+            <b>HEX</b>
+            <span>Hunt. Evade.<br />eXecute.</span>
           </a>
           <div class="server-status" id="server-status">
             <i></i>
@@ -193,8 +198,8 @@
             <article class="menu-panel active" data-menu-panel="home">
               <div class="hero">
                 <div>
-                  <span class="eyebrow">SKILL ARENA / BUILD 0.11.1</span>
-                  <h1>Find the<br /><em>difference.</em></h1>
+                  <span class="eyebrow">SYSTEMIC ARENA / BUILD 0.12.0</span>
+                  <h1>Shape the field.<br /><em>Execute the read.</em></h1>
                   <p>
                     Eight complete agents. Five clean rulesets. One shared language:
                     aim, space, timing, prediction, commitment, counterplay.
@@ -306,7 +311,15 @@
                     <span><b>Public listing</b><small>Visible in the lobby browser.</small></span>
                     <input id="lobby-public" type="checkbox" checked />
                   </label>
+                  <label class="toggle-setting">
+                    <span><b>Map hazards</b><small>Authored arena hazards remain authoritative.</small></span>
+                    <input id="lobby-hazards" type="checkbox" checked />
+                  </label>
                   <button class="button button-primary" id="host-lobby" type="button">Create and deploy</button>
+                  <div id="share-link-row" class="join-row" hidden>
+                    <input id="share-link" type="url" readonly aria-label="Shareable lobby link" />
+                    <button class="button" id="copy-share-link" type="button">Copy link</button>
+                  </div>
                 </section>
                 <section class="network-card">
                   <h3>Join by code</h3>
@@ -407,6 +420,7 @@
                 <article><b>Defense is specific</b><span>Reflect, guard, phase, absorb, and counter demand different reads.</span></article>
                 <article><b>Spawns are protected</b><span>Joining and resetting never hands out a free hit.</span></article>
                 <article><b>Flow is universal</b><span>Sprint, hop, and wall-kick spend one shared resource on every agent.</span></article>
+                <article><b>Flux is commitment</b><span>Special, defense, and character mobility compete for raw magic; primary and FLOW remain available when dry.</span></article>
                 <article><b>Elements alter routes</b><span>Wind carries fire; water douses fire; fire melts ice; ice freezes water.</span></article>
                 <article><b>Reactions stay readable</b><span>Lightning conducts through water. Explosive mechanics shatter earth; explosion is not an element.</span></article>
                 <article><b>Movement still wins</b><span>Fields create a short decision window; aim, timing, spacing, and FLOW secure the advantage.</span></article>
@@ -453,7 +467,7 @@
         </div>
 
         <footer class="menu-footer">
-          <span>DIFF / DODGING INSTINCT. FIGHTING FINESSE.</span>
+          <span>HEX / HUNT. EVADE. EXECUTE.</span>
           <span id="build-diagnostic">OFFLINE READY · NO INSTALL STEP</span>
         </footer>
       </section>

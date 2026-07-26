@@ -59,6 +59,7 @@ export class LobbyService {
       modeId: mode.id,
       mapId: map.id,
       botCount: clampInteger(candidate.botCount, 0, 7, mode.botCount),
+      hazardsEnabled: candidate.hazardsEnabled !== false,
       players: [
         {
           id: `remote-${shortId(clientId)}`,
@@ -402,6 +403,7 @@ export class LobbyService {
         0,
         oldState.entities.filter((entity) => entity.bot && !entity.neutral).length,
       ),
+      hazardsEnabled: oldState.rules?.hazardsEnabled !== false,
     });
     for (const member of players) {
       const entity = lobby.state.entities.find(

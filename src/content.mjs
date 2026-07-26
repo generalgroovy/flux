@@ -32,10 +32,10 @@ const character = ({
   acceleration: speed * 6.6,
   deceleration: speed * 8,
   damageInvulnerability: 0.08,
-  primary,
-  special,
-  defense,
-  mobility,
+  primary: { fluxCost: 0, ...primary },
+  special: { fluxCost: 34, ...special },
+  defense: { fluxCost: 18, ...defense },
+  mobility: { fluxCost: 16, ...mobility },
   affinity,
 });
 
@@ -152,7 +152,7 @@ export const CHARACTERS = Object.freeze([
   }),
   character({
     id: "echo",
-    affinity: { kind: "element", id: "ice", name: "FROST", edge: "Momentum-altering frozen ground" },
+    affinity: { kind: "element", id: "veil", name: "VEIL", edge: "Decoys, concealed intent, and position swaps" },
     name: "ECHO",
     role: "Feint skirmisher",
     style: "Overload reads with spread and discontinuous movement.",
@@ -202,7 +202,7 @@ export const CHARACTERS = Object.freeze([
   }),
   character({
     id: "volt",
-    affinity: { kind: "element", id: "lightning", name: "SPARK", edge: "Fast action interruption" },
+    affinity: { kind: "element", id: "lightning", name: "VOLT", edge: "Charge sequencing and interruption" },
     name: "VOLT",
     role: "Tempo striker",
     style: "Build rhythm, pierce lines, steal momentum.",
@@ -257,7 +257,7 @@ export const CHARACTERS = Object.freeze([
   }),
   character({
     id: "cinder",
-    affinity: { kind: "element", id: "fire", name: "FLAME", edge: "Persistent burning terrain" },
+    affinity: { kind: "element", id: "fire", name: "EMBER", edge: "Pressure, ignition, and delayed detonation" },
     name: "CINDER",
     role: "Trap zoner",
     style: "Shape routes, bait pursuit, detonate commitment.",
@@ -313,7 +313,7 @@ export const CHARACTERS = Object.freeze([
   }),
   character({
     id: "orbit",
-    affinity: { kind: "element", id: "force", name: "FORCE", edge: "Exclusive pull and displacement" },
+    affinity: { kind: "element", id: "null", name: "NULL", edge: "Punishable construct cancellation" },
     name: "ORBIT",
     role: "Field controller",
     style: "Displace enemies and bend projectile lanes.",
@@ -700,6 +700,12 @@ export const MATCH_TUNING = Object.freeze({
     earthThickness: 24,
     lightningInterrupt: 0.14,
   },
+  flux: {
+    maximum: 100,
+    recoveryPerSecond: 19,
+    recoveryDelay: 0.46,
+    dryCueCooldown: 0.7,
+  },
   controlScorePerSecond: 12,
   controlOvertimeGrace: 2.5,
   bot: {
@@ -777,6 +783,11 @@ export function validateContent({
       errors.push(`elements.${key} must be positive`);
     }
   }
+  for (const [key, value] of Object.entries(tuning.flux ?? {})) {
+    if (!Number.isFinite(value) || value <= 0) {
+      errors.push(`flux.${key} must be positive`);
+    }
+  }
 
   for (const agent of characters) {
     if (!agent.affinity?.id || !agent.affinity?.name || agent.affinity?.kind !== "element") {
@@ -803,6 +814,15 @@ export function validateContent({
     ]) {
       if (!Number.isFinite(path[1]) || path[1] <= 0) {
         errors.push(`${agent.id}.${path[0]} must be positive`);
+      }
+    }
+    for (const ability of [agent.special, agent.defense, agent.mobility]) {
+      if (
+        !Number.isFinite(ability.fluxCost) ||
+        ability.fluxCost <= 0 ||
+        ability.fluxCost > tuning.flux.maximum
+      ) {
+        errors.push(`${agent.id}.${ability.name}.fluxCost must be payable`);
       }
     }
   }

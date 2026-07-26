@@ -102,13 +102,15 @@ export function createMatch(options = {}) {
     projectiles: [],
     mines: [],
     elementFields: [],
-    hazards: map.hazards.map((hazard) => ({
+    decoys: [],
+    hazards: (options.hazardsEnabled === false ? [] : map.hazards).map((hazard) => ({
       ...hazard,
       phase: "cooldown",
       remaining: hazard.initial,
       hitIds: [],
     })),
     score: { alpha: 0, beta: 0 },
+    rules: { hazardsEnabled: options.hazardsEnabled !== false },
     round: 1,
     roundRemaining: 0,
     winner: null,
@@ -191,6 +193,9 @@ function createEntity(spec, index, map) {
     wallContactRemaining: 0,
     wallX: 0,
     wallY: 0,
+    flux: MATCH_TUNING.flux.maximum,
+    fluxRecoveryDelay: 0,
+    fluxWarningCooldown: 0,
     surface: "normal",
     elementForceX: 0,
     elementForceY: 0,
@@ -295,6 +300,7 @@ export function stepMatch(
 
   for (const entity of state.entities) tickEntity(entity, boundedDelta);
   updateElementFields(state, boundedDelta);
+  updateDecoys(state, boundedDelta);
   const activeMap = withElementGeometry(map, state.elementFields);
   for (const entity of state.entities) {
     if (!entity.alive) {
@@ -335,10 +341,19 @@ function tickEntity(entity, delta) {
     "hopRemaining",
     "wallContactRemaining",
     "interruptRemaining",
+    "fluxRecoveryDelay",
+    "fluxWarningCooldown",
   ]) {
     entity[key] = Math.max(0, finite(entity[key]) - delta);
   }
   entity.flow = clamp(entity.flow, 0, MATCH_TUNING.flow.maximum);
+  entity.flux = clamp(entity.flux, 0, MATCH_TUNING.flux.maximum);
+  if (entity.fluxRecoveryDelay === 0) {
+    entity.flux = Math.min(
+      MATCH_TUNING.flux.maximum,
+      entity.flux + MATCH_TUNING.flux.recoveryPerSecond * delta,
+    );
+  }
 }
 
 function updateEntity(state, entity, command, delta, map) {
@@ -355,12 +370,20 @@ function updateEntity(state, entity, command, delta, map) {
     state.tutorial.moved = true;
   }
 
-  if (command.mobility && entity.mobilityCooldown === 0) {
+  if (
+    command.mobility &&
+    entity.mobilityCooldown === 0 &&
+    spendFlux(state, entity, agent.mobility)
+  ) {
     startMobility(state, entity, command, agent, map);
   }
   if (!command.mobility) tryHop(state, entity, command);
   moveEntity(state, entity, command, agent, delta, map);
-  if (command.defend && entity.defenseCooldown === 0) {
+  if (
+    command.defend &&
+    entity.defenseCooldown === 0 &&
+    spendFlux(state, entity, agent.defense)
+  ) {
     entity.defenseRemaining = agent.defense.duration;
     entity.defenseCooldown = agent.defense.cooldown;
     if (entity.human) state.tutorial.defended = true;
@@ -372,7 +395,11 @@ function updateEntity(state, entity, command, delta, map) {
       y: entity.y,
     });
   }
-  if (command.special && entity.specialCooldown === 0) {
+  if (
+    command.special &&
+    entity.specialCooldown === 0 &&
+    spendFlux(state, entity, agent.special)
+  ) {
     useSpecial(state, entity, agent, map);
     if (entity.human) state.tutorial.special = true;
   }
@@ -381,6 +408,34 @@ function updateEntity(state, entity, command, delta, map) {
     entity.primaryCooldown = agent.primary.cooldown;
     if (entity.human) state.tutorial.fired = true;
   }
+}
+
+function spendFlux(state, entity, ability) {
+  const cost = ability.fluxCost ?? 0;
+  if (entity.flux < cost) {
+    if (entity.fluxWarningCooldown === 0) {
+      entity.fluxWarningCooldown = MATCH_TUNING.flux.dryCueCooldown;
+      state.events.push({
+        type: "fluxDry",
+        entityId: entity.id,
+        required: cost,
+        available: entity.flux,
+        x: entity.x,
+        y: entity.y,
+      });
+    }
+    return false;
+  }
+  entity.flux -= cost;
+  entity.fluxRecoveryDelay = MATCH_TUNING.flux.recoveryDelay;
+  state.events.push({
+    type: "fluxSpend",
+    entityId: entity.id,
+    amount: cost,
+    x: entity.x,
+    y: entity.y,
+  });
+  return true;
 }
 
 function startMobility(state, entity, command, agent, map) {
@@ -678,11 +733,28 @@ function updateElementFields(state, delta) {
     }
     if (
       field.element === "fire" &&
-      waterFields.some(
-        (water) =>
-          Math.hypot(water.x - field.x, water.y - field.y) <=
-          water.radius + field.radius,
-      )
+      waterFields.some((water) => {
+        const distance = Math.hypot(water.x - field.x, water.y - field.y);
+        if (distance > water.radius + field.radius) return false;
+        if (
+          Number.isFinite(water.directionX) &&
+          Number.isFinite(water.directionY) &&
+          (water.directionX !== 0 || water.directionY !== 0) &&
+          distance > field.radius * 0.25
+        ) {
+          field.x += water.directionX * water.radius * 0.72;
+          field.y += water.directionY * water.radius * 0.72;
+          field.duration *= 0.58;
+          state.events.push({
+            type: "elementReaction",
+            reaction: "redirect",
+            x: field.x,
+            y: field.y,
+          });
+          return false;
+        }
+        return true;
+      })
     ) {
       state.events.push({
         type: "elementReaction",
@@ -731,6 +803,11 @@ function updateElementFields(state, delta) {
       field.pulseRemaining = MATCH_TUNING.elements.firePulse;
     }
   }
+}
+
+function updateDecoys(state, delta) {
+  for (const decoy of state.decoys) decoy.duration -= delta;
+  state.decoys = state.decoys.filter((decoy) => decoy.duration > 0);
 }
 
 function useSpecial(state, entity, agent, map) {
@@ -797,13 +874,31 @@ function useSpecial(state, entity, agent, map) {
     }
   } else if (special.kind === "blast") {
     damageRadius(state, entity, special.range, special.damage, special.knockback);
-    if (agent.affinity.id === "ice") {
-      createElementField(state, entity, "ice", {
-        x: entity.x,
-        y: entity.y,
-        radius: MATCH_TUNING.elements.iceRadius,
-        duration: MATCH_TUNING.elements.iceDuration,
-      });
+    if (agent.affinity.id === "veil") {
+      const existing = state.decoys.find((decoy) => decoy.ownerId === entity.id);
+      if (existing) {
+        const beforeX = entity.x;
+        const beforeY = entity.y;
+        entity.x = existing.x;
+        entity.y = existing.y;
+        existing.x = beforeX;
+        existing.y = beforeY;
+        state.decoys = state.decoys.filter((decoy) => decoy !== existing);
+        state.events.push({ type: "veilSwap", entityId: entity.id, x: entity.x, y: entity.y });
+      } else {
+        state.decoys.push({
+          id: `decoy-${entity.id}`,
+          ownerId: entity.id,
+          team: entity.team,
+          characterId: entity.characterId,
+          x: entity.x,
+          y: entity.y,
+          facingX: entity.facingX,
+          facingY: entity.facingY,
+          duration: 3,
+        });
+        state.events.push({ type: "veilDecoy", entityId: entity.id, x: entity.x, y: entity.y });
+      }
     }
   } else if (special.kind === "rail") {
     const end = clippedRayEnd(entity, special.range, map);
@@ -900,21 +995,16 @@ function useSpecial(state, entity, agent, map) {
         direction: { x: -direction.x, y: -direction.y },
       });
     }
-    let bentField = false;
-    for (const field of state.elementFields) {
-      if (field.element === "earth") continue;
-      const distance = Math.hypot(entity.x - field.x, entity.y - field.y);
-      if (distance > special.range + (field.radius ?? 0)) continue;
-      const direction = normalizeDirection(entity.x - field.x, entity.y - field.y);
-      const displacement = Math.min(72, distance * 0.42);
-      field.x += direction.x * displacement;
-      field.y += direction.y * displacement;
-      bentField = true;
-    }
-    if (bentField) {
+    const fieldsBefore = state.elementFields.length;
+    state.elementFields = state.elementFields.filter((field) => {
+      const centerX = field.element === "earth" ? field.x + field.width / 2 : field.x;
+      const centerY = field.element === "earth" ? field.y + field.height / 2 : field.y;
+      return Math.hypot(centerX - entity.x, centerY - entity.y) > special.range;
+    });
+    if (state.elementFields.length < fieldsBefore) {
       state.events.push({
         type: "elementReaction",
-        reaction: "bend",
+        reaction: "nullify",
         x: entity.x,
         y: entity.y,
       });
@@ -935,6 +1025,8 @@ function useSpecial(state, entity, agent, map) {
         y: entity.y,
         radius: MATCH_TUNING.elements.waterRadius,
         duration: MATCH_TUNING.elements.waterDuration,
+        directionX: entity.facingX,
+        directionY: entity.facingY,
       });
     }
   } else if (special.kind === "volley") {
@@ -976,6 +1068,7 @@ function firePattern(state, entity, weapon, source) {
       pierce: weapon.pierce ?? 0,
       heavy: weapon.heavy === true,
       reflected: false,
+      fieldIds: [],
     });
     state.nextProjectileId += 1;
   }
@@ -1053,6 +1146,30 @@ function updateProjectiles(state, delta, map) {
     projectile.x += finite(projectile.vx) * delta;
     projectile.y += finite(projectile.vy) * delta;
     projectile.lifetime -= delta;
+    projectile.fieldIds ??= [];
+    for (const field of state.elementFields) {
+      if (
+        field.element !== "wind" ||
+        projectile.fieldIds.includes(field.id) ||
+        Math.hypot(projectile.x - field.x, projectile.y - field.y) > field.radius
+      ) {
+        continue;
+      }
+      const speed = Math.hypot(projectile.vx, projectile.vy);
+      const bent = normalizeDirection(
+        projectile.vx + field.directionX * 260,
+        projectile.vy + field.directionY * 260,
+      );
+      projectile.vx = bent.x * speed;
+      projectile.vy = bent.y * speed;
+      projectile.fieldIds.push(field.id);
+      state.events.push({
+        type: "elementReaction",
+        reaction: "deflect",
+        x: projectile.x,
+        y: projectile.y,
+      });
+    }
   }
 
   const removed = new Set();
@@ -1424,6 +1541,9 @@ function respawnEntity(entity, map) {
   entity.wallContactRemaining = 0;
   entity.wallX = 0;
   entity.wallY = 0;
+  entity.flux = MATCH_TUNING.flux.maximum;
+  entity.fluxRecoveryDelay = 0;
+  entity.fluxWarningCooldown = 0;
   entity.surface = "normal";
   entity.elementForceX = 0;
   entity.elementForceY = 0;
@@ -1442,6 +1562,7 @@ function resetRound(state, map, mode) {
   state.projectiles = [];
   state.mines = [];
   state.elementFields = [];
+  state.decoys = [];
   if (mode.id === "survival") {
     state.survival.wave += 1;
     const enemyCount = state.entities.filter(
@@ -1803,6 +1924,9 @@ export function matchInvariantErrors(state) {
       "elementForceX",
       "elementForceY",
       "interruptRemaining",
+      "flux",
+      "fluxRecoveryDelay",
+      "fluxWarningCooldown",
     ]) {
       if (!Number.isFinite(entity[key])) errors.push(`${entity.id}.${key} is not finite`);
     }

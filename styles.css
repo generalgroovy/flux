@@ -1734,6 +1734,14 @@ select {
   background: var(--amber);
 }
 
+.flux-ability {
+  border-color: #a985ff66;
+}
+
+.flux-ability i {
+  background: #a985ff;
+}
+
 .ability {
   position: relative;
   display: grid;

@@ -121,10 +121,15 @@ test("elemental specials author persistent, counterable arena state", () => {
   stepMatch(earth, { left: { ...idle, special: true } }, FIXED_DELTA);
   assert.equal(earth.elementFields.some((field) => field.element === "earth"), true);
 
-  const ice = duel({ leftCharacter: "echo", rightCharacter: "rook" });
-  stepMatch(ice, { left: { ...idle, special: true } }, FIXED_DELTA);
-  stepMatch(ice, {}, FIXED_DELTA);
-  assert.equal(ice.entities[0].surface, "ice");
+  const veil = duel({ leftCharacter: "echo", rightCharacter: "rook" });
+  stepMatch(veil, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(veil.decoys.length, 1);
+  const originX = veil.entities[0].x;
+  veil.entities[0].x += 90;
+  veil.entities[0].specialCooldown = 0;
+  stepMatch(veil, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(veil.entities[0].x, originX);
+  assert.equal(veil.decoys.length, 0);
 
   const lightning = duel({ leftCharacter: "volt", rightCharacter: "rook" });
   stepMatch(lightning, { left: { ...idle, special: true } }, FIXED_DELTA);
@@ -210,9 +215,44 @@ test("element fields resolve physical reactions deterministically", () => {
   stepMatch(state, {}, FIXED_DELTA);
   const carriedFire = state.elementFields.find((field) => field.element === "fire");
   assert.ok(carriedFire.x > base.x);
+
+  state.elementFields = [
+    {
+      ...base,
+      id: "cross-gale",
+      element: "wind",
+      directionX: 0,
+      directionY: 1,
+    },
+  ];
+  state.projectiles = [
+    {
+      id: 900,
+      ownerId: state.entities[0].id,
+      team: "alpha",
+      source: "test",
+      x: base.x,
+      y: base.y,
+      previousX: base.x,
+      previousY: base.y,
+      vx: 600,
+      vy: 0,
+      radius: 4,
+      damage: 1,
+      lifetime: 1,
+      knockback: 0,
+      pierce: 0,
+      heavy: false,
+      reflected: false,
+      fieldIds: [],
+    },
+  ];
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.ok(state.projectiles[0].vy > 0);
+  assert.equal(state.events.some((event) => event.reaction === "deflect"), true);
 });
 
-test("Force bends movable fields but not Stone geometry", () => {
+test("Null erases nearby constructs only on its paid commitment", () => {
   const state = duel({ leftCharacter: "orbit", rightCharacter: "rook" });
   const orbit = state.entities[0];
   state.elementFields = [
@@ -232,20 +272,17 @@ test("Force bends movable fields but not Stone geometry", () => {
       ownerId: orbit.id,
       team: "alpha",
       element: "earth",
-      x: orbit.x - 180,
-      y: orbit.y + 100,
+      x: orbit.x - 100,
+      y: orbit.y + 80,
       width: 24,
       height: 100,
       duration: 2,
       pulseRemaining: 0,
     },
   ];
-  const fireBefore = state.elementFields[0].x;
-  const stoneBefore = state.elementFields[1].x;
   stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
-  assert.ok(state.elementFields[0].x < fireBefore);
-  assert.equal(state.elementFields[1].x, stoneBefore);
-  assert.equal(state.events.some((event) => event.reaction === "bend"), true);
+  assert.equal(state.elementFields.length, 0);
+  assert.equal(state.events.some((event) => event.reaction === "nullify"), true);
 });
 
 test("commands reject non-finite movement and aim without poisoning state", () => {
@@ -260,6 +297,28 @@ test("commands reject non-finite movement and aim without poisoning state", () =
     { ...idle, aimX: 0 },
   );
   assert.deepEqual(normalizeDirection(0, -10), { x: 0, y: -1 });
+});
+
+test("Flux creates payable commitments, dry tells, and delayed recovery", () => {
+  const state = duel();
+  const player = state.entities[0];
+  const specialCost = getCharacter(player.characterId).special.fluxCost;
+  stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(player.flux, MATCH_TUNING.flux.maximum - specialCost);
+  assert.ok(player.fluxRecoveryDelay > 0);
+
+  player.specialCooldown = 0;
+  player.flux = specialCost - 1;
+  stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(player.specialCooldown, 0);
+  assert.equal(state.events.some((event) => event.type === "fluxDry"), true);
+
+  const dryFlux = player.flux;
+  for (let tick = 0; tick < MATCH_TUNING.tickRate; tick += 1) {
+    stepMatch(state, { left: idle }, FIXED_DELTA);
+  }
+  assert.ok(player.flux > dryFlux);
+  assert.ok(player.flux <= MATCH_TUNING.flux.maximum);
 });
 
 test("dashing repeatedly into walls and corners never hides or corrupts an agent", () => {

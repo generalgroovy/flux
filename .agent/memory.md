@@ -1,5 +1,32 @@
 # HEX agent memory
 
+## 2026-07-26 — HEX 0.13.0 race matrix and spatial arena atlas
+
+- **Player-facing problem:** Race was not selectable, selection did not explain
+  tradeoffs before commitment, and arenas appeared as unrelated cards rather
+  than locations in a coherent world-selection surface.
+- **Implemented solution:** Added twelve validated named races with explicitly
+  paired boons/drawbacks bounded to 0.9–1.1 across health, speed, Flux, and FLOW.
+  Race identity is server-owned, survives joins/rematches/respawns, appears in
+  HUD and field information, and can combine with every complete agent without
+  replacing its kit. Local players use horizontally scrollable race columns
+  above the agent grid; remote identity adds the same race selection. Race and
+  agent hover text exposes tradeoffs, discipline, style, and role. Added region,
+  scale, and atlas coordinates to every playable arena and replaced the map card
+  row with a responsive spatial atlas whose nodes remain actual selectors.
+- **Scope discipline:** Twelve characters per class and twelve multi-scale race
+  regions require dozens of complete mechanics and a camera/streaming model;
+  neither is represented through fake nodes or stat-reskinned agents. The next
+  map slice must prove large-map camera, rotations, sub-region boundaries, spawn
+  density, and authoritative snapshot budgets with one complete region first.
+- **Verification:** Final phased `npm test` passed 47/47, including race
+  authority/persistence, browser navigation, all combat combinations, dynamic
+  geometry, multiplayer lifecycle, and the eight-agent soak. Source/shell syntax
+  and diff checks passed. A live 0.13.0 server returned valid health plus HTTP
+  200 for the shell and game module, then shut down cleanly. Physical atlas
+  layout, horizontal race navigation, hover density, and race feel remain the
+  Linux/Windows desktop acceptance pass.
+
 ## 2026-07-26 — HEX 0.12.0 Flux commitments and seamless lobby links
 
 - **Player-facing problem:** Element powers were cooldown-only, leaving no

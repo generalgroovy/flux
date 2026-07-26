@@ -10,7 +10,16 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
-Build 0.12.0 introduces **Flux**, raw magic separate from universal movement
+Build 0.13.0 adds twelve playable fantasy races as a second, bounded build axis:
+Human, Iron Orc, Moss Troll, Briar Elf, Gloam Elf, Forge Dwarf, Copper Gnome,
+Ash Revenant, Cloud Sylph, Reefborn, Cairnkin, and Cinderling. Each trades no
+more than 10% across health, speed, Flux, and FLOW, advertises its boon and
+drawback before selection, and remains authoritative through remote joins and
+rematches. Race columns sit above the difficulty-ordered agent grid. Arena
+selection is now a spatial atlas with authored region/scale coordinates and
+hover/focus summaries, establishing the UI contract for nested world regions.
+
+Build 0.12.0 introduced **Flux**, raw magic separate from universal movement
 FLOW. Special, defense, and character mobility now compete for a visible,
 recovering Flux pool; dry fighters retain aim, primary fire, sprint, hops, and
 wall kicks, so fundamentals always offer a route back. The eight current

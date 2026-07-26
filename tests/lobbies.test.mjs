@@ -32,6 +32,7 @@ test("public lobbies can be hosted, listed, and joined in progress", () => {
       modeId: "control",
       mapId: "crown",
       characterId: "orbit",
+      raceId: "tideborn",
       botCount: 0,
       maxPlayers: 4,
     },
@@ -39,6 +40,7 @@ test("public lobbies can be hosted, listed, and joined in progress", () => {
   );
   assert.equal(hosted.ok, true);
   assert.equal(hosted.lobby.code, "ABC234");
+  assert.equal(hosted.snapshot.state.entities[0].raceId, "tideborn");
   assert.equal(service.list().length, 1);
 
   for (let tick = 0; tick < MATCH_TUNING.tickRate; tick += 1) {

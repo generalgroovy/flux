@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-import { getCharacter, getMap, getMode } from "./content.mjs";
+import { getCharacter, getMap, getMode, getRace } from "./content.mjs";
 import {
   addMatchPlayer,
   createMatch,
@@ -66,6 +66,7 @@ export class LobbyService {
           clientId,
           name: member.name,
           characterId: member.characterId,
+          raceId: member.raceId,
           team: "alpha",
           human: true,
         },
@@ -116,6 +117,7 @@ export class LobbyService {
         clientId,
         name: member.name,
         characterId: member.characterId,
+        raceId: member.raceId,
         team: lobby.state.modeId === "survival" ? "alpha" : undefined,
       });
       if (!entity) return failure("closed", "The match cannot accept players.");
@@ -292,10 +294,11 @@ export class LobbyService {
       return failure("in-progress", "Change agent after an elimination or rematch.");
     }
     const agent = getCharacter(characterId);
+    const race = getRace(member.raceId);
     member.characterId = agent.id;
     entity.characterId = agent.id;
-    entity.health = agent.health;
-    entity.maxHealth = agent.health;
+    entity.maxHealth = Math.round(agent.health * race.health);
+    entity.health = entity.maxHealth;
     return success({ characterId: agent.id });
   }
 
@@ -387,6 +390,7 @@ export class LobbyService {
       clientId: member.clientId,
       name: member.name,
       characterId: member.characterId,
+      raceId: member.raceId,
       team:
         oldState.modeId === "survival"
           ? "alpha"
@@ -495,6 +499,7 @@ function normalizeMember(
     role,
     name: cleanText(candidate.playerName ?? candidate.name, "PLAYER", 20),
     characterId: getCharacter(candidate.characterId).id,
+    raceId: getRace(candidate.raceId).id,
     reconnectToken,
     connected: true,
     disconnectedAt: null,

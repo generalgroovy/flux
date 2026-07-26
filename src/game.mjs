@@ -3,9 +3,11 @@ import {
   MAPS,
   MATCH_TUNING,
   MODES,
+  RACES,
   getCharacter,
   getMap,
   getMode,
+  getRace,
 } from "./content.mjs";
 import {
   createMatch,
@@ -454,6 +456,7 @@ function quickStart() {
         id: "p1",
         name: "PLAYER 1",
         characterId: "kite",
+        raceId: "human",
         team: "alpha",
         human: true,
         localSlot: 0,
@@ -466,6 +469,7 @@ function launchMode(modeId) {
   const mode = getMode(modeId);
   const mapId = selectedMatchChoice("map", "breakline");
   const characterId = selectedMatchChoice("character", "kite");
+  const raceId = selectedMatchChoice("race", "human");
   selectMatchChoice("mode", mode.id);
   startLocal({
     modeId: mode.id,
@@ -476,6 +480,7 @@ function launchMode(modeId) {
         id: "p1",
         name: "PLAYER 1",
         characterId,
+        raceId,
         team: "alpha",
         human: true,
         localSlot: 0,
@@ -491,6 +496,7 @@ function startConfiguredMatch(event) {
   let modeId = String(data.get("mode") ?? "duel");
   const mapId = String(data.get("map") ?? "breakline");
   const characterId = String(data.get("character") ?? "kite");
+  const raceId = String(data.get("race") ?? "human");
   if (format === "local" && !getMode(modeId).allowLocal) {
     modeId = "duel";
     toast("FIRST CONTACT is solo; switched to DIFFERENCE for local 2P.");
@@ -500,6 +506,7 @@ function startConfiguredMatch(event) {
       id: "p1",
       name: "PLAYER 1",
       characterId,
+      raceId,
       team: "alpha",
       human: true,
       localSlot: 0,
@@ -510,6 +517,7 @@ function startConfiguredMatch(event) {
       id: "p2",
       name: "PLAYER 2",
       characterId: String(data.get("characterTwo") ?? "bulwark"),
+      raceId: String(data.get("raceTwo") ?? "orc"),
       team: modeId === "survival" ? "alpha" : "beta",
       human: true,
       localSlot: 1,
@@ -646,9 +654,10 @@ function selectMatchChoice(name, value) {
 function updateDeploymentSummary() {
   const mode = getMode(selectedMatchChoice("mode", "duel"));
   const agent = getCharacter(selectedMatchChoice("character", "kite"));
+  const race = getRace(selectedMatchChoice("race", "human"));
   const map = getMap(selectedMatchChoice("map", "breakline"));
   element("deployment-summary").textContent =
-    `${mode.name} · ${agent.name} · ${map.name}`;
+    `${mode.name} · ${race.name} ${agent.name} · ${map.name}`;
 }
 
 function toggleInfo(force = !infoOpen) {
@@ -668,7 +677,8 @@ function updateInfoOverlay(mode, map) {
     matchState.entities[0];
   if (!player) return;
   const agent = getCharacter(player.characterId);
-  const flowRatio = clamp(player.flow / MATCH_TUNING.flow.maximum, 0, 1);
+  const race = getRace(player.raceId);
+  const flowRatio = clamp(player.flow / player.maxFlow, 0, 1);
   element("flow-charge").style.transform = `scaleX(${flowRatio})`;
   element("flow-detail").textContent =
     player.hopCooldown > 0
@@ -676,7 +686,7 @@ function updateInfoOverlay(mode, map) {
       : player.sprinting
         ? "Sprinting"
         : "Sprint / hop";
-  const fluxRatio = clamp(player.flux / MATCH_TUNING.flux.maximum, 0, 1);
+  const fluxRatio = clamp(player.flux / player.maxFlux, 0, 1);
   element("flux-charge").style.transform = `scaleX(${fluxRatio})`;
   element("flux-detail").textContent =
     player.fluxRecoveryDelay > 0
@@ -695,7 +705,7 @@ function updateInfoOverlay(mode, map) {
   element("info-agent-glyph").style.color = agent.accent;
   element("info-agent-name").textContent = agent.name;
   element("info-agent-role").textContent =
-    `${agent.role} · ${agent.affinity.name} ELEMENT`;
+    `${race.name} · ${agent.role} · ${agent.affinity.name} ELEMENT`;
   element("info-kit").innerHTML = [
     ["MB1", agent.primary],
     ["E", agent.special],
@@ -775,12 +785,13 @@ function updateRoster() {
       .filter((entity) => !entity.neutral || matchState.modeId === "convergence")
       .map((entity) => {
         const agent = getCharacter(entity.characterId);
+        const race = getRace(entity.raceId);
         const chip = document.createElement("div");
         chip.className = `roster-chip ${entity.alive ? "" : "dead"}`;
         chip.style.setProperty("--agent-color", agent.accent);
         const dot = document.createElement("i");
         const label = document.createElement("b");
-        label.textContent = `${entity.name} · ${agent.name}`;
+        label.textContent = `${entity.name} · ${race.name} ${agent.name}`;
         const health = document.createElement("span");
         health.style.width = `${Math.max(0, (entity.health / entity.maxHealth) * 100)}%`;
         chip.append(dot, label, health);
@@ -1443,7 +1454,7 @@ function drawEntities(time) {
       context.textBaseline = "alphabetic";
       context.textAlign = "center";
       context.fillText(
-        `${entity.name} · ${agent.name}`,
+        `${entity.name} · ${getRace(entity.raceId).name} ${agent.name}`,
         0,
         agent.radius + 21,
       );
@@ -1629,18 +1640,20 @@ function buildContentInterface() {
   ).join("");
   element("map-options").innerHTML = MAPS.map(
     (map, index) => `
-      <label class="choice-card">
+      <label class="choice-card atlas-node" style="--atlas-x:${map.atlas.x}%;--atlas-y:${map.atlas.y}%" title="${map.region} · ${map.scale} · ${map.identity}">
         <input type="radio" name="map" value="${map.id}" ${index === 0 ? "checked" : ""}>
         <b>${map.name}</b>
-        <small>${map.identity}</small>
-        <em>${map.hazards.length ? `${map.hazards.length} active hazard${map.hazards.length > 1 ? "s" : ""}` : "Pure geometry"}</em>
+        <small>${map.region} · ${map.scale}</small>
+        <em>${map.hazards.length ? `${map.hazards.length} hazard${map.hazards.length > 1 ? "s" : ""}` : "Pure geometry"}</em>
       </label>`,
   ).join("");
   element("agent-options").innerHTML = agentPicker("character", "kite");
+  element("race-options").innerHTML = racePicker("race", "human");
   element("agent-two-options").innerHTML = agentPicker(
     "characterTwo",
     "bulwark",
   );
+  element("race-two-options").innerHTML = racePicker("raceTwo", "orc");
   element("agent-codex").innerHTML = CHARACTERS.map(agentCard).join("");
   element("map-codex").innerHTML = MAPS.map(
     (map) => `
@@ -1664,6 +1677,9 @@ function buildContentInterface() {
     (agent) => `<option value="${agent.id}">${agent.name} — ${agent.role}</option>`,
   ).join("");
   element("online-agent").innerHTML = agentOptions;
+  element("online-race").innerHTML = RACES.map(
+    (race) => `<option value="${race.id}">${race.name} — ${race.trait}</option>`,
+  ).join("");
   element("online-mode").innerHTML = MODES.filter(
     (mode) => mode.id !== "training",
   )
@@ -1679,10 +1695,20 @@ function buildContentInterface() {
 function agentPicker(name, selected) {
   return CHARACTERS.map(
     (agent) => `
-      <label class="agent-choice" style="--agent-color:${agent.accent}">
+      <label class="agent-choice" style="--agent-color:${agent.accent}" title="${agent.role} · ${agent.affinity.name}: ${agent.style}">
         <input type="radio" name="${name}" value="${agent.id}" ${agent.id === selected ? "checked" : ""}>
         <span class="agent-choice-glyph" aria-hidden="true">${agent.glyph}</span>
         <b>${agent.name}</b>
+      </label>`,
+  ).join("");
+}
+
+function racePicker(name, selected) {
+  return RACES.map(
+    (race) => `
+      <label class="race-choice" title="${race.trait}: ${race.boon}; ${race.drawback}">
+        <input type="radio" name="${name}" value="${race.id}" ${race.id === selected ? "checked" : ""}>
+        <b>${race.name}</b><span>${race.boon}</span><small>${race.drawback}</small>
       </label>`,
   ).join("");
 }
@@ -1723,6 +1749,7 @@ async function hostLobby() {
         modeId: element("online-mode").value,
         mapId: element("online-map").value,
         characterId: element("online-agent").value,
+        raceId: element("online-race").value,
         public: element("lobby-public").checked,
         hazardsEnabled: element("lobby-hazards").checked,
         maxPlayers: 4,
@@ -1767,6 +1794,7 @@ async function joinLobby(code) {
       options: {
         name: element("online-name").value,
         characterId: element("online-agent").value,
+        raceId: element("online-race").value,
       },
     });
     if (!result.ok) throw new Error(result.message);

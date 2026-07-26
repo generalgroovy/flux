@@ -2,7 +2,7 @@
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.12.0 on Garuda Sway and Windows: complete all four
+1. Hands-on accept HEX 0.13.0 on Garuda Sway and Windows: complete all four
    FIRST CONTACT reads; chain sprint, hop, and wall kicks around cover; verify
    FLOW cost/recovery; launch all five home shortcuts; use every main-menu
    panel, toggle field info with `F1`, and verify
@@ -32,8 +32,11 @@
 
 ## Expansion acceptance — not exposed until complete
 
-- Add a validated race contract through two fully playable opposing races before
-  expanding toward twelve; every modifier needs a visible tell and real downside.
+- Twelve bounded race modifiers and their local/remote selector are live. Next:
+  hands-on matchup tuning, then race-specific mechanics one paired matchup at a
+  time; do not expand to twelve agents per discipline through numerical reskins.
+- Build the first zoomable world region with one complete nested sub-map at each
+  supported scale before multiplying it across twelve race territories.
 - Add one pre-match knowledge branch with mutually exclusive tradeoffs before
   multiplying trees across races and disciplines.
 - Grow each discipline through complete spell decisions and reaction tests; do

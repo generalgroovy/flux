@@ -4,6 +4,7 @@ import {
   getCharacter,
   getMap,
   getMode,
+  getRace,
 } from "./content.mjs";
 
 const EPSILON = 1e-8;
@@ -145,6 +146,10 @@ export function createMatch(options = {}) {
 
 function createEntity(spec, index, map) {
   const agent = getCharacter(spec.characterId);
+  const race = getRace(spec.raceId);
+  const maxHealth = Math.round(agent.health * race.health);
+  const maxFlow = MATCH_TUNING.flow.maximum * race.flow;
+  const maxFlux = MATCH_TUNING.flux.maximum * race.flux;
   const spawnIndex = finiteInteger(spec.spawnIndex, index) % map.spawns.length;
   const spawn = map.spawns[(spawnIndex + map.spawns.length) % map.spawns.length];
   const facingX = spawn.x < map.size.width / 2 ? 1 : -1;
@@ -153,6 +158,8 @@ function createEntity(spec, index, map) {
     clientId: spec.clientId ? String(spec.clientId) : null,
     name: cleanName(spec.name ?? `PLAYER ${index + 1}`),
     characterId: agent.id,
+    raceId: race.id,
+    speedScale: race.speed,
     team: spec.team === "beta" || spec.team === "neutral" ? spec.team : "alpha",
     human: spec.human === true,
     bot: spec.bot === true,
@@ -167,8 +174,8 @@ function createEntity(spec, index, map) {
     vy: 0,
     facingX,
     facingY: 0,
-    health: agent.health,
-    maxHealth: agent.health,
+    health: maxHealth,
+    maxHealth,
     alive: true,
     respawnRemaining: 0,
     spawnProtection: MATCH_TUNING.spawnProtection,
@@ -182,7 +189,8 @@ function createEntity(spec, index, map) {
     mobilityRemaining: 0,
     mobilityX: facingX,
     mobilityY: 0,
-    flow: MATCH_TUNING.flow.maximum,
+    flow: maxFlow,
+    maxFlow,
     flowRecoveryDelay: 0,
     sprinting: false,
     hopCooldown: 0,
@@ -193,7 +201,8 @@ function createEntity(spec, index, map) {
     wallContactRemaining: 0,
     wallX: 0,
     wallY: 0,
-    flux: MATCH_TUNING.flux.maximum,
+    flux: maxFlux,
+    maxFlux,
     fluxRecoveryDelay: 0,
     fluxWarningCooldown: 0,
     surface: "normal",
@@ -346,11 +355,11 @@ function tickEntity(entity, delta) {
   ]) {
     entity[key] = Math.max(0, finite(entity[key]) - delta);
   }
-  entity.flow = clamp(entity.flow, 0, MATCH_TUNING.flow.maximum);
-  entity.flux = clamp(entity.flux, 0, MATCH_TUNING.flux.maximum);
+  entity.flow = clamp(entity.flow, 0, entity.maxFlow);
+  entity.flux = clamp(entity.flux, 0, entity.maxFlux);
   if (entity.fluxRecoveryDelay === 0) {
     entity.flux = Math.min(
-      MATCH_TUNING.flux.maximum,
+      entity.maxFlux,
       entity.flux + MATCH_TUNING.flux.recoveryPerSecond * delta,
     );
   }
@@ -547,7 +556,9 @@ function moveEntity(state, entity, command, agent, delta, map) {
   } else {
     const moving = moveX !== 0 || moveY !== 0;
     const sprinting = command.sprint && moving && entity.flow > 0;
-    const speed = agent.speed * (sprinting ? MATCH_TUNING.flow.sprintMultiplier : 1);
+    const speed =
+      agent.speed * entity.speedScale *
+      (sprinting ? MATCH_TUNING.flow.sprintMultiplier : 1);
     const desiredX = moveX * speed + entity.elementForceX;
     const desiredY = moveY * speed + entity.elementForceY;
     const rate =
@@ -561,7 +572,7 @@ function moveEntity(state, entity, command, agent, delta, map) {
       state.tutorial.sprinted ||= entity.human;
     } else if (entity.flowRecoveryDelay === 0) {
       entity.flow = Math.min(
-        MATCH_TUNING.flow.maximum,
+        entity.maxFlow,
         entity.flow + MATCH_TUNING.flow.recoveryPerSecond * delta,
       );
     }
@@ -783,7 +794,7 @@ function updateElementFields(state, delta) {
       }
       if (field.element === "water" && entity.team === field.team) {
         entity.flow = Math.min(
-          MATCH_TUNING.flow.maximum,
+          entity.maxFlow,
           entity.flow + MATCH_TUNING.elements.waterFlowPerSecond * delta,
         );
         entity.interruptRemaining = 0;
@@ -1519,20 +1530,22 @@ function updateRespawn(state, entity, delta, map, mode) {
 function respawnEntity(entity, map) {
   const spawn = map.spawns[entity.spawnIndex % map.spawns.length];
   const agent = getCharacter(entity.characterId);
+  const race = getRace(entity.raceId);
   entity.x = spawn.x;
   entity.y = spawn.y;
   entity.lastSafeX = spawn.x;
   entity.lastSafeY = spawn.y;
   entity.vx = 0;
   entity.vy = 0;
-  entity.health = agent.health;
-  entity.maxHealth = agent.health;
+  entity.maxHealth = Math.round(agent.health * race.health);
+  entity.health = entity.maxHealth;
   entity.alive = true;
   entity.spawnProtection = MATCH_TUNING.spawnProtection;
   entity.damageInvulnerability = 0;
   entity.defenseRemaining = 0;
   entity.mobilityRemaining = 0;
-  entity.flow = MATCH_TUNING.flow.maximum;
+  entity.maxFlow = MATCH_TUNING.flow.maximum * race.flow;
+  entity.flow = entity.maxFlow;
   entity.flowRecoveryDelay = 0;
   entity.sprinting = false;
   entity.hopCooldown = 0;
@@ -1541,7 +1554,8 @@ function respawnEntity(entity, map) {
   entity.wallContactRemaining = 0;
   entity.wallX = 0;
   entity.wallY = 0;
-  entity.flux = MATCH_TUNING.flux.maximum;
+  entity.maxFlux = MATCH_TUNING.flux.maximum * race.flux;
+  entity.flux = entity.maxFlux;
   entity.fluxRecoveryDelay = 0;
   entity.fluxWarningCooldown = 0;
   entity.surface = "normal";
@@ -1744,7 +1758,7 @@ function updateBotCommand(state, entity, delta, map) {
       (distance > MATCH_TUNING.bot.preferredDistance * 1.65 ||
         entity.health / entity.maxHealth < MATCH_TUNING.bot.retreatHealthRatio),
     sprint:
-      entity.flow > MATCH_TUNING.flow.maximum * 0.6 &&
+      entity.flow > entity.maxFlow * 0.6 &&
       distance > MATCH_TUNING.bot.preferredDistance * 1.2,
     hop:
       closeProjectile &&
@@ -1917,6 +1931,7 @@ export function matchInvariantErrors(state) {
       "defenseCooldown",
       "mobilityCooldown",
       "flow",
+      "maxFlow",
       "flowRecoveryDelay",
       "hopCooldown",
       "hopRemaining",
@@ -1925,6 +1940,8 @@ export function matchInvariantErrors(state) {
       "elementForceY",
       "interruptRemaining",
       "flux",
+      "maxFlux",
+      "speedScale",
       "fluxRecoveryDelay",
       "fluxWarningCooldown",
     ]) {

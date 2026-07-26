@@ -5,6 +5,7 @@ import {
   CHARACTERS,
   MAPS,
   MODES,
+  RACES,
   MATCH_TUNING,
   getCharacter,
   validateContent,
@@ -38,6 +39,8 @@ function duel({
   leftCharacter = "kite",
   rightCharacter = "bulwark",
   mapId = "crosswind",
+  leftRace = "human",
+  rightRace = "human",
 } = {}) {
   const state = createMatch({
     modeId: "duel",
@@ -47,12 +50,14 @@ function duel({
       {
         id: "left",
         characterId: leftCharacter,
+        raceId: leftRace,
         team: "alpha",
         human: true,
       },
       {
         id: "right",
         characterId: rightCharacter,
+        raceId: rightRace,
         team: "beta",
         human: true,
       },
@@ -79,6 +84,7 @@ function duel({
 test("content ships eight complete agents, four maps, and all five mode gates", () => {
   assert.deepEqual(validateContent(), []);
   assert.equal(CHARACTERS.length, 8);
+  assert.equal(RACES.length, 12);
   assert.ok(MAPS.length >= 4);
   assert.deepEqual(
     new Set(MODES.map((mode) => mode.id)),
@@ -106,6 +112,16 @@ test("content ships eight complete agents, four maps, and all five mode gates", 
     assert.ok(agent.affinity.id);
     assert.equal(agent.affinity.kind, "element");
   }
+});
+
+test("race tradeoffs alter bounded resources without replacing character kits", () => {
+  const state = duel({ leftRace: "sylph", rightRace: "stonekin" });
+  const [sylph, stonekin] = state.entities;
+  assert.ok(sylph.speedScale > stonekin.speedScale);
+  assert.ok(sylph.maxHealth < stonekin.maxHealth);
+  assert.equal(sylph.characterId, "kite");
+  assert.equal(stonekin.characterId, "bulwark");
+  assert.deepEqual(matchInvariantErrors(state), []);
 });
 
 test("elemental specials author persistent, counterable arena state", () => {
@@ -304,7 +320,7 @@ test("Flux creates payable commitments, dry tells, and delayed recovery", () => 
   const player = state.entities[0];
   const specialCost = getCharacter(player.characterId).special.fluxCost;
   stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
-  assert.equal(player.flux, MATCH_TUNING.flux.maximum - specialCost);
+  assert.equal(player.flux, player.maxFlux - specialCost);
   assert.ok(player.fluxRecoveryDelay > 0);
 
   player.specialCooldown = 0;
@@ -318,7 +334,7 @@ test("Flux creates payable commitments, dry tells, and delayed recovery", () => 
     stepMatch(state, { left: idle }, FIXED_DELTA);
   }
   assert.ok(player.flux > dryFlux);
-  assert.ok(player.flux <= MATCH_TUNING.flux.maximum);
+  assert.ok(player.flux <= player.maxFlux);
 });
 
 test("dashing repeatedly into walls and corners never hides or corrupts an agent", () => {

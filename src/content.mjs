@@ -39,6 +39,21 @@ const character = ({
   affinity,
 });
 
+export const RACES = Object.freeze([
+  { id: "human", name: "Human", trait: "Adaptable", boon: "+4% Flux", drawback: "−2% health", health: 0.98, speed: 1, flux: 1.04, flow: 1 },
+  { id: "orc", name: "Iron Orc", trait: "Committed", boon: "+7% health", drawback: "−4% speed", health: 1.07, speed: 0.96, flux: 1, flow: 1 },
+  { id: "troll", name: "Moss Troll", trait: "Enduring", boon: "+9% health", drawback: "−6% Flux", health: 1.09, speed: 0.98, flux: 0.94, flow: 1 },
+  { id: "wood_elf", name: "Briar Elf", trait: "Fleet", boon: "+5% speed", drawback: "−5% health", health: 0.95, speed: 1.05, flux: 1, flow: 1 },
+  { id: "night_elf", name: "Gloam Elf", trait: "Arcane", boon: "+8% Flux", drawback: "−4% FLOW", health: 0.98, speed: 1, flux: 1.08, flow: 0.96 },
+  { id: "dwarf", name: "Forge Dwarf", trait: "Grounded", boon: "+6% health", drawback: "−3% speed", health: 1.06, speed: 0.97, flux: 1, flow: 1 },
+  { id: "gnome", name: "Copper Gnome", trait: "Efficient", boon: "+7% Flux", drawback: "−4% health", health: 0.96, speed: 1.01, flux: 1.07, flow: 1 },
+  { id: "undead", name: "Ash Revenant", trait: "Relentless", boon: "+5% health", drawback: "−5% FLOW", health: 1.05, speed: 1, flux: 1, flow: 0.95 },
+  { id: "sylph", name: "Cloud Sylph", trait: "Weightless", boon: "+6% speed", drawback: "−7% health", health: 0.93, speed: 1.06, flux: 1, flow: 1.02 },
+  { id: "tideborn", name: "Reefborn", trait: "Fluid", boon: "+7% FLOW", drawback: "−3% health", health: 0.97, speed: 1, flux: 1, flow: 1.07 },
+  { id: "stonekin", name: "Cairnkin", trait: "Anchored", boon: "+8% health", drawback: "−5% speed", health: 1.08, speed: 0.95, flux: 1, flow: 1 },
+  { id: "ashling", name: "Cinderling", trait: "Volatile", boon: "+5% speed / Flux", drawback: "−7% health", health: 0.93, speed: 1.05, flux: 1.05, flow: 1 },
+]);
+
 export const CHARACTERS = Object.freeze([
   character({
     id: "kite",
@@ -479,6 +494,9 @@ export const CHARACTERS = Object.freeze([
 export const MAPS = Object.freeze([
   {
     id: "breakline",
+    region: "The Fracture",
+    scale: "duel",
+    atlas: { x: 22, y: 54 },
     name: "BREAKLINE",
     identity: "Twin rotations around a lethal central seam.",
     visual: { floor: "#0a1720", void: "#03090e", grid: "#173343", accent: "#45d9ff" },
@@ -514,6 +532,9 @@ export const MAPS = Object.freeze([
   },
   {
     id: "crosswind",
+    region: "Gale Reach",
+    scale: "medium",
+    atlas: { x: 48, y: 27 },
     name: "CROSSWIND",
     identity: "Long sightlines broken by offset pockets.",
     visual: { floor: "#121521", void: "#070811", grid: "#2c2947", accent: "#c38cff" },
@@ -536,6 +557,9 @@ export const MAPS = Object.freeze([
   },
   {
     id: "crown",
+    region: "Cairn Crown",
+    scale: "small",
+    atlas: { x: 72, y: 48 },
     name: "CROWN",
     identity: "A contested center with four readable entry gates.",
     visual: { floor: "#17150d", void: "#0c0904", grid: "#42371b", accent: "#ffca4f" },
@@ -558,6 +582,9 @@ export const MAPS = Object.freeze([
   },
   {
     id: "undercurrent",
+    region: "Tide Hollows",
+    scale: "large",
+    atlas: { x: 54, y: 76 },
     name: "UNDERCURRENT",
     identity: "Three lanes whose side currents pulse out of phase.",
     visual: { floor: "#091a18", void: "#030c0b", grid: "#17443b", accent: "#77f7ce" },
@@ -720,6 +747,10 @@ export function getCharacter(id) {
   return CHARACTERS.find((entry) => entry.id === id) ?? CHARACTERS[0];
 }
 
+export function getRace(id) {
+  return RACES.find((entry) => entry.id === id) ?? RACES[0];
+}
+
 export function getMap(id) {
   return MAPS.find((entry) => entry.id === id) ?? MAPS[0];
 }
@@ -730,6 +761,7 @@ export function getMode(id) {
 
 export function validateContent({
   characters = CHARACTERS,
+  races = RACES,
   maps = MAPS,
   modes = MODES,
   tuning = MATCH_TUNING,
@@ -740,9 +772,18 @@ export function validateContent({
     if (new Set(ids).size !== ids.length) errors.push(`${label} ids must be unique`);
   };
   unique(characters, "character");
+  unique(races, "race");
   unique(maps, "map");
   unique(modes, "mode");
   if (characters.length < 8) errors.push("at least eight characters are required");
+  if (races.length < 12) errors.push("at least twelve races are required");
+  for (const race of races) {
+    for (const key of ["health", "speed", "flux", "flow"]) {
+      if (!Number.isFinite(race[key]) || race[key] < 0.9 || race[key] > 1.1) {
+        errors.push(`${race.id}.${key} must stay within the balanced 0.9–1.1 range`);
+      }
+    }
+  }
   if (maps.length < 3) errors.push("at least three maps are required");
   const requiredModes = ["training", "duel", "control", "convergence", "survival"];
   for (const modeId of requiredModes) {
@@ -828,6 +869,14 @@ export function validateContent({
   }
 
   for (const map of maps) {
+    if (
+      !map.region ||
+      !["duel", "small", "medium", "large", "world"].includes(map.scale) ||
+      !Number.isFinite(map.atlas?.x) ||
+      !Number.isFinite(map.atlas?.y)
+    ) {
+      errors.push(`${map.id} needs valid region, scale, and atlas coordinates`);
+    }
     for (const key of ["floor", "void", "grid", "accent"]) {
       if (!/^#[0-9a-f]{6}$/i.test(map.visual?.[key] ?? "")) {
         errors.push(`${map.id}.visual.${key} must be a six-digit hex color`);

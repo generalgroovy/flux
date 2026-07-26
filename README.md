@@ -205,6 +205,9 @@ bonuses. Aim, movement, timing, and resource reads still convert every advantage
 Direct Tide–Ember overlap now consumes both fields into a short neutral vapor
 cloud that damages any fighter who remains inside. Directed Tide still pushes a
 misaligned Ember field instead, preserving aim and spacing as the deciding read.
+Stone–Ember overlap consumes both constructs into a short neutral magma patch.
+Magma deals no damage and slows grounded movement to 62%, so a hop escapes it
+cleanly and neither elemental owner receives a passive matchup advantage.
 
 Hosts can disable authored map hazards and receive a shareable `?join=` URL that
 opens the lobby screen and joins automatically. The link must use a server

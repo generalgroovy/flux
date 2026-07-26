@@ -1369,3 +1369,19 @@
 - **Recommended next task:** Extract element-reaction rules from the large match
   module behind a deterministic simulation boundary, then implement and tune one
   Stone–Ember magma slow before introducing destructible environment props.
+
+# 2026-07-26 — Neutral Stone–Ember magma routes
+
+- **Player-facing problem:** Stone and Ember could overlap without reacting,
+  missing an intuitive chemistry outcome and leaving temporary cover untouched.
+- **Implemented solution:** Overlap now consumes both fields into a 2.4-second,
+  86-unit neutral magma patch. Its broken-orange mark slows grounded speed to
+  62% without damage; universal hops ignore the ground modifier and provide the
+  clean escape. The reaction grants neither owner charge or affinity immunity.
+- **Verification:** Focused reaction coverage proves formation, neutrality,
+  non-damage, bounded speed, and invariants. The full suite passed 82/82,
+  including browser, authoritative networking, combination stress, and server
+  cleanup checks.
+- **Recommended next task:** Extract the now-growing chemistry resolver from
+  `match.mjs`, then introduce one destructible prop family whose lifecycle and
+  elemental outcomes are authoritative, deterministic, and visually explicit.

@@ -111,7 +111,9 @@ clarity using only broad lessons from Enter the Gungeon—not copied content.
 
 - Tide–Ember vapor is deterministic and neutral. Hands-on tune its 1.8-second,
   92-unit, three-damage pulse contract for escape readability and visual density
-  before adding the proposed Stone–Ember magma slow or destructible props.
+  alongside the 2.4-second, 86-unit, 62%-speed Stone–Ember magma contract.
+  Require clear dotted vapor versus broken-orange magma marks and reliable hop
+  escapes before adding destructible props.
 
 - Thirteen readable race columns are live; champion choice now binds ancestry in
   local, quick-start, bot, and remote presentation. Empty columns are explicit,

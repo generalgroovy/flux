@@ -1459,9 +1459,11 @@ function processEvents(events, tick) {
       burst(event.x, event.y, "#45d9ff", 12);
       toast("ZAKK! · INTERRUPTED", "comic");
     } else if (event.type === "elementReaction") {
-      tone(280, 0.12, "sine", 0.05);
-      burst(event.x, event.y, "#d9f7ff", 14);
-      toast(`${event.reaction.toUpperCase()}! · FIELD CLEARED`, "comic");
+      const formed = ["vapor", "magma"].includes(event.reaction);
+      const magma = event.reaction === "magma";
+      tone(magma ? 120 : 280, 0.12, magma ? "sawtooth" : "sine", 0.05);
+      burst(event.x, event.y, magma ? "#ff9b45" : "#d9f7ff", 14);
+      toast(`${event.reaction.toUpperCase()}! · FIELD ${formed ? "FORMED" : "CLEARED"}`, "comic");
     } else if (event.type === "stateRepair") {
       toast("Simulation recovered an invalid entity state.", "error");
     }
@@ -1863,8 +1865,12 @@ function drawElementFields(time) {
     fire: "#ff795c",
     water: "#5cbcff",
     vapor: "#d8f1dd",
+    magma: "#ff8b3d",
   };
-  const marks = { wind: ">>>", earth: "###", ice: "* *", fire: "^^^", water: "~~~", vapor: ".:.:" };
+  const marks = {
+    wind: ">>>", earth: "###", ice: "* *", fire: "^^^", water: "~~~",
+    vapor: ".:.:", magma: "<> <>",
+  };
   for (const field of matchState.elementFields ?? []) {
     context.save();
     try {

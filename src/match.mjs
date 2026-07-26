@@ -981,6 +981,7 @@ function moveEntity(state, entity, command, agent, delta, map) {
     const speed =
       agent.speed * entity.speedScale *
       (sprinting ? MATCH_TUNING.flow.sprintMultiplier : 1) *
+      (entity.surface === "magma" ? MATCH_TUNING.elements.magmaSpeed : 1) *
       (entity.ultimateWindupRemaining > 0 ? agent.ultimate.moveScale : 1);
     const desiredX = moveX * speed + entity.elementForceX;
     const desiredY = moveY * speed + entity.elementForceY;
@@ -1389,6 +1390,33 @@ function updateElementFields(state, delta) {
       });
     }
   }
+  for (const fire of state.elementFields.filter((field) => field.element === "fire")) {
+    for (const earth of state.elementFields.filter((field) => field.element === "earth")) {
+      if (
+        removed.has(fire.id) ||
+        removed.has(earth.id) ||
+        !circleRectangleOverlap(fire, fire.radius, earth)
+      ) continue;
+      removed.add(fire.id);
+      removed.add(earth.id);
+      const owner = state.entities.find((entity) => entity.id === fire.ownerId) ?? state.entities[0];
+      createElementField(state, owner, "magma", {
+        ownerId: null,
+        team: "neutral",
+        source: "reaction",
+        x: fire.x,
+        y: fire.y,
+        radius: MATCH_TUNING.elements.magmaRadius,
+        duration: MATCH_TUNING.elements.magmaDuration,
+      }, false);
+      state.events.push({
+        type: "elementReaction",
+        reaction: "magma",
+        x: fire.x,
+        y: fire.y,
+      });
+    }
+  }
   state.elementFields = state.elementFields.filter((field) => {
     if (removed.has(field.id)) return false;
     if (field.duration <= 0) {
@@ -1408,6 +1436,7 @@ function updateElementFields(state, delta) {
         continue;
       }
       if (field.element === "ice") entity.surface = "ice";
+      if (field.element === "magma") entity.surface = "magma";
       if (
         field.element === "fire" && field.team === entity.team &&
         getCharacter(entity.characterId).passive?.kind === "field-temper"

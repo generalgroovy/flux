@@ -879,6 +879,39 @@ test("element fields resolve physical reactions deterministically", () => {
   assert.equal(state.events.some((event) => event.reaction === "deflect"), true);
 });
 
+test("earth and fire create neutral non-damaging magma slow", () => {
+  const state = duel({ leftCharacter: "bulwark", rightCharacter: "cinder" });
+  const fighter = state.entities[0];
+  fighter.spawnProtection = 0;
+  fighter.x = 800;
+  fighter.y = 700;
+  fighter.lastSafeX = fighter.x;
+  fighter.lastSafeY = fighter.y;
+  state.elementFields = [
+    {
+      id: "earth-for-magma", ownerId: fighter.id, team: "alpha", element: "earth",
+      x: 760, y: 660, width: 100, height: 80, duration: 2, pulseRemaining: 0,
+    },
+    {
+      id: "fire-for-magma", ownerId: state.entities[1].id, team: "beta", element: "fire",
+      x: 800, y: 700, radius: 60, duration: 2, pulseRemaining: 0,
+    },
+  ];
+  const healthBefore = fighter.health;
+  stepMatch(state, { left: { ...idle, moveX: 1 } }, FIXED_DELTA);
+  const magma = state.elementFields.find((field) => field.element === "magma");
+  assert.ok(magma);
+  assert.equal(magma.team, "neutral");
+  assert.equal(fighter.surface, "magma");
+  assert.equal(fighter.health, healthBefore);
+  assert.equal(state.events.some((event) => event.reaction === "magma"), true);
+  for (let tick = 0; tick < 120; tick += 1) {
+    stepMatch(state, { left: { ...idle, moveX: 1 } }, FIXED_DELTA);
+  }
+  assert.ok(fighter.vx <= getCharacter(fighter.characterId).speed * MATCH_TUNING.elements.magmaSpeed + 1);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
 test("Null erases nearby constructs only on its paid commitment", () => {
   const state = duel({ leftCharacter: "orbit", rightCharacter: "rook" });
   const orbit = state.entities[0];

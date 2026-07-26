@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 
 import { MATCH_TUNING } from "../src/content.mjs";
-import { LobbyService } from "../src/lobbies.mjs";
+import { LobbyService } from "../src/network/lobbies.mjs";
 
 const root = resolve(fileURLToPath(new URL("../", import.meta.url)));
 const serverVersion = "0.33.0";
@@ -33,8 +33,8 @@ const publicFiles = new Set([
   "/src/content.mjs",
   "/src/game.mjs",
   "/src/match.mjs",
-  "/src/network-conditioner.mjs",
-  "/src/network-quality.mjs",
+  "/src/network/conditioner.mjs",
+  "/src/network/quality.mjs",
 ]);
 const contentTypes = new Map([
   [".css", "text/css; charset=utf-8"],

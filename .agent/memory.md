@@ -1353,3 +1353,19 @@
 - **Recommended next task:** Rename the GitHub repository and local checkout to
   `flux`, verify the redirected remote and tests from the new path, then begin a
   bounded project-module extraction before Stone–Ember magma or destructibles.
+
+# 2026-07-26 — Network boundary extraction and completed rename
+
+- **Implemented solution:** Renamed the existing GitHub repository in place to
+  `generalgroovy/flux`, updated `origin`, and moved the checkout to
+  `/home/otp/Projects/flux`. Grouped lobby authority, adverse-network
+  conditioning, and connection diagnostics under `src/network/`; updated browser
+  public-file allowlists, server imports, tests, documentation, and recursive
+  syntax verification accordingly.
+- **Verification:** The remote branch resolves at the new repository, and the
+  complete 81-test suite plus syntax and diff checks passed from the renamed
+  local directory. The harmless host `pcilib` warning occurs before commands in
+  this environment and did not affect exit status or checks.
+- **Recommended next task:** Extract element-reaction rules from the large match
+  module behind a deterministic simulation boundary, then implement and tune one
+  Stone–Ember magma slow before introducing destructible environment props.

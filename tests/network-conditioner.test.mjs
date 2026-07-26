@@ -9,7 +9,7 @@ import {
   isFreshServerTick,
   networkLabActive,
   normalizeNetworkLab,
-} from "../src/network-conditioner.mjs";
+} from "../src/network/conditioner.mjs";
 
 test("network lab normalization is bounded and defaults to a zero-impact path", () => {
   assert.deepEqual(normalizeNetworkLab(), { latency: 0, jitter: 0, loss: 0 });

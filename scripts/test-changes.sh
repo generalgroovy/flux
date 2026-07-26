@@ -16,7 +16,7 @@ printf 'Installing locked dependencies...\n'
 env npm_config_cache="${TMPDIR:-/tmp}/flux-npm-cache" npm ci --ignore-scripts
 
 printf 'Checking source syntax...\n'
-for source_file in src/*.mjs scripts/*.mjs; do
+for source_file in src/*.mjs src/network/*.mjs scripts/*.mjs; do
   node --check "${source_file}"
 done
 bash -n scripts/pull-and-run.sh

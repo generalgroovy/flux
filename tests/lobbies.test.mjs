@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { MATCH_TUNING } from "../src/content.mjs";
-import { LobbyService } from "../src/lobbies.mjs";
+import { LobbyService } from "../src/network/lobbies.mjs";
 import { matchInvariantErrors } from "../src/match.mjs";
 
 function serviceFixture() {

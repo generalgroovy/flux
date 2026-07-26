@@ -23,7 +23,7 @@ import {
   expireNetworkProbes,
   receiveNetworkProbe,
   summarizeNetworkDiagnostics,
-} from "./network-quality.mjs";
+} from "./network/quality.mjs";
 import {
   conditionPacket,
   configurePacketConditioner,
@@ -31,7 +31,7 @@ import {
   drainPackets,
   isFreshServerTick,
   networkLabActive,
-} from "./network-conditioner.mjs";
+} from "./network/conditioner.mjs";
 
 const FIXED_DELTA = 1 / MATCH_TUNING.tickRate;
 const SETTINGS_KEY = "flux.presentation.v2";

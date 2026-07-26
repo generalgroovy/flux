@@ -50,8 +50,8 @@ test(
       "/src/content.mjs",
       "/src/game.mjs",
       "/src/match.mjs",
-      "/src/network-conditioner.mjs",
-      "/src/network-quality.mjs",
+      "/src/network/conditioner.mjs",
+      "/src/network/quality.mjs",
     ]) {
       const response = await fetch(`${origin}${route}`);
       assert.equal(response.status, 200, route);
@@ -64,7 +64,7 @@ test(
     for (const privateRoute of [
       "/package.json",
       "/scripts/serve.mjs",
-      "/src/lobbies.mjs",
+      "/src/network/lobbies.mjs",
       "/tests/network.test.mjs",
       "/%2e%2e%2fpackage.json",
     ]) {

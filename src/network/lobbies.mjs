@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 
-import { getCharacter, getMap, getMode, getRace } from "./content.mjs";
+import { getCharacter, getMap, getMode, getRace } from "../content.mjs";
 import {
   addMatchPlayer,
   createMatch,
@@ -8,7 +8,7 @@ import {
   removeMatchPlayer,
   sanitizeCommand,
   stepMatch,
-} from "./match.mjs";
+} from "../match.mjs";
 
 const LOBBY_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const MAX_MESSAGE_RATE = 180;

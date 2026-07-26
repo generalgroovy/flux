@@ -400,8 +400,9 @@ Modes:
 
 - [`src/content.mjs`](src/content.mjs) — validated champions, races, maps, modes, and tuning
 - [`src/match.mjs`](src/match.mjs) — fixed-tick simulation and collision authority
-- [`src/lobbies.mjs`](src/lobbies.mjs) — lobby lifecycle and remote command ownership
-- [`src/network-conditioner.mjs`](src/network-conditioner.mjs) — seeded adverse-network scheduling and tick freshness
+- [`src/network/lobbies.mjs`](src/network/lobbies.mjs) — lobby lifecycle and remote command ownership
+- [`src/network/conditioner.mjs`](src/network/conditioner.mjs) — seeded adverse-network scheduling and tick freshness
+- [`src/network/quality.mjs`](src/network/quality.mjs) — rolling application-level connection diagnostics
 - [`src/game.mjs`](src/game.mjs) — input, prediction, menus, HUD, feedback, and rendering
 - [`scripts/serve.mjs`](scripts/serve.mjs) — allowlisted static server, lobby API, and WebSockets
 
@@ -416,8 +417,9 @@ creates a fresh authoritative match.
 npm test
 node --check src/content.mjs
 node --check src/match.mjs
-node --check src/lobbies.mjs
-node --check src/network-conditioner.mjs
+node --check src/network/lobbies.mjs
+node --check src/network/conditioner.mjs
+node --check src/network/quality.mjs
 node --check src/game.mjs
 node --check scripts/serve.mjs
 node --check scripts/stop-servers.mjs

@@ -73,7 +73,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
           type: "hello",
           clientId: "browser-client",
           protocol: 2,
-          version: "0.34.1",
+          version: "0.34.2",
           tickRate: 120,
         });
       });

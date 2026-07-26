@@ -15,7 +15,7 @@ the FLUX context, run the actual suite, and push only the active agent branch.
 
 ## Release acceptance
 
-1. Ship FLUX 0.34.1 through a signed, player-accessible AppImage/NSIS update
+1. Ship FLUX 0.34.2 through a signed, player-accessible AppImage/NSIS update
    feed. Require launch-time update checks to succeed without credentials,
    verify publisher/checksum identity before install, retain the previous build
    for rollback, and prove normal/error shutdown leaves no authority, tunnel,
@@ -30,7 +30,7 @@ the FLUX context, run the actual suite, and push only the active agent branch.
    but repeated live probes exposed intermittent `trycloudflare.com` DNS
    publication failures. Treat it as a development fallback; select and deploy
    an owned authenticated relay before release.
-3. Hands-on accept FLUX 0.34.1 on Garuda Sway and Windows: navigate the main
+3. Hands-on accept FLUX 0.34.2 on Garuda Sway and Windows: navigate the main
    menu with pointer, keyboard arrows, Tab, Enter, and a gamepad; require the
    desktop window to cover the active display and re-enter fullscreen if the
    window manager leaves it, every

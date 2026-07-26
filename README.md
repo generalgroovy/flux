@@ -7,6 +7,12 @@ spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
+Build 0.34.2 gives the fullscreen **Muster Hall** a measured readability floor.
+Mode, champion, race, map, setting, and launch copy now stays near or above 12
+pixels at the default scale; mode choices wrap by available width, champion
+columns have room for complete names, and only the clearly marked race strip
+scrolls horizontally.
+
 Build 0.34.1 makes the desktop window permanently fullscreen and repairs the
 Muster Hall's **Enter arena** action. Panel state remains on the application
 root for styling, but delegated navigation now recognizes only real links and

@@ -2156,6 +2156,16 @@ select {
   margin-bottom: 1.15rem;
 }
 
+.menu-panel[data-menu-panel="play"] legend {
+  font-size: 0.72rem;
+}
+
+.menu-panel[data-menu-panel="play"] .eyebrow,
+.menu-panel[data-menu-panel="play"] .segmented span,
+.menu-panel[data-menu-panel="play"] .atlas-toolbar .text-button {
+  font-size: 0.7rem;
+}
+
 .match-builder {
   max-width: none;
   grid-template-columns: minmax(0, 1fr) minmax(17rem, 21rem);
@@ -2185,16 +2195,35 @@ select {
 }
 
 .match-rules .mode-options {
-  grid-template-columns: repeat(5, minmax(7.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
 }
 
 .match-rules .choice-card {
-  min-height: 5.1rem;
+  min-height: 6.4rem;
   padding: 0.7rem;
 }
 
+.match-rules .choice-card b {
+  font-size: 0.8rem;
+}
+
 .match-rules .choice-card small {
+  font-size: 0.72rem;
+  line-height: 1.4;
   overflow-wrap: anywhere;
+}
+
+.match-rules .choice-card em {
+  font-size: 0.7rem;
+}
+
+.menu-panel[data-menu-panel="play"] .atlas-node small {
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+
+.menu-panel[data-menu-panel="play"] .atlas-node em {
+  font-size: 0.7rem;
 }
 
 .field-guidance {
@@ -2206,7 +2235,7 @@ select {
 
 .race-champion-matrix {
   display: grid;
-  grid-auto-columns: minmax(9.5rem, 1fr);
+  grid-auto-columns: minmax(10.5rem, 1fr);
   grid-auto-flow: column;
   gap: 0.48rem;
   overflow-x: auto;
@@ -2217,7 +2246,7 @@ select {
 
 .race-column {
   display: grid;
-  min-height: 12.5rem;
+  min-height: 14rem;
   grid-template-rows: auto 1fr;
   border: 1px solid #4f4024;
   background: #130f09cc;
@@ -2226,7 +2255,7 @@ select {
 .race-column > header {
   position: relative;
   display: flex;
-  min-height: 6.8rem;
+  min-height: 7.5rem;
   flex-direction: column;
   padding: 0.7rem;
   border-bottom: 1px solid #4f4024;
@@ -2242,7 +2271,7 @@ select {
 }
 
 .race-column > header b {
-  max-width: 7rem;
+  max-width: calc(100% - 1.7rem);
   color: #f1dfac;
   font-size: 0.76rem;
   letter-spacing: 0.06em;
@@ -2251,7 +2280,7 @@ select {
 .race-column > header span,
 .race-column > header small {
   color: #b8a77a;
-  font-size: 0.61rem;
+  font-size: 0.7rem;
   line-height: 1.35;
 }
 
@@ -2272,7 +2301,7 @@ select {
 }
 
 .race-column .agent-choice {
-  min-height: 4.8rem;
+  min-height: 5.6rem;
   border-color: color-mix(in srgb, var(--element-color) 42%, #4f4024);
   background: color-mix(in srgb, var(--element-color) 7%, #161008);
 }
@@ -2286,10 +2315,17 @@ select {
   color: var(--element-color);
 }
 
+.race-column .agent-choice b {
+  max-width: calc(100% - 1.2rem);
+  font-size: 0.72rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
 .race-column .agent-choice small {
   position: relative;
   color: var(--element-color);
-  font-size: 0.57rem;
+  font-size: 0.7rem;
   font-weight: 760;
   letter-spacing: 0.05em;
 }
@@ -2298,7 +2334,7 @@ select {
   margin: 0;
   padding: 0.85rem 0.55rem;
   color: #776a4c;
-  font-size: 0.61rem;
+  font-size: 0.7rem;
   font-style: italic;
   line-height: 1.4;
 }
@@ -2337,7 +2373,7 @@ select {
 }
 
 .selected-champion b { font-size: 0.9rem; letter-spacing: 0.09em; }
-.selected-champion small { color: #b8a77a; font-size: 0.66rem; }
+.selected-champion small { color: #b8a77a; font-size: 0.72rem; }
 
 .deployment-readout {
   display: grid;
@@ -2352,8 +2388,20 @@ select {
   border-bottom: 1px solid #493b20;
 }
 
-.deployment-readout dt { color: #8e805d; font-size: 0.61rem; text-transform: uppercase; }
-.deployment-readout dd { margin: 0; color: #e7d7a7; font-size: 0.68rem; line-height: 1.35; }
+.deployment-readout dt { color: #8e805d; font-size: 0.7rem; text-transform: uppercase; }
+.deployment-readout dd { margin: 0; color: #e7d7a7; font-size: 0.74rem; line-height: 1.35; }
+
+.menu-panel[data-menu-panel="play"] .range-setting b,
+.menu-panel[data-menu-panel="play"] .toggle-setting b {
+  font-size: 0.72rem;
+}
+
+.menu-panel[data-menu-panel="play"] .range-setting small,
+.menu-panel[data-menu-panel="play"] .toggle-setting small,
+.menu-panel[data-menu-panel="play"] .atlas-toolbar small {
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
 
 .compact-setting {
   min-height: 3.3rem;
@@ -2378,8 +2426,13 @@ select {
 }
 
 .deployment-action small {
+  font-size: 0.74rem;
   white-space: normal;
   line-height: 1.4;
+}
+
+.deployment-action b {
+  font-size: 0.7rem;
 }
 
 .deploy-button {

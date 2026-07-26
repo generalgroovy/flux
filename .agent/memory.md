@@ -1476,3 +1476,26 @@
   closed. Recursive source syntax, shell syntax, JSON, and diff checks passed.
 - **Next task:** Establish the signed player-accessible update feed and stable
   authenticated relay, then complete the two-device Linux/Windows invite soak.
+
+# 2026-07-26 — FLUX 0.34.2 readable fullscreen Muster Hall
+
+- **Player-facing problem:** The Play screen was functionally restored, but its
+  default fullscreen presentation still rendered mode copy at 10.37 px,
+  champion names at 11.05 px, and element lines at 9.69 px. Several decision
+  cards could report text overflow, making the dense selector hard to scan.
+- **Implemented solution:** Established a scoped ~12 px default floor across
+  Play legends, mode descriptions/tags, race traits, champion names/elements,
+  map lore, settings, summary labels, and launch state. Mode choices now use an
+  auto-fitting minimum width and race columns are wider with safely wrapping
+  champion names. The race matrix remains an explicit horizontal column strip;
+  other decision text does not intentionally clip.
+- **Verification:** The final suite passed 94/94, and Linux AppImage plus Windows
+  x64 payloads assembled. In the rebuilt AppImage at 1920×1080 fullscreen, all
+  five modes remained in one row; computed-style and geometry checks found no
+  visible Play text leaf below 11.8 px and no clipped mode, champion, or map
+  text. Real pointer events opened Play and **Enter arena** launched a valid
+  two-entity Oath Duel without renderer errors or simulation invariant failures.
+  The packaged window recovered after a forced compositor fullscreen exit and
+  closed without a remaining renderer, authority, or AppImage process.
+- **Next task:** Continue the signed update feed and stable authenticated relay
+  acceptance work, followed by the two-device Linux/Windows invite soak.

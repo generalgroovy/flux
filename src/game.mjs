@@ -34,8 +34,10 @@ import {
 } from "./network-conditioner.mjs";
 
 const FIXED_DELTA = 1 / MATCH_TUNING.tickRate;
-const SETTINGS_KEY = "diff.presentation.v2";
-const RECONNECT_KEY = "diff.remote.session.v1";
+const SETTINGS_KEY = "flux.presentation.v2";
+const LEGACY_SETTINGS_KEY = "diff.presentation.v2";
+const RECONNECT_KEY = "flux.remote.session.v1";
+const LEGACY_RECONNECT_KEY = "diff.remote.session.v1";
 const BINDING_ACTIONS = Object.freeze([
   "moveUp",
   "moveLeft",
@@ -257,7 +259,7 @@ function frame(now) {
   try {
     runFrame(now);
   } catch (error) {
-    console.error("DIFF frame recovered", error);
+    console.error("FLUX frame recovered", error);
     if (now - lastFrameErrorAt > 2_000) {
       toast("Presentation recovered · R still restarts", "error");
       lastFrameErrorAt = now;
@@ -3155,7 +3157,11 @@ function writeReconnectSession(session) {
 
 function readReconnectSession() {
   try {
-    const parsed = JSON.parse(localStorage.getItem(RECONNECT_KEY) ?? "null");
+    const parsed = JSON.parse(
+      localStorage.getItem(RECONNECT_KEY) ??
+      localStorage.getItem(LEGACY_RECONNECT_KEY) ??
+      "null",
+    );
     if (
       parsed &&
       typeof parsed.base === "string" &&
@@ -3173,6 +3179,7 @@ function readReconnectSession() {
 function clearReconnectSession() {
   try {
     localStorage.removeItem(RECONNECT_KEY);
+    localStorage.removeItem(LEGACY_RECONNECT_KEY);
   } catch {
     // Nothing else is required when storage is blocked.
   }
@@ -3270,7 +3277,10 @@ function applySettings() {
 
 function loadSettings() {
   try {
-    return normalizeSettings(JSON.parse(localStorage.getItem(SETTINGS_KEY)));
+    return normalizeSettings(JSON.parse(
+      localStorage.getItem(SETTINGS_KEY) ??
+      localStorage.getItem(LEGACY_SETTINGS_KEY),
+    ));
   } catch {
     return { ...DEFAULT_SETTINGS, bindings: { ...DEFAULT_BINDINGS } };
   }
@@ -3437,7 +3447,7 @@ function element(id) {
   return found;
 }
 
-window.DIFF_DEBUG = Object.freeze({
+window.FLUX_DEBUG = Object.freeze({
   getState: () => structuredClone(matchState),
   getInvariantErrors: () => matchInvariantErrors(matchState),
   getInterfaceState: () => ({
@@ -3452,3 +3462,4 @@ window.DIFF_DEBUG = Object.freeze({
   showPanel,
   toggleInfo,
 });
+window.DIFF_DEBUG = window.FLUX_DEBUG;

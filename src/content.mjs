@@ -1626,5 +1626,5 @@ function circleRectangleOverlap(circle, radius, rectangle) {
 
 const contentErrors = validateContent();
 if (contentErrors.length > 0) {
-  throw new TypeError(`Invalid DIFF content: ${contentErrors.join("; ")}`);
+  throw new TypeError(`Invalid FLUX content: ${contentErrors.join("; ")}`);
 }

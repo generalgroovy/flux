@@ -1,8 +1,8 @@
 param(
-  [string]$RepositoryDirectory = (Join-Path $HOME "Projects\diff"),
-  [string]$Branch = $(if ($env:DIFF_BRANCH) { $env:DIFF_BRANCH } else { "main" }),
-  [int]$Port = $(if ($env:DIFF_PORT) { [int]$env:DIFF_PORT } else { 8000 }),
-  [string]$Repository = $(if ($env:DIFF_REPOSITORY) { $env:DIFF_REPOSITORY } else { "https://github.com/generalgroovy/diff.git" })
+  [string]$RepositoryDirectory = (Join-Path $HOME "Projects\flux"),
+  [string]$Branch = $(if ($env:FLUX_BRANCH) { $env:FLUX_BRANCH } elseif ($env:DIFF_BRANCH) { $env:DIFF_BRANCH } else { "main" }),
+  [int]$Port = $(if ($env:FLUX_PORT) { [int]$env:FLUX_PORT } elseif ($env:DIFF_PORT) { [int]$env:DIFF_PORT } else { 8000 }),
+  [string]$Repository = $(if ($env:FLUX_REPOSITORY) { $env:FLUX_REPOSITORY } elseif ($env:DIFF_REPOSITORY) { $env:DIFF_REPOSITORY } else { "https://github.com/generalgroovy/flux.git" })
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,7 +17,7 @@ foreach ($tool in @("git", "node", "npm", "gh")) {
 }
 
 $nodeCompatible = & node -p "const [a,b]=process.versions.node.split('.').map(Number);Number(a>20||(a===20&&b>=19))"
-if ($nodeCompatible -ne "1") { throw "DIFF requires Node.js 20.19 or newer." }
+if ($nodeCompatible -ne "1") { throw "FLUX requires Node.js 20.19 or newer." }
 & gh auth status --hostname github.com | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "Authenticate first: gh auth login --hostname github.com --git-protocol https --web" }
 & gh auth setup-git
@@ -45,12 +45,12 @@ try {
   & npm ci --ignore-scripts
   if ($LASTEXITCODE -ne 0) { throw "Dependency installation failed." }
   & npm test
-  if ($LASTEXITCODE -ne 0) { throw "Tests failed; DIFF was not started." }
+  if ($LASTEXITCODE -ne 0) { throw "Tests failed; FLUX was not started." }
 
-  function Test-DiffReady([int]$CandidatePort) {
+  function Test-FluxReady([int]$CandidatePort) {
     try {
-      $health = Invoke-RestMethod -Uri "http://127.0.0.1:$CandidatePort/__diff_health" -TimeoutSec 1
-      return $health.product -eq "DIFF" -and $health.status -eq "ready" -and $health.version -eq "0.33.0"
+      $health = Invoke-RestMethod -Uri "http://127.0.0.1:$CandidatePort/__flux_health" -TimeoutSec 1
+      return $health.product -eq "FLUX" -and $health.status -eq "ready" -and $health.version -eq "0.33.0"
     } catch { return $false }
   }
   function Test-PortUsed([int]$CandidatePort) {
@@ -59,7 +59,7 @@ try {
   }
 
   if (Test-PortUsed $Port) {
-    if (Test-DiffReady $Port) { Start-Process "http://127.0.0.1:$Port"; return }
+    if (Test-FluxReady $Port) { Start-Process "http://127.0.0.1:$Port"; return }
     $freePort = $null
     foreach ($candidate in 8001..8100) { if (-not (Test-PortUsed $candidate)) { $freePort = $candidate; break } }
     if ($null -eq $freePort) { throw "No free port from 8000 through 8100." }
@@ -67,17 +67,17 @@ try {
   }
 
   $env:PORT = [string]$Port
-  $env:HOST = $(if ($env:DIFF_HOST) { $env:DIFF_HOST } else { "127.0.0.1" })
+  $env:HOST = $(if ($env:FLUX_HOST) { $env:FLUX_HOST } elseif ($env:DIFF_HOST) { $env:DIFF_HOST } else { "127.0.0.1" })
   $server = Start-Process -FilePath "npm.cmd" -ArgumentList "start" -WorkingDirectory $RepositoryDirectory -NoNewWindow -PassThru
   try {
     $ready = $false
     foreach ($attempt in 1..50) {
-      if ($server.HasExited) { throw "DIFF server exited before becoming ready." }
-      if (Test-DiffReady $Port) { $ready = $true; break }
+      if ($server.HasExited) { throw "FLUX server exited before becoming ready." }
+      if (Test-FluxReady $Port) { $ready = $true; break }
       Start-Sleep -Milliseconds 100
     }
-    if (-not $ready) { throw "DIFF did not become ready on port $Port." }
-    Write-Host "DIFF is ready at http://127.0.0.1:$Port"
+    if (-not $ready) { throw "FLUX did not become ready on port $Port." }
+    Write-Host "FLUX is ready at http://127.0.0.1:$Port"
     Start-Process "http://127.0.0.1:$Port"
     Wait-Process -Id $server.Id
   } finally {

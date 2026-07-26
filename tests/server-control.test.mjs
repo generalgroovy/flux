@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
 
-test("server cleanup stops only a registered DIFF server", { timeout: 8_000 }, async (t) => {
+test("server cleanup stops only a registered FLUX server", { timeout: 8_000 }, async (t) => {
   const port = await freePort();
   const child = spawn(process.execPath, ["scripts/serve.mjs", `--port=${port}`], {
     cwd: new URL("../", import.meta.url),
@@ -22,10 +22,10 @@ test("server cleanup stops only a registered DIFF server", { timeout: 8_000 }, a
   cleanup.stderr.on("data", (chunk) => { output += chunk; });
   const cleanupCode = await new Promise((resolve) => cleanup.once("exit", resolve));
   assert.equal(cleanupCode, 0, output);
-  assert.match(output, new RegExp(`Stopped DIFF .* port ${port}`));
+  assert.match(output, new RegExp(`Stopped FLUX .* port ${port}`));
   const childCode = child.exitCode ?? await new Promise((resolve) => child.once("exit", resolve));
   assert.equal(childCode, 0);
-  await assert.rejects(fetch(`http://127.0.0.1:${port}/__diff_health`));
+  await assert.rejects(fetch(`http://127.0.0.1:${port}/__flux_health`));
 });
 
 async function freePort() {
@@ -42,12 +42,12 @@ async function freePort() {
 async function waitForHealth(port) {
   for (let attempt = 0; attempt < 80; attempt += 1) {
     try {
-      const response = await fetch(`http://127.0.0.1:${port}/__diff_health`);
+      const response = await fetch(`http://127.0.0.1:${port}/__flux_health`);
       if (response.ok) return;
     } catch {
       // Bounded startup race.
     }
     await new Promise((resolve) => setTimeout(resolve, 25));
   }
-  throw new Error("DIFF server did not become ready");
+  throw new Error("FLUX server did not become ready");
 }

@@ -10,7 +10,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   const { window } = parseHTML(html);
   const { document } = window;
   const storage = new Map();
-  storage.set("diff.presentation.v2", JSON.stringify({
+  storage.set("flux.presentation.v2", JSON.stringify({
     screenShake: 55,
     interfaceScale: 100,
     sound: 45,
@@ -222,6 +222,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
 
   const app = document.getElementById("app");
   assert.equal(app.dataset.view, "menu");
+  assert.equal(window.FLUX_DEBUG, window.DIFF_DEBUG, "legacy debug alias stays compatible");
   assert.deepEqual(window.DIFF_DEBUG.getInvariantErrors(), []);
   assert.equal(document.querySelectorAll("#agent-options .race-column").length, 13);
   assert.equal(document.querySelectorAll('#agent-options input[name="character"]').length, 10);
@@ -306,7 +307,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     "X/C",
   );
   assert.equal(
-    JSON.parse(storage.get("diff.presentation.v2")).bindings.tactical,
+    JSON.parse(storage.get("flux.presentation.v2")).bindings.tactical,
     "q",
   );
   const networkLatency = settingsForm.querySelector('[name="networkLatency"]');
@@ -316,7 +317,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   networkJitter.value = "35";
   networkLoss.value = "8";
   networkLoss.dispatchEvent(new window.Event("input", { bubbles: true }));
-  const savedNetworkLab = JSON.parse(storage.get("diff.presentation.v2"));
+  const savedNetworkLab = JSON.parse(storage.get("flux.presentation.v2"));
   assert.equal(savedNetworkLab.networkLatency, 120);
   assert.equal(savedNetworkLab.networkJitter, 35);
   assert.equal(savedNetworkLab.networkLoss, 8);
@@ -338,7 +339,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   document.getElementById("hud-detail-toggle").click();
   assert.equal(app.classList.contains("hud-detailed"), true);
   assert.equal(document.getElementById("hud-detail-toggle").textContent, "Compact HUD");
-  assert.equal(JSON.parse(storage.get("diff.presentation.v2")).hudDetailed, true);
+  assert.equal(JSON.parse(storage.get("flux.presentation.v2")).hudDetailed, true);
   assert.equal(document.getElementById("coach-progress").hidden, false);
   assert.equal(
     document.querySelector('[data-coach-step="0"]').classList.contains("active"),
@@ -383,7 +384,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   queuedFrame(performance.now() + 24);
   mockContext.fillRect = originalFillRect;
   console.error = originalConsoleError;
-  assert.match(recoveredError, /DIFF frame recovered/);
+  assert.match(recoveredError, /FLUX frame recovered/);
   const callsBeforeRecovery = drawCalls.length;
   queuedFrame(performance.now() + 32);
   assert.ok(drawCalls.length > callsBeforeRecovery);
@@ -411,7 +412,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.equal(defenseBinding.textContent, "Q");
   assert.equal(sprintBinding.textContent, "ALT");
   assert.equal(
-    JSON.parse(storage.get("diff.presentation.v2")).bindings.sprint,
+    JSON.parse(storage.get("flux.presentation.v2")).bindings.sprint,
     "alt",
   );
   assert.equal(networkLatency.value, "0");
@@ -572,7 +573,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   document.getElementById("host-lobby").click();
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "remote");
-  assert.equal(storage.has("diff.remote.session.v1"), true);
+  assert.equal(storage.has("flux.remote.session.v1"), true);
   assert.match(
     document.getElementById("coach-text").textContent,
     /OVERTIME.*next score wins/i,
@@ -592,6 +593,6 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     document.getElementById("server-status").textContent.trim(),
     "AUTHORITATIVE HOST CLOSED",
   );
-  assert.equal(storage.has("diff.remote.session.v1"), false);
+  assert.equal(storage.has("flux.remote.session.v1"), false);
   assert.equal(document.getElementById("reconnect-lobby").hidden, true);
 });

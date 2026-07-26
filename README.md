@@ -1,14 +1,15 @@
-# HEX
+# FLUX
 
-**Hunt. Evade. eXecute.**
+**Flow. Learn. Unleash. eXecute.**
 
-HEX is a complete, minimal 2D top-down systemic skill arena. Aim,
+FLUX is a complete, minimal 2D top-down systemic skill arena. Aim,
 spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
-The current launcher and network protocol retain their DIFF compatibility names
-while the working product identity migrates to HEX.
+Build 0.33.0 completes the FLUX identity migration. Legacy DIFF environment
+variables, health routes, browser storage, and debug hooks remain readable only
+as explicit compatibility aliases; all new launch and persistence paths use FLUX.
 
 Build 0.33.0 rebuilds the **Muster Hall** around a wide, usable configuration
 flow. Every race owns one column and its difficulty-ordered champion rows;
@@ -264,8 +265,8 @@ score, and outcomes.
 
 ### Pull, verify, and run on Linux
 
-The launcher exclusively uses `~/Projects/diff`, fast-forwards `main`, installs
-the locked dependencies, runs every test, reuses a healthy DIFF server or finds
+The launcher exclusively uses `~/Projects/flux`, fast-forwards `main`, installs
+the locked dependencies, runs every test, reuses a healthy FLUX server or finds
 a free port, and starts the game:
 
 ```bash
@@ -275,7 +276,7 @@ bash scripts/pull-and-run.sh
 Enable LAN/remote hosting through the same launcher:
 
 ```bash
-DIFF_HOST=0.0.0.0 bash scripts/pull-and-run.sh
+FLUX_HOST=0.0.0.0 bash scripts/pull-and-run.sh
 ```
 
 To update and run a specific development checkout/branch, pass both explicitly:
@@ -295,7 +296,7 @@ bash scripts/install-desktop-linux.sh
 ```
 
 It opens a terminal, fast-forwards the selected branch, installs locked
-dependencies, runs all tests, starts DIFF on a free port, and then opens the
+dependencies, runs all tests, starts FLUX on a free port, and then opens the
 browser. The terminal owns the server; close it or press `Ctrl+C` to stop.
 
 On Windows, run these once from PowerShell to create the equivalent desktop
@@ -308,7 +309,7 @@ powershell -ExecutionPolicy Bypass -File scripts\install-desktop-windows.ps1
 The shortcut uses `scripts\pull-and-run.ps1` to perform the same guarded
 update, test, free-port, health-check, browser-open, and shutdown flow natively.
 
-To stop registered DIFF servers belonging to this checkout without touching
+To stop registered FLUX servers belonging to this checkout without touching
 unrelated Node processes:
 
 ```bash

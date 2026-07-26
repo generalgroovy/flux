@@ -13,17 +13,19 @@ const root = resolve(fileURLToPath(new URL("../", import.meta.url)));
 const serverVersion = "0.33.0";
 const protocolVersion = 2;
 const requestedPort =
-  argumentValue("--port") ?? process.env.PORT ?? process.env.DIFF_PORT ?? "8000";
+  argumentValue("--port") ?? process.env.PORT ?? process.env.FLUX_PORT ?? process.env.DIFF_PORT ?? "8000";
 const port = Number.parseInt(requestedPort, 10);
 const host =
   argumentValue("--host") ??
   process.env.HOST ??
+  process.env.FLUX_HOST ??
   process.env.DIFF_HOST ??
   "127.0.0.1";
-const healthPath = "/__diff_health";
+const healthPath = "/__flux_health";
+const legacyHealthPath = "/__diff_health";
 const lobbyPath = "/api/lobbies";
 const instanceId = randomUUID();
-const registryDirectory = join(tmpdir(), "diff-arena-servers");
+const registryDirectory = join(tmpdir(), "flux-arena-servers");
 const registryPath = join(registryDirectory, `${sanitizeRegistryPart(host)}-${port}.json`);
 const publicFiles = new Set([
   "/index.html",
@@ -68,7 +70,7 @@ const server = createServer(async (request, response) => {
     const url = new URL(request.url ?? "/", "http://localhost");
     const pathname = decodeURIComponent(url.pathname);
 
-    if (pathname === healthPath) {
+    if (pathname === healthPath || pathname === legacyHealthPath) {
       response.writeHead(200, {
         ...securityHeaders,
         "Cache-Control": "no-store",
@@ -76,7 +78,7 @@ const server = createServer(async (request, response) => {
       });
       response.end(
         JSON.stringify({
-          product: "DIFF",
+          product: pathname === legacyHealthPath ? "DIFF" : "FLUX",
           status: "ready",
           version: serverVersion,
           protocol: protocolVersion,
@@ -215,16 +217,16 @@ server.once("error", (error) => {
   clearInterval(tickInterval);
   const address = `http://${displayHost(host)}:${port}`;
   if (error?.code === "EADDRINUSE") {
-    console.error(`Cannot start HEX at ${address}: that port is already in use.`);
+    console.error(`Cannot start FLUX at ${address}: that port is already in use.`);
   } else {
-    console.error(`Cannot start HEX at ${address}: ${error?.message ?? error}`);
+    console.error(`Cannot start FLUX at ${address}: ${error?.message ?? error}`);
   }
   process.exitCode = 1;
 });
 
 server.listen(port, host, async () => {
   await registerServer();
-  console.log(`HEX is running at http://${displayHost(host)}:${port}`);
+  console.log(`FLUX is running at http://${displayHost(host)}:${port}`);
   if (host === "0.0.0.0" || host === "::") {
     console.log("Remote lobbies enabled on all network interfaces.");
     for (const address of localNetworkAddresses()) {
@@ -310,7 +312,7 @@ async function registerServer() {
   await writeFile(
     registryPath,
     JSON.stringify({
-      product: "DIFF",
+      product: "FLUX",
       pid: process.pid,
       root,
       host,
@@ -327,7 +329,7 @@ async function removeServerRegistration() {
   try {
     await unlink(registryPath);
   } catch (error) {
-    if (error?.code !== "ENOENT") console.error("Could not remove DIFF server record:", error);
+    if (error?.code !== "ENOENT") console.error("Could not remove FLUX server record:", error);
   }
 }
 

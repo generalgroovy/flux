@@ -4,14 +4,14 @@ set -Eeuo pipefail
 
 readonly script_path="$(realpath -- "$0")"
 
-if [[ "${DIFF_CODEX_INHIBITED:-0}" != 1 ]] &&
+if [[ "${FLUX_CODEX_INHIBITED:-${DIFF_CODEX_INHIBITED:-0}}" != 1 ]] &&
   command -v systemd-inhibit >/dev/null 2>&1; then
   exec systemd-inhibit \
     --what=sleep:idle:handle-lid-switch \
     --mode=block \
-    --who="DIFF Codex" \
-    --why="Full-access DIFF project iteration" \
-    env DIFF_CODEX_INHIBITED=1 bash "${script_path}" "$@"
+    --who="FLUX Codex" \
+    --why="Full-access FLUX project iteration" \
+    env FLUX_CODEX_INHIBITED=1 bash "${script_path}" "$@"
 fi
 
 if [[ $# -gt 1 ]]; then
@@ -31,7 +31,7 @@ notify_user() {
 fail() {
   local message="$1"
   printf 'ERROR: %s\n' "${message}" >&2
-  notify_user critical "DIFF Codex stopped" "${message}"
+  notify_user critical "FLUX Codex stopped" "${message}"
   exit 1
 }
 
@@ -58,10 +58,10 @@ git -C "${repo_dir}" rev-parse --is-inside-work-tree >/dev/null 2>&1 ||
 [[ -f "${repo_dir}/AGENTS.md" ]] ||
   fail "${repo_dir}/AGENTS.md is missing."
 
-readonly reasoning_effort="${DIFF_CODEX_REASONING:-xhigh}"
+readonly reasoning_effort="${FLUX_CODEX_REASONING:-${DIFF_CODEX_REASONING:-xhigh}}"
 case "${reasoning_effort}" in
   low | medium | high | xhigh | max | ultra) ;;
-  *) fail "DIFF_CODEX_REASONING must be low, medium, high, xhigh, max, or ultra." ;;
+  *) fail "FLUX_CODEX_REASONING must be low, medium, high, xhigh, max, or ultra." ;;
 esac
 
 codex_help="$(codex --help 2>&1 || true)"
@@ -79,15 +79,15 @@ fi
 
 codex_command+=(--config "model_reasoning_effort=\"${reasoning_effort}\"")
 
-if [[ -n "${DIFF_CODEX_MODEL:-}" ]]; then
-  codex_command+=(--model "${DIFF_CODEX_MODEL}")
+if [[ -n "${FLUX_CODEX_MODEL:-${DIFF_CODEX_MODEL:-}}" ]]; then
+  codex_command+=(--model "${FLUX_CODEX_MODEL:-${DIFF_CODEX_MODEL}}")
 fi
 
-if [[ -n "${DIFF_CODEX_PROFILE:-}" ]]; then
-  codex_command+=(--profile "${DIFF_CODEX_PROFILE}")
+if [[ -n "${FLUX_CODEX_PROFILE:-${DIFF_CODEX_PROFILE:-}}" ]]; then
+  codex_command+=(--profile "${FLUX_CODEX_PROFILE:-${DIFF_CODEX_PROFILE}}")
 fi
 
-if [[ "${DIFF_CODEX_LIVE_SEARCH:-0}" == 1 ]]; then
+if [[ "${FLUX_CODEX_LIVE_SEARCH:-${DIFF_CODEX_LIVE_SEARCH:-0}}" == 1 ]]; then
   codex_command+=(--search)
 fi
 
@@ -99,9 +99,9 @@ printf '%s\n' \
   "Repository: ${repo_dir}" \
   ""
 
-if [[ "${DIFF_FULL_ACCESS_CONFIRM:-0}" != 1 ]]; then
+if [[ "${FLUX_FULL_ACCESS_CONFIRM:-${DIFF_FULL_ACCESS_CONFIRM:-0}}" != 1 ]]; then
   if [[ ! -t 0 ]]; then
-    fail "Interactive confirmation is required. Re-run in a terminal, or set DIFF_FULL_ACCESS_CONFIRM=1 after reviewing this script."
+    fail "Interactive confirmation is required. Re-run in a terminal, or set FLUX_FULL_ACCESS_CONFIRM=1 after reviewing this script."
   fi
   read -r -p "Type FULL ACCESS to continue: " confirmation
   [[ "${confirmation}" == "FULL ACCESS" ]] || {
@@ -111,7 +111,7 @@ if [[ "${DIFF_FULL_ACCESS_CONFIRM:-0}" != 1 ]]; then
 fi
 
 readonly run_id="$(date -u +%Y%m%dT%H%M%SZ)"
-readonly state_root="${XDG_STATE_HOME:-${HOME}/.local/state}/diff-codex"
+readonly state_root="${XDG_STATE_HOME:-${HOME}/.local/state}/flux-codex"
 readonly run_dir="${state_root}/${run_id}"
 readonly full_log="${run_dir}/session.log"
 readonly final_message="${run_dir}/final.md"
@@ -124,7 +124,7 @@ if [[ -n "${dirty_summary}" ]]; then
 fi
 
 read -r -d '' task <<'TASK' || true
-Continue the DIFF project as its principal gameplay engineer, systems designer,
+Continue the FLUX project as its principal gameplay engineer, systems designer,
 technical designer, QA engineer, UX designer, and release engineer.
 
 This is an implementation run, not a planning-only review. Full technical
@@ -188,19 +188,19 @@ the exact evidence, and return the smallest concrete action required from the
 user.
 TASK
 
-if [[ -n "${DIFF_CODEX_EXTRA_PROMPT:-}" ]]; then
+if [[ -n "${FLUX_CODEX_EXTRA_PROMPT:-${DIFF_CODEX_EXTRA_PROMPT:-}}" ]]; then
   task+=$'\n\nADDITIONAL USER DIRECTION\n\n'
-  task+="${DIFF_CODEX_EXTRA_PROMPT}"
+  task+="${FLUX_CODEX_EXTRA_PROMPT:-${DIFF_CODEX_EXTRA_PROMPT}}"
 fi
 
 printf '%s\n' \
-  "Starting full-access DIFF iteration..." \
+  "Starting full-access FLUX iteration..." \
   "Codex: $(codex --version 2>/dev/null || printf 'version unavailable')" \
   "Reasoning: ${reasoning_effort}" \
   "Log: ${full_log}" \
   "Final report: ${final_message}"
 
-notify_user normal "DIFF Codex started" "Full-access iteration in ${repo_dir}"
+notify_user normal "FLUX Codex started" "Full-access iteration in ${repo_dir}"
 
 set +e
 (
@@ -213,13 +213,13 @@ codex_status="${PIPESTATUS[0]}"
 set -e
 
 if (( codex_status != 0 )); then
-  notify_user critical "DIFF Codex failed" \
+  notify_user critical "FLUX Codex failed" \
     "Exit ${codex_status}. Review ${full_log}"
   printf '\nCodex exited with status %d. Review: %s\n' \
     "${codex_status}" "${full_log}" >&2
   exit "${codex_status}"
 fi
 
-notify_user normal "DIFF Codex finished" "Review the result and test it in DIFF."
+notify_user normal "FLUX Codex finished" "Review the result and test it in FLUX."
 printf '\nCodex finished successfully.\nLog: %s\nFinal report: %s\n' \
   "${full_log}" "${final_message}"

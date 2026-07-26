@@ -1,13 +1,17 @@
-# HEX backlog
+# FLUX backlog
 
 Priority remains fundamentals → compact PvP → PvPvE → PvE. Add race champions
 only as complete contrasting kits inside those proven loops. Keep Battle Royale
 and other scale-heavy variants unexposed until combat, authority, objectives,
 recovery, and performance are accepted at smaller scales.
 
+Visual/combat review should now explicitly test compact projectile lanes,
+weapon cadence, pixel-scale silhouettes, impact confirmation, and dense-fight
+clarity using only broad lessons from Enter the Gungeon—not copied content.
+
 ## Release acceptance
 
-1. Hands-on accept HEX 0.33.0 on Garuda Sway and Windows: navigate the main
+1. Hands-on accept FLUX 0.33.0 on Garuda Sway and Windows: navigate the main
    menu with pointer, keyboard arrows, Tab, Enter, and a gamepad; require every
    play choice to react visibly, focus to remain obvious, and all decision and
    launch-summary copy to wrap without clipping at desktop and narrow widths.

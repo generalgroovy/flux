@@ -28,10 +28,14 @@ test(
     });
     await waitForHealth(origin, child, () => serverOutput);
 
-    const health = await fetch(`${origin}/__diff_health`).then((response) =>
+    const health = await fetch(`${origin}/__flux_health`).then((response) =>
       response.json(),
     );
-    assert.equal(health.product, "DIFF");
+    assert.equal(health.product, "FLUX");
+    const legacyHealth = await fetch(`${origin}/__diff_health`).then((response) =>
+      response.json(),
+    );
+    assert.equal(legacyHealth.product, "DIFF");
     assert.equal(health.status, "ready");
     assert.equal(health.version, "0.33.0");
     assert.equal(health.protocol, 2);
@@ -277,7 +281,7 @@ async function waitForHealth(origin, child, output) {
       throw new Error(`Server exited early:\n${output()}`);
     }
     try {
-      const response = await fetch(`${origin}/__diff_health`);
+      const response = await fetch(`${origin}/__flux_health`);
       if (response.ok) return;
     } catch {
       // Startup race: retry with a bounded delay.

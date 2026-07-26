@@ -13,7 +13,7 @@ for command_name in node npm; do
 done
 
 printf 'Installing locked dependencies...\n'
-env npm_config_cache="${TMPDIR:-/tmp}/diff-npm-cache" npm ci --ignore-scripts
+env npm_config_cache="${TMPDIR:-/tmp}/flux-npm-cache" npm ci --ignore-scripts
 
 printf 'Checking source syntax...\n'
 for source_file in src/*.mjs scripts/*.mjs; do
@@ -23,10 +23,12 @@ bash -n scripts/pull-and-run.sh
 bash -n scripts/install-desktop-linux.sh
 bash -n scripts/test-changes.sh
 
-printf 'Running the full DIFF regression suite...\n'
+printf 'Running the full FLUX regression suite...\n'
 npm test
 
-if [[ -n "${DIFF_PORT:-}" ]]; then
+if [[ -n "${FLUX_PORT:-}" ]]; then
+  port="${FLUX_PORT}"
+elif [[ -n "${DIFF_PORT:-}" ]]; then
   port="${DIFF_PORT}"
 else
   port="$(
@@ -57,12 +59,12 @@ NODE
 fi
 
 if [[ -z "${port}" ]]; then
-  printf 'No free DIFF port was found from 8000 through 8100.\n' >&2
+  printf 'No free FLUX port was found from 8000 through 8100.\n' >&2
   exit 1
 fi
 
-printf '\nHEX 0.33.0 passed verification.\n'
+printf '\nFLUX 0.33.0 passed verification.\n'
 printf 'Open http://127.0.0.1:%s and test every mode shortcut plus F1 field info.\n' "${port}"
 printf 'Press Ctrl+C here to stop the server.\n'
 
-exec env HOST="${DIFF_HOST:-127.0.0.1}" PORT="${port}" node scripts/serve.mjs
+exec env HOST="${FLUX_HOST:-${DIFF_HOST:-127.0.0.1}}" PORT="${port}" node scripts/serve.mjs

@@ -1331,3 +1331,25 @@
 - **Recommended next task:** Complete the user-directed HEX→FLUX repository,
   checkout, product, launcher, package, documentation, and compatibility
   migration before adding magma or destructible environment state.
+
+# 2026-07-26 — FLUX identity and project-structure migration
+
+- **Player-facing problem:** The shipped interface said HEX while package,
+  server, storage, automation, checkout, and repository surfaces still mixed HEX
+  and DIFF identities. The iteration entrypoint also cluttered the project root.
+- **Implemented solution:** Made FLUX the canonical title and package identity,
+  adopted the line “Flow. Learn. Unleash. eXecute.”, migrated health/debug/save
+  and launcher surfaces to FLUX, and updated Linux/Windows defaults for the
+  `flux` repository and checkout. Legacy DIFF environment variables, health
+  route, debug handle, and browser storage remain explicit read-compatible
+  aliases. Moved the iteration entrypoint into `scripts/start-flux-iteration.sh`.
+  Added Enter the Gungeon as a principle-level reference for gunplay, pixel
+  silhouettes, projectile lanes, cadence, and dense-fight clarity without
+  copying protected expression.
+- **Verification:** JavaScript syntax, all shell syntax, focused browser/server
+  migration checks, the full `npm test` suite (81/81), and `git diff --check`
+  passed on Linux. PowerShell and physical desktop launchers remain Windows
+  acceptance items.
+- **Recommended next task:** Rename the GitHub repository and local checkout to
+  `flux`, verify the redirected remote and tests from the new path, then begin a
+  bounded project-module extraction before Stone–Ember magma or destructibles.

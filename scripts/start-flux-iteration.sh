@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Start a fresh, autonomous-but-auditable Codex iteration for the DIFF project.
-# Run from Fish with: bash ./start-diff-codex-iteration.sh /path/to/diff
+# Start a fresh, autonomous-but-auditable Codex iteration for FLUX.
+# Run from Fish with: bash ./scripts/start-flux-iteration.sh /path/to/flux
 
 set -Eeuo pipefail
 
@@ -25,7 +25,7 @@ PROGRESS_FILE=".agent/PROGRESS.md"
 
 if [[ ! -f "$PROGRESS_FILE" ]]; then
   cat >"$PROGRESS_FILE" <<'EOF'
-# DIFF Codex Iteration Progress
+# FLUX Codex Iteration Progress
 
 The active Codex agent records:
 - inspected state and current objective
@@ -36,7 +36,7 @@ EOF
 fi
 
 read -r -d '' TASK <<'PROMPT' || true
-You are the principal gameplay engineer for this repository. Work iteratively on DIFF: a fast, readable, top-down skill arena action game where movement, reaction, prediction, spacing, and elemental magic create outplay potential.
+You are the principal gameplay engineer for this repository. Work iteratively on FLUX: a fast, readable, top-down skill arena action game where movement, reaction, prediction, spacing, and elemental magic create outplay potential.
 
 First inspect the repository, current branch, existing uncommitted changes, game architecture, test commands, and the current playable state. Preserve unrelated work. If the tree is dirty, treat it as intentional user work: do not revert, reset, overwrite broadly, or commit it unless it is clearly part of your own narrowly scoped changes.
 

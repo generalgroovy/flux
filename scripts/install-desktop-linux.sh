@@ -3,9 +3,9 @@
 set -Eeuo pipefail
 
 repo_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
-branch="${DIFF_BRANCH:-$(git -C "${repo_dir}" branch --show-current)}"
+branch="${FLUX_BRANCH:-${DIFF_BRANCH:-$(git -C "${repo_dir}" branch --show-current)}}"
 applications_dir="${XDG_DATA_HOME:-${HOME}/.local/share}/applications"
-desktop_file="${applications_dir}/diff-arena.desktop"
+desktop_file="${applications_dir}/flux-arena.desktop"
 
 if [[ -z "${branch}" ]] || [[ "${branch}" == -* ]] || [[ "${branch}" == *..* ]]; then
   printf 'Cannot install launcher for unsafe or detached branch: %s\n' "${branch}" >&2
@@ -22,9 +22,9 @@ mkdir -p -- "${applications_dir}"
     '[Desktop Entry]' \
     'Type=Application' \
     'Version=1.0' \
-    'Name=HEX Arena' \
-    'Comment=Update, verify, and launch HEX' \
-    "Exec=env DIFF_OPEN_BROWSER=1 bash \"${repo_dir}/scripts/pull-and-run.sh\" \"${repo_dir}\" \"${branch}\"" \
+    'Name=FLUX Arena' \
+    'Comment=Update, verify, and launch FLUX' \
+    "Exec=env FLUX_OPEN_BROWSER=1 bash \"${repo_dir}/scripts/pull-and-run.sh\" \"${repo_dir}\" \"${branch}\"" \
     "Path=${repo_dir}" \
     'Terminal=true' \
     'Categories=Game;ActionGame;' \
@@ -35,4 +35,4 @@ chmod 0644 "${desktop_file}"
 if command -v desktop-file-validate >/dev/null 2>&1; then
   desktop-file-validate "${desktop_file}"
 fi
-printf 'Installed HEX desktop launcher: %s\n' "${desktop_file}"
+printf 'Installed FLUX desktop launcher: %s\n' "${desktop_file}"

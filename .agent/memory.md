@@ -1,4 +1,216 @@
-# DIFF agent memory
+# HEX agent memory
+
+## 2026-07-26 — HEX 0.13.0 race matrix and spatial arena atlas
+
+- **Player-facing problem:** Race was not selectable, selection did not explain
+  tradeoffs before commitment, and arenas appeared as unrelated cards rather
+  than locations in a coherent world-selection surface.
+- **Implemented solution:** Added twelve validated named races with explicitly
+  paired boons/drawbacks bounded to 0.9–1.1 across health, speed, Flux, and FLOW.
+  Race identity is server-owned, survives joins/rematches/respawns, appears in
+  HUD and field information, and can combine with every complete agent without
+  replacing its kit. Local players use horizontally scrollable race columns
+  above the agent grid; remote identity adds the same race selection. Race and
+  agent hover text exposes tradeoffs, discipline, style, and role. Added region,
+  scale, and atlas coordinates to every playable arena and replaced the map card
+  row with a responsive spatial atlas whose nodes remain actual selectors.
+- **Scope discipline:** Twelve characters per class and twelve multi-scale race
+  regions require dozens of complete mechanics and a camera/streaming model;
+  neither is represented through fake nodes or stat-reskinned agents. The next
+  map slice must prove large-map camera, rotations, sub-region boundaries, spawn
+  density, and authoritative snapshot budgets with one complete region first.
+- **Verification:** Final phased `npm test` passed 47/47, including race
+  authority/persistence, browser navigation, all combat combinations, dynamic
+  geometry, multiplayer lifecycle, and the eight-agent soak. Source/shell syntax
+  and diff checks passed. A live 0.13.0 server returned valid health plus HTTP
+  200 for the shell and game module, then shut down cleanly. Physical atlas
+  layout, horizontal race navigation, hover density, and race feel remain the
+  Linux/Windows desktop acceptance pass.
+
+## 2026-07-26 — HEX 0.12.0 Flux commitments and seamless lobby links
+
+- **Player-facing problem:** Element powers were cooldown-only, leaving no
+  shared magical resource read; the revised discipline vocabulary lacked VEIL
+  and NULL mechanics; and lobby hosts shared a code without an immediate link.
+- **Implemented solution:** Migrated the visible working identity to HEX — Hunt.
+  Evade. eXecute. Added independently tuned Flux with costs on special, defense,
+  and character mobility, delayed recovery, dry feedback, HUD state, bot-safe
+  authority, reset semantics, and invariant coverage. Primary fire and universal
+  FLOW remain available while dry. Mapped the eight complete fighters to EMBER,
+  TIDE, GALE, STONE, VOLT, VEIL, PRISM, and NULL. VEIL now plants a readable
+  decoy and swaps on recast; NULL deletes nearby fields during its paid special;
+  Gale deflects projectiles and Tide can redirect or douse Ember. Hosting now
+  supports an authoritative hazards toggle and produces a copyable auto-join
+  URL with query-link startup handling.
+- **Scope discipline:** Twelve races, forty-eight race characters, eighty spells,
+  skill forests, Battle Royale, and combinable roguelike rules are product-scale
+  expansions. They remain acceptance-driven backlog work instead of visible
+  placeholders; the next slice should prove one race matchup and one meaningful
+  knowledge branch end to end.
+- **Verification:** Final phased `npm test` passed 46/46. Pure/browser tests,
+  live networking, and destructive server cleanup now run as separate processes
+  so cleanup cannot terminate another test server; all coverage remains enabled.
+  Syntax and diff checks passed. A live 0.12.0 server
+  returned valid health and HTTP 200 for an auto-join URL and game module, then
+  shut down cleanly. The smoke also exposed an occupied-port stack trace; startup
+  now reports that condition concisely. Cross-device link reachability, Flux
+  feel, audio, and visual density remain physical desktop acceptance items.
+
+## 2026-07-26 — DIFF 0.11.1 frame recovery and elemental disciplines
+
+- **Player-facing problem:** A reported wall-impact sequence could leave the
+  avatar invisible and make restart appear ineffective. Simulation wall stress
+  remained finite, but any browser canvas exception terminated the animation
+  callback before scheduling its successor, so state could reset without ever
+  painting again. Movement also had two overlapping trail treatments.
+- **Implemented solution:** The next frame is now scheduled before work begins;
+  presentation faults are logged, visibly rate-limited, and recover on the next
+  frame so keyboard and pause-menu restart remain usable. Entity drawing resets
+  opacity/compositing explicitly. Consolidated trails into one subtle history
+  line gated and weighted by real speed. Named the eight complete disciplines
+  GALE, STONE, FROST, SPARK, FLAME, FORCE, TIDE, and PRISM; FORCE now bends
+  movable fields while STONE geometry resists it.
+- **Verification:** Added a synthetic canvas-loss browser regression proving a
+  subsequent frame renders and the existing restart path remains active. Final
+  `npm test` passed 44/44, including all element combinations, dynamic walls,
+  browser navigation/recovery, authoritative networking, cleanup integration,
+  all-agent/map/mode stress, and the eight-agent two-minute soak. Syntax and
+  diff checks passed; a live 0.11.1 server returned valid health and HTTP 200,
+  then shut down cleanly. Physical browser play remains the external acceptance.
+- **Recommended next task:** Add a tiny optional reaction laboratory with
+  movable field emitters, then author a complete Shade or Bloom agent rather
+  than exposing incomplete elements.
+
+## 2026-07-26 — DIFF 0.11.0 physical element fields
+
+- **Player-facing problem:** Character powers did damage or displacement but did
+  not persistently alter routes, combine into readable reactions, or establish
+  elements as a core spatial decision system. High-speed movement also lacked a
+  subtle trace for opponents to read.
+- **Implemented solution:** Declared wind, earth, ice, lightning, fire, and water
+  affinities plus explicit non-element gravity/ballistics edges. Specials now
+  author bounded authoritative fields: force channels, dynamic collision walls,
+  slippery ground, short interruption/conduction, pulsed burning terrain, and
+  allied FLOW/cleanse water. Added wind→fire carry, water→fire douse, fire→ice
+  melt, ice→water freeze, lightning→water conduct, and explosion→earth shatter;
+  explosion remains a reaction mechanic rather than an element. Fields combine
+  hue with geometry, marks, audio signatures, and comic reaction callouts. Agent
+  velocity now drives a restrained directional trail.
+- **Verification:** Final `npm test` passed 43/43, including deterministic
+  field/reaction coverage, all content combinations, the eight-agent two-minute
+  soak, browser shell, authoritative remote lifecycle, and server cleanup. The
+  first final run exposed that cleanup and networking integration files could
+  race when parallel because both register the same checkout; test-file
+  concurrency is now one, preserving every check without cross-test process
+  termination. All source/shell syntax and diff checks passed. A live 0.11.0
+  server returned its health payload and HTTP 200 for the shell and game module,
+  then shut down cleanly. Physical audio/visual/feel acceptance remains pending
+  on the installed Linux and Windows launchers because no browser executable is
+  available in this runtime.
+- **Recommended next task:** Add optional short element trials that teach one
+  interaction through movement and observation, then add destructible frozen
+  environment props without reducing aim or FLOW importance.
+
+## 2026-07-26 — DIFF 0.10.0 universal FLOW movement
+
+- **Player-facing problem:** Universal movement ended at ordinary acceleration
+  and one character mobility button, leaving neutral positioning too shallow
+  and giving the introduction no movement mastery to teach.
+- **Implemented solution:** Added a validated shared FLOW resource with a
+  sustained sprint, momentum-preserving hop, short remembered wall contact, and
+  faster directional wall kick. Every option has explicit cost, cooldown or
+  recovery delay, bot support, remote-command ownership, a non-color-only HUD
+  meter, keyboard/gamepad controls, arena feedback, and a behavior-driven first
+  training read. Character mobility remains a separate tactical commitment.
+- **Verification:** `npm test` passed 40/40, including new deterministic sprint,
+  recovery, hop, wall-kick, tutorial-ownership, full combination, soak, browser
+  shell, networking, and server-cleanup coverage. JavaScript syntax checks also
+  passed. A live 0.10.0 server returned its valid health payload and HTTP 200 for
+  the shell and game module before clean shutdown. One preceding parallel test
+  run reported process-level failures for both live-server files without
+  assertion detail; both passed immediately in isolation and the full 40-test
+  rerun passed. No browser executable is installed, so physical feel, gamepad,
+  color, and layout acceptance remain required on the desktop launchers.
+- **Recommended next task:** Tune FLOW through hands-on play, then add one
+  authored comic action-callout vocabulary before introducing a small,
+  deterministic pair of interacting elemental abilities.
+
+## 2026-07-26 — Safe server cleanup and self-updating desktop launchers
+
+- **Player-facing problem:** Repeated test launches could leave occupied ports,
+  and testing from a desktop icon was not available on either target desktop OS.
+- **Implemented solution:** DIFF servers now register PID, checkout, port,
+  version, and an unguessable instance token in the OS temp directory and clean
+  the record on shutdown. `npm run stop` verifies the live health token before
+  signaling only servers from this checkout. Added an opt-in browser handoff,
+  a validated Linux desktop-entry installer, and native PowerShell update/test/
+  launch plus Windows shortcut installers.
+- **Verification:** Deterministic server registration/cleanup integration,
+  Linux shell and desktop-entry validation, JavaScript syntax, and the complete
+  regression suite. PowerShell execution remains a Windows acceptance item
+  because PowerShell is unavailable in this Linux runtime.
+- **Recommended next task:** Add one universal movement resource with visible
+  commitment and counterplay, then teach it through FIRST CONTACT.
+
+## 2026-07-26 — DIFF 0.9.3 truthful remote quality diagnostics
+
+- **Player-facing problem:** The remote HUD presented snapshot age as latency,
+  so players and testers could not distinguish a healthy connection from
+  delayed, jittery, lossy, or stale delivery.
+- **Implemented solution:** Added bounded application-level probes outside match
+  authority, a pure rolling diagnostic model, and a compact remote readout with
+  measured round-trip latency, inter-sample jitter, recent probe loss, snapshot
+  staleness, and explicit GOOD/FAIR/POOR/MEASURING text states. Probe sequences
+  are validated and remain under the existing transport rate ceiling.
+- **Tests passed:** 37/37, including deterministic good/loss/expiry model
+  coverage, live probe echo, browser controller, authoritative lobby lifecycle,
+  all content combinations, and the eight-agent soak.
+- **Recommended next task:** Add safe server cleanup and self-updating Linux and
+  Windows desktop launch surfaces, then deterministic adverse-network controls.
+
+## 2026-07-26 — Branch-aware pull-and-run handoff
+
+- **Player-facing problem:** The safe launcher always selected `main` in
+  `~/Projects/diff`, while this system runs the newer verified build from
+  `/home/otp/Projects/outskilled` on `agent/prototype-loop`.
+- **Implemented solution:** Added a validated branch argument (with
+  `DIFF_BRANCH` fallback) across
+  clone, fetch, switch, tracking, and fast-forward pull operations; documented
+  the exact local command; generalized the GitHub CLI install hint; and ignored
+  Aider's local history/cache artifacts so they remain on disk without falsely
+  making the guarded checkout dirty.
+- **Verification:** Shell syntax, invalid-branch rejection, full deterministic
+  suite, and an end-to-end clean-checkout pull/test/server-ready smoke.
+- **Recommended next task:** Complete the physical browser and two-device 0.9.2
+  acceptance passes recorded in the release backlog.
+
+## 2026-07-26 — DIFF 0.9.2 first-contact clarity and arena atmosphere
+
+- **Player-facing problem:** FIRST CONTACT described a four-action language but
+  never verified the character special, and its single rotating sentence gave
+  weak progress feedback. Fixed-aspect arenas left unused display space as a
+  flat void, making presentation feel less authored on non-16:9 screens.
+- **Implemented solution:** Reworked onboarding into three compact behavioral
+  reads with a persistent, non-color-only checklist: move/fire, mobility/defense,
+  then special commitment under live pressure. The deterministic simulation now
+  records and confirms all four actions and emits explicit step/completion
+  feedback. Added validated per-map floor, void, grid, and accent palettes plus
+  restrained ambient overscan lines that fill the physical canvas while keeping
+  competitive map bounds and visibility unchanged for local and remote play.
+- **Files changed:** `src/content.mjs`, `src/match.mjs`, `src/game.mjs`,
+  `index.html`, `styles.css`, `tests/match.test.mjs`,
+  `tests/game-dom.test.mjs`, release/version files, `README.md`, backlog, and
+  this memory.
+- **Commands run:** `npm ci`; `npm test` with localhost WebSocket access;
+  syntax checks for all source/server modules; shell syntax checks; diff checks.
+- **Tests passed:** 35/35, including the real DOM/canvas controller, explicit
+  three-beat four-action tutorial progression and bot-ownership isolation, all 160 content combinations,
+  eight-agent soak, and complete WebSocket lobby/reconnect/spectator coverage.
+- **Known limitations:** No browser executable is installed in this runtime, so
+  final color, density, feel, gamepad, and physical multiplayer judgment still
+  require the Garuda/Windows acceptance pass.
+- **Recommended next task:** Add deterministic latency/jitter/loss simulation
+  diagnostics and an in-game network quality read before expanding content.
 
 ## 2026-07-25T18:10:00Z — DIFF 0.9.1 actionable front end and agent identity
 
@@ -405,3 +617,536 @@
   interactive browser was not available for hands-on play verification.
 - **Recommended next task:** Add one immediate primary attack and one reactive
   target with clear hit confirmation, while preserving the movement trial.
+
+## 2026-07-26 — HEX old-world Flux identity migration
+
+- **Player-facing problem:** The playable systems had moved toward Flux, races,
+  and elemental geometry while the roster, modes, arenas, and interface still
+  spoke in modern operator language. The conflicting identity obscured the
+  intended magic-world fantasy.
+- **Implemented solution:** Recast all eight shipped kits as named champions
+  native to eight established peoples, with old-world roles, spell names, and
+  biographies. Renamed every visible contest and arena without changing stable
+  simulation identifiers. Champion choice now selects native ancestry by
+  default while preserving ancestry as a deliberate build override. Reworked
+  the primary shell toward aged parchment, woven banners, gilt bevels, serif
+  display type, and pixel-crisp field rendering. Updated product guidance,
+  documentation, browser assertions, and release metadata to HEX 0.14.0.
+- **Compatibility:** Internal character, mode, map, launcher, health-product,
+  and debug identifiers remain stable so saved settings, join URLs, remote
+  protocol checks, and existing automation continue to work.
+- **Commands run:** `rg` identity sweeps; `git diff --check`; syntax checks for
+  `src/content.mjs` and `src/game.mjs`; `npm test`.
+- **Tests passed:** 47/47 tests: 45 deterministic DOM/lobby/match/network-quality
+  checks, the complete shipped-server network test, and isolated server cleanup.
+- **Known limitations:** No browser executable is installed in this environment,
+  so physical visual acceptance remains pending. Four arenas establish the
+  world atlas but do not yet constitute the requested nested continent.
+- **Recommended next task:** Make one existing arena the first fully illustrated
+  nested territory: region lore, readable landmark silhouettes, scale-aware
+  atlas zoom, and one environmental Flux interaction with deterministic tests.
+
+## 2026-07-26 — HEX authored realm chart
+
+- **Player-facing problem:** The renamed arenas still appeared as a neon
+  technical grid and the atlas was only four floating cards. Neither conveyed an
+  inhabited old-world magic setting or gave players memorable spatial anchors.
+- **Implemented solution:** Added validated terrain, lore, heraldry, and landmark
+  definitions to all four arenas. Rebuilt the atlas as an aged realm chart and
+  exposed its authored place information through hover/focus and the map codex.
+  Replaced the combat grid with sparse tile marks, regional landmark underlays,
+  rune circles, weathered borders, and stone cover. Landmark art remains beneath
+  the simulation layer and cannot imitate collision, hazards, or objectives.
+- **Commands run:** syntax checks for `src/content.mjs` and `src/game.mjs`;
+  `git diff --check`; focused DOM and deterministic match tests; `npm test`;
+  clean `scripts/serve.mjs` launch on port 8113; HTTP health, shell, and module
+  checks; clean server shutdown.
+- **Tests passed:** 48/48 checks: 46 DOM/lobby/match/network-quality tests,
+  including authored-place validation for every arena, plus the complete shipped
+  server network test and isolated server cleanup.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.15.0; `/` and
+  `/src/game.mjs` returned `200 OK` with the shipped security headers.
+- **Known limitations:** The realm chart has four complete destinations but no
+  zoom navigation yet; The Fracture is the selected first nested region. Physical
+  visual acceptance remains pending because this environment has no browser.
+- **Recommended next task:** Add scale-aware chart zoom into The Fracture and one
+  new small Sundered Road sub-map with its own route decision and deterministic
+  spawn/combination stress coverage.
+
+## 2026-07-26 — Complete Fracture region ladder
+
+- **Player-facing problem:** The realm chart had authored destinations but no
+  actual hierarchy, and The Fracture existed only as a duel arena despite being
+  presented as a world region.
+- **Implemented solution:** Added realm/Fracture chart depth controls and three
+  complete battlegrounds beside Sundered Road: Ashen Ford (small), Pilgrim Steps
+  (medium), and Oathscar Vale (large). Each has distinct route grammar, lore,
+  heraldry, cover, safe spawn anchors, landmarks, objective placement, and
+  restrained telegraphed hazards where appropriate. All seven maps populate
+  local and remote selectors from the same validated definitions.
+- **Commands run:** syntax checks for content and controller; `git diff --check`;
+  focused DOM and deterministic match suites; `npm test`; clean server launch on
+  port 8114; HTTP health/shell/module smoke; clean shutdown.
+- **Tests passed:** 49/49 checks. Realm/region navigation and selection, Fracture
+  scale completeness, all seven maps across the full deterministic character/mode
+  interaction matrix and combat soak, authoritative network lifecycle, and
+  isolated server cleanup all passed.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.16.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Known limitations:** Hands-on visual and route tuning remains pending because
+  no browser executable is available here. Other world regions intentionally
+  remain single destinations until this hierarchy receives real-player tuning.
+- **Recommended next task:** Hands-on tune Fracture routes, hazard cadence, and
+  atlas legibility; then add the first movement-reactive environmental Flux
+  shrine as a fully counterable objective rather than passive map power.
+
+## 2026-07-26 — Movement-reactive Broken Covenant shrine
+
+- **Player-facing problem:** Flux recovery was almost entirely passive, so map
+  mastery and universal movement could not create a deliberate resource swing.
+- **Implemented solution:** Added a validated, simulation-owned shrine to the
+  exposed center of Oathscar Vale. A fresh crossing above 610 movement speed
+  restores up to 24 missing Flux, then visibly locks for everyone for seven
+  seconds. Full-Flux passes do not waste the shrine. It grants no health, damage,
+  affinity bonus, control lock, or invulnerability. Added distinct world art,
+  countdown, comic callout, audio cue, particles, codex metadata, and guide text.
+- **Commands run:** Focused shrine/match test; syntax checks for content,
+  simulation, and controller; `git diff --check`; `npm test` twice around an
+  isolated network rerun; clean server launch on port 8115; HTTP health, shell,
+  and module smoke; clean shutdown.
+- **Tests passed:** 50/50 on the final full run, including shrine activation,
+  bounded reward, shared cooldown, no passive damage, invariant stability,
+  seven-map stress, authoritative networking, and isolated cleanup. The first
+  full run had one process-level network-test failure with no assertion detail;
+  the same network test passed immediately in isolation and the entire suite then
+  passed cleanly, so this is recorded as an intermittent harness event rather
+  than hidden.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.17.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Known limitation:** The threshold/reward/cooldown need hands-on play tuning;
+  no browser executable is installed in this environment.
+- **Recommended next task:** Add a short optional First Rite shrine trial that
+  teaches sprint-versus-dash threshold reads without adding another text step.
+
+## 2026-07-26 — Universal counter-strafe expression
+
+- **Player-facing problem:** Acceleration gave movement weight, but reversing
+  direction could feel uniformly sluggish and offered no explicit mastery point
+  for baiting shots or changing a peek.
+- **Implemented solution:** Added centralized counter-strafe tuning. A genuine
+  reversal against meaningful velocity gains a bounded 1.7× control rate, while
+  perpendicular steering and ordinary acceleration remain unchanged. Ice still
+  scales the resulting control down. Added a speed-gated, cooldown-throttled
+  simulation event with concise comic/audio feedback and guide text.
+- **Commands run:** Syntax checks for content, simulation, and controller;
+  `git diff --check`; focused match suite; `npm test`; clean server launch on
+  port 8116; HTTP health/shell/module smoke; clean shutdown.
+- **Tests passed:** 51/51 checks, including tuning validation, true-reversal
+  detection, faster momentum cut, cue throttling state, seven-map combination
+  stress, authoritative networking, and isolated cleanup.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.18.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Known limitation:** The multiplier needs hands-on mouse/keyboard and gamepad
+  tuning; no browser executable is installed here.
+- **Recommended next task:** Make hop landings preserve a bounded fraction of
+  entry momentum and test hop-to-counter-strafe, hop-to-wall-kick, and ice chains.
+
+## 2026-07-26 — Bounded hop momentum carry
+
+- **Player-facing problem:** Hops replaced all incoming velocity with a fixed
+  vector, flattening diagonal escape routes and making fast movement chains feel
+  disconnected.
+- **Implemented solution:** Hops now retain 35% of velocity perpendicular to the
+  chosen hop direction, hard-capped at 180 units. The forward hop and wall-kick
+  speeds remain fixed, FLOW costs remain unchanged, and carry cannot recursively
+  stack beyond the cap. Carry state is authoritative, finite, and reset on spawn.
+  Added guide text and centralized validation.
+- **Commands run:** Syntax checks for content and simulation; `git diff --check`;
+  focused match suite; `npm test`; clean server launch on port 8117; HTTP
+  health/shell/module smoke; clean shutdown.
+- **Tests passed:** 52/52 checks, including lateral carry, hard speed bound,
+  reset state, invariants, seven-map stress, authoritative networking, and
+  isolated cleanup.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.19.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Known limitation:** Hands-on animation/feel tuning remains pending because no
+  browser executable is installed here.
+- **Recommended next task:** Add a landing micro-window that permits one readable
+  counter-strafe cancel without reducing hop commitment or enabling spam.
+
+## 2026-07-26 — Universal committed ground slide
+
+- **Player-facing problem:** Sprint, hop, wall kick, and character mobility left
+  no universal low-line commitment for crossing exposed space or changing the
+  opponent's aim height and timing.
+- **Implemented solution:** Sprint+hop now starts a ground slide only after 250
+  speed. It costs 22 FLOW, travels at 720 for 0.3 seconds, steers at 32%, and has
+  a 0.78-second cooldown. Holding the chord suppresses accidental follow-up hops;
+  cover ends the slide with an explicit impact. Added authoritative state,
+  respawn reset, validation, silhouette squash, audio/comic cues, controls,
+  guide copy, and First Rite instruction.
+- **Commands run:** Syntax checks for content, simulation, and controller;
+  `git diff --check`; focused match suite; `npm test`; clean server launch on
+  port 8118; HTTP health/shell/module smoke; clean shutdown.
+- **Tests passed:** 53/53 checks, including entry threshold, FLOW cost, hop
+  exclusion, committed steering, cover termination, seven-map stress,
+  authoritative networking, and isolated cleanup.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.20.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Known limitation:** Hands-on feel and controller-chord tuning remain pending
+  because no browser executable is installed here.
+- **Recommended next task:** Add one landing micro-cancel after a completed hop,
+  then validate slide→hop, hop→counter-strafe, and wall-kick→slide chains as a
+  single bounded movement grammar.
+
+## 2026-07-26 — Full Wyrmbound culture package
+
+- **Player-facing problem:** The twelve race rows were bounded build modifiers,
+  but no expansion race demonstrated the complete bar for mechanical identity,
+  champion expression, elemental language, world placement, and network support.
+- **Implemented solution:** Added Wyrmbound as a thirteenth ancestry. Their scales
+  reduce forced movement by 14% in exchange for 6% FLOW and 2% speed. Added Yrsa
+  Rimewing, a complete Tide/Frost outrider with paired shards, a frost-field cone,
+  precise counter, armored charge, and unique wing silhouette. Added Emberpeak's
+  Wyrmfall Aerie with authored routes, safe spawns, rime vent, lore, landmarks,
+  heraldry, atlas placement, and objective. All selectors and remote definitions
+  derive from the same validated content.
+- **Commands run:** Syntax checks for content, simulation, and controller;
+  `git diff --check`; focused match suite; `npm test`; clean server launch on
+  port 8119; HTTP health/shell/module smoke; clean shutdown.
+- **Tests passed:** 54/54 checks, including thirteen-race bounds, resistance
+  versus equal raw damage, explicit FLOW weakness, ice reactions, all nine
+  champion kits, eight-map stress, authoritative networking, and cleanup.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.21.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Known limitation:** Wyrmbound resistance and Yrsa's kit need hands-on matchup
+  tuning; no browser executable is installed here.
+- **Recommended next task:** Complete movement grammar testing, then make Yrsa the
+  first champion to receive the production passive/tactical/ultimate schema used
+  for later roster expansion.
+
+## 2026-07-26 — One-use hop landing cut
+
+- **Player-facing problem:** Hop carry produced expressive arcs, but the landing
+  had no precise conversion point into grounded footwork.
+- **Implemented solution:** A fully completed hop now opens a 110 ms landing
+  window. One true counter-strafe during it gains 18% additional control and
+  consumes the state immediately. The cut cannot cancel hop commitment, cannot
+  repeat, and remains reduced on ice. Added authoritative/reset state, bounded
+  tuning validation, comic/audio feedback, and guide copy.
+- **Commands run:** Syntax checks for content, simulation, and controller;
+  `git diff --check`; focused match suite; `npm test`; clean server launch on
+  port 8120; HTTP health/shell/module smoke; clean shutdown.
+- **Tests passed:** 55/55 checks, including full hop commitment, one-use landing
+  cut, nine-champion/eight-map stress, authoritative networking, and cleanup.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.22.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Known limitation:** Hands-on latency and animation tuning remains pending
+  because no browser executable is installed here.
+- **Recommended next task:** Add deterministic chain tests for slide→hop,
+  wall-kick→slide, hop→landing-cut, and shrine traversal, then lock the movement
+  grammar before expanding champion ultimates.
+
+## 2026-07-26 — Adaptive First Rite FLOW chain
+
+- **Player-facing problem:** The opening rite advanced after only one sprint tick
+  and one hop, leaving the new committed slide untaught and presenting the whole
+  instruction at once.
+- **Implemented solution:** The same first of four reads now observes a genuine
+  sprint, completed slide, and separate hop. The live prompt adapts to the next
+  missing behavior, while skip remains immediate and bot actions remain excluded.
+  Slide and hop cannot overlap, preventing accidental completion through a held
+  chord.
+- **Commands run:** Syntax checks for simulation and controller; `git diff
+  --check`; focused match suite twice around the repaired flag; `npm test`; clean
+  server launch on port 8121; HTTP health/shell/module smoke; clean shutdown.
+- **Tests passed:** 55/55 checks, including behavior order, real slide activation,
+  separate hop, adaptive state, bot exclusion, expanded stress, networking, and
+  cleanup.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.23.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Regression repaired:** The first implementation placed the slide-observed flag
+  in sprint recovery; review caught it, moved it to successful slide start, and
+  reran the complete focused suite.
+- **Known limitation:** New-player observation remains pending because no browser
+  executable or external playtester is available here.
+- **Recommended next task:** Add the movement-chain regression matrix, then begin
+  the production passive/tactical/ultimate schema with Yrsa as the first pilot.
+
+## 2026-07-26 — Locked universal movement-chain boundaries
+
+- **Player-facing problem:** Individual movement verbs were tested, but their
+  transitions could still hide overlapping state or an unbounded chain exploit.
+- **Implemented solution:** Added deterministic slide→hop, mobility-exclusion,
+  held-input, commitment, and 600-tick adversarial speed/invariant coverage.
+  Universal slide or hop can no longer begin under active character mobility;
+  slides cannot be silently hop-cancelled, while completed slides route into hops.
+- **Regression found and repaired:** The new matrix exposed universal states
+  starting beneath character mobility. Both entry paths now reject the overlap.
+- **Commands run:** Syntax and diff checks; focused chain test; initial sandboxed
+  full suite; escalated full suite with loopback access; clean server launch on
+  port 8122; HTTP health/shell/module smoke; clean shutdown.
+- **Tests passed:** 56/56 checks with required loopback access, including chain
+  matrix, commitment boundaries, speed ceiling, expanded stress, authoritative
+  networking, and cleanup.
+- **Environment diagnosis:** The first full run's server test failed because this
+  turn's sandbox denied `listen(127.0.0.1)` with `EPERM`. A temporary port-retry
+  idea was removed after direct diagnosis; the unchanged strict test passed under
+  its project-scoped loopback permission.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.24.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Recommended next task:** Begin the production passive/tactical/ultimate
+  schema with Yrsa as the first fully wired champion pilot.
+
+## 2026-07-26 — Yrsa production champion contract
+
+- **Player-facing problem:** Nine baseline kits were playable, but champion
+  passives and ultimates had no production state, input, charge, telegraph, or
+  network contract. Adding roster breadth before proving that layer would have
+  multiplied incomplete behavior.
+- **Implemented solution:** HEX 0.25.0 introduces a tactical alias while retaining
+  the stable `special` wire field, match schema v2, an allowlisted ultimate
+  command, bounded authoritative state, and the first fully authored pilot.
+  Yrsa's **Ridgeline Hunt** turns a wall kick or landing cut into one 18%-faster,
+  55%-tighter Rime Fangs cast without increasing damage. Dealing non-ultimate
+  damage earns **The White Hunt**. At 100 charge, `F`/`H`/north button commits a
+  fixed lane for 0.58 seconds at 38% ground speed, then releases five rime fangs
+  and three shared ice fields. Cover clips the lane; Volt interruption cancels
+  the spent cast; the resulting ice continues to use Ember, Tide, and Null's
+  existing physical reactions. Ultimate damage cannot recharge the same cast.
+- **Communication and usability:** Added conditional HUD state, charge and ready
+  marks, an unambiguous dashed lane wedge and commitment bar, passive/readiness/
+  cast/interruption comic and audio cues, complete controls, and passive/tactical/
+  ultimate codex entries. The slot is forcibly absent for champions without a
+  complete authored ultimate, so no broken input is exposed.
+- **Authority and reliability:** Bots use the same command and charge rules;
+  remote commands remain sanitized and sequence-owned by the server. Charge,
+  channel, aim lock, passive window, fields, and projectiles are snapshot state.
+  Review also explicitly versioned the new match schema and added the CSS hidden
+  guarantee before release.
+- **Commands run:** content/simulation/controller/server syntax checks; shell
+  launcher syntax checks; `git diff --check`; focused match, DOM, and lobby
+  suites; fully escalated `npm test`; clean server launch on port 8123; health,
+  HTML, and module HTTP smoke with shipped security headers; clean shutdown.
+- **Tests passed:** 60/60 checks: 58 DOM/lobby/match/network-quality checks, one
+  live authoritative WebSocket lifecycle check, and one isolated server cleanup
+  check. New coverage includes damage-neutral passive conversion, combat-only
+  bounded charge, no self-recharge, aim lock, delayed resolve, field count,
+  Volt cancellation, hidden/visible HUD state, codex discoverability, and remote
+  ultimate authority.
+- **Launch smoke:** Health reported ready at HEX 0.25.0/protocol 2; `/` and
+  `/src/game.mjs` returned `200 OK` with CSP, COOP, no-referrer, nosniff, and
+  frame-deny headers. The server stopped cleanly.
+- **Known limitation:** No browser executable is installed in this environment,
+  so hands-on feel, telegraph density, gamepad comfort, audio mix, and real-device
+  remote prediction remain pending; the deterministic DOM/canvas harness passed.
+- **Recommended next task:** Hands-on tune Yrsa where available; meanwhile author
+  her mechanically opposed Wyrmbound counterpart as the second complete champion
+  contract, proving a different passive/ultimate kind rather than cloning the
+  line-volley implementation.
+
+## 2026-07-26 — Opposed Wyrmbound pair: Varka Ashmaw
+
+- **Player-facing problem:** Wyrmbound had one complete champion, but not the
+  contrasting decision profile needed to prove that the new passive/ultimate
+  contract could support a race roster without reskins.
+- **Implemented solution:** HEX 0.26.0 adds Varka Ashmaw, Yrsa's oath-broken Ember
+  counterpart. Cinder Tooth is an exact medium projectile. Pyre Furrow authors
+  three short-lived, douseable fire fields. While Varka occupies allied fire,
+  Pyre-Forged keeps the same 23 damage but trades 32% projectile speed for a 50%
+  larger heavy spell and 2.1× knockback. Smoke Shed phases through a committed
+  spell; Talon Vault recoils from the aimed threat. This creates direct-aim versus
+  predictive-clash choices without an elemental damage bonus.
+- **Ultimate and counterplay:** Combat damage earns The Ashen Crown. Its fixed
+  distant target is shown for 0.72 seconds while Varka moves at 50% speed; six
+  52-radius fire sigils sit on a 180-radius ring with validation-enforced open
+  seams. Tide douses breaches, Gale redirects fire, Null clears the ring from its
+  center, Volt cancels the spent windup, and cover clips target acquisition.
+  Ultimate-authored fire cannot recharge the same meter.
+- **Presentation and authority:** Added a unique oriented maw silhouette, active
+  passive mark, element-colored HUD state, crown target line, six exact field
+  previews, progress ring, distinct comic/audio feedback, codex/selection copy,
+  bot use, remote command coverage, reset/repair state, and bounded validation.
+- **Regression caught:** The first crown test expected its fire pulse one tick
+  after the observation loop; the simulation had correctly pulsed during the
+  post-cast ticks. The test observation window was corrected without changing or
+  weakening gameplay.
+- **Commands run:** syntax checks for content, match, controller, server, and
+  shell launchers; `git diff --check`; focused Varka/crown/bot suites; combined
+  DOM/lobby/match suite; fully escalated `npm test`; clean server launch on port
+  8124; health, HTML, and module HTTP smoke; clean shutdown.
+- **Tests passed:** 63/63 checks: 61 DOM/lobby/match/network-quality checks, one
+  live authoritative WebSocket lifecycle check, and one isolated cleanup check.
+  Coverage includes ordinary/tempered damage equality, projectile tradeoffs,
+  allied-field ownership, Tide dousing, crown seam geometry, fire pulse, no
+  ultimate self-charge, Null erasure, bot activation, DOM/codex discovery,
+  ten-champion stress, and both ultimate kinds through remote authority.
+- **Launch smoke:** Health reported HEX 0.26.0/protocol 2; `/` and
+  `/src/game.mjs` returned `200 OK` with all shipped security headers, then the
+  server stopped cleanly.
+- **Known limitation:** No browser executable is installed here. Hands-on
+  readability, audio mix, controller feel, and real-device remote prediction
+  remain pending; deterministic DOM/canvas and network harnesses passed.
+- **Recommended next task:** Hands-on tune the Yrsa/Varka matchup where available;
+  meanwhile promote a third mechanically distinct champion to the production
+  contract so Gate 2 has three complete high-depth matchup anchors before further
+  roster multiplication.
+
+## 2026-07-26 — Aerwyn reflection and trajectory contract
+
+- **Player-facing problem:** Gate 2 needed a third complete champion whose reward
+  came from reaction and aim expression rather than another damage or terrain
+  conversion.
+- **Implemented solution:** HEX 0.27.0 gives Aerwyn **Thread the Turn**: reflecting
+  a hostile spell primes one Wind Needle for 1.4 seconds. The converted shot keeps
+  22 damage, trades 8% speed for 0.58 seconds of live aim steering, and turns at a
+  validated 3.4 radians/second ceiling. A later reflection cancels its guidance.
+  Combat earns **The Turning Sky**, a cover-clipped 0.64-second target commitment
+  that creates one 3.1-second shared vortex. Its explicit rotation bends each
+  projectile once while preserving speed, applies bounded tangential force to all
+  fighters, and carries overlapping Ember without dealing damage. Volt interrupts
+  the windup and Null erases the resulting field.
+- **Presentation and authority:** Added a vortex target disk, progress arc,
+  directional field arrows, guided-shot fins, non-color glyphs, distinct Gale
+  audio/comic feedback, ready copy, full field-guide/codex discovery, bot use, and
+  the existing server-authoritative ultimate input/snapshot path.
+- **Regression caught:** Full diff review found the guided-shot decoration placed
+  in the movement-trail renderer, where its projectile variables were undefined.
+  It was moved to projectile rendering before release. Two focused test setups
+  were also moved clear of the central ruin and hostile Ember so they measured the
+  intended vortex rules rather than incidental collision or damage.
+- **Commands run:** syntax checks for all source/server modules and shell
+  launchers; `git diff --check`; focused match, DOM, and lobby suites; `npm test`;
+  clean server launch on port 8125; health, HTML, and module HTTP smoke; clean
+  shutdown.
+- **Tests passed:** 65/65 checks: 63 DOM/lobby/match/network-quality checks, one
+  live authoritative WebSocket lifecycle check, and one isolated cleanup check.
+  New coverage includes bounded guide turn/speed/damage, guide expiry, vortex
+  target/windup/field count, damage neutrality, fighter and Ember movement,
+  one-time projectile bending with speed preservation, Null erasure, bot use,
+  DOM/codex discovery, ten-champion stress, and all three ultimate kinds through
+  remote authority.
+- **Launch smoke:** Health reported HEX 0.27.0/protocol 2; `/` and
+  `/src/game.mjs` returned `200 OK` with all shipped security headers, then the
+  server stopped cleanly.
+- **Known limitation:** No browser executable is installed here. Hands-on vortex
+  readability, guided-aim feel, audio mix, gamepad comfort, and real-device remote
+  prediction remain pending; deterministic DOM/canvas and network harnesses pass.
+- **Recommended next task:** With three production champions complete, add
+  deterministic latency/jitter/loss simulation and input remapping before further
+  roster multiplication, then use those tools to tune movement and spell reads.
+
+## 2026-07-26 — Persistent input-aware controls
+
+- **Player-facing problem:** Fixed Player 1 keys limited accessibility and made
+  teaching copy unreliable as soon as controls changed.
+- **Implemented solution:** HEX 0.28.0 adds live keyboard capture for movement and
+  all seven combat actions. Assigning an occupied key swaps the two actions;
+  match-control and fixed Player 2 keys are rejected with text feedback; Escape
+  cancels; reset restores every default. Valid unique bindings persist inside the
+  existing settings record, while older or corrupt records migrate safely.
+- **Discoverability:** Settings use obvious focus/capture/error/success states.
+  The HUD, ability bar, field guide, live field panel, codex kit, and every First
+  Rite instruction/progress label derive from the active bindings. Mouse, gamepad,
+  Player 2, simulation commands, prediction, and network authority are unchanged.
+- **Commands/results:** All source and launcher syntax checks and `git diff
+  --check` passed. The first sandboxed network subprocess reproduced the known
+  loopback `EPERM`; the unchanged escalated `npm test` passed 65/65 checks. DOM
+  coverage proves swap, reserved-key rejection, cancellation, persistence, reset,
+  visible label updates, and a remapped sprint advancing authoritative tutorial
+  state. Server smoke on port 8126 reported HEX 0.28.0/protocol 2; `/` and
+  `/src/game.mjs` returned `200 OK` with all security headers, then stopped cleanly.
+- **Known limitation / next task:** No browser executable is installed here, so
+  hands-on keyboard-layout, responsive layout, controller, and audio verification
+  remain pending. Next add deterministic latency/jitter/loss simulation for
+  repeatable reconciliation tuning.
+
+## 2026-07-26 — Deterministic adverse-network lab
+
+- **Player-facing/QA problem:** Real RTT diagnostics identified poor links but
+  could not reproduce latency, jitter, loss, or snapshot reordering on demand.
+- **Implemented solution:** HEX 0.29.0 adds bounded persisted network-lab sliders
+  for 0–250 ms latency, 0–100 ms jitter, and 0–20% loss. A pure seeded scheduler
+  conditions only outgoing gameplay inputs and incoming authoritative snapshots;
+  zero uses the original direct path. Control requests and real probes remain
+  immediate. The HUD distinguishes real measurements from the active LAB profile
+  and reports delivered/dropped counts. Match, disconnect, reset, and config
+  boundaries clear queued packets.
+- **Synchronization hardening:** Authoritative server ticks now advance
+  monotonically on the client, so jitter-reordered or duplicate snapshots cannot
+  roll prediction backward. Pending-input replay and server ownership are
+  otherwise unchanged.
+- **Verification:** Source/launcher syntax and diff checks passed. `npm test`
+  passed 69/69 checks: 67 deterministic/DOM/lobby/conditioner/diagnostic checks,
+  one live WebSocket lifecycle, and one isolated cleanup check. New coverage
+  proves bounds, zero bypass configuration, seeded reproducibility, directional
+  queues, time order, clean resets, stale-tick rejection, persistence, and the
+  allowlisted browser module. Server smoke on port 8127 reported HEX
+  0.29.0/protocol 2; `/`, `/src/game.mjs`, and
+  `/src/network-conditioner.mjs` returned `200 OK` with security headers, then
+  stopped cleanly.
+- **Known limitation / next task:** No browser executable or second real device is
+  available here; hands-on feel under impairment remains pending. Use the lab for
+  reconciliation tuning, then add one behavior-driven elemental interaction trial.
+
+## 2026-07-26 — First Rite defensive interaction trial
+
+- **Player-facing problem:** The defense stage advanced from pressing the defense
+  key while its spar was forbidden to attack, so it taught input recall rather
+  than timing, threat reading, or each champion's actual defense contract.
+- **Implemented solution:** HEX 0.30.0 lets the spar cast one visually marked
+  practice spell during the defense stage. It is capped at 6 damage, has no
+  knockback, cannot eliminate the learner or build ultimate charge, and repeats
+  no faster than 1.1 seconds. Empty defense presses no longer count. Reflection,
+  guard, phase, absorb, and counter advance the rite only when they resolve an
+  incoming spell. Input-aware coaching first asks for mobility, then the timed
+  answer; a gold diamond, restrained tone, and comic callout communicate the read.
+- **Verification:** Source/server and shell syntax checks plus `git diff --check`
+  passed. Focused match coverage passed 48/48. The final complete `npm test`
+  passed 72/72 checks: 70 deterministic/DOM/lobby/network-conditioner/diagnostic checks,
+  one live authoritative WebSocket lifecycle check, and one isolated cleanup
+  check. New tests prove every defense family, reject empty-button completion,
+  enforce nonlethal/no-knockback/no-ultimate training pressure, and preserve the
+  full interaction and two-minute combat soaks.
+- **Launch smoke:** The release server on port 8128 reported HEX 0.30.0/protocol
+  2; `/` and `/src/game.mjs` returned `200 OK` with all security headers. The
+  shipped cleanup command then stopped PID 212439 and a failed health request
+  confirmed the port was closed.
+- **Known limitation / next task:** No browser executable or second device is
+  installed here. Hands-on timing, gold-mark visibility, audio mix, remapped-key
+  comfort, and impaired-network play remain pending. Next build one similarly
+  behavior-driven Flux/element reaction trial without lengthening the rite or
+  blocking immediate skip.
+
+## 2026-07-26 — First Rite discipline proof
+
+- **Player-facing problem:** The rite's final stage still completed on an empty
+  tactical key press. It did not teach that Flux magic must create world state,
+  connect through geometry, or survive a timing commitment.
+- **Implemented solution:** HEX 0.31.0 replaces that input check with production
+  outcomes. Gale, Stone, Tide, Rime, and Ember terrain must be created validly;
+  Veil must author a decoy; aimed Volt and Prism must hit; Null must catch a
+  nearby target; and Cinder's trap must finish arming. Tailored input-aware copy
+  explains each proof. Misses
+  and blocked Stone do not advance. The spar retains movement but cannot fire or
+  use abilities through the unfinished final stage, preserving safe practice.
+  Completion has a concise comic/audio cue and the rite still has four stages and
+  an immediate skip.
+- **Verification:** Source/server and shell syntax plus `git diff --check` passed.
+  Focused simulation coverage passed 51/51. Full `npm test` passed 75/75 checks:
+  73 deterministic/DOM/lobby/network-conditioner/diagnostic checks, one live
+  authoritative WebSocket lifecycle check, and one isolated cleanup check. New
+  coverage proves every tactical family, real miss rejection, delayed trap arm,
+  three seconds of restrained spar safety, invariant health, and existing combat
+  stress/soak behavior.
+- **Launch smoke:** Port 8129 reported HEX 0.31.0/protocol 2; `/` and
+  `/src/game.mjs` returned `200 OK` with all security headers. Ctrl+C exited the
+  server with status 0, and a failed health request confirmed the port closed.
+  A subsequent shipped `npm stop` found no registered instances, the registry
+  directory was empty, and `ps -C node` found no remaining Node process. Socket
+  enumeration itself was unavailable inside the restricted sandbox.
+- **Known limitation / next task:** No browser executable or second device is
+  installed here. Hands-on trial pacing, copy legibility, sound mix, and remote
+  prediction remain pending. Next add a short optional interaction drill where
+  two elements combine through geometry, starting with Gale bending a hostile
+  spell or Tide redirecting Ember, without adding elemental damage bonuses.

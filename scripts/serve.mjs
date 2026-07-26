@@ -1,8 +1,8 @@
 import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
-import { readFile } from "node:fs/promises";
-import { extname, resolve, sep } from "node:path";
-import { networkInterfaces } from "node:os";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
+import { extname, join, resolve, sep } from "node:path";
+import { networkInterfaces, tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 
@@ -10,7 +10,7 @@ import { MATCH_TUNING } from "../src/content.mjs";
 import { LobbyService } from "../src/lobbies.mjs";
 
 const root = resolve(fileURLToPath(new URL("../", import.meta.url)));
-const serverVersion = "0.9.1";
+const serverVersion = "0.31.0";
 const protocolVersion = 2;
 const requestedPort =
   argumentValue("--port") ?? process.env.PORT ?? process.env.DIFF_PORT ?? "8000";
@@ -22,12 +22,17 @@ const host =
   "127.0.0.1";
 const healthPath = "/__diff_health";
 const lobbyPath = "/api/lobbies";
+const instanceId = randomUUID();
+const registryDirectory = join(tmpdir(), "diff-arena-servers");
+const registryPath = join(registryDirectory, `${sanitizeRegistryPart(host)}-${port}.json`);
 const publicFiles = new Set([
   "/index.html",
   "/styles.css",
   "/src/content.mjs",
   "/src/game.mjs",
   "/src/match.mjs",
+  "/src/network-conditioner.mjs",
+  "/src/network-quality.mjs",
 ]);
 const contentTypes = new Map([
   [".css", "text/css; charset=utf-8"],
@@ -74,6 +79,7 @@ const server = createServer(async (request, response) => {
           status: "ready",
           version: serverVersion,
           protocol: protocolVersion,
+          instance: instanceId,
         }),
       );
       return;
@@ -204,8 +210,20 @@ const tickInterval = setInterval(
 );
 tickInterval.unref();
 
-server.listen(port, host, () => {
-  console.log(`DIFF is running at http://${displayHost(host)}:${port}`);
+server.once("error", (error) => {
+  clearInterval(tickInterval);
+  const address = `http://${displayHost(host)}:${port}`;
+  if (error?.code === "EADDRINUSE") {
+    console.error(`Cannot start HEX at ${address}: that port is already in use.`);
+  } else {
+    console.error(`Cannot start HEX at ${address}: ${error?.message ?? error}`);
+  }
+  process.exitCode = 1;
+});
+
+server.listen(port, host, async () => {
+  await registerServer();
+  console.log(`HEX is running at http://${displayHost(host)}:${port}`);
   if (host === "0.0.0.0" || host === "::") {
     console.log("Remote lobbies enabled on all network interfaces.");
     for (const address of localNetworkAddresses()) {
@@ -214,7 +232,12 @@ server.listen(port, host, () => {
   }
 });
 
-server.on("close", () => clearInterval(tickInterval));
+server.on("close", () => {
+  clearInterval(tickInterval);
+  void removeServerRegistration();
+});
+process.once("SIGINT", shutdown);
+process.once("SIGTERM", shutdown);
 
 function respond(response, status, message) {
   response.writeHead(status, {
@@ -230,6 +253,13 @@ function handleClientMessage(service, clientId, message, send) {
   }
   if (message.type === "list") {
     return { ok: true, lobbies: service.list() };
+  }
+  if (message.type === "probe") {
+    if (!Number.isInteger(message.sequence) || message.sequence < 1 || message.sequence > 1_000_000_000) {
+      return { ok: false, code: "invalid-probe", message: "Probe sequence must be a positive integer." };
+    }
+    send({ type: "probe", sequence: message.sequence });
+    return null;
   }
   if (message.type === "host") {
     return service.host(clientId, message.options, send);
@@ -272,6 +302,44 @@ function argumentValue(name) {
   const prefix = `${name}=`;
   const match = process.argv.find((argument) => argument.startsWith(prefix));
   return match?.slice(prefix.length);
+}
+
+async function registerServer() {
+  await mkdir(registryDirectory, { recursive: true });
+  await writeFile(
+    registryPath,
+    JSON.stringify({
+      product: "DIFF",
+      pid: process.pid,
+      root,
+      host,
+      port,
+      version: serverVersion,
+      startedAt: new Date().toISOString(),
+      instance: instanceId,
+    }),
+    { encoding: "utf8", mode: 0o600 },
+  );
+}
+
+async function removeServerRegistration() {
+  try {
+    await unlink(registryPath);
+  } catch (error) {
+    if (error?.code !== "ENOENT") console.error("Could not remove DIFF server record:", error);
+  }
+}
+
+function shutdown() {
+  for (const client of webSockets.clients) client.terminate();
+  webSockets.close();
+  server.close(() => {
+    void removeServerRegistration().finally(() => process.exit(0));
+  });
+}
+
+function sanitizeRegistryPart(value) {
+  return String(value).replace(/[^a-z0-9.-]+/gi, "_");
 }
 
 function localNetworkAddresses() {

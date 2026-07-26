@@ -16,10 +16,11 @@ printf 'Installing locked dependencies...\n'
 env npm_config_cache="${TMPDIR:-/tmp}/diff-npm-cache" npm ci --ignore-scripts
 
 printf 'Checking source syntax...\n'
-for source_file in src/*.mjs scripts/serve.mjs; do
+for source_file in src/*.mjs scripts/*.mjs; do
   node --check "${source_file}"
 done
 bash -n scripts/pull-and-run.sh
+bash -n scripts/install-desktop-linux.sh
 bash -n scripts/test-changes.sh
 
 printf 'Running the full DIFF regression suite...\n'
@@ -60,7 +61,7 @@ if [[ -z "${port}" ]]; then
   exit 1
 fi
 
-printf '\nDIFF 0.9.1 passed verification.\n'
+printf '\nHEX 0.31.0 passed verification.\n'
 printf 'Open http://127.0.0.1:%s and test every mode shortcut plus F1 field info.\n' "${port}"
 printf 'Press Ctrl+C here to stop the server.\n'
 

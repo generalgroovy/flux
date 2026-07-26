@@ -6,8 +6,15 @@ readonly REPOSITORY="${DIFF_REPOSITORY:-https://github.com/generalgroovy/diff.gi
 readonly PROJECTS_DIR="${HOME}/Projects"
 readonly DEFAULT_DIR="${PROJECTS_DIR}/diff"
 
-if [[ $# -gt 1 ]]; then
-  printf 'Usage: %s [repository-directory]\n' "$0" >&2
+if [[ $# -gt 2 ]]; then
+  printf 'Usage: %s [repository-directory] [branch]\n' "$0" >&2
+  exit 2
+fi
+
+readonly BRANCH="${2:-${DIFF_BRANCH:-main}}"
+
+if [[ ! "${BRANCH}" =~ ^[A-Za-z0-9._/-]+$ ]] || [[ "${BRANCH}" == -* ]] || [[ "${BRANCH}" == *..* ]]; then
+  printf 'DIFF_BRANCH is not a safe Git branch name: %s\n' "${BRANCH}" >&2
   exit 2
 fi
 
@@ -54,7 +61,7 @@ diff_is_ready() {
           response.ok &&
             body.product === "DIFF" &&
             body.status === "ready" &&
-            body.version === "0.9.1" &&
+            body.version === "0.31.0" &&
             body.protocol === 2
             ? 0
             : 1
@@ -83,7 +90,7 @@ fi
 if [[ "${REPOSITORY}" == https://github.com/* ]] && ! command -v gh >/dev/null 2>&1; then
   printf '%s\n' \
     'GitHub CLI is required for this private repository.' \
-    'Install it on Garuda with: sudo pacman -S --needed github-cli' >&2
+    'Install it with your system package manager (package: github-cli).' >&2
   exit 1
 fi
 
@@ -102,7 +109,7 @@ export GIT_TERMINAL_PROMPT=0
 if [[ ! -e "${repo_dir}" ]]; then
   mkdir -p -- "$(dirname -- "${repo_dir}")"
   printf 'Cloning DIFF into %s\n' "${repo_dir}"
-  if ! git clone --origin origin --branch main "${REPOSITORY}" "${repo_dir}"; then
+  if ! git clone --origin origin --branch "${BRANCH}" "${REPOSITORY}" "${repo_dir}"; then
     printf '%s\n' \
       'Clone failed. Authenticate first with:' \
       'gh auth login --hostname github.com --git-protocol https --web' >&2
@@ -128,22 +135,22 @@ else
   git remote add origin "${REPOSITORY}"
 fi
 
-printf 'Fetching DIFF main...\n'
-if ! git fetch --prune origin main; then
+printf 'Fetching DIFF %s...\n' "${BRANCH}"
+if ! git fetch --prune origin "${BRANCH}"; then
   printf '%s\n' \
     'Fetch failed. Authenticate first with:' \
     'gh auth login --hostname github.com --git-protocol https --web' >&2
   exit 1
 fi
 
-if git show-ref --verify --quiet refs/heads/main; then
-  git switch main
+if git show-ref --verify --quiet "refs/heads/${BRANCH}"; then
+  git switch "${BRANCH}"
 else
-  git switch --create main --track origin/main
+  git switch --create "${BRANCH}" --track "origin/${BRANCH}"
 fi
 
-git branch --set-upstream-to=origin/main main
-git pull --ff-only origin main
+git branch --set-upstream-to="origin/${BRANCH}" "${BRANCH}"
+git pull --ff-only origin "${BRANCH}"
 
 if [[ ! -f package.json ]]; then
   printf 'Update completed, but package.json is missing from %s\n' "${repo_dir}" >&2
@@ -217,5 +224,14 @@ if [[ "${ready}" != true ]]; then
 fi
 
 printf '\nDIFF is ready at %s\n' "${url}"
+if [[ "${DIFF_OPEN_BROWSER:-0}" == 1 ]]; then
+  if command -v xdg-open >/dev/null 2>&1; then
+    if ! xdg-open "${url}" >/dev/null 2>&1; then
+      printf 'Desktop browser handoff failed; open %s manually.\n' "${url}" >&2
+    fi
+  else
+    printf 'xdg-open is unavailable; open %s manually.\n' "${url}" >&2
+  fi
+fi
 printf 'Open that address in your browser. Press Ctrl+C here to stop DIFF.\n'
 wait "${server_pid}"

@@ -5,6 +5,7 @@ import {
   CHARACTERS,
   MAPS,
   MODES,
+  RACES,
   MATCH_TUNING,
   getCharacter,
   validateContent,
@@ -30,12 +31,17 @@ const idle = Object.freeze({
   special: false,
   defend: false,
   mobility: false,
+  sprint: false,
+  hop: false,
+  ultimate: false,
 });
 
 function duel({
   leftCharacter = "kite",
   rightCharacter = "bulwark",
   mapId = "crosswind",
+  leftRace = "human",
+  rightRace = "human",
 } = {}) {
   const state = createMatch({
     modeId: "duel",
@@ -45,12 +51,14 @@ function duel({
       {
         id: "left",
         characterId: leftCharacter,
+        raceId: leftRace,
         team: "alpha",
         human: true,
       },
       {
         id: "right",
         characterId: rightCharacter,
+        raceId: rightRace,
         team: "beta",
         human: true,
       },
@@ -74,10 +82,41 @@ function duel({
   return state;
 }
 
-test("content ships eight complete agents, four maps, and all five mode gates", () => {
+function playerFor(state) {
+  return state.entities.find((entity) => entity.human);
+}
+
+function trainingProjectile(state, player, spar) {
+  return {
+    id: state.nextProjectileId++,
+    ownerId: spar.id,
+    team: spar.team,
+    source: "training",
+    x: player.x + 20,
+    y: player.y,
+    previousX: player.x + 25,
+    previousY: player.y,
+    vx: -600,
+    vy: 0,
+    radius: 5,
+    damage: MATCH_TUNING.training.pressureDamage,
+    lifetime: 1,
+    knockback: 0,
+    pierce: 0,
+    heavy: false,
+    reflected: false,
+    fieldIds: [],
+    guidedBy: null,
+    guidedRemaining: 0,
+    turnRate: 0,
+  };
+}
+
+test("content ships ten playable champions, thirteen races, eight maps, and all five mode gates", () => {
   assert.deepEqual(validateContent(), []);
-  assert.equal(CHARACTERS.length, 8);
-  assert.ok(MAPS.length >= 4);
+  assert.equal(CHARACTERS.length, 10);
+  assert.equal(RACES.length, 13);
+  assert.ok(MAPS.length >= 8);
   assert.deepEqual(
     new Set(MODES.map((mode) => mode.id)),
     new Set(["training", "duel", "control", "convergence", "survival"]),
@@ -86,14 +125,779 @@ test("content ships eight complete agents, four maps, and all five mode gates", 
     new Set(CHARACTERS.map((agent) => agent.silhouette)).size,
     CHARACTERS.length,
   );
+  assert.ok(
+    validateContent({
+      tuning: {
+        ...MATCH_TUNING,
+        flow: { ...MATCH_TUNING.flow, hopCost: 101 },
+      },
+    }).includes("flow.hopCost must not exceed flow.maximum"),
+  );
   for (const agent of CHARACTERS) {
     assert.ok(agent.radius < 21);
     assert.ok(agent.glyph);
     assert.ok(agent.primary.name);
     assert.ok(agent.special.name);
+    assert.equal(agent.tactical, agent.special);
     assert.ok(agent.defense.name);
     assert.ok(agent.mobility.name);
+    assert.ok(agent.affinity.id);
+    assert.equal(agent.affinity.kind, "element");
   }
+  const yrsa = getCharacter("rimewing");
+  assert.equal(yrsa.passive.kind, "movement-prime");
+  assert.equal(yrsa.ultimate.kind, "line-volley");
+  assert.equal(yrsa.ultimate.chargeRequired, MATCH_TUNING.ultimate.maximum);
+  const varka = getCharacter("ashmaw");
+  assert.equal(varka.passive.kind, "field-temper");
+  assert.equal(varka.ultimate.kind, "field-crown");
+  const aerwyn = getCharacter("kite");
+  assert.equal(aerwyn.passive.kind, "reflect-guide");
+  assert.equal(aerwyn.ultimate.kind, "wind-vortex");
+});
+
+test("every arena is an authored old-world place rather than a bare combat grid", () => {
+  for (const map of MAPS) {
+    assert.ok(map.region);
+    assert.ok(map.terrain);
+    assert.ok(map.lore.length >= 80);
+    assert.ok(map.heraldry);
+    assert.ok(map.landmarks.length >= 2);
+    assert.ok(map.landmarks.some((landmark) => landmark.type === "rune"));
+  }
+});
+
+test("The Fracture ships a complete nested scale ladder", () => {
+  const fractureMaps = MAPS.filter((map) => map.regionId === "fracture");
+  assert.deepEqual(
+    new Set(fractureMaps.map((map) => map.scale)),
+    new Set(["duel", "small", "medium", "large"]),
+  );
+  assert.equal(new Set(fractureMaps.map((map) => map.id)).size, 4);
+  assert.ok(fractureMaps.every((map) => Number.isFinite(map.atlas.regionX)));
+  assert.ok(fractureMaps.every((map) => Number.isFinite(map.atlas.regionY)));
+});
+
+test("the covenant shrine rewards committed movement without passive damage", () => {
+  const state = duel({ mapId: "oathscar_vale", hazardsEnabled: false });
+  const runner = state.entities[0];
+  runner.x = 680;
+  runner.y = 450;
+  runner.lastSafeX = runner.x;
+  runner.lastSafeY = runner.y;
+  runner.flux = 40;
+  let claim = null;
+  for (let tick = 0; tick < 40 && !claim; tick += 1) {
+    stepMatch(state, {
+      [runner.id]: {
+        moveX: 1, moveY: 0, aimX: 1, aimY: 0,
+        mobility: tick === 0,
+      },
+    });
+    claim = state.events.find((event) => event.type === "shrineClaim") ?? null;
+  }
+  assert.ok(claim);
+  assert.equal(claim.entityId, runner.id);
+  assert.ok(runner.flux > 40);
+  assert.equal(state.shrines[0].readyIn > 6, true);
+  assert.equal(state.entities[1].health, state.entities[1].maxHealth);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("race tradeoffs alter bounded resources without replacing character kits", () => {
+  const state = duel({ leftRace: "sylph", rightRace: "stonekin" });
+  const [sylph, stonekin] = state.entities;
+  assert.ok(sylph.speedScale > stonekin.speedScale);
+  assert.ok(sylph.maxHealth < stonekin.maxHealth);
+  assert.equal(sylph.characterId, "kite");
+  assert.equal(stonekin.characterId, "bulwark");
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("Wyrmbound trade FLOW for readable forced-movement resistance", () => {
+  const human = duel({ leftCharacter: "bulwark", rightRace: "human" });
+  const scaled = duel({ leftCharacter: "bulwark", rightRace: "wyrmbound" });
+  for (const state of [human, scaled]) {
+    state.entities[1].x = 440;
+    state.entities[1].y = 450;
+    state.entities[1].lastSafeX = 440;
+    state.entities[1].lastSafeY = 450;
+    stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
+  }
+  assert.ok(Math.abs(scaled.entities[1].vx) < Math.abs(human.entities[1].vx));
+  assert.ok(scaled.entities[1].maxFlow < human.entities[1].maxFlow);
+  assert.equal(
+    human.entities[1].maxHealth - human.entities[1].health,
+    scaled.entities[1].maxHealth - scaled.entities[1].health,
+  );
+  assert.deepEqual(matchInvariantErrors(scaled), []);
+});
+
+test("Aerwyn converts a successful spell turn into one bounded aim-guided needle", () => {
+  const state = duel({ leftCharacter: "kite", rightCharacter: "kite" });
+  const [aerwyn, attacker] = state.entities;
+  const kit = getCharacter("kite");
+  state.projectiles.push({
+    id: state.nextProjectileId++,
+    ownerId: attacker.id,
+    team: attacker.team,
+    source: "primary",
+    x: aerwyn.x - 20,
+    y: aerwyn.y,
+    previousX: aerwyn.x - 25,
+    previousY: aerwyn.y,
+    vx: 600,
+    vy: 0,
+    radius: 5,
+    damage: 20,
+    lifetime: 1,
+    knockback: 0,
+    pierce: 0,
+    heavy: false,
+    reflected: false,
+    fieldIds: [],
+    guidedBy: null,
+    guidedRemaining: 0,
+    turnRate: 0,
+  });
+  stepMatch(state, { left: { ...idle, defend: true } }, FIXED_DELTA);
+  assert.equal(state.events.some((event) => event.type === "reflect"), true);
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "passivePrimed" && event.trigger === "SPELL TURN",
+    ),
+    true,
+  );
+  assert.ok(aerwyn.passiveRemaining > 1);
+
+  attacker.x = 1100;
+  attacker.y = 760;
+  attacker.lastSafeX = attacker.x;
+  attacker.lastSafeY = attacker.y;
+  stepMatch(state, { left: { ...idle, fire: true } }, FIXED_DELTA);
+  const guided = state.projectiles.find(
+    (projectile) => projectile.guidedBy === aerwyn.id && projectile.source === "primary",
+  );
+  assert.ok(guided);
+  assert.equal(guided.damage, kit.primary.damage);
+  assert.equal(guided.guidedBy, aerwyn.id);
+  assert.ok(guided.guidedRemaining > 0);
+  assert.ok(
+    Math.abs(Math.hypot(guided.vx, guided.vy) - kit.primary.speed * kit.passive.speedMultiplier) < 0.001,
+  );
+  assert.equal(aerwyn.passiveRemaining, 0);
+  assert.equal(state.events.some((event) => event.type === "passiveGuided"), true);
+
+  const speedBeforeTurn = Math.hypot(guided.vx, guided.vy);
+  stepMatch(state, { left: { ...idle, aimX: 0, aimY: -1 } }, FIXED_DELTA);
+  const turnedAngle = Math.atan2(guided.vy, guided.vx);
+  assert.ok(turnedAngle < 0);
+  assert.ok(Math.abs(turnedAngle) <= kit.passive.turnRate * FIXED_DELTA + 1e-8);
+  assert.ok(Math.abs(Math.hypot(guided.vx, guided.vy) - speedBeforeTurn) < 0.001);
+  for (let tick = 0; tick < Math.ceil(kit.passive.guideDuration / FIXED_DELTA) + 2; tick += 1) {
+    stepMatch(state, { left: { ...idle, aimX: 0, aimY: -1 } }, FIXED_DELTA);
+  }
+  assert.equal(
+    state.projectiles.includes(guided) ? guided.guidedRemaining : 0,
+    0,
+  );
+
+  state.projectiles = state.projectiles.filter((projectile) => projectile !== guided);
+  Object.assign(guided, {
+    ownerId: aerwyn.id,
+    team: aerwyn.team,
+    x: attacker.x - 20,
+    y: attacker.y,
+    previousX: attacker.x - 25,
+    previousY: attacker.y,
+    vx: 600,
+    vy: 0,
+    lifetime: 1,
+    fieldIds: [],
+    guidedBy: aerwyn.id,
+    guidedRemaining: 0.3,
+    turnRate: kit.passive.turnRate,
+  });
+  state.projectiles.push(guided);
+  stepMatch(state, { right: { ...idle, defend: true } }, FIXED_DELTA);
+  assert.equal(guided.ownerId, attacker.id);
+  assert.equal(guided.guidedBy, null);
+  assert.equal(guided.guidedRemaining, 0);
+  assert.ok(attacker.passiveRemaining > 0);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("The Turning Sky creates one shared vortex with physical, counterable interactions", () => {
+  const state = duel({ leftCharacter: "kite", rightCharacter: "orbit" });
+  const [aerwyn, nullCantor] = state.entities;
+  const ultimate = getCharacter("kite").ultimate;
+  aerwyn.ultimateCharge = aerwyn.maxUltimate;
+  stepMatch(state, { left: { ...idle, ultimate: true } }, FIXED_DELTA);
+  assert.equal(aerwyn.ultimateCharge, 0);
+  assert.ok(aerwyn.ultimateTargetX > aerwyn.x);
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "ultimateTell" && event.kind === "wind-vortex",
+    ),
+    true,
+  );
+  assert.equal(state.elementFields.length, 0);
+
+  for (let tick = 0; tick < Math.ceil(ultimate.windup / FIXED_DELTA) + 3; tick += 1) {
+    stepMatch(state, {}, FIXED_DELTA);
+  }
+  const vortex = state.elementFields.find(
+    (field) => field.ownerId === aerwyn.id && field.shape === "vortex",
+  );
+  assert.ok(vortex);
+  assert.equal(
+    state.elementFields.filter(
+      (field) => field.ownerId === aerwyn.id && field.source === "ultimate",
+    ).length,
+    1,
+  );
+
+  nullCantor.x = vortex.x - 90;
+  nullCantor.y = vortex.y;
+  nullCantor.lastSafeX = nullCantor.x;
+  nullCantor.lastSafeY = nullCantor.y;
+  nullCantor.vx = 0;
+  nullCantor.vy = 0;
+  const healthBefore = nullCantor.health;
+  state.projectiles.push({
+    id: state.nextProjectileId++,
+    ownerId: aerwyn.id,
+    team: aerwyn.team,
+    source: "primary",
+    x: vortex.x - vortex.radius + 4,
+    y: vortex.y - 30,
+    previousX: vortex.x - vortex.radius,
+    previousY: vortex.y - 30,
+    vx: 600,
+    vy: 0,
+    radius: 4,
+    damage: 1,
+    lifetime: 2,
+    knockback: 0,
+    pierce: 0,
+    heavy: false,
+    reflected: false,
+    fieldIds: [],
+    guidedBy: null,
+    guidedRemaining: 0,
+    turnRate: 0,
+  });
+  const spell = state.projectiles.at(-1);
+  const spellSpeed = Math.hypot(spell.vx, spell.vy);
+  state.elementFields.push({
+    id: `element-${state.nextElementFieldId++}`,
+    ownerId: aerwyn.id,
+    team: aerwyn.team,
+    element: "fire",
+    x: vortex.x + 100,
+    y: vortex.y,
+    radius: 26,
+    duration: 2,
+    pulseRemaining: 0,
+  });
+  const ember = state.elementFields.at(-1);
+  const emberY = ember.y;
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.ok(nullCantor.vy < 0);
+  assert.equal(nullCantor.health, healthBefore);
+  assert.ok(ember.y > emberY);
+  assert.ok(spell.vy < 0);
+  assert.ok(Math.abs(Math.hypot(spell.vx, spell.vy) - spellSpeed) < 0.001);
+  assert.deepEqual(spell.fieldIds, [vortex.id]);
+  const angleAfterEntry = Math.atan2(spell.vy, spell.vx);
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.equal(Math.atan2(spell.vy, spell.vx), angleAfterEntry);
+
+  nullCantor.x = vortex.x;
+  nullCantor.y = vortex.y;
+  nullCantor.lastSafeX = nullCantor.x;
+  nullCantor.lastSafeY = nullCantor.y;
+  nullCantor.specialCooldown = 0;
+  stepMatch(state, { right: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(
+    state.elementFields.some((field) => field.id === vortex.id),
+    false,
+  );
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "elementReaction" && event.reaction === "nullify",
+    ),
+    true,
+  );
+  assert.equal(aerwyn.ultimateCharge, 0);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("Yrsa converts mastered universal movement into one precise non-damage prime", () => {
+  const state = duel({ leftCharacter: "rimewing" });
+  const yrsa = state.entities[0];
+  const kit = getCharacter("rimewing");
+  yrsa.wallContactRemaining = MATCH_TUNING.flow.wallMemory;
+  yrsa.wallX = -1;
+  yrsa.wallY = 0;
+  stepMatch(
+    state,
+    { left: { ...idle, moveY: 1, hop: true } },
+    FIXED_DELTA,
+  );
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "passivePrimed" && event.trigger === "WALL KICK",
+    ),
+    true,
+  );
+  assert.ok(yrsa.passiveRemaining > 1);
+
+  stepMatch(state, { left: { ...idle, fire: true } }, FIXED_DELTA);
+  const fangs = state.projectiles.filter(
+    (projectile) => projectile.ownerId === yrsa.id && projectile.source === "primary",
+  );
+  assert.equal(fangs.length, 2);
+  assert.ok(Math.hypot(fangs[0].vx, fangs[0].vy) > kit.primary.speed);
+  const angleGap = Math.abs(
+    Math.atan2(fangs[1].vy, fangs[1].vx) -
+      Math.atan2(fangs[0].vy, fangs[0].vx),
+  );
+  assert.ok(angleGap < kit.primary.spread);
+  assert.ok(fangs.every((projectile) => projectile.damage === kit.primary.damage));
+  assert.equal(yrsa.passiveRemaining, 0);
+  assert.equal(state.events.some((event) => event.type === "passiveSpent"), true);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("The White Hunt earns charge through damage and resolves a counterable marked lane", () => {
+  const state = duel({ leftCharacter: "rimewing" });
+  const [yrsa, target] = state.entities;
+  const ultimate = getCharacter("rimewing").ultimate;
+  target.x = 450;
+  target.y = yrsa.y;
+  target.lastSafeX = target.x;
+  target.lastSafeY = target.y;
+  yrsa.ultimateCharge = 90;
+  stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(yrsa.ultimateCharge, ultimate.chargeRequired);
+  assert.equal(state.events.some((event) => event.type === "ultimateReady"), true);
+
+  yrsa.specialCooldown = 0;
+  stepMatch(state, { left: { ...idle, ultimate: true } }, FIXED_DELTA);
+  assert.equal(yrsa.ultimateCharge, 0);
+  assert.ok(yrsa.ultimateWindupRemaining > 0);
+  assert.equal(state.elementFields.length, 1);
+  assert.equal(state.events.some((event) => event.type === "ultimateTell"), true);
+  assert.equal(
+    state.projectiles.some((projectile) => projectile.source === "ultimate"),
+    false,
+  );
+  target.y += 280;
+  target.lastSafeY = target.y;
+
+  let cast = false;
+  for (let tick = 0; tick < Math.ceil(ultimate.windup / FIXED_DELTA) + 3; tick += 1) {
+    stepMatch(
+      state,
+      { left: { ...idle, aimX: 0, aimY: 1, fire: true } },
+      FIXED_DELTA,
+    );
+    cast ||= state.events.some((event) => event.type === "ultimateCast");
+  }
+  assert.equal(cast, true);
+  assert.equal(
+    state.projectiles.filter((projectile) => projectile.source === "ultimate").length,
+    ultimate.count,
+  );
+  assert.equal(
+    state.elementFields.filter(
+      (field) => field.element === "ice" && field.source === "ultimate",
+    ).length,
+    ultimate.fieldCount,
+  );
+  assert.ok(state.projectiles.every((projectile) => projectile.damage <= ultimate.damage));
+  target.x = yrsa.x + 82;
+  target.y = yrsa.y;
+  target.lastSafeX = target.x;
+  target.lastSafeY = target.y;
+  target.damageInvulnerability = 0;
+  const beforeUltimateHit = target.health;
+  for (let tick = 0; tick < 8 && target.health === beforeUltimateHit; tick += 1) {
+    stepMatch(state, { left: idle }, FIXED_DELTA);
+  }
+  assert.ok(target.health < beforeUltimateHit);
+  assert.equal(yrsa.ultimateCharge, 0);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("Volt interruption cancels The White Hunt during its visible commitment", () => {
+  const state = duel({ leftCharacter: "rimewing", rightCharacter: "volt" });
+  const yrsa = state.entities[0];
+  yrsa.ultimateCharge = yrsa.maxUltimate;
+  stepMatch(state, { left: { ...idle, ultimate: true } }, FIXED_DELTA);
+  yrsa.interruptRemaining = MATCH_TUNING.elements.lightningInterrupt;
+  stepMatch(state, { left: idle }, FIXED_DELTA);
+  assert.equal(yrsa.ultimateWindupRemaining, 0);
+  assert.equal(yrsa.ultimateResolvePending, false);
+  assert.equal(state.events.some((event) => event.type === "ultimateInterrupted"), true);
+  assert.equal(
+    state.projectiles.some((projectile) => projectile.source === "ultimate"),
+    false,
+  );
+  for (let tick = 0; tick < MATCH_TUNING.tickRate; tick += 1) {
+    stepMatch(state, { left: idle }, FIXED_DELTA);
+  }
+  assert.equal(
+    state.projectiles.some((projectile) => projectile.source === "ultimate"),
+    false,
+  );
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("Varka trades projectile speed for weight only while owning Ember terrain", () => {
+  const state = duel({ leftCharacter: "ashmaw", rightCharacter: "mend" });
+  const [varka, tide] = state.entities;
+  const kit = getCharacter("ashmaw");
+  stepMatch(state, { left: { ...idle, fire: true } }, FIXED_DELTA);
+  const ordinary = state.projectiles.find(
+    (projectile) => projectile.ownerId === varka.id,
+  );
+  assert.equal(ordinary.heavy, false);
+  state.projectiles = [];
+
+  varka.primaryCooldown = 0;
+  stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
+  const furrow = state.elementFields.filter(
+    (field) => field.ownerId === varka.id && field.source === "tactical",
+  );
+  assert.equal(furrow.length, kit.tactical.fieldCount);
+  varka.x = furrow[0].x;
+  varka.y = furrow[0].y;
+  varka.lastSafeX = varka.x;
+  varka.lastSafeY = varka.y;
+  const healthBefore = varka.health;
+  stepMatch(state, { left: idle }, FIXED_DELTA);
+  assert.equal(varka.passiveActive, true);
+  assert.equal(varka.health, healthBefore);
+
+  varka.primaryCooldown = 0;
+  stepMatch(state, { left: { ...idle, fire: true } }, FIXED_DELTA);
+  const tempered = state.projectiles.find(
+    (projectile) => projectile.ownerId === varka.id,
+  );
+  assert.equal(tempered.heavy, true);
+  assert.equal(tempered.damage, ordinary.damage);
+  assert.ok(Math.hypot(tempered.vx, tempered.vy) < Math.hypot(ordinary.vx, ordinary.vy));
+  assert.ok(tempered.radius > ordinary.radius);
+  assert.ok(tempered.knockback > ordinary.knockback);
+  assert.equal(state.events.some((event) => event.type === "passiveConverted"), true);
+
+  tide.x = furrow[0].x;
+  tide.y = furrow[0].y;
+  tide.lastSafeX = tide.x;
+  tide.lastSafeY = tide.y;
+  stepMatch(state, { right: { ...idle, special: true } }, FIXED_DELTA);
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.ok(
+    state.elementFields.filter(
+      (field) => field.ownerId === varka.id && field.source === "tactical",
+    ).length < furrow.length,
+  );
+  assert.equal(
+    state.events.some(
+      (event) => ["douse", "redirect"].includes(event.reaction),
+    ),
+    true,
+  );
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("The Ashen Crown telegraphs open seams, cannot self-charge, and yields to Null", () => {
+  const state = duel({ leftCharacter: "ashmaw", rightCharacter: "orbit" });
+  const [varka, nullCantor] = state.entities;
+  const ultimate = getCharacter("ashmaw").ultimate;
+  varka.ultimateCharge = varka.maxUltimate;
+  stepMatch(state, { left: { ...idle, ultimate: true } }, FIXED_DELTA);
+  assert.equal(varka.ultimateCharge, 0);
+  assert.ok(varka.ultimateTargetX > varka.x);
+  assert.equal(state.events.some((event) => event.type === "ultimateTell"), true);
+  nullCantor.x = varka.ultimateTargetX + ultimate.crownRadius;
+  nullCantor.y = varka.ultimateTargetY;
+  nullCantor.lastSafeX = nullCantor.x;
+  nullCantor.lastSafeY = nullCantor.y;
+  const healthBefore = nullCantor.health;
+
+  let cast = false;
+  for (let tick = 0; tick < Math.ceil(ultimate.windup / FIXED_DELTA) + 3; tick += 1) {
+    stepMatch(state, {}, FIXED_DELTA);
+    cast ||= state.events.some((event) => event.type === "ultimateCast");
+  }
+  assert.equal(cast, true);
+  const crown = state.elementFields.filter(
+    (field) => field.ownerId === varka.id && field.source === "ultimate",
+  );
+  assert.equal(crown.length, ultimate.fieldCount);
+  assert.ok(
+    crown.every(
+      (field) =>
+        Math.abs(
+          Math.hypot(
+            field.x - varka.ultimateTargetX,
+            field.y - varka.ultimateTargetY,
+          ) - ultimate.crownRadius,
+        ) < 0.001,
+    ),
+  );
+  assert.ok(
+    ultimate.fieldRadius * 2 * ultimate.fieldCount <
+      Math.PI * 2 * ultimate.crownRadius * 0.72,
+  );
+  assert.ok(nullCantor.health < healthBefore);
+  assert.equal(varka.ultimateCharge, 0);
+
+  nullCantor.x = varka.ultimateTargetX;
+  nullCantor.y = varka.ultimateTargetY;
+  nullCantor.lastSafeX = nullCantor.x;
+  nullCantor.lastSafeY = nullCantor.y;
+  nullCantor.specialCooldown = 0;
+  stepMatch(state, { right: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(
+    state.elementFields.some(
+      (field) => field.ownerId === varka.id && field.source === "ultimate",
+    ),
+    false,
+  );
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "elementReaction" && event.reaction === "nullify",
+    ),
+    true,
+  );
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("bots commit authored targeted ultimates through the shared command path", () => {
+  for (const characterId of ["ashmaw", "kite"]) {
+    const state = createMatch({
+      modeId: "duel",
+      mapId: "crosswind",
+      botCount: 1,
+      botCharacterIds: [characterId],
+      players: [
+        {
+          id: "human",
+          characterId: "kite",
+          raceId: "human",
+          team: "alpha",
+          human: true,
+        },
+      ],
+    });
+    const human = state.entities.find((entity) => entity.human);
+    const bot = state.entities.find((entity) => entity.bot);
+    human.x = 350;
+    human.y = 450;
+    human.lastSafeX = human.x;
+    human.lastSafeY = human.y;
+    bot.x = 600;
+    bot.y = 450;
+    bot.lastSafeX = bot.x;
+    bot.lastSafeY = bot.y;
+    bot.ultimateCharge = bot.maxUltimate;
+    bot.botThinkRemaining = 0;
+    stepMatch(state, { human: idle }, FIXED_DELTA);
+    assert.equal(bot.ultimateCharge, 0);
+    assert.ok(bot.ultimateWindupRemaining > 0);
+    assert.equal(
+      state.events.some(
+        (event) => event.type === "ultimateTell" && event.entityId === bot.id,
+      ),
+      true,
+    );
+    assert.deepEqual(matchInvariantErrors(state), []);
+  }
+});
+
+test("elemental specials author persistent, counterable arena state", () => {
+  const wind = duel({ leftCharacter: "kite", rightCharacter: "rook" });
+  stepMatch(wind, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(wind.elementFields.some((field) => field.element === "wind"), true);
+  stepMatch(wind, {}, FIXED_DELTA);
+  assert.ok(wind.entities[0].elementForceX > 0);
+
+  const earth = duel({ leftCharacter: "bulwark", rightCharacter: "rook" });
+  earth.entities[0].y = 700;
+  earth.entities[1].y = 700;
+  stepMatch(earth, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(earth.elementFields.some((field) => field.element === "earth"), true);
+
+  const ice = duel({ leftCharacter: "rimewing", rightCharacter: "rook" });
+  stepMatch(ice, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(ice.elementFields.some((field) => field.element === "ice"), true);
+
+  const veil = duel({ leftCharacter: "echo", rightCharacter: "rook" });
+  stepMatch(veil, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(veil.decoys.length, 1);
+  const originX = veil.entities[0].x;
+  veil.entities[0].x += 90;
+  veil.entities[0].specialCooldown = 0;
+  stepMatch(veil, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(veil.entities[0].x, originX);
+  assert.equal(veil.decoys.length, 0);
+
+  const lightning = duel({ leftCharacter: "volt", rightCharacter: "rook" });
+  stepMatch(lightning, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.ok(lightning.entities[1].interruptRemaining > 0);
+  assert.equal(
+    lightning.events.some((event) => event.type === "elementInterrupt"),
+    true,
+  );
+});
+
+test("water douses fire and rewards allied FLOW positioning", () => {
+  const state = duel({ leftCharacter: "mend", rightCharacter: "cinder" });
+  const mend = state.entities[0];
+  mend.flow = 20;
+  state.elementFields.push({
+    id: "test-fire",
+    ownerId: state.entities[1].id,
+    team: "beta",
+    element: "fire",
+    x: mend.x,
+    y: mend.y,
+    radius: 80,
+    duration: 2,
+    pulseRemaining: 0,
+  });
+  stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.equal(state.elementFields.some((field) => field.element === "fire"), false);
+  assert.ok(mend.flow > 20);
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "elementReaction" && event.reaction === "douse",
+    ),
+    true,
+  );
+});
+
+test("element fields resolve physical reactions deterministically", () => {
+  const state = duel();
+  const base = {
+    ownerId: state.entities[0].id,
+    team: "alpha",
+    x: 800,
+    y: 700,
+    radius: 80,
+    duration: 2,
+    pulseRemaining: 0,
+  };
+  state.elementFields = [
+    { ...base, id: "fire", element: "fire" },
+    { ...base, id: "ice", element: "ice" },
+  ];
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.equal(state.elementFields.length, 0);
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "elementReaction" && event.reaction === "melt",
+    ),
+    true,
+  );
+
+  state.elementFields = [
+    { ...base, id: "water", element: "water" },
+    { ...base, id: "ice-2", element: "ice" },
+  ];
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.deepEqual(state.elementFields.map((field) => field.element), ["ice"]);
+  assert.equal(
+    state.events.some((event) => event.reaction === "freeze"),
+    true,
+  );
+
+  state.elementFields = [
+    {
+      ...base,
+      id: "wind",
+      element: "wind",
+      directionX: 1,
+      directionY: 0,
+    },
+    { ...base, id: "carried-fire", element: "fire" },
+  ];
+  stepMatch(state, {}, FIXED_DELTA);
+  const carriedFire = state.elementFields.find((field) => field.element === "fire");
+  assert.ok(carriedFire.x > base.x);
+
+  state.elementFields = [
+    {
+      ...base,
+      id: "cross-gale",
+      element: "wind",
+      directionX: 0,
+      directionY: 1,
+    },
+  ];
+  state.projectiles = [
+    {
+      id: 900,
+      ownerId: state.entities[0].id,
+      team: "alpha",
+      source: "test",
+      x: base.x,
+      y: base.y,
+      previousX: base.x,
+      previousY: base.y,
+      vx: 600,
+      vy: 0,
+      radius: 4,
+      damage: 1,
+      lifetime: 1,
+      knockback: 0,
+      pierce: 0,
+      heavy: false,
+      reflected: false,
+      fieldIds: [],
+    },
+  ];
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.ok(state.projectiles[0].vy > 0);
+  assert.equal(state.events.some((event) => event.reaction === "deflect"), true);
+});
+
+test("Null erases nearby constructs only on its paid commitment", () => {
+  const state = duel({ leftCharacter: "orbit", rightCharacter: "rook" });
+  const orbit = state.entities[0];
+  state.elementFields = [
+    {
+      id: "movable-fire",
+      ownerId: state.entities[1].id,
+      team: "beta",
+      element: "fire",
+      x: orbit.x + 120,
+      y: orbit.y,
+      radius: 40,
+      duration: 2,
+      pulseRemaining: 1,
+    },
+    {
+      id: "fixed-stone",
+      ownerId: orbit.id,
+      team: "alpha",
+      element: "earth",
+      x: orbit.x - 100,
+      y: orbit.y + 80,
+      width: 24,
+      height: 100,
+      duration: 2,
+      pulseRemaining: 0,
+    },
+  ];
+  stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(state.elementFields.length, 0);
+  assert.equal(state.events.some((event) => event.reaction === "nullify"), true);
 });
 
 test("commands reject non-finite movement and aim without poisoning state", () => {
@@ -108,6 +912,28 @@ test("commands reject non-finite movement and aim without poisoning state", () =
     { ...idle, aimX: 0 },
   );
   assert.deepEqual(normalizeDirection(0, -10), { x: 0, y: -1 });
+});
+
+test("Flux creates payable commitments, dry tells, and delayed recovery", () => {
+  const state = duel();
+  const player = state.entities[0];
+  const specialCost = getCharacter(player.characterId).special.fluxCost;
+  stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(player.flux, player.maxFlux - specialCost);
+  assert.ok(player.fluxRecoveryDelay > 0);
+
+  player.specialCooldown = 0;
+  player.flux = specialCost - 1;
+  stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(player.specialCooldown, 0);
+  assert.equal(state.events.some((event) => event.type === "fluxDry"), true);
+
+  const dryFlux = player.flux;
+  for (let tick = 0; tick < MATCH_TUNING.tickRate; tick += 1) {
+    stepMatch(state, { left: idle }, FIXED_DELTA);
+  }
+  assert.ok(player.flux > dryFlux);
+  assert.ok(player.flux <= player.maxFlux);
 });
 
 test("dashing repeatedly into walls and corners never hides or corrupts an agent", () => {
@@ -292,6 +1118,7 @@ test("Cinder mines arm, detect hostile proximity, and apply one stable blast", (
   assert.equal(blasted, true);
   assert.ok(right.health < right.maxHealth);
   assert.equal(state.mines.length, 0);
+  assert.equal(state.elementFields.some((field) => field.element === "fire"), true);
 });
 
 test("death creates a bounded duel round break and clean reset", () => {
@@ -329,6 +1156,463 @@ test("training opponent stays non-lethal until movement and defense are taught",
   assert.equal(state.tutorial.step, 0);
   assert.equal(state.projectiles.length, 0);
   assert.equal(state.entities[0].health, state.entities[0].maxHealth);
+});
+
+test("First Rite spar authors its own bounded marked pressure", () => {
+  const state = createMatch({
+    modeId: "training",
+    mapId: "breakline",
+    characterId: "kite",
+    botCount: 1,
+  });
+  const player = playerFor(state);
+  const spar = state.entities.find((entity) => entity.bot);
+  state.tutorial.step = 2;
+  state.tutorial.mobility = true;
+  player.x = 430;
+  player.y = 280;
+  player.spawnProtection = 0;
+  spar.x = 650;
+  spar.y = 280;
+  spar.primaryCooldown = 0;
+  spar.botThinkRemaining = 0;
+
+  stepMatch(state, {}, FIXED_DELTA);
+
+  assert.equal(
+    state.events.some((event) => event.type === "trainingPressure"),
+    true,
+  );
+  const marked = state.projectiles.find(
+    (projectile) => projectile.source === "training",
+  );
+  assert.ok(marked);
+  assert.equal(marked.damage, MATCH_TUNING.training.pressureDamage);
+  assert.equal(marked.knockback, 0);
+  assert.equal(spar.primaryCooldown, MATCH_TUNING.training.pressureCooldown);
+  assert.equal(spar.ultimateCharge, 0);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("marked First Rite pressure is low damage and cannot eliminate the learner", () => {
+  const state = createMatch({
+    modeId: "training",
+    mapId: "breakline",
+    characterId: "kite",
+    botCount: 1,
+  });
+  const player = playerFor(state);
+  const spar = state.entities.find((entity) => entity.bot);
+  state.tutorial.step = 2;
+  state.tutorial.mobility = true;
+  player.spawnProtection = 0;
+  player.health = 4;
+  state.projectiles.push(trainingProjectile(state, player, spar));
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.equal(player.health, 1);
+  assert.equal(player.alive, true);
+  assert.equal(state.status, "playing");
+  assert.equal(state.tutorial.defended, false);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("counter-strafing cuts committed momentum with a readable skill cue", () => {
+  const state = duel();
+  const runner = state.entities[0];
+  for (let tick = 0; tick < 24; tick += 1) {
+    stepMatch(state, { [runner.id]: { ...idle, moveX: 1 } });
+  }
+  const forwardVelocity = runner.vx;
+  stepMatch(state, { [runner.id]: { ...idle, moveX: -1 } });
+  assert.ok(forwardVelocity >= MATCH_TUNING.flow.counterStrafeCueSpeed);
+  assert.ok(runner.vx < forwardVelocity);
+  assert.ok(state.events.some((event) => event.type === "counterStrafe"));
+  assert.ok(runner.counterStrafeCooldown > 0);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("hops preserve bounded lateral momentum without speed stacking", () => {
+  const state = duel();
+  const runner = state.entities[0];
+  for (let tick = 0; tick < 28; tick += 1) {
+    stepMatch(state, { [runner.id]: { ...idle, moveY: 1, sprint: true } });
+  }
+  stepMatch(state, { [runner.id]: { ...idle, moveX: 1, hop: true } });
+  assert.ok(runner.hopRemaining > 0);
+  assert.ok(runner.vy > 0);
+  assert.ok(Math.abs(runner.hopCarryY) <= MATCH_TUNING.flow.hopCarryLimit + 0.01);
+  assert.ok(
+    Math.hypot(runner.vx, runner.vy) <=
+      MATCH_TUNING.flow.hopSpeed + MATCH_TUNING.flow.hopCarryLimit + 0.01,
+  );
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("one post-hop counter-strafe consumes a bounded landing cancel", () => {
+  const state = duel();
+  const runner = state.entities[0];
+  runner.vx = MATCH_TUNING.flow.hopSpeed;
+  runner.hopX = 1;
+  runner.hopY = 0;
+  runner.hopRemaining = FIXED_DELTA / 2;
+  stepMatch(state, { [runner.id]: { ...idle, moveX: -1 } }, FIXED_DELTA);
+  assert.equal(runner.hopRemaining, 0);
+  assert.equal(runner.landingRemaining, 0);
+  assert.ok(state.events.some((event) => event.type === "landingCut"));
+  stepMatch(state, { [runner.id]: { ...idle, moveX: 1 } }, FIXED_DELTA);
+  stepMatch(state, { [runner.id]: { ...idle, moveX: -1 } }, FIXED_DELTA);
+  assert.equal(state.events.some((event) => event.type === "landingCut"), false);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("sprint slides spend FLOW, steer with commitment, and break on cover", () => {
+  const state = duel();
+  const runner = state.entities[0];
+  for (let tick = 0; tick < 16; tick += 1) {
+    stepMatch(state, { [runner.id]: { ...idle, moveX: 1, sprint: true } });
+  }
+  const flowBefore = runner.flow;
+  stepMatch(state, { [runner.id]: { ...idle, moveX: 1, sprint: true, hop: true } });
+  assert.ok(runner.slideRemaining > 0);
+  assert.equal(runner.hopRemaining, 0);
+  assert.ok(runner.flow <= flowBefore - MATCH_TUNING.flow.slideCost + 0.01);
+  assert.ok(Math.hypot(runner.vx, runner.vy) >= MATCH_TUNING.flow.slideSpeed - 0.01);
+  stepMatch(state, { [runner.id]: { ...idle, moveX: -1, sprint: true, hop: true } });
+  assert.ok(runner.vx > 0, "one frame cannot reverse a committed slide");
+
+  runner.x = 680;
+  runner.y = 450;
+  runner.lastSafeX = runner.x;
+  runner.lastSafeY = runner.y;
+  runner.slideX = 1;
+  runner.slideY = 0;
+  runner.slideRemaining = MATCH_TUNING.flow.slideDuration;
+  for (let tick = 0; tick < 30 && runner.slideRemaining > 0; tick += 1) {
+    stepMatch(state, { [runner.id]: { ...idle, moveX: 1 } });
+  }
+  assert.equal(runner.slideRemaining, 0);
+  assert.ok(state.events.some((event) => event.type === "slideImpact"));
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("movement chains respect commitment boundaries and remain speed-bounded", () => {
+  const state = duel({ mapId: "oathscar_vale" });
+  const runner = state.entities[0];
+  let peakSpeed = 0;
+  for (let tick = 0; tick < 24; tick += 1) {
+    stepMatch(state, { [runner.id]: { ...idle, moveX: 1, sprint: true } });
+  }
+  stepMatch(state, {
+    [runner.id]: { ...idle, moveX: 1, sprint: true, hop: true },
+  });
+  assert.ok(runner.slideRemaining > 0);
+  stepMatch(state, { [runner.id]: { ...idle, moveY: 1, hop: true } });
+  assert.equal(runner.hopRemaining, 0, "a slide cannot be silently hop-cancelled");
+  while (runner.slideRemaining > 0) {
+    stepMatch(state, { [runner.id]: { ...idle, moveX: 1 } });
+    peakSpeed = Math.max(peakSpeed, Math.hypot(runner.vx, runner.vy));
+  }
+  runner.hopCooldown = 0;
+  stepMatch(state, { [runner.id]: { ...idle, moveY: 1, hop: true } });
+  assert.ok(runner.hopRemaining > 0, "a completed slide can route into a hop");
+
+  runner.mobilityRemaining = 0.1;
+  runner.mobilityX = 1;
+  runner.mobilityY = 0;
+  runner.hopRemaining = 0;
+  runner.hopCooldown = 0;
+  runner.slideCooldown = 0;
+  stepMatch(state, {
+    [runner.id]: { ...idle, moveX: 1, sprint: true, hop: true },
+  });
+  assert.equal(runner.slideRemaining, 0);
+  assert.equal(runner.hopRemaining, 0, "universal movement cannot overlap character mobility");
+  runner.mobilityRemaining = 0;
+  runner.vx = 0;
+  runner.vy = 0;
+
+  for (let tick = 0; tick < 600; tick += 1) {
+    const phase = tick % 120;
+    stepMatch(state, {
+      [runner.id]: {
+        ...idle,
+        moveX: phase < 60 ? 1 : -1,
+        moveY: phase >= 30 && phase < 90 ? 1 : 0,
+        sprint: phase < 36,
+        hop: phase === 28 || phase === 88,
+      },
+    });
+    peakSpeed = Math.max(peakSpeed, Math.hypot(runner.vx, runner.vy));
+    assert.deepEqual(matchInvariantErrors(state), []);
+  }
+  assert.ok(peakSpeed <= MATCH_TUNING.flow.wallKickSpeed + MATCH_TUNING.flow.hopCarryLimit + 0.01);
+});
+
+test("flow sprint, hop, and wall kick are bounded universal movement", () => {
+  const state = duel({ mapId: "crosswind" });
+  const player = state.entities[0];
+  const baseSpeed = getCharacter(player.characterId).speed;
+
+  for (let tick = 0; tick < 30; tick += 1) {
+    stepMatch(
+      state,
+      { left: { ...idle, moveX: 1, sprint: true } },
+      FIXED_DELTA,
+    );
+  }
+  assert.ok(player.vx > baseSpeed);
+  assert.ok(player.flow < MATCH_TUNING.flow.maximum);
+
+  const flowBeforeHop = player.flow;
+  stepMatch(state, { left: { ...idle, moveY: 1, hop: true } }, FIXED_DELTA);
+  assert.equal(player.hopRemaining > 0, true);
+  assert.equal(player.flow, flowBeforeHop - MATCH_TUNING.flow.hopCost);
+  assert.equal(state.events.some((event) => event.type === "hop"), true);
+
+  player.hopRemaining = 0;
+  player.hopCooldown = 0;
+  player.x = getCharacter(player.characterId).radius;
+  stepMatch(state, { left: { ...idle, moveX: -1 } }, FIXED_DELTA);
+  assert.equal(player.wallContactRemaining > 0, true);
+  stepMatch(state, { left: { ...idle, moveY: 1, hop: true } }, FIXED_DELTA);
+  assert.equal(player.vx > 0, true);
+  assert.equal(state.events.some((event) => event.type === "wallKick"), true);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("flow recovers only after its explicit commitment window", () => {
+  const state = duel();
+  const player = state.entities[0];
+  stepMatch(
+    state,
+    { left: { ...idle, moveX: 1, sprint: true } },
+    FIXED_DELTA,
+  );
+  const spentFlow = player.flow;
+  stepMatch(state, { left: idle }, FIXED_DELTA);
+  assert.equal(player.flow, spentFlow);
+  for (let tick = 0; tick < MATCH_TUNING.tickRate; tick += 1) {
+    stepMatch(state, { left: idle }, FIXED_DELTA);
+  }
+  assert.ok(player.flow > spentFlow);
+  assert.ok(player.flow <= MATCH_TUNING.flow.maximum);
+});
+
+test("first contact teaches flow before the complete combat language", () => {
+  const state = createMatch({
+    modeId: "training",
+    mapId: "breakline",
+    characterId: "kite",
+    botCount: 1,
+  });
+  for (let tick = 0; tick < 16; tick += 1) {
+    stepMatch(state, { p1: { ...idle, moveX: 1, sprint: true } }, FIXED_DELTA);
+  }
+  assert.equal(state.tutorial.step, 0);
+  stepMatch(
+    state,
+    { p1: { ...idle, moveX: 1, sprint: true, hop: true } },
+    FIXED_DELTA,
+  );
+  assert.equal(state.tutorial.step, 0);
+  assert.equal(state.tutorial.slid, true);
+  for (let tick = 0; tick < 40; tick += 1) {
+    stepMatch(state, { p1: idle }, FIXED_DELTA);
+  }
+  stepMatch(state, { p1: { ...idle, moveX: 1, hop: true } }, FIXED_DELTA);
+  assert.equal(state.tutorial.step, 1);
+  assert.equal(state.tutorial.sprinted, true);
+  assert.equal(state.tutorial.hopped, true);
+
+  stepMatch(state, { p1: { ...idle, moveX: 1, fire: true } }, FIXED_DELTA);
+  assert.equal(state.tutorial.step, 2);
+  assert.equal(state.tutorial.moved, true);
+  assert.equal(state.tutorial.fired, true);
+
+  stepMatch(state, { p1: { ...idle, defend: true } }, FIXED_DELTA);
+  assert.equal(state.tutorial.step, 2);
+  assert.equal(state.tutorial.defended, false);
+  playerFor(state).defenseCooldown = 0;
+  stepMatch(
+    state,
+    { p1: { ...idle, moveY: 1, mobility: true } },
+    FIXED_DELTA,
+  );
+  assert.equal(state.tutorial.mobility, true);
+  const player = playerFor(state);
+  const spar = state.entities.find((entity) => entity.bot);
+  player.spawnProtection = 0;
+  state.projectiles.push(trainingProjectile(state, player, spar));
+  stepMatch(state, { p1: { ...idle, defend: true } }, FIXED_DELTA);
+  assert.equal(state.tutorial.step, 3);
+  assert.equal(state.tutorial.defended, true);
+  assert.equal(state.events.some((event) => event.type === "defenseRead"), true);
+
+  stepMatch(state, { p1: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(state.tutorial.step, 4);
+  assert.equal(state.tutorial.special, true);
+  assert.equal(
+    state.events.some((event) => event.type === "tutorialComplete"),
+    true,
+  );
+});
+
+test("every defense family proves the First Rite only on a real incoming spell", () => {
+  for (const characterId of ["kite", "bulwark", "echo", "volt", "rook"]) {
+    const state = createMatch({
+      modeId: "training",
+      mapId: "breakline",
+      characterId,
+      botCount: 1,
+    });
+    const player = playerFor(state);
+    const spar = state.entities.find((entity) => entity.bot);
+    state.tutorial.step = 2;
+    state.tutorial.mobility = true;
+    player.spawnProtection = 0;
+    stepMatch(state, { p1: { ...idle, defend: true } }, FIXED_DELTA);
+    assert.equal(state.tutorial.defended, false, `${characterId} empty defense`);
+    player.defenseCooldown = 0;
+    state.projectiles.push(trainingProjectile(state, player, spar));
+    stepMatch(state, { p1: { ...idle, defend: true } }, FIXED_DELTA);
+    assert.equal(state.tutorial.defended, true, characterId);
+    assert.equal(state.tutorial.step, 3, characterId);
+    assert.equal(
+      state.events.some((event) => event.type === "defenseRead"),
+      true,
+      characterId,
+    );
+    assert.deepEqual(matchInvariantErrors(state), []);
+  }
+});
+
+test("field, Veil, and Tide tacticals prove authored world state", () => {
+  for (const characterId of [
+    "kite",
+    "bulwark",
+    "echo",
+    "mend",
+    "rimewing",
+    "ashmaw",
+  ]) {
+    const state = createMatch({
+      modeId: "training",
+      mapId: "breakline",
+      characterId,
+      botCount: 1,
+    });
+    const player = playerFor(state);
+    const spar = state.entities.find((entity) => entity.bot);
+    state.tutorial.step = 3;
+    player.x = 200;
+    player.y = 450;
+    spar.x = 720;
+    spar.y = 450;
+    stepMatch(
+      state,
+      { p1: { ...idle, aimX: 1, special: true } },
+      FIXED_DELTA,
+    );
+    assert.equal(state.tutorial.special, true, characterId);
+    assert.equal(state.tutorial.step, 4, characterId);
+    assert.equal(
+      state.events.some((event) => event.type === "tacticalProof"),
+      true,
+      characterId,
+    );
+    assert.deepEqual(matchInvariantErrors(state), []);
+  }
+});
+
+test("aimed tacticals need a real impact to prove the First Rite", () => {
+  for (const characterId of ["volt", "orbit", "rook"]) {
+    const state = createMatch({
+      modeId: "training",
+      mapId: "breakline",
+      characterId,
+      botCount: 1,
+    });
+    const player = playerFor(state);
+    const spar = state.entities.find((entity) => entity.bot);
+    state.tutorial.step = 3;
+    player.x = 200;
+    player.y = 450;
+    player.spawnProtection = 0;
+    spar.x = characterId === "orbit" ? 500 : 320;
+    spar.y = 450;
+    spar.spawnProtection = 0;
+
+    stepMatch(
+      state,
+      { p1: { ...idle, aimX: -1, special: true } },
+      FIXED_DELTA,
+    );
+    assert.equal(state.tutorial.special, false, `${characterId} missed`);
+    player.specialCooldown = 0;
+    spar.x = 320;
+    for (let tick = 0; tick < 24 && !state.tutorial.special; tick += 1) {
+      stepMatch(
+        state,
+        { p1: { ...idle, aimX: 1, special: tick === 0 } },
+        FIXED_DELTA,
+      );
+    }
+    assert.equal(state.tutorial.special, true, characterId);
+    assert.equal(state.tutorial.step, 4, characterId);
+    assert.deepEqual(matchInvariantErrors(state), []);
+  }
+});
+
+test("Cinder proves trap timing only after the Ember rune arms", () => {
+  const state = createMatch({
+    modeId: "training",
+    mapId: "breakline",
+    characterId: "cinder",
+    botCount: 1,
+  });
+  const player = playerFor(state);
+  const spar = state.entities.find((entity) => entity.bot);
+  state.tutorial.step = 3;
+  player.x = 200;
+  player.y = 450;
+  spar.x = 720;
+  spar.y = 450;
+  stepMatch(state, { p1: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(state.tutorial.special, false);
+  assert.equal(state.mines.length, 1);
+  let armedCue = false;
+  for (let tick = 0; tick < 90 && !state.tutorial.special; tick += 1) {
+    stepMatch(state, { p1: idle }, FIXED_DELTA);
+    armedCue ||= state.events.some((event) => event.type === "mineArmed");
+  }
+  assert.equal(armedCue, true);
+  assert.equal(state.tutorial.special, true);
+  assert.equal(state.tutorial.step, 4);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("training spar stays restrained and cannot complete a human tactical proof", () => {
+  const state = createMatch({ modeId: "training", botCount: 1 });
+  const player = state.entities.find((entity) => entity.human);
+  const bot = state.entities.find((entity) => entity.bot);
+  state.tutorial.step = 3;
+  bot.x = player.x + 40;
+  bot.y = player.y;
+  bot.botThinkRemaining = 0;
+  bot.specialCooldown = 0;
+  const health = player.health;
+  let hostileAction = false;
+  for (let tick = 0; tick < 180; tick += 1) {
+    stepMatch(state, {}, FIXED_DELTA);
+    hostileAction ||= state.events.some(
+      (event) => event.entityId === bot.id && ["shot", "special"].includes(event.type),
+    );
+  }
+  assert.equal(bot.specialCooldown, 0);
+  assert.equal(hostileAction, false);
+  assert.equal(player.health, health);
+  assert.equal(state.tutorial.special, false);
+  assert.equal(state.tutorial.step, 3);
 });
 
 test("duel overtime ends on the next elimination instead of starting another round", () => {

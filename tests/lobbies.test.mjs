@@ -32,6 +32,7 @@ test("public lobbies can be hosted, listed, and joined in progress", () => {
       modeId: "control",
       mapId: "crown",
       characterId: "orbit",
+      raceId: "tideborn",
       botCount: 0,
       maxPlayers: 4,
     },
@@ -39,6 +40,7 @@ test("public lobbies can be hosted, listed, and joined in progress", () => {
   );
   assert.equal(hosted.ok, true);
   assert.equal(hosted.lobby.code, "ABC234");
+  assert.equal(hosted.snapshot.state.entities[0].raceId, "tideborn");
   assert.equal(service.list().length, 1);
 
   for (let tick = 0; tick < MATCH_TUNING.tickRate; tick += 1) {
@@ -58,6 +60,25 @@ test("public lobbies can be hosted, listed, and joined in progress", () => {
   assert.equal(service.list()[0].players, 2);
   assert.ok(hostMessages.some((message) => message.type === "presence"));
   assert.deepEqual(matchInvariantErrors(joined.snapshot.state), []);
+});
+
+test("host hazard configuration is authoritative and survives rematches", () => {
+  const { service } = serviceFixture();
+  const hosted = service.host("host", {
+    modeId: "duel",
+    mapId: "breakline",
+    hazardsEnabled: false,
+    botCount: 0,
+  });
+  assert.equal(hosted.ok, true);
+  assert.equal(hosted.snapshot.state.rules.hazardsEnabled, false);
+  assert.equal(hosted.snapshot.state.hazards.length, 0);
+  const lobby = service.lobbies.get(hosted.lobby.code);
+  lobby.state.status = "match-over";
+  const rematch = service.rematch("host");
+  assert.equal(rematch.ok, true);
+  assert.equal(lobby.state.rules.hazardsEnabled, false);
+  assert.equal(lobby.state.hazards.length, 0);
 });
 
 test("private lobbies stay out of discovery but remain joinable by code", () => {
@@ -87,6 +108,32 @@ test("lobby input requires monotonic sequences and enforces server sanitization"
   const entity = lobby.state.entities.find((candidate) => candidate.human);
   assert.ok(entity.x > 0);
   assert.deepEqual(matchInvariantErrors(lobby.state), []);
+});
+
+test("distinct ultimate commands remain server-authoritative through the lobby protocol", () => {
+  for (const characterId of ["rimewing", "ashmaw", "kite"]) {
+    const { service } = serviceFixture();
+    service.host(
+      "host",
+      { characterId, raceId: "wyrmbound", botCount: 0 },
+      () => {},
+    );
+    const lobby = [...service.lobbies.values()][0];
+    const member = lobby.members.get("host");
+    const entity = lobby.state.entities.find(
+      (candidate) => candidate.id === member.entityId,
+    );
+    entity.ultimateCharge = entity.maxUltimate;
+    assert.equal(service.input("host", 1, { ultimate: true }).ok, true);
+    service.tick(1 / MATCH_TUNING.tickRate);
+    assert.equal(entity.ultimateCharge, 0);
+    assert.ok(entity.ultimateWindupRemaining > 0);
+    assert.equal(
+      lobby.state.events.some((event) => event.type === "ultimateTell"),
+      true,
+    );
+    assert.deepEqual(matchInvariantErrors(lobby.state), []);
+  }
 });
 
 test("full and missing lobbies fail explicitly", () => {

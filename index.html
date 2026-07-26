@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="DIFF — a deep, minimal 2D skill arena shooter/fighter."
+      content="HEX — Hunt. Evade. eXecute. A systemic skill arena."
     />
     <meta name="theme-color" content="#070a10" />
-    <title>DIFF — Dodging Instinct. Fighting Finesse.</title>
+    <title>HEX — Hunt. Evade. eXecute.</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main id="app" data-view="menu" data-panel="home">
-      <canvas id="arena" aria-label="DIFF arena"></canvas>
+      <canvas id="arena" aria-label="HEX arena"></canvas>
 
       <section id="hud" class="hud" aria-live="polite">
         <div class="score score-alpha">
@@ -21,7 +21,7 @@
           <strong id="score-alpha">0</strong>
         </div>
         <div class="match-readout">
-          <span id="mode-label">FIRST CONTACT · BREAKLINE</span>
+          <span id="mode-label">THE FIRST RITE · THE SUNDERED ROAD</span>
           <strong id="match-clock">03:00</strong>
           <span id="network-readout">LOCAL · 120 TICK</span>
         </div>
@@ -52,7 +52,7 @@
         <header>
           <div>
             <span class="eyebrow">LIVE FIELD INFO</span>
-            <h2 id="info-operation">FIRST CONTACT</h2>
+            <h2 id="info-operation">THE FIRST RITE</h2>
           </div>
           <button
             id="info-close"
@@ -67,20 +67,21 @@
           <section>
             <span>Current read</span>
             <strong id="info-objective">Learn the four-action language.</strong>
-            <p id="info-status">Round 1 · BREAKLINE</p>
+            <p id="info-status">Round 1 · THE SUNDERED ROAD</p>
           </section>
           <section class="info-agent">
             <span id="info-agent-glyph" aria-hidden="true">◇</span>
             <div>
-              <strong id="info-agent-name">KITE</strong>
-              <p id="info-agent-role">Mobility duelist</p>
+              <strong id="info-agent-name">AERWYN</strong>
+              <p id="info-agent-role">Briar gale duelist</p>
             </div>
           </section>
         </div>
         <div id="info-kit" class="info-kit"></div>
         <dl class="info-controls">
-          <div><dt>Move / aim</dt><dd><kbd>WASD</kbd> / mouse</dd></div>
-          <div><dt>Actions</dt><dd><kbd>MB1</kbd><kbd>E</kbd><kbd>Q</kbd><kbd>Shift</kbd></dd></div>
+          <div><dt>Move / aim</dt><dd><kbd data-binding-summary="move">WASD</kbd> / mouse</dd></div>
+          <div><dt>Flow movement</dt><dd><kbd data-binding-label="sprint">Alt</kbd> sprint / <kbd data-binding-label="hop">C</kbd> hop</dd></div>
+          <div><dt>Actions</dt><dd><kbd>MB1</kbd><kbd data-binding-label="tactical">E</kbd><kbd data-binding-label="defense">Q</kbd><kbd data-binding-label="mobility">Shift</kbd><kbd data-binding-label="ultimate">F</kbd></dd></div>
           <div><dt>Reset / pause</dt><dd><kbd>R</kbd> / <kbd>Esc</kbd></dd></div>
         </dl>
         <p class="info-hint">Press <kbd>F1</kbd> at any time to close this panel. Combat continues.</p>
@@ -90,36 +91,57 @@
         <span class="eyebrow">LIVE READ</span>
         <strong id="coach-text">Move, aim, and fire. The arena never waits.</strong>
         <button id="skip-coach" type="button">Skip intro</button>
+        <div id="coach-progress" class="coach-progress" aria-label="Introduction progress">
+          <span data-coach-step="0"><i>01</i><b data-binding-summary="coachFlow">ALT + C / slide</b></span>
+          <span data-coach-step="1"><i>02</i><b data-binding-summary="coachFire">Move + SPACE</b></span>
+          <span data-coach-step="2"><i>03</i><b data-binding-summary="coachDefense">SHIFT + Q</b></span>
+          <span data-coach-step="3"><i>04</i><b data-binding-summary="coachTactical">Commit E</b></span>
+        </div>
       </section>
 
       <section id="ability-bar" class="ability-bar" aria-label="Abilities">
+        <div class="ability flow-ability" data-ability="flow">
+          <kbd data-binding-summary="flow">ALT/C</kbd>
+          <span><b>FLOW</b><small id="flow-detail">Sprint / hop</small></span>
+          <i id="flow-charge"></i>
+        </div>
+        <div class="ability flux-ability" data-ability="flux">
+          <kbd>CAST</kbd>
+          <span><b>FLUX</b><small id="flux-detail">Raw magic 100</small></span>
+          <i id="flux-charge"></i>
+        </div>
         <div class="ability" data-ability="primary">
-          <kbd>MB1</kbd>
+          <kbd data-binding-summary="primary">MB1/SPACE</kbd>
           <span><b id="primary-name">NEEDLE</b><small id="primary-detail">Precision fire</small></span>
           <i id="primary-charge"></i>
         </div>
         <div class="ability" data-ability="special">
-          <kbd>E</kbd>
+          <kbd data-binding-label="tactical">E</kbd>
           <span><b id="special-name">SHEAR</b><small id="special-detail">Close strike</small></span>
           <i id="special-charge"></i>
         </div>
         <div class="ability" data-ability="defense">
-          <kbd>Q</kbd>
+          <kbd data-binding-label="defense">Q</kbd>
           <span><b id="defense-name">SLIP</b><small id="defense-detail">Return fire</small></span>
           <i id="defense-charge"></i>
         </div>
         <div class="ability" data-ability="mobility">
-          <kbd>⇧</kbd>
+          <kbd data-binding-label="mobility">SHIFT</kbd>
           <span><b id="mobility-name">VECTOR</b><small id="mobility-detail">Directional dash</small></span>
           <i id="mobility-charge"></i>
+        </div>
+        <div id="ultimate-ability" class="ability ultimate-ability" data-ability="ultimate" hidden>
+          <kbd data-binding-label="ultimate">F</kbd>
+          <span><b id="ultimate-name">ULTIMATE</b><small id="ultimate-detail">Earn through active combat</small></span>
+          <i id="ultimate-charge"></i>
         </div>
       </section>
 
       <div id="toast-stack" class="toast-stack" aria-live="assertive"></div>
 
       <section id="match-overlay" class="match-overlay hidden" aria-modal="true">
-        <span class="eyebrow">OPERATION COMPLETE</span>
-        <h2 id="result-title">ALPHA DIFFERENCE</h2>
+        <span class="eyebrow">CONTEST COMPLETE</span>
+        <h2 id="result-title">OATH CLAIMED</h2>
         <p id="result-copy">The read was made. Run it back.</p>
         <div class="button-row">
           <button class="button button-primary" id="rematch" type="button">Rematch <kbd>R</kbd></button>
@@ -141,9 +163,9 @@
 
       <section id="front-end" class="front-end">
         <header class="topbar">
-          <a class="wordmark" href="#" data-panel="home" aria-label="DIFF home">
-            <b>DIFF</b>
-            <span>Dodging Instinct.<br />Fighting Finesse.</span>
+          <a class="wordmark" href="#" data-panel="home" aria-label="HEX home">
+            <b>HEX</b>
+            <span>Hunt. Evade.<br />eXecute.</span>
           </a>
           <div class="server-status" id="server-status">
             <i></i>
@@ -164,7 +186,7 @@
               <span>03</span><b>Host / Join</b><em>REMOTE</em>
             </button>
             <button class="nav-item" data-panel="agents" type="button">
-              <span>04</span><b>Agents</b><em>8</em>
+              <span>04</span><b>Champions</b><em>10</em>
             </button>
             <button class="nav-item" data-panel="arenas" type="button">
               <span>05</span><b>Maps & Modes</b>
@@ -181,32 +203,32 @@
             <article class="menu-panel active" data-menu-panel="home">
               <div class="hero">
                 <div>
-                  <span class="eyebrow">SKILL ARENA / BUILD 0.9.1</span>
-                  <h1>Find the<br /><em>difference.</em></h1>
+                  <span class="eyebrow">OLD-WORLD FLUX ARENA / BUILD 0.31.0</span>
+                  <h1>Shape the field.<br /><em>Execute the read.</em></h1>
                   <p>
-                    Eight complete agents. Five clean rulesets. One shared language:
+                    Ten race champions. Five proven contests. One magical language:
                     aim, space, timing, prediction, commitment, counterplay.
                   </p>
                   <div class="button-row">
                     <button class="button button-primary button-large" data-quick-start type="button">
                       First contact <kbd>↵</kbd>
                     </button>
-                    <button class="button button-large" data-panel="play" type="button">Choose operation</button>
+                    <button class="button button-large" data-panel="play" type="button">Choose contest</button>
                   </div>
                   <div class="operation-shortcuts" aria-label="Quick operations">
-                    <button type="button" data-launch-mode="duel"><b>DIFFERENCE</b><span>Duel</span></button>
-                    <button type="button" data-launch-mode="control"><b>FAULTLINE</b><span>Control</span></button>
-                    <button type="button" data-launch-mode="convergence"><b>CONVERGENCE</b><span>PvPvE</span></button>
-                    <button type="button" data-launch-mode="survival"><b>PRESSURE TEST</b><span>Co-op PvE</span></button>
+                    <button type="button" data-launch-mode="duel"><b>OATH DUEL</b><span>Duel</span></button>
+                    <button type="button" data-launch-mode="control"><b>RUNEHOLD</b><span>Control</span></button>
+                    <button type="button" data-launch-mode="convergence"><b>WILDMARCH</b><span>PvPvE</span></button>
+                    <button type="button" data-launch-mode="survival"><b>NIGHT SIEGE</b><span>Co-op PvE</span></button>
                   </div>
                 </div>
                 <div class="hero-mark" aria-hidden="true">
-                  <span>D</span><span>I</span><span>F</span><span>F</span>
+                  <span>H</span><span>E</span><span>X</span>
                 </div>
               </div>
               <div class="feature-strip">
-                <div><b>8</b><span>non-overlapping agents</span></div>
-                <div><b>4</b><span>authored arenas</span></div>
+                <div><b>10</b><span>race-bound champions</span></div>
+                <div><b>8</b><span>authored battlegrounds</span></div>
                 <div><b>5</b><span>solo / PvP / PvPvE / PvE modes</span></div>
                 <div><b>120</b><span>authoritative simulation tick</span></div>
               </div>
@@ -214,7 +236,7 @@
 
             <article class="menu-panel" data-menu-panel="play" hidden>
               <header class="panel-header">
-                <div><span class="eyebrow">DEPLOYMENT</span><h2>Build the match</h2></div>
+                <div><span class="eyebrow">MUSTER HALL</span><h2>Prepare the contest</h2></div>
                 <p>Defaults are tuned for immediate play. Every choice has a clean counter-read.</p>
               </header>
               <form id="match-form" class="match-builder">
@@ -230,15 +252,27 @@
                   <div id="mode-options" class="choice-grid mode-options"></div>
                 </fieldset>
                 <fieldset>
-                  <legend>Agent — Player 1</legend>
+                  <legend>Race — Player 1</legend>
+                  <div id="race-options" class="race-picker"></div>
+                </fieldset>
+                <fieldset>
+                  <legend>Champion — Player 1</legend>
                   <div id="agent-options" class="agent-picker"></div>
                 </fieldset>
                 <fieldset id="player-two-field" hidden>
-                  <legend>Agent — Player 2</legend>
+                  <legend>Ancestry + champion — Player 2</legend>
+                  <div id="race-two-options" class="race-picker"></div>
+                  <h3>Champion</h3>
                   <div id="agent-two-options" class="agent-picker"></div>
                 </fieldset>
                 <fieldset>
                   <legend>Arena</legend>
+                  <div class="atlas-toolbar" aria-label="Realm chart depth">
+                    <button class="text-button active" type="button" data-atlas-scope="realm">Realm</button>
+                    <span aria-hidden="true">›</span>
+                    <button class="text-button" type="button" data-atlas-scope="fracture">The Fracture</button>
+                    <small id="atlas-caption">Choose a region, or enter The Fracture for four battle scales.</small>
+                  </div>
                   <div id="map-options" class="choice-grid map-options"></div>
                 </fieldset>
                 <fieldset id="bot-field">
@@ -250,7 +284,7 @@
                   </label>
                 </fieldset>
                 <div class="deployment-action">
-                  <span><b>READY</b><small id="deployment-summary">DIFFERENCE · KITE · BREAKLINE</small></span>
+                  <span><b>READY</b><small id="deployment-summary">OATH DUEL · AERWYN · THE SUNDERED ROAD</small></span>
                   <button class="button button-primary button-large deploy-button" type="submit">
                     Enter arena
                   </button>
@@ -271,8 +305,12 @@
                     <input id="online-name" type="text" maxlength="20" value="PLAYER" />
                   </label>
                   <label>
-                    <span>Agent</span>
+                    <span>Champion</span>
                     <select id="online-agent"></select>
+                  </label>
+                  <label>
+                    <span>Race</span>
+                    <select id="online-race"></select>
                   </label>
                   <label>
                     <span>Server address</span>
@@ -294,7 +332,15 @@
                     <span><b>Public listing</b><small>Visible in the lobby browser.</small></span>
                     <input id="lobby-public" type="checkbox" checked />
                   </label>
+                  <label class="toggle-setting">
+                    <span><b>Map hazards</b><small>Authored arena hazards remain authoritative.</small></span>
+                    <input id="lobby-hazards" type="checkbox" checked />
+                  </label>
                   <button class="button button-primary" id="host-lobby" type="button">Create and deploy</button>
+                  <div id="share-link-row" class="join-row" hidden>
+                    <input id="share-link" type="url" readonly aria-label="Shareable lobby link" />
+                    <button class="button" id="copy-share-link" type="button">Copy link</button>
+                  </div>
                 </section>
                 <section class="network-card">
                   <h3>Join by code</h3>
@@ -321,47 +367,51 @@
 
             <article class="menu-panel" data-menu-panel="agents" hidden>
               <header class="panel-header">
-                <div><span class="eyebrow">ROSTER</span><h2>Eight ways to outplay</h2></div>
-                <p>Each agent owns one readable strength, one real weakness, and four counterable actions.</p>
+                <div><span class="eyebrow">CHAMPION CHRONICLE</span><h2>Ten old-world champions</h2></div>
+                <p>Each champion belongs to a people, shapes one discipline, and keeps the shared core readable; authored passives and ultimates appear only when complete.</p>
               </header>
               <div id="agent-codex" class="agent-codex"></div>
             </article>
 
             <article class="menu-panel" data-menu-panel="arenas" hidden>
               <header class="panel-header">
-                <div><span class="eyebrow">FIELD INTELLIGENCE</span><h2>Maps & modes</h2></div>
-                <p>Geometry and objectives change decisions, never the core rules.</p>
+                <div><span class="eyebrow">THE REALM CHART</span><h2>Regions & contests</h2></div>
+                <p>Read each old road, ruin, and current. The land changes decisions, never grants victory.</p>
               </header>
-              <h3 class="section-heading">Arenas</h3>
+              <h3 class="section-heading">Known battlegrounds</h3>
               <div id="map-codex" class="codex-grid"></div>
-              <h3 class="section-heading">Rulesets</h3>
+              <h3 class="section-heading">Ways of contest</h3>
               <div id="mode-codex" class="codex-grid"></div>
             </article>
 
             <article class="menu-panel" data-menu-panel="guide" hidden>
               <header class="panel-header">
-                <div><span class="eyebrow">FIELD GUIDE</span><h2>One language, every agent</h2></div>
+                <div><span class="eyebrow">FIELD GUIDE</span><h2>One language, every champion</h2></div>
                 <p>Actions keep the same input across the roster. Learn intent once; master expression forever.</p>
               </header>
               <div class="guide-grid">
                 <section>
                   <h3>Player 1</h3>
                   <dl class="control-list">
-                    <div><dt>Move</dt><dd><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dd></div>
+                    <div><dt>Move</dt><dd><kbd data-binding-label="moveUp">W</kbd><kbd data-binding-label="moveLeft">A</kbd><kbd data-binding-label="moveDown">S</kbd><kbd data-binding-label="moveRight">D</kbd></dd></div>
+                    <div><dt>Sprint / hop / slide</dt><dd><kbd data-binding-label="sprint">Alt</kbd> / <kbd data-binding-label="hop">C</kbd> / both</dd></div>
                     <div><dt>Aim</dt><dd>Mouse</dd></div>
-                    <div><dt>Primary</dt><dd><kbd>MB1</kbd> / <kbd>Space</kbd></dd></div>
-                    <div><dt>Special</dt><dd><kbd>MB2</kbd> / <kbd>E</kbd></dd></div>
-                    <div><dt>Defense</dt><dd><kbd>Q</kbd></dd></div>
-                    <div><dt>Mobility</dt><dd><kbd>Shift</kbd></dd></div>
+                    <div><dt>Primary</dt><dd><kbd>MB1</kbd> / <kbd data-binding-label="fire">Space</kbd></dd></div>
+                    <div><dt>Tactical</dt><dd><kbd>MB2</kbd> / <kbd data-binding-label="tactical">E</kbd></dd></div>
+                    <div><dt>Ultimate</dt><dd><kbd data-binding-label="ultimate">F</kbd></dd></div>
+                    <div><dt>Defense</dt><dd><kbd data-binding-label="defense">Q</kbd></dd></div>
+                    <div><dt>Mobility</dt><dd><kbd data-binding-label="mobility">Shift</kbd></dd></div>
                   </dl>
                 </section>
                 <section>
                   <h3>Player 2</h3>
                   <dl class="control-list">
                     <div><dt>Move</dt><dd>Arrow keys</dd></div>
+                    <div><dt>Sprint / hop / slide</dt><dd><kbd>,</kbd> / <kbd>.</kbd> / both</dd></div>
                     <div><dt>Aim</dt><dd><kbd>I</kbd><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd></dd></div>
                     <div><dt>Primary</dt><dd><kbd>U</kbd></dd></div>
-                    <div><dt>Special</dt><dd><kbd>O</kbd></dd></div>
+                    <div><dt>Tactical</dt><dd><kbd>O</kbd></dd></div>
+                    <div><dt>Ultimate</dt><dd><kbd>H</kbd></dd></div>
                     <div><dt>Defense</dt><dd><kbd>P</kbd></dd></div>
                     <div><dt>Mobility</dt><dd><kbd>Enter</kbd></dd></div>
                   </dl>
@@ -370,8 +420,10 @@
                   <h3>Gamepad</h3>
                   <dl class="control-list">
                     <div><dt>Move / aim</dt><dd>Left / right stick</dd></div>
+                    <div><dt>Sprint / hop</dt><dd>Left / right shoulder</dd></div>
                     <div><dt>Primary</dt><dd>Right trigger</dd></div>
-                    <div><dt>Special</dt><dd>West button</dd></div>
+                    <div><dt>Tactical</dt><dd>West button</dd></div>
+                    <div><dt>Ultimate</dt><dd>North button</dd></div>
                     <div><dt>Defense</dt><dd>Left trigger</dd></div>
                     <div><dt>Mobility</dt><dd>South button</dd></div>
                   </dl>
@@ -391,13 +443,23 @@
                 <article><b>Cover is absolute</b><span>No attacks or movement tunnel through geometry.</span></article>
                 <article><b>Defense is specific</b><span>Reflect, guard, phase, absorb, and counter demand different reads.</span></article>
                 <article><b>Spawns are protected</b><span>Joining and resetting never hands out a free hit.</span></article>
+                <article><b>Flow is universal</b><span>Sprint, hop, and wall-kick spend one shared resource on every champion.</span></article>
+                <article><b>Reverse with intent</b><span>Press against committed momentum to counter-strafe: brake and re-angle faster, with less control on ice.</span></article>
+                <article><b>Carry a curve</b><span>Hop across your travel line to preserve bounded lateral momentum into evasive arcs and wall approaches.</span></article>
+                <article><b>Cut the landing</b><span>Reverse once in the brief post-hop window to steal a sharper turn. The window is consumed immediately.</span></article>
+                <article><b>Commit low</b><span>While moving fast, hold sprint and hop together to slide. Steering is limited and cover breaks the attempt.</span></article>
+                <article><b>Flux is commitment</b><span>Tactical, defense, and character mobility compete for raw magic; primary and FLOW remain available when dry.</span></article>
+                <article><b>Shrines answer movement</b><span>Cross a ready covenant at high speed while missing Flux. The exposed route restores magic, then locks for everyone.</span></article>
+                <article><b>Elements alter routes</b><span>Wind carries fire; water douses fire; fire melts ice; ice freezes water.</span></article>
+                <article><b>Reactions stay readable</b><span>Lightning conducts through water. Explosive mechanics shatter earth; explosion is not an element.</span></article>
+                <article><b>Movement still wins</b><span>Fields create a short decision window; aim, timing, spacing, and FLOW secure the advantage.</span></article>
               </div>
             </article>
 
             <article class="menu-panel" data-menu-panel="settings" hidden>
               <header class="panel-header">
                 <div><span class="eyebrow">CONFIGURATION</span><h2>Clarity without compromise</h2></div>
-                <p>Safe presentation settings apply live and persist locally.</p>
+                <p>Presentation and Player 1 keyboard bindings apply live and persist locally.</p>
               </header>
               <form id="settings-form" class="settings-grid">
                 <label class="range-setting">
@@ -427,14 +489,51 @@
                   <span><b>High contrast</b><small>Stronger team and hazard edges.</small></span>
                   <input name="highContrast" type="checkbox" />
                 </label>
-                <button class="button" id="reset-settings" type="button">Reset presentation defaults</button>
+                <fieldset class="binding-settings">
+                  <legend>Player 1 keyboard</legend>
+                  <p>Choose an action, then press a key. Existing assignments swap; match and Player 2 keys stay protected.</p>
+                  <div class="binding-grid">
+                    <label><span>Move up</span><button type="button" data-bind-action="moveUp">W</button></label>
+                    <label><span>Move left</span><button type="button" data-bind-action="moveLeft">A</button></label>
+                    <label><span>Move down</span><button type="button" data-bind-action="moveDown">S</button></label>
+                    <label><span>Move right</span><button type="button" data-bind-action="moveRight">D</button></label>
+                    <label><span>Primary key</span><button type="button" data-bind-action="fire">SPACE</button></label>
+                    <label><span>Tactical</span><button type="button" data-bind-action="tactical">E</button></label>
+                    <label><span>Defense</span><button type="button" data-bind-action="defense">Q</button></label>
+                    <label><span>Mobility</span><button type="button" data-bind-action="mobility">SHIFT</button></label>
+                    <label><span>Sprint</span><button type="button" data-bind-action="sprint">ALT</button></label>
+                    <label><span>Hop</span><button type="button" data-bind-action="hop">C</button></label>
+                    <label><span>Ultimate</span><button type="button" data-bind-action="ultimate">F</button></label>
+                  </div>
+                  <output id="binding-status" aria-live="polite">Select an action to rebind.</output>
+                </fieldset>
+                <fieldset class="binding-settings network-lab-settings">
+                  <legend>Deterministic network lab</legend>
+                  <p>Remote gameplay traffic only. Real diagnostics stay visible; zero is the shipping path.</p>
+                  <label class="range-setting">
+                    <span><b>Added latency</b><small>Input and snapshot delay in milliseconds.</small></span>
+                    <input name="networkLatency" type="range" min="0" max="250" step="5" value="0" />
+                    <output>0</output>
+                  </label>
+                  <label class="range-setting">
+                    <span><b>Jitter</b><small>Seeded delay variation in milliseconds.</small></span>
+                    <input name="networkJitter" type="range" min="0" max="100" step="5" value="0" />
+                    <output>0</output>
+                  </label>
+                  <label class="range-setting">
+                    <span><b>Packet loss</b><small>Seeded gameplay packet loss percentage.</small></span>
+                    <input name="networkLoss" type="range" min="0" max="20" step="1" value="0" />
+                    <output>0</output>
+                  </label>
+                </fieldset>
+                <button class="button" id="reset-settings" type="button">Reset all defaults</button>
               </form>
             </article>
           </div>
         </div>
 
         <footer class="menu-footer">
-          <span>DIFF / DODGING INSTINCT. FIGHTING FINESSE.</span>
+          <span>HEX / HUNT. EVADE. EXECUTE.</span>
           <span id="build-diagnostic">OFFLINE READY · NO INSTALL STEP</span>
         </footer>
       </section>

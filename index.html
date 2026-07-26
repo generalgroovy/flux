@@ -80,6 +80,7 @@
         <div id="info-kit" class="info-kit"></div>
         <dl class="info-controls">
           <div><dt>Move / aim</dt><dd><kbd>WASD</kbd> / mouse</dd></div>
+          <div><dt>Flow movement</dt><dd><kbd>Alt</kbd> sprint / <kbd>C</kbd> hop</dd></div>
           <div><dt>Actions</dt><dd><kbd>MB1</kbd><kbd>E</kbd><kbd>Q</kbd><kbd>Shift</kbd></dd></div>
           <div><dt>Reset / pause</dt><dd><kbd>R</kbd> / <kbd>Esc</kbd></dd></div>
         </dl>
@@ -91,13 +92,19 @@
         <strong id="coach-text">Move, aim, and fire. The arena never waits.</strong>
         <button id="skip-coach" type="button">Skip intro</button>
         <div id="coach-progress" class="coach-progress" aria-label="Introduction progress">
-          <span data-coach-step="0"><i>01</i><b>Move + fire</b></span>
-          <span data-coach-step="1"><i>02</i><b>Evade + answer</b></span>
-          <span data-coach-step="2"><i>03</i><b>Commit special</b></span>
+          <span data-coach-step="0"><i>01</i><b>Sprint + hop</b></span>
+          <span data-coach-step="1"><i>02</i><b>Move + fire</b></span>
+          <span data-coach-step="2"><i>03</i><b>Evade + answer</b></span>
+          <span data-coach-step="3"><i>04</i><b>Commit special</b></span>
         </div>
       </section>
 
       <section id="ability-bar" class="ability-bar" aria-label="Abilities">
+        <div class="ability flow-ability" data-ability="flow">
+          <kbd>ALT/C</kbd>
+          <span><b>FLOW</b><small id="flow-detail">Sprint / hop</small></span>
+          <i id="flow-charge"></i>
+        </div>
         <div class="ability" data-ability="primary">
           <kbd>MB1</kbd>
           <span><b id="primary-name">NEEDLE</b><small id="primary-detail">Precision fire</small></span>
@@ -186,7 +193,7 @@
             <article class="menu-panel active" data-menu-panel="home">
               <div class="hero">
                 <div>
-                  <span class="eyebrow">SKILL ARENA / BUILD 0.9.3</span>
+                  <span class="eyebrow">SKILL ARENA / BUILD 0.10.0</span>
                   <h1>Find the<br /><em>difference.</em></h1>
                   <p>
                     Eight complete agents. Five clean rulesets. One shared language:
@@ -353,6 +360,7 @@
                   <h3>Player 1</h3>
                   <dl class="control-list">
                     <div><dt>Move</dt><dd><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></dd></div>
+                    <div><dt>Sprint / hop</dt><dd><kbd>Alt</kbd> / <kbd>C</kbd></dd></div>
                     <div><dt>Aim</dt><dd>Mouse</dd></div>
                     <div><dt>Primary</dt><dd><kbd>MB1</kbd> / <kbd>Space</kbd></dd></div>
                     <div><dt>Special</dt><dd><kbd>MB2</kbd> / <kbd>E</kbd></dd></div>
@@ -364,6 +372,7 @@
                   <h3>Player 2</h3>
                   <dl class="control-list">
                     <div><dt>Move</dt><dd>Arrow keys</dd></div>
+                    <div><dt>Sprint / hop</dt><dd><kbd>,</kbd> / <kbd>.</kbd></dd></div>
                     <div><dt>Aim</dt><dd><kbd>I</kbd><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd></dd></div>
                     <div><dt>Primary</dt><dd><kbd>U</kbd></dd></div>
                     <div><dt>Special</dt><dd><kbd>O</kbd></dd></div>
@@ -375,6 +384,7 @@
                   <h3>Gamepad</h3>
                   <dl class="control-list">
                     <div><dt>Move / aim</dt><dd>Left / right stick</dd></div>
+                    <div><dt>Sprint / hop</dt><dd>Left / right shoulder</dd></div>
                     <div><dt>Primary</dt><dd>Right trigger</dd></div>
                     <div><dt>Special</dt><dd>West button</dd></div>
                     <div><dt>Defense</dt><dd>Left trigger</dd></div>
@@ -396,6 +406,7 @@
                 <article><b>Cover is absolute</b><span>No attacks or movement tunnel through geometry.</span></article>
                 <article><b>Defense is specific</b><span>Reflect, guard, phase, absorb, and counter demand different reads.</span></article>
                 <article><b>Spawns are protected</b><span>Joining and resetting never hands out a free hit.</span></article>
+                <article><b>Flow is universal</b><span>Sprint, hop, and wall-kick spend one shared resource on every agent.</span></article>
               </div>
             </article>
 

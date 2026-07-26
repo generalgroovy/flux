@@ -1,5 +1,29 @@
 # DIFF agent memory
 
+## 2026-07-26 — DIFF 0.10.0 universal FLOW movement
+
+- **Player-facing problem:** Universal movement ended at ordinary acceleration
+  and one character mobility button, leaving neutral positioning too shallow
+  and giving the introduction no movement mastery to teach.
+- **Implemented solution:** Added a validated shared FLOW resource with a
+  sustained sprint, momentum-preserving hop, short remembered wall contact, and
+  faster directional wall kick. Every option has explicit cost, cooldown or
+  recovery delay, bot support, remote-command ownership, a non-color-only HUD
+  meter, keyboard/gamepad controls, arena feedback, and a behavior-driven first
+  training read. Character mobility remains a separate tactical commitment.
+- **Verification:** `npm test` passed 40/40, including new deterministic sprint,
+  recovery, hop, wall-kick, tutorial-ownership, full combination, soak, browser
+  shell, networking, and server-cleanup coverage. JavaScript syntax checks also
+  passed. A live 0.10.0 server returned its valid health payload and HTTP 200 for
+  the shell and game module before clean shutdown. One preceding parallel test
+  run reported process-level failures for both live-server files without
+  assertion detail; both passed immediately in isolation and the full 40-test
+  rerun passed. No browser executable is installed, so physical feel, gamepad,
+  color, and layout acceptance remain required on the desktop launchers.
+- **Recommended next task:** Tune FLOW through hands-on play, then add one
+  authored comic action-callout vocabulary before introducing a small,
+  deterministic pair of interacting elemental abilities.
+
 ## 2026-07-26 — Safe server cleanup and self-updating desktop launchers
 
 - **Player-facing problem:** Repeated test launches could leave occupied ports,

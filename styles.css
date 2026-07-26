@@ -1666,7 +1666,7 @@ select {
 .coach-progress {
   display: grid;
   grid-column: 1 / -1;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.3rem;
   margin-top: 0.35rem;
 }
@@ -1724,6 +1724,14 @@ select {
   display: flex;
   gap: 0.38rem;
   pointer-events: none;
+}
+
+.flow-ability {
+  border-color: #ffca4f55;
+}
+
+.flow-ability i {
+  background: var(--amber);
 }
 
 .ability {

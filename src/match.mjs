@@ -16,6 +16,8 @@ const IDLE_COMMAND = Object.freeze({
   special: false,
   defend: false,
   mobility: false,
+  sprint: false,
+  hop: false,
 });
 
 export function createMatch(options = {}) {
@@ -116,7 +118,9 @@ export function createMatch(options = {}) {
     },
     tutorial: {
       skipped: mode.id !== "training",
-      step: mode.id === "training" ? 0 : 3,
+      step: mode.id === "training" ? 0 : 4,
+      sprinted: false,
+      hopped: false,
       moved: false,
       fired: false,
       mobility: false,
@@ -174,6 +178,17 @@ function createEntity(spec, index, map) {
     mobilityRemaining: 0,
     mobilityX: facingX,
     mobilityY: 0,
+    flow: MATCH_TUNING.flow.maximum,
+    flowRecoveryDelay: 0,
+    sprinting: false,
+    hopCooldown: 0,
+    hopRemaining: 0,
+    hopX: facingX,
+    hopY: 0,
+    hopWallKick: false,
+    wallContactRemaining: 0,
+    wallX: 0,
+    wallY: 0,
     dashHitIds: [],
     kills: 0,
     deaths: 0,
@@ -243,6 +258,8 @@ export function sanitizeCommand(candidate) {
     special: source.special === true,
     defend: source.defend === true,
     mobility: source.mobility === true,
+    sprint: source.sprint === true,
+    hop: source.hop === true,
   };
 }
 
@@ -304,9 +321,14 @@ function tickEntity(entity, delta) {
     "damageInvulnerability",
     "spawnProtection",
     "hitFlash",
+    "flowRecoveryDelay",
+    "hopCooldown",
+    "hopRemaining",
+    "wallContactRemaining",
   ]) {
     entity[key] = Math.max(0, finite(entity[key]) - delta);
   }
+  entity.flow = clamp(entity.flow, 0, MATCH_TUNING.flow.maximum);
 }
 
 function updateEntity(state, entity, command, delta, map) {
@@ -322,6 +344,7 @@ function updateEntity(state, entity, command, delta, map) {
   if (command.mobility && entity.mobilityCooldown === 0) {
     startMobility(state, entity, command, agent, map);
   }
+  if (!command.mobility) tryHop(state, entity, command);
   moveEntity(state, entity, command, agent, delta, map);
   if (command.defend && entity.defenseCooldown === 0) {
     entity.defenseRemaining = agent.defense.duration;
@@ -392,18 +415,86 @@ function startMobility(state, entity, command, agent, map) {
   });
 }
 
+function tryHop(state, entity, command) {
+  const flow = MATCH_TUNING.flow;
+  if (
+    !command.hop ||
+    entity.hopCooldown > 0 ||
+    entity.hopRemaining > 0 ||
+    entity.flow < flow.hopCost
+  ) {
+    return;
+  }
+  let direction =
+    command.moveX !== 0 || command.moveY !== 0
+      ? { x: command.moveX, y: command.moveY }
+      : { x: entity.facingX, y: entity.facingY };
+  const wallKick = entity.wallContactRemaining > 0;
+  if (wallKick) {
+    const wallDot = direction.x * entity.wallX + direction.y * entity.wallY;
+    const tangentX = direction.x - entity.wallX * wallDot;
+    const tangentY = direction.y - entity.wallY * wallDot;
+    direction = normalizeDirection(
+      entity.wallX + tangentX * 0.72,
+      entity.wallY + tangentY * 0.72,
+    );
+  }
+  direction = normalizeDirection(direction.x, direction.y);
+  if (direction.x === 0 && direction.y === 0) direction = { x: entity.facingX, y: entity.facingY };
+  entity.flow -= flow.hopCost;
+  entity.flowRecoveryDelay = flow.recoveryDelay;
+  entity.hopCooldown = flow.hopCooldown;
+  entity.hopRemaining = flow.hopDuration;
+  entity.hopX = direction.x;
+  entity.hopY = direction.y;
+  entity.hopWallKick = wallKick;
+  entity.wallContactRemaining = 0;
+  entity.sprinting = false;
+  state.tutorial.hopped ||= entity.human;
+  state.events.push({
+    type: wallKick ? "wallKick" : "hop",
+    entityId: entity.id,
+    x: entity.x,
+    y: entity.y,
+    dx: direction.x,
+    dy: direction.y,
+  });
+}
+
 function moveEntity(state, entity, command, agent, delta, map) {
   let moveX = command.moveX;
   let moveY = command.moveY;
   if (entity.mobilityRemaining > 0) {
     entity.vx = entity.mobilityX * agent.mobility.speed;
     entity.vy = entity.mobilityY * agent.mobility.speed;
+    entity.sprinting = false;
+  } else if (entity.hopRemaining > 0) {
+    const speed = entity.hopWallKick
+      ? MATCH_TUNING.flow.wallKickSpeed
+      : MATCH_TUNING.flow.hopSpeed;
+    entity.vx = entity.hopX * speed;
+    entity.vy = entity.hopY * speed;
+    entity.sprinting = false;
   } else {
-    const desiredX = moveX * agent.speed;
-    const desiredY = moveY * agent.speed;
+    const moving = moveX !== 0 || moveY !== 0;
+    const sprinting = command.sprint && moving && entity.flow > 0;
+    const speed = agent.speed * (sprinting ? MATCH_TUNING.flow.sprintMultiplier : 1);
+    const desiredX = moveX * speed;
+    const desiredY = moveY * speed;
     const rate =
-      moveX !== 0 || moveY !== 0 ? agent.acceleration : agent.deceleration;
+      moving ? agent.acceleration : agent.deceleration;
     approachVelocity(entity, desiredX, desiredY, rate * delta);
+    entity.sprinting = sprinting;
+    if (sprinting) {
+      entity.flow = Math.max(0, entity.flow - MATCH_TUNING.flow.sprintDrainPerSecond * delta);
+      entity.flowRecoveryDelay = MATCH_TUNING.flow.recoveryDelay;
+      state.tutorial.sprinted ||= entity.human;
+    } else if (entity.flowRecoveryDelay === 0) {
+      entity.flow = Math.min(
+        MATCH_TUNING.flow.maximum,
+        entity.flow + MATCH_TUNING.flow.recoveryPerSecond * delta,
+      );
+    }
   }
 
   const result = moveCircleSwept(
@@ -413,6 +504,11 @@ function moveEntity(state, entity, command, agent, delta, map) {
     agent.radius,
     map,
   );
+  if (result.hitWall) {
+    entity.wallContactRemaining = MATCH_TUNING.flow.wallMemory;
+    entity.wallX = result.wallX;
+    entity.wallY = result.wallY;
+  }
   if (result.hitWall && entity.mobilityRemaining > 0) {
     entity.mobilityRemaining = 0;
     entity.vx = 0;
@@ -438,6 +534,8 @@ export function moveCircleSwept(circle, dx, dy, radius, map) {
   const stepX = safeDx / steps;
   const stepY = safeDy / steps;
   let hitWall = false;
+  let wallX = 0;
+  let wallY = 0;
 
   for (let step = 0; step < steps; step += 1) {
     const beforeX = circle.x;
@@ -445,6 +543,15 @@ export function moveCircleSwept(circle, dx, dy, radius, map) {
     circle.x += stepX;
     circle.y += stepY;
     constrainCircle(circle, radius, map.size);
+    if (circle.x !== beforeX + stepX || circle.y !== beforeY + stepY) {
+      const correction = normalizeDirection(
+        circle.x - (beforeX + stepX),
+        circle.y - (beforeY + stepY),
+      );
+      wallX = correction.x;
+      wallY = correction.y;
+      hitWall = true;
+    }
     for (let pass = 0; pass < 3; pass += 1) {
       let collided = false;
       for (const obstacle of map.obstacles) {
@@ -452,6 +559,14 @@ export function moveCircleSwept(circle, dx, dy, radius, map) {
       }
       if (!collided) break;
       hitWall = true;
+      const correction = normalizeDirection(
+        circle.x - (beforeX + stepX),
+        circle.y - (beforeY + stepY),
+      );
+      if (correction.x !== 0 || correction.y !== 0) {
+        wallX = correction.x;
+        wallY = correction.y;
+      }
     }
     constrainCircle(circle, radius, map.size);
     if (!Number.isFinite(circle.x) || !Number.isFinite(circle.y)) {
@@ -461,7 +576,7 @@ export function moveCircleSwept(circle, dx, dy, radius, map) {
       break;
     }
   }
-  return { hitWall };
+  return { hitWall, wallX, wallY };
 }
 
 function useSpecial(state, entity, agent, map) {
@@ -1007,6 +1122,15 @@ function respawnEntity(entity, map) {
   entity.damageInvulnerability = 0;
   entity.defenseRemaining = 0;
   entity.mobilityRemaining = 0;
+  entity.flow = MATCH_TUNING.flow.maximum;
+  entity.flowRecoveryDelay = 0;
+  entity.sprinting = false;
+  entity.hopCooldown = 0;
+  entity.hopRemaining = 0;
+  entity.hopWallKick = false;
+  entity.wallContactRemaining = 0;
+  entity.wallX = 0;
+  entity.wallY = 0;
   entity.primaryCooldown = 0;
   entity.specialCooldown = 0;
   entity.defenseCooldown = 0;
@@ -1108,25 +1232,32 @@ function finishMatch(state, team) {
 
 function updateTutorial(state) {
   if (state.tutorial.skipped || state.modeId !== "training") return;
-  if (state.tutorial.step === 0 && state.tutorial.moved && state.tutorial.fired) {
+  if (state.tutorial.step === 0 && state.tutorial.sprinted && state.tutorial.hopped) {
     state.tutorial.step = 1;
     state.events.push({ type: "tutorialStep", step: 1 });
   } else if (
     state.tutorial.step === 1 &&
-    state.tutorial.mobility &&
-    state.tutorial.defended
+    state.tutorial.moved &&
+    state.tutorial.fired
   ) {
     state.tutorial.step = 2;
     state.events.push({ type: "tutorialStep", step: 2 });
-  } else if (state.tutorial.step === 2 && state.tutorial.special) {
+  } else if (
+    state.tutorial.step === 2 &&
+    state.tutorial.mobility &&
+    state.tutorial.defended
+  ) {
     state.tutorial.step = 3;
+    state.events.push({ type: "tutorialStep", step: 3 });
+  } else if (state.tutorial.step === 3 && state.tutorial.special) {
+    state.tutorial.step = 4;
     state.events.push({ type: "tutorialComplete" });
   }
 }
 
 export function skipTutorial(state) {
   state.tutorial.skipped = true;
-  state.tutorial.step = 3;
+  state.tutorial.step = 4;
   state.events.push({ type: "tutorialSkipped" });
 }
 
@@ -1193,16 +1324,25 @@ function updateBotCommand(state, entity, delta, map) {
       entity.mobilityCooldown === 0 &&
       (distance > MATCH_TUNING.bot.preferredDistance * 1.65 ||
         entity.health / entity.maxHealth < MATCH_TUNING.bot.retreatHealthRatio),
+    sprint:
+      entity.flow > MATCH_TUNING.flow.maximum * 0.6 &&
+      distance > MATCH_TUNING.bot.preferredDistance * 1.2,
+    hop:
+      closeProjectile &&
+      entity.hopCooldown === 0 &&
+      entity.flow >= MATCH_TUNING.flow.hopCost,
   };
   if (
     state.modeId === "training" &&
     !state.tutorial.skipped &&
-    state.tutorial.step < 2
+    state.tutorial.step < 3
   ) {
     entity.botCommand.fire = false;
     entity.botCommand.special = false;
     entity.botCommand.defend = false;
     entity.botCommand.mobility = false;
+    entity.botCommand.sprint = false;
+    entity.botCommand.hop = false;
   }
   return entity.botCommand;
 }
@@ -1344,6 +1484,11 @@ export function matchInvariantErrors(state) {
       "specialCooldown",
       "defenseCooldown",
       "mobilityCooldown",
+      "flow",
+      "flowRecoveryDelay",
+      "hopCooldown",
+      "hopRemaining",
+      "wallContactRemaining",
     ]) {
       if (!Number.isFinite(entity[key])) errors.push(`${entity.id}.${key} is not finite`);
     }

@@ -61,7 +61,7 @@ if [[ -z "${port}" ]]; then
   exit 1
 fi
 
-printf '\nDIFF 0.9.3 passed verification.\n'
+printf '\nDIFF 0.10.0 passed verification.\n'
 printf 'Open http://127.0.0.1:%s and test every mode shortcut plus F1 field info.\n' "${port}"
 printf 'Press Ctrl+C here to stop the server.\n'
 

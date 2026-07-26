@@ -30,6 +30,8 @@ const idle = Object.freeze({
   special: false,
   defend: false,
   mobility: false,
+  sprint: false,
+  hop: false,
 });
 
 function duel({
@@ -85,6 +87,14 @@ test("content ships eight complete agents, four maps, and all five mode gates", 
   assert.equal(
     new Set(CHARACTERS.map((agent) => agent.silhouette)).size,
     CHARACTERS.length,
+  );
+  assert.ok(
+    validateContent({
+      tuning: {
+        ...MATCH_TUNING,
+        flow: { ...MATCH_TUNING.flow, hopCost: 101 },
+      },
+    }).includes("flow.hopCost must not exceed flow.maximum"),
   );
   for (const agent of CHARACTERS) {
     assert.ok(agent.radius < 21);
@@ -331,15 +341,72 @@ test("training opponent stays non-lethal until movement and defense are taught",
   assert.equal(state.entities[0].health, state.entities[0].maxHealth);
 });
 
-test("first contact verifies the complete four-action language in three beats", () => {
+test("flow sprint, hop, and wall kick are bounded universal movement", () => {
+  const state = duel({ mapId: "crosswind" });
+  const player = state.entities[0];
+  const baseSpeed = getCharacter(player.characterId).speed;
+
+  for (let tick = 0; tick < 30; tick += 1) {
+    stepMatch(
+      state,
+      { left: { ...idle, moveX: 1, sprint: true } },
+      FIXED_DELTA,
+    );
+  }
+  assert.ok(player.vx > baseSpeed);
+  assert.ok(player.flow < MATCH_TUNING.flow.maximum);
+
+  const flowBeforeHop = player.flow;
+  stepMatch(state, { left: { ...idle, moveY: 1, hop: true } }, FIXED_DELTA);
+  assert.equal(player.hopRemaining > 0, true);
+  assert.equal(player.flow, flowBeforeHop - MATCH_TUNING.flow.hopCost);
+  assert.equal(state.events.some((event) => event.type === "hop"), true);
+
+  player.hopRemaining = 0;
+  player.hopCooldown = 0;
+  player.x = getCharacter(player.characterId).radius;
+  stepMatch(state, { left: { ...idle, moveX: -1 } }, FIXED_DELTA);
+  assert.equal(player.wallContactRemaining > 0, true);
+  stepMatch(state, { left: { ...idle, moveY: 1, hop: true } }, FIXED_DELTA);
+  assert.equal(player.vx > 0, true);
+  assert.equal(state.events.some((event) => event.type === "wallKick"), true);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("flow recovers only after its explicit commitment window", () => {
+  const state = duel();
+  const player = state.entities[0];
+  stepMatch(
+    state,
+    { left: { ...idle, moveX: 1, sprint: true } },
+    FIXED_DELTA,
+  );
+  const spentFlow = player.flow;
+  stepMatch(state, { left: idle }, FIXED_DELTA);
+  assert.equal(player.flow, spentFlow);
+  for (let tick = 0; tick < MATCH_TUNING.tickRate; tick += 1) {
+    stepMatch(state, { left: idle }, FIXED_DELTA);
+  }
+  assert.ok(player.flow > spentFlow);
+  assert.ok(player.flow <= MATCH_TUNING.flow.maximum);
+});
+
+test("first contact teaches flow before the complete combat language", () => {
   const state = createMatch({
     modeId: "training",
     mapId: "breakline",
     characterId: "kite",
     botCount: 1,
   });
-  stepMatch(state, { p1: { ...idle, moveX: 1, fire: true } }, FIXED_DELTA);
+  stepMatch(state, { p1: { ...idle, moveX: 1, sprint: true } }, FIXED_DELTA);
+  assert.equal(state.tutorial.step, 0);
+  stepMatch(state, { p1: { ...idle, moveX: 1, hop: true } }, FIXED_DELTA);
   assert.equal(state.tutorial.step, 1);
+  assert.equal(state.tutorial.sprinted, true);
+  assert.equal(state.tutorial.hopped, true);
+
+  stepMatch(state, { p1: { ...idle, moveX: 1, fire: true } }, FIXED_DELTA);
+  assert.equal(state.tutorial.step, 2);
   assert.equal(state.tutorial.moved, true);
   assert.equal(state.tutorial.fired, true);
 
@@ -348,12 +415,12 @@ test("first contact verifies the complete four-action language in three beats", 
     { p1: { ...idle, moveY: 1, mobility: true, defend: true } },
     FIXED_DELTA,
   );
-  assert.equal(state.tutorial.step, 2);
+  assert.equal(state.tutorial.step, 3);
   assert.equal(state.tutorial.mobility, true);
   assert.equal(state.tutorial.defended, true);
 
   stepMatch(state, { p1: { ...idle, special: true } }, FIXED_DELTA);
-  assert.equal(state.tutorial.step, 3);
+  assert.equal(state.tutorial.step, 4);
   assert.equal(state.tutorial.special, true);
   assert.equal(
     state.events.some((event) => event.type === "tutorialComplete"),
@@ -365,7 +432,7 @@ test("bot actions cannot complete a human first-contact read", () => {
   const state = createMatch({ modeId: "training", botCount: 1 });
   const player = state.entities.find((entity) => entity.human);
   const bot = state.entities.find((entity) => entity.bot);
-  state.tutorial.step = 2;
+  state.tutorial.step = 3;
   bot.x = player.x + 40;
   bot.y = player.y;
   bot.botThinkRemaining = 0;
@@ -373,7 +440,7 @@ test("bot actions cannot complete a human first-contact read", () => {
   stepMatch(state, {}, FIXED_DELTA);
   assert.ok(bot.specialCooldown > 0);
   assert.equal(state.tutorial.special, false);
-  assert.equal(state.tutorial.step, 2);
+  assert.equal(state.tutorial.step, 3);
 });
 
 test("duel overtime ends on the next elimination instead of starting another round", () => {

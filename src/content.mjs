@@ -599,7 +599,7 @@ export const MODES = Object.freeze([
     id: "training",
     name: "FIRST CONTACT",
     category: "Fundamentals",
-    description: "A three-beat, skippable introduction against one restrained bot.",
+    description: "A four-read, skippable introduction against one restrained bot.",
     scoreLimit: 1,
     timeLimit: 180,
     botCount: 1,
@@ -658,6 +658,19 @@ export const MATCH_TUNING = Object.freeze({
   unitCollisionIterations: 3,
   maxMoveSubsteps: 12,
   projectileClashes: true,
+  flow: {
+    maximum: 100,
+    sprintMultiplier: 1.28,
+    sprintDrainPerSecond: 34,
+    recoveryPerSecond: 27,
+    recoveryDelay: 0.38,
+    hopCost: 28,
+    hopSpeed: 650,
+    wallKickSpeed: 780,
+    hopDuration: 0.16,
+    hopCooldown: 0.5,
+    wallMemory: 0.16,
+  },
   controlScorePerSecond: 12,
   controlOvertimeGrace: 2.5,
   bot: {
@@ -684,6 +697,7 @@ export function validateContent({
   characters = CHARACTERS,
   maps = MAPS,
   modes = MODES,
+  tuning = MATCH_TUNING,
 } = {}) {
   const errors = [];
   const unique = (items, label) => {
@@ -700,6 +714,34 @@ export function validateContent({
     if (!modes.some((mode) => mode.id === modeId)) {
       errors.push(`missing mode ${modeId}`);
     }
+  }
+
+  const flow = tuning.flow ?? {};
+  for (const key of [
+    "maximum",
+    "sprintMultiplier",
+    "sprintDrainPerSecond",
+    "recoveryPerSecond",
+    "recoveryDelay",
+    "hopCost",
+    "hopSpeed",
+    "wallKickSpeed",
+    "hopDuration",
+    "hopCooldown",
+    "wallMemory",
+  ]) {
+    if (!Number.isFinite(flow[key]) || flow[key] <= 0) {
+      errors.push(`flow.${key} must be positive`);
+    }
+  }
+  if (flow.hopCost > flow.maximum) {
+    errors.push("flow.hopCost must not exceed flow.maximum");
+  }
+  if (flow.sprintMultiplier < 1 || flow.sprintMultiplier > 2) {
+    errors.push("flow.sprintMultiplier must stay within 1–2");
+  }
+  if (flow.wallKickSpeed < flow.hopSpeed) {
+    errors.push("flow.wallKickSpeed must reward wall commitment");
   }
 
   for (const agent of characters) {

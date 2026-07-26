@@ -207,6 +207,7 @@ function handleKeyDown(event) {
       "arrowleft",
       "arrowright",
       "tab",
+      "alt",
     ].includes(key)
   ) {
     event.preventDefault();
@@ -266,6 +267,8 @@ function readPlayerOne(entity) {
     special: mouseButtons.has(2) || keys.has("e"),
     defend: keys.has("q"),
     mobility: keys.has("shift"),
+    sprint: keys.has("alt"),
+    hop: keys.has("c"),
   });
 }
 
@@ -289,6 +292,8 @@ function readPlayerTwo(entity) {
     special: keys.has("o"),
     defend: keys.has("p"),
     mobility: keys.has("enter"),
+    sprint: keys.has(","),
+    hop: keys.has("."),
   });
 }
 
@@ -326,6 +331,8 @@ function mergeGamepad(command, gamepad) {
     defend:
       command.defend || (gamepad.buttons[6]?.value ?? 0) > 0.35,
     mobility: command.mobility || gamepad.buttons[0]?.pressed,
+    sprint: command.sprint || gamepad.buttons[4]?.pressed,
+    hop: command.hop || gamepad.buttons[5]?.pressed,
   });
 }
 
@@ -641,6 +648,14 @@ function updateInfoOverlay(mode, map) {
     matchState.entities[0];
   if (!player) return;
   const agent = getCharacter(player.characterId);
+  const flowRatio = clamp(player.flow / MATCH_TUNING.flow.maximum, 0, 1);
+  element("flow-charge").style.transform = `scaleX(${flowRatio})`;
+  element("flow-detail").textContent =
+    player.hopCooldown > 0
+      ? `Hop ${player.hopCooldown.toFixed(1)}s`
+      : player.sprinting
+        ? "Sprinting"
+        : "Sprint / hop";
   element("info-operation").textContent = mode.name;
   element("info-objective").textContent =
     matchState.status === "round-over"
@@ -795,10 +810,12 @@ function updateCoach(mode) {
       );
     }
     if (matchState.tutorial.step === 0) {
-      text.textContent = "MOVE while aiming. Land pressure with MB1.";
+      text.textContent = "Hold ALT to sprint. Tap C to preserve momentum through a hop.";
     } else if (matchState.tutorial.step === 1) {
-      text.textContent = "SHIFT changes the angle. Q answers incoming pressure.";
+      text.textContent = "MOVE while aiming. Land pressure with MB1.";
     } else if (matchState.tutorial.step === 2) {
+      text.textContent = "SHIFT changes the angle. Q answers incoming pressure.";
+    } else if (matchState.tutorial.step === 3) {
       text.textContent = "Commit E up close. Miss, and you surrender tempo.";
     } else {
       text.textContent = "Language learned. Read the spar and finish the fight.";
@@ -867,9 +884,11 @@ function processEvents(events, tick) {
     } else if (event.type === "roundStart") {
       toast(`ROUND ${event.round}`);
     } else if (event.type === "tutorialStep") {
-      toast(`READ ${event.step + 1} / 3`);
+      toast(`READ ${event.step + 1} / 4`);
     } else if (event.type === "tutorialComplete") {
-      toast("FOUR-ACTION LANGUAGE ONLINE");
+      toast("CORE MOVEMENT + COMBAT ONLINE");
+    } else if (event.type === "wallKick") {
+      toast("WALL KICK · ANGLE STOLEN");
     } else if (event.type === "stateRepair") {
       toast("Simulation recovered an invalid entity state.", "error");
     }
@@ -1243,6 +1262,23 @@ function drawEntities(time) {
           : entity.team === "beta"
             ? "#ff5d73"
             : "#ffca4f";
+      if (entity.hopRemaining > 0) {
+        const progress = 1 - entity.hopRemaining / MATCH_TUNING.flow.hopDuration;
+        const lift = Math.sin(progress * Math.PI) * 11;
+        context.fillStyle = "#00000066";
+        context.beginPath();
+        context.ellipse(
+          0,
+          5,
+          agent.radius * 0.9,
+          agent.radius * 0.42,
+          0,
+          0,
+          Math.PI * 2,
+        );
+        context.fill();
+        context.translate(0, -lift);
+      }
       const defense = agent.defense;
       if (entity.spawnProtection > 0) {
         context.strokeStyle = "#ffffff";

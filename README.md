@@ -7,13 +7,13 @@ spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
-Build 0.9.3 streamlines **FIRST CONTACT** into a three-beat behavioral read of
-movement/primary, mobility/defense, and special commitment. Each arena now has
-an authored ambient palette that fills the display beyond its fixed competitive
-bounds without changing visibility, collision, or multiplayer authority.
-Remote matches now report measured round-trip latency, jitter, recent probe
-loss, snapshot staleness, and a plain-language quality state instead of
-mislabeling snapshot age as latency.
+Build 0.10.0 adds **FLOW**, a universal movement resource shared by every agent.
+Sprint for sustained space control, hop to redirect momentum, and turn a recent
+wall contact into a faster angled wall kick. These options spend or delay FLOW,
+so evasive movement creates readable commitment instead of free safety. FIRST
+CONTACT teaches FLOW before aim and the character kit, while the in-match meter
+shows its cost and recovery. Remote matches continue to report measured RTT,
+jitter, loss, snapshot staleness, and plain-language connection quality.
 
 ## Run
 
@@ -131,12 +131,15 @@ than 0.9.3 are not registered and must be closed from their original terminal.
 | Special | Right click / `E` | `O` | West button |
 | Defense | `Q` | `P` | Left trigger |
 | Mobility | `Shift` | `Enter` | South button |
+| Sprint | `Alt` | `,` | Left shoulder |
+| Hop / wall kick | `C` | `.` | Right shoulder |
 | Pause / network menu | `Escape` | `Escape` | — |
 | Instant restart | `R` | `R` | — |
 | Skip introduction | `T` | — | — |
 | Toggle live field info | `F1` | `F1` | — |
 
-Every agent uses this shared input language.
+Every agent uses this shared input language. Sprint and hop draw from FLOW;
+touch cover, then hop during the brief contact window to kick away from it.
 The live field panel shows the active objective, map, health, role, full kit,
 and essential controls without pausing combat.
 

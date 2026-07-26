@@ -7,7 +7,11 @@ recovery, and performance are accepted at smaller scales.
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.33.0 on Garuda Sway and Windows: navigate the full
+1. Hands-on accept HEX 0.33.0 on Garuda Sway and Windows: navigate the main
+   menu with pointer, keyboard arrows, Tab, Enter, and a gamepad; require every
+   play choice to react visibly, focus to remain obvious, and all decision and
+   launch-summary copy to wrap without clipping at desktop and narrow widths.
+   Gamepad menu traversal is the next implementation slice. Then navigate the full
    race-column Muster Hall at desktop and narrow widths; require that every
    champion launches with their visible ancestry, the persistent summary and
    hazard rule stay usable, the compact/detail HUD toggle persists,

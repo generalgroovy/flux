@@ -308,6 +308,7 @@ function handleKeyDown(event) {
     else showPanel("guide");
     return;
   }
+  if (app.dataset.view === "menu" && handleMenuKeyDown(event, key)) return;
   if (
     app.dataset.view === "game" &&
     ([
@@ -337,16 +338,47 @@ function handleKeyDown(event) {
     skipTutorial(matchState);
     return;
   }
-  if (
-    key === "enter" &&
-    app.dataset.view === "menu" &&
-    menuPanel === "home" &&
-    event.target === document.body
-  ) {
-    quickStart();
-    return;
-  }
   keys.add(key);
+}
+
+function handleMenuKeyDown(event, key) {
+  if (
+    !["arrowup", "arrowdown", "arrowleft", "arrowright", "enter", " "].includes(key)
+  ) return false;
+  const target = event.target;
+  const navigation = [...document.querySelectorAll(".nav-item")];
+  const navigationIndex = navigation.indexOf(target);
+  if (navigationIndex >= 0 && ["arrowup", "arrowdown"].includes(key)) {
+    event.preventDefault();
+    const direction = key === "arrowdown" ? 1 : -1;
+    const nextNavigation =
+      navigation[(navigationIndex + direction + navigation.length) % navigation.length];
+    nextNavigation.focus();
+    showPanel(nextNavigation.dataset.panel);
+    return true;
+  }
+  if (key === "arrowright" && navigationIndex >= 0) {
+    event.preventDefault();
+    document
+      .querySelector(
+        `[data-menu-panel="${target.dataset.panel}"] button, ` +
+        `[data-menu-panel="${target.dataset.panel}"] input, ` +
+        `[data-menu-panel="${target.dataset.panel}"] select`,
+      )
+      ?.focus();
+    return true;
+  }
+  if (key === "arrowleft" && target.closest?.("[data-menu-panel]")) {
+    event.preventDefault();
+    document.querySelector(`.nav-item[data-panel="${menuPanel}"]`)?.focus();
+    return true;
+  }
+  if (key === "enter" && menuPanel === "home" && target === document.body) {
+    event.preventDefault();
+    quickStart();
+    return true;
+  }
+  return false;
 }
 
 function readCommands() {

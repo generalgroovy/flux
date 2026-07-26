@@ -342,18 +342,18 @@ kbd {
 
 .nav-item span {
   color: #3c4858;
-  font: 650 0.6rem/1 ui-monospace, SFMono-Regular, monospace;
+  font: 700 0.68rem/1 Georgia, "Times New Roman", serif;
 }
 
 .nav-item b {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   letter-spacing: 0.11em;
   text-transform: uppercase;
 }
 
 .nav-item em {
   color: #425161;
-  font-size: 0.52rem;
+  font-size: 0.62rem;
   font-style: normal;
   font-weight: 850;
   letter-spacing: 0.12em;
@@ -925,13 +925,12 @@ legend,
 }
 
 .deployment-action small {
-  overflow: hidden;
   color: #91a0b2;
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   font-weight: 720;
+  line-height: 1.35;
   letter-spacing: 0.06em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .range-setting,
@@ -2195,10 +2194,7 @@ select {
 }
 
 .match-rules .choice-card small {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
 }
 
 .field-guidance {

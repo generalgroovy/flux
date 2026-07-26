@@ -248,6 +248,16 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
       false,
     );
   }
+  const playNavigation = document.querySelector('.nav-item[data-panel="play"]');
+  playNavigation.focus();
+  const downMenu = new window.Event("keydown", { bubbles: true });
+  Object.defineProperty(downMenu, "key", { value: "ArrowDown" });
+  playNavigation.dispatchEvent(downMenu);
+  assert.equal(app.dataset.panel, "online");
+  const upMenu = new window.Event("keydown", { bubbles: true });
+  Object.defineProperty(upMenu, "key", { value: "ArrowUp" });
+  document.querySelector('.nav-item[data-panel="online"]').dispatchEvent(upMenu);
+  assert.equal(app.dataset.panel, "play");
   assert.match(
     document.querySelector('[data-menu-panel="guide"]').textContent,
     /Wayseals choose the fight.*without gaining combat stats/i,

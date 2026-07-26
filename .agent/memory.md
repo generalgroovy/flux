@@ -1278,3 +1278,23 @@
   unavailable here. Gate 3 is software-complete; do not begin Gate 4 enemy
   families until that real-player combat/objective acceptance makes tuning
   credible.
+
+# 2026-07-26 — Responsive menu input and unclipped muster copy
+
+- **Player-facing problem:** The reported play menu did not react to directional
+  input, while mode descriptions and the final launch summary intentionally
+  clipped text. Primary navigation labels were also too small and visually
+  technical for the old-world presentation.
+- **Implemented solution:** Added bounded Up/Down navigation with immediate panel
+  activation, Right movement into the active panel, and Left return to its
+  navigation entry. Preserved the home-screen Enter shortcut. Removed mode-card
+  line clamping and summary ellipsis, enabled safe wrapping, and enlarged the
+  primary labels using the established chronicle serif stack.
+- **Verification:** `node --check src/game.mjs`, the focused browser-shell test,
+  the full `npm test` suite (81/81), shell syntax checks, and `git diff --check`
+  passed. The DOM regression now proves directional activation of Play and
+  Host/Join. No browser executable is installed, so physical pointer, focus,
+  narrow-layout, font rendering, and gamepad acceptance remain outstanding.
+- **Recommended next task:** Add deterministic gamepad menu traversal through the
+  same focus/activation contract, then hands-on accept the complete Muster Hall
+  on Garuda and Windows before expanding chemistry or destructible terrain.

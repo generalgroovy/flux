@@ -543,6 +543,22 @@ function updateEntity(state, entity, command, delta, map) {
         x: entity.x,
         y: entity.y,
       });
+    } else if (agent.passive?.kind === "reflect-guide" && entity.passiveRemaining > 0) {
+      primary = {
+        ...primary,
+        speed: primary.speed * agent.passive.speedMultiplier,
+        guidedBy: entity.id,
+        guidedRemaining: agent.passive.guideDuration,
+        turnRate: agent.passive.turnRate,
+      };
+      entity.passiveRemaining = 0;
+      state.events.push({
+        type: "passiveGuided",
+        entityId: entity.id,
+        name: agent.passive.name,
+        x: entity.x,
+        y: entity.y,
+      });
     } else if (agent.passive?.kind === "field-temper" && entity.passiveActive) {
       primary = {
         ...primary,
@@ -933,6 +949,20 @@ function primeMovementPassive(state, entity, agent, trigger) {
   });
 }
 
+function primeReflectPassive(state, entity) {
+  const passive = getCharacter(entity.characterId).passive;
+  if (passive?.kind !== "reflect-guide") return;
+  entity.passiveRemaining = passive.duration;
+  state.events.push({
+    type: "passivePrimed",
+    entityId: entity.id,
+    name: passive.name,
+    trigger: "SPELL TURN",
+    x: entity.x,
+    y: entity.y,
+  });
+}
+
 function tryStartUltimate(state, entity, command, agent, map) {
   const ultimate = agent.ultimate;
   if (
@@ -948,7 +978,7 @@ function tryStartUltimate(state, entity, command, agent, map) {
   entity.ultimateWindupRemaining = ultimate.windup;
   entity.ultimateAimX = entity.facingX;
   entity.ultimateAimY = entity.facingY;
-  if (ultimate.kind === "field-crown") {
+  if (["field-crown", "wind-vortex"].includes(ultimate.kind)) {
     const target = clippedRayEnd(entity, ultimate.targetRange, map);
     entity.ultimateTargetX = target.x;
     entity.ultimateTargetY = target.y;
@@ -1017,6 +1047,24 @@ function resolveUltimate(state, entity, agent, map) {
         false,
       );
     }
+  } else if (ultimate.kind === "wind-vortex") {
+    createElementField(
+      state,
+      entity,
+      "wind",
+      {
+        x: end.x,
+        y: end.y,
+        radius: ultimate.fieldRadius,
+        duration: ultimate.fieldDuration,
+        shape: "vortex",
+        spin: ultimate.spin,
+        directionX: 0,
+        directionY: 0,
+        source: "ultimate",
+      },
+      false,
+    );
   }
   state.events.push({
     type: "ultimateCast",
@@ -1044,6 +1092,16 @@ function withElementGeometry(map, fields) {
   return { ...map, obstacles: [...map.obstacles, ...earth] };
 }
 
+function windDirectionAt(field, x, y) {
+  if (field.shape !== "vortex") {
+    return normalizeDirection(field.directionX, field.directionY);
+  }
+  let radial = normalizeDirection(x - field.x, y - field.y);
+  if (radial.x === 0 && radial.y === 0) radial = { x: 1, y: 0 };
+  const spin = field.spin === -1 ? -1 : 1;
+  return { x: -radial.y * spin, y: radial.x * spin };
+}
+
 function updateElementFields(state, delta) {
   for (const entity of state.entities) {
     entity.surface = "normal";
@@ -1065,8 +1123,12 @@ function updateElementFields(state, delta) {
   for (const wind of state.elementFields.filter((field) => field.element === "wind")) {
     for (const fire of state.elementFields.filter((field) => field.element === "fire")) {
       if (!overlaps(wind, fire)) continue;
-      fire.x += wind.directionX * MATCH_TUNING.elements.windForce * delta * 0.32;
-      fire.y += wind.directionY * MATCH_TUNING.elements.windForce * delta * 0.32;
+      const direction = windDirectionAt(wind, fire.x, fire.y);
+      const speed = wind.shape === "vortex"
+        ? MATCH_TUNING.elements.vortexFireSpeed
+        : MATCH_TUNING.elements.windForce * 0.32;
+      fire.x += direction.x * speed * delta;
+      fire.y += direction.y * speed * delta;
     }
   }
   for (const fire of state.elementFields.filter((field) => field.element === "fire")) {
@@ -1147,8 +1209,12 @@ function updateElementFields(state, delta) {
         entity.passiveActive = true;
       }
       if (field.element === "wind") {
-        entity.elementForceX += field.directionX * MATCH_TUNING.elements.windForce;
-        entity.elementForceY += field.directionY * MATCH_TUNING.elements.windForce;
+        const direction = windDirectionAt(field, entity.x, entity.y);
+        const force = field.shape === "vortex"
+          ? MATCH_TUNING.elements.vortexMoveForce
+          : MATCH_TUNING.elements.windForce;
+        entity.elementForceX += direction.x * force;
+        entity.elementForceY += direction.y * force;
       }
       if (field.element === "water" && entity.team === field.team) {
         entity.flow = Math.min(
@@ -1467,6 +1533,9 @@ function firePattern(state, entity, weapon, source) {
       heavy: weapon.heavy === true,
       reflected: false,
       fieldIds: [],
+      guidedBy: weapon.guidedBy ?? null,
+      guidedRemaining: weapon.guidedRemaining ?? 0,
+      turnRate: weapon.turnRate ?? 0,
     });
     state.nextProjectileId += 1;
   }
@@ -1539,6 +1608,30 @@ function updateMines(state, delta) {
 
 function updateProjectiles(state, delta, map) {
   for (const projectile of state.projectiles) {
+    projectile.guidedRemaining = Math.max(0, finite(projectile.guidedRemaining));
+    projectile.turnRate = clamp(finite(projectile.turnRate), 0, 6);
+    projectile.guidedBy = typeof projectile.guidedBy === "string"
+      ? projectile.guidedBy
+      : null;
+    if (projectile.guidedRemaining > 0 && projectile.guidedBy) {
+      const guide = state.entities.find(
+        (entity) => entity.id === projectile.guidedBy && entity.alive,
+      );
+      if (guide) {
+        const speed = Math.hypot(projectile.vx, projectile.vy);
+        const current = Math.atan2(projectile.vy, projectile.vx);
+        const target = Math.atan2(guide.facingY, guide.facingX);
+        const difference = Math.atan2(Math.sin(target - current), Math.cos(target - current));
+        const angle = current + clamp(
+          difference,
+          -projectile.turnRate * delta,
+          projectile.turnRate * delta,
+        );
+        projectile.vx = Math.cos(angle) * speed;
+        projectile.vy = Math.sin(angle) * speed;
+      }
+      projectile.guidedRemaining = Math.max(0, projectile.guidedRemaining - delta);
+    }
     projectile.previousX = projectile.x;
     projectile.previousY = projectile.y;
     projectile.x += finite(projectile.vx) * delta;
@@ -1554,9 +1647,13 @@ function updateProjectiles(state, delta, map) {
         continue;
       }
       const speed = Math.hypot(projectile.vx, projectile.vy);
+      const direction = windDirectionAt(field, projectile.x, projectile.y);
+      const force = field.shape === "vortex"
+        ? MATCH_TUNING.elements.vortexProjectileForce
+        : 260;
       const bent = normalizeDirection(
-        projectile.vx + field.directionX * 260,
-        projectile.vy + field.directionY * 260,
+        projectile.vx + direction.x * force,
+        projectile.vy + direction.y * force,
       );
       projectile.vx = bent.x * speed;
       projectile.vy = bent.y * speed;
@@ -1698,6 +1795,10 @@ function defendAgainstProjectile(state, target, projectile) {
     projectile.y =
       target.y + normalizeDirection(projectile.vx, projectile.vy).y * 38;
     projectile.reflected = true;
+    projectile.guidedBy = null;
+    projectile.guidedRemaining = 0;
+    projectile.turnRate = 0;
+    primeReflectPassive(state, target);
     state.events.push({
       type: "reflect",
       entityId: target.id,

@@ -82,6 +82,15 @@ export const CHARACTERS = Object.freeze([
     difficulty: 2,
     health: 100,
     speed: 430,
+    passive: {
+      name: "THREAD THE TURN",
+      detail: "A successful spell turn guides one slightly slower Wind Needle through your aim.",
+      kind: "reflect-guide",
+      duration: 1.4,
+      guideDuration: 0.58,
+      turnRate: 3.4,
+      speedMultiplier: 0.92,
+    },
     primary: {
       name: "WIND NEEDLE",
       detail: "A fast, exact thorn of air.",
@@ -119,6 +128,20 @@ export const CHARACTERS = Object.freeze([
       speed: 1120,
       duration: 0.13,
       cooldown: 1.05,
+    },
+    ultimate: {
+      name: "THE TURNING SKY",
+      detail: "Mark a shared vortex that bends spells, fighters, and Ember around its rim.",
+      kind: "wind-vortex",
+      chargeRequired: 100,
+      chargePerDamage: 0.82,
+      windup: 0.64,
+      moveScale: 0.44,
+      targetRange: 310,
+      fieldCount: 1,
+      fieldRadius: 165,
+      fieldDuration: 3.1,
+      spin: 1,
     },
   }),
   character({
@@ -1073,6 +1096,9 @@ export const MATCH_TUNING = Object.freeze({
     windDuration: 1.8,
     windRadius: 118,
     windForce: 185,
+    vortexMoveForce: 140,
+    vortexProjectileForce: 440,
+    vortexFireSpeed: 92,
     iceDuration: 3.2,
     iceRadius: 148,
     iceControl: 0.34,
@@ -1315,7 +1341,17 @@ export function validateContent({
           passive.knockbackMultiplier <= 1 || passive.knockbackMultiplier > 2.5)
       ) {
         errors.push(`${agent.id}.passive field temper must trade speed for bounded weight`);
-      } else if (!["movement-prime", "field-temper"].includes(passive.kind)) {
+      } else if (
+        passive.kind === "reflect-guide" &&
+        (!Number.isFinite(passive.duration) || passive.duration <= 0 || passive.duration > 2 ||
+          !Number.isFinite(passive.guideDuration) || passive.guideDuration <= 0 ||
+          passive.guideDuration > 1 ||
+          !Number.isFinite(passive.turnRate) || passive.turnRate <= 0 || passive.turnRate > 6 ||
+          !Number.isFinite(passive.speedMultiplier) ||
+          passive.speedMultiplier < 0.75 || passive.speedMultiplier >= 1)
+      ) {
+        errors.push(`${agent.id}.passive reflect guide must trade speed for bounded steering`);
+      } else if (!["movement-prime", "field-temper", "reflect-guide"].includes(passive.kind)) {
         errors.push(`${agent.id}.passive kind is unsupported`);
       }
     }
@@ -1349,7 +1385,14 @@ export function validateContent({
             Math.PI * 2 * ultimate.crownRadius * 0.72)
       ) {
         errors.push(`${agent.id}.field-crown ultimate must preserve readable escape seams`);
-      } else if (!["line-volley", "field-crown"].includes(ultimate.kind)) {
+      } else if (
+        ultimate.kind === "wind-vortex" &&
+        (!Number.isFinite(ultimate.targetRange) || ultimate.targetRange <= 0 ||
+          ultimate.fieldCount !== 1 ||
+          ![-1, 1].includes(ultimate.spin))
+      ) {
+        errors.push(`${agent.id}.wind-vortex ultimate must remain singular and directional`);
+      } else if (!["line-volley", "field-crown", "wind-vortex"].includes(ultimate.kind)) {
         errors.push(`${agent.id}.ultimate kind is unsupported`);
       }
     }

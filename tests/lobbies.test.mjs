@@ -111,7 +111,7 @@ test("lobby input requires monotonic sequences and enforces server sanitization"
 });
 
 test("distinct ultimate commands remain server-authoritative through the lobby protocol", () => {
-  for (const characterId of ["rimewing", "ashmaw"]) {
+  for (const characterId of ["rimewing", "ashmaw", "kite"]) {
     const { service } = serviceFixture();
     service.host(
       "host",

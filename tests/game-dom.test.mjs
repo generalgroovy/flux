@@ -255,6 +255,22 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   document.querySelector('#pause-overlay [data-action="menu"]').click();
 
   document.querySelector('[data-panel="agents"]').click();
+  document.querySelector('[data-select-agent="kite"]').click();
+  document.querySelector('[data-launch-mode="duel"]').click();
+  assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "kite");
+  assert.equal(document.getElementById("ultimate-ability").hidden, false);
+  assert.equal(
+    document.getElementById("ultimate-name").textContent,
+    "THE TURNING SKY",
+  );
+  document.getElementById("info-toggle").click();
+  assert.match(document.getElementById("info-kit").textContent, /THREAD THE TURN/);
+  assert.match(document.getElementById("info-kit").textContent, /THE TURNING SKY/);
+  window.dispatchEvent(escape);
+  window.dispatchEvent(escape);
+  document.querySelector('#pause-overlay [data-action="menu"]').click();
+
+  document.querySelector('[data-panel="agents"]').click();
   document.querySelector('[data-select-agent="volt"]').click();
   assert.equal(app.dataset.panel, "play");
   assert.equal(

@@ -991,3 +991,47 @@
   meanwhile promote a third mechanically distinct champion to the production
   contract so Gate 2 has three complete high-depth matchup anchors before further
   roster multiplication.
+
+## 2026-07-26 — Aerwyn reflection and trajectory contract
+
+- **Player-facing problem:** Gate 2 needed a third complete champion whose reward
+  came from reaction and aim expression rather than another damage or terrain
+  conversion.
+- **Implemented solution:** HEX 0.27.0 gives Aerwyn **Thread the Turn**: reflecting
+  a hostile spell primes one Wind Needle for 1.4 seconds. The converted shot keeps
+  22 damage, trades 8% speed for 0.58 seconds of live aim steering, and turns at a
+  validated 3.4 radians/second ceiling. A later reflection cancels its guidance.
+  Combat earns **The Turning Sky**, a cover-clipped 0.64-second target commitment
+  that creates one 3.1-second shared vortex. Its explicit rotation bends each
+  projectile once while preserving speed, applies bounded tangential force to all
+  fighters, and carries overlapping Ember without dealing damage. Volt interrupts
+  the windup and Null erases the resulting field.
+- **Presentation and authority:** Added a vortex target disk, progress arc,
+  directional field arrows, guided-shot fins, non-color glyphs, distinct Gale
+  audio/comic feedback, ready copy, full field-guide/codex discovery, bot use, and
+  the existing server-authoritative ultimate input/snapshot path.
+- **Regression caught:** Full diff review found the guided-shot decoration placed
+  in the movement-trail renderer, where its projectile variables were undefined.
+  It was moved to projectile rendering before release. Two focused test setups
+  were also moved clear of the central ruin and hostile Ember so they measured the
+  intended vortex rules rather than incidental collision or damage.
+- **Commands run:** syntax checks for all source/server modules and shell
+  launchers; `git diff --check`; focused match, DOM, and lobby suites; `npm test`;
+  clean server launch on port 8125; health, HTML, and module HTTP smoke; clean
+  shutdown.
+- **Tests passed:** 65/65 checks: 63 DOM/lobby/match/network-quality checks, one
+  live authoritative WebSocket lifecycle check, and one isolated cleanup check.
+  New coverage includes bounded guide turn/speed/damage, guide expiry, vortex
+  target/windup/field count, damage neutrality, fighter and Ember movement,
+  one-time projectile bending with speed preservation, Null erasure, bot use,
+  DOM/codex discovery, ten-champion stress, and all three ultimate kinds through
+  remote authority.
+- **Launch smoke:** Health reported HEX 0.27.0/protocol 2; `/` and
+  `/src/game.mjs` returned `200 OK` with all shipped security headers, then the
+  server stopped cleanly.
+- **Known limitation:** No browser executable is installed here. Hands-on vortex
+  readability, guided-aim feel, audio mix, gamepad comfort, and real-device remote
+  prediction remain pending; deterministic DOM/canvas and network harnesses pass.
+- **Recommended next task:** With three production champions complete, add
+  deterministic latency/jitter/loss simulation and input remapping before further
+  roster multiplication, then use those tools to tune movement and spell reads.

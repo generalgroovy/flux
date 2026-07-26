@@ -2,7 +2,7 @@
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.26.0 on Garuda Sway and Windows: complete all four
+1. Hands-on accept HEX 0.27.0 on Garuda Sway and Windows: complete all four
    FIRST RITE reads; chain sprint, hop, and wall kicks around cover; verify
    FLOW cost/recovery; play Yrsa until THE WHITE HUNT is earned; verify its
    fixed lane tell, reduced channel movement, cover clipping, Volt cancel,
@@ -14,6 +14,10 @@
    Then play Varka into Tide, Gale, Null, and Volt: require obvious Pyre-Forged
    weight/speed trade, douseable Furrow, six readable Crown seams, accurate
    distant target tell, and no visual overload when the ring intersects hazards.
+   Play Aerwyn into projectile pressure: require an obvious successful-reflect
+   prime, controllable but dodgeable guided Needle, readable vortex rotation,
+   one bend per spell, gentle shared fighter/Ember movement, and clean Volt/Null
+   counters without visual or audio overload.
    Verify both installed desktop launchers update, test, open, and shut down.
 2. Run a 30-minute two-device remote soak through the intended VPN/router path;
    require clean join-in-progress, host migration, rematch, and disconnect
@@ -30,18 +34,19 @@
 8. Observe new players completing the adaptive sprint→slide→hop First Rite read;
    require comprehension without coaching repetition or accidental completion.
 9. Universal movement commitment boundaries and a 600-tick chain ceiling are now
-   deterministic; so is Yrsa's authoritative passive/tactical/ultimate pilot.
-   Next acceptance remains hands-on feel and remote prediction.
+   deterministic; so are the three production champion contracts. Next
+   acceptance remains hands-on feel and remote prediction.
 
 ## Gate 1 — Fundamentals implemented
 
-- Complete eight-champion shared-input combat, universal FLOW sprint/hop/wall-kick
+- Complete ten-champion shared-input combat, universal FLOW sprint/hop/wall-kick
   movement, eight Flux disciplines, interacting terrain fields, four
-  maps, short introduction, hazards, bots, death/reset, accessibility,
+  region scales across eight maps, short introduction, hazards, bots, death/reset, accessibility,
   validation, and combination tests.
-- Yrsa is the first champion on the production passive/tactical/ultimate schema.
-  Her movement conversion, active-combat charge, telegraph, interrupt, lane
-  shaping, HUD/codex/input feedback, bot use, and network command are complete.
+- Yrsa, Varka, and Aerwyn are complete on the production passive/tactical/
+  ultimate schema. Together they prove movement conversion, terrain conversion,
+  reflect conversion, fixed lanes, open field rings, and shared trajectory
+  geometry through the same HUD, bot, and authoritative network contracts.
 
 ## Gate 2 — PvP implemented; external soak pending
 

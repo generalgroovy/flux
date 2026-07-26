@@ -121,6 +121,9 @@ test("content ships ten playable champions, thirteen races, eight maps, and all 
   const varka = getCharacter("ashmaw");
   assert.equal(varka.passive.kind, "field-temper");
   assert.equal(varka.ultimate.kind, "field-crown");
+  const aerwyn = getCharacter("kite");
+  assert.equal(aerwyn.passive.kind, "reflect-guide");
+  assert.equal(aerwyn.ultimate.kind, "wind-vortex");
 });
 
 test("every arena is an authored old-world place rather than a bare combat grid", () => {
@@ -198,6 +201,206 @@ test("Wyrmbound trade FLOW for readable forced-movement resistance", () => {
     scaled.entities[1].maxHealth - scaled.entities[1].health,
   );
   assert.deepEqual(matchInvariantErrors(scaled), []);
+});
+
+test("Aerwyn converts a successful spell turn into one bounded aim-guided needle", () => {
+  const state = duel({ leftCharacter: "kite", rightCharacter: "kite" });
+  const [aerwyn, attacker] = state.entities;
+  const kit = getCharacter("kite");
+  state.projectiles.push({
+    id: state.nextProjectileId++,
+    ownerId: attacker.id,
+    team: attacker.team,
+    source: "primary",
+    x: aerwyn.x - 20,
+    y: aerwyn.y,
+    previousX: aerwyn.x - 25,
+    previousY: aerwyn.y,
+    vx: 600,
+    vy: 0,
+    radius: 5,
+    damage: 20,
+    lifetime: 1,
+    knockback: 0,
+    pierce: 0,
+    heavy: false,
+    reflected: false,
+    fieldIds: [],
+    guidedBy: null,
+    guidedRemaining: 0,
+    turnRate: 0,
+  });
+  stepMatch(state, { left: { ...idle, defend: true } }, FIXED_DELTA);
+  assert.equal(state.events.some((event) => event.type === "reflect"), true);
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "passivePrimed" && event.trigger === "SPELL TURN",
+    ),
+    true,
+  );
+  assert.ok(aerwyn.passiveRemaining > 1);
+
+  attacker.x = 1100;
+  attacker.y = 760;
+  attacker.lastSafeX = attacker.x;
+  attacker.lastSafeY = attacker.y;
+  stepMatch(state, { left: { ...idle, fire: true } }, FIXED_DELTA);
+  const guided = state.projectiles.find(
+    (projectile) => projectile.guidedBy === aerwyn.id && projectile.source === "primary",
+  );
+  assert.ok(guided);
+  assert.equal(guided.damage, kit.primary.damage);
+  assert.equal(guided.guidedBy, aerwyn.id);
+  assert.ok(guided.guidedRemaining > 0);
+  assert.ok(
+    Math.abs(Math.hypot(guided.vx, guided.vy) - kit.primary.speed * kit.passive.speedMultiplier) < 0.001,
+  );
+  assert.equal(aerwyn.passiveRemaining, 0);
+  assert.equal(state.events.some((event) => event.type === "passiveGuided"), true);
+
+  const speedBeforeTurn = Math.hypot(guided.vx, guided.vy);
+  stepMatch(state, { left: { ...idle, aimX: 0, aimY: -1 } }, FIXED_DELTA);
+  const turnedAngle = Math.atan2(guided.vy, guided.vx);
+  assert.ok(turnedAngle < 0);
+  assert.ok(Math.abs(turnedAngle) <= kit.passive.turnRate * FIXED_DELTA + 1e-8);
+  assert.ok(Math.abs(Math.hypot(guided.vx, guided.vy) - speedBeforeTurn) < 0.001);
+  for (let tick = 0; tick < Math.ceil(kit.passive.guideDuration / FIXED_DELTA) + 2; tick += 1) {
+    stepMatch(state, { left: { ...idle, aimX: 0, aimY: -1 } }, FIXED_DELTA);
+  }
+  assert.equal(
+    state.projectiles.includes(guided) ? guided.guidedRemaining : 0,
+    0,
+  );
+
+  state.projectiles = state.projectiles.filter((projectile) => projectile !== guided);
+  Object.assign(guided, {
+    ownerId: aerwyn.id,
+    team: aerwyn.team,
+    x: attacker.x - 20,
+    y: attacker.y,
+    previousX: attacker.x - 25,
+    previousY: attacker.y,
+    vx: 600,
+    vy: 0,
+    lifetime: 1,
+    fieldIds: [],
+    guidedBy: aerwyn.id,
+    guidedRemaining: 0.3,
+    turnRate: kit.passive.turnRate,
+  });
+  state.projectiles.push(guided);
+  stepMatch(state, { right: { ...idle, defend: true } }, FIXED_DELTA);
+  assert.equal(guided.ownerId, attacker.id);
+  assert.equal(guided.guidedBy, null);
+  assert.equal(guided.guidedRemaining, 0);
+  assert.ok(attacker.passiveRemaining > 0);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("The Turning Sky creates one shared vortex with physical, counterable interactions", () => {
+  const state = duel({ leftCharacter: "kite", rightCharacter: "orbit" });
+  const [aerwyn, nullCantor] = state.entities;
+  const ultimate = getCharacter("kite").ultimate;
+  aerwyn.ultimateCharge = aerwyn.maxUltimate;
+  stepMatch(state, { left: { ...idle, ultimate: true } }, FIXED_DELTA);
+  assert.equal(aerwyn.ultimateCharge, 0);
+  assert.ok(aerwyn.ultimateTargetX > aerwyn.x);
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "ultimateTell" && event.kind === "wind-vortex",
+    ),
+    true,
+  );
+  assert.equal(state.elementFields.length, 0);
+
+  for (let tick = 0; tick < Math.ceil(ultimate.windup / FIXED_DELTA) + 3; tick += 1) {
+    stepMatch(state, {}, FIXED_DELTA);
+  }
+  const vortex = state.elementFields.find(
+    (field) => field.ownerId === aerwyn.id && field.shape === "vortex",
+  );
+  assert.ok(vortex);
+  assert.equal(
+    state.elementFields.filter(
+      (field) => field.ownerId === aerwyn.id && field.source === "ultimate",
+    ).length,
+    1,
+  );
+
+  nullCantor.x = vortex.x - 90;
+  nullCantor.y = vortex.y;
+  nullCantor.lastSafeX = nullCantor.x;
+  nullCantor.lastSafeY = nullCantor.y;
+  nullCantor.vx = 0;
+  nullCantor.vy = 0;
+  const healthBefore = nullCantor.health;
+  state.projectiles.push({
+    id: state.nextProjectileId++,
+    ownerId: aerwyn.id,
+    team: aerwyn.team,
+    source: "primary",
+    x: vortex.x - vortex.radius + 4,
+    y: vortex.y - 30,
+    previousX: vortex.x - vortex.radius,
+    previousY: vortex.y - 30,
+    vx: 600,
+    vy: 0,
+    radius: 4,
+    damage: 1,
+    lifetime: 2,
+    knockback: 0,
+    pierce: 0,
+    heavy: false,
+    reflected: false,
+    fieldIds: [],
+    guidedBy: null,
+    guidedRemaining: 0,
+    turnRate: 0,
+  });
+  const spell = state.projectiles.at(-1);
+  const spellSpeed = Math.hypot(spell.vx, spell.vy);
+  state.elementFields.push({
+    id: `element-${state.nextElementFieldId++}`,
+    ownerId: aerwyn.id,
+    team: aerwyn.team,
+    element: "fire",
+    x: vortex.x + 100,
+    y: vortex.y,
+    radius: 26,
+    duration: 2,
+    pulseRemaining: 0,
+  });
+  const ember = state.elementFields.at(-1);
+  const emberY = ember.y;
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.ok(nullCantor.vy < 0);
+  assert.equal(nullCantor.health, healthBefore);
+  assert.ok(ember.y > emberY);
+  assert.ok(spell.vy < 0);
+  assert.ok(Math.abs(Math.hypot(spell.vx, spell.vy) - spellSpeed) < 0.001);
+  assert.deepEqual(spell.fieldIds, [vortex.id]);
+  const angleAfterEntry = Math.atan2(spell.vy, spell.vx);
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.equal(Math.atan2(spell.vy, spell.vx), angleAfterEntry);
+
+  nullCantor.x = vortex.x;
+  nullCantor.y = vortex.y;
+  nullCantor.lastSafeX = nullCantor.x;
+  nullCantor.lastSafeY = nullCantor.y;
+  nullCantor.specialCooldown = 0;
+  stepMatch(state, { right: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(
+    state.elementFields.some((field) => field.id === vortex.id),
+    false,
+  );
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "elementReaction" && event.reaction === "nullify",
+    ),
+    true,
+  );
+  assert.equal(aerwyn.ultimateCharge, 0);
+  assert.deepEqual(matchInvariantErrors(state), []);
 });
 
 test("Yrsa converts mastered universal movement into one precise non-damage prime", () => {
@@ -444,44 +647,46 @@ test("The Ashen Crown telegraphs open seams, cannot self-charge, and yields to N
   assert.deepEqual(matchInvariantErrors(state), []);
 });
 
-test("bots commit authored crown ultimates through the shared command path", () => {
-  const state = createMatch({
-    modeId: "duel",
-    mapId: "crosswind",
-    botCount: 1,
-    botCharacterIds: ["ashmaw"],
-    players: [
-      {
-        id: "human",
-        characterId: "kite",
-        raceId: "human",
-        team: "alpha",
-        human: true,
-      },
-    ],
-  });
-  const human = state.entities.find((entity) => entity.human);
-  const varka = state.entities.find((entity) => entity.bot);
-  human.x = 350;
-  human.y = 450;
-  human.lastSafeX = human.x;
-  human.lastSafeY = human.y;
-  varka.x = 600;
-  varka.y = 450;
-  varka.lastSafeX = varka.x;
-  varka.lastSafeY = varka.y;
-  varka.ultimateCharge = varka.maxUltimate;
-  varka.botThinkRemaining = 0;
-  stepMatch(state, { human: idle }, FIXED_DELTA);
-  assert.equal(varka.ultimateCharge, 0);
-  assert.ok(varka.ultimateWindupRemaining > 0);
-  assert.equal(
-    state.events.some(
-      (event) => event.type === "ultimateTell" && event.entityId === varka.id,
-    ),
-    true,
-  );
-  assert.deepEqual(matchInvariantErrors(state), []);
+test("bots commit authored targeted ultimates through the shared command path", () => {
+  for (const characterId of ["ashmaw", "kite"]) {
+    const state = createMatch({
+      modeId: "duel",
+      mapId: "crosswind",
+      botCount: 1,
+      botCharacterIds: [characterId],
+      players: [
+        {
+          id: "human",
+          characterId: "kite",
+          raceId: "human",
+          team: "alpha",
+          human: true,
+        },
+      ],
+    });
+    const human = state.entities.find((entity) => entity.human);
+    const bot = state.entities.find((entity) => entity.bot);
+    human.x = 350;
+    human.y = 450;
+    human.lastSafeX = human.x;
+    human.lastSafeY = human.y;
+    bot.x = 600;
+    bot.y = 450;
+    bot.lastSafeX = bot.x;
+    bot.lastSafeY = bot.y;
+    bot.ultimateCharge = bot.maxUltimate;
+    bot.botThinkRemaining = 0;
+    stepMatch(state, { human: idle }, FIXED_DELTA);
+    assert.equal(bot.ultimateCharge, 0);
+    assert.ok(bot.ultimateWindupRemaining > 0);
+    assert.equal(
+      state.events.some(
+        (event) => event.type === "ultimateTell" && event.entityId === bot.id,
+      ),
+      true,
+    );
+    assert.deepEqual(matchInvariantErrors(state), []);
+  }
 });
 
 test("elemental specials author persistent, counterable arena state", () => {

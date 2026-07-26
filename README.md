@@ -10,6 +10,15 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
+Build 0.27.0 completes **Aerwyn** as the third production champion. A successful
+Turning Leaf reflection primes **Thread the Turn**: one 8%-slower Wind Needle
+steers toward her live aim for 0.58 seconds at a bounded turn rate without added
+damage. Combat earns **The Turning Sky**, a 0.64-second, cover-clipped target tell
+that creates one shared Gale vortex. Its visible rotation bends each spell once,
+moves every fighter and overlapping Ember around the rim, deals no damage, and
+can be interrupted by Volt or erased by Null. The guide, vortex, bot use, HUD,
+codex, comic/audio cues, and remote commands use the authoritative simulation.
+
 Build 0.26.0 expands Wyrmbound into an opposed champion pair. **Varka Ashmaw**
 uses Ember to inscribe a douseable Pyre Furrow; while standing in allied fire,
 **Pyre-Forged** trades Cinder Tooth speed for size, knockback, and heavy-spell
@@ -264,7 +273,7 @@ and essential controls without pausing combat.
 
 | Champion | People / discipline | Primary | Tactical | Defense | Mobility | Passive / ultimate |
 | --- | --- | --- | --- | --- | --- | --- |
-| AERWYN | Briar Elf / Gale | Wind Needle | Shearwind | Turning Leaf | Gale Step | — |
+| AERWYN | Briar Elf / Gale | Wind Needle | Shearwind | Turning Leaf | Gale Step | Thread the Turn / The Turning Sky |
 | GORUM | Iron Orc / Stone | Slingstone | Faultline | Ironroot | War Tusk | — |
 | VELLYN | Gloam Elf / Veil | Moon Shards | Mirror Wraith | Dusk Mantle | Shadow Step | — |
 | NIM COPPERSPARK | Copper Gnome / Volt | Quick Arc | Chain Rune | Grounding Sigil | Storm Hop | — |
@@ -342,7 +351,7 @@ combinations, wall and corner dash stress, blink obstruction, unit collision,
 all defense types, projectile interaction, mines, hazards, death/reset,
 overtime, control, PvE waves, join-in-progress, discovery, input sequencing,
 snapshots, disconnect/reconnect identity, spectator isolation, host migration,
-route allowlisting, security headers, and an eight-champion two-minute
+route allowlisting, security headers, and an eight-fighter two-minute
 deterministic combat soak. It also clicks every main menu, launches all five
 rulesets through the shipped interface, toggles live field info, and verifies
 champion/map shortcuts update the contest builder.

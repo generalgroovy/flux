@@ -858,7 +858,9 @@ function updateAbilities() {
       : ready
         ? agent.ultimate.kind === "field-crown"
           ? "READY · ring with escape seams"
-          : "READY · fixed lane"
+          : agent.ultimate.kind === "wind-vortex"
+            ? "READY · shared spell vortex"
+            : "READY · fixed lane"
         : `${Math.floor(player.ultimateCharge)} / ${agent.ultimate.chargeRequired} · deal damage`;
     element("ultimate-charge").style.transform =
       `scaleX(${clamp(player.ultimateCharge / agent.ultimate.chargeRequired, 0, 1)})`;
@@ -986,10 +988,13 @@ function processEvents(events, tick) {
       toast("LANDING CUT · TURN STOLEN", "comic");
     } else if (event.type === "passivePrimed") {
       tone(540, 0.055, "triangle", 0.045);
-      toast(`${event.trigger} · RIME PRIMED`, "comic");
+      toast(`${event.trigger} · ${event.name}`, "comic");
     } else if (event.type === "passiveSpent") {
       tone(710, 0.045, "triangle", 0.04);
-      toast("FANGS HONED!", "comic");
+      toast(`${event.name} · HONED!`, "comic");
+    } else if (event.type === "passiveGuided") {
+      tone(630, 0.07, "sine", 0.05);
+      toast(`WHIRR! · ${event.name}`, "comic");
     } else if (event.type === "passiveConverted") {
       tone(155, 0.065, "sawtooth", 0.045);
       toast("KLANG! · PYRE-FORGED", "comic");
@@ -1000,17 +1005,23 @@ function processEvents(events, tick) {
       }
     } else if (event.type === "ultimateTell") {
       tone(96, 0.22, "sawtooth", 0.07);
+      const mark = event.kind === "field-crown"
+        ? "RING"
+        : event.kind === "wind-vortex"
+          ? "VORTEX"
+          : "LANE";
       toast(
-        `${event.name} · ${event.kind === "field-crown" ? "RING" : "LANE"} MARKED!`,
+        `${event.name} · ${mark} MARKED!`,
         "comic",
       );
     } else if (event.type === "ultimateCast") {
       const ember = event.element === "fire";
-      tone(ember ? 145 : 740, 0.16, ember ? "sawtooth" : "triangle", 0.08);
+      const gale = event.element === "wind";
+      tone(ember ? 145 : gale ? 560 : 740, 0.16, ember ? "sawtooth" : gale ? "sine" : "triangle", 0.08);
       burst(
-        event.kind === "field-crown" ? event.endX : event.x,
-        event.kind === "field-crown" ? event.endY : event.y,
-        ember ? "#e87b52" : "#cceff3",
+        ["field-crown", "wind-vortex"].includes(event.kind) ? event.endX : event.x,
+        ["field-crown", "wind-vortex"].includes(event.kind) ? event.endY : event.y,
+        ember ? "#e87b52" : gale ? "#77f7ce" : "#cceff3",
         24,
       );
       screenShake = Math.max(screenShake, 8);
@@ -1404,13 +1415,45 @@ function drawElementFields(time) {
       context.fill();
       context.stroke();
       context.setLineDash([]);
+      if (field.element === "wind" && field.shape === "vortex") {
+        const spin = field.spin === -1 ? -1 : 1;
+        context.save();
+        context.translate(field.x, field.y);
+        context.rotate(settings.reducedMotion ? 0 : time * 0.8 * spin);
+        context.lineWidth = settings.highContrast ? 5 : 3;
+        for (let index = 0; index < 4; index += 1) {
+          const angle = index * Math.PI / 2;
+          context.beginPath();
+          context.arc(0, 0, field.radius * 0.62, angle, angle + spin * 0.72);
+          context.stroke();
+          const tip = angle + spin * 0.72;
+          context.save();
+          context.translate(Math.cos(tip) * field.radius * 0.62, Math.sin(tip) * field.radius * 0.62);
+          context.rotate(tip + spin * Math.PI / 2);
+          context.fillStyle = color;
+          context.beginPath();
+          context.moveTo(0, -6);
+          context.lineTo(12 * spin, 0);
+          context.lineTo(0, 6);
+          context.closePath();
+          context.fill();
+          context.restore();
+        }
+        context.restore();
+      }
       context.fillStyle = color;
       context.font = "700 13px ui-monospace, monospace";
       context.textAlign = "center";
       context.textBaseline = "middle";
       const labelX = field.element === "earth" ? field.x + field.width / 2 : field.x;
       const labelY = field.element === "earth" ? field.y + field.height / 2 : field.y;
-      context.fillText(marks[field.element] ?? field.element, labelX, labelY);
+      context.fillText(
+        field.element === "wind" && field.shape === "vortex"
+          ? (field.spin === -1 ? "↺" : "↻")
+          : marks[field.element] ?? field.element,
+        labelX,
+        labelY,
+      );
     } finally {
       context.restore();
     }
@@ -1514,6 +1557,18 @@ function drawProjectiles() {
         -direction.y * (projectile.heavy ? 30 : 18),
       );
       context.stroke();
+      if (projectile.guidedRemaining > 0) {
+        context.globalAlpha = 0.9;
+        context.lineWidth = 2;
+        context.beginPath();
+        context.arc(0, 0, projectile.radius + 6, -1.1, 1.1);
+        context.stroke();
+        context.beginPath();
+        context.moveTo(-direction.x * 7 - direction.y * 7, -direction.y * 7 + direction.x * 7);
+        context.lineTo(-direction.x * 14, -direction.y * 14);
+        context.lineTo(-direction.x * 7 + direction.y * 7, -direction.y * 7 - direction.x * 7);
+        context.stroke();
+      }
     } finally {
       context.restore();
     }
@@ -1630,6 +1685,34 @@ function drawEntities(time) {
             -Math.PI / 2 + Math.PI * 2 * progress,
           );
           context.stroke();
+        } else if (agent.ultimate.kind === "wind-vortex") {
+          const targetX = entity.ultimateTargetX - entity.x;
+          const targetY = entity.ultimateTargetY - entity.y;
+          context.beginPath();
+          context.moveTo(0, 0);
+          context.lineTo(targetX, targetY);
+          context.stroke();
+          context.beginPath();
+          context.arc(targetX, targetY, agent.ultimate.fieldRadius, 0, Math.PI * 2);
+          context.fill();
+          context.stroke();
+          context.setLineDash([]);
+          context.lineWidth = 7;
+          context.beginPath();
+          context.arc(
+            targetX,
+            targetY,
+            agent.ultimate.fieldRadius * 0.68,
+            -Math.PI / 2,
+            -Math.PI / 2 + agent.ultimate.spin * Math.PI * 2 * progress,
+            agent.ultimate.spin < 0,
+          );
+          context.stroke();
+          context.fillStyle = agent.accent;
+          context.font = "700 20px ui-monospace, monospace";
+          context.textAlign = "center";
+          context.textBaseline = "middle";
+          context.fillText(agent.ultimate.spin < 0 ? "↺" : "↻", targetX, targetY);
         }
         context.setLineDash([]);
         context.restore();

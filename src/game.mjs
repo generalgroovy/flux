@@ -24,6 +24,7 @@ import {
   receiveNetworkProbe,
   summarizeNetworkDiagnostics,
 } from "./network/quality.mjs";
+import { createLobbyInvite, remoteServerFromHint } from "./network/invite.mjs";
 import {
   conditionPacket,
   configurePacketConditioner,
@@ -186,11 +187,19 @@ applySettings();
 showPanel("home");
 resize();
 updateInterface();
-const linkedLobbyCode = new URLSearchParams(location.search ?? "").get("join");
+const launchParameters = new URLSearchParams(location.search ?? "");
+const linkedLobbyCode = launchParameters.get("join");
+const linkedServer = launchParameters.get("server");
+const hintedServer = remoteServerFromHint(linkedServer);
+if (hintedServer) element("server-address").value = hintedServer;
 if (linkedLobbyCode) {
   showPanel("online");
   element("join-code").value = linkedLobbyCode.toUpperCase();
   window.setTimeout(() => joinLobby(linkedLobbyCode), 0);
+} else if (launchParameters.get("friends") === "1") {
+  showPanel("online");
+  element("lobby-public").checked = false;
+  setNetworkMessage("FRIEND HOST · create a private lobby, then send the invite link.");
 }
 
 window.addEventListener("resize", resize);
@@ -2734,9 +2743,10 @@ async function hostLobby() {
     });
     if (!result.ok) throw new Error(result.message);
     beginRemote(result);
-    const shareUrl = new URL("/", readServerBase());
-    shareUrl.searchParams.set("join", result.lobby.code);
-    element("share-link").value = shareUrl.href;
+    const serverBase = readServerBase();
+    element("share-link").value = createLobbyInvite(serverBase, result.lobby.code, {
+      desktop: launchParameters.get("desktop") === "1",
+    });
     element("share-link-row").hidden = false;
     await copyShareLink();
     toast(`LOBBY ${result.lobby.code} · LINK READY`);

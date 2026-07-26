@@ -1405,3 +1405,49 @@
 - **Recommended next task:** Use one launcher at a time for the chemistry-module
   extraction and destructible-prop slice; stop autonomous work through
   `.agent/STOP` before manual edits.
+
+# 2026-07-26 — FLUX 0.34.0 desktop runtime and private invite foundation
+
+- **Player-facing problem:** Remote lobbies were browser-hosted and required
+  players to understand reachable ports or VPNs. The source desktop shortcuts
+  still opened a browser, packaged auto-update did not exist, and there was no
+  application-owned invite or shutdown lifecycle.
+- **Implemented solution:** Electron 43 now owns a Linux/Windows FLUX window and
+  launches the existing authoritative server as one exact IPC child on a random
+  loopback port. The renderer is sandboxed with Node integration off, context
+  isolation and web security on, device/data reads denied, only same-origin
+  sanitized clipboard writes allowed, popups/webviews denied, and navigation
+  locked to a launch-token-authenticated local authority. Normal
+  shutdown asks that authority to close, stops the exact tunnel child, and uses
+  bounded targeted escalation only for those owned PIDs. AppImage and NSIS
+  packaging, a pixel-rune app icon, startup update probing, and `flux://` desktop
+  invite registration are configured. Linux/Windows source installers now add
+  normal and **Play with Friends** shortcuts; both update and test before opening
+  the desktop app.
+- **Friend transport:** Friend mode downloads the current official Linux/Windows
+  `cloudflared` asset into app user data, rejects missing or mismatched GitHub
+  SHA-256 metadata, creates a private HTTPS/WebSocket route, validates public
+  health, and retries boundedly before exposing it. Desktop lobby creation emits
+  a strict `flux://join` link containing only an HTTPS origin and six-character
+  lobby code. Browser/LAN development remains explicitly available.
+- **Verification run:** Baseline `npm test` passed 82/82. Desktop/runtime/tunnel/
+  invite focused tests, recursive JavaScript syntax, Linux shell syntax, JSON,
+  diff, and production dependency audit passed. The final expanded full suite
+  passed 94/94: 92 deterministic/DOM/lobby/match/desktop/network checks, one
+  live WebSocket lifecycle, and one isolated server cleanup. Source Electron opened on Wayland
+  and a forced close left no child or registry residue. Linux AppImage packaging
+  and packaged launch passed; the owned server started from ASAR and closed.
+  `npm audit --omit=dev` reported zero production vulnerabilities.
+- **Failures and limitations:** The first Linux package build rejected a
+  misplaced `desktopName`; moving it to package scope fixed the build. The
+  packaged GitHub update probe returned 404 because the repository has no
+  player-accessible release feed; its previously duplicated unhandled rejection
+  is now caught, but signed auto-update remains release-blocked. Windows files
+  assembled on Linux, then NSIS creation stopped because Wine is absent; no
+  system package was installed. Real Quick Tunnel registration worked and one
+  public health probe passed, but repeated generated hostnames intermittently
+  failed DNS publication. The implementation retries and fails closed, but an
+  owned authenticated relay is still required for dependable friend play.
+- **Recommended next task:** Establish a signed public update feed and stable
+  authenticated relay, then run a two-device Linux/Windows `flux://` join soak
+  before treating remote desktop play as out-of-box release-ready.

@@ -7,6 +7,19 @@ spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
+Build 0.34.0 makes the desktop application the primary play surface. Electron
+owns one sandboxed FLUX window and a separately isolated loopback authority;
+the renderer has no Node access, device/data-read permissions, popups, webviews,
+or external navigation. Only sanitized invite-link clipboard writes from the
+exact local game origin are allowed. Linux AppImage and Windows NSIS builds share the same runtime and
+probe their configured packaged-update feed when opened. **Play with Friends** creates a private
+lobby path through a temporary HTTPS/WebSocket tunnel and copies a `flux://`
+desktop invite, so guests join in their own FLUX window without port forwarding
+or a browser. Tunnel downloads come only from Cloudflare's official GitHub
+release and must match its published SHA-256 digest. Normal close asks owned
+children to stop gracefully, then targets only those exact child PIDs if they
+exceed the bounded shutdown window.
+
 Build 0.33.0 completes the FLUX identity migration. Legacy DIFF environment
 variables, health routes, browser storage, and debug hooks remain readable only
 as explicit compatibility aliases; all new launch and persistence paths use FLUX.
@@ -219,7 +232,7 @@ reversals readable without filling the arena with effects.
 
 ## Run
 
-Requires Node.js 20.19 or newer and a current desktop browser.
+Requires Node.js 20.19 or newer when running from source.
 
 ```bash
 npm ci
@@ -227,9 +240,28 @@ npm test
 npm start
 ```
 
-Open <http://127.0.0.1:8000>. The game starts in its main menu.
-The home screen launches every offline ruleset directly; **Choose contest**
+`npm start` opens FLUX in its own desktop window. No browser tab is used. The
+home screen launches every offline ruleset directly; **Choose contest**
 keeps champion, ancestry, arena, format, and bot setup available in one builder.
+
+Create a private remote session from a desktop window:
+
+```bash
+npm run start:friends
+```
+
+Choose the lobby settings, press **Create and deploy**, then send the copied
+`flux://` invite. A friend with FLUX installed can open it to launch the app and
+join directly. First use downloads about 40 MB of checksum-verified tunnel
+tooling into FLUX's user-data directory. The temporary link exists only while
+the host window is open. Quick Tunnels have no uptime guarantee; a stable owned
+relay remains required before treating this path as competitive infrastructure.
+Packaged auto-update also remains release-blocked until the repository exposes
+a signed, player-accessible update feed; source desktop launchers already
+fast-forward and verify their configured branch before every launch.
+
+The legacy browser/server development path remains available with
+`npm run start:server`, then <http://127.0.0.1:8000>.
 
 To verify a local working copy and launch it on the first free port from
 `8000`–`8100`:
@@ -269,8 +301,7 @@ score, and outcomes.
 ### Pull, verify, and run on Linux
 
 The launcher exclusively uses `~/Projects/flux`, fast-forwards `main`, installs
-the locked dependencies, runs every test, reuses a healthy FLUX server or finds
-a free port, and starts the game:
+the locked dependencies, runs every test, and opens the desktop game:
 
 ```bash
 bash scripts/pull-and-run.sh
@@ -279,7 +310,7 @@ bash scripts/pull-and-run.sh
 Enable LAN/remote hosting through the same launcher:
 
 ```bash
-FLUX_HOST=0.0.0.0 bash scripts/pull-and-run.sh
+FLUX_DESKTOP=0 FLUX_HOST=0.0.0.0 bash scripts/pull-and-run.sh
 ```
 
 To update and run a specific development checkout/branch, pass both explicitly:
@@ -298,9 +329,10 @@ Install a Linux desktop entry for the current checkout and branch:
 bash scripts/install-desktop-linux.sh
 ```
 
-It opens a terminal, fast-forwards the selected branch, installs locked
-dependencies, runs all tests, starts FLUX on a free port, and then opens the
-browser. The terminal owns the server; close it or press `Ctrl+C` to stop.
+It installs two launchers. Both fast-forward the selected branch, install locked
+dependencies, and run all tests before opening FLUX in its own window. **FLUX
+Arena · Play with Friends** additionally creates the private invite path.
+Closing the game stops only the authority and tunnel processes owned by it.
 
 On Windows, run these once from PowerShell to create the equivalent desktop
 shortcut:
@@ -309,8 +341,9 @@ shortcut:
 powershell -ExecutionPolicy Bypass -File scripts\install-desktop-windows.ps1
 ```
 
-The shortcut uses `scripts\pull-and-run.ps1` to perform the same guarded
-update, test, free-port, health-check, browser-open, and shutdown flow natively.
+The two shortcuts use `scripts\pull-and-run.ps1` to perform the same guarded
+update, verification, desktop launch, friend-host, and bounded shutdown flow
+natively.
 
 To stop registered FLUX servers belonging to this checkout without touching
 unrelated Node processes:

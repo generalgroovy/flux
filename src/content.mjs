@@ -849,6 +849,8 @@ export const MATCH_TUNING = Object.freeze({
     recoveryDelay: 0.38,
     hopCost: 28,
     hopSpeed: 650,
+    hopMomentumCarry: 0.35,
+    hopCarryLimit: 180,
     wallKickSpeed: 780,
     hopDuration: 0.16,
     hopCooldown: 0.5,
@@ -950,6 +952,8 @@ export function validateContent({
     "recoveryDelay",
     "hopCost",
     "hopSpeed",
+    "hopMomentumCarry",
+    "hopCarryLimit",
     "wallKickSpeed",
     "hopDuration",
     "hopCooldown",
@@ -970,6 +974,9 @@ export function validateContent({
   }
   if (flow.wallKickSpeed < flow.hopSpeed) {
     errors.push("flow.wallKickSpeed must reward wall commitment");
+  }
+  if (flow.hopMomentumCarry > 0.6 || flow.hopCarryLimit > flow.hopSpeed / 2) {
+    errors.push("flow hop momentum carry must remain bounded");
   }
   for (const [key, value] of Object.entries(tuning.elements ?? {})) {
     if (!Number.isFinite(value) || value <= 0) {

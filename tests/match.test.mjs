@@ -622,6 +622,23 @@ test("counter-strafing cuts committed momentum with a readable skill cue", () =>
   assert.deepEqual(matchInvariantErrors(state), []);
 });
 
+test("hops preserve bounded lateral momentum without speed stacking", () => {
+  const state = duel();
+  const runner = state.entities[0];
+  for (let tick = 0; tick < 28; tick += 1) {
+    stepMatch(state, { [runner.id]: { ...idle, moveY: 1, sprint: true } });
+  }
+  stepMatch(state, { [runner.id]: { ...idle, moveX: 1, hop: true } });
+  assert.ok(runner.hopRemaining > 0);
+  assert.ok(runner.vy > 0);
+  assert.ok(Math.abs(runner.hopCarryY) <= MATCH_TUNING.flow.hopCarryLimit + 0.01);
+  assert.ok(
+    Math.hypot(runner.vx, runner.vy) <=
+      MATCH_TUNING.flow.hopSpeed + MATCH_TUNING.flow.hopCarryLimit + 0.01,
+  );
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
 test("flow sprint, hop, and wall kick are bounded universal movement", () => {
   const state = duel({ mapId: "crosswind" });
   const player = state.entities[0];

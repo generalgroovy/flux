@@ -10,7 +10,13 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
-Build 0.18.0 deepens universal footwork with counter-strafing. Reversing against
+Build 0.19.0 adds bounded hop momentum carry. Crossing the hop direction with
+existing velocity preserves up to 35% of that lateral motion, capped at 180
+units. Players can shape evasive arcs and wall approaches, but cannot stack
+unbounded speed; collision, ice control, FLOW cost, and authoritative state all
+retain their existing meaning.
+
+Build 0.18.0 deepened universal footwork with counter-strafing. Reversing against
 committed momentum brakes and redirects at a bounded 1.7× control rate, creating
 sharper bait-and-repeek decisions without erasing acceleration. A restrained
 comic/audio cue teaches the successful cut; ice still reduces the maneuver's

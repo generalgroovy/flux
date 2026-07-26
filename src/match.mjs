@@ -202,6 +202,8 @@ function createEntity(spec, index, map) {
     hopRemaining: 0,
     hopX: facingX,
     hopY: 0,
+    hopCarryX: 0,
+    hopCarryY: 0,
     hopWallKick: false,
     wallContactRemaining: 0,
     wallX: 0,
@@ -564,6 +566,18 @@ function tryHop(state, entity, command) {
   entity.hopRemaining = flow.hopDuration;
   entity.hopX = direction.x;
   entity.hopY = direction.y;
+  const along = entity.vx * direction.x + entity.vy * direction.y;
+  const lateralX = entity.vx - direction.x * along;
+  const lateralY = entity.vy - direction.y * along;
+  const lateralSpeed = Math.hypot(lateralX, lateralY);
+  const carryScale = lateralSpeed > EPSILON
+    ? Math.min(
+        MATCH_TUNING.flow.hopMomentumCarry,
+        MATCH_TUNING.flow.hopCarryLimit / lateralSpeed,
+      )
+    : 0;
+  entity.hopCarryX = lateralX * carryScale;
+  entity.hopCarryY = lateralY * carryScale;
   entity.hopWallKick = wallKick;
   entity.wallContactRemaining = 0;
   entity.sprinting = false;
@@ -589,8 +603,8 @@ function moveEntity(state, entity, command, agent, delta, map) {
     const speed = entity.hopWallKick
       ? MATCH_TUNING.flow.wallKickSpeed
       : MATCH_TUNING.flow.hopSpeed;
-    entity.vx = entity.hopX * speed;
-    entity.vy = entity.hopY * speed;
+    entity.vx = entity.hopX * speed + entity.hopCarryX;
+    entity.vy = entity.hopY * speed + entity.hopCarryY;
     entity.sprinting = false;
   } else {
     const moving = moveX !== 0 || moveY !== 0;
@@ -1602,6 +1616,8 @@ function respawnEntity(entity, map) {
   entity.hopCooldown = 0;
   entity.hopRemaining = 0;
   entity.hopWallKick = false;
+  entity.hopCarryX = 0;
+  entity.hopCarryY = 0;
   entity.wallContactRemaining = 0;
   entity.wallX = 0;
   entity.wallY = 0;
@@ -1992,6 +2008,8 @@ export function matchInvariantErrors(state) {
       "flowRecoveryDelay",
       "hopCooldown",
       "hopRemaining",
+      "hopCarryX",
+      "hopCarryY",
       "wallContactRemaining",
       "elementForceX",
       "elementForceY",

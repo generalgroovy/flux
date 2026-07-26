@@ -750,3 +750,26 @@
   tuning; no browser executable is installed here.
 - **Recommended next task:** Make hop landings preserve a bounded fraction of
   entry momentum and test hop-to-counter-strafe, hop-to-wall-kick, and ice chains.
+
+## 2026-07-26 — Bounded hop momentum carry
+
+- **Player-facing problem:** Hops replaced all incoming velocity with a fixed
+  vector, flattening diagonal escape routes and making fast movement chains feel
+  disconnected.
+- **Implemented solution:** Hops now retain 35% of velocity perpendicular to the
+  chosen hop direction, hard-capped at 180 units. The forward hop and wall-kick
+  speeds remain fixed, FLOW costs remain unchanged, and carry cannot recursively
+  stack beyond the cap. Carry state is authoritative, finite, and reset on spawn.
+  Added guide text and centralized validation.
+- **Commands run:** Syntax checks for content and simulation; `git diff --check`;
+  focused match suite; `npm test`; clean server launch on port 8117; HTTP
+  health/shell/module smoke; clean shutdown.
+- **Tests passed:** 52/52 checks, including lateral carry, hard speed bound,
+  reset state, invariants, seven-map stress, authoritative networking, and
+  isolated cleanup.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.19.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Known limitation:** Hands-on animation/feel tuning remains pending because no
+  browser executable is installed here.
+- **Recommended next task:** Add a landing micro-window that permits one readable
+  counter-strafe cancel without reducing hop commitment or enabling spam.

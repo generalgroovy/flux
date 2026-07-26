@@ -15,31 +15,40 @@ const character = ({
   special,
   defense,
   mobility,
+  passive = null,
+  ultimate = null,
   affinity,
   homeRaceId,
-}) => ({
-  id,
-  name,
-  role,
-  style,
-  color,
-  accent,
-  glyph,
-  silhouette,
-  difficulty,
-  radius,
-  health,
-  speed,
-  acceleration: speed * 6.6,
-  deceleration: speed * 8,
-  damageInvulnerability: 0.08,
-  primary: { fluxCost: 0, ...primary },
-  special: { fluxCost: 34, ...special },
-  defense: { fluxCost: 18, ...defense },
-  mobility: { fluxCost: 16, ...mobility },
-  affinity,
-  homeRaceId,
-});
+}) => {
+  const tactical = { fluxCost: 34, ...special };
+  return {
+    id,
+    name,
+    role,
+    style,
+    color,
+    accent,
+    glyph,
+    silhouette,
+    difficulty,
+    radius,
+    health,
+    speed,
+    acceleration: speed * 6.6,
+    deceleration: speed * 8,
+    damageInvulnerability: 0.08,
+    passive,
+    primary: { fluxCost: 0, ...primary },
+    tactical,
+    // Wire-format v1 keeps `special`; authored content now uses the tactical contract.
+    special: tactical,
+    defense: { fluxCost: 18, ...defense },
+    mobility: { fluxCost: 16, ...mobility },
+    ultimate,
+    affinity,
+    homeRaceId,
+  };
+};
 
 export const RACES = Object.freeze([
   { id: "human", name: "Human", trait: "Adaptable", boon: "+4% Flux", drawback: "−2% health", health: 0.98, speed: 1, flux: 1.04, flow: 1 },
@@ -515,6 +524,14 @@ export const CHARACTERS = Object.freeze([
     difficulty: 2,
     health: 118,
     speed: 385,
+    passive: {
+      name: "RIDGELINE HUNT",
+      detail: "A wall kick or landing cut primes one faster, tighter Rime Fangs cast.",
+      kind: "movement-prime",
+      duration: 1.2,
+      speedMultiplier: 1.18,
+      spreadMultiplier: 0.45,
+    },
     primary: {
       name: "RIME FANGS",
       detail: "Paired shards reward range judgment.",
@@ -556,6 +573,26 @@ export const CHARACTERS = Object.freeze([
       cooldown: 1.32,
       contactDamage: 19,
       knockback: 280,
+    },
+    ultimate: {
+      name: "THE WHITE HUNT",
+      detail: "Mark a fixed lane, then loose a rime fan and freeze its route.",
+      kind: "line-volley",
+      chargeRequired: 100,
+      chargePerDamage: 0.8,
+      windup: 0.58,
+      moveScale: 0.38,
+      range: 430,
+      fieldCount: 3,
+      fieldRadius: 92,
+      fieldDuration: 3.8,
+      damage: 18,
+      speed: 940,
+      lifetime: 0.78,
+      radius: 7,
+      count: 5,
+      spread: 0.13,
+      knockback: 95,
     },
   }),
 ]);
@@ -982,6 +1019,11 @@ export const MATCH_TUNING = Object.freeze({
     recoveryDelay: 0.46,
     dryCueCooldown: 0.7,
   },
+  ultimate: {
+    maximum: 100,
+    minimumWindup: 0.35,
+    maximumWindup: 0.9,
+  },
   controlScorePerSecond: 12,
   controlOvertimeGrace: 2.5,
   bot: {
@@ -1115,6 +1157,11 @@ export function validateContent({
       errors.push(`flux.${key} must be positive`);
     }
   }
+  for (const [key, value] of Object.entries(tuning.ultimate ?? {})) {
+    if (!Number.isFinite(value) || value <= 0) {
+      errors.push(`ultimate.${key} must be positive`);
+    }
+  }
 
   for (const agent of characters) {
     if (!races.some((race) => race.id === agent.homeRaceId)) {
@@ -1122,6 +1169,9 @@ export function validateContent({
     }
     if (!agent.affinity?.id || !agent.affinity?.name || agent.affinity?.kind !== "element") {
       errors.push(`${agent.id}.affinity must declare a named element`);
+    }
+    if (agent.tactical !== agent.special) {
+      errors.push(`${agent.id}.tactical must retain the stable special wire alias`);
     }
     if (
       !["kite", "block", "split", "bolt", "flare", "ring", "cross", "rook", "wing"].includes(
@@ -1153,6 +1203,39 @@ export function validateContent({
         ability.fluxCost > tuning.flux.maximum
       ) {
         errors.push(`${agent.id}.${ability.name}.fluxCost must be payable`);
+      }
+    }
+    if (agent.passive) {
+      if (
+        !agent.passive.name || !agent.passive.detail ||
+        agent.passive.kind !== "movement-prime" ||
+        !Number.isFinite(agent.passive.duration) || agent.passive.duration <= 0 ||
+        !Number.isFinite(agent.passive.speedMultiplier) ||
+        agent.passive.speedMultiplier <= 1 || agent.passive.speedMultiplier > 1.3 ||
+        !Number.isFinite(agent.passive.spreadMultiplier) ||
+        agent.passive.spreadMultiplier <= 0 || agent.passive.spreadMultiplier >= 1
+      ) {
+        errors.push(`${agent.id}.passive must be a bounded movement-prime contract`);
+      }
+    }
+    if (agent.ultimate) {
+      const ultimate = agent.ultimate;
+      if (
+        !ultimate.name || !ultimate.detail || ultimate.kind !== "line-volley" ||
+        ultimate.chargeRequired !== tuning.ultimate.maximum ||
+        !Number.isFinite(ultimate.chargePerDamage) || ultimate.chargePerDamage <= 0 ||
+        ultimate.windup < tuning.ultimate.minimumWindup ||
+        ultimate.windup > tuning.ultimate.maximumWindup ||
+        !Number.isFinite(ultimate.moveScale) || ultimate.moveScale <= 0 ||
+        ultimate.moveScale > 0.5 || !Number.isFinite(ultimate.range) ||
+        ultimate.range <= 0 || !Number.isInteger(ultimate.fieldCount) ||
+        ultimate.fieldCount < 1 || ultimate.fieldCount > 4 ||
+        !Number.isFinite(ultimate.fieldRadius) || ultimate.fieldRadius <= 0 ||
+        !Number.isFinite(ultimate.fieldDuration) || ultimate.fieldDuration <= 0 ||
+        !Number.isFinite(ultimate.damage) || ultimate.damage <= 0 ||
+        !Number.isInteger(ultimate.count) || ultimate.count < 1 || ultimate.count > 7
+      ) {
+        errors.push(`${agent.id}.ultimate must be a bounded, telegraphed line-volley`);
       }
     }
   }

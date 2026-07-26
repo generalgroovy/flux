@@ -33,6 +33,7 @@ const idle = Object.freeze({
   mobility: false,
   sprint: false,
   hop: false,
+  ultimate: false,
 });
 
 function duel({
@@ -107,11 +108,16 @@ test("content ships nine complete champions, thirteen races, eight maps, and all
     assert.ok(agent.glyph);
     assert.ok(agent.primary.name);
     assert.ok(agent.special.name);
+    assert.equal(agent.tactical, agent.special);
     assert.ok(agent.defense.name);
     assert.ok(agent.mobility.name);
     assert.ok(agent.affinity.id);
     assert.equal(agent.affinity.kind, "element");
   }
+  const yrsa = getCharacter("rimewing");
+  assert.equal(yrsa.passive.kind, "movement-prime");
+  assert.equal(yrsa.ultimate.kind, "line-volley");
+  assert.equal(yrsa.ultimate.chargeRequired, MATCH_TUNING.ultimate.maximum);
 });
 
 test("every arena is an authored old-world place rather than a bare combat grid", () => {
@@ -189,6 +195,128 @@ test("Wyrmbound trade FLOW for readable forced-movement resistance", () => {
     scaled.entities[1].maxHealth - scaled.entities[1].health,
   );
   assert.deepEqual(matchInvariantErrors(scaled), []);
+});
+
+test("Yrsa converts mastered universal movement into one precise non-damage prime", () => {
+  const state = duel({ leftCharacter: "rimewing" });
+  const yrsa = state.entities[0];
+  const kit = getCharacter("rimewing");
+  yrsa.wallContactRemaining = MATCH_TUNING.flow.wallMemory;
+  yrsa.wallX = -1;
+  yrsa.wallY = 0;
+  stepMatch(
+    state,
+    { left: { ...idle, moveY: 1, hop: true } },
+    FIXED_DELTA,
+  );
+  assert.equal(
+    state.events.some(
+      (event) => event.type === "passivePrimed" && event.trigger === "WALL KICK",
+    ),
+    true,
+  );
+  assert.ok(yrsa.passiveRemaining > 1);
+
+  stepMatch(state, { left: { ...idle, fire: true } }, FIXED_DELTA);
+  const fangs = state.projectiles.filter(
+    (projectile) => projectile.ownerId === yrsa.id && projectile.source === "primary",
+  );
+  assert.equal(fangs.length, 2);
+  assert.ok(Math.hypot(fangs[0].vx, fangs[0].vy) > kit.primary.speed);
+  const angleGap = Math.abs(
+    Math.atan2(fangs[1].vy, fangs[1].vx) -
+      Math.atan2(fangs[0].vy, fangs[0].vx),
+  );
+  assert.ok(angleGap < kit.primary.spread);
+  assert.ok(fangs.every((projectile) => projectile.damage === kit.primary.damage));
+  assert.equal(yrsa.passiveRemaining, 0);
+  assert.equal(state.events.some((event) => event.type === "passiveSpent"), true);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("The White Hunt earns charge through damage and resolves a counterable marked lane", () => {
+  const state = duel({ leftCharacter: "rimewing" });
+  const [yrsa, target] = state.entities;
+  const ultimate = getCharacter("rimewing").ultimate;
+  target.x = 450;
+  target.y = yrsa.y;
+  target.lastSafeX = target.x;
+  target.lastSafeY = target.y;
+  yrsa.ultimateCharge = 90;
+  stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(yrsa.ultimateCharge, ultimate.chargeRequired);
+  assert.equal(state.events.some((event) => event.type === "ultimateReady"), true);
+
+  yrsa.specialCooldown = 0;
+  stepMatch(state, { left: { ...idle, ultimate: true } }, FIXED_DELTA);
+  assert.equal(yrsa.ultimateCharge, 0);
+  assert.ok(yrsa.ultimateWindupRemaining > 0);
+  assert.equal(state.elementFields.length, 1);
+  assert.equal(state.events.some((event) => event.type === "ultimateTell"), true);
+  assert.equal(
+    state.projectiles.some((projectile) => projectile.source === "ultimate"),
+    false,
+  );
+  target.y += 280;
+  target.lastSafeY = target.y;
+
+  let cast = false;
+  for (let tick = 0; tick < Math.ceil(ultimate.windup / FIXED_DELTA) + 3; tick += 1) {
+    stepMatch(
+      state,
+      { left: { ...idle, aimX: 0, aimY: 1, fire: true } },
+      FIXED_DELTA,
+    );
+    cast ||= state.events.some((event) => event.type === "ultimateCast");
+  }
+  assert.equal(cast, true);
+  assert.equal(
+    state.projectiles.filter((projectile) => projectile.source === "ultimate").length,
+    ultimate.count,
+  );
+  assert.equal(
+    state.elementFields.filter(
+      (field) => field.element === "ice" && field.source === "ultimate",
+    ).length,
+    ultimate.fieldCount,
+  );
+  assert.ok(state.projectiles.every((projectile) => projectile.damage <= ultimate.damage));
+  target.x = yrsa.x + 82;
+  target.y = yrsa.y;
+  target.lastSafeX = target.x;
+  target.lastSafeY = target.y;
+  target.damageInvulnerability = 0;
+  const beforeUltimateHit = target.health;
+  for (let tick = 0; tick < 8 && target.health === beforeUltimateHit; tick += 1) {
+    stepMatch(state, { left: idle }, FIXED_DELTA);
+  }
+  assert.ok(target.health < beforeUltimateHit);
+  assert.equal(yrsa.ultimateCharge, 0);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("Volt interruption cancels The White Hunt during its visible commitment", () => {
+  const state = duel({ leftCharacter: "rimewing", rightCharacter: "volt" });
+  const yrsa = state.entities[0];
+  yrsa.ultimateCharge = yrsa.maxUltimate;
+  stepMatch(state, { left: { ...idle, ultimate: true } }, FIXED_DELTA);
+  yrsa.interruptRemaining = MATCH_TUNING.elements.lightningInterrupt;
+  stepMatch(state, { left: idle }, FIXED_DELTA);
+  assert.equal(yrsa.ultimateWindupRemaining, 0);
+  assert.equal(yrsa.ultimateResolvePending, false);
+  assert.equal(state.events.some((event) => event.type === "ultimateInterrupted"), true);
+  assert.equal(
+    state.projectiles.some((projectile) => projectile.source === "ultimate"),
+    false,
+  );
+  for (let tick = 0; tick < MATCH_TUNING.tickRate; tick += 1) {
+    stepMatch(state, { left: idle }, FIXED_DELTA);
+  }
+  assert.equal(
+    state.projectiles.some((projectile) => projectile.source === "ultimate"),
+    false,
+  );
+  assert.deepEqual(matchInvariantErrors(state), []);
 });
 
 test("elemental specials author persistent, counterable arena state", () => {

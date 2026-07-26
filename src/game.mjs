@@ -292,6 +292,7 @@ function readPlayerOne(entity) {
     mobility: keys.has("shift"),
     sprint: keys.has("alt"),
     hop: keys.has("c"),
+    ultimate: keys.has("f"),
   });
 }
 
@@ -317,6 +318,7 @@ function readPlayerTwo(entity) {
     mobility: keys.has("enter"),
     sprint: keys.has(","),
     hop: keys.has("."),
+    ultimate: keys.has("h"),
   });
 }
 
@@ -356,6 +358,7 @@ function mergeGamepad(command, gamepad) {
     mobility: command.mobility || gamepad.buttons[0]?.pressed,
     sprint: command.sprint || gamepad.buttons[4]?.pressed,
     hop: command.hop || gamepad.buttons[5]?.pressed,
+    ultimate: command.ultimate || gamepad.buttons[3]?.pressed,
   });
 }
 
@@ -720,12 +723,15 @@ function updateInfoOverlay(mode, map) {
   element("info-agent-name").textContent = agent.name;
   element("info-agent-role").textContent =
     `${race.name} · ${agent.role} · ${agent.affinity.name} ELEMENT`;
-  element("info-kit").innerHTML = [
+  const kit = [
+    ...(agent.passive ? [["PASSIVE", agent.passive]] : []),
     ["MB1", agent.primary],
-    ["E", agent.special],
+    ["E", agent.tactical],
     ["Q", agent.defense],
     ["⇧", agent.mobility],
-  ]
+    ...(agent.ultimate ? [["F", agent.ultimate]] : []),
+  ];
+  element("info-kit").innerHTML = kit
     .map(
       ([key, ability]) =>
         `<div><kbd>${key}</kbd><b>${ability.name}</b><span>${ability.detail}</span></div>`,
@@ -820,7 +826,7 @@ function updateAbilities() {
   const agent = getCharacter(player.characterId);
   for (const [key, ability] of [
     ["primary", agent.primary],
-    ["special", agent.special],
+    ["special", agent.tactical],
     ["defense", agent.defense],
     ["mobility", agent.mobility],
   ]) {
@@ -839,6 +845,24 @@ function updateAbilities() {
             : player.mobilityCooldown;
     const ratio = clamp(1 - cooldown / ability.cooldown, 0, 1);
     element(`${key}-charge`).style.transform = `scaleX(${ratio})`;
+  }
+  const ultimateSlot = element("ultimate-ability");
+  ultimateSlot.hidden = !agent.ultimate;
+  if (agent.ultimate) {
+    const ready = player.ultimateCharge >= agent.ultimate.chargeRequired;
+    const channeling = player.ultimateWindupRemaining > 0;
+    element("ultimate-name").textContent = agent.ultimate.name;
+    element("ultimate-detail").textContent = channeling
+      ? `Committed · ${player.ultimateWindupRemaining.toFixed(1)}s`
+      : ready
+        ? "READY · fixed lane"
+        : `${Math.floor(player.ultimateCharge)} / ${agent.ultimate.chargeRequired} · deal damage`;
+    element("ultimate-charge").style.transform =
+      `scaleX(${clamp(player.ultimateCharge / agent.ultimate.chargeRequired, 0, 1)})`;
+    ultimateSlot.classList.toggle("ready", ready);
+    ultimateSlot.classList.toggle("channeling", channeling);
+  } else {
+    ultimateSlot.classList.remove("ready", "channeling");
   }
 }
 
@@ -877,7 +901,7 @@ function updateCoach(mode) {
     } else if (matchState.tutorial.step === 2) {
       text.textContent = "SHIFT changes the angle. Q answers incoming pressure.";
     } else if (matchState.tutorial.step === 3) {
-      text.textContent = "Commit E up close. Miss, and you surrender tempo.";
+      text.textContent = "Commit tactical E up close. Miss, and you surrender tempo.";
     } else {
       text.textContent = "Language learned. Read the spar and finish the fight.";
     }
@@ -956,6 +980,28 @@ function processEvents(events, tick) {
     } else if (event.type === "landingCut") {
       tone(360, 0.045, "triangle", 0.04);
       toast("LANDING CUT · TURN STOLEN", "comic");
+    } else if (event.type === "passivePrimed") {
+      tone(540, 0.055, "triangle", 0.045);
+      toast(`${event.trigger} · RIME PRIMED`, "comic");
+    } else if (event.type === "passiveSpent") {
+      tone(710, 0.045, "triangle", 0.04);
+      toast("FANGS HONED!", "comic");
+    } else if (event.type === "ultimateReady") {
+      if (event.entityId === localPlayer()?.id) {
+        tone(440, 0.12, "triangle", 0.06);
+        toast(`${event.name} · READY`, "comic");
+      }
+    } else if (event.type === "ultimateTell") {
+      tone(96, 0.22, "sawtooth", 0.07);
+      toast(`${event.name} · LANE MARKED!`, "comic");
+    } else if (event.type === "ultimateCast") {
+      tone(740, 0.16, "triangle", 0.08);
+      burst(event.x, event.y, "#cceff3", 24);
+      screenShake = Math.max(screenShake, 8);
+      toast("KRAA! · THE WHITE HUNT", "comic");
+    } else if (event.type === "ultimateInterrupted") {
+      tone(70, 0.12, "square", 0.055);
+      toast("BREAK! · HUNT INTERRUPTED", "comic");
     } else if (event.type === "slide") {
       tone(135, 0.07, "sawtooth", 0.04);
       toast("SLIDE · LOW LINE", "comic");
@@ -1488,6 +1534,52 @@ function drawEntities(time) {
           : entity.team === "beta"
             ? "#ff5d73"
             : "#ffca4f";
+      if (agent.ultimate && entity.ultimateCharge >= agent.ultimate.chargeRequired) {
+        context.save();
+        context.strokeStyle = agent.accent;
+        context.lineWidth = 3;
+        context.globalAlpha = 0.62;
+        context.setLineDash([5, 6]);
+        context.lineDashOffset = settings.reducedMotion ? 0 : -time * 18;
+        context.beginPath();
+        context.arc(0, 0, agent.radius + 14, 0, Math.PI * 2);
+        context.stroke();
+        context.setLineDash([]);
+        context.restore();
+      }
+      if (entity.passiveRemaining > 0) {
+        context.save();
+        context.strokeStyle = agent.accent;
+        context.lineWidth = 2;
+        context.globalAlpha = 0.75;
+        context.beginPath();
+        context.arc(0, 0, agent.radius + 8, -0.7, 0.7);
+        context.stroke();
+        context.restore();
+      }
+      if (agent.ultimate && entity.ultimateWindupRemaining > 0) {
+        const progress = 1 - entity.ultimateWindupRemaining / agent.ultimate.windup;
+        const angle = Math.atan2(entity.ultimateAimY, entity.ultimateAimX);
+        context.save();
+        context.rotate(angle);
+        context.fillStyle = `${agent.accent}20`;
+        context.strokeStyle = agent.accent;
+        context.lineWidth = settings.highContrast ? 5 : 3;
+        context.setLineDash([12, 8]);
+        context.lineDashOffset = settings.reducedMotion ? 0 : -time * 35;
+        context.beginPath();
+        context.moveTo(agent.radius + 4, -32);
+        context.lineTo(agent.ultimate.range, -72);
+        context.lineTo(agent.ultimate.range, 72);
+        context.lineTo(agent.radius + 4, 32);
+        context.closePath();
+        context.fill();
+        context.stroke();
+        context.setLineDash([]);
+        context.fillStyle = agent.accent;
+        context.fillRect(agent.radius + 6, -3, (agent.ultimate.range - agent.radius - 6) * progress, 6);
+        context.restore();
+      }
       if (entity.hopRemaining > 0) {
         const progress = 1 - entity.hopRemaining / MATCH_TUNING.flow.hopDuration;
         const lift = Math.sin(progress * Math.PI) * 11;
@@ -1866,11 +1958,14 @@ function agentCard(agent) {
         <p><strong>${agent.affinity.name} ELEMENT</strong> · ${agent.affinity.edge}</p>
         <div class="kit-list">
           ${[
+            agent.passive,
             agent.primary,
-            agent.special,
+            agent.tactical,
             agent.defense,
             agent.mobility,
+            agent.ultimate,
           ]
+            .filter(Boolean)
             .map(
               (ability) =>
                 `<div><b>${ability.name}</b><span>${ability.detail}</span></div>`,

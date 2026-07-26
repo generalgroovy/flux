@@ -897,3 +897,50 @@
   `/src/game.mjs` returned `200 OK` with shipped security headers.
 - **Recommended next task:** Begin the production passive/tactical/ultimate
   schema with Yrsa as the first fully wired champion pilot.
+
+## 2026-07-26 — Yrsa production champion contract
+
+- **Player-facing problem:** Nine baseline kits were playable, but champion
+  passives and ultimates had no production state, input, charge, telegraph, or
+  network contract. Adding roster breadth before proving that layer would have
+  multiplied incomplete behavior.
+- **Implemented solution:** HEX 0.25.0 introduces a tactical alias while retaining
+  the stable `special` wire field, match schema v2, an allowlisted ultimate
+  command, bounded authoritative state, and the first fully authored pilot.
+  Yrsa's **Ridgeline Hunt** turns a wall kick or landing cut into one 18%-faster,
+  55%-tighter Rime Fangs cast without increasing damage. Dealing non-ultimate
+  damage earns **The White Hunt**. At 100 charge, `F`/`H`/north button commits a
+  fixed lane for 0.58 seconds at 38% ground speed, then releases five rime fangs
+  and three shared ice fields. Cover clips the lane; Volt interruption cancels
+  the spent cast; the resulting ice continues to use Ember, Tide, and Null's
+  existing physical reactions. Ultimate damage cannot recharge the same cast.
+- **Communication and usability:** Added conditional HUD state, charge and ready
+  marks, an unambiguous dashed lane wedge and commitment bar, passive/readiness/
+  cast/interruption comic and audio cues, complete controls, and passive/tactical/
+  ultimate codex entries. The slot is forcibly absent for champions without a
+  complete authored ultimate, so no broken input is exposed.
+- **Authority and reliability:** Bots use the same command and charge rules;
+  remote commands remain sanitized and sequence-owned by the server. Charge,
+  channel, aim lock, passive window, fields, and projectiles are snapshot state.
+  Review also explicitly versioned the new match schema and added the CSS hidden
+  guarantee before release.
+- **Commands run:** content/simulation/controller/server syntax checks; shell
+  launcher syntax checks; `git diff --check`; focused match, DOM, and lobby
+  suites; fully escalated `npm test`; clean server launch on port 8123; health,
+  HTML, and module HTTP smoke with shipped security headers; clean shutdown.
+- **Tests passed:** 60/60 checks: 58 DOM/lobby/match/network-quality checks, one
+  live authoritative WebSocket lifecycle check, and one isolated server cleanup
+  check. New coverage includes damage-neutral passive conversion, combat-only
+  bounded charge, no self-recharge, aim lock, delayed resolve, field count,
+  Volt cancellation, hidden/visible HUD state, codex discoverability, and remote
+  ultimate authority.
+- **Launch smoke:** Health reported ready at HEX 0.25.0/protocol 2; `/` and
+  `/src/game.mjs` returned `200 OK` with CSP, COOP, no-referrer, nosniff, and
+  frame-deny headers. The server stopped cleanly.
+- **Known limitation:** No browser executable is installed in this environment,
+  so hands-on feel, telegraph density, gamepad comfort, audio mix, and real-device
+  remote prediction remain pending; the deterministic DOM/canvas harness passed.
+- **Recommended next task:** Hands-on tune Yrsa where available; meanwhile author
+  her mechanically opposed Wyrmbound counterpart as the second complete champion
+  contract, proving a different passive/ultimate kind rather than cloning the
+  line-volley implementation.

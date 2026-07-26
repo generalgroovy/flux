@@ -19,6 +19,7 @@ const IDLE_COMMAND = Object.freeze({
   mobility: false,
   sprint: false,
   hop: false,
+  ultimate: false,
 });
 
 export function createMatch(options = {}) {
@@ -92,7 +93,7 @@ export function createMatch(options = {}) {
   }
 
   const state = {
-    version: 1,
+    version: 2,
     seed,
     tick: 0,
     elapsed: 0,
@@ -195,6 +196,13 @@ function createEntity(spec, index, map) {
     mobilityRemaining: 0,
     mobilityX: facingX,
     mobilityY: 0,
+    passiveRemaining: 0,
+    ultimateCharge: 0,
+    maxUltimate: agent.ultimate?.chargeRequired ?? 0,
+    ultimateWindupRemaining: 0,
+    ultimateResolvePending: false,
+    ultimateAimX: facingX,
+    ultimateAimY: 0,
     flow: maxFlow,
     maxFlow,
     flowRecoveryDelay: 0,
@@ -294,6 +302,7 @@ export function sanitizeCommand(candidate) {
     mobility: source.mobility === true,
     sprint: source.sprint === true,
     hop: source.hop === true,
+    ultimate: source.ultimate === true,
   };
 }
 
@@ -382,6 +391,7 @@ function updateShrines(state, delta) {
 
 function tickEntity(entity, delta) {
   const wasHopping = entity.hopRemaining > 0;
+  const wasWindingUltimate = entity.ultimateWindupRemaining > 0;
   for (const key of [
     "primaryCooldown",
     "specialCooldown",
@@ -403,11 +413,16 @@ function tickEntity(entity, delta) {
     "fluxRecoveryDelay",
     "fluxWarningCooldown",
     "counterStrafeCooldown",
+    "passiveRemaining",
+    "ultimateWindupRemaining",
   ]) {
     entity[key] = Math.max(0, finite(entity[key]) - delta);
   }
   if (wasHopping && entity.hopRemaining === 0) {
     entity.landingRemaining = MATCH_TUNING.flow.landingWindow;
+  }
+  if (wasWindingUltimate && entity.ultimateWindupRemaining === 0) {
+    entity.ultimateResolvePending = true;
   }
   entity.flow = clamp(entity.flow, 0, entity.maxFlow);
   entity.flux = clamp(entity.flux, 0, entity.maxFlux);
@@ -422,7 +437,35 @@ function tickEntity(entity, delta) {
 function updateEntity(state, entity, command, delta, map) {
   const agent = getCharacter(entity.characterId);
   if (entity.interruptRemaining > 0) {
+    if (entity.ultimateWindupRemaining > 0 || entity.ultimateResolvePending) {
+      entity.ultimateWindupRemaining = 0;
+      entity.ultimateResolvePending = false;
+      state.events.push({
+        type: "ultimateInterrupted",
+        entityId: entity.id,
+        name: agent.ultimate?.name ?? "ULTIMATE",
+        x: entity.x,
+        y: entity.y,
+      });
+    }
     moveEntity(state, entity, IDLE_COMMAND, agent, delta, map);
+    return;
+  }
+  if (entity.ultimateResolvePending) {
+    resolveUltimate(state, entity, agent, map);
+    entity.ultimateResolvePending = false;
+    moveEntity(state, entity, IDLE_COMMAND, agent, delta, map);
+    return;
+  }
+  if (entity.ultimateWindupRemaining > 0) {
+    moveEntity(
+      state,
+      entity,
+      { ...command, sprint: false, hop: false },
+      agent,
+      delta,
+      map,
+    );
     return;
   }
   if (command.aimX !== 0 || command.aimY !== 0) {
@@ -431,6 +474,17 @@ function updateEntity(state, entity, command, delta, map) {
   }
   if (entity.human && (command.moveX !== 0 || command.moveY !== 0)) {
     state.tutorial.moved = true;
+  }
+  if (tryStartUltimate(state, entity, command, agent)) {
+    moveEntity(
+      state,
+      entity,
+      { ...command, sprint: false, hop: false },
+      agent,
+      delta,
+      map,
+    );
+    return;
   }
 
   if (
@@ -469,7 +523,23 @@ function updateEntity(state, entity, command, delta, map) {
     if (entity.human) state.tutorial.special = true;
   }
   if (command.fire && entity.primaryCooldown === 0) {
-    firePattern(state, entity, agent.primary, "primary");
+    let primary = agent.primary;
+    if (agent.passive?.kind === "movement-prime" && entity.passiveRemaining > 0) {
+      primary = {
+        ...primary,
+        speed: primary.speed * agent.passive.speedMultiplier,
+        spread: primary.spread * agent.passive.spreadMultiplier,
+      };
+      entity.passiveRemaining = 0;
+      state.events.push({
+        type: "passiveSpent",
+        entityId: entity.id,
+        name: agent.passive.name,
+        x: entity.x,
+        y: entity.y,
+      });
+    }
+    firePattern(state, entity, primary, "primary");
     entity.primaryCooldown = agent.primary.cooldown;
     if (entity.human) state.tutorial.fired = true;
   }
@@ -634,6 +704,14 @@ function tryHop(state, entity, command) {
     dx: direction.x,
     dy: direction.y,
   });
+  if (wallKick) {
+    primeMovementPassive(
+      state,
+      entity,
+      getCharacter(entity.characterId),
+      "WALL KICK",
+    );
+  }
 }
 
 function moveEntity(state, entity, command, agent, delta, map) {
@@ -668,7 +746,8 @@ function moveEntity(state, entity, command, agent, delta, map) {
     const sprinting = command.sprint && moving && entity.flow > 0;
     const speed =
       agent.speed * entity.speedScale *
-      (sprinting ? MATCH_TUNING.flow.sprintMultiplier : 1);
+      (sprinting ? MATCH_TUNING.flow.sprintMultiplier : 1) *
+      (entity.ultimateWindupRemaining > 0 ? agent.ultimate.moveScale : 1);
     const desiredX = moveX * speed + entity.elementForceX;
     const desiredY = moveY * speed + entity.elementForceY;
     const currentSpeed = Math.hypot(entity.vx, entity.vy);
@@ -686,6 +765,7 @@ function moveEntity(state, entity, command, agent, delta, map) {
     if (landingCut) {
       entity.landingRemaining = 0;
       state.events.push({ type: "landingCut", entityId: entity.id, x: entity.x, y: entity.y });
+      primeMovementPassive(state, entity, agent, "LANDING CUT");
     }
     if (
       opposing && currentSpeed >= MATCH_TUNING.flow.counterStrafeCueSpeed &&
@@ -795,7 +875,7 @@ export function moveCircleSwept(circle, dx, dy, radius, map) {
   return { hitWall, wallX, wallY };
 }
 
-function createElementField(state, owner, element, spec) {
+function createElementField(state, owner, element, spec, announce = true) {
   const field = {
     id: `element-${state.nextElementFieldId}`,
     ownerId: owner.id,
@@ -806,12 +886,92 @@ function createElementField(state, owner, element, spec) {
   };
   state.nextElementFieldId += 1;
   state.elementFields.push(field);
+  if (announce) {
+    state.events.push({
+      type: "elementField",
+      fieldId: field.id,
+      element,
+      x: spec.x,
+      y: spec.y,
+    });
+  }
+}
+
+function primeMovementPassive(state, entity, agent, trigger) {
+  if (agent.passive?.kind !== "movement-prime") return;
+  entity.passiveRemaining = agent.passive.duration;
   state.events.push({
-    type: "elementField",
-    fieldId: field.id,
-    element,
-    x: spec.x,
-    y: spec.y,
+    type: "passivePrimed",
+    entityId: entity.id,
+    name: agent.passive.name,
+    trigger,
+    x: entity.x,
+    y: entity.y,
+  });
+}
+
+function tryStartUltimate(state, entity, command, agent) {
+  const ultimate = agent.ultimate;
+  if (
+    !command.ultimate || !ultimate ||
+    entity.ultimateCharge < ultimate.chargeRequired ||
+    entity.ultimateWindupRemaining > 0 || entity.ultimateResolvePending ||
+    entity.mobilityRemaining > 0 || entity.slideRemaining > 0 ||
+    entity.hopRemaining > 0 || entity.defenseRemaining > 0
+  ) {
+    return false;
+  }
+  entity.ultimateCharge = 0;
+  entity.ultimateWindupRemaining = ultimate.windup;
+  entity.ultimateAimX = entity.facingX;
+  entity.ultimateAimY = entity.facingY;
+  entity.sprinting = false;
+  state.events.push({
+    type: "ultimateTell",
+    entityId: entity.id,
+    name: ultimate.name,
+    duration: ultimate.windup,
+    x: entity.x,
+    y: entity.y,
+    dx: entity.ultimateAimX,
+    dy: entity.ultimateAimY,
+  });
+  return true;
+}
+
+function resolveUltimate(state, entity, agent, map) {
+  const ultimate = agent.ultimate;
+  if (!ultimate) return;
+  entity.facingX = entity.ultimateAimX;
+  entity.facingY = entity.ultimateAimY;
+  const end = clippedRayEnd(entity, ultimate.range, map);
+  for (let index = 0; index < ultimate.fieldCount; index += 1) {
+    const fraction = (index + 1) / ultimate.fieldCount;
+    createElementField(
+      state,
+      entity,
+      "ice",
+      {
+        x: entity.x + (end.x - entity.x) * fraction,
+        y: entity.y + (end.y - entity.y) * fraction,
+        radius: ultimate.fieldRadius,
+        duration: ultimate.fieldDuration,
+        directionX: entity.ultimateAimX,
+        directionY: entity.ultimateAimY,
+        source: "ultimate",
+      },
+      false,
+    );
+  }
+  firePattern(state, entity, ultimate, "ultimate");
+  state.events.push({
+    type: "ultimateCast",
+    entityId: entity.id,
+    name: ultimate.name,
+    x: entity.x,
+    y: entity.y,
+    endX: end.x,
+    endY: end.y,
   });
 }
 
@@ -1585,8 +1745,33 @@ function damageEntity(state, target, rawDamage, attacker, options = {}) {
     x: target.x,
     y: target.y,
   });
+  if (attacker && attacker !== target && options.source !== "ultimate") {
+    gainUltimateCharge(state, attacker, damage);
+  }
   if (target.health === 0) eliminateEntity(state, target, attacker);
   return true;
+}
+
+function gainUltimateCharge(state, entity, damage) {
+  const ultimate = getCharacter(entity.characterId).ultimate;
+  if (!ultimate || entity.ultimateCharge >= ultimate.chargeRequired) return;
+  const before = entity.ultimateCharge;
+  entity.ultimateCharge = Math.min(
+    ultimate.chargeRequired,
+    entity.ultimateCharge + damage * ultimate.chargePerDamage,
+  );
+  if (
+    before < ultimate.chargeRequired &&
+    entity.ultimateCharge === ultimate.chargeRequired
+  ) {
+    state.events.push({
+      type: "ultimateReady",
+      entityId: entity.id,
+      name: ultimate.name,
+      x: entity.x,
+      y: entity.y,
+    });
+  }
 }
 
 function eliminateEntity(state, target, attacker) {
@@ -1596,6 +1781,9 @@ function eliminateEntity(state, target, attacker) {
   target.vx = 0;
   target.vy = 0;
   target.mobilityRemaining = 0;
+  target.passiveRemaining = 0;
+  target.ultimateWindupRemaining = 0;
+  target.ultimateResolvePending = false;
   if (attacker && attacker !== target) attacker.kills += 1;
   state.events.push({
     type: "elimination",
@@ -1689,6 +1877,13 @@ function respawnEntity(entity, map) {
   entity.damageInvulnerability = 0;
   entity.defenseRemaining = 0;
   entity.mobilityRemaining = 0;
+  entity.passiveRemaining = 0;
+  entity.maxUltimate = agent.ultimate?.chargeRequired ?? 0;
+  entity.ultimateCharge = clamp(entity.ultimateCharge, 0, entity.maxUltimate);
+  entity.ultimateWindupRemaining = 0;
+  entity.ultimateResolvePending = false;
+  entity.ultimateAimX = entity.facingX;
+  entity.ultimateAimY = entity.facingY;
   entity.maxFlow = MATCH_TUNING.flow.maximum * race.flow;
   entity.flow = entity.maxFlow;
   entity.flowRecoveryDelay = 0;
@@ -1925,6 +2120,11 @@ function updateBotCommand(state, entity, delta, map) {
       closeProjectile &&
       entity.hopCooldown === 0 &&
       entity.flow >= MATCH_TUNING.flow.hopCost,
+    ultimate:
+      Boolean(agent.ultimate) &&
+      entity.ultimateCharge >= (agent.ultimate?.chargeRequired ?? Infinity) &&
+      distance >= 150 &&
+      distance <= (agent.ultimate?.range ?? 0) * 0.92,
   };
   if (
     state.modeId === "training" &&
@@ -1937,6 +2137,7 @@ function updateBotCommand(state, entity, delta, map) {
     entity.botCommand.mobility = false;
     entity.botCommand.sprint = false;
     entity.botCommand.hop = false;
+    entity.botCommand.ultimate = false;
   }
   return entity.botCommand;
 }
@@ -2061,6 +2262,24 @@ function repairState(state, map) {
       entity.facingX = facing.x;
       entity.facingY = facing.y;
     }
+    entity.passiveRemaining = clamp(
+      finite(entity.passiveRemaining),
+      0,
+      agent.passive?.duration ?? 0,
+    );
+    entity.maxUltimate = agent.ultimate?.chargeRequired ?? 0;
+    entity.ultimateCharge = clamp(
+      finite(entity.ultimateCharge),
+      0,
+      entity.maxUltimate,
+    );
+    entity.ultimateWindupRemaining = clamp(
+      finite(entity.ultimateWindupRemaining),
+      0,
+      agent.ultimate?.windup ?? 0,
+    );
+    entity.ultimateAimX = finite(entity.ultimateAimX, entity.facingX);
+    entity.ultimateAimY = finite(entity.ultimateAimY, entity.facingY);
     constrainCircle(entity, agent.radius, map.size);
   }
   state.projectiles = state.projectiles.filter(
@@ -2113,6 +2332,12 @@ export function matchInvariantErrors(state) {
       "fluxRecoveryDelay",
       "fluxWarningCooldown",
       "counterStrafeCooldown",
+      "passiveRemaining",
+      "ultimateCharge",
+      "maxUltimate",
+      "ultimateWindupRemaining",
+      "ultimateAimX",
+      "ultimateAimY",
     ]) {
       if (!Number.isFinite(entity[key])) errors.push(`${entity.id}.${key} is not finite`);
     }

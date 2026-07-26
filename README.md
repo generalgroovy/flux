@@ -10,6 +10,18 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
+Build 0.25.0 establishes the production passive/tactical/ultimate contract with
+Yrsa as its first complete champion. **Ridgeline Hunt** turns a demonstrated wall
+kick or landing cut into one faster, tighter Rime Fangs cast without adding
+damage. Dealing damage—not waiting—earns **The White Hunt**; pressing `F` marks a
+fixed lane for 0.58 seconds before a rime fan freezes its route. Cover, sidesteps,
+Volt interruption, Ember melting, Tide extension, Null cancellation, and the
+shared slippery surface all retain counterplay. Charge, commitment, fields,
+projectiles, bot use, remote input, HUD state, telegraphs, and feedback remain
+authoritative and deterministic. Other champions retain their complete existing
+kits; their ultimate slot stays absent until each receives an equally complete
+authored contract.
+
 Build 0.24.0 locks the first movement grammar with deterministic chain and exploit
 coverage. Slides cannot be hop-cancelled before commitment ends; completed slides
 can route into hops; and neither hop nor slide can start invisibly beneath a
@@ -88,12 +100,12 @@ selection is now a spatial atlas with authored region/scale coordinates and
 hover/focus summaries, establishing the UI contract for nested world regions.
 
 Build 0.12.0 introduced **Flux**, raw magic separate from universal movement
-FLOW. Special, defense, and character mobility now compete for a visible,
+FLOW. Tactical, defense, and character mobility now compete for a visible,
 recovering Flux pool; dry fighters retain aim, primary fire, sprint, hops, and
 wall kicks, so fundamentals always offer a route back. The eight current
 disciplines are EMBER, TIDE, GALE, STONE, VOLT, VEIL, PRISM, and NULL. VEIL can
 plant and recast-swap with a readable decoy. NULL erases nearby constructs only
-during a paid, punishable special. Gale fields bend projectiles, Tide can douse
+during a paid, punishable tactical. Gale fields bend projectiles, Tide can douse
 or redirect Ember, Volt conducts through Tide, and explosive mechanics shatter
 Stone without becoming an element themselves. Every field uses shape/text cues,
 distinct audio, authoritative lifetimes, and geometry rather than passive damage
@@ -220,9 +232,10 @@ than 0.9.3 are not registered and must be closed from their original terminal.
 | Move | `WASD` | Arrow keys | Left stick |
 | Aim | Mouse | `IJKL` | Right stick |
 | Primary | Left click / `Space` | `U` | Right trigger |
-| Special | Right click / `E` | `O` | West button |
+| Tactical | Right click / `E` | `O` | West button |
 | Defense | `Q` | `P` | Left trigger |
 | Mobility | `Shift` | `Enter` | South button |
+| Ultimate (authored champions) | `F` | `H` | North button |
 | Sprint | `Alt` | `,` | Left shoulder |
 | Hop / wall kick | `C` | `.` | Right shoulder |
 | Slide | Sprint + hop | Sprint + hop | Both shoulders |
@@ -238,17 +251,17 @@ and essential controls without pausing combat.
 
 ## Race champions
 
-| Champion | People / discipline | Primary | Special | Defense | Mobility |
-| --- | --- | --- | --- | --- | --- |
-| AERWYN | Briar Elf / Gale | Wind Needle | Shearwind | Turning Leaf | Gale Step |
-| GORUM | Iron Orc / Stone | Slingstone | Faultline | Ironroot | War Tusk |
-| VELLYN | Gloam Elf / Veil | Moon Shards | Mirror Wraith | Dusk Mantle | Shadow Step |
-| NIM COPPERSPARK | Copper Gnome / Volt | Quick Arc | Chain Rune | Grounding Sigil | Storm Hop |
-| SEREK ASHBORN | Cinderling / Ember | Coal Star | Hearth Trap | Ashen Ward | Backblast |
-| MORCANT | Ash Revenant / Null | Grave Orb | Silence Well | Spellturn | Grave Step |
-| NERIS PEARLDIVE | Reefborn / Tide | Dew Lance | Wellspring | Tideshield | Current Step |
-| BRANNA RUNESIGHT | Forge Dwarf / Prism | Rune Ray | Sunsplit | Facet Parry | Runestep |
-| YRSA RIMEWING | Wyrmbound / Tide-Frost | Rime Fangs | White Breath | Scale Turn | Wyrmbound |
+| Champion | People / discipline | Primary | Tactical | Defense | Mobility | Passive / ultimate |
+| --- | --- | --- | --- | --- | --- | --- |
+| AERWYN | Briar Elf / Gale | Wind Needle | Shearwind | Turning Leaf | Gale Step | — |
+| GORUM | Iron Orc / Stone | Slingstone | Faultline | Ironroot | War Tusk | — |
+| VELLYN | Gloam Elf / Veil | Moon Shards | Mirror Wraith | Dusk Mantle | Shadow Step | — |
+| NIM COPPERSPARK | Copper Gnome / Volt | Quick Arc | Chain Rune | Grounding Sigil | Storm Hop | — |
+| SEREK ASHBORN | Cinderling / Ember | Coal Star | Hearth Trap | Ashen Ward | Backblast | — |
+| MORCANT | Ash Revenant / Null | Grave Orb | Silence Well | Spellturn | Grave Step | — |
+| NERIS PEARLDIVE | Reefborn / Tide | Dew Lance | Wellspring | Tideshield | Current Step | — |
+| BRANNA RUNESIGHT | Forge Dwarf / Prism | Rune Ray | Sunsplit | Facet Parry | Runestep | — |
+| YRSA RIMEWING | Wyrmbound / Tide-Frost | Rime Fangs | White Breath | Scale Turn | Wyrmbound | Ridgeline Hunt / The White Hunt |
 
 Shots clash, heavy projectiles win light clashes, reflections change ownership,
 cover blocks every projectile and movement type, mines interact with hostile

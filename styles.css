@@ -1867,6 +1867,36 @@ select {
   background: #a985ff;
 }
 
+.ultimate-ability {
+  border-color: #9fd8de88;
+  background: linear-gradient(135deg, #10161ce8, #17272be8);
+}
+
+.ultimate-ability i {
+  height: 3px;
+  background: #9fd8de;
+}
+
+.ultimate-ability.ready {
+  border-style: double;
+  border-width: 3px;
+  box-shadow: inset 0 0 0 1px #f1dfac44, 0 0 1rem #9fd8de22;
+  animation: ultimate-ready 1.1s steps(2, end) infinite;
+}
+
+.ultimate-ability.channeling {
+  border-color: #f1dfac;
+  background: #30291df2;
+}
+
+@keyframes ultimate-ready {
+  50% { transform: translateY(-2px); }
+}
+
+#app.reduced-motion .ultimate-ability.ready {
+  animation: none;
+}
+
 .ability {
   position: relative;
   display: grid;
@@ -1878,6 +1908,10 @@ select {
   overflow: hidden;
   border: 1px solid #293747;
   background: #070b11e8;
+}
+
+.ability[hidden] {
+  display: none;
 }
 
 .ability span {
@@ -2203,5 +2237,9 @@ select {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+
+  .ultimate-ability.ready {
+    animation: none;
   }
 }

@@ -2,9 +2,12 @@
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.24.0 on Garuda Sway and Windows: complete all four
+1. Hands-on accept HEX 0.25.0 on Garuda Sway and Windows: complete all four
    FIRST RITE reads; chain sprint, hop, and wall kicks around cover; verify
-   FLOW cost/recovery; launch all five home shortcuts; use every main-menu
+   FLOW cost/recovery; play Yrsa until THE WHITE HUNT is earned; verify its
+   fixed lane tell, reduced channel movement, cover clipping, Volt cancel,
+   Ember/Tide/Null field reactions, and passive conversion from both wall kick
+   and landing cut. Launch all five home shortcuts; use every main-menu
    panel, toggle field info with `F1`, and verify
    all eight smaller silhouettes, speed trails, field patterns, reaction
    callouts, and distinct elemental audio cues remain readable during dense combat.
@@ -24,7 +27,8 @@
 8. Observe new players completing the adaptive sprint→slide→hop First Rite read;
    require comprehension without coaching repetition or accidental completion.
 9. Universal movement commitment boundaries and a 600-tick chain ceiling are now
-   deterministic. Next acceptance remains hands-on feel and remote prediction.
+   deterministic; so is Yrsa's authoritative passive/tactical/ultimate pilot.
+   Next acceptance remains hands-on feel and remote prediction.
 
 ## Gate 1 — Fundamentals implemented
 
@@ -32,6 +36,9 @@
   movement, eight Flux disciplines, interacting terrain fields, four
   maps, short introduction, hazards, bots, death/reset, accessibility,
   validation, and combination tests.
+- Yrsa is the first champion on the production passive/tactical/ultimate schema.
+  Her movement conversion, active-combat charge, telegraph, interrupt, lane
+  shaping, HUD/codex/input feedback, bot use, and network command are complete.
 
 ## Gate 2 — PvP implemented; external soak pending
 
@@ -45,10 +52,11 @@
 ## Expansion acceptance — not exposed until complete
 
 - Thirteen races and their local/remote selector are live. Wyrmbound is the first
-  expansion culture shipped with a native champion, mechanical passive, and home
-  battleground. Next:
-  hands-on matchup tuning, then race-specific mechanics one paired matchup at a
-  time; do not expand to twelve champions per discipline through numerical reskins.
+  expansion culture shipped with a native champion, mechanical ancestry, home
+  battleground, and complete champion contract. Next: hands-on Yrsa tuning, then
+  add her mechanically opposed Wyrmbound counterpart as the second complete
+  culture champion; do not expand to twelve champions per discipline through
+  numerical reskins.
 - The realm chart and The Fracture's complete duel/small/medium/large region
   ladder now establish zoom, lore, terrain, heraldry, landmark, route, and hazard
   contracts. Next: hands-on tune all four Fracture scales before applying the

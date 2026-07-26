@@ -223,6 +223,22 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   }
 
   document.querySelector('[data-panel="agents"]').click();
+  document.querySelector('[data-select-agent="rimewing"]').click();
+  document.querySelector('[data-launch-mode="duel"]').click();
+  assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "rimewing");
+  assert.equal(document.getElementById("ultimate-ability").hidden, false);
+  assert.equal(
+    document.getElementById("ultimate-name").textContent,
+    "THE WHITE HUNT",
+  );
+  document.getElementById("info-toggle").click();
+  assert.match(document.getElementById("info-kit").textContent, /RIDGELINE HUNT/);
+  assert.match(document.getElementById("info-kit").textContent, /THE WHITE HUNT/);
+  window.dispatchEvent(escape);
+  window.dispatchEvent(escape);
+  document.querySelector('#pause-overlay [data-action="menu"]').click();
+
+  document.querySelector('[data-panel="agents"]').click();
   document.querySelector('[data-select-agent="volt"]').click();
   assert.equal(app.dataset.panel, "play");
   assert.equal(

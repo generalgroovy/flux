@@ -2,7 +2,7 @@
 
 ## Release acceptance
 
-1. Hands-on accept DIFF 0.11.0 on Garuda Sway and Windows: complete all four
+1. Hands-on accept DIFF 0.11.1 on Garuda Sway and Windows: complete all four
    FIRST CONTACT reads; chain sprint, hop, and wall kicks around cover; verify
    FLOW cost/recovery; launch all five home shortcuts; use every main-menu
    panel, toggle field info with `F1`, and verify

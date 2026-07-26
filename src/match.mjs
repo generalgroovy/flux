@@ -900,6 +900,25 @@ function useSpecial(state, entity, agent, map) {
         direction: { x: -direction.x, y: -direction.y },
       });
     }
+    let bentField = false;
+    for (const field of state.elementFields) {
+      if (field.element === "earth") continue;
+      const distance = Math.hypot(entity.x - field.x, entity.y - field.y);
+      if (distance > special.range + (field.radius ?? 0)) continue;
+      const direction = normalizeDirection(entity.x - field.x, entity.y - field.y);
+      const displacement = Math.min(72, distance * 0.42);
+      field.x += direction.x * displacement;
+      field.y += direction.y * displacement;
+      bentField = true;
+    }
+    if (bentField) {
+      state.events.push({
+        type: "elementReaction",
+        reaction: "bend",
+        x: entity.x,
+        y: entity.y,
+      });
+    }
   } else if (special.kind === "heal") {
     const before = entity.health;
     entity.health = Math.min(entity.maxHealth, entity.health + special.amount);

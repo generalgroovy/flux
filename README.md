@@ -7,13 +7,14 @@ spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
-Build 0.11.0 makes **elements spatial**. Wind creates force channels and carries
+Build 0.11.1 makes **elements spatial**. Wind creates force channels and carries
 fire; earth raises temporary collision cover; ice creates low-control momentum
 ground; lightning briefly interrupts and conducts through water; fire persists
 as bounded damage terrain; water restores allied FLOW and changes other fields.
 Fire melts ice, ice freezes water, water douses fire, and explosive mechanics
-shatter earth. Explosion is deliberately a reaction, not an element. ORBIT and
-ROOK instead declare extreme gravity and ballistic advantages. Every field uses
+shatter earth. Explosion is deliberately a reaction, not an element. The eight
+shipped disciplines are GALE, STONE, FROST, SPARK, FLAME, FORCE, TIDE, and
+PRISM; each owns a different positioning or projectile rule. Every field uses
 shape/text cues, a distinct audio signature, and an authoritative short lifetime.
 Aim, movement, timing, and FLOW remain the way players convert those windows.
 

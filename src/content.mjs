@@ -42,7 +42,7 @@ const character = ({
 export const CHARACTERS = Object.freeze([
   character({
     id: "kite",
-    affinity: { kind: "element", id: "wind", edge: "Directional force channels" },
+    affinity: { kind: "element", id: "wind", name: "GALE", edge: "Directional force channels" },
     name: "KITE",
     role: "Mobility duelist",
     style: "Thread angles, return fire, finish up close.",
@@ -95,7 +95,7 @@ export const CHARACTERS = Object.freeze([
   }),
   character({
     id: "bulwark",
-    affinity: { kind: "element", id: "earth", edge: "Temporary collision cover" },
+    affinity: { kind: "element", id: "earth", name: "STONE", edge: "Temporary collision cover" },
     name: "BULWARK",
     role: "Space anchor",
     style: "Own a lane, absorb pressure, punish entry.",
@@ -152,7 +152,7 @@ export const CHARACTERS = Object.freeze([
   }),
   character({
     id: "echo",
-    affinity: { kind: "element", id: "ice", edge: "Momentum-altering frozen ground" },
+    affinity: { kind: "element", id: "ice", name: "FROST", edge: "Momentum-altering frozen ground" },
     name: "ECHO",
     role: "Feint skirmisher",
     style: "Overload reads with spread and discontinuous movement.",
@@ -202,7 +202,7 @@ export const CHARACTERS = Object.freeze([
   }),
   character({
     id: "volt",
-    affinity: { kind: "element", id: "lightning", edge: "Fast action interruption" },
+    affinity: { kind: "element", id: "lightning", name: "SPARK", edge: "Fast action interruption" },
     name: "VOLT",
     role: "Tempo striker",
     style: "Build rhythm, pierce lines, steal momentum.",
@@ -257,7 +257,7 @@ export const CHARACTERS = Object.freeze([
   }),
   character({
     id: "cinder",
-    affinity: { kind: "element", id: "fire", edge: "Persistent burning terrain" },
+    affinity: { kind: "element", id: "fire", name: "FLAME", edge: "Persistent burning terrain" },
     name: "CINDER",
     role: "Trap zoner",
     style: "Shape routes, bait pursuit, detonate commitment.",
@@ -313,7 +313,7 @@ export const CHARACTERS = Object.freeze([
   }),
   character({
     id: "orbit",
-    affinity: { kind: "edge", id: "gravity", edge: "Exclusive pull and displacement" },
+    affinity: { kind: "element", id: "force", name: "FORCE", edge: "Exclusive pull and displacement" },
     name: "ORBIT",
     role: "Field controller",
     style: "Displace enemies and bend projectile lanes.",
@@ -365,7 +365,7 @@ export const CHARACTERS = Object.freeze([
   }),
   character({
     id: "mend",
-    affinity: { kind: "element", id: "water", edge: "Fire cleansing and FLOW recovery" },
+    affinity: { kind: "element", id: "water", name: "TIDE", edge: "Fire cleansing and FLOW recovery" },
     name: "MEND",
     role: "Sustain tactician",
     style: "Recover between reads and protect a narrow advantage.",
@@ -417,7 +417,7 @@ export const CHARACTERS = Object.freeze([
   }),
   character({
     id: "rook",
-    affinity: { kind: "edge", id: "ballistics", edge: "Exclusive range, speed, and piercing" },
+    affinity: { kind: "element", id: "prism", name: "PRISM", edge: "Splitting, piercing ranged pressure" },
     name: "ROOK",
     role: "Range sentinel",
     style: "Control long sightlines and punish predictable exits.",
@@ -779,8 +779,8 @@ export function validateContent({
   }
 
   for (const agent of characters) {
-    if (!agent.affinity?.id || !["element", "edge"].includes(agent.affinity?.kind)) {
-      errors.push(`${agent.id}.affinity must declare an element or extreme edge`);
+    if (!agent.affinity?.id || !agent.affinity?.name || agent.affinity?.kind !== "element") {
+      errors.push(`${agent.id}.affinity must declare a named element`);
     }
     if (
       !["kite", "block", "split", "bolt", "flare", "ring", "cross", "rook"].includes(

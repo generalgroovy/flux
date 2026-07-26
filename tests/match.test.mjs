@@ -104,7 +104,7 @@ test("content ships eight complete agents, four maps, and all five mode gates", 
     assert.ok(agent.defense.name);
     assert.ok(agent.mobility.name);
     assert.ok(agent.affinity.id);
-    assert.ok(["element", "edge"].includes(agent.affinity.kind));
+    assert.equal(agent.affinity.kind, "element");
   }
 });
 
@@ -210,6 +210,42 @@ test("element fields resolve physical reactions deterministically", () => {
   stepMatch(state, {}, FIXED_DELTA);
   const carriedFire = state.elementFields.find((field) => field.element === "fire");
   assert.ok(carriedFire.x > base.x);
+});
+
+test("Force bends movable fields but not Stone geometry", () => {
+  const state = duel({ leftCharacter: "orbit", rightCharacter: "rook" });
+  const orbit = state.entities[0];
+  state.elementFields = [
+    {
+      id: "movable-fire",
+      ownerId: state.entities[1].id,
+      team: "beta",
+      element: "fire",
+      x: orbit.x + 120,
+      y: orbit.y,
+      radius: 40,
+      duration: 2,
+      pulseRemaining: 1,
+    },
+    {
+      id: "fixed-stone",
+      ownerId: orbit.id,
+      team: "alpha",
+      element: "earth",
+      x: orbit.x - 180,
+      y: orbit.y + 100,
+      width: 24,
+      height: 100,
+      duration: 2,
+      pulseRemaining: 0,
+    },
+  ];
+  const fireBefore = state.elementFields[0].x;
+  const stoneBefore = state.elementFields[1].x;
+  stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.ok(state.elementFields[0].x < fireBefore);
+  assert.equal(state.elementFields[1].x, stoneBefore);
+  assert.equal(state.events.some((event) => event.reaction === "bend"), true);
 });
 
 test("commands reject non-finite movement and aim without poisoning state", () => {

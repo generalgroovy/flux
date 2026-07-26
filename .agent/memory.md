@@ -1,5 +1,30 @@
 # DIFF agent memory
 
+## 2026-07-26 — DIFF 0.11.1 frame recovery and elemental disciplines
+
+- **Player-facing problem:** A reported wall-impact sequence could leave the
+  avatar invisible and make restart appear ineffective. Simulation wall stress
+  remained finite, but any browser canvas exception terminated the animation
+  callback before scheduling its successor, so state could reset without ever
+  painting again. Movement also had two overlapping trail treatments.
+- **Implemented solution:** The next frame is now scheduled before work begins;
+  presentation faults are logged, visibly rate-limited, and recover on the next
+  frame so keyboard and pause-menu restart remain usable. Entity drawing resets
+  opacity/compositing explicitly. Consolidated trails into one subtle history
+  line gated and weighted by real speed. Named the eight complete disciplines
+  GALE, STONE, FROST, SPARK, FLAME, FORCE, TIDE, and PRISM; FORCE now bends
+  movable fields while STONE geometry resists it.
+- **Verification:** Added a synthetic canvas-loss browser regression proving a
+  subsequent frame renders and the existing restart path remains active. Final
+  `npm test` passed 44/44, including all element combinations, dynamic walls,
+  browser navigation/recovery, authoritative networking, cleanup integration,
+  all-agent/map/mode stress, and the eight-agent two-minute soak. Syntax and
+  diff checks passed; a live 0.11.1 server returned valid health and HTTP 200,
+  then shut down cleanly. Physical browser play remains the external acceptance.
+- **Recommended next task:** Add a tiny optional reaction laboratory with
+  movable field emitters, then author a complete Shade or Bloom agent rather
+  than exposing incomplete elements.
+
 ## 2026-07-26 — DIFF 0.11.0 physical element fields
 
 - **Player-facing problem:** Character powers did damage or displacement but did

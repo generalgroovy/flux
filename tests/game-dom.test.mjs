@@ -153,6 +153,23 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.ok(drawCalls.some((call) => call[0] === "fillRect"));
   assert.deepEqual(window.DIFF_DEBUG.getInvariantErrors(), []);
 
+  const originalFillRect = mockContext.fillRect;
+  const originalConsoleError = console.error;
+  let recoveredError = "";
+  mockContext.fillRect = () => {
+    throw new Error("synthetic canvas loss");
+  };
+  console.error = (...parts) => {
+    recoveredError = parts.map(String).join(" ");
+  };
+  queuedFrame(performance.now() + 24);
+  mockContext.fillRect = originalFillRect;
+  console.error = originalConsoleError;
+  assert.match(recoveredError, /DIFF frame recovered/);
+  const callsBeforeRecovery = drawCalls.length;
+  queuedFrame(performance.now() + 32);
+  assert.ok(drawCalls.length > callsBeforeRecovery);
+
   const escape = new window.Event("keydown");
   Object.defineProperty(escape, "key", { value: "Escape" });
   window.dispatchEvent(escape);

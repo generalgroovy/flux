@@ -157,8 +157,22 @@ infoToggle.addEventListener("click", () => toggleInfo());
 element("info-close").addEventListener("click", () => toggleInfo(false));
 
 requestAnimationFrame(frame);
+let lastFrameErrorAt = Number.NEGATIVE_INFINITY;
 
 function frame(now) {
+  requestAnimationFrame(frame);
+  try {
+    runFrame(now);
+  } catch (error) {
+    console.error("DIFF frame recovered", error);
+    if (now - lastFrameErrorAt > 2_000) {
+      toast("Presentation recovered · R still restarts", "error");
+      lastFrameErrorAt = now;
+    }
+  }
+}
+
+function runFrame(now) {
   const rawDelta = Math.max(0, (now - frameTime) / 1000);
   const delta = Math.min(rawDelta, MATCH_TUNING.maxFrameDelta);
   frameTime = now;
@@ -187,7 +201,6 @@ function frame(now) {
     updateInterface();
     interfaceAccumulator %= 1 / 20;
   }
-  requestAnimationFrame(frame);
 }
 
 function handleKeyDown(event) {
@@ -669,7 +682,7 @@ function updateInfoOverlay(mode, map) {
   element("info-agent-glyph").style.color = agent.accent;
   element("info-agent-name").textContent = agent.name;
   element("info-agent-role").textContent =
-    `${agent.role} · ${agent.affinity.id.toUpperCase()} ${agent.affinity.kind === "edge" ? "EDGE" : "ELEMENT"}`;
+    `${agent.role} · ${agent.affinity.name} ELEMENT`;
   element("info-kit").innerHTML = [
     ["MB1", agent.primary],
     ["E", agent.special],
@@ -1239,15 +1252,18 @@ function drawTrails() {
   for (const entity of matchState.entities) {
     if (!entity.alive) continue;
     const points = trails.get(entity.id) ?? [];
-    points.push({ x: entity.x, y: entity.y });
+    const speed = Math.hypot(entity.vx, entity.vy);
+    if (speed > 70) points.push({ x: entity.x, y: entity.y, speed });
+    else if (points.length > 0) points.shift();
     if (points.length > (settings.reducedMotion ? 3 : 10)) points.shift();
     trails.set(entity.id, points);
+    if (points.length < 2) continue;
     const agent = getCharacter(entity.characterId);
     context.save();
     try {
       context.strokeStyle = agent.accent;
       context.lineWidth = 4;
-      context.globalAlpha = 0.18;
+      context.globalAlpha = Math.min(0.24, 0.07 + speed / 6000);
       context.beginPath();
       for (const [index, point] of points.entries()) {
         if (index === 0) context.moveTo(point.x, point.y);
@@ -1300,6 +1316,8 @@ function drawEntities(time) {
     context.save();
     try {
       context.translate(entity.x, entity.y);
+      context.globalAlpha = 1;
+      context.globalCompositeOperation = "source-over";
       if (!entity.alive) {
         context.strokeStyle = "#667588";
         context.globalAlpha = 0.4;
@@ -1322,19 +1340,6 @@ function drawEntities(time) {
           : entity.team === "beta"
             ? "#ff5d73"
             : "#ffca4f";
-      const speed = Math.hypot(entity.vx, entity.vy);
-      if (speed > 70) {
-        const direction = normalize(entity.vx, entity.vy);
-        const length = Math.min(46, 8 + speed * 0.045);
-        context.strokeStyle = teamColor;
-        context.globalAlpha = Math.min(0.42, 0.12 + speed / 2400);
-        context.lineWidth = Math.min(5, 1.5 + speed / 420);
-        context.beginPath();
-        context.moveTo(-direction.x * agent.radius * 0.5, -direction.y * agent.radius * 0.5);
-        context.lineTo(-direction.x * length, -direction.y * length);
-        context.stroke();
-        context.globalAlpha = 1;
-      }
       if (entity.hopRemaining > 0) {
         const progress = 1 - entity.hopRemaining / MATCH_TUNING.flow.hopDuration;
         const lift = Math.sin(progress * Math.PI) * 11;
@@ -1635,7 +1640,7 @@ function agentCard(agent) {
       <div class="agent-identity"><i class="agent-glyph" aria-hidden="true">${agent.glyph}</i><b>${agent.name}</b><span>${agent.role} · ${"◆".repeat(agent.difficulty)}</span></div>
       <div class="agent-data">
         <p>${agent.style}</p>
-        <p><strong>${agent.affinity.id.toUpperCase()} ${agent.affinity.kind === "edge" ? "EDGE" : "ELEMENT"}</strong> · ${agent.affinity.edge}</p>
+        <p><strong>${agent.affinity.name} ELEMENT</strong> · ${agent.affinity.edge}</p>
         <div class="kit-list">
           ${[
             agent.primary,

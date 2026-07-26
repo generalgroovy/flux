@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { fork } from "node:child_process";
 import { createServer } from "node:net";
 
 import WebSocket from "ws";
@@ -11,10 +11,10 @@ test(
   async (t) => {
     const port = await freePort();
     const origin = `http://127.0.0.1:${port}`;
-    const child = spawn(process.execPath, ["scripts/serve.mjs"], {
+    const child = fork("scripts/serve.mjs", [], {
       cwd: new URL("../", import.meta.url),
       env: { ...process.env, PORT: String(port), HOST: "127.0.0.1" },
-      stdio: ["ignore", "pipe", "pipe"],
+      stdio: ["ignore", "pipe", "pipe", "ipc"],
     });
     let serverOutput = "";
     child.stdout.on("data", (chunk) => {
@@ -37,7 +37,7 @@ test(
     );
     assert.equal(legacyHealth.product, "DIFF");
     assert.equal(health.status, "ready");
-    assert.equal(health.version, "0.34.2");
+    assert.equal(health.version, "0.34.3");
     assert.equal(health.protocol, 2);
     assert.match(health.instance, /^[0-9a-f-]{36}$/i);
     const initialList = await fetch(`${origin}/api/lobbies`).then((response) =>
@@ -182,7 +182,9 @@ test(
       observer.waitFor((message) => message.type === "server-shutdown"),
       guest.waitFor((message) => message.type === "server-shutdown"),
     ];
-    assert.equal(child.kill("SIGTERM"), true);
+    await new Promise((resolve, reject) => {
+      child.send({ type: "shutdown" }, (error) => error ? reject(error) : resolve());
+    });
     for (const notice of await Promise.all(shutdownNotices)) {
       assert.equal(notice.code, "host-shutdown");
       assert.match(notice.message, /authoritative host shut down.*match has ended/i);

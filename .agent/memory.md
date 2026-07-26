@@ -1,5 +1,25 @@
 # HEX agent memory
 
+## 2026-07-26 — FLUX 0.34.3 native Windows/Linux runtime verification
+
+- **Observed Windows failures:** PowerShell resolved `npm` to an unsigned
+  `npm.ps1` shim under the host execution policy, and signal-based server
+  shutdown could not run Node's graceful SIGTERM handler on Windows. The live
+  WebSocket lifecycle therefore timed out after all 92 deterministic/browser
+  checks passed.
+- **Implemented solution:** The Windows updater/launcher now invokes
+  `npm.cmd` explicitly. Registered source servers store a separate shutdown
+  token and accept it only through a loopback-only POST endpoint; the cleanup
+  tool uses that path on every OS. The live lifecycle test uses the existing IPC
+  shutdown contract, and a Windows/Ubuntu GitHub Actions matrix runs the full
+  suite plus native launcher syntax checks. Repository attributes keep shell
+  and PowerShell line endings stable across checkouts.
+- **Verification:** Native Windows passed 95/95 tests, recursive JavaScript and
+  PowerShell syntax checks, the production dependency audit with zero findings,
+  and a complete NSIS build at `dist/FLUX-Arena-0.34.3-win-x64.exe`. Linux
+  behavior remains covered by the unchanged server protocol plus the Ubuntu CI
+  lane.
+
 ## 2026-07-26 — HEX 0.13.0 race matrix and spatial arena atlas
 
 - **Player-facing problem:** Race was not selectable, selection did not explain

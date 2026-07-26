@@ -1,0 +1,46 @@
+name: Cross-platform verification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            node: 20.19.1
+            npm: npm
+          - os: windows-latest
+            node: 20.19.1
+            npm: npm.cmd
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: ${{ matrix.npm }} ci --ignore-scripts
+      - run: ${{ matrix.npm }} test
+      - name: Validate Linux launch scripts
+        if: runner.os == 'Linux'
+        run: bash -n scripts/*.sh
+      - name: Validate Windows launch scripts
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $errors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path scripts/pull-and-run.ps1),
+            [ref]$null,
+            [ref]$errors
+          )
+          if ($errors.Count) { throw ($errors | Out-String) }

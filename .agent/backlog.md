@@ -15,7 +15,7 @@ the FLUX context, run the actual suite, and push only the active agent branch.
 
 ## Release acceptance
 
-1. Ship FLUX 0.34.2 through a signed, player-accessible AppImage/NSIS update
+1. Ship FLUX 0.34.3 through a signed, player-accessible AppImage/NSIS update
    feed. Require launch-time update checks to succeed without credentials,
    verify publisher/checksum identity before install, retain the previous build
    for rollback, and prove normal/error shutdown leaves no authority, tunnel,

@@ -7,6 +7,14 @@ spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
+Build 0.34.3 makes the verified source workflow genuinely cross-platform.
+Windows launchers call `npm.cmd`, avoiding the unsigned PowerShell shim that is
+blocked by common execution policies. Registered servers now stop through an
+authenticated loopback request, so Windows receives the same graceful WebSocket
+shutdown notice and zero exit status as Linux instead of an unavoidable forced
+termination. A Windows/Ubuntu CI matrix exercises the complete test suite and
+validates each platform's launcher syntax on every pull request.
+
 Build 0.34.2 gives the fullscreen **Muster Hall** a measured readability floor.
 Mode, champion, race, map, setting, and launch copy now stays near or above 12
 pixels at the default scale; mode choices wrap by available width, champion

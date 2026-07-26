@@ -28,3 +28,10 @@ test("downloaded friend transport requires digest verification before execution"
   assert.match(source, /mode: 0o700/);
   assert.doesNotMatch(source, /shell:\s*true/);
 });
+
+test("Windows launcher bypasses the unsigned PowerShell npm shim", async () => {
+  const source = await readFile(new URL("../scripts/pull-and-run.ps1", import.meta.url), "utf8");
+  assert.match(source, /Get-Command \$tool/);
+  assert.match(source, /"npm\.cmd"/);
+  assert.doesNotMatch(source, /& npm\s/);
+});

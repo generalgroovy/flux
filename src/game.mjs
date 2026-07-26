@@ -635,7 +635,10 @@ function handleMenuClick(event) {
     quickStart();
     return;
   }
-  const panelButton = event.target.closest("[data-panel]");
+  // The app root mirrors the active panel in data-panel for presentation state.
+  // Only controls are navigation targets; matching the root cancels unrelated
+  // default actions such as the Muster Hall form submission.
+  const panelButton = event.target.closest("a[data-panel], button[data-panel]");
   if (panelButton) {
     event.preventDefault();
     showPanel(panelButton.dataset.panel);

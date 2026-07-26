@@ -8,6 +8,11 @@ test("desktop shell keeps renderer privilege and process cleanup narrowly bounde
   assert.match(source, /nodeIntegration:\s*false/);
   assert.match(source, /sandbox:\s*true/);
   assert.match(source, /webSecurity:\s*true/);
+  assert.match(source, /fullscreen:\s*true/);
+  assert.match(source, /leave-full-screen/);
+  assert.match(source, /mainWindow\.setFullScreen\(true\)/);
+  assert.match(source, /setInterval\(enforceFullscreen,\s*1_000\)/);
+  assert.match(source, /clearInterval\(fullscreenGuard\)/);
   assert.match(source, /setWindowOpenHandler\(\(\) => \(\{ action: "deny" \}\)\)/);
   assert.match(source, /will-attach-webview/);
   assert.match(source, /permission === "clipboard-sanitized-write"/);

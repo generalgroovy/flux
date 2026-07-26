@@ -57,7 +57,7 @@ try {
   function Test-FluxReady([int]$CandidatePort) {
     try {
       $health = Invoke-RestMethod -Uri "http://127.0.0.1:$CandidatePort/__flux_health" -TimeoutSec 1
-      return $health.product -eq "FLUX" -and $health.status -eq "ready" -and $health.version -eq "0.34.0"
+      return $health.product -eq "FLUX" -and $health.status -eq "ready" -and $health.version -eq "0.34.1"
     } catch { return $false }
   }
   function Test-PortUsed([int]$CandidatePort) {

@@ -7,6 +7,11 @@ spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
+Build 0.34.1 makes the desktop window permanently fullscreen and repairs the
+Muster Hall's **Enter arena** action. Panel state remains on the application
+root for styling, but delegated navigation now recognizes only real links and
+buttons, so it cannot cancel form submission or other unrelated controls.
+
 Build 0.34.0 makes the desktop application the primary play surface. Electron
 owns one sandboxed FLUX window and a separately isolated loopback authority;
 the renderer has no Node access, device/data-read permissions, popups, webviews,

@@ -64,7 +64,7 @@ flux_is_ready() {
           response.ok &&
             body.product === "FLUX" &&
             body.status === "ready" &&
-            body.version === "0.34.0" &&
+            body.version === "0.34.1" &&
             body.protocol === 2
             ? 0
             : 1

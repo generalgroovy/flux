@@ -26,6 +26,7 @@ let tunnel = null;
 let pendingInvite = parseDesktopInvite(process.argv);
 let cleanupStarted = false;
 let allowExit = false;
+let fullscreenGuard = null;
 
 app.enableSandbox();
 app.setName("FLUX Arena");
@@ -123,6 +124,7 @@ function createGameWindow(url) {
     height: 900,
     minWidth: 960,
     minHeight: 640,
+    fullscreen: true,
     show: false,
     backgroundColor: "#17120d",
     title: "FLUX Arena",
@@ -143,11 +145,26 @@ function createGameWindow(url) {
     if (!isTrustedGameUrl(candidate, gameOrigin)) event.preventDefault();
   });
   mainWindow.webContents.on("will-attach-webview", (event) => event.preventDefault());
-  mainWindow.once("ready-to-show", () => mainWindow?.show());
+  mainWindow.once("ready-to-show", () => {
+    if (!mainWindow) return;
+    enforceFullscreen();
+    mainWindow.show();
+    mainWindow.focus();
+  });
+  mainWindow.on("leave-full-screen", enforceFullscreen);
+  fullscreenGuard = setInterval(enforceFullscreen, 1_000);
+  fullscreenGuard.unref();
   mainWindow.on("closed", () => {
+    clearInterval(fullscreenGuard);
+    fullscreenGuard = null;
     mainWindow = null;
   });
   void mainWindow.loadURL(url);
+}
+
+function enforceFullscreen() {
+  if (quitting || !mainWindow || mainWindow.isDestroyed()) return;
+  if (!mainWindow.isFullScreen()) mainWindow.setFullScreen(true);
 }
 
 function denyRendererPermissions() {

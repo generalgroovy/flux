@@ -1451,3 +1451,28 @@
 - **Recommended next task:** Establish a signed public update feed and stable
   authenticated relay, then run a two-device Linux/Windows `flux://` join soak
   before treating remote desktop play as out-of-box release-ready.
+
+# 2026-07-26 — FLUX 0.34.1 fullscreen and playable Muster Hall
+
+- **Player-facing problem:** The desktop did not declare fullscreen as a runtime
+  invariant, and the visible **Enter arena** button did nothing. The application
+  root mirrors menu state through `data-panel`; broad delegated click matching
+  mistook that root for a navigation control and cancelled the submit button's
+  default action.
+- **Implemented solution:** Restricted panel delegation to actual links and
+  buttons. The Electron window now starts fullscreen, asserts fullscreen again
+  before first show, focuses itself, and restores fullscreen through both a
+  native leave hook and a one-second lifecycle watchdog if the window manager
+  clears it. The watchdog is released with the window. Normal OS close still
+  uses the existing bounded, exact-child cleanup path.
+- **Verification run:** The final suite passed 94/94. A source Electron session
+  on Wayland reported a 2560×1440 viewport matching its active screen; DevTools
+  Protocol pointer events opened **Play**, hit the visible **Enter arena**
+  button, entered Oath Duel with two valid entities, and reported no simulation
+  invariant or renderer exception. The Linux AppImage and Windows x64 directory
+  rebuilt from the final code. The rebuilt AppImage launched fullscreen on the
+  complete 2560×1440 Sway output, recovered to fullscreen after a forced
+  compositor exit, and its window, authority, renderer, and AppImage mount all
+  closed. Recursive source syntax, shell syntax, JSON, and diff checks passed.
+- **Next task:** Establish the signed player-accessible update feed and stable
+  authenticated relay, then complete the two-device Linux/Windows invite soak.

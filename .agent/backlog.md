@@ -1,14 +1,26 @@
-# HEX backlog
+# FLUX backlog
 
 Priority remains fundamentals → compact PvP → PvPvE → PvE. Add race champions
 only as complete contrasting kits inside those proven loops. Keep Battle Royale
 and other scale-heavy variants unexposed until combat, authority, objectives,
 recovery, and performance are accepted at smaller scales.
 
+Visual/combat review should now explicitly test compact projectile lanes,
+weapon cadence, pixel-scale silhouettes, impact confirmation, and dense-fight
+clarity using only broad lessons from Enter the Gungeon—not copied content.
+
+Local-agent handoff is configured for Odysseus and Aider. Periodically verify
+both YOLO launchers still refuse `main` and dirty trees, share their lock, load
+the FLUX context, run the actual suite, and push only the active agent branch.
+
 ## Release acceptance
 
-1. Hands-on accept HEX 0.33.0 on Garuda Sway and Windows: navigate the full
-   race-column Muster Hall at desktop and narrow widths; require that every
+1. Hands-on accept FLUX 0.33.0 on Garuda Sway and Windows: navigate the main
+   menu with pointer, keyboard arrows, Tab, Enter, and a gamepad; require every
+   play choice to react visibly, focus to remain obvious, and all decision and
+   launch-summary copy to wrap without clipping at desktop and narrow widths.
+   Then navigate the full race-column Muster Hall at desktop and narrow widths;
+   require that every
    champion launches with their visible ancestry, the persistent summary and
    hazard rule stay usable, the compact/detail HUD toggle persists,
    69%-transparent comic callouts remain legible, and every shipped ancestry
@@ -42,10 +54,16 @@ recovery, and performance are accepted at smaller scales.
    prime, controllable but dodgeable guided Needle, readable vortex rotation,
    one bend per spell, gentle shared fighter/Ember movement, and clean Volt/Null
    counters without visual or audio overload.
+   In WILDMARCH, defeat a warden, read and claim the loose Wayseal, choose both
+   outer waystones on every arena, and require the scoring rune to move for 14
+   seconds without changing health, damage, Flux, or FLOW. Verify the 16-second
+   return tell, elimination/disconnect drops, opponent steals, bot routes,
+   sudden-score overtime, center restoration, restrained cue density, and clear
+   ordinary-drop versus deliberate-host-shutdown copy.
    Verify both installed desktop launchers update, test, open, and shut down.
 2. Run a 30-minute two-device remote soak through the intended VPN/router path;
-   require clean join-in-progress, host migration, rematch, and disconnect
-   recovery under real latency.
+   require clean join-in-progress, host migration, rematch, disconnect recovery,
+   Wayseal handoff/drop state, and deliberate host shutdown under real latency.
 3. Exercise the deterministic network lab at 80/20/3 and 180/60/10
    latency/jitter/loss profiles; require stable reconciliation, no backward
    snapshots, honest real metrics, explicit LAB state, and clean zero-profile
@@ -61,9 +79,10 @@ recovery, and performance are accepted at smaller scales.
 8. Observe new players completing the adaptive sprint→slide→hop→real defense
    First Rite reads; require comprehension without coaching repetition or
    accidental completion.
-9. Universal movement commitment boundaries and a 600-tick chain ceiling are now
-   deterministic; so are the three production champion contracts. Next
-   acceptance remains hands-on feel and remote prediction.
+9. Universal movement commitment boundaries, the 600-tick chain ceiling, three
+   production champion contracts, and the complete WILDMARCH Wayseal lifecycle
+   are deterministic. Next acceptance remains hands-on feel, route readability,
+   and remote prediction.
 
 ## Gate 1 — Fundamentals implemented
 
@@ -94,6 +113,12 @@ recovery, and performance are accepted at smaller scales.
 
 ## Expansion acceptance — not exposed until complete
 
+- Tide–Ember vapor is deterministic and neutral. Hands-on tune its 1.8-second,
+  92-unit, three-damage pulse contract for escape readability and visual density
+  alongside the 2.4-second, 86-unit, 62%-speed Stone–Ember magma contract.
+  Require clear dotted vapor versus broken-orange magma marks and reliable hop
+  escapes before adding destructible props.
+
 - Thirteen readable race columns are live; champion choice now binds ancestry in
   local, quick-start, bot, and remote presentation. Empty columns are explicit,
   non-interactive roster gaps. Wyrmbound is the first
@@ -116,11 +141,21 @@ recovery, and performance are accepted at smaller scales.
 - Prototype BR/roguelike rules only as internal match modifiers until their win,
   loss, spawn, loot, late-join, and reset flows are complete.
 
-## Gate 3 — PvPvE foundation implemented
+## Gate 3 — PvPvE implemented; external tuning pending
 
-- WILDMARCH has neutral hostile wardens and a shared control objective.
-- Next acceptance: add one neutral objective family whose reward changes route
-  choice without increasing player damage or health.
+- WILDMARCH has neutral hostile wardens plus one authoritative Wayseal. Warden
+  elimination releases it; pickup, carry, timeout, elimination/disconnect drop,
+  route delivery, center restoration, and bot intent are fixed-tick state.
+- Every arena authors two validated outer waystones. Delivery moves the scoring
+  rune for 14 seconds but grants no health, damage, Flux, or FLOW, so its reward
+  is a visible, temporary route choice rather than combat snowball.
+- Late joins and spectators receive the same carried/route state. Tied clocks use
+  sudden-score overtime. Graceful host shutdown explicitly ends the match and
+  clears the unusable reconnect offer; ordinary drops retain the 30-second
+  reservation.
+- Next acceptance: hands-on tune the 16-second carry/14-second route windows,
+  waypoint readability, cue density, steal frequency, and two-device continuity
+  before beginning Gate 4 enemy production.
 
 ## Gate 4 — PvE foundation implemented
 

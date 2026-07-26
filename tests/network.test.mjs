@@ -6,7 +6,7 @@ import { createServer } from "node:net";
 import WebSocket from "ws";
 
 test(
-  "shipped server supports discovery, live join, spectators, reconnect, and host migration",
+  "shipped server supports discovery, live join, spectators, reconnect, host migration, and clear shutdown",
   { timeout: 12_000 },
   async (t) => {
     const port = await freePort();
@@ -28,10 +28,14 @@ test(
     });
     await waitForHealth(origin, child, () => serverOutput);
 
-    const health = await fetch(`${origin}/__diff_health`).then((response) =>
+    const health = await fetch(`${origin}/__flux_health`).then((response) =>
       response.json(),
     );
-    assert.equal(health.product, "DIFF");
+    assert.equal(health.product, "FLUX");
+    const legacyHealth = await fetch(`${origin}/__diff_health`).then((response) =>
+      response.json(),
+    );
+    assert.equal(legacyHealth.product, "DIFF");
     assert.equal(health.status, "ready");
     assert.equal(health.version, "0.33.0");
     assert.equal(health.protocol, 2);
@@ -46,8 +50,8 @@ test(
       "/src/content.mjs",
       "/src/game.mjs",
       "/src/match.mjs",
-      "/src/network-conditioner.mjs",
-      "/src/network-quality.mjs",
+      "/src/network/conditioner.mjs",
+      "/src/network/quality.mjs",
     ]) {
       const response = await fetch(`${origin}${route}`);
       assert.equal(response.status, 200, route);
@@ -60,7 +64,7 @@ test(
     for (const privateRoute of [
       "/package.json",
       "/scripts/serve.mjs",
-      "/src/lobbies.mjs",
+      "/src/network/lobbies.mjs",
       "/tests/network.test.mjs",
       "/%2e%2e%2fpackage.json",
     ]) {
@@ -173,9 +177,19 @@ test(
       ),
       true,
     );
-    returningHost.close();
-    observer.close();
-    guest.close();
+    const shutdownNotices = [
+      returningHost.waitFor((message) => message.type === "server-shutdown"),
+      observer.waitFor((message) => message.type === "server-shutdown"),
+      guest.waitFor((message) => message.type === "server-shutdown"),
+    ];
+    assert.equal(child.kill("SIGTERM"), true);
+    for (const notice of await Promise.all(shutdownNotices)) {
+      assert.equal(notice.code, "host-shutdown");
+      assert.match(notice.message, /authoritative host shut down.*match has ended/i);
+    }
+    const exitCode = child.exitCode ??
+      await new Promise((resolve) => child.once("exit", resolve));
+    assert.equal(exitCode, 0, serverOutput);
   },
 );
 
@@ -267,7 +281,7 @@ async function waitForHealth(origin, child, output) {
       throw new Error(`Server exited early:\n${output()}`);
     }
     try {
-      const response = await fetch(`${origin}/__diff_health`);
+      const response = await fetch(`${origin}/__flux_health`);
       if (response.ok) return;
     } catch {
       // Startup race: retry with a bounded delay.

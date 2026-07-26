@@ -166,6 +166,11 @@ test("every arena is an authored old-world place rather than a bare combat grid"
     assert.ok(map.heraldry);
     assert.ok(map.landmarks.length >= 2);
     assert.ok(map.landmarks.some((landmark) => landmark.type === "rune"));
+    assert.equal(map.wildmarch.routes.length, 2);
+    assert.equal(
+      new Set(map.wildmarch.routes.map((route) => route.id)).size,
+      2,
+    );
   }
 });
 
@@ -608,7 +613,7 @@ test("Varka trades projectile speed for weight only while owning Ember terrain",
   );
   assert.equal(
     state.events.some(
-      (event) => ["douse", "redirect"].includes(event.reaction),
+      (event) => ["vapor", "redirect"].includes(event.reaction),
     ),
     true,
   );
@@ -757,9 +762,10 @@ test("elemental specials author persistent, counterable arena state", () => {
   );
 });
 
-test("water douses fire and rewards allied FLOW positioning", () => {
+test("water and fire create neutral damaging vapor", () => {
   const state = duel({ leftCharacter: "mend", rightCharacter: "cinder" });
   const mend = state.entities[0];
+  mend.invulnerableRemaining = 0;
   mend.flow = 20;
   state.elementFields.push({
     id: "test-fire",
@@ -775,13 +781,17 @@ test("water douses fire and rewards allied FLOW positioning", () => {
   stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
   stepMatch(state, {}, FIXED_DELTA);
   assert.equal(state.elementFields.some((field) => field.element === "fire"), false);
-  assert.ok(mend.flow > 20);
+  assert.equal(state.elementFields.some((field) => field.element === "water"), false);
+  assert.equal(state.elementFields.some((field) => field.element === "vapor"), true);
   assert.equal(
     state.events.some(
-      (event) => event.type === "elementReaction" && event.reaction === "douse",
+      (event) => event.type === "elementReaction" && event.reaction === "vapor",
     ),
     true,
   );
+  const healthBeforeVapor = mend.health;
+  for (let tick = 0; tick < 6; tick += 1) stepMatch(state, {}, 0.1);
+  assert.ok(mend.health < healthBeforeVapor);
 });
 
 test("element fields resolve physical reactions deterministically", () => {
@@ -867,6 +877,39 @@ test("element fields resolve physical reactions deterministically", () => {
   stepMatch(state, {}, FIXED_DELTA);
   assert.ok(state.projectiles[0].vy > 0);
   assert.equal(state.events.some((event) => event.reaction === "deflect"), true);
+});
+
+test("earth and fire create neutral non-damaging magma slow", () => {
+  const state = duel({ leftCharacter: "bulwark", rightCharacter: "cinder" });
+  const fighter = state.entities[0];
+  fighter.spawnProtection = 0;
+  fighter.x = 800;
+  fighter.y = 700;
+  fighter.lastSafeX = fighter.x;
+  fighter.lastSafeY = fighter.y;
+  state.elementFields = [
+    {
+      id: "earth-for-magma", ownerId: fighter.id, team: "alpha", element: "earth",
+      x: 760, y: 660, width: 100, height: 80, duration: 2, pulseRemaining: 0,
+    },
+    {
+      id: "fire-for-magma", ownerId: state.entities[1].id, team: "beta", element: "fire",
+      x: 800, y: 700, radius: 60, duration: 2, pulseRemaining: 0,
+    },
+  ];
+  const healthBefore = fighter.health;
+  stepMatch(state, { left: { ...idle, moveX: 1 } }, FIXED_DELTA);
+  const magma = state.elementFields.find((field) => field.element === "magma");
+  assert.ok(magma);
+  assert.equal(magma.team, "neutral");
+  assert.equal(fighter.surface, "magma");
+  assert.equal(fighter.health, healthBefore);
+  assert.equal(state.events.some((event) => event.reaction === "magma"), true);
+  for (let tick = 0; tick < 120; tick += 1) {
+    stepMatch(state, { left: { ...idle, moveX: 1 } }, FIXED_DELTA);
+  }
+  assert.ok(fighter.vx <= getCharacter(fighter.characterId).speed * MATCH_TUNING.elements.magmaSpeed + 1);
+  assert.deepEqual(matchInvariantErrors(state), []);
 });
 
 test("Null erases nearby constructs only on its paid commitment", () => {
@@ -1823,6 +1866,227 @@ test("control scores only one uncontested team and convergence neutrals cannot c
   stepMatch(state, {}, 1);
   assert.equal(state.objective.contested, true);
   assert.equal(state.score.alpha, score);
+});
+
+test("WILDMARCH Wayseal turns a neutral hunt into a bounded route choice", () => {
+  const state = createMatch({
+    modeId: "convergence",
+    mapId: "crown",
+    botCount: 0,
+    players: [
+      { id: "alpha", characterId: "volt", team: "alpha", human: true },
+      { id: "beta", characterId: "volt", team: "beta", human: true },
+    ],
+  });
+  const alpha = state.entities.find((entity) => entity.id === "alpha");
+  const beta = state.entities.find((entity) => entity.id === "beta");
+  const warden = state.entities.find((entity) => entity.neutral);
+  alpha.x = 300;
+  alpha.y = 450;
+  alpha.facingX = 1;
+  alpha.facingY = 0;
+  beta.x = 1300;
+  beta.y = 700;
+  warden.x = 450;
+  warden.y = 450;
+  warden.health = 1;
+  for (const entity of state.entities) {
+    entity.lastSafeX = entity.x;
+    entity.lastSafeY = entity.y;
+    entity.spawnProtection = 0;
+  }
+
+  stepMatch(state, { alpha: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(warden.alive, false);
+  assert.equal(state.wildmarch.seal.status, "grounded");
+  assert.equal(state.wildmarch.seal.x, warden.x);
+  assert.equal(state.wildmarch.seal.y, warden.y);
+  assert.ok(
+    state.events.some((event) => event.type === "waysealReleased"),
+  );
+
+  const protectedClaim = structuredClone(state);
+  const protectedAlpha = protectedClaim.entities.find(
+    (entity) => entity.id === alpha.id,
+  );
+  protectedAlpha.x = protectedClaim.wildmarch.seal.x;
+  protectedAlpha.y = protectedClaim.wildmarch.seal.y;
+  protectedAlpha.lastSafeX = protectedAlpha.x;
+  protectedAlpha.lastSafeY = protectedAlpha.y;
+  protectedAlpha.spawnProtection = 1;
+  stepMatch(protectedClaim, { alpha: idle }, FIXED_DELTA);
+  assert.equal(protectedClaim.wildmarch.seal.status, "grounded");
+
+  alpha.x = state.wildmarch.seal.x;
+  alpha.y = state.wildmarch.seal.y;
+  alpha.lastSafeX = alpha.x;
+  alpha.lastSafeY = alpha.y;
+  stepMatch(state, { alpha: idle }, FIXED_DELTA);
+  assert.equal(state.wildmarch.seal.status, "carried");
+  assert.equal(state.wildmarch.seal.carrierId, alpha.id);
+  alpha.spawnProtection = 100;
+
+  const disconnected = structuredClone(state);
+  const disconnectedCarrier = disconnected.entities.find(
+    (entity) => entity.id === alpha.id,
+  );
+  assert.equal(removeMatchPlayer(disconnected, alpha.id), true);
+  assert.equal(disconnected.wildmarch.seal.status, "grounded");
+  assert.equal(disconnected.wildmarch.seal.carrierId, null);
+  assert.equal(disconnected.wildmarch.seal.x, disconnectedCarrier.x);
+  assert.deepEqual(matchInvariantErrors(disconnected), []);
+
+  const eliminated = structuredClone(state);
+  const eliminatedAlpha = eliminated.entities.find(
+    (entity) => entity.id === alpha.id,
+  );
+  const eliminatedBeta = eliminated.entities.find(
+    (entity) => entity.id === beta.id,
+  );
+  eliminatedAlpha.health = 1;
+  eliminatedAlpha.spawnProtection = 0;
+  eliminatedAlpha.damageInvulnerability = 0;
+  eliminatedBeta.x = eliminatedAlpha.x - 150;
+  eliminatedBeta.y = eliminatedAlpha.y;
+  eliminatedBeta.lastSafeX = eliminatedBeta.x;
+  eliminatedBeta.lastSafeY = eliminatedBeta.y;
+  eliminatedBeta.facingX = 1;
+  eliminatedBeta.facingY = 0;
+  eliminatedBeta.spawnProtection = 100;
+  eliminatedBeta.specialCooldown = 0;
+  eliminatedBeta.flux = eliminatedBeta.maxFlux;
+  stepMatch(
+    eliminated,
+    { beta: { ...idle, special: true } },
+    FIXED_DELTA,
+  );
+  assert.equal(eliminatedAlpha.alive, false);
+  assert.equal(eliminated.wildmarch.seal.status, "grounded");
+  assert.equal(eliminated.wildmarch.seal.carrierId, null);
+  assert.ok(
+    eliminated.events.some((event) => event.type === "waysealDropped"),
+  );
+  assert.deepEqual(matchInvariantErrors(eliminated), []);
+
+  const stalled = structuredClone(state);
+  stalled.wildmarch.seal.returnRemaining = FIXED_DELTA / 2;
+  stepMatch(stalled, {}, FIXED_DELTA);
+  assert.equal(stalled.wildmarch.seal.status, "dormant");
+  assert.equal(stalled.wildmarch.seal.carrierId, null);
+
+  const route = state.wildmarch.routes[0];
+  const resourcesBefore = {
+    health: alpha.health,
+    maxHealth: alpha.maxHealth,
+    flow: alpha.flow,
+    maxFlow: alpha.maxFlow,
+    flux: alpha.flux,
+    maxFlux: alpha.maxFlux,
+  };
+  alpha.x = route.x;
+  alpha.y = route.y;
+  alpha.lastSafeX = alpha.x;
+  alpha.lastSafeY = alpha.y;
+  stepMatch(state, { alpha: idle }, FIXED_DELTA);
+  assert.equal(state.wildmarch.activeRouteId, route.id);
+  assert.equal(
+    state.wildmarch.routeRemaining,
+    MATCH_TUNING.wildmarch.routeDuration,
+  );
+  assert.equal(state.objective.x, route.x);
+  assert.equal(state.objective.y, route.y);
+  assert.equal(state.objective.radius, route.radius);
+  assert.deepEqual(
+    {
+      health: alpha.health,
+      maxHealth: alpha.maxHealth,
+      flow: alpha.flow,
+      maxFlow: alpha.maxFlow,
+      flux: alpha.flux,
+      maxFlux: alpha.maxFlux,
+    },
+    resourcesBefore,
+  );
+  assert.ok(
+    state.events.some((event) => event.type === "waysealRouted"),
+  );
+
+  alpha.x = 200;
+  alpha.y = 200;
+  alpha.lastSafeX = alpha.x;
+  alpha.lastSafeY = alpha.y;
+  state.wildmarch.routeRemaining = FIXED_DELTA / 2;
+  stepMatch(state, { alpha: idle }, FIXED_DELTA);
+  assert.equal(state.wildmarch.activeRouteId, null);
+  assert.equal(state.wildmarch.seal.status, "dormant");
+  assert.equal(state.objective.x, MAPS.find((map) => map.id === "crown").objective.x);
+  assert.equal(state.objective.y, MAPS.find((map) => map.id === "crown").objective.y);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("WILDMARCH bots carry the Wayseal toward an authored route", () => {
+  const state = createMatch({
+    modeId: "convergence",
+    mapId: "crown",
+    botCount: 1,
+  });
+  const courier = state.entities.find(
+    (entity) => entity.bot && !entity.neutral,
+  );
+  courier.x = 800;
+  courier.y = 600;
+  courier.lastSafeX = courier.x;
+  courier.lastSafeY = courier.y;
+  courier.botThinkRemaining = 0;
+  state.wildmarch.seal.status = "carried";
+  state.wildmarch.seal.carrierId = courier.id;
+  state.wildmarch.seal.x = courier.x;
+  state.wildmarch.seal.y = courier.y;
+  state.wildmarch.seal.returnRemaining = MATCH_TUNING.wildmarch.returnDuration;
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.ok(courier.botCommand.moveY > 0);
+  assert.ok(Math.hypot(courier.vx, courier.vy) > 0);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("WILDMARCH tie enters sudden-score overtime with one clear winner", () => {
+  const state = createMatch({
+    modeId: "convergence",
+    mapId: "crown",
+    botCount: 0,
+    players: [
+      { id: "alpha", characterId: "kite", team: "alpha", human: true },
+      { id: "beta", characterId: "kite", team: "beta", human: true },
+    ],
+  });
+  const alpha = state.entities.find((entity) => entity.id === "alpha");
+  const beta = state.entities.find((entity) => entity.id === "beta");
+  alpha.x = 300;
+  alpha.y = 160;
+  beta.x = 1300;
+  beta.y = 740;
+  for (const entity of state.entities) {
+    entity.lastSafeX = entity.x;
+    entity.lastSafeY = entity.y;
+    entity.spawnProtection = 100;
+  }
+  state.score.alpha = 40;
+  state.score.beta = 40;
+  state.elapsed = getModeById("convergence").timeLimit - FIXED_DELTA;
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.equal(state.overtime, true);
+  assert.equal(state.status, "playing");
+  assert.equal(state.winner, null);
+
+  alpha.x = state.objective.x;
+  alpha.y = state.objective.y;
+  alpha.lastSafeX = alpha.x;
+  alpha.lastSafeY = alpha.y;
+  stepMatch(state, {}, FIXED_DELTA);
+  assert.equal(state.status, "match-over");
+  assert.equal(state.winner, "alpha");
+  assert.ok(state.score.alpha > state.score.beta);
+  assert.deepEqual(matchInvariantErrors(state), []);
 });
 
 test("join-in-progress and disconnect preserve the running match", () => {

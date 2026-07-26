@@ -2,19 +2,19 @@
 
 set -Eeuo pipefail
 
-readonly REPOSITORY="${DIFF_REPOSITORY:-https://github.com/generalgroovy/diff.git}"
+readonly REPOSITORY="${FLUX_REPOSITORY:-${DIFF_REPOSITORY:-https://github.com/generalgroovy/flux.git}}"
 readonly PROJECTS_DIR="${HOME}/Projects"
-readonly DEFAULT_DIR="${PROJECTS_DIR}/diff"
+readonly DEFAULT_DIR="${PROJECTS_DIR}/flux"
 
 if [[ $# -gt 2 ]]; then
   printf 'Usage: %s [repository-directory] [branch]\n' "$0" >&2
   exit 2
 fi
 
-readonly BRANCH="${2:-${DIFF_BRANCH:-main}}"
+readonly BRANCH="${2:-${FLUX_BRANCH:-${DIFF_BRANCH:-main}}}"
 
 if [[ ! "${BRANCH}" =~ ^[A-Za-z0-9._/-]+$ ]] || [[ "${BRANCH}" == -* ]] || [[ "${BRANCH}" == *..* ]]; then
-  printf 'DIFF_BRANCH is not a safe Git branch name: %s\n' "${BRANCH}" >&2
+  printf 'FLUX_BRANCH is not a safe Git branch name: %s\n' "${BRANCH}" >&2
   exit 2
 fi
 
@@ -24,7 +24,10 @@ else
   repo_dir="${DEFAULT_DIR}"
 fi
 
-if [[ -n "${DIFF_PORT+x}" ]]; then
+if [[ -n "${FLUX_PORT+x}" ]]; then
+  port_was_explicit=true
+  port="${FLUX_PORT}"
+elif [[ -n "${DIFF_PORT+x}" ]]; then
   port_was_explicit=true
   port="${DIFF_PORT}"
 else
@@ -33,7 +36,7 @@ else
 fi
 
 if [[ ! "${port}" =~ ^[0-9]+$ ]] || (( port < 1 || port > 65535 )); then
-  printf 'DIFF_PORT must be an integer from 1 to 65535; received %s\n' "${port}" >&2
+  printf 'FLUX_PORT must be an integer from 1 to 65535; received %s\n' "${port}" >&2
   exit 2
 fi
 
@@ -52,14 +55,14 @@ port_is_in_use() {
   ' "$1"
 }
 
-diff_is_ready() {
+flux_is_ready() {
   node -e '
-    fetch(`${process.argv[1]}/__diff_health`)
+    fetch(`${process.argv[1]}/__flux_health`)
       .then(async (response) => {
         const body = await response.json();
         process.exit(
           response.ok &&
-            body.product === "DIFF" &&
+            body.product === "FLUX" &&
             body.status === "ready" &&
             body.version === "0.33.0" &&
             body.protocol === 2
@@ -83,7 +86,7 @@ node_compatible="$(node -p '
   Number(major > 20 || (major === 20 && minor >= 19));
 ')"
 if [[ "${node_compatible}" != 1 ]]; then
-  printf 'DIFF requires Node.js 20.19 or newer; found %s\n' "$(node --version)" >&2
+  printf 'FLUX requires Node.js 20.19 or newer; found %s\n' "$(node --version)" >&2
   exit 1
 fi
 
@@ -108,7 +111,7 @@ export GIT_TERMINAL_PROMPT=0
 
 if [[ ! -e "${repo_dir}" ]]; then
   mkdir -p -- "$(dirname -- "${repo_dir}")"
-  printf 'Cloning DIFF into %s\n' "${repo_dir}"
+  printf 'Cloning FLUX into %s\n' "${repo_dir}"
   if ! git clone --origin origin --branch "${BRANCH}" "${REPOSITORY}" "${repo_dir}"; then
     printf '%s\n' \
       'Clone failed. Authenticate first with:' \
@@ -135,7 +138,7 @@ else
   git remote add origin "${REPOSITORY}"
 fi
 
-printf 'Fetching DIFF %s...\n' "${BRANCH}"
+printf 'Fetching FLUX %s...\n' "${BRANCH}"
 if ! git fetch --prune origin "${BRANCH}"; then
   printf '%s\n' \
     'Fetch failed. Authenticate first with:' \
@@ -165,14 +168,14 @@ npm test
 
 url="http://127.0.0.1:${port}"
 if port_is_in_use "${port}"; then
-  if diff_is_ready "${url}"; then
-    printf '\nDIFF is already running at %s\n' "${url}"
+  if flux_is_ready "${url}"; then
+    printf '\nFLUX is already running at %s\n' "${url}"
     printf 'Open that address in your browser.\n'
     exit 0
   fi
 
   if [[ "${port_was_explicit}" == true ]]; then
-    printf 'DIFF_PORT %s is already in use by another process.\n' "${port}" >&2
+    printf 'FLUX_PORT %s is already in use by another process.\n' "${port}" >&2
     exit 1
   fi
 
@@ -185,7 +188,7 @@ if port_is_in_use "${port}"; then
   done
 
   if [[ -z "${available_port}" ]]; then
-    printf 'No free DIFF port was found from 8000 through 8100.\n' >&2
+    printf 'No free FLUX port was found from 8000 through 8100.\n' >&2
     exit 1
   fi
 
@@ -194,8 +197,8 @@ if port_is_in_use "${port}"; then
   url="http://127.0.0.1:${port}"
 fi
 
-printf 'Starting DIFF at %s\n' "${url}"
-HOST="${DIFF_HOST:-127.0.0.1}" PORT="${port}" npm start &
+printf 'Starting FLUX at %s\n' "${url}"
+HOST="${FLUX_HOST:-${DIFF_HOST:-127.0.0.1}}" PORT="${port}" npm start &
 server_pid=$!
 
 cleanup() {
@@ -211,7 +214,7 @@ for _ in {1..50}; do
   if ! kill -0 "${server_pid}" >/dev/null 2>&1; then
     wait "${server_pid}"
   fi
-  if diff_is_ready "${url}"; then
+  if flux_is_ready "${url}"; then
     ready=true
     break
   fi
@@ -219,12 +222,12 @@ for _ in {1..50}; do
 done
 
 if [[ "${ready}" != true ]]; then
-  printf 'DIFF did not become ready at %s\n' "${url}" >&2
+  printf 'FLUX did not become ready at %s\n' "${url}" >&2
   exit 1
 fi
 
-printf '\nDIFF is ready at %s\n' "${url}"
-if [[ "${DIFF_OPEN_BROWSER:-0}" == 1 ]]; then
+printf '\nFLUX is ready at %s\n' "${url}"
+if [[ "${FLUX_OPEN_BROWSER:-${DIFF_OPEN_BROWSER:-0}}" == 1 ]]; then
   if command -v xdg-open >/dev/null 2>&1; then
     if ! xdg-open "${url}" >/dev/null 2>&1; then
       printf 'Desktop browser handoff failed; open %s manually.\n' "${url}" >&2
@@ -233,5 +236,5 @@ if [[ "${DIFF_OPEN_BROWSER:-0}" == 1 ]]; then
     printf 'xdg-open is unavailable; open %s manually.\n' "${url}" >&2
   fi
 fi
-printf 'Open that address in your browser. Press Ctrl+C here to stop DIFF.\n'
+printf 'Open that address in your browser. Press Ctrl+C here to stop FLUX.\n'
 wait "${server_pid}"

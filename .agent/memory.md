@@ -1227,3 +1227,181 @@
   complete two-champion column. Next author one mechanically contrasting,
   production-complete pair for an empty ancestry or second champion for an
   existing ancestry, validate it in compact PvP, and repeat without stat reskins.
+
+## 2026-07-26 — WILDMARCH Wayseal route objective and shutdown contract
+
+- **Live starting evidence:** The tracked checkout began clean at HEX 0.32.0
+  with three pre-existing untracked user files left untouched. Baseline
+  `npm test` passed 77/77 checks. Every `src/*.mjs` and `scripts/*.mjs`
+  `node --check`, the three Linux `bash -n` launcher checks, and
+  `git diff --check` passed. Port 8131 served 0.32.0 health, the shell,
+  controller module, security headers, and empty lobby discovery, then closed
+  cleanly. No browser executable or PowerShell was installed.
+- **Player-facing problem:** WILDMARCH reused center control and neutral kill
+  points without a distinct PvPvE reward, route decision, loot/extraction state,
+  or truthful graceful-host-shutdown outcome. Its neutral layer did not yet
+  satisfy Gate 3.
+- **Implemented solution:** HEX 0.33.0 gives every arena two validated outer
+  waystones. Defeating a neutral warden releases one Wayseal; an unprotected
+  fighter can claim it and has 16 seconds to deliver it to either route.
+  Delivery moves the scoring rune there for 14 seconds, then restores center.
+  The seal changes no health, damage, Flux, or FLOW. It drops on elimination,
+  leave, or disconnect, can be stolen by either team, returns against stalling,
+  and remains singular while a route is active. Bots pursue loose seals, carry
+  them to the nearer authored route, and target hostile carriers.
+- **Authority and clarity:** Match schema v3 owns seal, carrier, timer, route,
+  and dynamic-objective state. Late joins, spectators, prediction, reconnects,
+  and host migration use the existing snapshots. Disconnect advances the
+  authoritative network tick before its immediate drop snapshot. Canvas
+  waystones, seal geometry, carrier roster text, live coaching, field info,
+  guide copy, and restrained comic/audio cues expose every phase. Tied clocks
+  state that the next score wins and deterministically end on the first score
+  delta.
+- **Host shutdown:** Graceful server shutdown now sends a terminal
+  `server-shutdown` message before closing sockets. The browser distinguishes it
+  from a recoverable drop, pauses with `Host realm closed`, removes the unusable
+  reconnect token, and directs the player back to Host / Join. Ordinary drops
+  keep the existing 30-second reservation copy.
+- **Commands/results:** Focused Wayseal/lobby/DOM/network checks passed, including
+  the combined DOM/lobby/match run at 72/72. Final `npm test` passed 81/81
+  checks: 79 deterministic/DOM/lobby/match/network-conditioner/diagnostic
+  checks, one real WebSocket lifecycle including shutdown delivery to player and
+  spectator clients, and one isolated registered-server cleanup check. All
+  JavaScript and Linux launcher syntax checks plus `git diff --check` passed.
+- **Launch/cleanup:** Port 8133 reported HEX 0.33.0/protocol 2; `/`,
+  `/src/game.mjs`, and `/src/match.mjs` returned `200 OK` with all shipped
+  security headers, and lobby discovery returned an empty list. The shipped
+  `npm stop` stopped PID 353171, health then refused connection, and a second
+  stopper found no registered server for this checkout.
+- **Known limitation / next task:** Physical Garuda/Windows play, gamepad,
+  Wayseal timing/readability/cue tuning, and the two-device remote soak remain
+  unavailable here. Gate 3 is software-complete; do not begin Gate 4 enemy
+  families until that real-player combat/objective acceptance makes tuning
+  credible.
+
+# 2026-07-26 — Responsive menu input and unclipped muster copy
+
+- **Player-facing problem:** The reported play menu did not react to directional
+  input, while mode descriptions and the final launch summary intentionally
+  clipped text. Primary navigation labels were also too small and visually
+  technical for the old-world presentation.
+- **Implemented solution:** Added bounded Up/Down navigation with immediate panel
+  activation, Right movement into the active panel, and Left return to its
+  navigation entry. Preserved the home-screen Enter shortcut. Removed mode-card
+  line clamping and summary ellipsis, enabled safe wrapping, and enlarged the
+  primary labels using the established chronicle serif stack.
+- **Verification:** `node --check src/game.mjs`, the focused browser-shell test,
+  the full `npm test` suite (81/81), shell syntax checks, and `git diff --check`
+  passed. The DOM regression now proves directional activation of Play and
+  Host/Join. No browser executable is installed, so physical pointer, focus,
+  narrow-layout, font rendering, and gamepad acceptance remain outstanding.
+- **Recommended next task:** Add deterministic gamepad menu traversal through the
+  same focus/activation contract, then hands-on accept the complete Muster Hall
+  on Garuda and Windows before expanding chemistry or destructible terrain.
+
+# 2026-07-26 — Edge-triggered gamepad menu traversal
+
+- **Player-facing problem:** The gamepad worked only after entering combat, so a
+  controller-first player could not traverse the menu that launches the game.
+- **Implemented solution:** The first connected pad now drives menu Up/Down with
+  the D-pad or left stick, Left/Right across navigation and panel controls, and
+  the south face button as accept. Inputs are edge-triggered and reset on release
+  or menu exit, preventing a held stick from racing through every panel.
+- **Verification:** `node --check src/game.mjs`, focused DOM coverage for gamepad
+  panel traversal, the full `npm test` suite (81/81), shell syntax checks, and
+  `git diff --check` passed. Physical controller feel remains a Garuda/Windows
+  acceptance item because no browser/gamepad device is available here.
+- **Recommended next task:** Hands-on accept pointer, keyboard, and controller
+  behavior at desktop and narrow widths, then address any focus/layout defects
+  before beginning a bounded chemistry/environment slice.
+
+# 2026-07-26 — Neutral Tide–Ember vapor chemistry
+
+- **Player-facing problem:** Tide erased Ember outright, so the most obvious
+  elemental combination removed state rather than creating a new positioning
+  decision.
+- **Implemented solution:** A direct overlap now consumes both fields into one
+  1.8-second neutral vapor cloud with a dotted pale-green mark and bounded
+  three-damage pulses against every fighter. Directed, offset Tide still
+  redirects Ember, making the reaction depend on placement rather than affinity.
+- **Verification:** Focused chemistry tests and the full `npm test` suite (81/81)
+  passed with invariant and Varka counterplay coverage. JavaScript syntax and
+  diff checks passed. Physical effect density and dodge timing remain untested
+  without a browser.
+- **Recommended next task:** Complete the user-directed HEX→FLUX repository,
+  checkout, product, launcher, package, documentation, and compatibility
+  migration before adding magma or destructible environment state.
+
+# 2026-07-26 — FLUX identity and project-structure migration
+
+- **Player-facing problem:** The shipped interface said HEX while package,
+  server, storage, automation, checkout, and repository surfaces still mixed HEX
+  and DIFF identities. The iteration entrypoint also cluttered the project root.
+- **Implemented solution:** Made FLUX the canonical title and package identity,
+  adopted the line “Flow. Learn. Unleash. eXecute.”, migrated health/debug/save
+  and launcher surfaces to FLUX, and updated Linux/Windows defaults for the
+  `flux` repository and checkout. Legacy DIFF environment variables, health
+  route, debug handle, and browser storage remain explicit read-compatible
+  aliases. Moved the iteration entrypoint into `scripts/start-flux-iteration.sh`.
+  Added Enter the Gungeon as a principle-level reference for gunplay, pixel
+  silhouettes, projectile lanes, cadence, and dense-fight clarity without
+  copying protected expression.
+- **Verification:** JavaScript syntax, all shell syntax, focused browser/server
+  migration checks, the full `npm test` suite (81/81), and `git diff --check`
+  passed on Linux. PowerShell and physical desktop launchers remain Windows
+  acceptance items.
+- **Recommended next task:** Rename the GitHub repository and local checkout to
+  `flux`, verify the redirected remote and tests from the new path, then begin a
+  bounded project-module extraction before Stone–Ember magma or destructibles.
+
+# 2026-07-26 — Network boundary extraction and completed rename
+
+- **Implemented solution:** Renamed the existing GitHub repository in place to
+  `generalgroovy/flux`, updated `origin`, and moved the checkout to
+  `/home/otp/Projects/flux`. Grouped lobby authority, adverse-network
+  conditioning, and connection diagnostics under `src/network/`; updated browser
+  public-file allowlists, server imports, tests, documentation, and recursive
+  syntax verification accordingly.
+- **Verification:** The remote branch resolves at the new repository, and the
+  complete 81-test suite plus syntax and diff checks passed from the renamed
+  local directory. The harmless host `pcilib` warning occurs before commands in
+  this environment and did not affect exit status or checks.
+- **Recommended next task:** Extract element-reaction rules from the large match
+  module behind a deterministic simulation boundary, then implement and tune one
+  Stone–Ember magma slow before introducing destructible environment props.
+
+# 2026-07-26 — Neutral Stone–Ember magma routes
+
+- **Player-facing problem:** Stone and Ember could overlap without reacting,
+  missing an intuitive chemistry outcome and leaving temporary cover untouched.
+- **Implemented solution:** Overlap now consumes both fields into a 2.4-second,
+  86-unit neutral magma patch. Its broken-orange mark slows grounded speed to
+  62% without damage; universal hops ignore the ground modifier and provide the
+  clean escape. The reaction grants neither owner charge or affinity immunity.
+- **Verification:** Focused reaction coverage proves formation, neutrality,
+  non-damage, bounded speed, and invariants. The full suite passed 82/82,
+  including browser, authoritative networking, combination stress, and server
+  cleanup checks.
+- **Recommended next task:** Extract the now-growing chemistry resolver from
+  `match.mjs`, then introduce one destructible prop family whose lifecycle and
+  elemental outcomes are authoritative, deterministic, and visually explicit.
+
+# 2026-07-26 — Local Odysseus and Aider unrestricted handoff
+
+- **Implemented solution:** Added tracked shared context, Aider configuration,
+  resumable Odysseus state/decisions/tests, an interactive Aider YOLO launcher,
+  and a persistent Odysseus-style supervisor that runs bounded Aider iterations,
+  verifies, commits, and pushes the active agent branch. Both use the installed
+  local Qwen 2.5 Coder 7B model, share a file lock, refuse `main`, and refuse a
+  dirty starting tree. Repaired the broken user-local `odysseus` dispatcher
+  symlink and installed the **FLUX Principal Agent** Odysseus preset without
+  storing credentials.
+- **Safety boundary:** “YOLO” accepts shell/edit prompts inside this checkout;
+  it does not permit force-push, history rewriting, credential access, releases,
+  destructive system changes, or unrelated external mutation.
+- **Verification:** Aider 0.86.2 parsed `.aider.conf.yml` with the local
+  `ollama_chat/qwen2.5-coder:7b-instruct` model; Odysseus 0.1.0 dispatch and the
+  FLUX preset round-trip passed; both shell launchers passed syntax checks.
+- **Recommended next task:** Use one launcher at a time for the chemistry-module
+  extraction and destructible-prop slice; stop autonomous work through
+  `.agent/STOP` before manual edits.

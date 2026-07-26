@@ -1,14 +1,15 @@
-# HEX
+# FLUX
 
-**Hunt. Evade. eXecute.**
+**Flow. Learn. Unleash. eXecute.**
 
-HEX is a complete, minimal 2D top-down systemic skill arena. Aim,
+FLUX is a complete, minimal 2D top-down systemic skill arena. Aim,
 spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
-The current launcher and network protocol retain their DIFF compatibility names
-while the working product identity migrates to HEX.
+Build 0.33.0 completes the FLUX identity migration. Legacy DIFF environment
+variables, health routes, browser storage, and debug hooks remain readable only
+as explicit compatibility aliases; all new launch and persistence paths use FLUX.
 
 Build 0.33.0 rebuilds the **Muster Hall** around a wide, usable configuration
 flow. Every race owns one column and its difficulty-ordered champion rows;
@@ -21,6 +22,23 @@ edges, blur, and shadow. Element labels pair a stable palette with words and
 marks, while every race declares and renders a distinct physical feature such
 as leaf-point ears, tusks, antlers, fins, rune ribs, or scaled wings. Empty race
 columns are honest and non-interactive until complete champion kits ship.
+The main navigation also responds to directional keyboard and gamepad input,
+exposes a clear focus path into each panel, edge-triggers held controller
+inputs, and keeps full contest and launch-summary copy visible instead of
+clipping decision-critical text.
+
+Build 0.33.0 also gives **WILDMARCH** its first distinct PvPvE objective loop.
+Defeating a neutral warden releases one visible Wayseal. Any fighter can claim
+it, but must deliver it within 16 seconds to one of two authored outer
+waystones. That choice moves the scoring rune to the selected route for 14
+seconds, then restores the center. The carrier gains no health, damage, Flux, or
+FLOW; elimination or disconnect drops the seal for either team, and timeout
+returns it to the wild. All eight arenas author two clear route choices. Bots,
+late joins, spectators, reconnects, host migration, HUD coaching, field art,
+audio/comic cues, and match invariants use the same authoritative state. A tied
+clock enters sudden-score overtime. Deliberate server shutdown now ends every
+client's match with explicit terminal copy and clears the unusable reconnect
+offer instead of masquerading as a recoverable drop.
 
 Build 0.32.0 adds **Edgeweave**, a universal movement read. Passing through the
 narrow outer edge of a hostile spell at 260+ movement speed restores 9 FLOW.
@@ -184,6 +202,12 @@ or redirect Ember, Volt conducts through Tide, and explosive mechanics shatter
 Stone without becoming an element themselves. Every field uses shape/text cues,
 distinct audio, authoritative lifetimes, and geometry rather than passive damage
 bonuses. Aim, movement, timing, and resource reads still convert every advantage.
+Direct Tide–Ember overlap now consumes both fields into a short neutral vapor
+cloud that damages any fighter who remains inside. Directed Tide still pushes a
+misaligned Ember field instead, preserving aim and spacing as the deciding read.
+Stone–Ember overlap consumes both constructs into a short neutral magma patch.
+Magma deals no damage and slows grounded movement to 62%, so a hop escapes it
+cleanly and neither elemental owner receives a passive matchup advantage.
 
 Hosts can disable authored map hazards and receive a shareable `?join=` URL that
 opens the lobby screen and joins automatically. The link must use a server
@@ -244,8 +268,8 @@ score, and outcomes.
 
 ### Pull, verify, and run on Linux
 
-The launcher exclusively uses `~/Projects/diff`, fast-forwards `main`, installs
-the locked dependencies, runs every test, reuses a healthy DIFF server or finds
+The launcher exclusively uses `~/Projects/flux`, fast-forwards `main`, installs
+the locked dependencies, runs every test, reuses a healthy FLUX server or finds
 a free port, and starts the game:
 
 ```bash
@@ -255,7 +279,7 @@ bash scripts/pull-and-run.sh
 Enable LAN/remote hosting through the same launcher:
 
 ```bash
-DIFF_HOST=0.0.0.0 bash scripts/pull-and-run.sh
+FLUX_HOST=0.0.0.0 bash scripts/pull-and-run.sh
 ```
 
 To update and run a specific development checkout/branch, pass both explicitly:
@@ -275,7 +299,7 @@ bash scripts/install-desktop-linux.sh
 ```
 
 It opens a terminal, fast-forwards the selected branch, installs locked
-dependencies, runs all tests, starts DIFF on a free port, and then opens the
+dependencies, runs all tests, starts FLUX on a free port, and then opens the
 browser. The terminal owns the server; close it or press `Ctrl+C` to stop.
 
 On Windows, run these once from PowerShell to create the equivalent desktop
@@ -288,12 +312,35 @@ powershell -ExecutionPolicy Bypass -File scripts\install-desktop-windows.ps1
 The shortcut uses `scripts\pull-and-run.ps1` to perform the same guarded
 update, test, free-port, health-check, browser-open, and shutdown flow natively.
 
-To stop registered DIFF servers belonging to this checkout without touching
+To stop registered FLUX servers belonging to this checkout without touching
 unrelated Node processes:
 
 ```bash
 npm run stop
 ```
+
+## Local AI handoff
+
+The repository includes a shared FLUX handoff for the installed local Odysseus
+workspace and Aider. Both launchers intentionally enable unrestricted/
+always-accept operation inside this checkout, share a concurrency lock, refuse
+`main`, and refuse to absorb an already dirty worktree.
+
+Interactive Aider:
+
+```bash
+flux-aider-yolo
+```
+
+Persistent Odysseus-supervised implementation → test → commit → push cycles:
+
+```bash
+flux-odysseus-yolo
+```
+
+Stop the supervisor with `touch .agent/STOP` or `Ctrl+C`. Configuration and
+resumable context live in `.aider.conf.yml`, `.agent/HANDOFF.md`, and
+`.odysseus/`. The Odysseus UI preset is named **FLUX Principal Agent**.
 
 Server records include the checkout root and a per-process instance token, so
 stale PID files cannot target another application. Servers from builds older
@@ -371,15 +418,17 @@ Modes:
 - **THE FIRST RITE** — short, skippable, behavior-driven introduction
 - **OATH DUEL** — first-to-five duel with clean rounds and overtime
 - **RUNEHOLD** — objective control with contested-state scoring
-- **WILDMARCH** — PvPvE control with hostile wild wardens
+- **WILDMARCH** — hunt wardens, carry the shared Wayseal, and choose which outer
+  route becomes the scoring rune
 - **NIGHT SIEGE** — solo/local/remote cooperative escalating PvE waves
 
 ## Architecture
 
 - [`src/content.mjs`](src/content.mjs) — validated champions, races, maps, modes, and tuning
 - [`src/match.mjs`](src/match.mjs) — fixed-tick simulation and collision authority
-- [`src/lobbies.mjs`](src/lobbies.mjs) — lobby lifecycle and remote command ownership
-- [`src/network-conditioner.mjs`](src/network-conditioner.mjs) — seeded adverse-network scheduling and tick freshness
+- [`src/network/lobbies.mjs`](src/network/lobbies.mjs) — lobby lifecycle and remote command ownership
+- [`src/network/conditioner.mjs`](src/network/conditioner.mjs) — seeded adverse-network scheduling and tick freshness
+- [`src/network/quality.mjs`](src/network/quality.mjs) — rolling application-level connection diagnostics
 - [`src/game.mjs`](src/game.mjs) — input, prediction, menus, HUD, feedback, and rendering
 - [`scripts/serve.mjs`](scripts/serve.mjs) — allowlisted static server, lobby API, and WebSockets
 
@@ -394,8 +443,9 @@ creates a fresh authoritative match.
 npm test
 node --check src/content.mjs
 node --check src/match.mjs
-node --check src/lobbies.mjs
-node --check src/network-conditioner.mjs
+node --check src/network/lobbies.mjs
+node --check src/network/conditioner.mjs
+node --check src/network/quality.mjs
 node --check src/game.mjs
 node --check scripts/serve.mjs
 node --check scripts/stop-servers.mjs

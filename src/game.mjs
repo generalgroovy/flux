@@ -23,7 +23,7 @@ import {
   expireNetworkProbes,
   receiveNetworkProbe,
   summarizeNetworkDiagnostics,
-} from "./network-quality.mjs";
+} from "./network/quality.mjs";
 import {
   conditionPacket,
   configurePacketConditioner,
@@ -31,11 +31,13 @@ import {
   drainPackets,
   isFreshServerTick,
   networkLabActive,
-} from "./network-conditioner.mjs";
+} from "./network/conditioner.mjs";
 
 const FIXED_DELTA = 1 / MATCH_TUNING.tickRate;
-const SETTINGS_KEY = "diff.presentation.v2";
-const RECONNECT_KEY = "diff.remote.session.v1";
+const SETTINGS_KEY = "flux.presentation.v2";
+const LEGACY_SETTINGS_KEY = "diff.presentation.v2";
+const RECONNECT_KEY = "flux.remote.session.v1";
+const LEGACY_RECONNECT_KEY = "diff.remote.session.v1";
 const BINDING_ACTIONS = Object.freeze([
   "moveUp",
   "moveLeft",
@@ -133,6 +135,7 @@ const requestResolvers = new Map();
 const particles = [];
 const rings = [];
 const trails = new Map();
+const menuGamepadHeld = new Set();
 
 let settings = loadSettings();
 let bindingCapture = null;
@@ -167,6 +170,7 @@ let lastAuthoritativeTick = -1;
 let remoteHostId = null;
 let clientId = null;
 let remoteRole = "player";
+let remoteServerShutdown = false;
 let viewport = {
   pixelRatio: 1,
   width: 1,
@@ -255,7 +259,7 @@ function frame(now) {
   try {
     runFrame(now);
   } catch (error) {
-    console.error("DIFF frame recovered", error);
+    console.error("FLUX frame recovered", error);
     if (now - lastFrameErrorAt > 2_000) {
       toast("Presentation recovered · R still restarts", "error");
       lastFrameErrorAt = now;
@@ -269,6 +273,7 @@ function runFrame(now) {
   frameTime = now;
   updateNetworkProbes(now);
   flushConditionedNetwork(now);
+  updateMenuGamepad();
   if (app.dataset.view === "game" && !paused) {
     accumulator += delta;
     let steps = 0;
@@ -295,6 +300,55 @@ function runFrame(now) {
   }
 }
 
+function updateMenuGamepad() {
+  if (app.dataset.view !== "menu") {
+    menuGamepadHeld.clear();
+    return;
+  }
+  const gamepad = navigator.getGamepads?.()[0];
+  if (!gamepad) {
+    menuGamepadHeld.clear();
+    return;
+  }
+  const actions = new Map([
+    ["up", Boolean(gamepad.buttons?.[12]?.pressed || gamepad.axes?.[1] < -0.65)],
+    ["down", Boolean(gamepad.buttons?.[13]?.pressed || gamepad.axes?.[1] > 0.65)],
+    ["left", Boolean(gamepad.buttons?.[14]?.pressed || gamepad.axes?.[0] < -0.65)],
+    ["right", Boolean(gamepad.buttons?.[15]?.pressed || gamepad.axes?.[0] > 0.65)],
+    ["accept", Boolean(gamepad.buttons?.[0]?.pressed)],
+  ]);
+  for (const [action, pressed] of actions) {
+    if (!pressed) {
+      menuGamepadHeld.delete(action);
+      continue;
+    }
+    if (menuGamepadHeld.has(action)) continue;
+    menuGamepadHeld.add(action);
+    activateMenuGamepadAction(action);
+  }
+}
+
+function activateMenuGamepadAction(action) {
+  const activeNavigation = document.querySelector(`.nav-item[data-panel="${menuPanel}"]`);
+  const focused = document.activeElement;
+  if (action === "accept") {
+    (focused?.matches?.("button, input, select, a") ? focused : activeNavigation)?.click();
+    return;
+  }
+  if (["up", "down"].includes(action)) {
+    const navigation = [...document.querySelectorAll(".nav-item")];
+    const index = Math.max(0, navigation.indexOf(activeNavigation));
+    const direction = action === "down" ? 1 : -1;
+    const next = navigation[(index + direction + navigation.length) % navigation.length];
+    next.focus();
+    showPanel(next.dataset.panel);
+    return;
+  }
+  const key = `arrow${action}`;
+  const target = focused?.closest?.(".nav-item, [data-menu-panel]") ? focused : activeNavigation;
+  target?.dispatchEvent(new window.KeyboardEvent("keydown", { key, bubbles: true }));
+}
+
 function handleKeyDown(event) {
   const key = normalizeInputKey(event.key);
   if (bindingCapture) {
@@ -307,6 +361,7 @@ function handleKeyDown(event) {
     else showPanel("guide");
     return;
   }
+  if (app.dataset.view === "menu" && handleMenuKeyDown(event, key)) return;
   if (
     app.dataset.view === "game" &&
     ([
@@ -336,16 +391,47 @@ function handleKeyDown(event) {
     skipTutorial(matchState);
     return;
   }
-  if (
-    key === "enter" &&
-    app.dataset.view === "menu" &&
-    menuPanel === "home" &&
-    event.target === document.body
-  ) {
-    quickStart();
-    return;
-  }
   keys.add(key);
+}
+
+function handleMenuKeyDown(event, key) {
+  if (
+    !["arrowup", "arrowdown", "arrowleft", "arrowright", "enter", " "].includes(key)
+  ) return false;
+  const target = event.target;
+  const navigation = [...document.querySelectorAll(".nav-item")];
+  const navigationIndex = navigation.indexOf(target);
+  if (navigationIndex >= 0 && ["arrowup", "arrowdown"].includes(key)) {
+    event.preventDefault();
+    const direction = key === "arrowdown" ? 1 : -1;
+    const nextNavigation =
+      navigation[(navigationIndex + direction + navigation.length) % navigation.length];
+    nextNavigation.focus();
+    showPanel(nextNavigation.dataset.panel);
+    return true;
+  }
+  if (key === "arrowright" && navigationIndex >= 0) {
+    event.preventDefault();
+    document
+      .querySelector(
+        `[data-menu-panel="${target.dataset.panel}"] button, ` +
+        `[data-menu-panel="${target.dataset.panel}"] input, ` +
+        `[data-menu-panel="${target.dataset.panel}"] select`,
+      )
+      ?.focus();
+    return true;
+  }
+  if (key === "arrowleft" && target.closest?.("[data-menu-panel]")) {
+    event.preventDefault();
+    document.querySelector(`.nav-item[data-panel="${menuPanel}"]`)?.focus();
+    return true;
+  }
+  if (key === "enter" && menuPanel === "home" && target === document.body) {
+    event.preventDefault();
+    quickStart();
+    return true;
+  }
+  return false;
 }
 
 function readCommands() {
@@ -905,7 +991,9 @@ function updateInfoOverlay(mode, map) {
       ? "Resetting clean positions for the next read."
       : matchState.status === "match-over"
         ? "Operation complete. Rematch or return to menu."
-        : mode.description;
+        : mode.id === "convergence"
+          ? wildmarchStatusCopy()
+          : mode.description;
   element("info-status").textContent =
     `Round ${matchState.round} · ${map.name} · ${Math.ceil(player.health)}/${player.maxHealth} HP`;
   element("info-agent-glyph").textContent = agent.glyph;
@@ -1008,7 +1096,11 @@ function updateRoster() {
         chip.style.setProperty("--agent-color", agent.accent);
         const dot = document.createElement("i");
         const label = document.createElement("b");
-        label.textContent = `${entity.name} · ${race.name} ${agent.name}`;
+        const carriesWayseal =
+          matchState.wildmarch?.seal.status === "carried" &&
+          matchState.wildmarch.seal.carrierId === entity.id;
+        label.textContent =
+          `${entity.name} · ${race.name} ${agent.name}${carriesWayseal ? " · WAYSEAL" : ""}`;
         const health = document.createElement("span");
         health.style.width = `${Math.max(0, (entity.health / entity.maxHealth) * 100)}%`;
         chip.append(dot, label, health);
@@ -1117,6 +1209,8 @@ function updateCoach(mode) {
     progress.hidden = true;
     if (matchState.status === "round-over") {
       text.textContent = "Resetting positions. The next read starts clean.";
+    } else if (mode.id === "convergence") {
+      text.textContent = wildmarchStatusCopy();
     } else if (matchState.objective.contested) {
       text.textContent = "Objective contested. Create space before you score.";
     } else if (matchState.objective.controllingTeam) {
@@ -1128,6 +1222,32 @@ function updateCoach(mode) {
           : mode.description;
     }
   }
+}
+
+function wildmarchStatusCopy() {
+  const wildmarch = matchState.wildmarch;
+  if (!wildmarch) return getMode("convergence").description;
+  const overtime = matchState.overtime ? "OVERTIME · next score wins. " : "";
+  const seal = wildmarch.seal;
+  if (wildmarch.activeRouteId) {
+    const route = wildmarch.routes.find(
+      (candidate) => candidate.id === wildmarch.activeRouteId,
+    );
+    return `${overtime}${route?.name ?? "Outer route"} is the scoring rune for ${Math.ceil(wildmarch.routeRemaining)}s. Rotate or contest it.`;
+  }
+  if (seal.status === "grounded") {
+    return `${overtime}The WAYSEAL is loose for ${Math.ceil(seal.returnRemaining)}s. Claim it before the wild takes it back.`;
+  }
+  if (seal.status === "carried") {
+    const carrier = matchState.entities.find(
+      (entity) => entity.id === seal.carrierId,
+    );
+    const carrierCopy = carrier?.id === localPlayer()?.id
+      ? `You carry the WAYSEAL for ${Math.ceil(seal.returnRemaining)}s. Choose either marked outer route.`
+      : `${carrier?.name ?? "A fighter"} carries the WAYSEAL. Escort or intercept the route choice.`;
+    return `${overtime}${carrierCopy}`;
+  }
+  return `${overtime}Wild wardens bind the WAYSEAL. Defeat one, claim it, then choose an outer scoring route.`;
 }
 
 function tacticalTrialCopy(player) {
@@ -1298,6 +1418,36 @@ function processEvents(events, tick) {
         life: 0.5, maximumLife: 0.5, color: "#efd379",
       });
       toast(`OATH KEPT! · +${Math.round(event.amount)} FLUX`, "comic");
+    } else if (event.type === "waysealReleased") {
+      tone(205, 0.11, "triangle", 0.055);
+      burst(event.x, event.y, "#efd379", 14);
+      toast("WAYSEAL LOOSE! · CLAIM THE WILD MARK", "comic");
+    } else if (event.type === "waysealClaimed") {
+      tone(520, 0.09, "triangle", 0.055);
+      if (locallyControlled(event.entityId)) {
+        toast("WAYSEAL CLAIMED · CHOOSE AN OUTER ROUTE", "comic");
+      } else {
+        toast(`${event.team.toUpperCase()} CARRIES THE WAYSEAL`, "comic");
+      }
+    } else if (event.type === "waysealDropped") {
+      tone(115, 0.1, "square", 0.05);
+      burst(event.x, event.y, "#efd379", 10);
+      toast("WAYSEAL DROPPED · THE ROUTE IS OPEN", "comic");
+    } else if (event.type === "waysealRouted") {
+      tone(690, 0.14, "triangle", 0.07);
+      burst(event.x, event.y, "#efd379", 20);
+      rings.push({
+        x: event.x, y: event.y, radius: 18,
+        life: 0.6, maximumLife: 0.6, color: "#efd379",
+      });
+      toast(`${event.routeName} AWAKENS! · SCORING RUNE MOVED`, "comic");
+    } else if (event.type === "waysealReturned") {
+      tone(260, 0.08, "sine", 0.04);
+      toast(
+        event.routeId
+          ? "WAYSEAL SPENT · CENTER RUNE RESTORED"
+          : "WAYSEAL RETURNED TO THE WILD",
+      );
     } else if (event.type === "veilDecoy") {
       tone(330, 0.08, "sine", 0.045);
       toast("VEIL · INTENT SPLIT", "comic");
@@ -1309,9 +1459,11 @@ function processEvents(events, tick) {
       burst(event.x, event.y, "#45d9ff", 12);
       toast("ZAKK! · INTERRUPTED", "comic");
     } else if (event.type === "elementReaction") {
-      tone(280, 0.12, "sine", 0.05);
-      burst(event.x, event.y, "#d9f7ff", 14);
-      toast(`${event.reaction.toUpperCase()}! · FIELD CLEARED`, "comic");
+      const formed = ["vapor", "magma"].includes(event.reaction);
+      const magma = event.reaction === "magma";
+      tone(magma ? 120 : 280, 0.12, magma ? "sawtooth" : "sine", 0.05);
+      burst(event.x, event.y, magma ? "#ff9b45" : "#d9f7ff", 14);
+      toast(`${event.reaction.toUpperCase()}! · FIELD ${formed ? "FORMED" : "CLEARED"}`, "comic");
     } else if (event.type === "stateRepair") {
       toast("Simulation recovered an invalid entity state.", "error");
     }
@@ -1413,6 +1565,7 @@ function render(time) {
     context.scale(viewport.scale, viewport.scale);
     drawArena(map, time);
     drawShrines(time);
+    drawWildmarch(time);
     drawObjective(map, time);
     drawElementFields(time);
     drawHazards(time);
@@ -1455,6 +1608,80 @@ function drawShrines(time) {
     } finally {
       context.restore();
     }
+  }
+}
+
+function drawWildmarch(time) {
+  const wildmarch = matchState.wildmarch;
+  if (!wildmarch) return;
+  for (const route of wildmarch.routes) {
+    const active = wildmarch.activeRouteId === route.id;
+    context.save();
+    try {
+      context.translate(route.x, route.y);
+      context.fillStyle = active ? "#efd3792e" : "#30291d73";
+      context.strokeStyle = active ? "#efd379" : "#8b774c";
+      context.lineWidth = settings.highContrast ? 5 : active ? 4 : 2;
+      context.setLineDash(active ? [10, 5] : [3, 10]);
+      context.lineDashOffset = settings.reducedMotion ? 0 : -time * (active ? 22 : 7);
+      context.beginPath();
+      context.arc(0, 0, route.radius, 0, Math.PI * 2);
+      context.fill();
+      context.stroke();
+      context.setLineDash([]);
+      context.fillStyle = active ? "#fff1be" : "#a48f61";
+      context.font = "700 11px Georgia, serif";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(
+        active
+          ? `${route.name} · ${Math.ceil(wildmarch.routeRemaining)}s`
+          : route.name,
+        0,
+        route.radius + 16,
+      );
+    } finally {
+      context.restore();
+    }
+  }
+
+  const seal = wildmarch.seal;
+  if (seal.status === "dormant") return;
+  if (seal.status === "carried") {
+    context.save();
+    try {
+      context.strokeStyle = "#efd379";
+      context.lineWidth = 1.5;
+      context.globalAlpha = 0.34;
+      context.setLineDash([5, 9]);
+      for (const route of wildmarch.routes) {
+        context.beginPath();
+        context.moveTo(seal.x, seal.y);
+        context.lineTo(route.x, route.y);
+        context.stroke();
+      }
+    } finally {
+      context.restore();
+    }
+  }
+  context.save();
+  try {
+    context.translate(seal.x, seal.y);
+    const lift = seal.status === "carried" ? -35 : 0;
+    context.translate(0, lift);
+    context.rotate(
+      settings.reducedMotion ? Math.PI / 4 : time * 0.9 + Math.PI / 4,
+    );
+    const radius = MATCH_TUNING.wildmarch.sealRadius;
+    context.fillStyle = "#efd379";
+    context.strokeStyle = "#fff1be";
+    context.lineWidth = settings.highContrast ? 4 : 2;
+    context.shadowColor = "#efd379";
+    context.shadowBlur = seal.status === "routed" ? 18 : 10;
+    context.fillRect(-radius * 0.55, -radius * 0.55, radius * 1.1, radius * 1.1);
+    context.strokeRect(-radius * 0.55, -radius * 0.55, radius * 1.1, radius * 1.1);
+  } finally {
+    context.restore();
   }
 }
 
@@ -1554,7 +1781,7 @@ function drawLandmarks(map) {
 function drawObjective(map, time) {
   const mode = getMode(matchState.modeId);
   if (mode.id !== "control" && mode.id !== "convergence") return;
-  const objective = map.objective;
+  const objective = matchState.objective ?? map.objective;
   const team = matchState.objective.controllingTeam;
   context.save();
   try {
@@ -1637,8 +1864,13 @@ function drawElementFields(time) {
     ice: "#9fe7ff",
     fire: "#ff795c",
     water: "#5cbcff",
+    vapor: "#d8f1dd",
+    magma: "#ff8b3d",
   };
-  const marks = { wind: ">>>", earth: "###", ice: "* *", fire: "^^^", water: "~~~" };
+  const marks = {
+    wind: ">>>", earth: "###", ice: "* *", fire: "^^^", water: "~~~",
+    vapor: ".:.:", magma: "<> <>",
+  };
   for (const field of matchState.elementFields ?? []) {
     context.save();
     try {
@@ -1646,7 +1878,9 @@ function drawElementFields(time) {
       context.fillStyle = `${color}24`;
       context.strokeStyle = color;
       context.lineWidth = settings.highContrast ? 4 : 2;
-      context.setLineDash(field.element === "ice" ? [8, 7] : []);
+      context.setLineDash(
+        field.element === "ice" ? [8, 7] : field.element === "vapor" ? [2, 6] : [],
+      );
       context.lineDashOffset = settings.reducedMotion ? 0 : -time * 28;
       context.beginPath();
       if (field.element === "earth") {
@@ -2701,6 +2935,7 @@ async function connectNetwork(base) {
   }
   leaveRemote(false);
   socketBase = base;
+  remoteServerShutdown = false;
   const webSocketUrl = new URL(base);
   webSocketUrl.protocol = webSocketUrl.protocol === "https:" ? "wss:" : "ws:";
   webSocketUrl.pathname = "/ws";
@@ -2728,7 +2963,12 @@ async function connectNetwork(base) {
       const wasRemote = matchKind === "remote";
       socket = null;
       clientId = null;
-      setServerStatus("offline", "NETWORK DISCONNECTED");
+      setServerStatus(
+        "offline",
+        remoteServerShutdown
+          ? "AUTHORITATIVE HOST CLOSED"
+          : "NETWORK DISCONNECTED",
+      );
       for (const pending of requestResolvers.values()) {
         pending.reject(new Error("Connection closed."));
       }
@@ -2736,9 +2976,12 @@ async function connectNetwork(base) {
       if (wasRemote) {
         paused = true;
         pauseOverlay.classList.remove("hidden");
-        element("pause-title").textContent = "Connection lost";
-        element("pause-copy").textContent =
-          "Your slot is reserved for 30 seconds. Open Host / Join and reconnect the last session.";
+        element("pause-title").textContent = remoteServerShutdown
+          ? "Host realm closed"
+          : "Connection lost";
+        element("pause-copy").textContent = remoteServerShutdown
+          ? "The authoritative host shut down, so this match has ended. Return to Host / Join to begin another."
+          : "Your slot is reserved for 30 seconds. Open Host / Join and reconnect the last session.";
       }
     });
   });
@@ -2785,6 +3028,24 @@ function deliverSocketMessage(message) {
   }
   if (message.type === "snapshot" && matchKind === "remote") {
     acceptRemoteSnapshot(message);
+    return;
+  }
+  if (message.type === "server-shutdown") {
+    remoteServerShutdown = true;
+    clearReconnectSession();
+    setServerStatus("offline", "AUTHORITATIVE HOST CLOSED");
+    setNetworkMessage(
+      message.message ?? "The authoritative host shut down. This match has ended.",
+      "error",
+    );
+    if (matchKind === "remote") {
+      paused = true;
+      pauseOverlay.classList.remove("hidden");
+      element("pause-title").textContent = "Host realm closed";
+      element("pause-copy").textContent =
+        "The authoritative host shut down, so this match has ended. Return to Host / Join to begin another.";
+    }
+    toast("AUTHORITATIVE HOST CLOSED · MATCH ENDED", "error");
     return;
   }
   if (message.type === "presence") {
@@ -2881,6 +3142,7 @@ function leaveRemote(forgetSession = true) {
   remoteLobby = null;
   remoteHostId = null;
   remoteRole = "player";
+  remoteServerShutdown = false;
   pendingInputs = [];
   configurePacketConditioner(networkConditioner, networkLabConfig());
   lastAuthoritativeTick = -1;
@@ -2901,7 +3163,11 @@ function writeReconnectSession(session) {
 
 function readReconnectSession() {
   try {
-    const parsed = JSON.parse(localStorage.getItem(RECONNECT_KEY) ?? "null");
+    const parsed = JSON.parse(
+      localStorage.getItem(RECONNECT_KEY) ??
+      localStorage.getItem(LEGACY_RECONNECT_KEY) ??
+      "null",
+    );
     if (
       parsed &&
       typeof parsed.base === "string" &&
@@ -2919,6 +3185,7 @@ function readReconnectSession() {
 function clearReconnectSession() {
   try {
     localStorage.removeItem(RECONNECT_KEY);
+    localStorage.removeItem(LEGACY_RECONNECT_KEY);
   } catch {
     // Nothing else is required when storage is blocked.
   }
@@ -3016,7 +3283,10 @@ function applySettings() {
 
 function loadSettings() {
   try {
-    return normalizeSettings(JSON.parse(localStorage.getItem(SETTINGS_KEY)));
+    return normalizeSettings(JSON.parse(
+      localStorage.getItem(SETTINGS_KEY) ??
+      localStorage.getItem(LEGACY_SETTINGS_KEY),
+    ));
   } catch {
     return { ...DEFAULT_SETTINGS, bindings: { ...DEFAULT_BINDINGS } };
   }
@@ -3183,7 +3453,7 @@ function element(id) {
   return found;
 }
 
-window.DIFF_DEBUG = Object.freeze({
+window.FLUX_DEBUG = Object.freeze({
   getState: () => structuredClone(matchState),
   getInvariantErrors: () => matchInvariantErrors(matchState),
   getInterfaceState: () => ({
@@ -3193,7 +3463,9 @@ window.DIFF_DEBUG = Object.freeze({
     view: app.dataset.view,
   }),
   launchMode,
+  activateMenuGamepadAction,
   quickStart,
   showPanel,
   toggleInfo,
 });
+window.DIFF_DEBUG = window.FLUX_DEBUG;

@@ -93,7 +93,7 @@ export function createMatch(options = {}) {
   }
 
   const state = {
-    version: 2,
+    version: 3,
     seed,
     tick: 0,
     elapsed: 0,
@@ -122,10 +122,14 @@ export function createMatch(options = {}) {
     roundRemaining: 0,
     winner: null,
     objective: {
+      x: map.objective.x,
+      y: map.objective.y,
+      radius: map.objective.radius,
       controllingTeam: null,
       contested: false,
       progress: { alpha: 0, beta: 0 },
     },
+    wildmarch: createWildmarchState(mode, map),
     tutorial: {
       skipped: mode.id !== "training",
       step: mode.id === "training" ? 0 : 4,
@@ -283,6 +287,7 @@ export function addMatchPlayer(state, spec = {}) {
 export function removeMatchPlayer(state, entityId) {
   const entity = state.entities.find((candidate) => candidate.id === entityId);
   if (!entity) return false;
+  releaseMatchPlayerObjectives(state, entityId, "leave");
   state.entities = state.entities.filter((candidate) => candidate !== entity);
   state.projectiles = state.projectiles.filter(
     (projectile) => projectile.ownerId !== entityId,
@@ -290,6 +295,20 @@ export function removeMatchPlayer(state, entityId) {
   state.mines = state.mines.filter((mine) => mine.ownerId !== entityId);
   state.events.push({ type: "playerLeft", entityId });
   return true;
+}
+
+export function releaseMatchPlayerObjectives(
+  state,
+  entityId,
+  reason = "disconnect",
+) {
+  const entity = state.entities.find((candidate) => candidate.id === entityId);
+  if (!entity) return false;
+  const carried =
+    state.wildmarch?.seal.status === "carried" &&
+    state.wildmarch.seal.carrierId === entityId;
+  dropCarriedWayseal(state, entity, reason);
+  return carried;
 }
 
 export function sanitizeCommand(candidate) {
@@ -356,6 +375,7 @@ export function stepMatch(
   updateMines(state, boundedDelta, activeMap);
   updateProjectiles(state, boundedDelta, activeMap);
   updateHazards(state, boundedDelta);
+  updateWildmarch(state, boundedDelta, map);
   updateObjective(state, boundedDelta, mode, map);
   updateTutorial(state, commands);
   updateMatchClock(state, boundedDelta, mode);
@@ -392,6 +412,178 @@ function updateShrines(state, delta) {
     }
     shrine.insideIds = inside;
   }
+}
+
+function createWildmarchState(mode, map) {
+  if (mode.id !== "convergence") return null;
+  return {
+    routes: map.wildmarch.routes.map((route) => ({ ...route })),
+    activeRouteId: null,
+    routeRemaining: 0,
+    seal: {
+      status: "dormant",
+      x: map.objective.x,
+      y: map.objective.y,
+      carrierId: null,
+      returnRemaining: 0,
+    },
+  };
+}
+
+function updateWildmarch(state, delta, map) {
+  const wildmarch = state.wildmarch;
+  if (!wildmarch) return;
+  if (wildmarch.routeRemaining > 0) {
+    wildmarch.routeRemaining = Math.max(0, wildmarch.routeRemaining - delta);
+    if (wildmarch.routeRemaining === 0) {
+      const previousRouteId = wildmarch.activeRouteId;
+      wildmarch.activeRouteId = null;
+      wildmarch.seal.status = "dormant";
+      wildmarch.seal.carrierId = null;
+      wildmarch.seal.returnRemaining = 0;
+      wildmarch.seal.x = map.objective.x;
+      wildmarch.seal.y = map.objective.y;
+      setObjectivePosition(state, map.objective);
+      state.events.push({
+        type: "waysealReturned",
+        routeId: previousRouteId,
+        x: map.objective.x,
+        y: map.objective.y,
+      });
+    }
+    return;
+  }
+
+  const seal = wildmarch.seal;
+  if (seal.status === "dormant") return;
+  seal.returnRemaining = Math.max(0, seal.returnRemaining - delta);
+  if (seal.returnRemaining === 0) {
+    seal.status = "dormant";
+    seal.carrierId = null;
+    seal.x = map.objective.x;
+    seal.y = map.objective.y;
+    state.events.push({
+      type: "waysealReturned",
+      routeId: null,
+      x: seal.x,
+      y: seal.y,
+    });
+    return;
+  }
+
+  if (seal.status === "carried") {
+    const carrier = state.entities.find(
+      (entity) =>
+        entity.id === seal.carrierId && entity.alive && !entity.neutral,
+    );
+    if (!carrier) {
+      seal.status = "grounded";
+      seal.carrierId = null;
+      return;
+    }
+    seal.x = carrier.x;
+    seal.y = carrier.y;
+    const route = wildmarch.routes.find(
+      (candidate) =>
+        Math.hypot(carrier.x - candidate.x, carrier.y - candidate.y) <=
+          candidate.radius + getCharacter(carrier.characterId).radius,
+    );
+    if (route) activateWildmarchRoute(state, carrier, route);
+    return;
+  }
+
+  const claimant = state.entities
+    .filter(
+      (entity) =>
+        entity.alive && !entity.neutral && entity.spawnProtection === 0 &&
+        Math.hypot(entity.x - seal.x, entity.y - seal.y) <=
+          MATCH_TUNING.wildmarch.pickupRadius +
+            getCharacter(entity.characterId).radius,
+    )
+    .sort((left, right) => {
+      const distanceDifference =
+        squaredDistance(left, seal) - squaredDistance(right, seal);
+      return distanceDifference || left.id.localeCompare(right.id);
+    })[0];
+  if (!claimant) return;
+  seal.status = "carried";
+  seal.carrierId = claimant.id;
+  seal.x = claimant.x;
+  seal.y = claimant.y;
+  state.events.push({
+    type: "waysealClaimed",
+    entityId: claimant.id,
+    team: claimant.team,
+    x: claimant.x,
+    y: claimant.y,
+  });
+}
+
+function releaseWayseal(state, warden) {
+  const wildmarch = state.wildmarch;
+  if (
+    !wildmarch || wildmarch.routeRemaining > 0 ||
+    wildmarch.seal.status !== "dormant"
+  ) return;
+  wildmarch.seal.status = "grounded";
+  wildmarch.seal.x = warden.x;
+  wildmarch.seal.y = warden.y;
+  wildmarch.seal.carrierId = null;
+  wildmarch.seal.returnRemaining = MATCH_TUNING.wildmarch.returnDuration;
+  state.events.push({
+    type: "waysealReleased",
+    entityId: warden.id,
+    x: warden.x,
+    y: warden.y,
+  });
+}
+
+function dropCarriedWayseal(state, carrier, reason) {
+  const seal = state.wildmarch?.seal;
+  if (!seal || seal.status !== "carried" || seal.carrierId !== carrier.id) {
+    return;
+  }
+  seal.status = "grounded";
+  seal.carrierId = null;
+  seal.x = carrier.x;
+  seal.y = carrier.y;
+  state.events.push({
+    type: "waysealDropped",
+    entityId: carrier.id,
+    reason,
+    x: carrier.x,
+    y: carrier.y,
+  });
+}
+
+function activateWildmarchRoute(state, carrier, route) {
+  const wildmarch = state.wildmarch;
+  wildmarch.activeRouteId = route.id;
+  wildmarch.routeRemaining = MATCH_TUNING.wildmarch.routeDuration;
+  wildmarch.seal.status = "routed";
+  wildmarch.seal.carrierId = null;
+  wildmarch.seal.returnRemaining = 0;
+  wildmarch.seal.x = route.x;
+  wildmarch.seal.y = route.y;
+  setObjectivePosition(state, route);
+  state.events.push({
+    type: "waysealRouted",
+    entityId: carrier.id,
+    team: carrier.team,
+    routeId: route.id,
+    routeName: route.name,
+    duration: wildmarch.routeRemaining,
+    x: route.x,
+    y: route.y,
+  });
+}
+
+function setObjectivePosition(state, source) {
+  state.objective.x = source.x;
+  state.objective.y = source.y;
+  state.objective.radius = source.radius;
+  state.objective.controllingTeam = null;
+  state.objective.contested = false;
 }
 
 function tickEntity(entity, delta) {
@@ -789,6 +981,7 @@ function moveEntity(state, entity, command, agent, delta, map) {
     const speed =
       agent.speed * entity.speedScale *
       (sprinting ? MATCH_TUNING.flow.sprintMultiplier : 1) *
+      (entity.surface === "magma" ? MATCH_TUNING.elements.magmaSpeed : 1) *
       (entity.ultimateWindupRemaining > 0 ? agent.ultimate.moveScale : 1);
     const desiredX = moveX * speed + entity.elementForceX;
     const desiredY = moveY * speed + entity.elementForceY;
@@ -1156,43 +1349,78 @@ function updateElementFields(state, delta) {
       state.events.push({ type: "elementReaction", reaction: "freeze", x: water.x, y: water.y });
     }
   }
+  for (const fire of state.elementFields.filter((field) => field.element === "fire")) {
+    for (const water of waterFields) {
+      if (removed.has(fire.id) || removed.has(water.id) || !overlaps(fire, water)) continue;
+      const distance = Math.hypot(water.x - fire.x, water.y - fire.y);
+      const directed =
+        Number.isFinite(water.directionX) &&
+        Number.isFinite(water.directionY) &&
+        (water.directionX !== 0 || water.directionY !== 0) &&
+        distance > fire.radius * 0.25;
+      if (directed) {
+        fire.x += water.directionX * water.radius * 0.72;
+        fire.y += water.directionY * water.radius * 0.72;
+        fire.duration *= 0.58;
+        state.events.push({
+          type: "elementReaction",
+          reaction: "redirect",
+          x: fire.x,
+          y: fire.y,
+        });
+        continue;
+      }
+      removed.add(fire.id);
+      removed.add(water.id);
+      const owner = state.entities.find((entity) => entity.id === fire.ownerId) ?? state.entities[0];
+      createElementField(state, owner, "vapor", {
+        ownerId: null,
+        team: "neutral",
+        source: "reaction",
+        x: (fire.x + water.x) / 2,
+        y: (fire.y + water.y) / 2,
+        radius: MATCH_TUNING.elements.vaporRadius,
+        duration: MATCH_TUNING.elements.vaporDuration,
+      }, false);
+      state.events.push({
+        type: "elementReaction",
+        reaction: "vapor",
+        x: (fire.x + water.x) / 2,
+        y: (fire.y + water.y) / 2,
+      });
+    }
+  }
+  for (const fire of state.elementFields.filter((field) => field.element === "fire")) {
+    for (const earth of state.elementFields.filter((field) => field.element === "earth")) {
+      if (
+        removed.has(fire.id) ||
+        removed.has(earth.id) ||
+        !circleRectangleOverlap(fire, fire.radius, earth)
+      ) continue;
+      removed.add(fire.id);
+      removed.add(earth.id);
+      const owner = state.entities.find((entity) => entity.id === fire.ownerId) ?? state.entities[0];
+      createElementField(state, owner, "magma", {
+        ownerId: null,
+        team: "neutral",
+        source: "reaction",
+        x: fire.x,
+        y: fire.y,
+        radius: MATCH_TUNING.elements.magmaRadius,
+        duration: MATCH_TUNING.elements.magmaDuration,
+      }, false);
+      state.events.push({
+        type: "elementReaction",
+        reaction: "magma",
+        x: fire.x,
+        y: fire.y,
+      });
+    }
+  }
   state.elementFields = state.elementFields.filter((field) => {
     if (removed.has(field.id)) return false;
     if (field.duration <= 0) {
       state.events.push({ type: "elementClear", fieldId: field.id, element: field.element });
-      return false;
-    }
-    if (
-      field.element === "fire" &&
-      waterFields.some((water) => {
-        const distance = Math.hypot(water.x - field.x, water.y - field.y);
-        if (distance > water.radius + field.radius) return false;
-        if (
-          Number.isFinite(water.directionX) &&
-          Number.isFinite(water.directionY) &&
-          (water.directionX !== 0 || water.directionY !== 0) &&
-          distance > field.radius * 0.25
-        ) {
-          field.x += water.directionX * water.radius * 0.72;
-          field.y += water.directionY * water.radius * 0.72;
-          field.duration *= 0.58;
-          state.events.push({
-            type: "elementReaction",
-            reaction: "redirect",
-            x: field.x,
-            y: field.y,
-          });
-          return false;
-        }
-        return true;
-      })
-    ) {
-      state.events.push({
-        type: "elementReaction",
-        reaction: "douse",
-        x: field.x,
-        y: field.y,
-      });
       return false;
     }
     return true;
@@ -1208,6 +1436,7 @@ function updateElementFields(state, delta) {
         continue;
       }
       if (field.element === "ice") entity.surface = "ice";
+      if (field.element === "magma") entity.surface = "magma";
       if (
         field.element === "fire" && field.team === entity.team &&
         getCharacter(entity.characterId).passive?.kind === "field-temper"
@@ -1239,9 +1468,17 @@ function updateElementFields(state, delta) {
           source: field.source === "ultimate" ? "ultimate" : "fire",
         });
       }
+      if (field.element === "vapor" && field.pulseRemaining === 0) {
+        damageEntity(state, entity, MATCH_TUNING.elements.vaporDamage, null, {
+          source: "vapor",
+        });
+      }
     }
     if (field.element === "fire" && field.pulseRemaining === 0) {
       field.pulseRemaining = MATCH_TUNING.elements.firePulse;
+    }
+    if (field.element === "vapor" && field.pulseRemaining === 0) {
+      field.pulseRemaining = MATCH_TUNING.elements.vaporPulse;
     }
   }
 }
@@ -2098,6 +2335,8 @@ function eliminateEntity(state, target, attacker) {
     attackerId: attacker?.id ?? null,
     team: attacker?.team ?? null,
   });
+  if (target.neutral) releaseWayseal(state, target);
+  else dropCarriedWayseal(state, target, "elimination");
   const mode = getMode(state.modeId);
   if (mode.id === "duel" || mode.id === "training") {
     const scoringTeam = attacker?.team;
@@ -2242,6 +2481,8 @@ function resetRound(state, map, mode) {
     readyIn: 0,
     insideIds: [],
   }));
+  setObjectivePosition(state, map.objective);
+  state.wildmarch = createWildmarchState(mode, map);
   if (mode.id === "survival") {
     state.survival.wave += 1;
     const enemyCount = state.entities.filter(
@@ -2279,6 +2520,7 @@ function resetRound(state, map, mode) {
 
 function updateObjective(state, delta, mode, map) {
   if (mode.id !== "control" && mode.id !== "convergence") return;
+  const objective = state.objective ?? map.objective;
   const occupants = new Set(
     state.entities
       .filter(
@@ -2286,10 +2528,10 @@ function updateObjective(state, delta, mode, map) {
           entity.alive &&
           entity.team !== "neutral" &&
           Math.hypot(
-            entity.x - map.objective.x,
-            entity.y - map.objective.y,
+            entity.x - objective.x,
+            entity.y - objective.y,
           ) <=
-            map.objective.radius + getCharacter(entity.characterId).radius,
+            objective.radius + getCharacter(entity.characterId).radius,
       )
       .map((entity) => entity.team),
   );
@@ -2371,7 +2613,14 @@ function updateBotCommand(state, entity, delta, map) {
     entity.botCommand = { ...IDLE_COMMAND };
     return entity.botCommand;
   }
-  const target = targets.reduce((nearest, candidate) =>
+  const hostileCarrier = state.wildmarch?.seal.status === "carried"
+    ? state.entities.find(
+        (candidate) =>
+          candidate.id === state.wildmarch.seal.carrierId &&
+          hostileTeams(entity.team, candidate.team),
+      )
+    : null;
+  const target = hostileCarrier ?? targets.reduce((nearest, candidate) =>
     squaredDistance(entity, candidate) < squaredDistance(entity, nearest)
       ? candidate
       : nearest,
@@ -2391,14 +2640,27 @@ function updateBotCommand(state, entity, delta, map) {
     moveY = aim.x * strafeSign;
   }
   if (state.modeId === "control" || state.modeId === "convergence") {
+    let destination = state.objective;
+    if (state.wildmarch?.seal.status === "grounded") {
+      destination = state.wildmarch.seal;
+    } else if (
+      state.wildmarch?.seal.status === "carried" &&
+      state.wildmarch.seal.carrierId === entity.id
+    ) {
+      destination = state.wildmarch.routes.reduce((nearest, route) =>
+        squaredDistance(entity, route) < squaredDistance(entity, nearest)
+          ? route
+          : nearest,
+      );
+    }
     const objectiveDistance = Math.hypot(
-      map.objective.x - entity.x,
-      map.objective.y - entity.y,
+      destination.x - entity.x,
+      destination.y - entity.y,
     );
-    if (objectiveDistance > map.objective.radius * 0.75) {
+    if (objectiveDistance > (destination.radius ?? map.objective.radius) * 0.75) {
       const objectiveDirection = normalizeDirection(
-        map.objective.x - entity.x,
-        map.objective.y - entity.y,
+        destination.x - entity.x,
+        destination.y - entity.y,
       );
       moveX = moveX * 0.45 + objectiveDirection.x * 0.85;
       moveY = moveY * 0.45 + objectiveDirection.y * 0.85;
@@ -2598,6 +2860,39 @@ function repairState(state, map) {
     entity.ultimateTargetY = finite(entity.ultimateTargetY, entity.y);
     constrainCircle(entity, agent.radius, map.size);
   }
+  state.objective.x = finite(state.objective.x, map.objective.x);
+  state.objective.y = finite(state.objective.y, map.objective.y);
+  state.objective.radius = clamp(
+    finite(state.objective.radius, map.objective.radius),
+    1,
+    Math.max(map.size.width, map.size.height),
+  );
+  if (state.wildmarch) {
+    const wildmarch = state.wildmarch;
+    wildmarch.routeRemaining = clamp(
+      finite(wildmarch.routeRemaining),
+      0,
+      MATCH_TUNING.wildmarch.routeDuration,
+    );
+    wildmarch.activeRouteId = wildmarch.routes.some(
+      (route) => route.id === wildmarch.activeRouteId,
+    )
+      ? wildmarch.activeRouteId
+      : null;
+    const seal = wildmarch.seal;
+    seal.x = finite(seal.x, map.objective.x);
+    seal.y = finite(seal.y, map.objective.y);
+    seal.returnRemaining = clamp(
+      finite(seal.returnRemaining),
+      0,
+      MATCH_TUNING.wildmarch.returnDuration,
+    );
+    if (!["dormant", "grounded", "carried", "routed"].includes(seal.status)) {
+      seal.status = "dormant";
+      seal.carrierId = null;
+      seal.returnRemaining = 0;
+    }
+  }
   state.projectiles = state.projectiles.filter(
     (projectile) =>
       Number.isFinite(projectile.x) &&
@@ -2610,6 +2905,7 @@ function repairState(state, map) {
 export function matchInvariantErrors(state) {
   const errors = [];
   const map = getMap(state.mapId);
+  if (state.version !== 3) errors.push("match state version must be 3");
   const ids = state.entities.map((entity) => entity.id);
   if (new Set(ids).size !== ids.length) errors.push("entity ids must be unique");
   for (const entity of state.entities) {
@@ -2687,6 +2983,51 @@ export function matchInvariantErrors(state) {
     if (shrine.readyIn < 0 || shrine.readyIn > shrine.cooldown) {
       errors.push(`${shrine.id}.readyIn is outside its cooldown`);
     }
+  }
+  for (const key of ["x", "y", "radius"]) {
+    if (!Number.isFinite(state.objective?.[key])) {
+      errors.push(`objective.${key} is not finite`);
+    }
+  }
+  if (state.wildmarch) {
+    const wildmarch = state.wildmarch;
+    if (
+      !Number.isFinite(wildmarch.routeRemaining) ||
+      wildmarch.routeRemaining < 0 ||
+      wildmarch.routeRemaining > MATCH_TUNING.wildmarch.routeDuration
+    ) {
+      errors.push("wildmarch.routeRemaining is outside its duration");
+    }
+    if (
+      wildmarch.activeRouteId !== null &&
+      !wildmarch.routes.some((route) => route.id === wildmarch.activeRouteId)
+    ) {
+      errors.push("wildmarch.activeRouteId is unknown");
+    }
+    for (const key of ["x", "y", "returnRemaining"]) {
+      if (!Number.isFinite(wildmarch.seal?.[key])) {
+        errors.push(`wildmarch.seal.${key} is not finite`);
+      }
+    }
+    if (
+      !["dormant", "grounded", "carried", "routed"].includes(
+        wildmarch.seal?.status,
+      )
+    ) {
+      errors.push("wildmarch.seal.status is invalid");
+    }
+    if (
+      wildmarch.seal?.status === "carried" &&
+      !state.entities.some(
+        (entity) =>
+          entity.id === wildmarch.seal.carrierId &&
+          entity.alive && !entity.neutral,
+      )
+    ) {
+      errors.push("wildmarch Wayseal has no living carrier");
+    }
+  } else if (state.modeId === "convergence") {
+    errors.push("convergence needs authoritative WILDMARCH state");
   }
   return errors;
 }

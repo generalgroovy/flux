@@ -8,7 +8,7 @@ import {
   expireNetworkProbes,
   receiveNetworkProbe,
   summarizeNetworkDiagnostics,
-} from "../src/network-quality.mjs";
+} from "../src/network/quality.mjs";
 
 test("network diagnostics report measured RTT and stable quality", () => {
   const state = createNetworkDiagnostics();

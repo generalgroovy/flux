@@ -133,6 +133,7 @@ const requestResolvers = new Map();
 const particles = [];
 const rings = [];
 const trails = new Map();
+const menuGamepadHeld = new Set();
 
 let settings = loadSettings();
 let bindingCapture = null;
@@ -270,6 +271,7 @@ function runFrame(now) {
   frameTime = now;
   updateNetworkProbes(now);
   flushConditionedNetwork(now);
+  updateMenuGamepad();
   if (app.dataset.view === "game" && !paused) {
     accumulator += delta;
     let steps = 0;
@@ -294,6 +296,55 @@ function runFrame(now) {
     updateInterface();
     interfaceAccumulator %= 1 / 20;
   }
+}
+
+function updateMenuGamepad() {
+  if (app.dataset.view !== "menu") {
+    menuGamepadHeld.clear();
+    return;
+  }
+  const gamepad = navigator.getGamepads?.()[0];
+  if (!gamepad) {
+    menuGamepadHeld.clear();
+    return;
+  }
+  const actions = new Map([
+    ["up", Boolean(gamepad.buttons?.[12]?.pressed || gamepad.axes?.[1] < -0.65)],
+    ["down", Boolean(gamepad.buttons?.[13]?.pressed || gamepad.axes?.[1] > 0.65)],
+    ["left", Boolean(gamepad.buttons?.[14]?.pressed || gamepad.axes?.[0] < -0.65)],
+    ["right", Boolean(gamepad.buttons?.[15]?.pressed || gamepad.axes?.[0] > 0.65)],
+    ["accept", Boolean(gamepad.buttons?.[0]?.pressed)],
+  ]);
+  for (const [action, pressed] of actions) {
+    if (!pressed) {
+      menuGamepadHeld.delete(action);
+      continue;
+    }
+    if (menuGamepadHeld.has(action)) continue;
+    menuGamepadHeld.add(action);
+    activateMenuGamepadAction(action);
+  }
+}
+
+function activateMenuGamepadAction(action) {
+  const activeNavigation = document.querySelector(`.nav-item[data-panel="${menuPanel}"]`);
+  const focused = document.activeElement;
+  if (action === "accept") {
+    (focused?.matches?.("button, input, select, a") ? focused : activeNavigation)?.click();
+    return;
+  }
+  if (["up", "down"].includes(action)) {
+    const navigation = [...document.querySelectorAll(".nav-item")];
+    const index = Math.max(0, navigation.indexOf(activeNavigation));
+    const direction = action === "down" ? 1 : -1;
+    const next = navigation[(index + direction + navigation.length) % navigation.length];
+    next.focus();
+    showPanel(next.dataset.panel);
+    return;
+  }
+  const key = `arrow${action}`;
+  const target = focused?.closest?.(".nav-item, [data-menu-panel]") ? focused : activeNavigation;
+  target?.dispatchEvent(new window.KeyboardEvent("keydown", { key, bubbles: true }));
 }
 
 function handleKeyDown(event) {
@@ -3393,6 +3444,7 @@ window.DIFF_DEBUG = Object.freeze({
     view: app.dataset.view,
   }),
   launchMode,
+  activateMenuGamepadAction,
   quickStart,
   showPanel,
   toggleInfo,

@@ -258,6 +258,10 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   Object.defineProperty(upMenu, "key", { value: "ArrowUp" });
   document.querySelector('.nav-item[data-panel="online"]').dispatchEvent(upMenu);
   assert.equal(app.dataset.panel, "play");
+  window.DIFF_DEBUG.activateMenuGamepadAction("down");
+  assert.equal(app.dataset.panel, "online");
+  window.DIFF_DEBUG.activateMenuGamepadAction("up");
+  assert.equal(app.dataset.panel, "play");
   assert.match(
     document.querySelector('[data-menu-panel="guide"]').textContent,
     /Wayseals choose the fight.*without gaining combat stats/i,

@@ -11,8 +11,8 @@ recovery, and performance are accepted at smaller scales.
    menu with pointer, keyboard arrows, Tab, Enter, and a gamepad; require every
    play choice to react visibly, focus to remain obvious, and all decision and
    launch-summary copy to wrap without clipping at desktop and narrow widths.
-   Gamepad menu traversal is the next implementation slice. Then navigate the full
-   race-column Muster Hall at desktop and narrow widths; require that every
+   Then navigate the full race-column Muster Hall at desktop and narrow widths;
+   require that every
    champion launches with their visible ancestry, the persistent summary and
    hazard rule stay usable, the compact/detail HUD toggle persists,
    69%-transparent comic callouts remain legible, and every shipped ancestry

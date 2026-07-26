@@ -21,9 +21,10 @@ edges, blur, and shadow. Element labels pair a stable palette with words and
 marks, while every race declares and renders a distinct physical feature such
 as leaf-point ears, tusks, antlers, fins, rune ribs, or scaled wings. Empty race
 columns are honest and non-interactive until complete champion kits ship.
-The main navigation also responds to directional keyboard input, exposes a
-clear focus path into each panel, and keeps full contest and launch-summary
-copy visible instead of clipping decision-critical text.
+The main navigation also responds to directional keyboard and gamepad input,
+exposes a clear focus path into each panel, edge-triggers held controller
+inputs, and keeps full contest and launch-summary copy visible instead of
+clipping decision-critical text.
 
 Build 0.33.0 also gives **WILDMARCH** its first distinct PvPvE objective loop.
 Defeating a neutral warden releases one visible Wayseal. Any fighter can claim

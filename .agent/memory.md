@@ -1298,3 +1298,19 @@
 - **Recommended next task:** Add deterministic gamepad menu traversal through the
   same focus/activation contract, then hands-on accept the complete Muster Hall
   on Garuda and Windows before expanding chemistry or destructible terrain.
+
+# 2026-07-26 — Edge-triggered gamepad menu traversal
+
+- **Player-facing problem:** The gamepad worked only after entering combat, so a
+  controller-first player could not traverse the menu that launches the game.
+- **Implemented solution:** The first connected pad now drives menu Up/Down with
+  the D-pad or left stick, Left/Right across navigation and panel controls, and
+  the south face button as accept. Inputs are edge-triggered and reset on release
+  or menu exit, preventing a held stick from racing through every panel.
+- **Verification:** `node --check src/game.mjs`, focused DOM coverage for gamepad
+  panel traversal, the full `npm test` suite (81/81), shell syntax checks, and
+  `git diff --check` passed. Physical controller feel remains a Garuda/Windows
+  acceptance item because no browser/gamepad device is available here.
+- **Recommended next task:** Hands-on accept pointer, keyboard, and controller
+  behavior at desktop and narrow widths, then address any focus/layout defects
+  before beginning a bounded chemistry/environment slice.

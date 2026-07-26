@@ -998,6 +998,15 @@ function useSpecial(state, entity, agent, map) {
         ),
       );
       if (!blocked) createElementField(state, entity, "earth", wall);
+    } else if (agent.affinity.id === "ice") {
+      createElementField(state, entity, "ice", {
+        x: entity.x + entity.facingX * special.range * 0.68,
+        y: entity.y + entity.facingY * special.range * 0.68,
+        radius: MATCH_TUNING.elements.iceRadius,
+        duration: MATCH_TUNING.elements.iceDuration,
+        directionX: entity.facingX,
+        directionY: entity.facingY,
+      });
     }
   } else if (special.kind === "blast") {
     damageRadius(state, entity, special.range, special.damage, special.knockback);
@@ -1544,8 +1553,9 @@ function damageEntity(state, target, rawDamage, attacker, options = {}) {
   target.damageInvulnerability = agent.damageInvulnerability;
   target.lastAttackerId = attacker?.id ?? null;
   if (options.knockback && options.direction) {
-    target.vx += options.direction.x * options.knockback;
-    target.vy += options.direction.y * options.knockback;
+    const resistance = getRace(target.raceId).knockback ?? 1;
+    target.vx += options.direction.x * options.knockback * resistance;
+    target.vy += options.direction.y * options.knockback * resistance;
   }
   state.events.push({
     type: "hit",

@@ -10,7 +10,15 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
-Build 0.20.0 adds universal ground slides without another input binding. Hold
+Build 0.21.0 introduces a complete thirteenth people: the **Wyrmbound**. Their
+scaled bodies take 14% less forced movement, but their heavy commitment costs 6%
+FLOW capacity and 2% speed. Native champion **Yrsa Rimewing** shapes Tide as
+Frost through paired ranged shards, a ground-freezing breath cone, a precise
+counter, and an armored leap. Her unique wing silhouette and **Wyrmfall Aerie**
+home battleground ship through local, bot, and authoritative remote play. The
+new ancestry changes spacing without reducing damage or granting affinity wins.
+
+Build 0.20.0 added universal ground slides without another input binding. Hold
 sprint and hop together after building speed to spend 22 FLOW on a fast 0.3
 second low line. Slides steer only 32%, break on cover, have a clear cooldown,
 and cannot replace ordinary hops unless both inputs remain intentionally held.
@@ -54,7 +62,7 @@ arenas, interface materials, and spell language use an illuminated chronicle
 and woven-banner vocabulary instead of modern operators and deployments.
 Stable internal identifiers remain intact for saved settings and network peers.
 
-Build 0.13.0 added twelve playable fantasy races as a second, bounded build axis:
+Build 0.13.0 added the original twelve playable fantasy races as a second, bounded build axis:
 Human, Iron Orc, Moss Troll, Briar Elf, Gloam Elf, Forge Dwarf, Copper Gnome,
 Ash Revenant, Cloud Sylph, Reefborn, Cairnkin, and Cinderling. Each trades no
 more than 10% across health, speed, Flux, and FLOW, advertises its boon and
@@ -224,6 +232,7 @@ and essential controls without pausing combat.
 | MORCANT | Ash Revenant / Null | Grave Orb | Silence Well | Spellturn | Grave Step |
 | NERIS PEARLDIVE | Reefborn / Tide | Dew Lance | Wellspring | Tideshield | Current Step |
 | BRANNA RUNESIGHT | Forge Dwarf / Prism | Rune Ray | Sunsplit | Facet Parry | Runestep |
+| YRSA RIMEWING | Wyrmbound / Tide-Frost | Rime Fangs | White Breath | Scale Turn | Wyrmbound |
 
 Shots clash, heavy projectiles win light clashes, reflections change ownership,
 cover blocks every projectile and movement type, mines interact with hostile
@@ -243,6 +252,7 @@ Maps:
 - **WINDGLASS MOOR** — long sightlines broken by offset cover pockets
 - **THE OLD CROWN** — a contested center with four readable gates
 - **DROWNED HALLS** — three lanes with out-of-phase side hazards
+- **WYRMFALL AERIE** — high rotations around a narrow rime-vented nave
 
 Each battleground is located on the interactive realm chart; The Fracture can be
 opened as its own regional chart. Every location carries an

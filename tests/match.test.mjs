@@ -81,11 +81,11 @@ function duel({
   return state;
 }
 
-test("content ships eight complete champions, seven maps, and all five mode gates", () => {
+test("content ships nine complete champions, thirteen races, eight maps, and all five mode gates", () => {
   assert.deepEqual(validateContent(), []);
-  assert.equal(CHARACTERS.length, 8);
-  assert.equal(RACES.length, 12);
-  assert.ok(MAPS.length >= 7);
+  assert.equal(CHARACTERS.length, 9);
+  assert.equal(RACES.length, 13);
+  assert.ok(MAPS.length >= 8);
   assert.deepEqual(
     new Set(MODES.map((mode) => mode.id)),
     new Set(["training", "duel", "control", "convergence", "survival"]),
@@ -172,6 +172,25 @@ test("race tradeoffs alter bounded resources without replacing character kits", 
   assert.deepEqual(matchInvariantErrors(state), []);
 });
 
+test("Wyrmbound trade FLOW for readable forced-movement resistance", () => {
+  const human = duel({ leftCharacter: "bulwark", rightRace: "human" });
+  const scaled = duel({ leftCharacter: "bulwark", rightRace: "wyrmbound" });
+  for (const state of [human, scaled]) {
+    state.entities[1].x = 440;
+    state.entities[1].y = 450;
+    state.entities[1].lastSafeX = 440;
+    state.entities[1].lastSafeY = 450;
+    stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
+  }
+  assert.ok(Math.abs(scaled.entities[1].vx) < Math.abs(human.entities[1].vx));
+  assert.ok(scaled.entities[1].maxFlow < human.entities[1].maxFlow);
+  assert.equal(
+    human.entities[1].maxHealth - human.entities[1].health,
+    scaled.entities[1].maxHealth - scaled.entities[1].health,
+  );
+  assert.deepEqual(matchInvariantErrors(scaled), []);
+});
+
 test("elemental specials author persistent, counterable arena state", () => {
   const wind = duel({ leftCharacter: "kite", rightCharacter: "rook" });
   stepMatch(wind, { left: { ...idle, special: true } }, FIXED_DELTA);
@@ -184,6 +203,10 @@ test("elemental specials author persistent, counterable arena state", () => {
   earth.entities[1].y = 700;
   stepMatch(earth, { left: { ...idle, special: true } }, FIXED_DELTA);
   assert.equal(earth.elementFields.some((field) => field.element === "earth"), true);
+
+  const ice = duel({ leftCharacter: "rimewing", rightCharacter: "rook" });
+  stepMatch(ice, { left: { ...idle, special: true } }, FIXED_DELTA);
+  assert.equal(ice.elementFields.some((field) => field.element === "ice"), true);
 
   const veil = duel({ leftCharacter: "echo", rightCharacter: "rook" });
   stepMatch(veil, { left: { ...idle, special: true } }, FIXED_DELTA);

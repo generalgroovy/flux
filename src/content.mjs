@@ -54,6 +54,7 @@ export const RACES = Object.freeze([
   { id: "tideborn", name: "Reefborn", trait: "Fluid", boon: "+7% FLOW", drawback: "−3% health", health: 0.97, speed: 1, flux: 1, flow: 1.07 },
   { id: "stonekin", name: "Cairnkin", trait: "Anchored", boon: "+8% health", drawback: "−5% speed", health: 1.08, speed: 0.95, flux: 1, flow: 1 },
   { id: "ashling", name: "Cinderling", trait: "Volatile", boon: "+5% speed / Flux", drawback: "−7% health", health: 0.93, speed: 1.05, flux: 1.05, flow: 1 },
+  { id: "wyrmbound", name: "Wyrmbound", trait: "Scaled", boon: "−14% forced movement", drawback: "−6% FLOW / −2% speed", health: 1.03, speed: 0.98, flux: 1.02, flow: 0.94, knockback: 0.86 },
 ]);
 
 export const CHARACTERS = Object.freeze([
@@ -499,6 +500,64 @@ export const CHARACTERS = Object.freeze([
       cooldown: 0.88,
     },
   }),
+  character({
+    id: "rimewing",
+    homeRaceId: "wyrmbound",
+    affinity: { kind: "element", id: "ice", name: "TIDE", edge: "Friction control and brittle ground" },
+    name: "YRSA RIMEWING",
+    role: "Wyrmbound frost outrider",
+    style: "A high-aerie hunter who commits through pressure, freezes the exit, and counters the panicked answer.",
+    color: "#f4efe0",
+    accent: "#9fd8de",
+    glyph: "ᚱ",
+    silhouette: "wing",
+    radius: 19,
+    difficulty: 2,
+    health: 118,
+    speed: 385,
+    primary: {
+      name: "RIME FANGS",
+      detail: "Paired shards reward range judgment.",
+      damage: 16,
+      cooldown: 0.27,
+      speed: 920,
+      lifetime: 1.35,
+      radius: 6,
+      count: 2,
+      spread: 0.075,
+      knockback: 58,
+    },
+    special: {
+      name: "WHITE BREATH",
+      detail: "Short cone leaves a readable frost route.",
+      kind: "cone",
+      damage: 19,
+      cooldown: 1.2,
+      range: 155,
+      halfAngle: 0.72,
+      knockback: 145,
+    },
+    defense: {
+      name: "SCALE TURN",
+      detail: "Tight read answers with a rime shard.",
+      kind: "counter",
+      duration: 0.14,
+      cooldown: 1.35,
+      radius: 38,
+      counterDamage: 29,
+      counterSpeed: 980,
+    },
+    mobility: {
+      name: "WYRMBOUND",
+      detail: "Armored forward leap with body risk.",
+      kind: "charge",
+      speed: 900,
+      duration: 0.16,
+      cooldown: 1.32,
+      contactDamage: 19,
+      knockback: 280,
+    },
+  }),
 ]);
 
 export const MAPS = Object.freeze([
@@ -772,6 +831,40 @@ export const MAPS = Object.freeze([
     ],
     objective: { x: 800, y: 450, radius: 105 },
   },
+  {
+    id: "wyrmfall",
+    regionId: "emberpeak",
+    region: "Emberpeak",
+    scale: "medium",
+    atlas: { x: 84, y: 22 },
+    name: "WYRMFALL AERIE",
+    terrain: "Cliff monastery and rime vents",
+    identity: "Two high rotations contest a narrow frost-bitten nave.",
+    lore: "The last sky-wyrm fell across this monastery and sealed its furnaces. Wyrmbound outriders now read the warm vents beneath its rime-covered bones.",
+    heraldry: "THE PALE WYRM",
+    visual: { floor: "#302c28", void: "#0e0d0c", grid: "#514b45", accent: "#9fcbd0" },
+    size: { width: 1600, height: 900, inset: 44 },
+    spawns: [
+      { x: 165, y: 450 }, { x: 1435, y: 450 }, { x: 300, y: 145 }, { x: 1300, y: 755 },
+    ],
+    obstacles: [
+      { x: 360, y: 180, width: 95, height: 250 },
+      { x: 360, y: 520, width: 95, height: 200 },
+      { x: 635, y: 345, width: 130, height: 80 },
+      { x: 835, y: 475, width: 130, height: 80 },
+      { x: 1145, y: 180, width: 95, height: 200 },
+      { x: 1145, y: 470, width: 95, height: 250 },
+    ],
+    hazards: [{
+      id: "rime-vent", x: 745, y: 405, width: 110, height: 90,
+      warning: 0.92, active: 0.4, cooldown: 3.2, initial: 1.9, damage: 20,
+    }],
+    landmarks: [
+      { type: "court", x: 250, y: 100, width: 1100, height: 700, label: "AERIE NAVE" },
+      { type: "rune", x: 800, y: 450, radius: 148, label: "WYRMFALL" },
+    ],
+    objective: { x: 800, y: 450, radius: 132 },
+  },
 ]);
 
 export const MODES = Object.freeze([
@@ -937,6 +1030,12 @@ export function validateContent({
         errors.push(`${race.id}.${key} must stay within the balanced 0.9–1.1 range`);
       }
     }
+    if (
+      race.knockback !== undefined &&
+      (!Number.isFinite(race.knockback) || race.knockback < 0.8 || race.knockback > 1)
+    ) {
+      errors.push(`${race.id}.knockback must stay within the balanced 0.8–1 range`);
+    }
   }
   if (maps.length < 3) errors.push("at least three maps are required");
   const requiredModes = ["training", "duel", "control", "convergence", "survival"];
@@ -1018,7 +1117,7 @@ export function validateContent({
       errors.push(`${agent.id}.affinity must declare a named element`);
     }
     if (
-      !["kite", "block", "split", "bolt", "flare", "ring", "cross", "rook"].includes(
+      !["kite", "block", "split", "bolt", "flare", "ring", "cross", "rook", "wing"].includes(
         agent.silhouette,
       )
     ) {

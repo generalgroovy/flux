@@ -2,7 +2,7 @@
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.20.0 on Garuda Sway and Windows: complete all four
+1. Hands-on accept HEX 0.21.0 on Garuda Sway and Windows: complete all four
    FIRST RITE reads; chain sprint, hop, and wall kicks around cover; verify
    FLOW cost/recovery; launch all five home shortcuts; use every main-menu
    panel, toggle field info with `F1`, and verify
@@ -38,7 +38,9 @@
 
 ## Expansion acceptance — not exposed until complete
 
-- Twelve bounded race modifiers and their local/remote selector are live. Next:
+- Thirteen races and their local/remote selector are live. Wyrmbound is the first
+  expansion culture shipped with a native champion, mechanical passive, and home
+  battleground. Next:
   hands-on matchup tuning, then race-specific mechanics one paired matchup at a
   time; do not expand to twelve champions per discipline through numerical reskins.
 - The realm chart and The Fracture's complete duel/small/medium/large region

@@ -1664,6 +1664,19 @@ function traceAgentBody(agent) {
       [0, -radius],
       [radius * 0.35, -radius * 0.58],
     ]);
+  } else if (agent.silhouette === "wing") {
+    tracePolygon([
+      [radius * 1.1, 0],
+      [radius * 0.35, radius * 0.28],
+      [radius * 0.72, radius],
+      [0, radius * 0.55],
+      [-radius * 0.82, radius * 0.9],
+      [-radius * 0.58, 0],
+      [-radius * 0.82, -radius * 0.9],
+      [0, -radius * 0.55],
+      [radius * 0.72, -radius],
+      [radius * 0.35, -radius * 0.28],
+    ]);
   } else {
     context.beginPath();
     context.arc(0, 0, radius, 0, Math.PI * 2);

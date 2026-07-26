@@ -798,3 +798,29 @@
 - **Recommended next task:** Add one landing micro-cancel after a completed hop,
   then validate slide→hop, hop→counter-strafe, and wall-kick→slide chains as a
   single bounded movement grammar.
+
+## 2026-07-26 — Full Wyrmbound culture package
+
+- **Player-facing problem:** The twelve race rows were bounded build modifiers,
+  but no expansion race demonstrated the complete bar for mechanical identity,
+  champion expression, elemental language, world placement, and network support.
+- **Implemented solution:** Added Wyrmbound as a thirteenth ancestry. Their scales
+  reduce forced movement by 14% in exchange for 6% FLOW and 2% speed. Added Yrsa
+  Rimewing, a complete Tide/Frost outrider with paired shards, a frost-field cone,
+  precise counter, armored charge, and unique wing silhouette. Added Emberpeak's
+  Wyrmfall Aerie with authored routes, safe spawns, rime vent, lore, landmarks,
+  heraldry, atlas placement, and objective. All selectors and remote definitions
+  derive from the same validated content.
+- **Commands run:** Syntax checks for content, simulation, and controller;
+  `git diff --check`; focused match suite; `npm test`; clean server launch on
+  port 8119; HTTP health/shell/module smoke; clean shutdown.
+- **Tests passed:** 54/54 checks, including thirteen-race bounds, resistance
+  versus equal raw damage, explicit FLOW weakness, ice reactions, all nine
+  champion kits, eight-map stress, authoritative networking, and cleanup.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.21.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Known limitation:** Wyrmbound resistance and Yrsa's kit need hands-on matchup
+  tuning; no browser executable is installed here.
+- **Recommended next task:** Complete movement grammar testing, then make Yrsa the
+  first champion to receive the production passive/tactical/ultimate schema used
+  for later roster expansion.

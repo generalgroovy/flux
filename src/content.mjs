@@ -508,8 +508,11 @@ export const MAPS = Object.freeze([
     scale: "duel",
     atlas: { x: 22, y: 54 },
     name: "THE SUNDERED ROAD",
-    identity: "Twin rotations around a lethal central seam.",
-    visual: { floor: "#0a1720", void: "#03090e", grid: "#173343", accent: "#45d9ff" },
+    terrain: "Broken imperial causeway",
+    identity: "Twin rotations around a cursed central scar.",
+    lore: "The king-road split when the first Flux oath failed. Caravans now race its two surviving arms while the scar wakes beneath them.",
+    heraldry: "THE FRACTURED SUN",
+    visual: { floor: "#302718", void: "#100d09", grid: "#514326", accent: "#d0a94f" },
     size: { width: 1600, height: 900, inset: 44 },
     spawns: [
       { x: 175, y: 450 },
@@ -538,6 +541,10 @@ export const MAPS = Object.freeze([
         damage: 22,
       },
     ],
+    landmarks: [
+      { type: "road", x: 110, y: 418, width: 1380, height: 64, label: "KING-ROAD" },
+      { type: "rune", x: 800, y: 450, radius: 76, label: "OATHSCAR" },
+    ],
     objective: { x: 800, y: 450, radius: 118 },
   },
   {
@@ -546,8 +553,11 @@ export const MAPS = Object.freeze([
     scale: "medium",
     atlas: { x: 48, y: 27 },
     name: "WINDGLASS MOOR",
-    identity: "Long sightlines broken by offset pockets.",
-    visual: { floor: "#121521", void: "#070811", grid: "#2c2947", accent: "#c38cff" },
+    terrain: "Heather moor and wind-cut glass",
+    identity: "Long sightlines broken by ancient standing stones.",
+    lore: "Gale-singers once tuned these violet stones by moonlight. Their broken chorus still bends dust across the exposed highland.",
+    heraldry: "THE SILVER LARK",
+    visual: { floor: "#29251e", void: "#0e0c0a", grid: "#494133", accent: "#aa9ac9" },
     size: { width: 1600, height: 900, inset: 44 },
     spawns: [
       { x: 170, y: 170 },
@@ -563,6 +573,10 @@ export const MAPS = Object.freeze([
       { x: 710, y: 410, width: 180, height: 80 },
     ],
     hazards: [],
+    landmarks: [
+      { type: "moor", x: 190, y: 100, width: 1220, height: 700, label: "SINGING HEATH" },
+      { type: "rune", x: 800, y: 450, radius: 108, label: "LARK RING" },
+    ],
     objective: { x: 800, y: 450, radius: 112 },
   },
   {
@@ -571,8 +585,11 @@ export const MAPS = Object.freeze([
     scale: "small",
     atlas: { x: 72, y: 48 },
     name: "THE OLD CROWN",
-    identity: "A contested center with four readable entry gates.",
-    visual: { floor: "#17150d", void: "#0c0904", grid: "#42371b", accent: "#ffca4f" },
+    terrain: "Cairn fortress court",
+    identity: "A ruined throne court with four readable entry gates.",
+    lore: "No ruler has sat the Cairn Throne for three centuries. Every clan still claims the four gate-stones remember its true heir.",
+    heraldry: "THE HOLLOW CROWN",
+    visual: { floor: "#332b18", void: "#100d07", grid: "#5c4d27", accent: "#d7b65c" },
     size: { width: 1600, height: 900, inset: 44 },
     spawns: [
       { x: 180, y: 450 },
@@ -588,6 +605,10 @@ export const MAPS = Object.freeze([
       { x: 748, y: 398, width: 104, height: 104 },
     ],
     hazards: [],
+    landmarks: [
+      { type: "court", x: 505, y: 155, width: 590, height: 590, label: "THRONE COURT" },
+      { type: "rune", x: 800, y: 450, radius: 214, label: "FOUR GATES" },
+    ],
     objective: { x: 800, y: 450, radius: 174 },
   },
   {
@@ -596,8 +617,11 @@ export const MAPS = Object.freeze([
     scale: "large",
     atlas: { x: 54, y: 76 },
     name: "DROWNED HALLS",
-    identity: "Three lanes whose side currents pulse out of phase.",
-    visual: { floor: "#091a18", void: "#030c0b", grid: "#17443b", accent: "#77f7ce" },
+    terrain: "Flooded Reefborn undercroft",
+    identity: "Three drowned aisles whose side currents pulse out of phase.",
+    lore: "The Reefborn archive sank intact. Tide-script still circles its pillars, carrying fragments of forgotten names between the aisles.",
+    heraldry: "THE PEARL SERPENT",
+    visual: { floor: "#172b26", void: "#08100e", grid: "#315349", accent: "#73bca8" },
     size: { width: 1600, height: 900, inset: 44 },
     spawns: [
       { x: 165, y: 450 },
@@ -636,6 +660,10 @@ export const MAPS = Object.freeze([
         initial: 2.55,
         damage: 18,
       },
+    ],
+    landmarks: [
+      { type: "water", x: 80, y: 92, width: 1440, height: 716, label: "SUNKEN ARCHIVE" },
+      { type: "rune", x: 800, y: 450, radius: 86, label: "PEARL SEAL" },
     ],
     objective: { x: 800, y: 450, radius: 105 },
   },
@@ -900,6 +928,19 @@ export function validateContent({
     }
     if (!Array.isArray(map.obstacles) || !Array.isArray(map.hazards)) {
       errors.push(`${map.id} geometry must use arrays`);
+    }
+    if (!map.terrain || !map.lore || !map.heraldry || !Array.isArray(map.landmarks)) {
+      errors.push(`${map.id} needs terrain, lore, heraldry, and landmark data`);
+    }
+    for (const landmark of map.landmarks ?? []) {
+      if (
+        !["road", "moor", "court", "water", "rune"].includes(landmark.type) ||
+        !landmark.label ||
+        !Number.isFinite(landmark.x) ||
+        !Number.isFinite(landmark.y)
+      ) {
+        errors.push(`${map.id} has an invalid landmark`);
+      }
     }
     for (const spawn of map.spawns ?? []) {
       if (

@@ -645,3 +645,30 @@
 - **Recommended next task:** Make one existing arena the first fully illustrated
   nested territory: region lore, readable landmark silhouettes, scale-aware
   atlas zoom, and one environmental Flux interaction with deterministic tests.
+
+## 2026-07-26 — HEX authored realm chart
+
+- **Player-facing problem:** The renamed arenas still appeared as a neon
+  technical grid and the atlas was only four floating cards. Neither conveyed an
+  inhabited old-world magic setting or gave players memorable spatial anchors.
+- **Implemented solution:** Added validated terrain, lore, heraldry, and landmark
+  definitions to all four arenas. Rebuilt the atlas as an aged realm chart and
+  exposed its authored place information through hover/focus and the map codex.
+  Replaced the combat grid with sparse tile marks, regional landmark underlays,
+  rune circles, weathered borders, and stone cover. Landmark art remains beneath
+  the simulation layer and cannot imitate collision, hazards, or objectives.
+- **Commands run:** syntax checks for `src/content.mjs` and `src/game.mjs`;
+  `git diff --check`; focused DOM and deterministic match tests; `npm test`;
+  clean `scripts/serve.mjs` launch on port 8113; HTTP health, shell, and module
+  checks; clean server shutdown.
+- **Tests passed:** 48/48 checks: 46 DOM/lobby/match/network-quality tests,
+  including authored-place validation for every arena, plus the complete shipped
+  server network test and isolated server cleanup.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.15.0; `/` and
+  `/src/game.mjs` returned `200 OK` with the shipped security headers.
+- **Known limitations:** The realm chart has four complete destinations but no
+  zoom navigation yet; The Fracture is the selected first nested region. Physical
+  visual acceptance remains pending because this environment has no browser.
+- **Recommended next task:** Add scale-aware chart zoom into The Fracture and one
+  new small Sundered Road sub-map with its own route decision and deterministic
+  spawn/combination stress coverage.

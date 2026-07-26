@@ -10,7 +10,13 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
-Build 0.14.0 completes the first old-world identity pass. Eight named champions
+Build 0.15.0 turns the arena atlas into the first authored realm chart. Every
+shipped battleground now declares terrain, regional lore, heraldry, and layered
+landmarks. The field renderer replaces its technical grid and synthetic cover
+with quiet tile marks, roads, courts, moors, water halls, runic sites, and stone
+ruins while keeping collision and danger boundaries unambiguous.
+
+Build 0.14.0 completed the first old-world identity pass. Eight named champions
 now belong to the peoples and regions that shaped their magic; contests,
 arenas, interface materials, and spell language use an illuminated chronicle
 and woven-banner vocabulary instead of modern operators and deployments.
@@ -201,6 +207,11 @@ Maps:
 - **WINDGLASS MOOR** — long sightlines broken by offset cover pockets
 - **THE OLD CROWN** — a contested center with four readable gates
 - **DROWNED HALLS** — three lanes with out-of-phase side hazards
+
+Each battleground is located on the interactive realm chart and carries an
+authored terrain identity, short history, regional heraldry, and at least two
+field landmarks. These layers are readable orientation anchors only; hard cover,
+hazards, elemental constructs, and objectives retain distinct gameplay edges.
 
 Modes:
 

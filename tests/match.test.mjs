@@ -114,6 +114,17 @@ test("content ships eight complete agents, four maps, and all five mode gates", 
   }
 });
 
+test("every arena is an authored old-world place rather than a bare combat grid", () => {
+  for (const map of MAPS) {
+    assert.ok(map.region);
+    assert.ok(map.terrain);
+    assert.ok(map.lore.length >= 80);
+    assert.ok(map.heraldry);
+    assert.ok(map.landmarks.length >= 2);
+    assert.ok(map.landmarks.some((landmark) => landmark.type === "rune"));
+  }
+});
+
 test("race tradeoffs alter bounded resources without replacing character kits", () => {
   const state = duel({ leftRace: "sylph", rightRace: "stonekin" });
   const [sylph, stonekin] = state.entities;

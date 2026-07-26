@@ -2,7 +2,7 @@
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.14.0 on Garuda Sway and Windows: complete all four
+1. Hands-on accept HEX 0.15.0 on Garuda Sway and Windows: complete all four
    FIRST RITE reads; chain sprint, hop, and wall kicks around cover; verify
    FLOW cost/recovery; launch all five home shortcuts; use every main-menu
    panel, toggle field info with `F1`, and verify
@@ -35,8 +35,10 @@
 - Twelve bounded race modifiers and their local/remote selector are live. Next:
   hands-on matchup tuning, then race-specific mechanics one paired matchup at a
   time; do not expand to twelve champions per discipline through numerical reskins.
-- Build the first zoomable world region with one complete nested sub-map at each
-  supported scale before multiplying it across twelve race territories.
+- The realm chart and four authored regional battlegrounds now establish lore,
+  terrain, heraldry, and landmark contracts. Next: make The Fracture the first
+  zoomable region with one complete nested sub-map at each supported scale before
+  multiplying it across twelve race territories.
 - Add one pre-match knowledge branch with mutually exclusive tradeoffs before
   multiplying trees across races and disciplines.
 - Grow each discipline through complete spell decisions and reaction tests; do

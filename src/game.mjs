@@ -1108,28 +1108,71 @@ function drawArena(map, time) {
   const { width, height, inset } = map.size;
   context.fillStyle = map.visual.floor;
   context.fillRect(0, 0, width, height);
-  context.strokeStyle = settings.highContrast ? "#52677e" : map.visual.grid;
+  context.strokeStyle = settings.highContrast ? "#a99055" : map.visual.grid;
   context.lineWidth = 1;
+  context.globalAlpha = 0.34;
   context.beginPath();
   for (let x = inset; x <= width - inset; x += 80) {
-    context.moveTo(x, inset);
-    context.lineTo(x, height - inset);
+    for (let y = inset; y < height - inset; y += 80) {
+      context.moveTo(x - 3, y + 40);
+      context.lineTo(x + 3, y + 40);
+    }
   }
   for (let y = inset; y <= height - inset; y += 80) {
-    context.moveTo(inset, y);
-    context.lineTo(width - inset, y);
+    for (let x = inset; x < width - inset; x += 80) {
+      context.moveTo(x + 40, y - 3);
+      context.lineTo(x + 40, y + 3);
+    }
   }
   context.stroke();
+  context.globalAlpha = 1;
+  drawLandmarks(map);
   context.strokeStyle = map.visual.accent;
-  context.lineWidth = 2;
+  context.lineWidth = 4;
   context.strokeRect(inset, inset, width - inset * 2, height - inset * 2);
-  context.globalAlpha = 0.22;
+  context.globalAlpha = 0.3;
   context.strokeStyle = map.visual.accent;
-  context.setLineDash([18, 22]);
-  context.lineDashOffset = -time * 30;
+  context.setLineDash([4, 10]);
+  context.lineDashOffset = settings.reducedMotion ? 0 : -time * 10;
   context.strokeRect(inset + 10, inset + 10, width - inset * 2 - 20, height - inset * 2 - 20);
   context.setLineDash([]);
   context.globalAlpha = 1;
+}
+
+function drawLandmarks(map) {
+  for (const landmark of map.landmarks ?? []) {
+    context.save();
+    try {
+      context.fillStyle = map.visual.grid;
+      context.strokeStyle = map.visual.accent;
+      context.globalAlpha = landmark.type === "rune" ? 0.22 : 0.15;
+      context.lineWidth = landmark.type === "rune" ? 3 : 2;
+      if (landmark.type === "rune") {
+        context.beginPath();
+        context.arc(landmark.x, landmark.y, landmark.radius, 0, Math.PI * 2);
+        context.moveTo(landmark.x - landmark.radius, landmark.y);
+        context.lineTo(landmark.x + landmark.radius, landmark.y);
+        context.moveTo(landmark.x, landmark.y - landmark.radius);
+        context.lineTo(landmark.x, landmark.y + landmark.radius);
+        context.stroke();
+      } else {
+        context.fillRect(landmark.x, landmark.y, landmark.width, landmark.height);
+        context.strokeRect(landmark.x, landmark.y, landmark.width, landmark.height);
+      }
+      context.globalAlpha = 0.28;
+      context.fillStyle = "#f1dfac";
+      context.font = "700 12px Georgia, serif";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(
+        landmark.label,
+        landmark.type === "rune" ? landmark.x : landmark.x + landmark.width / 2,
+        landmark.type === "rune" ? landmark.y : landmark.y + landmark.height / 2,
+      );
+    } finally {
+      context.restore();
+    }
+  }
 }
 
 function drawObjective(map, time) {
@@ -1253,12 +1296,12 @@ function drawElementFields(time) {
 
 function drawObstacles(map) {
   for (const obstacle of map.obstacles) {
-    context.fillStyle = "#182534";
-    context.strokeStyle = settings.highContrast ? "#7490aa" : "#40536a";
+    context.fillStyle = "#30291d";
+    context.strokeStyle = settings.highContrast ? "#d2bd82" : "#766746";
     context.lineWidth = settings.highContrast ? 3 : 2;
     context.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
     context.strokeRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-    context.fillStyle = "#ffffff08";
+    context.fillStyle = "#f1dfac12";
     context.fillRect(
       obstacle.x + 7,
       obstacle.y + 7,
@@ -1647,11 +1690,11 @@ function buildContentInterface() {
   ).join("");
   element("map-options").innerHTML = MAPS.map(
     (map, index) => `
-      <label class="choice-card atlas-node" style="--atlas-x:${map.atlas.x}%;--atlas-y:${map.atlas.y}%" title="${map.region} · ${map.scale} · ${map.identity}">
+      <label class="choice-card atlas-node" style="--atlas-x:${map.atlas.x}%;--atlas-y:${map.atlas.y}%;--atlas-color:${map.visual.accent}" title="${map.region} · ${map.terrain} · ${map.identity} ${map.lore}">
         <input type="radio" name="map" value="${map.id}" ${index === 0 ? "checked" : ""}>
         <b>${map.name}</b>
-        <small>${map.region} · ${map.scale}</small>
-        <em>${map.hazards.length ? `${map.hazards.length} hazard${map.hazards.length > 1 ? "s" : ""}` : "Pure geometry"}</em>
+        <small>${map.region} · ${map.scale} · ${map.terrain}</small>
+        <em>${map.heraldry}</em>
       </label>`,
   ).join("");
   element("agent-options").innerHTML = agentPicker("character", "kite");
@@ -1665,10 +1708,11 @@ function buildContentInterface() {
   element("map-codex").innerHTML = MAPS.map(
     (map) => `
       <article class="codex-card">
-        <em>${map.hazards.length ? "ACTIVE FIELD" : "GEOMETRY FIELD"}</em>
+        <em>${map.region} · ${map.scale}</em>
         <b>${map.name}</b>
-        <p>${map.identity} ${map.obstacles.length} pieces of hard cover, ${map.spawns.length} protected spawn anchors.</p>
-        <button class="text-button codex-action" type="button" data-select-map="${map.id}">Select arena →</button>
+        <p><strong>${map.terrain}.</strong> ${map.identity} ${map.lore}</p>
+        <small>${map.obstacles.length} hard-cover ruins · ${map.spawns.length} warded mustering stones · ${map.hazards.length ? `${map.hazards.length} active hazard` : "no authored hazard"}</small>
+        <button class="text-button codex-action" type="button" data-select-map="${map.id}">Travel here →</button>
       </article>`,
   ).join("");
   element("mode-codex").innerHTML = MODES.map(

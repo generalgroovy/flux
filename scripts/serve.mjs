@@ -49,6 +49,7 @@ const securityHeaders = Object.freeze({
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
 });
+let shuttingDown = false;
 
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
   throw new RangeError(`PORT must be an integer from 1 to 65535; received ${port}`);
@@ -331,10 +332,35 @@ async function removeServerRegistration() {
 }
 
 function shutdown() {
-  for (const client of webSockets.clients) client.terminate();
-  webSockets.close();
-  server.close(() => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  const notice = JSON.stringify({
+    type: "server-shutdown",
+    code: "host-shutdown",
+    message: "The authoritative host shut down. This match has ended.",
+  });
+  for (const client of webSockets.clients) {
+    if (client.readyState !== client.OPEN) continue;
+    client.send(notice, () => client.close(1012, "Authoritative host shut down"));
+  }
+  const forceClose = setTimeout(() => {
+    for (const client of webSockets.clients) client.terminate();
+  }, 500);
+  forceClose.unref();
+  let httpClosed = false;
+  let socketsClosed = webSockets.clients.size === 0;
+  const finish = () => {
+    if (!httpClosed || !socketsClosed) return;
+    clearTimeout(forceClose);
     void removeServerRegistration().finally(() => process.exit(0));
+  };
+  webSockets.close(() => {
+    socketsClosed = true;
+    finish();
+  });
+  server.close(() => {
+    httpClosed = true;
+    finish();
   });
 }
 

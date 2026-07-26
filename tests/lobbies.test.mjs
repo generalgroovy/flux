@@ -62,6 +62,63 @@ test("public lobbies can be hosted, listed, and joined in progress", () => {
   assert.deepEqual(matchInvariantErrors(joined.snapshot.state), []);
 });
 
+test("late joins receive WILDMARCH state and disconnects release its carrier", () => {
+  const { service } = serviceFixture();
+  const guestMessages = [];
+  const hosted = service.host(
+    "host",
+    {
+      modeId: "convergence",
+      mapId: "crown",
+      botCount: 0,
+      maxPlayers: 4,
+    },
+    () => {},
+  );
+  const lobby = service.lobbies.get(hosted.lobby.code);
+  const hostEntity = lobby.state.entities.find(
+    (entity) => entity.id === hosted.entityId,
+  );
+  hostEntity.x = 420;
+  hostEntity.y = 450;
+  hostEntity.lastSafeX = hostEntity.x;
+  hostEntity.lastSafeY = hostEntity.y;
+  lobby.state.wildmarch.seal.status = "carried";
+  lobby.state.wildmarch.seal.carrierId = hostEntity.id;
+  lobby.state.wildmarch.seal.x = hostEntity.x;
+  lobby.state.wildmarch.seal.y = hostEntity.y;
+  lobby.state.wildmarch.seal.returnRemaining =
+    MATCH_TUNING.wildmarch.returnDuration;
+
+  const joined = service.join(
+    "guest",
+    hosted.lobby.code,
+    {},
+    (message) => guestMessages.push(message),
+  );
+  assert.equal(joined.ok, true);
+  assert.equal(joined.snapshot.state.version, 3);
+  assert.equal(joined.snapshot.state.wildmarch.seal.status, "carried");
+  assert.equal(
+    joined.snapshot.state.wildmarch.seal.carrierId,
+    hostEntity.id,
+  );
+
+  assert.equal(service.disconnect("host"), true);
+  assert.equal(lobby.state.wildmarch.seal.status, "grounded");
+  assert.equal(lobby.state.wildmarch.seal.carrierId, null);
+  assert.equal(lobby.state.wildmarch.seal.x, hostEntity.x);
+  assert.ok(
+    guestMessages.some(
+      (message) =>
+        message.type === "snapshot" &&
+        message.immediate === true &&
+        message.state.wildmarch.seal.status === "grounded",
+    ),
+  );
+  assert.deepEqual(matchInvariantErrors(lobby.state), []);
+});
+
 test("host hazard configuration is authoritative and survives rematches", () => {
   const { service } = serviceFixture();
   const hosted = service.host("host", {

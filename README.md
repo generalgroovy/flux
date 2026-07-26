@@ -22,6 +22,19 @@ marks, while every race declares and renders a distinct physical feature such
 as leaf-point ears, tusks, antlers, fins, rune ribs, or scaled wings. Empty race
 columns are honest and non-interactive until complete champion kits ship.
 
+Build 0.33.0 also gives **WILDMARCH** its first distinct PvPvE objective loop.
+Defeating a neutral warden releases one visible Wayseal. Any fighter can claim
+it, but must deliver it within 16 seconds to one of two authored outer
+waystones. That choice moves the scoring rune to the selected route for 14
+seconds, then restores the center. The carrier gains no health, damage, Flux, or
+FLOW; elimination or disconnect drops the seal for either team, and timeout
+returns it to the wild. All eight arenas author two clear route choices. Bots,
+late joins, spectators, reconnects, host migration, HUD coaching, field art,
+audio/comic cues, and match invariants use the same authoritative state. A tied
+clock enters sudden-score overtime. Deliberate server shutdown now ends every
+client's match with explicit terminal copy and clears the unusable reconnect
+offer instead of masquerading as a recoverable drop.
+
 Build 0.32.0 adds **Edgeweave**, a universal movement read. Passing through the
 narrow outer edge of a hostile spell at 260+ movement speed restores 9 FLOW.
 Actual hits, marked practice pressure, stationary proximity, full FLOW, and
@@ -371,7 +384,8 @@ Modes:
 - **THE FIRST RITE** — short, skippable, behavior-driven introduction
 - **OATH DUEL** — first-to-five duel with clean rounds and overtime
 - **RUNEHOLD** — objective control with contested-state scoring
-- **WILDMARCH** — PvPvE control with hostile wild wardens
+- **WILDMARCH** — hunt wardens, carry the shared Wayseal, and choose which outer
+  route becomes the scoring rune
 - **NIGHT SIEGE** — solo/local/remote cooperative escalating PvE waves
 
 ## Architecture

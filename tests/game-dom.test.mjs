@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 import { parseHTML } from "linkedom";
+import { createMatch } from "../src/match.mjs";
 
 test("browser shell boots, renders, navigates, starts, pauses, and resets cleanly", async () => {
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
@@ -55,6 +56,103 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     status: 200,
     json: async () => ({ lobbies: [] }),
   });
+  let fakeSocket = null;
+  class FakeWebSocket {
+    static CONNECTING = 0;
+    static OPEN = 1;
+    static CLOSED = 3;
+
+    constructor() {
+      this.readyState = FakeWebSocket.CONNECTING;
+      this.listeners = new Map();
+      fakeSocket = this;
+      queueMicrotask(() => {
+        this.readyState = FakeWebSocket.OPEN;
+        this.emit("open", {});
+        this.emitMessage({
+          type: "hello",
+          clientId: "browser-client",
+          protocol: 2,
+          version: "0.33.0",
+          tickRate: 120,
+        });
+      });
+    }
+
+    addEventListener(type, listener) {
+      const listeners = this.listeners.get(type) ?? [];
+      listeners.push(listener);
+      this.listeners.set(type, listeners);
+    }
+
+    removeEventListener(type, listener) {
+      this.listeners.set(
+        type,
+        (this.listeners.get(type) ?? []).filter(
+          (candidate) => candidate !== listener,
+        ),
+      );
+    }
+
+    emit(type, event) {
+      for (const listener of this.listeners.get(type) ?? []) listener(event);
+    }
+
+    emitMessage(message) {
+      this.emit("message", { data: JSON.stringify(message) });
+    }
+
+    send(raw) {
+      const message = JSON.parse(raw);
+      if (message.type === "probe") {
+        this.emitMessage({ type: "probe", sequence: message.sequence });
+      } else if (message.type === "host") {
+        const state = createMatch({
+          modeId: "convergence",
+          mapId: "crown",
+          botCount: 1,
+          players: [{
+            id: "remote-browser",
+            clientId: "browser-client",
+            characterId: "kite",
+            raceId: "human",
+            team: "alpha",
+            human: true,
+          }],
+        });
+        state.overtime = true;
+        state.elapsed = 210;
+        this.emitMessage({
+          type: "result",
+          requestId: message.requestId,
+          action: "host",
+          ok: true,
+          lobby: {
+            code: "ABC234",
+            name: "DOM PROOF",
+            hostId: "browser-client",
+            players: 1,
+            maxPlayers: 4,
+          },
+          entityId: "remote-browser",
+          role: "player",
+          reconnectToken: "dom-reconnect-token",
+          snapshot: {
+            serverTick: 0,
+            acknowledgedSequence: -1,
+            entityId: "remote-browser",
+            state,
+          },
+        });
+      }
+    }
+
+    close() {
+      if (this.readyState === FakeWebSocket.CLOSED) return;
+      this.readyState = FakeWebSocket.CLOSED;
+      this.emit("close", {});
+    }
+  }
   Object.assign(window, {
     innerWidth: 1440,
     innerHeight: 900,
@@ -62,6 +160,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     requestAnimationFrame,
     localStorage,
     fetch,
+    WebSocket: FakeWebSocket,
     setTimeout: () => 1,
     clearTimeout: () => {},
   });
@@ -108,6 +207,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     requestAnimationFrame,
     FormData: DomFormData,
     fetch,
+    WebSocket: FakeWebSocket,
   });
   Object.defineProperty(globalThis, "location", {
     configurable: true,
@@ -148,6 +248,10 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
       false,
     );
   }
+  assert.match(
+    document.querySelector('[data-menu-panel="guide"]').textContent,
+    /Wayseals choose the fight.*without gaining combat stats/i,
+  );
   assert.equal(document.getElementById("host-lobby").disabled, false);
   assert.equal(document.getElementById("join-lobby").disabled, false);
 
@@ -321,6 +425,19 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
             ? "WILDMARCH"
             : "NIGHT SIEGE",
     );
+    if (modeId === "convergence") {
+      const wildmarch = window.DIFF_DEBUG.getState().wildmarch;
+      assert.equal(wildmarch.routes.length, 2);
+      assert.equal(wildmarch.seal.status, "dormant");
+      assert.match(
+        document.getElementById("info-objective").textContent,
+        /WAYSEAL.*outer scoring route/i,
+      );
+      assert.match(
+        document.getElementById("coach-text").textContent,
+        /WAYSEAL.*outer scoring route/i,
+      );
+    }
     const fieldInfo = new window.Event("keydown");
     Object.defineProperty(fieldInfo, "key", { value: "F1" });
     window.dispatchEvent(fieldInfo);
@@ -434,4 +551,33 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   window.dispatchEvent(restart);
   assert.equal(window.DIFF_DEBUG.getState().tick, 0);
   assert.ok(window.DIFF_DEBUG.getState().entities.every((entity) => entity.alive));
+
+  window.dispatchEvent(escape);
+  document.querySelector('#pause-overlay [data-action="menu"]').click();
+  document.querySelector('[data-panel="online"]').click();
+  document.getElementById("host-lobby").click();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "remote");
+  assert.equal(storage.has("diff.remote.session.v1"), true);
+  assert.match(
+    document.getElementById("coach-text").textContent,
+    /OVERTIME.*next score wins/i,
+  );
+  fakeSocket.emitMessage({
+    type: "server-shutdown",
+    code: "host-shutdown",
+    message: "The authoritative host shut down. This match has ended.",
+  });
+  fakeSocket.close();
+  assert.equal(document.getElementById("pause-title").textContent, "Host realm closed");
+  assert.match(
+    document.getElementById("pause-copy").textContent,
+    /authoritative host shut down.*match has ended/i,
+  );
+  assert.equal(
+    document.getElementById("server-status").textContent.trim(),
+    "AUTHORITATIVE HOST CLOSED",
+  );
+  assert.equal(storage.has("diff.remote.session.v1"), false);
+  assert.equal(document.getElementById("reconnect-lobby").hidden, true);
 });

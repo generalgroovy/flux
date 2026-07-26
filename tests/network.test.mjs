@@ -6,7 +6,7 @@ import { createServer } from "node:net";
 import WebSocket from "ws";
 
 test(
-  "shipped server supports discovery, live join, spectators, reconnect, and host migration",
+  "shipped server supports discovery, live join, spectators, reconnect, host migration, and clear shutdown",
   { timeout: 12_000 },
   async (t) => {
     const port = await freePort();
@@ -173,9 +173,19 @@ test(
       ),
       true,
     );
-    returningHost.close();
-    observer.close();
-    guest.close();
+    const shutdownNotices = [
+      returningHost.waitFor((message) => message.type === "server-shutdown"),
+      observer.waitFor((message) => message.type === "server-shutdown"),
+      guest.waitFor((message) => message.type === "server-shutdown"),
+    ];
+    assert.equal(child.kill("SIGTERM"), true);
+    for (const notice of await Promise.all(shutdownNotices)) {
+      assert.equal(notice.code, "host-shutdown");
+      assert.match(notice.message, /authoritative host shut down.*match has ended/i);
+    }
+    const exitCode = child.exitCode ??
+      await new Promise((resolve) => child.once("exit", resolve));
+    assert.equal(exitCode, 0, serverOutput);
   },
 );
 

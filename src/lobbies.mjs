@@ -4,6 +4,7 @@ import { getCharacter, getMap, getMode, getRace } from "./content.mjs";
 import {
   addMatchPlayer,
   createMatch,
+  releaseMatchPlayerObjectives,
   removeMatchPlayer,
   sanitizeCommand,
   stepMatch,
@@ -240,6 +241,11 @@ export class LobbyService {
     member.disconnectedAt = this.now();
     member.command = sanitizeCommand({});
     member.send = () => {};
+    const releasedObjective = releaseMatchPlayerObjectives(
+      lobby.state,
+      member.entityId,
+      "disconnect",
+    );
     if (lobby.hostId === clientId) this.migrateHost(lobby, clientId);
     this.broadcast(lobby, {
       type: "presence",
@@ -248,6 +254,10 @@ export class LobbyService {
       players: playerCount(lobby),
       spectators: spectatorCount(lobby),
     });
+    if (releasedObjective) {
+      lobby.networkTick += 1;
+      this.broadcastSnapshots(lobby, true);
+    }
     return true;
   }
 

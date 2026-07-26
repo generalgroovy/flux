@@ -167,6 +167,7 @@ let lastAuthoritativeTick = -1;
 let remoteHostId = null;
 let clientId = null;
 let remoteRole = "player";
+let remoteServerShutdown = false;
 let viewport = {
   pixelRatio: 1,
   width: 1,
@@ -905,7 +906,9 @@ function updateInfoOverlay(mode, map) {
       ? "Resetting clean positions for the next read."
       : matchState.status === "match-over"
         ? "Operation complete. Rematch or return to menu."
-        : mode.description;
+        : mode.id === "convergence"
+          ? wildmarchStatusCopy()
+          : mode.description;
   element("info-status").textContent =
     `Round ${matchState.round} · ${map.name} · ${Math.ceil(player.health)}/${player.maxHealth} HP`;
   element("info-agent-glyph").textContent = agent.glyph;
@@ -1008,7 +1011,11 @@ function updateRoster() {
         chip.style.setProperty("--agent-color", agent.accent);
         const dot = document.createElement("i");
         const label = document.createElement("b");
-        label.textContent = `${entity.name} · ${race.name} ${agent.name}`;
+        const carriesWayseal =
+          matchState.wildmarch?.seal.status === "carried" &&
+          matchState.wildmarch.seal.carrierId === entity.id;
+        label.textContent =
+          `${entity.name} · ${race.name} ${agent.name}${carriesWayseal ? " · WAYSEAL" : ""}`;
         const health = document.createElement("span");
         health.style.width = `${Math.max(0, (entity.health / entity.maxHealth) * 100)}%`;
         chip.append(dot, label, health);
@@ -1117,6 +1124,8 @@ function updateCoach(mode) {
     progress.hidden = true;
     if (matchState.status === "round-over") {
       text.textContent = "Resetting positions. The next read starts clean.";
+    } else if (mode.id === "convergence") {
+      text.textContent = wildmarchStatusCopy();
     } else if (matchState.objective.contested) {
       text.textContent = "Objective contested. Create space before you score.";
     } else if (matchState.objective.controllingTeam) {
@@ -1128,6 +1137,32 @@ function updateCoach(mode) {
           : mode.description;
     }
   }
+}
+
+function wildmarchStatusCopy() {
+  const wildmarch = matchState.wildmarch;
+  if (!wildmarch) return getMode("convergence").description;
+  const overtime = matchState.overtime ? "OVERTIME · next score wins. " : "";
+  const seal = wildmarch.seal;
+  if (wildmarch.activeRouteId) {
+    const route = wildmarch.routes.find(
+      (candidate) => candidate.id === wildmarch.activeRouteId,
+    );
+    return `${overtime}${route?.name ?? "Outer route"} is the scoring rune for ${Math.ceil(wildmarch.routeRemaining)}s. Rotate or contest it.`;
+  }
+  if (seal.status === "grounded") {
+    return `${overtime}The WAYSEAL is loose for ${Math.ceil(seal.returnRemaining)}s. Claim it before the wild takes it back.`;
+  }
+  if (seal.status === "carried") {
+    const carrier = matchState.entities.find(
+      (entity) => entity.id === seal.carrierId,
+    );
+    const carrierCopy = carrier?.id === localPlayer()?.id
+      ? `You carry the WAYSEAL for ${Math.ceil(seal.returnRemaining)}s. Choose either marked outer route.`
+      : `${carrier?.name ?? "A fighter"} carries the WAYSEAL. Escort or intercept the route choice.`;
+    return `${overtime}${carrierCopy}`;
+  }
+  return `${overtime}Wild wardens bind the WAYSEAL. Defeat one, claim it, then choose an outer scoring route.`;
 }
 
 function tacticalTrialCopy(player) {
@@ -1298,6 +1333,36 @@ function processEvents(events, tick) {
         life: 0.5, maximumLife: 0.5, color: "#efd379",
       });
       toast(`OATH KEPT! · +${Math.round(event.amount)} FLUX`, "comic");
+    } else if (event.type === "waysealReleased") {
+      tone(205, 0.11, "triangle", 0.055);
+      burst(event.x, event.y, "#efd379", 14);
+      toast("WAYSEAL LOOSE! · CLAIM THE WILD MARK", "comic");
+    } else if (event.type === "waysealClaimed") {
+      tone(520, 0.09, "triangle", 0.055);
+      if (locallyControlled(event.entityId)) {
+        toast("WAYSEAL CLAIMED · CHOOSE AN OUTER ROUTE", "comic");
+      } else {
+        toast(`${event.team.toUpperCase()} CARRIES THE WAYSEAL`, "comic");
+      }
+    } else if (event.type === "waysealDropped") {
+      tone(115, 0.1, "square", 0.05);
+      burst(event.x, event.y, "#efd379", 10);
+      toast("WAYSEAL DROPPED · THE ROUTE IS OPEN", "comic");
+    } else if (event.type === "waysealRouted") {
+      tone(690, 0.14, "triangle", 0.07);
+      burst(event.x, event.y, "#efd379", 20);
+      rings.push({
+        x: event.x, y: event.y, radius: 18,
+        life: 0.6, maximumLife: 0.6, color: "#efd379",
+      });
+      toast(`${event.routeName} AWAKENS! · SCORING RUNE MOVED`, "comic");
+    } else if (event.type === "waysealReturned") {
+      tone(260, 0.08, "sine", 0.04);
+      toast(
+        event.routeId
+          ? "WAYSEAL SPENT · CENTER RUNE RESTORED"
+          : "WAYSEAL RETURNED TO THE WILD",
+      );
     } else if (event.type === "veilDecoy") {
       tone(330, 0.08, "sine", 0.045);
       toast("VEIL · INTENT SPLIT", "comic");
@@ -1413,6 +1478,7 @@ function render(time) {
     context.scale(viewport.scale, viewport.scale);
     drawArena(map, time);
     drawShrines(time);
+    drawWildmarch(time);
     drawObjective(map, time);
     drawElementFields(time);
     drawHazards(time);
@@ -1455,6 +1521,80 @@ function drawShrines(time) {
     } finally {
       context.restore();
     }
+  }
+}
+
+function drawWildmarch(time) {
+  const wildmarch = matchState.wildmarch;
+  if (!wildmarch) return;
+  for (const route of wildmarch.routes) {
+    const active = wildmarch.activeRouteId === route.id;
+    context.save();
+    try {
+      context.translate(route.x, route.y);
+      context.fillStyle = active ? "#efd3792e" : "#30291d73";
+      context.strokeStyle = active ? "#efd379" : "#8b774c";
+      context.lineWidth = settings.highContrast ? 5 : active ? 4 : 2;
+      context.setLineDash(active ? [10, 5] : [3, 10]);
+      context.lineDashOffset = settings.reducedMotion ? 0 : -time * (active ? 22 : 7);
+      context.beginPath();
+      context.arc(0, 0, route.radius, 0, Math.PI * 2);
+      context.fill();
+      context.stroke();
+      context.setLineDash([]);
+      context.fillStyle = active ? "#fff1be" : "#a48f61";
+      context.font = "700 11px Georgia, serif";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(
+        active
+          ? `${route.name} · ${Math.ceil(wildmarch.routeRemaining)}s`
+          : route.name,
+        0,
+        route.radius + 16,
+      );
+    } finally {
+      context.restore();
+    }
+  }
+
+  const seal = wildmarch.seal;
+  if (seal.status === "dormant") return;
+  if (seal.status === "carried") {
+    context.save();
+    try {
+      context.strokeStyle = "#efd379";
+      context.lineWidth = 1.5;
+      context.globalAlpha = 0.34;
+      context.setLineDash([5, 9]);
+      for (const route of wildmarch.routes) {
+        context.beginPath();
+        context.moveTo(seal.x, seal.y);
+        context.lineTo(route.x, route.y);
+        context.stroke();
+      }
+    } finally {
+      context.restore();
+    }
+  }
+  context.save();
+  try {
+    context.translate(seal.x, seal.y);
+    const lift = seal.status === "carried" ? -35 : 0;
+    context.translate(0, lift);
+    context.rotate(
+      settings.reducedMotion ? Math.PI / 4 : time * 0.9 + Math.PI / 4,
+    );
+    const radius = MATCH_TUNING.wildmarch.sealRadius;
+    context.fillStyle = "#efd379";
+    context.strokeStyle = "#fff1be";
+    context.lineWidth = settings.highContrast ? 4 : 2;
+    context.shadowColor = "#efd379";
+    context.shadowBlur = seal.status === "routed" ? 18 : 10;
+    context.fillRect(-radius * 0.55, -radius * 0.55, radius * 1.1, radius * 1.1);
+    context.strokeRect(-radius * 0.55, -radius * 0.55, radius * 1.1, radius * 1.1);
+  } finally {
+    context.restore();
   }
 }
 
@@ -1554,7 +1694,7 @@ function drawLandmarks(map) {
 function drawObjective(map, time) {
   const mode = getMode(matchState.modeId);
   if (mode.id !== "control" && mode.id !== "convergence") return;
-  const objective = map.objective;
+  const objective = matchState.objective ?? map.objective;
   const team = matchState.objective.controllingTeam;
   context.save();
   try {
@@ -2701,6 +2841,7 @@ async function connectNetwork(base) {
   }
   leaveRemote(false);
   socketBase = base;
+  remoteServerShutdown = false;
   const webSocketUrl = new URL(base);
   webSocketUrl.protocol = webSocketUrl.protocol === "https:" ? "wss:" : "ws:";
   webSocketUrl.pathname = "/ws";
@@ -2728,7 +2869,12 @@ async function connectNetwork(base) {
       const wasRemote = matchKind === "remote";
       socket = null;
       clientId = null;
-      setServerStatus("offline", "NETWORK DISCONNECTED");
+      setServerStatus(
+        "offline",
+        remoteServerShutdown
+          ? "AUTHORITATIVE HOST CLOSED"
+          : "NETWORK DISCONNECTED",
+      );
       for (const pending of requestResolvers.values()) {
         pending.reject(new Error("Connection closed."));
       }
@@ -2736,9 +2882,12 @@ async function connectNetwork(base) {
       if (wasRemote) {
         paused = true;
         pauseOverlay.classList.remove("hidden");
-        element("pause-title").textContent = "Connection lost";
-        element("pause-copy").textContent =
-          "Your slot is reserved for 30 seconds. Open Host / Join and reconnect the last session.";
+        element("pause-title").textContent = remoteServerShutdown
+          ? "Host realm closed"
+          : "Connection lost";
+        element("pause-copy").textContent = remoteServerShutdown
+          ? "The authoritative host shut down, so this match has ended. Return to Host / Join to begin another."
+          : "Your slot is reserved for 30 seconds. Open Host / Join and reconnect the last session.";
       }
     });
   });
@@ -2785,6 +2934,24 @@ function deliverSocketMessage(message) {
   }
   if (message.type === "snapshot" && matchKind === "remote") {
     acceptRemoteSnapshot(message);
+    return;
+  }
+  if (message.type === "server-shutdown") {
+    remoteServerShutdown = true;
+    clearReconnectSession();
+    setServerStatus("offline", "AUTHORITATIVE HOST CLOSED");
+    setNetworkMessage(
+      message.message ?? "The authoritative host shut down. This match has ended.",
+      "error",
+    );
+    if (matchKind === "remote") {
+      paused = true;
+      pauseOverlay.classList.remove("hidden");
+      element("pause-title").textContent = "Host realm closed";
+      element("pause-copy").textContent =
+        "The authoritative host shut down, so this match has ended. Return to Host / Join to begin another.";
+    }
+    toast("AUTHORITATIVE HOST CLOSED · MATCH ENDED", "error");
     return;
   }
   if (message.type === "presence") {
@@ -2881,6 +3048,7 @@ function leaveRemote(forgetSession = true) {
   remoteLobby = null;
   remoteHostId = null;
   remoteRole = "player";
+  remoteServerShutdown = false;
   pendingInputs = [];
   configurePacketConditioner(networkConditioner, networkLabConfig());
   lastAuthoritativeTick = -1;

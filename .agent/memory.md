@@ -1227,3 +1227,54 @@
   complete two-champion column. Next author one mechanically contrasting,
   production-complete pair for an empty ancestry or second champion for an
   existing ancestry, validate it in compact PvP, and repeat without stat reskins.
+
+## 2026-07-26 — WILDMARCH Wayseal route objective and shutdown contract
+
+- **Live starting evidence:** The tracked checkout began clean at HEX 0.32.0
+  with three pre-existing untracked user files left untouched. Baseline
+  `npm test` passed 77/77 checks. Every `src/*.mjs` and `scripts/*.mjs`
+  `node --check`, the three Linux `bash -n` launcher checks, and
+  `git diff --check` passed. Port 8131 served 0.32.0 health, the shell,
+  controller module, security headers, and empty lobby discovery, then closed
+  cleanly. No browser executable or PowerShell was installed.
+- **Player-facing problem:** WILDMARCH reused center control and neutral kill
+  points without a distinct PvPvE reward, route decision, loot/extraction state,
+  or truthful graceful-host-shutdown outcome. Its neutral layer did not yet
+  satisfy Gate 3.
+- **Implemented solution:** HEX 0.33.0 gives every arena two validated outer
+  waystones. Defeating a neutral warden releases one Wayseal; an unprotected
+  fighter can claim it and has 16 seconds to deliver it to either route.
+  Delivery moves the scoring rune there for 14 seconds, then restores center.
+  The seal changes no health, damage, Flux, or FLOW. It drops on elimination,
+  leave, or disconnect, can be stolen by either team, returns against stalling,
+  and remains singular while a route is active. Bots pursue loose seals, carry
+  them to the nearer authored route, and target hostile carriers.
+- **Authority and clarity:** Match schema v3 owns seal, carrier, timer, route,
+  and dynamic-objective state. Late joins, spectators, prediction, reconnects,
+  and host migration use the existing snapshots. Disconnect advances the
+  authoritative network tick before its immediate drop snapshot. Canvas
+  waystones, seal geometry, carrier roster text, live coaching, field info,
+  guide copy, and restrained comic/audio cues expose every phase. Tied clocks
+  state that the next score wins and deterministically end on the first score
+  delta.
+- **Host shutdown:** Graceful server shutdown now sends a terminal
+  `server-shutdown` message before closing sockets. The browser distinguishes it
+  from a recoverable drop, pauses with `Host realm closed`, removes the unusable
+  reconnect token, and directs the player back to Host / Join. Ordinary drops
+  keep the existing 30-second reservation copy.
+- **Commands/results:** Focused Wayseal/lobby/DOM/network checks passed, including
+  the combined DOM/lobby/match run at 72/72. Final `npm test` passed 81/81
+  checks: 79 deterministic/DOM/lobby/match/network-conditioner/diagnostic
+  checks, one real WebSocket lifecycle including shutdown delivery to player and
+  spectator clients, and one isolated registered-server cleanup check. All
+  JavaScript and Linux launcher syntax checks plus `git diff --check` passed.
+- **Launch/cleanup:** Port 8133 reported HEX 0.33.0/protocol 2; `/`,
+  `/src/game.mjs`, and `/src/match.mjs` returned `200 OK` with all shipped
+  security headers, and lobby discovery returned an empty list. The shipped
+  `npm stop` stopped PID 353171, health then refused connection, and a second
+  stopper found no registered server for this checkout.
+- **Known limitation / next task:** Physical Garuda/Windows play, gamepad,
+  Wayseal timing/readability/cue tuning, and the two-device remote soak remain
+  unavailable here. Gate 3 is software-complete; do not begin Gate 4 enemy
+  families until that real-player combat/objective acceptance makes tuning
+  credible.

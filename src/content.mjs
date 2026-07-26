@@ -741,6 +741,12 @@ export const MAPS = Object.freeze([
       { type: "rune", x: 800, y: 450, radius: 76, label: "OATHSCAR" },
     ],
     objective: { x: 800, y: 450, radius: 118 },
+    wildmarch: {
+      routes: [
+        { id: "north-road", name: "NORTH ROAD", x: 800, y: 245, radius: 58 },
+        { id: "south-road", name: "SOUTH ROAD", x: 800, y: 655, radius: 58 },
+      ],
+    },
   },
   {
     id: "ashen_ford",
@@ -774,6 +780,12 @@ export const MAPS = Object.freeze([
       { type: "rune", x: 800, y: 450, radius: 92, label: "HERON STONES" },
     ],
     objective: { x: 800, y: 450, radius: 126 },
+    wildmarch: {
+      routes: [
+        { id: "heron-bank", name: "HERON BANK", x: 800, y: 235, radius: 58 },
+        { id: "cinder-bank", name: "CINDER BANK", x: 800, y: 665, radius: 58 },
+      ],
+    },
   },
   {
     id: "pilgrim_steps",
@@ -805,6 +817,12 @@ export const MAPS = Object.freeze([
       { type: "rune", x: 800, y: 450, radius: 130, label: "KEYLESS SHRINE" },
     ],
     objective: { x: 800, y: 450, radius: 138 },
+    wildmarch: {
+      routes: [
+        { id: "high-step", name: "HIGH STEP", x: 800, y: 185, radius: 58 },
+        { id: "low-step", name: "LOW STEP", x: 800, y: 715, radius: 58 },
+      ],
+    },
   },
   {
     id: "oathscar_vale",
@@ -842,6 +860,12 @@ export const MAPS = Object.freeze([
       name: "BROKEN COVENANT",
     }],
     objective: { x: 800, y: 450, radius: 155 },
+    wildmarch: {
+      routes: [
+        { id: "watcher-rise", name: "WATCHER RISE", x: 800, y: 205, radius: 58 },
+        { id: "pilgrim-fall", name: "PILGRIM FALL", x: 800, y: 695, radius: 58 },
+      ],
+    },
   },
   {
     id: "crosswind",
@@ -875,6 +899,12 @@ export const MAPS = Object.freeze([
       { type: "rune", x: 800, y: 450, radius: 108, label: "LARK RING" },
     ],
     objective: { x: 800, y: 450, radius: 112 },
+    wildmarch: {
+      routes: [
+        { id: "lark-rise", name: "LARK RISE", x: 615, y: 170, radius: 58 },
+        { id: "glass-fall", name: "GLASS FALL", x: 985, y: 730, radius: 58 },
+      ],
+    },
   },
   {
     id: "crown",
@@ -908,6 +938,12 @@ export const MAPS = Object.freeze([
       { type: "rune", x: 800, y: 450, radius: 214, label: "FOUR GATES" },
     ],
     objective: { x: 800, y: 450, radius: 174 },
+    wildmarch: {
+      routes: [
+        { id: "north-gate", name: "NORTH GATE", x: 800, y: 185, radius: 58 },
+        { id: "south-gate", name: "SOUTH GATE", x: 800, y: 715, radius: 58 },
+      ],
+    },
   },
   {
     id: "undercurrent",
@@ -965,6 +1001,12 @@ export const MAPS = Object.freeze([
       { type: "rune", x: 800, y: 450, radius: 86, label: "PEARL SEAL" },
     ],
     objective: { x: 800, y: 450, radius: 105 },
+    wildmarch: {
+      routes: [
+        { id: "north-aisle", name: "NORTH AISLE", x: 800, y: 275, radius: 58 },
+        { id: "south-aisle", name: "SOUTH AISLE", x: 800, y: 625, radius: 58 },
+      ],
+    },
   },
   {
     id: "wyrmfall",
@@ -999,6 +1041,12 @@ export const MAPS = Object.freeze([
       { type: "rune", x: 800, y: 450, radius: 148, label: "WYRMFALL" },
     ],
     objective: { x: 800, y: 450, radius: 132 },
+    wildmarch: {
+      routes: [
+        { id: "rime-choir", name: "RIME CHOIR", x: 800, y: 205, radius: 58 },
+        { id: "ember-choir", name: "EMBER CHOIR", x: 800, y: 695, radius: 58 },
+      ],
+    },
   },
 ]);
 
@@ -1037,7 +1085,7 @@ export const MODES = Object.freeze([
     id: "convergence",
     name: "WILDMARCH",
     category: "PvPvE",
-    description: "Fight for a rune while wild wardens punish careless routes.",
+    description: "Take a warden's Wayseal and choose which outer route becomes the scoring rune.",
     scoreLimit: 120,
     timeLimit: 210,
     botCount: 2,
@@ -1132,6 +1180,12 @@ export const MATCH_TUNING = Object.freeze({
   training: {
     pressureDamage: 6,
     pressureCooldown: 1.1,
+  },
+  wildmarch: {
+    sealRadius: 13,
+    pickupRadius: 28,
+    returnDuration: 16,
+    routeDuration: 14,
   },
   controlScorePerSecond: 12,
   controlOvertimeGrace: 2.5,
@@ -1285,6 +1339,25 @@ export function validateContent({
     if (!Number.isFinite(value) || value <= 0) {
       errors.push(`training.${key} must be positive`);
     }
+  }
+  const wildmarch = tuning.wildmarch ?? {};
+  for (const key of [
+    "sealRadius",
+    "pickupRadius",
+    "returnDuration",
+    "routeDuration",
+  ]) {
+    if (!Number.isFinite(wildmarch[key]) || wildmarch[key] <= 0) {
+      errors.push(`wildmarch.${key} must be positive`);
+    }
+  }
+  if (
+    wildmarch.sealRadius > 18 || wildmarch.pickupRadius > 40 ||
+    wildmarch.pickupRadius <= wildmarch.sealRadius ||
+    wildmarch.returnDuration < 8 || wildmarch.returnDuration > 24 ||
+    wildmarch.routeDuration < 8 || wildmarch.routeDuration > 24
+  ) {
+    errors.push("wildmarch Wayseal timing and pickup geometry must stay bounded");
   }
 
   for (const agent of characters) {
@@ -1479,6 +1552,40 @@ export function validateContent({
         !Number.isFinite(shrine.cooldown) || shrine.cooldown < 3
       ) {
         errors.push(`${map.id} has an invalid movement shrine`);
+      }
+    }
+    const routes = map.wildmarch?.routes;
+    if (
+      !Array.isArray(routes) || routes.length !== 2 ||
+      new Set(routes.map((route) => route.id)).size !== 2
+    ) {
+      errors.push(`${map.id} needs two distinct WILDMARCH routes`);
+    } else {
+      for (const route of routes) {
+        const radius = route.radius;
+        const inside =
+          Number.isFinite(route.x) && Number.isFinite(route.y) &&
+          Number.isFinite(radius) && radius >= 44 && radius <= 72 &&
+          route.x - radius >= map.size.inset &&
+          route.x + radius <= map.size.width - map.size.inset &&
+          route.y - radius >= map.size.inset &&
+          route.y + radius <= map.size.height - map.size.inset;
+        const clearOfCover = inside && !map.obstacles.some((obstacle) =>
+          circleRectangleOverlap(route, radius, obstacle)
+        );
+        if (!route.id || !route.name || !inside || !clearOfCover) {
+          errors.push(`${map.id} has an invalid WILDMARCH route`);
+        }
+      }
+      if (
+        routes.some((route) =>
+          Math.hypot(route.x - map.objective.x, route.y - map.objective.y) <=
+            route.radius + map.objective.radius
+        ) ||
+        Math.hypot(routes[0].x - routes[1].x, routes[0].y - routes[1].y) <=
+          routes[0].radius + routes[1].radius
+      ) {
+        errors.push(`${map.id} WILDMARCH routes must create distinct rotations`);
       }
     }
     for (const spawn of map.spawns ?? []) {

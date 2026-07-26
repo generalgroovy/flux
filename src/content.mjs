@@ -51,19 +51,19 @@ const character = ({
 };
 
 export const RACES = Object.freeze([
-  { id: "human", name: "Human", trait: "Adaptable", boon: "+4% Flux", drawback: "−2% health", health: 0.98, speed: 1, flux: 1.04, flow: 1 },
-  { id: "orc", name: "Iron Orc", trait: "Committed", boon: "+7% health", drawback: "−4% speed", health: 1.07, speed: 0.96, flux: 1, flow: 1 },
-  { id: "troll", name: "Moss Troll", trait: "Enduring", boon: "+9% health", drawback: "−6% Flux", health: 1.09, speed: 0.98, flux: 0.94, flow: 1 },
-  { id: "wood_elf", name: "Briar Elf", trait: "Fleet", boon: "+5% speed", drawback: "−5% health", health: 0.95, speed: 1.05, flux: 1, flow: 1 },
-  { id: "night_elf", name: "Gloam Elf", trait: "Arcane", boon: "+8% Flux", drawback: "−4% FLOW", health: 0.98, speed: 1, flux: 1.08, flow: 0.96 },
-  { id: "dwarf", name: "Forge Dwarf", trait: "Grounded", boon: "+6% health", drawback: "−3% speed", health: 1.06, speed: 0.97, flux: 1, flow: 1 },
-  { id: "gnome", name: "Copper Gnome", trait: "Efficient", boon: "+7% Flux", drawback: "−4% health", health: 0.96, speed: 1.01, flux: 1.07, flow: 1 },
-  { id: "undead", name: "Ash Revenant", trait: "Relentless", boon: "+5% health", drawback: "−5% FLOW", health: 1.05, speed: 1, flux: 1, flow: 0.95 },
-  { id: "sylph", name: "Cloud Sylph", trait: "Weightless", boon: "+6% speed", drawback: "−7% health", health: 0.93, speed: 1.06, flux: 1, flow: 1.02 },
-  { id: "tideborn", name: "Reefborn", trait: "Fluid", boon: "+7% FLOW", drawback: "−3% health", health: 0.97, speed: 1, flux: 1, flow: 1.07 },
-  { id: "stonekin", name: "Cairnkin", trait: "Anchored", boon: "+8% health", drawback: "−5% speed", health: 1.08, speed: 0.95, flux: 1, flow: 1 },
-  { id: "ashling", name: "Cinderling", trait: "Volatile", boon: "+5% speed / Flux", drawback: "−7% health", health: 0.93, speed: 1.05, flux: 1.05, flow: 1 },
-  { id: "wyrmbound", name: "Wyrmbound", trait: "Scaled", boon: "−14% forced movement", drawback: "−6% FLOW / −2% speed", health: 1.03, speed: 0.98, flux: 1.02, flow: 0.94, knockback: 0.86 },
+  { id: "human", name: "Human", trait: "Adaptable", feature: "open circlet", featureGlyph: "⌃", boon: "+4% Flux", drawback: "−2% health", health: 0.98, speed: 1, flux: 1.04, flow: 1 },
+  { id: "orc", name: "Iron Orc", trait: "Committed", feature: "twin tusks", featureGlyph: "ᚢ", boon: "+7% health", drawback: "−4% speed", health: 1.07, speed: 0.96, flux: 1, flow: 1 },
+  { id: "troll", name: "Moss Troll", trait: "Enduring", feature: "moss antlers", featureGlyph: "Y", boon: "+9% health", drawback: "−6% Flux", health: 1.09, speed: 0.98, flux: 0.94, flow: 1 },
+  { id: "wood_elf", name: "Briar Elf", trait: "Fleet", feature: "leaf-point ears", featureGlyph: "‹›", boon: "+5% speed", drawback: "−5% health", health: 0.95, speed: 1.05, flux: 1, flow: 1 },
+  { id: "night_elf", name: "Gloam Elf", trait: "Arcane", feature: "moon-point ears", featureGlyph: "◖◗", boon: "+8% Flux", drawback: "−4% FLOW", health: 0.98, speed: 1, flux: 1.08, flow: 0.96 },
+  { id: "dwarf", name: "Forge Dwarf", trait: "Grounded", feature: "braided square beard", featureGlyph: "⋈", boon: "+6% health", drawback: "−3% speed", health: 1.06, speed: 0.97, flux: 1, flow: 1 },
+  { id: "gnome", name: "Copper Gnome", trait: "Efficient", feature: "high copper cap", featureGlyph: "△", boon: "+7% Flux", drawback: "−4% health", health: 0.96, speed: 1.01, flux: 1.07, flow: 1 },
+  { id: "undead", name: "Ash Revenant", trait: "Relentless", feature: "rune ribs", featureGlyph: "≡", boon: "+5% health", drawback: "−5% FLOW", health: 1.05, speed: 1, flux: 1, flow: 0.95 },
+  { id: "sylph", name: "Cloud Sylph", trait: "Weightless", feature: "streamer wings", featureGlyph: "≋", boon: "+6% speed", drawback: "−7% health", health: 0.93, speed: 1.06, flux: 1, flow: 1.02 },
+  { id: "tideborn", name: "Reefborn", trait: "Fluid", feature: "cheek fins", featureGlyph: "⋉⋊", boon: "+7% FLOW", drawback: "−3% health", health: 0.97, speed: 1, flux: 1, flow: 1.07 },
+  { id: "stonekin", name: "Cairnkin", trait: "Anchored", feature: "cairn shoulders", featureGlyph: "◆◆", boon: "+8% health", drawback: "−5% speed", health: 1.08, speed: 0.95, flux: 1, flow: 1 },
+  { id: "ashling", name: "Cinderling", trait: "Volatile", feature: "flame crest", featureGlyph: "♨", boon: "+5% speed / Flux", drawback: "−7% health", health: 0.93, speed: 1.05, flux: 1.05, flow: 1 },
+  { id: "wyrmbound", name: "Wyrmbound", trait: "Scaled", feature: "scaled wings", featureGlyph: "〽", boon: "−14% forced movement", drawback: "−6% FLOW / −2% speed", health: 1.03, speed: 0.98, flux: 1.02, flow: 0.94, knockback: 0.86 },
 ]);
 
 export const CHARACTERS = Object.freeze([
@@ -1418,6 +1418,17 @@ export function validateContent({
       } else if (!["line-volley", "field-crown", "wind-vortex"].includes(ultimate.kind)) {
         errors.push(`${agent.id}.ultimate kind is unsupported`);
       }
+    }
+  }
+
+  const raceFeatures = new Set();
+  for (const race of races) {
+    if (!race.feature || !race.featureGlyph) {
+      errors.push(`${race.id} must declare a readable silhouette feature and glyph`);
+    } else if (raceFeatures.has(race.feature)) {
+      errors.push(`${race.id}.feature must be distinct`);
+    } else {
+      raceFeatures.add(race.feature);
     }
   }
 

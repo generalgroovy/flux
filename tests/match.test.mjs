@@ -144,6 +144,8 @@ test("content ships ten playable champions, thirteen races, eight maps, and all 
     assert.ok(agent.affinity.id);
     assert.equal(agent.affinity.kind, "element");
   }
+  assert.equal(new Set(RACES.map((race) => race.feature)).size, RACES.length);
+  assert.ok(RACES.every((race) => race.feature && race.featureGlyph));
   const yrsa = getCharacter("rimewing");
   assert.equal(yrsa.passive.kind, "movement-prime");
   assert.equal(yrsa.ultimate.kind, "line-volley");

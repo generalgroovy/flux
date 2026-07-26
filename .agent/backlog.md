@@ -7,7 +7,12 @@ recovery, and performance are accepted at smaller scales.
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.32.0 on Garuda Sway and Windows: earn EDGEWEAVE through
+1. Hands-on accept HEX 0.33.0 on Garuda Sway and Windows: navigate the full
+   race-column Muster Hall at desktop and narrow widths; require that every
+   champion launches with their visible ancestry, the persistent summary and
+   hazard rule stay usable, the compact/detail HUD toggle persists,
+   69%-transparent comic callouts remain legible, and every shipped ancestry
+   mark reads in motion. Then earn EDGEWEAVE through
    sprint, hop, slide, and wall-kick near-misses; require a narrow but learnable
    band, no reward on hits or stationary proximity, one reward across a tight
    fan, clear local comic/audio feedback, and no dense-fight visual noise.
@@ -89,7 +94,9 @@ recovery, and performance are accepted at smaller scales.
 
 ## Expansion acceptance — not exposed until complete
 
-- Thirteen races and their local/remote selector are live. Wyrmbound is the first
+- Thirteen readable race columns are live; champion choice now binds ancestry in
+  local, quick-start, bot, and remote presentation. Empty columns are explicit,
+  non-interactive roster gaps. Wyrmbound is the first
   expansion culture with a mechanical ancestry, home battleground, and opposed
   complete-champion pair: Yrsa's movement/ice conversion versus Varka's
   terrain/Ember conversion. Next: hands-on tune the paired matchup, then author a

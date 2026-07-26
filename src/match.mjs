@@ -153,7 +153,7 @@ export function createMatch(options = {}) {
 
 function createEntity(spec, index, map) {
   const agent = getCharacter(spec.characterId);
-  const race = getRace(spec.raceId);
+  const race = getRace(spec.raceId ?? agent.homeRaceId);
   const maxHealth = Math.round(agent.health * race.health);
   const maxFlow = MATCH_TUNING.flow.maximum * race.flow;
   const maxFlux = MATCH_TUNING.flux.maximum * race.flux;

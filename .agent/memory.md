@@ -1182,3 +1182,48 @@
   260-speed floor, 9-FLOW return, cue mix, and high-latency prediction feel fair.
   Next prioritize one additional complete contrasting champion for an existing
   race and validate it in compact PvP before expanding PvPvE content.
+
+## 2026-07-26 — HEX 0.33.0 coherent Muster Hall and readable ancestries
+
+- **Player-facing problem:** Play was a long, space-wasting form whose launch
+  action sat below a large atlas. Race and champion were independent selectors,
+  permitting thematically and visually incoherent combinations. Text and
+  callouts were too small/opaque, the HUD had no compact/detail choice, and race
+  silhouettes were communicated mostly by a name.
+- **Implemented solution:** Rebuilt Play as a responsive two-pane Muster Hall.
+  Format, functional rites, a horizontally comparable race-column champion
+  matrix, spatial atlas, real hazard rule, bot count, live champion/element/map
+  summary, and launch action now form one usable flow. Each champion carries its
+  home ancestry through configured, quick, bot-default, and online presentation;
+  online ancestry is visible but locked. All thirteen races declare unique
+  physical marks rendered on bodies (ears, tusks, antlers, beard, cap, ribs,
+  wings, fins, shoulders, crest). Stable element colors are paired with names
+  and glyphs. Base type is 17 px, the persistent HUD toggles compact/full detail,
+  and comic/toast fills are exactly 31% opaque (69% transparent) with contrast
+  edges, blur, and shadow. Empty race columns are honest and non-interactive.
+- **Verification:** `node --check` passed for game/content sources;
+  `git diff --check` passed before documentation. Focused DOM/gameplay coverage
+  passed 54/54. The final first full run passed its 75-check deterministic/DOM/
+  lobby/conditioner stage, then correctly failed the live-server assertion after
+  the release version changed; the stale assertion was updated. Focused live
+  authoritative networking passed 1/1 and isolated cleanup passed 1/1. New DOM
+  coverage proves 13 columns, 10 playable rows, no independent local race input,
+  race-feature copy, champion-bound quick-start ancestry, persistent HUD detail,
+  real hazard disabling, and clean local 2P launch.
+- **Final release check:** After synchronizing the server, updater, and network
+  assertion versions, the complete `npm test` passed 77/77: 75 deterministic/
+  DOM/lobby/conditioner/diagnostic checks, one live authoritative WebSocket
+  lifecycle, and one isolated cleanup check. One preceding combined-shell run
+  reported a file-level live-network failure without diagnostic detail; cleanup,
+  the isolated network test, and the exact full rerun all passed.
+- **Launch and cleanup:** Canonical port 8000 returned HEX 0.33.0/protocol 2;
+  `/`, `/src/game.mjs`, and the health endpoint returned successfully with
+  security headers. `npm stop` terminated PID 267474 and a failed follow-up
+  request confirmed port 8000 was closed. Future smokes reuse port 8000 after
+  cleanup instead of incrementing ports.
+- **Known limitation / next task:** No browser executable or second device is
+  installed here, so hands-on layout, silhouette, alpha/contrast, controller,
+  and remote-device acceptance remain pending. Only Wyrmbound currently has a
+  complete two-champion column. Next author one mechanically contrasting,
+  production-complete pair for an empty ancestry or second champion for an
+  existing ancestry, validate it in compact PvP, and repeat without stat reskins.

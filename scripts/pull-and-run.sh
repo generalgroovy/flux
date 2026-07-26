@@ -64,7 +64,7 @@ flux_is_ready() {
           response.ok &&
             body.product === "FLUX" &&
             body.status === "ready" &&
-            body.version === "0.33.0" &&
+            body.version === "0.34.2" &&
             body.protocol === 2
             ? 0
             : 1
@@ -166,6 +166,16 @@ npm ci --ignore-scripts
 printf 'Running deterministic tests...\n'
 npm test
 
+if [[ "${FLUX_DESKTOP:-1}" == 1 ]]; then
+  printf 'Opening FLUX in its desktop window...\n'
+  if [[ "${FLUX_FRIENDS:-0}" == 1 ]]; then
+    npm run start:friends
+  else
+    npm run start:desktop
+  fi
+  exit $?
+fi
+
 url="http://127.0.0.1:${port}"
 if port_is_in_use "${port}"; then
   if flux_is_ready "${url}"; then
@@ -198,7 +208,7 @@ if port_is_in_use "${port}"; then
 fi
 
 printf 'Starting FLUX at %s\n' "${url}"
-HOST="${FLUX_HOST:-${DIFF_HOST:-127.0.0.1}}" PORT="${port}" npm start &
+HOST="${FLUX_HOST:-${DIFF_HOST:-127.0.0.1}}" PORT="${port}" npm run start:server &
 server_pid=$!
 
 cleanup() {

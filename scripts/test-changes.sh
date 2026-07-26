@@ -16,7 +16,7 @@ printf 'Installing locked dependencies...\n'
 env npm_config_cache="${TMPDIR:-/tmp}/flux-npm-cache" npm ci --ignore-scripts
 
 printf 'Checking source syntax...\n'
-for source_file in src/*.mjs src/network/*.mjs scripts/*.mjs; do
+for source_file in src/*.mjs src/network/*.mjs scripts/*.mjs desktop/*.mjs; do
   node --check "${source_file}"
 done
 bash -n scripts/pull-and-run.sh
@@ -63,7 +63,7 @@ if [[ -z "${port}" ]]; then
   exit 1
 fi
 
-printf '\nFLUX 0.33.0 passed verification.\n'
+printf '\nFLUX 0.34.2 passed verification.\n'
 printf 'Open http://127.0.0.1:%s and test every mode shortcut plus F1 field info.\n' "${port}"
 printf 'Press Ctrl+C here to stop the server.\n'
 

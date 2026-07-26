@@ -15,4 +15,14 @@ $shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$launcherPath`
 $shortcut.WorkingDirectory = $RepositoryDirectory
 $shortcut.Description = "Update, verify, and launch FLUX"
 $shortcut.Save()
-Write-Host "Installed FLUX desktop launcher: $shortcutPath"
+
+$friendsShortcutPath = Join-Path $desktop "FLUX Arena - Play with Friends.lnk"
+$friendsShortcut = $shell.CreateShortcut($friendsShortcutPath)
+$friendsShortcut.TargetPath = "powershell.exe"
+$friendsShortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$launcherPath`" -RepositoryDirectory `"$RepositoryDirectory`" -Branch `"$Branch`" -Friends"
+$friendsShortcut.WorkingDirectory = $RepositoryDirectory
+$friendsShortcut.Description = "Update FLUX and create a private desktop invite"
+$friendsShortcut.Save()
+Write-Host "Installed FLUX desktop launchers:"
+Write-Host "  $shortcutPath"
+Write-Host "  $friendsShortcutPath"

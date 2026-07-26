@@ -10,7 +10,7 @@ import { MATCH_TUNING } from "../src/content.mjs";
 import { LobbyService } from "../src/network/lobbies.mjs";
 
 const root = resolve(fileURLToPath(new URL("../", import.meta.url)));
-const serverVersion = "0.33.0";
+const serverVersion = "0.34.2";
 const protocolVersion = 2;
 const requestedPort =
   argumentValue("--port") ?? process.env.PORT ?? process.env.FLUX_PORT ?? process.env.DIFF_PORT ?? "8000";
@@ -25,6 +25,7 @@ const healthPath = "/__flux_health";
 const legacyHealthPath = "/__diff_health";
 const lobbyPath = "/api/lobbies";
 const instanceId = randomUUID();
+const desktopToken = process.env.FLUX_DESKTOP_TOKEN ?? null;
 const registryDirectory = join(tmpdir(), "flux-arena-servers");
 const registryPath = join(registryDirectory, `${sanitizeRegistryPart(host)}-${port}.json`);
 const publicFiles = new Set([
@@ -34,6 +35,7 @@ const publicFiles = new Set([
   "/src/game.mjs",
   "/src/match.mjs",
   "/src/network/conditioner.mjs",
+  "/src/network/invite.mjs",
   "/src/network/quality.mjs",
 ]);
 const contentTypes = new Map([
@@ -83,6 +85,7 @@ const server = createServer(async (request, response) => {
           version: serverVersion,
           protocol: protocolVersion,
           instance: instanceId,
+          ...(desktopToken ? { desktopToken } : {}),
         }),
       );
       return;
@@ -241,6 +244,10 @@ server.on("close", () => {
 });
 process.once("SIGINT", shutdown);
 process.once("SIGTERM", shutdown);
+process.once("disconnect", shutdown);
+process.on("message", (message) => {
+  if (message?.type === "shutdown") shutdown();
+});
 
 function respond(response, status, message) {
   response.writeHead(status, {

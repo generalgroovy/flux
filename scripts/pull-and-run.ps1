@@ -2,7 +2,8 @@ param(
   [string]$RepositoryDirectory = (Join-Path $HOME "Projects\flux"),
   [string]$Branch = $(if ($env:FLUX_BRANCH) { $env:FLUX_BRANCH } elseif ($env:DIFF_BRANCH) { $env:DIFF_BRANCH } else { "main" }),
   [int]$Port = $(if ($env:FLUX_PORT) { [int]$env:FLUX_PORT } elseif ($env:DIFF_PORT) { [int]$env:DIFF_PORT } else { 8000 }),
-  [string]$Repository = $(if ($env:FLUX_REPOSITORY) { $env:FLUX_REPOSITORY } elseif ($env:DIFF_REPOSITORY) { $env:DIFF_REPOSITORY } else { "https://github.com/generalgroovy/flux.git" })
+  [string]$Repository = $(if ($env:FLUX_REPOSITORY) { $env:FLUX_REPOSITORY } elseif ($env:DIFF_REPOSITORY) { $env:DIFF_REPOSITORY } else { "https://github.com/generalgroovy/flux.git" }),
+  [switch]$Friends
 )
 
 $ErrorActionPreference = "Stop"
@@ -47,10 +48,16 @@ try {
   & npm test
   if ($LASTEXITCODE -ne 0) { throw "Tests failed; FLUX was not started." }
 
+  if ($env:FLUX_DESKTOP -ne "0") {
+    if ($Friends -or $env:FLUX_FRIENDS -eq "1") { & npm run start:friends } else { & npm run start:desktop }
+    if ($LASTEXITCODE -ne 0) { throw "FLUX desktop runtime exited with an error." }
+    return
+  }
+
   function Test-FluxReady([int]$CandidatePort) {
     try {
       $health = Invoke-RestMethod -Uri "http://127.0.0.1:$CandidatePort/__flux_health" -TimeoutSec 1
-      return $health.product -eq "FLUX" -and $health.status -eq "ready" -and $health.version -eq "0.33.0"
+      return $health.product -eq "FLUX" -and $health.status -eq "ready" -and $health.version -eq "0.34.2"
     } catch { return $false }
   }
   function Test-PortUsed([int]$CandidatePort) {
@@ -68,7 +75,7 @@ try {
 
   $env:PORT = [string]$Port
   $env:HOST = $(if ($env:FLUX_HOST) { $env:FLUX_HOST } elseif ($env:DIFF_HOST) { $env:DIFF_HOST } else { "127.0.0.1" })
-  $server = Start-Process -FilePath "npm.cmd" -ArgumentList "start" -WorkingDirectory $RepositoryDirectory -NoNewWindow -PassThru
+  $server = Start-Process -FilePath "npm.cmd" -ArgumentList "run", "start:server" -WorkingDirectory $RepositoryDirectory -NoNewWindow -PassThru
   try {
     $ready = $false
     foreach ($attempt in 1..50) {

@@ -15,8 +15,25 @@ the FLUX context, run the actual suite, and push only the active agent branch.
 
 ## Release acceptance
 
-1. Hands-on accept FLUX 0.33.0 on Garuda Sway and Windows: navigate the main
-   menu with pointer, keyboard arrows, Tab, Enter, and a gamepad; require every
+1. Ship FLUX 0.34.2 through a signed, player-accessible AppImage/NSIS update
+   feed. Require launch-time update checks to succeed without credentials,
+   verify publisher/checksum identity before install, retain the previous build
+   for rollback, and prove normal/error shutdown leaves no authority, tunnel,
+   updater, or Electron children. The Linux AppImage builds and launches; the
+   Windows bundle assembles, but NSIS creation still needs a Windows runner or
+   Wine plus a real signing identity. The current private/no-release GitHub feed
+   returns 404 and is not release-ready.
+2. Complete two-device desktop invite acceptance. The host must choose **Play
+   with Friends**, create a private lobby, and send one `flux://` invite; the
+   guest must launch into the same authoritative match without a browser, VPN,
+   account, or port forwarding. The verified Quick Tunnel path is implemented,
+   but repeated live probes exposed intermittent `trycloudflare.com` DNS
+   publication failures. Treat it as a development fallback; select and deploy
+   an owned authenticated relay before release.
+3. Hands-on accept FLUX 0.34.2 on Garuda Sway and Windows: navigate the main
+   menu with pointer, keyboard arrows, Tab, Enter, and a gamepad; require the
+   desktop window to cover the active display and re-enter fullscreen if the
+   window manager leaves it, every
    play choice to react visibly, focus to remain obvious, and all decision and
    launch-summary copy to wrap without clipping at desktop and narrow widths.
    Then navigate the full race-column Muster Hall at desktop and narrow widths;
@@ -61,25 +78,25 @@ the FLUX context, run the actual suite, and push only the active agent branch.
    sudden-score overtime, center restoration, restrained cue density, and clear
    ordinary-drop versus deliberate-host-shutdown copy.
    Verify both installed desktop launchers update, test, open, and shut down.
-2. Run a 30-minute two-device remote soak through the intended VPN/router path;
+4. Run a 30-minute two-device remote soak through the intended relay path;
    require clean join-in-progress, host migration, rematch, disconnect recovery,
    Wayseal handoff/drop state, and deliberate host shutdown under real latency.
-3. Exercise the deterministic network lab at 80/20/3 and 180/60/10
+5. Exercise the deterministic network lab at 80/20/3 and 180/60/10
    latency/jitter/loss profiles; require stable reconciliation, no backward
    snapshots, honest real metrics, explicit LAB state, and clean zero-profile
    behavior after reset.
-4. Hands-on tune the 1.7× counter-strafe control rate on normal ground and ice;
+6. Hands-on tune the 1.7× counter-strafe control rate on normal ground and ice;
    require sharp reversals without instant direction changes or animation noise.
-5. Hands-on tune 35%/180-unit hop carry through diagonal escape, wall-kick, ice,
+7. Hands-on tune 35%/180-unit hop carry through diagonal escape, wall-kick, ice,
    unit-collision, and shrine routes; reject any repeatable speed exploit.
-6. Hands-on tune slide entry at 250 speed, 22 FLOW, 720 travel speed, 0.3-second
+8. Hands-on tune slide entry at 250 speed, 22 FLOW, 720 travel speed, 0.3-second
    commitment, and 32% steering; verify readable cover impacts and no hold exploit.
-7. Hands-on tune the 110 ms/18% one-use landing cut across normal ground, ice,
+9. Hands-on tune the 110 ms/18% one-use landing cut across normal ground, ice,
    slide links, wall kicks, and high-latency remote prediction.
-8. Observe new players completing the adaptive sprint→slide→hop→real defense
+10. Observe new players completing the adaptive sprint→slide→hop→real defense
    First Rite reads; require comprehension without coaching repetition or
    accidental completion.
-9. Universal movement commitment boundaries, the 600-tick chain ceiling, three
+11. Universal movement commitment boundaries, the 600-tick chain ceiling, three
    production champion contracts, and the complete WILDMARCH Wayseal lifecycle
    are deterministic. Next acceptance remains hands-on feel, route readability,
    and remote prediction.

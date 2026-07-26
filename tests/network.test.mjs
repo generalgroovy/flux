@@ -37,7 +37,7 @@ test(
     );
     assert.equal(legacyHealth.product, "DIFF");
     assert.equal(health.status, "ready");
-    assert.equal(health.version, "0.33.0");
+    assert.equal(health.version, "0.34.2");
     assert.equal(health.protocol, 2);
     assert.match(health.instance, /^[0-9a-f-]{36}$/i);
     const initialList = await fetch(`${origin}/api/lobbies`).then((response) =>

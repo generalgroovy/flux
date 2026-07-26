@@ -73,7 +73,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
           type: "hello",
           clientId: "browser-client",
           protocol: 2,
-          version: "0.33.0",
+          version: "0.34.2",
           tickRate: 120,
         });
       });
@@ -539,6 +539,16 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   );
 
   document.querySelector('[data-panel="play"]').click();
+  const deployClick = new window.Event("click", {
+    bubbles: true,
+    cancelable: true,
+  });
+  document.querySelector(".deploy-button").dispatchEvent(deployClick);
+  assert.equal(
+    deployClick.defaultPrevented,
+    false,
+    "menu delegation must not cancel the Play form's submit button",
+  );
   const solo = document.querySelector('input[name="format"][value="solo"]');
   const local = document.querySelector('input[name="format"][value="local"]');
   solo.checked = false;

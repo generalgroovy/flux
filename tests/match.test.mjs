@@ -136,6 +136,32 @@ test("The Fracture ships a complete nested scale ladder", () => {
   assert.ok(fractureMaps.every((map) => Number.isFinite(map.atlas.regionY)));
 });
 
+test("the covenant shrine rewards committed movement without passive damage", () => {
+  const state = duel({ mapId: "oathscar_vale", hazardsEnabled: false });
+  const runner = state.entities[0];
+  runner.x = 680;
+  runner.y = 450;
+  runner.lastSafeX = runner.x;
+  runner.lastSafeY = runner.y;
+  runner.flux = 40;
+  let claim = null;
+  for (let tick = 0; tick < 40 && !claim; tick += 1) {
+    stepMatch(state, {
+      [runner.id]: {
+        moveX: 1, moveY: 0, aimX: 1, aimY: 0,
+        mobility: tick === 0,
+      },
+    });
+    claim = state.events.find((event) => event.type === "shrineClaim") ?? null;
+  }
+  assert.ok(claim);
+  assert.equal(claim.entityId, runner.id);
+  assert.ok(runner.flux > 40);
+  assert.equal(state.shrines[0].readyIn > 6, true);
+  assert.equal(state.entities[1].health, state.entities[1].maxHealth);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
 test("race tradeoffs alter bounded resources without replacing character kits", () => {
   const state = duel({ leftRace: "sylph", rightRace: "stonekin" });
   const [sylph, stonekin] = state.entities;

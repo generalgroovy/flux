@@ -104,6 +104,11 @@ export function createMatch(options = {}) {
     mines: [],
     elementFields: [],
     decoys: [],
+    shrines: (map.shrines ?? []).map((shrine) => ({
+      ...shrine,
+      readyIn: 0,
+      insideIds: [],
+    })),
     hazards: (options.hazardsEnabled === false ? [] : map.hazards).map((hazard) => ({
       ...hazard,
       phase: "cooldown",
@@ -324,6 +329,7 @@ export function stepMatch(
 
   resolveUnitCollisions(state, activeMap);
   resolveMapCollisions(state, activeMap);
+  updateShrines(state, boundedDelta);
   updateMines(state, boundedDelta, activeMap);
   updateProjectiles(state, boundedDelta, activeMap);
   updateHazards(state, boundedDelta);
@@ -332,6 +338,37 @@ export function stepMatch(
   updateMatchClock(state, boundedDelta, mode);
   repairState(state, map);
   return state;
+}
+
+function updateShrines(state, delta) {
+  for (const shrine of state.shrines ?? []) {
+    shrine.readyIn = Math.max(0, shrine.readyIn - delta);
+    const previous = new Set(shrine.insideIds);
+    const inside = [];
+    for (const entity of state.entities) {
+      if (!entity.alive || entity.neutral) continue;
+      const radius = getCharacter(entity.characterId).radius;
+      const inCircle = Math.hypot(entity.x - shrine.x, entity.y - shrine.y) <= shrine.radius + radius;
+      if (!inCircle) continue;
+      inside.push(entity.id);
+      const speed = Math.hypot(entity.vx, entity.vy);
+      if (
+        shrine.readyIn > 0 || previous.has(entity.id) ||
+        speed < shrine.speedRequired ||
+        entity.flux > entity.maxFlux - Math.min(12, shrine.fluxReward)
+      ) continue;
+      const restored = Math.min(shrine.fluxReward, entity.maxFlux - entity.flux);
+      entity.flux += restored;
+      entity.fluxRecoveryDelay = MATCH_TUNING.flux.recoveryDelay;
+      shrine.readyIn = shrine.cooldown;
+      state.events.push({
+        type: "shrineClaim", shrineId: shrine.id, entityId: entity.id,
+        team: entity.team, amount: restored, x: shrine.x, y: shrine.y,
+      });
+      break;
+    }
+    shrine.insideIds = inside;
+  }
 }
 
 function tickEntity(entity, delta) {
@@ -1577,6 +1614,11 @@ function resetRound(state, map, mode) {
   state.mines = [];
   state.elementFields = [];
   state.decoys = [];
+  state.shrines = (map.shrines ?? []).map((shrine) => ({
+    ...shrine,
+    readyIn: 0,
+    insideIds: [],
+  }));
   if (mode.id === "survival") {
     state.survival.wave += 1;
     const enemyCount = state.entities.filter(
@@ -1964,6 +2006,14 @@ export function matchInvariantErrors(state) {
   for (const field of state.elementFields) {
     for (const key of ["x", "y", "duration"]) {
       if (!Number.isFinite(field[key])) errors.push(`${field.id}.${key} is not finite`);
+    }
+  }
+  for (const shrine of state.shrines ?? []) {
+    for (const key of ["x", "y", "radius", "readyIn"]) {
+      if (!Number.isFinite(shrine[key])) errors.push(`${shrine.id}.${key} is not finite`);
+    }
+    if (shrine.readyIn < 0 || shrine.readyIn > shrine.cooldown) {
+      errors.push(`${shrine.id}.readyIn is outside its cooldown`);
     }
   }
   return errors;

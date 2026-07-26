@@ -10,7 +10,13 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
-Build 0.16.0 completes the first nested region. Enter **The Fracture** from the
+Build 0.17.0 adds the first movement-reactive world objective. The Broken
+Covenant shrine in Oathscar Vale restores bounded Flux only when a fighter who
+has spent magic crosses it at high speed. Its exposed central route, strict
+entry-speed read, visible seven-second shared lockout, and zero direct damage
+make movement execution and timing—not elemental affinity—the source of value.
+
+Build 0.16.0 completed the first nested region. Enter **The Fracture** from the
 realm chart to choose a full gameplay-scale ladder: Sundered Road for duel,
 Ashen Ford for small fights, Pilgrim Steps for medium contests, and Oathscar Vale
 for large encounters. Each is fully selectable in solo, local, and remote play;

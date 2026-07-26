@@ -642,6 +642,11 @@ export const MAPS = Object.freeze([
       { type: "road", x: 105, y: 410, width: 1390, height: 80, label: "VALE CROSSING" },
       { type: "rune", x: 800, y: 450, radius: 190, label: "COVENANT RING" },
     ],
+    shrines: [{
+      id: "covenant-shrine", x: 800, y: 450, radius: 74,
+      speedRequired: 610, fluxReward: 24, cooldown: 7,
+      name: "BROKEN COVENANT",
+    }],
     objective: { x: 800, y: 450, radius: 155 },
   },
   {
@@ -1043,6 +1048,19 @@ export function validateContent({
         !Number.isFinite(landmark.y)
       ) {
         errors.push(`${map.id} has an invalid landmark`);
+      }
+    }
+    for (const shrine of map.shrines ?? []) {
+      if (
+        !shrine.id || !shrine.name || !Number.isFinite(shrine.x) ||
+        !Number.isFinite(shrine.y) || !Number.isFinite(shrine.radius) ||
+        shrine.radius < 40 || !Number.isFinite(shrine.speedRequired) ||
+        shrine.speedRequired < tuning.flow.sprintMultiplier * 300 ||
+        !Number.isFinite(shrine.fluxReward) || shrine.fluxReward <= 0 ||
+        shrine.fluxReward > tuning.flux.maximum / 2 ||
+        !Number.isFinite(shrine.cooldown) || shrine.cooldown < 3
+      ) {
+        errors.push(`${map.id} has an invalid movement shrine`);
       }
     }
     for (const spawn of map.spawns ?? []) {

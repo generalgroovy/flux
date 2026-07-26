@@ -2,7 +2,7 @@
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.16.0 on Garuda Sway and Windows: complete all four
+1. Hands-on accept HEX 0.17.0 on Garuda Sway and Windows: complete all four
    FIRST RITE reads; chain sprint, hop, and wall kicks around cover; verify
    FLOW cost/recovery; launch all five home shortcuts; use every main-menu
    panel, toggle field info with `F1`, and verify
@@ -43,6 +43,9 @@
   multiplying trees across races and disciplines.
 - Grow each discipline through complete spell decisions and reaction tests; do
   not publish ten cosmetic numerical variants or unimplemented selectors.
+- The first movement shrine is authoritative in Oathscar Vale. Next acceptance:
+  hands-on tune its 610-speed threshold, 24-Flux reward, and seven-second shared
+  lockout before creating regional variants.
 - Prototype BR/roguelike rules only as internal match modifiers until their win,
   loss, spawn, loot, late-join, and reset flows are complete.
 

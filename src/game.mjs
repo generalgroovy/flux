@@ -957,6 +957,14 @@ function processEvents(events, tick) {
     } else if (event.type === "fluxDry") {
       tone(72, 0.08, "square", 0.04);
       toast(`LOW FLUX · NEED ${Math.ceil(event.required)}`, "comic");
+    } else if (event.type === "shrineClaim") {
+      tone(660, 0.12, "triangle", 0.065);
+      burst(event.x, event.y, "#efd379", 18);
+      rings.push({
+        x: event.x, y: event.y, radius: 16,
+        life: 0.5, maximumLife: 0.5, color: "#efd379",
+      });
+      toast(`OATH KEPT! · +${Math.round(event.amount)} FLUX`, "comic");
     } else if (event.type === "veilDecoy") {
       tone(330, 0.08, "sine", 0.045);
       toast("VEIL · INTENT SPLIT", "comic");
@@ -1071,6 +1079,7 @@ function render(time) {
     context.translate(viewport.offsetX + shakeX, viewport.offsetY + shakeY);
     context.scale(viewport.scale, viewport.scale);
     drawArena(map, time);
+    drawShrines(time);
     drawObjective(map, time);
     drawElementFields(time);
     drawHazards(time);
@@ -1086,6 +1095,33 @@ function render(time) {
   }
   if (app.dataset.view === "game" && pointer.active && localPlayer()) {
     drawCrosshair(time);
+  }
+}
+
+function drawShrines(time) {
+  for (const shrine of matchState.shrines ?? []) {
+    context.save();
+    try {
+      context.translate(shrine.x, shrine.y);
+      const ready = shrine.readyIn === 0;
+      context.fillStyle = ready ? "#d3b65b24" : "#30291d99";
+      context.strokeStyle = ready ? "#efd379" : "#766746";
+      context.lineWidth = settings.highContrast ? 5 : 3;
+      context.setLineDash(ready ? [5, 7] : [2, 12]);
+      context.lineDashOffset = settings.reducedMotion ? 0 : -time * (ready ? 18 : 5);
+      context.beginPath();
+      context.arc(0, 0, shrine.radius, 0, Math.PI * 2);
+      context.fill();
+      context.stroke();
+      context.setLineDash([]);
+      context.fillStyle = ready ? "#f1dfac" : "#897a55";
+      context.font = "700 12px Georgia, serif";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(ready ? "SPRINT THE OATH" : `${Math.ceil(shrine.readyIn)}s`, 0, 0);
+    } finally {
+      context.restore();
+    }
   }
 }
 
@@ -1710,7 +1746,7 @@ function buildContentInterface() {
         <em>${map.region} · ${map.scale}</em>
         <b>${map.name}</b>
         <p><strong>${map.terrain}.</strong> ${map.identity} ${map.lore}</p>
-        <small>${map.obstacles.length} hard-cover ruins · ${map.spawns.length} warded mustering stones · ${map.hazards.length ? `${map.hazards.length} active hazard` : "no authored hazard"}</small>
+        <small>${map.obstacles.length} hard-cover ruins · ${map.spawns.length} warded mustering stones · ${map.hazards.length ? `${map.hazards.length} active hazard` : "no authored hazard"}${map.shrines?.length ? ` · ${map.shrines.length} movement shrine` : ""}</small>
         <button class="text-button codex-action" type="button" data-select-map="${map.id}">Travel here →</button>
       </article>`,
   ).join("");

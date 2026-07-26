@@ -699,3 +699,31 @@
 - **Recommended next task:** Hands-on tune Fracture routes, hazard cadence, and
   atlas legibility; then add the first movement-reactive environmental Flux
   shrine as a fully counterable objective rather than passive map power.
+
+## 2026-07-26 — Movement-reactive Broken Covenant shrine
+
+- **Player-facing problem:** Flux recovery was almost entirely passive, so map
+  mastery and universal movement could not create a deliberate resource swing.
+- **Implemented solution:** Added a validated, simulation-owned shrine to the
+  exposed center of Oathscar Vale. A fresh crossing above 610 movement speed
+  restores up to 24 missing Flux, then visibly locks for everyone for seven
+  seconds. Full-Flux passes do not waste the shrine. It grants no health, damage,
+  affinity bonus, control lock, or invulnerability. Added distinct world art,
+  countdown, comic callout, audio cue, particles, codex metadata, and guide text.
+- **Commands run:** Focused shrine/match test; syntax checks for content,
+  simulation, and controller; `git diff --check`; `npm test` twice around an
+  isolated network rerun; clean server launch on port 8115; HTTP health, shell,
+  and module smoke; clean shutdown.
+- **Tests passed:** 50/50 on the final full run, including shrine activation,
+  bounded reward, shared cooldown, no passive damage, invariant stability,
+  seven-map stress, authoritative networking, and isolated cleanup. The first
+  full run had one process-level network-test failure with no assertion detail;
+  the same network test passed immediately in isolation and the entire suite then
+  passed cleanly, so this is recorded as an intermittent harness event rather
+  than hidden.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.17.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Known limitation:** The threshold/reward/cooldown need hands-on play tuning;
+  no browser executable is installed in this environment.
+- **Recommended next task:** Add a short optional First Rite shrine trial that
+  teaches sprint-versus-dash threshold reads without adding another text step.

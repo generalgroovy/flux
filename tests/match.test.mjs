@@ -613,7 +613,7 @@ test("Varka trades projectile speed for weight only while owning Ember terrain",
   );
   assert.equal(
     state.events.some(
-      (event) => ["douse", "redirect"].includes(event.reaction),
+      (event) => ["vapor", "redirect"].includes(event.reaction),
     ),
     true,
   );
@@ -762,9 +762,10 @@ test("elemental specials author persistent, counterable arena state", () => {
   );
 });
 
-test("water douses fire and rewards allied FLOW positioning", () => {
+test("water and fire create neutral damaging vapor", () => {
   const state = duel({ leftCharacter: "mend", rightCharacter: "cinder" });
   const mend = state.entities[0];
+  mend.invulnerableRemaining = 0;
   mend.flow = 20;
   state.elementFields.push({
     id: "test-fire",
@@ -780,13 +781,17 @@ test("water douses fire and rewards allied FLOW positioning", () => {
   stepMatch(state, { left: { ...idle, special: true } }, FIXED_DELTA);
   stepMatch(state, {}, FIXED_DELTA);
   assert.equal(state.elementFields.some((field) => field.element === "fire"), false);
-  assert.ok(mend.flow > 20);
+  assert.equal(state.elementFields.some((field) => field.element === "water"), false);
+  assert.equal(state.elementFields.some((field) => field.element === "vapor"), true);
   assert.equal(
     state.events.some(
-      (event) => event.type === "elementReaction" && event.reaction === "douse",
+      (event) => event.type === "elementReaction" && event.reaction === "vapor",
     ),
     true,
   );
+  const healthBeforeVapor = mend.health;
+  for (let tick = 0; tick < 6; tick += 1) stepMatch(state, {}, 0.1);
+  assert.ok(mend.health < healthBeforeVapor);
 });
 
 test("element fields resolve physical reactions deterministically", () => {

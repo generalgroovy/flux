@@ -105,6 +105,10 @@ recovery, and performance are accepted at smaller scales.
 
 ## Expansion acceptance — not exposed until complete
 
+- Tide–Ember vapor is deterministic and neutral. Hands-on tune its 1.8-second,
+  92-unit, three-damage pulse contract for escape readability and visual density
+  before adding the proposed Stone–Ember magma slow or destructible props.
+
 - Thirteen readable race columns are live; champion choice now binds ancestry in
   local, quick-start, bot, and remote presentation. Empty columns are explicit,
   non-interactive roster gaps. Wyrmbound is the first

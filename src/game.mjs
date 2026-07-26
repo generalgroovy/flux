@@ -1860,8 +1860,9 @@ function drawElementFields(time) {
     ice: "#9fe7ff",
     fire: "#ff795c",
     water: "#5cbcff",
+    vapor: "#d8f1dd",
   };
-  const marks = { wind: ">>>", earth: "###", ice: "* *", fire: "^^^", water: "~~~" };
+  const marks = { wind: ">>>", earth: "###", ice: "* *", fire: "^^^", water: "~~~", vapor: ".:.:" };
   for (const field of matchState.elementFields ?? []) {
     context.save();
     try {
@@ -1869,7 +1870,9 @@ function drawElementFields(time) {
       context.fillStyle = `${color}24`;
       context.strokeStyle = color;
       context.lineWidth = settings.highContrast ? 4 : 2;
-      context.setLineDash(field.element === "ice" ? [8, 7] : []);
+      context.setLineDash(
+        field.element === "ice" ? [8, 7] : field.element === "vapor" ? [2, 6] : [],
+      );
       context.lineDashOffset = settings.reducedMotion ? 0 : -time * 28;
       context.beginPath();
       if (field.element === "earth") {

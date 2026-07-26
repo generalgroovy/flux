@@ -1314,3 +1314,20 @@
 - **Recommended next task:** Hands-on accept pointer, keyboard, and controller
   behavior at desktop and narrow widths, then address any focus/layout defects
   before beginning a bounded chemistry/environment slice.
+
+# 2026-07-26 — Neutral Tide–Ember vapor chemistry
+
+- **Player-facing problem:** Tide erased Ember outright, so the most obvious
+  elemental combination removed state rather than creating a new positioning
+  decision.
+- **Implemented solution:** A direct overlap now consumes both fields into one
+  1.8-second neutral vapor cloud with a dotted pale-green mark and bounded
+  three-damage pulses against every fighter. Directed, offset Tide still
+  redirects Ember, making the reaction depend on placement rather than affinity.
+- **Verification:** Focused chemistry tests and the full `npm test` suite (81/81)
+  passed with invariant and Varka counterplay coverage. JavaScript syntax and
+  diff checks passed. Physical effect density and dodge timing remain untested
+  without a browser.
+- **Recommended next task:** Complete the user-directed HEX→FLUX repository,
+  checkout, product, launcher, package, documentation, and compatibility
+  migration before adding magma or destructible environment state.

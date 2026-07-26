@@ -201,6 +201,9 @@ or redirect Ember, Volt conducts through Tide, and explosive mechanics shatter
 Stone without becoming an element themselves. Every field uses shape/text cues,
 distinct audio, authoritative lifetimes, and geometry rather than passive damage
 bonuses. Aim, movement, timing, and resource reads still convert every advantage.
+Direct Tide–Ember overlap now consumes both fields into a short neutral vapor
+cloud that damages any fighter who remains inside. Directed Tide still pushes a
+misaligned Ember field instead, preserving aim and spacing as the deciding read.
 
 Hosts can disable authored map hazards and receive a shareable `?join=` URL that
 opens the lobby screen and joins automatically. The link must use a server

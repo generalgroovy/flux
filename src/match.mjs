@@ -1348,43 +1348,51 @@ function updateElementFields(state, delta) {
       state.events.push({ type: "elementReaction", reaction: "freeze", x: water.x, y: water.y });
     }
   }
+  for (const fire of state.elementFields.filter((field) => field.element === "fire")) {
+    for (const water of waterFields) {
+      if (removed.has(fire.id) || removed.has(water.id) || !overlaps(fire, water)) continue;
+      const distance = Math.hypot(water.x - fire.x, water.y - fire.y);
+      const directed =
+        Number.isFinite(water.directionX) &&
+        Number.isFinite(water.directionY) &&
+        (water.directionX !== 0 || water.directionY !== 0) &&
+        distance > fire.radius * 0.25;
+      if (directed) {
+        fire.x += water.directionX * water.radius * 0.72;
+        fire.y += water.directionY * water.radius * 0.72;
+        fire.duration *= 0.58;
+        state.events.push({
+          type: "elementReaction",
+          reaction: "redirect",
+          x: fire.x,
+          y: fire.y,
+        });
+        continue;
+      }
+      removed.add(fire.id);
+      removed.add(water.id);
+      const owner = state.entities.find((entity) => entity.id === fire.ownerId) ?? state.entities[0];
+      createElementField(state, owner, "vapor", {
+        ownerId: null,
+        team: "neutral",
+        source: "reaction",
+        x: (fire.x + water.x) / 2,
+        y: (fire.y + water.y) / 2,
+        radius: MATCH_TUNING.elements.vaporRadius,
+        duration: MATCH_TUNING.elements.vaporDuration,
+      }, false);
+      state.events.push({
+        type: "elementReaction",
+        reaction: "vapor",
+        x: (fire.x + water.x) / 2,
+        y: (fire.y + water.y) / 2,
+      });
+    }
+  }
   state.elementFields = state.elementFields.filter((field) => {
     if (removed.has(field.id)) return false;
     if (field.duration <= 0) {
       state.events.push({ type: "elementClear", fieldId: field.id, element: field.element });
-      return false;
-    }
-    if (
-      field.element === "fire" &&
-      waterFields.some((water) => {
-        const distance = Math.hypot(water.x - field.x, water.y - field.y);
-        if (distance > water.radius + field.radius) return false;
-        if (
-          Number.isFinite(water.directionX) &&
-          Number.isFinite(water.directionY) &&
-          (water.directionX !== 0 || water.directionY !== 0) &&
-          distance > field.radius * 0.25
-        ) {
-          field.x += water.directionX * water.radius * 0.72;
-          field.y += water.directionY * water.radius * 0.72;
-          field.duration *= 0.58;
-          state.events.push({
-            type: "elementReaction",
-            reaction: "redirect",
-            x: field.x,
-            y: field.y,
-          });
-          return false;
-        }
-        return true;
-      })
-    ) {
-      state.events.push({
-        type: "elementReaction",
-        reaction: "douse",
-        x: field.x,
-        y: field.y,
-      });
       return false;
     }
     return true;
@@ -1431,9 +1439,17 @@ function updateElementFields(state, delta) {
           source: field.source === "ultimate" ? "ultimate" : "fire",
         });
       }
+      if (field.element === "vapor" && field.pulseRemaining === 0) {
+        damageEntity(state, entity, MATCH_TUNING.elements.vaporDamage, null, {
+          source: "vapor",
+        });
+      }
     }
     if (field.element === "fire" && field.pulseRemaining === 0) {
       field.pulseRemaining = MATCH_TUNING.elements.firePulse;
+    }
+    if (field.element === "vapor" && field.pulseRemaining === 0) {
+      field.pulseRemaining = MATCH_TUNING.elements.vaporPulse;
     }
   }
 }

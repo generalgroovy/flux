@@ -662,6 +662,23 @@ test("hops preserve bounded lateral momentum without speed stacking", () => {
   assert.deepEqual(matchInvariantErrors(state), []);
 });
 
+test("one post-hop counter-strafe consumes a bounded landing cancel", () => {
+  const state = duel();
+  const runner = state.entities[0];
+  runner.vx = MATCH_TUNING.flow.hopSpeed;
+  runner.hopX = 1;
+  runner.hopY = 0;
+  runner.hopRemaining = FIXED_DELTA / 2;
+  stepMatch(state, { [runner.id]: { ...idle, moveX: -1 } }, FIXED_DELTA);
+  assert.equal(runner.hopRemaining, 0);
+  assert.equal(runner.landingRemaining, 0);
+  assert.ok(state.events.some((event) => event.type === "landingCut"));
+  stepMatch(state, { [runner.id]: { ...idle, moveX: 1 } }, FIXED_DELTA);
+  stepMatch(state, { [runner.id]: { ...idle, moveX: -1 } }, FIXED_DELTA);
+  assert.equal(state.events.some((event) => event.type === "landingCut"), false);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
 test("sprint slides spend FLOW, steer with commitment, and break on cover", () => {
   const state = duel();
   const runner = state.entities[0];

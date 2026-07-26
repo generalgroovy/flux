@@ -947,6 +947,9 @@ function processEvents(events, tick) {
     } else if (event.type === "counterStrafe") {
       tone(240, 0.045, "triangle", 0.035);
       toast("COUNTER-STRAFE · MOMENTUM CUT", "comic");
+    } else if (event.type === "landingCut") {
+      tone(360, 0.045, "triangle", 0.04);
+      toast("LANDING CUT · TURN STOLEN", "comic");
     } else if (event.type === "slide") {
       tone(135, 0.07, "sawtooth", 0.04);
       toast("SLIDE · LOW LINE", "comic");

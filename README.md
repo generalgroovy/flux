@@ -10,7 +10,12 @@ bots, and server-authoritative remote lobbies.
 The current launcher and network protocol retain their DIFF compatibility names
 while the working product identity migrates to HEX.
 
-Build 0.21.0 introduces a complete thirteenth people: the **Wyrmbound**. Their
+Build 0.22.0 completes the first universal movement-grammar pass with a one-use
+landing cut. After a hop fully resolves, a 110 ms true reversal gains 18% extra
+counter-strafe authority and immediately consumes the window. It never shortens
+the hop, inherits ice's reduced control, and cannot be held for repeated turns.
+
+Build 0.21.0 introduced a complete thirteenth people: the **Wyrmbound**. Their
 scaled bodies take 14% less forced movement, but their heavy commitment costs 6%
 FLOW capacity and 2% speed. Native champion **Yrsa Rimewing** shapes Tide as
 Frost through paired ranged shards, a ground-freezing breath cone, a precise

@@ -947,6 +947,8 @@ export const MATCH_TUNING = Object.freeze({
     wallKickSpeed: 780,
     hopDuration: 0.16,
     hopCooldown: 0.5,
+    landingWindow: 0.11,
+    landingCutMultiplier: 1.18,
     wallMemory: 0.16,
     slideCost: 22,
     slideEntrySpeed: 250,
@@ -1062,6 +1064,8 @@ export function validateContent({
     "wallKickSpeed",
     "hopDuration",
     "hopCooldown",
+    "landingWindow",
+    "landingCutMultiplier",
     "wallMemory",
     "slideCost",
     "slideEntrySpeed",
@@ -1097,6 +1101,9 @@ export function validateContent({
   }
   if (flow.hopMomentumCarry > 0.6 || flow.hopCarryLimit > flow.hopSpeed / 2) {
     errors.push("flow hop momentum carry must remain bounded");
+  }
+  if (flow.landingWindow > 0.16 || flow.landingCutMultiplier > 1.35) {
+    errors.push("flow landing cancel must preserve hop commitment");
   }
   for (const [key, value] of Object.entries(tuning.elements ?? {})) {
     if (!Number.isFinite(value) || value <= 0) {

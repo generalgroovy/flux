@@ -200,6 +200,7 @@ function createEntity(spec, index, map) {
     sprinting: false,
     hopCooldown: 0,
     hopRemaining: 0,
+    landingRemaining: 0,
     hopX: facingX,
     hopY: 0,
     hopCarryX: 0,
@@ -379,6 +380,7 @@ function updateShrines(state, delta) {
 }
 
 function tickEntity(entity, delta) {
+  const wasHopping = entity.hopRemaining > 0;
   for (const key of [
     "primaryCooldown",
     "specialCooldown",
@@ -392,6 +394,7 @@ function tickEntity(entity, delta) {
     "flowRecoveryDelay",
     "hopCooldown",
     "hopRemaining",
+    "landingRemaining",
     "slideCooldown",
     "slideRemaining",
     "wallContactRemaining",
@@ -401,6 +404,9 @@ function tickEntity(entity, delta) {
     "counterStrafeCooldown",
   ]) {
     entity[key] = Math.max(0, finite(entity[key]) - delta);
+  }
+  if (wasHopping && entity.hopRemaining === 0) {
+    entity.landingRemaining = MATCH_TUNING.flow.landingWindow;
   }
   entity.flow = clamp(entity.flow, 0, entity.maxFlow);
   entity.flux = clamp(entity.flux, 0, entity.maxFlux);
@@ -667,7 +673,15 @@ function moveEntity(state, entity, command, agent, delta, map) {
     const rate =
       (moving ? agent.acceleration : agent.deceleration) *
       (entity.surface === "ice" ? MATCH_TUNING.elements.iceControl : 1) *
-      (opposing ? MATCH_TUNING.flow.counterStrafeMultiplier : 1);
+      (opposing ? MATCH_TUNING.flow.counterStrafeMultiplier : 1) *
+      (opposing && entity.landingRemaining > 0
+        ? MATCH_TUNING.flow.landingCutMultiplier
+        : 1);
+    const landingCut = opposing && entity.landingRemaining > 0;
+    if (landingCut) {
+      entity.landingRemaining = 0;
+      state.events.push({ type: "landingCut", entityId: entity.id, x: entity.x, y: entity.y });
+    }
     if (
       opposing && currentSpeed >= MATCH_TUNING.flow.counterStrafeCueSpeed &&
       entity.counterStrafeCooldown === 0
@@ -1676,6 +1690,7 @@ function respawnEntity(entity, map) {
   entity.sprinting = false;
   entity.hopCooldown = 0;
   entity.hopRemaining = 0;
+  entity.landingRemaining = 0;
   entity.hopWallKick = false;
   entity.slideCooldown = 0;
   entity.slideRemaining = 0;
@@ -2073,6 +2088,7 @@ export function matchInvariantErrors(state) {
       "flowRecoveryDelay",
       "hopCooldown",
       "hopRemaining",
+      "landingRemaining",
       "slideCooldown",
       "slideRemaining",
       "slideX",

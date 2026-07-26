@@ -824,3 +824,25 @@
 - **Recommended next task:** Complete movement grammar testing, then make Yrsa the
   first champion to receive the production passive/tactical/ultimate schema used
   for later roster expansion.
+
+## 2026-07-26 — One-use hop landing cut
+
+- **Player-facing problem:** Hop carry produced expressive arcs, but the landing
+  had no precise conversion point into grounded footwork.
+- **Implemented solution:** A fully completed hop now opens a 110 ms landing
+  window. One true counter-strafe during it gains 18% additional control and
+  consumes the state immediately. The cut cannot cancel hop commitment, cannot
+  repeat, and remains reduced on ice. Added authoritative/reset state, bounded
+  tuning validation, comic/audio feedback, and guide copy.
+- **Commands run:** Syntax checks for content, simulation, and controller;
+  `git diff --check`; focused match suite; `npm test`; clean server launch on
+  port 8120; HTTP health/shell/module smoke; clean shutdown.
+- **Tests passed:** 55/55 checks, including full hop commitment, one-use landing
+  cut, nine-champion/eight-map stress, authoritative networking, and cleanup.
+- **Launch smoke:** Compatibility health reported ready at HEX 0.22.0; `/` and
+  `/src/game.mjs` returned `200 OK` with shipped security headers.
+- **Known limitation:** Hands-on latency and animation tuning remains pending
+  because no browser executable is installed here.
+- **Recommended next task:** Add deterministic chain tests for slide→hop,
+  wall-kick→slide, hop→landing-cut, and shrine traversal, then lock the movement
+  grammar before expanding champion ultimates.

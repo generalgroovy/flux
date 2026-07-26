@@ -2,7 +2,7 @@
 
 ## Release acceptance
 
-1. Hands-on accept HEX 0.21.0 on Garuda Sway and Windows: complete all four
+1. Hands-on accept HEX 0.22.0 on Garuda Sway and Windows: complete all four
    FIRST RITE reads; chain sprint, hop, and wall kicks around cover; verify
    FLOW cost/recovery; launch all five home shortcuts; use every main-menu
    panel, toggle field info with `F1`, and verify
@@ -19,6 +19,8 @@
    unit-collision, and shrine routes; reject any repeatable speed exploit.
 6. Hands-on tune slide entry at 250 speed, 22 FLOW, 720 travel speed, 0.3-second
    commitment, and 32% steering; verify readable cover impacts and no hold exploit.
+7. Hands-on tune the 110 ms/18% one-use landing cut across normal ground, ice,
+   slide links, wall kicks, and high-latency remote prediction.
 
 ## Gate 1 — Fundamentals implemented
 

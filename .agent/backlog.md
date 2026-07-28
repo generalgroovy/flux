@@ -206,3 +206,19 @@ the FLUX context, run the actual suite, and push only the active agent branch.
   control without letting the 7/13 discounted signature become mandatory.
 - Keep the Hobbit race available for a later distinct character rather than
   reskinning S. Wayne to satisfy artificial one-character-per-race coverage.
+
+## Fifteen-character future roster acceptance
+
+- Treat the requested fifteen names as the complete future roster; do not revive
+  Brum or add filler solely to cover every race.
+- Preserve each reused internal ID until an explicit compatibility migration
+  exists, while showing only the approved player-facing name.
+- Validate the low-cost Hara/Spai Si/Hidn Leef/Hesus Christo signatures through
+  geometry and setup tests before changing point values.
+- Prototype Dr. Apex first among the newly remapped support concepts: healing
+  must remain contestable, server-owned, non-damaging, and useful despite the
+  slow 4.67-second average signature cycle.
+- Wa Bidi's battlecry requires a visual subtitle/icon cue and an independent
+  timing tell so audio-disabled players receive equal warning.
+- Keep the humorous lore in menus and character inspection; combat HUD text
+  remains short and decision-relevant.

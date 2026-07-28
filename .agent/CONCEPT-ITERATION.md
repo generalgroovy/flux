@@ -10,7 +10,7 @@ subject to hands-on play after the unified build passes its launch smoke.
 
 ## Decisions locked in this pass
 
-- Keep all seven approved character and ability names exactly as authored.
+- Keep all fifteen approved character and ability names exactly as authored.
 - Keep the stable internal IDs `dark`, `scaleheir`, `stonewrought`, and
   `rootwarden`; display them to players as **Void**, **Wyrm**, **Stoneborn**, and
   **Treefolk**.
@@ -28,15 +28,23 @@ subject to hands-on play after the unified build passes its launch smoke.
 
 ## Canonical character concepts
 
-| Character | Player promise | Silhouette and motion read | Spell-shape language | Required weakness read |
+| Reference | Character | Race | Player promise | Primary visual and counterplay read |
 | --- | --- | --- | --- | --- |
-| Der Rote Baron | Formation controller who commits through dangerous air lanes | Tall narrow undead officer, split coat tails, rigid banking turns | Crimson wedges, black flak circles, pale rime fins | Landing recovery and reduced healing must be visible before opponents commit |
-| Treevor | Giant terrain tank who grows the route he wants to defend | Broad rooted trunk, asymmetric branch crown, slow planted turns | Blocky roots, sweeping leaf cones, ember nodes on breakable growth | Huge target and burning exposure use persistent outline changes, not hidden modifiers |
-| S. Wayne | Human eclipse tactician who routes through authored contrast boundaries | Medium upright silhouette, split light/dark mantle, deliberate lateral cuts | Prism lines, marked shadow anchors, narrow reveal rays | Peak repositioning requires a personal Light/Void boundary and has a visible lockout |
-| Steezo | Volatile engineer who builds a combo, then risks losing its pieces | Forward-leaning goblin, tool belt and sparking backpack, spring-loaded steps | Keg circles, prism line segments, coil arcs with exposed joints | Every construct has a distinct break state; refunds never trigger on self-detonation |
-| Oh Tipi | Field skirmisher who turns water routes into movement decisions | Streamlined fins and trailing mantle, lateral skating posture | Narrow tide ribbons, faceted freeze seams, surface-following charge line | Peak steering requires authored Water and all conductive routes remain shared danger |
-| Oll'I | Structural breaker who wins by maintaining a readable commitment | Wide horns, heavy forward lean, rectangular shoulders, slow turn radius | Long charge lane, ground shock rings, frontal mirror plane | Poor turning and miss recovery are telegraphed through locked torso and dust wake |
-| Fluup | Storm bruiser who converts a committed landing into the next attack | Large orc with weighted boots and loose storm mantle, high vertical arcs | Short charge cone, wind launch ribbon, radial rime fracture | Miss recovery creates a clear punish window; stored movement charge has a visible cap |
+| Michail | Oh Tipi | Seakin | Conductive-field skirmisher who turns Water routes into movement decisions | Streamlined fins, tide ribbons, freeze seams, and visible shared conduction risk |
+| Sam | S. Wayne | Human | Mysterious millionaire and eclipse tactician; rumor credits his fortune to mahjong | Split Light/Void mantle and marked boundaries; repositioning needs a personal boundary and lockout |
+| Michel | The Red Baron | Undead | Formation controller who commits through dangerous air lanes | Tall officer silhouette, crimson wedges, dark flak circles, and punishable landing recovery |
+| Stivo | Steezo | Goblin | Volatile combo engineer whose unmistakable call is “Sheeeeeeeeeeeeeee” | Sparking backpack and exposed construct joints; self-detonation never refunds |
+| Trev | Treevor the Mason | Treefolk | Mud-and-herb terrain mason famed for exceptional mudpies | Broad branch crown, mud-block geometry, herb sprigs, huge target, and visible Fire exposure |
+| Olli | Oll' I | Minotaur | Structural momentum breaker—one bull you do not grab by the horns | Wide horns, locked torso, long charge lane, poor turning, and long miss recovery |
+| Flip | Fluup | Orc | Storm bruiser who converts a committed landing into the next attack | Weighted boots, storm mantle, radial rime fracture, and visible stored-charge cap |
+| Kira | Wa Bidi | Sylph | Air-route assassin whose “WABIDI BIBIDI!” battlecry precedes the hit | Streamer wings and open wind arcs; fragile body and high knockback remain readable without sound |
+| Nick | Nico Lai | Gnome | Precision shared-device engineer who multiplies one opening | Calibrated coil pack and linked nodes; every device stays breakable and shared |
+| Martin | Spai Si | Elf | Cryptic redirect duelist who turns hostile intent into an angle | Narrow leaf silhouette and curved aim guides; fragile body limits repeated contests |
+| Sehnou | Hidn Leef | Treefolk | Concealed grove support who lets the battlefield bloom around an unseen route | Layered leaf mantle and growth rings; slow repositioning and Fire-vulnerable growth |
+| Tarek | Ha Rekt | Wyrm | Aerial cold-line hunter who marks the escape before the enemy sees it | Rime wings and landing fan; low FLOW capacity limits repeated commitments |
+| Daniel | Dr. Apex | Stoneborn | Armored combat medic from the far north | Stone shoulders, triage band, Spring basin, slow movement, and contestable healing |
+| Charis | Hara | Gnome | Resourceful planner who always keeps a second option | Compact silhouette and three-element utility; no extreme stat edge |
+| Christo | Hesus Christo | Wyrm | Towering renewal vanguard who turns broken ground into a route back | Heavy wings, growth-and-water routes, huge target, and slow response |
 
 ## Static balance snapshot
 
@@ -45,21 +53,31 @@ claims about match balance.
 
 | Character | Power budget | Signature points / 13 | Average Flux cost | Average cooldown | Role coverage |
 | --- | ---: | ---: | ---: | ---: | --- |
-| Der Rote Baron | 59 | 10 | 36.0 | 3.30 s | control, damage, defense, mobility |
-| Treevor | 70 | 11 | 40.0 | 3.97 s | control, defense, terrain |
+| The Red Baron | 59 | 10 | 36.0 | 3.30 s | control, damage, defense, mobility |
+| Treevor the Mason | 70 | 11 | 40.0 | 3.97 s | control, defense, terrain |
 | S. Wayne | 50 | 7 | 32.7 | 3.13 s | construct, control, damage, deception, mobility, reveal |
 | Steezo | 64 | 11 | 38.0 | 4.50 s | construct, control, mobility |
 | Oh Tipi | 67 | 9 | 31.3 | 3.13 s | control, mobility, terrain |
-| Oll'I | 71 | 11 | 38.7 | 4.03 s | control, damage, defense, destruction, mobility, terrain |
+| Oll' I | 71 | 11 | 38.7 | 4.03 s | control, damage, defense, destruction, mobility, terrain |
 | Fluup | 66 | 10 | 34.0 | 3.40 s | control, damage, mobility, terrain |
+| Wa Bidi | 56 | 7 | 28.7 | 2.73 s | control, defense, mobility |
+| Nico Lai | 53 | 9 | 36.7 | 3.80 s | construct, control, damage, interrupt, mobility |
+| Spai Si | 59 | 5 | 24.7 | 1.67 s | control, damage, defense, reveal, terrain |
+| Hidn Leef | 60 | 6 | 28.7 | 2.73 s | control, damage, reveal, support, terrain |
+| Ha Rekt | 65 | 8 | 30.0 | 2.67 s | control, damage, defense, mobility |
+| Dr. Apex | 65 | 10 | 39.3 | 4.67 s | defense, support, terrain |
+| Hara | 43 | 6 | 20.7 | 1.18 s | control, damage, defense, reveal |
+| Hesus Christo | 55 | 6 | 30.0 | 2.60 s | control, defense, support, terrain |
 
 The table exposes two playtest questions rather than prescribing speculative
 number changes:
 
-1. Oll'I has the widest role vocabulary. Verify that commitment and turning
+1. Oll' I has the widest role vocabulary. Verify that commitment and turning
    constraints keep that breadth from becoming universal best-in-slot value.
-2. Oh Tipi pays the lowest effective signature cost. Verify that dependence on
-   Water setup and shared conduction risk meaningfully tax the kit in open space.
+2. Spai Si, Hara, Hidn Leef, and Hesus Christo have inexpensive signatures.
+   Verify that geometry, setup, and body drawbacks prevent universal value.
+3. Dr. Apex has the slowest average signature cycle. Verify that healing remains
+   contestable without making the combat medic inactive between commitments.
 
 ## Visual system
 

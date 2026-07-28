@@ -25,9 +25,14 @@ test("overhaul content is internally valid and keeps the authored future roster 
   assert.deepEqual(validateOverhaulContent(), []);
   assert.equal(ELEMENTS.length, 8);
   assert.equal(RACE_ARCHETYPES.length, 16);
-  assert.equal(CHARACTER_ROSTER.length, 16);
-  assert.equal(CHARACTER_ROSTER.filter((entry) => entry.raceId === "human").length, 2);
+  assert.equal(CHARACTER_ROSTER.length, 15);
+  assert.deepEqual(CHARACTER_ROSTER.map((entry) => entry.name).sort(), [
+    "Dr. Apex", "Fluup", "Ha Rekt", "Hara", "Hesus Christo", "Hidn Leef", "Nico Lai", "Oh Tipi",
+    "Oll' I", "S. Wayne", "Spai Si", "Steezo", "The Red Baron", "Treevor the Mason", "Wa Bidi",
+  ].sort());
+  assert.equal(CHARACTER_ROSTER.filter((entry) => entry.raceId === "human").length, 1);
   assert.equal(CHARACTER_ROSTER.filter((entry) => entry.raceId === "hobbit").length, 0);
+  assert.ok(CHARACTER_ROSTER.every((entry) => entry.lore.length > 0));
   assert.ok(ABILITY_CATALOG.length >= 48);
 });
 

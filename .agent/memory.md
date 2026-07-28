@@ -1591,3 +1591,24 @@
   balance profile is valid at 50 power-budget points and 7/13 signature points.
   The complete Windows verification then passed 109/109 plus recursive syntax
   checks.
+
+# 2026-07-28 — Fifteen-character named overhaul roster
+
+- **Direction:** Replaced the provisional sixteen-character future roster with
+  the fifteen requested named concepts: Oh Tipi, S. Wayne, The Red Baron,
+  Steezo, Treevor the Mason, Oll' I, Fluup, Wa Bidi, Nico Lai, Spai Si, Hidn
+  Leef, Ha Rekt, Dr. Apex, Hara, and Hesus Christo.
+- **Reuse:** Reworked fifteen existing data slots rather than adding parallel
+  characters. Only the unrequested Brum placeholder was retired. Existing IDs
+  remain compatibility keys even where player-facing names and races changed.
+- **Authored identity:** Added lore for every future character and recorded the
+  requested real-name mapping in `.agent/CONCEPT-ITERATION.md`. Explicit races
+  are locked for Wa Bidi, Hidn Leef, Ha Rekt, Dr. Apex, Hara, and Hesus Christo.
+- **Mechanical adaptation:** Most characters retain the nearest existing kit.
+  Dr. Apex is now a Stoneborn combat medic using ROOT RAMPART, Spring, MIRROR
+  BULWARK, Deep Spring, and the non-damage FIELD TRIAGE passive.
+- **Compatibility:** Live 0.34.3 content remains unchanged. The future validator
+  now requires exactly the fifteen approved names, non-empty lore, valid race
+  sizes, diverse signature roles, bounded budgets, and explicit counterplay.
+- **Verification:** The focused future-content suite passed 14/14 after the
+  complete roster remap.

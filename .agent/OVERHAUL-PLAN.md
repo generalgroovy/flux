@@ -1,11 +1,11 @@
 # FLUX overhaul plan
 
-Branch: `agent/resource-hud-first-slice`
+Branch: `integration/unify-flux`
 
 ## Current constraints
 
 - Keep all existing playable paths operational while replacement systems are introduced.
-- Keep the seven approved character names and all approved passive, active, and ultimate names unchanged.
+- Keep the fifteen approved character names and all approved passive, active, and ultimate names unchanged.
 - Simplify system, mode, race, element, location, and interface labels where clarity improves.
 - Keep live gameplay text minimal and decision-relevant.
 - Move full explanations to tooltips, setup panels, the guide, and freeplay diagnostics.
@@ -112,13 +112,21 @@ Expected rhythm:
 
 Implement, without renaming any approved character or ability:
 
-- Der Rote Baron
-- Treevor
+- The Red Baron
+- Treevor the Mason
 - S. Wayne
 - Steezo
 - Oh Tipi
-- Oll'I
+- Oll' I
 - Fluup
+- Wa Bidi
+- Nico Lai
+- Spai Si
+- Hidn Leef
+- Ha Rekt
+- Dr. Apex
+- Hara
+- Hesus Christo
 
 Each requires complete data, visuals, bots, local and remote behavior, prediction, reconnect, spectators, tooltips, freeplay demonstration, and tests.
 

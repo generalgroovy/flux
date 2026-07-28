@@ -8,12 +8,12 @@ Evolve FLUX through small, verified vertical slices. Preserve working gameplay, 
 
 Character names and the previously approved character ability names are canonical and must not be simplified, renamed, abbreviated in content data, or replaced with generic labels. They may be shown compactly in the HUD and fully in tooltips, menus, the loadout builder, and the guide.
 
-### Der Rote Baron
+### The Red Baron
 - Passive: COLD ASHES
 - Actives: CRIMSON COMET, NIGHT FLAK, RIME WING
 - Ultimate: THE DEAD SKY
 
-### Treevor
+### Treevor the Mason
 - Passive: DEEP ROOTS
 - Actives: ROOT RAMPART, BRANCH GALE, EMBER SEED
 - Ultimate: CROWN OF THE WILDFIRE
@@ -34,7 +34,7 @@ Character names and the previously approved character ability names are canonica
 - Actives: TIDELINE, FLASH FREEZE, EEL STEP
 - Ultimate: STORMTIDE BASIN
 
-### Oll'I
+### Oll' I
 - Passive: LABYRINTH MOMENTUM
 - Actives: SUNHORN CHARGE, FURNACE STOMP, MIRROR BULWARK
 - Ultimate: THE BURNING MAZE
@@ -43,6 +43,54 @@ Character names and the previously approved character ability names are canonica
 - Passive: STORMWEIGHT
 - Actives: THUNDER SHOVE, SQUALL LEAP, RIME CRASH
 - Ultimate: BAD WEATHER
+
+### Wa Bidi
+- Sylph; Wind / Charge affinities
+- Passive: THIN AIR
+- Actives: SQUALL LEAP, EEL STEP, Gust Ring
+- Ultimate: Sky Hook
+
+### Nico Lai
+- Gnome; Charge / Light affinities
+- Passive: QUICK FIX
+- Actives: COIL HOPPER, PRISM TRIPWIRE, Arc Chain
+- Ultimate: Small World
+
+### Spai Si
+- Elf; Wind / Light / Earth affinities
+- Passive: THREAD THE TURN
+- Actives: Gust Ring, Ray, Seed Burst
+- Ultimate: Glass Moon
+
+### Hidn Leef
+- Treefolk; Water / Earth / Light affinities
+- Passive: AFTERBLOOM
+- Actives: Spring, Seed Burst, Ray
+- Ultimate: Bloom
+
+### Ha Rekt
+- Wyrm; Ice / Wind / Fire affinities
+- Passive: RIME DIVE
+- Actives: RIME WING, SQUALL LEAP, Fire Fan
+- Ultimate: Sky Hook
+
+### Dr. Apex
+- Stoneborn; Earth / Light / Water affinities
+- Passive: FIELD TRIAGE
+- Actives: ROOT RAMPART, Spring, MIRROR BULWARK
+- Ultimate: Deep Spring
+
+### Hara
+- Gnome; Light / Wind affinities
+- Passive: SECOND PLAN
+- Actives: Ray, Gust Ring, Stone Shot
+- Ultimate: Sun Grid
+
+### Hesus Christo
+- Wyrm; Earth / Water affinities
+- Passive: SECOND COMING
+- Actives: ROOT RAMPART, Surge, Seed Burst
+- Ultimate: Moss Flood
 
 ## Simple system names
 

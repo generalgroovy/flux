@@ -18,7 +18,7 @@ Integrated work:
 - audited recovery tags for every pre-unification branch;
 - reconciled overhaul constraints, system audit, compatibility matrix, and
   implementation loop;
-- future eight-element, sixteen-race, sixteen-character, ability, reaction,
+- future eight-element, sixteen-race, fifteen-character, ability, reaction,
   movement, mode, and destruction data contracts;
 - static character-balance profiling and roster diversity/counterplay guards;
 - approved simple future display vocabulary and canonical character visual

@@ -503,6 +503,30 @@ death, and respawn all share one simulation authority.
 Each champion also has a compact collision body, unique oriented silhouette, glyph,
 color, role, and readable kit identity.
 
+### Future overhaul roster — not playable yet
+
+This separate fifteen-character roster is validated design data in
+`src/overhaul-content.mjs`. It does not replace the live champions above until a
+future vertical slice implements and verifies each character end to end.
+
+| Character | Race | Affinities | Identity |
+| --- | --- | --- | --- |
+| Oh Tipi | Seakin | Water, Ice, Charge | Conductive-field skirmisher |
+| S. Wayne | Human | Void, Light | Eclipse boundary tactician and mysterious mahjong millionaire |
+| The Red Baron | Undead | Void, Fire, Ice | Airborne formation controller |
+| Steezo | Goblin | Fire, Charge, Light | Volatile combo engineer |
+| Treevor the Mason | Treefolk | Earth, Wind, Fire | Mud-and-herb terrain mason |
+| Oll' I | Minotaur | Earth, Fire, Light | Structural momentum breaker |
+| Fluup | Orc | Charge, Wind, Ice | Storm momentum bruiser |
+| Wa Bidi | Sylph | Wind, Charge | Battlecry air-route specialist |
+| Nico Lai | Gnome | Charge, Light | Precision shared-device engineer |
+| Spai Si | Elf | Wind, Light, Earth | Cryptic redirect duelist |
+| Hidn Leef | Treefolk | Water, Earth, Light | Concealed grove support |
+| Ha Rekt | Wyrm | Ice, Wind, Fire | Aerial cold-line hunter |
+| Dr. Apex | Stoneborn | Earth, Light, Water | Armored combat medic |
+| Hara | Gnome | Light, Wind | Resourceful mid-range planner |
+| Hesus Christo | Wyrm | Earth, Water | Towering renewal vanguard |
+
 ## Maps and modes
 
 Maps:

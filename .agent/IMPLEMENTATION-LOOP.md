@@ -15,7 +15,8 @@ Rules:
 ## Current gate
 
 - Integrated overhaul checkpoint: `75a09410db21027e45478591541a949473da7f13`.
-- The checkpoint patch passed compressed and decompressed SHA-256 verification before application.
-- Local dependency-free verification passed 112 deterministic tests before publication.
-- Cross-platform CI, DOM, WebSocket, desktop-security, and package verification are the active gate.
-- No subsequent gameplay slice begins until that gate passes or its failures are repaired.
+- DOM compatibility repair: `4aa8e2e74b0dcf36790f3cb3cc31b25bd1b878d7`.
+- Both patches passed compressed and decompressed SHA-256 verification before application.
+- Local dependency-free verification passes 104 integrated simulation/content/lobby tests after the repair.
+- The previous CI failure was a read-only Linkedom `<select>.value`; production now selects options through a browser-compatible fallback.
+- Cross-platform CI, WebSocket, desktop-security, and package verification remain the active gate.

@@ -51,7 +51,7 @@ jobs:
               -H "Authorization: Bearer $GH_TOKEN" \
               -H "Accept: application/vnd.github+json" \
               "https://api.github.com/repos/${GITHUB_REPOSITORY}/git/blobs/${sha}" \
-              | node -e 'let input=""; process.stdin.on("data", chunk => input += chunk); process.stdin.on("end", () => { const blob = JSON.parse(input); if (blob.encoding !== "base64") throw new Error("Unexpected blob encoding"); process.stdout.write(blob.content.replace(/\s/g, "")); });' \
+              | node -e 'let input=""; process.stdin.on("data", chunk => input += chunk); process.stdin.on("end", () => { const blob = JSON.parse(input); if (blob.encoding !== "base64") throw new Error("Unexpected blob encoding"); process.stdout.write(Buffer.from(blob.content.replace(/\s/g, ""), "base64").toString("utf8")); });' \
               >> /tmp/checkpoint.b64
           done < /tmp/checkpoint-blobs
 

@@ -14,7 +14,7 @@ test(
     const child = spawn(process.execPath, ["scripts/serve.mjs"], {
       cwd: new URL("../", import.meta.url),
       env: { ...process.env, PORT: String(port), HOST: "127.0.0.1" },
-      stdio: ["ignore", "pipe", "pipe"],
+      stdio: ["ignore", "pipe", "pipe", "ipc"],
     });
     let serverOutput = "";
     child.stdout.on("data", (chunk) => {
@@ -24,7 +24,7 @@ test(
       serverOutput += chunk;
     });
     t.after(() => {
-      child.kill("SIGTERM");
+      if (child.exitCode === null) child.kill("SIGTERM");
     });
     await waitForHealth(origin, child, () => serverOutput);
 
@@ -182,7 +182,7 @@ test(
       observer.waitFor((message) => message.type === "server-shutdown"),
       guest.waitFor((message) => message.type === "server-shutdown"),
     ];
-    assert.equal(child.kill("SIGTERM"), true);
+    assert.equal(child.send({ type: "shutdown" }), true);
     for (const notice of await Promise.all(shutdownNotices)) {
       assert.equal(notice.code, "host-shutdown");
       assert.match(notice.message, /authoritative host shut down.*match has ended/i);

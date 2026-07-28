@@ -7,6 +7,28 @@ spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
+## Current repository status
+
+The current unification candidate is `integration/unify-flux`. `main` remains the
+stable release branch and has not been rewritten or merged with the candidate.
+
+The candidate currently includes:
+
+- the complete 0.34.3 live game;
+- reliable source launch and graceful owned-process cleanup on Windows and Linux;
+- 108 passing automated checks on Windows, including the live WebSocket lifecycle
+  and authenticated server cleanup;
+- Windows NSIS and Linux AppImage package jobs that emit commit-bound SHA-256
+  manifests and downloadable CI artifacts;
+- an independently validated future character/element/race foundation that is
+  not connected to live gameplay yet.
+
+The remaining release gates are a current-commit packaged Windows gameplay smoke,
+green Windows/Linux CI after publishing `develop`, and a final review before any
+merge to `main`. The separate full-overhaul branch is actively changing and is
+preserved for later review; it is deliberately excluded from this stable
+candidate. There is no signed public installer or dependable public relay yet.
+
 Build 0.34.3 makes the verified source workflow genuinely cross-platform.
 Windows launchers call `npm.cmd`, avoiding the unsigned PowerShell shim that is
 blocked by common execution policies. Registered servers now stop through an
@@ -251,7 +273,19 @@ reversals readable without filling the arena with effects.
 
 ## Run
 
-Requires Node.js 20.19 or newer when running from source.
+Running from source requires Node.js 20.19 or newer. On Windows, use `npm.cmd`
+from PowerShell to avoid execution-policy conflicts with the unsigned npm
+PowerShell shim.
+
+Windows:
+
+```powershell
+npm.cmd ci
+npm.cmd test
+npm.cmd start
+```
+
+Linux:
 
 ```bash
 npm ci
@@ -262,6 +296,29 @@ npm start
 `npm start` opens FLUX in its own desktop window. No browser tab is used. The
 home screen launches every offline ruleset directly; **Choose contest**
 keeps champion, ancestry, arena, format, and bot setup available in one builder.
+
+### Windows setup for friends
+
+Until a signed installer is published, friends need [Git](https://git-scm.com/),
+[Node.js 20.19+](https://nodejs.org/), and the
+[GitHub CLI](https://cli.github.com/). In PowerShell:
+
+```powershell
+gh auth login --hostname github.com --git-protocol https --web
+git clone https://github.com/generalgroovy/flux.git "$HOME\Projects\flux"
+Set-Location "$HOME\Projects\flux"
+git switch integration/unify-flux
+npm.cmd ci
+npm.cmd test
+powershell -ExecutionPolicy Bypass -File scripts\install-desktop-windows.ps1
+```
+
+This creates **FLUX Arena** and **FLUX Arena - Play with Friends** shortcuts on
+the desktop. Each shortcut refuses dirty or diverged source, fast-forwards its
+pinned branch, installs the lockfile, runs the full tests, and only then opens
+the game. Send a `flux://` invite only after **Create and deploy** reports that
+the private route is ready. The host window must remain open for the invite to
+work.
 
 Create a private remote session from a desktop window:
 
@@ -332,10 +389,10 @@ Enable LAN/remote hosting through the same launcher:
 FLUX_DESKTOP=0 FLUX_HOST=0.0.0.0 bash scripts/pull-and-run.sh
 ```
 
-To update and run a specific development checkout/branch, pass both explicitly:
+To update and run a specific checkout/branch, pass both explicitly:
 
 ```bash
-bash scripts/pull-and-run.sh /home/otp/Projects/outskilled agent/prototype-loop
+bash scripts/pull-and-run.sh "$HOME/Projects/flux" integration/unify-flux
 ```
 
 It refuses dirty or diverged work instead of hiding local changes.
@@ -483,6 +540,9 @@ Modes:
 - [`src/network/quality.mjs`](src/network/quality.mjs) — rolling application-level connection diagnostics
 - [`src/game.mjs`](src/game.mjs) — input, prediction, menus, HUD, feedback, and rendering
 - [`scripts/serve.mjs`](scripts/serve.mjs) — allowlisted static server, lobby API, and WebSockets
+- [`src/overhaul-content.mjs`](src/overhaul-content.mjs) — validated future-only content contracts; not live simulation data
+- [`scripts/unification-preflight.mjs`](scripts/unification-preflight.mjs) — fail-closed launch and branch-cleanup audit
+- [`scripts/package-current.mjs`](scripts/package-current.mjs) — clean-tree packaging with commit and SHA-256 manifest
 
 Rendering never owns game rules. All commands are normalized, entity identifiers
 are stable, non-finite state is repaired at the simulation boundary, movement is
@@ -490,6 +550,29 @@ swept in bounded substeps, renderer state is isolated per entity, and reset
 creates a fresh authoritative match.
 
 ## Verification
+
+Complete cross-platform source verification:
+
+```bash
+node scripts/ci-verify.mjs
+```
+
+Launch preparation and verified packaging on Windows:
+
+```powershell
+npm.cmd run preflight:unify -- --phase=launch
+npm.cmd run package:windows:verified
+Get-Content -Raw dist\build-manifest.json
+```
+
+Branch deletion uses the stricter cleanup phase and must remain blocked while an
+unarchived source branch is moving:
+
+```powershell
+npm.cmd run preflight:unify -- --phase=cleanup
+```
+
+Individual checks remain available:
 
 ```bash
 npm test

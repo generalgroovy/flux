@@ -1,6 +1,7 @@
 node_modules/
 dist/
 coverage/
+ci-results/
 *.log
 npm-debug.log*
 .DS_Store

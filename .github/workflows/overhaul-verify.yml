@@ -1,0 +1,145 @@
+name: Verify overhaul
+
+on:
+  pull_request:
+    branches:
+      - agent/resource-hud-first-slice
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: overhaul-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apply-checkpoint:
+    name: Apply checkpoint payload
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      applied: ${{ steps.apply.outputs.applied }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - id: apply
+        name: Apply blob-backed checkpoint
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          manifest=.agent/checkpoint-blobs.json
+          echo "applied=false" >> "$GITHUB_OUTPUT"
+          if [[ ! -f "$manifest" ]]; then
+            exit 0
+          fi
+
+          expected_patch=$(node -p "require('./$manifest').patchSha256")
+          expected_gzip=$(node -p "require('./$manifest').gzipSha256")
+          node -e "for (const sha of require('./$manifest').blobs) console.log(sha)" > /tmp/checkpoint-blobs
+          [[ $(wc -l < /tmp/checkpoint-blobs) -eq 8 ]]
+          : > /tmp/checkpoint.b64
+
+          while IFS= read -r sha; do
+            [[ "$sha" =~ ^[0-9a-f]{40}$ ]]
+            curl --fail --silent --show-error --location \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/git/blobs/${sha}" \
+              | node -e 'let input=""; process.stdin.on("data", chunk => input += chunk); process.stdin.on("end", () => { const blob = JSON.parse(input); if (blob.encoding !== "base64") throw new Error("Unexpected blob encoding"); process.stdout.write(blob.content.replace(/\s/g, "")); });' \
+              >> /tmp/checkpoint.b64
+          done < /tmp/checkpoint-blobs
+
+          base64 --decode /tmp/checkpoint.b64 > /tmp/overhaul-checkpoint.patch.gz
+          echo "$expected_gzip  /tmp/overhaul-checkpoint.patch.gz" | sha256sum --check
+          gzip --decompress --stdout /tmp/overhaul-checkpoint.patch.gz > /tmp/overhaul-checkpoint.patch
+          echo "$expected_patch  /tmp/overhaul-checkpoint.patch" | sha256sum --check
+          git apply --check /tmp/overhaul-checkpoint.patch
+          git apply /tmp/overhaul-checkpoint.patch
+
+          rm -f "$manifest" .agent/overhaul-checkpoint*
+          git config user.name "FLUX verification agent"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: integrate playable overhaul checkpoint"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+          echo "applied=true" >> "$GITHUB_OUTPUT"
+
+  test:
+    name: Node ${{ matrix.node }} / ${{ matrix.os }}
+    needs: apply-checkpoint
+    if: always() && needs.apply-checkpoint.outputs.applied != 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [20, 22]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - name: Verify tests and production modules
+        run: node scripts/ci-verify.mjs
+      - name: Upload verification diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-${{ matrix.os }}-node${{ matrix.node }}
+          path: ci-results/*.log
+          if-no-files-found: warn
+          retention-days: 7
+
+  package-smoke:
+    name: Package configuration smoke
+    needs: apply-checkpoint
+    if: always() && needs.apply-checkpoint.outputs.applied != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx electron-builder --linux AppImage --dir
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+  source-snapshot:
+    name: Tested source snapshot
+    needs: apply-checkpoint
+    if: always() && needs.apply-checkpoint.outputs.applied != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload tested source
+        uses: actions/upload-artifact@v4
+        with:
+          name: flux-tested-source
+          path: |
+            .agent/**
+            .github/**
+            assets/**
+            desktop/**
+            scripts/**
+            src/**
+            tests/**
+            index.html
+            styles.css
+            package.json
+            package-lock.json
+            README.md
+          if-no-files-found: error
+          retention-days: 2

@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: overhaul-${{ github.event.pull_request.number || github.ref }}
+  group: overhaul-v2-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -116,6 +116,42 @@ jobs:
       - run: npx electron-builder --linux AppImage --dir
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+  dom-harness:
+    name: DOM harness snapshot
+    needs: apply-checkpoint
+    if: always() && needs.apply-checkpoint.outputs.applied != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Package minimal DOM dependencies
+        run: |
+          tar -czf /tmp/flux-dom-harness.tgz \
+            node_modules/linkedom \
+            node_modules/css-select \
+            node_modules/cssom \
+            node_modules/html-escaper \
+            node_modules/htmlparser2 \
+            node_modules/uhyphen \
+            node_modules/boolbase \
+            node_modules/css-what \
+            node_modules/domhandler \
+            node_modules/domutils \
+            node_modules/entities \
+            node_modules/nth-check \
+            node_modules/domelementtype
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flux-dom-harness
+          path: /tmp/flux-dom-harness.tgz
+          if-no-files-found: error
+          retention-days: 2
 
   source-snapshot:
     name: Tested source snapshot

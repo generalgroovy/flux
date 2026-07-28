@@ -14,7 +14,7 @@
     "start:server": "node scripts/serve.mjs",
     "start:remote": "node scripts/serve.mjs --host=0.0.0.0",
     "stop": "node scripts/stop-servers.mjs",
-    "test": "node --test --test-concurrency=1 tests/desktop-runtime.test.mjs tests/desktop-security.test.mjs tests/desktop-tunnel.test.mjs tests/game-dom.test.mjs tests/lobbies.test.mjs tests/match.test.mjs tests/network-conditioner.test.mjs tests/network-invite.test.mjs tests/network-quality.test.mjs tests/overhaul.test.mjs && node --test tests/network.test.mjs && node --test tests/server-control.test.mjs",
+    "test": "node --test --test-concurrency=1 tests/desktop-runtime.test.mjs tests/desktop-security.test.mjs tests/desktop-tunnel.test.mjs tests/game-dom.test.mjs tests/live-content.test.mjs tests/lobbies.test.mjs tests/match.test.mjs tests/network-conditioner.test.mjs tests/network-invite.test.mjs tests/network-quality.test.mjs tests/overhaul.test.mjs && node --test tests/network.test.mjs && node --test tests/server-control.test.mjs",
     "dist:linux": "electron-builder --linux AppImage",
     "dist:windows": "electron-builder --win nsis"
   },

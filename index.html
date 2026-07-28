@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main id="app" data-view="menu" data-panel="home">
+    <main id="app" data-view="menu" data-panel="home" data-sanctum-menu="false">
       <canvas id="arena" aria-label="FLUX arena"></canvas>
 
       <section id="hud" class="hud" aria-live="polite">
@@ -187,23 +187,26 @@
             <button class="nav-item active" data-panel="home" type="button">
               <span>01</span><b>Operations</b>
             </button>
+            <button class="nav-item" data-panel="freeplay" type="button">
+              <span>02</span><b>Freeplay</b>
+            </button>
             <button class="nav-item" data-panel="play" type="button">
-              <span>02</span><b>Play</b>
+              <span>03</span><b>Play</b>
             </button>
             <button class="nav-item" data-panel="online" type="button">
-              <span>03</span><b>Host / Join</b><em>REMOTE</em>
+              <span>04</span><b>Host / Join</b><em>REMOTE</em>
             </button>
             <button class="nav-item" data-panel="agents" type="button">
-              <span>04</span><b>Champions</b><em>10</em>
+              <span>05</span><b>Characters</b><em>26</em>
             </button>
             <button class="nav-item" data-panel="arenas" type="button">
-              <span>05</span><b>Maps & Modes</b>
+              <span>06</span><b>Maps & Modes</b>
             </button>
             <button class="nav-item" data-panel="guide" type="button">
-              <span>06</span><b>Controls</b>
+              <span>07</span><b>Controls</b>
             </button>
             <button class="nav-item" data-panel="settings" type="button">
-              <span>07</span><b>Configuration</b>
+              <span>08</span><b>Settings</b>
             </button>
           </nav>
 
@@ -211,17 +214,17 @@
             <article class="menu-panel active" data-menu-panel="home">
               <div class="hero">
                 <div>
-                  <span class="eyebrow">OLD-WORLD FLUX ARENA / BUILD 0.34.2</span>
-                  <h1>Shape the field.<br /><em>Execute the read.</em></h1>
+                  <span class="eyebrow">SANCTUM / BUILD 0.35</span>
+                  <h1>Play first.<br /><em>Choose from here.</em></h1>
                   <p>
-                    Ten race champions. Five proven contests. One magical language:
-                    aim, space, timing, prediction, commitment, counterplay.
+                    Freeplay is the home screen. Practice movement and spells, change
+                    rules, host friends, or enter a match without leaving the world.
                   </p>
                   <div class="button-row">
-                    <button class="button button-primary button-large" data-quick-start type="button">
-                      First contact <kbd>↵</kbd>
+                    <button class="button button-primary button-large" id="resume-sanctum" type="button">
+                      Resume freeplay <kbd>Esc</kbd>
                     </button>
-                    <button class="button button-large" data-panel="play" type="button">Choose contest</button>
+                    <button class="button button-large" data-panel="play" type="button">Start match</button>
                   </div>
                   <div class="operation-shortcuts" aria-label="Quick operations">
                     <button type="button" data-launch-mode="duel"><b>OATH DUEL</b><span>Duel</span></button>
@@ -235,10 +238,58 @@
                 </div>
               </div>
               <div class="feature-strip">
-                <div><b>10</b><span>race-bound champions</span></div>
-                <div><b>8</b><span>authored battlegrounds</span></div>
-                <div><b>5</b><span>solo / PvP / PvPvE / PvE modes</span></div>
-                <div><b>120</b><span>authoritative simulation tick</span></div>
+                <div><b>16</b><span>races with playable characters</span></div>
+                <div><b>8</b><span>element families</span></div>
+                <div><b>180</b><span>maximum Flux</span></div>
+                <div><b>120</b><span>authoritative ticks</span></div>
+              </div>
+            </article>
+
+            <article class="menu-panel" data-menu-panel="freeplay" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">FREEPLAY</span><h2>Practice rules</h2></div>
+                <p id="freeplay-counts">1 unit · 0 shots · 0 fields</p>
+              </header>
+              <div class="freeplay-grid">
+                <fieldset class="freeplay-group">
+                  <legend>Resources</legend>
+                  <label class="toggle-setting"><span><b>God mode</b></span><input id="freeplay-god" data-freeplay-setting type="checkbox" /></label>
+                  <label class="toggle-setting"><span><b>Endless Flux</b></span><input id="freeplay-flux" data-freeplay-setting type="checkbox" /></label>
+                  <label class="toggle-setting"><span><b>Endless FLOW</b></span><input id="freeplay-flow" data-freeplay-setting type="checkbox" /></label>
+                  <label class="toggle-setting"><span><b>Instant cooldowns</b></span><input id="freeplay-cooldowns" data-freeplay-setting type="checkbox" /></label>
+                  <label class="toggle-setting"><span><b>Endless ultimate</b></span><input id="freeplay-ultimate" data-freeplay-setting type="checkbox" /></label>
+                </fieldset>
+                <fieldset class="freeplay-group">
+                  <legend>World</legend>
+                  <label class="toggle-setting"><span><b>Destruction</b></span><input id="freeplay-destruction" data-freeplay-setting type="checkbox" checked /></label>
+                  <label class="toggle-setting"><span><b>Reactions</b></span><input id="freeplay-reactions" data-freeplay-setting type="checkbox" checked /></label>
+                  <label class="toggle-setting"><span><b>Friendly fire</b></span><input id="freeplay-friendly-fire" data-freeplay-setting type="checkbox" /></label>
+                  <label class="toggle-setting"><span><b>Freeze bots</b></span><input id="freeplay-freeze-bots" data-freeplay-setting type="checkbox" /></label>
+                </fieldset>
+                <fieldset class="freeplay-group">
+                  <legend>Debug</legend>
+                  <label class="toggle-setting"><span><b>Hitboxes</b></span><input id="freeplay-hitboxes" data-freeplay-setting type="checkbox" /></label>
+                  <label class="toggle-setting"><span><b>Velocity</b></span><input id="freeplay-velocity" data-freeplay-setting type="checkbox" /></label>
+                  <label class="toggle-setting"><span><b>Movement state</b></span><input id="freeplay-states" data-freeplay-setting type="checkbox" /></label>
+                </fieldset>
+                <fieldset class="freeplay-group freeplay-ranges">
+                  <legend>Scale</legend>
+                  <label class="range-setting"><span><b>Damage</b></span><input id="freeplay-damage" data-freeplay-setting type="range" min="0" max="4" step="0.25" value="1" /><output data-freeplay-output="damageMultiplier">1.0×</output></label>
+                  <label class="range-setting"><span><b>Speed</b></span><input id="freeplay-speed" data-freeplay-setting type="range" min="0.5" max="2" step="0.1" value="1" /><output data-freeplay-output="speedMultiplier">1.0×</output></label>
+                  <label class="range-setting"><span><b>Time</b></span><input id="freeplay-time" data-freeplay-setting type="range" min="0.1" max="2" step="0.1" value="1" /><output data-freeplay-output="timeScale">1.0×</output></label>
+                </fieldset>
+              </div>
+              <div class="freeplay-actions" aria-label="Freeplay actions">
+                <button class="button button-primary" id="resume-freeplay" type="button">Resume</button>
+                <button class="button" data-freeplay-action="spawn-dummy" type="button">Dummy</button>
+                <button class="button" data-freeplay-action="spawn-moving-dummy" type="button">Moving dummy</button>
+                <button class="button" data-freeplay-action="spawn-hostile-bot" type="button">Enemy bot</button>
+                <button class="button" data-freeplay-action="spawn-allied-bot" type="button">Ally bot</button>
+                <button class="button" data-freeplay-action="clear-projectiles" type="button">Clear shots</button>
+                <button class="button" data-freeplay-action="clear-fields" type="button">Clear fields</button>
+                <button class="button" data-freeplay-action="rebuild" type="button">Rebuild</button>
+                <button class="button" data-freeplay-action="reset-player" type="button">Reset player</button>
+                <button class="button button-quiet" data-freeplay-action="reset-all" type="button">Reset all</button>
               </div>
             </article>
 
@@ -269,13 +320,29 @@
                     <div id="agent-options" class="race-champion-matrix"></div>
                   </fieldset>
 
+                  <fieldset id="loadout-field" class="muster-section loadout-field">
+                    <legend>4 · Spells</legend>
+                    <div class="loadout-head">
+                      <p>Drag a spell into a slot or use the selectors.</p>
+                      <output id="loadout-budget" aria-live="polite">0 / 13 SP</output>
+                    </div>
+                    <div id="loadout-catalog" class="loadout-catalog" aria-label="Universal spell catalog"></div>
+                    <div class="loadout-slots">
+                      <label><span>Tactical</span><select id="loadout-active-1" name="activeOne" data-loadout-slot="0"></select></label>
+                      <label><span>Defense</span><select id="loadout-active-2" name="activeTwo" data-loadout-slot="1"></select></label>
+                      <label><span>Mobility</span><select id="loadout-active-3" name="activeThree" data-loadout-slot="2"></select></label>
+                      <label><span>Ultimate</span><select id="loadout-ultimate" name="ultimate"></select></label>
+                    </div>
+                    <p id="loadout-status" class="loadout-status">Signature kit ready.</p>
+                  </fieldset>
+
                   <fieldset id="player-two-field" class="muster-section champion-field" hidden>
-                    <legend>4 · Player 2 champion</legend>
+                    <legend>5 · Player 2 character</legend>
                     <div id="agent-two-options" class="race-champion-matrix"></div>
                   </fieldset>
 
                   <fieldset class="muster-section arena-field">
-                    <legend id="arena-step-label">4 · Battleground</legend>
+                    <legend id="arena-step-label">5 · Battleground</legend>
                     <div class="atlas-toolbar" aria-label="Realm chart depth">
                       <button class="text-button active" type="button" data-atlas-scope="realm">Realm</button>
                       <span aria-hidden="true">›</span>
@@ -519,7 +586,7 @@
                 </label>
                 <fieldset class="binding-settings">
                   <legend>Player 1 keyboard</legend>
-                  <p>Choose an action, then press a key. Existing assignments swap; match and Player 2 keys stay protected.</p>
+                  <p>Choose an action, then press a key, mouse button, or wheel direction. Up to four bindings are kept.</p>
                   <div class="binding-grid">
                     <label><span>Move up</span><button type="button" data-bind-action="moveUp">W</button></label>
                     <label><span>Move left</span><button type="button" data-bind-action="moveLeft">A</button></label>
@@ -532,6 +599,7 @@
                     <label><span>Sprint</span><button type="button" data-bind-action="sprint">ALT</button></label>
                     <label><span>Hop</span><button type="button" data-bind-action="hop">C</button></label>
                     <label><span>Ultimate</span><button type="button" data-bind-action="ultimate">F</button></label>
+                    <label><span>Interact</span><button type="button" data-bind-action="interact">X</button></label>
                   </div>
                   <output id="binding-status" aria-live="polite">Select an action to rebind.</output>
                 </fieldset>

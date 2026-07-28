@@ -810,7 +810,10 @@ test("element fields resolve physical reactions deterministically", () => {
     { ...base, id: "ice", element: "ice" },
   ];
   stepMatch(state, {}, FIXED_DELTA);
-  assert.equal(state.elementFields.length, 0);
+  assert.equal(state.elementFields.some((field) => field.element === "fire"), false);
+  assert.equal(state.elementFields.some((field) => field.element === "ice"), false);
+  assert.equal(state.elementFields.some((field) => field.element === "water"), true);
+  assert.equal(state.elementFields.some((field) => field.element === "vapor"), true);
   assert.equal(
     state.events.some(
       (event) => event.type === "elementReaction" && event.reaction === "melt",

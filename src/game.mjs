@@ -1,18 +1,24 @@
 import {
+  ABILITY_CATALOG,
+  CHARACTER_ROSTER,
   CHARACTERS,
   MAPS,
   MATCH_TUNING,
   MODES,
   RACES,
   getCharacter,
+  getLoadoutRule,
   getMap,
   getMode,
   getRace,
-} from "./content.mjs";
+  validateLoadout,
+} from "./live-content.mjs";
 import {
+  applyFreeplayAction,
   createMatch,
   matchInvariantErrors,
   sanitizeCommand,
+  setFreeplaySettings,
   skipTutorial,
   stepMatch,
 } from "./match.mjs";
@@ -51,19 +57,21 @@ const BINDING_ACTIONS = Object.freeze([
   "sprint",
   "hop",
   "ultimate",
+  "interact",
 ]);
 const DEFAULT_BINDINGS = Object.freeze({
-  moveUp: "w",
-  moveLeft: "a",
-  moveDown: "s",
-  moveRight: "d",
-  fire: " ",
-  tactical: "e",
-  defense: "q",
-  mobility: "shift",
-  sprint: "alt",
-  hop: "c",
-  ultimate: "f",
+  moveUp: Object.freeze(["w"]),
+  moveLeft: Object.freeze(["a"]),
+  moveDown: Object.freeze(["s"]),
+  moveRight: Object.freeze(["d"]),
+  fire: Object.freeze([" ", "mouse1"]),
+  tactical: Object.freeze(["e", "mouse2"]),
+  defense: Object.freeze(["q"]),
+  mobility: Object.freeze(["shift"]),
+  sprint: Object.freeze(["alt"]),
+  hop: Object.freeze(["c", "wheelup"]),
+  ultimate: Object.freeze(["f"]),
+  interact: Object.freeze(["x"]),
 });
 const BINDING_NAMES = Object.freeze({
   moveUp: "Move up",
@@ -77,6 +85,7 @@ const BINDING_NAMES = Object.freeze({
   sprint: "Sprint",
   hop: "Hop",
   ultimate: "Ultimate",
+  interact: "Interact",
 });
 const PROTECTED_BINDING_KEYS = new Set([
   "escape",
@@ -132,6 +141,7 @@ const matchForm = element("match-form");
 const pointer = { x: 0, y: 0, active: false };
 const keys = new Set();
 const mouseButtons = new Set();
+const wheelInputs = new Set();
 const requestResolvers = new Map();
 const particles = [];
 const rings = [];
@@ -142,13 +152,22 @@ let settings = loadSettings();
 let bindingCapture = null;
 let menuPanel = "home";
 let atlasScope = "realm";
-let matchState = createMatch({
-  modeId: "training",
-  mapId: "breakline",
-  botCount: 0,
+let loadoutCharacterId = null;
+let loadoutModeId = null;
+let draggedAbilityId = null;
+const SANCTUM_PLAYER = Object.freeze({
+  id: "p1",
+  name: "PLAYER 1",
+  characterId: "mara",
+  raceId: "human",
+  team: "alpha",
+  human: true,
+  localSlot: 0,
 });
-let matchKind = "none";
-let lastLocalOptions = null;
+
+let matchState = createMatch(createSanctumOptions());
+let matchKind = "local";
+let lastLocalOptions = createSanctumOptions();
 let paused = false;
 let infoOpen = false;
 let frameTime = performance.now();
@@ -186,29 +205,34 @@ syncSettingsForm();
 applySettings();
 showPanel("home");
 resize();
-updateInterface();
 const launchParameters = new URLSearchParams(location.search ?? "");
 const linkedLobbyCode = launchParameters.get("join");
 const linkedServer = launchParameters.get("server");
 const hintedServer = remoteServerFromHint(linkedServer);
 if (hintedServer) element("server-address").value = hintedServer;
 if (linkedLobbyCode) {
-  showPanel("online");
+  openSanctumMenu("online");
   element("join-code").value = linkedLobbyCode.toUpperCase();
   window.setTimeout(() => joinLobby(linkedLobbyCode), 0);
 } else if (launchParameters.get("friends") === "1") {
-  showPanel("online");
+  openSanctumMenu("online");
   element("lobby-public").checked = false;
   setNetworkMessage("FRIEND HOST · create a private lobby, then send the invite link.");
+} else {
+  enterGame();
+  toast("FREEPLAY · SANCTUM");
 }
 
 window.addEventListener("resize", resize);
 window.addEventListener("blur", () => {
   keys.clear();
   mouseButtons.clear();
+  wheelInputs.clear();
 });
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", (event) => keys.delete(normalizeInputKey(event.key)));
+window.addEventListener("wheel", handleWheelInput, { passive: false });
+window.addEventListener("mousedown", handleBindingPointerCapture, true);
 canvas.addEventListener("contextmenu", (event) => event.preventDefault());
 canvas.addEventListener("pointermove", (event) => {
   pointer.x = event.clientX;
@@ -217,6 +241,11 @@ canvas.addEventListener("pointermove", (event) => {
 });
 canvas.addEventListener("pointerdown", (event) => {
   ensureAudio();
+  const token = `mouse${event.button + 1}`;
+  if ((settings.bindings.interact ?? []).includes(token) && activateNearbyStation()) {
+    event.preventDefault();
+    return;
+  }
   mouseButtons.add(event.button);
   pointer.x = event.clientX;
   pointer.y = event.clientY;
@@ -232,9 +261,16 @@ canvas.addEventListener("pointerleave", () => {
   pointer.active = false;
 });
 frontEnd.addEventListener("click", handleMenuClick);
+frontEnd.addEventListener("input", handleFreeplayInput);
+frontEnd.addEventListener("dragstart", handleLoadoutDragStart);
+frontEnd.addEventListener("dragover", handleLoadoutDragOver);
+frontEnd.addEventListener("dragleave", handleLoadoutDragLeave);
+frontEnd.addEventListener("drop", handleLoadoutDrop);
 pauseOverlay.addEventListener("click", handleOverlayClick);
 matchOverlay.addEventListener("click", handleOverlayClick);
 menuClose.addEventListener("click", resumeGame);
+element("resume-sanctum").addEventListener("click", resumeGame);
+element("resume-freeplay").addEventListener("click", resumeGame);
 matchForm.addEventListener("submit", startConfiguredMatch);
 matchForm.addEventListener("change", handleMatchFormChange);
 element("bot-count").addEventListener("input", () => {
@@ -300,6 +336,7 @@ function runFrame(now) {
   } else {
     accumulator = 0;
   }
+  wheelInputs.clear();
   updateEffects(delta);
   render(now / 1000);
   interfaceAccumulator += delta;
@@ -381,7 +418,7 @@ function handleKeyDown(event) {
       "arrowright",
       "tab",
       "alt",
-    ].includes(key) || Object.values(settings.bindings).includes(key))
+    ].includes(key) || Object.values(settings.bindings).some((binding) => binding.includes(key)))
   ) {
     event.preventDefault();
   }
@@ -398,6 +435,13 @@ function handleKeyDown(event) {
   }
   if (key === "t" && app.dataset.view === "game") {
     skipTutorial(matchState);
+    return;
+  }
+  if (
+    !event.repeat && app.dataset.view === "game" &&
+    (settings.bindings.interact ?? []).includes(key) &&
+    activateNearbyStation()
+  ) {
     return;
   }
   keys.add(key);
@@ -457,12 +501,11 @@ function readCommands() {
 }
 
 function readPlayerOne(entity) {
-  const binding = settings.bindings;
   const movement = directionFromKeys(
-    binding.moveLeft,
-    binding.moveRight,
-    binding.moveUp,
-    binding.moveDown,
+    settings.bindings.moveLeft,
+    settings.bindings.moveRight,
+    settings.bindings.moveUp,
+    settings.bindings.moveDown,
   );
   let aim = { x: entity.facingX, y: entity.facingY };
   if (pointer.active) {
@@ -473,13 +516,13 @@ function readPlayerOne(entity) {
     ...movement,
     aimX: aim.x,
     aimY: aim.y,
-    fire: mouseButtons.has(0) || keys.has(binding.fire),
-    special: mouseButtons.has(2) || keys.has(binding.tactical),
-    defend: keys.has(binding.defense),
-    mobility: keys.has(binding.mobility),
-    sprint: keys.has(binding.sprint),
-    hop: keys.has(binding.hop),
-    ultimate: keys.has(binding.ultimate),
+    fire: actionPressed("fire"),
+    special: actionPressed("tactical"),
+    defend: actionPressed("defense"),
+    mobility: actionPressed("mobility"),
+    sprint: actionPressed("sprint"),
+    hop: actionPressed("hop"),
+    ultimate: actionPressed("ultimate"),
   });
 }
 
@@ -549,12 +592,54 @@ function mergeGamepad(command, gamepad) {
   });
 }
 
+function inputTokenPressed(token) {
+  if (token === "wheelup" || token === "wheeldown") return wheelInputs.has(token);
+  if (/^mouse[1-5]$/.test(token)) return mouseButtons.has(Number(token.slice(5)) - 1);
+  return keys.has(token);
+}
+
+function bindingPressed(binding) {
+  const tokens = Array.isArray(binding) ? binding : [binding];
+  return tokens.some(inputTokenPressed);
+}
+
+function actionPressed(action) {
+  return bindingPressed(settings.bindings[action] ?? []);
+}
+
 function directionFromKeys(left, right, up, down) {
   const direction = normalize(
-    Number(keys.has(right)) - Number(keys.has(left)),
-    Number(keys.has(down)) - Number(keys.has(up)),
+    Number(bindingPressed(right)) - Number(bindingPressed(left)),
+    Number(bindingPressed(down)) - Number(bindingPressed(up)),
   );
   return { moveX: direction.x, moveY: direction.y };
+}
+
+function handleWheelInput(event) {
+  const token = event.deltaY < 0 ? "wheelup" : "wheeldown";
+  if (bindingCapture) {
+    event.preventDefault();
+    commitBinding(bindingCapture, token);
+    return;
+  }
+  if (app.dataset.view === "game") {
+    if ((settings.bindings.interact ?? []).includes(token) && activateNearbyStation()) {
+      event.preventDefault();
+      return;
+    }
+    wheelInputs.add(token);
+    if (Object.values(settings.bindings).some((binding) => binding.includes(token))) {
+      event.preventDefault();
+    }
+  }
+}
+
+function handleBindingPointerCapture(event) {
+  if (!bindingCapture || event.target.closest?.("[data-bind-action]")) return;
+  if (event.button < 0 || event.button > 4) return;
+  event.preventDefault();
+  event.stopPropagation();
+  commitBinding(bindingCapture, `mouse${event.button + 1}`);
 }
 
 function predictRemoteTick() {
@@ -604,6 +689,11 @@ function flushConditionedNetwork(now) {
 }
 
 function handleMenuClick(event) {
+  const freeplayAction = event.target.closest("[data-freeplay-action]");
+  if (freeplayAction) {
+    runFreeplayAction(freeplayAction.dataset.freeplayAction);
+    return;
+  }
   const atlasButton = event.target.closest("[data-atlas-scope]");
   if (atlasButton) {
     atlasScope = atlasButton.dataset.atlasScope === "fracture" ? "fracture" : "realm";
@@ -670,31 +760,216 @@ function captureBinding(event, key) {
     status.dataset.tone = "";
     return;
   }
+  if (key === "backspace") {
+    const action = bindingCapture;
+    const bindings = { ...settings.bindings, [action]: [...DEFAULT_BINDINGS[action]] };
+    settings = normalizeSettings({ ...settings, bindings });
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    bindingCapture = null;
+    syncBindingLabels();
+    syncBindingButtons();
+    const status = element("binding-status");
+    status.textContent = `${BINDING_NAMES[action]} reset.`;
+    status.dataset.tone = "success";
+    return;
+  }
   if (!isBindableKey(key) || PROTECTED_BINDING_KEYS.has(key)) {
     const status = element("binding-status");
-    status.textContent = "That key is reserved for match control or Player 2. Try another.";
+    status.textContent = "Reserved key. Use another key, mouse button, or wheel direction.";
     status.dataset.tone = "error";
     return;
   }
+  commitBinding(bindingCapture, key);
+}
 
-  const action = bindingCapture;
-  const oldKey = settings.bindings[action];
-  const occupiedAction = BINDING_ACTIONS.find(
-    (candidate) => candidate !== action && settings.bindings[candidate] === key,
-  );
-  const bindings = { ...settings.bindings, [action]: key };
-  if (occupiedAction) bindings[occupiedAction] = oldKey;
+function commitBinding(action, token) {
+  const current = [...(settings.bindings[action] ?? [])];
+  if (!current.includes(token)) current.push(token);
+  const bindings = { ...settings.bindings, [action]: current.slice(-4) };
   settings = normalizeSettings({ ...settings, bindings });
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   bindingCapture = null;
   keys.clear();
+  wheelInputs.clear();
   syncBindingLabels();
   syncBindingButtons();
   const status = element("binding-status");
-  status.textContent = occupiedAction
-    ? `${BINDING_NAMES[action]} is ${keyLabel(key)}; ${BINDING_NAMES[occupiedAction]} moved to ${keyLabel(oldKey)}.`
-    : `${BINDING_NAMES[action]} is now ${keyLabel(key)}.`;
+  status.textContent = `${BINDING_NAMES[action]}: ${keyLabel(settings.bindings[action])}. Backspace while capturing resets.`;
   status.dataset.tone = "success";
+}
+
+function createSanctumOptions() {
+  return {
+    modeId: "freeplay",
+    mapId: "sanctum",
+    botCount: 0,
+    hazardsEnabled: false,
+    players: [{ ...SANCTUM_PLAYER }],
+  };
+}
+
+function isSanctum() {
+  return matchState?.modeId === "freeplay" && matchState?.mapId === "sanctum";
+}
+
+function nearbyStation() {
+  if (!isSanctum()) return null;
+  const player = localPlayer();
+  if (!player) return null;
+  return [...(getMap(matchState.mapId).stations ?? [])]
+    .filter((station) =>
+      Math.hypot(player.x - station.x, player.y - station.y) <= station.radius + 70
+    )
+    .sort((left, right) =>
+      Math.hypot(player.x - left.x, player.y - left.y) -
+      Math.hypot(player.x - right.x, player.y - right.y)
+    )[0] ?? null;
+}
+
+function activateNearbyStation() {
+  const station = nearbyStation();
+  if (!station) return false;
+  const panelByKind = {
+    play: "play",
+    movement: "guide",
+    loadout: "play",
+    online: "online",
+    settings: "settings",
+  };
+  openSanctumMenu(panelByKind[station.kind] ?? "home");
+  toast(station.label);
+  if (station.kind === "loadout") {
+    window.setTimeout(() => document.querySelector(".loadout-builder")?.scrollIntoView?.({ block: "start" }), 0);
+  }
+  return true;
+}
+
+function startSanctum(panel = null, preserveReconnect = false) {
+  leaveRemote(!preserveReconnect);
+  const options = createSanctumOptions();
+  matchState = createMatch(options);
+  lastLocalOptions = structuredClone(options);
+  matchKind = "local";
+  paused = false;
+  remoteEntityId = null;
+  pendingInputs = [];
+  lastProcessedTick = -1;
+  clearEffects();
+  enterGame();
+  if (panel) openSanctumMenu(panel);
+}
+
+function openSanctumMenu(panel = "home") {
+  if (!isSanctum()) {
+    startSanctum(panel);
+    return;
+  }
+  paused = true;
+  app.dataset.view = "menu";
+  app.dataset.sanctumMenu = "true";
+  toggleInfo(false);
+  pauseOverlay.classList.add("hidden");
+  matchOverlay.classList.add("hidden");
+  menuClose.hidden = false;
+  keys.clear();
+  mouseButtons.clear();
+  showPanel(panel);
+  syncFreeplayPanel();
+}
+
+function handleFreeplayInput(event) {
+  if (!event.target.matches?.("[data-freeplay-setting]")) return;
+  applyFreeplaySettingsFromControls();
+}
+
+async function applyFreeplaySettingsFromControls() {
+  if (!isSanctum()) return;
+  const checkbox = (id) => element(id).checked;
+  const number = (id) => Number.parseFloat(element(id).value);
+  const settingsUpdate = {
+    godMode: checkbox("freeplay-god"),
+    endlessFlux: checkbox("freeplay-flux"),
+    endlessFlow: checkbox("freeplay-flow"),
+    instantCooldowns: checkbox("freeplay-cooldowns"),
+    endlessUltimate: checkbox("freeplay-ultimate"),
+    friendlyFire: checkbox("freeplay-friendly-fire"),
+    destructibility: checkbox("freeplay-destruction"),
+    reactions: checkbox("freeplay-reactions"),
+    freezeBots: checkbox("freeplay-freeze-bots"),
+    showHitboxes: checkbox("freeplay-hitboxes"),
+    showVelocity: checkbox("freeplay-velocity"),
+    showMovementState: checkbox("freeplay-states"),
+    damageMultiplier: number("freeplay-damage"),
+    speedMultiplier: number("freeplay-speed"),
+    timeScale: number("freeplay-time"),
+  };
+  try {
+    if (matchKind === "remote") {
+      if (clientId !== remoteHostId) {
+        syncFreeplayPanel();
+        toast("Only the host changes shared freeplay rules.", "error");
+        return;
+      }
+      const result = await sendRequest("freeplay-settings", { settings: settingsUpdate });
+      if (!result.ok) throw new Error(result.message);
+    } else {
+      setFreeplaySettings(matchState, settingsUpdate);
+      syncFreeplayPanel();
+    }
+  } catch (error) {
+    syncFreeplayPanel();
+    toast(error.message, "error");
+  }
+}
+
+function syncFreeplayPanel() {
+  const controls = document.querySelector('[data-menu-panel="freeplay"]');
+  if (!controls || !isSanctum()) return;
+  const values = matchState.rules?.freeplaySettings ?? {};
+  const checked = (id, key) => { element(id).checked = Boolean(values[key]); };
+  const ranged = (id, key) => {
+    element(id).value = String(values[key]);
+    const output = document.querySelector(`[data-freeplay-output="${key}"]`);
+    if (output) output.value = `${Number(values[key]).toFixed(values[key] < 1 ? 2 : 1)}×`;
+  };
+  checked("freeplay-god", "godMode");
+  checked("freeplay-flux", "endlessFlux");
+  checked("freeplay-flow", "endlessFlow");
+  checked("freeplay-cooldowns", "instantCooldowns");
+  checked("freeplay-ultimate", "endlessUltimate");
+  checked("freeplay-friendly-fire", "friendlyFire");
+  checked("freeplay-destruction", "destructibility");
+  checked("freeplay-reactions", "reactions");
+  checked("freeplay-freeze-bots", "freezeBots");
+  checked("freeplay-hitboxes", "showHitboxes");
+  checked("freeplay-velocity", "showVelocity");
+  checked("freeplay-states", "showMovementState");
+  ranged("freeplay-damage", "damageMultiplier");
+  ranged("freeplay-speed", "speedMultiplier");
+  ranged("freeplay-time", "timeScale");
+  element("freeplay-counts").textContent =
+    `${matchState.entities.length} units · ${matchState.projectiles.length} shots · ${matchState.elementFields.length} fields`;
+}
+
+async function runFreeplayAction(action) {
+  if (!isSanctum()) startSanctum();
+  const player = localPlayer();
+  try {
+    if (matchKind === "remote") {
+      if (clientId !== remoteHostId) throw new Error("Only the host changes the shared sanctuary.");
+      const result = await sendRequest("freeplay-action", {
+        action,
+        options: { entityId: player?.id },
+      });
+      if (!result.ok) throw new Error(result.message);
+    } else if (!applyFreeplayAction(matchState, action, { entityId: player?.id })) {
+      throw new Error("Freeplay action unavailable.");
+    }
+    syncFreeplayPanel();
+    toast(action.replaceAll("-", " ").toUpperCase());
+  } catch (error) {
+    toast(error.message, "error");
+  }
 }
 
 function handleOverlayClick(event) {
@@ -731,6 +1006,7 @@ function showPanel(panel) {
   }
   if (panel === "online") refreshLobbies();
   if (panel === "online") refreshReconnectButton();
+  if (panel === "freeplay") syncFreeplayPanel();
 }
 
 function quickStart() {
@@ -756,9 +1032,10 @@ function quickStart() {
 function launchMode(modeId) {
   const mode = getMode(modeId);
   const mapId = selectedMatchChoice("map", "breakline");
-  const characterId = selectedMatchChoice("character", "kite");
+  const characterId = selectedMatchChoice("character", "mara");
   const raceId = getCharacter(characterId).homeRaceId;
   selectMatchChoice("mode", mode.id);
+  syncLoadoutBuilder();
   startLocal({
     modeId: mode.id,
     mapId,
@@ -772,6 +1049,7 @@ function launchMode(modeId) {
         team: "alpha",
         human: true,
         localSlot: 0,
+        ...selectedLoadoutSpec(characterId, mode.id),
       },
     ],
   });
@@ -783,8 +1061,19 @@ function startConfiguredMatch(event) {
   const format = data.get("format");
   let modeId = String(data.get("mode") ?? "duel");
   const mapId = String(data.get("map") ?? "breakline");
-  const characterId = String(data.get("character") ?? "kite");
+  const characterId = String(data.get("character") ?? "mara");
   const raceId = getCharacter(characterId).homeRaceId;
+  const activeAbilityIds = ["activeOne", "activeTwo", "activeThree"].map((name) => String(data.get(name) ?? ""));
+  const ultimateAbilityId = String(data.get("ultimate") ?? "");
+  const rosterCharacter = CHARACTER_ROSTER.find((entry) => entry.id === characterId);
+  if (rosterCharacter) {
+    const loadoutErrors = validateLoadout({ characterId, modeId, activeAbilityIds, ultimateAbilityId });
+    if (loadoutErrors.length) {
+      toast(loadoutErrors[0], "error");
+      showPanel("play");
+      return;
+    }
+  }
   if (format === "local" && !getMode(modeId).allowLocal) {
     modeId = "duel";
     toast("THE FIRST RITE is solo; switched to OATH DUEL for local 2P.");
@@ -798,6 +1087,8 @@ function startConfiguredMatch(event) {
       team: "alpha",
       human: true,
       localSlot: 0,
+      activeAbilityIds,
+      ultimateAbilityId,
     },
   ];
   if (format === "local") {
@@ -842,6 +1133,7 @@ function startLocal(options) {
 
 function enterGame() {
   app.dataset.view = "game";
+  app.dataset.sanctumMenu = "false";
   toggleInfo(false);
   pauseOverlay.classList.add("hidden");
   matchOverlay.classList.add("hidden");
@@ -854,6 +1146,10 @@ function enterGame() {
 }
 
 function openPause() {
+  if (isSanctum()) {
+    openSanctumMenu("home");
+    return;
+  }
   if (!pauseOverlay.classList.contains("hidden")) {
     resumeGame();
     return;
@@ -873,6 +1169,7 @@ function openPause() {
 function resumeGame() {
   if (matchKind === "none") return;
   app.dataset.view = "game";
+  app.dataset.sanctumMenu = "false";
   paused = false;
   pauseOverlay.classList.add("hidden");
   menuClose.hidden = false;
@@ -894,17 +1191,136 @@ async function restartMatch() {
 }
 
 function leaveToMenu(panel = "home", preserveReconnect = false) {
-  leaveRemote(!preserveReconnect);
-  matchKind = "none";
-  paused = false;
-  app.dataset.view = "menu";
-  toggleInfo(false);
-  pauseOverlay.classList.add("hidden");
-  matchOverlay.classList.add("hidden");
-  menuClose.hidden = true;
-  keys.clear();
-  mouseButtons.clear();
-  showPanel(panel);
+  startSanctum(panel, preserveReconnect);
+}
+
+function selectedLoadoutSpec(characterId, modeId) {
+  const roster = CHARACTER_ROSTER.find((entry) => entry.id === characterId);
+  if (!roster) return {};
+  const activeAbilityIds = [0, 1, 2].map((index) => element(`loadout-active-${index + 1}`).value);
+  const ultimateAbilityId = element("loadout-ultimate").value;
+  const errors = validateLoadout({ characterId, modeId, activeAbilityIds, ultimateAbilityId });
+  return errors.length ? {
+    activeAbilityIds: [...roster.activeAbilityIds],
+    ultimateAbilityId: roster.ultimateAbilityId,
+  } : { activeAbilityIds, ultimateAbilityId };
+}
+
+function effectiveLoadoutPoints(character, ability) {
+  const affinity = character.affinities?.find((entry) => entry.id === ability.element)?.strength ?? 0;
+  return Math.max(1, ability.points - Math.min(3, affinity));
+}
+
+function syncLoadoutBuilder(force = false) {
+  const characterId = selectedMatchChoice("character", "mara");
+  const modeId = selectedMatchChoice("mode", "duel");
+  const character = getCharacter(characterId);
+  const roster = CHARACTER_ROSTER.find((entry) => entry.id === characterId);
+  const rule = getLoadoutRule(modeId);
+  const changed = force || loadoutCharacterId !== characterId || loadoutModeId !== modeId;
+  loadoutCharacterId = characterId;
+  loadoutModeId = modeId;
+
+  const actives = ABILITY_CATALOG.filter(
+    (ability) => ability.type === "active" && rule.elements.includes(ability.element),
+  );
+  const ultimates = ABILITY_CATALOG.filter(
+    (ability) => ability.type === "ultimate" && rule.elements.includes(ability.element),
+  );
+  const defaults = roster?.activeAbilityIds ?? actives.slice(0, 3).map((entry) => entry.id);
+  const defaultUltimate = roster?.ultimateAbilityId ?? ultimates[0]?.id ?? "";
+  const current = [0, 1, 2].map((index) =>
+    changed ? defaults[index] : element(`loadout-active-${index + 1}`).value,
+  );
+  const selectedUltimate = changed ? defaultUltimate : element("loadout-ultimate").value;
+
+  for (let index = 0; index < 3; index += 1) {
+    const select = element(`loadout-active-${index + 1}`);
+    select.innerHTML = actives.map((ability) =>
+      `<option value="${ability.id}">${ability.name} · ${effectiveLoadoutPoints(character, ability)} SP · ${ability.element}</option>`,
+    ).join("");
+    select.value = actives.some((ability) => ability.id === current[index])
+      ? current[index]
+      : defaults[index] ?? actives[index]?.id;
+  }
+  const ultimateSelect = element("loadout-ultimate");
+  ultimateSelect.innerHTML = ultimates.map((ability) =>
+    `<option value="${ability.id}">${ability.name} · ${ability.element}</option>`,
+  ).join("");
+  ultimateSelect.disabled = !rule.ultimates;
+  ultimateSelect.value = ultimates.some((ability) => ability.id === selectedUltimate)
+    ? selectedUltimate
+    : defaultUltimate;
+
+  element("loadout-catalog").innerHTML = actives.map((ability) =>
+    `<button class="loadout-chip" type="button" draggable="true" data-loadout-ability="${ability.id}" title="${ability.counterplay.join(" · ")}"><b>${ability.name}</b><small>${ability.element} · ${effectiveLoadoutPoints(character, ability)} SP · ${ability.fluxCost} Flux</small></button>`,
+  ).join("");
+  validateCurrentLoadout();
+}
+
+function currentLoadout() {
+  return {
+    characterId: selectedMatchChoice("character", "mara"),
+    modeId: selectedMatchChoice("mode", "duel"),
+    activeAbilityIds: [0, 1, 2].map((index) => element(`loadout-active-${index + 1}`).value),
+    ultimateAbilityId: element("loadout-ultimate").value,
+  };
+}
+
+function validateCurrentLoadout() {
+  const loadout = currentLoadout();
+  const character = getCharacter(loadout.characterId);
+  const roster = CHARACTER_ROSTER.find((entry) => entry.id === loadout.characterId);
+  const rule = getLoadoutRule(loadout.modeId);
+  const points = loadout.activeAbilityIds.reduce((sum, id) => {
+    const ability = ABILITY_CATALOG.find((entry) => entry.id === id);
+    return sum + (ability ? effectiveLoadoutPoints(character, ability) : 0);
+  }, 0);
+  element("loadout-budget").value = `${points} / ${rule.skillPoints} SP`;
+  const errors = roster ? validateLoadout(loadout) : [];
+  const status = element("loadout-status");
+  status.textContent = errors[0] ?? (roster ? "Loadout ready." : "Legacy character uses its signature kit.");
+  status.dataset.tone = errors.length ? "error" : "success";
+  return errors;
+}
+
+function assignLoadoutSlot(index, abilityId) {
+  const slots = [0, 1, 2].map((slot) => element(`loadout-active-${slot + 1}`));
+  const target = slots[index];
+  if (!target?.querySelector(`option[value="${abilityId}"]`)) return;
+  const duplicate = slots.findIndex((select, slot) => slot !== index && select.value === abilityId);
+  if (duplicate >= 0) slots[duplicate].value = target.value;
+  target.value = abilityId;
+  validateCurrentLoadout();
+}
+
+function handleLoadoutDragStart(event) {
+  const chip = event.target.closest?.("[data-loadout-ability]");
+  if (!chip) return;
+  draggedAbilityId = chip.dataset.loadoutAbility;
+  event.dataTransfer?.setData("text/plain", draggedAbilityId);
+  if (event.dataTransfer) event.dataTransfer.effectAllowed = "copy";
+}
+
+function handleLoadoutDragOver(event) {
+  const select = event.target.closest?.("[data-loadout-slot]");
+  if (!select || !draggedAbilityId) return;
+  event.preventDefault();
+  select.classList.add("drag-target");
+}
+
+function handleLoadoutDragLeave(event) {
+  event.target.closest?.("[data-loadout-slot]")?.classList.remove("drag-target");
+}
+
+function handleLoadoutDrop(event) {
+  const select = event.target.closest?.("[data-loadout-slot]");
+  if (!select) return;
+  event.preventDefault();
+  select.classList.remove("drag-target");
+  const abilityId = event.dataTransfer?.getData("text/plain") || draggedAbilityId;
+  assignLoadoutSlot(Number.parseInt(select.dataset.loadoutSlot, 10), abilityId);
+  draggedAbilityId = null;
 }
 
 function handleMatchFormChange(event) {
@@ -912,12 +1328,13 @@ function handleMatchFormChange(event) {
     const local = event.target.value === "local";
     element("player-two-field").hidden = !local;
     element("bot-field").hidden = local;
-    element("arena-step-label").textContent = `${local ? 5 : 4} · Battleground`;
+    element("arena-step-label").textContent = `${local ? 6 : 5} · Battleground`;
     if (local && !getMode(selectedMatchChoice("mode", "duel")).allowLocal) {
       selectMatchChoice("mode", "duel");
       toast("THE FIRST RITE is solo; OATH DUEL selected for local 2P.");
     }
   }
+  syncLoadoutBuilder();
   updateDeploymentSummary();
 }
 
@@ -943,7 +1360,7 @@ function selectMatchChoice(name, value) {
 
 function updateDeploymentSummary() {
   const mode = getMode(selectedMatchChoice("mode", "duel"));
-  const agent = getCharacter(selectedMatchChoice("character", "kite"));
+  const agent = getCharacter(selectedMatchChoice("character", "mara"));
   const race = getRace(agent.homeRaceId);
   const map = getMap(selectedMatchChoice("map", "breakline"));
   element("deployment-summary").textContent =
@@ -1005,7 +1422,7 @@ function updateInfoOverlay(mode, map) {
         ? "Operation complete. Rematch or return to menu."
         : mode.id === "convergence"
           ? wildmarchStatusCopy()
-          : mode.description;
+          : modeStatusCopy(mode);
   element("info-status").textContent =
     `Round ${matchState.round} · ${map.name} · ${Math.ceil(player.health)}/${player.maxHealth} HP`;
   element("info-agent-glyph").textContent = agent.glyph;
@@ -1013,13 +1430,19 @@ function updateInfoOverlay(mode, map) {
   element("info-agent-name").textContent = agent.name;
   element("info-agent-role").textContent =
     `${race.name} · ${agent.role} · ${agent.affinity.name} ELEMENT`;
+  const runtimeKit = {
+    special: player.kit?.special ?? agent.tactical,
+    defense: player.kit?.defense ?? agent.defense,
+    mobility: player.kit?.mobility ?? agent.mobility,
+    ultimate: player.kit?.ultimate ?? agent.ultimate,
+  };
   const kit = [
     ...(agent.passive ? [["PASSIVE", agent.passive]] : []),
     [`MB1/${keyLabel(settings.bindings.fire)}`, agent.primary],
-    [`MB2/${keyLabel(settings.bindings.tactical)}`, agent.tactical],
-    [keyLabel(settings.bindings.defense), agent.defense],
-    [keyLabel(settings.bindings.mobility), agent.mobility],
-    ...(agent.ultimate ? [[keyLabel(settings.bindings.ultimate), agent.ultimate]] : []),
+    [`MB2/${keyLabel(settings.bindings.tactical)}`, runtimeKit.special],
+    [keyLabel(settings.bindings.defense), runtimeKit.defense],
+    [keyLabel(settings.bindings.mobility), runtimeKit.mobility],
+    ...(runtimeKit.ultimate ? [[keyLabel(settings.bindings.ultimate), runtimeKit.ultimate]] : []),
   ];
   element("info-kit").innerHTML = kit
     .map(
@@ -1125,17 +1548,23 @@ function updateAbilities() {
   const player = localPlayer();
   if (!player) return;
   const agent = getCharacter(player.characterId);
+  const runtimeKit = {
+    special: player.kit?.special ?? agent.tactical,
+    defense: player.kit?.defense ?? agent.defense,
+    mobility: player.kit?.mobility ?? agent.mobility,
+    ultimate: player.kit?.ultimate ?? agent.ultimate,
+  };
   for (const [key, ability] of [
     ["primary", agent.primary],
-    ["special", agent.tactical],
-    ["defense", agent.defense],
-    ["mobility", agent.mobility],
+    ["special", runtimeKit.special],
+    ["defense", runtimeKit.defense],
+    ["mobility", runtimeKit.mobility],
   ]) {
     element(`${key}-name`).textContent = ability.name;
-    element(`${key}-detail`).textContent =
-      ability.fluxCost > 0
-        ? `${ability.detail} · ${ability.fluxCost} Flux`
-        : ability.detail;
+    element(`${key}-detail`).textContent = ability.fluxCost > 0
+      ? `${ability.fluxCost} Flux · ${ability.cooldown.toFixed(1)}s`
+      : `${ability.cooldown.toFixed(1)}s`;
+    element(`${key}-detail`).title = ability.detail ?? "";
     const cooldown =
       key === "primary"
         ? player.primaryCooldown
@@ -1148,23 +1577,20 @@ function updateAbilities() {
     element(`${key}-charge`).style.transform = `scaleX(${ratio})`;
   }
   const ultimateSlot = element("ultimate-ability");
-  ultimateSlot.hidden = !agent.ultimate;
-  if (agent.ultimate) {
-    const ready = player.ultimateCharge >= agent.ultimate.chargeRequired;
+  ultimateSlot.hidden = !runtimeKit.ultimate;
+  if (runtimeKit.ultimate) {
+    const ultimate = runtimeKit.ultimate;
+    const ready = player.ultimateCharge >= ultimate.chargeRequired;
     const channeling = player.ultimateWindupRemaining > 0;
-    element("ultimate-name").textContent = agent.ultimate.name;
+    element("ultimate-name").textContent = ultimate.name;
     ultimateSlot.style.setProperty("--ultimate-color", agent.accent);
     element("ultimate-detail").textContent = channeling
       ? `Committed · ${player.ultimateWindupRemaining.toFixed(1)}s`
       : ready
-        ? agent.ultimate.kind === "field-crown"
-          ? "READY · ring with escape seams"
-          : agent.ultimate.kind === "wind-vortex"
-            ? "READY · shared spell vortex"
-            : "READY · fixed lane"
-        : `${Math.floor(player.ultimateCharge)} / ${agent.ultimate.chargeRequired} · deal damage`;
+        ? "READY"
+        : `${Math.floor(player.ultimateCharge)} / ${ultimate.chargeRequired}`;
     element("ultimate-charge").style.transform =
-      `scaleX(${clamp(player.ultimateCharge / agent.ultimate.chargeRequired, 0, 1)})`;
+      `scaleX(${clamp(player.ultimateCharge / ultimate.chargeRequired, 0, 1)})`;
     ultimateSlot.classList.toggle("ready", ready);
     ultimateSlot.classList.toggle("channeling", channeling);
   } else {
@@ -1231,9 +1657,26 @@ function updateCoach(mode) {
       text.textContent =
         mode.id === "duel"
           ? "First to five. Cover, cooldowns, and commitment decide the round."
-          : mode.description;
+          : modeStatusCopy(mode);
     }
   }
+}
+
+function modeStatusCopy(mode) {
+  const player = localPlayer();
+  if (mode.id === "freeplay") return `${keyLabel(settings.bindings.interact)} near a station · practice settings stay here.`;
+  if (mode.id === "movement") {
+    const progress = matchState.movementTrial?.progress[player?.id] ?? 0;
+    const total = matchState.movementTrial?.gates.length ?? 0;
+    return `GATE ${Math.min(progress + 1, total)}/${total} · movement only wins the route.`;
+  }
+  if (mode.id === "siege") return `BREAK ENEMY COVER · ${Math.round(matchState.score[player?.team] ?? 0)}/${matchState.siege?.targetScore ?? mode.scoreLimit}.`;
+  if (mode.id === "extraction") return `CARGO ${player?.cargo ?? 0}/${matchState.extraction?.required ?? 0} · bank it at EXIT.`;
+  if (mode.id === "battle_royale") return `${matchState.battleRoyale?.closing ? "ZONE CLOSING" : "ZONE STABLE"} · last team wins.`;
+  if (mode.id === "mirror") return "SAME SPELLS · different movement, race, and reads.";
+  if (mode.id === "draft") return "BUILD WITHIN THE SHARED POINT LIMIT.";
+  if (mode.id === "team") return `TEAM ELIMS · ${mode.scoreLimit} wins.`;
+  return mode.description;
 }
 
 function wildmarchStatusCopy() {
@@ -1555,6 +1998,7 @@ function screenToWorld(screenX, screenY) {
 
 function render(time) {
   const map = getMap(matchState.mapId);
+  context.imageSmoothingEnabled = false;
   calculateViewport(map);
   context.setTransform(
     viewport.pixelRatio,
@@ -1576,23 +2020,254 @@ function render(time) {
     context.translate(viewport.offsetX + shakeX, viewport.offsetY + shakeY);
     context.scale(viewport.scale, viewport.scale);
     drawArena(map, time);
+    drawBattleRoyaleZone(map, time);
+    drawStations(map, time);
+    drawModeObjectives(time);
     drawShrines(time);
     drawWildmarch(time);
     drawObjective(map, time);
     drawElementFields(time);
     drawHazards(time);
+    drawDestructibles(time);
     drawObstacles(map);
     drawMines(time);
     drawTrails();
     drawProjectiles();
     drawDecoys(time);
     drawEntities(time);
+    drawDiagnostics();
     drawEffects();
   } finally {
     context.restore();
   }
   if (app.dataset.view === "game" && pointer.active && localPlayer()) {
     drawCrosshair(time);
+  }
+}
+
+function drawBattleRoyaleZone(map, time) {
+  const zone = matchState.battleRoyale;
+  if (!zone) return;
+  context.save();
+  try {
+    context.fillStyle = "#21172bb8";
+    context.beginPath();
+    context.rect(0, 0, map.size.width, map.size.height);
+    context.arc(zone.centerX, zone.centerY, zone.radius, 0, Math.PI * 2, true);
+    context.fill("evenodd");
+    context.strokeStyle = zone.closing ? "#d8a5ff" : "#a887c5";
+    context.lineWidth = settings.highContrast ? 7 : 4;
+    context.setLineDash([14, 9]);
+    context.lineDashOffset = settings.reducedMotion ? 0 : -time * 28;
+    context.beginPath();
+    context.arc(zone.centerX, zone.centerY, zone.radius, 0, Math.PI * 2);
+    context.stroke();
+    context.setLineDash([]);
+  } finally {
+    context.restore();
+  }
+}
+
+function drawModeObjectives(time) {
+  const player = localPlayer();
+  if (matchState.movementTrial) {
+    const progress = matchState.movementTrial.progress[player?.id] ?? 0;
+    for (const [index, gate] of matchState.movementTrial.gates.entries()) {
+      context.save();
+      try {
+        const current = index === progress;
+        const complete = index < progress;
+        context.strokeStyle = complete ? "#77f7ce" : current ? "#fff0aa" : "#7690a8";
+        context.fillStyle = complete ? "#77f7ce24" : current ? "#fff0aa22" : "#7690a812";
+        context.lineWidth = current ? 5 : 3;
+        context.setLineDash(current ? [10, 6] : []);
+        context.lineDashOffset = settings.reducedMotion ? 0 : -time * 18;
+        context.beginPath();
+        context.arc(gate.x, gate.y, gate.radius, 0, Math.PI * 2);
+        context.fill();
+        context.stroke();
+        context.setLineDash([]);
+        context.fillStyle = complete ? "#77f7ce" : current ? "#fff0aa" : "#9db0bf";
+        context.font = "800 13px ui-monospace, monospace";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(String(index + 1), gate.x, gate.y);
+      } finally {
+        context.restore();
+      }
+    }
+  }
+  if (matchState.extraction) {
+    const exit = matchState.extraction.exit;
+    context.save();
+    try {
+      context.strokeStyle = "#fff0aa";
+      context.fillStyle = "#fff0aa18";
+      context.lineWidth = 4;
+      context.setLineDash([10, 7]);
+      context.lineDashOffset = settings.reducedMotion ? 0 : -time * 15;
+      context.beginPath();
+      context.arc(exit.x, exit.y, exit.radius, 0, Math.PI * 2);
+      context.fill();
+      context.stroke();
+      context.setLineDash([]);
+      context.fillStyle = "#fff6cf";
+      context.font = "800 12px ui-monospace, monospace";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(`EXIT ${player?.cargo ?? 0}/${matchState.extraction.required}`, exit.x, exit.y);
+      for (const drop of matchState.extraction.drops ?? []) {
+        context.fillStyle = "#77f7ce";
+        context.beginPath();
+        context.arc(drop.x, drop.y, 8 + Math.sin(time * 5) * 2, 0, Math.PI * 2);
+        context.fill();
+      }
+    } finally {
+      context.restore();
+    }
+  }
+}
+
+function drawStations(map, time) {
+  const player = localPlayer();
+  for (const station of map.stations ?? []) {
+    const close = player && Math.hypot(player.x - station.x, player.y - station.y) <= station.radius + 70;
+    context.save();
+    try {
+      context.translate(station.x, station.y);
+      context.strokeStyle = close ? "#fff0aa" : map.visual.accent;
+      context.fillStyle = close ? "#fff0aa28" : `${map.visual.accent}14`;
+      context.lineWidth = close ? 5 : 3;
+      context.setLineDash(close ? [] : [5, 8]);
+      context.lineDashOffset = settings.reducedMotion ? 0 : -time * 10;
+      context.beginPath();
+      context.arc(0, 0, station.radius, 0, Math.PI * 2);
+      context.fill();
+      context.stroke();
+      context.setLineDash([]);
+      context.fillStyle = close ? "#fff6cf" : map.visual.accent;
+      context.font = "800 12px ui-monospace, monospace";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(station.label, 0, 0);
+      if (close) {
+        context.font = "700 10px ui-monospace, monospace";
+        context.fillText(`${keyLabel(settings.bindings.interact)} · OPEN`, 0, station.radius + 16);
+      }
+    } finally {
+      context.restore();
+    }
+  }
+}
+
+function drawDestructibles(time) {
+  const materialColors = {
+    wood: ["#70543c", "#c4925c"],
+    glass: ["#6ca9a7", "#bcefea"],
+    stone: ["#5f6570", "#b6bbc3"],
+  };
+  for (const piece of matchState.destructibles ?? []) {
+    const [fill, stroke] = materialColors[piece.material] ?? ["#655d51", "#c7b88f"];
+    context.save();
+    try {
+      const lift = piece.level === "upper" ? -8 : 0;
+      context.translate(0, lift);
+      if (piece.destroyed) {
+        context.globalAlpha = 0.35;
+        context.strokeStyle = stroke;
+        context.lineWidth = 3;
+        for (let index = 0; index < 4; index += 1) {
+          const x = piece.x + (index + 0.5) * piece.width / 4;
+          context.beginPath();
+          context.moveTo(x - 8, piece.y + piece.height * 0.2);
+          context.lineTo(x + 8, piece.y + piece.height * 0.8);
+          context.stroke();
+        }
+        continue;
+      }
+      const ratio = clamp(piece.health / piece.maxHealth, 0, 1);
+      const ownerStroke = piece.ownerTeam === "alpha"
+        ? "#77f7ce"
+        : piece.ownerTeam === "beta"
+          ? "#ff5d73"
+          : stroke;
+      context.fillStyle = fill;
+      context.strokeStyle = ownerStroke;
+      context.lineWidth = settings.highContrast ? 4 : 2;
+      context.fillRect(piece.x, piece.y, piece.width, piece.height);
+      context.strokeRect(piece.x, piece.y, piece.width, piece.height);
+      if (piece.ownerTeam) {
+        context.fillStyle = ownerStroke;
+        context.font = "800 10px ui-monospace, monospace";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(piece.ownerTeam === "alpha" ? "A" : "B", piece.x + piece.width / 2, piece.y + piece.height / 2);
+      }
+      context.globalAlpha = 0.32 + (1 - ratio) * 0.55;
+      context.strokeStyle = "#fff6cf";
+      context.lineWidth = 1.5;
+      const cracks = Math.max(0, piece.damageStage ?? Math.floor((1 - ratio) * 3));
+      for (let index = 0; index < cracks; index += 1) {
+        const x = piece.x + piece.width * (index + 1) / (cracks + 1);
+        context.beginPath();
+        context.moveTo(x, piece.y);
+        context.lineTo(x - 6, piece.y + piece.height * 0.45);
+        context.lineTo(x + 4, piece.y + piece.height);
+        context.stroke();
+      }
+      if (piece.level === "upper") {
+        context.globalAlpha = 0.75;
+        context.fillStyle = "#00000055";
+        context.fillRect(piece.x + 7, piece.y + piece.height + 8, piece.width, 6);
+      }
+    } finally {
+      context.restore();
+    }
+  }
+}
+
+function drawDiagnostics() {
+  const debug = matchState.rules?.freeplaySettings;
+  if (!matchState.rules?.freeplay || !debug) return;
+  for (const entity of matchState.entities) {
+    if (!entity.alive) continue;
+    const agent = getCharacter(entity.characterId);
+    context.save();
+    try {
+      if (debug.showHitboxes) {
+        context.strokeStyle = "#ffffffaa";
+        context.lineWidth = 1;
+        context.beginPath();
+        context.arc(entity.x, entity.y, agent.radius, 0, Math.PI * 2);
+        context.stroke();
+      }
+      if (debug.showVelocity) {
+        context.strokeStyle = "#ffe27a";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.moveTo(entity.x, entity.y);
+        context.lineTo(entity.x + entity.vx * 0.16, entity.y + entity.vy * 0.16);
+        context.stroke();
+      }
+      if (debug.showMovementState) {
+        context.fillStyle = "#fff";
+        context.font = "700 9px ui-monospace, monospace";
+        context.textAlign = "center";
+        context.fillText(entity.movementState ?? "grounded", entity.x, entity.y - agent.radius - 24);
+      }
+    } finally {
+      context.restore();
+    }
+  }
+  if (debug.showElementData) {
+    for (const field of matchState.elementFields ?? []) {
+      const x = field.element === "earth" ? field.x + field.width / 2 : field.x;
+      const y = field.element === "earth" ? field.y + field.height / 2 : field.y;
+      context.fillStyle = "#ffffffdd";
+      context.font = "700 9px ui-monospace, monospace";
+      context.textAlign = "center";
+      context.fillText(`${field.element} ${Math.max(0, field.duration).toFixed(1)}`, x, y + 18);
+    }
   }
 }
 
@@ -1741,6 +2416,7 @@ function drawArena(map, time) {
   }
   context.stroke();
   context.globalAlpha = 1;
+  drawMapDecor(map, time);
   drawLandmarks(map);
   context.strokeStyle = map.visual.accent;
   context.lineWidth = 4;
@@ -1752,6 +2428,67 @@ function drawArena(map, time) {
   context.strokeRect(inset + 10, inset + 10, width - inset * 2 - 20, height - inset * 2 - 20);
   context.setLineDash([]);
   context.globalAlpha = 1;
+}
+
+function drawMapDecor(map, time) {
+  context.save();
+  try {
+    if (map.id === "sanctum") {
+      context.fillStyle = "#b9ca8b";
+      for (let y = 64; y < map.size.height - 64; y += 32) {
+        for (let x = 64; x < map.size.width - 64; x += 32) {
+          if (((x / 32 + y / 32) & 3) !== 0) continue;
+          context.fillRect(x, y, 4, 3);
+          context.fillRect(x + 9, y + 7, 3, 3);
+        }
+      }
+      context.fillStyle = "#d6c88f";
+      context.fillRect(760, 655, 680, 90);
+      context.fillRect(1055, 250, 90, 900);
+      context.fillStyle = "#79a8a2";
+      context.fillRect(90, 515, 230, 370);
+      context.strokeStyle = "#d8eed1";
+      context.lineWidth = 5;
+      context.strokeRect(90, 515, 230, 370);
+      for (const [x, y, scale] of [
+        [180, 180, 1], [520, 180, 0.9], [1680, 180, 1], [2020, 180, 0.9],
+        [180, 1220, 0.9], [520, 1220, 1], [1680, 1220, 0.9], [2020, 1220, 1],
+        [500, 690, 0.75], [1700, 690, 0.75],
+      ]) {
+        context.fillStyle = "#594733";
+        context.fillRect(x - 7 * scale, y + 9 * scale, 14 * scale, 22 * scale);
+        context.fillStyle = "#446b49";
+        context.fillRect(x - 22 * scale, y - 18 * scale, 44 * scale, 34 * scale);
+        context.fillStyle = "#75975a";
+        context.fillRect(x - 15 * scale, y - 27 * scale, 31 * scale, 20 * scale);
+      }
+      for (const [x, y] of [[690, 335], [1510, 335], [690, 1065], [1510, 1065]]) {
+        context.fillStyle = "#69583d";
+        context.fillRect(x - 5, y, 10, 28);
+        context.fillStyle = 0.65 + Math.sin(time * 5 + x) * 0.1 > 0.6 ? "#ffe795" : "#e4b85d";
+        context.fillRect(x - 8, y - 12, 16, 14);
+      }
+      context.fillStyle = "#d7868e";
+      for (const [x, y] of [[405, 430], [455, 390], [1750, 430], [1800, 390], [440, 990], [1760, 990]]) {
+        context.fillRect(x - 3, y - 3, 6, 6);
+      }
+    } else if (map.id === "rift") {
+      const regions = [
+        [60, 60, map.size.width / 2 - 90, map.size.height / 2 - 90, "#607957"],
+        [map.size.width / 2 + 30, 60, map.size.width / 2 - 90, map.size.height / 2 - 90, "#6e6b55"],
+        [60, map.size.height / 2 + 30, map.size.width / 2 - 90, map.size.height / 2 - 90, "#50717a"],
+        [map.size.width / 2 + 30, map.size.height / 2 + 30, map.size.width / 2 - 90, map.size.height / 2 - 90, "#6b596e"],
+      ];
+      context.globalAlpha = 0.32;
+      for (const [x, y, width, height, color] of regions) {
+        context.fillStyle = color;
+        context.fillRect(x, y, width, height);
+      }
+      context.globalAlpha = 1;
+    }
+  } finally {
+    context.restore();
+  }
 }
 
 function drawLandmarks(map) {
@@ -1876,11 +2613,17 @@ function drawElementFields(time) {
     ice: "#9fe7ff",
     fire: "#ff795c",
     water: "#5cbcff",
+    charge: "#ffe45c",
+    light: "#fff6b5",
+    dark: "#8e6bc8",
+    mud: "#8a6948",
+    "shadow-edge": "#d2b7ff",
     vapor: "#d8f1dd",
     magma: "#ff8b3d",
   };
   const marks = {
     wind: ">>>", earth: "###", ice: "* *", fire: "^^^", water: "~~~",
+    charge: "ϟϟ", light: "◇◇", dark: "●", mud: "..", "shadow-edge": "◐",
     vapor: ".:.:", magma: "<> <>",
   };
   for (const field of matchState.elementFields ?? []) {
@@ -1891,7 +2634,10 @@ function drawElementFields(time) {
       context.strokeStyle = color;
       context.lineWidth = settings.highContrast ? 4 : 2;
       context.setLineDash(
-        field.element === "ice" ? [8, 7] : field.element === "vapor" ? [2, 6] : [],
+        field.element === "ice" ? [8, 7]
+          : field.element === "vapor" || field.element === "dark" ? [2, 6]
+            : field.element === "light" && field.shape === "refracted" ? [12, 4, 2, 4]
+              : [],
       );
       context.lineDashOffset = settings.reducedMotion ? 0 : -time * 28;
       context.beginPath();
@@ -2298,11 +3044,10 @@ function drawEntities(time) {
       context.font = "700 10px ui-monospace, monospace";
       context.textBaseline = "alphabetic";
       context.textAlign = "center";
-      context.fillText(
-        `${entity.name} · ${race.name} ${agent.name}`,
-        0,
-        agent.radius + 21,
-      );
+      const nameLabel = settings.hudDetailed || entity.id === localPlayer()?.id
+        ? `${entity.name} · ${agent.name}`
+        : entity.name;
+      context.fillText(nameLabel, 0, agent.radius + 21);
     } finally {
       context.restore();
     }
@@ -2433,6 +3178,34 @@ function traceAgentBody(agent) {
       [radius * 1.12, radius * 0.34],
       [radius * 0.62, 0],
     ]);
+  } else if (agent.silhouette?.startsWith("overhaul-")) {
+    const raceId = agent.homeRaceId;
+    if (["gnome", "hobbit", "goblin"].includes(raceId)) {
+      tracePolygon([[radius, 0], [radius * 0.2, radius * 0.82], [-radius, radius * 0.55], [-radius * 0.78, 0], [-radius, -radius * 0.55], [radius * 0.2, -radius * 0.82]]);
+    } else if (["minotaur", "troll", "rootwarden"].includes(raceId)) {
+      tracePolygon([[radius, -radius * 0.55], [radius * 0.72, radius * 0.82], [0, radius], [-radius * 0.86, radius * 0.65], [-radius, 0], [-radius * 0.82, -radius * 0.72], [0, -radius]]);
+    } else if (["sylph", "elf", "scaleheir"].includes(raceId)) {
+      tracePolygon([[radius * 1.18, 0], [radius * 0.25, radius * 0.56], [-radius * 0.72, radius], [-radius * 0.5, 0], [-radius * 0.72, -radius], [radius * 0.25, -radius * 0.56]]);
+    } else if (raceId === "seakin") {
+      tracePolygon([[radius * 1.15, 0], [radius * 0.1, radius * 0.82], [-radius, radius * 0.52], [-radius * 0.72, 0], [-radius, -radius * 0.52], [radius * 0.1, -radius * 0.82]]);
+    } else if (["dwarf", "stonewrought"].includes(raceId)) {
+      context.beginPath();
+      context.rect(-radius, -radius * 0.72, radius * 1.85, radius * 1.44);
+    } else if (raceId === "undead") {
+      const inner = radius * 0.45;
+      tracePolygon([[radius, -inner], [inner, -inner], [inner, -radius], [-inner, -radius], [-inner, -inner], [-radius, -inner], [-radius, inner], [-inner, inner], [-inner, radius], [inner, radius], [inner, inner], [radius, inner]]);
+    } else if (raceId === "nymph") {
+      const points = [];
+      for (let index = 0; index < 12; index += 1) {
+        const angle = index / 12 * Math.PI * 2;
+        const extent = index % 2 === 0 ? radius : radius * 0.68;
+        points.push([Math.cos(angle) * extent, Math.sin(angle) * extent]);
+      }
+      tracePolygon(points);
+    } else {
+      context.beginPath();
+      context.arc(0, 0, radius, 0, Math.PI * 2);
+    }
   } else {
     context.beginPath();
     context.arc(0, 0, radius, 0, Math.PI * 2);
@@ -2464,7 +3237,7 @@ function drawRaceFeature(race, radius, teamColor) {
     context.moveTo(-radius * 0.25, radius * 0.62);
     context.lineTo(-radius * 0.62, radius * 1.1);
     context.lineTo(-radius * 0.82, radius * 0.78);
-  } else if (race.id === "wood_elf" || race.id === "night_elf") {
+  } else if (race.id === "elf" || race.id === "wood_elf" || race.id === "night_elf") {
     const reach = race.id === "wood_elf" ? 1.42 : 1.25;
     context.moveTo(0, -radius * 0.7);
     context.lineTo(-radius * 0.2, -radius * reach);
@@ -2494,16 +3267,52 @@ function drawRaceFeature(race, radius, teamColor) {
     context.quadraticCurveTo(-radius * 1.4, -radius, -radius * 1.05, -radius * 1.35);
     context.moveTo(-radius * 0.42, radius * 0.5);
     context.quadraticCurveTo(-radius * 1.4, radius, -radius * 1.05, radius * 1.35);
-  } else if (race.id === "tideborn") {
+  } else if (race.id === "hobbit") {
+    context.arc(-radius * 0.5, -radius * 0.45, radius * 0.2, 0, Math.PI * 2);
+    context.moveTo(-radius * 0.3, radius * 0.5);
+    context.arc(-radius * 0.5, radius * 0.45, radius * 0.2, 0, Math.PI * 2);
+  } else if (race.id === "minotaur") {
+    context.moveTo(radius * 0.15, -radius * 0.7);
+    context.quadraticCurveTo(radius * 0.9, -radius * 1.25, radius * 1.25, -radius * 0.62);
+    context.moveTo(radius * 0.15, radius * 0.7);
+    context.quadraticCurveTo(radius * 0.9, radius * 1.25, radius * 1.25, radius * 0.62);
+  } else if (race.id === "seakin" || race.id === "tideborn") {
     context.moveTo(radius * 0.1, -radius * 0.72);
     context.lineTo(-radius * 0.38, -radius * 1.18);
     context.lineTo(radius * 0.55, -radius * 0.82);
     context.moveTo(radius * 0.1, radius * 0.72);
     context.lineTo(-radius * 0.38, radius * 1.18);
     context.lineTo(radius * 0.55, radius * 0.82);
-  } else if (race.id === "stonekin") {
+  } else if (race.id === "scaleheir") {
+    context.moveTo(-radius * 0.15, -radius * 0.55);
+    context.lineTo(-radius * 1.18, -radius * 1.05);
+    context.lineTo(-radius * 0.72, -radius * 0.12);
+    context.moveTo(-radius * 0.15, radius * 0.55);
+    context.lineTo(-radius * 1.18, radius * 1.05);
+    context.lineTo(-radius * 0.72, radius * 0.12);
+  } else if (race.id === "stonewrought" || race.id === "stonekin") {
     context.rect(-radius * 0.42, -radius * 1.08, radius * 0.72, radius * 0.42);
     context.rect(-radius * 0.42, radius * 0.66, radius * 0.72, radius * 0.42);
+  } else if (race.id === "rootwarden") {
+    context.moveTo(-radius * 0.2, -radius * 0.45);
+    context.lineTo(-radius * 1.2, -radius * 0.95);
+    context.moveTo(-radius * 0.25, 0);
+    context.lineTo(-radius * 1.35, 0);
+    context.moveTo(-radius * 0.2, radius * 0.45);
+    context.lineTo(-radius * 1.2, radius * 0.95);
+  } else if (race.id === "goblin") {
+    context.moveTo(radius * 0.1, -radius * 0.5);
+    context.lineTo(-radius * 1.25, -radius * 0.85);
+    context.lineTo(-radius * 0.65, -radius * 0.15);
+    context.moveTo(radius * 0.1, radius * 0.5);
+    context.lineTo(-radius * 1.25, radius * 0.85);
+    context.lineTo(-radius * 0.65, radius * 0.15);
+  } else if (race.id === "nymph") {
+    for (let index = 0; index < 4; index += 1) {
+      const angle = index * Math.PI / 2;
+      context.moveTo(Math.cos(angle) * radius * 0.55, Math.sin(angle) * radius * 0.55);
+      context.lineTo(Math.cos(angle) * radius * 1.25, Math.sin(angle) * radius * 1.25);
+    }
   } else if (race.id === "ashling") {
     context.moveTo(-radius * 0.45, 0);
     context.lineTo(-radius * 0.85, -radius * 0.36);
@@ -2595,7 +3404,7 @@ function buildContentInterface() {
       </label>`,
   ).join("");
   renderMapOptions();
-  element("agent-options").innerHTML = raceChampionMatrix("character", "kite");
+  element("agent-options").innerHTML = raceChampionMatrix("character", "mara");
   element("agent-two-options").innerHTML = raceChampionMatrix(
     "characterTwo",
     "bulwark",
@@ -2637,6 +3446,7 @@ function buildContentInterface() {
     (map) => `<option value="${map.id}">${map.name}</option>`,
   ).join("");
   element("server-address").value = location.origin;
+  syncLoadoutBuilder(true);
   updateDeploymentSummary();
 }
 
@@ -2740,8 +3550,14 @@ async function hostLobby() {
         raceId: element("online-race").value,
         public: element("lobby-public").checked,
         hazardsEnabled: element("lobby-hazards").checked,
-        maxPlayers: 4,
-        botCount: 1,
+        maxPlayers: element("online-mode").value === "battle_royale" ? 12
+          : element("online-mode").value === "freeplay" ? 8 : 6,
+        teamSize: element("online-mode").value === "battle_royale" ? 1 : undefined,
+        botCount: element("online-mode").value === "freeplay" ? 0 : 1,
+        ...selectedLoadoutSpec(),
+        freeplaySettings: element("online-mode").value === "freeplay"
+          ? matchState?.rules?.freeplaySettings
+          : undefined,
       },
     });
     if (!result.ok) throw new Error(result.message);
@@ -2784,6 +3600,7 @@ async function joinLobby(code) {
         name: element("online-name").value,
         characterId: element("online-agent").value,
         raceId: element("online-race").value,
+        ...selectedLoadoutSpec(),
       },
     });
     if (!result.ok) throw new Error(result.message);
@@ -3329,19 +4146,19 @@ function normalizeSettings(candidate) {
 }
 
 function normalizeBindings(candidate) {
-  if (!candidate || typeof candidate !== "object") {
-    return { ...DEFAULT_BINDINGS };
-  }
+  const source = candidate && typeof candidate === "object" ? candidate : {};
   const bindings = {};
   for (const action of BINDING_ACTIONS) {
-    const key = normalizeInputKey(candidate[action]);
-    if (!isBindableKey(key) || PROTECTED_BINDING_KEYS.has(key)) {
-      return { ...DEFAULT_BINDINGS };
-    }
-    bindings[action] = key;
-  }
-  if (new Set(Object.values(bindings)).size !== BINDING_ACTIONS.length) {
-    return { ...DEFAULT_BINDINGS };
+    const raw = Array.isArray(source[action])
+      ? source[action]
+      : typeof source[action] === "string"
+        ? [source[action]]
+        : DEFAULT_BINDINGS[action];
+    const tokens = [...new Set(raw
+      .map(normalizeInputKey)
+      .filter((key) => isBindableKey(key) && !PROTECTED_BINDING_KEYS.has(key)))]
+      .slice(0, 4);
+    bindings[action] = tokens.length ? tokens : [...DEFAULT_BINDINGS[action]];
   }
   return bindings;
 }
@@ -3351,18 +4168,28 @@ function normalizeInputKey(value) {
 }
 
 function isBindableKey(key) {
-  return key.length === 1 || ["shift", "alt", "control", "backspace"].includes(key);
+  return key.length === 1 ||
+    ["shift", "alt", "control"].includes(key) ||
+    /^mouse[1-5]$/.test(key) ||
+    ["wheelup", "wheeldown"].includes(key);
 }
 
 function keyLabel(key) {
+  if (Array.isArray(key)) return key.map(keyLabel).join(" / ");
   const named = {
     " ": "SPACE",
     shift: "SHIFT",
     alt: "ALT",
     control: "CTRL",
-    backspace: "BACKSPACE",
+    mouse1: "MB1",
+    mouse2: "MB2",
+    mouse3: "MB3",
+    mouse4: "MB4",
+    mouse5: "MB5",
+    wheelup: "WHEEL↑",
+    wheeldown: "WHEEL↓",
   };
-  return named[key] ?? key.toUpperCase();
+  return named[key] ?? String(key).toUpperCase();
 }
 
 function syncBindingButtons() {
@@ -3474,11 +4301,14 @@ window.FLUX_DEBUG = Object.freeze({
     menuPanel,
     matchKind,
     view: app.dataset.view,
+    sanctum: isSanctum(),
   }),
   launchMode,
   activateMenuGamepadAction,
   quickStart,
   showPanel,
+  openSanctumMenu,
+  runFreeplayAction,
   toggleInfo,
 });
 window.DIFF_DEBUG = window.FLUX_DEBUG;

@@ -6,7 +6,7 @@ import { networkInterfaces, tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 
-import { MATCH_TUNING } from "../src/content.mjs";
+import { MATCH_TUNING } from "../src/live-content.mjs";
 import { LobbyService } from "../src/network/lobbies.mjs";
 
 const root = resolve(fileURLToPath(new URL("../", import.meta.url)));
@@ -32,6 +32,8 @@ const publicFiles = new Set([
   "/index.html",
   "/styles.css",
   "/src/content.mjs",
+  "/src/live-content.mjs",
+  "/src/overhaul-content.mjs",
   "/src/game.mjs",
   "/src/match.mjs",
   "/src/network/conditioner.mjs",
@@ -291,6 +293,15 @@ function handleClientMessage(service, clientId, message, send) {
   }
   if (message.type === "agent") {
     return service.changeAgent(clientId, message.characterId);
+  }
+  if (message.type === "loadout") {
+    return service.changeLoadout(clientId, message.options);
+  }
+  if (message.type === "freeplay-settings") {
+    return service.configureFreeplay(clientId, message.settings);
+  }
+  if (message.type === "freeplay-action") {
+    return service.runFreeplayAction(clientId, message.action, message.options);
   }
   if (message.type === "rematch") {
     return service.rematch(clientId);

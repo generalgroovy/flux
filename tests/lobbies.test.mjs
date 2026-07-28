@@ -383,3 +383,93 @@ test("a playerless lobby closes instead of stranding observers", () => {
     "not-in-lobby",
   );
 });
+
+test("remote freeplay preserves loadouts and host-controlled sanctuary settings", () => {
+  const { service } = serviceFixture();
+  const hosted = service.host("host", {
+    modeId: "freeplay",
+    mapId: "sanctum",
+    characterId: "rote-baron",
+    raceId: "undead",
+    activeAbilityIds: ["night-flak", "rime-wing", "crimson-comet"],
+    ultimateAbilityId: "the-dead-sky",
+    maxPlayers: 8,
+    botCount: 0,
+    freeplaySettings: { endlessFlux: true, reactions: true },
+  });
+  assert.equal(hosted.ok, true);
+  assert.equal(hosted.lobby.maxPlayers, 8);
+  assert.equal(hosted.snapshot.state.rules.freeplay, true);
+  assert.equal(hosted.snapshot.state.rules.freeplaySettings.endlessFlux, true);
+  const hostEntity = hosted.snapshot.state.entities.find((entity) => entity.id === hosted.entityId);
+  assert.deepEqual(hostEntity.activeAbilityIds, ["night-flak", "rime-wing", "crimson-comet"]);
+  assert.equal(hostEntity.ultimateAbilityId, "the-dead-sky");
+
+  const joined = service.join("guest", hosted.lobby.code, {
+    characterId: "oh-tipi",
+    raceId: "seakin",
+    activeAbilityIds: ["tideline", "flash-freeze", "eel-step"],
+    ultimateAbilityId: "stormtide-basin",
+  });
+  assert.equal(joined.ok, true);
+  const guestEntity = joined.snapshot.state.entities.find((entity) => entity.id === joined.entityId);
+  assert.deepEqual(guestEntity.activeAbilityIds, ["tideline", "flash-freeze", "eel-step"]);
+  assert.equal(service.configureFreeplay("guest", { godMode: true }).code, "host-only");
+  assert.equal(service.configureFreeplay("host", { godMode: true }).ok, true);
+  assert.equal(service.runFreeplayAction("host", "spawn-hostile-bot").ok, true);
+  const lobby = service.lobbies.get(hosted.lobby.code);
+  assert.equal(lobby.state.rules.freeplaySettings.godMode, true);
+  assert.equal(lobby.state.entities.some((entity) => entity.bot), true);
+  assert.deepEqual(matchInvariantErrors(lobby.state), []);
+});
+
+test("battle royale lobbies support twelve players and squad sizes one to three", () => {
+  const { service } = serviceFixture();
+  const hosted = service.host("p1", {
+    modeId: "battle_royale", mapId: "rift", maxPlayers: 12, teamSize: 2, botCount: 0,
+    characterId: "fluup", raceId: "orc",
+  });
+  assert.equal(hosted.ok, true);
+  assert.equal(hosted.lobby.maxPlayers, 12);
+  assert.equal(hosted.lobby.teamSize, 2);
+  for (let index = 2; index <= 7; index += 1) {
+    assert.equal(service.join(`p${index}`, hosted.lobby.code, {
+      characterId: index % 2 ? "steezo" : "treevor",
+    }).ok, true);
+  }
+  const lobby = service.lobbies.get(hosted.lobby.code);
+  const humanTeams = lobby.state.entities.filter((entity) => entity.human).map((entity) => entity.team);
+  assert.deepEqual(humanTeams, [
+    "squad-1", "squad-1", "squad-2", "squad-2",
+    "squad-3", "squad-3", "squad-4",
+  ]);
+  assert.equal(service.list()[0].players, 7);
+  assert.deepEqual(matchInvariantErrors(lobby.state), []);
+});
+
+test("remote loadout changes are authoritative in freeplay and survive reconnect", () => {
+  const { service, advance } = serviceFixture();
+  const hosted = service.host("host", {
+    modeId: "freeplay", mapId: "sanctum", botCount: 0,
+    characterId: "mara", raceId: "human",
+  });
+  const changed = service.changeLoadout("host", {
+    characterId: "steezo",
+    raceId: "goblin",
+    activeAbilityIds: ["spark-keg", "prism-tripwire", "coil-hopper"],
+    ultimateAbilityId: "safe-machine",
+  });
+  assert.equal(changed.ok, true);
+  const lobby = service.lobbies.get(hosted.lobby.code);
+  const before = lobby.state.entities.find((entity) => entity.id === hosted.entityId);
+  assert.equal(before.characterId, "steezo");
+  assert.deepEqual(before.activeAbilityIds, ["spark-keg", "prism-tripwire", "coil-hopper"]);
+  service.disconnect("host");
+  advance(2_000);
+  const reconnected = service.reconnect("host-new", hosted.reconnectToken);
+  assert.equal(reconnected.ok, true);
+  const after = reconnected.snapshot.state.entities.find((entity) => entity.id === hosted.entityId);
+  assert.equal(after.characterId, "steezo");
+  assert.equal(after.raceId, "goblin");
+  assert.equal(after.ultimateAbilityId, "safe-machine");
+});

@@ -1,19 +1,22 @@
 import { randomBytes } from "node:crypto";
 
-import { getCharacter, getMap, getMode, getRace } from "../content.mjs";
+import { getCharacter, getMap, getMode, getRace } from "../live-content.mjs";
 import {
   addMatchPlayer,
+  applyFreeplayAction,
+  configureMatchPlayer,
   createMatch,
   releaseMatchPlayerObjectives,
   removeMatchPlayer,
   sanitizeCommand,
+  setFreeplaySettings,
   stepMatch,
 } from "../match.mjs";
 
 const LOBBY_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const MAX_MESSAGE_RATE = 180;
 const MAX_LOBBIES_PER_CLIENT = 2;
-const MAX_SPECTATORS = 8;
+const MAX_SPECTATORS = 24;
 const RECONNECT_GRACE_MS = 30_000;
 
 export class LobbyService {
@@ -55,12 +58,18 @@ export class LobbyService {
       send,
       this.tokenFactory(),
     );
-    const maxPlayers = clampInteger(candidate.maxPlayers, 2, 4, 4);
+    const maximumForMode = mode.id === "battle_royale" ? 12 : mode.id === "freeplay" ? 8 : 6;
+    const defaultForMode = mode.id === "battle_royale" ? 8 : mode.id === "freeplay" ? 6 : 4;
+    const maxPlayers = clampInteger(candidate.maxPlayers, 2, maximumForMode, defaultForMode);
+    const teamSize = mode.id === "battle_royale"
+      ? clampInteger(candidate.teamSize, 1, 3, 1)
+      : mode.id === "survival" ? maxPlayers : 1;
     const state = createMatch({
       modeId: mode.id,
       mapId: map.id,
       botCount: clampInteger(candidate.botCount, 0, 7, mode.botCount),
       hazardsEnabled: candidate.hazardsEnabled !== false,
+      freeplaySettings: candidate.freeplaySettings,
       players: [
         {
           id: `remote-${shortId(clientId)}`,
@@ -68,18 +77,22 @@ export class LobbyService {
           name: member.name,
           characterId: member.characterId,
           raceId: member.raceId,
-          team: "alpha",
+          activeAbilityIds: member.activeAbilityIds,
+          ultimateAbilityId: member.ultimateAbilityId,
+          team: teamForIndex(mode.id, 0, teamSize),
           human: true,
         },
       ],
     });
     member.entityId = state.entities[0].id;
+    syncMemberFromEntity(member, state.entities[0]);
     const lobby = {
       code,
       name: cleanText(candidate.name, "OPEN ARENA", 30),
       public: candidate.public !== false,
       hostId: clientId,
       maxPlayers,
+      teamSize,
       createdAt: this.now(),
       state,
       members: new Map([[clientId, member]]),
@@ -119,10 +132,13 @@ export class LobbyService {
         name: member.name,
         characterId: member.characterId,
         raceId: member.raceId,
-        team: lobby.state.modeId === "survival" ? "alpha" : undefined,
+        activeAbilityIds: member.activeAbilityIds,
+        ultimateAbilityId: member.ultimateAbilityId,
+        team: teamForIndex(lobby.state.modeId, playerCount(lobby), lobby.teamSize),
       });
       if (!entity) return failure("closed", "The match cannot accept players.");
       member.entityId = entity.id;
+      syncMemberFromEntity(member, entity);
     }
     lobby.members.set(clientId, member);
     this.clientLobby.set(clientId, code);
@@ -300,16 +316,64 @@ export class LobbyService {
       return failure("spectator-read-only", "Spectators do not select active agents.");
     }
     if (!member || !entity) return failure("not-in-lobby", "Join a lobby first.");
-    if (entity.alive && lobby.state.status === "playing") {
+    if (!lobby.state.rules?.freeplay && entity.alive && lobby.state.status === "playing") {
       return failure("in-progress", "Change agent after an elimination or rematch.");
     }
     const agent = getCharacter(characterId);
-    const race = getRace(member.raceId);
-    member.characterId = agent.id;
-    entity.characterId = agent.id;
-    entity.maxHealth = Math.round(agent.health * race.health);
-    entity.health = entity.maxHealth;
-    return success({ characterId: agent.id });
+    const result = configureMatchPlayer(lobby.state, entity.id, {
+      characterId: agent.id,
+      raceId: member.raceId,
+      restore: true,
+    });
+    if (!result.ok) return failure("invalid-agent", result.errors.join("; "));
+    syncMemberFromEntity(member, entity);
+    this.broadcastSnapshots(lobby, true);
+    return success(result);
+  }
+
+  changeLoadout(clientId, candidate = {}) {
+    const lobby = this.lobbies.get(this.clientLobby.get(clientId));
+    const member = lobby?.members.get(clientId);
+    const entity = lobby?.state.entities.find((entry) => entry.id === member?.entityId);
+    if (member?.role === "spectator") {
+      return failure("spectator-read-only", "Spectators do not select active loadouts.");
+    }
+    if (!lobby || !member || !entity) return failure("not-in-lobby", "Join a lobby first.");
+    if (!lobby.state.rules?.freeplay && entity.alive && lobby.state.status === "playing") {
+      return failure("in-progress", "Change loadout after an elimination or rematch.");
+    }
+    const result = configureMatchPlayer(lobby.state, entity.id, {
+      characterId: candidate.characterId ?? member.characterId,
+      raceId: candidate.raceId ?? member.raceId,
+      activeAbilityIds: normalizeAbilityIds(candidate.activeAbilityIds),
+      ultimateAbilityId: normalizeAbilityId(candidate.ultimateAbilityId),
+      restore: lobby.state.rules?.freeplay === true,
+    });
+    if (!result.ok) return failure("invalid-loadout", result.errors.join("; "));
+    syncMemberFromEntity(member, entity);
+    this.broadcastSnapshots(lobby, true);
+    return success(result);
+  }
+
+  configureFreeplay(clientId, candidate = {}) {
+    const lobby = this.lobbies.get(this.clientLobby.get(clientId));
+    if (!lobby) return failure("not-in-lobby", "Join a lobby first.");
+    if (lobby.hostId !== clientId) return failure("host-only", "Only the host changes shared freeplay rules.");
+    if (!lobby.state.rules?.freeplay) return failure("wrong-mode", "This lobby is not freeplay.");
+    if (!setFreeplaySettings(lobby.state, candidate)) return failure("invalid-settings", "Freeplay settings rejected.");
+    this.broadcastSnapshots(lobby, true);
+    return success({ settings: { ...lobby.state.rules.freeplaySettings } });
+  }
+
+  runFreeplayAction(clientId, action, options = {}) {
+    const lobby = this.lobbies.get(this.clientLobby.get(clientId));
+    if (!lobby) return failure("not-in-lobby", "Join a lobby first.");
+    if (lobby.hostId !== clientId) return failure("host-only", "Only the host changes the shared sanctuary.");
+    if (!applyFreeplayAction(lobby.state, cleanText(action, "", 32), options)) {
+      return failure("invalid-action", "Freeplay action rejected.");
+    }
+    this.broadcastSnapshots(lobby, true);
+    return success({ action });
   }
 
   rematch(clientId) {
@@ -365,6 +429,7 @@ export class LobbyService {
       connectedPlayers: connectedPlayerCount(lobby),
       spectators: spectatorCount(lobby),
       maxPlayers: lobby.maxPlayers,
+      teamSize: lobby.teamSize,
       modeId: mode.id,
       modeName: mode.name,
       mapId: map.id,
@@ -401,12 +466,9 @@ export class LobbyService {
       name: member.name,
       characterId: member.characterId,
       raceId: member.raceId,
-      team:
-        oldState.modeId === "survival"
-          ? "alpha"
-          : index % 2 === 0
-            ? "alpha"
-            : "beta",
+      activeAbilityIds: member.activeAbilityIds,
+      ultimateAbilityId: member.ultimateAbilityId,
+      team: teamForIndex(oldState.modeId, index, lobby.teamSize),
       human: true,
     }));
     lobby.state = createMatch({
@@ -418,12 +480,14 @@ export class LobbyService {
         oldState.entities.filter((entity) => entity.bot && !entity.neutral).length,
       ),
       hazardsEnabled: oldState.rules?.hazardsEnabled !== false,
+      freeplaySettings: oldState.rules?.freeplaySettings,
     });
     for (const member of players) {
       const entity = lobby.state.entities.find(
         (candidate) => candidate.clientId === member.clientId,
       );
       member.entityId = entity?.id ?? member.entityId;
+      if (entity) syncMemberFromEntity(member, entity);
       member.command = sanitizeCommand({});
       member.lastSequence = -1;
     }
@@ -510,6 +574,8 @@ function normalizeMember(
     name: cleanText(candidate.playerName ?? candidate.name, "PLAYER", 20),
     characterId: getCharacter(candidate.characterId).id,
     raceId: getRace(candidate.raceId).id,
+    activeAbilityIds: normalizeAbilityIds(candidate.activeAbilityIds),
+    ultimateAbilityId: normalizeAbilityId(candidate.ultimateAbilityId),
     reconnectToken,
     connected: true,
     disconnectedAt: null,
@@ -527,14 +593,44 @@ function createNetworkSnapshot(lobby, member) {
       code: lobby.code,
       name: lobby.name,
       hostId: lobby.hostId,
-      players: lobby.members.size,
+      players: playerCount(lobby),
+      spectators: spectatorCount(lobby),
       maxPlayers: lobby.maxPlayers,
+      teamSize: lobby.teamSize,
     },
     serverTick: lobby.networkTick,
     acknowledgedSequence: member.lastSequence,
     entityId: member.entityId,
     state: lobby.state,
   };
+}
+
+function normalizeAbilityIds(candidate) {
+  if (!Array.isArray(candidate)) return undefined;
+  return candidate
+    .map((value) => normalizeAbilityId(value))
+    .filter(Boolean)
+    .slice(0, 3);
+}
+
+function normalizeAbilityId(candidate) {
+  const value = String(candidate ?? "").trim().toLowerCase();
+  return /^[a-z0-9-]{1,40}$/.test(value) ? value : undefined;
+}
+
+function teamForIndex(modeId, index, teamSize = 1) {
+  if (modeId === "survival") return "alpha";
+  if (modeId === "battle_royale") {
+    return `squad-${Math.floor(index / Math.max(1, teamSize)) + 1}`;
+  }
+  return index % 2 === 0 ? "alpha" : "beta";
+}
+
+function syncMemberFromEntity(member, entity) {
+  member.characterId = entity.characterId;
+  member.raceId = entity.raceId;
+  member.activeAbilityIds = [...(entity.activeAbilityIds ?? [])];
+  member.ultimateAbilityId = entity.ultimateAbilityId ?? null;
 }
 
 function createLobbyCode() {

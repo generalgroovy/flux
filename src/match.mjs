@@ -1,13 +1,29 @@
 import {
   CHARACTERS,
+  FREEPLAY_DEFAULTS,
+  buildCharacterKit,
   MATCH_TUNING,
   getCharacter,
   getMap,
   getMode,
   getRace,
-} from "./content.mjs";
+} from "./live-content.mjs";
 
 const EPSILON = 1e-8;
+const COMBAT_ELEMENT_ALIASES = Object.freeze({
+  stone: "earth", earth: "earth", nature: "earth",
+  ember: "fire", fire: "fire",
+  tide: "water", water: "water",
+  gale: "wind", wind: "wind",
+  frost: "ice", ice: "ice", cold: "ice",
+  volt: "charge", lightning: "charge", electricity: "charge", charge: "charge",
+  prism: "light", light: "light", refraction: "light",
+  veil: "dark", null: "dark", void: "dark", dark: "dark",
+});
+
+function combatElement(value) {
+  return COMBAT_ELEMENT_ALIASES[String(value ?? "").toLowerCase()] ?? "earth";
+}
 const IDLE_COMMAND = Object.freeze({
   moveX: 0,
   moveY: 0,
@@ -26,9 +42,9 @@ export function createMatch(options = {}) {
   const mode = getMode(options.modeId);
   const map = getMap(options.mapId);
   const seed = finiteInteger(options.seed, 1);
-  const playerSpecs =
+  let playerSpecs =
     Array.isArray(options.players) && options.players.length > 0
-      ? options.players
+      ? options.players.map((spec) => ({ ...spec }))
       : [
           {
             id: "p1",
@@ -39,9 +55,18 @@ export function createMatch(options = {}) {
             localSlot: 0,
           },
         ];
+  const mirrorLoadout = mode.id === "mirror"
+    ? {
+        activeAbilityIds: [...(playerSpecs[0]?.activeAbilityIds ?? [])],
+        ultimateAbilityId: playerSpecs[0]?.ultimateAbilityId ?? null,
+      }
+    : null;
+  if (mirrorLoadout) {
+    playerSpecs = playerSpecs.map((spec) => ({ ...spec, ...mirrorLoadout }));
+  }
   const entities = [];
   for (const [index, spec] of playerSpecs.entries()) {
-    entities.push(createEntity(spec, index, map));
+    entities.push(createEntity(spec, index, map, mode.id));
   }
 
   const requestedBots = Number.isInteger(options.botCount)
@@ -63,13 +88,17 @@ export function createMatch(options = {}) {
           id: `bot-${index + 1}`,
           name: `SPAR ${index + 1}`,
           characterId:
-            options.botCharacterIds?.[index] ??
-            CHARACTERS[(index + 1) % CHARACTERS.length].id,
+            mode.id === "mirror"
+              ? playerSpecs[0].characterId
+              : options.botCharacterIds?.[index] ??
+                CHARACTERS[(index + 1) % CHARACTERS.length].id,
           team,
           bot: true,
+          ...(mirrorLoadout ?? {}),
         },
         entities.length,
         map,
+        mode.id,
       ),
     );
   }
@@ -88,6 +117,7 @@ export function createMatch(options = {}) {
         },
         entities.length,
         map,
+        mode.id,
       ),
     );
   }
@@ -117,7 +147,33 @@ export function createMatch(options = {}) {
       hitIds: [],
     })),
     score: { alpha: 0, beta: 0 },
-    rules: { hazardsEnabled: options.hazardsEnabled !== false },
+    rules: {
+      hazardsEnabled: options.hazardsEnabled !== false,
+      freeplay: mode.id === "freeplay",
+      freeplaySettings: normalizeFreeplaySettings(
+        mode.id === "freeplay" ? options.freeplaySettings : null,
+      ),
+    },
+    destructibles: createModeDestructibles(mode, map),
+    movementTrial: mode.id === "movement"
+      ? createMovementTrialState(map, entities)
+      : null,
+    siege: mode.id === "siege"
+      ? { score: {}, brokenIds: [], targetScore: mode.scoreLimit }
+      : null,
+    extraction: mode.id === "extraction"
+      ? createExtractionState(map)
+      : null,
+    battleRoyale: mode.id === "battle_royale"
+      ? {
+          centerX: map.size.width / 2,
+          centerY: map.size.height / 2,
+          radius: MATCH_TUNING.battleRoyale.startRadius,
+          elapsed: 0,
+          pulseRemaining: 0,
+          closing: false,
+        }
+      : null,
     round: 1,
     roundRemaining: 0,
     winner: null,
@@ -149,15 +205,265 @@ export function createMatch(options = {}) {
     nextProjectileId: 1,
     nextMineId: 1,
     nextElementFieldId: 1,
+    nextStructuralEventId: 1,
     events: [],
   };
   state.events.push({ type: "matchStart", modeId: mode.id, mapId: map.id });
   return state;
 }
 
-function createEntity(spec, index, map) {
+function normalizeFreeplaySettings(candidate) {
+  const source = candidate && typeof candidate === "object" ? candidate : {};
+  const settings = { ...FREEPLAY_DEFAULTS };
+  for (const key of [
+    "godMode", "endlessFlux", "endlessFlow", "instantCooldowns",
+    "endlessUltimate", "friendlyFire", "destructibility", "reactions",
+    "freezeBots", "showHitboxes", "showVelocity", "showMovementState",
+    "showElementData",
+  ]) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) settings[key] = source[key] === true;
+  }
+  for (const [key, min, max] of [
+    ["damageMultiplier", 0, 5], ["speedMultiplier", 0.25, 3],
+    ["gravityMultiplier", 0.25, 3], ["airControlMultiplier", 0.25, 3],
+    ["timeScale", 0.05, 2],
+  ]) settings[key] = clamp(finite(source[key], settings[key]), min, max);
+  settings.networkProfile = typeof source.networkProfile === "string"
+    ? source.networkProfile.slice(0, 32) : settings.networkProfile;
+  return settings;
+}
+
+export function setFreeplaySettings(state, candidate = {}) {
+  if (!state?.rules?.freeplay) return false;
+  state.rules.freeplaySettings = normalizeFreeplaySettings({
+    ...state.rules.freeplaySettings, ...candidate,
+  });
+  state.events.push({ type: "freeplaySettings", settings: { ...state.rules.freeplaySettings } });
+  return true;
+}
+
+export function applyFreeplayAction(state, action, options = {}) {
+  if (!state?.rules?.freeplay) return false;
+  const map = getMap(state.mapId);
+  if (action === "clear-projectiles") state.projectiles = [];
+  else if (action === "clear-fields") { state.elementFields = []; state.mines = []; state.decoys = []; }
+  else if (action === "rebuild") {
+    state.destructibles = (map.destructibles ?? []).map((piece) => ({
+      ...piece, maxHealth: piece.health, health: piece.health, destroyed: false, damageStage: 0,
+    }));
+  } else if (action === "reset-player") {
+    const entity = state.entities.find((entry) => entry.id === options.entityId) ??
+      state.entities.find((entry) => entry.human);
+    if (!entity) return false;
+    respawnEntity(entity, map);
+  } else if (action === "reset-all") {
+    state.projectiles = []; state.mines = []; state.elementFields = []; state.decoys = [];
+    for (const entity of state.entities) respawnEntity(entity, map);
+    applyFreeplayAction(state, "rebuild");
+  } else if (["spawn-dummy", "spawn-moving-dummy", "spawn-hostile-bot", "spawn-allied-bot"].includes(action)) {
+    const human = state.entities.find((entry) => entry.human) ?? state.entities[0];
+    const hostile = action === "spawn-hostile-bot" || action.includes("dummy");
+    const entity = createEntity({
+      id: `freeplay-${state.tick}-${state.entities.length}`,
+      name: action.includes("dummy") ? "DUMMY" : "SPAR",
+      characterId: options.characterId ?? CHARACTERS[(state.entities.length + 3) % CHARACTERS.length].id,
+      raceId: options.raceId,
+      team: hostile ? oppositeTeam(human?.team ?? "alpha") : human?.team ?? "alpha",
+      bot: action !== "spawn-dummy",
+      neutral: action === "spawn-dummy",
+    }, state.entities.length, map, state.modeId);
+    entity.bot = action !== "spawn-dummy";
+    entity.freeplayDummy = action.includes("dummy");
+    entity.freezeInPlace = action === "spawn-dummy";
+    state.entities.push(entity);
+  } else return false;
+  state.events.push({ type: "freeplayAction", action });
+  return true;
+}
+
+function applyFreeplayEntityRules(state, entity) {
+  const settings = state.rules?.freeplaySettings;
+  if (!state.rules?.freeplay || !settings) return;
+  if (settings.endlessFlux) entity.flux = entity.maxFlux;
+  if (settings.endlessFlow) entity.flow = entity.maxFlow;
+  if (settings.endlessUltimate) entity.ultimateCharge = entity.maxUltimate;
+  if (settings.instantCooldowns) {
+    entity.primaryCooldown = 0; entity.specialCooldown = 0;
+    entity.defenseCooldown = 0; entity.mobilityCooldown = 0;
+  }
+  if (settings.freezeBots && entity.bot) { entity.vx = 0; entity.vy = 0; }
+}
+
+function updateBattleRoyale(state, delta, map) {
+  const zone = state.battleRoyale;
+  if (!zone || state.status !== "playing") return;
+  zone.elapsed += delta;
+  const tuning = MATCH_TUNING.battleRoyale;
+  if (zone.elapsed > tuning.delay) {
+    zone.closing = true;
+    const progress = clamp((zone.elapsed - tuning.delay) / tuning.duration, 0, 1);
+    zone.radius = tuning.startRadius + (tuning.endRadius - tuning.startRadius) * progress;
+  }
+  if (!zone.closing) return;
+  zone.pulseRemaining = Math.max(0, finite(zone.pulseRemaining) - delta);
+  if (zone.pulseRemaining === 0) {
+    zone.pulseRemaining = 0.5;
+    for (const entity of state.entities) {
+      if (!entity.alive || entity.neutral) continue;
+      const distance = Math.hypot(entity.x - zone.centerX, entity.y - zone.centerY);
+      if (distance <= zone.radius) continue;
+      damageEntity(state, entity, tuning.damagePerSecond * 0.5, null, { source: "storm" });
+    }
+  }
+  zone.centerX = clamp(zone.centerX, map.size.inset, map.size.width - map.size.inset);
+  zone.centerY = clamp(zone.centerY, map.size.inset, map.size.height - map.size.inset);
+}
+
+function updateLastTeamStanding(state, mode) {
+  if (!mode.noRespawn || state.status !== "playing") return;
+  const livingTeams = new Set(state.entities
+    .filter((entity) => entity.alive && !entity.neutral)
+    .map((entity) => entity.team));
+  if (livingTeams.size === 1 && state.entities.some((entity) => !entity.neutral && !entity.alive)) {
+    finishMatch(state, [...livingTeams][0]);
+  } else if (livingTeams.size === 0) finishMatch(state, null);
+}
+
+function createModeDestructibles(mode, map) {
+  const source = (map.destructibles ?? []).map((piece) => ({ ...piece }));
+  if (mode.id === "siege" && source.length < 6) {
+    const width = 92;
+    const height = 34;
+    const radiusX = Math.min(300, map.size.width * 0.22);
+    const radiusY = Math.min(210, map.size.height * 0.22);
+    const additions = [
+      [-radiusX, -radiusY], [0, -radiusY], [radiusX, -radiusY],
+      [-radiusX, radiusY], [0, radiusY], [radiusX, radiusY],
+    ].slice(source.length);
+    additions.forEach(([dx, dy], index) => source.push({
+      id: `siege-${source.length + index + 1}`,
+      x: map.objective.x + dx - width / 2,
+      y: map.objective.y + dy - height / 2,
+      width, height,
+      material: index % 2 === 0 ? "stone" : "wood",
+      level: index % 3 === 0 ? "upper" : "ground",
+      health: index % 2 === 0 ? 120 : 80,
+    }));
+  }
+  return source.map((piece, index) => ({
+    ...piece,
+    ownerTeam: mode.id === "siege" ? (index % 2 === 0 ? "alpha" : "beta") : piece.ownerTeam ?? null,
+    maxHealth: piece.health,
+    health: piece.health,
+    destroyed: false,
+    damageStage: 0,
+  }));
+}
+
+function createMovementTrialState(map, entities) {
+  const inset = map.size.inset ?? 44;
+  const gates = [
+    { id: "start", x: inset + 150, y: map.size.height / 2, radius: 58 },
+    { id: "north", x: map.size.width * 0.38, y: inset + 150, radius: 58 },
+    { id: "south", x: map.size.width * 0.62, y: map.size.height - inset - 150, radius: 58 },
+    { id: "wall", x: map.size.width - inset - 150, y: map.size.height * 0.34, radius: 58 },
+    { id: "finish", x: map.size.width / 2, y: map.size.height / 2, radius: 70 },
+  ];
+  return {
+    gates,
+    progress: Object.fromEntries(entities.filter((entity) => !entity.neutral).map((entity) => [entity.id, 0])),
+    completedBy: null,
+  };
+}
+
+function updateMovementTrial(state, mode) {
+  const trial = state.movementTrial;
+  if (!trial || mode.id !== "movement" || state.status !== "playing") return;
+  for (const entity of state.entities) {
+    if (!entity.alive || entity.neutral) continue;
+    const index = trial.progress[entity.id] ?? 0;
+    const gate = trial.gates[index];
+    if (!gate) continue;
+    const radius = getCharacter(entity.characterId).radius;
+    if (Math.hypot(entity.x - gate.x, entity.y - gate.y) > gate.radius + radius) continue;
+    const next = index + 1;
+    trial.progress[entity.id] = next;
+    state.events.push({
+      type: "movementGate", entityId: entity.id, gateId: gate.id, index,
+      x: gate.x, y: gate.y,
+    });
+    if (next >= trial.gates.length) {
+      trial.completedBy = entity.id;
+      state.score[entity.team] = 1;
+      finishMatch(state, entity.team);
+      return;
+    }
+  }
+}
+
+function createExtractionState(map) {
+  return {
+    required: 2,
+    exit: {
+      x: map.size.width - (map.size.inset ?? 44) - 125,
+      y: map.size.height / 2,
+      radius: 82,
+    },
+    drops: [],
+    extractedBy: null,
+  };
+}
+
+function updateExtraction(state, mode) {
+  const extraction = state.extraction;
+  if (!extraction || mode.id !== "extraction" || state.status !== "playing") return;
+  for (const entity of state.entities) {
+    if (!entity.alive || entity.neutral) continue;
+    for (const drop of [...extraction.drops]) {
+      if (Math.hypot(entity.x - drop.x, entity.y - drop.y) > 34 + getCharacter(entity.characterId).radius) continue;
+      const available = Math.max(0, extraction.required - entity.cargo);
+      const taken = Math.min(available, drop.amount);
+      if (taken <= 0) continue;
+      entity.cargo += taken;
+      drop.amount -= taken;
+      state.events.push({ type: "cargoPicked", entityId: entity.id, amount: taken, cargo: entity.cargo, x: drop.x, y: drop.y });
+      if (drop.amount <= 0) extraction.drops = extraction.drops.filter((candidate) => candidate !== drop);
+    }
+    if (entity.cargo < extraction.required) continue;
+    if (Math.hypot(entity.x - extraction.exit.x, entity.y - extraction.exit.y) > extraction.exit.radius + getCharacter(entity.characterId).radius) continue;
+    extraction.extractedBy = entity.id;
+    state.score[entity.team] = 1;
+    state.events.push({ type: "extracted", entityId: entity.id, team: entity.team, cargo: entity.cargo, x: extraction.exit.x, y: extraction.exit.y });
+    finishMatch(state, entity.team);
+    return;
+  }
+}
+
+function scoreSiegeBreak(state, piece, ownerId) {
+  if (!state.siege || state.status !== "playing") return;
+  if (state.siege.brokenIds.includes(piece.id)) return;
+  state.siege.brokenIds.push(piece.id);
+  const attacker = state.entities.find((entity) => entity.id === ownerId);
+  if (!attacker || attacker.neutral || attacker.team === piece.ownerTeam) return;
+  const points = Math.max(20, Math.round(piece.maxHealth * 0.5));
+  state.siege.score[attacker.team] = (state.siege.score[attacker.team] ?? 0) + points;
+  state.score[attacker.team] = (state.score[attacker.team] ?? 0) + points;
+  state.events.push({ type: "siegeScore", entityId: attacker.id, team: attacker.team, points, structuralId: piece.id });
+  const enemyStructuresRemain = state.destructibles.some((candidate) => !candidate.destroyed && candidate.ownerTeam !== attacker.team);
+  if (state.siege.score[attacker.team] >= state.siege.targetScore || !enemyStructuresRemain) {
+    finishMatch(state, attacker.team);
+  }
+}
+
+function createEntity(spec, index, map, modeId = "freeplay") {
   const agent = getCharacter(spec.characterId);
   const race = getRace(spec.raceId ?? agent.homeRaceId);
+  const kit = buildCharacterKit({
+    characterId: agent.id,
+    modeId,
+    activeAbilityIds: spec.activeAbilityIds,
+    ultimateAbilityId: spec.ultimateAbilityId,
+  });
   const maxHealth = Math.round(agent.health * race.health);
   const maxFlow = MATCH_TUNING.flow.maximum * race.flow;
   const maxFlux = MATCH_TUNING.flux.maximum * race.flux;
@@ -170,8 +476,19 @@ function createEntity(spec, index, map) {
     name: cleanName(spec.name ?? `PLAYER ${index + 1}`),
     characterId: agent.id,
     raceId: race.id,
+    size: agent.size ?? 3,
+    activeAbilityIds: [...kit.activeAbilityIds],
+    ultimateAbilityId: kit.ultimateAbilityId,
+    kit: {
+      special: { ...kit.special },
+      defense: { ...kit.defense },
+      mobility: { ...kit.mobility },
+      ultimate: kit.ultimate ? { ...kit.ultimate } : null,
+      skillPoints: kit.skillPoints,
+    },
+    loadoutErrors: [...kit.errors],
     speedScale: race.speed,
-    team: spec.team === "beta" || spec.team === "neutral" ? spec.team : "alpha",
+    team: normalizeEntityTeam(spec.team, modeId),
     human: spec.human === true,
     bot: spec.bot === true,
     neutral: spec.neutral === true,
@@ -204,7 +521,7 @@ function createEntity(spec, index, map) {
     passiveActive: false,
     passiveCueCooldown: 0,
     ultimateCharge: 0,
-    maxUltimate: agent.ultimate?.chargeRequired ?? 0,
+    maxUltimate: kit.ultimate?.chargeRequired ?? 0,
     ultimateWindupRemaining: 0,
     ultimateResolvePending: false,
     ultimateAimX: facingX,
@@ -223,6 +540,15 @@ function createEntity(spec, index, map) {
     hopCarryX: 0,
     hopCarryY: 0,
     hopWallKick: false,
+    airborneRemaining: 0,
+    airJumpsRemaining: race.id === "scaleheir" ? 2 : 1,
+    airDodgeCooldown: 0,
+    airDodgeRemaining: 0,
+    airDodgeX: facingX,
+    airDodgeY: 0,
+    vaultWindow: 0,
+    superglideCooldown: 0,
+    movementState: "grounded",
     slideCooldown: 0,
     slideRemaining: 0,
     slideX: facingX,
@@ -243,10 +569,30 @@ function createEntity(spec, index, map) {
     dashHitIds: [],
     kills: 0,
     deaths: 0,
+    cargo: 0,
+    mendDelay: 0,
+    reactionCharge: 0,
+    raceArmor: 0,
+    inFire: false,
+    inOwnWater: false,
+    onOwnEarth: false,
     lives: 3,
     lastAttackerId: null,
     botThinkRemaining: 0,
     botCommand: { ...IDLE_COMMAND },
+  };
+}
+
+function runtimeCharacter(entity) {
+  const base = getCharacter(entity.characterId);
+  if (!entity.kit) return base;
+  return {
+    ...base,
+    special: entity.kit.special ?? base.special,
+    tactical: entity.kit.special ?? base.tactical,
+    defense: entity.kit.defense ?? base.defense,
+    mobility: entity.kit.mobility ?? base.mobility,
+    ultimate: entity.kit.ultimate ?? base.ultimate,
   };
 }
 
@@ -278,10 +624,67 @@ export function addMatchPlayer(state, spec = {}) {
     },
     state.entities.length,
     map,
+    state.modeId,
   );
   state.entities.push(entity);
   state.events.push({ type: "playerJoined", entityId: entity.id });
   return entity;
+}
+
+export function configureMatchPlayer(state, entityId, candidate = {}) {
+  const entity = state?.entities?.find((entry) => entry.id === entityId);
+  if (!entity) return { ok: false, errors: ["player not found"] };
+  const character = getCharacter(candidate.characterId ?? entity.characterId);
+  const race = getRace(candidate.raceId ?? entity.raceId ?? character.homeRaceId);
+  const kit = buildCharacterKit({
+    characterId: character.id,
+    modeId: state.modeId,
+    activeAbilityIds: candidate.activeAbilityIds ?? entity.activeAbilityIds,
+    ultimateAbilityId: candidate.ultimateAbilityId ?? entity.ultimateAbilityId,
+  });
+  if (kit.errors.length > 0) return { ok: false, errors: [...kit.errors] };
+
+  entity.characterId = character.id;
+  entity.raceId = race.id;
+  entity.size = character.size ?? 3;
+  entity.activeAbilityIds = [...kit.activeAbilityIds];
+  entity.ultimateAbilityId = kit.ultimateAbilityId;
+  entity.kit = {
+    special: { ...kit.special },
+    defense: { ...kit.defense },
+    mobility: { ...kit.mobility },
+    ultimate: kit.ultimate ? { ...kit.ultimate } : null,
+    skillPoints: kit.skillPoints,
+  };
+  entity.loadoutErrors = [];
+  entity.speedScale = race.speed;
+  entity.maxHealth = Math.round(character.health * race.health);
+  entity.maxFlow = MATCH_TUNING.flow.maximum * race.flow;
+  entity.maxFlux = MATCH_TUNING.flux.maximum * race.flux;
+  entity.maxUltimate = kit.ultimate?.chargeRequired ?? 0;
+  if (candidate.restore === true) {
+    entity.health = entity.maxHealth;
+    entity.flow = entity.maxFlow;
+    entity.flux = entity.maxFlux;
+    entity.ultimateCharge = entity.maxUltimate;
+  } else {
+    entity.health = clamp(entity.health, 1, entity.maxHealth);
+    entity.flow = clamp(entity.flow, 0, entity.maxFlow);
+    entity.flux = clamp(entity.flux, 0, entity.maxFlux);
+    entity.ultimateCharge = clamp(entity.ultimateCharge, 0, entity.maxUltimate);
+  }
+  state.events.push({
+    type: "playerConfigured", entityId: entity.id,
+    characterId: character.id, raceId: race.id,
+    activeAbilityIds: [...entity.activeAbilityIds],
+    ultimateAbilityId: entity.ultimateAbilityId,
+  });
+  return {
+    ok: true, characterId: character.id, raceId: race.id,
+    activeAbilityIds: [...entity.activeAbilityIds],
+    ultimateAbilityId: entity.ultimateAbilityId,
+    skillPoints: kit.skillPoints,
+  };
 }
 
 export function removeMatchPlayer(state, entityId) {
@@ -343,7 +746,10 @@ export function stepMatch(
   ) {
     return state;
   }
-  const boundedDelta = Math.min(delta, MATCH_TUNING.maxFrameDelta);
+  let boundedDelta = Math.min(delta, MATCH_TUNING.maxFrameDelta);
+  if (state.rules?.freeplay) {
+    boundedDelta *= state.rules.freeplaySettings?.timeScale ?? 1;
+  }
   const mode = getMode(state.modeId);
   const map = getMap(state.mapId);
   state.tick += 1;
@@ -354,17 +760,24 @@ export function stepMatch(
     return state;
   }
 
-  for (const entity of state.entities) tickEntity(entity, boundedDelta);
+  for (const entity of state.entities) {
+    tickEntity(entity, boundedDelta);
+    applyFreeplayEntityRules(state, entity);
+  }
   updateElementFields(state, boundedDelta);
+  updateRaceTraits(state, boundedDelta);
   updateDecoys(state, boundedDelta);
-  const activeMap = withElementGeometry(map, state.elementFields);
+  updateBattleRoyale(state, boundedDelta, map);
+  const activeMap = withDynamicGeometry(map, state);
   for (const entity of state.entities) {
     if (!entity.alive) {
       updateRespawn(state, entity, boundedDelta, map, mode);
       continue;
     }
     const command = entity.bot
-      ? updateBotCommand(state, entity, boundedDelta, map)
+      ? state.rules?.freeplaySettings?.freezeBots
+        ? IDLE_COMMAND
+        : updateBotCommand(state, entity, boundedDelta, map)
       : sanitizeCommand(commands[entity.id]);
     updateEntity(state, entity, command, boundedDelta, activeMap);
   }
@@ -376,7 +789,10 @@ export function stepMatch(
   updateProjectiles(state, boundedDelta, activeMap);
   updateHazards(state, boundedDelta);
   updateWildmarch(state, boundedDelta, map);
+  updateMovementTrial(state, mode);
+  updateExtraction(state, mode);
   updateObjective(state, boundedDelta, mode, map);
+  updateLastTeamStanding(state, mode);
   updateTutorial(state, commands);
   updateMatchClock(state, boundedDelta, mode);
   repairState(state, map);
@@ -588,6 +1004,7 @@ function setObjectivePosition(state, source) {
 
 function tickEntity(entity, delta) {
   const wasHopping = entity.hopRemaining > 0;
+  const wasAirborne = entity.airborneRemaining > 0;
   const wasWindingUltimate = entity.ultimateWindupRemaining > 0;
   for (const key of [
     "primaryCooldown",
@@ -603,6 +1020,11 @@ function tickEntity(entity, delta) {
     "hopCooldown",
     "hopRemaining",
     "landingRemaining",
+    "airborneRemaining",
+    "airDodgeCooldown",
+    "airDodgeRemaining",
+    "vaultWindow",
+    "superglideCooldown",
     "slideCooldown",
     "slideRemaining",
     "wallContactRemaining",
@@ -613,12 +1035,17 @@ function tickEntity(entity, delta) {
     "grazeCooldown",
     "passiveRemaining",
     "passiveCueCooldown",
+    "mendDelay",
     "ultimateWindupRemaining",
   ]) {
     entity[key] = Math.max(0, finite(entity[key]) - delta);
   }
   if (wasHopping && entity.hopRemaining === 0) {
     entity.landingRemaining = MATCH_TUNING.flow.landingWindow;
+  }
+  if (wasAirborne && entity.airborneRemaining === 0) {
+    entity.airJumpsRemaining = entity.raceId === "scaleheir" ? 2 : 1;
+    entity.movementState = "grounded";
   }
   if (wasWindingUltimate && entity.ultimateWindupRemaining === 0) {
     entity.ultimateResolvePending = true;
@@ -634,7 +1061,7 @@ function tickEntity(entity, delta) {
 }
 
 function updateEntity(state, entity, command, delta, map) {
-  const agent = getCharacter(entity.characterId);
+  const agent = runtimeCharacter(entity);
   if (entity.interruptRemaining > 0) {
     if (entity.ultimateWindupRemaining > 0 || entity.ultimateResolvePending) {
       entity.ultimateWindupRemaining = 0;
@@ -686,19 +1113,21 @@ function updateEntity(state, entity, command, delta, map) {
     return;
   }
 
+  const usedAirDodge = tryAirDodge(state, entity, command);
+  const usedSuperglide = !usedAirDodge && trySuperglide(state, entity, command);
   if (
-    command.mobility &&
+    !usedAirDodge && !usedSuperglide && command.mobility &&
     entity.mobilityCooldown === 0 &&
     spendFlux(state, entity, agent.mobility)
   ) {
     startMobility(state, entity, command, agent, map);
   }
-  if (!command.mobility && !trySlide(state, entity, command)) {
+  if (!usedAirDodge && !usedSuperglide && !command.mobility && !trySlide(state, entity, command)) {
     tryHop(state, entity, command);
   }
   moveEntity(state, entity, command, agent, delta, map);
   if (
-    command.defend &&
+    !usedAirDodge && command.defend &&
     entity.defenseCooldown === 0 &&
     spendFlux(state, entity, agent.defense)
   ) {
@@ -822,7 +1251,7 @@ function spendFlux(state, entity, ability) {
     }
     return false;
   }
-  entity.flux -= cost;
+  if (!state.rules?.freeplaySettings?.endlessFlux) entity.flux -= cost;
   entity.fluxRecoveryDelay = MATCH_TUNING.flux.recoveryDelay;
   state.events.push({
     type: "fluxSpend",
@@ -846,6 +1275,10 @@ function startMobility(state, entity, command, agent, map) {
   direction = normalizeDirection(direction.x, direction.y);
   if (direction.x === 0 && direction.y === 0) direction = { x: 1, y: 0 };
   entity.mobilityCooldown = mobility.cooldown;
+  entity.hopRemaining = 0;
+  entity.slideRemaining = 0;
+  entity.airDodgeRemaining = 0;
+  entity.vaultWindow = 0;
   entity.mobilityX = direction.x;
   entity.mobilityY = direction.y;
   entity.dashHitIds = [];
@@ -880,18 +1313,89 @@ function startMobility(state, entity, command, agent, map) {
   });
 }
 
+function tryAirDodge(state, entity, command) {
+  const movement = MATCH_TUNING.movement;
+  if (
+    !command.hop || !command.defend || entity.airborneRemaining <= 0 ||
+    entity.mobilityRemaining > 0 || entity.slideRemaining > 0 ||
+    entity.airDodgeCooldown > 0 || entity.airDodgeRemaining > 0 ||
+    entity.flow < movement.airDodgeCost
+  ) return false;
+  let direction = command.moveX !== 0 || command.moveY !== 0
+    ? normalizeDirection(command.moveX, command.moveY)
+    : normalizeDirection(entity.facingX, entity.facingY);
+  if (direction.x === 0 && direction.y === 0) direction = { x: 1, y: 0 };
+  entity.flow -= movement.airDodgeCost;
+  entity.flowRecoveryDelay = MATCH_TUNING.flow.recoveryDelay;
+  entity.airDodgeCooldown = movement.airDodgeCooldown;
+  entity.airDodgeRemaining = movement.airDodgeDuration;
+  entity.airDodgeX = direction.x;
+  entity.airDodgeY = direction.y;
+  entity.airJumpsRemaining = 0;
+  const wavedash = entity.landingRemaining > 0;
+  if (wavedash) {
+    entity.airDodgeRemaining = 0;
+    entity.slideRemaining = movement.wavedashDuration;
+    entity.slideCooldown = Math.max(entity.slideCooldown, movement.airDodgeCooldown);
+    entity.slideX = direction.x;
+    entity.slideY = direction.y;
+    entity.vx = direction.x * movement.wavedashSpeed;
+    entity.vy = direction.y * movement.wavedashSpeed;
+    entity.landingRemaining = 0;
+    entity.movementState = "wavedash";
+  } else entity.movementState = "air-dodge";
+  state.events.push({
+    type: wavedash ? "wavedash" : "airDodge", entityId: entity.id,
+    x: entity.x, y: entity.y, dx: direction.x, dy: direction.y,
+  });
+  primeMovementPassive(state, entity, getCharacter(entity.characterId), wavedash ? "WAVEDASH" : "AIR DODGE");
+  return true;
+}
+
+function trySuperglide(state, entity, command) {
+  const movement = MATCH_TUNING.movement;
+  if (
+    !command.hop || !command.sprint || entity.vaultWindow <= 0 ||
+    entity.mobilityRemaining > 0 || entity.slideRemaining > 0 ||
+    entity.airDodgeRemaining > 0 || entity.superglideCooldown > 0 ||
+    entity.flow < movement.superglideCost
+  ) return false;
+  let direction = command.moveX !== 0 || command.moveY !== 0
+    ? normalizeDirection(command.moveX, command.moveY)
+    : normalizeDirection(entity.facingX, entity.facingY);
+  if (direction.x === 0 && direction.y === 0) direction = { x: 1, y: 0 };
+  entity.flow -= movement.superglideCost;
+  entity.flowRecoveryDelay = MATCH_TUNING.flow.recoveryDelay;
+  entity.hopRemaining = movement.superglideDuration;
+  entity.hopCooldown = MATCH_TUNING.flow.hopCooldown;
+  entity.airborneRemaining = movement.airborneWindow /
+    (state.rules?.freeplaySettings?.gravityMultiplier ?? 1);
+  entity.hopX = direction.x; entity.hopY = direction.y;
+  entity.hopCarryX = 0; entity.hopCarryY = 0;
+  entity.vaultWindow = 0;
+  entity.superglideCooldown = movement.superglideCooldown;
+  entity.movementState = "superglide";
+  state.events.push({ type: "superglide", entityId: entity.id, x: entity.x, y: entity.y, dx: direction.x, dy: direction.y });
+  primeMovementPassive(state, entity, getCharacter(entity.characterId), "SUPERGLIDE");
+  return true;
+}
+
 function tryHop(state, entity, command) {
   const flow = MATCH_TUNING.flow;
   if (
     !command.hop ||
     entity.hopCooldown > 0 ||
     entity.hopRemaining > 0 ||
+    entity.airDodgeRemaining > 0 ||
     entity.slideRemaining > 0 ||
-    entity.mobilityRemaining > 0 ||
-    entity.flow < flow.hopCost
+    entity.mobilityRemaining > 0
   ) {
     return;
   }
+  const doubleJump = entity.airborneRemaining > 0;
+  const cost = doubleJump ? MATCH_TUNING.movement.doubleJumpCost : flow.hopCost;
+  if (doubleJump && entity.airJumpsRemaining <= 0) return;
+  if (entity.flow < cost) return;
   let direction =
     command.moveX !== 0 || command.moveY !== 0
       ? { x: command.moveX, y: command.moveY }
@@ -908,10 +1412,14 @@ function tryHop(state, entity, command) {
   }
   direction = normalizeDirection(direction.x, direction.y);
   if (direction.x === 0 && direction.y === 0) direction = { x: entity.facingX, y: entity.facingY };
-  entity.flow -= flow.hopCost;
+  entity.flow -= cost;
   entity.flowRecoveryDelay = flow.recoveryDelay;
   entity.hopCooldown = flow.hopCooldown;
   entity.hopRemaining = flow.hopDuration;
+  entity.airborneRemaining = MATCH_TUNING.movement.airborneWindow /
+    (state.rules?.freeplaySettings?.gravityMultiplier ?? 1);
+  if (doubleJump) entity.airJumpsRemaining -= 1;
+  entity.movementState = doubleJump ? "double-jump" : "airborne";
   entity.hopX = direction.x;
   entity.hopY = direction.y;
   const along = entity.vx * direction.x + entity.vy * direction.y;
@@ -931,7 +1439,7 @@ function tryHop(state, entity, command) {
   entity.sprinting = false;
   state.tutorial.hopped ||= entity.human;
   state.events.push({
-    type: wallKick ? "wallKick" : "hop",
+    type: wallKick ? "wallKick" : doubleJump ? "doubleJump" : "hop",
     entityId: entity.id,
     x: entity.x,
     y: entity.y,
@@ -951,7 +1459,12 @@ function tryHop(state, entity, command) {
 function moveEntity(state, entity, command, agent, delta, map) {
   let moveX = command.moveX;
   let moveY = command.moveY;
-  if (entity.mobilityRemaining > 0) {
+  if (entity.airDodgeRemaining > 0) {
+    entity.vx = entity.airDodgeX * MATCH_TUNING.movement.airDodgeSpeed;
+    entity.vy = entity.airDodgeY * MATCH_TUNING.movement.airDodgeSpeed;
+    entity.sprinting = false;
+    entity.movementState = "air-dodge";
+  } else if (entity.mobilityRemaining > 0) {
     entity.vx = entity.mobilityX * agent.mobility.speed;
     entity.vy = entity.mobilityY * agent.mobility.speed;
     entity.sprinting = false;
@@ -969,9 +1482,30 @@ function moveEntity(state, entity, command, agent, delta, map) {
     entity.vy = entity.slideY * MATCH_TUNING.flow.slideSpeed;
     entity.sprinting = false;
   } else if (entity.hopRemaining > 0) {
+    if (moveX !== 0 || moveY !== 0) {
+      const raceSteering = entity.raceId === "sylph"
+        ? 1.45
+        : entity.raceId === "elf"
+          ? 1.22
+          : entity.inOwnWater && entity.raceId === "seakin"
+            ? 1.3
+            : 1;
+      const steering = MATCH_TUNING.movement.airSteering * raceSteering *
+        (state.rules?.freeplaySettings?.airControlMultiplier ?? 1);
+      const redirected = normalizeDirection(
+        entity.hopX * (1 - steering) + moveX * steering,
+        entity.hopY * (1 - steering) + moveY * steering,
+      );
+      entity.hopX = redirected.x;
+      entity.hopY = redirected.y;
+    }
     const speed = entity.hopWallKick
       ? MATCH_TUNING.flow.wallKickSpeed
-      : MATCH_TUNING.flow.hopSpeed;
+      : entity.movementState === "double-jump"
+        ? MATCH_TUNING.movement.doubleJumpSpeed
+        : entity.movementState === "superglide"
+          ? MATCH_TUNING.movement.superglideSpeed
+          : MATCH_TUNING.flow.hopSpeed;
     entity.vx = entity.hopX * speed + entity.hopCarryX;
     entity.vy = entity.hopY * speed + entity.hopCarryY;
     entity.sprinting = false;
@@ -980,8 +1514,10 @@ function moveEntity(state, entity, command, agent, delta, map) {
     const sprinting = command.sprint && moving && entity.flow > 0;
     const speed =
       agent.speed * entity.speedScale *
+      (state.rules?.freeplaySettings?.speedMultiplier ?? 1) *
       (sprinting ? MATCH_TUNING.flow.sprintMultiplier : 1) *
       (entity.surface === "magma" ? MATCH_TUNING.elements.magmaSpeed : 1) *
+      (entity.surface === "mud" ? MATCH_TUNING.elements.mudSpeed : 1) *
       (entity.ultimateWindupRemaining > 0 ? agent.ultimate.moveScale : 1);
     const desiredX = moveX * speed + entity.elementForceX;
     const desiredY = moveY * speed + entity.elementForceY;
@@ -1032,6 +1568,7 @@ function moveEntity(state, entity, command, agent, delta, map) {
   );
   if (result.hitWall) {
     entity.wallContactRemaining = MATCH_TUNING.flow.wallMemory;
+    entity.vaultWindow = MATCH_TUNING.movement.vaultMemory;
     entity.wallX = result.wallX;
     entity.wallY = result.wallY;
   }
@@ -1278,17 +1815,24 @@ function resolveUltimate(state, entity, agent, map) {
   });
 }
 
-function withElementGeometry(map, fields) {
-  const earth = fields
+function withDynamicGeometry(map, state) {
+  const earth = state.elementFields
     .filter((field) => field.element === "earth")
     .map((field) => ({
       x: field.x,
       y: field.y,
       width: field.width,
       height: field.height,
+      source: "element",
     }));
-  if (earth.length === 0) return map;
-  return { ...map, obstacles: [...map.obstacles, ...earth] };
+  const structures = (state.destructibles ?? [])
+    .filter((piece) => !piece.destroyed)
+    .map((piece) => ({
+      x: piece.x, y: piece.y, width: piece.width, height: piece.height,
+      source: "destructible", structuralId: piece.id,
+    }));
+  if (earth.length === 0 && structures.length === 0) return map;
+  return { ...map, obstacles: [...map.obstacles, ...structures, ...earth] };
 }
 
 function windDirectionAt(field, x, y) {
@@ -1307,140 +1851,305 @@ function updateElementFields(state, delta) {
     entity.elementForceX = 0;
     entity.elementForceY = 0;
     entity.passiveActive = false;
+    entity.wet = false;
+    entity.chilled = false;
+    entity.revealed = false;
+    entity.shadowed = false;
+    entity.inFire = false;
+    entity.inOwnWater = false;
+    entity.onOwnEarth = false;
+    entity.raceArmor = 0;
   }
   for (const field of state.elementFields) {
     field.duration -= delta;
-    field.pulseRemaining = Math.max(0, field.pulseRemaining - delta);
+    field.pulseRemaining = Math.max(0, finite(field.pulseRemaining) - delta);
   }
-  const waterFields = state.elementFields.filter(
-    (field) => field.element === "water" && field.duration > 0,
-  );
+
+  const activeFields = state.elementFields.filter((field) => field.duration > 0);
   const removed = new Set();
-  const overlaps = (left, right) =>
-    Math.hypot(left.x - right.x, left.y - right.y) <=
-    (left.radius ?? 0) + (right.radius ?? 0);
-  for (const wind of state.elementFields.filter((field) => field.element === "wind")) {
-    for (const fire of state.elementFields.filter((field) => field.element === "fire")) {
-      if (!overlaps(wind, fire)) continue;
-      const direction = windDirectionAt(wind, fire.x, fire.y);
-      const speed = wind.shape === "vortex"
-        ? MATCH_TUNING.elements.vortexFireSpeed
-        : MATCH_TUNING.elements.windForce * 0.32;
-      fire.x += direction.x * speed * delta;
-      fire.y += direction.y * speed * delta;
+  const spawned = [];
+  const reactionsEnabled = !state.rules?.freeplay ||
+    state.rules.freeplaySettings?.reactions !== false;
+  const fields = (element) => activeFields.filter(
+    (field) => field.element === element && !removed.has(field.id),
+  );
+  const centerOf = (field) => field.element === "earth"
+    ? { x: field.x + field.width / 2, y: field.y + field.height / 2 }
+    : { x: field.x, y: field.y };
+  const overlap = (left, right) => {
+    if (left.element === "earth") {
+      const center = centerOf(right);
+      return circleRectangleOverlap(center, right.radius ?? 0, left);
     }
-  }
-  for (const fire of state.elementFields.filter((field) => field.element === "fire")) {
-    for (const ice of state.elementFields.filter((field) => field.element === "ice")) {
-      if (removed.has(fire.id) || removed.has(ice.id) || !overlaps(fire, ice)) continue;
-      removed.add(fire.id);
-      removed.add(ice.id);
-      state.events.push({ type: "elementReaction", reaction: "melt", x: ice.x, y: ice.y });
+    if (right.element === "earth") {
+      const center = centerOf(left);
+      return circleRectangleOverlap(center, left.radius ?? 0, right);
     }
-  }
-  for (const water of waterFields) {
-    for (const ice of state.elementFields.filter((field) => field.element === "ice")) {
-      if (removed.has(water.id) || removed.has(ice.id) || !overlaps(water, ice)) continue;
-      removed.add(water.id);
-      ice.duration = Math.min(
-        MATCH_TUNING.elements.iceDuration * 1.35,
-        ice.duration + water.duration * 0.5,
-      );
-      state.events.push({ type: "elementReaction", reaction: "freeze", x: water.x, y: water.y });
+    return Math.hypot(left.x - right.x, left.y - right.y) <=
+      (left.radius ?? 0) + (right.radius ?? 0);
+  };
+  const reactionOwner = (...candidates) => {
+    for (const field of candidates) {
+      const owner = state.entities.find((entity) => entity.id === field?.ownerId);
+      if (owner) return owner;
     }
-  }
-  for (const fire of state.elementFields.filter((field) => field.element === "fire")) {
-    for (const water of waterFields) {
-      if (removed.has(fire.id) || removed.has(water.id) || !overlaps(fire, water)) continue;
-      const distance = Math.hypot(water.x - fire.x, water.y - fire.y);
-      const directed =
-        Number.isFinite(water.directionX) &&
-        Number.isFinite(water.directionY) &&
-        (water.directionX !== 0 || water.directionY !== 0) &&
-        distance > fire.radius * 0.25;
-      if (directed) {
-        fire.x += water.directionX * water.radius * 0.72;
-        fire.y += water.directionY * water.radius * 0.72;
-        fire.duration *= 0.58;
-        state.events.push({
-          type: "elementReaction",
-          reaction: "redirect",
+    return state.entities[0];
+  };
+  const spawnReaction = (owner, element, spec) => {
+    if (!owner) return;
+    const before = state.elementFields.length;
+    createElementField(state, owner, element, {
+      ownerId: null,
+      team: "neutral",
+      source: "reaction",
+      ...spec,
+    }, false);
+    spawned.push(state.elementFields[before]);
+  };
+  const emitReaction = (reaction, left, right, extra = {}) => {
+    const a = centerOf(left);
+    const b = centerOf(right);
+    for (const field of [left, right]) {
+      const owner = state.entities.find((entity) => entity.id === field?.ownerId);
+      if (owner?.raceId === "nymph") owner.reactionCharge = 1;
+    }
+    state.events.push({
+      type: "elementReaction",
+      reaction,
+      x: (a.x + b.x) / 2,
+      y: (a.y + b.y) / 2,
+      ...extra,
+    });
+  };
+
+  // Wind changes geometry without consuming either field.
+  if (reactionsEnabled) {
+    for (const wind of fields("wind")) {
+      for (const fire of fields("fire")) {
+        if (!overlap(wind, fire)) continue;
+        const direction = windDirectionAt(wind, fire.x, fire.y);
+        const speed = wind.shape === "vortex"
+          ? MATCH_TUNING.elements.vortexFireSpeed
+          : MATCH_TUNING.elements.windForce * 0.32;
+        fire.x += direction.x * speed * delta;
+        fire.y += direction.y * speed * delta;
+      }
+    }
+
+    // Heat and cold consume each other and leave bounded meltwater/steam.
+    for (const fire of fields("fire")) {
+      for (const ice of fields("ice")) {
+        if (removed.has(fire.id) || removed.has(ice.id) || !overlap(fire, ice)) continue;
+        removed.add(fire.id);
+        removed.add(ice.id);
+        const a = centerOf(fire);
+        const b = centerOf(ice);
+        const owner = reactionOwner(fire, ice);
+        spawnReaction(owner, "water", {
+          x: (a.x + b.x) / 2,
+          y: (a.y + b.y) / 2,
+          radius: Math.min(MATCH_TUNING.elements.waterRadius, (fire.radius + ice.radius) * 0.42),
+          duration: MATCH_TUNING.elements.waterDuration * 0.55,
+          directionX: 0,
+          directionY: 0,
+        });
+        spawnReaction(owner, "vapor", {
+          x: (a.x + b.x) / 2,
+          y: (a.y + b.y) / 2,
+          radius: MATCH_TUNING.elements.vaporRadius * 0.72,
+          duration: MATCH_TUNING.elements.vaporDuration * 0.6,
+        });
+        emitReaction("melt", fire, ice);
+      }
+    }
+
+    // Water reinforces an overlapping ice field and is consumed.
+    for (const water of fields("water")) {
+      for (const ice of fields("ice")) {
+        if (removed.has(water.id) || removed.has(ice.id) || !overlap(water, ice)) continue;
+        removed.add(water.id);
+        ice.duration = Math.min(
+          MATCH_TUNING.elements.iceDuration * 1.35,
+          ice.duration + water.duration * 0.5,
+        );
+        emitReaction("freeze", water, ice);
+      }
+    }
+
+    // Water can redirect a directed flame or quench it into vapor.
+    for (const fire of fields("fire")) {
+      for (const water of fields("water")) {
+        if (removed.has(fire.id) || removed.has(water.id) || !overlap(fire, water)) continue;
+        const distance = Math.hypot(water.x - fire.x, water.y - fire.y);
+        const directed = Number.isFinite(water.directionX) && Number.isFinite(water.directionY) &&
+          (water.directionX !== 0 || water.directionY !== 0) &&
+          distance > fire.radius * 0.25;
+        if (directed) {
+          fire.x += water.directionX * water.radius * 0.72;
+          fire.y += water.directionY * water.radius * 0.72;
+          fire.duration *= 0.58;
+          emitReaction("redirect", fire, water);
+          continue;
+        }
+        removed.add(fire.id);
+        removed.add(water.id);
+        const owner = reactionOwner(fire, water);
+        spawnReaction(owner, "vapor", {
+          x: (fire.x + water.x) / 2,
+          y: (fire.y + water.y) / 2,
+          radius: MATCH_TUNING.elements.vaporRadius,
+          duration: MATCH_TUNING.elements.vaporDuration,
+        });
+        emitReaction("vapor", fire, water);
+      }
+    }
+
+    // Water erodes solid earth into a slower, non-damaging mud field.
+    for (const earth of fields("earth")) {
+      for (const water of fields("water")) {
+        if (removed.has(earth.id) || removed.has(water.id) || !overlap(earth, water)) continue;
+        removed.add(earth.id);
+        removed.add(water.id);
+        const c = centerOf(earth);
+        spawnReaction(reactionOwner(earth, water), "mud", {
+          x: c.x,
+          y: c.y,
+          radius: MATCH_TUNING.elements.mudRadius,
+          duration: MATCH_TUNING.elements.mudDuration,
+        });
+        emitReaction("mud", earth, water);
+      }
+    }
+
+    // Fire consumes authored earth cover into a neutral magma slow.
+    for (const fire of fields("fire")) {
+      for (const earth of fields("earth")) {
+        if (removed.has(fire.id) || removed.has(earth.id) || !overlap(fire, earth)) continue;
+        removed.add(fire.id);
+        removed.add(earth.id);
+        spawnReaction(reactionOwner(fire, earth), "magma", {
           x: fire.x,
           y: fire.y,
+          radius: MATCH_TUNING.elements.magmaRadius,
+          duration: MATCH_TUNING.elements.magmaDuration,
         });
-        continue;
+        emitReaction("magma", fire, earth);
       }
-      removed.add(fire.id);
-      removed.add(water.id);
-      const owner = state.entities.find((entity) => entity.id === fire.ownerId) ?? state.entities[0];
-      createElementField(state, owner, "vapor", {
-        ownerId: null,
-        team: "neutral",
-        source: "reaction",
-        x: (fire.x + water.x) / 2,
-        y: (fire.y + water.y) / 2,
-        radius: MATCH_TUNING.elements.vaporRadius,
-        duration: MATCH_TUNING.elements.vaporDuration,
-      }, false);
-      state.events.push({
-        type: "elementReaction",
-        reaction: "vapor",
-        x: (fire.x + water.x) / 2,
-        y: (fire.y + water.y) / 2,
+    }
+
+    // Charge is consumed into a conducted pulse while water remains wet.
+    for (const charge of fields("charge")) {
+      for (const water of fields("water")) {
+        if (removed.has(charge.id) || removed.has(water.id) || !overlap(charge, water)) continue;
+        removed.add(charge.id);
+        spawnReaction(reactionOwner(charge, water), "charge", {
+          x: water.x,
+          y: water.y,
+          radius: Math.max(water.radius, MATCH_TUNING.elements.chargeRadius),
+          duration: MATCH_TUNING.elements.chargeDuration * 0.72,
+          pulseRemaining: 0,
+          shape: "conducted",
+        });
+        emitReaction("conduct", charge, water);
+      }
+    }
+
+    // Light refracts once through water or ice and widens its readable ray field.
+    for (const light of fields("light")) {
+      const medium = [...fields("water"), ...fields("ice")].find(
+        (candidate) => !removed.has(candidate.id) && overlap(light, candidate),
+      );
+      if (!medium || removed.has(light.id)) continue;
+      removed.add(light.id);
+      const c = centerOf(medium);
+      spawnReaction(reactionOwner(light, medium), "light", {
+        x: c.x,
+        y: c.y,
+        radius: Math.max(light.radius, medium.radius ?? 0) * 1.2,
+        duration: MATCH_TUNING.elements.lightDuration * 0.7,
+        directionX: -(light.directionY ?? 0),
+        directionY: light.directionX ?? 1,
+        shape: "refracted",
       });
+      emitReaction("refract", light, medium, { medium: medium.element });
+    }
+
+    // Light and dark cancel their centers but leave a short visible boundary.
+    for (const light of fields("light")) {
+      for (const dark of fields("dark")) {
+        if (removed.has(light.id) || removed.has(dark.id) || !overlap(light, dark)) continue;
+        removed.add(light.id);
+        removed.add(dark.id);
+        const a = centerOf(light);
+        const b = centerOf(dark);
+        spawnReaction(reactionOwner(light, dark), "shadow-edge", {
+          x: (a.x + b.x) / 2,
+          y: (a.y + b.y) / 2,
+          radius: MATCH_TUNING.elements.shadowEdgeRadius,
+          duration: MATCH_TUNING.elements.shadowEdgeDuration,
+        });
+        emitReaction("attenuate", light, dark);
+      }
+    }
+
+    // Dark decay is costly and consumes the dark field while weakening earth.
+    for (const dark of fields("dark")) {
+      for (const earth of fields("earth")) {
+        if (removed.has(dark.id) || removed.has(earth.id) || !overlap(dark, earth)) continue;
+        removed.add(dark.id);
+        earth.duration *= 0.35;
+        emitReaction("decay", dark, earth);
+      }
     }
   }
-  for (const fire of state.elementFields.filter((field) => field.element === "fire")) {
-    for (const earth of state.elementFields.filter((field) => field.element === "earth")) {
-      if (
-        removed.has(fire.id) ||
-        removed.has(earth.id) ||
-        !circleRectangleOverlap(fire, fire.radius, earth)
-      ) continue;
-      removed.add(fire.id);
-      removed.add(earth.id);
-      const owner = state.entities.find((entity) => entity.id === fire.ownerId) ?? state.entities[0];
-      createElementField(state, owner, "magma", {
-        ownerId: null,
-        team: "neutral",
-        source: "reaction",
-        x: fire.x,
-        y: fire.y,
-        radius: MATCH_TUNING.elements.magmaRadius,
-        duration: MATCH_TUNING.elements.magmaDuration,
-      }, false);
-      state.events.push({
-        type: "elementReaction",
-        reaction: "magma",
-        x: fire.x,
-        y: fire.y,
-      });
-    }
-  }
+
+  const coldAshes = [];
   state.elementFields = state.elementFields.filter((field) => {
     if (removed.has(field.id)) return false;
     if (field.duration <= 0) {
+      const owner = state.entities.find((entity) => entity.id === field.ownerId);
+      if (field.element === "fire" && owner && getCharacter(owner.characterId).passive?.name === "COLD ASHES") {
+        coldAshes.push({ owner, field });
+      }
       state.events.push({ type: "elementClear", fieldId: field.id, element: field.element });
       return false;
     }
     return true;
   });
+  for (const { owner, field } of coldAshes) {
+    createElementField(state, owner, "ice", {
+      x: field.x, y: field.y, radius: Math.max(32, (field.radius ?? 60) * 0.68),
+      duration: 1.1, source: "cold-ashes", harmless: true,
+    }, false);
+    state.events.push({ type: "coldAshes", entityId: owner.id, x: field.x, y: field.y });
+  }
+
   for (const field of state.elementFields) {
-    if (field.element === "earth") continue;
-    for (const entity of state.entities) {
-      if (
-        !entity.alive ||
-        Math.hypot(entity.x - field.x, entity.y - field.y) >
-          field.radius + getCharacter(entity.characterId).radius
-      ) {
-        continue;
+    if (field.element === "earth") {
+      for (const entity of state.entities) {
+        if (!entity.alive || !circleRectangleOverlap(entity, getCharacter(entity.characterId).radius, field)) continue;
+        if (field.team === entity.team) entity.onOwnEarth = true;
       }
-      if (field.element === "ice") entity.surface = "ice";
+      continue;
+    }
+    for (const entity of state.entities) {
+      if (!entity.alive || Math.hypot(entity.x - field.x, entity.y - field.y) >
+        (field.radius ?? 0) + getCharacter(entity.characterId).radius) continue;
+
+      if (field.element === "ice") { entity.surface = "ice"; entity.chilled = true; }
       if (field.element === "magma") entity.surface = "magma";
-      if (
-        field.element === "fire" && field.team === entity.team &&
-        getCharacter(entity.characterId).passive?.kind === "field-temper"
-      ) {
+      if (field.element === "mud") entity.surface = "mud";
+      if (field.element === "water") {
+        entity.wet = true;
+        if (field.team === entity.team) entity.inOwnWater = true;
+      }
+      if (field.element === "fire") entity.inFire = true;
+      if (field.element === "light") { entity.revealed = true; entity.shadowed = false; }
+      if (field.element === "dark") entity.shadowed = true;
+      if (field.element === "shadow-edge") entity.revealed = true;
+
+      if (field.element === "fire" && field.team === entity.team &&
+        getCharacter(entity.characterId).passive?.kind === "field-temper") {
         entity.passiveActive = true;
       }
       if (field.element === "wind") {
@@ -1451,22 +2160,37 @@ function updateElementFields(state, delta) {
         entity.elementForceX += direction.x * force;
         entity.elementForceY += direction.y * force;
       }
-      if (field.element === "water" && entity.team === field.team) {
+      if (field.element === "dark") {
+        const direction = normalizeDirection(field.x - entity.x, field.y - entity.y);
+        entity.elementForceX += direction.x * MATCH_TUNING.elements.darkPull;
+        entity.elementForceY += direction.y * MATCH_TUNING.elements.darkPull;
+      }
+      if (field.element === "water" && field.team === entity.team) {
         entity.flow = Math.min(
           entity.maxFlow,
           entity.flow + MATCH_TUNING.elements.waterFlowPerSecond * delta,
         );
         entity.interruptRemaining = 0;
       }
-      if (
-        field.element === "fire" &&
-        hostileTeams(field.team, entity.team) &&
-        field.pulseRemaining === 0
-      ) {
+      if (field.element === "fire" &&
+        hostileTeams(field.team, entity.team, state) && field.pulseRemaining === 0) {
         const owner = state.entities.find((candidate) => candidate.id === field.ownerId);
         damageEntity(state, entity, MATCH_TUNING.elements.fireDamage, owner, {
           source: field.source === "ultimate" ? "ultimate" : "fire",
         });
+      }
+      if (field.element === "charge" &&
+        hostileTeams(field.team, entity.team, state) && field.pulseRemaining === 0) {
+        const owner = state.entities.find((candidate) => candidate.id === field.ownerId);
+        damageEntity(state, entity, MATCH_TUNING.elements.chargeDamage, owner, {
+          source: "charge-field",
+        });
+        const committedOrc = entity.raceId === "orc" &&
+          (entity.mobilityRemaining > 0 || entity.ultimateWindupRemaining > 0 || entity.specialCooldown > 0);
+        entity.interruptRemaining = Math.max(
+          entity.interruptRemaining,
+          MATCH_TUNING.elements.lightningInterrupt * (committedOrc ? 0.6 : 1),
+        );
       }
       if (field.element === "vapor" && field.pulseRemaining === 0) {
         damageEntity(state, entity, MATCH_TUNING.elements.vaporDamage, null, {
@@ -1477,8 +2201,34 @@ function updateElementFields(state, delta) {
     if (field.element === "fire" && field.pulseRemaining === 0) {
       field.pulseRemaining = MATCH_TUNING.elements.firePulse;
     }
+    if (field.element === "charge" && field.pulseRemaining === 0) {
+      field.pulseRemaining = MATCH_TUNING.elements.chargePulse;
+    }
     if (field.element === "vapor" && field.pulseRemaining === 0) {
       field.pulseRemaining = MATCH_TUNING.elements.vaporPulse;
+    }
+  }
+}
+
+function updateRaceTraits(state, delta) {
+  for (const entity of state.entities) {
+    if (!entity.alive || entity.neutral) continue;
+    if (entity.raceId === "stonewrought" && entity.onOwnEarth) entity.raceArmor = 0.12;
+    if (entity.raceId === "rootwarden" && entity.onOwnEarth) {
+      entity.raceArmor = Math.max(entity.raceArmor, 0.06);
+      entity.flow = Math.min(entity.maxFlow, entity.flow + 5 * delta);
+      if (entity.mendDelay === 0 && !entity.inFire) {
+        entity.health = Math.min(entity.maxHealth, entity.health + 1.2 * delta);
+      }
+    }
+    if (entity.raceId === "troll" && entity.mendDelay === 0 && !entity.inFire) {
+      entity.health = Math.min(entity.maxHealth, entity.health + 3 * delta);
+    }
+    if (entity.raceId === "seakin" && entity.inOwnWater) {
+      entity.flow = Math.min(entity.maxFlow, entity.flow + 4 * delta);
+    }
+    if (entity.raceId === "undead" && entity.shadowed && entity.mendDelay === 0) {
+      entity.health = Math.min(entity.maxHealth, entity.health + 0.8 * delta);
     }
   }
 }
@@ -1490,6 +2240,7 @@ function updateDecoys(state, delta) {
 
 function useSpecial(state, entity, agent, map) {
   const special = agent.special;
+  const element = combatElement(special.element ?? agent.affinity?.canonicalId ?? agent.affinity?.id);
   entity.specialCooldown = special.cooldown;
   state.events.push({
     type: "special",
@@ -1505,7 +2256,7 @@ function useSpecial(state, entity, agent, map) {
       createElementField(
         state,
         entity,
-        "fire",
+        element,
         {
           x: entity.x + (end.x - entity.x) * fraction,
           y: entity.y + (end.y - entity.y) * fraction,
@@ -1537,7 +2288,7 @@ function useSpecial(state, entity, agent, map) {
         });
       }
     }
-    if (agent.affinity.id === "wind") {
+    if (element === "wind") {
       createElementField(state, entity, "wind", {
         x: entity.x + entity.facingX * special.range * 0.72,
         y: entity.y + entity.facingY * special.range * 0.72,
@@ -1547,7 +2298,7 @@ function useSpecial(state, entity, agent, map) {
         directionY: entity.facingY,
         source: "tactical",
       });
-    } else if (agent.affinity.id === "earth") {
+    } else if (element === "earth") {
       const length = MATCH_TUNING.elements.earthLength;
       const thickness = MATCH_TUNING.elements.earthThickness;
       const centerX = entity.x + entity.facingX * (special.range + thickness) * 0.58;
@@ -1571,7 +2322,7 @@ function useSpecial(state, entity, agent, map) {
         ),
       );
       if (!blocked) createElementField(state, entity, "earth", wall);
-    } else if (agent.affinity.id === "ice") {
+    } else if (element === "ice") {
       createElementField(state, entity, "ice", {
         x: entity.x + entity.facingX * special.range * 0.68,
         y: entity.y + entity.facingY * special.range * 0.68,
@@ -1581,10 +2332,20 @@ function useSpecial(state, entity, agent, map) {
         directionY: entity.facingY,
         source: "tactical",
       });
+    } else if (["fire", "water", "charge", "light", "dark"].includes(element)) {
+      createElementField(state, entity, element, {
+        x: entity.x + entity.facingX * special.range * 0.68,
+        y: entity.y + entity.facingY * special.range * 0.68,
+        radius: MATCH_TUNING.elements[`${element}Radius`] ?? 110,
+        duration: MATCH_TUNING.elements[`${element}Duration`] ?? 2.4,
+        directionX: entity.facingX,
+        directionY: entity.facingY,
+        source: "tactical",
+      });
     }
   } else if (special.kind === "blast") {
     damageRadius(state, entity, special.range, special.damage, special.knockback);
-    if (agent.affinity.id === "veil") {
+    if (element === "dark") {
       const existing = state.decoys.find((decoy) => decoy.ownerId === entity.id);
       if (existing) {
         const beforeX = entity.x;
@@ -1611,6 +2372,17 @@ function useSpecial(state, entity, agent, map) {
         state.events.push({ type: "veilDecoy", entityId: entity.id, x: entity.x, y: entity.y });
       }
     }
+    if (["fire", "water", "wind", "ice", "charge", "light", "dark"].includes(element)) {
+      createElementField(state, entity, element, {
+        x: entity.x + entity.facingX * special.range * 0.45,
+        y: entity.y + entity.facingY * special.range * 0.45,
+        radius: MATCH_TUNING.elements[`${element}Radius`] ?? 105,
+        duration: MATCH_TUNING.elements[`${element}Duration`] ?? 2.2,
+        directionX: entity.facingX,
+        directionY: entity.facingY,
+        source: "tactical",
+      }, false);
+    }
   } else if (special.kind === "rail") {
     const end = clippedRayEnd(entity, special.range, map);
     for (const target of opponentsOf(state, entity)) {
@@ -1630,14 +2402,14 @@ function useSpecial(state, entity, agent, map) {
           knockback: special.knockback,
           direction: { x: entity.facingX, y: entity.facingY },
         });
-        if (agent.affinity.id === "lightning") {
+        if (element === "charge") {
           target.interruptRemaining = Math.max(
             target.interruptRemaining,
             MATCH_TUNING.elements.lightningInterrupt,
           );
           state.events.push({
             type: "elementInterrupt",
-            element: "lightning",
+            element: "charge",
             entityId: target.id,
             x: target.x,
             y: target.y,
@@ -1677,6 +2449,17 @@ function useSpecial(state, entity, agent, map) {
       endX: end.x,
       endY: end.y,
     });
+    if (element === "light") {
+      createElementField(state, entity, "light", {
+        x: (entity.x + end.x) / 2,
+        y: (entity.y + end.y) / 2,
+        radius: MATCH_TUNING.elements.lightRadius,
+        duration: MATCH_TUNING.elements.lightDuration,
+        directionX: entity.facingX,
+        directionY: entity.facingY,
+        source: "tactical",
+      }, false);
+    }
   } else if (special.kind === "mine") {
     state.mines = state.mines.filter(
       (mine) => mine.ownerId !== entity.id || mine.remaining > special.duration / 2,
@@ -1687,12 +2470,13 @@ function useSpecial(state, entity, agent, map) {
       team: entity.team,
       x: entity.x,
       y: entity.y,
-      armedIn: special.armTime,
+      armedIn: special.armTime * (entity.raceId === "gnome" ? 0.78 : 1),
       remaining: special.duration,
       triggerRadius: special.triggerRadius,
       blastRadius: special.blastRadius,
       damage: special.damage,
       knockback: special.knockback,
+      element,
     });
     state.nextMineId += 1;
   } else if (special.kind === "pull") {
@@ -1723,7 +2507,10 @@ function useSpecial(state, entity, agent, map) {
     }
   } else if (special.kind === "heal") {
     const before = entity.health;
-    entity.health = Math.min(entity.maxHealth, entity.health + special.amount);
+    const undeadScale = entity.raceId === "undead" ? 0.7 : 1;
+    const reactionScale = entity.raceId === "nymph" && entity.reactionCharge > 0 ? 1.35 : 1;
+    entity.health = Math.min(entity.maxHealth, entity.health + special.amount * undeadScale * reactionScale);
+    if (reactionScale > 1) entity.reactionCharge = 0;
     state.events.push({
       type: "heal",
       entityId: entity.id,
@@ -1731,7 +2518,7 @@ function useSpecial(state, entity, agent, map) {
       x: entity.x,
       y: entity.y,
     });
-    if (agent.affinity.id === "water") {
+    if (element === "water") {
       createElementField(state, entity, "water", {
         x: entity.x,
         y: entity.y,
@@ -1822,12 +2609,12 @@ function updateMines(state, delta) {
     const target = state.entities.find(
       (entity) =>
         entity.alive &&
-        hostileTeams(mine.team, entity.team) &&
+        hostileTeams(mine.team, entity.team, state) &&
         Math.hypot(entity.x - mine.x, entity.y - mine.y) <= mine.triggerRadius,
     );
     if (mine.armedIn === 0 && target) {
       for (const entity of state.entities) {
-        if (!entity.alive || !hostileTeams(mine.team, entity.team)) continue;
+        if (!entity.alive || !hostileTeams(mine.team, entity.team, state)) continue;
         const distance = Math.hypot(entity.x - mine.x, entity.y - mine.y);
         if (distance > mine.blastRadius) continue;
         const direction = normalizeDirection(entity.x - mine.x, entity.y - mine.y);
@@ -1838,6 +2625,11 @@ function updateMines(state, delta) {
         });
       }
       state.events.push({ type: "mineBlast", x: mine.x, y: mine.y });
+      if (owner?.raceId === "goblin") {
+        const refund = Math.min(12, owner.maxFlux - owner.flux);
+        owner.flux += refund;
+        if (refund > 0) state.events.push({ type: "salvage", entityId: owner.id, amount: refund, x: mine.x, y: mine.y });
+      }
       const earthBefore = state.elementFields.length;
       state.elementFields = state.elementFields.filter(
         (field) =>
@@ -1855,12 +2647,18 @@ function updateMines(state, delta) {
           y: mine.y,
         });
       }
-      if (owner && getCharacter(owner.characterId).affinity.id === "fire") {
-        createElementField(state, owner, "fire", {
+      const mineElement = combatElement(
+        mine.element ?? getCharacter(owner?.characterId).affinity?.id,
+      );
+      if (owner && ["fire", "water", "wind", "ice", "charge", "light", "dark"].includes(mineElement)) {
+        createElementField(state, owner, mineElement, {
           x: mine.x,
           y: mine.y,
-          radius: MATCH_TUNING.elements.fireRadius,
-          duration: MATCH_TUNING.elements.fireDuration,
+          radius: MATCH_TUNING.elements[`${mineElement}Radius`] ?? mine.blastRadius * 0.72,
+          duration: MATCH_TUNING.elements[`${mineElement}Duration`] ?? 2.2,
+          directionX: 0,
+          directionY: 0,
+          source: "mine",
         });
       }
       continue;
@@ -1940,7 +2738,7 @@ function updateProjectiles(state, delta, map) {
         const b = state.projectiles[right];
         if (
           removed.has(b.id) ||
-          !hostileTeams(a.team, b.team) ||
+          !hostileTeams(a.team, b.team, state) ||
           !projectilesCross(a, b)
         ) {
           continue;
@@ -1969,6 +2767,19 @@ function updateProjectiles(state, delta, map) {
     ) {
       continue;
     }
+    const structuralHit = (state.destructibles ?? []).find((piece) =>
+      !piece.destroyed && segmentRectangleHit(
+        projectile.previousX, projectile.previousY, projectile.x, projectile.y,
+        piece, projectile.radius,
+      ),
+    );
+    if (structuralHit) {
+      damageDestructible(
+        state, structuralHit, projectile.damage * (projectile.heavy ? 1.6 : 1),
+        projectile.ownerId, projectile.source,
+      );
+      continue;
+    }
     if (
       map.obstacles.some((obstacle) =>
         segmentRectangleHit(
@@ -1993,7 +2804,7 @@ function updateProjectiles(state, delta, map) {
       (entity) =>
         entity.alive &&
         entity.id !== projectile.ownerId &&
-        hostileTeams(projectile.team, entity.team) &&
+        hostileTeams(projectile.team, entity.team, state) &&
         segmentCircleHit(
           projectile.previousX,
           projectile.previousY,
@@ -2047,7 +2858,7 @@ function resolveProjectileGrazes(state, projectile, hitEntityId) {
   for (const entity of state.entities) {
     if (
       !entity.alive || entity.id === hitEntityId ||
-      !hostileTeams(projectile.team, entity.team) ||
+      !hostileTeams(projectile.team, entity.team, state) ||
       entity.spawnProtection > 0 || entity.grazeCooldown > 0 ||
       projectile.grazedIds.includes(entity.id) ||
       Math.hypot(entity.vx, entity.vy) < MATCH_TUNING.flow.grazeMinimumSpeed ||
@@ -2074,8 +2885,9 @@ function resolveProjectileGrazes(state, projectile, hitEntityId) {
         hitRadius + MATCH_TUNING.flow.grazeMargin,
       )
     ) continue;
+    const raceScale = entity.raceId === "hobbit" ? 1.35 : 1;
     const amount = Math.min(
-      MATCH_TUNING.flow.grazeReward,
+      MATCH_TUNING.flow.grazeReward * raceScale,
       entity.maxFlow - entity.flow,
     );
     entity.flow += amount;
@@ -2096,7 +2908,7 @@ function resolveProjectileGrazes(state, projectile, hitEntityId) {
 function defendAgainstProjectile(state, target, projectile) {
   if (target.spawnProtection > 0) return "consume";
   if (target.defenseRemaining <= 0) return "hit";
-  const defense = getCharacter(target.characterId).defense;
+  const defense = runtimeCharacter(target).defense;
   if (defense.kind === "phase") {
     markTutorialDefenseRead(state, target, defense.kind);
     return "pass";
@@ -2242,6 +3054,38 @@ function updateHazards(state, delta) {
   }
 }
 
+function damageDestructible(state, piece, rawDamage, ownerId = null, source = "unknown") {
+  if (!piece || piece.destroyed || state.rules?.freeplaySettings?.destructibility === false) return false;
+  const owner = state.entities.find((entity) => entity.id === ownerId);
+  const momentumScale = owner?.raceId === "minotaur"
+    ? 1 + Math.min(0.35, Math.hypot(owner.vx, owner.vy) / 1800)
+    : 1;
+  const damage = Math.max(1, Math.round(finite(rawDamage) * momentumScale));
+  piece.health = Math.max(0, piece.health - damage);
+  piece.damageStage = piece.health === 0 ? 3
+    : piece.health <= piece.maxHealth * 0.33 ? 2
+      : piece.health <= piece.maxHealth * 0.66 ? 1 : 0;
+  state.events.push({
+    type: "structureHit", structuralId: piece.id, ownerId, source, damage,
+    health: piece.health, x: piece.x + piece.width / 2, y: piece.y + piece.height / 2,
+  });
+  if (piece.health === 0) {
+    piece.destroyed = true;
+    state.events.push({
+      type: "structureBroken", structuralId: piece.id, ownerId, source,
+      material: piece.material, level: piece.level,
+      x: piece.x + piece.width / 2, y: piece.y + piece.height / 2,
+    });
+    scoreSiegeBreak(state, piece, ownerId);
+  }
+  return true;
+}
+
+export function damageStructure(state, structuralId, rawDamage, ownerId = null, source = "script") {
+  const piece = state.destructibles?.find((candidate) => candidate.id === structuralId);
+  return damageDestructible(state, piece, rawDamage, ownerId, source);
+}
+
 function damageEntity(state, target, rawDamage, attacker, options = {}) {
   if (
     !target?.alive ||
@@ -2250,8 +3094,12 @@ function damageEntity(state, target, rawDamage, attacker, options = {}) {
   ) {
     return false;
   }
-  const agent = getCharacter(target.characterId);
-  let damage = Math.max(0, finite(rawDamage));
+  if (state.rules?.freeplaySettings?.godMode && target.human) return false;
+  const agent = runtimeCharacter(target);
+  let damage = Math.max(0, finite(rawDamage)) *
+    (state.rules?.freeplaySettings?.damageMultiplier ?? 1);
+  if (target.raceId === "rootwarden" && ["fire", "ultimate"].includes(options.source)) damage *= 1.14;
+  if (target.raceArmor > 0) damage *= 1 - target.raceArmor;
   if (target.defenseRemaining > 0 && agent.defense.kind === "guard") {
     const sourceDirection = options.direction ?? { x: 0, y: 0 };
     const incomingDot =
@@ -2268,6 +3116,7 @@ function damageEntity(state, target, rawDamage, attacker, options = {}) {
   target.hitFlash = MATCH_TUNING.hitFlash;
   target.damageInvulnerability = agent.damageInvulnerability;
   target.lastAttackerId = attacker?.id ?? null;
+  target.mendDelay = 3;
   if (options.knockback && options.direction) {
     const resistance = getRace(target.raceId).knockback ?? 1;
     target.vx += options.direction.x * options.knockback * resistance;
@@ -2296,7 +3145,7 @@ function damageEntity(state, target, rawDamage, attacker, options = {}) {
 }
 
 function gainUltimateCharge(state, entity, damage) {
-  const ultimate = getCharacter(entity.characterId).ultimate;
+  const ultimate = runtimeCharacter(entity).ultimate;
   if (!ultimate || entity.ultimateCharge >= ultimate.chargeRequired) return;
   const before = entity.ultimateCharge;
   entity.ultimateCharge = Math.min(
@@ -2335,6 +3184,21 @@ function eliminateEntity(state, target, attacker) {
     attackerId: attacker?.id ?? null,
     team: attacker?.team ?? null,
   });
+  if (state.extraction) {
+    if (target.neutral && attacker && !attacker.neutral) {
+      attacker.cargo = Math.min(state.extraction.required, attacker.cargo + 1);
+      state.events.push({
+        type: "cargoClaimed", entityId: attacker.id, amount: 1, cargo: attacker.cargo,
+        x: target.x, y: target.y,
+      });
+    } else if (!target.neutral && target.cargo > 0) {
+      state.extraction.drops.push({
+        id: `cargo-${state.tick}-${target.id}`, x: target.x, y: target.y, amount: target.cargo,
+      });
+      state.events.push({ type: "cargoDropped", entityId: target.id, amount: target.cargo, x: target.x, y: target.y });
+      target.cargo = 0;
+    }
+  }
   if (target.neutral) releaseWayseal(state, target);
   else dropCarriedWayseal(state, target, "elimination");
   const mode = getMode(state.modeId);
@@ -2354,6 +3218,12 @@ function eliminateEntity(state, target, attacker) {
       state.roundRemaining = MATCH_TUNING.roundResetDelay;
       state.winner = scoringTeam ?? null;
       state.events.push({ type: "roundOver", winner: state.winner });
+    }
+  } else if (["team", "draft", "mirror"].includes(mode.id)) {
+    const scoringTeam = attacker?.team;
+    if (scoringTeam && scoringTeam !== "neutral" && scoringTeam !== target.team) {
+      state.score[scoringTeam] = (state.score[scoringTeam] ?? 0) + 1;
+      if (state.score[scoringTeam] >= mode.scoreLimit) finishMatch(state, scoringTeam);
     }
   } else if (mode.id === "survival") {
     if (target.team === "alpha") {
@@ -2395,7 +3265,7 @@ function eliminateEntity(state, target, attacker) {
 
 function updateRespawn(state, entity, delta, map, mode) {
   if (state.status !== "playing") return;
-  if (mode.id === "duel" || mode.id === "training") return;
+  if (mode.id === "duel" || mode.id === "training" || mode.noRespawn) return;
   if (mode.id === "survival" && entity.team === "beta") return;
   if (mode.id === "survival" && entity.team === "alpha" && entity.lives <= 0) {
     return;
@@ -2408,7 +3278,7 @@ function updateRespawn(state, entity, delta, map, mode) {
 
 function respawnEntity(entity, map) {
   const spawn = map.spawns[entity.spawnIndex % map.spawns.length];
-  const agent = getCharacter(entity.characterId);
+  const agent = runtimeCharacter(entity);
   const race = getRace(entity.raceId);
   entity.x = spawn.x;
   entity.y = spawn.y;
@@ -2442,6 +3312,15 @@ function respawnEntity(entity, map) {
   entity.hopRemaining = 0;
   entity.landingRemaining = 0;
   entity.hopWallKick = false;
+  entity.airborneRemaining = 0;
+  entity.airJumpsRemaining = entity.raceId === "scaleheir" ? 2 : 1;
+  entity.airDodgeCooldown = 0;
+  entity.airDodgeRemaining = 0;
+  entity.airDodgeX = entity.facingX;
+  entity.airDodgeY = entity.facingY;
+  entity.vaultWindow = 0;
+  entity.superglideCooldown = 0;
+  entity.movementState = "grounded";
   entity.slideCooldown = 0;
   entity.slideRemaining = 0;
   entity.slideX = entity.facingX;
@@ -2457,6 +3336,12 @@ function respawnEntity(entity, map) {
   entity.fluxWarningCooldown = 0;
   entity.counterStrafeCooldown = 0;
   entity.grazeCooldown = 0;
+  entity.mendDelay = 0;
+  entity.reactionCharge = 0;
+  entity.raceArmor = 0;
+  entity.inFire = false;
+  entity.inOwnWater = false;
+  entity.onOwnEarth = false;
   entity.surface = "normal";
   entity.elementForceX = 0;
   entity.elementForceY = 0;
@@ -2476,6 +3361,14 @@ function resetRound(state, map, mode) {
   state.mines = [];
   state.elementFields = [];
   state.decoys = [];
+  state.destructibles = createModeDestructibles(mode, map);
+  state.movementTrial = mode.id === "movement"
+    ? createMovementTrialState(map, state.entities)
+    : null;
+  state.siege = mode.id === "siege"
+    ? { score: {}, brokenIds: [], targetScore: mode.scoreLimit }
+    : null;
+  state.extraction = mode.id === "extraction" ? createExtractionState(map) : null;
   state.shrines = (map.shrines ?? []).map((shrine) => ({
     ...shrine,
     readyIn: 0,
@@ -2502,6 +3395,7 @@ function resetRound(state, map, mode) {
           },
           state.entities.length,
           map,
+          state.modeId,
         ),
       );
     }
@@ -2548,6 +3442,7 @@ function updateObjective(state, delta, mode, map) {
 
 function updateMatchClock(state, delta, mode) {
   state.elapsed += delta;
+  if (mode.id === "freeplay") return;
   if (state.elapsed < mode.timeLimit || state.status !== "playing") return;
   if (mode.id === "survival") {
     finishMatch(state, "beta");
@@ -2608,8 +3503,47 @@ function updateBotCommand(state, entity, delta, map) {
   entity.botThinkRemaining -= delta;
   if (entity.botThinkRemaining > 0) return entity.botCommand;
   entity.botThinkRemaining = MATCH_TUNING.bot.thinkInterval;
+
+  if (state.movementTrial) {
+    const gate = state.movementTrial.gates[state.movementTrial.progress[entity.id] ?? 0];
+    if (!gate) {
+      entity.botCommand = { ...IDLE_COMMAND };
+      return entity.botCommand;
+    }
+    const direction = normalizeDirection(gate.x - entity.x, gate.y - entity.y);
+    entity.botCommand = {
+      ...IDLE_COMMAND,
+      moveX: direction.x, moveY: direction.y,
+      aimX: direction.x, aimY: direction.y,
+      sprint: entity.flow > entity.maxFlow * 0.35,
+      hop: entity.hopCooldown === 0 && entity.flow >= MATCH_TUNING.flow.hopCost && hashSign(entity.id, state.tick) > 0,
+      mobility: entity.mobilityCooldown === 0 && Math.hypot(gate.x - entity.x, gate.y - entity.y) > 260,
+    };
+    return entity.botCommand;
+  }
+
   const targets = opponentsOf(state, entity);
-  if (targets.length === 0) {
+  let modeTarget = null;
+  if (state.extraction) {
+    if (entity.cargo >= state.extraction.required) {
+      modeTarget = state.extraction.exit;
+    } else {
+      const candidates = [
+        ...state.entities.filter((candidate) => candidate.alive && candidate.neutral),
+        ...state.extraction.drops,
+      ];
+      modeTarget = candidates.sort((left, right) => squaredDistance(entity, left) - squaredDistance(entity, right))[0] ?? null;
+    }
+  } else if (state.siege) {
+    const pieces = state.destructibles.filter((piece) => !piece.destroyed && piece.ownerTeam !== entity.team);
+    const piece = pieces.sort((left, right) => {
+      const leftCenter = { x: left.x + left.width / 2, y: left.y + left.height / 2 };
+      const rightCenter = { x: right.x + right.width / 2, y: right.y + right.height / 2 };
+      return squaredDistance(entity, leftCenter) - squaredDistance(entity, rightCenter);
+    })[0];
+    if (piece) modeTarget = { x: piece.x + piece.width / 2, y: piece.y + piece.height / 2, structuralId: piece.id };
+  }
+  if (targets.length === 0 && !modeTarget) {
     entity.botCommand = { ...IDLE_COMMAND };
     return entity.botCommand;
   }
@@ -2617,14 +3551,17 @@ function updateBotCommand(state, entity, delta, map) {
     ? state.entities.find(
         (candidate) =>
           candidate.id === state.wildmarch.seal.carrierId &&
-          hostileTeams(entity.team, candidate.team),
+          hostileTeams(entity.team, candidate.team, state),
       )
     : null;
-  const target = hostileCarrier ?? targets.reduce((nearest, candidate) =>
-    squaredDistance(entity, candidate) < squaredDistance(entity, nearest)
-      ? candidate
-      : nearest,
-  );
+  const combatTarget = targets.length > 0
+    ? targets.reduce((nearest, candidate) =>
+        squaredDistance(entity, candidate) < squaredDistance(entity, nearest)
+          ? candidate
+          : nearest,
+      )
+    : null;
+  const target = hostileCarrier ?? modeTarget ?? combatTarget;
   const dx = target.x - entity.x;
   const dy = target.y - entity.y;
   const distance = Math.hypot(dx, dy);
@@ -2669,10 +3606,10 @@ function updateBotCommand(state, entity, delta, map) {
   const move = normalizeDirection(moveX, moveY);
   const closeProjectile = state.projectiles.some(
     (projectile) =>
-      hostileTeams(entity.team, projectile.team) &&
+      hostileTeams(entity.team, projectile.team, state) &&
       Math.hypot(projectile.x - entity.x, projectile.y - entity.y) < 125,
   );
-  const agent = getCharacter(entity.characterId);
+  const agent = runtimeCharacter(entity);
   entity.botCommand = {
     moveX: move.x,
     moveY: move.y,
@@ -2696,6 +3633,7 @@ function updateBotCommand(state, entity, delta, map) {
       entity.flow >= MATCH_TUNING.flow.hopCost,
     ultimate:
       Boolean(agent.ultimate) &&
+      Boolean(combatTarget) &&
       entity.ultimateCharge >= (agent.ultimate?.chargeRequired ?? Infinity) &&
       distance >= 150 &&
       distance <= (agent.ultimate?.range ?? agent.ultimate?.targetRange ?? 0) * 0.92,
@@ -2768,7 +3706,7 @@ function resolveDashContact(state, attacker, target, nx, ny) {
   if (
     attacker.mobilityRemaining <= 0 ||
     attacker.dashHitIds.includes(target.id) ||
-    !hostileTeams(attacker.team, target.team)
+    !hostileTeams(attacker.team, target.team, state)
   ) {
     return;
   }
@@ -2800,17 +3738,20 @@ function opponentsOf(state, entity) {
     (candidate) =>
       candidate.alive &&
       candidate !== entity &&
-      hostileTeams(entity.team, candidate.team),
+      hostileTeams(entity.team, candidate.team, state),
   );
 }
 
-function hostileTeams(left, right) {
-  return left !== right && (left === "neutral" || right === "neutral" || left !== right);
+function hostileTeams(left, right, state = null) {
+  if (left === "neutral" || right === "neutral") return left !== right;
+  if (left !== right) return true;
+  return state?.rules?.freeplay === true &&
+    state.rules.freeplaySettings?.friendlyFire === true;
 }
 
 function repairState(state, map) {
   for (const entity of state.entities) {
-    const agent = getCharacter(entity.characterId);
+    const agent = runtimeCharacter(entity);
     if (Number.isFinite(entity.x) && Number.isFinite(entity.y)) {
       entity.lastSafeX = entity.x;
       entity.lastSafeY = entity.y;
@@ -2928,6 +3869,14 @@ export function matchInvariantErrors(state) {
       "hopCooldown",
       "hopRemaining",
       "landingRemaining",
+      "airborneRemaining",
+      "airJumpsRemaining",
+      "airDodgeCooldown",
+      "airDodgeRemaining",
+      "airDodgeX",
+      "airDodgeY",
+      "vaultWindow",
+      "superglideCooldown",
       "slideCooldown",
       "slideRemaining",
       "slideX",
@@ -2954,6 +3903,10 @@ export function matchInvariantErrors(state) {
       "ultimateAimY",
       "ultimateTargetX",
       "ultimateTargetY",
+      "cargo",
+      "mendDelay",
+      "reactionCharge",
+      "raceArmor",
     ]) {
       if (!Number.isFinite(entity[key])) errors.push(`${entity.id}.${key} is not finite`);
     }
@@ -2965,7 +3918,7 @@ export function matchInvariantErrors(state) {
     ) {
       errors.push(`${entity.id} left arena bounds`);
     }
-    for (const obstacle of withElementGeometry(map, state.elementFields).obstacles) {
+    for (const obstacle of withDynamicGeometry(map, state).obstacles) {
       if (circleRectangleOverlap(entity, radius - 0.01, obstacle)) {
         errors.push(`${entity.id} overlaps cover`);
       }
@@ -3028,6 +3981,46 @@ export function matchInvariantErrors(state) {
     }
   } else if (state.modeId === "convergence") {
     errors.push("convergence needs authoritative WILDMARCH state");
+  }
+  for (const piece of state.destructibles ?? []) {
+    for (const key of ["x", "y", "width", "height", "health", "maxHealth"]) {
+      if (!Number.isFinite(piece[key])) errors.push(`${piece.id}.${key} is not finite`);
+    }
+    if (piece.health < 0 || piece.health > piece.maxHealth) errors.push(`${piece.id}.health is invalid`);
+    if (piece.destroyed !== (piece.health === 0)) errors.push(`${piece.id}.destroyed disagrees with health`);
+  }
+  if (state.movementTrial) {
+    for (const gate of state.movementTrial.gates ?? []) {
+      for (const key of ["x", "y", "radius"]) {
+        if (!Number.isFinite(gate[key])) errors.push(`movementTrial.${gate.id}.${key} is not finite`);
+      }
+    }
+    for (const [entityId, progress] of Object.entries(state.movementTrial.progress ?? {})) {
+      if (!Number.isInteger(progress) || progress < 0 || progress > state.movementTrial.gates.length) {
+        errors.push(`movementTrial.progress.${entityId} is invalid`);
+      }
+    }
+  } else if (state.modeId === "movement") errors.push("movement mode needs trial state");
+  if (state.siege) {
+    for (const [team, score] of Object.entries(state.siege.score ?? {})) {
+      if (!Number.isFinite(score) || score < 0) errors.push(`siege.score.${team} is invalid`);
+    }
+  } else if (state.modeId === "siege") errors.push("siege mode needs siege state");
+  if (state.extraction) {
+    for (const key of ["x", "y", "radius"]) {
+      if (!Number.isFinite(state.extraction.exit?.[key])) errors.push(`extraction.exit.${key} is not finite`);
+    }
+    if (!Number.isInteger(state.extraction.required) || state.extraction.required <= 0) {
+      errors.push("extraction.required is invalid");
+    }
+    for (const drop of state.extraction.drops ?? []) {
+      for (const key of ["x", "y", "amount"]) {
+        if (!Number.isFinite(drop[key])) errors.push(`${drop.id}.${key} is not finite`);
+      }
+    }
+  } else if (state.modeId === "extraction") errors.push("extraction mode needs extraction state");
+  if (state.battleRoyale && (!Number.isFinite(state.battleRoyale.radius) || state.battleRoyale.radius <= 0)) {
+    errors.push("battleRoyale.radius is invalid");
   }
   return errors;
 }
@@ -3232,6 +4225,13 @@ function hashSign(id, tick) {
   let hash = tick >> 5;
   for (const character of id) hash = (hash * 31 + character.charCodeAt(0)) | 0;
   return hash % 2 === 0 ? 1 : -1;
+}
+
+function normalizeEntityTeam(candidate, modeId) {
+  const value = String(candidate ?? "");
+  if (value === "neutral") return "neutral";
+  if (modeId === "battle_royale" && /^squad-[1-9][0-9]?$/.test(value)) return value;
+  return value === "beta" ? "beta" : "alpha";
 }
 
 function oppositeTeam(team) {

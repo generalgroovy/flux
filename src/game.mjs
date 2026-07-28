@@ -1211,6 +1211,27 @@ function effectiveLoadoutPoints(character, ability) {
   return Math.max(1, ability.points - Math.min(3, affinity));
 }
 
+function setSelectValue(select, requestedValue) {
+  const options = [...select.querySelectorAll("option")];
+  const selected = options.find((option) => option.value === requestedValue) ?? options[0] ?? null;
+  const value = selected?.value ?? "";
+
+  // Native browsers provide a writable HTMLSelectElement.value. Lightweight DOM
+  // implementations used by deterministic smoke tests may expose only the getter.
+  try {
+    select.value = value;
+    if (select.value === value) return value;
+  } catch {
+    // Fall through to explicit option selection.
+  }
+
+  for (const option of options) {
+    if (option === selected) option.setAttribute("selected", "");
+    else option.removeAttribute("selected");
+  }
+  return value;
+}
+
 function syncLoadoutBuilder(force = false) {
   const characterId = selectedMatchChoice("character", "mara");
   const modeId = selectedMatchChoice("mode", "duel");
@@ -1239,18 +1260,24 @@ function syncLoadoutBuilder(force = false) {
     select.innerHTML = actives.map((ability) =>
       `<option value="${ability.id}">${ability.name} · ${effectiveLoadoutPoints(character, ability)} SP · ${ability.element}</option>`,
     ).join("");
-    select.value = actives.some((ability) => ability.id === current[index])
-      ? current[index]
-      : defaults[index] ?? actives[index]?.id;
+    setSelectValue(
+      select,
+      actives.some((ability) => ability.id === current[index])
+        ? current[index]
+        : defaults[index] ?? actives[index]?.id,
+    );
   }
   const ultimateSelect = element("loadout-ultimate");
   ultimateSelect.innerHTML = ultimates.map((ability) =>
     `<option value="${ability.id}">${ability.name} · ${ability.element}</option>`,
   ).join("");
   ultimateSelect.disabled = !rule.ultimates;
-  ultimateSelect.value = ultimates.some((ability) => ability.id === selectedUltimate)
-    ? selectedUltimate
-    : defaultUltimate;
+  setSelectValue(
+    ultimateSelect,
+    ultimates.some((ability) => ability.id === selectedUltimate)
+      ? selectedUltimate
+      : defaultUltimate,
+  );
 
   element("loadout-catalog").innerHTML = actives.map((ability) =>
     `<button class="loadout-chip" type="button" draggable="true" data-loadout-ability="${ability.id}" title="${ability.counterplay.join(" · ")}"><b>${ability.name}</b><small>${ability.element} · ${effectiveLoadoutPoints(character, ability)} SP · ${ability.fluxCost} Flux</small></button>`,
@@ -1289,8 +1316,8 @@ function assignLoadoutSlot(index, abilityId) {
   const target = slots[index];
   if (!target?.querySelector(`option[value="${abilityId}"]`)) return;
   const duplicate = slots.findIndex((select, slot) => slot !== index && select.value === abilityId);
-  if (duplicate >= 0) slots[duplicate].value = target.value;
-  target.value = abilityId;
+  if (duplicate >= 0) setSelectValue(slots[duplicate], target.value);
+  setSelectValue(target, abilityId);
   validateCurrentLoadout();
 }
 

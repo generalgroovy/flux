@@ -346,7 +346,8 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     false,
   );
 
-  document.querySelector("[data-quick-start]").click();
+  document.querySelector('[data-select-agent="kite"]').click();
+  document.querySelector('[data-launch-mode="training"]').click();
   assert.equal(app.dataset.view, "game");
   assert.equal(window.DIFF_DEBUG.getState().modeId, "training");
   assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "kite");

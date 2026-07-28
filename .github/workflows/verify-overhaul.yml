@@ -55,3 +55,29 @@ jobs:
       - run: npx electron-builder --linux AppImage --dir
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+  source-snapshot:
+    name: Tested source snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload tested source
+        uses: actions/upload-artifact@v4
+        with:
+          name: flux-tested-source
+          path: |
+            .agent/**
+            .github/**
+            assets/**
+            desktop/**
+            scripts/**
+            src/**
+            tests/**
+            index.html
+            styles.css
+            package.json
+            package-lock.json
+            README.md
+          if-no-files-found: error
+          retention-days: 2

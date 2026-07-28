@@ -139,10 +139,47 @@ function selectSlots(rosterEntry, requestedIds = rosterEntry.activeAbilityIds) {
   };
 }
 
+function runtimeAbilityMetadata(ability) {
+  return ability ? {
+    abilityId: ability.id,
+    catalogKind: ability.kind,
+    tier: ability.tier ?? 1,
+    points: ability.points ?? 0,
+    startup: ability.startup ?? 0,
+    recovery: ability.recovery ?? 0,
+    roles: [...(ability.roles ?? [])],
+    tags: [...(ability.tags ?? [])],
+    counterplay: [...(ability.counterplay ?? [])],
+  } : {
+    abilityId: null,
+    catalogKind: null,
+    tier: 1,
+    points: 0,
+    startup: 0,
+    recovery: 0,
+    roles: [],
+    tags: [],
+    counterplay: [],
+  };
+}
+
 function specialKind(ability) {
   if (!ability) return "blast";
-  if (["mine", "turn-mine", "reactive-seed", "charged-construct", "jump-pad", "refract-line", "multi-construct", "gadget-ring"].includes(ability.kind)) return "mine";
-  if (["beam", "chain", "projectile", "delayed-bursts", "beam-grid"].includes(ability.kind)) return "rail";
+  const exact = {
+    wall: "wall",
+    "convert-field": "convert-field",
+    orbit: "orbit",
+    chain: "chain",
+    "delayed-bursts": "delayed-bursts",
+    "refract-line": "tripwire",
+    "charged-construct": "charged-construct",
+    "reactive-seed": "reactive-seed",
+    "turn-mine": "turn-mine",
+    "jump-pad": "jump-pad",
+  }[ability.kind];
+  if (exact) return exact;
+  if (["mine", "multi-construct", "gadget-ring"].includes(ability.kind)) return "mine";
+  if (["beam", "projectile", "beam-grid"].includes(ability.kind)) return "rail";
   if (["pull-field", "construct-decay", "decoy-swap", "blink-decoy"].includes(ability.kind)) return "pull";
   if (["support-field", "support-basin", "support-growth"].includes(ability.kind)) return "heal";
   if (["dash-trail", "moving-field", "route-dash", "storm-front"].includes(ability.kind)) return "trail";
@@ -153,7 +190,9 @@ function specialKind(ability) {
 function adaptSpecial(ability) {
   const element = canonicalElement(ability?.element) ?? "earth";
   const kind = specialKind(ability);
+  const metadata = runtimeAbilityMetadata(ability);
   const base = {
+    ...metadata,
     name: ability?.name ?? "SPELL",
     detail: ability ? `${titleCase(ability.kind)} · ${ability.points} SP` : "Elemental spell.",
     element,
@@ -166,7 +205,21 @@ function adaptSpecial(ability) {
   };
   if (kind === "cone") return { ...base, halfAngle: 0.72 };
   if (kind === "rail") return { ...base, width: 7, range: 720, damage: 25 + (ability?.tier ?? 1) * 9 };
-  if (kind === "mine") return { ...base, armTime: 0.45, duration: 6, triggerRadius: 72, blastRadius: 118, damage: 30 + (ability?.tier ?? 1) * 8 };
+  if (["mine", "turn-mine", "reactive-seed", "charged-construct", "jump-pad", "tripwire"].includes(kind)) {
+    return {
+      ...base,
+      armTime: kind === "delayed-bursts" ? 0.7 : 0.45,
+      duration: kind === "tripwire" ? 7 : 6,
+      triggerRadius: kind === "tripwire" ? 54 : 72,
+      blastRadius: kind === "charged-construct" ? 132 : 118,
+      damage: 30 + (ability?.tier ?? 1) * 8,
+    };
+  }
+  if (kind === "delayed-bursts") return { ...base, count: 3, spacing: 92, armTime: 0.72, duration: 3.2, triggerRadius: 46, blastRadius: 82 };
+  if (kind === "chain") return { ...base, width: 6, range: 620, chainRange: 180, chainCount: 3, damage: 29 };
+  if (kind === "wall") return { ...base, range: 125, length: 175, thickness: 28, duration: 4.2, damage: 0, knockback: 0 };
+  if (kind === "convert-field") return { ...base, range: 240, radius: 135, duration: 4, damage: 0, knockback: 0 };
+  if (kind === "orbit") return { ...base, range: 95, radius: 94, duration: 1.6, damage: 18, knockback: 220 };
   if (kind === "trail") return { ...base, range: 280, fieldCount: 5, fieldRadius: 48, fieldDuration: 2.8 };
   if (kind === "pull") return { ...base, range: 175, pull: 275, damage: 18 };
   if (kind === "heal") return { ...base, amount: 34, range: 130, damage: 0, knockback: 0 };
@@ -184,6 +237,7 @@ function adaptDefense(ability, characterEntry) {
             : "guard"
     : element === "dark" ? "phase" : "guard";
   return {
+    ...runtimeAbilityMetadata(ability),
     name: ability?.name ?? "GUARD",
     detail: defensive ? `${titleCase(ability.kind)} defense.` : "Commit this spell as a defensive read.",
     element,
@@ -191,8 +245,9 @@ function adaptDefense(ability, characterEntry) {
     fluxCost: bounded(ability?.fluxCost ?? 28, 12, 48),
     duration: kind === "phase" ? 0.22 : kind === "reflect" ? 0.2 : 0.28,
     cooldown: bounded((ability?.cooldown ?? 2.2) * 0.72, 0.9, 4.5),
-    radius: 42,
+    radius: ability?.kind === "orbit" ? 58 : 42,
     reduction: 0.58,
+    frontalDot: 0.12,
     returnDamage: 12,
     amount: 24,
   };
@@ -208,6 +263,7 @@ function adaptMobility(ability, characterEntry) {
         ? "charge"
         : "dash";
   return {
+    ...runtimeAbilityMetadata(ability),
     name: ability?.name ?? "STEP",
     detail: ability?.roles.includes("mobility") ? `${titleCase(ability.kind)} movement.` : "Convert this spell into a committed movement route.",
     element,
@@ -224,12 +280,21 @@ function adaptMobility(ability, characterEntry) {
 
 function adaptUltimate(ability, characterEntry) {
   const element = canonicalElement(ability?.element) ?? characterEntry.affinities[0].id;
-  const kind = ["wind", "dark", "light"].includes(element)
-    ? "wind-vortex"
-    : ["ice", "charge"].includes(element)
-      ? "line-volley"
-      : "field-crown";
+  const catalogKind = ability?.kind;
+  const supportedKinds = new Set([
+    "beam-grid", "armor-structure", "gadget-ring", "route-dash", "orbit-lens",
+    "storm-front", "growth-wave", "maze", "basin", "grapple-web", "collapse-line",
+    "living-structure", "formation", "multi-construct", "support-growth",
+  ]);
+  const kind = supportedKinds.has(catalogKind)
+    ? catalogKind
+    : ["wind", "dark", "light"].includes(element)
+      ? "wind-vortex"
+      : ["ice", "charge"].includes(element)
+        ? "line-volley"
+        : "field-crown";
   const base = {
+    ...runtimeAbilityMetadata(ability),
     name: ability?.name ?? "ULTIMATE",
     detail: ability ? `${titleCase(ability.kind)} ultimate.` : "Signature ultimate.",
     element,
@@ -238,8 +303,8 @@ function adaptUltimate(ability, characterEntry) {
     chargePerDamage: 0.82,
     windup: bounded(ability?.startup ?? 0.75, 0.45, 0.95),
     moveScale: 0.42,
-    fieldCount: kind === "field-crown" ? 7 : 5,
-    fieldRadius: kind === "wind-vortex" ? 168 : 58,
+    fieldCount: ["field-crown", "maze", "living-structure", "formation"].includes(kind) ? 7 : 5,
+    fieldRadius: kind === "wind-vortex" || kind === "orbit-lens" || kind === "grapple-web" ? 168 : 58,
     fieldDuration: 3.4,
     targetRange: 330,
     crownRadius: 118,

@@ -499,3 +499,168 @@ test("race traits create bounded distinct playstyles in the authoritative simula
   assert.equal(baronState.elementFields.some((field) => field.source === "cold-ashes"), true);
   assert.deepEqual(matchInvariantErrors(baronState), []);
 });
+
+test("all sixteen race champions preserve signature catalog execution through shared actions", () => {
+  const ultimateKinds = new Set();
+  for (const character of OVERHAUL_CHARACTERS) {
+    const state = createMatch({
+      modeId: "freeplay",
+      mapId: "sanctum",
+      botCount: 0,
+      players: [
+        { id: "caster", characterId: character.id, raceId: character.homeRaceId, team: "alpha", human: true },
+        { id: "target", characterId: "mara", raceId: "human", team: "beta", human: true },
+      ],
+    });
+    const caster = state.entities[0];
+    const target = state.entities[1];
+    caster.x = 520;
+    caster.y = 450;
+    target.x = 760;
+    target.y = 450;
+    caster.spawnProtection = 0;
+    target.spawnProtection = 0;
+    caster.flux = caster.maxFlux;
+    caster.ultimateCharge = caster.maxUltimate;
+
+    const expected = {
+      special: caster.kit.special.abilityId,
+      defense: caster.kit.defense.abilityId,
+      mobility: caster.kit.mobility.abilityId,
+      ultimate: caster.kit.ultimate.abilityId,
+    };
+    assert.ok(expected.special, `${character.id} special catalog id`);
+    assert.ok(expected.defense, `${character.id} defense catalog id`);
+    assert.ok(expected.mobility, `${character.id} mobility catalog id`);
+    assert.ok(expected.ultimate, `${character.id} ultimate catalog id`);
+    ultimateKinds.add(caster.kit.ultimate.catalogKind);
+
+    stepMatch(state, { caster: { aimX: 1, aimY: 0, special: true } });
+    assert.ok(
+      state.events.some((event) => event.type === "special" && event.abilityId === expected.special),
+      `${character.id} special execution`,
+    );
+
+    caster.flux = caster.maxFlux;
+    stepMatch(state, { caster: { aimX: 1, aimY: 0, defend: true } });
+    assert.ok(
+      state.events.some((event) => event.type === "defense" && event.abilityId === expected.defense),
+      `${character.id} defense execution`,
+    );
+
+    caster.flux = caster.maxFlux;
+    stepMatch(state, { caster: { moveX: 1, moveY: 0, aimX: 1, aimY: 0, mobility: true } });
+    assert.ok(
+      state.events.some((event) => event.type === "mobility" && event.abilityId === expected.mobility),
+      `${character.id} mobility execution`,
+    );
+
+    for (let frame = 0; frame < 80; frame += 1) stepMatch(state);
+    caster.flux = caster.maxFlux;
+    caster.ultimateCharge = caster.maxUltimate;
+    caster.specialCooldown = 0;
+    caster.defenseCooldown = 0;
+    caster.mobilityCooldown = 0;
+    stepMatch(state, { caster: { aimX: 1, aimY: 0, ultimate: true } });
+    let resolved = null;
+    for (let frame = 0; frame < 150 && !resolved; frame += 1) {
+      stepMatch(state, { caster: { aimX: 1, aimY: 0 } });
+      resolved = state.events.find(
+        (event) => event.type === "ultimateCast" && event.abilityId === expected.ultimate,
+      );
+    }
+    assert.ok(resolved, `${character.id} ultimate execution`);
+    assert.deepEqual(matchInvariantErrors(state), [], character.id);
+  }
+  assert.ok(ultimateKinds.size >= 14, "the roster must not collapse ultimates into a few generic shapes");
+});
+
+test("bots use catalog tactical, defense, mobility, and ultimate actions for every race champion", () => {
+  for (const character of OVERHAUL_CHARACTERS) {
+    const state = createMatch({
+      modeId: "freeplay",
+      mapId: "sanctum",
+      botCount: 0,
+      players: [
+        { id: "bot", characterId: character.id, raceId: character.homeRaceId, team: "alpha", bot: true },
+        { id: "human", characterId: "mara", raceId: "human", team: "beta", human: true },
+      ],
+    });
+    setFreeplaySettings(state, { godMode: true, endlessFlux: true, endlessFlow: true });
+    const bot = state.entities[0];
+    const human = state.entities[1];
+    bot.x = 500;
+    bot.y = 450;
+    human.x = 620;
+    human.y = 450;
+    bot.spawnProtection = 0;
+    human.spawnProtection = 0;
+    bot.ultimateCharge = 0;
+    bot.botThinkRemaining = 0;
+
+    const observed = new Set();
+    const collect = () => {
+      for (const event of state.events) {
+        if (event.entityId !== bot.id) continue;
+        if (event.type === "special" && event.abilityId === bot.kit.special.abilityId) observed.add("special");
+        if (event.type === "defense" && event.abilityId === bot.kit.defense.abilityId) observed.add("defense");
+        if (event.type === "mobility" && event.abilityId === bot.kit.mobility.abilityId) observed.add("mobility");
+        if (event.type === "ultimateCast" && event.abilityId === bot.kit.ultimate.abilityId) observed.add("ultimate");
+      }
+    };
+
+    // Close combat plus a hostile projectile proves tactical and defensive planning.
+    for (let frame = 0; frame < 150 && (!observed.has("special") || !observed.has("defense")); frame += 1) {
+      if (frame % 30 === 0) {
+        bot.flux = bot.maxFlux;
+        bot.specialCooldown = 0;
+        bot.defenseCooldown = 0;
+        bot.botThinkRemaining = 0;
+        state.projectiles.push({
+          id: state.nextProjectileId++, ownerId: human.id, team: human.team, source: "primary",
+          x: bot.x + 70, y: bot.y, previousX: bot.x + 80, previousY: bot.y,
+          vx: -50, vy: 0, radius: 5, damage: 1, lifetime: 0.7, knockback: 0,
+          pierce: 0, heavy: false, reflected: false, fieldIds: [], guidedBy: null,
+          guidedRemaining: 0, turnRate: 0,
+        });
+      }
+      stepMatch(state);
+      collect();
+    }
+
+    // A long route proves that the bot understands its authored movement conversion.
+    human.x = 1180;
+    human.y = 450;
+    bot.mobilityCooldown = 0;
+    bot.botThinkRemaining = 0;
+    for (let frame = 0; frame < 90 && !observed.has("mobility"); frame += 1) {
+      if (frame % 20 === 0) {
+        bot.flux = bot.maxFlux;
+        bot.mobilityCooldown = 0;
+        bot.botThinkRemaining = 0;
+      }
+      stepMatch(state);
+      collect();
+    }
+
+    // A clean medium-range target proves ultimate commitment and resolution.
+    human.x = bot.x + 250;
+    human.y = bot.y;
+    bot.ultimateCharge = bot.maxUltimate;
+    bot.botThinkRemaining = 0;
+    for (let frame = 0; frame < 220 && !observed.has("ultimate"); frame += 1) {
+      if (frame % 45 === 0) {
+        bot.ultimateCharge = bot.maxUltimate;
+        bot.botThinkRemaining = 0;
+      }
+      stepMatch(state);
+      collect();
+    }
+
+    assert.ok(observed.has("special"), `${character.id} bot tactical`);
+    assert.ok(observed.has("defense"), `${character.id} bot defense`);
+    assert.ok(observed.has("mobility"), `${character.id} bot mobility`);
+    assert.ok(observed.has("ultimate"), `${character.id} bot ultimate`);
+    assert.deepEqual(matchInvariantErrors(state), [], character.id);
+  }
+});

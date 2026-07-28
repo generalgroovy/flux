@@ -30,15 +30,16 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
-      - run: npm test
-      - name: Parse production modules
-        shell: bash
-        run: |
-          node --check src/content.mjs
-          node --check src/match.mjs
-          node --check src/game.mjs
-          node --check src/lobbies.mjs
-          node --check scripts/serve.mjs
+      - name: Verify tests and production modules
+        run: node scripts/ci-verify.mjs
+      - name: Upload verification diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-${{ matrix.os }}-node${{ matrix.node }}
+          path: ci-results/*.log
+          if-no-files-found: warn
+          retention-days: 7
 
   package-smoke:
     name: Package configuration smoke

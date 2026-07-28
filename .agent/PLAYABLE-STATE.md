@@ -1,49 +1,67 @@
 # FLUX playable-state ledger
 
-Branch: `agent/resource-hud-first-slice`
+Date: 2026-07-28
+Branch: `integration/unify-flux`
+Base: `d77c0b2` (`agent/windows-linux-runtime`)
 
-## Baseline
+## Integrated state
 
-The branch was created from `main` before overhaul code changes.
+The branch preserves the complete 0.34.3 live game and its Windows/Linux runtime
+repair. It adds the independently tested future overhaul data foundation and one
+canonical cross-platform verification workflow. The overhaul catalog remains
+inactive: `src/content.mjs` and `src/match.mjs` are still authoritative for live
+gameplay.
 
-## Current branch changes
+Integrated work:
 
-Documentation only:
+- reliable Windows `npm.cmd` launch and authenticated graceful server cleanup;
+- audited recovery tags for every pre-unification branch;
+- reconciled overhaul constraints, system audit, compatibility matrix, and
+  implementation loop;
+- future eight-element, sixteen-race, sixteen-character, ability, reaction,
+  movement, mode, and destruction data contracts;
+- static character-balance profiling and roster diversity/counterplay guards;
+- approved simple future display vocabulary and canonical character visual
+  direction;
+- one Windows/Ubuntu Node 20.19.1/22 verification matrix with real packaging
+  jobs and failure diagnostics.
 
-- `.agent/OVERHAUL-PROMPT.md`
-- `.agent/OVERHAUL-PLAN.md`
-- `.agent/SYSTEM-AUDIT.md`
-- `.agent/PLAYABLE-STATE.md`
+No checkpoint payload or checkpoint-generated source was applied. The manifest
+cannot be reconstructed deterministically, as recorded in
+`.agent/BRANCH-AUDIT.md`.
 
-No simulation, content, UI, networking, launcher, package, or test file has been changed yet.
+## Verified on current source
 
-## Claimed verification
+Observed on Windows on 2026-07-28:
 
-- GitHub branch creation succeeded.
-- Documentation commits succeeded.
-- Relevant current source files were inspected.
+- `npm.cmd ci` completed successfully earlier in the integration pass.
+- `npm.cmd test` passed 108/108: 106 core/DOM/deterministic checks, one live
+  WebSocket lifecycle, and one authenticated server-cleanup check.
+- `node scripts/ci-verify.mjs` passed the same 108 tests and recursive syntax
+  checks for all desktop, script, source, and test modules.
+- PowerShell launcher parsing passed.
+- The canonical workflow parsed as valid YAML.
+- `npm.cmd audit --omit=dev` reported zero production vulnerabilities.
+- A Windows NSIS package built successfully at commit `3a02958` before the
+  inactive concept-data pass.
 
-## Not yet verified
+The full dependency audit reports 16 high-severity development-only findings in
+the Electron packaging toolchain. Production dependencies remain clean; the dev
+findings must be handled through dependency maintenance rather than concealed.
 
-The following have not been executed in this chat environment and must not be treated as passing:
+## Pending launch gate
 
-```bash
-npm ci
-npm test
-node --check src/content.mjs
-node --check src/match.mjs
-node --check src/game.mjs
-npm start
-npm run start:server
-```
+The current source has not yet been rebuilt and exercised interactively after
+the concept-data pass. Before publication as the durable `develop` branch:
 
-## Next code step
+1. rebuild the Windows package from current HEAD;
+2. open the packaged application;
+3. enter a real match through the Play flow;
+4. close normally and verify all owned child processes exit;
+5. push `develop` and wait for the Windows/Ubuntu CI and packaging jobs;
+6. update this ledger with the resulting run URLs and artifacts.
 
-Implement Slice 1 as one small patch:
-
-1. tune maximum Flux, recovery, recovery delay, and default paid-action costs;
-2. extend content validation with burst/recovery invariants;
-3. extend deterministic match tests for cast payment and recovery delay;
-4. update compact HUD resource copy without renaming abilities;
-5. run the full declared verification set;
-6. record exact results here before committing the code slice as playable.
+Linux packaging and packaged launch require the GitHub Ubuntu job (or a Linux
+host); neither is inferred from a Windows build. The unified branch must not be
+merged to `main` until both platform gates are green and explicit final approval
+is given.

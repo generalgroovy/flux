@@ -16,7 +16,7 @@ The candidate currently includes:
 
 - the complete 0.34.3 live game;
 - reliable source launch and graceful owned-process cleanup on Windows and Linux;
-- 108 passing automated checks on Windows, including the live WebSocket lifecycle
+- 109 passing automated checks on Windows, including the live WebSocket lifecycle
   and authenticated server cleanup;
 - Windows NSIS and Linux AppImage package jobs that emit commit-bound SHA-256
   manifests and downloadable CI artifacts;

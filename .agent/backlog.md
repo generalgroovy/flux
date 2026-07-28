@@ -194,3 +194,15 @@ the FLUX context, run the actual suite, and push only the active agent branch.
 - Publish `develop`, wait for both installable package artifacts and every test
   lane, then close superseded PRs before deleting only exact archived heads.
 - Stop before merging `develop` into `main`.
+
+## Future S. Wayne acceptance
+
+- Preserve `samwise` only as the compatibility ID; all player-facing future copy
+  uses **S. Wayne**, Human, Void/Light.
+- Prototype BETWEEN SHADOWS only after the inactive overhaul foundation receives
+  an approved live vertical slice. The boundary crossing must be server-owned,
+  visibly locked out, and incapable of granting damage.
+- Validate PRISM TRIPWIRE, BURROWED SHADOW, Ray, and Sun Grid together for route
+  control without letting the 7/13 discounted signature become mandatory.
+- Keep the Hobbit race available for a later distinct character rather than
+  reskinning S. Wayne to satisfy artificial one-character-per-race coverage.

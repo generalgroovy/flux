@@ -18,10 +18,11 @@ Character names and the previously approved character ability names are canonica
 - Actives: ROOT RAMPART, BRANCH GALE, EMBER SEED
 - Ultimate: CROWN OF THE WILDFIRE
 
-### Samwise DeWayne
-- Passive: SMALL TARGET, BIG EXIT
-- Actives: POCKET TEMPEST, BURROWED SHADOW, CAMPFIRE FEINT
-- Ultimate: THERE AND BACK AGAIN
+### S. Wayne
+- Human; Void / Light affinities
+- Passive: BETWEEN SHADOWS
+- Actives: PRISM TRIPWIRE, BURROWED SHADOW, Ray
+- Ultimate: Sun Grid
 
 ### Steezo
 - Passive: QUESTIONABLE ENGINEERING

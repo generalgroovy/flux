@@ -21,13 +21,25 @@ import {
   validateOverhaulContent,
 } from "../src/overhaul-content.mjs";
 
-test("overhaul content is internally valid and covers one playable character per race", () => {
+test("overhaul content is internally valid and keeps the authored future roster bounded", () => {
   assert.deepEqual(validateOverhaulContent(), []);
   assert.equal(ELEMENTS.length, 8);
   assert.equal(RACE_ARCHETYPES.length, 16);
   assert.equal(CHARACTER_ROSTER.length, 16);
-  assert.equal(new Set(CHARACTER_ROSTER.map((entry) => entry.raceId)).size, 16);
+  assert.equal(CHARACTER_ROSTER.filter((entry) => entry.raceId === "human").length, 2);
+  assert.equal(CHARACTER_ROSTER.filter((entry) => entry.raceId === "hobbit").length, 0);
   assert.ok(ABILITY_CATALOG.length >= 48);
+});
+
+test("S. Wayne keeps the legacy id while using the Human Dark/Light rework", () => {
+  const wayne = CHARACTER_ROSTER.find((entry) => entry.id === "samwise");
+  assert.equal(wayne.name, "S. Wayne");
+  assert.equal(wayne.raceId, "human");
+  assert.equal(wayne.size, 3);
+  assert.deepEqual(wayne.affinities, [{ id: "dark", strength: 2 }, { id: "light", strength: 2 }]);
+  assert.equal(wayne.passive.name, "BETWEEN SHADOWS");
+  assert.deepEqual(wayne.activeAbilityIds, ["prism-tripwire", "burrowed-shadow", "ray"]);
+  assert.equal(wayne.ultimateAbilityId, "sun-grid");
 });
 
 test("legacy element names resolve to the simplified eight-family vocabulary", () => {

@@ -1572,3 +1572,22 @@
   clean check, confirming an active writer. Launch and cleanup are now separate
   preflight phases: drift is a visible non-blocking warning for packaging the
   immutable candidate, but remains a hard failure for branch deletion.
+
+# 2026-07-28 — S. Wayne future-roster rework
+
+- **Direction:** Replaced the future Samwise DeWayne concept with **S. Wayne**, a
+  medium Human with strong internal Dark/Light affinities and a player-facing
+  Void/Light identity. The stable `samwise` ID remains as a compatibility key.
+- **Kit:** Authored the eclipse-boundary passive **BETWEEN SHADOWS**, with PRISM
+  TRIPWIRE, BURROWED SHADOW, Ray, and Sun Grid as the signature kit. The concept
+  now communicates contrast boundaries through a split mantle, prism lines,
+  shadow anchors, and reveal rays.
+- **Roster contract:** Two Humans and no assigned Hobbit are now intentional.
+  Validation retains exactly sixteen future races and sixteen future characters
+  but no longer fabricates one representative per race.
+- **Compatibility:** This changes only inactive overhaul data, tests, and design
+  documents. The ten-character 0.34.3 live roster is untouched.
+- **Verification:** The focused overhaul suite passed 14/14 and the generated
+  balance profile is valid at 50 power-budget points and 7/13 signature points.
+  The complete Windows verification then passed 109/109 plus recursive syntax
+  checks.

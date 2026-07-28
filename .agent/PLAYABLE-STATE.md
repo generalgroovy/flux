@@ -35,9 +35,9 @@ cannot be reconstructed deterministically, as recorded in
 Observed on Windows on 2026-07-28:
 
 - `npm.cmd ci` completed successfully earlier in the integration pass.
-- `npm.cmd test` passed 108/108: 106 core/DOM/deterministic checks, one live
+- `npm.cmd test` passed 109/109: 107 core/DOM/deterministic checks, one live
   WebSocket lifecycle, and one authenticated server-cleanup check.
-- `node scripts/ci-verify.mjs` passed the same 108 tests and recursive syntax
+- `node scripts/ci-verify.mjs` passed the same 109 tests and recursive syntax
   checks for all desktop, script, source, and test modules.
 - PowerShell launcher parsing passed.
 - The canonical workflow parsed as valid YAML.

@@ -114,7 +114,7 @@ Implement, without renaming any approved character or ability:
 
 - Der Rote Baron
 - Treevor
-- Samwise DeWayne
+- S. Wayne
 - Steezo
 - Oh Tipi
 - Oll'I

@@ -32,7 +32,7 @@ subject to hands-on play after the unified build passes its launch smoke.
 | --- | --- | --- | --- | --- |
 | Der Rote Baron | Formation controller who commits through dangerous air lanes | Tall narrow undead officer, split coat tails, rigid banking turns | Crimson wedges, black flak circles, pale rime fins | Landing recovery and reduced healing must be visible before opponents commit |
 | Treevor | Giant terrain tank who grows the route he wants to defend | Broad rooted trunk, asymmetric branch crown, slow planted turns | Blocky roots, sweeping leaf cones, ember nodes on breakable growth | Huge target and burning exposure use persistent outline changes, not hidden modifiers |
-| Samwise DeWayne | Small route trickster who escapes through prepared misdirection | Low round silhouette, oversized travel pack, quick stop-start footwork | Tight wind orbit, marked burrow anchor, triangular campfire decoy | Short reach and low durability stay readable despite his small target profile |
+| S. Wayne | Human eclipse tactician who routes through authored contrast boundaries | Medium upright silhouette, split light/dark mantle, deliberate lateral cuts | Prism lines, marked shadow anchors, narrow reveal rays | Peak repositioning requires a personal Light/Void boundary and has a visible lockout |
 | Steezo | Volatile engineer who builds a combo, then risks losing its pieces | Forward-leaning goblin, tool belt and sparking backpack, spring-loaded steps | Keg circles, prism line segments, coil arcs with exposed joints | Every construct has a distinct break state; refunds never trigger on self-detonation |
 | Oh Tipi | Field skirmisher who turns water routes into movement decisions | Streamlined fins and trailing mantle, lateral skating posture | Narrow tide ribbons, faceted freeze seams, surface-following charge line | Peak steering requires authored Water and all conductive routes remain shared danger |
 | Oll'I | Structural breaker who wins by maintaining a readable commitment | Wide horns, heavy forward lean, rectangular shoulders, slow turn radius | Long charge lane, ground shock rings, frontal mirror plane | Poor turning and miss recovery are telegraphed through locked torso and dust wake |
@@ -47,7 +47,7 @@ claims about match balance.
 | --- | ---: | ---: | ---: | ---: | --- |
 | Der Rote Baron | 59 | 10 | 36.0 | 3.30 s | control, damage, defense, mobility |
 | Treevor | 70 | 11 | 40.0 | 3.97 s | control, defense, terrain |
-| Samwise DeWayne | 56 | 10 | 34.0 | 3.40 s | control, deception, defense, mobility |
+| S. Wayne | 50 | 7 | 32.7 | 3.13 s | construct, control, damage, deception, mobility, reveal |
 | Steezo | 64 | 11 | 38.0 | 4.50 s | construct, control, mobility |
 | Oh Tipi | 67 | 9 | 31.3 | 3.13 s | control, mobility, terrain |
 | Oll'I | 71 | 11 | 38.7 | 4.03 s | control, damage, defense, destruction, mobility, terrain |

@@ -10,7 +10,7 @@ import { MATCH_TUNING } from "../src/content.mjs";
 import { LobbyService } from "../src/network/lobbies.mjs";
 
 const root = resolve(fileURLToPath(new URL("../", import.meta.url)));
-const serverVersion = "0.34.2";
+const serverVersion = "0.34.3";
 const protocolVersion = 2;
 const requestedPort =
   argumentValue("--port") ?? process.env.PORT ?? process.env.FLUX_PORT ?? process.env.DIFF_PORT ?? "8000";
@@ -23,8 +23,10 @@ const host =
   "127.0.0.1";
 const healthPath = "/__flux_health";
 const legacyHealthPath = "/__diff_health";
+const shutdownPath = "/__flux_shutdown";
 const lobbyPath = "/api/lobbies";
 const instanceId = randomUUID();
+const shutdownToken = randomUUID();
 const desktopToken = process.env.FLUX_DESKTOP_TOKEN ?? null;
 const registryDirectory = join(tmpdir(), "flux-arena-servers");
 const registryPath = join(registryDirectory, `${sanitizeRegistryPart(host)}-${port}.json`);
@@ -88,6 +90,26 @@ const server = createServer(async (request, response) => {
           ...(desktopToken ? { desktopToken } : {}),
         }),
       );
+      return;
+    }
+
+    if (pathname === shutdownPath) {
+      const suppliedToken = request.headers["x-flux-shutdown-token"];
+      if (
+        request.method !== "POST" ||
+        !isLoopbackAddress(request.socket.remoteAddress) ||
+        suppliedToken !== shutdownToken
+      ) {
+        respond(response, 403, "Forbidden");
+        return;
+      }
+      response.writeHead(202, {
+        ...securityHeaders,
+        "Cache-Control": "no-store",
+        "Content-Type": "application/json; charset=utf-8",
+      });
+      response.end(JSON.stringify({ status: "stopping" }));
+      setImmediate(shutdown);
       return;
     }
 
@@ -327,6 +349,7 @@ async function registerServer() {
       version: serverVersion,
       startedAt: new Date().toISOString(),
       instance: instanceId,
+      shutdownToken,
     }),
     { encoding: "utf8", mode: 0o600 },
   );
@@ -391,4 +414,8 @@ function localNetworkAddresses() {
     console.warn(`LAN address discovery unavailable: ${error.code ?? error.message}`);
   }
   return [...new Set(addresses)];
+}
+
+function isLoopbackAddress(address) {
+  return address === "127.0.0.1" || address === "::1" || address === "::ffff:127.0.0.1";
 }

@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "repository": "generalgroovy/flux",
+  "integrationBranch": "integration/unify-flux",
+  "targetBranch": "develop",
+  "protectedBranches": ["main", "develop"],
+  "cleanupCandidates": [
+    {
+      "branch": "agent/full-overhaul-implementation",
+      "expectedHead": "292eb578e133e5f913fd4913f77904e224f057e4",
+      "archiveTag": "archive/pre-unify-full-overhaul-20260728-1246",
+      "pullRequest": 8,
+      "classification": "deferred-failing-overhaul"
+    },
+    {
+      "branch": "agent/resource-hud-first-slice",
+      "expectedHead": "2ffa373fa74d4068a3ad6dc92bcc09710deae843",
+      "archiveTag": "archive/pre-unify-resource-hud-20260728-1241",
+      "pullRequest": 7,
+      "classification": "superseded-transport"
+    },
+    {
+      "branch": "agent/windows-linux-runtime",
+      "expectedHead": "d77c0b281802aad29946bbe8d5abecf0e3284062",
+      "archiveTag": "archive/pre-unify-windows-linux-runtime-20260728-1220",
+      "pullRequest": 6,
+      "classification": "incorporated-required-runtime"
+    },
+    {
+      "branch": "agent/prototype-loop",
+      "expectedHead": "7ec3062c95080935dc3f02451e0a09177f9321f8",
+      "archiveTag": "archive/pre-unify-prototype-loop-20260728-1220",
+      "pullRequest": 5,
+      "classification": "superseded-documentation"
+    },
+    {
+      "branch": "agent/odysseus-aider",
+      "expectedHead": "78805f17af3e453603264689cd8f60a45e578eba",
+      "archiveTag": "archive/pre-unify-odysseus-aider-20260728-1220",
+      "pullRequest": null,
+      "classification": "exact-main-copy"
+    },
+    {
+      "branch": "agent/odysseus-last-good",
+      "expectedHead": "78805f17af3e453603264689cd8f60a45e578eba",
+      "archiveTag": "archive/pre-unify-odysseus-last-good-20260728-1220",
+      "pullRequest": null,
+      "classification": "exact-main-copy"
+    },
+    {
+      "branch": "agent/diff-0.9.1-actionable-ui-20260725",
+      "expectedHead": "83637cb2518ea223d90f06e478365ba529363ab9",
+      "archiveTag": "archive/pre-unify-diff-0-9-1-actionable-ui-20260725-20260728-1220",
+      "pullRequest": null,
+      "classification": "contained-in-main"
+    },
+    {
+      "branch": "agent/diff-0-8-release-20260725",
+      "expectedHead": "42859c341f0547df38dc8b53c0ce8a35af3d2293",
+      "archiveTag": "archive/pre-unify-diff-0-8-release-20260725-20260728-1220",
+      "pullRequest": null,
+      "classification": "contained-in-main"
+    }
+  ]
+}

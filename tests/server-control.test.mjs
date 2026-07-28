@@ -13,6 +13,10 @@ test("server cleanup stops only a registered FLUX server", { timeout: 8_000 }, a
     if (child.exitCode === null) child.kill("SIGTERM");
   });
   await waitForHealth(port);
+  const unauthenticatedShutdown = await fetch(`http://127.0.0.1:${port}/__flux_shutdown`, {
+    method: "POST",
+  });
+  assert.equal(unauthenticatedShutdown.status, 403);
   const cleanup = spawn(process.execPath, ["scripts/stop-servers.mjs", `--port=${port}`], {
     cwd: new URL("../", import.meta.url),
     stdio: ["ignore", "pipe", "pipe"],

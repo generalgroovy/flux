@@ -44,13 +44,30 @@ for (const entry of entries.filter((name) => name.endsWith(".json"))) {
     continue;
   }
   try {
-    process.kill(record.pid, "SIGTERM");
+    if (typeof record.shutdownToken === "string" && record.shutdownToken.length > 0) {
+      await requestGracefulShutdown(record);
+    } else {
+      // Compatibility for server records created before the loopback shutdown API.
+      process.kill(record.pid, "SIGTERM");
+    }
     await waitForStop(record);
     stopped += 1;
     console.log(`Stopped FLUX ${record.version ?? "unknown"} on port ${record.port} (PID ${record.pid}).`);
   } catch (error) {
     console.error(`Could not stop FLUX PID ${record.pid}: ${error.message}`);
     process.exitCode = 1;
+  }
+}
+
+async function requestGracefulShutdown(record) {
+  const host = record.host === "0.0.0.0" || record.host === "::" ? "127.0.0.1" : record.host;
+  const response = await fetch(`http://${host}:${record.port}/__flux_shutdown`, {
+    method: "POST",
+    headers: { "x-flux-shutdown-token": record.shutdownToken },
+    signal: AbortSignal.timeout(1_000),
+  });
+  if (response.status !== 202) {
+    throw new Error(`server refused authenticated shutdown (${response.status})`);
   }
 }
 

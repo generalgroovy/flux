@@ -13,7 +13,7 @@ if ($Branch -notmatch '^[A-Za-z0-9._/-]+$' -or $Branch.StartsWith('-') -or $Bran
   throw "Unsafe Git branch name: $Branch"
 }
 if ($Port -lt 1 -or $Port -gt 65535) { throw "Port must be from 1 to 65535." }
-foreach ($tool in @("git", "node", "npm", "gh")) {
+foreach ($tool in @("git", "node", "npm.cmd", "gh")) {
   if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) { throw "Missing required command: $tool" }
 }
 
@@ -43,13 +43,13 @@ try {
   & git branch --set-upstream-to="origin/$Branch" $Branch
   & git pull --ff-only origin $Branch
   if ($LASTEXITCODE -ne 0) { throw "Fast-forward update refused." }
-  & npm ci --ignore-scripts
+  & npm.cmd ci --ignore-scripts
   if ($LASTEXITCODE -ne 0) { throw "Dependency installation failed." }
-  & npm test
+  & npm.cmd test
   if ($LASTEXITCODE -ne 0) { throw "Tests failed; FLUX was not started." }
 
   if ($env:FLUX_DESKTOP -ne "0") {
-    if ($Friends -or $env:FLUX_FRIENDS -eq "1") { & npm run start:friends } else { & npm run start:desktop }
+    if ($Friends -or $env:FLUX_FRIENDS -eq "1") { & npm.cmd run start:friends } else { & npm.cmd run start:desktop }
     if ($LASTEXITCODE -ne 0) { throw "FLUX desktop runtime exited with an error." }
     return
   }
@@ -57,7 +57,7 @@ try {
   function Test-FluxReady([int]$CandidatePort) {
     try {
       $health = Invoke-RestMethod -Uri "http://127.0.0.1:$CandidatePort/__flux_health" -TimeoutSec 1
-      return $health.product -eq "FLUX" -and $health.status -eq "ready" -and $health.version -eq "0.34.2"
+      return $health.product -eq "FLUX" -and $health.status -eq "ready" -and $health.version -eq "0.34.3"
     } catch { return $false }
   }
   function Test-PortUsed([int]$CandidatePort) {

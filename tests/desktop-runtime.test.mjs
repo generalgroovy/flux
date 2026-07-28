@@ -65,7 +65,7 @@ test("desktop readiness accepts only the FLUX protocol contract", async () => {
         ok: true,
         json: async () => calls === 1
           ? { product: "OTHER", status: "ready", protocol: 2 }
-          : { product: "FLUX", status: "ready", protocol: 2, version: "0.34.2" },
+          : { product: "FLUX", status: "ready", protocol: 2, version: "0.34.3" },
       };
     },
   });

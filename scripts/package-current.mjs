@@ -9,7 +9,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const requested = process.argv.find((entry) => entry.startsWith("--platform="))?.split("=")[1];
 const platform = requested ?? (process.platform === "win32" ? "windows" : "linux");
 if (!new Set(["windows", "linux"]).has(platform)) throw new Error("Use --platform=windows or --platform=linux");
-if ((platform === "windows") !== (process.platform === "win32")) throw new Error(`Build ${platform} packages on a ${platform} host`);
+const requiredHost = platform === "windows" ? "win32" : "linux";
+if (process.platform !== requiredHost) throw new Error(`Build ${platform} packages on a ${platform} host`);
 
 function git(args) {
   return execFileSync("git", args, { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] }).trim();
@@ -42,7 +43,7 @@ const manifest = {
   schema: 1,
   builtAt: new Date().toISOString(),
   platform,
-  branch: git(["branch", "--show-current"]),
+  branch: git(["branch", "--show-current"]) || process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME || null,
   commit: git(["rev-parse", "HEAD"]),
   node: process.version,
   artifacts: [],

@@ -56,8 +56,10 @@ git push --set-upstream origin develop
 gh pr create --repo generalgroovy/flux --base main --head develop --draft --title "Unify FLUX runtime, verification, and future foundation" --body-file .agent/UNIFICATION-REPORT.md
 ```
 
-Wait for every Windows/Ubuntu test and package job. Download both package
-artifacts and verify their `build-manifest.json` commit equals the PR head.
+Wait for every Windows/Ubuntu test and package job. Test jobs validate GitHub's
+merge candidate; package jobs deliberately build the exact PR head. Download
+both package artifacts and verify their `build-manifest.json` commit equals that
+head.
 
 ## 5. Close and clean superseded work
 

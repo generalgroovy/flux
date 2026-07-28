@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 
 import { parseHTML } from "linkedom";
 import { createMatch } from "../src/match.mjs";
+import { CHARACTERS, CHARACTER_ROSTER, RACES } from "../src/live-content.mjs";
 
 test("browser shell boots, renders, navigates, starts, pauses, and resets cleanly", async () => {
   const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
@@ -16,9 +17,10 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     sound: 45,
     coaching: true,
     bindings: {
-      moveUp: "w", moveLeft: "w", moveDown: "w", moveRight: "w",
-      fire: "w", tactical: "w", defense: "w", mobility: "w",
-      sprint: "w", hop: "w", ultimate: "w",
+      moveUp: ["w"], moveLeft: ["a"], moveDown: ["s"], moveRight: ["d"],
+      fire: [" ", "mouse1"], tactical: ["e", "mouse2"], defense: ["q"],
+      mobility: ["shift"], sprint: ["alt"], hop: ["c", "wheelup"],
+      ultimate: ["f"], interact: ["x"],
     },
   }));
   const drawCalls = [];
@@ -221,17 +223,31 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   await import(`../src/game.mjs?dom-smoke=${Date.now()}`);
 
   const app = document.getElementById("app");
-  assert.equal(app.dataset.view, "menu");
+  assert.equal(app.dataset.view, "game");
+  assert.equal(app.dataset.sanctumMenu, "false");
   assert.equal(window.FLUX_DEBUG, window.DIFF_DEBUG, "legacy debug alias stays compatible");
   assert.deepEqual(window.DIFF_DEBUG.getInvariantErrors(), []);
-  assert.equal(document.querySelectorAll("#agent-options .race-column").length, 13);
-  assert.equal(document.querySelectorAll('#agent-options input[name="character"]').length, 10);
+  assert.equal(window.DIFF_DEBUG.getState().modeId, "freeplay");
+  assert.equal(window.DIFF_DEBUG.getState().mapId, "sanctum");
+  assert.equal(window.DIFF_DEBUG.getInterfaceState().sanctum, true);
+
+  const raceColumns = [...document.querySelectorAll("#agent-options .race-column")];
+  const characterOptions = document.querySelectorAll('#agent-options input[name="character"]');
+  assert.equal(raceColumns.length, RACES.length);
+  assert.equal(characterOptions.length, CHARACTERS.length);
+  assert.ok(raceColumns.length >= 16);
+  const playableRaceIds = new Set(CHARACTERS.map((character) => character.homeRaceId));
+  assert.ok(playableRaceIds.size >= 16);
+  assert.ok(CHARACTER_ROSTER.every((character) => playableRaceIds.has(character.raceId)));
   assert.equal(document.querySelectorAll('#agent-options input[name="race"]').length, 0);
-  assert.match(
-    document.querySelector('#agent-options .race-column[aria-label="Briar Elf champions"] header').textContent,
-    /leaf-point ears/,
-  );
   assert.equal(document.getElementById("online-race").disabled, true);
+
+  const escape = new window.Event("keydown");
+  Object.defineProperty(escape, "key", { value: "Escape" });
+  window.dispatchEvent(escape);
+  assert.equal(app.dataset.view, "menu");
+  assert.equal(app.dataset.sanctumMenu, "true");
+  assert.equal(app.dataset.panel, "home");
 
   for (const panel of [
     "home",
@@ -273,16 +289,16 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   document.querySelector('[data-panel="settings"]').click();
   const tacticalBinding = document.querySelector('[data-bind-action="tactical"]');
   const defenseBinding = document.querySelector('[data-bind-action="defense"]');
-  assert.equal(tacticalBinding.textContent, "E");
+  assert.equal(tacticalBinding.textContent, "E / MB2");
   assert.equal(defenseBinding.textContent, "Q");
   tacticalBinding.click();
   assert.equal(tacticalBinding.classList.contains("capturing"), true);
-  const bindQ = new window.Event("keydown");
-  Object.defineProperty(bindQ, "key", { value: "q" });
-  window.dispatchEvent(bindQ);
-  assert.equal(tacticalBinding.textContent, "Q");
-  assert.equal(defenseBinding.textContent, "E");
-  assert.match(document.getElementById("binding-status").textContent, /Defense moved to E/);
+  const bindG = new window.Event("keydown");
+  Object.defineProperty(bindG, "key", { value: "g" });
+  window.dispatchEvent(bindG);
+  assert.equal(tacticalBinding.textContent, "E / MB2 / G");
+  assert.equal(defenseBinding.textContent, "Q");
+  assert.match(document.getElementById("binding-status").textContent, /Tactical: E \/ MB2 \/ G/);
 
   const hopBinding = document.querySelector('[data-bind-action="hop"]');
   hopBinding.click();
@@ -294,21 +310,21 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   const cancelBinding = new window.Event("keydown");
   Object.defineProperty(cancelBinding, "key", { value: "Escape" });
   window.dispatchEvent(cancelBinding);
-  assert.equal(hopBinding.textContent, "C");
+  assert.equal(hopBinding.textContent, "C / WHEEL↑");
 
   const sprintBinding = document.querySelector('[data-bind-action="sprint"]');
   sprintBinding.click();
   const bindX = new window.Event("keydown");
   Object.defineProperty(bindX, "key", { value: "x" });
   window.dispatchEvent(bindX);
-  assert.equal(sprintBinding.textContent, "X");
+  assert.equal(sprintBinding.textContent, "ALT / X");
   assert.equal(
     document.querySelector('[data-binding-summary="flow"]').textContent,
-    "X/C",
+    "ALT / X/C / WHEEL↑",
   );
-  assert.equal(
+  assert.deepEqual(
     JSON.parse(storage.get("flux.presentation.v2")).bindings.tactical,
-    "q",
+    ["e", "mouse2", "g"],
   );
   const networkLatency = settingsForm.querySelector('[name="networkLatency"]');
   const networkJitter = settingsForm.querySelector('[name="networkJitter"]');
@@ -345,14 +361,14 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     document.querySelector('[data-coach-step="0"]').classList.contains("active"),
     true,
   );
-  assert.match(document.getElementById("coach-text").textContent, /Hold X/);
+  assert.match(document.getElementById("coach-text").textContent, /Hold .*X/);
   assert.equal(
     document.querySelector('[data-ability="special"] > kbd').textContent,
-    "Q",
+    "E / MB2 / G",
   );
   assert.equal(
     document.querySelector('[data-ability="defense"] > kbd').textContent,
-    "E",
+    "Q",
   );
   const moveDown = new window.Event("keydown");
   Object.defineProperty(moveDown, "key", { value: "d" });
@@ -389,8 +405,6 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   queuedFrame(performance.now() + 32);
   assert.ok(drawCalls.length > callsBeforeRecovery);
 
-  const escape = new window.Event("keydown");
-  Object.defineProperty(escape, "key", { value: "Escape" });
   window.dispatchEvent(escape);
   assert.equal(
     document.getElementById("pause-overlay").classList.contains("hidden"),
@@ -405,15 +419,18 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   window.dispatchEvent(escape);
   document.querySelector('#pause-overlay [data-action="menu"]').click();
   assert.equal(app.dataset.view, "menu");
+  assert.equal(app.dataset.sanctumMenu, "true");
   assert.equal(app.dataset.panel, "home");
+  assert.equal(window.DIFF_DEBUG.getState().modeId, "freeplay");
+  assert.equal(window.DIFF_DEBUG.getState().mapId, "sanctum");
   document.querySelector('[data-panel="settings"]').click();
   document.getElementById("reset-settings").click();
-  assert.equal(tacticalBinding.textContent, "E");
+  assert.equal(tacticalBinding.textContent, "E / MB2");
   assert.equal(defenseBinding.textContent, "Q");
   assert.equal(sprintBinding.textContent, "ALT");
-  assert.equal(
+  assert.deepEqual(
     JSON.parse(storage.get("flux.presentation.v2")).bindings.sprint,
-    "alt",
+    ["alt"],
   );
   assert.equal(networkLatency.value, "0");
   assert.equal(networkJitter.value, "0");
@@ -464,6 +481,8 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     window.dispatchEvent(escape);
     document.querySelector('#pause-overlay [data-action="menu"]').click();
     assert.equal(app.dataset.view, "menu");
+    assert.equal(window.DIFF_DEBUG.getState().modeId, "freeplay");
+    assert.equal(window.DIFF_DEBUG.getState().mapId, "sanctum");
   }
 
   document.querySelector('[data-panel="agents"]').click();

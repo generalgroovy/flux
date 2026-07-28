@@ -16,7 +16,8 @@ Rules:
 
 - Integrated overhaul checkpoint: `75a09410db21027e45478591541a949473da7f13`.
 - DOM compatibility repair: `4aa8e2e74b0dcf36790f3cb3cc31b25bd1b878d7`.
-- Both patches passed compressed and decompressed SHA-256 verification before application.
-- Local dependency-free verification passes 104 integrated simulation/content/lobby tests after the repair.
-- The previous CI failure was a read-only Linkedom `<select>.value`; production now selects options through a browser-compatible fallback.
+- Sanctum-first DOM contract: `7ad6f0c034b86244a80138c782c7660ffd2f4e86`.
+- Every source patch passed compressed and decompressed SHA-256 verification before application.
+- Local dependency-free verification passes 104 integrated simulation/content/lobby tests.
+- The browser smoke test now treats freeplay Sanctum as startup, menu, and match-return state and exercises multi-bind input semantics.
 - Cross-platform CI, WebSocket, desktop-security, and package verification remain the active gate.

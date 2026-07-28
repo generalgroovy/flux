@@ -664,3 +664,100 @@ test("bots use catalog tactical, defense, mobility, and ultimate actions for eve
     assert.deepEqual(matchInvariantErrors(state), [], character.id);
   }
 });
+
+test("opponents can break owned gadgets and QUESTIONABLE ENGINEERING refunds only that loss", () => {
+  const state = createMatch({
+    modeId: "freeplay",
+    mapId: "sanctum",
+    botCount: 0,
+    players: [
+      { id: "steezo", characterId: "steezo", raceId: "goblin", team: "alpha", human: true },
+      { id: "enemy", characterId: "mara", raceId: "human", team: "beta", human: true },
+    ],
+  });
+  const steezo = state.entities[0];
+  const enemy = state.entities[1];
+  steezo.x = 520;
+  steezo.y = 450;
+  enemy.x = 1050;
+  enemy.y = 450;
+  steezo.spawnProtection = 0;
+  enemy.spawnProtection = 0;
+
+  stepMatch(state, { steezo: { aimX: 1, aimY: 0, special: true } });
+  const selfMine = state.mines.find((mine) => mine.ownerId === steezo.id);
+  assert.ok(selfMine?.breakable);
+  assert.ok(selfMine.maxHealth > 0);
+  steezo.flux = 20;
+  steezo.fluxRecoveryDelay = 10;
+  selfMine.armedIn = 0;
+  selfMine.detonateOnArm = true;
+  stepMatch(state);
+  assert.equal(state.events.some((event) => event.type === "constructSalvage"), false);
+  assert.equal(steezo.flux, 20, "self-detonation must not refund Flux");
+
+  steezo.specialCooldown = 0;
+  steezo.flux = steezo.maxFlux;
+  stepMatch(state, { steezo: { aimX: 1, aimY: 0, special: true } });
+  const targetMine = state.mines.find((mine) => mine.ownerId === steezo.id);
+  assert.ok(targetMine);
+  targetMine.health = 10;
+  targetMine.maxHealth = Math.max(targetMine.maxHealth, 10);
+  steezo.flux = 20;
+  steezo.fluxRecoveryDelay = 10;
+  state.projectiles.push({
+    id: state.nextProjectileId++, ownerId: enemy.id, team: enemy.team, source: "primary",
+    x: targetMine.x - 30, y: targetMine.y, previousX: targetMine.x - 30, previousY: targetMine.y,
+    vx: 3600, vy: 0, radius: 5, damage: 24, lifetime: 1, knockback: 0,
+    pierce: 0, heavy: false, reflected: false, fieldIds: [], guidedBy: null,
+    guidedRemaining: 0, turnRate: 0,
+  });
+  stepMatch(state);
+  assert.equal(state.mines.some((mine) => mine.id === targetMine.id), false);
+  assert.equal(steezo.flux, 36);
+  assert.ok(state.events.some(
+    (event) => event.type === "constructSalvage" && event.passive === "QUESTIONABLE ENGINEERING",
+  ));
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("temporary Earth walls are durable, readable, and break under hostile fire", () => {
+  const state = createMatch({
+    modeId: "freeplay",
+    mapId: "sanctum",
+    botCount: 0,
+    players: [
+      { id: "treevor", characterId: "treevor", raceId: "rootwarden", team: "alpha", human: true },
+      { id: "enemy", characterId: "mara", raceId: "human", team: "beta", human: true },
+    ],
+  });
+  const treevor = state.entities[0];
+  const enemy = state.entities[1];
+  treevor.x = 1100;
+  treevor.y = 800;
+  enemy.x = 1550;
+  enemy.y = 800;
+  treevor.spawnProtection = 0;
+  enemy.spawnProtection = 0;
+  stepMatch(state, { treevor: { aimX: 1, aimY: 0, defend: true } });
+  const wall = state.elementFields.find(
+    (field) => field.ownerId === treevor.id && field.element === "earth" && field.breakable,
+  );
+  assert.ok(wall);
+  assert.ok(wall.maxHealth >= 100, "Rootwarden growth should be meaningfully sturdy");
+  wall.health = 10;
+  state.projectiles.push({
+    id: state.nextProjectileId++, ownerId: enemy.id, team: enemy.team, source: "primary",
+    x: wall.x - 30, y: wall.y + wall.height / 2,
+    previousX: wall.x - 30, previousY: wall.y + wall.height / 2,
+    vx: 4800, vy: 0, radius: 5, damage: 24, lifetime: 1, knockback: 0,
+    pierce: 0, heavy: false, reflected: false, fieldIds: [], guidedBy: null,
+    guidedRemaining: 0, turnRate: 0,
+  });
+  stepMatch(state);
+  assert.equal(state.elementFields.some((field) => field.id === wall.id), false);
+  assert.ok(state.events.some(
+    (event) => event.type === "constructBroken" && event.constructId === wall.id,
+  ));
+  assert.deepEqual(matchInvariantErrors(state), []);
+});

@@ -1258,6 +1258,18 @@ function spendFlux(state, entity, ability) {
   return true;
 }
 
+function constructHealthScale(entity) {
+  if (entity.raceId === "rootwarden") return 1.3;
+  if (entity.raceId === "stonewrought") return 1.18;
+  if (entity.raceId === "goblin") return 0.92;
+  return 1;
+}
+
+function constructDurability(entity, baseHealth) {
+  const maxHealth = Math.max(1, Math.round(baseHealth * constructHealthScale(entity)));
+  return { breakable: true, maxHealth, health: maxHealth, damageStage: 0, destroyed: false };
+}
+
 function createTemporaryWall(state, entity, map, spec = {}) {
   const length = spec.length ?? MATCH_TUNING.elements.earthLength;
   const thickness = spec.thickness ?? MATCH_TUNING.elements.earthThickness;
@@ -1274,6 +1286,8 @@ function createTemporaryWall(state, entity, map, spec = {}) {
     shape: spec.shape ?? "wall",
     directionX: entity.facingX,
     directionY: entity.facingY,
+    constructType: spec.constructType ?? "wall",
+    ...constructDurability(entity, spec.maxHealth ?? (spec.source === "ultimate" ? 120 : 84)),
   };
   const blocked = map.obstacles.some((obstacle) => rectanglesOverlap(wall, obstacle, 20)) ||
     state.entities.some((candidate) => candidate.alive && candidate !== entity && circleRectangleOverlap(
@@ -1291,6 +1305,16 @@ function createTemporaryWall(state, entity, map, spec = {}) {
 }
 
 function placeAbilityMine(state, entity, special, position, overrides = {}) {
+  const catalogKind = overrides.catalogKind ?? special.catalogKind ?? special.kind;
+  const baseHealth = overrides.maxHealth ?? ({
+    "jump-pad": 68,
+    "charged-construct": 56,
+    "refract-line": 48,
+    "reactive-seed": 38,
+    "turn-mine": 34,
+    "multi-construct": 46,
+    "gadget-ring": 46,
+  }[catalogKind] ?? 30);
   state.mines.push({
     id: state.nextMineId,
     ownerId: entity.id,
@@ -1305,7 +1329,10 @@ function placeAbilityMine(state, entity, special, position, overrides = {}) {
     knockback: overrides.knockback ?? special.knockback ?? 180,
     element: overrides.element ?? special.element,
     abilityId: special.abilityId ?? null,
-    catalogKind: overrides.catalogKind ?? special.catalogKind ?? special.kind,
+    catalogKind,
+    radius: overrides.radius ?? special.radius ?? 13,
+    constructType: "device",
+    ...constructDurability(entity, baseHealth),
     detonateOnArm: overrides.detonateOnArm === true,
     directionX: overrides.directionX ?? entity.facingX,
     directionY: overrides.directionY ?? entity.facingY,
@@ -1838,6 +1865,9 @@ function createElementField(state, owner, element, spec, announce = true) {
     pulseRemaining: 0,
     ...spec,
   };
+  if (field.breakable) {
+    Object.assign(field, constructDurability(owner, field.maxHealth ?? field.health ?? 80));
+  }
   state.nextElementFieldId += 1;
   state.elementFields.push(field);
   if (field.source === "tactical") {
@@ -1956,6 +1986,9 @@ function createUltimateEarthSegment(state, entity, point, ultimate, angle = 0, s
     directionY: Math.sin(angle),
     shape: "wall",
     source,
+    constructType: "wall",
+    breakable: true,
+    maxHealth: source === "ultimate-armor" ? 138 : 112,
   }, false);
   return true;
 }
@@ -2195,7 +2228,7 @@ function resolveUltimate(state, entity, agent, map) {
 
 function withDynamicGeometry(map, state) {
   const earth = state.elementFields
-    .filter((field) => field.element === "earth")
+    .filter((field) => field.element === "earth" && !field.destroyed)
     .map((field) => ({
       x: field.x,
       y: field.y,
@@ -2483,7 +2516,7 @@ function updateElementFields(state, delta) {
 
   const coldAshes = [];
   state.elementFields = state.elementFields.filter((field) => {
-    if (removed.has(field.id)) return false;
+    if (removed.has(field.id) || field.destroyed) return false;
     if (field.duration <= 0) {
       const owner = state.entities.find((entity) => entity.id === field.ownerId);
       if (field.element === "fire" && owner && getCharacter(owner.characterId).passive?.name === "COLD ASHES") {
@@ -3055,6 +3088,7 @@ function firePattern(state, entity, weapon, source) {
 function updateMines(state, delta) {
   const survivors = [];
   for (const mine of state.mines) {
+    if (mine.destroyed) continue;
     const wasArmed = mine.armedIn === 0;
     mine.armedIn = Math.max(0, mine.armedIn - delta);
     mine.remaining -= delta;
@@ -3145,6 +3179,46 @@ function updateMines(state, delta) {
     survivors.push(mine);
   }
   state.mines = survivors;
+}
+
+function damageSpellConstruct(state, construct, rawDamage, attackerId, source = "projectile") {
+  if (
+    !construct?.breakable || construct.destroyed ||
+    state.rules?.freeplaySettings?.destructibility === false
+  ) return false;
+  const owner = state.entities.find((entity) => entity.id === construct.ownerId);
+  const attacker = state.entities.find((entity) => entity.id === attackerId);
+  if (owner && attacker && !hostileTeams(owner.team, attacker.team, state)) return false;
+  const damage = Math.max(1, Math.round(finite(rawDamage)));
+  construct.health = Math.max(0, construct.health - damage);
+  construct.damageStage = construct.health === 0 ? 3
+    : construct.health <= construct.maxHealth * 0.33 ? 2
+      : construct.health <= construct.maxHealth * 0.66 ? 1 : 0;
+  const x = construct.width === undefined ? construct.x : construct.x + construct.width / 2;
+  const y = construct.height === undefined ? construct.y : construct.y + construct.height / 2;
+  state.events.push({
+    type: "constructHit", constructId: construct.id, constructType: construct.constructType ?? "field",
+    ownerId: construct.ownerId, attackerId: attacker?.id ?? null, source, damage,
+    health: construct.health, maxHealth: construct.maxHealth, x, y,
+  });
+  if (construct.health > 0) return true;
+  construct.destroyed = true;
+  state.events.push({
+    type: "constructBroken", constructId: construct.id, constructType: construct.constructType ?? "field",
+    ownerId: construct.ownerId, attackerId: attacker?.id ?? null, source, x, y,
+  });
+  if (owner?.raceId === "goblin" && attacker && hostileTeams(owner.team, attacker.team, state)) {
+    const refund = Math.min(16, owner.maxFlux - owner.flux);
+    if (refund > 0) {
+      owner.flux += refund;
+      owner.fluxRecoveryDelay = MATCH_TUNING.flux.recoveryDelay;
+      state.events.push({
+        type: "constructSalvage", entityId: owner.id, constructId: construct.id,
+        passive: "QUESTIONABLE ENGINEERING", amount: refund, x, y,
+      });
+    }
+  }
+  return true;
 }
 
 function updateProjectiles(state, delta, map) {
@@ -3246,6 +3320,35 @@ function updateProjectiles(state, delta, map) {
     ) {
       continue;
     }
+    const mineHit = state.mines.find((mine) =>
+      !mine.destroyed && mine.breakable && hostileTeams(projectile.team, mine.team, state) &&
+      segmentCircleHit(
+        projectile.previousX, projectile.previousY, projectile.x, projectile.y,
+        mine.x, mine.y, (mine.radius ?? 13) + projectile.radius,
+      )
+    );
+    if (mineHit) {
+      damageSpellConstruct(
+        state, mineHit, projectile.damage * (projectile.heavy ? 1.35 : 1),
+        projectile.ownerId, projectile.source,
+      );
+      continue;
+    }
+    const earthConstructHit = state.elementFields.find((field) =>
+      field.element === "earth" && field.breakable && !field.destroyed &&
+      hostileTeams(projectile.team, field.team, state) &&
+      segmentRectangleHit(
+        projectile.previousX, projectile.previousY, projectile.x, projectile.y,
+        field, projectile.radius,
+      )
+    );
+    if (earthConstructHit) {
+      damageSpellConstruct(
+        state, earthConstructHit, projectile.damage * (projectile.heavy ? 1.6 : 1),
+        projectile.ownerId, projectile.source,
+      );
+      continue;
+    }
     const structuralHit = (state.destructibles ?? []).find((piece) =>
       !piece.destroyed && segmentRectangleHit(
         projectile.previousX, projectile.previousY, projectile.x, projectile.y,
@@ -3329,6 +3432,8 @@ function updateProjectiles(state, delta, map) {
     }
   }
   state.projectiles = survivors;
+  state.mines = state.mines.filter((mine) => !mine.destroyed);
+  state.elementFields = state.elementFields.filter((field) => !field.destroyed);
 }
 
 function resolveProjectileGrazes(state, projectile, hitEntityId) {
@@ -4421,6 +4526,18 @@ export function matchInvariantErrors(state) {
     for (const key of ["x", "y", "duration"]) {
       if (!Number.isFinite(field[key])) errors.push(`${field.id}.${key} is not finite`);
     }
+    if (field.breakable) {
+      for (const key of ["health", "maxHealth"]) {
+        if (!Number.isFinite(field[key])) errors.push(`${field.id}.${key} is not finite`);
+      }
+      if (field.health < 0 || field.health > field.maxHealth) errors.push(`${field.id}.health is invalid`);
+    }
+  }
+  for (const mine of state.mines) {
+    for (const key of ["x", "y", "remaining", "health", "maxHealth"]) {
+      if (!Number.isFinite(mine[key])) errors.push(`mine-${mine.id}.${key} is not finite`);
+    }
+    if (mine.health < 0 || mine.health > mine.maxHealth) errors.push(`mine-${mine.id}.health is invalid`);
   }
   for (const shrine of state.shrines ?? []) {
     for (const key of ["x", "y", "radius", "readyIn"]) {

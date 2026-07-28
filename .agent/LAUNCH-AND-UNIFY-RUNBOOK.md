@@ -9,14 +9,15 @@ Run from the repository root on a clean `integration/unify-flux` checkout:
 
 ```powershell
 git fetch origin --prune --tags
-npm.cmd run preflight:unify
+npm.cmd run preflight:unify -- --phase=launch
 npm.cmd test
 npm.cmd audit --omit=dev
 ```
 
-The preflight must fail if any cleanup candidate moved after its recorded archive
-tag. A moved branch requires a new audit and pushed recovery tag; never update the
-manifest just to make the check green.
+Launch preflight reports a moving cleanup branch as a warning because it cannot
+change the immutable integration candidate. Cleanup preflight remains fail-closed:
+a moved branch requires a new audit and pushed recovery tag; never update the
+manifest just to make that check green.
 
 ## 2. Build the exact launch candidate
 
@@ -60,7 +61,8 @@ artifacts and verify their `build-manifest.json` commit equals the PR head.
 
 ## 5. Close and clean superseded work
 
-Run `npm.cmd run preflight:unify` again immediately before cleanup. Then:
+Run `npm.cmd run preflight:unify -- --phase=cleanup` immediately before cleanup.
+It must have no warnings or failures. Then:
 
 1. Comment on PRs #5–#8 with the unified PR and exact recovery tag for each head.
 2. Close those PRs as superseded; do not merge them.

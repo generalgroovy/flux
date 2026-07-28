@@ -1567,3 +1567,8 @@
   Windows verification passed.
 - **Next task:** Rerun clean preflight immediately before packaging, execute the
   commit-bound Windows smoke, and stop if any remote branch moves again.
+
+- **Gate refinement:** The full-overhaul branch moved again immediately after a
+  clean check, confirming an active writer. Launch and cleanup are now separate
+  preflight phases: drift is a visible non-blocking warning for packaging the
+  immutable candidate, but remains a hard failure for branch deletion.

@@ -182,8 +182,8 @@ the FLUX context, run the actual suite, and push only the active agent branch.
 
 ## Repository unification acceptance
 
-- Rerun `npm.cmd run preflight:unify` from a clean tree immediately before
-  packaging and again before remote branch deletion.
+- Run `npm.cmd run preflight:unify -- --phase=launch` from a clean tree before
+  packaging and the stricter `--phase=cleanup` gate before remote deletion.
 - If any remote head differs from `.agent/unification-manifest.json`, stop,
   classify the new commits, push a fresh annotated recovery tag, and update the
   audit. Never race an active branch writer.

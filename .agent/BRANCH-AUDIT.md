@@ -104,6 +104,12 @@ run was still pending when this audit entry was written. This does not alter the
 defer decision: it is outside the stable candidate until independently green and
 reviewed as a later vertical slice.
 
+The branch advanced once more to `fe4f594` with a staged DOM-copy assertion blob
+while this operational pass was being committed. This confirms an active writer,
+not a stable cleanup target. Launch preflight reports that drift without blocking
+the immutable candidate; cleanup preflight remains red until the writer stops,
+the final commits are classified, and a final recovery tag is pushed.
+
 The failing overhaul is DEFERRED, not discarded. It must not expand the current
 unification diff or replace the known-playable live simulation. The executable
 preflight now verifies every candidate branch still matches its pushed archive

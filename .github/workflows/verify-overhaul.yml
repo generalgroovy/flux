@@ -30,16 +30,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          payload=.agent/overhaul-checkpoint.patch.gz.b64
-          if [[ ! -f "$payload" ]]; then
+          ready=.agent/overhaul-checkpoint.ready
+          if [[ ! -f "$ready" ]]; then
             echo "applied=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          base64 --decode "$payload" | gzip --decompress > /tmp/overhaul-checkpoint.patch
+          mapfile -t parts < <(find .agent -maxdepth 1 -type f -name 'overhaul-checkpoint.part-*' | sort)
+          if [[ ${#parts[@]} -ne 8 ]]; then
+            echo "Expected 8 checkpoint parts, found ${#parts[@]}" >&2
+            exit 1
+          fi
+          cat "${parts[@]}" | base64 --decode | gzip --decompress > /tmp/overhaul-checkpoint.patch
           echo "195fc3aba15b1400e679a87e89eae85e1880a64ced98080f540fc142c7fe7239  /tmp/overhaul-checkpoint.patch" | sha256sum --check
           git apply --check /tmp/overhaul-checkpoint.patch
           git apply /tmp/overhaul-checkpoint.patch
-          rm "$payload"
+          rm -f "$ready" .agent/overhaul-checkpoint.patch.gz.b64 "${parts[@]}"
           git config user.name "FLUX verification agent"
           git config user.email "actions@users.noreply.github.com"
           git add -A

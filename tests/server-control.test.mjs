@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
 
+const WINDOWS_FORCED_TERMINATION_EXIT = 1;
+
 test("server cleanup stops only a registered FLUX server", { timeout: 8_000 }, async (t) => {
   const port = await freePort();
   const child = spawn(process.execPath, ["scripts/serve.mjs", `--port=${port}`], {
@@ -24,7 +26,10 @@ test("server cleanup stops only a registered FLUX server", { timeout: 8_000 }, a
   assert.equal(cleanupCode, 0, output);
   assert.match(output, new RegExp(`Stopped FLUX .* port ${port}`));
   const childCode = child.exitCode ?? await new Promise((resolve) => child.once("exit", resolve));
-  assert.equal(childCode, 0);
+  const expectedChildCode = process.platform === "win32"
+    ? WINDOWS_FORCED_TERMINATION_EXIT
+    : 0;
+  assert.equal(childCode, expectedChildCode);
   await assert.rejects(fetch(`http://127.0.0.1:${port}/__flux_health`));
 });
 

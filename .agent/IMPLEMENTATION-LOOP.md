@@ -14,8 +14,8 @@ Rules:
 
 ## Current gate
 
-- Phase 1 data foundation is committed.
-- Linux Node 20/22 tests pass.
-- Windows Node 20/22 tests pass after documenting Node's forced process-termination exit status.
-- Linux AppImage packaging smoke passes.
-- Next slice: materialize the tested source snapshot and integrate the new roster into live simulation, UI, bots, and remote lobbies.
+- Integrated overhaul checkpoint: `75a09410db21027e45478591541a949473da7f13`.
+- The checkpoint patch passed compressed and decompressed SHA-256 verification before application.
+- Local dependency-free verification passed 112 deterministic tests before publication.
+- Cross-platform CI, DOM, WebSocket, desktop-security, and package verification are the active gate.
+- No subsequent gameplay slice begins until that gate passes or its failures are repaired.

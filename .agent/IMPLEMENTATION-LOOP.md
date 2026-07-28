@@ -20,7 +20,8 @@ Rules:
 - DOM semantic-copy repair: `963f8e20998f519da5027872a94f068b2811699d`.
 - First Rite launch contract: `bc7d6e4290b8ced322ed9bf5c199d57455c2e093`.
 - Roster signature execution: `0e064c6ca8dbd100d4e04089713c16b470639e5c`.
+- Construct durability and salvage: `22ba8f62aae6e30a7cdf4edc3ef7088cdf83b27c`.
 - Every source patch passed compressed and decompressed SHA-256 verification before application.
-- Local dependency-free verification passes 112 deterministic tests after the signature slice.
-- All sixteen race champions retain catalog-specific tactical, defense, mobility, and ultimate execution; bots use the same four semantic action families.
+- Local dependency-free verification passes 114 deterministic tests.
+- Opponents can break owned gadgets and Earth walls; QUESTIONABLE ENGINEERING refunds bounded Flux only when an opponent destroys Steezo's construct.
 - Cross-platform CI, WebSocket, DOM, desktop-security, and package verification are the active gate.

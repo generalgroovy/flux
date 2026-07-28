@@ -23,6 +23,9 @@ Integrated work:
 - static character-balance profiling and roster diversity/counterplay guards;
 - approved simple future display vocabulary and canonical character visual
   direction;
+- a fail-closed, headless Hara overhaul prototype with deterministic Ray/Stone
+  Shot swapping, Gust Ring, Sun Grid, and bot behavior; it is not exposed in the
+  menu or accepted by live lobbies;
 - one Windows/Ubuntu Node 20.19.1/22 verification matrix with real packaging
   jobs and failure diagnostics.
 
@@ -35,9 +38,9 @@ cannot be reconstructed deterministically, as recorded in
 Observed on Windows on 2026-07-28:
 
 - `npm.cmd ci` completed successfully earlier in the integration pass.
-- `npm.cmd test` passed 110/110: 108 core/DOM/deterministic checks, one live
+- `npm.cmd test` passed 119/119: 117 core/DOM/deterministic checks, one live
   WebSocket lifecycle, and one authenticated server-cleanup check.
-- `node scripts/ci-verify.mjs` passed the same 110 tests and recursive syntax
+- `node scripts/ci-verify.mjs` passed the same 119 tests and recursive syntax
   checks for all desktop, script, source, and test modules.
 - PowerShell launcher parsing passed.
 - The canonical workflow parsed as valid YAML.

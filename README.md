@@ -16,7 +16,7 @@ The candidate currently includes:
 
 - the complete 0.34.3 live game;
 - reliable source launch and graceful owned-process cleanup on Windows and Linux;
-- 110 passing automated checks on Windows, including the live WebSocket lifecycle
+- 119 passing automated checks on Windows, including the live WebSocket lifecycle
   and authenticated server cleanup;
 - Windows NSIS and Linux AppImage package jobs that emit commit-bound SHA-256
   manifests and downloadable CI artifacts;
@@ -510,6 +510,15 @@ This separate sixteen-character roster is validated design data in
 future vertical slice implements and verifies each character end to end.
 All current character-description text is retained as draft placeholder copy for
 an author rewrite; it is not approved for in-game display.
+
+Implementation has begun with a local, headless Hara prototype in
+`src/overhaul-runtime.mjs`. It is available only to tests and programmatic
+matches that explicitly request `contentProfile: "overhaul-preview"`; the menu,
+normal local matches, and live lobbies still fail closed to the shipped roster.
+Ray, Stone Shot, SECOND PLAN, Gust Ring, Sun Grid, and basic bot behavior are
+implemented and deterministically tested. Rendering, input/UI exposure, remote
+preview authority, accessibility review, and packaged smoke testing remain
+required before Hara can be considered playable.
 
 | Character | Race | Affinities | Identity |
 | --- | --- | --- | --- |

@@ -1,11 +1,15 @@
 import {
   CHARACTERS,
   MATCH_TUNING,
-  getCharacter,
+  getCharacter as getLiveCharacter,
   getMap,
   getMode,
   getRace,
 } from "./content.mjs";
+import {
+  OVERHAUL_PREVIEW_PROFILE,
+  getOverhaulRuntimeCharacter,
+} from "./overhaul-runtime.mjs";
 
 const EPSILON = 1e-8;
 const IDLE_COMMAND = Object.freeze({
@@ -20,12 +24,27 @@ const IDLE_COMMAND = Object.freeze({
   sprint: false,
   hop: false,
   ultimate: false,
+  swap: false,
 });
+
+function getCharacter(id) {
+  return getOverhaulRuntimeCharacter(id) ?? getLiveCharacter(id);
+}
+
+function requestedCharacter(id, contentProfile) {
+  if (contentProfile === OVERHAUL_PREVIEW_PROFILE) {
+    return getOverhaulRuntimeCharacter(id) ?? getLiveCharacter(id);
+  }
+  return getLiveCharacter(id);
+}
 
 export function createMatch(options = {}) {
   const mode = getMode(options.modeId);
   const map = getMap(options.mapId);
   const seed = finiteInteger(options.seed, 1);
+  const contentProfile = options.contentProfile === OVERHAUL_PREVIEW_PROFILE
+    ? OVERHAUL_PREVIEW_PROFILE
+    : "live";
   const playerSpecs =
     Array.isArray(options.players) && options.players.length > 0
       ? options.players
@@ -41,7 +60,10 @@ export function createMatch(options = {}) {
         ];
   const entities = [];
   for (const [index, spec] of playerSpecs.entries()) {
-    entities.push(createEntity(spec, index, map));
+    entities.push(createEntity({
+      ...spec,
+      characterId: requestedCharacter(spec.characterId, contentProfile).id,
+    }, index, map));
   }
 
   const requestedBots = Number.isInteger(options.botCount)
@@ -63,8 +85,11 @@ export function createMatch(options = {}) {
           id: `bot-${index + 1}`,
           name: `SPAR ${index + 1}`,
           characterId:
-            options.botCharacterIds?.[index] ??
-            CHARACTERS[(index + 1) % CHARACTERS.length].id,
+            requestedCharacter(
+              options.botCharacterIds?.[index] ??
+                CHARACTERS[(index + 1) % CHARACTERS.length].id,
+              contentProfile,
+            ).id,
           team,
           bot: true,
         },
@@ -94,6 +119,7 @@ export function createMatch(options = {}) {
 
   const state = {
     version: 3,
+    contentProfile,
     seed,
     tick: 0,
     elapsed: 0,
@@ -130,6 +156,17 @@ export function createMatch(options = {}) {
       progress: { alpha: 0, beta: 0 },
     },
     wildmarch: createWildmarchState(mode, map),
+    overhaul: contentProfile === OVERHAUL_PREVIEW_PROFILE
+      ? {
+          sanctuaries: map.spawns.map((spawn, index) => ({
+            id: `sanctuary-${index + 1}`,
+            ownerSpawnIndex: index,
+            x: spawn.x,
+            y: spawn.y,
+            radius: 54,
+          })),
+        }
+      : null,
     tutorial: {
       skipped: mode.id !== "training",
       step: mode.id === "training" ? 0 : 4,
@@ -203,6 +240,10 @@ function createEntity(spec, index, map) {
     passiveRemaining: 0,
     passiveActive: false,
     passiveCueCooldown: 0,
+    activePrimaryId: agent.primary.abilityId ?? null,
+    passiveUsesRemaining: agent.passive?.kind === "sanctuary-swap"
+      ? agent.passive.usesPerRound
+      : 0,
     ultimateCharge: 0,
     maxUltimate: agent.ultimate?.chargeRequired ?? 0,
     ultimateWindupRemaining: 0,
@@ -270,6 +311,7 @@ export function addMatchPlayer(state, spec = {}) {
   const entity = createEntity(
     {
       ...spec,
+      characterId: requestedCharacter(spec.characterId, state.contentProfile).id,
       id,
       human: true,
       bot: false,
@@ -327,6 +369,7 @@ export function sanitizeCommand(candidate) {
     sprint: source.sprint === true,
     hop: source.hop === true,
     ultimate: source.ultimate === true,
+    swap: source.swap === true,
   };
 }
 
@@ -674,6 +717,7 @@ function updateEntity(state, entity, command, delta, map) {
   if (entity.human && (command.moveX !== 0 || command.moveY !== 0)) {
     state.tutorial.moved = true;
   }
+  trySwapPrimary(state, entity, command, agent);
   if (tryStartUltimate(state, entity, command, agent, map)) {
     moveEntity(
       state,
@@ -720,7 +764,7 @@ function updateEntity(state, entity, command, delta, map) {
     useSpecial(state, entity, agent, map);
   }
   if (command.fire && entity.primaryCooldown === 0) {
-    let primary = agent.primary;
+    let primary = activePrimary(agent, entity);
     if (agent.passive?.kind === "movement-prime" && entity.passiveRemaining > 0) {
       primary = {
         ...primary,
@@ -774,9 +818,49 @@ function updateEntity(state, entity, command, delta, map) {
     entity.primaryCooldown =
       state.modeId === "training" && entity.bot && state.tutorial.step === 2
         ? MATCH_TUNING.training.pressureCooldown
-        : agent.primary.cooldown;
+        : primary.cooldown;
     if (entity.human) state.tutorial.fired = true;
   }
+}
+
+function activePrimary(agent, entity) {
+  if (
+    agent.alternatePrimary?.abilityId &&
+    entity.activePrimaryId === agent.alternatePrimary.abilityId
+  ) {
+    return agent.alternatePrimary;
+  }
+  return agent.primary;
+}
+
+function trySwapPrimary(state, entity, command, agent) {
+  if (
+    !command.swap || agent.passive?.kind !== "sanctuary-swap" ||
+    entity.passiveUsesRemaining <= 0
+  ) return false;
+  const sanctuary = state.overhaul?.sanctuaries?.find((shrine) =>
+    shrine.ownerSpawnIndex === entity.spawnIndex &&
+    Math.hypot(entity.x - shrine.x, entity.y - shrine.y) <=
+      shrine.radius + agent.radius
+  );
+  if (!sanctuary) return false;
+  const before = activePrimary(agent, entity);
+  const after = before === agent.primary ? agent.alternatePrimary : agent.primary;
+  if (!after?.abilityId) return false;
+  entity.activePrimaryId = after.abilityId;
+  entity.passiveUsesRemaining -= 1;
+  entity.primaryCooldown = Math.max(entity.primaryCooldown, after.cooldown);
+  state.events.push({
+    type: "activeSwapped",
+    entityId: entity.id,
+    passive: agent.passive.name,
+    fromAbilityId: before.abilityId,
+    toAbilityId: after.abilityId,
+    sanctuaryId: sanctuary.id,
+    x: entity.x,
+    y: entity.y,
+  });
+  return true;
 }
 
 function trySlide(state, entity, command) {
@@ -1264,6 +1348,53 @@ function resolveUltimate(state, entity, agent, map) {
       },
       false,
     );
+  } else if (ultimate.kind === "beam-grid") {
+    end = clippedRayEnd(entity, ultimate.range, map);
+    const perpendicular = { x: -entity.ultimateAimY, y: entity.ultimateAimX };
+    const lanes = [];
+    for (let index = 0; index < ultimate.fieldCount; index += 1) {
+      const offset = (index - (ultimate.fieldCount - 1) / 2) * ultimate.laneSpacing;
+      const lane = {
+        startX: entity.x + perpendicular.x * offset,
+        startY: entity.y + perpendicular.y * offset,
+        endX: end.x + perpendicular.x * offset,
+        endY: end.y + perpendicular.y * offset,
+      };
+      lanes.push(lane);
+      createElementField(
+        state,
+        entity,
+        "light",
+        {
+          x: lane.startX,
+          y: lane.startY,
+          endX: lane.endX,
+          endY: lane.endY,
+          radius: ultimate.fieldRadius,
+          duration: ultimate.fieldDuration,
+          shape: "line",
+          source: "ultimate",
+        },
+        false,
+      );
+    }
+    for (const target of opponentsOf(state, entity)) {
+      const hit = lanes.some((lane) => segmentCircleHit(
+        lane.startX,
+        lane.startY,
+        lane.endX,
+        lane.endY,
+        target.x,
+        target.y,
+        getCharacter(target.characterId).radius + ultimate.fieldRadius,
+      ));
+      if (!hit) continue;
+      damageEntity(state, target, ultimate.damage, entity, {
+        source: "ultimate",
+        knockback: ultimate.knockback,
+        direction: { x: entity.ultimateAimX, y: entity.ultimateAimY },
+      });
+    }
   }
   state.events.push({
     type: "ultimateCast",
@@ -1583,7 +1714,14 @@ function useSpecial(state, entity, agent, map) {
       });
     }
   } else if (special.kind === "blast") {
-    damageRadius(state, entity, special.range, special.damage, special.knockback);
+    damageRadius(
+      state,
+      entity,
+      special.range,
+      special.damage,
+      special.knockback,
+      special.safeRadius,
+    );
     if (agent.affinity.id === "veil") {
       const existing = state.decoys.find((decoy) => decoy.ownerId === entity.id);
       if (existing) {
@@ -1770,6 +1908,7 @@ function firePattern(state, entity, weapon, source) {
       ownerId: entity.id,
       team: entity.team,
       source: trainingPressure ? "training" : source,
+      abilityId: weapon.abilityId ?? null,
       x: entity.x + direction.x * spawnOffset,
       y: entity.y + direction.y * spawnOffset,
       previousX: entity.x,
@@ -1796,6 +1935,7 @@ function firePattern(state, entity, weapon, source) {
     type: trainingPressure ? "trainingPressure" : "shot",
     entityId: entity.id,
     source,
+    abilityId: weapon.abilityId ?? null,
     x: entity.x,
     y: entity.y,
   });
@@ -2506,7 +2646,14 @@ function resetRound(state, map, mode) {
       );
     }
   }
-  for (const entity of state.entities) respawnEntity(entity, map);
+  for (const entity of state.entities) {
+    respawnEntity(entity, map);
+    const agent = getCharacter(entity.characterId);
+    entity.activePrimaryId = agent.primary.abilityId ?? null;
+    entity.passiveUsesRemaining = agent.passive?.kind === "sanctuary-swap"
+      ? agent.passive.usesPerRound
+      : 0;
+  }
   for (const hazard of state.hazards) {
     hazard.phase = "cooldown";
     hazard.remaining = hazard.initial;
@@ -2673,12 +2820,17 @@ function updateBotCommand(state, entity, delta, map) {
       Math.hypot(projectile.x - entity.x, projectile.y - entity.y) < 125,
   );
   const agent = getCharacter(entity.characterId);
+  const primary = activePrimary(agent, entity);
+  const atSanctuary = state.overhaul?.sanctuaries?.some((shrine) =>
+    shrine.ownerSpawnIndex === entity.spawnIndex &&
+    Math.hypot(entity.x - shrine.x, entity.y - shrine.y) <= shrine.radius + agent.radius
+  );
   entity.botCommand = {
     moveX: move.x,
     moveY: move.y,
     aimX: aim.x,
     aimY: aim.y,
-    fire: distance < agent.primary.speed * agent.primary.lifetime * 0.82,
+    fire: distance < primary.speed * primary.lifetime * 0.82,
     special:
       entity.specialCooldown === 0 &&
       (distance < (agent.special.range ?? 180) || agent.special.kind === "mine"),
@@ -2699,6 +2851,11 @@ function updateBotCommand(state, entity, delta, map) {
       entity.ultimateCharge >= (agent.ultimate?.chargeRequired ?? Infinity) &&
       distance >= 150 &&
       distance <= (agent.ultimate?.range ?? agent.ultimate?.targetRange ?? 0) * 0.92,
+    swap:
+      agent.passive?.kind === "sanctuary-swap" &&
+      entity.passiveUsesRemaining > 0 &&
+      atSanctuary &&
+      (target.maxHealth >= 120 || distance > MATCH_TUNING.bot.preferredDistance * 1.2),
   };
   if (
     state.modeId === "training" &&
@@ -2712,6 +2869,7 @@ function updateBotCommand(state, entity, delta, map) {
     entity.botCommand.sprint = false;
     entity.botCommand.hop = false;
     entity.botCommand.ultimate = false;
+    entity.botCommand.swap = false;
   }
   return entity.botCommand;
 }
@@ -2782,10 +2940,10 @@ function resolveDashContact(state, attacker, target, nx, ny) {
   });
 }
 
-function damageRadius(state, source, range, damage, knockback) {
+function damageRadius(state, source, range, damage, knockback, safeRadius = 0) {
   for (const target of opponentsOf(state, source)) {
     const distance = Math.hypot(target.x - source.x, target.y - source.y);
-    if (distance > range) continue;
+    if (distance > range || distance < safeRadius) continue;
     const direction = normalizeDirection(target.x - source.x, target.y - source.y);
     damageEntity(state, target, damage, source, {
       source: "blast",
@@ -2843,6 +3001,14 @@ function repairState(state, map) {
     );
     entity.passiveActive = entity.passiveActive === true;
     entity.passiveCueCooldown = clamp(finite(entity.passiveCueCooldown), 0, 1);
+    entity.activePrimaryId = activePrimary(agent, entity).abilityId ?? null;
+    entity.passiveUsesRemaining = clamp(
+      finite(entity.passiveUsesRemaining),
+      0,
+      agent.passive?.kind === "sanctuary-swap"
+        ? agent.passive.usesPerRound
+        : 0,
+    );
     entity.maxUltimate = agent.ultimate?.chargeRequired ?? 0;
     entity.ultimateCharge = clamp(
       finite(entity.ultimateCharge),
@@ -2906,6 +3072,9 @@ export function matchInvariantErrors(state) {
   const errors = [];
   const map = getMap(state.mapId);
   if (state.version !== 3) errors.push("match state version must be 3");
+  if (!["live", OVERHAUL_PREVIEW_PROFILE].includes(state.contentProfile)) {
+    errors.push("match content profile must be live or overhaul-preview");
+  }
   const ids = state.entities.map((entity) => entity.id);
   if (new Set(ids).size !== ids.length) errors.push("entity ids must be unique");
   for (const entity of state.entities) {
@@ -2947,6 +3116,7 @@ export function matchInvariantErrors(state) {
       "grazeCooldown",
       "passiveRemaining",
       "passiveCueCooldown",
+      "passiveUsesRemaining",
       "ultimateCharge",
       "maxUltimate",
       "ultimateWindupRemaining",
@@ -2956,6 +3126,9 @@ export function matchInvariantErrors(state) {
       "ultimateTargetY",
     ]) {
       if (!Number.isFinite(entity[key])) errors.push(`${entity.id}.${key} is not finite`);
+    }
+    if (entity.activePrimaryId !== (activePrimary(getCharacter(entity.characterId), entity).abilityId ?? null)) {
+      errors.push(`${entity.id}.activePrimaryId is invalid`);
     }
     if (
       entity.x < map.size.inset + radius - 0.01 ||
@@ -2982,6 +3155,11 @@ export function matchInvariantErrors(state) {
     }
     if (shrine.readyIn < 0 || shrine.readyIn > shrine.cooldown) {
       errors.push(`${shrine.id}.readyIn is outside its cooldown`);
+    }
+  }
+  for (const sanctuary of state.overhaul?.sanctuaries ?? []) {
+    for (const key of ["ownerSpawnIndex", "x", "y", "radius"]) {
+      if (!Number.isFinite(sanctuary[key])) errors.push(`${sanctuary.id}.${key} is not finite`);
     }
   }
   for (const key of ["x", "y", "radius"]) {

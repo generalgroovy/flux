@@ -101,10 +101,12 @@ existing catalog abilities before adding simulation primitives.
 | Wa Bidi | Route advantage without audio dependence | Battlecry timing must also have a shape and motion cue | High: accessibility and mobility validation |
 | Dr. Apex, Hesus Christo | Contestable sustain with clear interruption and downtime | Heal source, radius, suspension, and recovery | High: support tuning and server authority |
 
-Every character remains `design-only` until its mechanic prototype passes
-deterministic local tests, server-authoritative remote play, bot-use coverage,
-readability/accessibility review, and a packaged smoke test. Lore approval is a
-separate author-owned gate and cannot be inferred from mechanical acceptance.
+Future roster data remains `design-only`. Hara now has a separate
+`prototype-local` runtime adapter whose mechanic prototype, deterministic local
+tests, and bot-use coverage pass. Server-authoritative remote play,
+readability/accessibility review, and packaged smoke testing remain pending.
+Lore approval is a separate author-owned gate and cannot be inferred from
+mechanical acceptance.
 
 ## Visual system
 

@@ -1633,3 +1633,24 @@
   Windows verification passed 110/110 (108 core/DOM/deterministic checks, one
   live WebSocket lifecycle, and one server-cleanup check), plus recursive
   JavaScript syntax checks.
+
+# 2026-07-28 — First feature-gated overhaul runtime slice
+
+- **Safety boundary:** Added the `overhaul-preview` match content profile while
+  preserving `live` as the default. The normal menu and lobby service continue
+  to resolve only the shipped roster; requests for the preview-only `mara` ID
+  fail closed to the existing live fallback.
+- **Hara mechanics:** Implemented Ray and heavy Stone Shot as distinct primary
+  commitments, SECOND PLAN as one swap per round at a personal spawn sanctuary,
+  Gust Ring with a real safe center, and Sun Grid as three telegraphed lanes
+  that cannot multi-hit one target. Draft lore is absent from runtime data.
+- **Bots and protocol:** Added an optional, strictly boolean `swap` command with
+  a false default for existing clients. Preview bots use the same sanitizer and
+  can select Stone Shot at a sanctuary against heavy or distant targets.
+- **Promotion:** Mechanic-prototype, deterministic-local-test, and bot-use gates
+  pass. UI/input exposure, remote preview authority, accessibility/readability,
+  and packaged smoke gates remain pending, so Hara is not user-playable.
+- **Verification:** The complete Windows verification passed 119/119: 117
+  core/DOM/deterministic checks, one live WebSocket lifecycle, and one
+  authenticated server-cleanup check. Recursive JavaScript syntax checks also
+  passed.

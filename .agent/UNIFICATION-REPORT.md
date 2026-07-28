@@ -53,7 +53,7 @@ candidate.
 ## Current verification
 
 - Clean install: passed.
-- Complete test command: 110/110 passed on Windows.
+- Complete test command: 119/119 passed on Windows.
 - Consolidated CI helper and recursive JavaScript syntax: passed.
 - PowerShell parsing and workflow YAML parsing: passed.
 - Production dependency audit: zero vulnerabilities.

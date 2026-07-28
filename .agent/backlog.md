@@ -216,6 +216,10 @@ the FLUX context, run the actual suite, and push only the active agent branch.
   exists, while showing only the approved player-facing name.
 - Validate the low-cost Hara/Spai Si/Hidn Leef/Hesus Christo signatures through
   geometry and setup tests before changing point values.
+- Keep Hara preview-only while adding sanctuary/active-state rendering,
+  developer-only input bindings, accessibility cues, remote preview authority,
+  reconnect/spectator coverage, and packaged Windows/Linux smoke tests. Do not
+  begin a second character adapter until these gates are reviewed.
 - Prototype Dr. Apex first among the newly remapped support concepts: healing
   must remain contestable, server-owned, non-damaging, and useful despite the
   slow 4.67-second average signature cycle.

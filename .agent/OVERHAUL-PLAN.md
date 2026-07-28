@@ -14,6 +14,15 @@ Branch: `integration/unify-flux`
 - Make Flux feel abundant but strategically exhaustible.
 - Preserve deterministic server authority, stable IDs, reconnect, spectators, host migration, Linux, Windows, and safe updating.
 
+## Current implementation checkpoint
+
+Hara is the first feature-gated runtime slice. `src/overhaul-runtime.mjs` maps
+her stable `mara` ID to a local preview implementation of Ray, Stone Shot,
+SECOND PLAN, Gust Ring, and Sun Grid. It is not present in the normal selector
+or accepted by live lobbies. The mechanic, deterministic-test, and bot-use gates
+pass; rendering/input, remote-authority, accessibility, and packaged-smoke gates
+remain pending. See `.agent/OVERHAUL-IMPLEMENTATION.md` for the exact matrix.
+
 ## Slice 1 — Flux economy and HUD copy
 
 ### Scope

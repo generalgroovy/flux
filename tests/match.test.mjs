@@ -34,6 +34,7 @@ const idle = Object.freeze({
   sprint: false,
   hop: false,
   ultimate: false,
+  swap: false,
 });
 
 function duel({

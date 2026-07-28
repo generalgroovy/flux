@@ -9,7 +9,7 @@ export const ELEMENTS = freeze([
   freeze({ id: "ice", name: "Ice", legacy: ["frost", "cold"], glyph: "✣", identity: "friction, brittle cover, freeze", tags: ["frozen", "slippery", "brittle"] }),
   freeze({ id: "charge", name: "Charge", legacy: ["volt", "electricity", "lightning"], glyph: "ϟ", identity: "conduction, interruption, stored power", tags: ["charged", "conductive", "overloaded"] }),
   freeze({ id: "light", name: "Light", legacy: ["prism", "refraction"], glyph: "◇", identity: "beams, reveal, refraction", tags: ["lit", "reflective", "refractive"] }),
-  freeze({ id: "dark", name: "Dark", legacy: ["null", "veil", "void"], glyph: "●", identity: "concealment, pull, decay", tags: ["shadowed", "corrupted", "silenced"] }),
+  freeze({ id: "dark", name: "Void", legacy: ["null", "veil", "void"], glyph: "●", identity: "concealment, pull, decay", tags: ["shadowed", "corrupted", "silenced"] }),
 ]);
 
 export const ELEMENT_ALIASES = freeze(Object.fromEntries(
@@ -42,9 +42,9 @@ export const RACE_ARCHETYPES = freeze([
   race({ id: "troll", name: "Troll", sizes: [4, 5], affinities: [{ id: "earth", strength: 2 }, { id: "water", strength: 1 }], trait: { id: "mend", name: "Mend", rule: "Recover health slowly after avoiding damage; burning pauses recovery." }, feature: "moss horns", glyph: "Y", modifiers: { health: 1.09, speed: 0.94, flux: 0.96 }, budgetCost: 8 }),
   race({ id: "minotaur", name: "Minotaur", sizes: [4, 5], affinities: [{ id: "earth", strength: 2 }, { id: "fire", strength: 1 }, { id: "light", strength: 1 }], trait: { id: "momentum", name: "Momentum", rule: "Sustained movement increases structural impact, never spell damage." }, feature: "wide horns", glyph: "⋔", modifiers: { health: 1.08, speed: 0.95, knockback: 0.84 }, budgetCost: 9 }),
   race({ id: "seakin", name: "Seakin", sizes: [2, 3, 4], affinities: [{ id: "water", strength: 2 }, { id: "ice", strength: 1 }, { id: "charge", strength: 1 }], trait: { id: "current", name: "Current", rule: "More steering in self-made water and wet routes." }, feature: "cheek fins", glyph: "⋉⋊", modifiers: { health: 0.97, flow: 1.07 }, budgetCost: 8 }),
-  race({ id: "scaleheir", name: "Scaleheir", sizes: [3, 4, 5], affinities: [{ id: "fire", strength: 1 }, { id: "wind", strength: 2 }, { id: "ice", strength: 2 }], trait: { id: "wings", name: "Wings", rule: "One stronger aerial commitment; reduced FLOW capacity." }, feature: "scaled wings", glyph: "〽", modifiers: { health: 1.03, speed: 0.98, flux: 1.02, flow: 0.94, knockback: 0.86 }, budgetCost: 9 }),
-  race({ id: "stonewrought", name: "Stonewrought", sizes: [3, 4, 5], affinities: [{ id: "earth", strength: 2 }, { id: "light", strength: 1 }], trait: { id: "brace", name: "Brace", rule: "Brief armor while touching a personal structure; slow recovery afterward." }, feature: "stone shoulders", glyph: "◆◆", modifiers: { health: 1.08, speed: 0.94, knockback: 0.84 }, budgetCost: 8 }),
-  race({ id: "rootwarden", name: "Rootwarden", sizes: [4, 5], affinities: [{ id: "earth", strength: 2 }, { id: "wind", strength: 1 }, { id: "fire", strength: 1 }], trait: { id: "roots", name: "Roots", rule: "Stability and recovery on personal growth; sustained fire is dangerous." }, feature: "branch crown", glyph: "♜", modifiers: { health: 1.09, speed: 0.93, knockback: 0.85 }, budgetCost: 9 }),
+  race({ id: "scaleheir", name: "Wyrm", sizes: [3, 4, 5], affinities: [{ id: "fire", strength: 1 }, { id: "wind", strength: 2 }, { id: "ice", strength: 2 }], trait: { id: "wings", name: "Wings", rule: "One stronger aerial commitment; reduced FLOW capacity." }, feature: "scaled wings", glyph: "〽", modifiers: { health: 1.03, speed: 0.98, flux: 1.02, flow: 0.94, knockback: 0.86 }, budgetCost: 9 }),
+  race({ id: "stonewrought", name: "Stoneborn", sizes: [3, 4, 5], affinities: [{ id: "earth", strength: 2 }, { id: "light", strength: 1 }], trait: { id: "brace", name: "Brace", rule: "Brief armor while touching a personal structure; slow recovery afterward." }, feature: "stone shoulders", glyph: "◆◆", modifiers: { health: 1.08, speed: 0.94, knockback: 0.84 }, budgetCost: 8 }),
+  race({ id: "rootwarden", name: "Treefolk", sizes: [4, 5], affinities: [{ id: "earth", strength: 2 }, { id: "wind", strength: 1 }, { id: "fire", strength: 1 }], trait: { id: "roots", name: "Roots", rule: "Stability and recovery on personal growth; sustained fire is dangerous." }, feature: "branch crown", glyph: "♜", modifiers: { health: 1.09, speed: 0.93, knockback: 0.85 }, budgetCost: 9 }),
   race({ id: "sylph", name: "Sylph", sizes: [1, 2, 3], affinities: [{ id: "wind", strength: 2 }, { id: "charge", strength: 1 }], trait: { id: "float", name: "Float", rule: "Superior air redirect and lower fall commitment; very low mass." }, feature: "streamer wings", glyph: "≋", modifiers: { health: 0.92, speed: 1.07, flow: 1.04, knockback: 1.1 }, budgetCost: 8 }),
   race({ id: "undead", name: "Undead", sizes: [2, 3, 4], affinities: [{ id: "dark", strength: 2 }, { id: "ice", strength: 1 }, { id: "fire", strength: 1 }], trait: { id: "remnant", name: "Remnant", rule: "Convert one expiring personal field into a harmless remnant; reduced healing." }, feature: "rune ribs", glyph: "≡", modifiers: { health: 1.03, flow: 0.96 }, budgetCost: 8 }),
   race({ id: "goblin", name: "Goblin", sizes: [1, 2, 3], affinities: [{ id: "fire", strength: 1 }, { id: "charge", strength: 2 }, { id: "light", strength: 1 }], trait: { id: "salvage", name: "Salvage", rule: "Opponent-destroyed personal constructs refund bounded Flux." }, feature: "tool belt", glyph: "⌁", modifiers: { health: 0.93, speed: 1.05, flux: 1.05 }, budgetCost: 8 }),
@@ -203,6 +203,26 @@ export function calculateCharacterBudget(candidate) {
 export function affinityStrength(characterEntry, elementId) { const canonical = canonicalElement(elementId); return characterEntry.affinities.find((entry) => entry.id === canonical)?.strength ?? 0; }
 export function effectiveAbilityPoints(characterEntry, abilityEntry) { return Math.max(1, abilityEntry.points - clamp(affinityStrength(characterEntry, abilityEntry.element), 0, 3)); }
 
+export function characterBalanceProfile(characterEntry) {
+  const activeAbilities = characterEntry.activeAbilityIds
+    .map((id) => ABILITY_CATALOG.find((entry) => entry.id === id && entry.type === "active"))
+    .filter(Boolean);
+  const signatureRoles = [...new Set(activeAbilities.flatMap((entry) => entry.roles))].sort();
+  const signatureElements = [...new Set(activeAbilities.map((entry) => entry.element))].sort();
+  const signatureSkillPoints = activeAbilities.reduce((sum, entry) => sum + effectiveAbilityPoints(characterEntry, entry), 0);
+  const averageFluxCost = activeAbilities.length === 0 ? 0 : activeAbilities.reduce((sum, entry) => sum + entry.fluxCost, 0) / activeAbilities.length;
+  const averageCooldown = activeAbilities.length === 0 ? 0 : activeAbilities.reduce((sum, entry) => sum + entry.cooldown, 0) / activeAbilities.length;
+  return freeze({
+    characterId: characterEntry.id,
+    powerBudget: calculateCharacterBudget(characterEntry),
+    signatureSkillPoints,
+    signatureRoles: freeze(signatureRoles),
+    signatureElements: freeze(signatureElements),
+    averageFluxCost,
+    averageCooldown,
+  });
+}
+
 export function validateLoadout({ characterId, modeId, activeAbilityIds, ultimateAbilityId }) {
   const errors = [];
   const characterEntry = CHARACTER_ROSTER.find((entry) => entry.id === characterId);
@@ -228,6 +248,13 @@ export function validateOverhaulContent() {
   if (ELEMENTS.length !== 8) errors.push("exactly eight elements are required");
   if (RACE_ARCHETYPES.length !== 16) errors.push("exactly sixteen races are required");
   if (CHARACTER_ROSTER.length < RACE_ARCHETYPES.length) errors.push("at least one character per race is required");
+  for (const abilityEntry of ABILITY_CATALOG) {
+    if (!canonicalElement(abilityEntry.element)) errors.push(`${abilityEntry.id} has an invalid element`);
+    if (abilityEntry.roles.length === 0) errors.push(`${abilityEntry.id} needs at least one role`);
+    if (abilityEntry.counterplay.length === 0) errors.push(`${abilityEntry.id} needs explicit counterplay`);
+    if (abilityEntry.type === "active" && (!Number.isFinite(abilityEntry.fluxCost) || abilityEntry.fluxCost <= 0)) errors.push(`${abilityEntry.id} needs a positive Flux cost`);
+    if (abilityEntry.type === "active" && (!Number.isFinite(abilityEntry.cooldown) || abilityEntry.cooldown <= 0)) errors.push(`${abilityEntry.id} needs a positive cooldown`);
+  }
   for (const raceEntry of RACE_ARCHETYPES) {
     if (!raceEntry.sizes.every((size) => SIZE_RULES[size])) errors.push(`${raceEntry.id} has an invalid size range`);
     if (!raceEntry.affinities.every((entry) => canonicalElement(entry.id) && entry.strength >= 1 && entry.strength <= 3)) errors.push(`${raceEntry.id} has invalid affinities`);
@@ -240,11 +267,20 @@ export function validateOverhaulContent() {
     if (!raceEntry) errors.push(`${characterEntry.id} has unknown race`);
     if (raceEntry && !raceEntry.sizes.includes(characterEntry.size)) errors.push(`${characterEntry.id} size is outside race range`);
     if (characterEntry.affinities.length < 1 || characterEntry.affinities.length > 5) errors.push(`${characterEntry.id} needs one to five affinities`);
+    if (new Set(characterEntry.affinities.map((entry) => entry.id)).size !== characterEntry.affinities.length) errors.push(`${characterEntry.id} affinities must be unique`);
     if (characterEntry.activeAbilityIds.length !== 3) errors.push(`${characterEntry.id} needs three signature actives`);
+    if (new Set(characterEntry.activeAbilityIds).size !== characterEntry.activeAbilityIds.length) errors.push(`${characterEntry.id} signature actives must be unique`);
     if (characterEntry.activeAbilityIds.some((id) => !ABILITY_CATALOG.some((entry) => entry.id === id && entry.type === "active"))) errors.push(`${characterEntry.id} references an unknown active`);
     if (!ABILITY_CATALOG.some((entry) => entry.id === characterEntry.ultimateAbilityId && entry.type === "ultimate")) errors.push(`${characterEntry.id} references an unknown ultimate`);
     const budget = calculateCharacterBudget(characterEntry); if (!Number.isFinite(budget) || budget > 100) errors.push(`${characterEntry.id} exceeds power budget: ${budget}`);
+    const balance = characterBalanceProfile(characterEntry);
+    if (balance.signatureRoles.length < 2) errors.push(`${characterEntry.id} signature needs at least two gameplay roles`);
+    if (balance.signatureSkillPoints > 13) errors.push(`${characterEntry.id} signature exceeds the standard loadout budget: ${balance.signatureSkillPoints}/13`);
   }
+  const signatureAbilityUse = new Map();
+  for (const characterEntry of CHARACTER_ROSTER) for (const id of characterEntry.activeAbilityIds) signatureAbilityUse.set(id, (signatureAbilityUse.get(id) ?? 0) + 1);
+  const maximumSignatureReuse = Math.ceil(CHARACTER_ROSTER.length * 0.25);
+  for (const [id, count] of signatureAbilityUse) if (count > maximumSignatureReuse) errors.push(`${id} appears in too many signature kits: ${count}/${CHARACTER_ROSTER.length}`);
   for (const element of ELEMENTS) if (!RACE_ARCHETYPES.some((raceEntry) => raceEntry.affinities.some((entry) => entry.id === element.id && entry.strength >= 2))) errors.push(`no race has strong ${element.id} affinity`);
   const requiredNames = ["COLD ASHES", "CRIMSON COMET", "NIGHT FLAK", "RIME WING", "THE DEAD SKY", "DEEP ROOTS", "ROOT RAMPART", "BRANCH GALE", "EMBER SEED", "CROWN OF THE WILDFIRE", "SMALL TARGET, BIG EXIT", "POCKET TEMPEST", "BURROWED SHADOW", "CAMPFIRE FEINT", "THERE AND BACK AGAIN", "QUESTIONABLE ENGINEERING", "SPARK KEG", "PRISM TRIPWIRE", "COIL HOPPER", "PERFECTLY SAFE MACHINE", "LIVING CURRENT", "TIDELINE", "FLASH FREEZE", "EEL STEP", "STORMTIDE BASIN", "LABYRINTH MOMENTUM", "SUNHORN CHARGE", "FURNACE STOMP", "MIRROR BULWARK", "THE BURNING MAZE", "STORMWEIGHT", "THUNDER SHOVE", "SQUALL LEAP", "RIME CRASH", "BAD WEATHER"];
   const shippedNames = new Set([...ABILITY_CATALOG.map((entry) => entry.name), ...CHARACTER_ROSTER.map((entry) => entry.passive.name)]);

@@ -1519,3 +1519,27 @@
   closed without a remaining renderer, authority, or AppImage process.
 - **Next task:** Continue the signed update feed and stable authenticated relay
   acceptance work, followed by the two-device Linux/Windows invite soak.
+
+# 2026-07-28 — Future roster concept and static balance pass
+
+- **Scope:** Worked only in the inactive overhaul content foundation while the
+  unified Windows package awaits hands-on launch verification. Live gameplay,
+  rendering, networking, save IDs, and package behavior were not changed.
+- **Design correction:** Preserved the stable IDs `dark`, `scaleheir`,
+  `stonewrought`, and `rootwarden` while aligning their player-facing names to
+  the approved vocabulary: Void, Wyrm, Stoneborn, and Treefolk.
+- **Balance foundation:** Added deterministic character profiles for power
+  budget, effective signature points, role/element coverage, average Flux cost,
+  and cooldown. Validation now rejects duplicate signature skills or affinities,
+  missing ability counterplay, invalid paid-action costs/cooldowns, signatures
+  without role breadth, signatures over the standard 13-point limit, and active
+  reuse beyond 25% of the roster.
+- **Concept direction:** Authored silhouette, motion, counterplay, and effect
+  language for the seven canonical future characters in
+  `.agent/CONCEPT-ITERATION.md`. No speculative combat values were changed.
+- **Verification:** Focused overhaul tests passed 13/13. The current complete
+  Windows test command and consolidated CI helper then passed 108/108 plus all
+  recursive JavaScript syntax checks. Interactive and Linux package gates remain
+  required before publication.
+- **Next task:** Complete the scheduled packaged Windows smoke, then run the
+  full suite and publish the unified `develop` branch only if all gates pass.

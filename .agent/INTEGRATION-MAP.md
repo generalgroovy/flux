@@ -11,7 +11,7 @@ contracts until a later tested vertical slice connects them to production.
 | System | Authoritative source | Integration decision |
 | --- | --- | --- |
 | Live content and character definitions | `main:src/content.mjs` | Preserve stable IDs, ten playable champions, thirteen races, maps, and current kits. |
-| Future race/element/ability definitions | `foundation:src/overhaul-content.mjs` | Preserve as validated future schema; do not silently replace live content. |
+| Future race/element/ability definitions | `foundation:src/overhaul-content.mjs` + `.agent/CONCEPT-ITERATION.md` | Preserve as validated future schema; use the approved simple display vocabulary and do not silently replace live content. |
 | Simulation and deterministic tick | `main:src/match.mjs` | No checkpoint patch. Preserve current fixed-tick authority and invariants. |
 | Movement | `main:src/match.mjs` | Preserve shipped sprint, hop, slide, wall-kick, landing cut, and speed ceilings. Future movement grammar is descriptive only. |
 | Abilities and loadouts | Live: `main`; future catalog: `foundation` | Preserve shipped action/network IDs. Test the future catalog independently until integrated. |
@@ -56,4 +56,3 @@ contracts until a later tested vertical slice connects them to production.
 - No Windows forced-termination acceptance when graceful shutdown is available.
 - No implicit replacement of current stable content/network/save IDs by future
   schema IDs.
-

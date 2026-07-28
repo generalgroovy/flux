@@ -15,6 +15,7 @@ import {
   SIZE_RULES,
   calculateCharacterBudget,
   canonicalElement,
+  characterBalanceProfile,
   effectiveAbilityPoints,
   validateLoadout,
   validateOverhaulContent,
@@ -40,6 +41,13 @@ test("legacy element names resolve to the simplified eight-family vocabulary", (
   assert.equal(canonicalElement("prism"), "light");
   assert.equal(canonicalElement("null"), "dark");
   assert.equal(canonicalElement("veil"), "dark");
+});
+
+test("future-facing display names use the approved simple vocabulary without changing stable ids", () => {
+  assert.equal(ELEMENTS.find((entry) => entry.id === "dark").name, "Void");
+  assert.equal(RACE_ARCHETYPES.find((entry) => entry.id === "scaleheir").name, "Wyrm");
+  assert.equal(RACE_ARCHETYPES.find((entry) => entry.id === "stonewrought").name, "Stoneborn");
+  assert.equal(RACE_ARCHETYPES.find((entry) => entry.id === "rootwarden").name, "Treefolk");
 });
 
 test("race size ranges and modifiers remain bounded", () => {
@@ -69,7 +77,23 @@ test("every character stays inside the validated power budget", () => {
     assert.ok(budget <= 100, `${character.name}: ${budget}`);
     assert.ok(character.affinities.length >= 1 && character.affinities.length <= 5);
     assert.equal(character.activeAbilityIds.length, 3);
+    const profile = characterBalanceProfile(character);
+    assert.equal(profile.powerBudget, budget);
+    assert.ok(profile.signatureRoles.length >= 2, `${character.name}: role coverage`);
+    assert.ok(profile.signatureSkillPoints <= 13, `${character.name}: ${profile.signatureSkillPoints}/13`);
+    assert.ok(profile.averageFluxCost > 0);
+    assert.ok(profile.averageCooldown > 0);
   }
+});
+
+test("signature kits remain varied across the roster", () => {
+  const usage = new Map();
+  for (const character of CHARACTER_ROSTER) {
+    assert.equal(new Set(character.activeAbilityIds).size, character.activeAbilityIds.length);
+    for (const id of character.activeAbilityIds) usage.set(id, (usage.get(id) ?? 0) + 1);
+  }
+  const maximumReuse = Math.ceil(CHARACTER_ROSTER.length * 0.25);
+  for (const [id, count] of usage) assert.ok(count <= maximumReuse, `${id}: ${count}/${CHARACTER_ROSTER.length}`);
 });
 
 test("signature loadouts are universal catalog entries and fit standard duel budgets", () => {

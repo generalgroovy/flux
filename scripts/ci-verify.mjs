@@ -22,9 +22,10 @@ function run(name, command, args) {
 run("npm test", "npm", ["test"]);
 for (const file of [
   "src/content.mjs",
+  "src/overhaul-content.mjs",
   "src/match.mjs",
   "src/game.mjs",
-  "src/lobbies.mjs",
+  "src/network/lobbies.mjs",
   "scripts/serve.mjs",
 ]) {
   run(`node --check ${file}`, process.execPath, ["--check", file]);

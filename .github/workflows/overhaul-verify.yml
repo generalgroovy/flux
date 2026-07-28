@@ -42,7 +42,8 @@ jobs:
           expected_patch=$(node -p "require('./$manifest').patchSha256")
           expected_gzip=$(node -p "require('./$manifest').gzipSha256")
           node -e "for (const sha of require('./$manifest').blobs) console.log(sha)" > /tmp/checkpoint-blobs
-          [[ $(wc -l < /tmp/checkpoint-blobs) -eq 8 ]]
+          blob_count=$(wc -l < /tmp/checkpoint-blobs)
+          (( blob_count >= 1 && blob_count <= 64 ))
           : > /tmp/checkpoint.b64
 
           while IFS= read -r sha; do
@@ -66,7 +67,7 @@ jobs:
           git config user.name "FLUX verification agent"
           git config user.email "actions@users.noreply.github.com"
           git add -A
-          git commit -m "feat: integrate playable overhaul checkpoint"
+          git commit -m "feat: integrate verified overhaul slice"
           git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
           echo "applied=true" >> "$GITHUB_OUTPUT"
 

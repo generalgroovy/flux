@@ -179,3 +179,18 @@ the FLUX context, run the actual suite, and push only the active agent branch.
 - NIGHT SIEGE has cooperative lives, bounded wave clears, escalation, and loss.
 - Next acceptance: add authored scout/anchor/artillery enemy families, one elite,
   and a boss after real-player combat tuning is stable.
+
+## Repository unification acceptance
+
+- Rerun `npm.cmd run preflight:unify` from a clean tree immediately before
+  packaging and again before remote branch deletion.
+- If any remote head differs from `.agent/unification-manifest.json`, stop,
+  classify the new commits, push a fresh annotated recovery tag, and update the
+  audit. Never race an active branch writer.
+- Build Windows through `npm.cmd run package:windows:verified` and launch only the
+  artifact recorded in `dist/build-manifest.json`.
+- Record the exact commit/hash and normal-close child-process result in the
+  playable-state ledger.
+- Publish `develop`, wait for both installable package artifacts and every test
+  lane, then close superseded PRs before deleting only exact archived heads.
+- Stop before merging `develop` into `main`.

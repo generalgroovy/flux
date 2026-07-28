@@ -1543,3 +1543,27 @@
   required before publication.
 - **Next task:** Complete the scheduled packaged Windows smoke, then run the
   full suite and publish the unified `develop` branch only if all gates pass.
+
+# 2026-07-28 — Launch and branch-cleanup operational hardening
+
+- **Problem:** Recovery tags captured the original branch audit, but two remote
+  writers continued advancing. Deleting from that stale snapshot would have
+  lost newly applied overhaul work. Package output also lacked a durable link
+  from installer hash to the exact source commit.
+- **Implemented solution:** Added fresh recovery tags at 12:41 and 12:46, an
+  explicit unification manifest, and a fail-closed preflight that verifies the
+  current integration branch, clean tree, main ancestry, every expected remote
+  head, and every pushed archive target. Added a clean-tree packaging wrapper
+  that records commit, artifact size, and SHA-256, plus CI artifact publication
+  and an exact launch/unification runbook.
+- **Deferred work:** The advanced full-overhaul branch contains substantial live
+  checkpoint code. Its first replacement CI run failed the same DOM reset
+  assertion on all four platform/version lanes; a later test-contract revision
+  was still pending. The complete tip is archived but intentionally excluded
+  from the stable candidate.
+- **Verification:** The preflight passed against all eight currently recorded
+  remote tips and pushed archive tags. The package wrapper correctly refused a
+  dirty tree. JSON, workflow YAML, new script syntax, and the full 108-test
+  Windows verification passed.
+- **Next task:** Rerun clean preflight immediately before packaging, execute the
+  commit-bound Windows smoke, and stop if any remote branch moves again.

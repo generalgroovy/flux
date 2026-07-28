@@ -78,6 +78,37 @@ Therefore the checkpoint is archived only. Its payload, readiness marker, and
 one-shot application workflow are GENERATED / TRANSPORT artifacts and must not
 enter `develop`.
 
+## Post-audit branch movement
+
+The first recovery snapshot did not freeze remote writers. A refresh at 12:41
+found two advanced tips:
+
+- `agent/resource-hud-first-slice` advanced from `a687938` to `2ffa373` through
+  three additional checkpoint-blob CI commits. These are transport-only and are
+  excluded from `develop`.
+- `agent/full-overhaul-implementation` advanced from `459edc2` to `36f09b5`.
+  It now contains a 3,800-line applied gameplay checkpoint plus a DOM repair.
+  The source is preserved for later review, but all four Linux/Windows Node
+  lanes fail the browser-shell lifecycle check at `tests/game-dom.test.mjs:224`:
+  reset leaves `data-screen="game"` where the contract expects `menu`.
+
+Fresh annotated recovery tags were pushed for the exact new tips:
+
+- `archive/pre-unify-resource-hud-20260728-1241` -> `2ffa373`
+- `archive/pre-unify-full-overhaul-20260728-1241` -> `36f09b5`
+
+At 12:46, the full-overhaul branch advanced again to `292eb57` with a staged
+Sanctum DOM contract and revised browser-shell test. The exact new tip is
+preserved as `archive/pre-unify-full-overhaul-20260728-1246`; its replacement CI
+run was still pending when this audit entry was written. This does not alter the
+defer decision: it is outside the stable candidate until independently green and
+reviewed as a later vertical slice.
+
+The failing overhaul is DEFERRED, not discarded. It must not expand the current
+unification diff or replace the known-playable live simulation. The executable
+preflight now verifies every candidate branch still matches its pushed archive
+tag before cleanup can proceed.
+
 ## Pull requests
 
 | PR | State | Classification | Disposition after unified PR exists |
@@ -86,4 +117,3 @@ enter `develop`.
 | #6 `windows-linux-runtime -> main` | open draft, green | required | Close as incorporated by `develop`. |
 | #7 `resource-hud-first-slice -> main` | open draft | partial docs/CI plus transport infrastructure | Close as superseded after selective integration. |
 | #8 `full-overhaul-implementation -> resource-hud-first-slice` | open draft, failing | valid foundation plus invalid transport | Close only after real commits are present and green on `develop`. |
-

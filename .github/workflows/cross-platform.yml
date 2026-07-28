@@ -73,10 +73,10 @@ jobs:
         include:
           - os: ubuntu-latest
             npm: npm
-            command: npm run dist:linux
+            command: npm run package:linux:verified
           - os: windows-latest
             npm: npm.cmd
-            command: npm.cmd run dist:windows
+            command: npm.cmd run package:windows:verified
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -87,3 +87,13 @@ jobs:
       - run: ${{ matrix.command }}
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - name: Upload installable package
+        uses: actions/upload-artifact@v4
+        with:
+          name: flux-${{ runner.os }}-package
+          path: |
+            dist/build-manifest.json
+            dist/*.AppImage
+            dist/*-win-*.exe
+          if-no-files-found: error
+          retention-days: 7

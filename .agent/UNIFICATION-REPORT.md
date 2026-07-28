@@ -23,6 +23,14 @@ payload are invalid Base64. Although a non-declared 00–06 sequence decompresse
 to bytes matching the advertised SHA-256, it does not satisfy the manifest's
 deterministic reconstruction contract and was not applied.
 
+After the initial audit, the resource and full-overhaul branches advanced. New
+12:41 recovery tags preserve their exact tips. The latter contains an applied
+gameplay checkpoint but fails the same DOM reset contract on all four CI lanes;
+it is explicitly deferred from this stable unification candidate. A subsequent
+test-contract revision advanced that branch again at 12:46 and received its own
+exact recovery tag; its replacement CI was pending and does not enter this
+candidate.
+
 ## Reconciliation decisions
 
 - `d77c0b2` supplies Windows/Linux launch reliability and graceful authenticated
@@ -35,6 +43,10 @@ deterministic reconstruction contract and was not applied.
   the runtime baseline has the stronger lifecycle contract.
 - CI was consolidated manually into one source-verification and packaging
   workflow for Windows and Ubuntu; checkpoint assembly is not part of CI.
+- Packaging now emits a commit-bound SHA-256 manifest and uploads installable
+  Windows/Linux artifacts for direct PR-head verification.
+- A fail-closed preflight compares every cleanup branch to its expected remote
+  head and pushed recovery tag before any deletion is considered.
 - Future display labels were aligned to the approved simple vocabulary while
   retaining stable data IDs.
 

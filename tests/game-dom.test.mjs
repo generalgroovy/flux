@@ -306,7 +306,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   Object.defineProperty(reserved, "key", { value: "ArrowLeft" });
   window.dispatchEvent(reserved);
   assert.equal(hopBinding.classList.contains("capturing"), true);
-  assert.match(document.getElementById("binding-status").textContent, /reserved/);
+  assert.match(document.getElementById("binding-status").textContent, /reserved/i);
   const cancelBinding = new window.Event("keydown");
   Object.defineProperty(cancelBinding, "key", { value: "Escape" });
   window.dispatchEvent(cancelBinding);

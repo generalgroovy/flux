@@ -207,10 +207,11 @@ the FLUX context, run the actual suite, and push only the active agent branch.
 - Keep the Hobbit race available for a later distinct character rather than
   reskinning S. Wayne to satisfy artificial one-character-per-race coverage.
 
-## Fifteen-character future roster acceptance
+## Future roster acceptance
 
-- Treat the requested fifteen names as the complete future roster; do not revive
-  Brum or add filler solely to cover every race.
+- Treat the sixteen named concepts as the complete future roster. Grimm Bow
+  reuses the retired `brum` compatibility ID; do not add filler solely to cover
+  every race.
 - Preserve each reused internal ID until an explicit compatibility migration
   exists, while showing only the approved player-facing name.
 - Validate the low-cost Hara/Spai Si/Hidn Leef/Hesus Christo signatures through
@@ -220,5 +221,9 @@ the FLUX context, run the actual suite, and push only the active agent branch.
   slow 4.67-second average signature cycle.
 - Wa Bidi's battlecry requires a visual subtitle/icon cue and an independent
   timing tell so audio-disabled players receive equal warning.
-- Keep the humorous lore in menus and character inspection; combat HUD text
-  remains short and decision-relevant.
+- Keep all current lore as `draft-placeholder` source material only. It requires
+  an explicit author rewrite before menus, character inspection, localization,
+  voice, marketing, or combat surfaces may consume it.
+- Prototype Grimm Bow as a readable displacement-to-precision loop. DROWNED MARK
+  may steady Stone Shot after personal Void/Water displacement but must never
+  increase its damage.

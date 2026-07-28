@@ -10,7 +10,7 @@ subject to hands-on play after the unified build passes its launch smoke.
 
 ## Decisions locked in this pass
 
-- Keep all fifteen approved character and ability names exactly as authored.
+- Keep all sixteen approved character and ability names exactly as authored.
 - Keep the stable internal IDs `dark`, `scaleheir`, `stonewrought`, and
   `rootwarden`; display them to players as **Void**, **Wyrm**, **Stoneborn**, and
   **Treefolk**.
@@ -25,26 +25,30 @@ subject to hands-on play after the unified build passes its launch smoke.
 - Never balance ancestry, size, or affinity with direct spell-damage bonuses.
   Their value belongs in movement, body geometry, resource shape, terrain use,
   and bounded utility.
+- Treat every character description as `draft-placeholder` copy. The existing
+  wording stays available for the author to rework, but it must not enter the
+  live game, marketing, localization, or voice pipeline before that rewrite.
 
 ## Canonical character concepts
 
-| Reference | Character | Race | Player promise | Primary visual and counterplay read |
-| --- | --- | --- | --- | --- |
-| Michail | Oh Tipi | Seakin | Conductive-field skirmisher who turns Water routes into movement decisions | Streamlined fins, tide ribbons, freeze seams, and visible shared conduction risk |
-| Sam | S. Wayne | Human | Mysterious millionaire and eclipse tactician; rumor credits his fortune to mahjong | Split Light/Void mantle and marked boundaries; repositioning needs a personal boundary and lockout |
-| Michel | The Red Baron | Undead | Formation controller who commits through dangerous air lanes | Tall officer silhouette, crimson wedges, dark flak circles, and punishable landing recovery |
-| Stivo | Steezo | Goblin | Volatile combo engineer whose unmistakable call is “Sheeeeeeeeeeeeeee” | Sparking backpack and exposed construct joints; self-detonation never refunds |
-| Trev | Treevor the Mason | Treefolk | Mud-and-herb terrain mason famed for exceptional mudpies | Broad branch crown, mud-block geometry, herb sprigs, huge target, and visible Fire exposure |
-| Olli | Oll' I | Minotaur | Structural momentum breaker—one bull you do not grab by the horns | Wide horns, locked torso, long charge lane, poor turning, and long miss recovery |
-| Flip | Fluup | Orc | Storm bruiser who converts a committed landing into the next attack | Weighted boots, storm mantle, radial rime fracture, and visible stored-charge cap |
-| Kira | Wa Bidi | Sylph | Air-route assassin whose “WABIDI BIBIDI!” battlecry precedes the hit | Streamer wings and open wind arcs; fragile body and high knockback remain readable without sound |
-| Nick | Nico Lai | Gnome | Precision shared-device engineer who multiplies one opening | Calibrated coil pack and linked nodes; every device stays breakable and shared |
-| Martin | Spai Si | Elf | Cryptic redirect duelist who turns hostile intent into an angle | Narrow leaf silhouette and curved aim guides; fragile body limits repeated contests |
-| Sehnou | Hidn Leef | Treefolk | Concealed grove support who lets the battlefield bloom around an unseen route | Layered leaf mantle and growth rings; slow repositioning and Fire-vulnerable growth |
-| Tarek | Ha Rekt | Wyrm | Aerial cold-line hunter who marks the escape before the enemy sees it | Rime wings and landing fan; low FLOW capacity limits repeated commitments |
-| Daniel | Dr. Apex | Stoneborn | Armored combat medic from the far north | Stone shoulders, triage band, Spring basin, slow movement, and contestable healing |
-| Charis | Hara | Gnome | Resourceful planner who always keeps a second option | Compact silhouette and three-element utility; no extreme stat edge |
-| Christo | Hesus Christo | Wyrm | Towering renewal vanguard who turns broken ground into a route back | Heavy wings, growth-and-water routes, huge target, and slow response |
+| Character | Race | Player promise | Primary visual and counterplay read |
+| --- | --- | --- | --- |
+| Oh Tipi | Seakin | Conductive-field skirmisher who turns Water routes into movement decisions | Streamlined fins, tide ribbons, freeze seams, and visible shared conduction risk |
+| S. Wayne | Human | Eclipse tactician who creates and crosses personal Light/Void boundaries | Split Light/Void mantle and marked boundaries; repositioning needs a personal boundary and lockout |
+| The Red Baron | Undead | Formation controller who commits through dangerous air lanes | Tall officer silhouette, crimson wedges, dark flak circles, and punishable landing recovery |
+| Steezo | Goblin | Volatile combo engineer who builds a risky detonation chain | Sparking backpack and exposed construct joints; self-detonation never refunds |
+| Treevor the Mason | Treefolk | Terrain mason who creates cover, routes, and Fire liabilities | Broad branch crown, mud-block geometry, herb sprigs, huge target, and visible Fire exposure |
+| Oll' I | Minotaur | Structural momentum breaker with high commitment | Wide horns, locked torso, long charge lane, poor turning, and long miss recovery |
+| Fluup | Orc | Storm bruiser who converts a committed landing into the next attack | Weighted boots, storm mantle, radial rime fracture, and visible stored-charge cap |
+| Wa Bidi | Sylph | Air-route assassin who trades safety for movement angles | Streamer wings and open wind arcs; fragile body and high knockback remain readable without sound |
+| Nico Lai | Gnome | Precision shared-device engineer who multiplies one opening | Calibrated coil pack and linked nodes; every device stays breakable and shared |
+| Spai Si | Elf | Redirect duelist who turns hostile intent into an angle | Narrow leaf silhouette and curved aim guides; fragile body limits repeated contests |
+| Hidn Leef | Treefolk | Concealed grove support who grows value around a planned route | Layered leaf mantle and growth rings; slow repositioning and Fire-vulnerable growth |
+| Ha Rekt | Wyrm | Aerial cold-line hunter who marks an escape route | Rime wings and landing fan; low FLOW capacity limits repeated commitments |
+| Dr. Apex | Stoneborn | Armored combat medic with contestable area support | Stone shoulders, triage band, Spring basin, slow movement, and contestable healing |
+| Hara | Gnome | Resourceful planner who always keeps a second option | Compact silhouette and two-element utility; no extreme stat edge |
+| Hesus Christo | Wyrm | Towering renewal vanguard who turns broken ground into a route back | Heavy wings, growth-and-water routes, huge target, and slow response |
+| Grimm Bow | Troll | Void-current terrain archer who converts displacement into a steadier follow-up | Heavy archer silhouette, inward Void marks, water lanes, a visible shot-ready cue, and long miss recovery |
 
 ## Static balance snapshot
 
@@ -68,6 +72,7 @@ claims about match balance.
 | Dr. Apex | 65 | 10 | 39.3 | 4.67 s | defense, support, terrain |
 | Hara | 43 | 6 | 20.7 | 1.18 s | control, damage, defense, reveal |
 | Hesus Christo | 55 | 6 | 30.0 | 2.60 s | control, defense, support, terrain |
+| Grimm Bow | 61 | 6 | 26.0 | 2.12 s | control, damage, terrain |
 
 The table exposes two playtest questions rather than prescribing speculative
 number changes:
@@ -78,6 +83,28 @@ number changes:
    Verify that geometry, setup, and body drawbacks prevent universal value.
 3. Dr. Apex has the slowest average signature cycle. Verify that healing remains
    contestable without making the combat medic inactive between commitments.
+4. Grimm Bow's setup should improve aim stability only, never damage. Verify that
+   opponents can read and escape the displacement-to-shot sequence.
+
+## Mechanical depth and implementation feasibility
+
+Depth comes from sequencing, positioning, shared terrain, and punishable
+commitment rather than hidden multipliers. Prototype one loop at a time and use
+existing catalog abilities before adding simulation primitives.
+
+| Character group | Loop to prove first | Clarity requirement | Initial risk |
+| --- | --- | --- | --- |
+| Hara, Spai Si, Fluup, Ha Rekt | Existing movement and projectile abilities in new combinations | Standard startup, landing, and recovery cues | Low: catalog reuse |
+| Nico Lai, The Red Baron, Oh Tipi | Shared devices, lanes, and fields that both teams can contest | Ownership plus break/interrupt state | Medium: persistent shared state |
+| S. Wayne, Oll' I, Steezo | Commit, expose a response window, then convert only on success | Boundary, charge lane, stored state, and miss recovery | Medium: short-lived state machines |
+| Treevor the Mason, Hidn Leef, Grimm Bow | Create or exploit terrain without trapping play into one route | Terrain lifetime, collision, mark, and teardown cues | Medium: authored terrain interactions |
+| Wa Bidi | Route advantage without audio dependence | Battlecry timing must also have a shape and motion cue | High: accessibility and mobility validation |
+| Dr. Apex, Hesus Christo | Contestable sustain with clear interruption and downtime | Heal source, radius, suspension, and recovery | High: support tuning and server authority |
+
+Every character remains `design-only` until its mechanic prototype passes
+deterministic local tests, server-authoritative remote play, bot-use coverage,
+readability/accessibility review, and a packaged smoke test. Lore approval is a
+separate author-owned gate and cannot be inferred from mechanical acceptance.
 
 ## Visual system
 

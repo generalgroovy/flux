@@ -5,7 +5,8 @@ Branch: `integration/unify-flux`
 ## Current constraints
 
 - Keep all existing playable paths operational while replacement systems are introduced.
-- Keep the fifteen approved character names and all approved passive, active, and ultimate names unchanged.
+- Keep the sixteen approved character names and all approved passive, active, and ultimate names unchanged.
+- Keep character descriptions as author-owned draft placeholders until they are explicitly rewritten and approved for in-game use.
 - Simplify system, mode, race, element, location, and interface labels where clarity improves.
 - Keep live gameplay text minimal and decision-relevant.
 - Move full explanations to tooltips, setup panels, the guide, and freeplay diagnostics.
@@ -127,8 +128,9 @@ Implement, without renaming any approved character or ability:
 - Dr. Apex
 - Hara
 - Hesus Christo
+- Grimm Bow
 
-Each requires complete data, visuals, bots, local and remote behavior, prediction, reconnect, spectators, tooltips, freeplay demonstration, and tests.
+Each requires complete data, visuals, bots, local and remote behavior, prediction, reconnect, spectators, tooltips, freeplay demonstration, and tests. Mechanical acceptance does not approve placeholder lore.
 
 ## Slice 8 — Destruction, levels, modes, and releases
 

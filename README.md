@@ -16,7 +16,7 @@ The candidate currently includes:
 
 - the complete 0.34.3 live game;
 - reliable source launch and graceful owned-process cleanup on Windows and Linux;
-- 109 passing automated checks on Windows, including the live WebSocket lifecycle
+- 110 passing automated checks on Windows, including the live WebSocket lifecycle
   and authenticated server cleanup;
 - Windows NSIS and Linux AppImage package jobs that emit commit-bound SHA-256
   manifests and downloadable CI artifacts;
@@ -505,14 +505,16 @@ color, role, and readable kit identity.
 
 ### Future overhaul roster — not playable yet
 
-This separate fifteen-character roster is validated design data in
+This separate sixteen-character roster is validated design data in
 `src/overhaul-content.mjs`. It does not replace the live champions above until a
 future vertical slice implements and verifies each character end to end.
+All current character-description text is retained as draft placeholder copy for
+an author rewrite; it is not approved for in-game display.
 
 | Character | Race | Affinities | Identity |
 | --- | --- | --- | --- |
 | Oh Tipi | Seakin | Water, Ice, Charge | Conductive-field skirmisher |
-| S. Wayne | Human | Void, Light | Eclipse boundary tactician and mysterious mahjong millionaire |
+| S. Wayne | Human | Void, Light | Eclipse boundary tactician |
 | The Red Baron | Undead | Void, Fire, Ice | Airborne formation controller |
 | Steezo | Goblin | Fire, Charge, Light | Volatile combo engineer |
 | Treevor the Mason | Treefolk | Earth, Wind, Fire | Mud-and-herb terrain mason |
@@ -526,6 +528,7 @@ future vertical slice implements and verifies each character end to end.
 | Dr. Apex | Stoneborn | Earth, Light, Water | Armored combat medic |
 | Hara | Gnome | Light, Wind | Resourceful mid-range planner |
 | Hesus Christo | Wyrm | Earth, Water | Towering renewal vanguard |
+| Grimm Bow | Troll | Void, Earth, Water | Displacement-to-precision terrain archer |
 
 ## Maps and modes
 

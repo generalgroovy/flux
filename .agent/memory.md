@@ -1592,7 +1592,7 @@
   The complete Windows verification then passed 109/109 plus recursive syntax
   checks.
 
-# 2026-07-28 — Fifteen-character named overhaul roster
+# 2026-07-28 — Superseded fifteen-character overhaul roster
 
 - **Direction:** Replaced the provisional sixteen-character future roster with
   the fifteen requested named concepts: Oh Tipi, S. Wayne, The Red Baron,
@@ -1601,8 +1601,7 @@
 - **Reuse:** Reworked fifteen existing data slots rather than adding parallel
   characters. Only the unrequested Brum placeholder was retired. Existing IDs
   remain compatibility keys even where player-facing names and races changed.
-- **Authored identity:** Added lore for every future character and recorded the
-  requested real-name mapping in `.agent/CONCEPT-ITERATION.md`. Explicit races
+- **Authored identity:** Added draft lore for every future character. Explicit races
   are locked for Wa Bidi, Hidn Leef, Ha Rekt, Dr. Apex, Hara, and Hesus Christo.
 - **Mechanical adaptation:** Most characters retain the nearest existing kit.
   Dr. Apex is now a Stoneborn combat medic using ROOT RAMPART, Spring, MIRROR
@@ -1612,3 +1611,25 @@
   sizes, diverse signature roles, bounded budgets, and explicit counterplay.
 - **Verification:** The focused future-content suite passed 14/14 after the
   complete roster remap.
+
+# 2026-07-28 — Mechanics-first roster and Grimm Bow
+
+- **Privacy and lore boundary:** Removed personal reference mappings from the
+  concept documentation. Existing humorous descriptions remain unchanged as
+  `draft-placeholder` source copy and are blocked from in-game use until the
+  author explicitly rewrites and approves them.
+- **Roster:** Restored the retired `brum` compatibility slot as **Grimm Bow**, a
+  size-4 Troll with Void 2 / Earth 1 / Water 1 affinities. The future roster is
+  again sixteen characters; live 0.34.3 content remains untouched.
+- **Mechanical loop:** DROWNED MARK lets personal Void/Water displacement steady
+  the next Stone Shot without increasing damage. Stone Shot, Void Pull,
+  TIDELINE, and Moss Flood reuse the existing catalog, keeping the first
+  prototype feasible while preserving setup, escape, and miss-recovery play.
+- **Promotion contract:** Every future character is `design-only`. Promotion
+  requires a mechanic prototype, deterministic local tests, server authority,
+  bot use, readability/accessibility review, and packaged smoke verification;
+  mechanical acceptance never approves lore.
+- **Verification:** Focused future-content checks passed 15/15. The complete
+  Windows verification passed 110/110 (108 core/DOM/deterministic checks, one
+  live WebSocket lifecycle, and one server-cleanup check), plus recursive
+  JavaScript syntax checks.

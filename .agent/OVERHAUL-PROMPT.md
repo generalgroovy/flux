@@ -8,6 +8,8 @@ Evolve FLUX through small, verified vertical slices. Preserve working gameplay, 
 
 Character names and the previously approved character ability names are canonical and must not be simplified, renamed, abbreviated in content data, or replaced with generic labels. They may be shown compactly in the HUD and fully in tooltips, menus, the loadout builder, and the guide.
 
+Current character-description wording is draft placeholder copy. Preserve it for the author's rewrite, but do not ship it in-game or treat mechanical acceptance as narrative approval.
+
 ### The Red Baron
 - Passive: COLD ASHES
 - Actives: CRIMSON COMET, NIGHT FLAK, RIME WING
@@ -90,6 +92,12 @@ Character names and the previously approved character ability names are canonica
 - Wyrm; Earth / Water affinities
 - Passive: SECOND COMING
 - Actives: ROOT RAMPART, Surge, Seed Burst
+- Ultimate: Moss Flood
+
+### Grimm Bow
+- Troll; Void / Earth / Water affinities
+- Passive: DROWNED MARK
+- Actives: Stone Shot, Void Pull, TIDELINE
 - Ultimate: Moss Flood
 
 ## Simple system names

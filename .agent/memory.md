@@ -1654,3 +1654,29 @@
   core/DOM/deterministic checks, one live WebSocket lifecycle, and one
   authenticated server-cleanup check. Recursive JavaScript syntax checks also
   passed.
+
+# 2026-07-29 — Safe Garuda local-model handoff
+
+- **Outcome:** Replaced the stale machine/branch-specific unrestricted launchers
+  with a path-independent Garuda/Arch setup doctor and a shared local-agent
+  runner for interactive or bounded work.
+- **Stack:** Ollama uses the official `qwen2.5-coder:3b` or `:7b` tags through
+  Aider's `ollama_chat/` adapter. Both profiles use 16K context and a 2K
+  repository map; automatic selection prefers 7B at 16 GiB RAM or 7 GiB VRAM.
+- **Safety:** Setup changes require explicit `--install`/`--pull`. Agent work
+  refuses protected/detached branches, dirty trees, and concurrent runs; it
+  defaults to one iteration, no commit, and no push. Those external Git actions
+  require separate `--commit` and `--push` choices.
+- **Odysseus:** Converted its prompt/state/decisions to live-state discovery.
+  Odysseus remains an optional authenticated workspace while Aider supplies the
+  supported repository-editing equivalent and the same task/test gate. A
+  clipboard helper renders current branch, commit, status, and recent history
+  directly through Sway's `wl-copy` without creating repository artifacts.
+- **Verification:** `node --test tests/local-agent-handoff.test.mjs` passed 2/2;
+  Git for Windows Bash parsed every `scripts/*.sh`; `git diff --check` passed;
+  and `npm.cmd test` passed 121/121 (119 core/DOM/deterministic checks, one live
+  WebSocket lifecycle, and one authenticated cleanup check).
+- **Limitation:** The Garuda package/service/model/GPU doctor and Sway
+  notifications require execution on the target Linux machine and remain
+  unverified here; this tooling-only slice did not change or interactively
+  playtest game behavior.

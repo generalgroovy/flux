@@ -16,7 +16,8 @@ The candidate currently includes:
 
 - the complete 0.34.3 live game;
 - reliable source launch and graceful owned-process cleanup on Windows and Linux;
-- 119 passing automated checks on Windows, including the live WebSocket lifecycle
+- 121 passing automated checks on Windows, including the local-agent contract,
+  live WebSocket lifecycle,
   and authenticated server cleanup;
 - Windows NSIS and Linux AppImage package jobs that emit commit-bound SHA-256
   manifests and downloadable CI artifacts;
@@ -430,26 +431,31 @@ npm run stop
 
 ## Local AI handoff
 
-The repository includes a shared FLUX handoff for the installed local Odysseus
-workspace and Aider. Both launchers intentionally enable unrestricted/
-always-accept operation inside this checkout, share a concurrency lock, refuse
-`main`, and refuse to absorb an already dirty worktree.
+Garuda Sway can run a fully local FLUX coding handoff with Ollama,
+Qwen2.5-Coder 3B/7B, and Aider. Odysseus may provide the workspace UI and
+scheduler, but uses the same tracked prompt, state, branch guard, lock, and test
+gate. Setup is explicit; agent commits and pushes are off by default.
 
-Interactive Aider:
-
-```bash
-flux-aider-yolo
-```
-
-Persistent Odysseus-supervised implementation → test → commit → push cycles:
+Diagnose or install the local stack:
 
 ```bash
-flux-odysseus-yolo
+bash scripts/setup-local-agent-linux.sh --check
+bash scripts/setup-local-agent-linux.sh --install --pull --model auto --backend cpu
 ```
 
-Stop the supervisor with `touch .agent/STOP` or `Ctrl+C`. Configuration and
-resumable context live in `.aider.conf.yml`, `.agent/HANDOFF.md`, and
-`.odysseus/`. The Odysseus UI preset is named **FLUX Principal Agent**.
+Start an interactive code session or one bounded implementation/test pass:
+
+```bash
+bash scripts/local-agent.sh chat --model auto
+bash scripts/local-agent.sh run --model auto --iterations 1
+bash scripts/prepare-odysseus-handoff.sh --clipboard
+```
+
+The runner refuses `main`, `master`, `develop`, detached HEAD, dirty trees, and
+concurrent FLUX agents. A run must be given `--commit` before it commits and
+`--push` before it pushes. Stop it with `bash scripts/local-agent.sh stop` or
+`Ctrl+C`. The complete setup, model sizing, Odysseus handoff, and review flow is
+documented in [`.agent/LOCAL-MODEL-HANDOFF.md`](.agent/LOCAL-MODEL-HANDOFF.md).
 
 Server records include the checkout root and a per-process instance token, so
 stale PID files cannot target another application. Servers from builds older

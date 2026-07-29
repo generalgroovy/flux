@@ -19,9 +19,9 @@ printf 'Checking source syntax...\n'
 for source_file in src/*.mjs src/network/*.mjs scripts/*.mjs desktop/*.mjs; do
   node --check "${source_file}"
 done
-bash -n scripts/pull-and-run.sh
-bash -n scripts/install-desktop-linux.sh
-bash -n scripts/test-changes.sh
+for shell_file in scripts/*.sh; do
+  bash -n "${shell_file}"
+done
 
 printf 'Running the full FLUX regression suite...\n'
 npm test

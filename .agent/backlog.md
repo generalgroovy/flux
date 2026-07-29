@@ -9,9 +9,10 @@ Visual/combat review should now explicitly test compact projectile lanes,
 weapon cadence, pixel-scale silhouettes, impact confirmation, and dense-fight
 clarity using only broad lessons from Enter the Gungeon—not copied content.
 
-Local-agent handoff is configured for Odysseus and Aider. Periodically verify
-both YOLO launchers still refuse `main` and dirty trees, share their lock, load
-the FLUX context, run the actual suite, and push only the active agent branch.
+Local-agent handoff is configured for Garuda Sway with Ollama,
+Qwen2.5-Coder 3B/7B, Aider, and optional Odysseus. Target-machine acceptance
+must run the read-only doctor, one uncommitted bounded pass, the actual suite,
+and a game smoke; commits and pushes remain separate explicit options.
 
 ## Release acceptance
 

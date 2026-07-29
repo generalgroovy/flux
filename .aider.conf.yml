@@ -1,10 +1,8 @@
-model: ollama_chat/qwen2.5-coder:7b-instruct
-architect: true
-auto-accept-architect: true
-yes-always: true
+model: ollama_chat/qwen2.5-coder:7b
+yes-always: false
 git: true
 gitignore: false
-auto-commits: true
+auto-commits: false
 dirty-commits: false
 attribute-author: false
 attribute-committer: false
@@ -12,6 +10,6 @@ auto-test: true
 test-cmd: npm test
 suggest-shell-commands: true
 map-refresh: auto
-map-tokens: 4096
+map-tokens: 2048
 restore-chat-history: true
 notifications: false

@@ -1808,3 +1808,34 @@
 - **Next gate:** V0 is implemented but awaits user visual acceptance. Do not
   start V1 character production until the token/specimen direction is accepted
   or revised; the Angel placeholder must be resolved before V1 can complete.
+
+# 2026-07-29 — Legacy retirement map and V1 Spai Si specimen
+
+- **Gate transition:** Treated the user's continuation as V0 acceptance and
+  advanced only to V1 characters; V2 mechanics/spells and later visual gates
+  remain blocked by order.
+- **Roster decision:** Reclassified all ten shipped champions as temporary
+  compatibility scaffolding. Added a one-to-one tested transfer ledger:
+  Aerwyn→Spai Si, Gorum→Urzh, Vellyn→S. Wayne, Nim→Nico Lai, Serek→Steezo,
+  Morcant→Djonah Thaan, Neris→Grace Reava, Branna→Biggy Bob, Yrsa→Ha Rekt,
+  and Varka→Treevor the Mason. Every transfer records retained concepts and
+  retired identity so no old champion becomes a permanent overhaul addition.
+- **Playable boundary:** Did not delete or modify live runtime entries and did
+  not import the new presentation module into `src/game.mjs`. Removal waits for
+  a complete successor plus selection, authority, migration, launch, and
+  regression checks in the same playable slice.
+- **V1 slice:** Added the source-only Spai Si specimen with six gameplay reads,
+  swept Demon horns, ember tail, Wind arcs, Light spindle, Earth-weighted
+  mantle, team-shape redundancy, low-health wear, and a nonsexualized compact
+  silhouette. It inherits Aerwyn's redirect readability but explicitly retires
+  Aerwyn's name, ancestry, fiction, and complete kit.
+- **Rendered verification:** The in-app browser rendered
+  `tools/spai-si-specimen.html` at its 1280×720 desktop viewport with all six
+  state cards, no horizontal overflow, and no console errors. No narrow-window
+  render or live combat playtest is claimed for this presentation-only slice.
+- **Automated verification:** Focused visual checks passed 4/4. `npm.cmd test`
+  passed 126/126: 124 sequential checks, one live WebSocket lifecycle, and one
+  authenticated cleanup check. Final syntax, diff, and source-route checks are
+  recorded in the commit handoff.
+- **Next decision:** Visually accept or revise Spai Si before creating the next
+  character specimen; keep the Angel placeholder unresolved and inactive.

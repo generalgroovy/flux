@@ -39,7 +39,7 @@ mechanical defect, record it in the backlog rather than fixing it in this pass.
 | Gate | Scope | Completion evidence before advancing |
 | ---: | --- | --- |
 | V0 | Visual tokens and reference specimen | Original palette/value/outline/material/motion rules are centralized; one non-shipping specimen proves scale and contrast without changing gameplay |
-| V1 | Characters | Every shipped champion reads by race, role, facing, health state, and element at gameplay zoom; approved future characters receive concepts only and remain inactive |
+| V1 | Characters | Every approved overhaul champion concept reads by ancestry, role, facing, health state, and element at gameplay zoom; concepts remain inactive while shipped sources await safe retirement |
 | V2 | Spells | Every shipped primary/tactical/defense/mobility/ultimate family has distinct anticipation, travel/area, impact, ownership, and expiry reads under color-blind settings |
 | V3 | Maps | Every shipped arena has original regional materials, landmarks, route hierarchy, cover/hazard contrast, spawn/objective readability, and dense-fight clarity |
 | V4 | GUI | Menu, Muster Hall, HUD, guide, settings, lobby, pause, results, and tutorial use one restrained manuscript/adventure system with keyboard/gamepad focus and no clipped decisions |
@@ -49,8 +49,9 @@ mechanical defect, record it in the backlog rather than fixing it in this pass.
 
 | Gate | Status | Evidence / next decision |
 | ---: | --- | --- |
-| V0 | Implemented; visual acceptance pending | Central tokens live in `styles.css`; the source-only specimen is `tools/visual-specimen.html`; inspect desktop and narrow layouts before accepting V0 |
-| V1–V5 | Blocked by order | Do not begin until the preceding visual gate is accepted |
+| V0 | Accepted | Central tokens live in `styles.css`; the source-only specimen passed desktop and narrow review; the user's continuation authorized V1 |
+| V1 | In progress | Spai Si is the first overhaul-character specimen; complete and accept every overhaul champion before runtime promotion |
+| V2–V5 | Blocked by order | Do not begin until the preceding visual gate is accepted |
 
 Within V1 through V4, finish one complete production slice at a time. Do not
 scatter placeholder restyles across the category. Preserve stable IDs and
@@ -136,6 +137,29 @@ shapes that obscure attacks or body boundaries.
 All twenty ancestry foundations now have a visual representative, but the Angel
 slot is intentionally not a character approval. Do not invent its permanent
 name, lore, kit, or mechanics merely to convert coverage into fake completion.
+
+## Legacy concept retirement
+
+The ten shipped champions are compatibility scaffolding, not members of the
+overhaul roster. Remove each only after its successor is complete and the same
+commit proves launch, selection, authority, tests, and migration safety.
+
+| Shipped source | Overhaul successor | Concept retained |
+| --- | --- | --- |
+| Aerwyn | Spai Si | Redirect timing, forward posture, Wind-angle guides |
+| Gorum | Urzh | Brace discipline, lane anchor, squared stone mass |
+| Vellyn | S. Wayne | Intent division, decoy spacing, visible swap boundary |
+| Nim Copperspark | Nico Lai | Charge sequencing, interrupts, calibrated devices |
+| Serek Ashborn | Steezo | Route traps, bounded detonation, backblast recovery |
+| Morcant | Djonah Thaan | Ground denial, pursuit pressure, silence cue |
+| Neris Pearldive | Grace Reava | Current redirection, brief protection, Tide rhythm |
+| Branna Runesight | Biggy Bob | Sightline control, focus tool, forge-prism geometry |
+| Yrsa Rimewing | Ha Rekt | Aerial cold-line hunt, marked escape, committed landing |
+| Varka Ashmaw | Treevor the Mason | Terrain shaping, Fire liability, crown climax |
+
+`src/overhaul-character-visuals.mjs` is the tested source of truth for this
+retirement ledger. It is presentation-only and must not be imported into the
+live renderer while V1 remains incomplete.
 
 ## Iteration rule
 

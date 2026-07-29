@@ -495,7 +495,12 @@ and essential controls without pausing combat.
 Player 1 keyboard bindings can be changed under **Settings**; the table lists
 defaults. Reserved match and Player 2 keys cannot be stolen.
 
-## Race champions
+## Compatibility roster scheduled for retirement
+
+These ten champions keep the current build playable while the visual-first
+overhaul is produced. They are not permanent overhaul-roster entries; each is
+removed only when its mapped successor is complete and the replacement build
+passes selection, authority, migration, launch, and regression checks.
 
 | Champion | People / discipline | Primary | Tactical | Defense | Mobility | Passive / ultimate |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -529,8 +534,23 @@ npm run visual:specimen
 
 Then open `http://127.0.0.1:4173/tools/visual-specimen.html`. The specimen is
 available from the source server for review but is excluded from desktop
-packages. V1 character production remains blocked until V0 is visually
-accepted; this styling work changes no simulation or network behavior.
+packages. V0 is accepted and V1 character production has begun. Review the
+first presentation-only slice at
+`http://127.0.0.1:4173/tools/spai-si-specimen.html`; this styling work changes no
+simulation or network behavior.
+
+| Source being retired | Overhaul successor | What survives |
+| --- | --- | --- |
+| Aerwyn | Spai Si | Redirect timing and Wind-angle readability |
+| Gorum | Urzh | Brace and lane-anchor discipline |
+| Vellyn | S. Wayne | Decoy spacing and swap boundaries |
+| Nim Copperspark | Nico Lai | Charge sequencing and devices |
+| Serek Ashborn | Steezo | Traps, detonation, and backblast recovery |
+| Morcant | Djonah Thaan | Ground denial and pursuit pressure |
+| Neris Pearldive | Grace Reava | Current redirection and brief protection |
+| Branna Runesight | Biggy Bob | Sightline and forge-prism geometry |
+| Yrsa Rimewing | Ha Rekt | Aerial cold-line hunting |
+| Varka Ashmaw | Treevor the Mason | Terrain shaping and Fire liability |
 
 ### Future overhaul roster — not playable yet
 
@@ -539,9 +559,9 @@ The integration branch currently contains sixteen validated design records in
 named champions, one temporary Angel placeholder, and twenty ancestry
 foundations. The seven later named concepts, placeholder decision, and new
 ancestry assignments must be unified into validated content only after
-the character-visual gate is accepted. They do not replace the live champions
-above until a future vertical slice implements and verifies each character end
-to end. See [`.agent/VISUAL-OVERHAUL.md`](.agent/VISUAL-OVERHAUL.md) for the
+the character-visual gate is accepted. They replace the compatibility roster
+only when a future vertical slice implements and verifies each character end to
+end. See [`.agent/VISUAL-OVERHAUL.md`](.agent/VISUAL-OVERHAUL.md) for the
 authoritative distribution and migration boundary.
 All current character-description text is retained as draft placeholder copy for
 an author rewrite; it is not approved for in-game display.

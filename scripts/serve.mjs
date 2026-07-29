@@ -34,6 +34,7 @@ const publicFiles = new Set([
   "/index.html",
   "/styles.css",
   "/src/content.mjs",
+  "/src/overhaul-character-visuals.mjs",
   "/src/game.mjs",
   "/src/match.mjs",
   "/src/network/conditioner.mjs",
@@ -41,6 +42,9 @@ const publicFiles = new Set([
   "/src/network/quality.mjs",
   "/tools/visual-specimen.html",
   "/tools/visual-specimen.css",
+  "/tools/spai-si-specimen.html",
+  "/tools/spai-si-specimen.css",
+  "/tools/spai-si-specimen.mjs",
 ]);
 const contentTypes = new Map([
   [".css", "text/css; charset=utf-8"],

@@ -4,10 +4,12 @@
 
 Complete `.agent/VISUAL-OVERHAUL.md` before selecting any mechanical backlog
 item. Required order is V0 tokens/specimen -> V1 characters -> V2 spells -> V3
-maps -> V4 GUI -> V5 integrated acceptance. V0 tokens and the non-shipping
-specimen are implemented; current next decision is desktop/narrow visual
-acceptance of `tools/visual-specimen.html`. Do not begin V1 until that review
-accepts or revises the palette, value, outline, material, and motion grammar.
+maps -> V4 GUI -> V5 integrated acceptance. V0 is accepted and V1 is active.
+Review `tools/spai-si-specimen.html` as the first overhaul-character slice,
+then iterate it or accept it before authoring the next champion. Keep the ten
+shipped champions as compatibility-only runtime scaffolding until their mapped
+successors pass complete visual and later mechanical promotion checks; never
+present them as overhaul-roster additions.
 
 Priority remains fundamentals → compact PvP → PvPvE → PvE. Add race champions
 only as complete contrasting kits inside those proven loops. Keep Battle Royale

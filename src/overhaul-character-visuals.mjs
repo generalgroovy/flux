@@ -31,6 +31,21 @@ export const OVERHAUL_CHARACTER_VISUAL_PROFILES = freeze({
     light: "#d4b84e",
     ember: "#c76632",
   }),
+  urzh: freeze({
+    id: "urzh",
+    name: "Urzh",
+    plannedAncestry: "Stoneborn",
+    ancestryRead: "squared stone frame with ember seams",
+    roleRead: "braced conductive kiln bulwark",
+    affinityRead: "Earth plates, Fire seams, Charge forks",
+    focusProp: "kiln buckler",
+    body: "#8d8068",
+    mantle: "#463d31",
+    ink: "#17130d",
+    earth: "#a79771",
+    fire: "#c76632",
+    charge: "#d4b84e",
+  }),
 });
 
 export const OVERHAUL_CHARACTER_VISUAL_STATES = freeze([
@@ -59,6 +74,10 @@ export function resolveOverhaulCharacterVisualState(entity, cooldowns = {}) {
 
 export function drawOverhaulCharacterAura(context, profile, state, radius, time, reducedMotion) {
   if (!profile || state === "defeated") return;
+  if (profile.id === "urzh") {
+    drawUrzhAura(context, profile, state, radius, time, reducedMotion);
+    return;
+  }
   const phase = reducedMotion ? 0 : Math.sin(time * 5) * radius * 0.06;
   context.save();
   try {
@@ -119,7 +138,17 @@ export function drawOverhaulCharacterAura(context, profile, state, radius, time,
 }
 
 export function traceOverhaulCharacterBody(context, profile, radius) {
-  if (!profile || profile.id !== "aerwyn") return false;
+  if (!profile) return false;
+  if (profile.id === "urzh") {
+    tracePolygon(context, [
+      [radius * 0.92, -radius * 0.56], [radius * 1.12, 0], [radius * 0.92, radius * 0.56],
+      [radius * 0.34, radius * 0.92], [-radius * 0.7, radius * 0.78],
+      [-radius * 0.96, radius * 0.42], [-radius * 0.96, -radius * 0.42],
+      [-radius * 0.7, -radius * 0.78], [radius * 0.34, -radius * 0.92],
+    ]);
+    return true;
+  }
+  if (profile.id !== "aerwyn") return false;
   tracePolygon(context, [
     [radius * 1.2, 0], [radius * 0.42, radius * 0.52], [radius * 0.06, radius * 0.88],
     [-radius * 0.28, radius * 0.62], [-radius * 0.92, radius * 0.78], [-radius * 0.68, 0],
@@ -130,7 +159,12 @@ export function traceOverhaulCharacterBody(context, profile, radius) {
 }
 
 export function drawOverhaulCharacterDetails(context, profile, state, radius, team, teamColor, healthRatio) {
-  if (!profile || profile.id !== "aerwyn") return;
+  if (!profile) return;
+  if (profile.id === "urzh") {
+    drawUrzhDetails(context, profile, state, radius, team, teamColor, healthRatio);
+    return;
+  }
+  if (profile.id !== "aerwyn") return;
   context.save();
   try {
     context.shadowBlur = 0;
@@ -194,7 +228,9 @@ export function drawOverhaulCharacterDetails(context, profile, state, radius, te
 }
 
 export function drawOverhaulCharacterDefeat(context, profile, radius, teamColor) {
-  if (!profile || profile.id !== "aerwyn") return false;
+  if (!profile) return false;
+  if (profile.id === "urzh") return drawUrzhDefeat(context, profile, radius, teamColor);
+  if (profile.id !== "aerwyn") return false;
   context.save();
   try {
     context.globalAlpha = 0.58;
@@ -210,6 +246,150 @@ export function drawOverhaulCharacterDefeat(context, profile, radius, teamColor)
     context.beginPath();
     context.moveTo(-radius * 0.48, -radius * 0.5);
     context.lineTo(radius * 0.46, radius * 0.5);
+    context.stroke();
+  } finally {
+    context.restore();
+  }
+  return true;
+}
+
+function drawUrzhAura(context, profile, state, radius, time, reducedMotion) {
+  const pulse = reducedMotion ? 0 : Math.sin(time * 5) * radius * 0.08;
+  context.save();
+  try {
+    context.shadowBlur = 0;
+    context.lineCap = "square";
+    if (state === "idle") {
+      context.strokeStyle = profile.earth;
+      context.globalAlpha = 0.34;
+      context.lineWidth = 3;
+      for (const side of [-1, 1]) {
+        context.beginPath();
+        context.moveTo(-radius * 0.8, side * radius * 0.9);
+        context.lineTo(radius * 0.55, side * radius * 0.9);
+        context.stroke();
+      }
+    } else if (state === "move") {
+      context.strokeStyle = profile.fire;
+      context.globalAlpha = 0.54;
+      context.lineWidth = 2.5;
+      for (const side of [-1, 1]) {
+        context.beginPath();
+        context.moveTo(-radius * 0.72, side * radius * 0.48);
+        context.lineTo(-radius * 1.32 - pulse, side * radius * 0.62);
+        context.lineTo(-radius * 1.08, side * radius * 0.3);
+        context.stroke();
+      }
+    } else if (state === "commit") {
+      context.strokeStyle = profile.charge;
+      context.globalAlpha = 0.82;
+      context.lineWidth = 2.4;
+      for (const side of [-1, 1]) {
+        context.beginPath();
+        context.moveTo(radius * 0.54, side * radius * 0.5);
+        context.lineTo(radius * 0.92, side * radius * 0.28);
+        context.lineTo(radius * 0.74, side * radius * 0.05);
+        context.lineTo(radius * 1.38, 0);
+        context.stroke();
+      }
+    } else if (state === "hit") {
+      context.strokeStyle = profile.fire;
+      context.globalAlpha = 0.9;
+      context.lineWidth = 2;
+      for (const side of [-1, 1]) {
+        context.beginPath();
+        context.moveTo(-radius * 0.1, side * radius * 0.66);
+        context.lineTo(radius * 0.18, side * radius * 1.26);
+        context.stroke();
+      }
+    } else if (state === "defend") {
+      context.strokeStyle = profile.earth;
+      context.globalAlpha = 0.88;
+      context.lineWidth = 4;
+      context.beginPath();
+      context.moveTo(radius * 0.68, -radius * 1.05);
+      context.lineTo(radius * 1.24, -radius * 0.66);
+      context.lineTo(radius * 1.24, radius * 0.66);
+      context.lineTo(radius * 0.68, radius * 1.05);
+      context.stroke();
+    }
+  } finally {
+    context.restore();
+  }
+}
+
+function drawUrzhDetails(context, profile, state, radius, team, teamColor, healthRatio) {
+  context.save();
+  try {
+    context.shadowBlur = 0;
+    context.lineJoin = "bevel";
+
+    // Two block shoulders make Stoneborn ancestry readable without scale changes.
+    context.fillStyle = profile.earth;
+    context.strokeStyle = profile.ink;
+    context.lineWidth = 1.5;
+    for (const side of [-1, 1]) {
+      tracePolygon(context, [
+        [-radius * 0.55, side * radius * 0.28], [-radius * 0.42, side * radius * 0.76],
+        [radius * 0.18, side * radius * 0.82], [radius * 0.34, side * radius * 0.38],
+      ]);
+      context.fill();
+      context.stroke();
+    }
+
+    // The kiln seam is body wear, never an ability telegraph.
+    context.strokeStyle = profile.fire;
+    context.lineWidth = 2.3;
+    context.beginPath();
+    context.moveTo(-radius * 0.52, 0);
+    context.lineTo(-radius * 0.12, -radius * 0.18);
+    context.lineTo(radius * 0.12, radius * 0.16);
+    context.lineTo(radius * 0.48, 0);
+    context.stroke();
+
+    // A square buckler gives a single role/facing prop at combat zoom.
+    context.fillStyle = profile.mantle;
+    context.strokeStyle = profile.charge;
+    context.lineWidth = 1.8;
+    context.beginPath();
+    context.rect(radius * 0.34, -radius * 0.34, radius * 0.54, radius * 0.68);
+    context.fill();
+    context.stroke();
+    context.beginPath();
+    context.moveTo(radius * 0.46, 0);
+    context.lineTo(radius * 0.76, 0);
+    context.stroke();
+
+    drawTeamShape(context, team, teamColor, radius);
+    drawHealthWear(context, profile.ink, radius, healthRatio);
+    if (state === "commit") {
+      context.fillStyle = profile.charge;
+      context.fillRect(radius * 0.56, -radius * 0.09, radius * 0.28, radius * 0.18);
+    }
+  } finally {
+    context.restore();
+  }
+}
+
+function drawUrzhDefeat(context, profile, radius, teamColor) {
+  context.save();
+  try {
+    context.globalAlpha = 0.62;
+    context.fillStyle = profile.mantle;
+    context.strokeStyle = teamColor;
+    context.lineWidth = 2;
+    context.translate(0, radius * 0.36);
+    tracePolygon(context, [
+      [-radius * 1.02, radius * 0.28], [-radius * 0.68, -radius * 0.3],
+      [-radius * 0.08, -radius * 0.12], [radius * 0.28, -radius * 0.42],
+      [radius * 1.04, radius * 0.22],
+    ]);
+    context.fill();
+    context.stroke();
+    context.strokeStyle = profile.fire;
+    context.beginPath();
+    context.moveTo(-radius * 0.34, 0);
+    context.lineTo(radius * 0.34, radius * 0.12);
     context.stroke();
   } finally {
     context.restore();

@@ -45,6 +45,8 @@ const publicFiles = new Set([
   "/tools/spai-si-specimen.html",
   "/tools/spai-si-specimen.css",
   "/tools/spai-si-specimen.mjs",
+  "/tools/urzh-specimen.html",
+  "/tools/urzh-specimen.mjs",
 ]);
 const contentTypes = new Map([
   [".css", "text/css; charset=utf-8"],

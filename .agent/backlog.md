@@ -5,8 +5,9 @@
 Complete `.agent/VISUAL-OVERHAUL.md` before selecting any mechanical backlog
 item. Required order is V0 tokens/specimen -> V1 characters -> V2 spells -> V3
 maps -> V4 GUI -> V5 integrated acceptance. V0 is accepted and V1 is active.
-Review `tools/spai-si-specimen.html` as the first overhaul-character slice,
-then iterate it or accept it before authoring the next champion. Keep the ten
+Spai Si and Urzh now have isolated source-only character slices. Review
+`tools/urzh-specimen.html`, then iterate it or accept it before authoring the
+next champion. Keep the ten
 shipped champions as compatibility-only runtime scaffolding until their mapped
 successors pass complete visual and later mechanical promotion checks; never
 present them as overhaul-roster additions.

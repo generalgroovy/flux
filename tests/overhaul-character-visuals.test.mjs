@@ -28,6 +28,17 @@ test("Spai Si owns Aerwyn's redirect language without inheriting Aerwyn's identi
   assert.match(profile.ancestryRead, /horns.*tail/);
 });
 
+test("Urzh inherits Gorum's anchor discipline as an original Stoneborn read", () => {
+  const transfer = LEGACY_CONCEPT_TRANSFERS.find((entry) => entry.legacyId === "bulwark");
+  const profile = getOverhaulCharacterVisualProfile(transfer.overhaulId);
+  assert.equal(transfer.overhaulName, "Urzh");
+  assert.match(transfer.retained, /lane anchoring/);
+  assert.match(transfer.retired, /Iron Orc/);
+  assert.equal(profile.plannedAncestry, "Stoneborn");
+  assert.match(profile.ancestryRead, /squared stone frame/);
+  assert.match(profile.affinityRead, /Earth.*Fire.*Charge/);
+});
+
 test("overhaul character state resolver preserves the six authored reads", () => {
   const base = { alive: true, vx: 0, vy: 0 };
   assert.deepEqual(OVERHAUL_CHARACTER_VISUAL_STATES, ["idle", "move", "commit", "hit", "defend", "defeated"]);

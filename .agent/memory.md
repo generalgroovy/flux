@@ -1839,3 +1839,34 @@
   recorded in the commit handoff.
 - **Next decision:** Visually accept or revise Spai Si before creating the next
   character specimen; keep the Angel placeholder unresolved and inactive.
+
+# 2026-07-29 — Recovery refresh, pushed integration, and V1 Urzh slice
+
+- **Recovery/unification:** Audited remote drift before integration. Pushed
+  annotated recovery tags for `main` at `eebf01c`, full-overhaul at `8590ce5`,
+  and resource-HUD at `7cd5795`; updated the manifest/classifications; merged
+  refreshed `origin/main`; launch preflight then passed every ancestry/head/tag
+  check. Pushed `integration/unify-flux` without force or branch deletion.
+- **Deferred mechanics:** The full-overhaul PR matrix is green, but its construct
+  durability and parallel live-content expansion remain deferred under the V1
+  mechanical freeze. The resource-HUD delta remains checkpoint CI only.
+- **Verification:** A first post-merge full run found one stale exact phrase in
+  the local-agent visual contract. Restored the explicit inactive-future-roster
+  invariant; focused checks passed 7/7 and the rerun passed 126/126. Production
+  dependency audit reported zero vulnerabilities.
+- **Package evidence:** The verified Windows package is bound to `2a1277b` with
+  SHA-256 `80bd785916cd2c31180bcd94e95b17a638ff61f9fd62d24fa0fdece3d853eb43`.
+  The packaged app rendered fullscreen and closed normally with no owned
+  processes left. Automation could focus but not activate a match control, so
+  `develop` was not published and no packaged combat claim is made.
+- **V1 slice 02:** Added Urzh as a source-only Stoneborn specimen inheriting
+  Gorum's brace/lane-anchor discipline while retiring Gorum's name, Iron Orc
+  ancestry, lore, and complete kit. Squared shoulders, ember seams, kiln
+  buckler, Earth plates, Fire exhaust, and Charge forks distinguish ancestry,
+  role, affinities, action state, and ownership without simulation changes.
+- **Rendered verification:** The in-app browser rendered all six Urzh state
+  cards at 1280×720 with no horizontal overflow or console errors. Focused
+  character/visual checks passed 5/5; the full suite passed 127/127 across 125
+  standard checks, one live WebSocket lifecycle, and one authenticated cleanup.
+- **Next decision:** Visually accept or revise Urzh before the third V1 champion.
+  A real packaged match launch remains required before publishing `develop`.

@@ -50,7 +50,7 @@ mechanical defect, record it in the backlog rather than fixing it in this pass.
 | Gate | Status | Evidence / next decision |
 | ---: | --- | --- |
 | V0 | Accepted | Central tokens live in `styles.css`; the source-only specimen passed desktop and narrow review; the user's continuation authorized V1 |
-| V1 | In progress | Spai Si is the first overhaul-character specimen; complete and accept every overhaul champion before runtime promotion |
+| V1 | In progress | Spai Si and Urzh have source-only specimens; review Urzh, then complete and accept every overhaul champion before runtime promotion |
 | V2–V5 | Blocked by order | Do not begin until the preceding visual gate is accepted |
 
 Within V1 through V4, finish one complete production slice at a time. Do not

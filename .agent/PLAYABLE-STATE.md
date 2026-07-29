@@ -1,6 +1,6 @@
 # FLUX playable-state ledger
 
-Date: 2026-07-28
+Date: 2026-07-29
 Branch: `integration/unify-flux`
 Base: `d77c0b2` (`agent/windows-linux-runtime`)
 
@@ -68,3 +68,21 @@ Linux packaging and packaged launch require the GitHub Ubuntu job (or a Linux
 host); neither is inferred from a Windows build. The unified branch must not be
 merged to `main` until both platform gates are green and explicit final approval
 is given.
+
+## 2026-07-29 candidate refresh
+
+- `integration/unify-flux` was refreshed with `origin/main`, passed launch
+  preflight, and was pushed before packaging.
+- `npm.cmd test` passed 126/126 and `npm.cmd audit --omit=dev` found zero
+  production vulnerabilities at `2a1277b`.
+- `npm.cmd run package:windows:verified` produced
+  `dist/FLUX-Arena-0.34.3-win-x64.exe` for exact commit
+  `2a1277b7946f40629b0eb9b8503298946ce8ffcc`, 99,915,974 bytes, SHA-256
+  `80bd785916cd2c31180bcd94e95b17a638ff61f9fd62d24fa0fdece3d853eb43`.
+- The packaged `win-unpacked/FLUX Arena.exe` opened fullscreen and rendered its
+  complete home screen. It closed normally through Alt+F4; `npm.cmd stop`
+  reported no registered server and no package-owned process remained.
+- Windows UI automation could focus and hover launch controls but did not
+  activate them, so no packaged match-entry claim is made. Publishing `develop`
+  remains blocked on one real match launch, movement/ability/pause observation,
+  and normal close at this exact candidate or its documented successor.

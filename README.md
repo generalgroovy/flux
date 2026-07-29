@@ -535,8 +535,9 @@ npm run visual:specimen
 Then open `http://127.0.0.1:4173/tools/visual-specimen.html`. The specimen is
 available from the source server for review but is excluded from desktop
 packages. V0 is accepted and V1 character production has begun. Review the
-first presentation-only slice at
-`http://127.0.0.1:4173/tools/spai-si-specimen.html`; this styling work changes no
+first presentation-only slices at
+`http://127.0.0.1:4173/tools/spai-si-specimen.html` and
+`http://127.0.0.1:4173/tools/urzh-specimen.html`; this styling work changes no
 simulation or network behavior.
 
 | Source being retired | Overhaul successor | What survives |

@@ -2111,3 +2111,35 @@
   claimed; the running window was left untouched for hands-on play.
 - **Next:** After the user's station-layout feedback, resume the ordered V1
   Nico Lai source-only visual slice.
+
+# 2026-07-29 — V1 Nico Lai source implementation
+
+- **User boundary:** The user retained PC control. No Windows application was
+  launched, focused, captured, or given input during this slice; observed
+  desktop and narrow visual review remains explicitly pending.
+- **V1 slice 04 source:** Added Nico Lai as a modular source-only Gnome visual
+  with required visual ID `nico`. The inactive overhaul catalog's `nix` ID is
+  retained only as `contentCompatibilityId`; neither ID enters the live roster.
+- **Read hierarchy:** The high-cap compact ancestry foundation supplies anatomy.
+  Nico's measured leather frame and calibrated coil pack supply role, forked
+  Charge paths and Light calibration diamonds stay shape-distinct, and a
+  detached device uses a visible team tether plus split hit/defeat states to
+  communicate ownership and breakability.
+- **Six-state contract:** Idle docks and calibrates; move uses segmented charge
+  cadence; commit extends the owned device into an open aperture; hit breaks the
+  tether and device; defend raises a forward bracket with an open rear; defeat
+  collapses the cap/frame and leaves separated coil halves.
+- **Isolation:** The shared presentation registry and specimen runner are the
+  only consumers. Tests prove `src/game.mjs` imports no overhaul visual registry
+  or Nico module; simulation, hitboxes, balance, abilities, networking, normal
+  selection, package manifests, and runtime state are unchanged.
+- **Verification:** Focused profile, migration, finite animated/static draw,
+  six-state registry, responsive specimen, source-route, and runtime-isolation
+  checks passed 11/11. `node scripts/ci-verify.mjs` passed 140/140 standard
+  checks, the live WebSocket lifecycle, authenticated cleanup, and every
+  recursive JavaScript syntax check. `git diff --check` passed.
+- **Acceptance boundary:** Source implementation is complete, but the slice is
+  not visually accepted because no render was observed. When the user returns
+  PC control, review `tools/nico-lai-specimen.html` at desktop and narrow
+  widths, including reduced motion and both team marks; revise or accept it
+  before beginning Steezo.

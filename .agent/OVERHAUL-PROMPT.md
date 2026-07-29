@@ -47,10 +47,11 @@ Mechanics are frozen. Follow:
 
 `V0 tokens -> V1 characters -> V2 spells -> V3 maps -> V4 GUI -> V5 integrated acceptance`
 
-V0 is accepted. V1 is active. Spai Si, Urzh, and S. Wayne have source-only
-specimens. The next slice is Nico Lai. Do not resume Haara mechanics, introduce gameplay,
-change balance, migrate live races, or expose preview characters until the
-visual gates are accepted.
+V0 is accepted. V1 is active. Spai Si, Urzh, and S. Wayne have reviewed
+source-only specimens. Nico Lai's source implementation is complete and awaits
+observed desktop/narrow render acceptance. Do not begin Steezo, resume Haara
+mechanics, introduce gameplay, change balance, migrate live races, or expose
+preview characters until the ordered visual acceptance permits it.
 
 ## Ground-up rule
 
@@ -105,9 +106,10 @@ gate, or required user visual acceptance.
 
 ## Immediate task
 
-Implement Nico Lai's source-only V1 character slice using the Gnome ancestry
-template and the shared specimen/rendering infrastructure. Preserve stable
-visual ID `nico`. Prove a compact precision-engineer silhouette, breakable
-shared-device ownership, separate Charge/Light shape language, six gameplay
-states, team redundancy, health wear, reduced motion, responsive rendering, and
-zero simulation/network/runtime roster changes.
+When the user returns PC control, render Nico Lai's source-only board at desktop
+and narrow widths. Inspect the compact Gnome silhouette, high-cap anatomy,
+calibrated coil pack, breakable shared-device ownership, separate Charge/Light
+shape language, six states, team redundancy, health wear, reduced motion, and
+overflow. Revise or accept that slice using observed evidence; only then begin
+Steezo. Preserve zero simulation, network, balance, hitbox, or runtime-roster
+changes.

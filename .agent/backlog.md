@@ -5,11 +5,14 @@
 Complete `.agent/VISUAL-OVERHAUL.md` before selecting any mechanical backlog
 item. Required order is V0 tokens/specimen -> V1 characters -> V2 spells -> V3
 maps -> V4 GUI -> V5 integrated acceptance. V0 is accepted and V1 is active.
-Spai Si, Urzh, and S. Wayne now have isolated source-only character slices.
+Spai Si, Urzh, and S. Wayne now have reviewed source-only character slices.
 S. Wayne also established modular champion files, shared drawing primitives,
 and one shared specimen harness so the remaining roster does not grow a
-monolithic renderer or copied pages. The next bounded V1 slice is Nico Lai as a
-Gnome with Charge/Light device language. Use the validated twenty-entry
+monolithic renderer or copied pages. Nico Lai's Gnome/Charge/Light source slice
+is implemented with a calibrated coil pack, breakable device, team tether, six
+states, and focused tests; perform its observed desktop and narrow render review
+when the user returns PC control, then revise or accept it before beginning
+Steezo. Use the validated twenty-entry
 ancestry registry and its one-screen
 `tools/ancestry-template-specimen.html` review board; add champion
 posture/prop/affinity layers by composition instead of copying ancestry drawing

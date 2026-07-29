@@ -270,7 +270,7 @@ GUI foundation to arrive early.
 | Gate | Scope | Current status |
 | ---: | --- | --- |
 | V0 | Visual tokens and non-shipping reference specimen | Accepted |
-| V1 | All champion and ancestry concepts | In progress: Spai Si, Urzh, and S. Wayne have source-only specimens |
+| V1 | All champion and ancestry concepts | In progress: Spai Si, Urzh, and S. Wayne are reviewed; Nico Lai is implemented source-only and awaits observed render acceptance |
 | V2 | Spell anticipation, travel, impact, ownership, and expiry language | Blocked by V1 |
 | V3 | Map materials, landmarks, routes, hazards, objectives, and dense-fight clarity | Blocked by V2 |
 | V4 | Sanctum, HUD, guide, settings, lobby, pause, results, and tutorial | Menu, roster, and integrated Practice court authorized and implemented; full gate still blocked by V3 |
@@ -288,7 +288,7 @@ every slice.
 | --- | --- |
 | Compatibility runtime | Complete ten-character game remains authoritative in normal local and remote matches |
 | Overhaul data | Eight-family element aliases, sixteen mechanical race archetypes, sixteen design-only champions, ability catalog, reactions, movement grammar, sizes, modes, and destruction rules are validated but inactive |
-| Character visuals | Twenty modular ancestry templates exist; Spai Si, Urzh, and S. Wayne have modular six-state source-only specimens |
+| Character visuals | Twenty modular ancestry templates exist; Spai Si, Urzh, S. Wayne, and Nico Lai have modular six-state source implementations, with Nico Lai awaiting observed render acceptance |
 | Haara prototype | Headless local mechanic prototype still uses the legacy `Hara` label and stable `mara` ID behind `contentProfile: "overhaul-preview"`; normal selection and live lobbies reject it |
 | Movement | Complete universal Stamina grammar is live and deterministic: sprint, counter-strafe, jump/double jump, slide/slide jump, air redirect/dodge, wavedash, wall jump, landing cut, Edgeweave, vault, and superglide; all eight battlegrounds provide marked vault routes |
 | Sanctum | Always-rendered Living Sanctum shell, persistent remote company, ancestry-column roster selection, and a local Practice court with complete movement/spell areas, stationary target, champion switch, refill/reset, and `F2` field guide are implemented |

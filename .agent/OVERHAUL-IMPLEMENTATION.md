@@ -116,8 +116,8 @@ lessons transfer before unrelated breadth:
 | 01 | Spai Si | Demon | Source specimen complete |
 | 02 | Urzh | Stoneborn | Source specimen complete |
 | 03 | S. Wayne | Hobbit | Source specimen complete |
-| 04 | Nico Lai | Gnome | Next implementation slice |
-| 05 | Steezo | Goblin | Pending |
+| 04 | Nico Lai | Gnome | Source complete; observed render acceptance pending |
+| 05 | Steezo | Goblin | Blocked by Nico Lai acceptance |
 | 06 | Djonah Thaan | Vampire | Pending |
 | 07 | Grace Reava | Sylph | Pending |
 | 08 | Biggy Bob | Dwarf | Pending |
@@ -220,3 +220,21 @@ app-stylesheet overflow conflict was corrected inside the specimen boundary.
 Focused tests, the 132-check full suite, syntax checks, and diff hygiene pass.
 PR #10's Windows/Linux Node 20/22 verification and both package jobs passed for
 implementation commit `e472bd7`. The next implementation slice is Nico Lai.
+
+Nico Lai's source-only implementation is now complete:
+
+- required visual ID `nico`, with inactive content ID `nix` recorded only as a
+  compatibility field;
+- compact Gnome ancestry composition with a high cap and measured tool frame;
+- calibrated coil pack plus a detached, breakable device and explicit team
+  tether;
+- Charge forks separated from Light calibration diamonds by shape and value;
+- idle, move, commit, hit/low-health, defend, and defeated reads;
+- shared specimen runner and source-only route, with no live renderer,
+  simulation, roster, hitbox, balance, or network imports;
+- focused profile, transfer, all-state draw, responsive specimen, and route
+  tests passing.
+
+Observed desktop and narrow render review is intentionally pending while the
+user retains PC control. Do not begin Steezo until Nico Lai is visually reviewed
+and either revised or accepted.

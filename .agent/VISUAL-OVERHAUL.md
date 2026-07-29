@@ -58,9 +58,9 @@ after its acceptance, priority returns to V1.
 | Gate | Status | Evidence / next decision |
 | ---: | --- | --- |
 | V0 | Accepted | Central tokens live in `styles.css`; the source-only specimen passed desktop and narrow review; the user's continuation authorized V1 |
-| V1 | In progress | Spai Si, Urzh, and S. Wayne have source-only six-state specimens; implement Nico Lai next, then complete and accept every overhaul champion before runtime promotion |
+| V1 | In progress | Spai Si, Urzh, and S. Wayne are reviewed source-only specimens; Nico Lai's six-state source implementation is complete but awaits observed render acceptance before Steezo begins |
 | V2–V3, V5 | Blocked by order | Do not begin until the preceding visual gate is accepted |
-| V4 | Foundation plus complete movement court by direct request | The Living Sanctum owns all menu routes, preserves an active remote company, starts behind the menu, and teaches the complete universal Stamina grammar with marked vault rails, character switching, refill/reset, and a field guide; Muster adds ancestry-column portrait selection with independent non-mutating hover/focus previews; full GUI acceptance remains blocked until V1–V3 complete |
+| V4 | Foundation plus complete movement court by direct request | Players spawn directly on the Living Sanctum floor; eight proximity stations own all option routes, preserve resumable local/remote contests, and expose movement teaching, marked vault rails, character switching, refill/reset, and a field guide; Muster adds ancestry-column portrait selection with independent non-mutating hover/focus previews; full GUI acceptance remains blocked until V1–V3 complete |
 
 Within V1 through V4, finish one complete production slice at a time. Do not
 scatter placeholder restyles across the category. Preserve stable IDs and

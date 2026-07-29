@@ -2078,5 +2078,6 @@
   `09b09235619d0acfdc18985441777276845aaa97c3933e25b21c958e17286e87`.
 - **Remote acceptance:** GitHub Actions run `30462865622` passed all six jobs
   for movement commit `0ff6eb0`: Windows and Ubuntu on Node 20.19.1 and Node 22,
-  Windows NSIS, and Linux AppImage packaging. PR #13 remains to be merged and
-  `integration/unify-flux` realigned with `main`; then resume V1 Nico Lai.
+  Windows NSIS, and Linux AppImage packaging. The documentation head repeated
+  all six successfully in run `30463176519`; PR #13 merged as `8cd54bb`, and
+  `integration/unify-flux` plus `main` were realigned there. Resume V1 Nico Lai.

@@ -115,6 +115,28 @@ unification diff or replace the known-playable live simulation. The executable
 preflight now verifies every candidate branch still matches its pushed archive
 tag before cleanup can proceed.
 
+## 2026-07-29 refresh
+
+Remote `main` advanced to `eebf01c` by merging PR #9 from the integration
+branch. Before refreshing the integration ancestry, exact annotated recovery
+tags were pushed:
+
+- `archive/pre-unify-main-20260729-1230` -> `eebf01c`
+- `archive/pre-unify-full-overhaul-20260729-1230` -> `8590ce5`
+- `archive/pre-unify-resource-hud-20260729-1230` -> `7cd5795`
+
+The full-overhaul branch added construct durability and related live-content
+tests after `292eb57`. Its GitHub matrix is now green across Node 20/22 on
+Windows/Ubuntu plus packaging and snapshot jobs. The source is still deferred:
+V1's visual-first freeze forbids importing its mechanical expansion, and its
+parallel live-content architecture must be reconciled as a later complete
+vertical slice rather than merged wholesale.
+
+The resource-HUD branch added only isolated checkpoint-run CI and DOM harness
+export behavior after `2ffa373`; it remains superseded transport/CI rather than
+product source. Both exact heads are now represented in the manifest. No work
+branch or pull request was deleted or force-pushed.
+
 ## Pull requests
 
 | PR | State | Classification | Disposition after unified PR exists |

@@ -31,6 +31,13 @@ test-contract revision advanced that branch again at 12:46 and received its own
 exact recovery tag; its replacement CI was pending and does not enter this
 candidate.
 
+On 2026-07-29 the remote heads were refreshed again and preserved by exact
+`archive/pre-unify-*-20260729-1230` tags. The full-overhaul matrix is now green,
+but its new construct-durability/live-content mechanics remain deferred by the
+active V1 visual freeze and parallel-runtime review boundary. The resource-HUD
+delta remains checkpoint-only CI. Remote `main` at `eebf01c` was also tagged
+before integration ancestry was refreshed. No archived work was discarded.
+
 ## Reconciliation decisions
 
 - `d77c0b2` supplies Windows/Linux launch reliability and graceful authenticated

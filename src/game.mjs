@@ -11,6 +11,7 @@ import {
 } from "./content.mjs";
 import {
   createMatch,
+  refillSanctumPractice,
   matchInvariantErrors,
   sanitizeCommand,
   skipTutorial,
@@ -81,6 +82,7 @@ const BINDING_NAMES = Object.freeze({
 const PROTECTED_BINDING_KEYS = new Set([
   "escape",
   "f1",
+  "f2",
   "r",
   "t",
   "tab",
@@ -127,6 +129,8 @@ const toastStack = element("toast-stack");
 const infoOverlay = element("info-overlay");
 const infoToggle = element("info-toggle");
 const hudDetailToggle = element("hud-detail-toggle");
+const practiceTools = element("practice-tools");
+const practiceOverview = element("practice-overview");
 const settingsForm = element("settings-form");
 const matchForm = element("match-form");
 const pointer = { x: 0, y: 0, active: false };
@@ -143,14 +147,16 @@ let bindingCapture = null;
 let menuPanel = "home";
 let atlasScope = "realm";
 let matchState = createMatch({
-  modeId: "training",
-  mapId: "breakline",
+  modeId: "sanctum",
+  mapId: "living_sanctum",
   botCount: 0,
 });
 let matchKind = "none";
 let lastLocalOptions = null;
+let lastLocalKind = "local";
 let paused = false;
 let infoOpen = false;
+let practiceOverviewOpen = false;
 let frameTime = performance.now();
 let accumulator = 0;
 let interfaceAccumulator = 0;
@@ -232,6 +238,8 @@ canvas.addEventListener("pointerleave", () => {
   pointer.active = false;
 });
 frontEnd.addEventListener("click", handleMenuClick);
+practiceTools.addEventListener("click", handlePracticeAction);
+practiceOverview.addEventListener("click", handlePracticeAction);
 pauseOverlay.addEventListener("click", handleOverlayClick);
 matchOverlay.addEventListener("click", handleOverlayClick);
 menuClose.addEventListener("click", resumeGame);
@@ -268,6 +276,7 @@ infoToggle.addEventListener("click", () => toggleInfo());
 hudDetailToggle.addEventListener("click", toggleHudDetail);
 element("info-close").addEventListener("click", () => toggleInfo(false));
 element("online-agent").addEventListener("change", syncOnlineRace);
+element("practice-character").addEventListener("change", updatePracticeSelection);
 
 requestAnimationFrame(frame);
 let lastFrameErrorAt = Number.NEGATIVE_INFINITY;
@@ -296,7 +305,7 @@ function runFrame(now) {
     accumulator += delta;
     let steps = 0;
     while (accumulator >= FIXED_DELTA && steps < 16) {
-      if (matchKind === "local") {
+      if (matchKind === "local" || matchKind === "sanctum") {
         stepMatch(matchState, readCommands(), FIXED_DELTA);
         processEvents(matchState.events, matchState.tick);
       } else if (matchKind === "remote" && matchState) {
@@ -379,6 +388,11 @@ function handleKeyDown(event) {
     else showPanel("guide");
     return;
   }
+  if (key === "f2" && matchKind === "sanctum" && app.dataset.view === "game") {
+    event.preventDefault();
+    togglePracticeOverview();
+    return;
+  }
   if (app.dataset.view === "menu" && handleMenuKeyDown(event, key)) return;
   if (
     app.dataset.view === "game" &&
@@ -396,7 +410,8 @@ function handleKeyDown(event) {
   }
   if (event.repeat && ["escape", "r", "t"].includes(key)) return;
   if (key === "escape") {
-    if (infoOpen) toggleInfo(false);
+    if (practiceOverviewOpen) togglePracticeOverview(false);
+    else if (infoOpen) toggleInfo(false);
     else if (app.dataset.view === "game") openPause();
     else if (matchKind !== "none") resumeGame();
     return;
@@ -613,6 +628,12 @@ function flushConditionedNetwork(now) {
 }
 
 function handleMenuClick(event) {
+  const practiceAction = event.target.closest("[data-practice-action]")?.dataset
+    .practiceAction;
+  if (practiceAction) {
+    runPracticeAction(practiceAction);
+    return;
+  }
   const sanctumAction = event.target.closest("[data-action]")?.dataset.action;
   if (sanctumAction === "resume") {
     resumeGame();
@@ -657,6 +678,23 @@ function handleMenuClick(event) {
     event.preventDefault();
     showPanel(panelButton.dataset.panel);
   }
+}
+
+function handlePracticeAction(event) {
+  const action = event.target.closest("[data-practice-action]")?.dataset
+    .practiceAction;
+  if (action) runPracticeAction(action);
+}
+
+function runPracticeAction(action) {
+  if (action === "start") startSanctumPractice();
+  else if (action === "previous") cyclePracticeCharacter(-1);
+  else if (action === "next") cyclePracticeCharacter(1);
+  else if (action === "refill") refillPracticeResources();
+  else if (action === "reset") restartMatch();
+  else if (action === "overview") togglePracticeOverview();
+  else if (action === "overview-close") togglePracticeOverview(false);
+  else if (action === "sanctum") enterSanctum("practice");
 }
 
 function handleBindingClick(event) {
@@ -715,7 +753,9 @@ function handleOverlayClick(event) {
   const action = event.target.closest("[data-action]")?.dataset.action;
   if (action === "resume") resumeGame();
   else if (action === "restart") restartMatch();
-  else if (action === "menu") enterSanctum("home");
+  else if (action === "menu") {
+    enterSanctum(matchKind === "sanctum" ? "practice" : "home");
+  }
   else if (action === "online") enterSanctum("online");
 }
 
@@ -741,6 +781,72 @@ function showPanel(panel) {
   if (panel === "online") refreshLobbies();
   if (panel === "online") refreshReconnectButton();
   syncSanctumPresence();
+}
+
+function startSanctumPractice(characterId = element("practice-character").value) {
+  const champion = getCharacter(characterId || "kite");
+  const targetControl = element("practice-target");
+  const targetEnabled = typeof targetControl.checked === "boolean"
+    ? targetControl.checked
+    : targetControl.hasAttribute("checked");
+  for (const option of element("practice-character").querySelectorAll("option")) {
+    if (option.value === champion.id) option.setAttribute("selected", "");
+    else option.removeAttribute("selected");
+  }
+  updatePracticeSelection();
+  startLocal(
+    {
+      modeId: "sanctum",
+      mapId: "living_sanctum",
+      hazardsEnabled: false,
+      botCount: targetEnabled ? 1 : 0,
+      botCharacterIds: ["bulwark"],
+      players: [
+        {
+          id: "p1",
+          name: "PLAYER 1",
+          characterId: champion.id,
+          raceId: champion.homeRaceId,
+          team: "alpha",
+          human: true,
+          localSlot: 0,
+        },
+      ],
+    },
+    { kind: "sanctum" },
+  );
+}
+
+function cyclePracticeCharacter(direction) {
+  if (matchKind !== "sanctum") return;
+  const player = localPlayer();
+  const currentIndex = Math.max(
+    0,
+    CHARACTERS.findIndex((character) => character.id === player?.characterId),
+  );
+  const next = CHARACTERS[
+    (currentIndex + direction + CHARACTERS.length) % CHARACTERS.length
+  ];
+  startSanctumPractice(next.id);
+  toast(`${next.name} enters the practice floor.`);
+}
+
+function refillPracticeResources() {
+  const player = localPlayer();
+  if (!player || !refillSanctumPractice(matchState, player.id)) return;
+  processEvents(matchState.events, matchState.tick);
+  updateInterface();
+  toast("Health, Stamina, Flux, cooldowns, and ultimate refilled.");
+}
+
+function togglePracticeOverview(force = !practiceOverviewOpen) {
+  practiceOverviewOpen =
+    Boolean(force) && matchKind === "sanctum" && app.dataset.view === "game";
+  practiceOverview.hidden = !practiceOverviewOpen;
+  element("practice-overview-toggle").setAttribute(
+    "aria-expanded",
+    String(practiceOverviewOpen),
+  );
 }
 
 function quickStart() {
@@ -835,11 +941,12 @@ function startConfiguredMatch(event) {
   });
 }
 
-function startLocal(options) {
+function startLocal(options, { kind = "local" } = {}) {
   leaveRemote();
   matchState = createMatch(options);
   lastLocalOptions = structuredClone(options);
-  matchKind = "local";
+  lastLocalKind = kind;
+  matchKind = kind;
   paused = false;
   remoteEntityId = null;
   pendingInputs = [];
@@ -852,6 +959,15 @@ function startLocal(options) {
 
 function enterGame() {
   app.dataset.view = "game";
+  app.classList.toggle("sanctum-practice", matchKind === "sanctum");
+  practiceTools.hidden = matchKind !== "sanctum";
+  if (matchKind === "sanctum") {
+    const player = localPlayer();
+    element("practice-live-character").textContent = player
+      ? getCharacter(player.characterId).name
+      : "PRACTICE";
+  }
+  togglePracticeOverview(false);
   toggleInfo(false);
   pauseOverlay.classList.add("hidden");
   matchOverlay.classList.add("hidden");
@@ -872,11 +988,17 @@ function openPause() {
   paused = true;
   pauseOverlay.classList.remove("hidden");
   element("pause-title").textContent =
-    matchKind === "remote" ? "Remote contest" : "Contest held";
+    matchKind === "remote"
+      ? "Remote contest"
+      : matchKind === "sanctum"
+        ? "Practice held"
+        : "Contest held";
   element("pause-copy").textContent =
     matchKind === "remote"
       ? "The authoritative contest continues. Enter the Sanctum without leaving your friends."
-      : "Local simulation is frozen.";
+      : matchKind === "sanctum"
+        ? "The practice floor is frozen. Resume, reset, or return to its Sanctum chamber."
+        : "Local simulation is frozen.";
   keys.clear();
   mouseButtons.clear();
 }
@@ -901,7 +1023,7 @@ async function restartMatch() {
     else toast("Rematch started.");
     return;
   }
-  if (lastLocalOptions) startLocal(lastLocalOptions);
+  if (lastLocalOptions) startLocal(lastLocalOptions, { kind: lastLocalKind });
 }
 
 function enterSanctum(panel = "home", { disconnect = false } = {}) {
@@ -911,6 +1033,9 @@ function enterSanctum(panel = "home", { disconnect = false } = {}) {
   }
   paused = matchKind === "local";
   app.dataset.view = "menu";
+  app.classList.remove("sanctum-practice");
+  practiceTools.hidden = true;
+  togglePracticeOverview(false);
   toggleInfo(false);
   pauseOverlay.classList.add("hidden");
   matchOverlay.classList.add("hidden");
@@ -1100,12 +1225,21 @@ function updateInterface() {
   const map = getMap(matchState.mapId);
   element("score-alpha").textContent = formatScore(matchState.score.alpha, mode);
   element("score-beta").textContent = formatScore(matchState.score.beta, mode);
-  element("mode-label").textContent = `${mode.name} · ${map.name} · R${matchState.round}`;
+  element("mode-label").textContent = mode.id === "sanctum"
+    ? `${mode.name} · ${getCharacter(localPlayer()?.characterId).name}`
+    : `${mode.name} · ${map.name} · R${matchState.round}`;
   const remaining = Math.max(0, mode.timeLimit - matchState.elapsed);
   element("match-clock").textContent =
-    remaining === 0 && matchState.status === "playing"
+    mode.id === "sanctum"
+      ? "FREE"
+      : remaining === 0 && matchState.status === "playing"
       ? "OT"
       : formatClock(remaining);
+  if (mode.id === "sanctum" && localPlayer()) {
+    element("practice-live-character").textContent = getCharacter(
+      localPlayer().characterId,
+    ).name;
+  }
   updateNetworkReadout();
   updateRoster();
   updateAbilities();
@@ -1136,6 +1270,12 @@ function updateInterface() {
 
 function updateNetworkReadout() {
   const readout = element("network-readout");
+  if (matchKind === "sanctum") {
+    readout.textContent = "SANCTUM · LOCAL PRACTICE";
+    readout.dataset.quality = "local";
+    readout.title = "Local deterministic practice simulation";
+    return;
+  }
   if (matchKind !== "remote") {
     readout.textContent = "LOCAL · 120 TICK";
     readout.dataset.quality = "local";
@@ -1267,7 +1407,7 @@ function updateCoach(mode) {
           ? `At speed, hold ${keyLabel(settings.bindings.sprint)} + ${keyLabel(settings.bindings.hop)} together to commit to a slide.`
           : !matchState.tutorial.hopped
             ? `Release ${keyLabel(settings.bindings.sprint)}, then tap ${keyLabel(settings.bindings.hop)} to hop and carry your angle.`
-            : "FLOW chain learned.";
+            : "Stamina chain learned.";
     } else if (matchState.tutorial.step === 1) {
       text.textContent = `MOVE while aiming. Land pressure with MB1 or ${keyLabel(settings.bindings.fire)}.`;
     } else if (matchState.tutorial.step === 2) {
@@ -1294,7 +1434,9 @@ function updateCoach(mode) {
       text.textContent = `${matchState.objective.controllingTeam.toUpperCase()} controls the field.`;
     } else {
       text.textContent =
-        mode.id === "duel"
+        mode.id === "sanctum"
+          ? "Practice freely. F2 opens movement, element, race, champion, and ability details."
+          : mode.id === "duel"
           ? "First to five. Cover, cooldowns, and commitment decide the round."
           : mode.description;
     }
@@ -1336,7 +1478,7 @@ function tacticalTrialCopy(player) {
     volt: `Line up the spar and land ${key}. Volt rewards exact interruption timing.`,
     cinder: `Plant ${key} in the spar's route. Hold space until the Ember rune arms.`,
     orbit: `Close the gap, then catch the spar with ${key}. Null needs a punishable window.`,
-    mend: `Spend ${key} to shape Tide terrain. It redirects Ember and restores allied FLOW.`,
+    mend: `Spend ${key} to shape Tide terrain. It redirects Ember and restores allied Stamina.`,
     rook: `Aim ${key} and land one split Prism ray. Angles create the conversion.`,
     rimewing: `Aim ${key} across the route. Rime trades traction for space control.`,
     ashmaw: `Aim ${key} to inscribe a douseable Ember route with open exits.`,
@@ -1415,7 +1557,7 @@ function processEvents(events, tick) {
       if (locallyControlled(event.entityId)) {
         tone(585, 0.055, "triangle", 0.04);
         burst(event.x, event.y, "#77f7ce", 7);
-        toast(`EDGEWEAVE! · +${Math.round(event.amount)} FLOW`, "comic");
+        toast(`EDGEWEAVE! · +${Math.round(event.amount)} STAMINA`, "comic");
       }
     } else if (event.type === "wallKick") {
       toast("WALL KICK · ANGLE STOLEN");
@@ -2665,6 +2807,11 @@ function buildContentInterface() {
     "characterTwo",
     "bulwark",
   );
+  element("practice-character").innerHTML = CHARACTERS.map(
+    (agent) =>
+      `<option value="${agent.id}">${agent.name} — ${getRace(agent.homeRaceId).name} — ${agent.affinity.name}</option>`,
+  ).join("");
+  updatePracticeSelection();
   element("agent-codex").innerHTML = CHARACTERS.map(agentCard).join("");
   element("map-codex").innerHTML = MAPS.map(
     (map) => `
@@ -2703,6 +2850,67 @@ function buildContentInterface() {
   ).join("");
   element("server-address").value = location.origin;
   updateDeploymentSummary();
+}
+
+function updatePracticeSelection() {
+  const selected = getCharacter(element("practice-character").value || "kite");
+  const race = getRace(selected.homeRaceId);
+  const readout = element("practice-character-readout");
+  readout.style.setProperty("--agent-color", selected.accent);
+  readout.innerHTML = `
+    <i aria-hidden="true">${selected.glyph}</i>
+    <div>
+      <b>${selected.name}</b>
+      <span>${race.name} · ${selected.role}<br>${selected.affinity.name}: ${selected.affinity.edge}</span>
+    </div>`;
+  const reference = practiceReferenceMarkup(selected);
+  element("practice-menu-reference").innerHTML = reference;
+  element("practice-overview-content").innerHTML = reference;
+}
+
+function practiceReferenceMarkup(selected) {
+  const movements = [
+    ["Walk + aim", "Independent movement and mouse/right-stick aim; counter-strafe sharpens committed reversals."],
+    ["Sprint", `${keyLabel(settings.bindings.sprint)} while moving · drains Stamina and builds slide entry speed.`],
+    ["Slide", `${keyLabel(settings.bindings.sprint)} + ${keyLabel(settings.bindings.hop)} at speed · committed travel with limited steering.`],
+    ["Hop", `${keyLabel(settings.bindings.hop)} without sprint · carries a bounded lateral angle and enables one landing cut.`],
+    ["Wall kick", `Hop during the wall-contact memory · launches away from cover at the strongest universal movement speed.`],
+    ["Landing cut", "Counter-strafe just after landing · one short recovery conversion, never repeatable speed stacking."],
+    ["Mobility", `${keyLabel(settings.bindings.mobility)} · champion-specific Flux movement with its own commitment and cooldown.`],
+    ["Edgeweave", "Thread a hostile projectile's narrow miss band at committed speed to recover Stamina; hits and stationary proximity never pay."],
+  ];
+  const elements = [...new Map(
+    CHARACTERS.map((agent) => [agent.affinity.id, agent.affinity]),
+  ).values()].map((affinity) => [affinity.name, affinity.edge]);
+  const races = RACES.map((race) => [
+    race.name,
+    `${race.trait} · ${race.boon} · ${race.drawback} · cue: ${race.feature}`,
+  ]);
+  const champions = CHARACTERS.map((agent) => [
+    agent.name,
+    `${getRace(agent.homeRaceId).name} · ${agent.role} · ${agent.affinity.name}`,
+  ]);
+  const abilities = [
+    ...(selected.passive ? [[`Passive · ${selected.passive.name}`, selected.passive.detail]] : []),
+    [`Primary · ${selected.primary.name}`, selected.primary.detail],
+    [`Tactical · ${selected.tactical.name}`, `${selected.tactical.detail} · ${selected.tactical.fluxCost} Flux`],
+    [`Defense · ${selected.defense.name}`, `${selected.defense.detail} · ${selected.defense.fluxCost} Flux`],
+    [`Mobility · ${selected.mobility.name}`, `${selected.mobility.detail} · ${selected.mobility.fluxCost} Flux`],
+    ...(selected.ultimate ? [[`Ultimate · ${selected.ultimate.name}`, selected.ultimate.detail]] : []),
+  ];
+  return [
+    ["Movement", movements, true],
+    ["Elements", elements],
+    ["Selected abilities", abilities, true],
+    ["Champions", champions],
+    ["Races", races],
+  ].map(([label, entries, open]) => `
+    <details ${open ? "open" : ""}>
+      <summary>${label}</summary>
+      <div class="practice-reference-list">
+        ${entries.map(([name, detail]) => `<article><b>${name}</b><span>${detail}</span></article>`).join("")}
+      </div>
+    </details>`).join("");
 }
 
 function renderMapOptions() {

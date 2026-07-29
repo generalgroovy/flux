@@ -55,8 +55,8 @@ without a proven replacement.
 - Test harnesses that assert behavior rather than legacy presentation.
 - Central visual tokens, the twenty ancestry templates, and reusable rendering
   primitives that pass their neutrality tests.
-- The Living Sanctum shell only as the verified foundation for its final
-  diegetic replacement.
+- The Living Sanctum shell, ancestry-column selection, and bounded Practice
+  court as verified foundations for the final diegetic replacement.
 
 ## What is temporary
 
@@ -170,7 +170,7 @@ plus package runs on Windows and Linux.
 After V5 acceptance, implement mechanics in this order:
 
 1. Versioned overhaul content and semantic command contracts.
-2. Universal movement/physics kernel and FLOW.
+2. Universal movement/physics kernel and Stamina.
 3. Flux economy, loadout budget, primary, three actives, and ultimate charge.
 4. Materials and bounded element reactions.
 5. One complete champion, one complete map, Freeplay, and First Rite.

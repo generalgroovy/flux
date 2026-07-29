@@ -273,6 +273,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
 
   for (const panel of [
     "home",
+    "practice",
     "play",
     "online",
     "agents",
@@ -368,22 +369,24 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     false,
   );
 
-  document.querySelector("[data-quick-start]").click();
+  document.querySelector('[data-panel="practice"]').click();
+  assert.match(document.getElementById("practice-menu-reference").textContent, /Stamina.*Elements.*Selected abilities/s);
+  document.querySelector('[data-practice-action="start"]').click();
   assert.equal(app.dataset.view, "game");
-  assert.equal(window.DIFF_DEBUG.getState().modeId, "training");
+  assert.equal(window.DIFF_DEBUG.getState().modeId, "sanctum");
+  assert.equal(window.DIFF_DEBUG.getState().mapId, "living_sanctum");
   assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "kite");
   assert.equal(window.DIFF_DEBUG.getState().entities[0].raceId, "wood_elf");
+  assert.equal(window.DIFF_DEBUG.getState().entities[1].bot, true);
+  assert.equal(document.getElementById("practice-tools").hidden, false);
+  assert.equal(app.classList.contains("sanctum-practice"), true);
   assert.equal(app.classList.contains("hud-detailed"), false);
   document.getElementById("hud-detail-toggle").click();
   assert.equal(app.classList.contains("hud-detailed"), true);
   assert.equal(document.getElementById("hud-detail-toggle").textContent, "Compact HUD");
   assert.equal(JSON.parse(storage.get("flux.presentation.v2")).hudDetailed, true);
-  assert.equal(document.getElementById("coach-progress").hidden, false);
-  assert.equal(
-    document.querySelector('[data-coach-step="0"]').classList.contains("active"),
-    true,
-  );
-  assert.match(document.getElementById("coach-text").textContent, /Hold X/);
+  assert.equal(document.getElementById("coach-progress").hidden, true);
+  assert.match(document.getElementById("coach-text").textContent, /Practice freely.*F2/i);
   assert.equal(
     document.querySelector('[data-ability="special"] > kbd').textContent,
     "Q",
@@ -400,13 +403,32 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   window.dispatchEvent(sprintDown);
   assert.equal(typeof queuedFrame, "function");
   queuedFrame(performance.now() + 16);
-  assert.equal(window.DIFF_DEBUG.getState().tutorial.sprinted, true);
+  assert.equal(window.DIFF_DEBUG.getState().entities[0].sprinting, true);
+  assert.ok(
+    window.DIFF_DEBUG.getState().entities[0].flow <
+      window.DIFF_DEBUG.getState().entities[0].maxFlow,
+  );
   const moveUp = new window.Event("keyup");
   Object.defineProperty(moveUp, "key", { value: "d" });
   window.dispatchEvent(moveUp);
   const sprintUp = new window.Event("keyup");
   Object.defineProperty(sprintUp, "key", { value: "x" });
   window.dispatchEvent(sprintUp);
+  const fieldGuide = new window.Event("keydown");
+  Object.defineProperty(fieldGuide, "key", { value: "F2" });
+  window.dispatchEvent(fieldGuide);
+  assert.equal(document.getElementById("practice-overview").hidden, false);
+  assert.match(document.getElementById("practice-overview-content").textContent, /Wall kick.*Elements.*Races/s);
+  document.querySelector('[data-practice-action="overview-close"]').click();
+  assert.equal(document.getElementById("practice-overview").hidden, true);
+  document.querySelector('[data-practice-action="refill"]').click();
+  assert.equal(
+    window.DIFF_DEBUG.getState().entities[0].flow,
+    window.DIFF_DEBUG.getState().entities[0].maxFlow,
+  );
+  document.querySelector('[data-practice-action="next"]').click();
+  assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "bulwark");
+  assert.equal(document.getElementById("practice-live-character").textContent, "GORUM");
   assert.ok(drawCalls.some((call) => call[0] === "fillRect"));
   assert.deepEqual(window.DIFF_DEBUG.getInvariantErrors(), []);
 
@@ -443,7 +465,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   window.dispatchEvent(escape);
   document.querySelector('#pause-overlay [data-action="menu"]').click();
   assert.equal(app.dataset.view, "menu");
-  assert.equal(app.dataset.panel, "home");
+  assert.equal(app.dataset.panel, "practice");
   document.querySelector('[data-panel="settings"]').click();
   document.getElementById("reset-settings").click();
   assert.equal(tacticalBinding.textContent, "E");
@@ -637,6 +659,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.equal(document.getElementById("sanctum-party").hidden, false);
   for (const panel of [
     "home",
+    "practice",
     "play",
     "online",
     "agents",

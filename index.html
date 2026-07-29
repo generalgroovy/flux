@@ -88,7 +88,7 @@
         <div id="info-kit" class="info-kit"></div>
         <dl class="info-controls">
           <div><dt>Move / aim</dt><dd><kbd data-binding-summary="move">WASD</kbd> / mouse</dd></div>
-          <div><dt>Flow movement</dt><dd><kbd data-binding-label="sprint">Alt</kbd> sprint / <kbd data-binding-label="hop">C</kbd> hop</dd></div>
+          <div><dt>Stamina movement</dt><dd><kbd data-binding-label="sprint">Alt</kbd> sprint / <kbd data-binding-label="hop">C</kbd> hop</dd></div>
           <div><dt>Actions</dt><dd><kbd>MB1</kbd><kbd data-binding-label="tactical">E</kbd><kbd data-binding-label="defense">Q</kbd><kbd data-binding-label="mobility">Shift</kbd><kbd data-binding-label="ultimate">F</kbd></dd></div>
           <div><dt>Reset / pause</dt><dd><kbd>R</kbd> / <kbd>Esc</kbd></dd></div>
         </dl>
@@ -110,7 +110,7 @@
       <section id="ability-bar" class="ability-bar" aria-label="Abilities">
         <div class="ability flow-ability" data-ability="flow">
           <kbd data-binding-summary="flow">ALT/C</kbd>
-          <span><b>FLOW</b><small id="flow-detail">Sprint / hop</small></span>
+          <span><b>STAMINA</b><small id="flow-detail">Sprint / hop</small></span>
           <i id="flow-charge"></i>
         </div>
         <div class="ability flux-ability" data-ability="flux">
@@ -169,6 +169,27 @@
         </div>
       </section>
 
+      <section id="practice-tools" class="practice-tools" aria-label="Sanctum practice controls" hidden>
+        <div>
+          <span class="eyebrow">SANCTUM PRACTICE</span>
+          <strong id="practice-live-character">AERWYN</strong>
+        </div>
+        <button class="button button-quiet" data-practice-action="previous" type="button" aria-label="Previous champion">&#8249;</button>
+        <button class="button button-quiet" data-practice-action="next" type="button" aria-label="Next champion">&#8250;</button>
+        <button class="button" data-practice-action="refill" type="button">Refill</button>
+        <button class="button" data-practice-action="reset" type="button">Reset floor</button>
+        <button class="button" id="practice-overview-toggle" data-practice-action="overview" type="button" aria-controls="practice-overview" aria-expanded="false">Overview</button>
+        <button class="button button-primary" data-practice-action="sanctum" type="button">Sanctum</button>
+      </section>
+
+      <aside id="practice-overview" class="practice-overview" aria-label="Game reference" hidden>
+        <header>
+          <div><span class="eyebrow">FIELD GUIDE</span><h2>Test reference</h2></div>
+          <button class="icon-button" data-practice-action="overview-close" type="button" aria-label="Close game reference">&times;</button>
+        </header>
+        <div id="practice-overview-content" class="practice-overview-content"></div>
+      </aside>
+
       <section id="front-end" class="front-end">
         <header class="topbar">
           <a class="wordmark" href="#" data-panel="home" aria-label="FLUX home">
@@ -189,23 +210,26 @@
             <button class="nav-item active" data-panel="home" type="button">
               <span>01</span><b>Sanctum</b>
             </button>
+            <button class="nav-item" data-panel="practice" type="button">
+              <span>02</span><b>Practice</b><em>LIVE</em>
+            </button>
             <button class="nav-item" data-panel="play" type="button">
-              <span>02</span><b>Muster</b>
+              <span>03</span><b>Muster</b>
             </button>
             <button class="nav-item" data-panel="online" type="button">
-              <span>03</span><b>Friends</b><em>REMOTE</em>
+              <span>04</span><b>Friends</b><em>REMOTE</em>
             </button>
             <button class="nav-item" data-panel="agents" type="button">
-              <span>04</span><b>Champions</b><em>10</em>
+              <span>05</span><b>Champions</b><em>10</em>
             </button>
             <button class="nav-item" data-panel="arenas" type="button">
-              <span>05</span><b>Realm & Rites</b>
+              <span>06</span><b>Realm & Rites</b>
             </button>
             <button class="nav-item" data-panel="guide" type="button">
-              <span>06</span><b>Controls</b>
+              <span>07</span><b>Guide</b>
             </button>
             <button class="nav-item" data-panel="settings" type="button">
-              <span>07</span><b>Settings</b>
+              <span>08</span><b>Settings</b>
             </button>
           </nav>
 
@@ -220,8 +244,8 @@
                     study the realm, tune controls, and enter a rite without leaving the party.
                   </p>
                   <div class="button-row">
-                    <button class="button button-primary button-large" data-quick-start type="button">
-                      First contact <kbd>↵</kbd>
+                    <button class="button button-primary button-large" data-panel="practice" type="button">
+                      Enter practice floor <kbd>↵</kbd>
                     </button>
                     <button class="button button-large" data-panel="play" type="button">Enter muster hall</button>
                   </div>
@@ -246,6 +270,40 @@
                 <div><b>8</b><span>authored battlegrounds</span></div>
                 <div><b>5</b><span>solo / PvP / PvPvE / PvE modes</span></div>
                 <div><b>120</b><span>authoritative simulation tick</span></div>
+              </div>
+            </article>
+
+            <article class="menu-panel practice-panel" data-menu-panel="practice" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">MOVEMENT CLOISTER / SPELL COURT</span><h2>Practice without a match</h2></div>
+                <p>Test the complete movement language and every equipped ability, switch champions instantly, and return here without losing a remote company.</p>
+              </header>
+              <div class="practice-layout">
+                <section class="practice-launch-card">
+                  <span class="eyebrow">YOUR PRACTICE RITE</span>
+                  <label>
+                    <span>Champion</span>
+                    <select id="practice-character"></select>
+                  </label>
+                  <label class="toggle-setting">
+                    <span><b>Stationary practice shade</b><small>Target for damage, reactions, cooldowns, and ultimate charge.</small></span>
+                    <input id="practice-target" type="checkbox" checked />
+                  </label>
+                  <div id="practice-character-readout" class="practice-character-readout" aria-live="polite"></div>
+                  <button class="button button-primary button-large" data-practice-action="start" type="button">Step onto the practice floor</button>
+                  <small>Inside: cycle champions, refill resources and cooldowns, reset positions, or open the complete field guide at any time.</small>
+                </section>
+                <section class="practice-map" aria-label="Sanctum practice areas">
+                  <div class="practice-map-ring"><i></i><i></i><i></i><i></i></div>
+                  <article data-zone="movement"><b>Movement Cloister</b><span>Sprint, slide, hop, wall kick, landing cut, counter-strafe</span></article>
+                  <article data-zone="spell"><b>Spell Court</b><span>Primary, tactical, defense, mobility, ultimate</span></article>
+                  <article data-zone="ward"><b>Mirror Ward</b><span>Target pressure, aim, spacing, cooldown reads</span></article>
+                  <article data-zone="gate"><b>Gathering Gate</b><span>Champion switch, refill, reset, return</span></article>
+                </section>
+                <section class="practice-reference-card">
+                  <header><span class="eyebrow">TOGGLEABLE FIELD GUIDE</span><h3>Know what you are testing</h3></header>
+                  <div id="practice-menu-reference" class="practice-reference"></div>
+                </section>
               </div>
             </article>
 
@@ -481,18 +539,18 @@
                 <article><b>Cover is absolute</b><span>No attacks or movement tunnel through geometry.</span></article>
                 <article><b>Defense is specific</b><span>Reflect, guard, phase, absorb, and counter demand different reads.</span></article>
                 <article><b>Spawns are protected</b><span>Joining and resetting never hands out a free hit.</span></article>
-                <article><b>Flow is universal</b><span>Sprint, hop, and wall-kick spend one shared resource on every champion.</span></article>
+                <article><b>Stamina is universal</b><span>Sprint, hop, and wall-kick spend one shared resource on every champion.</span></article>
                 <article><b>Reverse with intent</b><span>Press against committed momentum to counter-strafe: brake and re-angle faster, with less control on ice.</span></article>
                 <article><b>Carry a curve</b><span>Hop across your travel line to preserve bounded lateral momentum into evasive arcs and wall approaches.</span></article>
                 <article><b>Cut the landing</b><span>Reverse once in the brief post-hop window to steal a sharper turn. The window is consumed immediately.</span></article>
                 <article><b>Commit low</b><span>While moving fast, hold sprint and hop together to slide. Steering is limited and cover breaks the attempt.</span></article>
-                <article><b>Thread the edge</b><span>Move at committed speed through a hostile spell's narrow miss band to restore 9 FLOW. Hits, practice marks, and repeated fan shots do not pay.</span></article>
-                <article><b>Flux is commitment</b><span>Tactical, defense, and character mobility compete for raw magic; primary and FLOW remain available when dry.</span></article>
+                <article><b>Thread the edge</b><span>Move at committed speed through a hostile spell's narrow miss band to restore 9 Stamina. Hits, practice marks, and repeated fan shots do not pay.</span></article>
+                <article><b>Flux is commitment</b><span>Tactical, defense, and character mobility compete for raw magic; primary attacks and Stamina movement remain available when dry.</span></article>
                 <article><b>Shrines answer movement</b><span>Cross a ready covenant at high speed while missing Flux. The exposed route restores magic, then locks for everyone.</span></article>
                 <article><b>Wayseals choose the fight</b><span>In WILDMARCH, defeat a warden, carry its seal to either outer waystone, and move the scoring rune without gaining combat stats.</span></article>
                 <article><b>Elements alter routes</b><span>Wind carries fire; water douses fire; fire melts ice; ice freezes water.</span></article>
                 <article><b>Reactions stay readable</b><span>Lightning conducts through water. Explosive mechanics shatter earth; explosion is not an element.</span></article>
-                <article><b>Movement still wins</b><span>Fields create a short decision window; aim, timing, spacing, and FLOW secure the advantage.</span></article>
+                <article><b>Movement still wins</b><span>Fields create a short decision window; aim, timing, spacing, and Stamina secure the advantage.</span></article>
               </div>
             </article>
 
@@ -573,7 +631,7 @@
         </div>
 
         <footer class="menu-footer">
-          <span>FLUX / FLOW. LEARN. UNLEASH. EXECUTE.</span>
+          <span>FLUX / THE LIVING SANCTUM</span>
           <span id="build-diagnostic">OFFLINE READY · NO INSTALL STEP</span>
         </footer>
       </section>

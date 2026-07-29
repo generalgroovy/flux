@@ -119,3 +119,32 @@ is given.
   the suite and passes recursive JavaScript syntax checks.
 - PR #10's Windows/Linux Node 20/22 verification and both installable package
   jobs passed for implementation commit `e472bd7`.
+
+## 2026-07-29 Living Sanctum practice candidate
+
+- The runtime now starts against the authored `living_sanctum` map while the
+  Living Sanctum menu remains open. Practice launches a local-only free court
+  excluded from competitive catalogs, lobby setup, and network authority.
+- The court exposes the complete implemented compatibility movement kernel:
+  independent move/aim, counter-strafe, Stamina sprint, committed slide, hop,
+  landing cut, wall kick, champion mobility, and Edgeweave. It does not claim
+  the README's future double jump, air dodge, wavedash, vault, superglide, or air
+  redirect.
+- Practice provides a toggleable stationary target, previous/next champion
+  switching, exact resource/cooldown refill, floor reset, Sanctum return, and an
+  `F2` guide for movement, elements, selected abilities, champions, and races.
+  All player-facing resource labels use **Stamina**; internal `flow` identifiers
+  remain compatibility keys for saved settings, wire data, and deterministic
+  simulation.
+- `npm.cmd test` passed 133/133: 131 core/DOM/deterministic checks, one live
+  WebSocket lifecycle, and one authenticated cleanup check. `node
+  scripts/ci-verify.mjs` repeated all 133 and passed recursive syntax checks;
+  `npm.cmd audit --omit=dev` found zero production vulnerabilities.
+- The Windows source Electron runtime booted fullscreen into the Sanctum,
+  exposed all eight chambers through accessibility, and closed normally with no
+  remaining FLUX/Electron window. Desktop automation focused controls but did
+  not activate them, matching the prior Chromium automation limitation; no
+  automated desktop movement claim is made. The Browser surface rendered the
+  menu layout without horizontal overflow but blocked `src/game.mjs` as a local
+  source module, so browser behavior is not inferred.
+- Remote Windows/Linux CI and package jobs are still pending for this candidate.

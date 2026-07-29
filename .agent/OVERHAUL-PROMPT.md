@@ -48,10 +48,10 @@ Mechanics are frozen. Follow:
 `V0 tokens -> V1 characters -> V2 spells -> V3 maps -> V4 GUI -> V5 integrated acceptance`
 
 V0 is accepted. V1 is active. Spai Si, Urzh, and S. Wayne have reviewed
-source-only specimens. Nico Lai's source implementation is complete and awaits
-observed desktop/narrow render acceptance. Do not begin Steezo, resume Haara
-mechanics, introduce gameplay, change balance, migrate live races, or expose
-preview characters until the ordered visual acceptance permits it.
+source-only specimens. Nico Lai passed desktop specimen and live Windows
+Sanctum review and is the first promoted replacement; Steezo is next. Do not
+resume Haara mechanics, migrate live races, or expose other preview characters
+until the ordered visual acceptance permits it.
 
 ## Ground-up rule
 
@@ -106,10 +106,8 @@ gate, or required user visual acceptance.
 
 ## Immediate task
 
-When the user returns PC control, render Nico Lai's source-only board at desktop
-and narrow widths. Inspect the compact Gnome silhouette, high-cap anatomy,
-calibrated coil pack, breakable shared-device ownership, separate Charge/Light
-shape language, six states, team redundancy, health wear, reduced motion, and
-overflow. Revise or accept that slice using observed evidence; only then begin
-Steezo. Preserve zero simulation, network, balance, hitbox, or runtime-roster
-changes.
+Use Nico Lai's accepted board and shared live integration as the pattern for
+Steezo. Build the Goblin ancestry/role silhouette, tool rig, separate
+Charge/Fire/Light shape language, six states, team redundancy, health wear,
+reduced motion, and responsive specimen; review it before any live promotion.
+Preserve stable simulation/network identifiers and keep visuals data-driven.

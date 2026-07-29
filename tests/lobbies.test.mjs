@@ -316,6 +316,7 @@ test("disconnect reserves an exact player session and reconnect restores it", ()
     (candidate) => candidate.id === hosted.entityId,
   );
   entity.health = 37;
+  entity.healthRecoveryDelay = MATCH_TUNING.health.recoveryDelay;
   service.tick(1 / MATCH_TUNING.tickRate);
   const elapsed = lobby.state.elapsed;
 

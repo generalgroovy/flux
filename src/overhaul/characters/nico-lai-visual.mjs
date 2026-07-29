@@ -12,6 +12,7 @@ import {
 export const NICO_LAI_VISUAL = Object.freeze({
   profile: composeCharacterVisualProfile({
     id: "nico",
+    runtimeCharacterId: "volt",
     contentCompatibilityId: "nix",
     name: "Nico Lai",
     ancestryId: "gnome",

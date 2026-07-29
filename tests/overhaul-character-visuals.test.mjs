@@ -59,7 +59,15 @@ test("every shipped champion has exactly one explicit retirement transfer", () =
   assert.deepEqual(LEGACY_CONCEPT_TRANSFERS.map((entry) => entry.legacyId).sort(), shippedIds);
   assert.equal(new Set(LEGACY_CONCEPT_TRANSFERS.map((entry) => entry.overhaulId)).size, shippedIds.length);
   assert.ok(LEGACY_CONCEPT_TRANSFERS.every((entry) => entry.retained && entry.retired));
-  assert.ok(LEGACY_CONCEPT_TRANSFERS.every((entry) => entry.status === "compatibility-only"));
+  assert.equal(
+    LEGACY_CONCEPT_TRANSFERS.filter((entry) => entry.status === "promoted")[0]?.legacyId,
+    "volt",
+  );
+  assert.ok(
+    LEGACY_CONCEPT_TRANSFERS.every((entry) =>
+      ["compatibility-only", "promoted"].includes(entry.status),
+    ),
+  );
 });
 
 test("Spai Si owns Aerwyn's redirect language without inheriting Aerwyn's identity", () => {
@@ -105,6 +113,7 @@ test("Nico Lai is a tiny Gnome engineer with a breakable owned device read", () 
   assert.match(transfer.retained, /charge sequencing.*calibrated device/);
   assert.match(transfer.retired, /storm-scribe/);
   assert.equal(profile.name, "Nico Lai");
+  assert.equal(profile.runtimeCharacterId, "volt");
   assert.equal(profile.contentCompatibilityId, "nix");
   assert.equal(profile.plannedAncestry, "Gnome");
   assert.match(profile.ancestryRead, /high cap.*tiny measured tool frame/);

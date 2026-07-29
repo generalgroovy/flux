@@ -212,6 +212,12 @@ Character selection uses a fighting-game grid: ancestry columns contain
 champion portraits, and hover or keyboard focus reveals the kit without
 changing the locked choice.
 
+Every champion exposes the same six readable statistics: total Health,
+out-of-combat Health recovery, total Flux, Flux focus/recovery, base speed, and
+Endurance (total Stamina plus its recovery rate). Character and ancestry
+modifiers are centralized, bounded, authoritative, and shown directly in the
+Training Court; Health recovery begins only after 5.5 seconds without damage.
+
 The practice court exposes the complete universal movement grammar in the live
 runtime: independent move/aim, counter-strafe, Stamina sprint, jump and double
 jump, committed slide and slide jump, air redirect, air dodge, wavedash, wall
@@ -270,7 +276,7 @@ GUI foundation to arrive early.
 | Gate | Scope | Current status |
 | ---: | --- | --- |
 | V0 | Visual tokens and non-shipping reference specimen | Accepted |
-| V1 | All champion and ancestry concepts | In progress: Spai Si, Urzh, and S. Wayne are reviewed; Nico Lai is implemented source-only and awaits observed render acceptance |
+| V1 | All champion and ancestry concepts | In progress: Spai Si, Urzh, and S. Wayne are reviewed source specimens; Nico Lai passed observed review and is the first live promotion; Steezo is next |
 | V2 | Spell anticipation, travel, impact, ownership, and expiry language | Blocked by V1 |
 | V3 | Map materials, landmarks, routes, hazards, objectives, and dense-fight clarity | Blocked by V2 |
 | V4 | Sanctum, HUD, guide, settings, lobby, pause, results, and tutorial | Menu, roster, and integrated Practice court authorized and implemented; full gate still blocked by V3 |
@@ -286,15 +292,16 @@ every slice.
 
 | Area | Actual repository state |
 | --- | --- |
-| Compatibility runtime | Complete ten-character game remains authoritative in normal local and remote matches |
+| Compatibility runtime | Nine legacy sources plus promoted Nico Lai remain authoritative in normal local and remote matches; stable runtime IDs preserve saves and packets |
 | Overhaul data | Eight-family element aliases, sixteen mechanical race archetypes, sixteen design-only champions, ability catalog, reactions, movement grammar, sizes, modes, and destruction rules are validated but inactive |
-| Character visuals | Twenty modular ancestry templates exist; Spai Si, Urzh, S. Wayne, and Nico Lai have modular six-state source implementations, with Nico Lai awaiting observed render acceptance |
+| Character visuals | Twenty modular ancestry templates exist; Spai Si, Urzh, and S. Wayne remain reviewed source specimens; Nico Lai's six-state Gnome profile is live in the shared renderer |
 | Haara prototype | Headless local mechanic prototype still uses the legacy `Hara` label and stable `mara` ID behind `contentProfile: "overhaul-preview"`; normal selection and live lobbies reject it |
 | Movement | Complete universal Stamina grammar is live and deterministic: sprint, counter-strafe, jump/double jump, slide/slide jump, air redirect/dodge, wavedash, wall jump, landing cut, Edgeweave, vault, and superglide; all eight battlegrounds provide marked vault routes |
-| Sanctum | Always-rendered Living Sanctum shell, persistent remote company, ancestry-column roster selection, and a local Practice court with complete movement/spell areas, stationary target, champion switch, refill/reset, and `F2` field guide are implemented |
+| Champion statistics | Health/recovery, Flux capacity/recovery, speed, and Endurance are centralized, bounded, authoritative, deterministic, and visible in Sanctum selection/testing |
+| Sanctum | Always-rendered Living Sanctum shell, persistent remote company, ancestry-column roster selection, and a local Practice court with complete movement/spell areas, stationary target, champion switch, live statistics, refill/reset, and `F2` field guide are implemented |
 | Platforms | Source launch and graceful cleanup work on Windows and Linux; CI builds Windows NSIS and Linux AppImage artifacts |
-| Verification | 141 automated checks pass locally; GitHub Actions run `30462865622` passed Windows/Linux Node 20/22 verification plus NSIS/AppImage packaging for movement commit `0ff6eb0` |
-| Release blockers | Complete V1–V5 acceptance, a current packaged match smoke, signed public installers/update feed, and a dependable owned relay |
+| Verification | 143 automated checks pass locally; Windows source boot and interactive Sanctum/Training Court inspection passed; the latest published package matrix remains GitHub Actions run `30462865622` until this slice is pushed |
+| Release blockers | Remaining V1–V5 acceptance, a current packaged match smoke, signed public installers/update feed, and a dependable owned relay |
 
 The old champions are implementation scaffolding, not overhaul characters. Their
 mechanical lessons transfer only when the successor is complete:

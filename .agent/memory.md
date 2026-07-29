@@ -2143,3 +2143,39 @@
   PC control, review `tools/nico-lai-specimen.html` at desktop and narrow
   widths, including reduced motion and both team marks; revise or accept it
   before beginning Steezo.
+
+# 2026-07-29 — Nico Lai live promotion and champion statistics
+
+- **Observed visual acceptance:** Rendered Nico's six-state board in the local
+  browser with no warnings or errors, then launched the real Windows Electron
+  source build and inspected the live Living Sanctum and Training Court. The
+  compact Gnome body, high cap, coil pack, team tether, Charge forks, Light
+  diamonds, ability names, ownership, and health read remained visible at
+  gameplay zoom.
+- **Startup repair:** The interactive run exposed a real pre-existing boot
+  failure: `scripts/serve.mjs` omitted `overhaul-runtime.mjs` and
+  `overhaul-content.mjs` even though `match.mjs` imported them. Added both
+  explicit routes; the Windows app then booted directly into Sanctum as Nico.
+- **Stable promotion:** Replaced Nim Copperspark's presentation with Nico Lai
+  while preserving runtime ID `volt`, Gnome ancestry, hitbox, packet/save
+  identity, and proven Charge mechanics. Renamed the kit to Coil Dart, Arc
+  Chain, Prism Ground, and Coil Hop and connected only the shared overhaul
+  renderer registry, never the champion module directly.
+- **Simple stat contract:** Added bounded per-champion Health recovery, Flux
+  capacity/recovery, and Endurance alongside existing Health and speed. The
+  authoritative simulation resolves ancestry plus character values, applies
+  5.5-second damage-gated Health recovery, scales Flux/Stamina recovery, and
+  exposes Health, Recovery, Flux, Focus, Speed, and Endurance in the Sanctum.
+- **Sanctum clarity:** Nico is the default practice entrant. The Training Court
+  displays the full stat card and selected-statistics guide next to the complete
+  universal movement reference. Landmark labels now use authored positions so
+  station and court names do not stack at the map center.
+- **Verification:** `npm.cmd test` passed 143/143 checks including complete
+  movement chains, health recovery, reconnect preservation, live WebSocket
+  lifecycle, cleanup, renderer registry isolation, and stress/soak coverage.
+  Recursive syntax checks and focused desktop/visual checks passed; the real
+  Windows Sanctum and Training Court opened successfully. Linux/package jobs
+  still require the pushed GitHub Actions matrix for this commit.
+- **Next:** Implement Steezo as the next source visual slice using the accepted
+  Goblin ancestry template and separate Charge/Fire/Light shape language; keep
+  the live promotion behind its own observed and deterministic acceptance.

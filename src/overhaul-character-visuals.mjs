@@ -17,7 +17,7 @@ export const LEGACY_CONCEPT_TRANSFERS = freeze([
   transfer("kite", "Aerwyn", "aerwyn", "Spai Si", "redirect timing, forward duelist posture, and readable wind-angle guides", "name, Briar Elf ancestry, and complete legacy kit"),
   transfer("bulwark", "Gorum", "urzh", "Urzh", "brace discipline, lane anchoring, and squared stone mass", "name, Iron Orc ancestry, and rune-warden fiction"),
   transfer("echo", "Vellyn", "samwise", "S. Wayne", "intent division, decoy spacing, and visible swap boundaries", "name, Gloam Elf ancestry, and moon-wraith fiction"),
-  transfer("volt", "Nim Copperspark", "nico", "Nico Lai", "charge sequencing, interrupt windows, and calibrated device language", "name and storm-scribe fiction"),
+  transfer("volt", "Nim Copperspark", "nico", "Nico Lai", "charge sequencing, interrupt windows, and calibrated device language", "name and storm-scribe fiction", "promoted"),
   transfer("cinder", "Serek Ashborn", "steezo", "Steezo", "route traps, bounded detonation chains, and backblast recovery", "name and Cinderling ancestry"),
   transfer("orbit", "Morcant", "djonah-thaan", "Djonah Thaan", "ground denial, pursuit pressure, and a return-to-fundamentals silence cue", "name, Revenant ancestry, and grave-cantor fiction"),
   transfer("mend", "Neris Pearldive", "grace-reava", "Grace Reava", "living-current redirection, narrow protection windows, and Tide rhythm", "name and Reefborn ancestry"),
@@ -138,6 +138,7 @@ function transfer(
   overhaulName,
   retained,
   retired,
+  status = "compatibility-only",
 ) {
   return freeze({
     legacyId,
@@ -146,6 +147,6 @@ function transfer(
     overhaulName,
     retained,
     retired,
-    status: "compatibility-only",
+    status,
   });
 }

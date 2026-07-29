@@ -10,6 +10,8 @@ import {
   getCharacter,
   getMap,
   getMode,
+  getRace,
+  resolveCharacterStats,
   validateContent,
 } from "../src/content.mjs";
 import {
@@ -148,7 +150,18 @@ test("content ships ten playable champions, thirteen races, eight maps, and all 
     assert.ok(agent.mobility.name);
     assert.ok(agent.affinity.id);
     assert.equal(agent.affinity.kind, "element");
+    assert.ok(agent.stats.healthRegen > 0);
+    assert.ok(agent.stats.fluxCapacity >= 0.9);
+    assert.ok(agent.stats.fluxRegen >= 0.85);
+    assert.ok(agent.stats.endurance >= 0.9);
   }
+  const nico = getCharacter("volt");
+  const nicoStats = resolveCharacterStats(nico, getRace(nico.homeRaceId));
+  assert.equal(nico.name, "NICO LAI");
+  assert.deepEqual(nico.affinities, ["CHARGE", "LIGHT"]);
+  assert.equal(nico.visualProfileId, "nico");
+  assert.ok(nicoStats.maxFlux > MATCH_TUNING.flux.maximum);
+  assert.ok(nicoStats.fluxRegen > MATCH_TUNING.flux.recoveryPerSecond);
   assert.equal(new Set(RACES.map((race) => race.feature)).size, RACES.length);
   assert.ok(RACES.every((race) => race.feature && race.featureGlyph));
   const yrsa = getCharacter("rimewing");
@@ -1840,6 +1853,27 @@ test("flow recovers only after its explicit commitment window", () => {
   }
   assert.ok(player.flow > spentFlow);
   assert.ok(player.flow <= MATCH_TUNING.flow.maximum);
+});
+
+test("champion recovery waits for safety and uses the authored health rate", () => {
+  const state = duel({ leftCharacter: "volt", leftRace: "gnome" });
+  const player = state.entities[0];
+  player.health = player.maxHealth - 20;
+  player.healthRecoveryDelay = 0.05;
+  const woundedHealth = player.health;
+  for (let tick = 0; tick < 4; tick += 1) {
+    stepMatch(state, { left: idle }, FIXED_DELTA);
+  }
+  assert.equal(player.health, woundedHealth);
+  for (let tick = 0; tick < MATCH_TUNING.tickRate; tick += 1) {
+    stepMatch(state, { left: idle }, FIXED_DELTA);
+  }
+  assert.ok(player.health > woundedHealth);
+  assert.ok(player.health <= player.maxHealth);
+  assert.ok(
+    Math.abs(player.health - (woundedHealth + getCharacter("volt").stats.healthRegen)) < 0.02,
+  );
+  assert.deepEqual(matchInvariantErrors(state), []);
 });
 
 test("first contact teaches flow before the complete combat language", () => {

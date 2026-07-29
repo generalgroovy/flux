@@ -117,10 +117,13 @@ test("V1 character specimens share one responsive non-shipping harness", async (
     "/tools/nico-lai-specimen.html",
     "/tools/nico-lai-specimen.mjs",
     "/src/overhaul/characters/nico-lai-visual.mjs",
+    "/src/overhaul-content.mjs",
+    "/src/overhaul-runtime.mjs",
   ]) {
     assert.match(server, new RegExp(path.replaceAll("/", "\\/").replace(".", "\\.")));
   }
-  assert.doesNotMatch(game, /overhaul-character-visuals|nico-lai-visual/);
+  assert.match(game, /from "\.\/overhaul-character-visuals\.mjs"/);
+  assert.doesNotMatch(game, /nico-lai-visual/);
   assert.equal(
     JSON.parse(packageJson).build.files.some((entry) => entry.startsWith("tools/")),
     false,

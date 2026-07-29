@@ -5,6 +5,7 @@ import {
   getMap,
   getMode,
   getRace,
+  resolveCharacterStats,
 } from "./content.mjs";
 import {
   OVERHAUL_PREVIEW_PROFILE,
@@ -196,9 +197,10 @@ export function createMatch(options = {}) {
 function createEntity(spec, index, map) {
   const agent = getCharacter(spec.characterId);
   const race = getRace(spec.raceId ?? agent.homeRaceId);
-  const maxHealth = Math.round(agent.health * race.health);
-  const maxFlow = MATCH_TUNING.flow.maximum * race.flow;
-  const maxFlux = MATCH_TUNING.flux.maximum * race.flux;
+  const resolvedStats = resolveCharacterStats(agent, race);
+  const maxHealth = resolvedStats.maxHealth;
+  const maxFlow = resolvedStats.maxStamina;
+  const maxFlux = resolvedStats.maxFlux;
   const spawnIndex = finiteInteger(spec.spawnIndex, index) % map.spawns.length;
   const spawn = map.spawns[(spawnIndex + map.spawns.length) % map.spawns.length];
   const facingX = spawn.x < map.size.width / 2 ? 1 : -1;
@@ -225,6 +227,7 @@ function createEntity(spec, index, map) {
     facingY: 0,
     health: maxHealth,
     maxHealth,
+    healthRecoveryDelay: 0,
     alive: true,
     respawnRemaining: 0,
     spawnProtection: MATCH_TUNING.spawnProtection,
@@ -669,6 +672,7 @@ function tickEntity(state, entity, delta) {
     "damageInvulnerability",
     "spawnProtection",
     "hitFlash",
+    "healthRecoveryDelay",
     "flowRecoveryDelay",
     "hopCooldown",
     "hopRemaining",
@@ -733,10 +737,22 @@ function tickEntity(state, entity, delta) {
   }
   entity.flow = clamp(entity.flow, 0, entity.maxFlow);
   entity.flux = clamp(entity.flux, 0, entity.maxFlux);
+  const agent = getCharacter(entity.characterId);
+  if (
+    entity.alive &&
+    entity.healthRecoveryDelay === 0 &&
+    entity.health < entity.maxHealth
+  ) {
+    entity.health = Math.min(
+      entity.maxHealth,
+      entity.health + (agent.stats?.healthRegen ?? 0.8) * delta,
+    );
+  }
   if (entity.fluxRecoveryDelay === 0) {
     entity.flux = Math.min(
       entity.maxFlux,
-      entity.flux + MATCH_TUNING.flux.recoveryPerSecond * delta,
+      entity.flux + MATCH_TUNING.flux.recoveryPerSecond *
+        (agent.stats?.fluxRegen ?? 1) * delta,
     );
   }
 }
@@ -1534,7 +1550,8 @@ function moveEntity(state, entity, command, agent, delta, map) {
     } else if (entity.flowRecoveryDelay === 0) {
       entity.flow = Math.min(
         entity.maxFlow,
-        entity.flow + MATCH_TUNING.flow.recoveryPerSecond * delta,
+        entity.flow + MATCH_TUNING.flow.recoveryPerSecond *
+          (agent.stats?.endurance ?? 1) * delta,
       );
     }
   }
@@ -2855,6 +2872,7 @@ function damageEntity(state, target, rawDamage, attacker, options = {}) {
   damage = Math.max(1, Math.round(damage));
   const healthFloor = options.source === "training" ? 1 : 0;
   target.health = Math.max(healthFloor, target.health - damage);
+  target.healthRecoveryDelay = MATCH_TUNING.health.recoveryDelay;
   target.hitFlash = MATCH_TUNING.hitFlash;
   target.damageInvulnerability = agent.damageInvulnerability;
   target.lastAttackerId = attacker?.id ?? null;
@@ -3000,14 +3018,16 @@ function respawnEntity(entity, map) {
   const spawn = map.spawns[entity.spawnIndex % map.spawns.length];
   const agent = getCharacter(entity.characterId);
   const race = getRace(entity.raceId);
+  const resolvedStats = resolveCharacterStats(agent, race);
   entity.x = spawn.x;
   entity.y = spawn.y;
   entity.lastSafeX = spawn.x;
   entity.lastSafeY = spawn.y;
   entity.vx = 0;
   entity.vy = 0;
-  entity.maxHealth = Math.round(agent.health * race.health);
+  entity.maxHealth = resolvedStats.maxHealth;
   entity.health = entity.maxHealth;
+  entity.healthRecoveryDelay = 0;
   entity.alive = true;
   entity.spawnProtection = MATCH_TUNING.spawnProtection;
   entity.damageInvulnerability = 0;
@@ -3024,7 +3044,7 @@ function respawnEntity(entity, map) {
   entity.ultimateAimY = entity.facingY;
   entity.ultimateTargetX = entity.x;
   entity.ultimateTargetY = entity.y;
-  entity.maxFlow = MATCH_TUNING.flow.maximum * race.flow;
+  entity.maxFlow = resolvedStats.maxStamina;
   entity.flow = entity.maxFlow;
   entity.flowRecoveryDelay = 0;
   entity.sprinting = false;
@@ -3062,7 +3082,7 @@ function respawnEntity(entity, map) {
   entity.wallContactRemaining = 0;
   entity.wallX = 0;
   entity.wallY = 0;
-  entity.maxFlux = MATCH_TUNING.flux.maximum * race.flux;
+  entity.maxFlux = resolvedStats.maxFlux;
   entity.flux = entity.maxFlux;
   entity.fluxRecoveryDelay = 0;
   entity.fluxWarningCooldown = 0;
@@ -3496,6 +3516,11 @@ function repairState(state, map) {
       entity.facingY = facing.y;
     }
     entity.hopHeld = entity.hopHeld === true;
+    entity.healthRecoveryDelay = clamp(
+      finite(entity.healthRecoveryDelay),
+      0,
+      MATCH_TUNING.health.recoveryDelay,
+    );
     entity.techniqueHeld = entity.techniqueHeld === true;
     entity.hopStage = clamp(Math.trunc(finite(entity.hopStage)), 0, 2);
     entity.hopSpeed = clamp(
@@ -3637,6 +3662,7 @@ export function matchInvariantErrors(state) {
       "facingX",
       "facingY",
       "health",
+      "healthRecoveryDelay",
       "primaryCooldown",
       "specialCooldown",
       "defenseCooldown",

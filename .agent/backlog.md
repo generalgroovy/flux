@@ -8,16 +8,16 @@ maps -> V4 GUI -> V5 integrated acceptance. V0 is accepted and V1 is active.
 Spai Si, Urzh, and S. Wayne now have reviewed source-only character slices.
 S. Wayne also established modular champion files, shared drawing primitives,
 and one shared specimen harness so the remaining roster does not grow a
-monolithic renderer or copied pages. Nico Lai's Gnome/Charge/Light source slice
-is implemented with a calibrated coil pack, breakable device, team tether, six
-states, and focused tests; perform its observed desktop and narrow render review
-when the user returns PC control, then revise or accept it before beginning
-Steezo. Use the validated twenty-entry
+monolithic renderer or copied pages. Nico Lai's Gnome/Charge/Light slice passed
+desktop specimen and live Windows Sanctum review and is promoted through the
+stable `volt` runtime ID with centralized readable champion statistics. Begin
+Steezo next as the simplest Goblin/Charge/Fire/Light visual slice, preserving
+the same review and promotion gates. Use the validated twenty-entry
 ancestry registry and its one-screen
 `tools/ancestry-template-specimen.html` review board; add champion
 posture/prop/affinity layers by composition instead of copying ancestry drawing
 code. Keep the ten
-shipped champions as compatibility-only runtime scaffolding until their mapped
+remaining shipped champions as compatibility-only runtime scaffolding until their mapped
 successors pass complete visual and later mechanical promotion checks; never
 present them as overhaul-roster additions.
 

@@ -58,7 +58,7 @@ after its acceptance, priority returns to V1.
 | Gate | Status | Evidence / next decision |
 | ---: | --- | --- |
 | V0 | Accepted | Central tokens live in `styles.css`; the source-only specimen passed desktop and narrow review; the user's continuation authorized V1 |
-| V1 | In progress | Spai Si, Urzh, and S. Wayne are reviewed source-only specimens; Nico Lai's six-state source implementation is complete but awaits observed render acceptance before Steezo begins |
+| V1 | In progress | Spai Si, Urzh, and S. Wayne are reviewed source specimens; Nico Lai passed desktop specimen and live Windows Sanctum review and is the first promoted visual/runtime replacement; Steezo is next |
 | V2–V3, V5 | Blocked by order | Do not begin until the preceding visual gate is accepted |
 | V4 | Foundation plus complete movement court by direct request | Players spawn directly on the Living Sanctum floor; eight proximity stations own all option routes, preserve resumable local/remote contests, and expose movement teaching, marked vault rails, character switching, refill/reset, and a field guide; Muster adds ancestry-column portrait selection with independent non-mutating hover/focus previews; full GUI acceptance remains blocked until V1–V3 complete |
 
@@ -84,7 +84,10 @@ To introduce or revise an ancestry visually:
 4. run `tests/overhaul-character-visuals.test.mjs` and the full suite.
 
 Templates are presentation-only. They may not encode hitboxes, statistics,
-affinity advantages, abilities, runtime race migration, or hidden tells.
+affinity advantages, abilities, runtime race migration, or hidden tells. The
+2026-07-29 user-authorized Nico promotion keeps its runtime mechanics and stable
+`volt` ID separate from the visual profile while centralized champion stats
+remain simulation-owned content.
 
 ## Category acceptance
 
@@ -187,8 +190,10 @@ commit proves launch, selection, authority, tests, and migration safety.
 | Varka Ashmaw | Treevor the Mason | Terrain shaping, Fire liability, crown climax |
 
 `src/overhaul-character-visuals.mjs` is the tested source of truth for this
-retirement ledger. It is presentation-only and must not be imported into the
-live renderer while V1 remains incomplete.
+retirement ledger. Nico Lai is the first explicit exception promoted into the
+live renderer by direct user request; every other entry remains source-only
+until separately reviewed and promoted without adding champion branches to the
+shared renderer.
 
 ## Iteration rule
 

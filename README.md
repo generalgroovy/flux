@@ -269,14 +269,28 @@ Decorative particles may drop under load; essential tells may not.
 
 ## Overhaul delivery order
 
-Mechanical expansion is frozen while the visual-first gates are completed in
-order. A direct user request allowed only the existing Sanctum and roster-grid
-GUI foundation to arrive early.
+The latest reference direction places a repository-wide pixel-perspective pass
+and then a bounded input/movement pass ahead of further champion production.
+Reference images provide only broad perspective, proportion, pixel-density, and
+readability principles; FLUX copies no sprites, tiles, maps, layouts, fonts,
+icons, palettes, animations, HUD, or trade dress.
+
+| Priority | Scope | Current status |
+| ---: | --- | --- |
+| P0-P5 | Original three-quarter top-down virtual-pixel foundation, Living Sanctum terrain/elevation, Nico sprite, Charge/Light spells, text/HUD, integrated acceptance | P0 active; runtime unchanged |
+| M0-M5 | Remappable keyboard/controller defaults, jump body-lift/enlarging-shadow presentation, advanced movement revalidation, bounded tap-strafe/aerial turn | Blocked by P5 |
+| V1 resume | Continue one champion at a time beginning with Steezo | Blocked by M5 |
+
+The detailed contracts are
+[`PIXEL-PERSPECTIVE-OVERHAUL.md`](.agent/PIXEL-PERSPECTIVE-OVERHAUL.md) and
+[`MOVEMENT-INPUT-OVERHAUL.md`](.agent/MOVEMENT-INPUT-OVERHAUL.md).
+
+The underlying visual gates remain:
 
 | Gate | Scope | Current status |
 | ---: | --- | --- |
 | V0 | Visual tokens and non-shipping reference specimen | Accepted |
-| V1 | All champion and ancestry concepts | In progress: Spai Si, Urzh, and S. Wayne are reviewed source specimens; Nico Lai passed observed review and is the first live promotion; Steezo is next |
+| V1 | All champion and ancestry concepts | Paused: Spai Si, Urzh, and S. Wayne are reviewed source specimens; Nico Lai passed observed review and is the first live promotion; Steezo resumes after P0-P5 and M0-M5 |
 | V2 | Spell anticipation, travel, impact, ownership, and expiry language | Blocked by V1 |
 | V3 | Map materials, landmarks, routes, hazards, objectives, and dense-fight clarity | Blocked by V2 |
 | V4 | Sanctum, HUD, guide, settings, lobby, pause, results, and tutorial | Menu, roster, and integrated Practice court authorized and implemented; full gate still blocked by V3 |

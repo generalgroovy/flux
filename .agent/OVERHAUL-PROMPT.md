@@ -43,13 +43,14 @@ the same slice.
 
 ## Current gate
 
-Mechanics are frozen. Follow:
+The latest reference request overrides the previous next slice. Follow:
 
-`V0 tokens -> V1 characters -> V2 spells -> V3 maps -> V4 GUI -> V5 integrated acceptance`
+`P0-P5 pixel perspective -> M0-M5 movement/input -> resume V1 with Steezo -> V2 spells -> V3 maps -> V4 GUI -> V5 integrated acceptance`
 
-V0 is accepted. V1 is active. Spai Si, Urzh, and S. Wayne have reviewed
+V0 is accepted. V1 is paused. Spai Si, Urzh, and S. Wayne have reviewed
 source-only specimens. Nico Lai passed desktop specimen and live Windows
-Sanctum review and is the first promoted replacement; Steezo is next. Do not
+Sanctum review and is the first promoted replacement. P0 is active; Steezo
+resumes only after P0-P5 and M0-M5. Do not
 resume Haara mechanics, migrate live races, or expose other preview characters
 until the ordered visual acceptance permits it.
 
@@ -106,8 +107,10 @@ gate, or required user visual acceptance.
 
 ## Immediate task
 
-Use Nico Lai's accepted board and shared live integration as the pattern for
-Steezo. Build the Goblin ancestry/role silhouette, tool rig, separate
-Charge/Fire/Light shape language, six states, team redundancy, health wear,
-reduced motion, and responsive specimen; review it before any live promotion.
-Preserve stable simulation/network identifiers and keep visuals data-driven.
+Implement only P0 from `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md`: centralized
+virtual-pixel/projection/layer/palette/material/outline tokens and one original
+non-shipping three-quarter top-down specimen proving terrain, elevation,
+Nico-scale character proportions, ground anchor/shadow, and Charge/Light motifs.
+Do not convert runtime maps, change movement/bindings, add tap strafe, or begin
+Steezo. Preserve stable simulation/network identifiers and keep visuals
+data-driven.

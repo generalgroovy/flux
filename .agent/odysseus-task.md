@@ -6,24 +6,29 @@ Read `AGENTS.md`, `.agent/VISUAL-OVERHAUL.md`, `README.md`,
 `.odysseus/STATE.md`. Inspect the live branch, status, history, tests, current
 rendering/content boundaries, and the actual playable presentation.
 
-CURRENT OVERRIDING TASK: continue the original visual overhaul before any new
-mechanical implementation. Work strictly through V0 visual tokens/specimen ->
-V1 characters -> V2 spells -> V3 maps -> V4 GUI -> V5 integrated acceptance.
-V0 is accepted. Nico Lai is the first promoted V1 champion; confirm that fact
-from live source and Git history, then take **Steezo** as the next single V1
-slice. Do not revisit accepted Nico work unless verification exposes a direct
-regression, and do not scatter partial restyles across later gates.
+CURRENT OVERRIDING ORDER: complete
+`.agent/PIXEL-PERSPECTIVE-OVERHAUL.md` P0-P5, then
+`.agent/MOVEMENT-INPUT-OVERHAUL.md` M0-M5, then resume V1 champion production
+with Steezo. Choose exactly one complete slice from the first incomplete
+contract. The current slice is **P0 only**; do not begin runtime map conversion,
+movement changes, input rebinding, tap strafe, or Steezo.
 
-For Steezo, first inspect the Goblin ancestry template, the inactive catalog
-record, the Serek Ashborn compatibility mapping, existing character specimen
-architecture, and current tests. Produce or complete one original, compact
-Goblin engineer visual source whose Charge/Fire/Light affinities read through
-shape, motion, value, and restrained aura at gameplay zoom. Cover idle, move,
-commit, hit, defend, and defeat states; preserve a practical silhouette and the
-project's non-sexualized presentation. Keep Steezo source-only until an actual
-Garuda visual review confirms all six states, ancestry, team ownership, damage
-wear, reduced-motion behavior, and dense-background contrast. Promotion into
-the live renderer is a separate follow-up slice after that evidence exists.
+For P0, inspect the current canvas transform, arena/map/entity drawing order,
+visual tokens, Nico visual profile, spell rendering, responsive canvas setup,
+and visual tests. Establish centralized virtual-pixel scale, integer snapping,
+nearest-neighbour rendering, projection/layer tokens, compact palette/material
+ramps, selective outlines, and one non-shipping three-quarter top-down specimen.
+The specimen must contain an original small FLUX terrain scene with walkable
+ground, path, water, cliff top/front faces, stairs, blocker, foliage, one station
+landmark, a Nico-scale champion proof, ground anchor/shadow, and Charge/Light
+motifs. It may not reuse or trace any reference sprite, tile, map, font, icon,
+layout, or palette.
+
+Review the P0 specimen at desktop and narrow sizes with nearest-neighbour pixel
+edges, grayscale hierarchy, high contrast, and reduced motion. Record actual
+screenshot evidence when available. Keep all runtime simulation, maps,
+characters, hitboxes, controls, movement, spells, networking, and GUI behavior
+unchanged; P0 is a source-only foundation and acceptance board.
 
 Treat the user's Legend of Zelda reference only as broad inspiration for warm,
 inviting top-down heroic fantasy, clear silhouettes, handcrafted nature, and
@@ -34,8 +39,8 @@ creatures, symbols, typography, heart meters, item icons, menus, maps,
 composition, animation, audio, assets, or trade dress.
 
 Do not add or rebalance mechanics, activate Steezo or other future characters,
-change hitboxes, simulation timing, network contracts, AI, damage, resources,
-objectives, or mode rules. Implement the visual source slice, add
+change runtime maps, hitboxes, simulation timing, network contracts, AI, damage,
+resources, objectives, bindings, movement, or mode rules. Implement P0, add
 regression/accessibility coverage, run focused checks and the complete suite,
 open the specimen on Garuda when possible, inspect the diff, and update
 memory/backlog/state with real evidence. Record screenshots or their paths when

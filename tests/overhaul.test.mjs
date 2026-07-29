@@ -10,6 +10,7 @@ import {
   MATERIAL_TAGS,
   MODE_LOADOUT_RULES,
   MOVEMENT_GRAMMAR,
+  OVERHAUL_CONTENT_STATUS,
   RACE_ARCHETYPES,
   REACTION_RULES,
   SIZE_RULES,
@@ -21,13 +22,66 @@ import {
   validateOverhaulContent,
 } from "../src/overhaul-content.mjs";
 
-test("overhaul content is internally valid and covers one playable character per race", () => {
+test("overhaul content is internally valid and keeps the authored future roster bounded", () => {
   assert.deepEqual(validateOverhaulContent(), []);
   assert.equal(ELEMENTS.length, 8);
   assert.equal(RACE_ARCHETYPES.length, 16);
   assert.equal(CHARACTER_ROSTER.length, 16);
-  assert.equal(new Set(CHARACTER_ROSTER.map((entry) => entry.raceId)).size, 16);
+  assert.deepEqual(CHARACTER_ROSTER.map((entry) => entry.name).sort(), [
+    "Dr. Apex", "Fluup", "Grimm Bow", "Ha Rekt", "Hara", "Hesus Christo", "Hidn Leef", "Nico Lai", "Oh Tipi",
+    "Oll' I", "S. Wayne", "Spai Si", "Steezo", "The Red Baron", "Treevor the Mason", "Wa Bidi",
+  ].sort());
+  assert.equal(CHARACTER_ROSTER.filter((entry) => entry.raceId === "human").length, 1);
+  assert.equal(CHARACTER_ROSTER.filter((entry) => entry.raceId === "troll").length, 1);
+  assert.equal(CHARACTER_ROSTER.filter((entry) => entry.raceId === "hobbit").length, 0);
+  assert.ok(CHARACTER_ROSTER.every((entry) => entry.lore.length > 0));
+  assert.ok(CHARACTER_ROSTER.every((entry) => entry.loreStatus === "draft-placeholder"));
+  assert.ok(CHARACTER_ROSTER.every((entry) => entry.implementationStatus === "design-only"));
+  assert.equal(OVERHAUL_CONTENT_STATUS.gameplay, "design-only");
+  assert.equal(OVERHAUL_CONTENT_STATUS.lore, "draft-placeholder");
+  assert.deepEqual(OVERHAUL_CONTENT_STATUS.promotionGates, [
+    "mechanic-prototype",
+    "deterministic-local-tests",
+    "server-authority",
+    "bot-use",
+    "readability-accessibility",
+    "packaged-smoke",
+  ]);
   assert.ok(ABILITY_CATALOG.length >= 48);
+});
+
+test("S. Wayne keeps the legacy id while using the Human Dark/Light rework", () => {
+  const wayne = CHARACTER_ROSTER.find((entry) => entry.id === "samwise");
+  assert.equal(wayne.name, "S. Wayne");
+  assert.equal(wayne.raceId, "human");
+  assert.equal(wayne.size, 3);
+  assert.deepEqual(wayne.affinities, [{ id: "dark", strength: 2 }, { id: "light", strength: 2 }]);
+  assert.equal(wayne.passive.name, "BETWEEN SHADOWS");
+  assert.deepEqual(wayne.activeAbilityIds, ["prism-tripwire", "burrowed-shadow", "ray"]);
+  assert.equal(wayne.ultimateAbilityId, "sun-grid");
+});
+
+test("Grimm Bow reuses a stable slot for a bounded Void/Earth/Water setup loop", () => {
+  const grimm = CHARACTER_ROSTER.find((entry) => entry.id === "brum");
+  assert.equal(grimm.name, "Grimm Bow");
+  assert.equal(grimm.raceId, "troll");
+  assert.equal(grimm.size, 4);
+  assert.deepEqual(grimm.affinities, [
+    { id: "dark", strength: 2 },
+    { id: "earth", strength: 1 },
+    { id: "water", strength: 1 },
+  ]);
+  assert.equal(grimm.passive.name, "DROWNED MARK");
+  assert.match(grimm.passive.rule, /never increasing damage/i);
+  assert.deepEqual(grimm.activeAbilityIds, ["stone-shot", "void-pull", "tideline"]);
+  assert.equal(grimm.ultimateAbilityId, "moss-flood");
+
+  const profile = characterBalanceProfile(grimm);
+  assert.equal(profile.powerBudget, 61);
+  assert.equal(profile.signatureSkillPoints, 6);
+  assert.equal(profile.averageFluxCost, 26);
+  assert.equal(Number(profile.averageCooldown.toFixed(2)), 2.12);
+  assert.deepEqual(profile.signatureRoles, ["control", "damage", "terrain"]);
 });
 
 test("legacy element names resolve to the simplified eight-family vocabulary", () => {

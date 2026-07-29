@@ -1,5 +1,32 @@
 # FLUX backlog
 
+## Active visual-first gate — mechanics frozen
+
+Complete `.agent/VISUAL-OVERHAUL.md` before selecting any mechanical backlog
+item. Required order is V0 tokens/specimen -> V1 characters -> V2 spells -> V3
+maps -> V4 GUI -> V5 integrated acceptance. V0 is accepted and V1 is active.
+Spai Si, Urzh, and S. Wayne now have isolated source-only character slices.
+S. Wayne also established modular champion files, shared drawing primitives,
+and one shared specimen harness so the remaining roster does not grow a
+monolithic renderer or copied pages. The next bounded V1 slice is Nico Lai as a
+Gnome with Charge/Light device language. Use the validated twenty-entry
+ancestry registry and its one-screen
+`tools/ancestry-template-specimen.html` review board; add champion
+posture/prop/affinity layers by composition instead of copying ancestry drawing
+code. Keep the ten
+shipped champions as compatibility-only runtime scaffolding until their mapped
+successors pass complete visual and later mechanical promotion checks; never
+present them as overhaul-roster additions.
+
+The user's direct Sanctum request authorized one bounded V4 foundation ahead of
+the normal order: obsolete HEX/operations presentation is removed, every
+existing menu route lives in the Living Sanctum, and remote company persists
+while players browse those routes. The follow-up roster request extends only
+that foundation: Muster now uses compact ancestry columns, portrait tiles, and
+non-mutating hover/focus detail previews for both local players. Do not expand
+this exception into broader GUI restyling or new lobby mechanics before
+V1–V3 are accepted.
+
 Priority remains fundamentals → compact PvP → PvPvE → PvE. Add race champions
 only as complete contrasting kits inside those proven loops. Keep Battle Royale
 and other scale-heavy variants unexposed until combat, authority, objectives,
@@ -9,9 +36,12 @@ Visual/combat review should now explicitly test compact projectile lanes,
 weapon cadence, pixel-scale silhouettes, impact confirmation, and dense-fight
 clarity using only broad lessons from Enter the Gungeon—not copied content.
 
-Local-agent handoff is configured for Odysseus and Aider. Periodically verify
-both YOLO launchers still refuse `main` and dirty trees, share their lock, load
-the FLUX context, run the actual suite, and push only the active agent branch.
+Local-agent handoff is configured for Garuda Sway with Ollama,
+Qwen2.5-Coder 3B/7B, Aider, and optional Odysseus. Target-machine acceptance
+must run the read-only doctor, one autonomous local-commit pass, one interactive
+follow-up, the actual suite, and a game smoke while observing zero remote
+runtime requests; inspect the session manifest, timestamped events, transcript,
+raw LLM history, final state, and replayable patch for completeness.
 
 ## Release acceptance
 
@@ -194,3 +224,47 @@ the FLUX context, run the actual suite, and push only the active agent branch.
 - Publish `develop`, wait for both installable package artifacts and every test
   lane, then close superseded PRs before deleting only exact archived heads.
 - Stop before merging `develop` into `main`.
+
+## Future S. Wayne acceptance
+
+- Preserve `samwise` only as the compatibility ID; all player-facing future copy
+  uses **S. Wayne**, Hobbit, Dark/Light.
+- Prototype BETWEEN SHADOWS only after the inactive overhaul foundation receives
+  an approved live vertical slice. The boundary crossing must be server-owned,
+  visibly locked out, and incapable of granting damage.
+- Validate PRISM TRIPWIRE, BURROWED SHADOW, Ray, and Sun Grid together for route
+  control without letting the 7/13 discounted signature become mandatory.
+- Preserve the low Hobbit silhouette, bare-foot anatomy cue, and split
+  Light/Dark mantle without changing S. Wayne's hitbox during the visual gate.
+
+## Future roster acceptance
+
+- Treat the twenty-three named concepts plus one temporary Angel placeholder in
+  `.agent/VISUAL-OVERHAUL.md` as the visual roster plan. Grimm Bow reuses the
+  retired `brum` compatibility ID.
+- Use Spai Si as Demon, Fluup as Orc, Oll' I as Werewolf, The Red Baron as
+  Undead, Djonah Thaan as Vampire, and Hesus Christo as Elf. Keep these as
+  presentation-only assignments until V1 accepts every character concept and a
+  separate mechanical migration is tested.
+- Keep the Angel entry explicitly unnamed and without lore, kit, ID, or runtime
+  record; replace or remove it before V1 acceptance instead of treating a filler
+  slot as a finished champion.
+- Preserve each reused internal ID until an explicit compatibility migration
+  exists, while showing only the approved player-facing name.
+- Validate the low-cost Haara/Spai Si/Leaf the Hidden/Hesus Christo signatures through
+  geometry and setup tests before changing point values.
+- Keep the legacy Haara preview adapter isolated while adding sanctuary/active-state rendering,
+  developer-only input bindings, accessibility cues, remote preview authority,
+  reconnect/spectator coverage, and packaged Windows/Linux smoke tests. Do not
+  begin a second character adapter until these gates are reviewed.
+- Prototype Dr. Apex first among the newly remapped support concepts: healing
+  must remain contestable, server-owned, non-damaging, and useful despite the
+  slow 4.67-second average signature cycle.
+- Wa Bidi's battlecry requires a visual subtitle/icon cue and an independent
+  timing tell so audio-disabled players receive equal warning.
+- Keep all current lore as `draft-placeholder` source material only. It requires
+  an explicit author rewrite before menus, character inspection, localization,
+  voice, marketing, or combat surfaces may consume it.
+- Prototype Grimm Bow as a readable displacement-to-precision loop. DROWNED MARK
+  may steady Stone Shot after personal Void/Water displacement but must never
+  increase its damage.

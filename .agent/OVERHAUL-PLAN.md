@@ -1,17 +1,27 @@
 # FLUX overhaul plan
 
-Branch: `agent/resource-hud-first-slice`
+Branch: `integration/unify-flux`
 
 ## Current constraints
 
 - Keep all existing playable paths operational while replacement systems are introduced.
-- Keep the seven approved character names and all approved passive, active, and ultimate names unchanged.
+- Keep the sixteen approved character names and all approved passive, active, and ultimate names unchanged.
+- Keep character descriptions as author-owned draft placeholders until they are explicitly rewritten and approved for in-game use.
 - Simplify system, mode, race, element, location, and interface labels where clarity improves.
 - Keep live gameplay text minimal and decision-relevant.
 - Move full explanations to tooltips, setup panels, the guide, and freeplay diagnostics.
 - Move the HUD toward a compact action-RTS/MOBA information hierarchy.
 - Make Flux feel abundant but strategically exhaustible.
 - Preserve deterministic server authority, stable IDs, reconnect, spectators, host migration, Linux, Windows, and safe updating.
+
+## Current implementation checkpoint
+
+Hara is the first feature-gated runtime slice. `src/overhaul-runtime.mjs` maps
+her stable `mara` ID to a local preview implementation of Ray, Stone Shot,
+SECOND PLAN, Gust Ring, and Sun Grid. It is not present in the normal selector
+or accepted by live lobbies. The mechanic, deterministic-test, and bot-use gates
+pass; rendering/input, remote-authority, accessibility, and packaged-smoke gates
+remain pending. See `.agent/OVERHAUL-IMPLEMENTATION.md` for the exact matrix.
 
 ## Slice 1 — Flux economy and HUD copy
 
@@ -112,15 +122,24 @@ Expected rhythm:
 
 Implement, without renaming any approved character or ability:
 
-- Der Rote Baron
-- Treevor
-- Samwise DeWayne
+- The Red Baron
+- Treevor the Mason
+- S. Wayne
 - Steezo
 - Oh Tipi
-- Oll'I
+- Oll' I
 - Fluup
+- Wa Bidi
+- Nico Lai
+- Spai Si
+- Hidn Leef
+- Ha Rekt
+- Dr. Apex
+- Hara
+- Hesus Christo
+- Grimm Bow
 
-Each requires complete data, visuals, bots, local and remote behavior, prediction, reconnect, spectators, tooltips, freeplay demonstration, and tests.
+Each requires complete data, visuals, bots, local and remote behavior, prediction, reconnect, spectators, tooltips, freeplay demonstration, and tests. Mechanical acceptance does not approve placeholder lore.
 
 ## Slice 8 — Destruction, levels, modes, and releases
 

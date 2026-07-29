@@ -7,17 +7,17 @@
   "cleanupCandidates": [
     {
       "branch": "agent/full-overhaul-implementation",
-      "expectedHead": "292eb578e133e5f913fd4913f77904e224f057e4",
-      "archiveTag": "archive/pre-unify-full-overhaul-20260728-1246",
+      "expectedHead": "8590ce58ae86698a1dcc6f08851a89358d6b9236",
+      "archiveTag": "archive/pre-unify-full-overhaul-20260729-1230",
       "pullRequest": 8,
-      "classification": "deferred-failing-overhaul"
+      "classification": "deferred-green-mechanics-frozen"
     },
     {
       "branch": "agent/resource-hud-first-slice",
-      "expectedHead": "2ffa373fa74d4068a3ad6dc92bcc09710deae843",
-      "archiveTag": "archive/pre-unify-resource-hud-20260728-1241",
+      "expectedHead": "7cd579556a26794a9e286ec41e7bbafa4004aeff",
+      "archiveTag": "archive/pre-unify-resource-hud-20260729-1230",
       "pullRequest": 7,
-      "classification": "superseded-transport"
+      "classification": "superseded-checkpoint-ci"
     },
     {
       "branch": "agent/windows-linux-runtime",

@@ -10,13 +10,15 @@ top-down skill arena shooter/fighter. Target AAA-grade responsiveness,
 readability, cohesion, and production discipline while keeping the art direction,
 rules, interface, and code intentionally minimal.
 
-FLUX is an old-world magical setting. Flux is raw shapeable magic; race champions
-channel Ember, Tide, Gale, Stone, Volt, Veil, Prism, or Null through geometry and
-timing. The presentation draws on illuminated chronicles, carved runes, woven
-banners, aged maps, and readable pixel-era adventure silhouettes—not modern
-operators, military deployment fiction, glass dashboards, or science-fiction UI.
-Movement, aim, spacing, reactions, and disciplined resource use remain primary;
-an elemental matchup never grants an automatic damage advantage.
+FLUX is an old-world magical setting. Flux is raw shapeable magic; champions
+channel the overhaul element families defined in `README.md` through geometry,
+materials, movement, and timing. Compatibility names and IDs are migration
+adapters, not the future product vocabulary. The presentation draws on
+illuminated chronicles, carved runes, woven banners, aged maps, and readable
+pixel-era adventure silhouettes—not modern operators, military deployment
+fiction, glass dashboards, or science-fiction UI. Movement, aim, spacing,
+reactions, and disciplined resource use remain primary; an elemental matchup
+never grants an automatic damage advantage.
 
 Do not copy protected assets, characters, maps, names, audio, visual identities,
 or exact mechanics. Extract only broad design principles from fast arena
@@ -29,6 +31,18 @@ weapon-specific cadence, impact clarity, and dense encounters that remain
 readable. Combine those principles with FLUX's old-world elemental identity;
 do not reproduce its weapons, characters, rooms, enemies, assets, or exact
 mechanics.
+
+## Current visual-first directive
+
+Before selecting any new mechanical work, read and obey
+`.agent/VISUAL-OVERHAUL.md`, `.agent/OVERHAUL-IMPLEMENTATION.md`, and
+`.agent/OVERHAUL-PROMPT.md`. New mechanics are frozen until the visual gates are
+accepted in this strict order: visual tokens/specimen, characters, spells,
+maps, GUI, integrated acceptance. The user's Zelda reference is mood-level
+only; produce an original FLUX identity and copy no protected visual identity,
+characters, symbols, assets, layouts, interface, animation, or audio. This
+directive changes iteration priority, not the delivery-gate or playable-state
+requirements below.
 
 ## Product pillars
 

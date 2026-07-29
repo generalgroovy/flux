@@ -57,6 +57,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     json: async () => ({ lobbies: [] }),
   });
   let fakeSocket = null;
+  const socketMessages = [];
   class FakeWebSocket {
     static CONNECTING = 0;
     static OPEN = 1;
@@ -104,6 +105,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
 
     send(raw) {
       const message = JSON.parse(raw);
+      socketMessages.push(message);
       if (message.type === "probe") {
         this.emitMessage({ type: "probe", sequence: message.sequence });
       } else if (message.type === "host") {
@@ -222,15 +224,51 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
 
   const app = document.getElementById("app");
   assert.equal(app.dataset.view, "menu");
+  assert.match(
+    document.querySelector('.nav-item[data-panel="home"]').textContent,
+    /Sanctum/i,
+  );
+  assert.equal(document.querySelector(".hero-mark"), null);
+  assert.equal(document.querySelectorAll(".sanctum-sigil i").length, 8);
+  assert.doesNotMatch(
+    document.querySelector('[data-menu-panel="home"]').textContent,
+    /(^|\s)HEX(\s|$)/i,
+  );
   assert.equal(window.FLUX_DEBUG, window.DIFF_DEBUG, "legacy debug alias stays compatible");
   assert.deepEqual(window.DIFF_DEBUG.getInvariantErrors(), []);
   assert.equal(document.querySelectorAll("#agent-options .race-column").length, 13);
   assert.equal(document.querySelectorAll('#agent-options input[name="character"]').length, 10);
+  assert.equal(document.querySelectorAll("#agent-options [data-character-id]").length, 10);
   assert.equal(document.querySelectorAll('#agent-options input[name="race"]').length, 0);
   assert.match(
     document.querySelector('#agent-options .race-column[aria-label="Briar Elf champions"] header').textContent,
     /leaf-point ears/,
   );
+  assert.match(document.getElementById("agent-preview").textContent, /AERWYN/);
+  assert.match(
+    document.getElementById("agent-preview").textContent,
+    /Briar Elf.*Briar gale duelist.*THREAD THE TURN/s,
+  );
+  assert.match(document.getElementById("agent-two-preview").textContent, /GORUM/);
+  const gorumChoice = document.querySelector(
+    '#agent-options [data-character-id="bulwark"]',
+  );
+  gorumChoice.dispatchEvent(new window.Event("pointerover", { bubbles: true }));
+  assert.match(
+    document.getElementById("agent-preview").textContent,
+    /Iron Orc runewarden.*GORUM.*STONE/s,
+  );
+  assert.equal(
+    document
+      .querySelector('input[name="character"][value="kite"]')
+      .hasAttribute("checked"),
+    true,
+    "hover previews without changing the locked champion",
+  );
+  document.getElementById("agent-options").dispatchEvent(
+    new window.Event("pointerleave"),
+  );
+  assert.match(document.getElementById("agent-preview").textContent, /AERWYN/);
   assert.equal(document.getElementById("online-race").disabled, true);
 
   for (const panel of [
@@ -588,6 +626,42 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     document.getElementById("coach-text").textContent,
     /OVERTIME.*next score wins/i,
   );
+  window.dispatchEvent(escape);
+  document.querySelector('#pause-overlay [data-action="menu"]').click();
+  assert.equal(app.dataset.view, "menu");
+  assert.equal(app.dataset.remoteSession, "connected");
+  assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "remote");
+  assert.equal(fakeSocket.readyState, FakeWebSocket.OPEN);
+  assert.equal(socketMessages.some((message) => message.type === "leave"), false);
+  assert.equal(document.getElementById("menu-close").hidden, false);
+  assert.equal(document.getElementById("sanctum-party").hidden, false);
+  for (const panel of [
+    "home",
+    "play",
+    "online",
+    "agents",
+    "arenas",
+    "guide",
+    "settings",
+  ]) {
+    document.querySelector(`.nav-item[data-panel="${panel}"]`).click();
+    assert.equal(app.dataset.panel, panel);
+    assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "remote");
+    assert.equal(fakeSocket.readyState, FakeWebSocket.OPEN);
+  }
+  document.getElementById("menu-close").click();
+  assert.equal(app.dataset.view, "game");
+  window.dispatchEvent(escape);
+  document.querySelector('#pause-overlay [data-action="menu"]').click();
+  document.querySelector('.nav-item[data-panel="online"]').click();
+  document.getElementById("leave-lobby").click();
+  assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "none");
+  assert.equal(app.dataset.remoteSession, "none");
+  assert.equal(document.getElementById("sanctum-party").hidden, true);
+  assert.equal(socketMessages.filter((message) => message.type === "leave").length, 1);
+  document.getElementById("host-lobby").click();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "remote");
   fakeSocket.emitMessage({
     type: "server-shutdown",
     code: "host-shutdown",
@@ -597,7 +671,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.equal(document.getElementById("pause-title").textContent, "Host realm closed");
   assert.match(
     document.getElementById("pause-copy").textContent,
-    /authoritative host shut down.*match has ended/i,
+    /host shut down.*contest has ended/i,
   );
   assert.equal(
     document.getElementById("server-status").textContent.trim(),

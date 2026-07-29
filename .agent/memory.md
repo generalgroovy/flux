@@ -1572,3 +1572,439 @@
   clean check, confirming an active writer. Launch and cleanup are now separate
   preflight phases: drift is a visible non-blocking warning for packaging the
   immutable candidate, but remains a hard failure for branch deletion.
+
+# 2026-07-28 — S. Wayne future-roster rework
+
+- **Direction:** Replaced the future Samwise DeWayne concept with **S. Wayne**, a
+  medium Human with strong internal Dark/Light affinities and a player-facing
+  Void/Light identity. The stable `samwise` ID remains as a compatibility key.
+- **Kit:** Authored the eclipse-boundary passive **BETWEEN SHADOWS**, with PRISM
+  TRIPWIRE, BURROWED SHADOW, Ray, and Sun Grid as the signature kit. The concept
+  now communicates contrast boundaries through a split mantle, prism lines,
+  shadow anchors, and reveal rays.
+- **Roster contract:** Two Humans and no assigned Hobbit are now intentional.
+  Validation retains exactly sixteen future races and sixteen future characters
+  but no longer fabricates one representative per race.
+- **Compatibility:** This changes only inactive overhaul data, tests, and design
+  documents. The ten-character 0.34.3 live roster is untouched.
+- **Verification:** The focused overhaul suite passed 14/14 and the generated
+  balance profile is valid at 50 power-budget points and 7/13 signature points.
+  The complete Windows verification then passed 109/109 plus recursive syntax
+  checks.
+
+# 2026-07-28 — Superseded fifteen-character overhaul roster
+
+- **Direction:** Replaced the provisional sixteen-character future roster with
+  the fifteen requested named concepts: Oh Tipi, S. Wayne, The Red Baron,
+  Steezo, Treevor the Mason, Oll' I, Fluup, Wa Bidi, Nico Lai, Spai Si, Hidn
+  Leef, Ha Rekt, Dr. Apex, Hara, and Hesus Christo.
+- **Reuse:** Reworked fifteen existing data slots rather than adding parallel
+  characters. Only the unrequested Brum placeholder was retired. Existing IDs
+  remain compatibility keys even where player-facing names and races changed.
+- **Authored identity:** Added draft lore for every future character. Explicit races
+  are locked for Wa Bidi, Hidn Leef, Ha Rekt, Dr. Apex, Hara, and Hesus Christo.
+- **Mechanical adaptation:** Most characters retain the nearest existing kit.
+  Dr. Apex is now a Stoneborn combat medic using ROOT RAMPART, Spring, MIRROR
+  BULWARK, Deep Spring, and the non-damage FIELD TRIAGE passive.
+- **Compatibility:** Live 0.34.3 content remains unchanged. The future validator
+  now requires exactly the fifteen approved names, non-empty lore, valid race
+  sizes, diverse signature roles, bounded budgets, and explicit counterplay.
+- **Verification:** The focused future-content suite passed 14/14 after the
+  complete roster remap.
+
+# 2026-07-28 — Mechanics-first roster and Grimm Bow
+
+- **Privacy and lore boundary:** Removed personal reference mappings from the
+  concept documentation. Existing humorous descriptions remain unchanged as
+  `draft-placeholder` source copy and are blocked from in-game use until the
+  author explicitly rewrites and approves them.
+- **Roster:** Restored the retired `brum` compatibility slot as **Grimm Bow**, a
+  size-4 Troll with Void 2 / Earth 1 / Water 1 affinities. The future roster is
+  again sixteen characters; live 0.34.3 content remains untouched.
+- **Mechanical loop:** DROWNED MARK lets personal Void/Water displacement steady
+  the next Stone Shot without increasing damage. Stone Shot, Void Pull,
+  TIDELINE, and Moss Flood reuse the existing catalog, keeping the first
+  prototype feasible while preserving setup, escape, and miss-recovery play.
+- **Promotion contract:** Every future character is `design-only`. Promotion
+  requires a mechanic prototype, deterministic local tests, server authority,
+  bot use, readability/accessibility review, and packaged smoke verification;
+  mechanical acceptance never approves lore.
+- **Verification:** Focused future-content checks passed 15/15. The complete
+  Windows verification passed 110/110 (108 core/DOM/deterministic checks, one
+  live WebSocket lifecycle, and one server-cleanup check), plus recursive
+  JavaScript syntax checks.
+
+# 2026-07-28 — First feature-gated overhaul runtime slice
+
+- **Safety boundary:** Added the `overhaul-preview` match content profile while
+  preserving `live` as the default. The normal menu and lobby service continue
+  to resolve only the shipped roster; requests for the preview-only `mara` ID
+  fail closed to the existing live fallback.
+- **Hara mechanics:** Implemented Ray and heavy Stone Shot as distinct primary
+  commitments, SECOND PLAN as one swap per round at a personal spawn sanctuary,
+  Gust Ring with a real safe center, and Sun Grid as three telegraphed lanes
+  that cannot multi-hit one target. Draft lore is absent from runtime data.
+- **Bots and protocol:** Added an optional, strictly boolean `swap` command with
+  a false default for existing clients. Preview bots use the same sanitizer and
+  can select Stone Shot at a sanctuary against heavy or distant targets.
+- **Promotion:** Mechanic-prototype, deterministic-local-test, and bot-use gates
+  pass. UI/input exposure, remote preview authority, accessibility/readability,
+  and packaged smoke gates remain pending, so Hara is not user-playable.
+- **Verification:** The complete Windows verification passed 119/119: 117
+  core/DOM/deterministic checks, one live WebSocket lifecycle, and one
+  authenticated server-cleanup check. Recursive JavaScript syntax checks also
+  passed.
+
+# 2026-07-29 — Safe Garuda local-model handoff
+
+- **Outcome:** Replaced the stale machine/branch-specific unrestricted launchers
+  with a path-independent Garuda/Arch setup doctor and a shared local-agent
+  runner for interactive or bounded work.
+- **Stack:** Ollama uses the official `qwen2.5-coder:3b` or `:7b` tags through
+  Aider's `ollama_chat/` adapter. Both profiles use 16K context and a 2K
+  repository map; automatic selection prefers 7B at 16 GiB RAM or 7 GiB VRAM.
+- **Safety:** Setup changes require explicit `--install`/`--pull`. Agent work
+  refuses protected/detached branches, dirty trees, and concurrent runs; it
+  defaults to one iteration, no commit, and no push. Those external Git actions
+  require separate `--commit` and `--push` choices.
+- **Odysseus:** Converted its prompt/state/decisions to live-state discovery.
+  Odysseus remains an optional authenticated workspace while Aider supplies the
+  supported repository-editing equivalent and the same task/test gate. A
+  clipboard helper renders current branch, commit, status, and recent history
+  directly through Sway's `wl-copy` without creating repository artifacts.
+- **Verification:** `node --test tests/local-agent-handoff.test.mjs` passed 2/2;
+  Git for Windows Bash parsed every `scripts/*.sh`; `git diff --check` passed;
+  and `npm.cmd test` passed 121/121 (119 core/DOM/deterministic checks, one live
+  WebSocket lifecycle, and one authenticated cleanup check).
+- **Limitation:** The Garuda package/service/model/GPU doctor and Sway
+  notifications require execution on the target Linux machine and remain
+  unverified here; this tooling-only slice did not change or interactively
+  playtest game behavior.
+
+# 2026-07-29 — Autonomous local-only agent runtime
+
+- **Direction:** Made both interactive and bounded Qwen sessions operate without
+  tool confirmations while preserving branch, clean-tree, concurrency, and
+  deterministic verification gates.
+- **Interactive behavior:** Aider stays open for follow-up prompts, auto-approves
+  local shell/file actions, runs `npm test` after edits, and makes local commits.
+  Bounded runs now also commit verified work by default; `--no-commit` retains a
+  review diff, and no runtime path exposes push.
+- **Local resources:** Runtime accepts only a loopback Ollama URL and disables
+  Aider telemetry/update checks/URL ingestion, Playwright downloads, npm online
+  resolution, Git network protocols, and standard HTTP(S)/SOCKS egress while
+  preserving loopback for inference and local network tests.
+- **Scope boundary:** Setup remains the explicit networked package/model phase.
+  Full unsandboxed user-shell access can deliberately override environment
+  restrictions, so the prompt forbids remote access and the documentation names
+  this limitation instead of claiming kernel-level isolation.
+- **Verification:** The focused handoff suite passed 2/2, Git for Windows Bash
+  parsed every shell launcher, explicit model/loopback selection accepted local
+  endpoints and rejected a remote endpoint, `git diff --check` passed, and the
+  complete Windows suite passed 121/121 both normally and from the configured
+  proxy-denied/npm-offline local runtime environment.
+
+# 2026-07-29 — Complete observable development audit
+
+- **Outcome:** Every interactive or bounded local-agent session now creates a
+  private, timestamped audit below the user's XDG state directory and prints
+  its location at start and exit. `local-agent.sh logs` discovers the newest
+  session without requiring Ollama or Aider.
+- **Evidence:** The audit contains a start manifest, timestamped event stream,
+  visible terminal/tool/test/Git output, interactive input history, chat
+  history, raw local-LLM request/response history, final exit/Git state,
+  session commit list, diff statistics, and committed/staged/uncommitted
+  patches. Aider also runs verbose and displays commit diffs.
+- **Privacy:** Audit directories use a restrictive umask and remain outside the
+  repository because they may contain source, prompts, and terminal output.
+  The agent contract forbids suppressing or deleting audit evidence.
+- **Verification:** The handoff contract passed 2/2, all shell scripts parsed,
+  the synthetic XDG-state `logs` lookup listed the expected manifest/events,
+  `git diff --check` passed, and the complete Windows suite passed 121/121.
+- **Limitation:** Aider is not installed in this Windows checkout, so an actual
+  Qwen interactive session and its raw transcript must still be accepted on the
+  target Garuda host; hidden model chain-of-thought is intentionally not treated
+  as trustworthy engineering documentation.
+
+# 2026-07-29 — Visual-first production freeze
+
+- **Direction:** Froze new mechanical implementation until an ordered original
+  visual overhaul is accepted: V0 centralized tokens/non-shipping specimen, V1
+  characters, V2 spells, V3 maps, V4 GUI, and V5 integrated acceptance.
+- **Reference boundary:** Recorded The Legend of Zelda only as a broad reference
+  for inviting top-down heroic fantasy, silhouette clarity, handcrafted nature,
+  and restrained adventure UI. The contract explicitly rejects copying its
+  characters, costumes, creatures, symbols, typography, meters, icons, menus,
+  maps, compositions, animation, audio, assets, or trade dress.
+- **Implementation boundary:** Visual work may touch rendering, presentation
+  metadata, CSS/canvas/assets, non-simulation animation, accessibility, and
+  visual tests. It may not alter movement, hitboxes, timing, damage, resources,
+  abilities, elements, races, AI, networking, objectives, modes, or progression.
+- **Agent routing:** Root instructions, audited local task, handoff context,
+  backlog, Odysseus state/decisions, README, and regression tests all route the
+  next run to the first incomplete visual gate. Approved future characters may
+  receive concepts in V1 but stay inactive.
+- **Verification:** The focused handoff/visual contract suite passed 3/3, every
+  shell script parsed, `git diff --check` passed, and the full Windows suite
+  passed 122/122.
+- **Limitation:** This slice establishes and verifies the production contract;
+  it does not claim V0 art tokens or any visual asset was implemented or
+  visually accepted. The next audited Garuda agent run must implement V0 first.
+# 2026-07-29 — V1 ancestry redistribution
+
+- **Scope:** Updated presentation planning only; live content, preview adapters,
+  runtime ancestry IDs, kits, balance, networking, and packaged behavior remain
+  unchanged under the visual-first mechanical freeze.
+- **Roster truth:** Recorded the approved twenty-three-character concept roster
+  in `.agent/VISUAL-OVERHAUL.md` and exposed the integration gap in `README.md`:
+  this branch still contains sixteen validated design records while seven later
+  concepts await deliberate branch unification.
+- **New ancestry assignments:** The Red Baron is planned as Vampire, Fluup as
+  Werewolf, Spai Si as Angel, and provisional Donnok as Demon. The assignments
+  preserve stronger locks: S. Wayne remains Hobbit, Haara Nymph, Wa Bidi Goblin,
+  Grace Reava the sole Sylph, and Ha Rekt/Hesus Christo anthropomorphic
+  Wyrmborn.
+- **Representation:** The planned roster covers eighteen of twenty ancestry
+  foundations; Elf and Orc intentionally remain empty rather than forcing a
+  weak reskin. The roster remains 23 champions total.
+- **Verification:** `git diff --check` passed; the local-agent visual-contract
+  and focused overhaul suites passed 18/18, then the full deterministic suite
+  passed 122/122 across its standard, WebSocket, and cleanup lanes. No playtest
+  is claimed for a presentation-only planning change.
+
+# 2026-07-29 — Corrected ancestry plan and V0 visual specimen
+
+- **User mapping:** Superseded the prior distribution. Spai Si is planned as
+  Demon, Fluup as Orc, Oll' I as Werewolf, The Red Baron as Undead, Djonah
+  Thaan as Vampire, and Hesus Christo as Elf. The twenty-three named champions
+  now cover nineteen ancestries; one explicitly unnamed Angel placeholder gives
+  the final ancestry a visual slot but has no ID, lore, kit, mechanics, or
+  runtime record.
+- **V0 implementation:** Centralized a seven-step value ladder, eight restrained
+  palette roles, three outline weights, five old-world material treatments,
+  spacing, corners, four timing tiers, and one response easing curve in
+  `styles.css`. Existing interface variables now alias those tokens without
+  changing simulation behavior.
+- **Reference specimen:** Added `tools/visual-specimen.html` and its scoped CSS
+  as a source-server-only board for palette, contrast, materials, gameplay
+  geometry, scale, outlines, and motion. The route is allowlisted only for local
+  source review and `tools/` remains excluded from desktop package inputs.
+- **Accessibility:** The specimen is responsive and reduced-motion safe. Tests
+  enforce all token families, package exclusion, all six reference sections,
+  and at least 4.5:1 contrast for primary, secondary, focus, and danger roles;
+  the lowest enforced pair is Danger on the darkest ground at 4.72:1.
+- **Rendered verification:** The in-app browser rendered the specimen at
+  1440×900, 800×700, and 390×844 with all six sections visible, no horizontal
+  overflow, and no clipped text after one header-line-height correction. The
+  live main menu also rendered at 1440×900 with no console warnings. The
+  in-app browser did not initialize the gameplay module during an attempted
+  First Contact click, so no interactive combat playtest is claimed; the
+  deterministic browser-shell test did launch, pause, and reset successfully.
+- **Automated verification:** Focused visual/handoff checks passed 4/4;
+  `npm.cmd test` passed 123/123 across 121 standard checks, one live WebSocket
+  lifecycle, and one authenticated cleanup check; all tracked shell scripts
+  parsed with Git Bash; package JSON, server syntax, and `git diff --check`
+  passed.
+- **Next gate:** V0 is implemented but awaits user visual acceptance. Do not
+  start V1 character production until the token/specimen direction is accepted
+  or revised; the Angel placeholder must be resolved before V1 can complete.
+
+# 2026-07-29 — Legacy retirement map and V1 Spai Si specimen
+
+- **Gate transition:** Treated the user's continuation as V0 acceptance and
+  advanced only to V1 characters; V2 mechanics/spells and later visual gates
+  remain blocked by order.
+- **Roster decision:** Reclassified all ten shipped champions as temporary
+  compatibility scaffolding. Added a one-to-one tested transfer ledger:
+  Aerwyn→Spai Si, Gorum→Urzh, Vellyn→S. Wayne, Nim→Nico Lai, Serek→Steezo,
+  Morcant→Djonah Thaan, Neris→Grace Reava, Branna→Biggy Bob, Yrsa→Ha Rekt,
+  and Varka→Treevor the Mason. Every transfer records retained concepts and
+  retired identity so no old champion becomes a permanent overhaul addition.
+- **Playable boundary:** Did not delete or modify live runtime entries and did
+  not import the new presentation module into `src/game.mjs`. Removal waits for
+  a complete successor plus selection, authority, migration, launch, and
+  regression checks in the same playable slice.
+- **V1 slice:** Added the source-only Spai Si specimen with six gameplay reads,
+  swept Demon horns, ember tail, Wind arcs, Light spindle, Earth-weighted
+  mantle, team-shape redundancy, low-health wear, and a nonsexualized compact
+  silhouette. It inherits Aerwyn's redirect readability but explicitly retires
+  Aerwyn's name, ancestry, fiction, and complete kit.
+- **Rendered verification:** The in-app browser rendered
+  `tools/spai-si-specimen.html` at its 1280×720 desktop viewport with all six
+  state cards, no horizontal overflow, and no console errors. No narrow-window
+  render or live combat playtest is claimed for this presentation-only slice.
+- **Automated verification:** Focused visual checks passed 4/4. `npm.cmd test`
+  passed 126/126: 124 sequential checks, one live WebSocket lifecycle, and one
+  authenticated cleanup check. Final syntax, diff, and source-route checks are
+  recorded in the commit handoff.
+- **Next decision:** Visually accept or revise Spai Si before creating the next
+  character specimen; keep the Angel placeholder unresolved and inactive.
+
+# 2026-07-29 — Recovery refresh, pushed integration, and V1 Urzh slice
+
+- **Recovery/unification:** Audited remote drift before integration. Pushed
+  annotated recovery tags for `main` at `eebf01c`, full-overhaul at `8590ce5`,
+  and resource-HUD at `7cd5795`; updated the manifest/classifications; merged
+  refreshed `origin/main`; launch preflight then passed every ancestry/head/tag
+  check. Pushed `integration/unify-flux` without force or branch deletion.
+- **Deferred mechanics:** The full-overhaul PR matrix is green, but its construct
+  durability and parallel live-content expansion remain deferred under the V1
+  mechanical freeze. The resource-HUD delta remains checkpoint CI only.
+- **Verification:** A first post-merge full run found one stale exact phrase in
+  the local-agent visual contract. Restored the explicit inactive-future-roster
+  invariant; focused checks passed 7/7 and the rerun passed 126/126. Production
+  dependency audit reported zero vulnerabilities.
+- **Package evidence:** The verified Windows package is bound to `2a1277b` with
+  SHA-256 `80bd785916cd2c31180bcd94e95b17a638ff61f9fd62d24fa0fdece3d853eb43`.
+  The packaged app rendered fullscreen and closed normally with no owned
+  processes left. Automation could focus but not activate a match control, so
+  `develop` was not published and no packaged combat claim is made.
+- **V1 slice 02:** Added Urzh as a source-only Stoneborn specimen inheriting
+  Gorum's brace/lane-anchor discipline while retiring Gorum's name, Iron Orc
+  ancestry, lore, and complete kit. Squared shoulders, ember seams, kiln
+  buckler, Earth plates, Fire exhaust, and Charge forks distinguish ancestry,
+  role, affinities, action state, and ownership without simulation changes.
+- **Rendered verification:** The in-app browser rendered all six Urzh state
+  cards at 1280×720 with no horizontal overflow or console errors. Focused
+  character/visual checks passed 5/5; the full suite passed 127/127 across 125
+  standard checks, one live WebSocket lifecycle, and one authenticated cleanup.
+- **Next decision:** Visually accept or revise Urzh before the third V1 champion.
+  A real packaged match launch remains required before publishing `develop`.
+
+# 2026-07-29 — Modular ancestry visual foundation
+
+- **Architecture:** Added `src/ancestry-visual-templates.mjs` with twenty frozen,
+  validated presentation templates. Each owns only body shape, anatomy feature
+  recipes, material, and motion read; champion profile composition owns role,
+  prop, affinities, palette, ownership, health wear, and action-state effects.
+- **Migration proof:** Spai Si now composes the Demon template and Urzh composes
+  the Stoneborn template. Their champion-specific aura and prop layers remain
+  independent, and no live renderer, simulation radius, runtime race ID,
+  ability, network rule, or balance value changed.
+- **Modding path:** A new champion normally selects an `ancestryId` and supplies
+  profile layers. A genuinely new ancestry adds one registry entry and, only if
+  necessary, one shared body/feature recipe; it does not copy a full champion
+  renderer.
+- **Review board:** Added `tools/ancestry-template-specimen.html`, showing every
+  foundation, body-shape key, anatomy hooks, material, and motion read in one
+  responsive source-only board.
+- **Rendered verification:** The in-app browser rendered all twenty cards at
+  1280×720 with a complete 1,384-pixel document, no horizontal overflow, and no
+  console errors. Spai Si and Urzh each retained six cards, no overflow, and no
+  console errors after migration.
+- **Focused verification:** Seven ancestry/character/visual checks passed,
+  including every template's generic body/anatomy renderer and two independent
+  champions sharing one template. The full suite passed 129/129 across 127
+  standard checks, one live WebSocket lifecycle, and one authenticated cleanup.
+
+# 2026-07-29 — Living Sanctum menu and persistent remote company
+
+- **Concept cleanup:** Removed the obsolete H/E/X background lettering and
+  operations/deployment-facing menu copy. The home presentation is now the
+  Living Sanctum, with an original eight-point geometric seal and old-world
+  Muster, Friends, Realm & Rites, Controls, and Settings language.
+- **Unified navigation:** Every existing front-end route is a Sanctum chamber.
+  Entering the Sanctum from pause or results preserves the current local or
+  remote contest; a persistent top-bar action and connected-company card return
+  directly to play.
+- **Remote lifecycle:** Sanctum navigation no longer sends `leave` or closes the
+  WebSocket. Connected players can visit all seven chambers while the
+  authoritative contest continues. Disconnect is now the explicit **Leave
+  remote company** action, which is separately regression-tested.
+- **Automated verification:** `npm.cmd test` passed 129/129 across 127 standard
+  checks, one live WebSocket lifecycle, and one authenticated cleanup. The DOM
+  test proves remote state/socket retention across every chamber, return to
+  contest, explicit leave, reconnection, and host shutdown. `node --check
+  src/game.mjs` and `git diff --check` passed.
+- **Rendered verification:** The source Sanctum rendered at 1280×720 and
+  390×844 with no body overflow; the desktop rail had zero horizontal overflow,
+  and the narrow rail remained intentionally scrollable. The browser surface
+  did not execute `src/game.mjs`, so its clicks could not verify live behavior;
+  no browser multiplayer playtest is claimed.
+- **Gate boundary:** This is a direct-user-authorized V4 foundation only. V1
+  character work remains active, and broader GUI styling, spells, maps, and
+  mechanics remain ordered behind their existing gates.
+
+# 2026-07-29 — Ancestry-column champion selection
+
+- **Player-facing problem:** Muster exposed ancestry columns, but each champion
+  row spent most of its space on repeated copy and did not provide the immediate
+  portrait scan or inspect-before-lock behavior expected of a fighting-game
+  roster.
+- **Implemented solution:** Recast both local-player selectors as thirteen
+  compact ancestry columns with layered ancestry/champion portrait marks.
+  Hovering or focusing a tile now fills a shared detail card with the champion's
+  role, style, affinity edge, difficulty, ancestry boon/drawback, and complete
+  kit names. Leaving the roster restores the locked champion, and previewing
+  never changes the radio selection.
+- **Responsive/accessibility contract:** Pointer hover and keyboard focus share
+  one code path; labels remain the actual stable radio controls; Player 1 and
+  Player 2 own independent live regions; narrow layouts stack the readout while
+  preserving the horizontally comparable ancestry strip.
+- **Automated verification:** `npm.cmd test` passed 129/129 across 127 standard
+  checks, one live WebSocket lifecycle, and one authenticated cleanup check.
+  The DOM coverage includes all thirteen columns, ten live portrait choices,
+  both initial previews, a Gorum hover preview, locked-selection stability, and
+  leave-to-restore behavior.
+- **Rendered limitation:** The Windows source build rendered the Living Sanctum
+  fullscreen and accepted focus on **Enter Muster Hall**, but Electron desktop
+  automation again did not dispatch activation. No interactive roster render or
+  match-entry claim is made from that automation run.
+- **Gate boundary:** This is the user's second bounded V4 foundation request.
+  V1 remains active; the change introduces no champion, affinity, ability,
+  balance, networking, or simulation behavior.
+
+# 2026-07-29 — Overhaul-first README
+
+- **Documentation correction:** Replaced the compatibility-build changelog as
+  the README's organizing frame. The document now describes the overhaul
+  product first: movement, resources, ability/loadout grammar, expanded element
+  vision and reactions, twenty ancestry templates, the twenty-three named
+  champions plus temporary Angel slot, Sanctum, maps/modes, visual direction,
+  delivery gates, and cross-platform workflow.
+- **Truth boundary:** The README explicitly distinguishes intended overhaul
+  behavior from the inactive eight-family/sixteen-character data prototype and
+  the ten-character compatibility runtime. It does not claim that future
+  characters, Spirit/Chaos/Gravity/Time, the full movement grammar, or 32-player
+  scale are currently playable.
+- **Legacy handling:** Old champion names appear only in a clearly marked
+  mechanical-transfer ledger. Haara is the target name; the existing headless
+  prototype's legacy `Hara` label and stable `mara` ID are disclosed as an
+  implementation migration still to complete.
+- **Verification:** `npm.cmd test` passed 129/129 across 127 standard checks,
+  one live WebSocket lifecycle, and one authenticated cleanup check;
+  `git diff --check` passed before the run.
+
+# 2026-07-29 — Ground-up overhaul boundary and V1 S. Wayne slice
+
+- **Documentation contract:** Reworked `AGENTS.md`,
+  `.agent/OVERHAUL-IMPLEMENTATION.md`, `.agent/OVERHAUL-PROMPT.md`,
+  `.agent/IMPLEMENTATION-LOOP.md`, and `.agent/backlog.md` around one canonical
+  read order, explicit clean-reuse criteria, controlled replacement, visual
+  V0–V5 order, modular target boundaries, and measured slice acceptance.
+  `.agent/CONCEPT-ITERATION.md` is now explicitly historical where it conflicts
+  with the overhaul-first README.
+- **Architecture:** Split the monolithic champion drawing path into shared
+  primitives and one module per authored character under `src/overhaul/`.
+  `src/overhaul-character-visuals.mjs` remains a compatibility registry/barrel,
+  and all character boards now use one shared source-only specimen runner and
+  stylesheet.
+- **V1 slice 03:** Added S. Wayne with stable visual/migration ID `samwise`,
+  Hobbit anatomy, an eclipse waystone, separate Dark/Light value and shape
+  language, team redundancy, health wear, and six authored gameplay reads. No
+  live roster, simulation, network, lore, or balance behavior changed.
+- **Rendered verification:** The in-app browser loaded
+  `tools/s-wayne-specimen.html` at 1280x720 and reported no console errors.
+  Review caught global `overflow: hidden` clipping the lower state row; the
+  shared specimen document now owns scrolling, and both rows, annotations, and
+  footer were then visually inspected.
+- **Automated verification:** Focused visual tests passed 10/10.
+  `npm.cmd test` passed 132/132: 130 standard checks, one live WebSocket
+  lifecycle, and one authenticated cleanup check. `node scripts/ci-verify.mjs`
+  repeated the suite and passed syntax checks for all JavaScript modules.
+  `git diff --check` passed.
+- **Next target:** Implement Nico Lai as the next source-only V1 Gnome
+  character using the shared rendering/specimen boundary.
+- **Remote verification:** GitHub Actions run `30454561082` passed all six jobs
+  for implementation commit `e472bd7`: Windows and Ubuntu on Node 20.19.1 and
+  Node 22, plus Windows NSIS and Ubuntu AppImage package builds.

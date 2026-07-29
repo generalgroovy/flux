@@ -62,6 +62,28 @@ test("public lobbies can be hosted, listed, and joined in progress", () => {
   assert.deepEqual(matchInvariantErrors(joined.snapshot.state), []);
 });
 
+test("live lobbies fail closed when clients request an overhaul preview id", () => {
+  const { service } = serviceFixture();
+  const hosted = service.host(
+    "host-client",
+    { characterId: "mara", botCount: 0, maxPlayers: 4 },
+  );
+  assert.equal(hosted.ok, true);
+  assert.equal(hosted.snapshot.state.contentProfile, "live");
+  assert.equal(hosted.snapshot.state.entities[0].characterId, "kite");
+
+  const joined = service.join(
+    "guest-client",
+    hosted.lobby.code,
+    { characterId: "mara" },
+  );
+  assert.equal(joined.ok, true);
+  assert.equal(
+    joined.snapshot.state.entities.find((entity) => entity.id === joined.entityId).characterId,
+    "kite",
+  );
+});
+
 test("late joins receive WILDMARCH state and disconnects release its carrier", () => {
   const { service } = serviceFixture();
   const guestMessages = [];

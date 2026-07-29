@@ -2179,3 +2179,33 @@
 - **Next:** Implement Steezo as the next source visual slice using the accepted
   Goblin ancestry template and separate Charge/Fire/Light shape language; keep
   the live promotion behind its own observed and deterministic acceptance.
+
+# 2026-07-29 — Current Garuda Odysseus/Aider handoff
+
+- **Canonical entry point:** Added `scripts/linux-agent-handoff.sh` as a small
+  dispatcher for setup, doctor, interactive Aider, bounded Odysseus-style runs,
+  live Odysseus clipboard handoff, audit discovery, and stop. It delegates to
+  the existing audited scripts and introduces no alternate agent path.
+- **Current task:** Replaced the stale Urzh state with the reviewed baseline:
+  Nico Lai is promoted and Steezo is the next single V1 slice. Both Odysseus and
+  Aider are instructed to build Steezo's source-only six-state Goblin
+  Charge/Fire/Light specimen and defer runtime promotion until a real Garuda
+  visual review supplies evidence.
+- **Sway behavior:** `odysseus` automatically copies the live repository,
+  branch, commit, status, history, and exact audited run command when
+  `WAYLAND_DISPLAY`, `SWAYSOCK`, and `wl-copy` are present; otherwise it prints
+  the same handoff. Setup remains the only package/model download phase.
+- **Transparency and access:** Execution stays unsandboxed as the current Linux
+  user, auto-approves local actions, accepts only loopback Ollama, records the
+  full private manifest/transcripts/events/model history/final state/patches,
+  may commit verified work locally, and cannot push through the launcher.
+- **Verification:** The focused handoff contract passed 3/3. Git for Windows
+  Bash parsed every tracked shell script and exercised the dispatcher help plus
+  rendered handoff. `node scripts/ci-verify.mjs` passed all 143 checks and every
+  recursive JavaScript syntax check. The actual Garuda packages, Ollama service,
+  selected GPU backend, Sway clipboard, and local Qwen session remain explicitly
+  unverified until run on that host.
+- **Next:** On Garuda, create or select a clean non-protected branch, run
+  `bash scripts/linux-agent-handoff.sh setup --check`, then doctor and one
+  bounded `run --model auto --iterations 1`; inspect the private audit and
+  Steezo specimen before allowing a follow-up promotion slice.

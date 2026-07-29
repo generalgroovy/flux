@@ -16,6 +16,7 @@ For local-agent handoff changes also run:
 
 ```bash
 node --test tests/local-agent-handoff.test.mjs
+bash scripts/linux-agent-handoff.sh --help
 bash scripts/local-agent.sh --help
 bash scripts/setup-local-agent-linux.sh --help
 bash scripts/prepare-odysseus-handoff.sh --help

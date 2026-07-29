@@ -187,3 +187,24 @@ is given.
 - The documentation head repeated all six successfully in run `30463176519`;
   PR #13 merged as `8cd54bb`, and `main` plus `integration/unify-flux` were
   realigned there with a clean unification preflight.
+
+## 2026-07-29 Nico promotion and Linux handoff baseline
+
+- Nico Lai is the first promoted overhaul champion, retaining stable live ID
+  `volt` while rendering through the accepted Gnome Charge/Light visual profile.
+- Centralized bounded champion statistics now authoritatively control maximum
+  Health, safe-delay Health recovery, maximum Flux, Flux recovery, speed,
+  Stamina, and Endurance; the Sanctum Training Court and field guide expose the
+  selected values without changing universal movement rules.
+- The Windows source launcher now serves the complete overhaul runtime module
+  graph. A real Electron session started directly in the Living Sanctum as Nico,
+  opened the Training Court, displayed the six statistics, and restarted on the
+  final presentation with separated station labels.
+- `node scripts/ci-verify.mjs` passed 143 checks and recursive syntax validation.
+  GitHub Actions run `30473256385` passed Windows and Ubuntu Node 20/22 tests
+  plus Windows NSIS and Linux AppImage packaging; PR #16 merged as `0d294b2` and
+  `main` plus `integration/unify-flux` were realigned there.
+- The tracked Garuda handoff now points Odysseus and Aider at Steezo's bounded
+  V1 source specimen through `scripts/linux-agent-handoff.sh`. A real Garuda
+  doctor, local-model session, Sway clipboard handoff, and Steezo specimen review
+  remain target-machine acceptance work and must not be inferred from Windows.

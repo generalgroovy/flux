@@ -65,7 +65,9 @@ render_handoff() {
   printf 'Use the repository files directly; do not ask for or ingest an archive.\n'
   printf 'Read `.agent/ODYSSEUS_PROMPT.md` as the system contract and '
   printf '`.agent/odysseus-task.md` as the current task. Run '
-  printf '`bash scripts/local-agent.sh doctor` before editing.\n'
+  printf '`bash scripts/linux-agent-handoff.sh doctor --model auto` before editing. '
+  printf 'For one audited implementation pass call '
+  printf '`bash scripts/linux-agent-handoff.sh run --model auto --iterations 1`.\n'
 }
 
 if [[ "${clipboard}" == true ]]; then

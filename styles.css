@@ -295,6 +295,52 @@ kbd {
   pointer-events: none;
 }
 
+#app.station-open[data-view="game"] .front-end {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  grid-template-rows: 4.2rem minmax(0, 1fr) 2.5rem;
+  padding: clamp(0.5rem, 2vw, 1.5rem);
+  background:
+    linear-gradient(#080603a8, #080603d4),
+    radial-gradient(circle at 50% 45%, #6f53282b, transparent 54%);
+  backdrop-filter: blur(3px);
+}
+
+#app.station-open .topbar,
+#app.station-open .menu-layout,
+#app.station-open .menu-footer {
+  width: min(82rem, 100%);
+  margin-inline: auto;
+  border: 1px solid #806a3e;
+  background: #17120bf2;
+  box-shadow: 0 1.25rem 4rem #0009;
+}
+
+#app.station-open .topbar {
+  padding-inline: clamp(1rem, 3vw, 2.25rem);
+  border-bottom: 0;
+}
+
+#app.station-open .menu-layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+#app.station-open .panel-stage {
+  background:
+    linear-gradient(135deg, #d3b96d0b, transparent 44%),
+    #17120bf2;
+}
+
+#app.station-open .menu-panel {
+  padding: clamp(1.25rem, 3.5vw, 3.2rem);
+}
+
+#app.station-open .menu-footer {
+  padding-inline: 1rem;
+  border-top: 0;
+}
+
 #app[data-view="menu"] .front-end {
   visibility: visible;
   opacity: 1;
@@ -2711,6 +2757,71 @@ select {
   min-height: 2.25rem;
   padding: 0.5rem 0.65rem;
   font-size: 0.58rem;
+}
+
+.practice-tools-hint {
+  max-width: 22rem;
+  padding: 0 0.75rem;
+  color: #b8aa84;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.sanctum-station-prompt {
+  position: fixed;
+  z-index: 18;
+  bottom: clamp(5.2rem, 9vh, 7rem);
+  left: 50%;
+  display: grid;
+  grid-template-columns: 2.6rem minmax(9rem, auto) auto auto;
+  align-items: center;
+  gap: 0.7rem;
+  transform: translateX(-50%);
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #d7bc70;
+  background: #17120bf2;
+  box-shadow: 0 0.8rem 2.5rem #000b, inset 0 0 1.5rem #d7bc7010;
+  pointer-events: none;
+}
+
+.sanctum-station-prompt > span {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border: 1px solid #8f7641;
+  color: #fff0a4;
+  font: 800 1.15rem/1 Georgia, serif;
+}
+
+.sanctum-station-prompt div {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.sanctum-station-prompt small,
+.sanctum-station-prompt em {
+  color: #9c8e6a;
+  font-size: 0.52rem;
+  font-style: normal;
+  font-weight: 850;
+  letter-spacing: 0.13em;
+}
+
+.sanctum-station-prompt strong {
+  color: #f2e4b9;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.sanctum-station-prompt kbd {
+  min-width: 2.25rem;
+  padding: 0.5rem;
+  border: 1px solid #d7bc70;
+  background: #342817;
+  color: #fff0a4;
+  text-align: center;
 }
 
 .practice-overview {

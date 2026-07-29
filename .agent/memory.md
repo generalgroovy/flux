@@ -2081,3 +2081,33 @@
   Windows NSIS, and Linux AppImage packaging. The documentation head repeated
   all six successfully in run `30463176519`; PR #13 merged as `8cd54bb`, and
   `integration/unify-flux` plus `main` were realigned there. Resume V1 Nico Lai.
+
+# 2026-07-29 — Direct-spawn Living Sanctum stations
+
+- **Player-facing outcome:** Removed the separate startup menu. A source launch
+  now creates the playable Living Sanctum immediately, with the player standing
+  inside the Training Court interaction radius.
+- **Diegetic option access:** Added eight authored, visible floor stations for
+  training, champions, realm, muster, guide, rites, friends, and settings.
+  The nearest station exposes a remap-aware interaction prompt; the tactical
+  key or gamepad west button opens that station, and `Escape` returns to the
+  same live floor instead of opening a Sanctum pause menu.
+- **Contest continuity:** Entering the Sanctum from a local contest suspends and
+  restores the exact state. Entering from a remote contest keeps its socket,
+  lobby, snapshots, and explicit leave path alive while the local Sanctum runs;
+  the Rite Gate returns to that contest without dissolving the company.
+- **Interface cleanup:** Removed the always-on practice action bar and moved
+  champion setup, target toggle, refill, reset, and guide controls into the
+  Training Court station. The legacy navigation rail remains inert and hidden
+  only as compatibility markup while current chamber panels are reused.
+- **Automated verification:** `node scripts/ci-verify.mjs` passed 139/139
+  standard checks, the live WebSocket lifecycle, authenticated cleanup, and all
+  recursive JavaScript syntax checks. Focused DOM/simulation coverage passed
+  67/67 and proves direct spawn, physical interaction, every station route,
+  no Sanctum Escape menu, local/remote suspension, and invariant safety.
+- **Windows handoff:** The source Electron app launched fullscreen and remained
+  running for the user. Windows app-control inspection was stopped by the
+  user's physical `Escape`, so no automated interactive visual acceptance is
+  claimed; the running window was left untouched for hands-on play.
+- **Next:** After the user's station-layout feedback, resume the ordered V1
+  Nico Lai source-only visual slice.

@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main id="app" data-view="menu" data-panel="home">
+    <main id="app" data-view="game" data-panel="practice">
       <canvas id="arena" aria-label="FLUX arena"></canvas>
 
       <section id="hud" class="hud" aria-live="polite">
@@ -171,16 +171,21 @@
 
       <section id="practice-tools" class="practice-tools" aria-label="Sanctum practice controls" hidden>
         <div>
-          <span class="eyebrow">SANCTUM PRACTICE</span>
+          <span class="eyebrow">LIVING SANCTUM</span>
           <strong id="practice-live-character">AERWYN</strong>
         </div>
-        <button class="button button-quiet" data-practice-action="previous" type="button" aria-label="Previous champion">&#8249;</button>
-        <button class="button button-quiet" data-practice-action="next" type="button" aria-label="Next champion">&#8250;</button>
-        <button class="button" data-practice-action="refill" type="button">Refill</button>
-        <button class="button" data-practice-action="reset" type="button">Reset floor</button>
-        <button class="button" id="practice-overview-toggle" data-practice-action="overview" type="button" aria-controls="practice-overview" aria-expanded="false">Overview</button>
-        <button class="button button-primary" data-practice-action="sanctum" type="button">Sanctum</button>
+        <span class="practice-tools-hint">Walk to a marked station · interact to open · F2 field guide</span>
       </section>
+
+      <aside id="sanctum-station-prompt" class="sanctum-station-prompt" aria-live="polite" hidden>
+        <span id="sanctum-station-glyph" aria-hidden="true">◇</span>
+        <div>
+          <small>NEARBY STATION</small>
+          <strong id="sanctum-station-name">TRAINING COURT</strong>
+        </div>
+        <kbd id="sanctum-station-key">E</kbd>
+        <em>INTERACT</em>
+      </aside>
 
       <aside id="practice-overview" class="practice-overview" aria-label="Game reference" hidden>
         <header>
@@ -192,21 +197,21 @@
 
       <section id="front-end" class="front-end">
         <header class="topbar">
-          <a class="wordmark" href="#" data-panel="home" aria-label="FLUX home">
+          <div class="wordmark" aria-label="FLUX Sanctum station">
             <b>FLUX</b>
             <span>Flow. Learn.<br />Unleash. eXecute.</span>
-          </a>
+          </div>
           <div class="server-status" id="server-status">
             <i></i>
             <span>SANCTUM READY</span>
           </div>
-          <button class="button button-quiet sanctum-return" id="menu-close" type="button" hidden>
-            Return to contest
+          <button class="button button-quiet sanctum-return" id="menu-close" type="button">
+            Return to Sanctum
           </button>
         </header>
 
         <div class="menu-layout">
-          <nav class="primary-nav" aria-label="Living Sanctum">
+          <nav class="primary-nav" aria-label="Legacy navigation" hidden>
             <button class="nav-item active" data-panel="home" type="button">
               <span>01</span><b>Sanctum</b>
             </button>
@@ -290,8 +295,15 @@
                     <input id="practice-target" type="checkbox" checked />
                   </label>
                   <div id="practice-character-readout" class="practice-character-readout" aria-live="polite"></div>
-                  <button class="button button-primary button-large" data-practice-action="start" type="button">Step onto the practice floor</button>
-                  <small>Inside: cycle champions, refill resources and cooldowns, reset positions, or open the complete field guide at any time.</small>
+                  <button class="button button-primary button-large" data-practice-action="start" type="button">Apply training setup</button>
+                  <div class="button-row">
+                    <button class="button button-quiet" data-practice-action="previous" type="button">Previous champion</button>
+                    <button class="button button-quiet" data-practice-action="next" type="button">Next champion</button>
+                    <button class="button" data-practice-action="refill" type="button">Refill</button>
+                    <button class="button" data-practice-action="reset" type="button">Reset floor</button>
+                    <button class="button" id="practice-overview-toggle" data-practice-action="overview" type="button" aria-controls="practice-overview" aria-expanded="false">Field guide</button>
+                  </div>
+                  <small>Applying a setup returns you directly to the floor. Every other option lives at a marked Sanctum station.</small>
                 </section>
                 <section class="practice-map" aria-label="Sanctum practice areas">
                   <div class="practice-map-ring"><i></i><i></i><i></i><i></i></div>

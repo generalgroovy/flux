@@ -22,7 +22,7 @@ automatic damage advantage.
 | Skill pillars | Aim, spacing, route choice, movement chains, timing, prediction, feints, counterplay, and resource discipline |
 | Match clarity | Clean projectile lanes, compact silhouettes, explicit telegraphs, restrained effects, and fast hit confirmation |
 | World | Old-world magical regions expressed through carved runes, woven banners, stone, roots, mud, water, and regional heraldry |
-| Social hub | The Living Sanctum is the starting area, menu, practice space, party hub, character select, guide, and route into every mode |
+| Social hub | Players spawn directly into the Living Sanctum; eight walk-up stations provide training, muster, friends, champions, realm, guide, rites, and settings |
 | Authority | Deterministic fixed-tick simulation; clients never own position, damage, cooldowns, objectives, score, or outcomes |
 | Scale | Eight-player lobbies during the current stage, with protocol and performance decisions planned for at least 32 players later |
 | Fairness | No ancestry or element grants passive spell-damage superiority; power comes from execution and readable interactions |
@@ -198,15 +198,16 @@ approved or removed—visual coverage is not character completion.
 ### The Living Sanctum
 
 The Sanctum is the first overhaul location foundation and the intended shared
-social shell. Its current menu chambers already let players inspect champions,
-configure matches, browse the realm and guide, tune controls, host or join
-friends, and return to an active contest without dissolving the remote party;
-the Living Sanctum is also the rendered starting place behind every menu.
-Its local Practice chamber launches a dedicated rune court with a Stamina
-circuit, movement cloister, spell court, and mirror ward. Players can switch
-champions without leaving the floor, enable a stationary target, restore every
-resource and cooldown, reset the court, and toggle the complete movement,
-element, champion, ancestry, and selected-ability field guide with `F2`.
+social shell. There is no separate startup menu: players spawn directly on its
+playable Stamina circuit, movement cloister, spell court, and mirror ward.
+Eight visible walk-up stations open training, match configuration, friends,
+champions, realm, guide, rites, and settings interfaces only when a player is in
+range and presses the contextual interact key. Closing a station returns to the
+same floor position; entering from a contest preserves a resumable local match
+or connected remote company. The Training Court switches champions, enables a
+stationary target, restores every resource and cooldown, resets the court, and
+opens the complete movement, element, champion, ancestry, and selected-ability
+field guide; `F2` remains its direct reference shortcut.
 Character selection uses a fighting-game grid: ancestry columns contain
 champion portraits, and hover or keyboard focus reveals the kit without
 changing the locked choice.
@@ -339,10 +340,11 @@ processes registered to this checkout with:
 npm run stop
 ```
 
-The game opens in the Living Sanctum. Choose **Practice**, select a champion,
-optionally keep the stationary target enabled, and choose **Enter the Practice
-Floor**. Use the top practice strip to switch champions, refill Stamina/Flux and
-cooldowns, reset the floor, or return to the Sanctum; press `F2` for the complete
+The game opens with the player already moving in the Living Sanctum. Walk near
+a marked floor station and press the displayed interact key (`E` by default) to
+open it; `Escape` closes that station back to the floor. The Training Court at
+the initial spawn switches champions, toggles the stationary target, refills
+Stamina/Flux and cooldowns, and resets the floor; press `F2` for the complete
 field guide.
 
 ### Setup for friends on Windows
@@ -425,7 +427,8 @@ fixed so local play has a conflict-free default.
 | Air dodge | Sprint + technique in air | Sprint + technique in air | Left shoulder + east button in air |
 | Wavedash | Late angled air dodge | Late angled air dodge | Late angled air dodge |
 | Superglide | Jump at marked vault crest | Jump at marked vault crest | Right shoulder at marked vault crest |
-| Pause / network menu | `Escape` | `Escape` | — |
+| Close Sanctum station / pause contest | `Escape` | `Escape` | — |
+| Interact with nearby Sanctum station | Tactical key (`E` default) | Tactical key (`O`) | West button |
 | Restart | `R` | `R` | — |
 | Skip First Rite | `T` | — | — |
 | Toggle field information | `F1` | `F1` | — |

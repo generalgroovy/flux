@@ -79,6 +79,8 @@ test("V1 character specimens share one responsive non-shipping harness", async (
     spai,
     urzh,
     wayne,
+    nico,
+    game,
     server,
     packageJson,
   ] = await Promise.all([
@@ -87,6 +89,8 @@ test("V1 character specimens share one responsive non-shipping harness", async (
     read("tools/spai-si-specimen.html"),
     read("tools/urzh-specimen.html"),
     read("tools/s-wayne-specimen.html"),
+    read("tools/nico-lai-specimen.html"),
+    read("src/game.mjs"),
     read("scripts/serve.mjs"),
     read("package.json"),
   ]);
@@ -98,6 +102,7 @@ test("V1 character specimens share one responsive non-shipping harness", async (
     ["Spai Si", spai],
     ["Urzh", urzh],
     ["S. Wayne", wayne],
+    ["Nico Lai", nico],
   ]) {
     assert.match(html, /character-specimen\.css/, name);
     assert.equal((html.match(/data-state=/g) ?? []).length, 6, name);
@@ -109,9 +114,16 @@ test("V1 character specimens share one responsive non-shipping harness", async (
     "/tools/s-wayne-specimen.html",
     "/tools/s-wayne-specimen.mjs",
     "/src/overhaul/characters/s-wayne-visual.mjs",
+    "/tools/nico-lai-specimen.html",
+    "/tools/nico-lai-specimen.mjs",
+    "/src/overhaul/characters/nico-lai-visual.mjs",
+    "/src/overhaul-content.mjs",
+    "/src/overhaul-runtime.mjs",
   ]) {
     assert.match(server, new RegExp(path.replaceAll("/", "\\/").replace(".", "\\.")));
   }
+  assert.match(game, /from "\.\/overhaul-character-visuals\.mjs"/);
+  assert.doesNotMatch(game, /nico-lai-visual/);
   assert.equal(
     JSON.parse(packageJson).build.files.some((entry) => entry.startsWith("tools/")),
     false,

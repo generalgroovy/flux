@@ -8,7 +8,16 @@ import {
   getMap,
   getMode,
   getRace,
+  resolveCharacterStats,
 } from "./content.mjs";
+import {
+  drawOverhaulCharacterAura,
+  drawOverhaulCharacterDefeat,
+  drawOverhaulCharacterDetails,
+  getOverhaulCharacterVisualProfile,
+  resolveOverhaulCharacterVisualState,
+  traceOverhaulCharacterBody,
+} from "./overhaul-character-visuals.mjs";
 import {
   createMatch,
   refillSanctumPractice,
@@ -1310,6 +1319,7 @@ function renderChampionPreview(previewId, characterId) {
       <h3>${agent.name}</h3>
       <p>${agent.style}</p>
       <small>${race.trait}: ${race.boon} / ${race.drawback}</small>
+      ${championStatMarkup(agent, race)}
     </div>
     <div class="champion-preview-readout">
       <b>${agent.affinity.name}</b>
@@ -1317,6 +1327,21 @@ function renderChampionPreview(previewId, characterId) {
       <em>Difficulty ${"◆".repeat(agent.difficulty)}</em>
       <div>${kit.map((ability) => `<i>${ability.name}</i>`).join("")}</div>
     </div>`;
+}
+
+function championStatMarkup(agent, race) {
+  const stats = resolveCharacterStats(agent, race);
+  const entries = [
+    ["Health", Math.round(stats.maxHealth)],
+    ["Recovery", `${stats.healthRegen.toFixed(2)}/s`],
+    ["Flux", Math.round(stats.maxFlux)],
+    ["Focus", `${stats.fluxRegen.toFixed(1)}/s`],
+    ["Speed", Math.round(stats.speed)],
+    ["Endurance", Math.round(stats.maxStamina)],
+  ];
+  return `<div class="champion-stat-grid" aria-label="Champion statistics">${entries
+    .map(([label, value]) => `<span><small>${label}</small><b>${value}</b></span>`)
+    .join("")}</div>`;
 }
 
 function toggleHudDetail() {
@@ -2210,8 +2235,10 @@ function drawLandmarks(map) {
       context.textBaseline = "middle";
       context.fillText(
         landmark.label,
-        landmark.type === "rune" ? landmark.x : landmark.x + landmark.width / 2,
-        landmark.type === "rune" ? landmark.y : landmark.y + landmark.height / 2,
+        landmark.labelX ??
+          (landmark.type === "rune" ? landmark.x : landmark.x + landmark.width / 2),
+        landmark.labelY ??
+          (landmark.type === "rune" ? landmark.y : landmark.y + landmark.height / 2),
       );
     } finally {
       context.restore();
@@ -2568,33 +2595,49 @@ function drawEntities(time) {
   for (const entity of matchState.entities) {
     const agent = getCharacter(entity.characterId);
     const race = getRace(entity.raceId ?? agent.homeRaceId);
+    const visualProfile = getOverhaulCharacterVisualProfile(agent.visualProfileId);
+    const visualState = visualProfile
+      ? resolveOverhaulCharacterVisualState(entity, {
+          primary: agent.primary.cooldown,
+          special: agent.special.cooldown,
+        })
+      : null;
+    const teamColor =
+      entity.team === "alpha"
+        ? "#77f7ce"
+        : entity.team === "beta"
+          ? "#ff5d73"
+          : "#ffca4f";
     context.save();
     try {
       context.translate(entity.x, entity.y);
       context.globalAlpha = 1;
       context.globalCompositeOperation = "source-over";
       if (!entity.alive) {
-        context.strokeStyle = "#667588";
-        context.globalAlpha = 0.4;
-        context.lineWidth = 2;
-        context.beginPath();
-        context.arc(0, 0, agent.radius + 5, 0, Math.PI * 2);
-        context.stroke();
-        context.beginPath();
-        context.moveTo(-10, -10);
-        context.lineTo(10, 10);
-        context.moveTo(10, -10);
-        context.lineTo(-10, 10);
-        context.stroke();
+        if (visualProfile) {
+          context.rotate(Math.atan2(entity.facingY, entity.facingX));
+          drawOverhaulCharacterDefeat(
+            context,
+            visualProfile,
+            agent.radius,
+            teamColor,
+          );
+        } else {
+          context.strokeStyle = "#667588";
+          context.globalAlpha = 0.4;
+          context.lineWidth = 2;
+          context.beginPath();
+          context.arc(0, 0, agent.radius + 5, 0, Math.PI * 2);
+          context.stroke();
+          context.beginPath();
+          context.moveTo(-10, -10);
+          context.lineTo(10, 10);
+          context.moveTo(10, -10);
+          context.lineTo(-10, 10);
+          context.stroke();
+        }
         continue;
       }
-
-      const teamColor =
-        entity.team === "alpha"
-          ? "#77f7ce"
-          : entity.team === "beta"
-            ? "#ff5d73"
-            : "#ffca4f";
       if (agent.ultimate && entity.ultimateCharge >= agent.ultimate.chargeRequired) {
         context.save();
         context.strokeStyle = agent.accent;
@@ -2745,6 +2788,19 @@ function drawEntities(time) {
         context.rotate(Math.atan2(entity.slideY, entity.slideX));
         context.scale(1.28, 0.72);
       }
+      if (visualProfile) {
+        context.save();
+        context.rotate(Math.atan2(entity.facingY, entity.facingX));
+        drawOverhaulCharacterAura(
+          context,
+          visualProfile,
+          visualState,
+          agent.radius,
+          time,
+          settings.reducedMotion,
+        );
+        context.restore();
+      }
       const defense = agent.defense;
       if (entity.spawnProtection > 0) {
         context.strokeStyle = "#ffffff";
@@ -2781,16 +2837,33 @@ function drawEntities(time) {
       context.save();
       try {
         context.rotate(Math.atan2(entity.facingY, entity.facingX));
-        traceAgentBody(agent);
-        context.fill();
-        context.stroke();
-        context.shadowBlur = 0;
-        drawRaceFeature(race, agent.radius, teamColor);
-        context.fillStyle = agent.accent;
-        context.font = `900 ${Math.max(11, agent.radius * 0.78)}px ui-monospace, monospace`;
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-        context.fillText(agent.glyph, 0, 0);
+        if (visualProfile) {
+          context.fillStyle = entity.hitFlash > 0 ? "#ffffff" : visualProfile.body;
+          traceOverhaulCharacterBody(context, visualProfile, agent.radius);
+          context.fill();
+          context.stroke();
+          context.shadowBlur = 0;
+          drawOverhaulCharacterDetails(
+            context,
+            visualProfile,
+            visualState,
+            agent.radius,
+            entity.team,
+            teamColor,
+            clamp(entity.health / entity.maxHealth, 0, 1),
+          );
+        } else {
+          traceAgentBody(agent);
+          context.fill();
+          context.stroke();
+          context.shadowBlur = 0;
+          drawRaceFeature(race, agent.radius, teamColor);
+          context.fillStyle = agent.accent;
+          context.font = `900 ${Math.max(11, agent.radius * 0.78)}px ui-monospace, monospace`;
+          context.textAlign = "center";
+          context.textBaseline = "middle";
+          context.fillText(agent.glyph, 0, 0);
+        }
       } finally {
         context.restore();
       }
@@ -3109,7 +3182,7 @@ function buildContentInterface() {
   );
   element("practice-character").innerHTML = CHARACTERS.map(
     (agent) =>
-      `<option value="${agent.id}">${agent.name} — ${getRace(agent.homeRaceId).name} — ${agent.affinity.name}</option>`,
+      `<option value="${agent.id}" ${agent.id === "volt" ? "selected" : ""}>${agent.name} — ${getRace(agent.homeRaceId).name} — ${agent.affinities.join(" / ")}</option>`,
   ).join("");
   updatePracticeSelection();
   element("agent-codex").innerHTML = CHARACTERS.map(agentCard).join("");
@@ -3161,7 +3234,8 @@ function updatePracticeSelection() {
     <i aria-hidden="true">${selected.glyph}</i>
     <div>
       <b>${selected.name}</b>
-      <span>${race.name} · ${selected.role}<br>${selected.affinity.name}: ${selected.affinity.edge}</span>
+      <span>${race.name} · ${selected.role}<br>${selected.affinities.join(" / ")} · ${selected.affinity.edge}</span>
+      ${championStatMarkup(selected, race)}
     </div>`;
   const reference = practiceReferenceMarkup(selected);
   element("practice-menu-reference").innerHTML = reference;
@@ -3204,8 +3278,15 @@ function practiceReferenceMarkup(selected) {
     [`Mobility · ${selected.mobility.name}`, `${selected.mobility.detail} · ${selected.mobility.fluxCost} Flux`],
     ...(selected.ultimate ? [[`Ultimate · ${selected.ultimate.name}`, selected.ultimate.detail]] : []),
   ];
+  const stats = resolveCharacterStats(selected, getRace(selected.homeRaceId));
+  const statistics = [
+    ["Health", `${Math.round(stats.maxHealth)} total · ${stats.healthRegen.toFixed(2)}/s after ${MATCH_TUNING.health.recoveryDelay}s safe`],
+    ["Flux", `${Math.round(stats.maxFlux)} total · ${stats.fluxRegen.toFixed(1)}/s recovery`],
+    ["Movement", `${Math.round(stats.speed)} base speed · ${Math.round(stats.maxStamina)} Endurance · ${stats.staminaRegen.toFixed(1)}/s Stamina`],
+  ];
   return [
     ["Movement", movements, true],
+    ["Selected statistics", statistics, true],
     ["Elements", elements],
     ["Selected abilities", abilities, true],
     ["Champions", champions],

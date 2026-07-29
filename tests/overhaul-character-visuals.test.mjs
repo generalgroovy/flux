@@ -59,7 +59,15 @@ test("every shipped champion has exactly one explicit retirement transfer", () =
   assert.deepEqual(LEGACY_CONCEPT_TRANSFERS.map((entry) => entry.legacyId).sort(), shippedIds);
   assert.equal(new Set(LEGACY_CONCEPT_TRANSFERS.map((entry) => entry.overhaulId)).size, shippedIds.length);
   assert.ok(LEGACY_CONCEPT_TRANSFERS.every((entry) => entry.retained && entry.retired));
-  assert.ok(LEGACY_CONCEPT_TRANSFERS.every((entry) => entry.status === "compatibility-only"));
+  assert.equal(
+    LEGACY_CONCEPT_TRANSFERS.filter((entry) => entry.status === "promoted")[0]?.legacyId,
+    "volt",
+  );
+  assert.ok(
+    LEGACY_CONCEPT_TRANSFERS.every((entry) =>
+      ["compatibility-only", "promoted"].includes(entry.status),
+    ),
+  );
 });
 
 test("Spai Si owns Aerwyn's redirect language without inheriting Aerwyn's identity", () => {
@@ -97,11 +105,28 @@ test("S. Wayne is a low Hobbit boundary tactician with separate Dark and Light r
   assert.equal(profile.focusProp, "eclipse waystone");
 });
 
+test("Nico Lai is a tiny Gnome engineer with a breakable owned device read", () => {
+  const transfer = LEGACY_CONCEPT_TRANSFERS.find((entry) => entry.legacyId === "volt");
+  const profile = getOverhaulCharacterVisualProfile(transfer.overhaulId);
+  assert.equal(transfer.overhaulId, "nico");
+  assert.equal(transfer.overhaulName, "Nico Lai");
+  assert.match(transfer.retained, /charge sequencing.*calibrated device/);
+  assert.match(transfer.retired, /storm-scribe/);
+  assert.equal(profile.name, "Nico Lai");
+  assert.equal(profile.runtimeCharacterId, "volt");
+  assert.equal(profile.contentCompatibilityId, "nix");
+  assert.equal(profile.plannedAncestry, "Gnome");
+  assert.match(profile.ancestryRead, /high cap.*tiny measured tool frame/);
+  assert.match(profile.affinityRead, /Charge forks.*Light calibration diamonds/);
+  assert.equal(profile.focusProp, "calibrated coil pack");
+  assert.match(profile.deviceRead, /breakable coil.*team tether/);
+});
+
 test("every authored character visual renders all six states through the registry", () => {
   const context = fakeContext();
   assert.deepEqual(
     Object.keys(OVERHAUL_CHARACTER_VISUAL_PROFILES).sort(),
-    ["aerwyn", "samwise", "urzh"],
+    ["aerwyn", "nico", "samwise", "urzh"],
   );
   for (const profile of Object.values(OVERHAUL_CHARACTER_VISUAL_PROFILES)) {
     assert.equal(traceOverhaulCharacterBody(context, profile, 24), true, profile.id);
@@ -118,6 +143,11 @@ test("every authored character visual renders all six states through the registr
         drawOverhaulCharacterAura(context, profile, state, 24, 0.7, true),
         true,
         `${profile.id}:${state}:aura`,
+      );
+      assert.equal(
+        drawOverhaulCharacterAura(context, profile, state, 24, 1.1, false),
+        true,
+        `${profile.id}:${state}:animated-aura`,
       );
       assert.equal(
         drawOverhaulCharacterDetails(
@@ -148,9 +178,20 @@ test("overhaul character state resolver preserves the six authored reads", () =>
 });
 
 function fakeContext() {
+  const finiteCommand = (...values) => {
+    for (const value of values) {
+      if (typeof value === "number") assert.equal(Number.isFinite(value), true);
+    }
+  };
   return {
-    save() {}, restore() {}, beginPath() {}, moveTo() {}, lineTo() {}, closePath() {},
-    fill() {}, stroke() {}, arc() {}, quadraticCurveTo() {}, rect() {}, fillRect() {},
-    translate() {}, scale() {},
+    save() {}, restore() {}, beginPath() {}, closePath() {}, fill() {}, stroke() {},
+    moveTo: finiteCommand,
+    lineTo: finiteCommand,
+    arc: finiteCommand,
+    quadraticCurveTo: finiteCommand,
+    rect: finiteCommand,
+    fillRect: finiteCommand,
+    translate: finiteCommand,
+    scale: finiteCommand,
   };
 }

@@ -19,8 +19,18 @@ const character = ({
   ultimate = null,
   affinity,
   homeRaceId,
+  affinities = null,
+  visualProfileId = null,
+  stats = {},
 }) => {
   const tactical = { fluxCost: 34, ...special };
+  const statProfile = Object.freeze({
+    healthRegen: 0.8,
+    fluxCapacity: 1,
+    fluxRegen: 1,
+    endurance: 1,
+    ...stats,
+  });
   return {
     id,
     name,
@@ -46,7 +56,10 @@ const character = ({
     mobility: { fluxCost: 16, ...mobility },
     ultimate,
     affinity,
+    affinities: Object.freeze(affinities ?? [affinity.name]),
     homeRaceId,
+    visualProfileId,
+    stats: statProfile,
   };
 };
 
@@ -82,6 +95,7 @@ export const CHARACTERS = Object.freeze([
     difficulty: 2,
     health: 100,
     speed: 430,
+    stats: { healthRegen: 0.8, fluxCapacity: 1, fluxRegen: 1.05, endurance: 0.96 },
     passive: {
       name: "THREAD THE TURN",
       detail: "A successful spell turn guides one slightly slower Wind Needle through your aim.",
@@ -159,6 +173,7 @@ export const CHARACTERS = Object.freeze([
     difficulty: 1,
     health: 145,
     speed: 340,
+    stats: { healthRegen: 1.2, fluxCapacity: 0.94, fluxRegen: 0.9, endurance: 1.12 },
     primary: {
       name: "SLINGSTONE",
       detail: "Heavy rune-cut impact.",
@@ -217,6 +232,7 @@ export const CHARACTERS = Object.freeze([
     difficulty: 3,
     health: 84,
     speed: 465,
+    stats: { healthRegen: 0.55, fluxCapacity: 1.1, fluxRegen: 1.08, endurance: 0.92 },
     primary: {
       name: "MOON SHARDS",
       detail: "Three pale shards in a fan.",
@@ -256,10 +272,12 @@ export const CHARACTERS = Object.freeze([
   character({
     id: "volt",
     homeRaceId: "gnome",
-    affinity: { kind: "element", id: "lightning", name: "VOLT", edge: "Charge sequencing and interruption" },
-    name: "NIM COPPERSPARK",
-    role: "Gnome storm-scribe",
-    style: "A Copper Gnome arcanist who sequences charge, pierces lines, and steals a beat with interruption.",
+    affinity: { kind: "element", id: "lightning", name: "CHARGE", edge: "Measured sequencing, conduction, and interruption" },
+    affinities: ["CHARGE", "LIGHT"],
+    visualProfileId: "nico",
+    name: "NICO LAI",
+    role: "Gnome precision engineer",
+    style: "A measured device specialist who calibrates clean lanes, interrupts commitments, and keeps every tool contestable.",
     color: "#effcff",
     accent: "#45d9ff",
     glyph: "ϟ",
@@ -268,9 +286,10 @@ export const CHARACTERS = Object.freeze([
     difficulty: 3,
     health: 94,
     speed: 445,
+    stats: { healthRegen: 0.7, fluxCapacity: 1.1, fluxRegen: 1.14, endurance: 0.96 },
     primary: {
-      name: "QUICK ARC",
-      detail: "Rapid inscribed lightning bolt.",
+      name: "COIL DART",
+      detail: "A rapid calibrated Charge dart.",
       damage: 15,
       cooldown: 0.115,
       speed: 1240,
@@ -281,8 +300,8 @@ export const CHARACTERS = Object.freeze([
       knockback: 24,
     },
     special: {
-      name: "CHAIN RUNE",
-      detail: "Instant line spell that conducts through Tide.",
+      name: "ARC CHAIN",
+      detail: "An exact line discharge that conducts through Tide.",
       kind: "rail",
       damage: 37,
       cooldown: 1.15,
@@ -291,8 +310,8 @@ export const CHARACTERS = Object.freeze([
       knockback: 180,
     },
     defense: {
-      name: "GROUNDING SIGIL",
-      detail: "Absorb one spell into recovery.",
+      name: "PRISM GROUND",
+      detail: "Calibrate a brief Light plane that absorbs one spell into recovery.",
       kind: "absorb",
       duration: 0.3,
       cooldown: 1.7,
@@ -301,8 +320,8 @@ export const CHARACTERS = Object.freeze([
       refund: 0.28,
     },
     mobility: {
-      name: "STORM HOP",
-      detail: "Long, fragile current dash.",
+      name: "COIL HOP",
+      detail: "A long, fragile device-assisted dash.",
       kind: "dash",
       speed: 1280,
       duration: 0.15,
@@ -324,6 +343,7 @@ export const CHARACTERS = Object.freeze([
     difficulty: 2,
     health: 102,
     speed: 380,
+    stats: { healthRegen: 0.85, fluxCapacity: 1.04, fluxRegen: 0.98, endurance: 1 },
     primary: {
       name: "COAL STAR",
       detail: "Slow, high-pressure ember.",
@@ -381,6 +401,7 @@ export const CHARACTERS = Object.freeze([
     difficulty: 3,
     health: 108,
     speed: 390,
+    stats: { healthRegen: 1, fluxCapacity: 0.98, fluxRegen: 1.04, endurance: 1.06 },
     primary: {
       name: "GRAVE ORB",
       detail: "Slow remnant with crushing force.",
@@ -434,6 +455,7 @@ export const CHARACTERS = Object.freeze([
     difficulty: 1,
     health: 112,
     speed: 405,
+    stats: { healthRegen: 1.25, fluxCapacity: 1.02, fluxRegen: 1.08, endurance: 1.08 },
     primary: {
       name: "DEW LANCE",
       detail: "Reliable needle of pressurized Tide.",
@@ -487,6 +509,7 @@ export const CHARACTERS = Object.freeze([
     difficulty: 2,
     health: 96,
     speed: 365,
+    stats: { healthRegen: 0.9, fluxCapacity: 1.08, fluxRegen: 0.95, endurance: 1.1 },
     primary: {
       name: "RUNE RAY",
       detail: "Fast long-range beam shard.",
@@ -547,6 +570,7 @@ export const CHARACTERS = Object.freeze([
     difficulty: 2,
     health: 118,
     speed: 385,
+    stats: { healthRegen: 0.75, fluxCapacity: 1.02, fluxRegen: 0.96, endurance: 0.92 },
     passive: {
       name: "RIDGELINE HUNT",
       detail: "A wall kick or landing cut primes one faster, tighter Rime Fangs cast.",
@@ -633,6 +657,7 @@ export const CHARACTERS = Object.freeze([
     difficulty: 3,
     health: 110,
     speed: 405,
+    stats: { healthRegen: 1.05, fluxCapacity: 0.96, fluxRegen: 1, endurance: 1.04 },
     passive: {
       name: "PYRE-FORGED",
       detail: "From allied fire, Cinder Tooth becomes slower, wider, and heavy without gaining damage.",
@@ -1083,10 +1108,10 @@ export const SANCTUM_PRACTICE_MAP = Object.freeze({
   ],
   hazards: [],
   landmarks: [
-    { type: "road", x: 92, y: 390, width: 1416, height: 120, label: "STAMINA CIRCUIT" },
-    { type: "court", x: 500, y: 92, width: 600, height: 250, label: "MOVEMENT CLOISTER" },
-    { type: "court", x: 500, y: 558, width: 600, height: 250, label: "SPELL COURT" },
-    { type: "rune", x: 800, y: 450, radius: 115, label: "MIRROR WARD" },
+    { type: "road", x: 92, y: 390, width: 1416, height: 120, label: "STAMINA CIRCUIT", labelX: 540, labelY: 450 },
+    { type: "court", x: 500, y: 92, width: 600, height: 250, label: "MOVEMENT CLOISTER", labelX: 800, labelY: 110 },
+    { type: "court", x: 500, y: 558, width: 600, height: 250, label: "SPELL COURT", labelX: 590, labelY: 580 },
+    { type: "rune", x: 800, y: 450, radius: 115, label: "MIRROR WARD", labelX: 800, labelY: 450 },
   ],
   stations: [
     { id: "training", panel: "practice", name: "TRAINING COURT", glyph: "△", x: 250, y: 450, radius: 76 },
@@ -1179,6 +1204,9 @@ export const MATCH_TUNING = Object.freeze({
   unitCollisionIterations: 3,
   maxMoveSubsteps: 12,
   projectileClashes: true,
+  health: {
+    recoveryDelay: 5.5,
+  },
   flow: {
     maximum: 100,
     sprintMultiplier: 1.28,
@@ -1316,6 +1344,30 @@ export function getMode(id) {
   return MODES.find((entry) => entry.id === id) ?? MODES[0];
 }
 
+export function resolveCharacterStats(characterOrId, raceOrId = null) {
+  const agent = typeof characterOrId === "string"
+    ? getCharacter(characterOrId)
+    : characterOrId;
+  const race = typeof raceOrId === "string"
+    ? getRace(raceOrId)
+    : raceOrId ?? getRace(agent.homeRaceId);
+  const stats = agent.stats ?? {
+    healthRegen: 0.8,
+    fluxCapacity: 1,
+    fluxRegen: 1,
+    endurance: 1,
+  };
+  return Object.freeze({
+    maxHealth: Math.round(agent.health * race.health),
+    healthRegen: stats.healthRegen,
+    maxFlux: MATCH_TUNING.flux.maximum * race.flux * stats.fluxCapacity,
+    fluxRegen: MATCH_TUNING.flux.recoveryPerSecond * stats.fluxRegen,
+    speed: agent.speed * race.speed,
+    maxStamina: MATCH_TUNING.flow.maximum * race.flow * stats.endurance,
+    staminaRegen: MATCH_TUNING.flow.recoveryPerSecond * stats.endurance,
+  });
+}
+
 export function validateContent({
   characters = CHARACTERS,
   races = RACES,
@@ -1333,6 +1385,22 @@ export function validateContent({
   unique(maps, "map");
   unique(modes, "mode");
   if (characters.length < 8) errors.push("at least eight characters are required");
+  for (const agent of characters) {
+    const stats = agent.stats ?? {};
+    for (const [key, minimum, maximum] of [
+      ["healthRegen", 0.4, 1.5],
+      ["fluxCapacity", 0.9, 1.12],
+      ["fluxRegen", 0.85, 1.16],
+      ["endurance", 0.9, 1.15],
+    ]) {
+      if (!Number.isFinite(stats[key]) || stats[key] < minimum || stats[key] > maximum) {
+        errors.push(`${agent.id}.stats.${key} must stay within ${minimum}–${maximum}`);
+      }
+    }
+    if (agent.visualProfileId !== null && typeof agent.visualProfileId !== "string") {
+      errors.push(`${agent.id}.visualProfileId must be null or a stable string`);
+    }
+  }
   if (races.length < 12) errors.push("at least twelve races are required");
   for (const race of races) {
     for (const key of ["health", "speed", "flux", "flow"]) {
@@ -1356,6 +1424,9 @@ export function validateContent({
   }
 
   const flow = tuning.flow ?? {};
+  if (!Number.isFinite(tuning.health?.recoveryDelay) || tuning.health.recoveryDelay < 3) {
+    errors.push("health.recoveryDelay must be at least 3 seconds");
+  }
   for (const key of [
     "maximum",
     "sprintMultiplier",

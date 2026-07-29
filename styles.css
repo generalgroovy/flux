@@ -2892,6 +2892,43 @@ select {
   color: #81724f;
 }
 
+.champion-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.28rem;
+  margin-top: 0.65rem;
+}
+
+.champion-stat-grid > span {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 0.3rem;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid #51442b;
+  background: #0d0b08a6;
+}
+
+.champion-stat-grid > span small {
+  margin: 0;
+  color: #8f805a;
+  font-size: 0.46rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.champion-stat-grid > span b {
+  color: #f0d98e;
+  font: 800 0.62rem/1 ui-monospace, SFMono-Regular, monospace;
+}
+
+.practice-character-readout .champion-stat-grid {
+  grid-column: 1 / -1;
+  margin-top: 0.45rem;
+}
+
 .champion-preview-readout {
   border-left: 1px solid #4f4024;
 }

@@ -389,8 +389,12 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.equal(app.dataset.view, "game");
   assert.equal(window.DIFF_DEBUG.getState().modeId, "sanctum");
   assert.equal(window.DIFF_DEBUG.getState().mapId, "living_sanctum");
-  assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "kite");
-  assert.equal(window.DIFF_DEBUG.getState().entities[0].raceId, "wood_elf");
+  assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "volt");
+  assert.equal(window.DIFF_DEBUG.getState().entities[0].raceId, "gnome");
+  assert.match(
+    document.getElementById("practice-menu-reference").textContent,
+    /Selected statistics.*Health.*Flux.*Endurance/s,
+  );
   assert.equal(window.DIFF_DEBUG.getState().entities[1].bot, true);
   assert.equal(document.getElementById("practice-tools").hidden, false);
   assert.equal(app.classList.contains("sanctum-practice"), true);
@@ -444,8 +448,8 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     window.DIFF_DEBUG.getState().entities[0].maxFlow,
   );
   document.querySelector('[data-practice-action="next"]').click();
-  assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "bulwark");
-  assert.equal(document.getElementById("practice-live-character").textContent, "GORUM");
+  assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "cinder");
+  assert.equal(document.getElementById("practice-live-character").textContent, "SEREK ASHBORN");
   assert.ok(drawCalls.some((call) => call[0] === "fillRect"));
   assert.deepEqual(window.DIFF_DEBUG.getInvariantErrors(), []);
 
@@ -610,7 +614,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   );
   assert.match(
     document.getElementById("deployment-summary").textContent,
-    /NIM COPPERSPARK · THE OLD CROWN/,
+    /NICO LAI · THE OLD CROWN/,
   );
 
   window.DIFF_DEBUG.openSanctumStation("play");

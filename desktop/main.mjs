@@ -145,6 +145,17 @@ function createGameWindow(url) {
     if (!isTrustedGameUrl(candidate, gameOrigin)) event.preventDefault();
   });
   mainWindow.webContents.on("will-attach-webview", (event) => event.preventDefault());
+  if (!app.isPackaged) {
+    mainWindow.webContents.on("console-message", (_event, details) => {
+      const level = details?.level ?? "log";
+      const message = details?.message ?? "Unknown renderer message";
+      const source = details?.sourceId
+        ? ` (${details.sourceId}:${details.lineNumber ?? 0})`
+        : "";
+      const write = level === "error" ? console.error : level === "warning" ? console.warn : console.log;
+      write(`[FLUX renderer] ${message}${source}`);
+    });
+  }
   mainWindow.once("ready-to-show", () => {
     if (!mainWindow) return;
     enforceFullscreen();

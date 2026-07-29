@@ -69,6 +69,20 @@ host); neither is inferred from a Windows build. The unified branch must not be
 merged to `main` until both platform gates are green and explicit final approval
 is given.
 
+## 2026-07-29 Living Sanctum candidate
+
+- The old HEX/operations home presentation has been replaced by the Living
+  Sanctum; Muster, Friends, Champions, Realm & Rites, Controls, and Settings are
+  all reachable from one keyboard/gamepad-compatible navigation rail.
+- Entering the Sanctum from a remote contest preserves the authoritative socket,
+  lobby identity, and reconnect token across every chamber. Returning to play
+  and explicitly leaving remote company are distinct tested actions.
+- `npm.cmd test` passes 129/129 on Windows, and source renders at desktop and
+  narrow widths without body overflow.
+- This does not satisfy the pending packaged-match gate. A current-commit Windows
+  package match smoke and the GitHub Ubuntu package job are still required before
+  publishing `develop` or considering a merge to `main`.
+
 ## 2026-07-29 candidate refresh
 
 - `integration/unify-flux` was refreshed with `origin/main`, passed launch

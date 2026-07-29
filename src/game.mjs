@@ -253,6 +253,7 @@ element("join-lobby").addEventListener("click", () =>
   joinLobby(element("join-code").value),
 );
 element("reconnect-lobby").addEventListener("click", reconnectLastSession);
+element("leave-lobby").addEventListener("click", leaveRemoteCompany);
 element("refresh-lobbies").addEventListener("click", refreshLobbies);
 element("rematch").addEventListener("click", restartMatch);
 infoToggle.addEventListener("click", () => toggleInfo());
@@ -604,6 +605,11 @@ function flushConditionedNetwork(now) {
 }
 
 function handleMenuClick(event) {
+  const sanctumAction = event.target.closest("[data-action]")?.dataset.action;
+  if (sanctumAction === "resume") {
+    resumeGame();
+    return;
+  }
   const atlasButton = event.target.closest("[data-atlas-scope]");
   if (atlasButton) {
     atlasScope = atlasButton.dataset.atlasScope === "fracture" ? "fracture" : "realm";
@@ -701,13 +707,8 @@ function handleOverlayClick(event) {
   const action = event.target.closest("[data-action]")?.dataset.action;
   if (action === "resume") resumeGame();
   else if (action === "restart") restartMatch();
-  else if (action === "menu") leaveToMenu("home");
-  else if (action === "online") {
-    const preserveReconnect =
-      matchKind === "remote" &&
-      (!socket || socket.readyState !== WebSocket.OPEN);
-    leaveToMenu("online", preserveReconnect);
-  }
+  else if (action === "menu") enterSanctum("home");
+  else if (action === "online") enterSanctum("online");
 }
 
 function showPanel(panel) {
@@ -731,6 +732,7 @@ function showPanel(panel) {
   }
   if (panel === "online") refreshLobbies();
   if (panel === "online") refreshReconnectButton();
+  syncSanctumPresence();
 }
 
 function quickStart() {
@@ -850,6 +852,7 @@ function enterGame() {
   mouseButtons.clear();
   accumulator = 0;
   frameTime = performance.now();
+  syncSanctumPresence();
   updateInterface();
 }
 
@@ -861,10 +864,10 @@ function openPause() {
   paused = true;
   pauseOverlay.classList.remove("hidden");
   element("pause-title").textContent =
-    matchKind === "remote" ? "Network menu" : "Operation held";
+    matchKind === "remote" ? "Remote contest" : "Contest held";
   element("pause-copy").textContent =
     matchKind === "remote"
-      ? "The authoritative match continues while this menu is open."
+      ? "The authoritative contest continues. Enter the Sanctum without leaving your friends."
       : "Local simulation is frozen.";
   keys.clear();
   mouseButtons.clear();
@@ -893,18 +896,20 @@ async function restartMatch() {
   if (lastLocalOptions) startLocal(lastLocalOptions);
 }
 
-function leaveToMenu(panel = "home", preserveReconnect = false) {
-  leaveRemote(!preserveReconnect);
-  matchKind = "none";
-  paused = false;
+function enterSanctum(panel = "home", { disconnect = false } = {}) {
+  if (disconnect) {
+    matchKind = "none";
+    leaveRemote();
+  }
+  paused = matchKind === "local";
   app.dataset.view = "menu";
   toggleInfo(false);
   pauseOverlay.classList.add("hidden");
   matchOverlay.classList.add("hidden");
-  menuClose.hidden = true;
   keys.clear();
   mouseButtons.clear();
   showPanel(panel);
+  syncSanctumPresence();
 }
 
 function handleMatchFormChange(event) {
@@ -1002,7 +1007,7 @@ function updateInfoOverlay(mode, map) {
     matchState.status === "round-over"
       ? "Resetting clean positions for the next read."
       : matchState.status === "match-over"
-        ? "Operation complete. Rematch or return to menu."
+        ? "Contest complete. Rematch or return to the Sanctum."
         : mode.id === "convergence"
           ? wildmarchStatusCopy()
           : mode.description;
@@ -2868,6 +2873,7 @@ function beginRemote(result) {
   }
   clearEffects();
   enterGame();
+  syncSanctumPresence();
 }
 
 async function refreshLobbies() {
@@ -2993,9 +2999,10 @@ async function connectNetwork(base) {
           ? "Host realm closed"
           : "Connection lost";
         element("pause-copy").textContent = remoteServerShutdown
-          ? "The authoritative host shut down, so this match has ended. Return to Host / Join to begin another."
-          : "Your slot is reserved for 30 seconds. Open Host / Join and reconnect the last session.";
+          ? "The host shut down, so this contest has ended. Return to Friends in the Sanctum to begin another."
+          : "Your place is reserved for 30 seconds. Open Friends in the Sanctum and reconnect the last session.";
       }
+      syncSanctumPresence();
     });
   });
 }
@@ -3056,7 +3063,7 @@ function deliverSocketMessage(message) {
       pauseOverlay.classList.remove("hidden");
       element("pause-title").textContent = "Host realm closed";
       element("pause-copy").textContent =
-        "The authoritative host shut down, so this match has ended. Return to Host / Join to begin another.";
+        "The host shut down, so this contest has ended. Return to Friends in the Sanctum to begin another.";
     }
     toast("AUTHORITATIVE HOST CLOSED · MATCH ENDED", "error");
     return;
@@ -3072,7 +3079,7 @@ function deliverSocketMessage(message) {
     );
   } else if (message.type === "lobby-closed") {
     toast(message.reason ?? "Lobby closed.", "error");
-    leaveToMenu("online");
+    enterSanctum("online", { disconnect: true });
   } else if (message.type === "error") {
     toast(message.message, "error");
   }
@@ -3085,6 +3092,7 @@ function acceptRemoteSnapshot(message) {
   remoteLobby = message.lobby;
   remoteHostId = message.lobby.hostId;
   remoteEntityId = message.entityId;
+  syncSanctumPresence();
   pendingInputs = pendingInputs.filter(
     (pending) => pending.sequence > message.acknowledgedSequence,
   );
@@ -3163,6 +3171,54 @@ function leaveRemote(forgetSession = true) {
   app.dataset.spectating = "false";
   if (forgetSession) clearReconnectSession();
   else refreshReconnectButton();
+  syncSanctumPresence();
+}
+
+function leaveRemoteCompany() {
+  if (matchKind !== "remote" && !socket) return;
+  leaveRemote();
+  matchKind = "none";
+  paused = false;
+  setNetworkMessage(
+    "Remote company left. The Sanctum remains available.",
+    "success",
+  );
+  setServerStatus("ready", "SANCTUM READY");
+  showPanel("online");
+  toast("REMOTE COMPANY LEFT");
+}
+
+function syncSanctumPresence() {
+  const remoteSession = matchKind === "remote";
+  const connected =
+    remoteSession &&
+    Boolean(remoteLobby) &&
+    socket?.readyState === WebSocket.OPEN;
+  const resumable = matchKind === "local" || connected;
+  app.dataset.remoteSession = connected
+    ? "connected"
+    : remoteSession
+      ? "interrupted"
+      : "none";
+  menuClose.hidden = app.dataset.view !== "menu" || !resumable;
+  menuClose.textContent =
+    matchKind === "remote" ? "Return to remote contest" : "Return to contest";
+
+  const party = element("sanctum-party");
+  party.hidden = !remoteSession;
+  element("leave-lobby").hidden = !remoteSession;
+  if (!remoteSession) return;
+
+  const lobbyName = remoteLobby?.name ?? "REMOTE COMPANY";
+  const lobbyCode = remoteLobby?.code ? ` · ${remoteLobby.code}` : "";
+  const playerCount = Number.isFinite(remoteLobby?.players)
+    ? ` · ${remoteLobby.players}/${remoteLobby.maxPlayers ?? 8}`
+    : "";
+  element("sanctum-party-name").textContent = `${lobbyName}${lobbyCode}`;
+  element("sanctum-party-detail").textContent = connected
+    ? `${playerCount.replace(/^ · /, "") || "Connected"} · friends remain connected in every Sanctum chamber.`
+    : "Connection interrupted · your place may still be recoverable from Friends.";
+  party.querySelector('[data-action="resume"]').hidden = !connected;
 }
 
 function writeReconnectSession(session) {

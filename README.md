@@ -15,8 +15,12 @@ stable release branch and has not been rewritten or merged with the candidate.
 The candidate currently includes:
 
 - the complete 0.34.3 live game;
+- the Living Sanctum as the single menu surface for muster, remote friends,
+  champions, realm/rites, controls, and settings;
+- persistent remote company while connected players visit any Sanctum chamber,
+  with an explicit return-to-contest control and explicit leave action;
 - reliable source launch and graceful owned-process cleanup on Windows and Linux;
-- 122 passing automated checks on Windows, including the local-agent and
+- 129 passing automated checks on Windows, including the local-agent and
   visual-priority contracts, live WebSocket lifecycle, and authenticated server
   cleanup;
 - Windows NSIS and Linux AppImage package jobs that emit commit-bound SHA-256
@@ -300,8 +304,11 @@ npm start
 ```
 
 `npm start` opens FLUX in its own desktop window. No browser tab is used. The
-home screen launches every offline ruleset directly; **Choose contest**
-keeps champion, ancestry, arena, format, and bot setup available in one builder.
+Living Sanctum launches every offline ruleset directly; **Muster** keeps
+champion, ancestry, arena, format, and bot setup available in one builder.
+Friends remain connected while anyone visits Champions, Realm & Rites,
+Controls, Settings, or another Sanctum chamber; **Return to remote contest**
+resumes play, while **Leave remote company** is the explicit disconnect action.
 
 ### Windows setup for friends
 
@@ -322,7 +329,7 @@ powershell -ExecutionPolicy Bypass -File scripts\install-desktop-windows.ps1
 This creates **FLUX Arena** and **FLUX Arena - Play with Friends** shortcuts on
 the desktop. Each shortcut refuses dirty or diverged source, fast-forwards its
 pinned branch, installs the lockfile, runs the full tests, and only then opens
-the game. Send a `flux://` invite only after **Create and deploy** reports that
+the game. Send a `flux://` invite only after **Open lobby** reports that
 the private route is ready. The host window must remain open for the invite to
 work.
 
@@ -332,7 +339,7 @@ Create a private remote session from a desktop window:
 npm run start:friends
 ```
 
-Choose the lobby settings, press **Create and deploy**, then send the copied
+Choose the lobby settings, press **Open lobby**, then send the copied
 `flux://` invite. A friend with FLUX installed can open it to launch the app and
 join directly. First use downloads about 40 MB of checksum-verified tunnel
 tooling into FLUX's user-data directory. The temporary link exists only while
@@ -361,7 +368,7 @@ npm run start:remote
 ```
 
 The server prints the local and LAN addresses. Other players open the reachable
-address, choose **Host / Join**, refresh the public lobby browser, or enter the
+address, choose **Friends**, refresh the public lobby browser, or enter the
 six-character lobby code. Internet play requires TCP port `8000` to be
 reachable through port forwarding or a private-network/VPN tool. A different
 port can be selected cross-platform:
@@ -704,6 +711,6 @@ all defense types, projectile interaction, mines, hazards, death/reset,
 overtime, control, PvE waves, join-in-progress, discovery, input sequencing,
 snapshots, disconnect/reconnect identity, spectator isolation, host migration,
 route allowlisting, security headers, and an eight-fighter two-minute
-deterministic combat soak. It also clicks every main menu, launches all five
+deterministic combat soak. It also clicks every Sanctum chamber, launches all five
 rulesets through the shipped interface, toggles live field info, and verifies
 champion/map shortcuts update the contest builder.

@@ -1896,3 +1896,31 @@
   including every template's generic body/anatomy renderer and two independent
   champions sharing one template. The full suite passed 129/129 across 127
   standard checks, one live WebSocket lifecycle, and one authenticated cleanup.
+
+# 2026-07-29 — Living Sanctum menu and persistent remote company
+
+- **Concept cleanup:** Removed the obsolete H/E/X background lettering and
+  operations/deployment-facing menu copy. The home presentation is now the
+  Living Sanctum, with an original eight-point geometric seal and old-world
+  Muster, Friends, Realm & Rites, Controls, and Settings language.
+- **Unified navigation:** Every existing front-end route is a Sanctum chamber.
+  Entering the Sanctum from pause or results preserves the current local or
+  remote contest; a persistent top-bar action and connected-company card return
+  directly to play.
+- **Remote lifecycle:** Sanctum navigation no longer sends `leave` or closes the
+  WebSocket. Connected players can visit all seven chambers while the
+  authoritative contest continues. Disconnect is now the explicit **Leave
+  remote company** action, which is separately regression-tested.
+- **Automated verification:** `npm.cmd test` passed 129/129 across 127 standard
+  checks, one live WebSocket lifecycle, and one authenticated cleanup. The DOM
+  test proves remote state/socket retention across every chamber, return to
+  contest, explicit leave, reconnection, and host shutdown. `node --check
+  src/game.mjs` and `git diff --check` passed.
+- **Rendered verification:** The source Sanctum rendered at 1280×720 and
+  390×844 with no body overflow; the desktop rail had zero horizontal overflow,
+  and the narrow rail remained intentionally scrollable. The browser surface
+  did not execute `src/game.mjs`, so its clicks could not verify live behavior;
+  no browser multiplayer playtest is claimed.
+- **Gate boundary:** This is a direct-user-authorized V4 foundation only. V1
+  character work remains active, and broader GUI styling, spells, maps, and
+  mechanics remain ordered behind their existing gates.

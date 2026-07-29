@@ -15,6 +15,12 @@ shipped champions as compatibility-only runtime scaffolding until their mapped
 successors pass complete visual and later mechanical promotion checks; never
 present them as overhaul-roster additions.
 
+The user's direct Sanctum request authorized one bounded V4 foundation ahead of
+the normal order: obsolete HEX/operations presentation is removed, every
+existing menu route lives in the Living Sanctum, and remote company persists
+while players browse those routes. Do not expand this exception into broader GUI
+restyling or new lobby mechanics before V1–V3 are accepted.
+
 Priority remains fundamentals → compact PvP → PvPvE → PvE. Add race champions
 only as complete contrasting kits inside those proven loops. Keep Battle Royale
 and other scale-heavy variants unexposed until combat, authority, objectives,

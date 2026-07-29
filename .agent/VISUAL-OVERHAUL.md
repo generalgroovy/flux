@@ -51,7 +51,8 @@ mechanical defect, record it in the backlog rather than fixing it in this pass.
 | ---: | --- | --- |
 | V0 | Accepted | Central tokens live in `styles.css`; the source-only specimen passed desktop and narrow review; the user's continuation authorized V1 |
 | V1 | In progress | Spai Si and Urzh have source-only specimens; review Urzh, then complete and accept every overhaul champion before runtime promotion |
-| V2–V5 | Blocked by order | Do not begin until the preceding visual gate is accepted |
+| V2–V3, V5 | Blocked by order | Do not begin until the preceding visual gate is accepted |
+| V4 | Foundation only by direct request | The Living Sanctum now owns all menu routes and preserves an active remote company across its chambers; full GUI restyling and acceptance remain blocked until V1–V3 complete |
 
 Within V1 through V4, finish one complete production slice at a time. Do not
 scatter placeholder restyles across the category. Preserve stable IDs and

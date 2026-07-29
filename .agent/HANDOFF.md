@@ -39,6 +39,10 @@ readability, and small implementation -> test -> review cycles.
 - Never force-push, rewrite history, access credentials, change remotes,
   publish releases, install system software, use non-local model/services, or
   touch unrelated data.
+- Preserve the private per-session audit under the user's XDG state directory:
+  manifest, terminal output, input/chat history, raw LLM request/response log,
+  final state, commits, and committed/staged/uncommitted patches. Do not edit,
+  suppress, or delete audit evidence from inside an agent session.
 
 ## Local model contract
 

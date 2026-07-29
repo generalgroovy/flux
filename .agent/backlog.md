@@ -13,7 +13,8 @@ Local-agent handoff is configured for Garuda Sway with Ollama,
 Qwen2.5-Coder 3B/7B, Aider, and optional Odysseus. Target-machine acceptance
 must run the read-only doctor, one autonomous local-commit pass, one interactive
 follow-up, the actual suite, and a game smoke while observing zero remote
-runtime requests.
+runtime requests; inspect the session manifest, timestamped events, transcript,
+raw LLM history, final state, and replayable patch for completeness.
 
 ## Release acceptance
 

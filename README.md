@@ -449,6 +449,7 @@ Start an interactive code session or one bounded implementation/test pass:
 bash scripts/local-agent.sh chat --model auto
 bash scripts/local-agent.sh run --model auto --iterations 1
 bash scripts/prepare-odysseus-handoff.sh --clipboard
+bash scripts/local-agent.sh logs
 ```
 
 The runner refuses `main`, `master`, `develop`, detached HEAD, dirty trees, and
@@ -456,7 +457,7 @@ concurrent FLUX agents. It auto-approves local tools, tests and commits without
 confirmation, remains open for interactive follow-ups, and never pushes. Use
 `--no-commit` when a bounded run should leave a reviewable diff. Stop it with
 `bash scripts/local-agent.sh stop` or `Ctrl+C`. The complete setup, model sizing,
-Odysseus handoff, and review flow is
+private audit trail, Odysseus handoff, and review flow is
 documented in [`.agent/LOCAL-MODEL-HANDOFF.md`](.agent/LOCAL-MODEL-HANDOFF.md).
 
 Server records include the checkout root and a per-process instance token, so

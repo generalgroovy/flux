@@ -23,4 +23,6 @@ release, deploy, push, or touch unrelated data. Use only the selected checkout,
 already-installed local tools, and loopback Ollama. Do not merely plan or
 fabricate validation. Local tool actions require no confirmation; stay
 interactive for additional human prompts and create local commits only after
-the configured verification succeeds.
+the configured verification succeeds. Preserve and report the repository
+launcher's complete session audit; never hide commands, output, failures,
+prompts, model responses, diffs, test results, or commits.

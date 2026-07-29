@@ -19,6 +19,7 @@ Commands:
   chat     Start an interactive Aider session with FLUX context.
   run      Run bounded Odysseus-style implementation/test iterations.
   stop     Ask a running bounded loop to stop after its current iteration.
+  logs     Show the latest session's private audit directory and files.
 
 Options:
   --model auto|3b|7b      Select local Qwen2.5-Coder model (default: auto).
@@ -87,6 +88,18 @@ done
 
 cd -- "${repo_dir}"
 flux_agent_require_repo "${repo_dir}"
+
+state_root="${XDG_STATE_HOME:-${HOME}/.local/state}/flux-local-agent"
+if [[ "${command_name}" == logs ]]; then
+  latest_file="${state_root}/latest"
+  [[ -r "${latest_file}" ]] || flux_agent_fail 'No local-agent audit session has been recorded yet.'
+  latest_dir="$(<"${latest_file}")"
+  [[ -d "${latest_dir}" ]] || flux_agent_fail "Latest audit directory is missing: ${latest_dir}"
+  printf 'Latest FLUX local-agent audit: %s\n' "${latest_dir}"
+  find "${latest_dir}" -maxdepth 1 -type f -printf '  %f\n' | sort
+  exit 0
+fi
+
 model_tag="$(flux_agent_model_tag "${model_request}")"
 aider_model="ollama_chat/${model_tag}"
 flux_agent_enable_local_runtime
@@ -109,7 +122,7 @@ doctor() {
   printf '  model: %s\n' "${model_tag}"
   printf '  aider: %s\n' "${aider_path}"
 
-  for command_required in curl flock git node npm ollama timeout; do
+  for command_required in curl find flock git node npm ollama tee timeout; do
     if ! command -v "${command_required}" >/dev/null 2>&1; then
       printf '  missing: %s\n' "${command_required}" >&2
       failed=1
@@ -158,6 +171,84 @@ aider_command="$(flux_agent_aider_command)"
 exec 9>"${repo_dir}/.agent/agent.lock"
 flock --nonblock 9 || flux_agent_fail 'Another FLUX local agent holds .agent/agent.lock.'
 
+umask 077
+run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
+audit_dir="${state_root}/${run_id}"
+session_log="${audit_dir}/session.log"
+chat_history="${audit_dir}/chat-history.md"
+input_history="${audit_dir}/input-history.txt"
+llm_history="${audit_dir}/llm-history.log"
+events_file="${audit_dir}/events.tsv"
+start_head="$(git rev-parse HEAD)"
+mkdir -p -- "${audit_dir}"
+printf '%s\n' "${audit_dir}" > "${state_root}/latest"
+printf 'timestamp_utc\tevent\tdetail\n' > "${events_file}"
+
+audit_event() {
+  printf '%s\t%s\t%s\n' "$(date -u --iso-8601=seconds)" "$1" "${2:-}" >> "${events_file}"
+}
+audit_event session_start "mode=${command_name};model=${model_tag};commit=${commit_changes}"
+
+{
+  printf 'FLUX local-agent audit manifest\n'
+  printf 'started_utc=%s\n' "$(date -u --iso-8601=seconds)"
+  printf 'repository=%s\n' "${repo_dir}"
+  printf 'mode=%s\n' "${command_name}"
+  printf 'model=%s\n' "${model_tag}"
+  printf 'ollama=%s\n' "${OLLAMA_API_BASE}"
+  printf 'branch=%s\n' "$(git branch --show-current)"
+  printf 'start_commit=%s\n' "${start_head}"
+  printf 'iterations=%s\n' "${iterations}"
+  printf 'timeout=%s\n' "${iteration_timeout}"
+  printf 'auto_approve=true\n'
+  printf 'local_commit=%s\n' "${commit_changes}"
+  printf 'push=false\n'
+  printf 'runtime_network=loopback-model-and-local-tests-only\n'
+  printf '\nInitial status\n'
+  git status --short --branch
+  printf '\nRecent history\n'
+  git log -5 --oneline --decorate
+} > "${audit_dir}/manifest.txt"
+
+audit_finalize() {
+  local final_status="$1"
+  local end_head
+  trap - EXIT
+  audit_event session_end "exit_status=${final_status}"
+  end_head="$(git rev-parse HEAD 2>/dev/null || printf unavailable)"
+  {
+    printf 'finished_utc=%s\n' "$(date -u --iso-8601=seconds)"
+    printf 'exit_status=%s\n' "${final_status}"
+    printf 'start_commit=%s\n' "${start_head}"
+    printf 'end_commit=%s\n' "${end_head}"
+    printf '\nFinal status\n'
+    git status --short --branch || true
+    printf '\nSession commits\n'
+    git log --oneline --decorate "${start_head}..${end_head}" || true
+    printf '\nCommitted diff statistics\n'
+    git diff --stat "${start_head}..${end_head}" || true
+  } > "${audit_dir}/final-state.txt"
+  git diff --binary "${start_head}..${end_head}" > "${audit_dir}/committed-changes.patch" 2>/dev/null || true
+  git diff --binary > "${audit_dir}/uncommitted-changes.patch" 2>/dev/null || true
+  git diff --cached --binary > "${audit_dir}/staged-changes.patch" 2>/dev/null || true
+  printf '\nAudit directory: %s\n' "${audit_dir}"
+}
+trap 'audit_finalize "$?"' EXIT
+
+run_logged() {
+  local command_status
+  printf '\n$' | tee -a "${session_log}"
+  printf ' %q' "$@" | tee -a "${session_log}"
+  printf '\n' | tee -a "${session_log}"
+  audit_event command_start "$*"
+  set +e
+  "$@" 2>&1 | tee -a "${session_log}"
+  command_status="${PIPESTATUS[0]}"
+  set -e
+  audit_event command_end "status=${command_status};command=$*"
+  return "${command_status}"
+}
+
 common_aider_options=(
   --model "${aider_model}"
   --no-dirty-commits
@@ -169,6 +260,11 @@ common_aider_options=(
   --analytics-disable
   --no-check-update
   --disable-playwright
+  --show-diffs
+  --verbose
+  --chat-history-file "${chat_history}"
+  --input-history-file "${input_history}"
+  --llm-history-file "${llm_history}"
   --read AGENTS.md
   --read README.md
   --read .agent/HANDOFF.md
@@ -180,7 +276,15 @@ common_aider_options=(
 if [[ "${command_name}" == chat ]]; then
   printf 'Starting full-access interactive FLUX Aider with %s. Ctrl+C exits.\n' "${model_tag}"
   printf 'Local runtime: loopback Ollama only; confirmations and telemetry are disabled.\n'
-  exec "${aider_command}" "${common_aider_options[@]}" --auto-commits "${aider_options[@]}"
+  printf 'Audit directory: %s\n' "${audit_dir}"
+  audit_event aider_start interactive
+  set +e
+  "${aider_command}" "${common_aider_options[@]}" --auto-commits "${aider_options[@]}" 2>&1 |
+    tee -a "${session_log}"
+  chat_status="${PIPESTATUS[0]}"
+  set -e
+  audit_event aider_end "status=${chat_status};mode=interactive"
+  exit "${chat_status}"
 fi
 
 [[ "${iterations}" =~ ^[0-9]+$ ]] || flux_agent_fail '--iterations must be an integer.'
@@ -190,20 +294,24 @@ command -v systemd-inhibit >/dev/null 2>&1 && inhibit_prefix=(systemd-inhibit --
 rm -f -- .agent/STOP
 printf 'Starting %d bounded FLUX iteration(s) with %s.\n' "${iterations}" "${model_tag}"
 printf 'Local commits: %s; network/push: disabled. Use Ctrl+C or scripts/local-agent.sh stop.\n' "${commit_changes}"
+printf 'Audit directory: %s\n' "${audit_dir}"
 
 for (( iteration = 1; iteration <= iterations; iteration += 1 )); do
   [[ ! -e .agent/STOP ]] || break
   printf '\n[FLUX] local-agent iteration %d/%d\n' "${iteration}" "${iterations}"
 
+  printf '\n[command] aider bounded iteration %d\n' "${iteration}" | tee -a "${session_log}"
+  audit_event aider_start "bounded_iteration=${iteration}"
   set +e
   "${inhibit_prefix[@]}" timeout --signal=TERM --kill-after=2m "${iteration_timeout}" \
     "${aider_command}" \
       "${common_aider_options[@]}" \
       --no-auto-commits \
       --message-file "${task_file}" \
-      "${aider_options[@]}"
-  agent_status=$?
+      "${aider_options[@]}" 2>&1 | tee -a "${session_log}"
+  agent_status="${PIPESTATUS[0]}"
   set -e
+  audit_event aider_end "status=${agent_status};bounded_iteration=${iteration}"
 
   if (( agent_status != 0 )); then
     flux_agent_notify critical 'FLUX local agent stopped' "Iteration ${iteration} exited ${agent_status}; review the worktree."
@@ -215,15 +323,15 @@ for (( iteration = 1; iteration <= iterations; iteration += 1 )); do
     break
   fi
 
-  npm test
+  run_logged npm test
   for shell_file in scripts/*.sh; do
-    bash -n "${shell_file}"
+    run_logged bash -n "${shell_file}"
   done
-  git diff --check
+  run_logged git diff --check
 
   if [[ "${commit_changes}" == true ]]; then
-    git add -A
-    git -c commit.gpgsign=false commit -m "Continue FLUX local-agent iteration ${iteration}"
+    run_logged git add -A
+    run_logged git -c commit.gpgsign=false commit -m "Continue FLUX local-agent iteration ${iteration}"
   else
     printf '[FLUX] verified changes remain uncommitted for human review; stopping.\n'
     break

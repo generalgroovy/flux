@@ -77,6 +77,35 @@ override environment policy, so do not give it untrusted repositories or
 prompts; kernel-level egress isolation would require a separately administered
 network namespace/firewall and conflicts with reaching a host Ollama service.
 
+## Development transparency
+
+Every `chat` or `run` creates a private directory with mode `0700` below
+`${XDG_STATE_HOME:-$HOME/.local/state}/flux-local-agent`. It records:
+
+| File | Evidence |
+| --- | --- |
+| `manifest.txt` | Start time, repository, branch, commit, model, mode, limits, and initial status |
+| `session.log` | Visible model, tool, shell, test, and Git output |
+| `input-history.txt` | Interactive inputs received by Aider |
+| `chat-history.md` | User/assistant development conversation |
+| `llm-history.log` | Raw requests and responses sent only to local Ollama |
+| `events.tsv` | Timestamped session, model, command, test, and completion events |
+| `final-state.txt` | Exit status, ending commit/status, session commits, and diff statistics |
+| `committed-changes.patch` | Replayable aggregate patch for session commits |
+| `staged-changes.patch` | Any staged remainder at exit |
+| `uncommitted-changes.patch` | Any tracked unstaged remainder at exit |
+
+Locate the newest audit without starting Ollama or an agent:
+
+```bash
+bash scripts/local-agent.sh logs
+```
+
+Audit files may contain source, prompts, and terminal output, so they are
+user-private and intentionally stored outside the repository. Transparency
+means observable decisions/actions/evidence; it does not treat hidden model
+chain-of-thought as trustworthy engineering documentation.
+
 Stop a running loop from another terminal with:
 
 ```bash

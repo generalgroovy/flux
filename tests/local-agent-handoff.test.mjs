@@ -31,6 +31,14 @@ test("local-agent handoff is portable, autonomous, and local-model only", async 
   assert.match(launcher, /commit_changes=true/);
   assert.match(launcher, /--yes-always/);
   assert.match(launcher, /--auto-commits/);
+  assert.match(launcher, /--show-diffs/);
+  assert.match(launcher, /--llm-history-file/);
+  assert.match(launcher, /manifest\.txt/);
+  assert.match(launcher, /final-state\.txt/);
+  assert.match(launcher, /committed-changes\.patch/);
+  assert.match(launcher, /session\.log/);
+  assert.match(launcher, /events\.tsv/);
+  assert.match(launcher, /command_name.*logs/);
   assert.doesNotMatch(launcher, /git push/);
   assert.match(setup, /install=false/);
   assert.match(setup, /--install/);

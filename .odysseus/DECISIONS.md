@@ -16,3 +16,6 @@
   local commits after verification. `--no-commit` retains a bounded diff.
 - Runtime accepts only loopback Ollama and disables telemetry, update checks,
   URL ingestion, dependency downloads, Git network protocols, and push.
+- Every session writes a private XDG-state audit containing its manifest,
+  terminal output, input/chat/LLM histories, final state, commits, and patches;
+  agents may not suppress or delete this evidence.

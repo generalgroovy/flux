@@ -1703,3 +1703,25 @@
   endpoints and rejected a remote endpoint, `git diff --check` passed, and the
   complete Windows suite passed 121/121 both normally and from the configured
   proxy-denied/npm-offline local runtime environment.
+
+# 2026-07-29 — Complete observable development audit
+
+- **Outcome:** Every interactive or bounded local-agent session now creates a
+  private, timestamped audit below the user's XDG state directory and prints
+  its location at start and exit. `local-agent.sh logs` discovers the newest
+  session without requiring Ollama or Aider.
+- **Evidence:** The audit contains a start manifest, timestamped event stream,
+  visible terminal/tool/test/Git output, interactive input history, chat
+  history, raw local-LLM request/response history, final exit/Git state,
+  session commit list, diff statistics, and committed/staged/uncommitted
+  patches. Aider also runs verbose and displays commit diffs.
+- **Privacy:** Audit directories use a restrictive umask and remain outside the
+  repository because they may contain source, prompts, and terminal output.
+  The agent contract forbids suppressing or deleting audit evidence.
+- **Verification:** The handoff contract passed 2/2, all shell scripts parsed,
+  the synthetic XDG-state `logs` lookup listed the expected manifest/events,
+  `git diff --check` passed, and the complete Windows suite passed 121/121.
+- **Limitation:** Aider is not installed in this Windows checkout, so an actual
+  Qwen interactive session and its raw transcript must still be accepted on the
+  target Garuda host; hidden model chain-of-thought is intentionally not treated
+  as trustworthy engineering documentation.

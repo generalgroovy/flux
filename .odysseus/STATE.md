@@ -1,7 +1,7 @@
 # FLUX agent state
 
-- Status: autonomous full-access/local-model handoff prepared; verify this
-  state against the live checkout and target Garuda host
+- Status: audited autonomous full-access/local-model handoff prepared; verify
+  this state against the live checkout and target Garuda host
 - Branch: resolve with `git branch --show-current`; never assume a stored name
 - Commit: resolve with `git rev-parse HEAD`; never assume a stored SHA
 - Remote: resolve with `git remote -v`; never change it from an agent run

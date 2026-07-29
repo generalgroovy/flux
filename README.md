@@ -292,7 +292,7 @@ every slice.
 | Movement | Complete universal Stamina grammar is live and deterministic: sprint, counter-strafe, jump/double jump, slide/slide jump, air redirect/dodge, wavedash, wall jump, landing cut, Edgeweave, vault, and superglide; all eight battlegrounds provide marked vault routes |
 | Sanctum | Always-rendered Living Sanctum shell, persistent remote company, ancestry-column roster selection, and a local Practice court with complete movement/spell areas, stationary target, champion switch, refill/reset, and `F2` field guide are implemented |
 | Platforms | Source launch and graceful cleanup work on Windows and Linux; CI builds Windows NSIS and Linux AppImage artifacts |
-| Verification | 141 automated checks pass locally; the current movement candidate still requires its GitHub Windows/Linux Node 20/22 and NSIS/AppImage run before release acceptance |
+| Verification | 141 automated checks pass locally; GitHub Actions run `30462865622` passed Windows/Linux Node 20/22 verification plus NSIS/AppImage packaging for movement commit `0ff6eb0` |
 | Release blockers | Complete V1–V5 acceptance, a current packaged match smoke, signed public installers/update feed, and a dependable owned relay |
 
 The old champions are implementation scaffolding, not overhaul characters. Their

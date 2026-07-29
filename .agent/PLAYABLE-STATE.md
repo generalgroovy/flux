@@ -178,5 +178,9 @@ is given.
   layout and no warnings or errors. Its automation focused but again did not
   activate Chromium controls, so no browser play-input claim is made; movement
   behavior is evidenced by deterministic and DOM tests pending hands-on feel.
-- GitHub Windows/Linux Node 20/22 verification and NSIS/AppImage packaging are
-  still pending for this exact candidate.
+- `npm.cmd run package:windows:verified` built the exact `0ff6eb0` NSIS
+  installer with SHA-256
+  `09b09235619d0acfdc18985441777276845aaa97c3933e25b21c958e17286e87`.
+- GitHub Actions run `30462865622` passed all six jobs for movement commit
+  `0ff6eb0`: Windows and Ubuntu on Node 20.19.1 and Node 22, Windows NSIS, and
+  Linux AppImage packaging.

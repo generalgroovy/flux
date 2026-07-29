@@ -2073,6 +2073,10 @@
 - **Visual review:** The source Sanctum rendered at 1280px with no horizontal
   overflow and no browser warnings/errors. Browser automation focused controls
   but did not activate them, so no browser movement-input claim is made.
-- **Pending remote acceptance:** Push the exact candidate, pass Windows/Linux
-  Node 20/22 verification plus NSIS/AppImage packaging, merge, and realign
-  `integration/unify-flux` with `main`; then resume V1 Nico Lai.
+- **Local package:** `npm.cmd run package:windows:verified` built the exact
+  `0ff6eb0` NSIS installer with SHA-256
+  `09b09235619d0acfdc18985441777276845aaa97c3933e25b21c958e17286e87`.
+- **Remote acceptance:** GitHub Actions run `30462865622` passed all six jobs
+  for movement commit `0ff6eb0`: Windows and Ubuntu on Node 20.19.1 and Node 22,
+  Windows NSIS, and Linux AppImage packaging. PR #13 remains to be merged and
+  `integration/unify-flux` realigned with `main`; then resume V1 Nico Lai.

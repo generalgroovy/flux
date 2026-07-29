@@ -50,7 +50,7 @@ mechanical defect, record it in the backlog rather than fixing it in this pass.
 | Gate | Status | Evidence / next decision |
 | ---: | --- | --- |
 | V0 | Accepted | Central tokens live in `styles.css`; the source-only specimen passed desktop and narrow review; the user's continuation authorized V1 |
-| V1 | In progress | Spai Si and Urzh have source-only specimens; review Urzh, then complete and accept every overhaul champion before runtime promotion |
+| V1 | In progress | Spai Si, Urzh, and S. Wayne have source-only six-state specimens; implement Nico Lai next, then complete and accept every overhaul champion before runtime promotion |
 | V2–V3, V5 | Blocked by order | Do not begin until the preceding visual gate is accepted |
 | V4 | Foundation only by direct request | The Living Sanctum owns all menu routes and preserves an active remote company; Muster adds ancestry-column portrait selection with independent non-mutating hover/focus previews; full GUI restyling and acceptance remain blocked until V1–V3 complete |
 

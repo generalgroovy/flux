@@ -104,3 +104,18 @@ is given.
   activate them, so no packaged match-entry claim is made. Publishing `develop`
   remains blocked on one real match launch, movement/ability/pause observation,
   and normal close at this exact candidate or its documented successor.
+
+## 2026-07-29 S. Wayne visual candidate
+
+- The compatibility runtime remains the playable Windows/Linux baseline;
+  S. Wayne is source-only and cannot enter normal or remote rosters.
+- The V1 character path now uses modular champion files, shared drawing
+  primitives, a registry-compatible barrel, and one shared non-shipping
+  specimen harness.
+- S. Wayne renders all six authored Hobbit Dark/Light states. The source board
+  was reviewed at 1280x720, scrolled through both rows without clipping, and
+  produced no browser console errors.
+- `npm.cmd test` passes 132/132 on Windows; `node scripts/ci-verify.mjs` repeats
+  the suite and passes recursive JavaScript syntax checks.
+- Windows/Linux package and test CI for this exact commit remain required before
+  the slice is remotely verified.

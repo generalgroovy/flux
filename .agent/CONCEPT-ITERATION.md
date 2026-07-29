@@ -1,7 +1,12 @@
 # FLUX concept iteration: characters, balance, and visual language
 
 Date: 2026-07-28
-Status: future-facing design foundation; not connected to live gameplay
+Status: superseded historical concept snapshot; not an implementation source
+
+The current roster, elements, ancestries, and delivery order are defined by
+`README.md`, `.agent/VISUAL-OVERHAUL.md`, and
+`.agent/OVERHAUL-IMPLEMENTATION.md`. Conflicting rows below are retained only as
+design history and must not drive implementation.
 
 This pass develops the approved overhaul roster without weakening the repository
 unification gate. It changes no live combat values, simulation paths, renderer,

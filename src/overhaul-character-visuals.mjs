@@ -1,8 +1,12 @@
+import { traceAncestryBody } from "./ancestry-visual-templates.mjs";
 import {
-  composeCharacterVisualProfile,
-  drawAncestryFeatures,
-  traceAncestryBody,
-} from "./ancestry-visual-templates.mjs";
+  finite,
+  insideOpeningWindow,
+  positive,
+} from "./overhaul/character-visual-primitives.mjs";
+import { SPAI_SI_VISUAL } from "./overhaul/characters/spai-si-visual.mjs";
+import { S_WAYNE_VISUAL } from "./overhaul/characters/s-wayne-visual.mjs";
+import { URZH_VISUAL } from "./overhaul/characters/urzh-visual.mjs";
 
 const freeze = (value) => Object.freeze(value);
 
@@ -21,41 +25,29 @@ export const LEGACY_CONCEPT_TRANSFERS = freeze([
   transfer("ashmaw", "Varka Ashmaw", "treevor", "Treevor the Mason", "terrain shaping, Fire liability, and a crown-state climax", "name, Wyrmbound ancestry, and pyre-exile fiction"),
 ]);
 
-export const OVERHAUL_CHARACTER_VISUAL_PROFILES = freeze({
-  aerwyn: composeCharacterVisualProfile({
-    id: "aerwyn",
-    name: "Spai Si",
-    ancestryId: "demon",
-    ancestryRead: "swept horns and ember tail",
-    roleRead: "forward-poised redirect duelist",
-    affinityRead: "open Wind arcs, Light spindle, Earth-weighted mantle",
-    focusProp: "woven angle spindle",
-    body: "#b97750",
-    mantle: "#51462f",
-    ink: "#17130d",
-    wind: "#86bda7",
-    light: "#d4b84e",
-    ember: "#c76632",
-  }),
-  urzh: composeCharacterVisualProfile({
-    id: "urzh",
-    name: "Urzh",
-    ancestryId: "stoneborn",
-    ancestryRead: "squared stone frame with ember seams",
-    roleRead: "braced conductive kiln bulwark",
-    affinityRead: "Earth plates, Fire seams, Charge forks",
-    focusProp: "kiln buckler",
-    body: "#8d8068",
-    mantle: "#463d31",
-    ink: "#17130d",
-    earth: "#a79771",
-    fire: "#c76632",
-    charge: "#d4b84e",
-  }),
-});
+const CHARACTER_VISUALS = freeze([
+  SPAI_SI_VISUAL,
+  URZH_VISUAL,
+  S_WAYNE_VISUAL,
+]);
+
+const VISUAL_BY_ID = new Map(
+  CHARACTER_VISUALS.map((entry) => [entry.profile.id, entry]),
+);
+
+export const OVERHAUL_CHARACTER_VISUAL_PROFILES = freeze(
+  Object.fromEntries(
+    CHARACTER_VISUALS.map((entry) => [entry.profile.id, entry.profile]),
+  ),
+);
 
 export const OVERHAUL_CHARACTER_VISUAL_STATES = freeze([
-  "idle", "move", "commit", "hit", "defend", "defeated",
+  "idle",
+  "move",
+  "commit",
+  "hit",
+  "defend",
+  "defeated",
 ]);
 
 export function getOverhaulCharacterVisualProfile(characterId) {
@@ -70,77 +62,33 @@ export function resolveOverhaulCharacterVisualState(entity, cooldowns = {}) {
     positive(entity.ultimateWindupRemaining) ||
     insideOpeningWindow(entity.primaryCooldown, cooldowns.primary, 0.075) ||
     insideOpeningWindow(entity.specialCooldown, cooldowns.special, 0.16)
-  ) return "commit";
+  ) {
+    return "commit";
+  }
   if (
     Math.hypot(finite(entity.vx), finite(entity.vy)) > 70 ||
-    positive(entity.mobilityRemaining) || positive(entity.slideRemaining) || positive(entity.hopRemaining)
-  ) return "move";
+    positive(entity.mobilityRemaining) ||
+    positive(entity.slideRemaining) ||
+    positive(entity.hopRemaining)
+  ) {
+    return "move";
+  }
   return "idle";
 }
 
-export function drawOverhaulCharacterAura(context, profile, state, radius, time, reducedMotion) {
-  if (!profile || state === "defeated") return;
-  if (profile.id === "urzh") {
-    drawUrzhAura(context, profile, state, radius, time, reducedMotion);
-    return;
-  }
-  const phase = reducedMotion ? 0 : Math.sin(time * 5) * radius * 0.06;
-  context.save();
-  try {
-    context.shadowBlur = 0;
-    context.strokeStyle = profile.wind;
-    context.lineCap = "round";
-    context.lineJoin = "round";
-    if (state === "idle") {
-      context.globalAlpha = 0.3;
-      context.lineWidth = 1.5;
-      openArc(context, -radius * 0.1, -radius * 0.02, radius * 1.12, -0.75, 0.75);
-      openArc(context, -radius * 0.2, 0, radius * 1.34, -0.5, 0.5);
-    } else if (state === "move") {
-      context.globalAlpha = 0.5;
-      context.lineWidth = 2;
-      for (const side of [-1, 1]) {
-        context.beginPath();
-        context.moveTo(-radius * 0.3, side * radius * 0.45);
-        context.quadraticCurveTo(-radius * 0.95, side * (radius * 0.65 + phase), -radius * 1.55, side * radius * 0.28);
-        context.stroke();
-      }
-    } else if (state === "commit") {
-      context.globalAlpha = 0.75;
-      context.lineWidth = 2.5;
-      for (const side of [-1, 0, 1]) {
-        context.beginPath();
-        context.moveTo(radius * 0.45, side * radius * 0.34);
-        context.lineTo(radius * 1.38, side * radius * 0.62);
-        context.stroke();
-      }
-    } else if (state === "hit") {
-      context.globalAlpha = 0.9;
-      context.lineWidth = 2;
-      for (let index = 0; index < 4; index += 1) {
-        const angle = Math.PI / 4 + (index * Math.PI) / 2;
-        context.beginPath();
-        context.moveTo(Math.cos(angle) * radius * 0.7, Math.sin(angle) * radius * 0.7);
-        context.lineTo(Math.cos(angle) * radius * 1.25, Math.sin(angle) * radius * 1.25);
-        context.stroke();
-      }
-    } else if (state === "defend") {
-      context.globalAlpha = 0.84;
-      context.lineWidth = 3;
-      context.beginPath();
-      context.moveTo(radius * 0.4, -radius * 0.9);
-      context.quadraticCurveTo(radius * 1.45, 0, radius * 0.4, radius * 0.9);
-      context.stroke();
-      context.beginPath();
-      context.moveTo(radius * 0.62, 0);
-      context.lineTo(radius * 1.12, -radius * 0.22);
-      context.moveTo(radius * 0.62, 0);
-      context.lineTo(radius * 1.12, radius * 0.22);
-      context.stroke();
-    }
-  } finally {
-    context.restore();
-  }
+export function drawOverhaulCharacterAura(
+  context,
+  profile,
+  state,
+  radius,
+  time,
+  reducedMotion,
+) {
+  if (!profile || state === "defeated") return false;
+  const visual = VISUAL_BY_ID.get(profile.id);
+  if (!visual) return false;
+  visual.drawAura(context, profile, state, radius, time, reducedMotion);
+  return true;
 }
 
 export function traceOverhaulCharacterBody(context, profile, radius) {
@@ -148,257 +96,54 @@ export function traceOverhaulCharacterBody(context, profile, radius) {
   return traceAncestryBody(context, profile.ancestryTemplate, radius);
 }
 
-export function drawOverhaulCharacterDetails(context, profile, state, radius, team, teamColor, healthRatio) {
-  if (!profile) return;
-  if (profile.id === "urzh") {
-    drawUrzhDetails(context, profile, state, radius, team, teamColor, healthRatio);
-    return;
-  }
-  if (profile.id !== "aerwyn") return;
-  context.save();
-  try {
-    context.shadowBlur = 0;
-    context.lineCap = "round";
-    context.lineJoin = "round";
-
-    drawAncestryFeatures(context, profile, radius);
-
-    // Earth-weighted mantle keeps the center readable beneath the Wind aura.
-    context.fillStyle = profile.mantle;
-    context.strokeStyle = profile.ink;
-    context.lineWidth = 1.5;
-    tracePolygon(context, [[-radius * 0.08, -radius * 0.52], [radius * 0.62, 0], [-radius * 0.08, radius * 0.52], [-radius * 0.5, 0]]);
-    context.fill();
-    context.stroke();
-
-    // A single Light focus prop supplies aim direction without becoming a tell.
-    context.fillStyle = profile.light;
-    context.beginPath();
-    context.moveTo(radius * 0.48, 0);
-    context.lineTo(radius * 0.18, radius * 0.24);
-    context.lineTo(-radius * 0.08, 0);
-    context.lineTo(radius * 0.18, -radius * 0.24);
-    context.closePath();
-    context.fill();
-    context.stroke();
-
-    drawTeamShape(context, team, teamColor, radius);
-    drawHealthWear(context, profile.ink, radius, healthRatio);
-    if (state === "commit") {
-      context.strokeStyle = profile.light;
-      context.lineWidth = 2;
-      context.beginPath();
-      context.moveTo(radius * 0.82, -radius * 0.28);
-      context.lineTo(radius * 1.16, 0);
-      context.lineTo(radius * 0.82, radius * 0.28);
-      context.stroke();
-    }
-  } finally {
-    context.restore();
-  }
-}
-
-export function drawOverhaulCharacterDefeat(context, profile, radius, teamColor) {
-  if (!profile) return false;
-  if (profile.id === "urzh") return drawUrzhDefeat(context, profile, radius, teamColor);
-  if (profile.id !== "aerwyn") return false;
-  context.save();
-  try {
-    context.globalAlpha = 0.58;
-    context.strokeStyle = teamColor;
-    context.fillStyle = profile.ink;
-    context.lineWidth = 2;
-    context.translate(0, radius * 0.28);
-    context.scale(1.12, 0.48);
-    tracePolygon(context, [[radius * 0.95, 0], [0, radius * 0.72], [-radius * 0.86, 0], [0, -radius * 0.72]]);
-    context.fill();
-    context.stroke();
-    context.strokeStyle = profile.wind;
-    context.beginPath();
-    context.moveTo(-radius * 0.48, -radius * 0.5);
-    context.lineTo(radius * 0.46, radius * 0.5);
-    context.stroke();
-  } finally {
-    context.restore();
-  }
+export function drawOverhaulCharacterDetails(
+  context,
+  profile,
+  state,
+  radius,
+  team,
+  teamColor,
+  healthRatio,
+) {
+  const visual = profile ? VISUAL_BY_ID.get(profile.id) : null;
+  if (!visual) return false;
+  visual.drawDetails(
+    context,
+    profile,
+    state,
+    radius,
+    team,
+    teamColor,
+    healthRatio,
+  );
   return true;
 }
 
-function drawUrzhAura(context, profile, state, radius, time, reducedMotion) {
-  const pulse = reducedMotion ? 0 : Math.sin(time * 5) * radius * 0.08;
-  context.save();
-  try {
-    context.shadowBlur = 0;
-    context.lineCap = "square";
-    if (state === "idle") {
-      context.strokeStyle = profile.earth;
-      context.globalAlpha = 0.34;
-      context.lineWidth = 3;
-      for (const side of [-1, 1]) {
-        context.beginPath();
-        context.moveTo(-radius * 0.8, side * radius * 0.9);
-        context.lineTo(radius * 0.55, side * radius * 0.9);
-        context.stroke();
-      }
-    } else if (state === "move") {
-      context.strokeStyle = profile.fire;
-      context.globalAlpha = 0.54;
-      context.lineWidth = 2.5;
-      for (const side of [-1, 1]) {
-        context.beginPath();
-        context.moveTo(-radius * 0.72, side * radius * 0.48);
-        context.lineTo(-radius * 1.32 - pulse, side * radius * 0.62);
-        context.lineTo(-radius * 1.08, side * radius * 0.3);
-        context.stroke();
-      }
-    } else if (state === "commit") {
-      context.strokeStyle = profile.charge;
-      context.globalAlpha = 0.82;
-      context.lineWidth = 2.4;
-      for (const side of [-1, 1]) {
-        context.beginPath();
-        context.moveTo(radius * 0.54, side * radius * 0.5);
-        context.lineTo(radius * 0.92, side * radius * 0.28);
-        context.lineTo(radius * 0.74, side * radius * 0.05);
-        context.lineTo(radius * 1.38, 0);
-        context.stroke();
-      }
-    } else if (state === "hit") {
-      context.strokeStyle = profile.fire;
-      context.globalAlpha = 0.9;
-      context.lineWidth = 2;
-      for (const side of [-1, 1]) {
-        context.beginPath();
-        context.moveTo(-radius * 0.1, side * radius * 0.66);
-        context.lineTo(radius * 0.18, side * radius * 1.26);
-        context.stroke();
-      }
-    } else if (state === "defend") {
-      context.strokeStyle = profile.earth;
-      context.globalAlpha = 0.88;
-      context.lineWidth = 4;
-      context.beginPath();
-      context.moveTo(radius * 0.68, -radius * 1.05);
-      context.lineTo(radius * 1.24, -radius * 0.66);
-      context.lineTo(radius * 1.24, radius * 0.66);
-      context.lineTo(radius * 0.68, radius * 1.05);
-      context.stroke();
-    }
-  } finally {
-    context.restore();
-  }
+export function drawOverhaulCharacterDefeat(
+  context,
+  profile,
+  radius,
+  teamColor,
+) {
+  const visual = profile ? VISUAL_BY_ID.get(profile.id) : null;
+  return visual?.drawDefeat(context, profile, radius, teamColor) ?? false;
 }
 
-function drawUrzhDetails(context, profile, state, radius, team, teamColor, healthRatio) {
-  context.save();
-  try {
-    context.shadowBlur = 0;
-    context.lineJoin = "bevel";
-
-    drawAncestryFeatures(context, profile, radius);
-
-    // A square buckler gives a single role/facing prop at combat zoom.
-    context.fillStyle = profile.mantle;
-    context.strokeStyle = profile.charge;
-    context.lineWidth = 1.8;
-    context.beginPath();
-    context.rect(radius * 0.34, -radius * 0.34, radius * 0.54, radius * 0.68);
-    context.fill();
-    context.stroke();
-    context.beginPath();
-    context.moveTo(radius * 0.46, 0);
-    context.lineTo(radius * 0.76, 0);
-    context.stroke();
-
-    drawTeamShape(context, team, teamColor, radius);
-    drawHealthWear(context, profile.ink, radius, healthRatio);
-    if (state === "commit") {
-      context.fillStyle = profile.charge;
-      context.fillRect(radius * 0.56, -radius * 0.09, radius * 0.28, radius * 0.18);
-    }
-  } finally {
-    context.restore();
-  }
-}
-
-function drawUrzhDefeat(context, profile, radius, teamColor) {
-  context.save();
-  try {
-    context.globalAlpha = 0.62;
-    context.fillStyle = profile.mantle;
-    context.strokeStyle = teamColor;
-    context.lineWidth = 2;
-    context.translate(0, radius * 0.36);
-    tracePolygon(context, [
-      [-radius * 1.02, radius * 0.28], [-radius * 0.68, -radius * 0.3],
-      [-radius * 0.08, -radius * 0.12], [radius * 0.28, -radius * 0.42],
-      [radius * 1.04, radius * 0.22],
-    ]);
-    context.fill();
-    context.stroke();
-    context.strokeStyle = profile.fire;
-    context.beginPath();
-    context.moveTo(-radius * 0.34, 0);
-    context.lineTo(radius * 0.34, radius * 0.12);
-    context.stroke();
-  } finally {
-    context.restore();
-  }
-  return true;
-}
-
-function transfer(legacyId, legacyName, overhaulId, overhaulName, retained, retired) {
-  return freeze({ legacyId, legacyName, overhaulId, overhaulName, retained, retired, status: "compatibility-only" });
-}
-
-function drawTeamShape(context, team, teamColor, radius) {
-  context.strokeStyle = teamColor;
-  context.lineWidth = 2;
-  if (team === "alpha") {
-    context.beginPath();
-    context.moveTo(-radius * 0.72, -radius * 0.28);
-    context.lineTo(-radius * 1.02, 0);
-    context.lineTo(-radius * 0.72, radius * 0.28);
-    context.stroke();
-  } else if (team === "beta") {
-    for (const offset of [-0.16, 0.16]) {
-      context.beginPath();
-      context.moveTo(-radius * 0.96, radius * offset - radius * 0.18);
-      context.lineTo(-radius * 0.72, radius * offset + radius * 0.18);
-      context.stroke();
-    }
-  }
-}
-
-function drawHealthWear(context, ink, radius, healthRatio) {
-  if (healthRatio > 0.5) return;
-  context.strokeStyle = ink;
-  context.lineWidth = 1.5;
-  context.beginPath();
-  context.moveTo(-radius * 0.4, -radius * 0.36);
-  context.lineTo(-radius * 0.12, -radius * 0.1);
-  context.stroke();
-  if (healthRatio > 0.25) return;
-  context.beginPath();
-  context.moveTo(-radius * 0.42, radius * 0.38);
-  context.lineTo(-radius * 0.08, radius * 0.12);
-  context.stroke();
-}
-
-function openArc(context, x, y, radius, start, end) {
-  context.beginPath();
-  context.arc(x, y, radius, start, end);
-  context.stroke();
-}
-
-function tracePolygon(context, points) {
-  context.beginPath();
-  for (const [index, [x, y]] of points.entries()) index === 0 ? context.moveTo(x, y) : context.lineTo(x, y);
-  context.closePath();
-}
-
-function positive(value) { return Number.isFinite(value) && value > 0; }
-function finite(value) { return Number.isFinite(value) ? value : 0; }
-function insideOpeningWindow(remaining, cooldown, window) {
-  return Number.isFinite(remaining) && Number.isFinite(cooldown) && cooldown > 0 && remaining > Math.max(0, cooldown - window);
+function transfer(
+  legacyId,
+  legacyName,
+  overhaulId,
+  overhaulName,
+  retained,
+  retired,
+) {
+  return freeze({
+    legacyId,
+    legacyName,
+    overhaulId,
+    overhaulName,
+    retained,
+    retired,
+    status: "compatibility-only",
+  });
 }

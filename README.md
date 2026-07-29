@@ -255,7 +255,7 @@ GUI foundation to arrive early.
 | Gate | Scope | Current status |
 | ---: | --- | --- |
 | V0 | Visual tokens and non-shipping reference specimen | Accepted |
-| V1 | All champion and ancestry concepts | In progress: Spai Si and Urzh have source-only specimens |
+| V1 | All champion and ancestry concepts | In progress: Spai Si, Urzh, and S. Wayne have source-only specimens |
 | V2 | Spell anticipation, travel, impact, ownership, and expiry language | Blocked by V1 |
 | V3 | Map materials, landmarks, routes, hazards, objectives, and dense-fight clarity | Blocked by V2 |
 | V4 | Sanctum, HUD, guide, settings, lobby, pause, results, and tutorial | Foundation only; full gate blocked by V3 |
@@ -273,11 +273,11 @@ every slice.
 | --- | --- |
 | Compatibility runtime | Complete ten-character game remains authoritative in normal local and remote matches |
 | Overhaul data | Eight-family element aliases, sixteen mechanical race archetypes, sixteen design-only champions, ability catalog, reactions, movement grammar, sizes, modes, and destruction rules are validated but inactive |
-| Character visuals | Twenty modular ancestry templates exist; Spai Si and Urzh have six-state source-only specimens |
+| Character visuals | Twenty modular ancestry templates exist; Spai Si, Urzh, and S. Wayne have modular six-state source-only specimens |
 | Haara prototype | Headless local mechanic prototype still uses the legacy `Hara` label and stable `mara` ID behind `contentProfile: "overhaul-preview"`; normal selection and live lobbies reject it |
 | Sanctum | Living menu shell, persistent remote company, and ancestry-column roster selection are implemented as an authorized V4 foundation |
 | Platforms | Source launch and graceful cleanup work on Windows and Linux; CI builds Windows NSIS and Linux AppImage artifacts |
-| Verification | 129 automated checks currently pass locally; the latest PR matrix passes Windows/Linux Node verification and packaging |
+| Verification | 132 automated checks currently pass locally; the prior PR matrix passed Windows/Linux Node verification and packaging; the current commit still requires CI |
 | Release blockers | Complete V1–V5 acceptance, a current packaged match smoke, signed public installers/update feed, and a dependable owned relay |
 
 The old champions are implementation scaffolding, not overhaul characters. Their
@@ -418,6 +418,7 @@ Then open:
 - `http://127.0.0.1:4173/tools/ancestry-template-specimen.html`
 - `http://127.0.0.1:4173/tools/spai-si-specimen.html`
 - `http://127.0.0.1:4173/tools/urzh-specimen.html`
+- `http://127.0.0.1:4173/tools/s-wayne-specimen.html`
 
 Complete repository verification:
 

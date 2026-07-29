@@ -71,3 +71,49 @@ test("V0 visual tokens and the non-shipping specimen stay complete and bounded",
   const buildFiles = JSON.parse(packageJson).build.files;
   assert.equal(buildFiles.some((entry) => entry.startsWith("tools/")), false);
 });
+
+test("V1 character specimens share one responsive non-shipping harness", async () => {
+  const [
+    sharedStyles,
+    sharedRunner,
+    spai,
+    urzh,
+    wayne,
+    server,
+    packageJson,
+  ] = await Promise.all([
+    read("tools/character-specimen.css"),
+    read("tools/character-specimen.mjs"),
+    read("tools/spai-si-specimen.html"),
+    read("tools/urzh-specimen.html"),
+    read("tools/s-wayne-specimen.html"),
+    read("scripts/serve.mjs"),
+    read("package.json"),
+  ]);
+
+  assert.match(sharedStyles, /prefers-reduced-motion:\s*reduce/);
+  assert.match(sharedStyles, /@media \(max-width:\s*30rem\)/);
+  assert.match(sharedRunner, /renderCharacterSpecimen/);
+  for (const [name, html] of [
+    ["Spai Si", spai],
+    ["Urzh", urzh],
+    ["S. Wayne", wayne],
+  ]) {
+    assert.match(html, /character-specimen\.css/, name);
+    assert.equal((html.match(/data-state=/g) ?? []).length, 6, name);
+    assert.match(html, /NON-SHIPPING REFERENCE/, name);
+  }
+  for (const path of [
+    "/tools/character-specimen.css",
+    "/tools/character-specimen.mjs",
+    "/tools/s-wayne-specimen.html",
+    "/tools/s-wayne-specimen.mjs",
+    "/src/overhaul/characters/s-wayne-visual.mjs",
+  ]) {
+    assert.match(server, new RegExp(path.replaceAll("/", "\\/").replace(".", "\\.")));
+  }
+  assert.equal(
+    JSON.parse(packageJson).build.files.some((entry) => entry.startsWith("tools/")),
+    false,
+  );
+});

@@ -11,9 +11,14 @@ import {
 } from "../src/ancestry-visual-templates.mjs";
 import {
   LEGACY_CONCEPT_TRANSFERS,
+  OVERHAUL_CHARACTER_VISUAL_PROFILES,
   OVERHAUL_CHARACTER_VISUAL_STATES,
+  drawOverhaulCharacterAura,
+  drawOverhaulCharacterDefeat,
+  drawOverhaulCharacterDetails,
   getOverhaulCharacterVisualProfile,
   resolveOverhaulCharacterVisualState,
+  traceOverhaulCharacterBody,
 } from "../src/overhaul-character-visuals.mjs";
 
 test("all twenty ancestry templates are valid, renderable, and champion-neutral", () => {
@@ -79,6 +84,58 @@ test("Urzh inherits Gorum's anchor discipline as an original Stoneborn read", ()
   assert.match(profile.affinityRead, /Earth.*Fire.*Charge/);
 });
 
+test("S. Wayne is a low Hobbit boundary tactician with separate Dark and Light reads", () => {
+  const transfer = LEGACY_CONCEPT_TRANSFERS.find((entry) => entry.legacyId === "echo");
+  const profile = getOverhaulCharacterVisualProfile(transfer.overhaulId);
+  assert.equal(transfer.overhaulName, "S. Wayne");
+  assert.match(transfer.retained, /decoy spacing.*swap boundaries/);
+  assert.match(transfer.retired, /Gloam Elf/);
+  assert.equal(profile.name, "S. Wayne");
+  assert.equal(profile.plannedAncestry, "Hobbit");
+  assert.match(profile.ancestryRead, /bare feet.*low split mantle/);
+  assert.match(profile.affinityRead, /Dark.*Light/);
+  assert.equal(profile.focusProp, "eclipse waystone");
+});
+
+test("every authored character visual renders all six states through the registry", () => {
+  const context = fakeContext();
+  assert.deepEqual(
+    Object.keys(OVERHAUL_CHARACTER_VISUAL_PROFILES).sort(),
+    ["aerwyn", "samwise", "urzh"],
+  );
+  for (const profile of Object.values(OVERHAUL_CHARACTER_VISUAL_PROFILES)) {
+    assert.equal(traceOverhaulCharacterBody(context, profile, 24), true, profile.id);
+    for (const state of OVERHAUL_CHARACTER_VISUAL_STATES) {
+      if (state === "defeated") {
+        assert.equal(
+          drawOverhaulCharacterDefeat(context, profile, 24, "#77f7ce"),
+          true,
+          `${profile.id}:${state}`,
+        );
+        continue;
+      }
+      assert.equal(
+        drawOverhaulCharacterAura(context, profile, state, 24, 0.7, true),
+        true,
+        `${profile.id}:${state}:aura`,
+      );
+      assert.equal(
+        drawOverhaulCharacterDetails(
+          context,
+          profile,
+          state,
+          24,
+          "alpha",
+          "#77f7ce",
+          state === "hit" ? 0.2 : 1,
+        ),
+        true,
+        `${profile.id}:${state}:details`,
+      );
+    }
+  }
+});
+
 test("overhaul character state resolver preserves the six authored reads", () => {
   const base = { alive: true, vx: 0, vy: 0 };
   assert.deepEqual(OVERHAUL_CHARACTER_VISUAL_STATES, ["idle", "move", "commit", "hit", "defend", "defeated"]);
@@ -94,5 +151,6 @@ function fakeContext() {
   return {
     save() {}, restore() {}, beginPath() {}, moveTo() {}, lineTo() {}, closePath() {},
     fill() {}, stroke() {}, arc() {}, quadraticCurveTo() {}, rect() {}, fillRect() {},
+    translate() {}, scale() {},
   };
 }

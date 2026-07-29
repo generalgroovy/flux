@@ -1974,3 +1974,35 @@
 - **Verification:** `npm.cmd test` passed 129/129 across 127 standard checks,
   one live WebSocket lifecycle, and one authenticated cleanup check;
   `git diff --check` passed before the run.
+
+# 2026-07-29 — Ground-up overhaul boundary and V1 S. Wayne slice
+
+- **Documentation contract:** Reworked `AGENTS.md`,
+  `.agent/OVERHAUL-IMPLEMENTATION.md`, `.agent/OVERHAUL-PROMPT.md`,
+  `.agent/IMPLEMENTATION-LOOP.md`, and `.agent/backlog.md` around one canonical
+  read order, explicit clean-reuse criteria, controlled replacement, visual
+  V0–V5 order, modular target boundaries, and measured slice acceptance.
+  `.agent/CONCEPT-ITERATION.md` is now explicitly historical where it conflicts
+  with the overhaul-first README.
+- **Architecture:** Split the monolithic champion drawing path into shared
+  primitives and one module per authored character under `src/overhaul/`.
+  `src/overhaul-character-visuals.mjs` remains a compatibility registry/barrel,
+  and all character boards now use one shared source-only specimen runner and
+  stylesheet.
+- **V1 slice 03:** Added S. Wayne with stable visual/migration ID `samwise`,
+  Hobbit anatomy, an eclipse waystone, separate Dark/Light value and shape
+  language, team redundancy, health wear, and six authored gameplay reads. No
+  live roster, simulation, network, lore, or balance behavior changed.
+- **Rendered verification:** The in-app browser loaded
+  `tools/s-wayne-specimen.html` at 1280x720 and reported no console errors.
+  Review caught global `overflow: hidden` clipping the lower state row; the
+  shared specimen document now owns scrolling, and both rows, annotations, and
+  footer were then visually inspected.
+- **Automated verification:** Focused visual tests passed 10/10.
+  `npm.cmd test` passed 132/132: 130 standard checks, one live WebSocket
+  lifecycle, and one authenticated cleanup check. `node scripts/ci-verify.mjs`
+  repeated the suite and passed syntax checks for all JavaScript modules.
+  `git diff --check` passed.
+- **Next target:** Wait for the exact commit's Windows/Linux CI and package
+  matrix, then implement Nico Lai as the next source-only V1 Gnome character
+  using the shared rendering/specimen boundary.

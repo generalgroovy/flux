@@ -5,10 +5,13 @@
 Complete `.agent/VISUAL-OVERHAUL.md` before selecting any mechanical backlog
 item. Required order is V0 tokens/specimen -> V1 characters -> V2 spells -> V3
 maps -> V4 GUI -> V5 integrated acceptance. V0 is accepted and V1 is active.
-Spai Si and Urzh now have isolated source-only character slices. Review
-`tools/urzh-specimen.html`, then iterate it or accept it before authoring the
-next champion. Use the validated twenty-entry ancestry registry and its
-one-screen `tools/ancestry-template-specimen.html` review board; add champion
+Spai Si, Urzh, and S. Wayne now have isolated source-only character slices.
+S. Wayne also established modular champion files, shared drawing primitives,
+and one shared specimen harness so the remaining roster does not grow a
+monolithic renderer or copied pages. The next bounded V1 slice is Nico Lai as a
+Gnome with Charge/Light device language. Use the validated twenty-entry
+ancestry registry and its one-screen
+`tools/ancestry-template-specimen.html` review board; add champion
 posture/prop/affinity layers by composition instead of copying ancestry drawing
 code. Keep the ten
 shipped champions as compatibility-only runtime scaffolding until their mapped
@@ -225,14 +228,14 @@ raw LLM history, final state, and replayable patch for completeness.
 ## Future S. Wayne acceptance
 
 - Preserve `samwise` only as the compatibility ID; all player-facing future copy
-  uses **S. Wayne**, Hobbit, Void/Light.
+  uses **S. Wayne**, Hobbit, Dark/Light.
 - Prototype BETWEEN SHADOWS only after the inactive overhaul foundation receives
   an approved live vertical slice. The boundary crossing must be server-owned,
   visibly locked out, and incapable of granting damage.
 - Validate PRISM TRIPWIRE, BURROWED SHADOW, Ray, and Sun Grid together for route
   control without letting the 7/13 discounted signature become mandatory.
 - Preserve the low Hobbit silhouette, bare-foot anatomy cue, and split
-  Light/Void mantle without changing S. Wayne's hitbox during the visual gate.
+  Light/Dark mantle without changing S. Wayne's hitbox during the visual gate.
 
 ## Future roster acceptance
 

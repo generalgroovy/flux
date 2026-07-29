@@ -65,8 +65,9 @@ repository-authored, and mechanically honest.
 | Slice | State | Evidence / next boundary |
 | ---: | --- | --- |
 | P0 | Accepted 2026-07-29 | `src/pixel-perspective.mjs` centralizes the 384x216 virtual canvas, feet anchor, projection/layer order, seven-value ladder, and four-value material/Charge/Light ramps; the non-shipping specimen passed desktop, 480px narrow, grayscale, high-contrast, and reduced-motion browser review with no console warnings or errors, and its focused tests pass |
-| P1 | Active | Convert only the Living Sanctum terrain/elevation presentation using the accepted grammar; preserve its geometry, collisions, stations, spawn, movement, and remote-company state |
-| P2-P5 | Pending | Begin only after the preceding slice is implemented, visually reviewed, tested, and recorded |
+| P1 | Accepted 2026-07-29 | The live Sanctum now uses the accepted materials and stepped layers for water boundary, grass, routes, courts, mirror ward, collision rails, station plinths, and a distinct Rite Gate; desktop and reloaded 480px browser review passed without warnings/errors while map data and rules remained unchanged |
+| P2 | Active | Convert Nico's live renderer to compact cardinal pixel reads with a feet-ground anchor, team mark, damage wear, six states, and restrained Charge/Light motifs without changing his hitbox, stats, kit, or commands |
+| P3-P5 | Pending | Begin only after the preceding slice is implemented, visually reviewed, tested, and recorded |
 
 Do not start Steezo or another champion until P0-P5 are accepted. A complete
 foundation prevents every later character/map/spell from being rebuilt twice.

@@ -277,7 +277,7 @@ icons, palettes, animations, HUD, or trade dress.
 
 | Priority | Scope | Current status |
 | ---: | --- | --- |
-| P0-P5 | Original three-quarter top-down virtual-pixel foundation, Living Sanctum terrain/elevation, Nico sprite, Charge/Light spells, text/HUD, integrated acceptance | P0 accepted; P1 Living Sanctum presentation active |
+| P0-P5 | Original three-quarter top-down virtual-pixel foundation, Living Sanctum terrain/elevation, Nico sprite, Charge/Light spells, text/HUD, integrated acceptance | P0-P1 accepted; P2 Nico runtime sprite active |
 | M0-M5 | Remappable keyboard/controller defaults, jump body-lift/enlarging-shadow presentation, advanced movement revalidation, bounded tap-strafe/aerial turn | Blocked by P5 |
 | V1 resume | Continue one champion at a time beginning with Steezo | Blocked by M5 |
 

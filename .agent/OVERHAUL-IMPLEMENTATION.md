@@ -239,6 +239,6 @@ Nico Lai's implementation is now promoted:
 Desktop specimen review and a real Windows Living Sanctum run both passed with
 no console errors after fixing the local authority's missing overhaul module
 routes. Nico now starts in Sanctum with visible Health, recovery, Flux,
-focus, speed, and Endurance statistics. P0 pixel-perspective foundation is
-accepted and P1 Living Sanctum presentation is active; Steezo resumes after
+focus, speed, and Endurance statistics. P0-P1 pixel-perspective foundation and
+Living Sanctum presentation are accepted; P2 Nico runtime sprite is active and Steezo resumes after
 P0-P5 and M0-M5 acceptance.

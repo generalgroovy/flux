@@ -19,6 +19,12 @@ import {
   traceOverhaulCharacterBody,
 } from "./overhaul-character-visuals.mjs";
 import {
+  drawPixelSanctumForeground,
+  drawPixelSanctumGround,
+  drawPixelSanctumObstacle,
+  drawPixelSanctumStation,
+} from "./pixel-sanctum-renderer.mjs";
+import {
   createMatch,
   refillSanctumPractice,
   matchInvariantErrors,
@@ -1987,6 +1993,7 @@ function resize() {
   viewport.height = Math.max(1, window.innerHeight);
   canvas.width = Math.round(viewport.width * viewport.pixelRatio);
   canvas.height = Math.round(viewport.height * viewport.pixelRatio);
+  context.imageSmoothingEnabled = false;
 }
 
 function calculateViewport(map) {
@@ -2041,6 +2048,7 @@ function render(time) {
     drawProjectiles();
     drawDecoys(time);
     drawEntities(time);
+    drawPixelSanctumForeground(context, map, { highContrast: settings.highContrast });
     drawEffects();
   } finally {
     context.restore();
@@ -2174,6 +2182,7 @@ function drawBackdrop(map, time) {
 }
 
 function drawArena(map, time) {
+  if (drawPixelSanctumGround(context, map, { highContrast: settings.highContrast })) return;
   const { width, height, inset } = map.size;
   context.fillStyle = map.visual.floor;
   context.fillRect(0, 0, width, height);
@@ -2254,20 +2263,14 @@ function drawSanctumStations(map, time) {
     const pulse = settings.reducedMotion
       ? 0
       : Math.sin(time * 3.2 + station.x * 0.01) * 3;
+    drawPixelSanctumStation(context, station, {
+      active,
+      highContrast: settings.highContrast,
+      pulse,
+    });
     context.save();
     try {
       context.translate(station.x, station.y);
-      context.fillStyle = active ? "#d7bc7038" : "#17120bcc";
-      context.strokeStyle = active ? "#fff0a4" : "#9b8148";
-      context.lineWidth = settings.highContrast ? 5 : active ? 4 : 2;
-      context.beginPath();
-      context.arc(0, 0, 38 + pulse, 0, Math.PI * 2);
-      context.fill();
-      context.stroke();
-      context.rotate(Math.PI / 4);
-      context.strokeStyle = active ? "#fff0a4" : "#6f5a31";
-      context.strokeRect(-27, -27, 54, 54);
-      context.rotate(-Math.PI / 4);
       context.fillStyle = active ? "#fff3c4" : "#d7bc70";
       context.font = "800 24px Georgia, serif";
       context.textAlign = "center";
@@ -2451,6 +2454,17 @@ function drawElementFields(time) {
 
 function drawObstacles(map) {
   for (const obstacle of map.obstacles) {
+    if (map.id === "living_sanctum") {
+      drawPixelSanctumObstacle(context, obstacle, { highContrast: settings.highContrast });
+      if (obstacle.vaultable) {
+        context.fillStyle = "#f4ecc9";
+        context.font = "800 11px ui-monospace, monospace";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText("V", obstacle.x + obstacle.width / 2, obstacle.y + obstacle.height / 2);
+      }
+      continue;
+    }
     context.fillStyle = obstacle.vaultable ? "#3d3422" : "#30291d";
     context.strokeStyle = settings.highContrast
       ? "#d2bd82"

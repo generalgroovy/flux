@@ -2268,3 +2268,24 @@
   Sanctum terrain/elevation presentation while freezing geometry and mechanics.
 - **Next:** Implement and visually review P1 against the accepted material,
   layering, snapping, grayscale, and no-label-navigation contract.
+
+# 2026-07-29 — P1 Living Sanctum pixel terrain accepted
+
+- **Presentation-only renderer:** Added `src/pixel-sanctum-renderer.mjs`, which
+  reuses the P0 ramps and snapping contract for the Sanctum's water boundary,
+  grass clusters, worn station routes, shallow courts, mirror ward, collision
+  rails, station plinths, foreground edge, and distinct Rite Gate silhouette.
+- **Rule isolation:** Only `living_sanctum` opts into the new ground/obstacle/
+  station pass. Competitive maps keep their renderer; Sanctum content geometry,
+  obstacles, stations, spawns, collision, movement, practice state, and remote
+  company contracts are untouched.
+- **Observed review:** The live loopback game rendered at 1280x720 and after a
+  clean reload at 480x720. Route hierarchy, station endpoints, blockers, courts,
+  outer water, central ward, and exit gate remained distinguishable at both
+  sizes. No browser warnings or errors were present; 480px had no horizontal
+  overflow. High-contrast draw paths and value ordering are regression-covered.
+- **Verification:** `node scripts/ci-verify.mjs` passed 143 standard tests plus
+  the live network lifecycle and server cleanup (145 total), all recursive
+  JavaScript syntax checks passed, and `git diff --check` passed.
+- **Next:** P2 converts Nico's live renderer to compact cardinal pixel reads and
+  a clear feet/shadow ground anchor while preserving stable `volt` mechanics.

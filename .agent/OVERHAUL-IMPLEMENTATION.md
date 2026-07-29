@@ -108,7 +108,8 @@ spacing, and motion tokens plus non-shipping reference board.
 
 ### V1 — Characters
 
-Status: **active**. Produce source-only concepts in this order so compatibility
+Status: **paused by P0-P5 pixel-perspective and M0-M5 movement/input order**.
+When resumed, produce source-only concepts in this order so compatibility
 lessons transfer before unrelated breadth:
 
 | Slice | Champion | Ancestry | State |
@@ -117,7 +118,7 @@ lessons transfer before unrelated breadth:
 | 02 | Urzh | Stoneborn | Source specimen complete |
 | 03 | S. Wayne | Hobbit | Source specimen complete |
 | 04 | Nico Lai | Gnome | Desktop specimen and live Windows Sanctum accepted; first promoted replacement |
-| 05 | Steezo | Goblin | Next source slice |
+| 05 | Steezo | Goblin | Next V1 source slice after M5 |
 | 06 | Djonah Thaan | Vampire | Pending |
 | 07 | Grace Reava | Sylph | Pending |
 | 08 | Biggy Bob | Dwarf | Pending |
@@ -238,4 +239,5 @@ Nico Lai's implementation is now promoted:
 Desktop specimen review and a real Windows Living Sanctum run both passed with
 no console errors after fixing the local authority's missing overhaul module
 routes. Nico now starts in Sanctum with visible Health, recovery, Flux,
-focus, speed, and Endurance statistics. Steezo is the next V1 source slice.
+focus, speed, and Endurance statistics. P0 pixel-perspective foundation is now
+active; Steezo resumes after P0-P5 and M0-M5 acceptance.

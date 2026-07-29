@@ -208,3 +208,21 @@ is given.
   V1 source specimen through `scripts/linux-agent-handoff.sh`. A real Garuda
   doctor, local-model session, Sway clipboard handoff, and Steezo specimen review
   remain target-machine acceptance work and must not be inferred from Windows.
+
+## 2026-07-29 reference-priority update
+
+- The latest supplied images now guide an original three-quarter top-down
+  virtual-pixel presentation; no referenced sprite, tile, map, layout, font,
+  icon, palette, animation, HUD, or trade dress may be copied.
+- `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md` P0-P5 is the active first task. P0 is
+  source-only tokens plus a specimen; later slices convert the Living Sanctum,
+  Nico, Charge/Light spells, text/HUD, and integrated presentation in order.
+- `.agent/MOVEMENT-INPUT-OVERHAUL.md` M0-M5 is the second task after visual
+  acceptance. The live build already implements the requested slide jump,
+  wavedash, wall jump, air redirect, air dodge, vault, and superglide. The new
+  work is a conventional remappable keyboard/controller layout, deterministic
+  body-lift/enlarging-shadow jump presentation, full-device revalidation, and
+  one bounded no-speed-gain tap-strafe/aerial-turn rule.
+- Steezo and other champion expansion are paused until both new task contracts
+  pass. This update changes priority and acceptance only; the current playable
+  runtime, controls, movement, maps, spells, networking, and roster are unchanged.

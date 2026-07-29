@@ -267,6 +267,8 @@ common_aider_options=(
   --llm-history-file "${llm_history}"
   --read AGENTS.md
   --read .agent/VISUAL-OVERHAUL.md
+  --read .agent/PIXEL-PERSPECTIVE-OVERHAUL.md
+  --read .agent/MOVEMENT-INPUT-OVERHAUL.md
   --read README.md
   --read .agent/HANDOFF.md
   --read .agent/memory.md

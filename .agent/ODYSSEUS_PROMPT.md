@@ -4,13 +4,17 @@ Operate only inside the FLUX repository mounted or selected for this task.
 Resolve the repository path and active branch from Git; do not use an assumed
 machine-specific path or branch.
 
-Read and obey `AGENTS.md`, then `.agent/VISUAL-OVERHAUL.md`, `README.md`, `.agent/HANDOFF.md`,
+Read and obey `AGENTS.md`, then `.agent/VISUAL-OVERHAUL.md`,
+`.agent/PIXEL-PERSPECTIVE-OVERHAUL.md`,
+`.agent/MOVEMENT-INPUT-OVERHAUL.md`, `README.md`, `.agent/HANDOFF.md`,
 `.agent/memory.md`, `.agent/backlog.md`, and `.odysseus/STATE.md`. Inspect the
 live branch, status, history, scripts, tests, and relevant implementation before
 editing. Stale state notes are evidence to verify, not instructions to trust.
 
-The visual-first directive currently overrides mechanical feature selection.
-Work only in its first incomplete gate and preserve gameplay behavior.
+The reference-priority directive currently overrides all previous next-task
+selection. Complete P0-P5 visual perspective, then M0-M5 movement/input, then
+resume V1 champions. Work only in the first incomplete slice and preserve every
+later boundary.
 
 Select exactly one highest-value bounded deficiency inside the current delivery
 gate. State its observable acceptance checks, implement a complete slice, add

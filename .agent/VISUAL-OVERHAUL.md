@@ -24,6 +24,23 @@ No visual may encode hidden mechanical information, change hitboxes, conceal
 telegraphs, reduce contrast, or grant an affinity an automatic readability
 advantage. Color is always paired with shape, motion, value, or a mark.
 
+## 2026-07-29 reference-priority override
+
+The latest user direction inserts two repository-wide tasks ahead of further
+champion production:
+
+| Priority | Contract | State |
+| ---: | --- | --- |
+| 1 | `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md` P0-P5: original three-quarter top-down pixel perspective across characters, Sanctum/maps, spells/elements, text, and interface | Active; begin P0 only |
+| 2 | `.agent/MOVEMENT-INPUT-OVERHAUL.md` M0-M5: conventional remappable keyboard/controller layout, stronger jump/shadow read, revalidation of advanced movement, then bounded tap-strafe/aerial turn | Blocked by P5 acceptance |
+| 3 | Resume V1 champion production with Steezo | Blocked by M5 acceptance |
+
+The reference images provide proportion, perspective, pixel-density, terrain
+layering, and readability principles only. Do not copy their sprites, tiles,
+maps, layouts, fonts, HUD, icons, palettes, animation, or trade dress. The new
+pixel renderer remains a presentation layer over the current authoritative X/Y
+simulation and stable gameplay identifiers.
+
 ## Mechanical freeze
 
 Until every visual phase below is accepted, do not add or rebalance movement,
@@ -42,6 +59,12 @@ tests, and collision-safe authored rails. This exception does not authorize new
 champion abilities, elements, damage, objectives, networking, AI, or modes;
 after its acceptance, priority returns to V1.
 
+That exception is complete. The later direct reference request authorizes the
+separate M0-M5 input/movement pass only after P0-P5 visual acceptance. Until
+then, no movement mechanics or bindings change. M0-M5 may add the specified
+bounded tap-strafe/aerial turn, but it may not add free speed, reproduce an
+engine exploit, or weaken fixed-tick/server/collision ownership.
+
 ## Required order
 
 | Gate | Scope | Completion evidence before advancing |
@@ -58,7 +81,7 @@ after its acceptance, priority returns to V1.
 | Gate | Status | Evidence / next decision |
 | ---: | --- | --- |
 | V0 | Accepted | Central tokens live in `styles.css`; the source-only specimen passed desktop and narrow review; the user's continuation authorized V1 |
-| V1 | In progress | Spai Si, Urzh, and S. Wayne are reviewed source specimens; Nico Lai passed desktop specimen and live Windows Sanctum review and is the first promoted visual/runtime replacement; Steezo is next |
+| V1 | Paused by reference-priority override | Spai Si, Urzh, and S. Wayne are reviewed source specimens; Nico Lai passed desktop specimen and live Windows Sanctum review and is the first promoted visual/runtime replacement; Steezo resumes only after P0-P5 and M0-M5 |
 | V2–V3, V5 | Blocked by order | Do not begin until the preceding visual gate is accepted |
 | V4 | Foundation plus complete movement court by direct request | Players spawn directly on the Living Sanctum floor; eight proximity stations own all option routes, preserve resumable local/remote contests, and expose movement teaching, marked vault rails, character switching, refill/reset, and a field guide; Muster adds ancestry-column portrait selection with independent non-mutating hover/focus previews; full GUI acceptance remains blocked until V1–V3 complete |
 
@@ -198,7 +221,8 @@ shared renderer.
 ## Iteration rule
 
 At the start of each local-agent run, read this file, determine the first
-incomplete visual gate, and select exactly one complete slice inside it. State
+incomplete priority contract and select exactly one complete slice inside it.
+P0 is now the first incomplete slice; do not select Steezo yet. State
 the unchanged gameplay boundary and visual acceptance checks in the audit.
 Capture before/after evidence when the environment supports screenshots; never
 claim a visual review that did not occur. Run focused tests, the full suite,

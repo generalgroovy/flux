@@ -2209,3 +2209,38 @@
   `bash scripts/linux-agent-handoff.sh setup --check`, then doctor and one
   bounded `run --model auto --iterations 1`; inspect the private audit and
   Steezo specimen before allowing a follow-up promotion slice.
+
+# 2026-07-29 — Pixel perspective and movement priority contracts
+
+- **User reference decision:** Inspected the supplied champion board and two
+  classic top-down adventure screenshots. Extracted only broad principles:
+  compact pixel proportions, three-quarter orthographic readability, tiled
+  terrain/elevation, strong value grouping, short readable text, and economical
+  elemental motifs. The roster board's outdated labels/ancestries/affinities are
+  explicitly non-authoritative, and no reference asset/layout/font/HUD/palette
+  may be copied.
+- **New first task:** Added `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md` P0-P5. It
+  preserves simulation X/Y and feet-anchored hitboxes while establishing virtual
+  pixels, integer snapping, nearest-neighbour scaling, layered elevation,
+  original material ramps, compact champion silhouettes, shape-first elements,
+  and restrained text/HUD. P0 alone is active as source-only tokens plus one
+  non-shipping perspective specimen; later slices convert Sanctum, Nico,
+  Charge/Light spells, GUI/text, then integrated acceptance.
+- **New second task:** Added `.agent/MOVEMENT-INPUT-OVERHAUL.md` M0-M5, blocked
+  until P5. The live runtime already owns double/slide jump, wall jump, air
+  redirect/dodge, wavedash, vault, and superglide. The planned delta is a
+  conventional fully remappable keyboard/controller layout, deterministic body
+  lift plus the explicitly requested enlarging ground shadow, full-device
+  revalidation, and one original bounded tap-strafe/aerial turn that consumes
+  the redirect allowance and can never add velocity.
+- **Agent routing:** Updated the visual contract, Odysseus prompt/task/state,
+  Aider read set, implementation prompt/matrix, backlog, playable ledger, README,
+  and handoff tests to enforce P0-P5 -> M0-M5 -> Steezo. No runtime rendering,
+  movement, binding, roster, spell, map, simulation, or network behavior changed.
+- **Verification:** The focused handoff contract passed 3/3, every shell script
+  parsed with Git for Windows Bash, `git diff --check` passed, and
+  `node scripts/ci-verify.mjs` passed all 143 checks plus recursive JavaScript
+  syntax validation.
+- **Next:** Run one Garuda local-agent P0 iteration, review the original
+  perspective specimen at desktop/narrow/grayscale/high-contrast/reduced-motion,
+  and accept or revise the foundation before any P1 runtime Sanctum conversion.

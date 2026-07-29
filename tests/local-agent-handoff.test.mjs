@@ -70,18 +70,20 @@ test("local-agent handoff supports only the approved Qwen profiles", async () =>
   assert.match(common, /Unsupported model/);
 });
 
-test("local agent freezes mechanics and follows the visual overhaul order", async () => {
-  const [agents, visual, task, backlog, launcher] = await Promise.all([
+test("local agent follows the pixel perspective, movement, then character order", async () => {
+  const [agents, visual, perspective, movement, task, backlog, launcher] = await Promise.all([
     read("AGENTS.md"),
     read(".agent/VISUAL-OVERHAUL.md"),
+    read(".agent/PIXEL-PERSPECTIVE-OVERHAUL.md"),
+    read(".agent/MOVEMENT-INPUT-OVERHAUL.md"),
     read(".agent/odysseus-task.md"),
     read(".agent/backlog.md"),
     read("scripts/local-agent.sh"),
   ]);
-  const contract = [agents, visual, task, backlog].join("\n");
+  const contract = [agents, visual, perspective, movement, task, backlog].join("\n");
 
   assert.match(contract, /mechanics (?:are )?frozen/i);
-  assert.match(task, /V0 visual tokens\/specimen ->\s*V1 characters -> V2 spells -> V3 maps -> V4 GUI -> V5 integrated acceptance/);
+  assert.match(task, /PIXEL-PERSPECTIVE-OVERHAUL\.md` P0-P5, then\s+`\.agent\/MOVEMENT-INPUT-OVERHAUL\.md` M0-M5, then resume V1/);
   assert.match(visual, /Do not reproduce or closely imitate/);
   assert.match(visual, /do not add or rebalance movement,/i);
   assert.match(visual, /approved future characters receive concepts only and remain inactive/i);
@@ -100,6 +102,12 @@ test("local agent freezes mechanics and follows the visual overhaul order", asyn
   assert.match(visual, /\| Unnamed Angel \(placeholder\) \| \*\*Angel\*\* \|/);
   assert.match(visual, /Runtime `raceId` values remain\s+unchanged until V1/i);
   assert.match(launcher, /--read \.agent\/VISUAL-OVERHAUL\.md/);
-  assert.match(task, /take \*\*Steezo\*\* as the next single V1\s+slice/);
-  assert.match(task, /Keep Steezo source-only until an actual\s+Garuda visual review/);
+  assert.match(task, /current slice is \*\*P0 only\*\*/);
+  assert.match(task, /do not begin runtime map conversion,\s+movement changes, input rebinding, tap strafe, or Steezo/);
+  assert.match(perspective, /Ground anchor/);
+  assert.match(perspective, /Do not start Steezo or another champion until P0-P5 are accepted/);
+  assert.match(movement, /shadow grows wider and slightly\s+darker toward the apex/);
+  assert.match(movement, /can never add\s+velocity/);
+  assert.match(launcher, /--read \.agent\/PIXEL-PERSPECTIVE-OVERHAUL\.md/);
+  assert.match(launcher, /--read \.agent\/MOVEMENT-INPUT-OVERHAUL\.md/);
 });

@@ -2,16 +2,35 @@
 
 ## Active visual-first gate — mechanics frozen
 
-Complete `.agent/VISUAL-OVERHAUL.md` before selecting any mechanical backlog
-item. Required order is V0 tokens/specimen -> V1 characters -> V2 spells -> V3
-maps -> V4 GUI -> V5 integrated acceptance. V0 is accepted and V1 is active.
+The latest reference request overrides the previous next slice. Complete
+`.agent/PIXEL-PERSPECTIVE-OVERHAUL.md` P0-P5 first, then the explicitly
+authorized `.agent/MOVEMENT-INPUT-OVERHAUL.md` M0-M5, then resume the normal V1
+character gate with Steezo. P0 is active; movement/bindings and Steezo are
+currently frozen.
+
+P0 establishes virtual-pixel scale, integer snapping, nearest-neighbour
+rendering, projection/layer tokens, compact palette/material ramps, selective
+outlines, and one non-shipping original three-quarter top-down scene containing
+terrain, elevation, Nico-scale character, ground anchor, and Charge/Light
+motifs. Do not convert runtime maps or mechanics in P0. P1-P5 then convert the
+Living Sanctum, Nico, his spells/elements, text/HUD, and integrated acceptance
+in order.
+
+M0-M5 begins only after P5. It updates semantic/remappable keyboard-controller
+defaults, adds deterministic body-lift plus the requested enlarging jump shadow,
+revalidates existing double/slide jump, wall jump, redirect, air dodge,
+wavedash, vault, and superglide, then introduces one bounded no-speed-gain
+tap-strafe/aerial-turn rule. The current implementation already owns those
+advanced techniques except the distinct tap-strafe rule; do not duplicate them.
+
+The earlier V1 ledger remains valid but paused. V0 is accepted.
 Spai Si, Urzh, and S. Wayne now have reviewed source-only character slices.
 S. Wayne also established modular champion files, shared drawing primitives,
 and one shared specimen harness so the remaining roster does not grow a
 monolithic renderer or copied pages. Nico Lai's Gnome/Charge/Light slice passed
 desktop specimen and live Windows Sanctum review and is promoted through the
-stable `volt` runtime ID with centralized readable champion statistics. Begin
-Steezo next as the simplest Goblin/Charge/Fire/Light visual slice, preserving
+ stable `volt` runtime ID with centralized readable champion statistics. Resume
+ Steezo after P0-P5 and M0-M5 as the simplest Goblin/Charge/Fire/Light visual slice, preserving
 the same review and promotion gates. Use the validated twenty-entry
 ancestry registry and its one-screen
 `tools/ancestry-template-specimen.html` review board; add champion
@@ -47,7 +66,8 @@ clarity using only broad lessons from Enter the Gungeon—not copied content.
 Local-agent handoff is configured for Garuda Sway with Ollama,
 Qwen2.5-Coder 3B/7B, Aider, and optional Odysseus through the canonical
 `scripts/linux-agent-handoff.sh` dispatcher. Its tracked task now routes both
-agents to the Steezo V1 source specimen without runtime activation. Target-machine
+agents to the P0 source-only pixel-perspective foundation; movement and Steezo
+remain blocked by the new order. Target-machine
 acceptance must run the read-only doctor, one autonomous local-commit pass, one
 interactive follow-up, the actual suite, and a game smoke while observing zero
 remote runtime requests; inspect the session manifest, timestamped events,

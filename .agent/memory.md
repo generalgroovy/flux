@@ -2038,5 +2038,8 @@
   The in-app Browser rendered the menu without horizontal overflow but blocked
   the main local source module (`ERR_BLOCKED_BY_CLIENT`), so it was not used to
   infer live gameplay.
-- **Next:** publish the candidate, wait for Windows/Linux Node and package jobs,
-  unify when green, then resume the active V1 Nico Lai visual slice.
+- **Remote acceptance:** GitHub Actions run `30458296343` passed all six jobs
+  for implementation commit `e5627ad`: Windows and Ubuntu on Node 20.19.1 and
+  Node 22, Windows NSIS, and Linux AppImage packaging. PR #11 merged as
+  `09d0257`, and `main` plus `integration/unify-flux` were realigned there.
+- **Next:** resume the active V1 Nico Lai visual slice.

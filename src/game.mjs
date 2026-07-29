@@ -14,7 +14,10 @@ import {
   drawOverhaulCharacterAura,
   drawOverhaulCharacterDefeat,
   drawOverhaulCharacterDetails,
+  drawOverhaulPixelCharacter,
   getOverhaulCharacterVisualProfile,
+  isOverhaulPixelCharacter,
+  resolveCardinalFacing,
   resolveOverhaulCharacterVisualState,
   traceOverhaulCharacterBody,
 } from "./overhaul-character-visuals.mjs";
@@ -2616,6 +2619,8 @@ function drawEntities(time) {
           special: agent.special.cooldown,
         })
       : null;
+    const pixelVisual = isOverhaulPixelCharacter(visualProfile);
+    const cardinalFacing = resolveCardinalFacing(entity.facingX, entity.facingY);
     const teamColor =
       entity.team === "alpha"
         ? "#77f7ce"
@@ -2628,7 +2633,18 @@ function drawEntities(time) {
       context.globalAlpha = 1;
       context.globalCompositeOperation = "source-over";
       if (!entity.alive) {
-        if (visualProfile) {
+        if (pixelVisual) {
+          drawOverhaulPixelCharacter(
+            context,
+            visualProfile,
+            "defeated",
+            agent.radius,
+            entity.team,
+            teamColor,
+            0,
+            cardinalFacing,
+          );
+        } else if (visualProfile) {
           context.rotate(Math.atan2(entity.facingY, entity.facingX));
           drawOverhaulCharacterDefeat(
             context,
@@ -2767,44 +2783,53 @@ function drawEntities(time) {
       if (entity.hopRemaining > 0) {
         const progress = 1 - entity.hopRemaining / entity.hopDuration;
         const lift = Math.sin(progress * Math.PI) * 11;
-        context.fillStyle = "#00000066";
-        context.beginPath();
-        context.ellipse(
-          0,
-          5,
-          agent.radius * 0.9,
-          agent.radius * 0.42,
-          0,
-          0,
-          Math.PI * 2,
-        );
-        context.fill();
+        if (pixelVisual) drawPixelGroundAnchorShadow(agent.radius, lift / 11);
+        else {
+          context.fillStyle = "#00000066";
+          context.beginPath();
+          context.ellipse(
+            0,
+            5,
+            agent.radius * 0.9,
+            agent.radius * 0.42,
+            0,
+            0,
+            Math.PI * 2,
+          );
+          context.fill();
+        }
         context.translate(0, -lift);
       } else if (entity.vaultRemaining > 0) {
+        if (pixelVisual) drawPixelGroundAnchorShadow(agent.radius, 0.8);
         const progress = 1 - entity.vaultRemaining / MATCH_TUNING.flow.vaultDuration;
         const lift = Math.sin(progress * Math.PI) * 15;
         context.translate(0, -lift);
-        context.rotate(Math.atan2(entity.vaultY, entity.vaultX) * 0.08);
+        if (!pixelVisual) context.rotate(Math.atan2(entity.vaultY, entity.vaultX) * 0.08);
       } else if (entity.airDodgeRemaining > 0 || entity.superglideRemaining > 0) {
+        if (pixelVisual) drawPixelGroundAnchorShadow(agent.radius, 0.7);
         const dx = entity.superglideRemaining > 0
           ? entity.superglideX
           : entity.airDodgeX;
         const dy = entity.superglideRemaining > 0
           ? entity.superglideY
           : entity.airDodgeY;
-        context.rotate(Math.atan2(dy, dx));
+        if (!pixelVisual) context.rotate(Math.atan2(dy, dx));
         context.scale(1.18, 0.82);
         context.translate(0, -7);
       } else if (entity.waveDashRemaining > 0) {
-        context.rotate(Math.atan2(entity.waveDashY, entity.waveDashX));
+        if (pixelVisual) drawPixelGroundAnchorShadow(agent.radius, 0.15);
+        if (!pixelVisual) context.rotate(Math.atan2(entity.waveDashY, entity.waveDashX));
         context.scale(1.2, 0.76);
       } else if (entity.slideRemaining > 0) {
-        context.rotate(Math.atan2(entity.slideY, entity.slideX));
+        if (pixelVisual) drawPixelGroundAnchorShadow(agent.radius, 0.08);
+        if (!pixelVisual) context.rotate(Math.atan2(entity.slideY, entity.slideX));
         context.scale(1.28, 0.72);
+      } else if (pixelVisual) {
+        drawPixelGroundAnchorShadow(agent.radius, 0);
       }
-      if (visualProfile) {
+      if (visualProfile && !pixelVisual) {
         context.save();
-        context.rotate(Math.atan2(entity.facingY, entity.facingX));
+        if (!pixelVisual) context.rotate(Math.atan2(entity.facingY, entity.facingX));
         drawOverhaulCharacterAura(
           context,
           visualProfile,
@@ -2851,7 +2876,19 @@ function drawEntities(time) {
       context.save();
       try {
         context.rotate(Math.atan2(entity.facingY, entity.facingX));
-        if (visualProfile) {
+        if (pixelVisual) {
+          context.shadowBlur = 0;
+          drawOverhaulPixelCharacter(
+            context,
+            visualProfile,
+            visualState,
+            agent.radius,
+            entity.team,
+            teamColor,
+            clamp(entity.health / entity.maxHealth, 0, 1),
+            cardinalFacing,
+          );
+        } else if (visualProfile) {
           context.fillStyle = entity.hitFlash > 0 ? "#ffffff" : visualProfile.body;
           traceOverhaulCharacterBody(context, visualProfile, agent.radius);
           context.fill();
@@ -2901,6 +2938,19 @@ function drawEntities(time) {
       context.restore();
     }
   }
+}
+
+function drawPixelGroundAnchorShadow(radius, liftRatio) {
+  const ratio = clamp(liftRatio, 0, 1);
+  const step = 4;
+  const width = Math.round((radius * (1.05 + ratio * 0.38)) / step) * step;
+  const height = Math.max(step * 2, Math.round((radius * (0.34 + ratio * 0.1)) / step) * step);
+  context.save();
+  context.imageSmoothingEnabled = false;
+  context.fillStyle = ratio > 0.5 ? "#070906b8" : "#0b0d0994";
+  context.fillRect(-width / 2 + step, 2 - height / 2, width - step * 2, height);
+  context.fillRect(-width / 2, 2 - height / 2 + step, width, height - step * 2);
+  context.restore();
 }
 
 function drawDecoys(time) {

@@ -238,6 +238,12 @@ test("V1 character specimens share one responsive non-shipping harness", async (
     assert.equal((html.match(/data-state=/g) ?? []).length, 6, name);
     assert.match(html, /NON-SHIPPING REFERENCE/, name);
   }
+  assert.equal((nico.match(/data-facing=/g) ?? []).length, 6);
+  for (const facing of ["up", "down", "left", "right"]) {
+    assert.match(nico, new RegExp(`data-facing="${facing}"`));
+  }
+  assert.match(sharedStyles, /image-rendering:\s*pixelated/);
+  assert.match(sharedRunner, /drawOverhaulPixelCharacter/);
   for (const path of [
     "/tools/character-specimen.css",
     "/tools/character-specimen.mjs",

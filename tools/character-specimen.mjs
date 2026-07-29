@@ -2,7 +2,9 @@ import {
   drawOverhaulCharacterAura,
   drawOverhaulCharacterDefeat,
   drawOverhaulCharacterDetails,
+  drawOverhaulPixelCharacter,
   getOverhaulCharacterVisualProfile,
+  isOverhaulPixelCharacter,
   traceOverhaulCharacterBody,
 } from "../src/overhaul-character-visuals.mjs";
 
@@ -25,6 +27,25 @@ export function renderCharacterSpecimen(characterId, { radius = 26 } = {}) {
     const healthRatio = state === "hit" ? 0.2 : state === "defeated" ? 0 : 1;
 
     drawGround(context, canvas.width, canvas.height, teamColor);
+    if (isOverhaulPixelCharacter(profile)) {
+      context.save();
+      context.imageSmoothingEnabled = false;
+      context.translate(canvas.width / 2, canvas.height * 0.68);
+      context.scale(3, 3);
+      drawPixelShadow(context, radius, state === "move" ? 0.25 : 0);
+      drawOverhaulPixelCharacter(
+        context,
+        profile,
+        state,
+        radius,
+        team,
+        teamColor,
+        healthRatio,
+        figure.dataset.facing ?? "down",
+      );
+      context.restore();
+      continue;
+    }
     context.save();
     context.translate(canvas.width / 2, canvas.height / 2 - 4);
     context.scale(2.1, 2.1);
@@ -57,6 +78,13 @@ export function renderCharacterSpecimen(characterId, { radius = 26 } = {}) {
     }
     context.restore();
   }
+}
+
+function drawPixelShadow(context, radius, liftRatio) {
+  const width = Math.round(radius * (1.05 + liftRatio * 0.38) / 4) * 4;
+  context.fillStyle = "#070906b8";
+  context.fillRect(-width / 2 + 4, -2, width - 8, 8);
+  context.fillRect(-width / 2, 2, width, 4);
 }
 
 function drawGround(context, width, height, teamColor) {

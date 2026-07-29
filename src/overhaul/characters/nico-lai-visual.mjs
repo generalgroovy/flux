@@ -8,6 +8,7 @@ import {
   drawTeamShape,
   tracePolygon,
 } from "../character-visual-primitives.mjs";
+import { PIXEL_PERSPECTIVE } from "../../pixel-perspective.mjs";
 
 export const NICO_LAI_VISUAL = Object.freeze({
   profile: composeCharacterVisualProfile({
@@ -21,6 +22,7 @@ export const NICO_LAI_VISUAL = Object.freeze({
     affinityRead: "Charge forks and Light calibration diamonds",
     focusProp: "calibrated coil pack",
     deviceRead: "detached breakable coil with an explicit team tether",
+    renderer: "pixel-cardinal",
     body: "#a97954",
     mantle: "#55452d",
     leather: "#765a35",
@@ -32,7 +34,162 @@ export const NICO_LAI_VISUAL = Object.freeze({
   drawAura,
   drawDetails,
   drawDefeat,
+  drawPixel: drawNicoPixelSprite,
 });
+
+function drawNicoPixelSprite(context, profile, state, radius, team, teamColor, healthRatio, facing) {
+  const unit = Math.max(1, Math.round(radius / 18));
+  const direction = ["up", "down", "left", "right"].includes(facing) ? facing : "down";
+  context.save();
+  try {
+    context.imageSmoothingEnabled = false;
+    context.shadowBlur = 0;
+    if (state === "defeated") {
+      drawPixelDefeat(context, profile, unit, teamColor);
+      drawPixelTeamMark(context, team, teamColor, unit);
+      return true;
+    }
+    if (direction === "left") {
+      context.scale(-1, 1);
+      drawSideSprite(context, profile, state, unit, teamColor, healthRatio);
+    } else if (direction === "right") {
+      drawSideSprite(context, profile, state, unit, teamColor, healthRatio);
+    } else {
+      drawFrontBackSprite(context, profile, state, unit, teamColor, healthRatio, direction === "up");
+    }
+    drawPixelTeamMark(context, team, teamColor, unit);
+  } finally {
+    context.restore();
+  }
+  return true;
+}
+
+function drawPixelDefeat(context, profile, unit, teamColor) {
+  const ink = PIXEL_PERSPECTIVE.values[0];
+  pixel(context, ink, -14, -6, 24, 7, unit);
+  pixel(context, profile.leather, -12, -5, 14, 5, unit);
+  pixel(context, profile.mantle, -9, -8, 9, 4, unit);
+  pixel(context, profile.body, -2, -7, 8, 5, unit);
+  pixel(context, profile.copper, 8, -5, 3, 3, unit);
+  pixel(context, profile.copper, 12, -2, 3, 3, unit);
+  pixel(context, profile.light, 13, -3, 1, 1, unit);
+  if (teamColor) pixel(context, teamColor, -10, 0, 18, 1, unit);
+}
+
+function drawFrontBackSprite(context, profile, state, unit, teamColor, healthRatio, back) {
+  const ink = PIXEL_PERSPECTIVE.values[0];
+  pixel(context, ink, -5, -17, 10, 16, unit);
+  pixel(context, profile.leather, -4, -16, 8, 12, unit);
+  pixel(context, profile.mantle, -5, -12, 10, 5, unit);
+  pixel(context, ink, -5, -4, 4, 3, unit);
+  pixel(context, ink, 1, -4, 4, 3, unit);
+  if (state === "move") {
+    pixel(context, profile.copper, -5, -4, 3, 3, unit);
+    pixel(context, ink, 2, -3, 4, 2, unit);
+  }
+
+  pixel(context, ink, -6, -28, 12, 12, unit);
+  pixel(context, profile.body, -5, -27, 10, 10, unit);
+  pixel(context, profile.mantle, -7, -31, 14, 6, unit);
+  pixel(context, profile.copper, -4, -33, 8, 3, unit);
+  pixel(context, ink, -6, -25, 12, 2, unit);
+  if (back) {
+    pixel(context, profile.copper, -3, -22, 6, 6, unit);
+    pixel(context, profile.charge, -1, -21, 2, 4, unit);
+  } else {
+    pixel(context, ink, -3, -23, 2, 2, unit);
+    pixel(context, ink, 2, -23, 2, 2, unit);
+    pixel(context, profile.light, -1, -19, 2, 1, unit);
+  }
+  drawPixelDevice(context, profile, state, unit, 7, -13);
+  drawPixelStateRead(context, profile, state, unit, back ? -1 : 1);
+  drawPixelWear(context, profile, unit, healthRatio);
+  if (state === "hit") pixel(context, PIXEL_PERSPECTIVE.values[6], -1, -26, 3, 3, unit);
+  if (teamColor) pixel(context, teamColor, -4, -7, 8, 1, unit);
+}
+
+function drawSideSprite(context, profile, state, unit, teamColor, healthRatio) {
+  const ink = PIXEL_PERSPECTIVE.values[0];
+  pixel(context, ink, -5, -17, 10, 16, unit);
+  pixel(context, profile.leather, -4, -16, 8, 12, unit);
+  pixel(context, profile.mantle, -4, -12, 9, 5, unit);
+  pixel(context, ink, -4, -4, 3, 3, unit);
+  pixel(context, ink, 2, state === "move" ? -3 : -4, 4, state === "move" ? 2 : 3, unit);
+  pixel(context, ink, -6, -28, 12, 12, unit);
+  pixel(context, profile.body, -5, -27, 10, 10, unit);
+  pixel(context, profile.mantle, -7, -31, 14, 6, unit);
+  pixel(context, profile.copper, -4, -33, 8, 3, unit);
+  pixel(context, ink, 3, -24, 2, 2, unit);
+  pixel(context, profile.light, 5, -21, 1, 2, unit);
+  pixel(context, profile.copper, -6, -15, 3, 8, unit);
+  pixel(context, profile.charge, -5, -13, 1, 4, unit);
+  drawPixelDevice(context, profile, state, unit, state === "commit" ? 10 : 7, -13);
+  drawPixelStateRead(context, profile, state, unit, 1);
+  drawPixelWear(context, profile, unit, healthRatio);
+  if (state === "hit") pixel(context, PIXEL_PERSPECTIVE.values[6], 2, -25, 3, 3, unit);
+  if (teamColor) pixel(context, teamColor, -4, -7, 8, 1, unit);
+}
+
+function drawPixelDevice(context, profile, state, unit, x, y) {
+  const ink = PIXEL_PERSPECTIVE.values[0];
+  if (state === "hit") {
+    pixel(context, ink, x, y, 3, 3, unit);
+    pixel(context, profile.copper, x + 1, y, 2, 2, unit);
+    pixel(context, ink, x + 4, y + 3, 3, 3, unit);
+    pixel(context, profile.light, x + 4, y + 4, 2, 1, unit);
+    return;
+  }
+  pixel(context, ink, x, y, 6, 7, unit);
+  pixel(context, profile.copper, x + 1, y + 1, 4, 5, unit);
+  pixel(context, profile.charge, x + 2, y + 2, 2, 3, unit);
+  pixel(context, profile.light, x + 2, y, 2, 1, unit);
+  if (state === "commit") {
+    pixel(context, profile.charge, x + 6, y + 1, 4, 1, unit);
+    pixel(context, profile.charge, x + 8, y - 1, 1, 5, unit);
+    pixel(context, profile.light, x + 10, y, 2, 2, unit);
+  }
+}
+
+function drawPixelStateRead(context, profile, state, unit, forward) {
+  if (state === "idle") {
+    pixel(context, profile.light, -1, -36, 2, 2, unit);
+  } else if (state === "move") {
+    pixel(context, profile.charge, -9 * forward, -8, 4 * forward, 1, unit);
+    pixel(context, profile.charge, -11 * forward, -5, 3 * forward, 1, unit);
+  } else if (state === "defend") {
+    const x = 8 * forward;
+    pixel(context, profile.light, x, -22, 2 * forward, 14, unit);
+    pixel(context, profile.light, x, -22, 5 * forward, 2, unit);
+    pixel(context, profile.light, x, -10, 5 * forward, 2, unit);
+  }
+}
+
+function drawPixelWear(context, profile, unit, healthRatio) {
+  if (healthRatio >= 0.58) return;
+  pixel(context, profile.ink, -3, -14, 3, 1, unit);
+  if (healthRatio < 0.3) {
+    pixel(context, profile.ink, 1, -10, 3, 1, unit);
+    pixel(context, profile.ink, -2, -26, 1, 3, unit);
+  }
+}
+
+function drawPixelTeamMark(context, team, teamColor, unit) {
+  if (!teamColor) return;
+  if (team === "alpha") {
+    pixel(context, teamColor, -3, 1, 6, 1, unit);
+    pixel(context, teamColor, -1, 0, 2, 1, unit);
+  } else {
+    pixel(context, teamColor, -3, 0, 6, 1, unit);
+    pixel(context, teamColor, -1, 1, 2, 1, unit);
+  }
+}
+
+function pixel(context, color, x, y, width, height, unit) {
+  const left = Math.min(x, x + width) * unit;
+  const top = Math.min(y, y + height) * unit;
+  context.fillStyle = color;
+  context.fillRect(left, top, Math.abs(width) * unit, Math.abs(height) * unit);
+}
 
 function drawAura(context, profile, state, radius, time, reducedMotion) {
   const pulse = reducedMotion ? 0 : Math.sin(time * 5.6) * radius * 0.05;

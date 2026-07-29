@@ -2289,3 +2289,24 @@
   JavaScript syntax checks passed, and `git diff --check` passed.
 - **Next:** P2 converts Nico's live renderer to compact cardinal pixel reads and
   a clear feet/shadow ground anchor while preserving stable `volt` mechanics.
+
+# 2026-07-29 — P2 Nico cardinal pixel runtime accepted
+
+- **Dedicated renderer:** Nico alone now opts into a `pixel-cardinal` runtime
+  path. Dominant-axis facing resolves to up/down/left/right without quantizing
+  any other champion, and the stable registry remains the only game consumer.
+- **Complete state read:** The sprite board and live build show compact cap/head,
+  short practical frame, coil pack, device, feet, team mark, Charge/Light pixels,
+  low-health wear, split-device hit, forward defend bracket, and pixel-collapse
+  defeat across idle/move/commit/hit/defend/defeated states.
+- **Ground anchor:** Nico owns a persistent stepped shadow at authoritative X/Y;
+  the body lifts independently while jumping/vaulting, and the shadow widens and
+  darkens toward lift without changing movement or collision.
+- **Observed review:** The live Sanctum rendered the new sprite; the focused
+  board passed desktop and 480px review, including all facings/states, with no
+  browser warnings or errors. Nearest-neighbour CSS and canvas smoothing rules
+  remain explicit.
+- **Verification:** `node scripts/ci-verify.mjs` passed 144 standard tests plus
+  live network and cleanup checks (146 total), recursive syntax, and diff checks.
+- **Next:** P3 converts Nico's Charge/Light spell tells, lanes, impacts,
+  ownership, and expiry to the same shape-first pixel grammar.

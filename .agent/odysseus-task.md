@@ -10,21 +10,19 @@ CURRENT OVERRIDING ORDER: complete
 `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md` P0-P5, then
 `.agent/MOVEMENT-INPUT-OVERHAUL.md` M0-M5, then resume V1 champion production
 with Steezo. Choose exactly one complete slice from the first incomplete
-contract. P0-P1 are accepted; the current slice is **P2 only**. Do not begin
-spell, GUI, movement, input, tap-strafe, or Steezo work.
+contract. P0-P2 are accepted; the current slice is **P3 only**. Do not begin
+GUI, movement, input, tap-strafe, or Steezo work.
 
-For P2, inspect the live Nico profile, Gnome template, shared visual primitives,
-entity draw order, facing vector, hop presentation, six-state resolver, runtime
-specimen, and accepted pixel contract. Convert only Nico's live sprite to compact
-pixel-stepped cardinal reads with a large readable head/cap, short practical
-frame, coil prop, feet, ground shadow, team mark, health wear, and sparse
-shape-first Charge/Light motifs. Reuse central tokens and shared primitives.
+For P3, inspect Nico's live Coil Dart, Arc Chain, Prism Ground, and Coil Hop
+definitions plus projectile, field, cast, trail, impact, ownership, and expiry
+drawing paths. Convert only those presentation reads to discrete pixel-stepped
+Charge forks and Light diamonds using central ramps and explicit team edges.
 
-Review Nico in the live Sanctum and focused board at desktop/narrow sizes for
-four facings, six states, jump ground-anchor separation, reduced motion, high
-contrast, team ownership, damage wear, and gameplay-scale readability. Keep his
-hitbox, stats, kit, costs, cooldowns, movement, commands, simulation, networking,
-Sanctum map, spells, and GUI behavior unchanged.
+Review Nico's full kit in the live Sanctum and an eight-agent stress surface at
+desktop/narrow sizes for anticipation, lane, impact, owner, expiry, reduced
+motion, high contrast, and shape-without-hue readability. Keep all timings,
+ranges, damage, costs, cooldowns, reactions, hitboxes, commands, simulation,
+networking, Sanctum map, character sprite, and GUI behavior unchanged.
 
 Treat the user's Legend of Zelda reference only as broad inspiration for warm,
 inviting top-down heroic fantasy, clear silhouettes, handcrafted nature, and
@@ -36,9 +34,9 @@ composition, animation, audio, assets, or trade dress.
 
 Do not add or rebalance mechanics, activate Steezo or other future characters,
 change runtime map data, hitboxes, simulation timing, network contracts, AI, damage,
-resources, objectives, bindings, movement, or mode rules. Implement P2, add
+resources, objectives, bindings, movement, or mode rules. Implement P3, add
 regression/accessibility coverage, run focused checks and the complete suite,
-open Nico's specimen and live Sanctum on Garuda when possible, inspect the diff, and update
+open Nico's live kit on Garuda when possible, inspect the diff, and update
 memory/backlog/state with real evidence. Record screenshots or their paths when
 available; never claim visual acceptance from automated tests alone.
 

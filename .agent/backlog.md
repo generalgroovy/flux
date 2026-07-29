@@ -5,15 +5,14 @@
 The latest reference request overrides the previous next slice. Complete
 `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md` P0-P5 first, then the explicitly
 authorized `.agent/MOVEMENT-INPUT-OVERHAUL.md` M0-M5, then resume the normal V1
-character gate with Steezo. P0-P1 are accepted and P2 is active; movement/bindings and Steezo are
+character gate with Steezo. P0-P2 are accepted and P3 is active; movement/bindings and Steezo are
 currently frozen.
 
-P0 establishes and validates the shared pixel grammar; P1 applies it to the
-reviewed live Sanctum without changing geometry or rules. P2 is the single
-active slice: convert Nico's promoted Gnome renderer to compact cardinal pixel
-reads with a feet-ground anchor, six states, team ownership, damage wear, and
-restrained Charge/Light motifs while preserving his stable `volt` mechanics.
-P3-P5 then convert spells/elements, text/HUD, and integrated acceptance.
+P0-P2 establish the shared pixel grammar, live Sanctum, and Nico cardinal
+runtime sprite without changing rules. P3 is the single active slice: convert
+Nico's Charge/Light spell anticipation, travel, impact, ownership, and expiry
+reads to discrete shape-first pixels while preserving every stable `volt`
+mechanic. P4-P5 then convert text/HUD and integrated acceptance.
 
 M0-M5 begins only after P5. It updates semantic/remappable keyboard-controller
 defaults, adds deterministic body-lift plus the requested enlarging jump shadow,
@@ -65,7 +64,7 @@ clarity using only broad lessons from Enter the Gungeon—not copied content.
 Local-agent handoff is configured for Garuda Sway with Ollama,
 Qwen2.5-Coder 3B/7B, Aider, and optional Odysseus through the canonical
 `scripts/linux-agent-handoff.sh` dispatcher. Its tracked task now routes both
-agents to the P2 Nico runtime sprite and ground-anchor pass; movement and Steezo
+agents to the P3 Nico Charge/Light spell-readability pass; movement and Steezo
 remain blocked by the new order. Target-machine
 acceptance must run the read-only doctor, one autonomous local-commit pass, one
 interactive follow-up, the actual suite, and a game smoke while observing zero

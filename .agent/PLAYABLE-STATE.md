@@ -248,3 +248,13 @@ is given.
 - P2 Nico sprite work is now active. His live identity remains `volt`, and no
   hitbox, stat, ability, command, movement, simulation, or network change is in
   scope.
+
+## 2026-07-29 P2 Nico pixel runtime checkpoint
+
+- Nico's stable `volt` slot now renders a compact four-facing pixel Gnome with
+  six action/damage states, coil/device reads, ownership mark, health wear, and
+  feet-ground shadow separation; all mechanics and network identifiers remain
+  unchanged.
+- Desktop live Sanctum plus desktop/narrow specimen review completed without
+  browser diagnostics, and the full 146-check verification remained green.
+- P3 Charge/Light spell presentation is active; ability rules are frozen.

@@ -23,6 +23,7 @@ const IDLE_COMMAND = Object.freeze({
   mobility: false,
   sprint: false,
   hop: false,
+  technique: false,
   ultimate: false,
   swap: false,
 });
@@ -256,8 +257,22 @@ function createEntity(spec, index, map) {
     maxFlow,
     flowRecoveryDelay: 0,
     sprinting: false,
+    hopHeld: false,
+    techniqueHeld: false,
     hopCooldown: 0,
     hopRemaining: 0,
+    hopStage: 0,
+    hopSpeed: MATCH_TUNING.flow.hopSpeed,
+    hopDuration: MATCH_TUNING.flow.hopDuration,
+    airRedirectsRemaining: 0,
+    airDodgeCooldown: 0,
+    airDodgeRemaining: 0,
+    airDodgeX: facingX,
+    airDodgeY: 0,
+    waveDashQueued: false,
+    waveDashRemaining: 0,
+    waveDashX: facingX,
+    waveDashY: 0,
     landingRemaining: 0,
     hopX: facingX,
     hopY: 0,
@@ -268,6 +283,13 @@ function createEntity(spec, index, map) {
     slideRemaining: 0,
     slideX: facingX,
     slideY: 0,
+    vaultCooldown: 0,
+    vaultRemaining: 0,
+    vaultX: facingX,
+    vaultY: 0,
+    superglideRemaining: 0,
+    superglideX: facingX,
+    superglideY: 0,
     wallContactRemaining: 0,
     wallX: 0,
     wallY: 0,
@@ -368,6 +390,7 @@ export function sanitizeCommand(candidate) {
     mobility: source.mobility === true,
     sprint: source.sprint === true,
     hop: source.hop === true,
+    technique: source.technique === true,
     ultimate: source.ultimate === true,
     swap: source.swap === true,
   };
@@ -397,7 +420,7 @@ export function stepMatch(
     return state;
   }
 
-  for (const entity of state.entities) tickEntity(entity, boundedDelta);
+  for (const entity of state.entities) tickEntity(state, entity, boundedDelta);
   updateElementFields(state, boundedDelta);
   updateDecoys(state, boundedDelta);
   const activeMap = withElementGeometry(map, state.elementFields);
@@ -629,8 +652,12 @@ function setObjectivePosition(state, source) {
   state.objective.contested = false;
 }
 
-function tickEntity(entity, delta) {
+function tickEntity(state, entity, delta) {
   const wasHopping = entity.hopRemaining > 0;
+  const wasAirDodging = entity.airDodgeRemaining > 0;
+  const wasWaveDashing = entity.waveDashRemaining > 0;
+  const wasVaulting = entity.vaultRemaining > 0;
+  const wasSupergliding = entity.superglideRemaining > 0;
   const wasWindingUltimate = entity.ultimateWindupRemaining > 0;
   for (const key of [
     "primaryCooldown",
@@ -645,9 +672,15 @@ function tickEntity(entity, delta) {
     "flowRecoveryDelay",
     "hopCooldown",
     "hopRemaining",
+    "airDodgeCooldown",
+    "airDodgeRemaining",
+    "waveDashRemaining",
     "landingRemaining",
     "slideCooldown",
     "slideRemaining",
+    "vaultCooldown",
+    "vaultRemaining",
+    "superglideRemaining",
     "wallContactRemaining",
     "interruptRemaining",
     "fluxRecoveryDelay",
@@ -660,8 +693,40 @@ function tickEntity(entity, delta) {
   ]) {
     entity[key] = Math.max(0, finite(entity[key]) - delta);
   }
-  if (wasHopping && entity.hopRemaining === 0) {
+  if (
+    wasAirDodging && entity.airDodgeRemaining === 0 &&
+    entity.waveDashQueued
+  ) {
+    entity.waveDashQueued = false;
+    entity.waveDashRemaining = MATCH_TUNING.flow.waveDashDuration;
+    entity.waveDashX = entity.airDodgeX;
+    entity.waveDashY = entity.airDodgeY;
+    entity.landingRemaining = 0;
+    state.events.push({
+      type: "waveDash",
+      entityId: entity.id,
+      x: entity.x,
+      y: entity.y,
+      dx: entity.waveDashX,
+      dy: entity.waveDashY,
+    });
+  } else if (
+    (wasHopping && entity.hopRemaining === 0) ||
+    (wasAirDodging && entity.airDodgeRemaining === 0) ||
+    (wasWaveDashing && entity.waveDashRemaining === 0) ||
+    (wasSupergliding && entity.superglideRemaining === 0)
+  ) {
     entity.landingRemaining = MATCH_TUNING.flow.landingWindow;
+    entity.hopStage = 0;
+    entity.airRedirectsRemaining = 0;
+  }
+  if (wasVaulting && entity.vaultRemaining === 0) {
+    state.events.push({
+      type: "vaultLand",
+      entityId: entity.id,
+      x: entity.x,
+      y: entity.y,
+    });
   }
   if (wasWindingUltimate && entity.ultimateWindupRemaining === 0) {
     entity.ultimateResolvePending = true;
@@ -678,6 +743,10 @@ function tickEntity(entity, delta) {
 
 function updateEntity(state, entity, command, delta, map) {
   const agent = getCharacter(entity.characterId);
+  const hopPressed = command.hop && !entity.hopHeld;
+  const techniquePressed = command.technique && !entity.techniqueHeld;
+  entity.hopHeld = command.hop;
+  entity.techniqueHeld = command.technique;
   if (entity.interruptRemaining > 0) {
     if (entity.ultimateWindupRemaining > 0 || entity.ultimateResolvePending) {
       entity.ultimateWindupRemaining = 0;
@@ -737,8 +806,20 @@ function updateEntity(state, entity, command, delta, map) {
   ) {
     startMobility(state, entity, command, agent, map);
   }
-  if (!command.mobility && !trySlide(state, entity, command)) {
-    tryHop(state, entity, command);
+  if (
+    !command.mobility &&
+    !tryAdvancedMovement(
+      state,
+      entity,
+      command,
+      agent,
+      map,
+      hopPressed,
+      techniquePressed,
+    ) &&
+    !trySlide(state, entity, command, hopPressed)
+  ) {
+    tryHop(state, entity, command, hopPressed);
   }
   moveEntity(state, entity, command, agent, delta, map);
   if (
@@ -863,13 +944,333 @@ function trySwapPrimary(state, entity, command, agent) {
   return true;
 }
 
-function trySlide(state, entity, command) {
-  const wantsSlide = command.sprint && command.hop &&
+function tryAdvancedMovement(
+  state,
+  entity,
+  command,
+  agent,
+  map,
+  hopPressed,
+  techniquePressed,
+) {
+  if (hopPressed && entity.vaultRemaining > 0) {
+    trySuperglide(state, entity, command);
+    return true;
+  }
+  if (hopPressed && entity.slideRemaining > 0) {
+    trySlideJump(state, entity, command);
+    return true;
+  }
+  if (hopPressed && entity.hopRemaining > 0) {
+    tryDoubleJump(state, entity, command);
+    return true;
+  }
+  if (!techniquePressed) return false;
+  if (isAirborne(entity)) {
+    if (command.sprint) tryAirDodge(state, entity, command);
+    else tryAirRedirect(state, entity, command);
+    return true;
+  }
+  tryVault(state, entity, command, agent, map);
+  return true;
+}
+
+function isAirborne(entity) {
+  return entity.hopRemaining > 0 || entity.airDodgeRemaining > 0 ||
+    entity.superglideRemaining > 0;
+}
+
+function requestedMovementDirection(entity, command, fallback = null) {
+  const source = command.moveX !== 0 || command.moveY !== 0
+    ? { x: command.moveX, y: command.moveY }
+    : fallback ?? { x: entity.facingX, y: entity.facingY };
+  const direction = normalizeDirection(source.x, source.y);
+  return direction.x === 0 && direction.y === 0
+    ? { x: 1, y: 0 }
+    : direction;
+}
+
+function spendStamina(state, entity, amount, technique) {
+  if (entity.flow < amount) {
+    state.events.push({
+      type: "staminaDry",
+      entityId: entity.id,
+      technique,
+      required: amount,
+      available: entity.flow,
+      x: entity.x,
+      y: entity.y,
+    });
+    return false;
+  }
+  entity.flow -= amount;
+  entity.flowRecoveryDelay = MATCH_TUNING.flow.recoveryDelay;
+  return true;
+}
+
+function tryDoubleJump(state, entity, command) {
+  const flow = MATCH_TUNING.flow;
+  if (entity.hopStage !== 1 || !spendStamina(state, entity, flow.doubleJumpCost, "DOUBLE JUMP")) {
+    return false;
+  }
+  const direction = requestedMovementDirection(entity, command, {
+    x: entity.hopX,
+    y: entity.hopY,
+  });
+  entity.hopStage = 2;
+  entity.hopRemaining = flow.doubleJumpDuration;
+  entity.hopSpeed = flow.doubleJumpSpeed;
+  entity.hopDuration = flow.doubleJumpDuration;
+  entity.hopX = direction.x;
+  entity.hopY = direction.y;
+  entity.hopCarryX = 0;
+  entity.hopCarryY = 0;
+  entity.hopWallKick = false;
+  entity.airRedirectsRemaining = 1;
+  state.events.push({
+    type: "doubleJump",
+    entityId: entity.id,
+    x: entity.x,
+    y: entity.y,
+    dx: direction.x,
+    dy: direction.y,
+  });
+  return true;
+}
+
+function tryAirRedirect(state, entity, command) {
+  const flow = MATCH_TUNING.flow;
+  if (
+    entity.hopRemaining <= 0 || entity.airRedirectsRemaining <= 0 ||
+    !spendStamina(state, entity, flow.airRedirectCost, "AIR REDIRECT")
+  ) return false;
+  const requested = requestedMovementDirection(entity, command, {
+    x: entity.hopX,
+    y: entity.hopY,
+  });
+  const direction = normalizeDirection(
+    entity.hopX * (1 - flow.airRedirectBlend) + requested.x * flow.airRedirectBlend,
+    entity.hopY * (1 - flow.airRedirectBlend) + requested.y * flow.airRedirectBlend,
+  );
+  entity.hopX = direction.x;
+  entity.hopY = direction.y;
+  entity.hopCarryX = 0;
+  entity.hopCarryY = 0;
+  entity.airRedirectsRemaining = 0;
+  state.events.push({
+    type: "airRedirect",
+    entityId: entity.id,
+    x: entity.x,
+    y: entity.y,
+    dx: direction.x,
+    dy: direction.y,
+  });
+  return true;
+}
+
+function tryAirDodge(state, entity, command) {
+  const flow = MATCH_TUNING.flow;
+  if (
+    entity.hopRemaining <= 0 || entity.airDodgeCooldown > 0 ||
+    !spendStamina(state, entity, flow.airDodgeCost, "AIR DODGE")
+  ) return false;
+  const direction = requestedMovementDirection(entity, command, {
+    x: entity.hopX,
+    y: entity.hopY,
+  });
+  const turn = 1 - (entity.hopX * direction.x + entity.hopY * direction.y);
+  entity.waveDashQueued =
+    entity.hopRemaining <= flow.waveDashInputWindow &&
+    turn >= flow.waveDashMinimumTurn;
+  entity.hopRemaining = 0;
+  entity.airDodgeCooldown = flow.airDodgeCooldown;
+  entity.airDodgeRemaining = flow.airDodgeDuration;
+  entity.airDodgeX = direction.x;
+  entity.airDodgeY = direction.y;
+  entity.landingRemaining = 0;
+  state.events.push({
+    type: "airDodge",
+    entityId: entity.id,
+    x: entity.x,
+    y: entity.y,
+    dx: direction.x,
+    dy: direction.y,
+    waveDashQueued: entity.waveDashQueued,
+  });
+  return true;
+}
+
+function trySlideJump(state, entity, command) {
+  const flow = MATCH_TUNING.flow;
+  if (
+    entity.slideRemaining > flow.slideJumpWindow ||
+    !spendStamina(state, entity, flow.slideJumpCost, "SLIDE JUMP")
+  ) return false;
+  const direction = requestedMovementDirection(entity, command, {
+    x: entity.slideX,
+    y: entity.slideY,
+  });
+  entity.slideRemaining = 0;
+  entity.hopRemaining = flow.slideJumpDuration;
+  entity.hopStage = 1;
+  entity.hopSpeed = flow.slideJumpSpeed;
+  entity.hopDuration = flow.slideJumpDuration;
+  entity.hopX = direction.x;
+  entity.hopY = direction.y;
+  entity.hopCarryX = 0;
+  entity.hopCarryY = 0;
+  entity.hopWallKick = false;
+  entity.airRedirectsRemaining = 1;
+  state.events.push({
+    type: "slideJump",
+    entityId: entity.id,
+    x: entity.x,
+    y: entity.y,
+    dx: direction.x,
+    dy: direction.y,
+  });
+  return true;
+}
+
+function tryVault(state, entity, command, agent, map) {
+  const flow = MATCH_TUNING.flow;
+  if (
+    entity.vaultCooldown > 0 || entity.mobilityRemaining > 0 ||
+    entity.slideRemaining > 0 || entity.waveDashRemaining > 0 ||
+    entity.superglideRemaining > 0
+  ) return false;
+  const direction = requestedMovementDirection(entity, command);
+  const obstacle = findVaultObstacle(entity, direction, agent.radius, map);
+  if (!obstacle) {
+    state.events.push({
+      type: "vaultMiss",
+      entityId: entity.id,
+      x: entity.x,
+      y: entity.y,
+    });
+    return false;
+  }
+  if (entity.flow < flow.vaultCost) {
+    spendStamina(state, entity, flow.vaultCost, "VAULT");
+    return false;
+  }
+  const centerX = obstacle.x + obstacle.width / 2;
+  const centerY = obstacle.y + obstacle.height / 2;
+  const centerDistance =
+    (centerX - entity.x) * direction.x + (centerY - entity.y) * direction.y;
+  const depth = Math.abs(direction.x) * obstacle.width / 2 +
+    Math.abs(direction.y) * obstacle.height / 2;
+  const distance = centerDistance + depth + agent.radius + flow.vaultLanding;
+  const beforeX = entity.x;
+  const beforeY = entity.y;
+  const vaultMap = {
+    ...map,
+    obstacles: map.obstacles.filter((candidate) => candidate !== obstacle),
+  };
+  const result = moveCircleSwept(
+    entity,
+    direction.x * distance,
+    direction.y * distance,
+    agent.radius,
+    vaultMap,
+  );
+  const blocked = result.hitWall || map.obstacles.some((candidate) =>
+    candidate !== obstacle && circleRectangleOverlap(entity, agent.radius, candidate)
+  );
+  if (blocked) {
+    entity.x = beforeX;
+    entity.y = beforeY;
+    state.events.push({
+      type: "vaultBlocked",
+      entityId: entity.id,
+      x: entity.x,
+      y: entity.y,
+    });
+    return false;
+  }
+  spendStamina(state, entity, flow.vaultCost, "VAULT");
+  entity.vaultCooldown = flow.vaultCooldown;
+  entity.vaultRemaining = flow.vaultDuration;
+  entity.vaultX = direction.x;
+  entity.vaultY = direction.y;
+  entity.vx = 0;
+  entity.vy = 0;
+  entity.sprinting = false;
+  entity.wallContactRemaining = 0;
+  state.events.push({
+    type: "vault",
+    entityId: entity.id,
+    obstacleId: obstacle.id ?? null,
+    x: entity.x,
+    y: entity.y,
+    dx: direction.x,
+    dy: direction.y,
+  });
+  return true;
+}
+
+function findVaultObstacle(entity, direction, radius, map) {
+  const flow = MATCH_TUNING.flow;
+  let best = null;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const obstacle of map.obstacles) {
+    if (!obstacle.vaultable) continue;
+    const depth = Math.abs(direction.x) * obstacle.width +
+      Math.abs(direction.y) * obstacle.height;
+    if (depth > flow.vaultMaximumDepth) continue;
+    const nearestX = clamp(entity.x, obstacle.x, obstacle.x + obstacle.width);
+    const nearestY = clamp(entity.y, obstacle.y, obstacle.y + obstacle.height);
+    const dx = nearestX - entity.x;
+    const dy = nearestY - entity.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance > radius + flow.vaultApproach || distance >= bestDistance) continue;
+    const approach = distance > EPSILON
+      ? (dx * direction.x + dy * direction.y) / distance
+      : 1;
+    if (approach < 0.72) continue;
+    best = obstacle;
+    bestDistance = distance;
+  }
+  return best;
+}
+
+function trySuperglide(state, entity, command) {
+  const flow = MATCH_TUNING.flow;
+  if (
+    entity.vaultRemaining < flow.vaultCrestStart ||
+    entity.vaultRemaining > flow.vaultCrestEnd ||
+    !spendStamina(state, entity, flow.superglideCost, "SUPERGLIDE")
+  ) return false;
+  const direction = requestedMovementDirection(entity, command, {
+    x: entity.vaultX,
+    y: entity.vaultY,
+  });
+  entity.vaultRemaining = 0;
+  entity.superglideRemaining = flow.superglideDuration;
+  entity.superglideX = direction.x;
+  entity.superglideY = direction.y;
+  entity.hopStage = 2;
+  entity.airRedirectsRemaining = 0;
+  state.events.push({
+    type: "superglide",
+    entityId: entity.id,
+    x: entity.x,
+    y: entity.y,
+    dx: direction.x,
+    dy: direction.y,
+  });
+  return true;
+}
+
+function trySlide(state, entity, command, hopPressed) {
+  const wantsSlide = command.sprint && hopPressed &&
     (command.moveX !== 0 || command.moveY !== 0);
   if (!wantsSlide) return false;
   if (
     entity.slideCooldown > 0 || entity.slideRemaining > 0 ||
     entity.hopRemaining > 0 || entity.mobilityRemaining > 0 ||
+    entity.airDodgeRemaining > 0 || entity.waveDashRemaining > 0 ||
+    entity.vaultRemaining > 0 || entity.superglideRemaining > 0 ||
     entity.flow < MATCH_TUNING.flow.slideCost ||
     Math.hypot(entity.vx, entity.vy) < MATCH_TUNING.flow.slideEntrySpeed
   ) return true;
@@ -964,13 +1365,17 @@ function startMobility(state, entity, command, agent, map) {
   });
 }
 
-function tryHop(state, entity, command) {
+function tryHop(state, entity, command, hopPressed) {
   const flow = MATCH_TUNING.flow;
   if (
-    !command.hop ||
+    !hopPressed ||
     entity.hopCooldown > 0 ||
     entity.hopRemaining > 0 ||
     entity.slideRemaining > 0 ||
+    entity.airDodgeRemaining > 0 ||
+    entity.waveDashRemaining > 0 ||
+    entity.vaultRemaining > 0 ||
+    entity.superglideRemaining > 0 ||
     entity.mobilityRemaining > 0 ||
     entity.flow < flow.hopCost
   ) {
@@ -996,6 +1401,10 @@ function tryHop(state, entity, command) {
   entity.flowRecoveryDelay = flow.recoveryDelay;
   entity.hopCooldown = flow.hopCooldown;
   entity.hopRemaining = flow.hopDuration;
+  entity.hopStage = 1;
+  entity.hopSpeed = wallKick ? flow.wallKickSpeed : flow.hopSpeed;
+  entity.hopDuration = flow.hopDuration;
+  entity.airRedirectsRemaining = 1;
   entity.hopX = direction.x;
   entity.hopY = direction.y;
   const along = entity.vx * direction.x + entity.vy * direction.y;
@@ -1039,6 +1448,31 @@ function moveEntity(state, entity, command, agent, delta, map) {
     entity.vx = entity.mobilityX * agent.mobility.speed;
     entity.vy = entity.mobilityY * agent.mobility.speed;
     entity.sprinting = false;
+  } else if (entity.superglideRemaining > 0) {
+    entity.vx = entity.superglideX * MATCH_TUNING.flow.superglideSpeed;
+    entity.vy = entity.superglideY * MATCH_TUNING.flow.superglideSpeed;
+    entity.sprinting = false;
+  } else if (entity.airDodgeRemaining > 0) {
+    entity.vx = entity.airDodgeX * MATCH_TUNING.flow.airDodgeSpeed;
+    entity.vy = entity.airDodgeY * MATCH_TUNING.flow.airDodgeSpeed;
+    entity.sprinting = false;
+  } else if (entity.waveDashRemaining > 0) {
+    if (moveX !== 0 || moveY !== 0) {
+      const steering = MATCH_TUNING.flow.waveDashSteering;
+      const direction = normalizeDirection(
+        entity.waveDashX * (1 - steering) + moveX * steering,
+        entity.waveDashY * (1 - steering) + moveY * steering,
+      );
+      entity.waveDashX = direction.x;
+      entity.waveDashY = direction.y;
+    }
+    entity.vx = entity.waveDashX * MATCH_TUNING.flow.waveDashSpeed;
+    entity.vy = entity.waveDashY * MATCH_TUNING.flow.waveDashSpeed;
+    entity.sprinting = false;
+  } else if (entity.vaultRemaining > 0) {
+    entity.vx = 0;
+    entity.vy = 0;
+    entity.sprinting = false;
   } else if (entity.slideRemaining > 0) {
     if (moveX !== 0 || moveY !== 0) {
       const steering = MATCH_TUNING.flow.slideSteering;
@@ -1053,9 +1487,7 @@ function moveEntity(state, entity, command, agent, delta, map) {
     entity.vy = entity.slideY * MATCH_TUNING.flow.slideSpeed;
     entity.sprinting = false;
   } else if (entity.hopRemaining > 0) {
-    const speed = entity.hopWallKick
-      ? MATCH_TUNING.flow.wallKickSpeed
-      : MATCH_TUNING.flow.hopSpeed;
+    const speed = entity.hopSpeed;
     entity.vx = entity.hopX * speed + entity.hopCarryX;
     entity.vy = entity.hopY * speed + entity.hopCarryY;
     entity.sprinting = false;
@@ -1129,6 +1561,22 @@ function moveEntity(state, entity, command, agent, delta, map) {
       x: entity.x,
       y: entity.y,
     });
+  } else if (result.hitWall && entity.superglideRemaining > 0) {
+    entity.superglideRemaining = 0;
+    entity.vx = 0;
+    entity.vy = 0;
+    state.events.push({ type: "superglideImpact", entityId: entity.id, x: entity.x, y: entity.y });
+  } else if (result.hitWall && entity.airDodgeRemaining > 0) {
+    entity.airDodgeRemaining = 0;
+    entity.waveDashQueued = false;
+    entity.vx = 0;
+    entity.vy = 0;
+    state.events.push({ type: "airDodgeImpact", entityId: entity.id, x: entity.x, y: entity.y });
+  } else if (result.hitWall && entity.waveDashRemaining > 0) {
+    entity.waveDashRemaining = 0;
+    entity.vx = 0;
+    entity.vy = 0;
+    state.events.push({ type: "waveDashImpact", entityId: entity.id, x: entity.x, y: entity.y });
   } else if (result.hitWall && entity.slideRemaining > 0) {
     entity.slideRemaining = 0;
     entity.vx = 0;
@@ -1253,7 +1701,9 @@ function tryStartUltimate(state, entity, command, agent, map) {
     entity.ultimateCharge < ultimate.chargeRequired ||
     entity.ultimateWindupRemaining > 0 || entity.ultimateResolvePending ||
     entity.mobilityRemaining > 0 || entity.slideRemaining > 0 ||
-    entity.hopRemaining > 0 || entity.defenseRemaining > 0
+    entity.hopRemaining > 0 || entity.airDodgeRemaining > 0 ||
+    entity.waveDashRemaining > 0 || entity.vaultRemaining > 0 ||
+    entity.superglideRemaining > 0 || entity.defenseRemaining > 0
   ) {
     return false;
   }
@@ -2578,14 +3028,35 @@ function respawnEntity(entity, map) {
   entity.flow = entity.maxFlow;
   entity.flowRecoveryDelay = 0;
   entity.sprinting = false;
+  entity.hopHeld = false;
+  entity.techniqueHeld = false;
   entity.hopCooldown = 0;
   entity.hopRemaining = 0;
+  entity.hopStage = 0;
+  entity.hopSpeed = MATCH_TUNING.flow.hopSpeed;
+  entity.hopDuration = MATCH_TUNING.flow.hopDuration;
+  entity.airRedirectsRemaining = 0;
+  entity.airDodgeCooldown = 0;
+  entity.airDodgeRemaining = 0;
+  entity.airDodgeX = entity.facingX;
+  entity.airDodgeY = entity.facingY;
+  entity.waveDashQueued = false;
+  entity.waveDashRemaining = 0;
+  entity.waveDashX = entity.facingX;
+  entity.waveDashY = entity.facingY;
   entity.landingRemaining = 0;
   entity.hopWallKick = false;
   entity.slideCooldown = 0;
   entity.slideRemaining = 0;
   entity.slideX = entity.facingX;
   entity.slideY = entity.facingY;
+  entity.vaultCooldown = 0;
+  entity.vaultRemaining = 0;
+  entity.vaultX = entity.facingX;
+  entity.vaultY = entity.facingY;
+  entity.superglideRemaining = 0;
+  entity.superglideX = entity.facingX;
+  entity.superglideY = entity.facingY;
   entity.hopCarryX = 0;
   entity.hopCarryY = 0;
   entity.wallContactRemaining = 0;
@@ -2768,6 +3239,8 @@ export function refillSanctumPractice(state, entityId) {
   entity.mobilityCooldown = 0;
   entity.hopCooldown = 0;
   entity.slideCooldown = 0;
+  entity.airDodgeCooldown = 0;
+  entity.vaultCooldown = 0;
   entity.ultimateCharge = entity.maxUltimate;
   state.events.push({ type: "sanctumRefill", entityId: entity.id });
   return true;
@@ -2872,6 +3345,7 @@ function updateBotCommand(state, entity, delta, map) {
       closeProjectile &&
       entity.hopCooldown === 0 &&
       entity.flow >= MATCH_TUNING.flow.hopCost,
+    technique: false,
     ultimate:
       Boolean(agent.ultimate) &&
       entity.ultimateCharge >= (agent.ultimate?.chargeRequired ?? Infinity) &&
@@ -2894,6 +3368,7 @@ function updateBotCommand(state, entity, delta, map) {
     entity.botCommand.mobility = false;
     entity.botCommand.sprint = false;
     entity.botCommand.hop = false;
+    entity.botCommand.technique = false;
     entity.botCommand.ultimate = false;
     entity.botCommand.swap = false;
   }
@@ -3020,6 +3495,55 @@ function repairState(state, map) {
       entity.facingX = facing.x;
       entity.facingY = facing.y;
     }
+    entity.hopHeld = entity.hopHeld === true;
+    entity.techniqueHeld = entity.techniqueHeld === true;
+    entity.hopStage = clamp(Math.trunc(finite(entity.hopStage)), 0, 2);
+    entity.hopSpeed = clamp(
+      finite(entity.hopSpeed, MATCH_TUNING.flow.hopSpeed),
+      0,
+      MATCH_TUNING.flow.superglideSpeed,
+    );
+    entity.hopDuration = clamp(
+      finite(entity.hopDuration, MATCH_TUNING.flow.hopDuration),
+      EPSILON,
+      Math.max(
+        MATCH_TUNING.flow.hopDuration,
+        MATCH_TUNING.flow.doubleJumpDuration,
+        MATCH_TUNING.flow.slideJumpDuration,
+      ),
+    );
+    entity.airRedirectsRemaining = clamp(
+      Math.trunc(finite(entity.airRedirectsRemaining)),
+      0,
+      1,
+    );
+    entity.waveDashQueued = entity.waveDashQueued === true;
+    for (const [key, maximum] of [
+      ["airDodgeCooldown", MATCH_TUNING.flow.airDodgeCooldown],
+      ["airDodgeRemaining", MATCH_TUNING.flow.airDodgeDuration],
+      ["waveDashRemaining", MATCH_TUNING.flow.waveDashDuration],
+      ["vaultCooldown", MATCH_TUNING.flow.vaultCooldown],
+      ["vaultRemaining", MATCH_TUNING.flow.vaultDuration],
+      ["superglideRemaining", MATCH_TUNING.flow.superglideDuration],
+    ]) {
+      entity[key] = clamp(finite(entity[key]), 0, maximum);
+    }
+    for (const [xKey, yKey] of [
+      ["airDodgeX", "airDodgeY"],
+      ["waveDashX", "waveDashY"],
+      ["vaultX", "vaultY"],
+      ["superglideX", "superglideY"],
+    ]) {
+      const direction = normalizeDirection(
+        finite(entity[xKey], entity.facingX),
+        finite(entity[yKey], entity.facingY),
+      );
+      const repairedDirection = direction.x === 0 && direction.y === 0
+        ? { x: entity.facingX, y: entity.facingY }
+        : direction;
+      entity[xKey] = repairedDirection.x;
+      entity[yKey] = repairedDirection.y;
+    }
     entity.passiveRemaining = clamp(
       finite(entity.passiveRemaining),
       0,
@@ -3122,11 +3646,29 @@ export function matchInvariantErrors(state) {
       "flowRecoveryDelay",
       "hopCooldown",
       "hopRemaining",
+      "hopStage",
+      "hopSpeed",
+      "hopDuration",
+      "airRedirectsRemaining",
+      "airDodgeCooldown",
+      "airDodgeRemaining",
+      "airDodgeX",
+      "airDodgeY",
+      "waveDashRemaining",
+      "waveDashX",
+      "waveDashY",
       "landingRemaining",
       "slideCooldown",
       "slideRemaining",
       "slideX",
       "slideY",
+      "vaultCooldown",
+      "vaultRemaining",
+      "vaultX",
+      "vaultY",
+      "superglideRemaining",
+      "superglideX",
+      "superglideY",
       "hopCarryX",
       "hopCarryY",
       "wallContactRemaining",

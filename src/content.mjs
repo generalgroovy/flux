@@ -718,7 +718,7 @@ export const MAPS = Object.freeze([
     obstacles: [
       { x: 490, y: 140, width: 78, height: 260 },
       { x: 490, y: 500, width: 78, height: 260 },
-      { x: 760, y: 374, width: 80, height: 152 },
+      { id: "sundered-gate", x: 760, y: 374, width: 80, height: 152, vaultable: true },
       { x: 1032, y: 140, width: 78, height: 260 },
       { x: 1032, y: 500, width: 78, height: 260 },
     ],
@@ -765,11 +765,11 @@ export const MAPS = Object.freeze([
       { x: 170, y: 450 }, { x: 1430, y: 450 }, { x: 310, y: 150 }, { x: 1290, y: 750 },
     ],
     obstacles: [
-      { x: 420, y: 250, width: 170, height: 80 },
-      { x: 420, y: 570, width: 170, height: 80 },
+      { id: "west-heron-step", x: 420, y: 250, width: 170, height: 80, vaultable: true },
+      { id: "west-cinder-step", x: 420, y: 570, width: 170, height: 80, vaultable: true },
       { x: 720, y: 370, width: 160, height: 160 },
-      { x: 1010, y: 250, width: 170, height: 80 },
-      { x: 1010, y: 570, width: 170, height: 80 },
+      { id: "east-heron-step", x: 1010, y: 250, width: 170, height: 80, vaultable: true },
+      { id: "east-cinder-step", x: 1010, y: 570, width: 170, height: 80, vaultable: true },
     ],
     hazards: [{
       id: "ford-kindle", x: 630, y: 420, width: 340, height: 60,
@@ -806,8 +806,8 @@ export const MAPS = Object.freeze([
     obstacles: [
       { x: 330, y: 210, width: 300, height: 70 },
       { x: 330, y: 620, width: 300, height: 70 },
-      { x: 720, y: 300, width: 160, height: 70 },
-      { x: 720, y: 530, width: 160, height: 70 },
+      { id: "high-key-step", x: 720, y: 300, width: 160, height: 70, vaultable: true },
+      { id: "low-key-step", x: 720, y: 530, width: 160, height: 70, vaultable: true },
       { x: 970, y: 210, width: 300, height: 70 },
       { x: 970, y: 620, width: 300, height: 70 },
     ],
@@ -843,8 +843,10 @@ export const MAPS = Object.freeze([
     obstacles: [
       { x: 280, y: 180, width: 210, height: 90 }, { x: 280, y: 630, width: 210, height: 90 },
       { x: 1110, y: 180, width: 210, height: 90 }, { x: 1110, y: 630, width: 210, height: 90 },
-      { x: 570, y: 330, width: 120, height: 80 }, { x: 910, y: 490, width: 120, height: 80 },
-      { x: 570, y: 490, width: 120, height: 80 }, { x: 910, y: 330, width: 120, height: 80 },
+      { id: "northwest-oathstone", x: 570, y: 330, width: 120, height: 80, vaultable: true },
+      { id: "southeast-oathstone", x: 910, y: 490, width: 120, height: 80, vaultable: true },
+      { id: "southwest-oathstone", x: 570, y: 490, width: 120, height: 80, vaultable: true },
+      { id: "northeast-oathstone", x: 910, y: 330, width: 120, height: 80, vaultable: true },
     ],
     hazards: [{
       id: "covenant-pulse", x: 735, y: 385, width: 130, height: 130,
@@ -891,7 +893,7 @@ export const MAPS = Object.freeze([
       { x: 995, y: 565, width: 250, height: 70 },
       { x: 720, y: 125, width: 70, height: 235 },
       { x: 810, y: 540, width: 70, height: 235 },
-      { x: 710, y: 410, width: 180, height: 80 },
+      { id: "lark-rail", x: 710, y: 410, width: 180, height: 80, vaultable: true },
     ],
     hazards: [],
     landmarks: [
@@ -926,10 +928,10 @@ export const MAPS = Object.freeze([
       { x: 800, y: 765 },
     ],
     obstacles: [
-      { x: 570, y: 220, width: 92, height: 120 },
-      { x: 938, y: 220, width: 92, height: 120 },
-      { x: 570, y: 560, width: 92, height: 120 },
-      { x: 938, y: 560, width: 92, height: 120 },
+      { id: "northwest-gate", x: 570, y: 220, width: 92, height: 120, vaultable: true },
+      { id: "northeast-gate", x: 938, y: 220, width: 92, height: 120, vaultable: true },
+      { id: "southwest-gate", x: 570, y: 560, width: 92, height: 120, vaultable: true },
+      { id: "southeast-gate", x: 938, y: 560, width: 92, height: 120, vaultable: true },
       { x: 748, y: 398, width: 104, height: 104 },
     ],
     hazards: [],
@@ -965,10 +967,10 @@ export const MAPS = Object.freeze([
       { x: 1350, y: 755 },
     ],
     obstacles: [
-      { x: 400, y: 350, width: 230, height: 72 },
-      { x: 400, y: 478, width: 230, height: 72 },
-      { x: 970, y: 350, width: 230, height: 72 },
-      { x: 970, y: 478, width: 230, height: 72 },
+      { id: "west-pearl-rail", x: 400, y: 350, width: 230, height: 72, vaultable: true },
+      { id: "west-tide-rail", x: 400, y: 478, width: 230, height: 72, vaultable: true },
+      { id: "east-pearl-rail", x: 970, y: 350, width: 230, height: 72, vaultable: true },
+      { id: "east-tide-rail", x: 970, y: 478, width: 230, height: 72, vaultable: true },
     ],
     hazards: [
       {
@@ -1027,8 +1029,8 @@ export const MAPS = Object.freeze([
     obstacles: [
       { x: 360, y: 180, width: 95, height: 250 },
       { x: 360, y: 520, width: 95, height: 200 },
-      { x: 635, y: 345, width: 130, height: 80 },
-      { x: 835, y: 475, width: 130, height: 80 },
+      { id: "rime-rail", x: 635, y: 345, width: 130, height: 80, vaultable: true },
+      { id: "ember-rail", x: 835, y: 475, width: 130, height: 80, vaultable: true },
       { x: 1145, y: 180, width: 95, height: 200 },
       { x: 1145, y: 470, width: 95, height: 250 },
     ],
@@ -1072,12 +1074,12 @@ export const SANCTUM_PRACTICE_MAP = Object.freeze({
     { x: 800, y: 740 },
   ],
   obstacles: [
-    { x: 405, y: 120, width: 64, height: 250 },
-    { x: 405, y: 530, width: 64, height: 250 },
-    { x: 1131, y: 120, width: 64, height: 250 },
-    { x: 1131, y: 530, width: 64, height: 250 },
-    { x: 660, y: 270, width: 80, height: 150 },
-    { x: 860, y: 480, width: 80, height: 150 },
+    { id: "west-north-rail", x: 405, y: 120, width: 64, height: 250, vaultable: true },
+    { id: "west-south-rail", x: 405, y: 530, width: 64, height: 250, vaultable: true },
+    { id: "east-north-rail", x: 1131, y: 120, width: 64, height: 250, vaultable: true },
+    { id: "east-south-rail", x: 1131, y: 530, width: 64, height: 250, vaultable: true },
+    { id: "north-crest", x: 660, y: 270, width: 80, height: 150, vaultable: true },
+    { id: "south-crest", x: 860, y: 480, width: 80, height: 150, vaultable: true },
   ],
   hazards: [],
   landmarks: [
@@ -1183,6 +1185,20 @@ export const MATCH_TUNING = Object.freeze({
     wallKickSpeed: 780,
     hopDuration: 0.16,
     hopCooldown: 0.5,
+    doubleJumpCost: 24,
+    doubleJumpSpeed: 700,
+    doubleJumpDuration: 0.2,
+    airRedirectCost: 10,
+    airRedirectBlend: 0.72,
+    airDodgeCost: 28,
+    airDodgeSpeed: 860,
+    airDodgeDuration: 0.18,
+    airDodgeCooldown: 0.62,
+    waveDashInputWindow: 0.085,
+    waveDashMinimumTurn: 0.28,
+    waveDashSpeed: 740,
+    waveDashDuration: 0.24,
+    waveDashSteering: 0.2,
     landingWindow: 0.11,
     landingCutMultiplier: 1.18,
     wallMemory: 0.16,
@@ -1192,6 +1208,21 @@ export const MATCH_TUNING = Object.freeze({
     slideDuration: 0.3,
     slideCooldown: 0.78,
     slideSteering: 0.32,
+    slideJumpCost: 20,
+    slideJumpSpeed: 790,
+    slideJumpDuration: 0.23,
+    slideJumpWindow: 0.14,
+    vaultCost: 14,
+    vaultApproach: 42,
+    vaultLanding: 22,
+    vaultMaximumDepth: 96,
+    vaultDuration: 0.3,
+    vaultCooldown: 0.5,
+    vaultCrestStart: 0.1,
+    vaultCrestEnd: 0.23,
+    superglideCost: 26,
+    superglideSpeed: 900,
+    superglideDuration: 0.22,
     grazeMargin: 16,
     grazeMinimumSpeed: 260,
     grazeReward: 9,
@@ -1331,6 +1362,20 @@ export function validateContent({
     "wallKickSpeed",
     "hopDuration",
     "hopCooldown",
+    "doubleJumpCost",
+    "doubleJumpSpeed",
+    "doubleJumpDuration",
+    "airRedirectCost",
+    "airRedirectBlend",
+    "airDodgeCost",
+    "airDodgeSpeed",
+    "airDodgeDuration",
+    "airDodgeCooldown",
+    "waveDashInputWindow",
+    "waveDashMinimumTurn",
+    "waveDashSpeed",
+    "waveDashDuration",
+    "waveDashSteering",
     "landingWindow",
     "landingCutMultiplier",
     "wallMemory",
@@ -1340,6 +1385,21 @@ export function validateContent({
     "slideDuration",
     "slideCooldown",
     "slideSteering",
+    "slideJumpCost",
+    "slideJumpSpeed",
+    "slideJumpDuration",
+    "slideJumpWindow",
+    "vaultCost",
+    "vaultApproach",
+    "vaultLanding",
+    "vaultMaximumDepth",
+    "vaultDuration",
+    "vaultCooldown",
+    "vaultCrestStart",
+    "vaultCrestEnd",
+    "superglideCost",
+    "superglideSpeed",
+    "superglideDuration",
     "grazeMargin",
     "grazeMinimumSpeed",
     "grazeReward",
@@ -1353,6 +1413,27 @@ export function validateContent({
     errors.push("flow.hopCost must not exceed flow.maximum");
   }
   if (
+    flow.doubleJumpCost > flow.maximum || flow.airDodgeCost > flow.maximum ||
+    flow.slideJumpCost > flow.maximum || flow.vaultCost > flow.maximum ||
+    flow.superglideCost > flow.maximum
+  ) {
+    errors.push("flow advanced movement must remain individually payable");
+  }
+  if (
+    flow.doubleJumpSpeed < flow.hopSpeed ||
+    flow.airDodgeSpeed <= flow.doubleJumpSpeed ||
+    flow.waveDashSpeed >= flow.airDodgeSpeed ||
+    flow.superglideSpeed <= flow.airDodgeSpeed
+  ) {
+    errors.push("flow aerial movement speeds must preserve their commitment ladder");
+  }
+  if (
+    flow.airRedirectBlend > 0.8 || flow.waveDashSteering > 0.35 ||
+    flow.waveDashMinimumTurn >= 0.8
+  ) {
+    errors.push("flow aerial steering and wavedash entry must remain bounded");
+  }
+  if (
     flow.slideCost > flow.maximum || flow.slideSpeed <= flow.hopSpeed ||
     flow.slideEntrySpeed >= flow.slideSpeed
   ) {
@@ -1360,6 +1441,15 @@ export function validateContent({
   }
   if (flow.slideSteering > 0.5) {
     errors.push("flow.slideSteering must preserve slide commitment");
+  }
+  if (
+    flow.slideJumpWindow > flow.slideDuration ||
+    flow.slideJumpSpeed <= flow.slideSpeed ||
+    flow.vaultMaximumDepth < 48 ||
+    flow.vaultCrestStart >= flow.vaultCrestEnd ||
+    flow.vaultCrestEnd > flow.vaultDuration
+  ) {
+    errors.push("flow route conversions must use valid bounded timing windows");
   }
   if (
     flow.grazeMargin > 24 || flow.grazeReward > flow.maximum * 0.12 ||
@@ -1589,6 +1679,20 @@ export function validateContent({
     }
     if (!Array.isArray(map.obstacles) || !Array.isArray(map.hazards)) {
       errors.push(`${map.id} geometry must use arrays`);
+    }
+    const vaultIds = new Set();
+    for (const obstacle of map.obstacles ?? []) {
+      if (!obstacle.vaultable) continue;
+      if (
+        !obstacle.id || vaultIds.has(obstacle.id) ||
+        Math.min(obstacle.width, obstacle.height) > tuning.flow.vaultMaximumDepth
+      ) {
+        errors.push(`${map.id} has an invalid vault rail`);
+      }
+      vaultIds.add(obstacle.id);
+    }
+    if (vaultIds.size === 0) {
+      errors.push(`${map.id} needs at least one authored vault rail`);
     }
     if (!map.terrain || !map.lore || !map.heraldry || !Array.isArray(map.landmarks)) {
       errors.push(`${map.id} needs terrain, lore, heraldry, and landmark data`);

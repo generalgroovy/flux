@@ -88,7 +88,7 @@
         <div id="info-kit" class="info-kit"></div>
         <dl class="info-controls">
           <div><dt>Move / aim</dt><dd><kbd data-binding-summary="move">WASD</kbd> / mouse</dd></div>
-          <div><dt>Stamina movement</dt><dd><kbd data-binding-label="sprint">Alt</kbd> sprint / <kbd data-binding-label="hop">C</kbd> hop</dd></div>
+          <div><dt>Stamina movement</dt><dd><kbd data-binding-label="sprint">Alt</kbd> sprint / <kbd data-binding-label="hop">C</kbd> jump / <kbd data-binding-label="technique">V</kbd> technique</dd></div>
           <div><dt>Actions</dt><dd><kbd>MB1</kbd><kbd data-binding-label="tactical">E</kbd><kbd data-binding-label="defense">Q</kbd><kbd data-binding-label="mobility">Shift</kbd><kbd data-binding-label="ultimate">F</kbd></dd></div>
           <div><dt>Reset / pause</dt><dd><kbd>R</kbd> / <kbd>Esc</kbd></dd></div>
         </dl>
@@ -109,8 +109,8 @@
 
       <section id="ability-bar" class="ability-bar" aria-label="Abilities">
         <div class="ability flow-ability" data-ability="flow">
-          <kbd data-binding-summary="flow">ALT/C</kbd>
-          <span><b>STAMINA</b><small id="flow-detail">Sprint / hop</small></span>
+          <kbd data-binding-summary="flow">ALT/C/V</kbd>
+          <span><b>STAMINA</b><small id="flow-detail">Sprint / jump / technique</small></span>
           <i id="flow-charge"></i>
         </div>
         <div class="ability flux-ability" data-ability="flux">
@@ -295,7 +295,7 @@
                 </section>
                 <section class="practice-map" aria-label="Sanctum practice areas">
                   <div class="practice-map-ring"><i></i><i></i><i></i><i></i></div>
-                  <article data-zone="movement"><b>Movement Cloister</b><span>Sprint, slide, hop, wall kick, landing cut, counter-strafe</span></article>
+                  <article data-zone="movement"><b>Movement Cloister</b><span>Jump chains, air routes, marked vault rails, superglide</span></article>
                   <article data-zone="spell"><b>Spell Court</b><span>Primary, tactical, defense, mobility, ultimate</span></article>
                   <article data-zone="ward"><b>Mirror Ward</b><span>Target pressure, aim, spacing, cooldown reads</span></article>
                   <article data-zone="gate"><b>Gathering Gate</b><span>Champion switch, refill, reset, return</span></article>
@@ -490,7 +490,8 @@
                   <h3>Player 1</h3>
                   <dl class="control-list">
                     <div><dt>Move</dt><dd><kbd data-binding-label="moveUp">W</kbd><kbd data-binding-label="moveLeft">A</kbd><kbd data-binding-label="moveDown">S</kbd><kbd data-binding-label="moveRight">D</kbd></dd></div>
-                    <div><dt>Sprint / hop / slide</dt><dd><kbd data-binding-label="sprint">Alt</kbd> / <kbd data-binding-label="hop">C</kbd> / both</dd></div>
+                    <div><dt>Sprint / jump / slide</dt><dd><kbd data-binding-label="sprint">Alt</kbd> / <kbd data-binding-label="hop">C</kbd> / both</dd></div>
+                    <div><dt>Technique / air dodge</dt><dd><kbd data-binding-label="technique">V</kbd> / <kbd data-binding-label="sprint">Alt</kbd> + <kbd data-binding-label="technique">V</kbd></dd></div>
                     <div><dt>Aim</dt><dd>Mouse</dd></div>
                     <div><dt>Primary</dt><dd><kbd>MB1</kbd> / <kbd data-binding-label="fire">Space</kbd></dd></div>
                     <div><dt>Tactical</dt><dd><kbd>MB2</kbd> / <kbd data-binding-label="tactical">E</kbd></dd></div>
@@ -503,7 +504,8 @@
                   <h3>Player 2</h3>
                   <dl class="control-list">
                     <div><dt>Move</dt><dd>Arrow keys</dd></div>
-                    <div><dt>Sprint / hop / slide</dt><dd><kbd>,</kbd> / <kbd>.</kbd> / both</dd></div>
+                    <div><dt>Sprint / jump / slide</dt><dd><kbd>,</kbd> / <kbd>.</kbd> / both</dd></div>
+                    <div><dt>Technique / air dodge</dt><dd><kbd>/</kbd> / <kbd>,</kbd> + <kbd>/</kbd></dd></div>
                     <div><dt>Aim</dt><dd><kbd>I</kbd><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd></dd></div>
                     <div><dt>Primary</dt><dd><kbd>U</kbd></dd></div>
                     <div><dt>Tactical</dt><dd><kbd>O</kbd></dd></div>
@@ -516,7 +518,8 @@
                   <h3>Gamepad</h3>
                   <dl class="control-list">
                     <div><dt>Move / aim</dt><dd>Left / right stick</dd></div>
-                    <div><dt>Sprint / hop</dt><dd>Left / right shoulder</dd></div>
+                    <div><dt>Sprint / jump</dt><dd>Left / right shoulder</dd></div>
+                    <div><dt>Technique / air dodge</dt><dd>East button / left shoulder + east</dd></div>
                     <div><dt>Primary</dt><dd>Right trigger</dd></div>
                     <div><dt>Tactical</dt><dd>West button</dd></div>
                     <div><dt>Ultimate</dt><dd>North button</dd></div>
@@ -539,11 +542,14 @@
                 <article><b>Cover is absolute</b><span>No attacks or movement tunnel through geometry.</span></article>
                 <article><b>Defense is specific</b><span>Reflect, guard, phase, absorb, and counter demand different reads.</span></article>
                 <article><b>Spawns are protected</b><span>Joining and resetting never hands out a free hit.</span></article>
-                <article><b>Stamina is universal</b><span>Sprint, hop, and wall-kick spend one shared resource on every champion.</span></article>
+                <article><b>Stamina is universal</b><span>Every sprint, jump conversion, air route, vault, and edgeweave uses one shared resource on every champion.</span></article>
                 <article><b>Reverse with intent</b><span>Press against committed momentum to counter-strafe: brake and re-angle faster, with less control on ice.</span></article>
-                <article><b>Carry a curve</b><span>Hop across your travel line to preserve bounded lateral momentum into evasive arcs and wall approaches.</span></article>
+                <article><b>Carry a curve</b><span>Jump across your travel line to preserve bounded lateral momentum into evasive arcs and wall approaches.</span></article>
                 <article><b>Cut the landing</b><span>Reverse once in the brief post-hop window to steal a sharper turn. The window is consumed immediately.</span></article>
                 <article><b>Commit low</b><span>While moving fast, hold sprint and hop together to slide. Steering is limited and cover breaks the attempt.</span></article>
+                <article><b>Convert the route</b><span>Jump late from a slide, jump once more in air, or spend one technique input to redirect; each conversion is limited and paid.</span></article>
+                <article><b>Ground an angle</b><span>Use sprint plus technique late in a jump and turn across the current line; a valid angled landing becomes one bounded wavedash.</span></article>
+                <article><b>Read low cover</b><span>Vault only rails marked V with the technique key. Jump during the short crest cue to superglide; early and late presses do nothing.</span></article>
                 <article><b>Thread the edge</b><span>Move at committed speed through a hostile spell's narrow miss band to restore 9 Stamina. Hits, practice marks, and repeated fan shots do not pay.</span></article>
                 <article><b>Flux is commitment</b><span>Tactical, defense, and character mobility compete for raw magic; primary attacks and Stamina movement remain available when dry.</span></article>
                 <article><b>Shrines answer movement</b><span>Cross a ready covenant at high speed while missing Flux. The exposed route restores magic, then locks for everyone.</span></article>
@@ -600,7 +606,8 @@
                     <label><span>Defense</span><button type="button" data-bind-action="defense">Q</button></label>
                     <label><span>Mobility</span><button type="button" data-bind-action="mobility">SHIFT</button></label>
                     <label><span>Sprint</span><button type="button" data-bind-action="sprint">ALT</button></label>
-                    <label><span>Hop</span><button type="button" data-bind-action="hop">C</button></label>
+                    <label><span>Jump</span><button type="button" data-bind-action="hop">C</button></label>
+                    <label><span>Movement technique</span><button type="button" data-bind-action="technique">V</button></label>
                     <label><span>Ultimate</span><button type="button" data-bind-action="ultimate">F</button></label>
                   </div>
                   <output id="binding-status" aria-live="polite">Select an action to rebind.</output>

@@ -335,6 +335,16 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   window.dispatchEvent(cancelBinding);
   assert.equal(hopBinding.textContent, "C");
 
+  const techniqueBinding = document.querySelector('[data-bind-action="technique"]');
+  techniqueBinding.click();
+  const protectedTechnique = new window.Event("keydown");
+  Object.defineProperty(protectedTechnique, "key", { value: "/" });
+  window.dispatchEvent(protectedTechnique);
+  assert.equal(techniqueBinding.classList.contains("capturing"), true);
+  assert.match(document.getElementById("binding-status").textContent, /reserved/);
+  window.dispatchEvent(cancelBinding);
+  assert.equal(techniqueBinding.textContent, "V");
+
   const sprintBinding = document.querySelector('[data-bind-action="sprint"]');
   sprintBinding.click();
   const bindX = new window.Event("keydown");
@@ -343,7 +353,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.equal(sprintBinding.textContent, "X");
   assert.equal(
     document.querySelector('[data-binding-summary="flow"]').textContent,
-    "X/C",
+    "X/C/V",
   );
   assert.equal(
     JSON.parse(storage.get("flux.presentation.v2")).bindings.tactical,
@@ -418,7 +428,10 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   Object.defineProperty(fieldGuide, "key", { value: "F2" });
   window.dispatchEvent(fieldGuide);
   assert.equal(document.getElementById("practice-overview").hidden, false);
-  assert.match(document.getElementById("practice-overview-content").textContent, /Wall kick.*Elements.*Races/s);
+  assert.match(
+    document.getElementById("practice-overview-content").textContent,
+    /Double jump.*Slide jump.*Air redirect.*Air dodge.*Wavedash.*Wall jump.*Vault.*Superglide.*Elements.*Races/s,
+  );
   document.querySelector('[data-practice-action="overview-close"]').click();
   assert.equal(document.getElementById("practice-overview").hidden, true);
   document.querySelector('[data-practice-action="refill"]').click();
@@ -471,6 +484,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.equal(tacticalBinding.textContent, "E");
   assert.equal(defenseBinding.textContent, "Q");
   assert.equal(sprintBinding.textContent, "ALT");
+  assert.equal(techniqueBinding.textContent, "V");
   assert.equal(
     JSON.parse(storage.get("flux.presentation.v2")).bindings.sprint,
     "alt",

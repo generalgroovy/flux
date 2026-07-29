@@ -180,6 +180,11 @@ After V5 acceptance, implement mechanics in this order:
 9. Destruction and multi-level spaces.
 10. Only after eight-player acceptance, staged work toward 32-player lobbies.
 
+The compatibility runtime now proves the complete universal movement grammar
+and collision-safe marked vault routes by direct user exception. Phase B still
+migrates that proven contract into the ground-up overhaul boundary rather than
+duplicating or redesigning it.
+
 Each accepted production slice migrates one consumer from compatibility code.
 Delete the superseded path only after references, saves, tests, launchers, and
 package manifests prove it unused.

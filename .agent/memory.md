@@ -2043,3 +2043,40 @@
   Node 22, Windows NSIS, and Linux AppImage packaging. PR #11 merged as
   `09d0257`, and `main` plus `integration/unify-flux` were realigned there.
 - **Next:** resume the active V1 Nico Lai visual slice.
+
+# 2026-07-29 — Complete universal Stamina movement
+
+- **Direct exception:** The user's explicit request completed the universal
+  movement grammar before V1 resumed. No champion ability, element, damage,
+  objective, network rule, AI, or mode was added.
+- **Authoritative movement:** Added edge-triggered double jump and slide jump,
+  one bounded air redirect, fixed-lane air dodge, late angled wavedash,
+  marked-cover vault, and vault-crest superglide alongside the existing sprint,
+  counter-strafe, jump, slide, wall jump, landing cut, and Edgeweave kernel.
+- **Safety and tuning:** Every transition has centralized Stamina cost, timing,
+  steering, cooldown, and speed bounds. New state is reset on respawn, repaired
+  at the simulation boundary, checked by invariants, blocked during champion
+  mobility/ultimate commitments, and interrupted safely by collision.
+- **Authored routes:** Every competitive map and the Living Sanctum now provides
+  one or more validated `vaultable` rails with stable IDs and a visible `V`.
+  Vaults sweep past only their selected rail, retain every other collision, roll
+  back blocked travel, and reject unmarked cover.
+- **Controls and teaching:** Added the semantic `technique` command across
+  sanitization, Player 1 remapping (`V`), Player 2 (`/`), and gamepad east face;
+  `Alt+V` air-dodges. HUD state, feedback, practice copy, controls, and the `F2`
+  guide expose every conversion with Stamina language.
+- **Verification:** `node scripts/ci-verify.mjs` passed 141/141 tests and all
+  recursive syntax checks. Deterministic coverage proves every new transition,
+  input-edge and non-stacking rule, collision interruption, unmarked-cover and
+  low-Stamina rejection, refill reset, mixed-chain ceiling, all content stress,
+  and the eight-agent soak.
+- **Visual review:** The source Sanctum rendered at 1280px with no horizontal
+  overflow and no browser warnings/errors. Browser automation focused controls
+  but did not activate them, so no browser movement-input claim is made.
+- **Local package:** `npm.cmd run package:windows:verified` built the exact
+  `0ff6eb0` NSIS installer with SHA-256
+  `09b09235619d0acfdc18985441777276845aaa97c3933e25b21c958e17286e87`.
+- **Remote acceptance:** GitHub Actions run `30462865622` passed all six jobs
+  for movement commit `0ff6eb0`: Windows and Ubuntu on Node 20.19.1 and Node 22,
+  Windows NSIS, and Linux AppImage packaging. PR #13 remains to be merged and
+  `integration/unify-flux` realigned with `main`; then resume V1 Nico Lai.

@@ -39,7 +39,7 @@ actions. Every transition is buffered, bounded, collision-safe, and readable.
 | Sprint | Fast pursuit, disengagement, and objective routing | Continuously spends Stamina and delays recovery |
 | Jump / double jump | Clear ground pressure and vary approach height | Costs Stamina; aerial state limits later options |
 | Slide | Low, fast ground commitment | Weak steering, recovery, and hard stop on cover |
-| Slide jump | Convert a completed slide into a longer route | Costs more Stamina and cannot erase slide commitment |
+| Slide jump | Convert the late committed slide window into a longer route | Costs more Stamina and cannot erase slide commitment |
 | Air dodge | Short directional aerial escape | High Stamina cost, limited steering, punishable recovery |
 | Wavedash | Convert an angled air-dodge landing into grounded momentum | Requires exact landing geometry; no free speed stacking |
 | Wall jump | Rebound from a brief wall-contact window | Per-wall lockout prevents infinite loops |
@@ -211,12 +211,13 @@ Character selection uses a fighting-game grid: ancestry columns contain
 champion portraits, and hover or keyboard focus reveals the kit without
 changing the locked choice.
 
-The practice court exposes the complete movement set currently implemented in
-the compatibility runtime: independent move/aim, counter-strafe, Stamina
-sprint, committed slide, hop, landing cut, wall kick, champion mobility, and
-Edgeweave. The broader movement table above remains the overhaul target; its
-double jump, air dodge, wavedash, vault, superglide, and air redirect entries
-are not yet runtime claims.
+The practice court exposes the complete universal movement grammar in the live
+runtime: independent move/aim, counter-strafe, Stamina sprint, jump and double
+jump, committed slide and slide jump, air redirect, air dodge, wavedash, wall
+jump, landing cut, Edgeweave, marked-cover vault, and vault-crest superglide.
+Every competitive battleground also owns at least one marked vault route;
+unmarked cover remains solid. Champion mobility stays a separate Flux-paid
+ability and is not part of this universal movement set.
 
 ### Battleground design
 
@@ -288,9 +289,10 @@ every slice.
 | Overhaul data | Eight-family element aliases, sixteen mechanical race archetypes, sixteen design-only champions, ability catalog, reactions, movement grammar, sizes, modes, and destruction rules are validated but inactive |
 | Character visuals | Twenty modular ancestry templates exist; Spai Si, Urzh, and S. Wayne have modular six-state source-only specimens |
 | Haara prototype | Headless local mechanic prototype still uses the legacy `Hara` label and stable `mara` ID behind `contentProfile: "overhaul-preview"`; normal selection and live lobbies reject it |
-| Sanctum | Always-rendered Living Sanctum shell, persistent remote company, ancestry-column roster selection, and a local Practice court with movement/spell areas, stationary target, champion switch, refill/reset, and `F2` field guide are implemented |
+| Movement | Complete universal Stamina grammar is live and deterministic: sprint, counter-strafe, jump/double jump, slide/slide jump, air redirect/dodge, wavedash, wall jump, landing cut, Edgeweave, vault, and superglide; all eight battlegrounds provide marked vault routes |
+| Sanctum | Always-rendered Living Sanctum shell, persistent remote company, ancestry-column roster selection, and a local Practice court with complete movement/spell areas, stationary target, champion switch, refill/reset, and `F2` field guide are implemented |
 | Platforms | Source launch and graceful cleanup work on Windows and Linux; CI builds Windows NSIS and Linux AppImage artifacts |
-| Verification | 133 automated checks pass locally; PR #11 passed Windows/Linux Node 20/22 verification plus Windows NSIS and Linux AppImage package builds for Sanctum implementation commit `e5627ad` |
+| Verification | 141 automated checks pass locally; GitHub Actions run `30462865622` passed Windows/Linux Node 20/22 verification plus NSIS/AppImage packaging for movement commit `0ff6eb0` |
 | Release blockers | Complete V1–V5 acceptance, a current packaged match smoke, signed public installers/update feed, and a dependable owned relay |
 
 The old champions are implementation scaffolding, not overhaul characters. Their
@@ -401,10 +403,10 @@ Remote authority supports public/private rooms, lobby codes, join-in-progress,
 spectators, reconnect tokens, host migration, prediction/reconciliation, input
 sequences, snapshots, rate limits, diagnostics, and explicit shutdown behavior.
 
-## Current compatibility controls
+## Current controls
 
-These bindings operate the test harness and may be remapped as the overhaul
-loadout and movement grammar become live.
+Player 1 keyboard bindings are remappable. Player 2 and gamepad bindings remain
+fixed so local play has a conflict-free default.
 
 | Action | Player 1 | Player 2 | Gamepad |
 | --- | --- | --- | --- |
@@ -416,8 +418,13 @@ loadout and movement grammar become live.
 | Champion mobility | `Shift` | `Enter` | South button |
 | Ultimate | `F` | `H` | North button |
 | Sprint | `Alt` | `,` | Left shoulder |
-| Hop / wall kick | `C` | `.` | Right shoulder |
+| Jump / wall jump | `C` | `.` | Right shoulder |
 | Slide | Sprint + hop | Sprint + hop | Both shoulders |
+| Technique / vault / air redirect | `V` | `/` | East button |
+| Double jump / slide jump | Release + repress jump | Release + repress jump | Release + repress right shoulder |
+| Air dodge | Sprint + technique in air | Sprint + technique in air | Left shoulder + east button in air |
+| Wavedash | Late angled air dodge | Late angled air dodge | Late angled air dodge |
+| Superglide | Jump at marked vault crest | Jump at marked vault crest | Right shoulder at marked vault crest |
 | Pause / network menu | `Escape` | `Escape` | — |
 | Restart | `R` | `R` | — |
 | Skip First Rite | `T` | — | — |

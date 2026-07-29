@@ -223,11 +223,16 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   await import(`../src/game.mjs?dom-smoke=${Date.now()}`);
 
   const app = document.getElementById("app");
-  assert.equal(app.dataset.view, "menu");
-  assert.match(
-    document.querySelector('.nav-item[data-panel="home"]').textContent,
-    /Sanctum/i,
-  );
+  assert.equal(app.dataset.view, "game");
+  assert.equal(window.DIFF_DEBUG.getState().modeId, "sanctum");
+  assert.equal(window.DIFF_DEBUG.getState().mapId, "living_sanctum");
+  assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "sanctum");
+  assert.equal(window.DIFF_DEBUG.getInterfaceState().nearestSanctumStationId, "training");
+  assert.equal(document.querySelector(".primary-nav").hidden, true);
+  assert.equal(document.getElementById("front-end").matches(":not([hidden])"), true);
+  assert.equal(app.classList.contains("station-open"), false);
+  assert.equal(document.getElementById("sanctum-station-prompt").hidden, false);
+  assert.match(document.getElementById("sanctum-station-name").textContent, /TRAINING COURT/);
   assert.equal(document.querySelector(".hero-mark"), null);
   assert.equal(document.querySelectorAll(".sanctum-sigil i").length, 8);
   assert.doesNotMatch(
@@ -271,6 +276,15 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.match(document.getElementById("agent-preview").textContent, /AERWYN/);
   assert.equal(document.getElementById("online-race").disabled, true);
 
+  const stationInteract = new window.Event("keydown");
+  Object.defineProperty(stationInteract, "key", { value: "e" });
+  window.dispatchEvent(stationInteract);
+  assert.equal(app.classList.contains("station-open"), true);
+  assert.equal(app.dataset.panel, "practice");
+  assert.equal(window.DIFF_DEBUG.getInterfaceState().sanctumStationOpen, true);
+  document.getElementById("menu-close").click();
+  assert.equal(app.classList.contains("station-open"), false);
+
   for (const panel of [
     "home",
     "practice",
@@ -281,27 +295,15 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     "guide",
     "settings",
   ]) {
-    document.querySelector(`.nav-item[data-panel="${panel}"]`).click();
+    assert.equal(window.DIFF_DEBUG.openSanctumStation(panel), true);
     assert.equal(app.dataset.panel, panel);
     assert.equal(
       document.querySelector(`[data-menu-panel="${panel}"]`).hidden,
       false,
     );
+    assert.equal(app.classList.contains("station-open"), true);
+    document.getElementById("menu-close").click();
   }
-  const playNavigation = document.querySelector('.nav-item[data-panel="play"]');
-  playNavigation.focus();
-  const downMenu = new window.Event("keydown", { bubbles: true });
-  Object.defineProperty(downMenu, "key", { value: "ArrowDown" });
-  playNavigation.dispatchEvent(downMenu);
-  assert.equal(app.dataset.panel, "online");
-  const upMenu = new window.Event("keydown", { bubbles: true });
-  Object.defineProperty(upMenu, "key", { value: "ArrowUp" });
-  document.querySelector('.nav-item[data-panel="online"]').dispatchEvent(upMenu);
-  assert.equal(app.dataset.panel, "play");
-  window.DIFF_DEBUG.activateMenuGamepadAction("down");
-  assert.equal(app.dataset.panel, "online");
-  window.DIFF_DEBUG.activateMenuGamepadAction("up");
-  assert.equal(app.dataset.panel, "play");
   assert.match(
     document.querySelector('[data-menu-panel="guide"]').textContent,
     /Wayseals choose the fight.*without gaining combat stats/i,
@@ -309,7 +311,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.equal(document.getElementById("host-lobby").disabled, false);
   assert.equal(document.getElementById("join-lobby").disabled, false);
 
-  document.querySelector('[data-panel="settings"]').click();
+  window.DIFF_DEBUG.openSanctumStation("settings");
   const tacticalBinding = document.querySelector('[data-bind-action="tactical"]');
   const defenseBinding = document.querySelector('[data-bind-action="defense"]');
   assert.equal(tacticalBinding.textContent, "E");
@@ -372,14 +374,16 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.equal(savedNetworkLab.networkLoss, 8);
   assert.equal(networkLoss.parentElement.querySelector("output").value, "8");
 
-  document.querySelector('[data-panel="agents"]').click();
+  document.getElementById("menu-close").click();
+  window.DIFF_DEBUG.openSanctumStation("agents");
   assert.equal(app.dataset.panel, "agents");
   assert.equal(
     document.querySelector('[data-menu-panel="agents"]').hidden,
     false,
   );
 
-  document.querySelector('[data-panel="practice"]').click();
+  document.getElementById("menu-close").click();
+  window.DIFF_DEBUG.openSanctumStation("practice");
   assert.match(document.getElementById("practice-menu-reference").textContent, /Stamina.*Elements.*Selected abilities/s);
   document.querySelector('[data-practice-action="start"]').click();
   assert.equal(app.dataset.view, "game");
@@ -467,19 +471,12 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   window.dispatchEvent(escape);
   assert.equal(
     document.getElementById("pause-overlay").classList.contains("hidden"),
-    false,
-  );
-  document.querySelector('#pause-overlay [data-action="resume"]').click();
-  assert.equal(
-    document.getElementById("pause-overlay").classList.contains("hidden"),
     true,
   );
-
+  window.DIFF_DEBUG.openSanctumStation("settings");
   window.dispatchEvent(escape);
-  document.querySelector('#pause-overlay [data-action="menu"]').click();
-  assert.equal(app.dataset.view, "menu");
-  assert.equal(app.dataset.panel, "practice");
-  document.querySelector('[data-panel="settings"]').click();
+  assert.equal(app.classList.contains("station-open"), false);
+  window.DIFF_DEBUG.openSanctumStation("settings");
   document.getElementById("reset-settings").click();
   assert.equal(tacticalBinding.textContent, "E");
   assert.equal(defenseBinding.textContent, "Q");
@@ -492,8 +489,10 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.equal(networkLatency.value, "0");
   assert.equal(networkJitter.value, "0");
   assert.equal(networkLoss.value, "0");
+  document.getElementById("menu-close").click();
 
   for (const modeId of ["duel", "control", "convergence", "survival"]) {
+    window.DIFF_DEBUG.openSanctumStation("home");
     document.querySelector(`[data-launch-mode="${modeId}"]`).click();
     assert.equal(app.dataset.view, "game");
     assert.equal(window.DIFF_DEBUG.getState().modeId, modeId);
@@ -537,10 +536,12 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
 
     window.dispatchEvent(escape);
     document.querySelector('#pause-overlay [data-action="menu"]').click();
-    assert.equal(app.dataset.view, "menu");
+    assert.equal(app.dataset.view, "game");
+    assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "sanctum");
+    assert.equal(window.DIFF_DEBUG.getInterfaceState().suspendedContestKind, "local");
   }
 
-  document.querySelector('[data-panel="agents"]').click();
+  window.DIFF_DEBUG.openSanctumStation("agents");
   document.querySelector('[data-select-agent="rimewing"]').click();
   document.querySelector('[data-launch-mode="duel"]').click();
   assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "rimewing");
@@ -556,7 +557,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   window.dispatchEvent(escape);
   document.querySelector('#pause-overlay [data-action="menu"]').click();
 
-  document.querySelector('[data-panel="agents"]').click();
+  window.DIFF_DEBUG.openSanctumStation("agents");
   document.querySelector('[data-select-agent="ashmaw"]').click();
   document.querySelector('[data-launch-mode="duel"]').click();
   assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "ashmaw");
@@ -572,7 +573,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   window.dispatchEvent(escape);
   document.querySelector('#pause-overlay [data-action="menu"]').click();
 
-  document.querySelector('[data-panel="agents"]').click();
+  window.DIFF_DEBUG.openSanctumStation("agents");
   document.querySelector('[data-select-agent="kite"]').click();
   document.querySelector('[data-launch-mode="duel"]').click();
   assert.equal(window.DIFF_DEBUG.getState().entities[0].characterId, "kite");
@@ -588,14 +589,14 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   window.dispatchEvent(escape);
   document.querySelector('#pause-overlay [data-action="menu"]').click();
 
-  document.querySelector('[data-panel="agents"]').click();
+  window.DIFF_DEBUG.openSanctumStation("agents");
   document.querySelector('[data-select-agent="volt"]').click();
   assert.equal(app.dataset.panel, "play");
   assert.equal(
     document.querySelector('input[name="character"][value="volt"]').checked,
     true,
   );
-  document.querySelector('[data-panel="arenas"]').click();
+  window.DIFF_DEBUG.openSanctumStation("arenas");
   document.querySelector('[data-atlas-scope="fracture"]').click();
   assert.equal(document.getElementById("map-options").dataset.scope, "fracture");
   assert.ok(document.querySelector('input[name="map"][value="ashen_ford"]'));
@@ -612,7 +613,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     /NIM COPPERSPARK · THE OLD CROWN/,
   );
 
-  document.querySelector('[data-panel="play"]').click();
+  window.DIFF_DEBUG.openSanctumStation("play");
   const deployClick = new window.Event("click", {
     bubbles: true,
     cancelable: true,
@@ -653,7 +654,7 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
 
   window.dispatchEvent(escape);
   document.querySelector('#pause-overlay [data-action="menu"]').click();
-  document.querySelector('[data-panel="online"]').click();
+  window.DIFF_DEBUG.openSanctumStation("online");
   document.getElementById("host-lobby").click();
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "remote");
@@ -664,13 +665,12 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   );
   window.dispatchEvent(escape);
   document.querySelector('#pause-overlay [data-action="menu"]').click();
-  assert.equal(app.dataset.view, "menu");
+  assert.equal(app.dataset.view, "game");
   assert.equal(app.dataset.remoteSession, "connected");
-  assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "remote");
+  assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "sanctum");
+  assert.equal(window.DIFF_DEBUG.getInterfaceState().suspendedContestKind, "remote");
   assert.equal(fakeSocket.readyState, FakeWebSocket.OPEN);
   assert.equal(socketMessages.some((message) => message.type === "leave"), false);
-  assert.equal(document.getElementById("menu-close").hidden, false);
-  assert.equal(document.getElementById("sanctum-party").hidden, false);
   for (const panel of [
     "home",
     "practice",
@@ -681,18 +681,21 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
     "guide",
     "settings",
   ]) {
-    document.querySelector(`.nav-item[data-panel="${panel}"]`).click();
+    window.DIFF_DEBUG.openSanctumStation(panel);
     assert.equal(app.dataset.panel, panel);
-    assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "remote");
+    assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "sanctum");
     assert.equal(fakeSocket.readyState, FakeWebSocket.OPEN);
+    document.getElementById("menu-close").click();
   }
-  document.getElementById("menu-close").click();
-  assert.equal(app.dataset.view, "game");
+  window.DIFF_DEBUG.openSanctumStation("home");
+  assert.equal(document.getElementById("sanctum-party").hidden, false);
+  document.querySelector('#sanctum-party [data-action="resume"]').click();
+  assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "remote");
   window.dispatchEvent(escape);
   document.querySelector('#pause-overlay [data-action="menu"]').click();
-  document.querySelector('.nav-item[data-panel="online"]').click();
+  window.DIFF_DEBUG.openSanctumStation("online");
   document.getElementById("leave-lobby").click();
-  assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "none");
+  assert.equal(window.DIFF_DEBUG.getInterfaceState().matchKind, "sanctum");
   assert.equal(app.dataset.remoteSession, "none");
   assert.equal(document.getElementById("sanctum-party").hidden, true);
   assert.equal(socketMessages.filter((message) => message.type === "leave").length, 1);

@@ -135,6 +135,7 @@ const infoToggle = element("info-toggle");
 const hudDetailToggle = element("hud-detail-toggle");
 const practiceTools = element("practice-tools");
 const practiceOverview = element("practice-overview");
+const stationPrompt = element("sanctum-station-prompt");
 const settingsForm = element("settings-form");
 const matchForm = element("match-form");
 const pointer = { x: 0, y: 0, active: false };
@@ -145,10 +146,11 @@ const particles = [];
 const rings = [];
 const trails = new Map();
 const menuGamepadHeld = new Set();
+const sanctumGamepadHeld = new Set();
 
 let settings = loadSettings();
 let bindingCapture = null;
-let menuPanel = "home";
+let menuPanel = "practice";
 let atlasScope = "realm";
 let matchState = createMatch({
   modeId: "sanctum",
@@ -156,6 +158,8 @@ let matchState = createMatch({
   botCount: 0,
 });
 let matchKind = "none";
+let sanctumStationOpen = false;
+let sanctumReturnSession = null;
 let lastLocalOptions = null;
 let lastLocalKind = "local";
 let paused = false;
@@ -194,7 +198,7 @@ let viewport = {
 buildContentInterface();
 syncSettingsForm();
 applySettings();
-showPanel("home");
+startSanctumPractice();
 resize();
 updateInterface();
 const launchParameters = new URLSearchParams(location.search ?? "");
@@ -203,11 +207,11 @@ const linkedServer = launchParameters.get("server");
 const hintedServer = remoteServerFromHint(linkedServer);
 if (hintedServer) element("server-address").value = hintedServer;
 if (linkedLobbyCode) {
-  showPanel("online");
+  openSanctumStation("online");
   element("join-code").value = linkedLobbyCode.toUpperCase();
   window.setTimeout(() => joinLobby(linkedLobbyCode), 0);
 } else if (launchParameters.get("friends") === "1") {
-  showPanel("online");
+  openSanctumStation("online");
   element("lobby-public").checked = false;
   setNetworkMessage("FRIEND HOST · create a private lobby, then send the invite link.");
 }
@@ -246,7 +250,7 @@ practiceTools.addEventListener("click", handlePracticeAction);
 practiceOverview.addEventListener("click", handlePracticeAction);
 pauseOverlay.addEventListener("click", handleOverlayClick);
 matchOverlay.addEventListener("click", handleOverlayClick);
-menuClose.addEventListener("click", resumeGame);
+menuClose.addEventListener("click", closeSanctumStation);
 matchForm.addEventListener("submit", startConfiguredMatch);
 matchForm.addEventListener("change", handleMatchFormChange);
 matchForm.addEventListener("pointerover", previewChampionChoice);
@@ -305,6 +309,7 @@ function runFrame(now) {
   updateNetworkProbes(now);
   flushConditionedNetwork(now);
   updateMenuGamepad();
+  updateSanctumGamepad();
   if (app.dataset.view === "game" && !paused) {
     accumulator += delta;
     let steps = 0;
@@ -332,7 +337,7 @@ function runFrame(now) {
 }
 
 function updateMenuGamepad() {
-  if (app.dataset.view !== "menu") {
+  if (!sanctumStationOpen) {
     menuGamepadHeld.clear();
     return;
   }
@@ -363,9 +368,16 @@ function activateMenuGamepadAction(action) {
   const activeNavigation = document.querySelector(`.nav-item[data-panel="${menuPanel}"]`);
   const focused = document.activeElement;
   if (action === "accept") {
-    (focused?.matches?.("button, input, select, a") ? focused : activeNavigation)?.click();
+    (focused?.matches?.("button, input, select, a")
+      ? focused
+      : document.querySelector(
+        `[data-menu-panel="${menuPanel}"] button, ` +
+        `[data-menu-panel="${menuPanel}"] input, ` +
+        `[data-menu-panel="${menuPanel}"] select`,
+      ))?.click();
     return;
   }
+  if (!activeNavigation) return;
   if (["up", "down"].includes(action)) {
     const navigation = [...document.querySelectorAll(".nav-item")];
     const index = Math.max(0, navigation.indexOf(activeNavigation));
@@ -392,9 +404,25 @@ function handleKeyDown(event) {
     else showPanel("guide");
     return;
   }
-  if (key === "f2" && matchKind === "sanctum" && app.dataset.view === "game") {
+  if (
+    key === "f2" &&
+    matchKind === "sanctum" &&
+    app.dataset.view === "game" &&
+    !sanctumStationOpen
+  ) {
     event.preventDefault();
     togglePracticeOverview();
+    return;
+  }
+  if (
+    !event.repeat &&
+    key === settings.bindings.tactical &&
+    matchKind === "sanctum" &&
+    app.dataset.view === "game" &&
+    !sanctumStationOpen &&
+    tryOpenNearbySanctumStation()
+  ) {
+    event.preventDefault();
     return;
   }
   if (app.dataset.view === "menu" && handleMenuKeyDown(event, key)) return;
@@ -414,9 +442,10 @@ function handleKeyDown(event) {
   }
   if (event.repeat && ["escape", "r", "t"].includes(key)) return;
   if (key === "escape") {
-    if (practiceOverviewOpen) togglePracticeOverview(false);
+    if (sanctumStationOpen) closeSanctumStation();
+    else if (practiceOverviewOpen) togglePracticeOverview(false);
     else if (infoOpen) toggleInfo(false);
-    else if (app.dataset.view === "game") openPause();
+    else if (app.dataset.view === "game" && matchKind !== "sanctum") openPause();
     else if (matchKind !== "none") resumeGame();
     return;
   }
@@ -643,7 +672,7 @@ function handleMenuClick(event) {
   }
   const sanctumAction = event.target.closest("[data-action]")?.dataset.action;
   if (sanctumAction === "resume") {
-    resumeGame();
+    resumeContest();
     return;
   }
   const atlasButton = event.target.closest("[data-atlas-scope]");
@@ -687,6 +716,26 @@ function handleMenuClick(event) {
   }
 }
 
+function updateSanctumGamepad() {
+  if (
+    matchKind !== "sanctum" ||
+    app.dataset.view !== "game" ||
+    sanctumStationOpen
+  ) {
+    sanctumGamepadHeld.clear();
+    return;
+  }
+  const gamepad = navigator.getGamepads?.()[0];
+  const interact = Boolean(gamepad?.buttons?.[2]?.pressed);
+  if (!interact) {
+    sanctumGamepadHeld.delete("interact");
+    return;
+  }
+  if (sanctumGamepadHeld.has("interact")) return;
+  sanctumGamepadHeld.add("interact");
+  tryOpenNearbySanctumStation();
+}
+
 function handlePracticeAction(event) {
   const action = event.target.closest("[data-practice-action]")?.dataset
     .practiceAction;
@@ -701,7 +750,7 @@ function runPracticeAction(action) {
   else if (action === "reset") restartMatch();
   else if (action === "overview") togglePracticeOverview();
   else if (action === "overview-close") togglePracticeOverview(false);
-  else if (action === "sanctum") enterSanctum("practice");
+  else if (action === "sanctum") closeSanctumStation();
 }
 
 function handleBindingClick(event) {
@@ -761,9 +810,9 @@ function handleOverlayClick(event) {
   if (action === "resume") resumeGame();
   else if (action === "restart") restartMatch();
   else if (action === "menu") {
-    enterSanctum(matchKind === "sanctum" ? "practice" : "home");
+    enterSanctum();
   }
-  else if (action === "online") enterSanctum("online");
+  else if (action === "online") enterSanctum();
 }
 
 function showPanel(panel) {
@@ -790,6 +839,77 @@ function showPanel(panel) {
   syncSanctumPresence();
 }
 
+function openSanctumStation(panel) {
+  if (matchKind !== "sanctum" || app.dataset.view !== "game") return false;
+  const station = getMap("living_sanctum").stations?.find(
+    (candidate) => candidate.panel === panel,
+  );
+  if (!station) return false;
+  showPanel(panel);
+  sanctumStationOpen = true;
+  paused = true;
+  app.classList.add("station-open");
+  frontEnd.setAttribute("aria-label", `${station.name} station`);
+  menuClose.hidden = false;
+  menuClose.textContent = "Return to Sanctum";
+  keys.clear();
+  mouseButtons.clear();
+  stationPrompt.hidden = true;
+  const firstControl = document.querySelector(
+    `[data-menu-panel="${panel}"] button, ` +
+    `[data-menu-panel="${panel}"] input, ` +
+    `[data-menu-panel="${panel}"] select`,
+  );
+  firstControl?.focus();
+  return true;
+}
+
+function closeSanctumStation() {
+  if (!sanctumStationOpen) return;
+  sanctumStationOpen = false;
+  paused = false;
+  app.classList.remove("station-open");
+  frontEnd.removeAttribute("aria-label");
+  keys.clear();
+  mouseButtons.clear();
+  frameTime = performance.now();
+  syncSanctumStationPrompt();
+  canvas.focus?.();
+}
+
+function nearestSanctumStation() {
+  if (matchKind !== "sanctum" || app.dataset.view !== "game") return null;
+  const player = localPlayer();
+  if (!player) return null;
+  let nearest = null;
+  let nearestDistance = Number.POSITIVE_INFINITY;
+  for (const station of getMap("living_sanctum").stations ?? []) {
+    const distance = Math.hypot(player.x - station.x, player.y - station.y);
+    if (distance <= station.radius && distance < nearestDistance) {
+      nearest = station;
+      nearestDistance = distance;
+    }
+  }
+  return nearest;
+}
+
+function tryOpenNearbySanctumStation() {
+  const station = nearestSanctumStation();
+  return station ? openSanctumStation(station.panel) : false;
+}
+
+function syncSanctumStationPrompt() {
+  const station =
+    !sanctumStationOpen && !practiceOverviewOpen && !infoOpen
+      ? nearestSanctumStation()
+      : null;
+  stationPrompt.hidden = !station;
+  if (!station) return;
+  element("sanctum-station-glyph").textContent = station.glyph;
+  element("sanctum-station-name").textContent = station.name;
+  element("sanctum-station-key").textContent = keyLabel(settings.bindings.tactical);
+}
+
 function startSanctumPractice(characterId = element("practice-character").value) {
   const champion = getCharacter(characterId || "kite");
   const targetControl = element("practice-target");
@@ -801,27 +921,36 @@ function startSanctumPractice(characterId = element("practice-character").value)
     else option.removeAttribute("selected");
   }
   updatePracticeSelection();
-  startLocal(
-    {
-      modeId: "sanctum",
-      mapId: "living_sanctum",
-      hazardsEnabled: false,
-      botCount: targetEnabled ? 1 : 0,
-      botCharacterIds: ["bulwark"],
-      players: [
-        {
-          id: "p1",
-          name: "PLAYER 1",
-          characterId: champion.id,
-          raceId: champion.homeRaceId,
-          team: "alpha",
-          human: true,
-          localSlot: 0,
-        },
-      ],
-    },
-    { kind: "sanctum" },
-  );
+  const options = {
+    modeId: "sanctum",
+    mapId: "living_sanctum",
+    hazardsEnabled: false,
+    botCount: targetEnabled ? 1 : 0,
+    botCharacterIds: ["bulwark"],
+    players: [
+      {
+        id: "p1",
+        name: "PLAYER 1",
+        characterId: champion.id,
+        raceId: champion.homeRaceId,
+        team: "alpha",
+        human: true,
+        localSlot: 0,
+      },
+    ],
+  };
+  matchState = createMatch(options);
+  lastLocalOptions = structuredClone(options);
+  lastLocalKind = "sanctum";
+  matchKind = "sanctum";
+  paused = false;
+  remoteEntityId = null;
+  pendingInputs = [];
+  lastProcessedTick = -1;
+  clearEffects();
+  enterGame();
+  ensureAudio();
+  toast(`${champion.name} enters the Living Sanctum.`);
 }
 
 function cyclePracticeCharacter(direction) {
@@ -950,6 +1079,7 @@ function startConfiguredMatch(event) {
 
 function startLocal(options, { kind = "local" } = {}) {
   leaveRemote();
+  sanctumReturnSession = null;
   matchState = createMatch(options);
   lastLocalOptions = structuredClone(options);
   lastLocalKind = kind;
@@ -966,6 +1096,8 @@ function startLocal(options, { kind = "local" } = {}) {
 
 function enterGame() {
   app.dataset.view = "game";
+  sanctumStationOpen = false;
+  app.classList.remove("station-open");
   app.classList.toggle("sanctum-practice", matchKind === "sanctum");
   practiceTools.hidden = matchKind !== "sanctum";
   if (matchKind === "sanctum") {
@@ -978,7 +1110,7 @@ function enterGame() {
   toggleInfo(false);
   pauseOverlay.classList.add("hidden");
   matchOverlay.classList.add("hidden");
-  menuClose.hidden = false;
+  menuClose.hidden = true;
   keys.clear();
   mouseButtons.clear();
   accumulator = 0;
@@ -1015,11 +1147,37 @@ function resumeGame() {
   app.dataset.view = "game";
   paused = false;
   pauseOverlay.classList.add("hidden");
-  menuClose.hidden = false;
+  menuClose.hidden = true;
   frameTime = performance.now();
 }
 
+function resumeContest() {
+  if (!sanctumReturnSession) {
+    closeSanctumStation();
+    return;
+  }
+  const returning = sanctumReturnSession;
+  sanctumReturnSession = null;
+  matchState = returning.state;
+  matchKind = returning.kind;
+  lastLocalOptions = returning.lastLocalOptions;
+  lastLocalKind = returning.lastLocalKind;
+  remoteEntityId = returning.remoteEntityId;
+  lastProcessedTick = matchState.tick - 1;
+  clearEffects();
+  enterGame();
+  toast(
+    matchKind === "remote"
+      ? "Returned to the remote contest."
+      : "Returned to the local contest.",
+  );
+}
+
 async function restartMatch() {
+  if (matchKind === "sanctum") {
+    startSanctumPractice(localPlayer()?.characterId ?? "kite");
+    return;
+  }
   if (matchKind === "remote") {
     if (!socket || socket.readyState !== WebSocket.OPEN) {
       toast("Connection is not ready.", "error");
@@ -1033,23 +1191,30 @@ async function restartMatch() {
   if (lastLocalOptions) startLocal(lastLocalOptions, { kind: lastLocalKind });
 }
 
-function enterSanctum(panel = "home", { disconnect = false } = {}) {
+function enterSanctum(_panel = "home", { disconnect = false } = {}) {
   if (disconnect) {
     matchKind = "none";
     leaveRemote();
+    sanctumReturnSession = null;
+  } else if (matchKind !== "none" && matchKind !== "sanctum") {
+    sanctumReturnSession = {
+      kind: matchKind,
+      state: matchState,
+      lastLocalOptions,
+      lastLocalKind,
+      remoteEntityId,
+    };
   }
-  paused = matchKind === "local";
-  app.dataset.view = "menu";
-  app.classList.remove("sanctum-practice");
-  practiceTools.hidden = true;
+  const priorCharacter = localPlayer()?.characterId ?? "kite";
   togglePracticeOverview(false);
   toggleInfo(false);
   pauseOverlay.classList.add("hidden");
   matchOverlay.classList.add("hidden");
   keys.clear();
   mouseButtons.clear();
-  showPanel(panel);
+  startSanctumPractice(priorCharacter);
   syncSanctumPresence();
+  toast("Entered the Living Sanctum · walk to a marked station.");
 }
 
 function handleMatchFormChange(event) {
@@ -1266,6 +1431,7 @@ function updateInterface() {
   updateAbilities();
   updateCoach(mode);
   updateInfoOverlay(mode, map);
+  syncSanctumStationPrompt();
 
   const matchOver = matchState.status === "match-over";
   element("rematch").disabled =
@@ -1844,6 +2010,7 @@ function render(time) {
     drawElementFields(time);
     drawHazards(time);
     drawObstacles(map);
+    drawSanctumStations(map, time);
     drawMines(time);
     drawTrails();
     drawProjectiles();
@@ -2046,6 +2213,51 @@ function drawLandmarks(map) {
         landmark.type === "rune" ? landmark.x : landmark.x + landmark.width / 2,
         landmark.type === "rune" ? landmark.y : landmark.y + landmark.height / 2,
       );
+    } finally {
+      context.restore();
+    }
+  }
+}
+
+function drawSanctumStations(map, time) {
+  if (map.id !== "living_sanctum") return;
+  const nearby = nearestSanctumStation();
+  for (const station of map.stations ?? []) {
+    const active = nearby?.id === station.id && !sanctumStationOpen;
+    const pulse = settings.reducedMotion
+      ? 0
+      : Math.sin(time * 3.2 + station.x * 0.01) * 3;
+    context.save();
+    try {
+      context.translate(station.x, station.y);
+      context.fillStyle = active ? "#d7bc7038" : "#17120bcc";
+      context.strokeStyle = active ? "#fff0a4" : "#9b8148";
+      context.lineWidth = settings.highContrast ? 5 : active ? 4 : 2;
+      context.beginPath();
+      context.arc(0, 0, 38 + pulse, 0, Math.PI * 2);
+      context.fill();
+      context.stroke();
+      context.rotate(Math.PI / 4);
+      context.strokeStyle = active ? "#fff0a4" : "#6f5a31";
+      context.strokeRect(-27, -27, 54, 54);
+      context.rotate(-Math.PI / 4);
+      context.fillStyle = active ? "#fff3c4" : "#d7bc70";
+      context.font = "800 24px Georgia, serif";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(station.glyph, 0, -1);
+      context.fillStyle = active ? "#fff3c4" : "#cbb77c";
+      context.font = "800 11px Georgia, serif";
+      context.fillText(station.name, 0, 58);
+      if (active) {
+        context.fillStyle = "#fff3c4";
+        context.font = "800 10px ui-monospace, monospace";
+        context.fillText(
+          `${keyLabel(settings.bindings.tactical)} · INTERACT`,
+          0,
+          74,
+        );
+      }
     } finally {
       context.restore();
     }
@@ -3205,6 +3417,7 @@ async function reconnectLastSession() {
 }
 
 function beginRemote(result) {
+  sanctumReturnSession = null;
   matchKind = "remote";
   lastLocalOptions = null;
   remoteEntityId = result.entityId;
@@ -3341,7 +3554,7 @@ async function connectNetwork(base) {
     });
     connection.addEventListener("close", () => {
       if (socket !== connection) return;
-      const wasRemote = matchKind === "remote";
+      const wasRemote = hasRemoteContest();
       socket = null;
       clientId = null;
       setServerStatus(
@@ -3354,7 +3567,7 @@ async function connectNetwork(base) {
         pending.reject(new Error("Connection closed."));
       }
       requestResolvers.clear();
-      if (wasRemote) {
+      if (wasRemote && matchKind === "remote") {
         paused = true;
         pauseOverlay.classList.remove("hidden");
         element("pause-title").textContent = remoteServerShutdown
@@ -3363,6 +3576,14 @@ async function connectNetwork(base) {
         element("pause-copy").textContent = remoteServerShutdown
           ? "The host shut down, so this contest has ended. Return to Friends in the Sanctum to begin another."
           : "Your place is reserved for 30 seconds. Open Friends in the Sanctum and reconnect the last session.";
+      } else if (wasRemote && sanctumReturnSession?.kind === "remote") {
+        sanctumReturnSession = null;
+        toast(
+          remoteServerShutdown
+            ? "REMOTE CONTEST ENDED · SANCTUM REMAINS OPEN"
+            : "REMOTE CONNECTION LOST · USE THE FRIENDS HEARTH TO RECONNECT",
+          "error",
+        );
       }
       syncSanctumPresence();
     });
@@ -3377,7 +3598,7 @@ function handleSocketMessage(event) {
     return;
   }
   if (
-    message.type === "snapshot" && matchKind === "remote" &&
+    message.type === "snapshot" && hasRemoteContest() &&
     networkLabActive(networkLabConfig())
   ) {
     const now = performance.now();
@@ -3408,7 +3629,7 @@ function deliverSocketMessage(message) {
     }
     return;
   }
-  if (message.type === "snapshot" && matchKind === "remote") {
+  if (message.type === "snapshot" && hasRemoteContest()) {
     acceptRemoteSnapshot(message);
     return;
   }
@@ -3426,6 +3647,9 @@ function deliverSocketMessage(message) {
       element("pause-title").textContent = "Host realm closed";
       element("pause-copy").textContent =
         "The host shut down, so this contest has ended. Return to Friends in the Sanctum to begin another.";
+    } else if (sanctumReturnSession?.kind === "remote") {
+      sanctumReturnSession = null;
+      syncSanctumPresence();
     }
     toast("AUTHORITATIVE HOST CLOSED · MATCH ENDED", "error");
     return;
@@ -3455,19 +3679,24 @@ function acceptRemoteSnapshot(message) {
   remoteHostId = message.lobby.hostId;
   remoteEntityId = message.entityId;
   syncSanctumPresence();
-  pendingInputs = pendingInputs.filter(
-    (pending) => pending.sequence > message.acknowledgedSequence,
-  );
-  for (const pending of pendingInputs) {
-    stepMatch(
-      authoritative,
-      { [remoteEntityId]: pending.command },
-      FIXED_DELTA,
+  if (matchKind === "remote") {
+    pendingInputs = pendingInputs.filter(
+      (pending) => pending.sequence > message.acknowledgedSequence,
     );
+    for (const pending of pendingInputs) {
+      stepMatch(
+        authoritative,
+        { [remoteEntityId]: pending.command },
+        FIXED_DELTA,
+      );
+    }
+    matchState = authoritative;
+    processEvents(message.state.events ?? [], message.serverTick);
+  } else if (sanctumReturnSession?.kind === "remote") {
+    sanctumReturnSession.state = authoritative;
+    sanctumReturnSession.remoteEntityId = message.entityId;
   }
-  matchState = authoritative;
   lastSnapshotAt = performance.now();
-  processEvents(message.state.events ?? [], message.serverTick);
 }
 
 function sendRequest(type, payload = {}) {
@@ -3510,8 +3739,12 @@ function sendNetworkProbe(now) {
   socket.send(JSON.stringify({ type: "probe", sequence }));
 }
 
+function hasRemoteContest() {
+  return matchKind === "remote" || sanctumReturnSession?.kind === "remote";
+}
+
 function leaveRemote(forgetSession = true) {
-  if (socket && socket.readyState === WebSocket.OPEN && matchKind === "remote") {
+  if (socket && socket.readyState === WebSocket.OPEN && hasRemoteContest()) {
     socket.send(JSON.stringify({ type: "leave" }));
   }
   if (socket) {
@@ -3531,45 +3764,61 @@ function leaveRemote(forgetSession = true) {
   lastAuthoritativeTick = -1;
   networkDiagnostics = createNetworkDiagnostics();
   app.dataset.spectating = "false";
+  if (sanctumReturnSession?.kind === "remote") sanctumReturnSession = null;
   if (forgetSession) clearReconnectSession();
   else refreshReconnectButton();
   syncSanctumPresence();
 }
 
 function leaveRemoteCompany() {
-  if (matchKind !== "remote" && !socket) return;
+  if (!hasRemoteContest() && !socket) return;
+  const remainInSanctum = matchKind === "sanctum";
   leaveRemote();
-  matchKind = "none";
+  if (!remainInSanctum) {
+    matchKind = "none";
+  }
   paused = false;
   setNetworkMessage(
     "Remote company left. The Sanctum remains available.",
     "success",
   );
   setServerStatus("ready", "SANCTUM READY");
-  showPanel("online");
+  if (remainInSanctum) showPanel("online");
   toast("REMOTE COMPANY LEFT");
 }
 
 function syncSanctumPresence() {
-  const remoteSession = matchKind === "remote";
+  const remoteSession = hasRemoteContest();
+  const returnSession =
+    matchKind === "sanctum" && Boolean(sanctumReturnSession);
   const connected =
     remoteSession &&
     Boolean(remoteLobby) &&
     socket?.readyState === WebSocket.OPEN;
-  const resumable = matchKind === "local" || connected;
+  const resumable = returnSession &&
+    (sanctumReturnSession.kind === "local" || connected);
   app.dataset.remoteSession = connected
     ? "connected"
     : remoteSession
       ? "interrupted"
       : "none";
-  menuClose.hidden = app.dataset.view !== "menu" || !resumable;
-  menuClose.textContent =
-    matchKind === "remote" ? "Return to remote contest" : "Return to contest";
+  menuClose.hidden = !sanctumStationOpen;
+  menuClose.textContent = "Return to Sanctum";
 
   const party = element("sanctum-party");
-  party.hidden = !remoteSession;
+  party.hidden = !returnSession;
   element("leave-lobby").hidden = !remoteSession;
-  if (!remoteSession) return;
+  if (!returnSession) return;
+
+  if (sanctumReturnSession.kind === "local") {
+    element("sanctum-party-name").textContent = "LOCAL CONTEST HELD";
+    element("sanctum-party-detail").textContent =
+      "The contest is paused while you use the Sanctum stations.";
+    party.querySelector('[data-action="resume"]').hidden = false;
+    party.querySelector('[data-action="resume"]').textContent =
+      "Return to local contest →";
+    return;
+  }
 
   const lobbyName = remoteLobby?.name ?? "REMOTE COMPANY";
   const lobbyCode = remoteLobby?.code ? ` · ${remoteLobby.code}` : "";
@@ -3580,7 +3829,11 @@ function syncSanctumPresence() {
   element("sanctum-party-detail").textContent = connected
     ? `${playerCount.replace(/^ · /, "") || "Connected"} · friends remain connected in every Sanctum chamber.`
     : "Connection interrupted · your place may still be recoverable from Friends.";
-  party.querySelector('[data-action="resume"]').hidden = !connected;
+  party.querySelector('[data-action="resume"]').hidden = !resumable;
+  party.querySelector('[data-action="resume"]').textContent =
+    sanctumReturnSession?.kind === "remote"
+      ? "Return to remote contest →"
+      : "Return to local contest →";
 }
 
 function writeReconnectSession(session) {
@@ -3891,10 +4144,14 @@ window.FLUX_DEBUG = Object.freeze({
     infoOpen,
     menuPanel,
     matchKind,
+    sanctumStationOpen,
+    nearestSanctumStationId: nearestSanctumStation()?.id ?? null,
+    suspendedContestKind: sanctumReturnSession?.kind ?? null,
     view: app.dataset.view,
   }),
   launchMode,
   activateMenuGamepadAction,
+  openSanctumStation,
   quickStart,
   showPanel,
   toggleInfo,

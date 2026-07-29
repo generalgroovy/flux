@@ -1088,6 +1088,16 @@ export const SANCTUM_PRACTICE_MAP = Object.freeze({
     { type: "court", x: 500, y: 558, width: 600, height: 250, label: "SPELL COURT" },
     { type: "rune", x: 800, y: 450, radius: 115, label: "MIRROR WARD" },
   ],
+  stations: [
+    { id: "training", panel: "practice", name: "TRAINING COURT", glyph: "△", x: 250, y: 450, radius: 76 },
+    { id: "champions", panel: "agents", name: "CHAMPION GALLERY", glyph: "♙", x: 250, y: 190, radius: 76 },
+    { id: "realm", panel: "arenas", name: "REALM ARCHIVE", glyph: "⌁", x: 250, y: 710, radius: 76 },
+    { id: "muster", panel: "play", name: "MUSTER HALL", glyph: "⚔", x: 800, y: 160, radius: 76 },
+    { id: "guide", panel: "guide", name: "FIELD GUIDE", glyph: "✦", x: 800, y: 740, radius: 76 },
+    { id: "rites", panel: "home", name: "RITE GATE", glyph: "◇", x: 1350, y: 190, radius: 76 },
+    { id: "friends", panel: "online", name: "FRIENDS HEARTH", glyph: "∞", x: 1200, y: 450, radius: 76 },
+    { id: "settings", panel: "settings", name: "SETTINGS FORGE", glyph: "⚙", x: 1350, y: 710, radius: 76 },
+  ],
   objective: { x: 800, y: 450, radius: 115 },
   wildmarch: { routes: [] },
 });

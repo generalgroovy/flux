@@ -19,11 +19,12 @@ successors pass complete visual and later mechanical promotion checks; never
 present them as overhaul-roster additions.
 
 The user's direct Sanctum request authorized one integrated V4/playability slice
-ahead of the normal order: obsolete HEX/operations presentation is removed,
-every existing menu route lives in the Living Sanctum, remote company persists
-while players browse those routes, and the game starts against the real
-Sanctum practice map. The Practice chamber exposes the complete currently
-implemented universal Stamina grammar, a stationary target, immediate champion switching,
+ahead of the normal order: obsolete HEX/operations presentation and the
+separate startup menu are removed, players spawn directly on the real Living
+Sanctum floor, and eight proximity-gated stations own every existing option
+route. Entering from a contest preserves its resumable local state or connected
+remote company. The Training Court exposes the complete currently implemented
+universal Stamina grammar, a stationary target, immediate champion switching,
 refill/reset controls, and a toggleable field guide. Double jump, slide jump,
 air redirect, air dodge, wavedash, marked vault, and superglide are complete;
 all competitive arenas own a validated vault route. Muster uses compact ancestry
@@ -64,8 +65,9 @@ raw LLM history, final state, and replayable patch for completeness.
    but repeated live probes exposed intermittent `trycloudflare.com` DNS
    publication failures. Treat it as a development fallback; select and deploy
    an owned authenticated relay before release.
-3. Hands-on accept FLUX 0.34.2 on Garuda Sway and Windows: navigate the main
-   menu with pointer, keyboard arrows, Tab, Enter, and a gamepad; require the
+3. Hands-on accept FLUX 0.34.3 on Garuda Sway and Windows: traverse all eight
+   Sanctum stations with keyboard and gamepad, open them through contextual
+   interaction, close them to the same floor position, and require the
    desktop window to cover the active display and re-enter fullscreen if the
    window manager leaves it, every
    play choice to react visibly, focus to remain obvious, and all decision and

@@ -168,6 +168,17 @@ test("the Living Sanctum resolves outside competitive catalogs and supports boun
   assert.equal(getMode("sanctum").name, "SANCTUM PRACTICE");
   assert.equal(MAPS.some((map) => map.id === "living_sanctum"), false);
   assert.equal(MODES.some((mode) => mode.id === "sanctum"), false);
+  const stations = getMap("living_sanctum").stations;
+  assert.deepEqual(
+    stations.map((station) => station.panel).sort(),
+    ["agents", "arenas", "guide", "home", "online", "play", "practice", "settings"],
+  );
+  assert.equal(new Set(stations.map((station) => station.id)).size, 8);
+  assert.ok(stations.every((station) =>
+    station.x >= 44 && station.x <= 1556 &&
+    station.y >= 44 && station.y <= 856 &&
+    station.radius >= 60 && station.radius <= 100
+  ));
 
   const state = createMatch({
     modeId: "sanctum",

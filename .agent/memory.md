@@ -1953,3 +1953,24 @@
 - **Gate boundary:** This is the user's second bounded V4 foundation request.
   V1 remains active; the change introduces no champion, affinity, ability,
   balance, networking, or simulation behavior.
+
+# 2026-07-29 — Overhaul-first README
+
+- **Documentation correction:** Replaced the compatibility-build changelog as
+  the README's organizing frame. The document now describes the overhaul
+  product first: movement, resources, ability/loadout grammar, expanded element
+  vision and reactions, twenty ancestry templates, the twenty-three named
+  champions plus temporary Angel slot, Sanctum, maps/modes, visual direction,
+  delivery gates, and cross-platform workflow.
+- **Truth boundary:** The README explicitly distinguishes intended overhaul
+  behavior from the inactive eight-family/sixteen-character data prototype and
+  the ten-character compatibility runtime. It does not claim that future
+  characters, Spirit/Chaos/Gravity/Time, the full movement grammar, or 32-player
+  scale are currently playable.
+- **Legacy handling:** Old champion names appear only in a clearly marked
+  mechanical-transfer ledger. Haara is the target name; the existing headless
+  prototype's legacy `Hara` label and stable `mara` ID are disclosed as an
+  implementation migration still to complete.
+- **Verification:** `npm.cmd test` passed 129/129 across 127 standard checks,
+  one live WebSocket lifecycle, and one authenticated cleanup check;
+  `git diff --check` passed before the run.

@@ -11,5 +11,7 @@ coverage, run focused checks and the full test suite, inspect the diff, repair
 regressions, and update memory/backlog/state with real results and the next task.
 
 Do not modify main, force-push, rewrite history, access credentials, change
-remotes, publish releases, or touch unrelated user data. Do not merely plan.
-Leave the worktree ready for review and commit by the supervisor.
+remotes, access remote APIs/websites, download or install anything, push,
+publish releases, or touch unrelated user data. Use only this checkout,
+already-installed tools, and loopback Ollama. Do not merely plan. Leave the
+worktree ready for the supervisor's verification and local commit.

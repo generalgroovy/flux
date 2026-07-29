@@ -4,7 +4,7 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("local-agent handoff is portable and safe by default", async () => {
+test("local-agent handoff is portable, autonomous, and local-model only", async () => {
   const [config, handoff, prompt, common, launcher, setup, odysseus, state] = await Promise.all([
     read(".aider.conf.yml"),
     read(".agent/HANDOFF.md"),
@@ -20,13 +20,21 @@ test("local-agent handoff is portable and safe by default", async () => {
   assert.doesNotMatch(trackedHandoff, /\/home\/otp\/Projects\/flux/);
   assert.doesNotMatch(trackedHandoff, /agent\/prototype-loop/);
   assert.doesNotMatch(trackedHandoff, /qwen2\.5-coder:7b-instruct/);
-  assert.match(config, /^auto-commits: false$/m);
-  assert.match(config, /^yes-always: false$/m);
+  assert.match(config, /^auto-commits: true$/m);
+  assert.match(config, /^yes-always: true$/m);
+  assert.match(config, /^analytics-disable: true$/m);
+  assert.match(config, /^check-update: false$/m);
   assert.match(common, /main \| master \| develop/);
-  assert.match(launcher, /commit_changes=false/);
-  assert.match(launcher, /push_changes=false/);
+  assert.match(common, /Only a loopback Ollama endpoint is allowed/);
+  assert.match(common, /GIT_ALLOW_PROTOCOL=file/);
+  assert.match(common, /npm_config_offline=true/);
+  assert.match(launcher, /commit_changes=true/);
+  assert.match(launcher, /--yes-always/);
+  assert.match(launcher, /--auto-commits/);
+  assert.doesNotMatch(launcher, /git push/);
   assert.match(setup, /install=false/);
   assert.match(setup, /--install/);
+  assert.match(setup, /--noconfirm/);
   assert.match(odysseus, /wl-copy/);
   assert.doesNotMatch(odysseus, /git push/);
 });

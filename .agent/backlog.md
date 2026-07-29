@@ -11,8 +11,9 @@ clarity using only broad lessons from Enter the Gungeon—not copied content.
 
 Local-agent handoff is configured for Garuda Sway with Ollama,
 Qwen2.5-Coder 3B/7B, Aider, and optional Odysseus. Target-machine acceptance
-must run the read-only doctor, one uncommitted bounded pass, the actual suite,
-and a game smoke; commits and pushes remain separate explicit options.
+must run the read-only doctor, one autonomous local-commit pass, one interactive
+follow-up, the actual suite, and a game smoke while observing zero remote
+runtime requests.
 
 ## Release acceptance
 

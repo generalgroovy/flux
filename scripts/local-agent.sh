@@ -25,12 +25,11 @@ Options:
   --iterations N          Maximum run iterations (default: 1, maximum: 20).
   --timeout DURATION      Per-iteration GNU timeout value (default: 30m).
   --task FILE             Task prompt (default: .agent/odysseus-task.md).
-  --commit                Commit a verified run result (off by default).
-  --push                  Push that commit; implies --commit (off by default).
+  --no-commit             Leave a bounded run uncommitted (commits by default).
   -h, --help              Show this help.
 
-The loop refuses main/master/develop, detached HEAD, dirty trees, concurrent
-FLUX agents, failed tests, and implicit commits or pushes.
+The runtime auto-approves local tools and shell commands, uses only loopback
+Ollama, and never pushes. It remains interactive in chat mode.
 EOF
 }
 
@@ -46,8 +45,7 @@ model_request="${FLUX_AGENT_MODEL:-auto}"
 iterations="${FLUX_AGENT_ITERATIONS:-1}"
 iteration_timeout="${FLUX_AGENT_TIMEOUT:-30m}"
 task_file="${FLUX_AGENT_TASK:-.agent/odysseus-task.md}"
-commit_changes=false
-push_changes=false
+commit_changes=true
 aider_options=()
 
 while [[ $# -gt 0 ]]; do
@@ -72,11 +70,7 @@ while [[ $# -gt 0 ]]; do
       task_file="$2"
       shift
       ;;
-    --commit) commit_changes=true ;;
-    --push)
-      push_changes=true
-      commit_changes=true
-      ;;
+    --no-commit) commit_changes=false ;;
     -h | --help)
       usage
       exit 0
@@ -95,7 +89,7 @@ cd -- "${repo_dir}"
 flux_agent_require_repo "${repo_dir}"
 model_tag="$(flux_agent_model_tag "${model_request}")"
 aider_model="ollama_chat/${model_tag}"
-export OLLAMA_API_BASE="${FLUX_OLLAMA_URL:-${OLLAMA_API_BASE:-http://127.0.0.1:11434}}"
+flux_agent_enable_local_runtime
 
 doctor() {
   local failed=0
@@ -166,12 +160,15 @@ flock --nonblock 9 || flux_agent_fail 'Another FLUX local agent holds .agent/age
 
 common_aider_options=(
   --model "${aider_model}"
-  --no-auto-commits
   --no-dirty-commits
   --no-attribute-author
   --no-attribute-committer
   --auto-test
   --test-cmd "npm test"
+  --yes-always
+  --analytics-disable
+  --no-check-update
+  --disable-playwright
   --read AGENTS.md
   --read README.md
   --read .agent/HANDOFF.md
@@ -181,8 +178,9 @@ common_aider_options=(
 )
 
 if [[ "${command_name}" == chat ]]; then
-  printf 'Starting interactive FLUX Aider with %s. Ctrl+C exits.\n' "${model_tag}"
-  exec "${aider_command}" "${common_aider_options[@]}" "${aider_options[@]}"
+  printf 'Starting full-access interactive FLUX Aider with %s. Ctrl+C exits.\n' "${model_tag}"
+  printf 'Local runtime: loopback Ollama only; confirmations and telemetry are disabled.\n'
+  exec "${aider_command}" "${common_aider_options[@]}" --auto-commits "${aider_options[@]}"
 fi
 
 [[ "${iterations}" =~ ^[0-9]+$ ]] || flux_agent_fail '--iterations must be an integer.'
@@ -191,7 +189,7 @@ command -v systemd-inhibit >/dev/null 2>&1 && inhibit_prefix=(systemd-inhibit --
 
 rm -f -- .agent/STOP
 printf 'Starting %d bounded FLUX iteration(s) with %s.\n' "${iterations}" "${model_tag}"
-printf 'Commits: %s; push: %s. Use Ctrl+C or scripts/local-agent.sh stop.\n' "${commit_changes}" "${push_changes}"
+printf 'Local commits: %s; network/push: disabled. Use Ctrl+C or scripts/local-agent.sh stop.\n' "${commit_changes}"
 
 for (( iteration = 1; iteration <= iterations; iteration += 1 )); do
   [[ ! -e .agent/STOP ]] || break
@@ -201,7 +199,7 @@ for (( iteration = 1; iteration <= iterations; iteration += 1 )); do
   "${inhibit_prefix[@]}" timeout --signal=TERM --kill-after=2m "${iteration_timeout}" \
     "${aider_command}" \
       "${common_aider_options[@]}" \
-      --yes-always \
+      --no-auto-commits \
       --message-file "${task_file}" \
       "${aider_options[@]}"
   agent_status=$?
@@ -209,7 +207,7 @@ for (( iteration = 1; iteration <= iterations; iteration += 1 )); do
 
   if (( agent_status != 0 )); then
     flux_agent_notify critical 'FLUX local agent stopped' "Iteration ${iteration} exited ${agent_status}; review the worktree."
-    flux_agent_fail "Iteration ${iteration} exited ${agent_status}; changes were not committed or pushed."
+    flux_agent_fail "Iteration ${iteration} exited ${agent_status}; changes were not committed."
   fi
 
   if [[ -z "$(git status --porcelain)" ]]; then
@@ -225,11 +223,7 @@ for (( iteration = 1; iteration <= iterations; iteration += 1 )); do
 
   if [[ "${commit_changes}" == true ]]; then
     git add -A
-    git commit -m "Continue FLUX local-agent iteration ${iteration}"
-    if [[ "${push_changes}" == true ]]; then
-      active_branch="$(git branch --show-current)"
-      git push origin "${active_branch}"
-    fi
+    git -c commit.gpgsign=false commit -m "Continue FLUX local-agent iteration ${iteration}"
   else
     printf '[FLUX] verified changes remain uncommitted for human review; stopping.\n'
     break

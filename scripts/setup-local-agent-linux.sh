@@ -85,7 +85,7 @@ if [[ "${install}" == true ]]; then
   esac
 
   printf 'Installing Garuda/Arch prerequisites: %s\n' "${packages[*]}"
-  sudo pacman -S --needed "${packages[@]}"
+  sudo pacman -S --needed --noconfirm "${packages[@]}"
 
   mkdir -p -- "${tools_root}"
   if [[ ! -x "${managed_aider}" ]]; then

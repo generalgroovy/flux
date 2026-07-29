@@ -434,7 +434,7 @@ npm run stop
 Garuda Sway can run a fully local FLUX coding handoff with Ollama,
 Qwen2.5-Coder 3B/7B, and Aider. Odysseus may provide the workspace UI and
 scheduler, but uses the same tracked prompt, state, branch guard, lock, and test
-gate. Setup is explicit; agent commits and pushes are off by default.
+gate. Setup is the only networked phase; normal agent runtime is local-only.
 
 Diagnose or install the local stack:
 
@@ -452,9 +452,11 @@ bash scripts/prepare-odysseus-handoff.sh --clipboard
 ```
 
 The runner refuses `main`, `master`, `develop`, detached HEAD, dirty trees, and
-concurrent FLUX agents. A run must be given `--commit` before it commits and
-`--push` before it pushes. Stop it with `bash scripts/local-agent.sh stop` or
-`Ctrl+C`. The complete setup, model sizing, Odysseus handoff, and review flow is
+concurrent FLUX agents. It auto-approves local tools, tests and commits without
+confirmation, remains open for interactive follow-ups, and never pushes. Use
+`--no-commit` when a bounded run should leave a reviewable diff. Stop it with
+`bash scripts/local-agent.sh stop` or `Ctrl+C`. The complete setup, model sizing,
+Odysseus handoff, and review flow is
 documented in [`.agent/LOCAL-MODEL-HANDOFF.md`](.agent/LOCAL-MODEL-HANDOFF.md).
 
 Server records include the checkout root and a per-process instance token, so

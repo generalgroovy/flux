@@ -1680,3 +1680,26 @@
   notifications require execution on the target Linux machine and remain
   unverified here; this tooling-only slice did not change or interactively
   playtest game behavior.
+
+# 2026-07-29 — Autonomous local-only agent runtime
+
+- **Direction:** Made both interactive and bounded Qwen sessions operate without
+  tool confirmations while preserving branch, clean-tree, concurrency, and
+  deterministic verification gates.
+- **Interactive behavior:** Aider stays open for follow-up prompts, auto-approves
+  local shell/file actions, runs `npm test` after edits, and makes local commits.
+  Bounded runs now also commit verified work by default; `--no-commit` retains a
+  review diff, and no runtime path exposes push.
+- **Local resources:** Runtime accepts only a loopback Ollama URL and disables
+  Aider telemetry/update checks/URL ingestion, Playwright downloads, npm online
+  resolution, Git network protocols, and standard HTTP(S)/SOCKS egress while
+  preserving loopback for inference and local network tests.
+- **Scope boundary:** Setup remains the explicit networked package/model phase.
+  Full unsandboxed user-shell access can deliberately override environment
+  restrictions, so the prompt forbids remote access and the documentation names
+  this limitation instead of claiming kernel-level isolation.
+- **Verification:** The focused handoff suite passed 2/2, Git for Windows Bash
+  parsed every shell launcher, explicit model/loopback selection accepted local
+  endpoints and rejected a remote endpoint, `git diff --check` passed, and the
+  complete Windows suite passed 121/121 both normally and from the configured
+  proxy-denied/npm-offline local runtime environment.

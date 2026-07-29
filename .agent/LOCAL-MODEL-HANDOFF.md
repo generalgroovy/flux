@@ -8,7 +8,7 @@
 | Model | Qwen2.5-Coder 3B or 7B | Code reading, editing, diagnosis, and test repair |
 | Code agent | Aider | Git-aware repository map, edits, shell suggestions, and tests |
 | Workspace | Odysseus (optional) | UI, sessions, scheduling, prompt/state handoff |
-| Guardrail | `scripts/local-agent.sh` | Branch/tree checks, shared lock, bounded run, verification |
+| Guardrail | `scripts/local-agent.sh` | Full local access, shared lock, verification, local commits |
 
 The repository does not install or vendor Odysseus. Its current upstream is a
 self-hosted application with shell/file tools, so it should remain private and
@@ -56,14 +56,26 @@ For one unattended but bounded pass:
 bash scripts/local-agent.sh run --model 7b --iterations 1
 ```
 
-That command edits and tests but intentionally leaves the result uncommitted.
-After human review, either commit normally or explicitly allow a future run to
-commit; pushing is a separate choice:
+That command autonomously edits, runs the complete suite, and creates a local
+commit without confirmation. To keep the verified diff uncommitted instead:
 
 ```bash
-bash scripts/local-agent.sh run --model 7b --iterations 1 --commit
-bash scripts/local-agent.sh run --model 7b --iterations 1 --push
+bash scripts/local-agent.sh run --model 7b --iterations 1 --no-commit
 ```
+
+Interactive chat also auto-approves shell/file actions, tests edits, and makes
+local commits while remaining open for follow-up prompts. Agent runtime accepts
+only loopback Ollama and disables telemetry, update checks, URL ingestion,
+package downloads, and Git network protocols. It never pushes; setup is the
+only phase permitted to download packages and models.
+
+Full access means the agent runs with the normal Linux user's unsandboxed file
+and process permissions. The launcher hard-rejects a non-loopback model API and
+disables normal HTTP proxies, Git network protocols, package downloads,
+telemetry, URL loading, and update checks. An unsandboxed shell can technically
+override environment policy, so do not give it untrusted repositories or
+prompts; kernel-level egress isolation would require a separately administered
+network namespace/firewall and conflicts with reaching a host Ollama service.
 
 Stop a running loop from another terminal with:
 

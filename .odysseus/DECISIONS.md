@@ -12,5 +12,7 @@
   authenticated workspace using the same prompt, task, state, and shell gate.
 - Interactive and bounded agents share `.agent/agent.lock` so they cannot edit
   concurrently.
-- Interactive edits, bounded runs, commits, and pushes are distinct choices.
-  Bounded runs default to one iteration and leave verified changes uncommitted.
+- Interactive and bounded agents auto-approve local tool actions and create
+  local commits after verification. `--no-commit` retains a bounded diff.
+- Runtime accepts only loopback Ollama and disables telemetry, update checks,
+  URL ingestion, dependency downloads, Git network protocols, and push.

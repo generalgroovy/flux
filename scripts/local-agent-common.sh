@@ -104,14 +104,16 @@ flux_agent_require_safe_tree() {
 }
 
 flux_agent_ollama_ready() {
-  local api_base="${FLUX_OLLAMA_URL:-${OLLAMA_API_BASE:-http://127.0.0.1:11434}}"
+  local api_base
+  api_base="$(flux_agent_ollama_api_base)"
   curl --silent --show-error --fail --max-time 2 \
     "${api_base%/}/api/tags" >/dev/null 2>&1
 }
 
 flux_agent_model_present() {
   local model_tag="$1"
-  local api_base="${FLUX_OLLAMA_URL:-${OLLAMA_API_BASE:-http://127.0.0.1:11434}}"
+  local api_base
+  api_base="$(flux_agent_ollama_api_base)"
   env OLLAMA_HOST="${api_base}" ollama list 2>/dev/null |
     awk 'NR > 1 { print $1 }' |
     grep -Fxq -- "${model_tag}"
@@ -124,4 +126,38 @@ flux_agent_notify() {
   if command -v notify-send >/dev/null 2>&1; then
     notify-send --urgency="${urgency}" "${title}" "${body}" >/dev/null 2>&1 || true
   fi
+}
+
+flux_agent_ollama_api_base() {
+  local api_base="${FLUX_OLLAMA_URL:-${OLLAMA_API_BASE:-http://127.0.0.1:11434}}"
+  case "${api_base}" in
+    http://127.0.0.1:* | http://localhost:* | http://\[::1\]:*)
+      printf '%s\n' "${api_base%/}"
+      ;;
+    *)
+      flux_agent_fail "Only a loopback Ollama endpoint is allowed, not '${api_base}'."
+      ;;
+  esac
+}
+
+flux_agent_enable_local_runtime() {
+  local api_base
+  api_base="$(flux_agent_ollama_api_base)"
+
+  export OLLAMA_API_BASE="${api_base}"
+  export NO_PROXY='127.0.0.1,localhost,::1'
+  export no_proxy="${NO_PROXY}"
+  export HTTP_PROXY='http://127.0.0.1:9'
+  export HTTPS_PROXY='http://127.0.0.1:9'
+  export ALL_PROXY='http://127.0.0.1:9'
+  export http_proxy="${HTTP_PROXY}"
+  export https_proxy="${HTTPS_PROXY}"
+  export all_proxy="${ALL_PROXY}"
+  export AIDER_ANALYTICS_DISABLE=true
+  export AIDER_CHECK_UPDATE=false
+  export AIDER_DISABLE_PLAYWRIGHT=true
+  export GIT_ALLOW_PROTOCOL=file
+  export GIT_TERMINAL_PROMPT=0
+  export npm_config_offline=true
+  export npm_config_update_notifier=false
 }

@@ -18,7 +18,9 @@ readable presentation, and a playable repository.
 
 Do not work on `main`, `master`, `develop`, detached HEAD, or a dirty tree. Do
 not force-push, rewrite history, access credentials, change remotes, install
-system software, release, deploy, or touch unrelated data. Do not merely plan
-or fabricate validation. Leave work uncommitted unless the human explicitly
-selected the repository launcher's `--commit`; push only with its separate
-`--push` option.
+system software, download dependencies/models, access remote APIs or websites,
+release, deploy, push, or touch unrelated data. Use only the selected checkout,
+already-installed local tools, and loopback Ollama. Do not merely plan or
+fabricate validation. Local tool actions require no confirmation; stay
+interactive for additional human prompts and create local commits only after
+the configured verification succeeds.

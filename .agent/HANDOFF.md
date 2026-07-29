@@ -32,11 +32,13 @@ readability, and small implementation -> test -> review cycles.
   perform a real gameplay smoke when the change affects play or presentation.
 - Update `.agent/memory.md`, `.agent/backlog.md`, and `.odysseus/STATE.md` with
   real results and limitations. Never report a check that did not run.
-- Leave changes uncommitted by default. A bounded supervisor may commit only
-  when launched with `--commit`, and may push only when separately launched
-  with `--push`.
+- The interactive agent auto-approves local shell/file actions, runs the full
+  test command after edits, and creates local Git commits without confirmation.
+  A bounded run also commits verified changes unless launched with
+  `--no-commit`; no local-agent mode may push.
 - Never force-push, rewrite history, access credentials, change remotes,
-  publish releases, install system software, or touch unrelated data.
+  publish releases, install system software, use non-local model/services, or
+  touch unrelated data.
 
 ## Local model contract
 
@@ -48,4 +50,6 @@ The 3B model is for narrow edits, tests, documentation, and diagnosis. Prefer
 Odysseus is an optional workspace and scheduling surface, not a hidden second
 implementation path. Give it `.agent/ODYSSEUS_PROMPT.md` and the repository
 checkout; its shell agent must call the same `scripts/local-agent.sh` workflow
-and the same test gates.
+and the same test gates. Runtime inference is accepted only from loopback
+Ollama; telemetry, update checks, URL ingestion, package downloads, and Git
+network protocols are disabled after setup.

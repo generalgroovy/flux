@@ -1,8 +1,8 @@
 model: ollama_chat/qwen2.5-coder:7b
-yes-always: false
+yes-always: true
 git: true
 gitignore: false
-auto-commits: false
+auto-commits: true
 dirty-commits: false
 attribute-author: false
 attribute-committer: false
@@ -13,3 +13,7 @@ map-refresh: auto
 map-tokens: 2048
 restore-chat-history: true
 notifications: false
+analytics-disable: true
+check-update: false
+detect-urls: false
+disable-playwright: true

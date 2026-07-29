@@ -49,7 +49,7 @@ The latest reference request overrides the previous next slice. Follow:
 
 V0 is accepted. V1 is paused. Spai Si, Urzh, and S. Wayne have reviewed
 source-only specimens. Nico Lai passed desktop specimen and live Windows
-Sanctum review and is the first promoted replacement. P0 is active; Steezo
+Sanctum review and is the first promoted replacement. P0 is accepted and P1 is active; Steezo
 resumes only after P0-P5 and M0-M5. Do not
 resume Haara mechanics, migrate live races, or expose other preview characters
 until the ordered visual acceptance permits it.
@@ -107,10 +107,10 @@ gate, or required user visual acceptance.
 
 ## Immediate task
 
-Implement only P0 from `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md`: centralized
-virtual-pixel/projection/layer/palette/material/outline tokens and one original
-non-shipping three-quarter top-down specimen proving terrain, elevation,
-Nico-scale character proportions, ground anchor/shadow, and Charge/Light motifs.
-Do not convert runtime maps, change movement/bindings, add tap strafe, or begin
-Steezo. Preserve stable simulation/network identifiers and keep visuals
-data-driven.
+Implement only P1 from `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md`: convert the
+Living Sanctum terrain/elevation renderer to the accepted virtual-pixel,
+three-quarter top-down grammar with original grass, earth, stone, timber,
+water, root, route, blocker, elevation, and station reads. Preserve the exact
+Sanctum geometry, collision, spawn, station triggers, remote company, movement,
+simulation, and stable identifiers. Do not change movement/bindings, add tap
+strafe, convert Nico or spells, or begin Steezo.

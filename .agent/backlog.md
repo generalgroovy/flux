@@ -5,16 +5,16 @@
 The latest reference request overrides the previous next slice. Complete
 `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md` P0-P5 first, then the explicitly
 authorized `.agent/MOVEMENT-INPUT-OVERHAUL.md` M0-M5, then resume the normal V1
-character gate with Steezo. P0 is active; movement/bindings and Steezo are
+character gate with Steezo. P0 is accepted and P1 is active; movement/bindings and Steezo are
 currently frozen.
 
-P0 establishes virtual-pixel scale, integer snapping, nearest-neighbour
+P0 now establishes virtual-pixel scale, integer snapping, nearest-neighbour
 rendering, projection/layer tokens, compact palette/material ramps, selective
-outlines, and one non-shipping original three-quarter top-down scene containing
-terrain, elevation, Nico-scale character, ground anchor, and Charge/Light
-motifs. Do not convert runtime maps or mechanics in P0. P1-P5 then convert the
-Living Sanctum, Nico, his spells/elements, text/HUD, and integrated acceptance
-in order.
+outlines, and one reviewed non-shipping original perspective scene. P1 is the
+single active slice: convert the Living Sanctum terrain/elevation presentation
+without changing geometry, station triggers, spawn, remote company, movement,
+or any simulation rule. P2-P5 then convert Nico, his spells/elements, text/HUD,
+and integrated acceptance in order.
 
 M0-M5 begins only after P5. It updates semantic/remappable keyboard-controller
 defaults, adds deterministic body-lift plus the requested enlarging jump shadow,
@@ -66,7 +66,7 @@ clarity using only broad lessons from Enter the Gungeon—not copied content.
 Local-agent handoff is configured for Garuda Sway with Ollama,
 Qwen2.5-Coder 3B/7B, Aider, and optional Odysseus through the canonical
 `scripts/linux-agent-handoff.sh` dispatcher. Its tracked task now routes both
-agents to the P0 source-only pixel-perspective foundation; movement and Steezo
+agents to the P1 Living Sanctum terrain/elevation renderer; movement and Steezo
 remain blocked by the new order. Target-machine
 acceptance must run the read-only doctor, one autonomous local-commit pass, one
 interactive follow-up, the actual suite, and a game smoke while observing zero

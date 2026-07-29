@@ -102,8 +102,9 @@ test("local agent follows the pixel perspective, movement, then character order"
   assert.match(visual, /\| Unnamed Angel \(placeholder\) \| \*\*Angel\*\* \|/);
   assert.match(visual, /Runtime `raceId` values remain\s+unchanged until V1/i);
   assert.match(launcher, /--read \.agent\/VISUAL-OVERHAUL\.md/);
-  assert.match(task, /current slice is \*\*P0 only\*\*/);
-  assert.match(task, /do not begin runtime map conversion,\s+movement changes, input rebinding, tap strafe, or Steezo/);
+  assert.match(task, /P0 is accepted; the current slice is \*\*P1 only\*\*/);
+  assert.match(task, /Do not begin Nico,\s+spell, GUI, movement, input, tap-strafe, or Steezo work/);
+  assert.match(task, /Keep Sanctum geometry,\s+collisions, station triggers, spawn, movement, remote company/i);
   assert.match(perspective, /Ground anchor/);
   assert.match(perspective, /Do not start Steezo or another champion until P0-P5 are accepted/);
   assert.match(movement, /shadow grows wider and slightly\s+darker toward the apex/);

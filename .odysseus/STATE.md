@@ -7,7 +7,7 @@
 - Verification: run `npm test`; do not reuse a stored test count
 - Playable state: read `.agent/PLAYABLE-STATE.md` and smoke affected behavior
 - Task source: `.agent/VISUAL-OVERHAUL.md`, `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md`, `.agent/MOVEMENT-INPUT-OVERHAUL.md`, then `.agent/backlog.md`
-- Current slice: P0 source-only pixel perspective/tokens/specimen; P1-P5 follow, then M0-M5, then Steezo resumes
+- Current slice: P1 Living Sanctum terrain/elevation presentation; P0 is accepted, P2-P5 follow, then M0-M5, then Steezo resumes
 - Stop signal for a bounded local run: `.agent/STOP`
 
 Use `bash scripts/linux-agent-handoff.sh doctor --model auto` before every

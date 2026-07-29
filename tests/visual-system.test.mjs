@@ -2,6 +2,14 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+import {
+  PIXEL_PERSPECTIVE,
+  PERSPECTIVE_SPECIMEN_FEATURES,
+  drawPixelPerspectiveSpecimen,
+  snapVirtualPixel,
+  validatePixelPerspective,
+} from "../src/pixel-perspective.mjs";
+
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 const channel = (value) => {
@@ -70,6 +78,73 @@ test("V0 visual tokens and the non-shipping specimen stay complete and bounded",
 
   const buildFiles = JSON.parse(packageJson).build.files;
   assert.equal(buildFiles.some((entry) => entry.startsWith("tools/")), false);
+});
+
+test("P0 pixel perspective foundation is bounded, responsive, and source-only", async () => {
+  const [specimen, specimenStyles, runner, server, packageJson, game] = await Promise.all([
+    read("tools/pixel-perspective-specimen.html"),
+    read("tools/pixel-perspective-specimen.css"),
+    read("tools/pixel-perspective-specimen.mjs"),
+    read("scripts/serve.mjs"),
+    read("package.json"),
+    read("src/game.mjs"),
+  ]);
+
+  assert.deepEqual(validatePixelPerspective(), []);
+  assert.equal(PIXEL_PERSPECTIVE.virtualWidth, 384);
+  assert.equal(PIXEL_PERSPECTIVE.virtualHeight, 216);
+  assert.equal(PIXEL_PERSPECTIVE.projection, "orthographic-three-quarter");
+  assert.equal(PIXEL_PERSPECTIVE.groundAnchor, "feet");
+  assert.equal(new Set(PIXEL_PERSPECTIVE.layers).size, PIXEL_PERSPECTIVE.layers.length);
+  assert.ok(PIXEL_PERSPECTIVE.layers.indexOf("ground") < PIXEL_PERSPECTIVE.layers.indexOf("champion"));
+  assert.ok(PIXEL_PERSPECTIVE.layers.indexOf("ground-shadow") < PIXEL_PERSPECTIVE.layers.indexOf("champion"));
+  assert.ok(PIXEL_PERSPECTIVE.layers.indexOf("champion") < PIXEL_PERSPECTIVE.layers.indexOf("element"));
+  for (const feature of [
+    "walkable-ground", "worn-path", "shallow-water", "cliff-top", "cliff-front",
+    "stairs", "stone-blocker", "foliage", "station-landmark",
+    "nico-scale-champion", "ground-anchor-shadow", "charge-motif", "light-motif",
+  ]) {
+    assert.ok(PERSPECTIVE_SPECIMEN_FEATURES.includes(feature), feature);
+  }
+  for (const ramp of Object.values(PIXEL_PERSPECTIVE.materials)) assert.equal(ramp.length, 4);
+  assert.equal(snapVirtualPixel(7.4, 2), 8);
+  assert.equal(snapVirtualPixel(Number.NaN, 0), 0);
+
+  const operations = [];
+  let smoothing = true;
+  const context = {
+    save() {},
+    restore() {},
+    fillRect(...values) { operations.push(["fill", ...values]); },
+    strokeRect(...values) { operations.push(["stroke", ...values]); },
+    set fillStyle(value) {},
+    set strokeStyle(value) {},
+    set lineWidth(value) {},
+    set imageSmoothingEnabled(value) { smoothing = value; },
+  };
+  drawPixelPerspectiveSpecimen(context, { grayscale: true, highContrast: true });
+  assert.equal(smoothing, false);
+  assert.ok(operations.length > 100, "specimen draws a complete proof scene");
+
+  assert.match(specimen, /P0[^<]*NON-SHIPPING PERSPECTIVE FOUNDATION/);
+  assert.match(specimen, /canvas id="pixel-scene" width="384" height="216"/);
+  for (const id of ["grayscale", "high-contrast", "reduced-motion"]) {
+    assert.match(specimen, new RegExp(`id="${id}"`));
+  }
+  assert.match(specimenStyles, /image-rendering:\s*pixelated/);
+  assert.match(specimenStyles, /@media \(max-width:\s*30rem\)/);
+  assert.match(specimenStyles, /prefers-reduced-motion:\s*reduce/);
+  assert.match(runner, /from "\.\.\/src\/pixel-perspective\.mjs"/);
+  for (const path of [
+    "/src/pixel-perspective.mjs",
+    "/tools/pixel-perspective-specimen.html",
+    "/tools/pixel-perspective-specimen.css",
+    "/tools/pixel-perspective-specimen.mjs",
+  ]) {
+    assert.match(server, new RegExp(path.replaceAll("/", "\\/").replaceAll(".", "\\.")));
+  }
+  assert.doesNotMatch(game, /pixel-perspective/);
+  assert.equal(JSON.parse(packageJson).build.files.some((entry) => entry.startsWith("tools/")), false);
 });
 
 test("V1 character specimens share one responsive non-shipping harness", async () => {

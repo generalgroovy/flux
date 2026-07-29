@@ -2244,3 +2244,27 @@
 - **Next:** Run one Garuda local-agent P0 iteration, review the original
   perspective specimen at desktop/narrow/grayscale/high-contrast/reduced-motion,
   and accept or revise the foundation before any P1 runtime Sanctum conversion.
+
+# 2026-07-29 — P0 pixel-perspective foundation accepted
+
+- **Central contract:** Added `src/pixel-perspective.mjs` with a 384x216 virtual
+  canvas, integer snapping, nearest-neighbour scaling, feet-ground anchoring,
+  orthographic three-quarter projection, explicit draw layers, seven shared
+  values, and compact original material plus Charge/Light ramps.
+- **Non-shipping proof:** Added an excluded specimen that demonstrates original
+  ground, worn route, water, cliff top/front, stairs, blocker, foliage, station,
+  Nico-scale body/shadow, and shape-first Charge/Light motifs without importing
+  the contract into the shipping runtime.
+- **Observed review:** The local browser rendered the board at 1280x900 and
+  480x900. Color, grayscale, high contrast, reduced motion, responsive stacking,
+  and nearest-neighbour canvas scaling all worked; the narrow page reported no
+  horizontal overflow and browser diagnostics contained no warnings or errors.
+- **Regression boundary:** The focused visual suite passed 3/3 and found one
+  malformed grayscale-ramp construction, which was corrected before acceptance.
+  The specimen routes are explicit while all `tools/` content remains excluded
+  from packaged files; `src/game.mjs` still has no P0 runtime import.
+- **Handoff:** P0 is complete. Every tracked Odysseus/Aider state and current
+  implementation prompt now routes the next bounded local run to P1 Living
+  Sanctum terrain/elevation presentation while freezing geometry and mechanics.
+- **Next:** Implement and visually review P1 against the accepted material,
+  layering, snapping, grayscale, and no-label-navigation contract.

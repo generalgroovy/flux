@@ -60,6 +60,14 @@ repository-authored, and mechanically honest.
 | P4 | HUD, field guide, prompts, and text converted to the restrained pixel/manuscript system | Information, focus order, shortcuts, accessibility, and remapping |
 | P5 | Integrated desktop/narrow/high-contrast/reduced-motion/eight-agent acceptance and Windows/Linux source/package smoke | All game rules |
 
+## Slice status
+
+| Slice | State | Evidence / next boundary |
+| ---: | --- | --- |
+| P0 | Accepted 2026-07-29 | `src/pixel-perspective.mjs` centralizes the 384x216 virtual canvas, feet anchor, projection/layer order, seven-value ladder, and four-value material/Charge/Light ramps; the non-shipping specimen passed desktop, 480px narrow, grayscale, high-contrast, and reduced-motion browser review with no console warnings or errors, and its focused tests pass |
+| P1 | Active | Convert only the Living Sanctum terrain/elevation presentation using the accepted grammar; preserve its geometry, collisions, stations, spawn, movement, and remote-company state |
+| P2-P5 | Pending | Begin only after the preceding slice is implemented, visually reviewed, tested, and recorded |
+
 Do not start Steezo or another champion until P0-P5 are accepted. A complete
 foundation prevents every later character/map/spell from being rebuilt twice.
 

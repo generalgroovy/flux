@@ -10,25 +10,22 @@ CURRENT OVERRIDING ORDER: complete
 `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md` P0-P5, then
 `.agent/MOVEMENT-INPUT-OVERHAUL.md` M0-M5, then resume V1 champion production
 with Steezo. Choose exactly one complete slice from the first incomplete
-contract. The current slice is **P0 only**; do not begin runtime map conversion,
-movement changes, input rebinding, tap strafe, or Steezo.
+contract. P0 is accepted; the current slice is **P1 only**. Do not begin Nico,
+spell, GUI, movement, input, tap-strafe, or Steezo work.
 
-For P0, inspect the current canvas transform, arena/map/entity drawing order,
-visual tokens, Nico visual profile, spell rendering, responsive canvas setup,
-and visual tests. Establish centralized virtual-pixel scale, integer snapping,
-nearest-neighbour rendering, projection/layer tokens, compact palette/material
-ramps, selective outlines, and one non-shipping three-quarter top-down specimen.
-The specimen must contain an original small FLUX terrain scene with walkable
-ground, path, water, cliff top/front faces, stairs, blocker, foliage, one station
-landmark, a Nico-scale champion proof, ground anchor/shadow, and Charge/Light
-motifs. It may not reuse or trace any reference sprite, tile, map, font, icon,
-layout, or palette.
+For P1, inspect the live canvas transform, Living Sanctum content, arena/map
+drawing order, obstacles, station landmarks, routes, foreground layers, visual
+tests, and the accepted `src/pixel-perspective.mjs` contract. Convert only the
+Sanctum terrain/elevation presentation using original compact material ramps,
+pixel-stepped edges, clear walkable routes, distinct blockers, authored-looking
+top/front faces, roots, water, and station silhouettes. Reuse the accepted
+tokens instead of introducing a second palette or snapping contract.
 
-Review the P0 specimen at desktop and narrow sizes with nearest-neighbour pixel
-edges, grayscale hierarchy, high contrast, and reduced motion. Record actual
-screenshot evidence when available. Keep all runtime simulation, maps,
-characters, hitboxes, controls, movement, spells, networking, and GUI behavior
-unchanged; P0 is a source-only foundation and acceptance board.
+Review the live Sanctum at desktop and narrow sizes in color, grayscale, high
+contrast, and reduced motion. Require floor, route, blocker, elevation, station,
+and exit to remain distinguishable without labels. Keep Sanctum geometry,
+collisions, station triggers, spawn, movement, remote company, simulation,
+characters, spells, networking, and GUI behavior unchanged.
 
 Treat the user's Legend of Zelda reference only as broad inspiration for warm,
 inviting top-down heroic fantasy, clear silhouettes, handcrafted nature, and
@@ -39,10 +36,10 @@ creatures, symbols, typography, heart meters, item icons, menus, maps,
 composition, animation, audio, assets, or trade dress.
 
 Do not add or rebalance mechanics, activate Steezo or other future characters,
-change runtime maps, hitboxes, simulation timing, network contracts, AI, damage,
-resources, objectives, bindings, movement, or mode rules. Implement P0, add
+change runtime map data, hitboxes, simulation timing, network contracts, AI, damage,
+resources, objectives, bindings, movement, or mode rules. Implement P1, add
 regression/accessibility coverage, run focused checks and the complete suite,
-open the specimen on Garuda when possible, inspect the diff, and update
+open the live Sanctum on Garuda when possible, inspect the diff, and update
 memory/backlog/state with real evidence. Record screenshots or their paths when
 available; never claim visual acceptance from automated tests alone.
 

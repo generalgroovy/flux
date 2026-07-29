@@ -210,25 +210,30 @@ raw LLM history, final state, and replayable patch for completeness.
 ## Future S. Wayne acceptance
 
 - Preserve `samwise` only as the compatibility ID; all player-facing future copy
-  uses **S. Wayne**, Human, Void/Light.
+  uses **S. Wayne**, Hobbit, Void/Light.
 - Prototype BETWEEN SHADOWS only after the inactive overhaul foundation receives
   an approved live vertical slice. The boundary crossing must be server-owned,
   visibly locked out, and incapable of granting damage.
 - Validate PRISM TRIPWIRE, BURROWED SHADOW, Ray, and Sun Grid together for route
   control without letting the 7/13 discounted signature become mandatory.
-- Keep the Hobbit race available for a later distinct character rather than
-  reskinning S. Wayne to satisfy artificial one-character-per-race coverage.
+- Preserve the low Hobbit silhouette, bare-foot anatomy cue, and split
+  Light/Void mantle without changing S. Wayne's hitbox during the visual gate.
 
 ## Future roster acceptance
 
-- Treat the sixteen named concepts as the complete future roster. Grimm Bow
-  reuses the retired `brum` compatibility ID; do not add filler solely to cover
-  every race.
+- Treat the twenty-three concepts in `.agent/VISUAL-OVERHAUL.md` as the approved
+  visual roster. Grimm Bow reuses the retired `brum` compatibility ID; do not
+  add filler solely to cover every ancestry.
+- Use The Red Baron as Vampire, Fluup as Werewolf, Spai Si as Angel, and Donnok
+  as Demon. Keep these as presentation-only assignments until V1 accepts every
+  character concept and a separate mechanical migration is tested.
+- Leave Elf and Orc unrepresented in this roster rather than weakening an
+  existing champion identity for artificial one-per-ancestry coverage.
 - Preserve each reused internal ID until an explicit compatibility migration
   exists, while showing only the approved player-facing name.
-- Validate the low-cost Hara/Spai Si/Hidn Leef/Hesus Christo signatures through
+- Validate the low-cost Haara/Spai Si/Leaf the Hidden/Hesus Christo signatures through
   geometry and setup tests before changing point values.
-- Keep Hara preview-only while adding sanctuary/active-state rendering,
+- Keep the legacy Haara preview adapter isolated while adding sanctuary/active-state rendering,
   developer-only input bindings, accessibility cues, remote preview authority,
   reconnect/spectator coverage, and packaged Windows/Linux smoke tests. Do not
   begin a second character adapter until these gates are reviewed.

@@ -519,9 +519,14 @@ color, role, and readable kit identity.
 
 ### Future overhaul roster — not playable yet
 
-This separate sixteen-character roster is validated design data in
-`src/overhaul-content.mjs`. It does not replace the live champions above until a
-future vertical slice implements and verifies each character end to end.
+The integration branch currently contains sixteen validated design records in
+`src/overhaul-content.mjs`; the approved V1 visual plan now contains twenty-three
+champions and twenty ancestry foundations. The seven later concepts and the
+four new ancestry assignments must be unified into validated content only after
+the character-visual gate is accepted. They do not replace the live champions
+above until a future vertical slice implements and verifies each character end
+to end. See [`.agent/VISUAL-OVERHAUL.md`](.agent/VISUAL-OVERHAUL.md) for the
+authoritative distribution and migration boundary.
 All current character-description text is retained as draft placeholder copy for
 an author rewrite; it is not approved for in-game display.
 
@@ -534,24 +539,31 @@ implemented and deterministically tested. Rendering, input/UI exposure, remote
 preview authority, accessibility review, and packaged smoke testing remain
 required before Hara can be considered playable.
 
-| Character | Race | Affinities | Identity |
+| Character | Planned ancestry | Affinities | Identity |
 | --- | --- | --- | --- |
 | Oh Tipi | Seakin | Water, Ice, Charge | Conductive-field skirmisher |
-| S. Wayne | Human | Void, Light | Eclipse boundary tactician |
-| The Red Baron | Undead | Void, Fire, Ice | Airborne formation controller |
+| S. Wayne | Hobbit | Void, Light | Eclipse boundary tactician |
+| The Red Baron | **Vampire** | Void, Fire, Ice | Airborne formation controller |
 | Steezo | Goblin | Fire, Charge, Light | Volatile combo engineer |
 | Treevor the Mason | Treefolk | Earth, Wind, Fire | Mud-and-herb terrain mason |
 | Oll' I | Minotaur | Earth, Fire, Light | Structural momentum breaker |
-| Fluup | Orc | Charge, Wind, Ice | Storm momentum bruiser |
-| Wa Bidi | Sylph | Wind, Charge | Battlecry air-route specialist |
+| Fluup | **Werewolf** | Charge, Wind, Ice | Storm momentum bruiser |
+| Wa Bidi | Goblin | Charge, Wind, Fire | Battlecry air-route specialist |
+| Grace Reava | Sylph | Wind, Water, Light | Luminous-current route duelist |
 | Nico Lai | Gnome | Charge, Light | Precision shared-device engineer |
-| Spai Si | Elf | Wind, Light, Earth | Cryptic redirect duelist |
-| Hidn Leef | Treefolk | Water, Earth, Light | Concealed grove support |
-| Ha Rekt | Wyrm | Ice, Wind, Fire | Aerial cold-line hunter |
+| Spai Si | **Angel** | Wind, Light, Earth | Cryptic redirect duelist |
+| Leaf the Hidden | Treefolk | Water, Earth, Light | Concealed grove support |
+| Ha Rekt | Wyrmborn | Ice, Wind, Fire | Aerial cold-line hunter |
 | Dr. Apex | Stoneborn | Earth, Light, Water | Armored combat medic |
-| Hara | Gnome | Light, Wind | Resourceful mid-range planner |
-| Hesus Christo | Wyrm | Earth, Water | Towering renewal vanguard |
+| Haara | Nymph | Light, Wind, Spirit | Resourceful bloom planner |
+| Hesus Christo | Wyrmborn | Earth, Water | Towering renewal vanguard |
 | Grimm Bow | Troll | Void, Earth, Water | Displacement-to-precision terrain archer |
+| Biggy Bob | Dwarf | Earth, Fire, Light | Grounded forge-line breacher |
+| Jan Wicked | Human | Ice, Void, Charge | Black-ice circuit hunter |
+| Ba Djoh | Minotaur | Earth, Fire, Water | Three-current charge breaker |
+| Urzh | Stoneborn | Earth, Fire, Charge | Conductive kiln bulwark |
+| Donnok | **Demon** | Earth, Fire, Water | Chthonic forge shaper |
+| Djonah Thaan | Undead | Void, Charge, Fire | Grave-current pursuit controller |
 
 ## Maps and modes
 

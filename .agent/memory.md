@@ -1750,3 +1750,24 @@
 - **Limitation:** This slice establishes and verifies the production contract;
   it does not claim V0 art tokens or any visual asset was implemented or
   visually accepted. The next audited Garuda agent run must implement V0 first.
+# 2026-07-29 — V1 ancestry redistribution
+
+- **Scope:** Updated presentation planning only; live content, preview adapters,
+  runtime ancestry IDs, kits, balance, networking, and packaged behavior remain
+  unchanged under the visual-first mechanical freeze.
+- **Roster truth:** Recorded the approved twenty-three-character concept roster
+  in `.agent/VISUAL-OVERHAUL.md` and exposed the integration gap in `README.md`:
+  this branch still contains sixteen validated design records while seven later
+  concepts await deliberate branch unification.
+- **New ancestry assignments:** The Red Baron is planned as Vampire, Fluup as
+  Werewolf, Spai Si as Angel, and provisional Donnok as Demon. The assignments
+  preserve stronger locks: S. Wayne remains Hobbit, Haara Nymph, Wa Bidi Goblin,
+  Grace Reava the sole Sylph, and Ha Rekt/Hesus Christo anthropomorphic
+  Wyrmborn.
+- **Representation:** The planned roster covers eighteen of twenty ancestry
+  foundations; Elf and Orc intentionally remain empty rather than forcing a
+  weak reskin. The roster remains 23 champions total.
+- **Verification:** `git diff --check` passed; the local-agent visual-contract
+  and focused overhaul suites passed 18/18, then the full deterministic suite
+  passed 122/122 across its standard, WebSocket, and cleanup lanes. No playtest
+  is claimed for a presentation-only planning change.

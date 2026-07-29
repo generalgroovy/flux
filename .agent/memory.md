@@ -2008,3 +2008,35 @@
 - **Remote verification:** GitHub Actions run `30454561082` passed all six jobs
   for implementation commit `e472bd7`: Windows and Ubuntu on Node 20.19.1 and
   Node 22, plus Windows NSIS and Ubuntu AppImage package builds.
+
+# 2026-07-29 — Living Sanctum practice floor and Stamina language
+
+- **Player-facing outcome:** FLUX now starts in the rendered Living Sanctum.
+  Its Practice chamber launches an authored old-world rune court divided into a
+  Stamina circuit, movement cloister, spell court, and mirror ward, with an
+  optional stationary target and no competitive/network catalog exposure.
+- **Complete test controls:** The live strip switches champions in place,
+  restores health, Stamina, Flux, ultimate, cooldowns, and recovery windows,
+  resets the floor, opens the full reference, or returns to the Sanctum. `F2`
+  toggles movement, elements, selected abilities, champions, and races.
+- **Compatibility boundary:** Player-facing FLOW became Stamina across HUD,
+  guide, ancestry copy, practice reference, README, and active planning notes.
+  Internal `flow` fields remain stable simulation/wire/persistence identifiers.
+- **Simulation safety:** `living_sanctum` and mode `sanctum` resolve through the
+  normal validated content accessors but remain outside competitive map/mode
+  arrays. The target uses the shared entity contract with an explicit idle
+  command, and refill is rejected outside active local Sanctum practice.
+- **Automated verification:** `npm.cmd test` passed 133/133; `node
+  scripts/ci-verify.mjs` independently repeated the suite and all recursive
+  syntax checks; `npm.cmd audit --omit=dev` reported zero vulnerabilities; the
+  focused simulation/DOM/visual run passed 61/61 and `git diff --check` passed.
+- **Rendered verification:** The Windows source Electron runtime rendered the
+  full Sanctum at desktop resolution, exposed all eight chambers through UI
+  Automation, and closed without a remaining Electron window. Automation could
+  focus but not activate Chromium controls, so the interactive movement result
+  is sourced from deterministic and DOM tests, not a claimed manual playtest.
+  The in-app Browser rendered the menu without horizontal overflow but blocked
+  the main local source module (`ERR_BLOCKED_BY_CLIENT`), so it was not used to
+  infer live gameplay.
+- **Next:** publish the candidate, wait for Windows/Linux Node and package jobs,
+  unify when green, then resume the active V1 Nico Lai visual slice.

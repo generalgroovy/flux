@@ -2751,10 +2751,36 @@ export function skipTutorial(state) {
   state.events.push({ type: "tutorialSkipped" });
 }
 
+export function refillSanctumPractice(state, entityId) {
+  if (state?.modeId !== "sanctum" || state.status !== "playing") return false;
+  const entity = state.entities.find(
+    (candidate) => candidate.id === entityId && candidate.human && candidate.alive,
+  );
+  if (!entity) return false;
+  entity.health = entity.maxHealth;
+  entity.flow = entity.maxFlow;
+  entity.flowRecoveryDelay = 0;
+  entity.flux = entity.maxFlux;
+  entity.fluxRecoveryDelay = 0;
+  entity.primaryCooldown = 0;
+  entity.specialCooldown = 0;
+  entity.defenseCooldown = 0;
+  entity.mobilityCooldown = 0;
+  entity.hopCooldown = 0;
+  entity.slideCooldown = 0;
+  entity.ultimateCharge = entity.maxUltimate;
+  state.events.push({ type: "sanctumRefill", entityId: entity.id });
+  return true;
+}
+
 function updateBotCommand(state, entity, delta, map) {
   entity.botThinkRemaining -= delta;
   if (entity.botThinkRemaining > 0) return entity.botCommand;
   entity.botThinkRemaining = MATCH_TUNING.bot.thinkInterval;
+  if (state.modeId === "sanctum") {
+    entity.botCommand = { ...IDLE_COMMAND };
+    return entity.botCommand;
+  }
   const targets = opponentsOf(state, entity);
   if (targets.length === 0) {
     entity.botCommand = { ...IDLE_COMMAND };

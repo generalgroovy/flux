@@ -8,11 +8,14 @@ import {
   RACES,
   MATCH_TUNING,
   getCharacter,
+  getMap,
+  getMode,
   validateContent,
 } from "../src/content.mjs";
 import {
   addMatchPlayer,
   createMatch,
+  refillSanctumPractice,
   matchInvariantErrors,
   moveCircleSwept,
   normalizeDirection,
@@ -159,6 +162,53 @@ test("content ships ten playable champions, thirteen races, eight maps, and all 
   assert.equal(aerwyn.ultimate.kind, "wind-vortex");
 });
 
+test("the Living Sanctum resolves outside competitive catalogs and supports bounded practice", () => {
+  assert.equal(getMap("living_sanctum").name, "THE LIVING SANCTUM");
+  assert.equal(getMode("sanctum").name, "SANCTUM PRACTICE");
+  assert.equal(MAPS.some((map) => map.id === "living_sanctum"), false);
+  assert.equal(MODES.some((mode) => mode.id === "sanctum"), false);
+
+  const state = createMatch({
+    modeId: "sanctum",
+    mapId: "living_sanctum",
+    botCount: 1,
+    players: [{
+      id: "practitioner",
+      characterId: "kite",
+      raceId: "wood_elf",
+      team: "alpha",
+      human: true,
+      localSlot: 0,
+    }],
+  });
+  const player = state.entities[0];
+  const target = state.entities[1];
+  const targetStart = { x: target.x, y: target.y };
+  for (let tick = 0; tick < 60; tick += 1) {
+    stepMatch(state, {
+      [player.id]: { ...idle, moveX: 1, sprint: true },
+    }, FIXED_DELTA);
+  }
+  assert.ok(player.flow < player.maxFlow);
+  assert.deepEqual({ x: target.x, y: target.y }, targetStart);
+  assert.equal(state.projectiles.some((projectile) => projectile.ownerId === target.id), false);
+  player.health = 1;
+  player.flux = 0;
+  player.ultimateCharge = 0;
+  player.specialCooldown = 5;
+  assert.equal(refillSanctumPractice(state, player.id), true);
+  assert.equal(player.health, player.maxHealth);
+  assert.equal(player.flow, player.maxFlow);
+  assert.equal(player.flux, player.maxFlux);
+  assert.equal(player.ultimateCharge, player.maxUltimate);
+  assert.equal(player.specialCooldown, 0);
+  assert.deepEqual(matchInvariantErrors(state), []);
+  assert.equal(
+    refillSanctumPractice(createMatch({ modeId: "duel", mapId: "breakline" }), "p1"),
+    false,
+  );
+});
+
 test("every arena is an authored old-world place rather than a bare combat grid", () => {
   for (const map of MAPS) {
     assert.ok(map.region);
@@ -222,7 +272,7 @@ test("race tradeoffs alter bounded resources without replacing character kits", 
   assert.deepEqual(matchInvariantErrors(state), []);
 });
 
-test("Wyrmbound trade FLOW for readable forced-movement resistance", () => {
+test("Wyrmbound trade Stamina for readable forced-movement resistance", () => {
   const human = duel({ leftCharacter: "bulwark", rightRace: "human" });
   const scaled = duel({ leftCharacter: "bulwark", rightRace: "wyrmbound" });
   for (const state of [human, scaled]) {
@@ -1421,7 +1471,7 @@ test("one post-hop counter-strafe consumes a bounded landing cancel", () => {
   assert.deepEqual(matchInvariantErrors(state), []);
 });
 
-test("sprint slides spend FLOW, steer with commitment, and break on cover", () => {
+test("sprint slides spend Stamina, steer with commitment, and break on cover", () => {
   const state = duel();
   const runner = state.entities[0];
   for (let tick = 0; tick < 16; tick += 1) {

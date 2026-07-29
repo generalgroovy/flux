@@ -18,13 +18,15 @@ shipped champions as compatibility-only runtime scaffolding until their mapped
 successors pass complete visual and later mechanical promotion checks; never
 present them as overhaul-roster additions.
 
-The user's direct Sanctum request authorized one bounded V4 foundation ahead of
-the normal order: obsolete HEX/operations presentation is removed, every
-existing menu route lives in the Living Sanctum, and remote company persists
-while players browse those routes. The follow-up roster request extends only
-that foundation: Muster now uses compact ancestry columns, portrait tiles, and
-non-mutating hover/focus detail previews for both local players. Do not expand
-this exception into broader GUI restyling or new lobby mechanics before
+The user's direct Sanctum request authorized one integrated V4/playability slice
+ahead of the normal order: obsolete HEX/operations presentation is removed,
+every existing menu route lives in the Living Sanctum, remote company persists
+while players browse those routes, and the game starts against the real
+Sanctum practice map. The Practice chamber exposes the complete currently
+implemented movement kernel, a stationary target, immediate champion switching,
+refill/reset controls, and a toggleable field guide. Muster uses compact ancestry
+columns, portrait tiles, and non-mutating hover/focus detail previews for both
+local players. Do not expand this exception into unrelated mechanics before
 V1–V3 are accepted.
 
 Priority remains fundamentals → compact PvP → PvPvE → PvE. Add race champions
@@ -87,7 +89,7 @@ raw LLM history, final state, and replayable patch for completeness.
    verify persistence, and confirm HUD, guide, live info, and FIRST RITE labels
    always match. Then complete all four
    FIRST RITE reads; chain sprint, hop, and wall kicks around cover; verify
-   FLOW cost/recovery; play Yrsa until THE WHITE HUNT is earned; verify its
+   Stamina cost/recovery; play Yrsa until THE WHITE HUNT is earned; verify its
    fixed lane tell, reduced channel movement, cover clipping, Volt cancel,
    Ember/Tide/Null field reactions, and passive conversion from both wall kick
    and landing cut. Launch all five home shortcuts; use every main-menu
@@ -103,7 +105,7 @@ raw LLM history, final state, and replayable patch for completeness.
    counters without visual or audio overload.
    In WILDMARCH, defeat a warden, read and claim the loose Wayseal, choose both
    outer waystones on every arena, and require the scoring rune to move for 14
-   seconds without changing health, damage, Flux, or FLOW. Verify the 16-second
+   seconds without changing health, damage, Flux, or Stamina. Verify the 16-second
    return tell, elimination/disconnect drops, opponent steals, bot routes,
    sudden-score overtime, center restoration, restrained cue density, and clear
    ordinary-drop versus deliberate-host-shutdown copy.
@@ -119,7 +121,7 @@ raw LLM history, final state, and replayable patch for completeness.
    require sharp reversals without instant direction changes or animation noise.
 7. Hands-on tune 35%/180-unit hop carry through diagonal escape, wall-kick, ice,
    unit-collision, and shrine routes; reject any repeatable speed exploit.
-8. Hands-on tune slide entry at 250 speed, 22 FLOW, 720 travel speed, 0.3-second
+8. Hands-on tune slide entry at 250 speed, 22 Stamina, 720 travel speed, 0.3-second
    commitment, and 32% steering; verify readable cover impacts and no hold exploit.
 9. Hands-on tune the 110 ms/18% one-use landing cut across normal ground, ice,
    slide links, wall kicks, and high-latency remote prediction.
@@ -133,7 +135,7 @@ raw LLM history, final state, and replayable patch for completeness.
 
 ## Gate 1 — Fundamentals implemented
 
-- Complete ten-champion shared-input combat, universal FLOW sprint/hop/wall-kick
+- Complete ten-champion shared-input combat, universal Stamina sprint/hop/wall-kick
   movement, eight Flux disciplines, interacting terrain fields, four
   region scales across eight maps, short introduction, hazards, bots, death/reset, accessibility,
   validation, and combination tests.
@@ -154,8 +156,8 @@ raw LLM history, final state, and replayable patch for completeness.
 - Its final stage now proves each shipped tactical's real world-state, timing, or
   impact contract instead of accepting an empty cast.
 - Universal Edgeweave rewards committed hostile-spell near-misses with a bounded
-  FLOW return; hits, training marks, stationary play, and fan farming do not pay.
-- Next acceptance: hands-on FLOW/Flux and discipline-trial tuning,
+  Stamina return; hits, training marks, stationary play, and fan farming do not pay.
+- Next acceptance: hands-on Stamina/Flux and discipline-trial tuning,
   share-link testing across Linux/Windows, and network-lab reconciliation tuning.
 
 ## Expansion acceptance — not exposed until complete
@@ -194,7 +196,7 @@ raw LLM history, final state, and replayable patch for completeness.
   elimination releases it; pickup, carry, timeout, elimination/disconnect drop,
   route delivery, center restoration, and bot intent are fixed-tick state.
 - Every arena authors two validated outer waystones. Delivery moves the scoring
-  rune for 14 seconds but grants no health, damage, Flux, or FLOW, so its reward
+  rune for 14 seconds but grants no health, damage, Flux, or Stamina, so its reward
   is a visible, temporary route choice rather than combat snowball.
 - Late joins and spectators receive the same carried/route state. Tied clocks use
   sudden-score overtime. Graceful host shutdown explicitly ends the match and

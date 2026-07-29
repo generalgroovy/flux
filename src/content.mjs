@@ -55,15 +55,15 @@ export const RACES = Object.freeze([
   { id: "orc", name: "Iron Orc", trait: "Committed", feature: "twin tusks", featureGlyph: "ᚢ", boon: "+7% health", drawback: "−4% speed", health: 1.07, speed: 0.96, flux: 1, flow: 1 },
   { id: "troll", name: "Moss Troll", trait: "Enduring", feature: "moss antlers", featureGlyph: "Y", boon: "+9% health", drawback: "−6% Flux", health: 1.09, speed: 0.98, flux: 0.94, flow: 1 },
   { id: "wood_elf", name: "Briar Elf", trait: "Fleet", feature: "leaf-point ears", featureGlyph: "‹›", boon: "+5% speed", drawback: "−5% health", health: 0.95, speed: 1.05, flux: 1, flow: 1 },
-  { id: "night_elf", name: "Gloam Elf", trait: "Arcane", feature: "moon-point ears", featureGlyph: "◖◗", boon: "+8% Flux", drawback: "−4% FLOW", health: 0.98, speed: 1, flux: 1.08, flow: 0.96 },
+  { id: "night_elf", name: "Gloam Elf", trait: "Arcane", feature: "moon-point ears", featureGlyph: "◖◗", boon: "+8% Flux", drawback: "−4% Stamina", health: 0.98, speed: 1, flux: 1.08, flow: 0.96 },
   { id: "dwarf", name: "Forge Dwarf", trait: "Grounded", feature: "braided square beard", featureGlyph: "⋈", boon: "+6% health", drawback: "−3% speed", health: 1.06, speed: 0.97, flux: 1, flow: 1 },
   { id: "gnome", name: "Copper Gnome", trait: "Efficient", feature: "high copper cap", featureGlyph: "△", boon: "+7% Flux", drawback: "−4% health", health: 0.96, speed: 1.01, flux: 1.07, flow: 1 },
-  { id: "undead", name: "Ash Revenant", trait: "Relentless", feature: "rune ribs", featureGlyph: "≡", boon: "+5% health", drawback: "−5% FLOW", health: 1.05, speed: 1, flux: 1, flow: 0.95 },
+  { id: "undead", name: "Ash Revenant", trait: "Relentless", feature: "rune ribs", featureGlyph: "≡", boon: "+5% health", drawback: "−5% Stamina", health: 1.05, speed: 1, flux: 1, flow: 0.95 },
   { id: "sylph", name: "Cloud Sylph", trait: "Weightless", feature: "streamer wings", featureGlyph: "≋", boon: "+6% speed", drawback: "−7% health", health: 0.93, speed: 1.06, flux: 1, flow: 1.02 },
-  { id: "tideborn", name: "Reefborn", trait: "Fluid", feature: "cheek fins", featureGlyph: "⋉⋊", boon: "+7% FLOW", drawback: "−3% health", health: 0.97, speed: 1, flux: 1, flow: 1.07 },
+  { id: "tideborn", name: "Reefborn", trait: "Fluid", feature: "cheek fins", featureGlyph: "⋉⋊", boon: "+7% Stamina", drawback: "−3% health", health: 0.97, speed: 1, flux: 1, flow: 1.07 },
   { id: "stonekin", name: "Cairnkin", trait: "Anchored", feature: "cairn shoulders", featureGlyph: "◆◆", boon: "+8% health", drawback: "−5% speed", health: 1.08, speed: 0.95, flux: 1, flow: 1 },
   { id: "ashling", name: "Cinderling", trait: "Volatile", feature: "flame crest", featureGlyph: "♨", boon: "+5% speed / Flux", drawback: "−7% health", health: 0.93, speed: 1.05, flux: 1.05, flow: 1 },
-  { id: "wyrmbound", name: "Wyrmbound", trait: "Scaled", feature: "scaled wings", featureGlyph: "〽", boon: "−14% forced movement", drawback: "−6% FLOW / −2% speed", health: 1.03, speed: 0.98, flux: 1.02, flow: 0.94, knockback: 0.86 },
+  { id: "wyrmbound", name: "Wyrmbound", trait: "Scaled", feature: "scaled wings", featureGlyph: "〽", boon: "−14% forced movement", drawback: "−6% Stamina / −2% speed", health: 1.03, speed: 0.98, flux: 1.02, flow: 0.94, knockback: 0.86 },
 ]);
 
 export const CHARACTERS = Object.freeze([
@@ -422,7 +422,7 @@ export const CHARACTERS = Object.freeze([
   character({
     id: "mend",
     homeRaceId: "tideborn",
-    affinity: { kind: "element", id: "water", name: "TIDE", edge: "Fire cleansing and FLOW recovery" },
+    affinity: { kind: "element", id: "water", name: "TIDE", edge: "Fire cleansing and Stamina recovery" },
     name: "NERIS PEARLDIVE",
     role: "Reefborn tidecaller",
     style: "A keeper of living currents who redirects Ember, restores Flux rhythm, and protects a narrow advantage.",
@@ -1050,6 +1050,46 @@ export const MAPS = Object.freeze([
   },
 ]);
 
+// The Living Sanctum is a local, non-competitive practice space. It is resolved
+// through getMap() but intentionally excluded from MAPS so matchmaking, atlas
+// counts, saves, and remote map validation keep their established contracts.
+export const SANCTUM_PRACTICE_MAP = Object.freeze({
+  id: "living_sanctum",
+  regionId: "sanctum",
+  region: "The Living Sanctum",
+  scale: "practice",
+  name: "THE LIVING SANCTUM",
+  terrain: "Root-bound cloister and rune court",
+  identity: "Four readable practice courts joined by an uninterrupted movement circuit.",
+  lore: "A shared hearth for learning movement, reading spell geometry, and preparing a company.",
+  heraldry: "THE OPEN HAND",
+  visual: { floor: "#2c2518", void: "#0d0b08", grid: "#574a30", accent: "#d7bc70" },
+  size: { width: 1600, height: 900, inset: 44 },
+  spawns: [
+    { x: 250, y: 450 },
+    { x: 1200, y: 450 },
+    { x: 800, y: 160 },
+    { x: 800, y: 740 },
+  ],
+  obstacles: [
+    { x: 405, y: 120, width: 64, height: 250 },
+    { x: 405, y: 530, width: 64, height: 250 },
+    { x: 1131, y: 120, width: 64, height: 250 },
+    { x: 1131, y: 530, width: 64, height: 250 },
+    { x: 660, y: 270, width: 80, height: 150 },
+    { x: 860, y: 480, width: 80, height: 150 },
+  ],
+  hazards: [],
+  landmarks: [
+    { type: "road", x: 92, y: 390, width: 1416, height: 120, label: "STAMINA CIRCUIT" },
+    { type: "court", x: 500, y: 92, width: 600, height: 250, label: "MOVEMENT CLOISTER" },
+    { type: "court", x: 500, y: 558, width: 600, height: 250, label: "SPELL COURT" },
+    { type: "rune", x: 800, y: 450, radius: 115, label: "MIRROR WARD" },
+  ],
+  objective: { x: 800, y: 450, radius: 115 },
+  wildmarch: { routes: [] },
+});
+
 export const MODES = Object.freeze([
   {
     id: "training",
@@ -1104,6 +1144,19 @@ export const MODES = Object.freeze([
     allowLocal: true,
   },
 ]);
+
+// Like the Sanctum map, this mode is available only through the local practice
+// entry point and never enters competitive or remote mode lists.
+export const SANCTUM_PRACTICE_MODE = Object.freeze({
+  id: "sanctum",
+  name: "SANCTUM PRACTICE",
+  category: "Practice",
+  description: "Free movement and ability testing with optional stationary pressure.",
+  scoreLimit: 999,
+  timeLimit: 86_400,
+  botCount: 0,
+  allowLocal: false,
+});
 
 export const MATCH_TUNING = Object.freeze({
   tickRate: 120,
@@ -1213,10 +1266,12 @@ export function getRace(id) {
 }
 
 export function getMap(id) {
+  if (id === SANCTUM_PRACTICE_MAP.id) return SANCTUM_PRACTICE_MAP;
   return MAPS.find((entry) => entry.id === id) ?? MAPS[0];
 }
 
 export function getMode(id) {
+  if (id === SANCTUM_PRACTICE_MODE.id) return SANCTUM_PRACTICE_MODE;
   return MODES.find((entry) => entry.id === id) ?? MODES[0];
 }
 

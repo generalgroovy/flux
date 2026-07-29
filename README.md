@@ -30,23 +30,23 @@ automatic damage advantage.
 ## Movement
 
 Movement is a shared combat language, not a character-specific privilege.
-**FLOW** pays for universal movement; **Flux** pays for spells and champion
+**Stamina** pays for universal movement; **Flux** pays for spells and champion
 actions. Every transition is buffered, bounded, collision-safe, and readable.
 
 | Action | Function | Commitment / counterplay |
 | --- | --- | --- |
 | Move + independent aim | Permanent strafing, leading, cover, crossfire, and retreat foundation | Acceleration and braking preserve readable momentum |
-| Sprint | Fast pursuit, disengagement, and objective routing | Continuously spends FLOW and delays recovery |
-| Jump / double jump | Clear ground pressure and vary approach height | Costs FLOW; aerial state limits later options |
+| Sprint | Fast pursuit, disengagement, and objective routing | Continuously spends Stamina and delays recovery |
+| Jump / double jump | Clear ground pressure and vary approach height | Costs Stamina; aerial state limits later options |
 | Slide | Low, fast ground commitment | Weak steering, recovery, and hard stop on cover |
-| Slide jump | Convert a completed slide into a longer route | Costs more FLOW and cannot erase slide commitment |
-| Air dodge | Short directional aerial escape | High FLOW cost, limited steering, punishable recovery |
+| Slide jump | Convert a completed slide into a longer route | Costs more Stamina and cannot erase slide commitment |
+| Air dodge | Short directional aerial escape | High Stamina cost, limited steering, punishable recovery |
 | Wavedash | Convert an angled air-dodge landing into grounded momentum | Requires exact landing geometry; no free speed stacking |
 | Wall jump | Rebound from a brief wall-contact window | Per-wall lockout prevents infinite loops |
 | Air redirect | One bounded mid-air correction | Limited uses and explicit recovery |
 | Vault | Cross authored low cover | Requires a valid obstacle and leaves a readable crest |
-| Superglide | Jump during the narrow vault crest window | Precise execution, FLOW cost, and fixed speed ceiling |
-| Edgeweave | Skim a hostile spell edge at speed to regain FLOW | Hits, stationary proximity, and repeated contact give nothing |
+| Superglide | Jump during the narrow vault crest window | Precise execution, Stamina cost, and fixed speed ceiling |
+| Edgeweave | Skim a hostile spell edge at speed to regain Stamina | Hits, stationary proximity, and repeated contact give nothing |
 
 The intended movement state machine includes grounded, rising, airborne,
 falling, sliding, air-dodging, wall-contact, wall-jumping, vaulting, launched,
@@ -59,7 +59,7 @@ route through these states but may not bypass collision or the speed ceiling.
 | --- | --- |
 | Health | Determines defeat; ancestry and size may change survivability only within bounded budgets |
 | Flux | Abundant but exhaustible magic resource; repeated casting postpones recovery |
-| FLOW | Separate movement resource for sprinting, jumps, slides, air actions, and wall routes |
+| Stamina | Separate movement resource for sprinting, jumps, slides, air actions, and wall routes |
 | Ultimate charge | Earned through active combat and objective contribution, never passive waiting or self-farming |
 | Passive | One champion-defining rule that rewards a demonstrated behavior and has an explicit lockout |
 | Primary | Reliable aimed pressure that remains useful without Flux |
@@ -138,7 +138,7 @@ reuses an ancestry without copying a complete renderer or changing hitboxes.
 | Troll | Grimm Bow | Huge enduring body and delayed recovery; slow, readable commitments |
 | Minotaur | Ba Djoh | Momentum and structural impact; poor turning and miss recovery |
 | Seakin | Oh Tipi | Fins and water-route steering; strongest value depends on authored currents |
-| Wyrmborn | Ha Rekt | Anthropomorphic scaled wings and one strong aerial commitment; reduced FLOW |
+| Wyrmborn | Ha Rekt | Anthropomorphic scaled wings and one strong aerial commitment; reduced Stamina |
 | Stoneborn | Dr. Apex, Urzh | Braced stone mass and structure synergy; slow movement |
 | Treefolk | Treevor the Mason, Leaf the Hidden | Rooted stability and growth; large targets vulnerable to sustained fire |
 | Sylph | Grace Reava | Streamer-wing air control; very low health and mass |
@@ -201,9 +201,22 @@ The Sanctum is the first overhaul location foundation and the intended shared
 social shell. Its current menu chambers already let players inspect champions,
 configure matches, browse the realm and guide, tune controls, host or join
 friends, and return to an active contest without dissolving the remote party;
-the diegetic practice space remains to be built. Character selection uses a
-fighting-game grid: ancestry columns contain champion portraits, and hover or
-keyboard focus reveals the kit without changing the locked choice.
+the Living Sanctum is also the rendered starting place behind every menu.
+Its local Practice chamber launches a dedicated rune court with a Stamina
+circuit, movement cloister, spell court, and mirror ward. Players can switch
+champions without leaving the floor, enable a stationary target, restore every
+resource and cooldown, reset the court, and toggle the complete movement,
+element, champion, ancestry, and selected-ability field guide with `F2`.
+Character selection uses a fighting-game grid: ancestry columns contain
+champion portraits, and hover or keyboard focus reveals the kit without
+changing the locked choice.
+
+The practice court exposes the complete movement set currently implemented in
+the compatibility runtime: independent move/aim, counter-strafe, Stamina
+sprint, committed slide, hop, landing cut, wall kick, champion mobility, and
+Edgeweave. The broader movement table above remains the overhaul target; its
+double jump, air dodge, wavedash, vault, superglide, and air redirect entries
+are not yet runtime claims.
 
 ### Battleground design
 
@@ -258,7 +271,7 @@ GUI foundation to arrive early.
 | V1 | All champion and ancestry concepts | In progress: Spai Si, Urzh, and S. Wayne have source-only specimens |
 | V2 | Spell anticipation, travel, impact, ownership, and expiry language | Blocked by V1 |
 | V3 | Map materials, landmarks, routes, hazards, objectives, and dense-fight clarity | Blocked by V2 |
-| V4 | Sanctum, HUD, guide, settings, lobby, pause, results, and tutorial | Foundation only; full gate blocked by V3 |
+| V4 | Sanctum, HUD, guide, settings, lobby, pause, results, and tutorial | Menu, roster, and integrated Practice court authorized and implemented; full gate still blocked by V3 |
 | V5 | Integrated play, accessibility, eight-player stress, Windows/Linux source and package acceptance | Blocked by V4 |
 
 After V5, mechanics proceed as complete vertical slices: Flux economy and HUD,
@@ -275,9 +288,9 @@ every slice.
 | Overhaul data | Eight-family element aliases, sixteen mechanical race archetypes, sixteen design-only champions, ability catalog, reactions, movement grammar, sizes, modes, and destruction rules are validated but inactive |
 | Character visuals | Twenty modular ancestry templates exist; Spai Si, Urzh, and S. Wayne have modular six-state source-only specimens |
 | Haara prototype | Headless local mechanic prototype still uses the legacy `Hara` label and stable `mara` ID behind `contentProfile: "overhaul-preview"`; normal selection and live lobbies reject it |
-| Sanctum | Living menu shell, persistent remote company, and ancestry-column roster selection are implemented as an authorized V4 foundation |
+| Sanctum | Always-rendered Living Sanctum shell, persistent remote company, ancestry-column roster selection, and a local Practice court with movement/spell areas, stationary target, champion switch, refill/reset, and `F2` field guide are implemented |
 | Platforms | Source launch and graceful cleanup work on Windows and Linux; CI builds Windows NSIS and Linux AppImage artifacts |
-| Verification | 132 automated checks pass locally; PR #10 passed Windows/Linux Node 20/22 verification and both package builds for implementation commit `e472bd7` |
+| Verification | 133 automated checks pass locally; PR #10 passed Windows/Linux Node 20/22 verification and both package builds for the preceding implementation commit `e472bd7`; this Sanctum commit still needs its remote CI run |
 | Release blockers | Complete V1–V5 acceptance, a current packaged match smoke, signed public installers/update feed, and a dependable owned relay |
 
 The old champions are implementation scaffolding, not overhaul characters. Their
@@ -323,6 +336,12 @@ processes registered to this checkout with:
 ```bash
 npm run stop
 ```
+
+The game opens in the Living Sanctum. Choose **Practice**, select a champion,
+optionally keep the stationary target enabled, and choose **Enter the Practice
+Floor**. Use the top practice strip to switch champions, refill Stamina/Flux and
+cooldowns, reset the floor, or return to the Sanctum; press `F2` for the complete
+field guide.
 
 ### Setup for friends on Windows
 
@@ -403,6 +422,7 @@ loadout and movement grammar become live.
 | Restart | `R` | `R` | — |
 | Skip First Rite | `T` | — | — |
 | Toggle field information | `F1` | `F1` | — |
+| Toggle Sanctum practice guide | `F2` | `F2` | — |
 
 ## Visual review and verification
 

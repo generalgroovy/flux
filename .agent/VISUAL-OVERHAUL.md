@@ -52,7 +52,7 @@ mechanical defect, record it in the backlog rather than fixing it in this pass.
 | V0 | Accepted | Central tokens live in `styles.css`; the source-only specimen passed desktop and narrow review; the user's continuation authorized V1 |
 | V1 | In progress | Spai Si, Urzh, and S. Wayne have source-only six-state specimens; implement Nico Lai next, then complete and accept every overhaul champion before runtime promotion |
 | V2–V3, V5 | Blocked by order | Do not begin until the preceding visual gate is accepted |
-| V4 | Foundation only by direct request | The Living Sanctum owns all menu routes and preserves an active remote company; Muster adds ancestry-column portrait selection with independent non-mutating hover/focus previews; full GUI restyling and acceptance remain blocked until V1–V3 complete |
+| V4 | Foundation plus practice court by direct request | The Living Sanctum owns all menu routes, preserves an active remote company, starts behind the menu, and provides one old-world practice court with movement/spell lanes, character switching, refill/reset, and a field guide; Muster adds ancestry-column portrait selection with independent non-mutating hover/focus previews; full GUI acceptance remains blocked until V1–V3 complete |
 
 Within V1 through V4, finish one complete production slice at a time. Do not
 scatter placeholder restyles across the category. Preserve stable IDs and

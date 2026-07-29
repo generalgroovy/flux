@@ -78,15 +78,19 @@ test("local agent freezes mechanics and follows the visual overhaul order", asyn
   assert.match(visual, /Do not reproduce or closely imitate/);
   assert.match(visual, /do not add or rebalance movement,/i);
   assert.match(visual, /approved future characters receive concepts only and remain inactive/i);
-  assert.match(visual, /twenty-three-champion overhaul roster/i);
-  for (const [champion, ancestry] of [
-    ["The Red Baron", "Vampire"],
-    ["Fluup", "Werewolf"],
-    ["Spai Si", "Angel"],
-    ["Donnok", "Demon"],
+  assert.match(visual, /twenty-three named champions plus one explicitly temporary Angel placeholder/i);
+  for (const [champion, ancestry, emphasized] of [
+    ["Spai Si", "Demon", true],
+    ["Fluup", "Orc", false],
+    ["Oll' I", "Werewolf", true],
+    ["The Red Baron", "Undead", false],
+    ["Djonah Thaan", "Vampire", true],
+    ["Hesus Christo", "Elf", true],
   ]) {
-    assert.match(visual, new RegExp(`\\| ${champion.replace(".", "\\.")} \\| \\*\\*${ancestry}\\*\\* \\|`));
+    const display = emphasized ? `\\*\\*${ancestry}\\*\\*` : ancestry;
+    assert.match(visual, new RegExp(`\\| ${champion.replace(".", "\\.")} \\| ${display} \\|`));
   }
+  assert.match(visual, /\| Unnamed Angel \(placeholder\) \| \*\*Angel\*\* \|/);
   assert.match(visual, /Runtime `raceId` values remain\s+unchanged until V1/i);
   assert.match(launcher, /--read \.agent\/VISUAL-OVERHAUL\.md/);
 });

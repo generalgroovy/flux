@@ -6,7 +6,7 @@
 - Remote: resolve with `git remote -v`; never change it from an agent run
 - Verification: run `npm test`; do not reuse a stored test count
 - Playable state: read `.agent/PLAYABLE-STATE.md` and smoke affected behavior
-- Task source: `.agent/VISUAL-OVERHAUL.md`, then `.agent/backlog.md`; begin at V0
+- Task source: `.agent/VISUAL-OVERHAUL.md`, then `.agent/backlog.md`; V0 is implemented and awaits visual acceptance before V1
 - Stop signal for a bounded local run: `.agent/STOP`
 
 Use `bash scripts/local-agent.sh doctor` before every Odysseus or Aider handoff.

@@ -517,12 +517,28 @@ death, and respawn all share one simulation authority.
 Each champion also has a compact collision body, unique oriented silhouette, glyph,
 color, role, and readable kit identity.
 
+### Visual overhaul development
+
+V0 now centralizes FLUX's value ladder, old-world palette roles, outlines,
+materials, spacing, and motion timings in `styles.css`. Review the deliberately
+non-shipping reference board with:
+
+```bash
+npm run visual:specimen
+```
+
+Then open `http://127.0.0.1:4173/tools/visual-specimen.html`. The specimen is
+available from the source server for review but is excluded from desktop
+packages. V1 character production remains blocked until V0 is visually
+accepted; this styling work changes no simulation or network behavior.
+
 ### Future overhaul roster — not playable yet
 
 The integration branch currently contains sixteen validated design records in
 `src/overhaul-content.mjs`; the approved V1 visual plan now contains twenty-three
-champions and twenty ancestry foundations. The seven later concepts and the
-four new ancestry assignments must be unified into validated content only after
+named champions, one temporary Angel placeholder, and twenty ancestry
+foundations. The seven later named concepts, placeholder decision, and new
+ancestry assignments must be unified into validated content only after
 the character-visual gate is accepted. They do not replace the live champions
 above until a future vertical slice implements and verifies each character end
 to end. See [`.agent/VISUAL-OVERHAUL.md`](.agent/VISUAL-OVERHAUL.md) for the
@@ -543,27 +559,28 @@ required before Hara can be considered playable.
 | --- | --- | --- | --- |
 | Oh Tipi | Seakin | Water, Ice, Charge | Conductive-field skirmisher |
 | S. Wayne | Hobbit | Void, Light | Eclipse boundary tactician |
-| The Red Baron | **Vampire** | Void, Fire, Ice | Airborne formation controller |
+| The Red Baron | Undead | Void, Fire, Ice | Airborne formation controller |
 | Steezo | Goblin | Fire, Charge, Light | Volatile combo engineer |
 | Treevor the Mason | Treefolk | Earth, Wind, Fire | Mud-and-herb terrain mason |
-| Oll' I | Minotaur | Earth, Fire, Light | Structural momentum breaker |
-| Fluup | **Werewolf** | Charge, Wind, Ice | Storm momentum bruiser |
+| Oll' I | **Werewolf** | Earth, Fire, Light | Structural momentum breaker |
+| Fluup | Orc | Charge, Wind, Ice | Storm momentum bruiser |
 | Wa Bidi | Goblin | Charge, Wind, Fire | Battlecry air-route specialist |
 | Grace Reava | Sylph | Wind, Water, Light | Luminous-current route duelist |
 | Nico Lai | Gnome | Charge, Light | Precision shared-device engineer |
-| Spai Si | **Angel** | Wind, Light, Earth | Cryptic redirect duelist |
+| Spai Si | **Demon** | Wind, Light, Earth | Cryptic redirect duelist |
 | Leaf the Hidden | Treefolk | Water, Earth, Light | Concealed grove support |
 | Ha Rekt | Wyrmborn | Ice, Wind, Fire | Aerial cold-line hunter |
 | Dr. Apex | Stoneborn | Earth, Light, Water | Armored combat medic |
 | Haara | Nymph | Light, Wind, Spirit | Resourceful bloom planner |
-| Hesus Christo | Wyrmborn | Earth, Water | Towering renewal vanguard |
+| Hesus Christo | **Elf** | Earth, Water | Towering renewal vanguard |
 | Grimm Bow | Troll | Void, Earth, Water | Displacement-to-precision terrain archer |
 | Biggy Bob | Dwarf | Earth, Fire, Light | Grounded forge-line breacher |
 | Jan Wicked | Human | Ice, Void, Charge | Black-ice circuit hunter |
 | Ba Djoh | Minotaur | Earth, Fire, Water | Three-current charge breaker |
 | Urzh | Stoneborn | Earth, Fire, Charge | Conductive kiln bulwark |
-| Donnok | **Demon** | Earth, Fire, Water | Chthonic forge shaper |
-| Djonah Thaan | Undead | Void, Charge, Fire | Grave-current pursuit controller |
+| Donnok | Dwarf | Earth, Fire, Water | Forge-rhythm terrain shaper |
+| Djonah Thaan | **Vampire** | Void, Charge, Fire | Grave-current pursuit controller |
+| Unnamed Angel | **Angel placeholder** | Wind, Light, Spirit | Visual coverage only; identity and kit unapproved |
 
 ## Maps and modes
 

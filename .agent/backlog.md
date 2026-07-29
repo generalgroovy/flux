@@ -4,10 +4,10 @@
 
 Complete `.agent/VISUAL-OVERHAUL.md` before selecting any mechanical backlog
 item. Required order is V0 tokens/specimen -> V1 characters -> V2 spells -> V3
-maps -> V4 GUI -> V5 integrated acceptance. Current next slice: inspect the live
-renderer and centralize an original FLUX palette, value, outline, material, and
-motion token set; prove it on one non-shipping reference specimen without
-changing simulation or exposing a partial production restyle.
+maps -> V4 GUI -> V5 integrated acceptance. V0 tokens and the non-shipping
+specimen are implemented; current next decision is desktop/narrow visual
+acceptance of `tools/visual-specimen.html`. Do not begin V1 until that review
+accepts or revises the palette, value, outline, material, and motion grammar.
 
 Priority remains fundamentals → compact PvP → PvPvE → PvE. Add race champions
 only as complete contrasting kits inside those proven loops. Keep Battle Royale
@@ -221,14 +221,16 @@ raw LLM history, final state, and replayable patch for completeness.
 
 ## Future roster acceptance
 
-- Treat the twenty-three concepts in `.agent/VISUAL-OVERHAUL.md` as the approved
-  visual roster. Grimm Bow reuses the retired `brum` compatibility ID; do not
-  add filler solely to cover every ancestry.
-- Use The Red Baron as Vampire, Fluup as Werewolf, Spai Si as Angel, and Donnok
-  as Demon. Keep these as presentation-only assignments until V1 accepts every
-  character concept and a separate mechanical migration is tested.
-- Leave Elf and Orc unrepresented in this roster rather than weakening an
-  existing champion identity for artificial one-per-ancestry coverage.
+- Treat the twenty-three named concepts plus one temporary Angel placeholder in
+  `.agent/VISUAL-OVERHAUL.md` as the visual roster plan. Grimm Bow reuses the
+  retired `brum` compatibility ID.
+- Use Spai Si as Demon, Fluup as Orc, Oll' I as Werewolf, The Red Baron as
+  Undead, Djonah Thaan as Vampire, and Hesus Christo as Elf. Keep these as
+  presentation-only assignments until V1 accepts every character concept and a
+  separate mechanical migration is tested.
+- Keep the Angel entry explicitly unnamed and without lore, kit, ID, or runtime
+  record; replace or remove it before V1 acceptance instead of treating a filler
+  slot as a finished champion.
 - Preserve each reused internal ID until an explicit compatibility migration
   exists, while showing only the approved player-facing name.
 - Validate the low-cost Haara/Spai Si/Leaf the Hidden/Hesus Christo signatures through

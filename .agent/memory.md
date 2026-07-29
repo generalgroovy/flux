@@ -1771,3 +1771,40 @@
   and focused overhaul suites passed 18/18, then the full deterministic suite
   passed 122/122 across its standard, WebSocket, and cleanup lanes. No playtest
   is claimed for a presentation-only planning change.
+
+# 2026-07-29 — Corrected ancestry plan and V0 visual specimen
+
+- **User mapping:** Superseded the prior distribution. Spai Si is planned as
+  Demon, Fluup as Orc, Oll' I as Werewolf, The Red Baron as Undead, Djonah
+  Thaan as Vampire, and Hesus Christo as Elf. The twenty-three named champions
+  now cover nineteen ancestries; one explicitly unnamed Angel placeholder gives
+  the final ancestry a visual slot but has no ID, lore, kit, mechanics, or
+  runtime record.
+- **V0 implementation:** Centralized a seven-step value ladder, eight restrained
+  palette roles, three outline weights, five old-world material treatments,
+  spacing, corners, four timing tiers, and one response easing curve in
+  `styles.css`. Existing interface variables now alias those tokens without
+  changing simulation behavior.
+- **Reference specimen:** Added `tools/visual-specimen.html` and its scoped CSS
+  as a source-server-only board for palette, contrast, materials, gameplay
+  geometry, scale, outlines, and motion. The route is allowlisted only for local
+  source review and `tools/` remains excluded from desktop package inputs.
+- **Accessibility:** The specimen is responsive and reduced-motion safe. Tests
+  enforce all token families, package exclusion, all six reference sections,
+  and at least 4.5:1 contrast for primary, secondary, focus, and danger roles;
+  the lowest enforced pair is Danger on the darkest ground at 4.72:1.
+- **Rendered verification:** The in-app browser rendered the specimen at
+  1440×900, 800×700, and 390×844 with all six sections visible, no horizontal
+  overflow, and no clipped text after one header-line-height correction. The
+  live main menu also rendered at 1440×900 with no console warnings. The
+  in-app browser did not initialize the gameplay module during an attempted
+  First Contact click, so no interactive combat playtest is claimed; the
+  deterministic browser-shell test did launch, pause, and reset successfully.
+- **Automated verification:** Focused visual/handoff checks passed 4/4;
+  `npm.cmd test` passed 123/123 across 121 standard checks, one live WebSocket
+  lifecycle, and one authenticated cleanup check; all tracked shell scripts
+  parsed with Git Bash; package JSON, server syntax, and `git diff --check`
+  passed.
+- **Next gate:** V0 is implemented but awaits user visual acceptance. Do not
+  start V1 character production until the token/specimen direction is accepted
+  or revised; the Angel placeholder must be resolved before V1 can complete.

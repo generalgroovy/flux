@@ -39,6 +39,8 @@ const publicFiles = new Set([
   "/src/network/conditioner.mjs",
   "/src/network/invite.mjs",
   "/src/network/quality.mjs",
+  "/tools/visual-specimen.html",
+  "/tools/visual-specimen.css",
 ]);
 const contentTypes = new Map([
   [".css", "text/css; charset=utf-8"],

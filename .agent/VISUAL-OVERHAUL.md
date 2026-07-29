@@ -45,6 +45,13 @@ mechanical defect, record it in the backlog rather than fixing it in this pass.
 | V4 | GUI | Menu, Muster Hall, HUD, guide, settings, lobby, pause, results, and tutorial use one restrained manuscript/adventure system with keyboard/gamepad focus and no clipped decisions |
 | V5 | Integrated acceptance | Full match, First Rite, every shortcut, compact/narrow layouts, 8-player stress, Windows/Linux source launch, package smoke, and visual/accessibility review pass |
 
+## Gate status
+
+| Gate | Status | Evidence / next decision |
+| ---: | --- | --- |
+| V0 | Implemented; visual acceptance pending | Central tokens live in `styles.css`; the source-only specimen is `tools/visual-specimen.html`; inspect desktop and narrow layouts before accepting V0 |
+| V1–V5 | Blocked by order | Do not begin until the preceding visual gate is accepted |
+
 Within V1 through V4, finish one complete production slice at a time. Do not
 scatter placeholder restyles across the category. Preserve stable IDs and
 existing gameplay behavior throughout.
@@ -61,38 +68,40 @@ existing gameplay behavior throughout.
 ## V1 planned ancestry distribution
 
 This is the authoritative visual-concept distribution for the approved
-twenty-three-champion overhaul roster. It supersedes older concept tables that
-show The Red Baron as Undead, Fluup as Orc, Spai Si as Elf, or Donnok as Dwarf.
-The four reassigned champions keep their stable character IDs, affinities,
-kits, balance values, and implementation status. Runtime `raceId` values remain
-unchanged until V1 character concepts are accepted and a separately tested
-mechanical migration is authorized.
+twenty-three named champions plus one explicitly temporary Angel placeholder.
+It supersedes older concept tables that show different assignments. Reassigned
+champions keep their stable character IDs, affinities, kits, balance values,
+and implementation status. Runtime `raceId` values remain unchanged until V1
+character concepts are accepted and a separately tested mechanical migration
+is authorized. The Angel placeholder has no gameplay ID, kit, lore, or runtime
+record and must be replaced or removed before V1 acceptance.
 
 | Champion | Planned ancestry | Visual role read |
 | --- | --- | --- |
 | Oh Tipi | Seakin | Compact tide skirmisher with cheek fins and a trident line |
 | S. Wayne | Hobbit | Low eclipse tactician with bare feet and a split mantle |
-| The Red Baron | **Vampire** | Aristocratic air controller with a high collar, fangs, and rigid crimson wedges |
+| The Red Baron | Undead | Air controller with rune ribs, an officer mantle, and rigid crimson wedges |
 | Steezo | Goblin | Small volatile engineer with a tool rig and sparking pack |
 | Treevor the Mason | Treefolk | Huge terrain mason with a branch crown and mud-block mass |
-| Oll' I | Minotaur | Broad horned breaker with a locked charge posture |
-| Fluup | **Werewolf** | Heavy storm bruiser with a wolf muzzle, mane, and weighted landing stance |
+| Oll' I | **Werewolf** | Heavy breaker with a wolf muzzle, mane, and a locked forward posture |
+| Fluup | Orc | Heavy storm bruiser with tusks and a weighted landing stance |
 | Wa Bidi | Goblin | Fast battlecry route specialist with large ears and wind-swept gear |
 | Grace Reava | Sylph | Light streamer-wing duelist with practical layered travel clothes |
 | Nico Lai | Gnome | Tiny precision engineer with a high cap and calibrated coil pack |
-| Spai Si | **Angel** | Narrow redirect duelist with feathered wings, a simple halo mark, and poised aim lines |
+| Spai Si | **Demon** | Narrow redirect duelist with swept horns, an ember tail, and poised aim lines |
 | Leaf the Hidden | Treefolk | Large concealed support with a layered leaf mantle and growth rings |
 | Ha Rekt | Wyrmborn | Anthropomorphic rime hunter with scaled wings and an aerial attack posture |
 | Dr. Apex | Stoneborn | Large armored medic with square stone shoulders and a triage focus |
 | Haara | Nymph | Small bloom planner with a petal mantle and restrained pollen motes |
-| Hesus Christo | Wyrmborn | Huge anthropomorphic renewal vanguard with heavy scaled wings |
+| Hesus Christo | **Elf** | Tall renewal vanguard with long ears, a grounded mantle, and deliberate posture |
 | Grimm Bow | Troll | Large terrain archer with moss horns and an inward-drawn bow stance |
 | Biggy Bob | Dwarf | Broad forge breacher with brown hair, a brown beard, and a masonry hammer |
 | Jan Wicked | Human | Medium black-ice hunter whose identity comes from gear and stance, not anatomy |
 | Ba Djoh | Minotaur | Huge three-current breaker with broad horns and a wet hoof trail |
 | Urzh | Stoneborn | Large kiln bulwark with ember seams in a squared stone frame |
-| Donnok | **Demon** | Compact chthonic forge shaper with swept horns, an ember tail, and steam-worn wraps |
-| Djonah Thaan | Undead | Medium pursuit controller with rune ribs and a deathly wake |
+| Donnok | Dwarf | Compact forge shaper with a square silhouette and steam-worn wraps |
+| Djonah Thaan | **Vampire** | Medium pursuit controller with a high collar, fangs, and a deathly wake |
+| Unnamed Angel (placeholder) | **Angel** | Temporary feather-wing and plain-halo silhouette slot; no approved character identity yet |
 
 The new ancestry silhouettes are presentation concepts only in V1: Vampires
 use high collars, fangs, and controlled posture; Werewolves use muzzles, manes,
@@ -104,30 +113,29 @@ shapes that obscure attacks or body boundaries.
 | Ancestry | Champions | Count |
 | --- | --- | ---: |
 | Human | Jan Wicked | 1 |
-| Dwarf | Biggy Bob | 1 |
+| Dwarf | Biggy Bob; Donnok | 2 |
 | Gnome | Nico Lai | 1 |
 | Hobbit | S. Wayne | 1 |
-| Elf | — | 0 |
-| Orc | — | 0 |
+| Elf | Hesus Christo | 1 |
+| Orc | Fluup | 1 |
 | Troll | Grimm Bow | 1 |
-| Minotaur | Oll' I; Ba Djoh | 2 |
+| Minotaur | Ba Djoh | 1 |
 | Seakin | Oh Tipi | 1 |
-| Wyrmborn | Ha Rekt; Hesus Christo | 2 |
+| Wyrmborn | Ha Rekt | 1 |
 | Stoneborn | Dr. Apex; Urzh | 2 |
 | Treefolk | Treevor the Mason; Leaf the Hidden | 2 |
 | Sylph | Grace Reava | 1 |
-| Undead | Djonah Thaan | 1 |
+| Undead | The Red Baron | 1 |
 | Goblin | Steezo; Wa Bidi | 2 |
 | Nymph | Haara | 1 |
-| **Vampire** | The Red Baron | 1 |
-| **Werewolf** | Fluup | 1 |
-| **Angel** | Spai Si | 1 |
-| **Demon** | Donnok | 1 |
+| **Vampire** | Djonah Thaan | 1 |
+| **Werewolf** | Oll' I | 1 |
+| **Angel** | Unnamed placeholder | 1 |
+| **Demon** | Spai Si | 1 |
 
-Elf and Orc remain valid ancestry foundations but deliberately have no champion
-in this roster. Do not distort a champion solely to achieve one-per-ancestry
-coverage; add a future champion only when its play and visual promise are
-distinct.
+All twenty ancestry foundations now have a visual representative, but the Angel
+slot is intentionally not a character approval. Do not invent its permanent
+name, lore, kit, or mechanics merely to convert coverage into fake completion.
 
 ## Iteration rule
 

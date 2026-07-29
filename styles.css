@@ -1,17 +1,73 @@
 :root {
   color-scheme: dark;
-  --ink: #f1dfac;
-  --muted: #b6a77b;
-  --dim: #746746;
-  --void: #110f0a;
-  --panel: #211b11;
+  /* V0 visual system: value roles before hue roles. */
+  --flux-value-0: #0d0b08;
+  --flux-value-1: #17130d;
+  --flux-value-2: #241d13;
+  --flux-value-3: #493b24;
+  --flux-value-4: #817044;
+  --flux-value-5: #b9a66f;
+  --flux-value-6: #f2e4bb;
+
+  /* Original old-world materials and restrained elemental accents. */
+  --flux-parchment: #f2e4bb;
+  --flux-parchment-muted: #b9a66f;
+  --flux-mineral: #817044;
+  --flux-forest: #71864a;
+  --flux-tide: #67959a;
+  --flux-ember: #ce7146;
+  --flux-volt: #d4b84e;
+  --flux-veil: #77648d;
+  --flux-prism: #ead684;
+  --flux-danger: #c85b45;
+
+  /* Shape, spacing, and timing are shared by every later visual gate. */
+  --flux-outline-hairline: 1px;
+  --flux-outline-body: 2px;
+  --flux-outline-focus: 3px;
+  --flux-corner-small: 0.2rem;
+  --flux-corner-panel: 0.45rem;
+  --flux-space-1: 0.25rem;
+  --flux-space-2: 0.5rem;
+  --flux-space-3: 0.75rem;
+  --flux-space-4: 1rem;
+  --flux-space-6: 1.5rem;
+  --flux-motion-immediate: 80ms;
+  --flux-motion-response: 120ms;
+  --flux-motion-panel: 180ms;
+  --flux-motion-ceremony: 320ms;
+  --flux-ease-response: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --flux-material-parchment:
+    repeating-linear-gradient(0deg, #664e2510 0 1px, transparent 1px 5px),
+    linear-gradient(135deg, #3a2d18, #241b10);
+  --flux-material-stone:
+    linear-gradient(135deg, transparent 45%, #c3aa6540 46% 49%, transparent 50%),
+    linear-gradient(#332b20, #1b1813);
+  --flux-material-woven:
+    repeating-linear-gradient(90deg, #d1b96516 0 2px, transparent 2px 6px),
+    repeating-linear-gradient(0deg, #00000024 0 1px, transparent 1px 4px),
+    #342513;
+  --flux-material-root:
+    repeating-radial-gradient(ellipse at 15% 120%, #98aa5540 0 2px, transparent 3px 12px),
+    #242519;
+  --flux-material-water:
+    repeating-linear-gradient(165deg, #acd8d81a 0 2px, transparent 2px 11px),
+    #193034;
+
+  /* Compatibility names used by the current interface. */
+  --ink: var(--flux-parchment);
+  --muted: var(--flux-parchment-muted);
+  --dim: var(--flux-value-4);
+  --void: var(--flux-value-0);
+  --panel: var(--flux-value-2);
   --panel-soft: #2a2114;
-  --line: #806b36;
-  --line-soft: #493b20;
-  --mint: #d3b65b;
-  --amber: #efbf48;
-  --red: #c85b45;
-  --blue: #6e9a9b;
+  --line: var(--flux-mineral);
+  --line-soft: var(--flux-value-3);
+  --mint: var(--flux-volt);
+  --amber: var(--flux-prism);
+  --red: var(--flux-danger);
+  --blue: var(--flux-tide);
   --scale: 1;
   font-family:
     Georgia, "Times New Roman", ui-serif, serif;
@@ -146,10 +202,10 @@ kbd {
   letter-spacing: 0.09em;
   text-transform: uppercase;
   transition:
-    border-color 120ms ease,
-    background 120ms ease,
-    color 120ms ease,
-    transform 120ms ease;
+    border-color var(--flux-motion-response) var(--flux-ease-response),
+    background var(--flux-motion-response) var(--flux-ease-response),
+    color var(--flux-motion-response) var(--flux-ease-response),
+    transform var(--flux-motion-response) var(--flux-ease-response);
 }
 
 .button:hover {
@@ -229,8 +285,8 @@ kbd {
     linear-gradient(90deg, #151108fa 0 27%, #211a0eea 70%, #19130ae8),
     radial-gradient(circle at 82% 22%, #9b743335, transparent 30%);
   transition:
-    opacity 180ms ease,
-    visibility 180ms ease;
+    opacity var(--flux-motion-panel) var(--flux-ease-response),
+    visibility var(--flux-motion-panel) var(--flux-ease-response);
 }
 
 #app[data-view="game"] .front-end {

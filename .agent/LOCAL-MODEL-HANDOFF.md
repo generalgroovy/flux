@@ -8,6 +8,7 @@
 | Model | Qwen2.5-Coder 3B or 7B | Code reading, editing, diagnosis, and test repair |
 | Code agent | Aider | Git-aware repository map, edits, shell suggestions, and tests |
 | Workspace | Odysseus (optional) | UI, sessions, scheduling, prompt/state handoff |
+| Entry point | `scripts/linux-agent-handoff.sh` | One Garuda/Sway command surface for setup, Aider, Odysseus, logs, and stop |
 | Guardrail | `scripts/local-agent.sh` | Full local access, shared lock, verification, local commits |
 
 The repository does not install or vendor Odysseus. Its current upstream is a
@@ -32,9 +33,9 @@ the model should inspect relevant files rather than ingest the whole codebase.
 Review the installer, then run one of:
 
 ```bash
-bash scripts/setup-local-agent-linux.sh --install --pull --model auto --backend cpu
-bash scripts/setup-local-agent-linux.sh --install --pull --model 7b --backend cuda
-bash scripts/setup-local-agent-linux.sh --install --pull --model 7b --backend rocm
+bash scripts/linux-agent-handoff.sh setup --install --pull --model auto --backend cpu
+bash scripts/linux-agent-handoff.sh setup --install --pull --model 7b --backend cuda
+bash scripts/linux-agent-handoff.sh setup --install --pull --model 7b --backend rocm
 ```
 
 `--install` is required before the script may invoke `pacman`, create its
@@ -46,21 +47,21 @@ user-local Aider virtual environment, or enable Ollama. Without `--install` or
 
 ```bash
 git switch -c agent/my-bounded-flux-task
-bash scripts/local-agent.sh doctor --model auto
-bash scripts/local-agent.sh chat --model auto
+bash scripts/linux-agent-handoff.sh doctor --model auto
+bash scripts/linux-agent-handoff.sh aider --model auto
 ```
 
 For one unattended but bounded pass:
 
 ```bash
-bash scripts/local-agent.sh run --model 7b --iterations 1
+bash scripts/linux-agent-handoff.sh run --model 7b --iterations 1
 ```
 
 That command autonomously edits, runs the complete suite, and creates a local
 commit without confirmation. To keep the verified diff uncommitted instead:
 
 ```bash
-bash scripts/local-agent.sh run --model 7b --iterations 1 --no-commit
+bash scripts/linux-agent-handoff.sh run --model 7b --iterations 1 --no-commit
 ```
 
 Interactive chat also auto-approves shell/file actions, tests edits, and makes
@@ -98,7 +99,7 @@ Every `chat` or `run` creates a private directory with mode `0700` below
 Locate the newest audit without starting Ollama or an agent:
 
 ```bash
-bash scripts/local-agent.sh logs
+bash scripts/linux-agent-handoff.sh logs
 ```
 
 Audit files may contain source, prompts, and terminal output, so they are
@@ -109,7 +110,7 @@ chain-of-thought as trustworthy engineering documentation.
 Stop a running loop from another terminal with:
 
 ```bash
-bash scripts/local-agent.sh stop
+bash scripts/linux-agent-handoff.sh stop
 ```
 
 ## Odysseus handoff
@@ -124,9 +125,13 @@ then return the diff and validation result for review.
 Generate a live branch/commit/status handoff and place it on Sway's clipboard:
 
 ```bash
-bash scripts/prepare-odysseus-handoff.sh --clipboard
+bash scripts/linux-agent-handoff.sh odysseus --clipboard
 ```
 
-Sway needs no special GUI integration. The bounded runner uses
+With no extra option, `odysseus` automatically uses `wl-copy` when both
+`WAYLAND_DISPLAY` and `SWAYSOCK` are active; otherwise it prints the live
+handoff to the terminal. Paste that handoff into an authenticated Odysseus
+workspace configured with `.agent/ODYSSEUS_PROMPT.md`, then have its shell agent
+call exactly one `run` command above. Sway needs no special GUI integration. The bounded runner uses
 `systemd-inhibit` when available and `notify-send` for completion/failure, while
 remaining fully usable from a terminal without either feature.

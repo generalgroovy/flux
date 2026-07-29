@@ -501,12 +501,13 @@ Garuda Sway can run a transparent local-only coding handoff with Ollama,
 Qwen2.5-Coder 3B/7B, Aider, and optional Odysseus:
 
 ```bash
-bash scripts/setup-local-agent-linux.sh --check
-bash scripts/setup-local-agent-linux.sh --install --pull --model auto --backend cpu
-bash scripts/local-agent.sh chat --model auto
-bash scripts/local-agent.sh run --model auto --iterations 1
-bash scripts/prepare-odysseus-handoff.sh --clipboard
-bash scripts/local-agent.sh logs
+bash scripts/linux-agent-handoff.sh setup --check
+bash scripts/linux-agent-handoff.sh setup --install --pull --model auto --backend cpu
+bash scripts/linux-agent-handoff.sh doctor --model auto
+bash scripts/linux-agent-handoff.sh aider --model auto
+bash scripts/linux-agent-handoff.sh run --model auto --iterations 1
+bash scripts/linux-agent-handoff.sh odysseus --clipboard
+bash scripts/linux-agent-handoff.sh logs
 ```
 
 The runner refuses protected branches, detached HEAD, dirty trees, and concurrent

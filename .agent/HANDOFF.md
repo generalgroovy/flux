@@ -58,3 +58,9 @@ checkout; its shell agent must call the same `scripts/local-agent.sh` workflow
 and the same test gates. Runtime inference is accepted only from loopback
 Ollama; telemetry, update checks, URL ingestion, package downloads, and Git
 network protocols are disabled after setup.
+
+On Garuda/Sway, `scripts/linux-agent-handoff.sh` is the canonical human-facing
+dispatcher. Its `aider` command opens the interactive workflow, `run` performs
+the same bounded workflow for Odysseus, and `odysseus` prints or copies a live
+branch/commit/status handoff. The dispatcher adds no second execution path; it
+delegates to the audited setup, launcher, and handoff scripts above.

@@ -155,6 +155,6 @@ else
 fi
 
 printf '\nReady. Create or switch to a non-protected branch, then run:\n'
-printf '  bash scripts/local-agent.sh chat --model %s\n' "${model_request}"
+printf '  bash scripts/linux-agent-handoff.sh aider --model %s\n' "${model_request}"
 printf 'or one bounded implementation pass:\n'
-printf '  bash scripts/local-agent.sh run --model %s --iterations 1\n' "${model_request}"
+printf '  bash scripts/linux-agent-handoff.sh run --model %s --iterations 1\n' "${model_request}"

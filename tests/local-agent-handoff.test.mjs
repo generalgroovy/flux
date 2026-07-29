@@ -5,17 +5,18 @@ import test from "node:test";
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("local-agent handoff is portable, autonomous, and local-model only", async () => {
-  const [config, handoff, prompt, common, launcher, setup, odysseus, state] = await Promise.all([
+  const [config, handoff, prompt, common, launcher, dispatcher, setup, odysseus, state] = await Promise.all([
     read(".aider.conf.yml"),
     read(".agent/HANDOFF.md"),
     read(".agent/ODYSSEUS_PROMPT.md"),
     read("scripts/local-agent-common.sh"),
     read("scripts/local-agent.sh"),
+    read("scripts/linux-agent-handoff.sh"),
     read("scripts/setup-local-agent-linux.sh"),
     read("scripts/prepare-odysseus-handoff.sh"),
     read(".odysseus/STATE.md"),
   ]);
-  const trackedHandoff = [config, handoff, prompt, common, launcher, setup, odysseus, state].join("\n");
+  const trackedHandoff = [config, handoff, prompt, common, launcher, dispatcher, setup, odysseus, state].join("\n");
 
   assert.doesNotMatch(trackedHandoff, /\/home\/otp\/Projects\/flux/);
   assert.doesNotMatch(trackedHandoff, /agent\/prototype-loop/);
@@ -40,6 +41,12 @@ test("local-agent handoff is portable, autonomous, and local-model only", async 
   assert.match(launcher, /events\.tsv/);
   assert.match(launcher, /command_name.*logs/);
   assert.doesNotMatch(launcher, /git push/);
+  assert.match(dispatcher, /local-agent\.sh.*chat/);
+  assert.match(dispatcher, /local-agent\.sh.*run/);
+  assert.match(dispatcher, /prepare-odysseus-handoff\.sh/);
+  assert.match(dispatcher, /WAYLAND_DISPLAY/);
+  assert.match(dispatcher, /SWAYSOCK/);
+  assert.doesNotMatch(dispatcher, /git (?:pull|push|fetch)/);
   assert.match(setup, /install=false/);
   assert.match(setup, /--install/);
   assert.match(setup, /--noconfirm/);
@@ -93,4 +100,6 @@ test("local agent freezes mechanics and follows the visual overhaul order", asyn
   assert.match(visual, /\| Unnamed Angel \(placeholder\) \| \*\*Angel\*\* \|/);
   assert.match(visual, /Runtime `raceId` values remain\s+unchanged until V1/i);
   assert.match(launcher, /--read \.agent\/VISUAL-OVERHAUL\.md/);
+  assert.match(task, /take \*\*Steezo\*\* as the next single V1\s+slice/);
+  assert.match(task, /Keep Steezo source-only until an actual\s+Garuda visual review/);
 });

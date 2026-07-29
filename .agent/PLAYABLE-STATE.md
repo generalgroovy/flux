@@ -82,6 +82,10 @@ is given.
 - This does not satisfy the pending packaged-match gate. A current-commit Windows
   package match smoke and the GitHub Ubuntu package job are still required before
   publishing `develop` or considering a merge to `main`.
+- Muster now presents thirteen ancestry columns as a compact portrait roster.
+  Hover and keyboard focus expose champion role, style, affinity, difficulty,
+  ancestry tradeoffs, and kit names without changing the locked choice; Player
+  1 and Player 2 previews remain independent.
 
 ## 2026-07-29 candidate refresh
 

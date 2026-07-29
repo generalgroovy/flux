@@ -17,6 +17,10 @@ The candidate currently includes:
 - the complete 0.34.3 live game;
 - the Living Sanctum as the single menu surface for muster, remote friends,
   champions, realm/rites, controls, and settings;
+- a fighting-game-style Muster roster: ancestries form compact columns,
+  portrait tiles retain stable champion choices, and hover or keyboard focus
+  reveals role, affinity, difficulty, ancestry tradeoffs, and the complete kit
+  without changing the locked selection;
 - persistent remote company while connected players visit any Sanctum chamber,
   with an explicit return-to-contest control and explicit leave action;
 - reliable source launch and graceful owned-process cleanup on Windows and Linux;
@@ -46,6 +50,13 @@ authenticated loopback request, so Windows receives the same graceful WebSocket
 shutdown notice and zero exit status as Linux instead of an unavoidable forced
 termination. A Windows/Ubuntu CI matrix exercises the complete test suite and
 validates each platform's launcher syntax on every pull request.
+
+The current candidate refines the **Muster Hall** into a compact fighting-game
+roster without changing gameplay contracts. Thirteen ancestry columns carry
+layered race/champion portrait marks; hovering or focusing a portrait opens a
+shared detail card with role, play style, ancestry trait, affinity edge,
+difficulty, and kit names. Player 1 and Player 2 keep independent previews, and
+previewing never changes the champion already locked for launch.
 
 Build 0.34.2 gives the fullscreen **Muster Hall** a measured readability floor.
 Mode, champion, race, map, setting, and launch copy now stays near or above 12

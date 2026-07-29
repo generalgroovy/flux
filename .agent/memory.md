@@ -1924,3 +1924,32 @@
 - **Gate boundary:** This is a direct-user-authorized V4 foundation only. V1
   character work remains active, and broader GUI styling, spells, maps, and
   mechanics remain ordered behind their existing gates.
+
+# 2026-07-29 — Ancestry-column champion selection
+
+- **Player-facing problem:** Muster exposed ancestry columns, but each champion
+  row spent most of its space on repeated copy and did not provide the immediate
+  portrait scan or inspect-before-lock behavior expected of a fighting-game
+  roster.
+- **Implemented solution:** Recast both local-player selectors as thirteen
+  compact ancestry columns with layered ancestry/champion portrait marks.
+  Hovering or focusing a tile now fills a shared detail card with the champion's
+  role, style, affinity edge, difficulty, ancestry boon/drawback, and complete
+  kit names. Leaving the roster restores the locked champion, and previewing
+  never changes the radio selection.
+- **Responsive/accessibility contract:** Pointer hover and keyboard focus share
+  one code path; labels remain the actual stable radio controls; Player 1 and
+  Player 2 own independent live regions; narrow layouts stack the readout while
+  preserving the horizontally comparable ancestry strip.
+- **Automated verification:** `npm.cmd test` passed 129/129 across 127 standard
+  checks, one live WebSocket lifecycle, and one authenticated cleanup check.
+  The DOM coverage includes all thirteen columns, ten live portrait choices,
+  both initial previews, a Gorum hover preview, locked-selection stability, and
+  leave-to-restore behavior.
+- **Rendered limitation:** The Windows source build rendered the Living Sanctum
+  fullscreen and accepted focus on **Enter Muster Hall**, but Electron desktop
+  automation again did not dispatch activation. No interactive roster render or
+  match-entry claim is made from that automation run.
+- **Gate boundary:** This is the user's second bounded V4 foundation request.
+  V1 remains active; the change introduces no champion, affinity, ability,
+  balance, networking, or simulation behavior.

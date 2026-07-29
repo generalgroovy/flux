@@ -237,6 +237,14 @@ matchOverlay.addEventListener("click", handleOverlayClick);
 menuClose.addEventListener("click", resumeGame);
 matchForm.addEventListener("submit", startConfiguredMatch);
 matchForm.addEventListener("change", handleMatchFormChange);
+matchForm.addEventListener("pointerover", previewChampionChoice);
+matchForm.addEventListener("focusin", previewChampionChoice);
+element("agent-options").addEventListener("pointerleave", () =>
+  restoreChampionPreview("character"),
+);
+element("agent-two-options").addEventListener("pointerleave", () =>
+  restoreChampionPreview("characterTwo"),
+);
 element("bot-count").addEventListener("input", () => {
   element("bot-count-output").value = element("bot-count").value;
 });
@@ -960,6 +968,58 @@ function updateDeploymentSummary() {
   element("selected-map-name").textContent = map.name;
   element("selected-element-name").textContent = `${agent.affinity.name} · ${agent.affinity.edge}`;
   element("selected-champion").dataset.element = agent.affinity.id;
+  restoreChampionPreview("character");
+  restoreChampionPreview("characterTwo");
+}
+
+function previewChampionChoice(event) {
+  const choice = event.target.closest?.(".agent-choice[data-character-id]");
+  if (!choice) return;
+  const input = choice.querySelector('input[type="radio"]');
+  if (!input) return;
+  renderChampionPreview(
+    input.name === "characterTwo" ? "agent-two-preview" : "agent-preview",
+    choice.dataset.characterId,
+  );
+}
+
+function restoreChampionPreview(name) {
+  renderChampionPreview(
+    name === "characterTwo" ? "agent-two-preview" : "agent-preview",
+    selectedMatchChoice(name, name === "characterTwo" ? "bulwark" : "kite"),
+  );
+}
+
+function renderChampionPreview(previewId, characterId) {
+  const preview = element(previewId);
+  const agent = getCharacter(characterId);
+  const race = getRace(agent.homeRaceId);
+  const kit = [
+    agent.passive,
+    agent.primary,
+    agent.tactical,
+    agent.defense,
+    agent.mobility,
+    agent.ultimate,
+  ].filter(Boolean);
+  preview.dataset.element = agent.affinity.id;
+  preview.innerHTML = `
+    <div class="champion-preview-portrait" style="--agent-color:${agent.accent}">
+      <i aria-hidden="true">${race.featureGlyph}</i>
+      <strong aria-hidden="true">${agent.glyph}</strong>
+    </div>
+    <div class="champion-preview-copy">
+      <span>${race.name} · ${agent.role}</span>
+      <h3>${agent.name}</h3>
+      <p>${agent.style}</p>
+      <small>${race.trait}: ${race.boon} / ${race.drawback}</small>
+    </div>
+    <div class="champion-preview-readout">
+      <b>${agent.affinity.name}</b>
+      <span>${agent.affinity.edge}</span>
+      <em>Difficulty ${"◆".repeat(agent.difficulty)}</em>
+      <div>${kit.map((ability) => `<i>${ability.name}</i>`).join("")}</div>
+    </div>`;
 }
 
 function toggleHudDetail() {
@@ -2679,16 +2739,16 @@ function raceChampionMatrix(name, selected) {
         <header title="${race.trait}: ${race.boon}; ${race.drawback}">
           <i aria-hidden="true">${race.featureGlyph}</i>
           <b>${race.name}</b>
-          <span>${race.trait} · ${race.feature}</span>
-          <small>${race.boon} / ${race.drawback}</small>
+          <span>${champions.length} sworn</span>
+          <small>${race.feature}</small>
         </header>
         <div class="race-column-roster">
           ${champions.length ? champions.map((agent) => `
-            <label class="agent-choice" data-element="${agent.affinity.id}" style="--agent-color:${agent.accent}" title="${agent.role} · ${agent.affinity.name}: ${agent.style}">
+            <label class="agent-choice" data-character-id="${agent.id}" data-element="${agent.affinity.id}" style="--agent-color:${agent.accent}" title="${agent.role} · ${agent.affinity.name}: ${agent.style}">
               <input type="radio" name="${name}" value="${agent.id}" ${agent.id === selected ? "checked" : ""}>
-              <span class="agent-choice-glyph" aria-hidden="true">${agent.glyph}</span>
+              <span class="agent-choice-portrait" aria-hidden="true"><i>${race.featureGlyph}</i><strong>${agent.glyph}</strong></span>
               <b>${agent.name}</b>
-              <small>${agent.affinity.name} · ${"◆".repeat(agent.difficulty)}</small>
+              <small>${agent.affinity.name}</small>
             </label>`).join("") : `<p class="empty-roster">No sworn champion yet</p>`}
         </div>
       </section>`;

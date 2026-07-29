@@ -238,11 +238,37 @@ test("browser shell boots, renders, navigates, starts, pauses, and resets cleanl
   assert.deepEqual(window.DIFF_DEBUG.getInvariantErrors(), []);
   assert.equal(document.querySelectorAll("#agent-options .race-column").length, 13);
   assert.equal(document.querySelectorAll('#agent-options input[name="character"]').length, 10);
+  assert.equal(document.querySelectorAll("#agent-options [data-character-id]").length, 10);
   assert.equal(document.querySelectorAll('#agent-options input[name="race"]').length, 0);
   assert.match(
     document.querySelector('#agent-options .race-column[aria-label="Briar Elf champions"] header').textContent,
     /leaf-point ears/,
   );
+  assert.match(document.getElementById("agent-preview").textContent, /AERWYN/);
+  assert.match(
+    document.getElementById("agent-preview").textContent,
+    /Briar Elf.*Briar gale duelist.*THREAD THE TURN/s,
+  );
+  assert.match(document.getElementById("agent-two-preview").textContent, /GORUM/);
+  const gorumChoice = document.querySelector(
+    '#agent-options [data-character-id="bulwark"]',
+  );
+  gorumChoice.dispatchEvent(new window.Event("pointerover", { bubbles: true }));
+  assert.match(
+    document.getElementById("agent-preview").textContent,
+    /Iron Orc runewarden.*GORUM.*STONE/s,
+  );
+  assert.equal(
+    document
+      .querySelector('input[name="character"][value="kite"]')
+      .hasAttribute("checked"),
+    true,
+    "hover previews without changing the locked champion",
+  );
+  document.getElementById("agent-options").dispatchEvent(
+    new window.Event("pointerleave"),
+  );
+  assert.match(document.getElementById("agent-preview").textContent, /AERWYN/);
   assert.equal(document.getElementById("online-race").disabled, true);
 
   for (const panel of [

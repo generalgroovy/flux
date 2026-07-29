@@ -7,7 +7,129 @@ spacing, movement, timing, prediction, feints, and resource discipline decide
 every match. The same deterministic rules power solo play, local multiplayer,
 bots, and server-authoritative remote lobbies.
 
-## Current repository status
+## Game concept overview
+
+This section describes the **currently playable build**. The visual overhaul
+roster is a future replacement plan, not a second live roster; its concepts are
+listed separately under [Future overhaul roster](#future-overhaul-roster--not-playable-yet).
+
+### 1. Core contest
+
+| Layer | Playable concept |
+| --- | --- |
+| View and feel | Fast 2D top-down spell combat with precise aim, clear projectile lanes, compact silhouettes, and old-world magical presentation |
+| Skill test | Spacing, route choice, prediction, movement chains, defense timing, resource discipline, and adaptation |
+| Match flow | Choose a rite, champion, and battleground in the Living Sanctum; fight; score or survive; rematch or return without dissolving the party |
+| Rules authority | One deterministic 120-tick simulation owns movement, collision, damage, objectives, bots, and remote outcomes |
+| Fairness rule | Elements change geometry and decisions, never grant automatic damage advantages |
+| Player counts | Solo, two-player local play, bots, and server-authoritative remote lobbies support up to eight players in the current stage |
+
+### 2. Movement and resources
+
+| System | Purpose and decision |
+| --- | --- |
+| Move and aim | Independent movement and aim make strafing, leading, cover use, and crossfire the permanent foundation |
+| Sprint | Spend **FLOW** for sustained repositioning, pursuit, retreat, and fast objective routes |
+| Hop / wall kick | Carry bounded momentum, clear ground pressure, and kick away from cover during the brief contact window |
+| Slide | Hold sprint and hop after building speed to commit to a fast, low, lightly steerable line that stops on cover |
+| Counter-strafe / landing cut | Reverse committed momentum for a sharper bounded turn; a precise post-hop reversal gains one stronger cut |
+| Edgeweave | Skim the readable edge of a hostile spell at speed to recover FLOW; hits and passive proximity give nothing |
+| Champion mobility | Every champion adds one Flux-funded dash, blink, charge, leap, or equivalent without replacing universal footwork |
+| Health | Reaching zero causes death, scoring, and the mode's authored respawn or round transition |
+| Flux | Recovering spell resource shared by tactical, defense, and champion mobility; primary fire and universal movement remain available while dry |
+| FLOW | Separate universal movement resource spent by sprint, hop, wall kick, and slide |
+| Ultimate charge | Complete production champions earn a visible, interruptible high-impact commitment through combat rather than passive waiting |
+
+### 3. Elements and interactions
+
+| Discipline | Core spatial identity | Important interactions |
+| --- | --- | --- |
+| **Ember** | Delayed detonation and persistent route pressure | Tide douses, redirects, or converts it to vapor; Stone overlap creates magma; Gale can move exposed fire |
+| **Tide** | Flow redirection, cleansing, protection, and Frost-shaped friction control | Conducts Volt; direct Ember overlap creates neutral vapor; Frost can freeze valid water and Ember can melt ice |
+| **Gale** | Directional force, projectile bending, and displacement | Repositions exposed fields and changes projectile lanes without adding passive damage |
+| **Stone** | Temporary cover, lane anchoring, and collision geometry | Explosions can shatter it; Ember overlap creates neutral, slowing magma |
+| **Volt** | Charge sequencing, interruption, and conductive pressure | Conducts through Tide and interrupts explicitly vulnerable commitments |
+| **Veil** | Decoys, concealed intent, and position swaps | Wins through misdirection and timing; its reads remain visible and counterable |
+| **Prism** | Splitting, piercing, and sightline pressure | Creates angle and cover decisions rather than a universal damage modifier |
+| **Null** | Paid, punishable cancellation of magical constructs | Erases nearby eligible fields only during an authored commitment |
+
+Elemental reactions are neutral arena state: vapor threatens everyone, magma
+slows everyone, and ownership never produces a passive matchup win.
+
+### 4. Ability grammar
+
+| Slot | Shared contract |
+| --- | --- |
+| Passive | Optional champion rule that rewards a specific demonstrated behavior |
+| Primary | Reliable aimed pressure with no Flux cost; cadence, spread, weight, and range define the weapon read |
+| Tactical | Main authored setup, field, trap, cone, device, or control tool; costs Flux |
+| Defense | Brief reflect, guard, phase, absorb, counter, or equivalent answer with readable timing; costs Flux |
+| Mobility | Champion-specific repositioning layered on universal movement; costs Flux |
+| Ultimate | Optional combat-earned signature action with an explicit tell, commitment, escape or interruption window, and no self-charging loop |
+
+Every champion uses this six-slot language, although compatibility champions
+without a production-authored passive or ultimate leave that slot honestly
+empty. Exact inputs are listed under [Controls](#controls).
+
+### 5. Playable ancestries
+
+Ancestry changes bounded health, speed, Flux, FLOW, or forced-movement behavior;
+it never changes spell damage or overrides a champion kit.
+
+| Ancestry column | Trait and tradeoff | Playable champion(s) |
+| --- | --- | --- |
+| Human | Adaptable: +4% Flux / -2% health | — |
+| Iron Orc | Committed: +7% health / -4% speed | Gorum |
+| Moss Troll | Enduring: +9% health / -6% Flux | — |
+| Briar Elf | Fleet: +5% speed / -5% health | Aerwyn |
+| Gloam Elf | Arcane: +8% Flux / -4% FLOW | Vellyn |
+| Forge Dwarf | Grounded: +6% health / -3% speed | Branna Runesight |
+| Copper Gnome | Efficient: +7% Flux / -4% health | Nim Copperspark |
+| Ash Revenant | Relentless: +5% health / -5% FLOW | Morcant |
+| Cloud Sylph | Weightless: +6% speed / -7% health | — |
+| Reefborn | Fluid: +7% FLOW / -3% health | Neris Pearldive |
+| Cairnkin | Anchored: +8% health / -5% speed | — |
+| Cinderling | Volatile: +5% speed and Flux / -7% health | Serek Ashborn |
+| Wyrmbound | Scaled: -14% forced movement / -6% FLOW and -2% speed | Yrsa Rimewing, Varka Ashmaw |
+
+Empty columns remain visible but non-interactive until a complete champion is
+ready; the Muster grid never substitutes an unrelated ancestry.
+
+### 6. Playable champions
+
+| Champion | Ancestry | Discipline | Combat identity |
+| --- | --- | --- | --- |
+| Aerwyn | Briar Elf | Gale | Mobile redirect duelist |
+| Gorum | Iron Orc | Stone | Cover-building lane anchor |
+| Vellyn | Gloam Elf | Veil | Decoy and position-swap deceiver |
+| Nim Copperspark | Copper Gnome | Volt | Charge-sequencing device skirmisher |
+| Serek Ashborn | Cinderling | Ember | Trap and delayed-detonation controller |
+| Morcant | Ash Revenant | Null | Construct-cancelling pursuit controller |
+| Neris Pearldive | Reefborn | Tide | Current-shaping protector |
+| Branna Runesight | Forge Dwarf | Prism | Sightline and split-shot specialist |
+| Yrsa Rimewing | Wyrmbound | Tide / Frost | Movement-earned cold-line hunter |
+| Varka Ashmaw | Wyrmbound | Ember | Terrain-fed heavy projectile bruiser |
+
+These ten keep the game complete while each future overhaul successor is built
+and accepted one at a time. Their detailed kits and retirement transfers appear
+under [Compatibility roster](#compatibility-roster-scheduled-for-retirement).
+
+### 7. Battlegrounds, modes, and multiplayer
+
+| Content | Current playable scope |
+| --- | --- |
+| Battlegrounds | Eight authored arenas with distinct routes, cover, landmarks, spawns, hazards, objectives, and scale decisions |
+| First Rite | Short, skippable introduction that advances only when movement, defense, and tactical behaviors are demonstrated |
+| Oath Duel | First-to-five round combat with overtime and immediate rematch |
+| Runehold | Contested objective control |
+| Wildmarch | PvPvE warden hunt, shared Wayseal carry, and player-chosen scoring route |
+| Night Siege | Solo, local, or remote cooperative escalating PvE waves |
+| Remote play | Host/join lobbies support late join, spectators, reconnect, host migration, diagnostics, and authoritative validation |
+
+See [Maps and modes](#maps-and-modes) for every battleground and the longer mode
+descriptions.
+
+## Repository and release status
 
 The current unification candidate is `integration/unify-flux`. `main` remains the
 stable release branch and has not been rewritten or merged with the candidate.

@@ -39,7 +39,7 @@ mechanical defect, record it in the backlog rather than fixing it in this pass.
 | Gate | Scope | Completion evidence before advancing |
 | ---: | --- | --- |
 | V0 | Visual tokens and reference specimen | Original palette/value/outline/material/motion rules are centralized; one non-shipping specimen proves scale and contrast without changing gameplay |
-| V1 | Characters | Every approved overhaul champion concept reads by ancestry, role, facing, health state, and element at gameplay zoom; concepts remain inactive while shipped sources await safe retirement |
+| V1 | Characters | Every approved overhaul champion concept reads by ancestry, role, facing, health state, and element at gameplay zoom; approved future characters receive concepts only and remain inactive while shipped sources await safe retirement |
 | V2 | Spells | Every shipped primary/tactical/defense/mobility/ultimate family has distinct anticipation, travel/area, impact, ownership, and expiry reads under color-blind settings |
 | V3 | Maps | Every shipped arena has original regional materials, landmarks, route hierarchy, cover/hazard contrast, spawn/objective readability, and dense-fight clarity |
 | V4 | GUI | Menu, Muster Hall, HUD, guide, settings, lobby, pause, results, and tutorial use one restrained manuscript/adventure system with keyboard/gamepad focus and no clipped decisions |

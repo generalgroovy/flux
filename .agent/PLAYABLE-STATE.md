@@ -150,3 +150,33 @@ is given.
 - GitHub Actions run `30458296343` passed all six jobs for implementation
   commit `e5627ad`: Windows and Ubuntu on Node 20.19.1 and Node 22, Windows NSIS,
   and Linux AppImage packaging; PR #11 merged as `09d0257`.
+
+## 2026-07-29 complete universal movement candidate
+
+- This candidate supersedes the earlier Sanctum movement limitation. The live
+  deterministic runtime now implements sprint, counter-strafe, jump/double
+  jump, slide/slide jump, air redirect, air dodge, wavedash, wall jump, landing
+  cut, Edgeweave, marked-cover vault, and vault-crest superglide without using a
+  champion ability.
+- Player 1 uses remappable `Alt`, `C`, and `V`; Player 2 uses `,`, `.`, and `/`;
+  gamepad uses left shoulder, right shoulder, and east face. The same semantic
+  `technique` command is sanitized by local and remote authority paths.
+- All eight competitive battlegrounds and the Living Sanctum own validated,
+  visibly marked vault rails. Vault resolution ignores only the selected rail,
+  sweeps against every other collision boundary, rolls back if blocked, and
+  never crosses unmarked cover.
+- HUD state, event/audio cues, settings, controls, practice map copy, and the
+  `F2` field guide describe every conversion. Active movement remains bounded
+  by explicit Stamina cost, cooldown, edge-trigger, steering, timing, and speed
+  ceilings; low Stamina fails closed with an explicit tell.
+- `node scripts/ci-verify.mjs` passed 141/141 automated checks and recursive
+  JavaScript syntax checks. Coverage includes each new transition, input edge,
+  collision interruption, unmarked-cover rejection, low-Stamina rejection,
+  refill reset, a 600-tick mixed chain, all content combinations, and the
+  eight-agent two-minute soak.
+- The in-app browser rendered the source Sanctum at 1280px with exact-width
+  layout and no warnings or errors. Its automation focused but again did not
+  activate Chromium controls, so no browser play-input claim is made; movement
+  behavior is evidenced by deterministic and DOM tests pending hands-on feel.
+- GitHub Windows/Linux Node 20/22 verification and NSIS/AppImage packaging are
+  still pending for this exact candidate.

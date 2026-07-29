@@ -23,8 +23,10 @@ ahead of the normal order: obsolete HEX/operations presentation is removed,
 every existing menu route lives in the Living Sanctum, remote company persists
 while players browse those routes, and the game starts against the real
 Sanctum practice map. The Practice chamber exposes the complete currently
-implemented movement kernel, a stationary target, immediate champion switching,
-refill/reset controls, and a toggleable field guide. Muster uses compact ancestry
+implemented universal Stamina grammar, a stationary target, immediate champion switching,
+refill/reset controls, and a toggleable field guide. Double jump, slide jump,
+air redirect, air dodge, wavedash, marked vault, and superglide are complete;
+all competitive arenas own a validated vault route. Muster uses compact ancestry
 columns, portrait tiles, and non-mutating hover/focus detail previews for both
 local players. Do not expand this exception into unrelated mechanics before
 V1–V3 are accepted.
@@ -130,13 +132,19 @@ raw LLM history, final state, and replayable patch for completeness.
    accidental completion.
 11. Universal movement commitment boundaries, the 600-tick chain ceiling, three
    production champion contracts, and the complete WILDMARCH Wayseal lifecycle
-   are deterministic. Next acceptance remains hands-on feel, route readability,
+   are deterministic. The complete universal Stamina grammar now shares those
+   boundaries. Next acceptance remains hands-on feel, marked-route readability,
    and remote prediction.
+12. Hands-on run the complete Sanctum movement circuit with keyboard and gamepad:
+    require distinct jump/slide conversions, one-read air correction, a clear
+    late wavedash angle, legible `V` vault rails, a learnable superglide crest,
+    low-Stamina feedback, and no collision or repeatable speed exploit.
 
 ## Gate 1 — Fundamentals implemented
 
-- Complete ten-champion shared-input combat, universal Stamina sprint/hop/wall-kick
-  movement, eight Flux disciplines, interacting terrain fields, four
+- Complete ten-champion shared-input combat, universal Stamina sprint, jump
+  chains, slide conversions, air routes, wall jump, vault, and superglide,
+  eight Flux disciplines, interacting terrain fields, four
   region scales across eight maps, short introduction, hazards, bots, death/reset, accessibility,
   validation, and combination tests.
 - Yrsa, Varka, and Aerwyn are complete on the production passive/tactical/

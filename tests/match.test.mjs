@@ -36,6 +36,7 @@ const idle = Object.freeze({
   mobility: false,
   sprint: false,
   hop: false,
+  technique: false,
   ultimate: false,
   swap: false,
 });
@@ -196,12 +197,16 @@ test("the Living Sanctum resolves outside competitive catalogs and supports boun
   player.flux = 0;
   player.ultimateCharge = 0;
   player.specialCooldown = 5;
+  player.airDodgeCooldown = 0.5;
+  player.vaultCooldown = 0.4;
   assert.equal(refillSanctumPractice(state, player.id), true);
   assert.equal(player.health, player.maxHealth);
   assert.equal(player.flow, player.maxFlow);
   assert.equal(player.flux, player.maxFlux);
   assert.equal(player.ultimateCharge, player.maxUltimate);
   assert.equal(player.specialCooldown, 0);
+  assert.equal(player.airDodgeCooldown, 0);
+  assert.equal(player.vaultCooldown, 0);
   assert.deepEqual(matchInvariantErrors(state), []);
   assert.equal(
     refillSanctumPractice(createMatch({ modeId: "duel", mapId: "breakline" }), "p1"),
@@ -217,6 +222,7 @@ test("every arena is an authored old-world place rather than a bare combat grid"
     assert.ok(map.heraldry);
     assert.ok(map.landmarks.length >= 2);
     assert.ok(map.landmarks.some((landmark) => landmark.type === "rune"));
+    assert.ok(map.obstacles.some((obstacle) => obstacle.vaultable));
     assert.equal(map.wildmarch.routes.length, 2);
     assert.equal(
       new Set(map.wildmarch.routes.map((route) => route.id)).size,
@@ -1501,6 +1507,226 @@ test("sprint slides spend Stamina, steer with commitment, and break on cover", (
   assert.deepEqual(matchInvariantErrors(state), []);
 });
 
+test("double jump is a paid edge-triggered second arc and cannot stack", () => {
+  const state = duel({ mapId: "oathscar_vale" });
+  const runner = state.entities[0];
+  const staminaBefore = runner.flow;
+  stepMatch(state, { [runner.id]: { ...idle, moveX: 1, hop: true } }, FIXED_DELTA);
+  assert.equal(runner.hopStage, 1);
+  stepMatch(state, { [runner.id]: idle }, FIXED_DELTA);
+  stepMatch(state, { [runner.id]: { ...idle, moveY: 1, hop: true } }, FIXED_DELTA);
+  assert.equal(runner.hopStage, 2);
+  assert.equal(runner.hopSpeed, MATCH_TUNING.flow.doubleJumpSpeed);
+  assert.ok(runner.hopY > 0);
+  assert.equal(
+    runner.flow,
+    staminaBefore - MATCH_TUNING.flow.hopCost - MATCH_TUNING.flow.doubleJumpCost,
+  );
+  assert.equal(state.events.filter((event) => event.type === "doubleJump").length, 1);
+  stepMatch(state, { [runner.id]: idle }, FIXED_DELTA);
+  stepMatch(state, { [runner.id]: { ...idle, moveX: -1, hop: true } }, FIXED_DELTA);
+  assert.equal(state.events.filter((event) => event.type === "doubleJump").length, 0);
+  assert.equal(runner.hopStage, 2);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("air redirect bends one jump arc without creating extra speed", () => {
+  const state = duel({ mapId: "oathscar_vale" });
+  const runner = state.entities[0];
+  stepMatch(state, { [runner.id]: { ...idle, moveX: 1, hop: true } }, FIXED_DELTA);
+  stepMatch(state, { [runner.id]: idle }, FIXED_DELTA);
+  const staminaBefore = runner.flow;
+  stepMatch(state, {
+    [runner.id]: { ...idle, moveY: 1, technique: true },
+  }, FIXED_DELTA);
+  assert.equal(runner.airRedirectsRemaining, 0);
+  assert.ok(runner.hopX > 0 && runner.hopY > 0);
+  assert.equal(runner.flow, staminaBefore - MATCH_TUNING.flow.airRedirectCost);
+  assert.equal(state.events.some((event) => event.type === "airRedirect"), true);
+  assert.ok(
+    Math.hypot(runner.vx, runner.vy) <=
+      MATCH_TUNING.flow.hopSpeed + MATCH_TUNING.flow.hopCarryLimit + 0.01,
+  );
+  stepMatch(state, { [runner.id]: idle }, FIXED_DELTA);
+  stepMatch(state, {
+    [runner.id]: { ...idle, moveX: -1, technique: true },
+  }, FIXED_DELTA);
+  assert.equal(state.events.some((event) => event.type === "airRedirect"), false);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("air dodge commits to one fixed lane and breaks safely on collision", () => {
+  const state = duel({ mapId: "oathscar_vale" });
+  const runner = state.entities[0];
+  stepMatch(state, { [runner.id]: { ...idle, moveX: 1, hop: true } }, FIXED_DELTA);
+  stepMatch(state, { [runner.id]: idle }, FIXED_DELTA);
+  stepMatch(state, {
+    [runner.id]: { ...idle, moveY: 1, sprint: true, technique: true },
+  }, FIXED_DELTA);
+  assert.ok(runner.airDodgeRemaining > 0);
+  assert.equal(runner.waveDashQueued, false);
+  assert.ok(Math.abs(Math.hypot(runner.vx, runner.vy) - MATCH_TUNING.flow.airDodgeSpeed) < 0.01);
+  assert.equal(state.events.some((event) => event.type === "airDodge"), true);
+  runner.x = 800;
+  runner.y = getMap(state.mapId).size.inset + getCharacter(runner.characterId).radius + 1;
+  runner.lastSafeX = runner.x;
+  runner.lastSafeY = runner.y;
+  runner.airDodgeRemaining = MATCH_TUNING.flow.airDodgeDuration;
+  runner.airDodgeX = 0;
+  runner.airDodgeY = -1;
+  runner.waveDashQueued = true;
+  stepMatch(state, { [runner.id]: idle }, FIXED_DELTA);
+  assert.equal(runner.airDodgeRemaining, 0);
+  assert.equal(runner.waveDashQueued, false);
+  assert.equal(state.events.some((event) => event.type === "airDodgeImpact"), true);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("a late angled air dodge converts into one bounded wavedash", () => {
+  const state = duel({ mapId: "oathscar_vale" });
+  const runner = state.entities[0];
+  runner.x = 800;
+  runner.y = 450;
+  runner.lastSafeX = runner.x;
+  runner.lastSafeY = runner.y;
+  runner.hopRemaining = MATCH_TUNING.flow.waveDashInputWindow;
+  runner.hopDuration = MATCH_TUNING.flow.hopDuration;
+  runner.hopStage = 1;
+  runner.hopX = 1;
+  runner.hopY = 0;
+  runner.airRedirectsRemaining = 1;
+  stepMatch(state, {
+    [runner.id]: { ...idle, moveY: 1, sprint: true, technique: true },
+  }, FIXED_DELTA);
+  assert.equal(runner.waveDashQueued, true);
+  assert.ok(runner.airDodgeRemaining > 0);
+  for (let tick = 0; tick < 40 && runner.waveDashRemaining === 0; tick += 1) {
+    stepMatch(state, { [runner.id]: idle }, FIXED_DELTA);
+  }
+  assert.ok(runner.waveDashRemaining > 0);
+  assert.equal(runner.waveDashQueued, false);
+  assert.equal(state.events.some((event) => event.type === "waveDash"), true);
+  assert.ok(Math.abs(Math.hypot(runner.vx, runner.vy) - MATCH_TUNING.flow.waveDashSpeed) < 0.01);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("slide jump converts only the authored late slide window", () => {
+  const earlyState = duel({ mapId: "oathscar_vale" });
+  const early = earlyState.entities[0];
+  early.slideRemaining = MATCH_TUNING.flow.slideJumpWindow + FIXED_DELTA * 2;
+  early.slideX = 1;
+  early.slideY = 0;
+  const earlyStamina = early.flow;
+  stepMatch(earlyState, {
+    [early.id]: { ...idle, moveX: 1, hop: true },
+  }, FIXED_DELTA);
+  assert.equal(early.hopRemaining, 0);
+  assert.equal(early.flow, earlyStamina);
+  assert.equal(earlyState.events.some((event) => event.type === "slideJump"), false);
+
+  const state = duel({ mapId: "oathscar_vale" });
+  const runner = state.entities[0];
+  runner.slideRemaining = MATCH_TUNING.flow.slideJumpWindow / 2;
+  runner.slideX = 1;
+  runner.slideY = 0;
+  const staminaBefore = runner.flow;
+  stepMatch(state, {
+    [runner.id]: { ...idle, moveX: 1, hop: true },
+  }, FIXED_DELTA);
+  assert.equal(runner.slideRemaining, 0);
+  assert.ok(runner.hopRemaining > 0);
+  assert.equal(runner.hopSpeed, MATCH_TUNING.flow.slideJumpSpeed);
+  assert.equal(runner.flow, staminaBefore - MATCH_TUNING.flow.slideJumpCost);
+  assert.equal(state.events.some((event) => event.type === "slideJump"), true);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("marked Sanctum rails vault with rollback safety and expose a superglide crest", () => {
+  const state = createMatch({
+    modeId: "sanctum",
+    mapId: "living_sanctum",
+    botCount: 0,
+    players: [{
+      id: "practitioner",
+      characterId: "kite",
+      raceId: "wood_elf",
+      team: "alpha",
+      human: true,
+    }],
+  });
+  const runner = playerFor(state);
+  const agent = getCharacter(runner.characterId);
+  const rail = getMap("living_sanctum").obstacles.find(
+    (obstacle) => obstacle.id === "west-north-rail",
+  );
+  runner.x = rail.x - agent.radius - 2;
+  runner.y = rail.y + rail.height / 2;
+  runner.lastSafeX = runner.x;
+  runner.lastSafeY = runner.y;
+  const staminaBefore = runner.flow;
+  stepMatch(state, {
+    [runner.id]: { ...idle, moveX: 1, technique: true },
+  }, FIXED_DELTA);
+  assert.ok(runner.x > rail.x + rail.width + agent.radius);
+  assert.ok(runner.vaultRemaining > 0);
+  assert.equal(runner.flow, staminaBefore - MATCH_TUNING.flow.vaultCost);
+  assert.equal(state.events.some((event) => event.type === "vault"), true);
+  stepMatch(state, { [runner.id]: idle }, FIXED_DELTA);
+  while (runner.vaultRemaining > MATCH_TUNING.flow.vaultCrestEnd) {
+    stepMatch(state, { [runner.id]: idle }, FIXED_DELTA);
+  }
+  const beforeGlide = runner.flow;
+  stepMatch(state, {
+    [runner.id]: { ...idle, moveX: 1, hop: true },
+  }, FIXED_DELTA);
+  assert.equal(runner.vaultRemaining, 0);
+  assert.ok(runner.superglideRemaining > 0);
+  assert.equal(runner.flow, beforeGlide - MATCH_TUNING.flow.superglideCost);
+  assert.equal(state.events.some((event) => event.type === "superglide"), true);
+  assert.ok(Math.abs(Math.hypot(runner.vx, runner.vy) - MATCH_TUNING.flow.superglideSpeed) < 0.01);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("technique input never crosses unmarked cover", () => {
+  const state = duel({ mapId: "breakline" });
+  const runner = state.entities[0];
+  const agent = getCharacter(runner.characterId);
+  const wall = getMap("breakline").obstacles[0];
+  runner.x = wall.x - agent.radius - 2;
+  runner.y = wall.y + wall.height / 2;
+  runner.lastSafeX = runner.x;
+  runner.lastSafeY = runner.y;
+  const before = { flow: runner.flow };
+  stepMatch(state, {
+    [runner.id]: { ...idle, moveX: 1, technique: true },
+  }, FIXED_DELTA);
+  assert.equal(runner.vaultRemaining, 0);
+  assert.equal(runner.flow, before.flow);
+  assert.ok(runner.x <= wall.x - agent.radius + 0.01);
+  assert.equal(state.events.some((event) => event.type === "vaultMiss"), true);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
+test("advanced movement fails closed with an explicit low-Stamina tell", () => {
+  const state = duel({ mapId: "oathscar_vale" });
+  const runner = state.entities[0];
+  runner.flow = MATCH_TUNING.flow.doubleJumpCost - 1;
+  runner.hopRemaining = MATCH_TUNING.flow.hopDuration;
+  runner.hopDuration = MATCH_TUNING.flow.hopDuration;
+  runner.hopStage = 1;
+  runner.hopX = 1;
+  runner.hopY = 0;
+  stepMatch(state, {
+    [runner.id]: { ...idle, moveY: 1, hop: true },
+  }, FIXED_DELTA);
+  assert.equal(runner.hopStage, 1);
+  assert.equal(runner.flow, MATCH_TUNING.flow.doubleJumpCost - 1);
+  assert.equal(state.events.some(
+    (event) => event.type === "staminaDry" && event.technique === "DOUBLE JUMP",
+  ), true);
+  assert.deepEqual(matchInvariantErrors(state), []);
+});
+
 test("movement chains respect commitment boundaries and remain speed-bounded", () => {
   const state = duel({ mapId: "oathscar_vale" });
   const runner = state.entities[0];
@@ -1546,6 +1772,7 @@ test("movement chains respect commitment boundaries and remain speed-bounded", (
         moveY: phase >= 30 && phase < 90 ? 1 : 0,
         sprint: phase < 36,
         hop: phase === 28 || phase === 88,
+        technique: phase === 30 || phase === 90,
       },
     });
     peakSpeed = Math.max(peakSpeed, Math.hypot(runner.vx, runner.vy));

@@ -51,6 +51,7 @@ const BINDING_ACTIONS = Object.freeze([
   "mobility",
   "sprint",
   "hop",
+  "technique",
   "ultimate",
 ]);
 const DEFAULT_BINDINGS = Object.freeze({
@@ -64,6 +65,7 @@ const DEFAULT_BINDINGS = Object.freeze({
   mobility: "shift",
   sprint: "alt",
   hop: "c",
+  technique: "v",
   ultimate: "f",
 });
 const BINDING_NAMES = Object.freeze({
@@ -76,7 +78,8 @@ const BINDING_NAMES = Object.freeze({
   defense: "Defense",
   mobility: "Mobility",
   sprint: "Sprint",
-  hop: "Hop",
+  hop: "Jump",
+  technique: "Technique",
   ultimate: "Ultimate",
 });
 const PROTECTED_BINDING_KEYS = new Set([
@@ -101,6 +104,7 @@ const PROTECTED_BINDING_KEYS = new Set([
   "h",
   ",",
   ".",
+  "/",
 ]);
 const DEFAULT_SETTINGS = Object.freeze({
   screenShake: 55,
@@ -503,6 +507,7 @@ function readPlayerOne(entity) {
     mobility: keys.has(binding.mobility),
     sprint: keys.has(binding.sprint),
     hop: keys.has(binding.hop),
+    technique: keys.has(binding.technique),
     ultimate: keys.has(binding.ultimate),
   });
 }
@@ -529,6 +534,7 @@ function readPlayerTwo(entity) {
     mobility: keys.has("enter"),
     sprint: keys.has(","),
     hop: keys.has("."),
+    technique: keys.has("/"),
     ultimate: keys.has("h"),
   });
 }
@@ -569,6 +575,7 @@ function mergeGamepad(command, gamepad) {
     mobility: command.mobility || gamepad.buttons[0]?.pressed,
     sprint: command.sprint || gamepad.buttons[4]?.pressed,
     hop: command.hop || gamepad.buttons[5]?.pressed,
+    technique: command.technique || gamepad.buttons[1]?.pressed,
     ultimate: command.ultimate || gamepad.buttons[3]?.pressed,
   });
 }
@@ -1174,13 +1181,27 @@ function updateInfoOverlay(mode, map) {
   const flowRatio = clamp(player.flow / player.maxFlow, 0, 1);
   element("flow-charge").style.transform = `scaleX(${flowRatio})`;
   element("flow-detail").textContent =
-    player.grazeCooldown > 0
-      ? `Edgeweave ${player.grazeCooldown.toFixed(1)}s`
-      : player.hopCooldown > 0
-      ? `Hop ${player.hopCooldown.toFixed(1)}s`
-      : player.sprinting
-        ? "Sprinting"
-        : "Sprint / hop";
+    player.superglideRemaining > 0
+      ? "Supergliding"
+      : player.airDodgeRemaining > 0
+        ? "Air dodging"
+        : player.waveDashRemaining > 0
+          ? "Wavedashing"
+          : player.vaultRemaining > 0
+            ? "Vault crest"
+            : player.slideRemaining > 0
+              ? "Sliding"
+              : player.hopRemaining > 0 && player.hopStage === 2
+                ? "Double jump"
+                : player.hopRemaining > 0
+                  ? "Airborne"
+                  : player.grazeCooldown > 0
+                    ? `Edgeweave ${player.grazeCooldown.toFixed(1)}s`
+                    : player.hopCooldown > 0
+                      ? `Jump ${player.hopCooldown.toFixed(1)}s`
+                      : player.sprinting
+                        ? "Sprinting"
+                        : "Sprint / jump / technique";
   const fluxRatio = clamp(player.flux / player.maxFlux, 0, 1);
   element("flux-charge").style.transform = `scaleX(${fluxRatio})`;
   element("flux-detail").textContent =
@@ -1560,7 +1581,7 @@ function processEvents(events, tick) {
         toast(`EDGEWEAVE! · +${Math.round(event.amount)} STAMINA`, "comic");
       }
     } else if (event.type === "wallKick") {
-      toast("WALL KICK · ANGLE STOLEN");
+      toast("WALL JUMP · ANGLE STOLEN");
     } else if (event.type === "counterStrafe") {
       tone(240, 0.045, "triangle", 0.035);
       toast("COUNTER-STRAFE · MOMENTUM CUT", "comic");
@@ -1616,6 +1637,40 @@ function processEvents(events, tick) {
     } else if (event.type === "slideImpact") {
       tone(82, 0.06, "square", 0.045);
       toast("THUD! · SLIDE BROKEN", "comic");
+    } else if (event.type === "doubleJump") {
+      tone(520, 0.055, "triangle", 0.045);
+      toast("DOUBLE JUMP · SECOND ARC", "comic");
+    } else if (event.type === "slideJump") {
+      tone(420, 0.065, "triangle", 0.05);
+      toast("SLIDE JUMP · MOMENTUM LIFTED", "comic");
+    } else if (event.type === "airRedirect") {
+      tone(610, 0.045, "sine", 0.04);
+      toast("AIR REDIRECT · ANGLE TURNED", "comic");
+    } else if (event.type === "airDodge") {
+      tone(760, 0.055, "triangle", 0.045);
+      toast(
+        event.waveDashQueued
+          ? "AIR DODGE · LANDING ANGLE SET"
+          : "AIR DODGE · COMMITTED",
+        "comic",
+      );
+    } else if (event.type === "waveDash") {
+      tone(300, 0.065, "sawtooth", 0.045);
+      toast("WAVEDASH · MOMENTUM GROUNDED", "comic");
+    } else if (event.type === "vault") {
+      tone(460, 0.06, "triangle", 0.045);
+      toast("VAULT · CREST WINDOW OPEN", "comic");
+    } else if (event.type === "superglide") {
+      tone(880, 0.08, "triangle", 0.055);
+      toast("SUPERGLIDE! · CREST CONVERTED", "comic");
+    } else if (
+      ["airDodgeImpact", "waveDashImpact", "superglideImpact"].includes(event.type)
+    ) {
+      tone(86, 0.06, "square", 0.045);
+      toast("THUD! · MOVEMENT BROKEN", "comic");
+    } else if (event.type === "staminaDry") {
+      tone(74, 0.06, "square", 0.04);
+      toast(`LOW STAMINA · ${event.technique}`, "comic");
     } else if (event.type === "elementField") {
       const cue = {
         wind: [520, "sine"],
@@ -2157,8 +2212,12 @@ function drawElementFields(time) {
 
 function drawObstacles(map) {
   for (const obstacle of map.obstacles) {
-    context.fillStyle = "#30291d";
-    context.strokeStyle = settings.highContrast ? "#d2bd82" : "#766746";
+    context.fillStyle = obstacle.vaultable ? "#3d3422" : "#30291d";
+    context.strokeStyle = settings.highContrast
+      ? "#d2bd82"
+      : obstacle.vaultable
+        ? "#b69b59"
+        : "#766746";
     context.lineWidth = settings.highContrast ? 3 : 2;
     context.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
     context.strokeRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
@@ -2169,6 +2228,17 @@ function drawObstacles(map) {
       obstacle.width - 14,
       4,
     );
+    if (obstacle.vaultable) {
+      context.fillStyle = "#e8d28c99";
+      context.font = "800 11px ui-monospace, monospace";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(
+        "V",
+        obstacle.x + obstacle.width / 2,
+        obstacle.y + obstacle.height / 2,
+      );
+    }
   }
 }
 
@@ -2426,7 +2496,7 @@ function drawEntities(time) {
         context.restore();
       }
       if (entity.hopRemaining > 0) {
-        const progress = 1 - entity.hopRemaining / MATCH_TUNING.flow.hopDuration;
+        const progress = 1 - entity.hopRemaining / entity.hopDuration;
         const lift = Math.sin(progress * Math.PI) * 11;
         context.fillStyle = "#00000066";
         context.beginPath();
@@ -2441,6 +2511,24 @@ function drawEntities(time) {
         );
         context.fill();
         context.translate(0, -lift);
+      } else if (entity.vaultRemaining > 0) {
+        const progress = 1 - entity.vaultRemaining / MATCH_TUNING.flow.vaultDuration;
+        const lift = Math.sin(progress * Math.PI) * 15;
+        context.translate(0, -lift);
+        context.rotate(Math.atan2(entity.vaultY, entity.vaultX) * 0.08);
+      } else if (entity.airDodgeRemaining > 0 || entity.superglideRemaining > 0) {
+        const dx = entity.superglideRemaining > 0
+          ? entity.superglideX
+          : entity.airDodgeX;
+        const dy = entity.superglideRemaining > 0
+          ? entity.superglideY
+          : entity.airDodgeY;
+        context.rotate(Math.atan2(dy, dx));
+        context.scale(1.18, 0.82);
+        context.translate(0, -7);
+      } else if (entity.waveDashRemaining > 0) {
+        context.rotate(Math.atan2(entity.waveDashY, entity.waveDashX));
+        context.scale(1.2, 0.76);
       } else if (entity.slideRemaining > 0) {
         context.rotate(Math.atan2(entity.slideY, entity.slideX));
         context.scale(1.28, 0.72);
@@ -2873,10 +2961,16 @@ function practiceReferenceMarkup(selected) {
     ["Walk + aim", "Independent movement and mouse/right-stick aim; counter-strafe sharpens committed reversals."],
     ["Sprint", `${keyLabel(settings.bindings.sprint)} while moving · drains Stamina and builds slide entry speed.`],
     ["Slide", `${keyLabel(settings.bindings.sprint)} + ${keyLabel(settings.bindings.hop)} at speed · committed travel with limited steering.`],
-    ["Hop", `${keyLabel(settings.bindings.hop)} without sprint · carries a bounded lateral angle and enables one landing cut.`],
-    ["Wall kick", `Hop during the wall-contact memory · launches away from cover at the strongest universal movement speed.`],
+    ["Jump", `${keyLabel(settings.bindings.hop)} without sprint · carries a bounded lateral angle and enables one landing cut.`],
+    ["Double jump", `Release and press ${keyLabel(settings.bindings.hop)} again while airborne · one additional arc, no repeated stacking.`],
+    ["Slide jump", `Release sprint, then press ${keyLabel(settings.bindings.hop)} during the last half of a slide · converts committed ground speed into one longer arc.`],
+    ["Air redirect", `${keyLabel(settings.bindings.technique)} + a direction while airborne · one paid correction per jump arc.`],
+    ["Air dodge", `${keyLabel(settings.bindings.sprint)} + ${keyLabel(settings.bindings.technique)} while airborne · fast fixed lane with punishable recovery.`],
+    ["Wavedash", `Late angled air dodge · grounds the marked landing angle as bounded steerable momentum.`],
+    ["Wall jump", `Press ${keyLabel(settings.bindings.hop)} during the wall-contact memory · launches away from cover at the strongest basic jump speed.`],
+    ["Vault", `Press ${keyLabel(settings.bindings.technique)} toward low cover marked V · crosses only a valid authored rail.`],
+    ["Superglide", `Press ${keyLabel(settings.bindings.hop)} during a vault's crest cue · converts the rail crossing into the fastest universal route.`],
     ["Landing cut", "Counter-strafe just after landing · one short recovery conversion, never repeatable speed stacking."],
-    ["Mobility", `${keyLabel(settings.bindings.mobility)} · champion-specific Flux movement with its own commitment and cooldown.`],
     ["Edgeweave", "Thread a hostile projectile's narrow miss band at committed speed to recover Stamina; hits and stationary proximity never pay."],
   ];
   const elements = [...new Map(
@@ -3707,7 +3801,7 @@ function syncBindingLabels() {
     move: ["moveUp", "moveLeft", "moveDown", "moveRight"]
       .map((action) => keyLabel(settings.bindings[action]))
       .join("/"),
-    flow: `${keyLabel(settings.bindings.sprint)}/${keyLabel(settings.bindings.hop)}`,
+    flow: `${keyLabel(settings.bindings.sprint)}/${keyLabel(settings.bindings.hop)}/${keyLabel(settings.bindings.technique)}`,
     primary: `MB1/${keyLabel(settings.bindings.fire)}`,
     coachFlow: `${keyLabel(settings.bindings.sprint)} + ${keyLabel(settings.bindings.hop)} / slide`,
     coachFire: `Move + ${keyLabel(settings.bindings.fire)}`,

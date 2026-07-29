@@ -290,7 +290,7 @@ every slice.
 | Haara prototype | Headless local mechanic prototype still uses the legacy `Hara` label and stable `mara` ID behind `contentProfile: "overhaul-preview"`; normal selection and live lobbies reject it |
 | Sanctum | Always-rendered Living Sanctum shell, persistent remote company, ancestry-column roster selection, and a local Practice court with movement/spell areas, stationary target, champion switch, refill/reset, and `F2` field guide are implemented |
 | Platforms | Source launch and graceful cleanup work on Windows and Linux; CI builds Windows NSIS and Linux AppImage artifacts |
-| Verification | 133 automated checks pass locally; PR #10 passed Windows/Linux Node 20/22 verification and both package builds for the preceding implementation commit `e472bd7`; this Sanctum commit still needs its remote CI run |
+| Verification | 133 automated checks pass locally; PR #11 passed Windows/Linux Node 20/22 verification plus Windows NSIS and Linux AppImage package builds for Sanctum implementation commit `e5627ad` |
 | Release blockers | Complete V1–V5 acceptance, a current packaged match smoke, signed public installers/update feed, and a dependable owned relay |
 
 The old champions are implementation scaffolding, not overhaul characters. Their

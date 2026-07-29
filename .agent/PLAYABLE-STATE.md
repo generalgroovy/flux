@@ -147,4 +147,6 @@ is given.
   automated desktop movement claim is made. The Browser surface rendered the
   menu layout without horizontal overflow but blocked `src/game.mjs` as a local
   source module, so browser behavior is not inferred.
-- Remote Windows/Linux CI and package jobs are still pending for this candidate.
+- GitHub Actions run `30458296343` passed all six jobs for implementation
+  commit `e5627ad`: Windows and Ubuntu on Node 20.19.1 and Node 22, Windows NSIS,
+  and Linux AppImage packaging; PR #11 merged as `09d0257`.

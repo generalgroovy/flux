@@ -184,3 +184,6 @@ is given.
 - GitHub Actions run `30462865622` passed all six jobs for movement commit
   `0ff6eb0`: Windows and Ubuntu on Node 20.19.1 and Node 22, Windows NSIS, and
   Linux AppImage packaging.
+- The documentation head repeated all six successfully in run `30463176519`;
+  PR #13 merged as `8cd54bb`, and `main` plus `integration/unify-flux` were
+  realigned there with a clean unification preflight.

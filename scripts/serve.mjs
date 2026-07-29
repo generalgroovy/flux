@@ -40,6 +40,7 @@ const publicFiles = new Set([
   "/src/overhaul-runtime.mjs",
   "/src/pixel-perspective.mjs",
   "/src/pixel-sanctum-renderer.mjs",
+  "/src/pixel-spell-renderer.mjs",
   "/src/overhaul/character-visual-primitives.mjs",
   "/src/overhaul/characters/nico-lai-visual.mjs",
   "/src/overhaul/characters/spai-si-visual.mjs",

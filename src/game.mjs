@@ -27,6 +27,7 @@ import {
   drawPixelSanctumObstacle,
   drawPixelSanctumStation,
 } from "./pixel-sanctum-renderer.mjs";
+import { drawNicoCoilDart } from "./pixel-spell-renderer.mjs";
 import {
   createMatch,
   refillSanctumPractice,
@@ -2561,6 +2562,12 @@ function drawProjectiles() {
           : projectile.team === "beta"
             ? "#ff5d73"
             : "#ffca4f";
+      const owner = matchState.entities.find((entity) => entity.id === projectile.ownerId);
+      if (drawNicoCoilDart(
+        context,
+        { ...projectile, ownerCharacterId: owner?.characterId ?? null },
+        color,
+      )) continue;
       context.fillStyle = color;
       context.shadowColor = color;
       context.shadowBlur = projectile.heavy ? 18 : 9;

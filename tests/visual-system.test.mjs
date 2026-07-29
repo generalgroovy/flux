@@ -18,6 +18,7 @@ import {
   drawPixelSanctumStation,
   validateSanctumPixelStyle,
 } from "../src/pixel-sanctum-renderer.mjs";
+import { NICO_SPELL_VISUALS, drawNicoCoilDart, validateNicoSpellVisuals } from "../src/pixel-spell-renderer.mjs";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -200,6 +201,21 @@ test("P1 Living Sanctum renderer changes presentation without owning game rules"
   assert.match(game, /function drawArena\(map, time\) \{\s+if \(drawPixelSanctumGround\(context, map/);
   assert.ok(game.indexOf("drawEntities(time)") < game.indexOf("drawPixelSanctumForeground(context, map"));
   assert.match(server, /"\/src\/pixel-sanctum-renderer\.mjs"/);
+});
+
+test("P3 Nico spell contract begins with an owner-shaped Coil Dart", () => {
+  assert.deepEqual(validateNicoSpellVisuals(), []);
+  assert.deepEqual(Object.keys(NICO_SPELL_VISUALS), ["coilDart", "arcChain", "prismGround", "coilHop"]);
+  const operations = [];
+  const context = {
+    save() {}, restore() {},
+    fillRect(...values) { operations.push(values); },
+    set fillStyle(value) {}, set imageSmoothingEnabled(value) {},
+  };
+  assert.equal(drawNicoCoilDart(context, { ownerCharacterId: "cinder" }, "#fff"), false);
+  assert.equal(drawNicoCoilDart(context, { ownerCharacterId: "volt", vx: 1240, vy: 0, heavy: false }, "#77f7ce"), true);
+  assert.ok(operations.length >= 7);
+  assert.ok(operations.flat().every(Number.isFinite));
 });
 
 test("V1 character specimens share one responsive non-shipping harness", async () => {

@@ -14,6 +14,10 @@ Nico's Charge/Light spell anticipation, travel, impact, ownership, and expiry
 reads to discrete shape-first pixels while preserving every stable `volt`
 mechanic. P4-P5 then convert text/HUD and integrated acceptance.
 
+P3 implementation is underway: Coil Dart travel/ownership now uses the shared
+pixel spell contract. Arc Chain, Prism Ground, Coil Hop, impact, and expiry
+reads remain in the active slice and must be completed before advancing to P4.
+
 M0-M5 begins only after P5. It updates semantic/remappable keyboard-controller
 defaults, adds deterministic body-lift plus the requested enlarging jump shadow,
 revalidates existing double/slide jump, wall jump, redirect, air dodge,

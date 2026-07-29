@@ -2310,3 +2310,13 @@
   live network and cleanup checks (146 total), recursive syntax, and diff checks.
 - **Next:** P3 converts Nico's Charge/Light spell tells, lanes, impacts,
   ownership, and expiry to the same shape-first pixel grammar.
+
+# 2026-07-29 — P3 in progress: Coil Dart travel read
+
+- Added a bounded `pixel-spell-renderer.mjs` contract covering the required
+  anticipation/travel/impact/expiry vocabulary for all four Nico abilities.
+- Migrated only live `volt`-owned primary projectiles to a compact forked Charge
+  dart with an explicit team-colored split tail; all other projectiles retain
+  their renderer and the projectile simulation object is unchanged.
+- Focused visual and DOM checks pass. P3 remains active and incomplete: Arc
+  Chain, Prism Ground, Coil Hop, and Nico-specific impact/expiry reads are next.

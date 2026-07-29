@@ -266,6 +266,7 @@ common_aider_options=(
   --input-history-file "${input_history}"
   --llm-history-file "${llm_history}"
   --read AGENTS.md
+  --read .agent/VISUAL-OVERHAUL.md
   --read README.md
   --read .agent/HANDOFF.md
   --read .agent/memory.md

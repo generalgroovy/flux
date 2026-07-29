@@ -1,5 +1,9 @@
 # FLUX decisions
 
+- Visual production currently precedes all new mechanics: V0 tokens/specimen,
+  V1 characters, V2 spells, V3 maps, V4 GUI, then V5 integrated acceptance.
+  The Zelda reference supplies only broad mood/readability principles; all
+  FLUX visuals, symbols, assets, layouts, and presentation remain original.
 - Resolve checkout path, active branch, commit, and remote from live Git state;
   no machine-specific path or long-lived agent branch is assumed.
 - `main`, `master`, `develop`, detached HEAD, and dirty trees are protected from

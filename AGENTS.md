@@ -30,6 +30,17 @@ readable. Combine those principles with FLUX's old-world elemental identity;
 do not reproduce its weapons, characters, rooms, enemies, assets, or exact
 mechanics.
 
+## Current visual-first directive
+
+Before selecting any new mechanical work, read and obey
+`.agent/VISUAL-OVERHAUL.md`. New mechanics are frozen until its visual gates are
+accepted in this strict order: visual tokens/specimen, characters, spells,
+maps, GUI, integrated acceptance. The user's Zelda reference is mood-level
+only; produce an original FLUX identity and copy no protected visual identity,
+characters, symbols, assets, layouts, interface, animation, or audio. This
+directive changes iteration priority, not the delivery-gate or playable-state
+requirements below.
+
 ## Product pillars
 
 1. **Player expression:** aim, spacing, movement, timing, prediction, feints,

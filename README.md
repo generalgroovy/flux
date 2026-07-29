@@ -16,9 +16,9 @@ The candidate currently includes:
 
 - the complete 0.34.3 live game;
 - reliable source launch and graceful owned-process cleanup on Windows and Linux;
-- 121 passing automated checks on Windows, including the local-agent contract,
-  live WebSocket lifecycle,
-  and authenticated server cleanup;
+- 122 passing automated checks on Windows, including the local-agent and
+  visual-priority contracts, live WebSocket lifecycle, and authenticated server
+  cleanup;
 - Windows NSIS and Linux AppImage package jobs that emit commit-bound SHA-256
   manifests and downloadable CI artifacts;
 - an independently validated future character/element/race foundation that is
@@ -29,6 +29,11 @@ green Windows/Linux CI after publishing `develop`, and a final review before any
 merge to `main`. The separate full-overhaul branch is actively changing and is
 preserved for later review; it is deliberately excluded from this stable
 candidate. There is no signed public installer or dependable public relay yet.
+
+Current development priority is visual-only: original FLUX visual tokens,
+characters, spells, maps, GUI, then integrated acceptance. New mechanics remain
+frozen until that ordered pass is accepted; see
+[`.agent/VISUAL-OVERHAUL.md`](.agent/VISUAL-OVERHAUL.md).
 
 Build 0.34.3 makes the verified source workflow genuinely cross-platform.
 Windows launchers call `npm.cmd`, avoiding the unsigned PowerShell shim that is

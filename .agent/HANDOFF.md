@@ -9,11 +9,12 @@ checkout; never trust a stale absolute path or an old test total.
 Read, in order, before editing:
 
 1. `AGENTS.md`
-2. `README.md`
-3. `.agent/memory.md`
-4. `.agent/backlog.md`
-5. `.odysseus/STATE.md`
-6. Git status, current branch, recent history, package scripts, and relevant code
+2. `.agent/VISUAL-OVERHAUL.md`
+3. `README.md`
+4. `.agent/memory.md`
+5. `.agent/backlog.md`
+6. `.odysseus/STATE.md`
+7. Git status, current branch, recent history, package scripts, and relevant code
 
 FLUX is a deterministic browser/desktop arena game. Preserve authoritative
 simulation, stable identifiers, Linux/Windows parity, old-world pixel

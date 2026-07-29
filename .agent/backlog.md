@@ -1,5 +1,14 @@
 # FLUX backlog
 
+## Active visual-first gate — mechanics frozen
+
+Complete `.agent/VISUAL-OVERHAUL.md` before selecting any mechanical backlog
+item. Required order is V0 tokens/specimen -> V1 characters -> V2 spells -> V3
+maps -> V4 GUI -> V5 integrated acceptance. Current next slice: inspect the live
+renderer and centralize an original FLUX palette, value, outline, material, and
+motion token set; prove it on one non-shipping reference specimen without
+changing simulation or exposing a partial production restyle.
+
 Priority remains fundamentals → compact PvP → PvPvE → PvE. Add race champions
 only as complete contrasting kits inside those proven loops. Keep Battle Royale
 and other scale-heavy variants unexposed until combat, authority, objectives,

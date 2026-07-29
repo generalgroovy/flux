@@ -1725,3 +1725,28 @@
   Qwen interactive session and its raw transcript must still be accepted on the
   target Garuda host; hidden model chain-of-thought is intentionally not treated
   as trustworthy engineering documentation.
+
+# 2026-07-29 — Visual-first production freeze
+
+- **Direction:** Froze new mechanical implementation until an ordered original
+  visual overhaul is accepted: V0 centralized tokens/non-shipping specimen, V1
+  characters, V2 spells, V3 maps, V4 GUI, and V5 integrated acceptance.
+- **Reference boundary:** Recorded The Legend of Zelda only as a broad reference
+  for inviting top-down heroic fantasy, silhouette clarity, handcrafted nature,
+  and restrained adventure UI. The contract explicitly rejects copying its
+  characters, costumes, creatures, symbols, typography, meters, icons, menus,
+  maps, compositions, animation, audio, assets, or trade dress.
+- **Implementation boundary:** Visual work may touch rendering, presentation
+  metadata, CSS/canvas/assets, non-simulation animation, accessibility, and
+  visual tests. It may not alter movement, hitboxes, timing, damage, resources,
+  abilities, elements, races, AI, networking, objectives, modes, or progression.
+- **Agent routing:** Root instructions, audited local task, handoff context,
+  backlog, Odysseus state/decisions, README, and regression tests all route the
+  next run to the first incomplete visual gate. Approved future characters may
+  receive concepts in V1 but stay inactive.
+- **Verification:** The focused handoff/visual contract suite passed 3/3, every
+  shell script parsed, `git diff --check` passed, and the full Windows suite
+  passed 122/122.
+- **Limitation:** This slice establishes and verifies the production contract;
+  it does not claim V0 art tokens or any visual asset was implemented or
+  visually accepted. The next audited Garuda agent run must implement V0 first.

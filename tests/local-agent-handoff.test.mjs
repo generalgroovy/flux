@@ -62,3 +62,21 @@ test("local-agent handoff supports only the approved Qwen profiles", async () =>
   assert.match(settings, /num_ctx: 16384/g);
   assert.match(common, /Unsupported model/);
 });
+
+test("local agent freezes mechanics and follows the visual overhaul order", async () => {
+  const [agents, visual, task, backlog, launcher] = await Promise.all([
+    read("AGENTS.md"),
+    read(".agent/VISUAL-OVERHAUL.md"),
+    read(".agent/odysseus-task.md"),
+    read(".agent/backlog.md"),
+    read("scripts/local-agent.sh"),
+  ]);
+  const contract = [agents, visual, task, backlog].join("\n");
+
+  assert.match(contract, /mechanics (?:are )?frozen/i);
+  assert.match(task, /V0 visual tokens\/specimen ->\s*V1 characters -> V2 spells -> V3 maps -> V4 GUI -> V5 integrated acceptance/);
+  assert.match(visual, /Do not reproduce or closely imitate/);
+  assert.match(visual, /do not add or rebalance movement,/i);
+  assert.match(visual, /approved future characters receive concepts only and remain inactive/i);
+  assert.match(launcher, /--read \.agent\/VISUAL-OVERHAUL\.md/);
+});

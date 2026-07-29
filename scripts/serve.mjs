@@ -34,6 +34,7 @@ const publicFiles = new Set([
   "/index.html",
   "/styles.css",
   "/src/content.mjs",
+  "/src/ancestry-visual-templates.mjs",
   "/src/overhaul-character-visuals.mjs",
   "/src/game.mjs",
   "/src/match.mjs",
@@ -47,6 +48,9 @@ const publicFiles = new Set([
   "/tools/spai-si-specimen.mjs",
   "/tools/urzh-specimen.html",
   "/tools/urzh-specimen.mjs",
+  "/tools/ancestry-template-specimen.html",
+  "/tools/ancestry-template-specimen.css",
+  "/tools/ancestry-template-specimen.mjs",
 ]);
 const contentTypes = new Map([
   [".css", "text/css; charset=utf-8"],

@@ -57,6 +57,26 @@ Within V1 through V4, finish one complete production slice at a time. Do not
 scatter placeholder restyles across the category. Preserve stable IDs and
 existing gameplay behavior throughout.
 
+### Modular ancestry templates
+
+`src/ancestry-visual-templates.mjs` is the V1 ancestry foundation registry.
+Each of the twenty entries owns only body geometry, anatomy feature hooks,
+material, and motion read. Champion profiles separately compose role posture,
+focus prop, affinities, palette, state effects, health wear, and team ownership.
+This permits several champions to share one ancestry without becoming palette
+swaps or sharing gameplay data.
+
+To introduce or revise an ancestry visually:
+
+1. edit one registry entry or add one body/feature recipe;
+2. compose a champion profile with `ancestryId` rather than copying anatomy;
+3. review all foundations at `tools/ancestry-template-specimen.html` and the
+   champion's six-state specimen;
+4. run `tests/overhaul-character-visuals.test.mjs` and the full suite.
+
+Templates are presentation-only. They may not encode hitboxes, statistics,
+affinity advantages, abilities, runtime race migration, or hidden tells.
+
 ## Category acceptance
 
 | Category | Required checks |

@@ -1,3 +1,9 @@
+import {
+  composeCharacterVisualProfile,
+  drawAncestryFeatures,
+  traceAncestryBody,
+} from "./ancestry-visual-templates.mjs";
+
 const freeze = (value) => Object.freeze(value);
 
 // Presentation-only migration ledger. Legacy IDs remain live until their
@@ -16,10 +22,10 @@ export const LEGACY_CONCEPT_TRANSFERS = freeze([
 ]);
 
 export const OVERHAUL_CHARACTER_VISUAL_PROFILES = freeze({
-  aerwyn: freeze({
+  aerwyn: composeCharacterVisualProfile({
     id: "aerwyn",
     name: "Spai Si",
-    plannedAncestry: "Demon",
+    ancestryId: "demon",
     ancestryRead: "swept horns and ember tail",
     roleRead: "forward-poised redirect duelist",
     affinityRead: "open Wind arcs, Light spindle, Earth-weighted mantle",
@@ -31,10 +37,10 @@ export const OVERHAUL_CHARACTER_VISUAL_PROFILES = freeze({
     light: "#d4b84e",
     ember: "#c76632",
   }),
-  urzh: freeze({
+  urzh: composeCharacterVisualProfile({
     id: "urzh",
     name: "Urzh",
-    plannedAncestry: "Stoneborn",
+    ancestryId: "stoneborn",
     ancestryRead: "squared stone frame with ember seams",
     roleRead: "braced conductive kiln bulwark",
     affinityRead: "Earth plates, Fire seams, Charge forks",
@@ -139,23 +145,7 @@ export function drawOverhaulCharacterAura(context, profile, state, radius, time,
 
 export function traceOverhaulCharacterBody(context, profile, radius) {
   if (!profile) return false;
-  if (profile.id === "urzh") {
-    tracePolygon(context, [
-      [radius * 0.92, -radius * 0.56], [radius * 1.12, 0], [radius * 0.92, radius * 0.56],
-      [radius * 0.34, radius * 0.92], [-radius * 0.7, radius * 0.78],
-      [-radius * 0.96, radius * 0.42], [-radius * 0.96, -radius * 0.42],
-      [-radius * 0.7, -radius * 0.78], [radius * 0.34, -radius * 0.92],
-    ]);
-    return true;
-  }
-  if (profile.id !== "aerwyn") return false;
-  tracePolygon(context, [
-    [radius * 1.2, 0], [radius * 0.42, radius * 0.52], [radius * 0.06, radius * 0.88],
-    [-radius * 0.28, radius * 0.62], [-radius * 0.92, radius * 0.78], [-radius * 0.68, 0],
-    [-radius * 0.92, -radius * 0.78], [-radius * 0.28, -radius * 0.62],
-    [radius * 0.06, -radius * 0.88], [radius * 0.42, -radius * 0.52],
-  ]);
-  return true;
+  return traceAncestryBody(context, profile.ancestryTemplate, radius);
 }
 
 export function drawOverhaulCharacterDetails(context, profile, state, radius, team, teamColor, healthRatio) {
@@ -171,26 +161,7 @@ export function drawOverhaulCharacterDetails(context, profile, state, radius, te
     context.lineCap = "round";
     context.lineJoin = "round";
 
-    // Swept horns and a hooked tail communicate Demon before color or text.
-    context.fillStyle = profile.ink;
-    context.strokeStyle = profile.light;
-    context.lineWidth = 1.4;
-    for (const side of [-1, 1]) {
-      context.beginPath();
-      context.moveTo(-radius * 0.18, side * radius * 0.48);
-      context.quadraticCurveTo(-radius * 0.68, side * radius * 0.9, -radius * 0.3, side * radius * 1.15);
-      context.lineTo(radius * 0.18, side * radius * 0.62);
-      context.closePath();
-      context.fill();
-      context.stroke();
-    }
-    context.strokeStyle = profile.ember;
-    context.lineWidth = 2.4;
-    context.beginPath();
-    context.moveTo(-radius * 0.55, radius * 0.18);
-    context.quadraticCurveTo(-radius * 1.22, radius * 0.72, -radius * 0.78, radius * 1.2);
-    context.lineTo(-radius * 0.55, radius * 0.98);
-    context.stroke();
+    drawAncestryFeatures(context, profile, radius);
 
     // Earth-weighted mantle keeps the center readable beneath the Wind aura.
     context.fillStyle = profile.mantle;
@@ -324,28 +295,7 @@ function drawUrzhDetails(context, profile, state, radius, team, teamColor, healt
     context.shadowBlur = 0;
     context.lineJoin = "bevel";
 
-    // Two block shoulders make Stoneborn ancestry readable without scale changes.
-    context.fillStyle = profile.earth;
-    context.strokeStyle = profile.ink;
-    context.lineWidth = 1.5;
-    for (const side of [-1, 1]) {
-      tracePolygon(context, [
-        [-radius * 0.55, side * radius * 0.28], [-radius * 0.42, side * radius * 0.76],
-        [radius * 0.18, side * radius * 0.82], [radius * 0.34, side * radius * 0.38],
-      ]);
-      context.fill();
-      context.stroke();
-    }
-
-    // The kiln seam is body wear, never an ability telegraph.
-    context.strokeStyle = profile.fire;
-    context.lineWidth = 2.3;
-    context.beginPath();
-    context.moveTo(-radius * 0.52, 0);
-    context.lineTo(-radius * 0.12, -radius * 0.18);
-    context.lineTo(radius * 0.12, radius * 0.16);
-    context.lineTo(radius * 0.48, 0);
-    context.stroke();
+    drawAncestryFeatures(context, profile, radius);
 
     // A square buckler gives a single role/facing prop at combat zoom.
     context.fillStyle = profile.mantle;

@@ -1870,3 +1870,29 @@
   standard checks, one live WebSocket lifecycle, and one authenticated cleanup.
 - **Next decision:** Visually accept or revise Urzh before the third V1 champion.
   A real packaged match launch remains required before publishing `develop`.
+
+# 2026-07-29 — Modular ancestry visual foundation
+
+- **Architecture:** Added `src/ancestry-visual-templates.mjs` with twenty frozen,
+  validated presentation templates. Each owns only body shape, anatomy feature
+  recipes, material, and motion read; champion profile composition owns role,
+  prop, affinities, palette, ownership, health wear, and action-state effects.
+- **Migration proof:** Spai Si now composes the Demon template and Urzh composes
+  the Stoneborn template. Their champion-specific aura and prop layers remain
+  independent, and no live renderer, simulation radius, runtime race ID,
+  ability, network rule, or balance value changed.
+- **Modding path:** A new champion normally selects an `ancestryId` and supplies
+  profile layers. A genuinely new ancestry adds one registry entry and, only if
+  necessary, one shared body/feature recipe; it does not copy a full champion
+  renderer.
+- **Review board:** Added `tools/ancestry-template-specimen.html`, showing every
+  foundation, body-shape key, anatomy hooks, material, and motion read in one
+  responsive source-only board.
+- **Rendered verification:** The in-app browser rendered all twenty cards at
+  1280×720 with a complete 1,384-pixel document, no horizontal overflow, and no
+  console errors. Spai Si and Urzh each retained six cards, no overflow, and no
+  console errors after migration.
+- **Focused verification:** Seven ancestry/character/visual checks passed,
+  including every template's generic body/anatomy renderer and two independent
+  champions sharing one template. The full suite passed 129/129 across 127
+  standard checks, one live WebSocket lifecycle, and one authenticated cleanup.

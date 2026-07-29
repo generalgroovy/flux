@@ -7,7 +7,10 @@ item. Required order is V0 tokens/specimen -> V1 characters -> V2 spells -> V3
 maps -> V4 GUI -> V5 integrated acceptance. V0 is accepted and V1 is active.
 Spai Si and Urzh now have isolated source-only character slices. Review
 `tools/urzh-specimen.html`, then iterate it or accept it before authoring the
-next champion. Keep the ten
+next champion. Use the validated twenty-entry ancestry registry and its
+one-screen `tools/ancestry-template-specimen.html` review board; add champion
+posture/prop/affinity layers by composition instead of copying ancestry drawing
+code. Keep the ten
 shipped champions as compatibility-only runtime scaffolding until their mapped
 successors pass complete visual and later mechanical promotion checks; never
 present them as overhaul-roster additions.

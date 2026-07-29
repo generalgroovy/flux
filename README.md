@@ -540,6 +540,15 @@ first presentation-only slices at
 `http://127.0.0.1:4173/tools/urzh-specimen.html`; this styling work changes no
 simulation or network behavior.
 
+All twenty planned ancestry foundations are now centralized in
+`src/ancestry-visual-templates.mjs`. Run `npm run visual:specimen`, then open
+`http://127.0.0.1:4173/tools/ancestry-template-specimen.html` to review them in
+one board. A template owns body geometry, anatomy hooks, material, and motion
+read; a champion profile supplies its ancestry ID plus independent posture,
+focus prop, affinities, palette, ownership, and state effects. New champions can
+therefore reuse an ancestry without copying renderer code or touching hitboxes,
+statistics, abilities, or runtime race IDs.
+
 | Source being retired | Overhaul successor | What survives |
 | --- | --- | --- |
 | Aerwyn | Spai Si | Redirect timing and Wind-angle readability |

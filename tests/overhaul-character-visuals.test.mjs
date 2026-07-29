@@ -3,11 +3,51 @@ import assert from "node:assert/strict";
 
 import { CHARACTERS } from "../src/content.mjs";
 import {
+  ANCESTRY_VISUAL_TEMPLATES,
+  composeCharacterVisualProfile,
+  drawAncestryFeatures,
+  traceAncestryBody,
+  validateAncestryVisualTemplates,
+} from "../src/ancestry-visual-templates.mjs";
+import {
   LEGACY_CONCEPT_TRANSFERS,
   OVERHAUL_CHARACTER_VISUAL_STATES,
   getOverhaulCharacterVisualProfile,
   resolveOverhaulCharacterVisualState,
 } from "../src/overhaul-character-visuals.mjs";
+
+test("all twenty ancestry templates are valid, renderable, and champion-neutral", () => {
+  assert.deepEqual(validateAncestryVisualTemplates(), []);
+  assert.equal(ANCESTRY_VISUAL_TEMPLATES.length, 20);
+  const context = fakeContext();
+  for (const ancestry of ANCESTRY_VISUAL_TEMPLATES) {
+    assert.equal(traceAncestryBody(context, ancestry, 24), true, ancestry.id);
+    assert.equal("roleRead" in ancestry, false, `${ancestry.id}: role belongs to champion profile`);
+    const profile = composeCharacterVisualProfile({
+      id: `test-${ancestry.id}`,
+      name: `Test ${ancestry.name}`,
+      ancestryId: ancestry.id,
+      roleRead: "test role",
+      focusProp: "test prop",
+      body: "#888888",
+      mantle: "#555555",
+      ink: "#111111",
+      earth: "#999966",
+      fire: "#cc6633",
+      light: "#ddcc66",
+    });
+    assert.equal(profile.ancestryTemplate, ancestry);
+    assert.equal(drawAncestryFeatures(context, profile, 24), true, ancestry.id);
+  }
+});
+
+test("one ancestry template composes multiple independent champion profiles", () => {
+  const first = composeCharacterVisualProfile({ id: "one", name: "One", ancestryId: "dwarf", roleRead: "anchor", focusProp: "shield" });
+  const second = composeCharacterVisualProfile({ id: "two", name: "Two", ancestryId: "dwarf", roleRead: "shaper", focusProp: "hammer" });
+  assert.equal(first.ancestryTemplate, second.ancestryTemplate);
+  assert.notEqual(first.roleRead, second.roleRead);
+  assert.notEqual(first.focusProp, second.focusProp);
+});
 
 test("every shipped champion has exactly one explicit retirement transfer", () => {
   const shippedIds = CHARACTERS.map((agent) => agent.id).sort();
@@ -49,3 +89,10 @@ test("overhaul character state resolver preserves the six authored reads", () =>
   assert.equal(resolveOverhaulCharacterVisualState({ ...base, hitFlash: 0.1, defenseRemaining: 0.1 }), "hit");
   assert.equal(resolveOverhaulCharacterVisualState({ ...base, alive: false, hitFlash: 0.1 }), "defeated");
 });
+
+function fakeContext() {
+  return {
+    save() {}, restore() {}, beginPath() {}, moveTo() {}, lineTo() {}, closePath() {},
+    fill() {}, stroke() {}, arc() {}, quadraticCurveTo() {}, rect() {}, fillRect() {},
+  };
+}

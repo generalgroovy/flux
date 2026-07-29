@@ -2003,6 +2003,8 @@
   lifecycle, and one authenticated cleanup check. `node scripts/ci-verify.mjs`
   repeated the suite and passed syntax checks for all JavaScript modules.
   `git diff --check` passed.
-- **Next target:** Wait for the exact commit's Windows/Linux CI and package
-  matrix, then implement Nico Lai as the next source-only V1 Gnome character
-  using the shared rendering/specimen boundary.
+- **Next target:** Implement Nico Lai as the next source-only V1 Gnome
+  character using the shared rendering/specimen boundary.
+- **Remote verification:** GitHub Actions run `30454561082` passed all six jobs
+  for implementation commit `e472bd7`: Windows and Ubuntu on Node 20.19.1 and
+  Node 22, plus Windows NSIS and Ubuntu AppImage package builds.

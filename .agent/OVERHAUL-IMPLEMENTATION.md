@@ -213,5 +213,5 @@ S. Wayne is implemented as a source-only Hobbit visual:
 The six-state board rendered without console errors and its inherited
 app-stylesheet overflow conflict was corrected inside the specimen boundary.
 Focused tests, the 132-check full suite, syntax checks, and diff hygiene pass.
-The remaining acceptance item for this commit is a clean Windows/Linux CI
-matrix. The next implementation slice is Nico Lai.
+PR #10's Windows/Linux Node 20/22 verification and both package jobs passed for
+implementation commit `e472bd7`. The next implementation slice is Nico Lai.

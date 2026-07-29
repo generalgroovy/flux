@@ -117,5 +117,5 @@ is given.
   produced no browser console errors.
 - `npm.cmd test` passes 132/132 on Windows; `node scripts/ci-verify.mjs` repeats
   the suite and passes recursive JavaScript syntax checks.
-- Windows/Linux package and test CI for this exact commit remain required before
-  the slice is remotely verified.
+- PR #10's Windows/Linux Node 20/22 verification and both installable package
+  jobs passed for implementation commit `e472bd7`.

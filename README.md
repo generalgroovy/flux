@@ -277,7 +277,7 @@ every slice.
 | Haara prototype | Headless local mechanic prototype still uses the legacy `Hara` label and stable `mara` ID behind `contentProfile: "overhaul-preview"`; normal selection and live lobbies reject it |
 | Sanctum | Living menu shell, persistent remote company, and ancestry-column roster selection are implemented as an authorized V4 foundation |
 | Platforms | Source launch and graceful cleanup work on Windows and Linux; CI builds Windows NSIS and Linux AppImage artifacts |
-| Verification | 132 automated checks currently pass locally; the prior PR matrix passed Windows/Linux Node verification and packaging; the current commit still requires CI |
+| Verification | 132 automated checks pass locally; PR #10 passed Windows/Linux Node 20/22 verification and both package builds for implementation commit `e472bd7` |
 | Release blockers | Complete V1–V5 acceptance, a current packaged match smoke, signed public installers/update feed, and a dependable owned relay |
 
 The old champions are implementation scaffolding, not overhaul characters. Their

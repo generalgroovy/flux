@@ -2,6 +2,8 @@
 
 Experimental and reference workspace for FLUX.
 
-## Reference material
+## Character reference material
 
-- [Generated character sprite references](reference/character-sprites/README.md)
+[Open the full character sprite and skeleton reference](reference/character-sprites/README.md)
+
+![Front view reference preview](reference/character-sprites/front-views-board.png)

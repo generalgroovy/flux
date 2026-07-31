@@ -89,7 +89,9 @@ fi
 log "Fetching the repository-contained Aider workflow"
 git fetch origin "$BOOTSTRAP_BRANCH"
 current_branch="$(git branch --show-current)"
-if [[ "$current_branch" != agent/aider-* ]] || [[ ! -f .aider.conf.yml ]] || [[ ! -f CONVENTIONS.md ]]; then
+if [[ "$current_branch" == "$BOOTSTRAP_BRANCH" ]]; then
+  git merge --ff-only "origin/$BOOTSTRAP_BRANCH"
+elif [[ "$current_branch" != agent/aider-* ]] || [[ ! -f .aider.conf.yml ]] || [[ ! -f CONVENTIONS.md ]]; then
   if git show-ref --verify --quiet "refs/heads/$BOOTSTRAP_BRANCH"; then
     git switch "$BOOTSTRAP_BRANCH"
     git merge --ff-only "origin/$BOOTSTRAP_BRANCH"

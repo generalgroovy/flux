@@ -3,6 +3,8 @@ extends Node2D
 
 const MAX_CATCH_UP_STEPS: int = 8
 const HUB_DEFINITION_PATH: String = "res://content/maps/sanctum_hub_v1.json"
+const ABILITY_CATALOG_PATH: String = "res://content/abilities/foundation_abilities_v1.json"
+const LOADOUT_PATH: String = "res://content/loadouts/foundation_practitioner_v1.json"
 const WATER_COLOR := Color("153c4a")
 const WATER_HIGHLIGHT_COLOR := Color("28677a")
 const FOREST_SHADOW_COLOR := Color("17261b")
@@ -23,6 +25,8 @@ const PLAYER_COLOR := ATTUNEMENT_COLOR
 var world: SimWorld
 var input_router: InputRouter
 var hub_definition: HubDefinition
+var ability_catalog: AbilityCatalog
+var loadout: LoadoutDefinition
 var tick_rate: int = 120
 var accumulator_seconds: float = 0.0
 var previous_position := Vector2.ZERO
@@ -36,15 +40,27 @@ func _ready() -> void:
 		push_error(hub_definition.last_error)
 		get_tree().quit(1)
 		return
+	ability_catalog = AbilityCatalog.new()
+	if not ability_catalog.load_from_file(ABILITY_CATALOG_PATH):
+		push_error(ability_catalog.last_error)
+		get_tree().quit(1)
+		return
+	loadout = LoadoutDefinition.new()
+	if not loadout.load_from_file(LOADOUT_PATH, ability_catalog):
+		push_error(loadout.last_error)
+		get_tree().quit(1)
+		return
 	tick_rate = _requested_tick_rate()
 	_start_match(tick_rate)
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, Sanctum districts %d, travel nodes %d"
+		"FLUX2 bootstrap: %d Hz, protocol %d, Sanctum districts %d, travel nodes %d, ability catalog %s, build %d/13"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
 			hub_definition.districts_by_id.size(),
 			hub_definition.travel_nodes_by_id.size(),
+			ability_catalog.content_hash.left(12),
+			loadout.active_points,
 		]
 	)
 	set_process(true)
@@ -106,7 +122,7 @@ func _draw() -> void:
 	]
 	draw_rect(Rect2(16, 14, 1248, 76), PANEL_COLOR, true)
 	draw_rect(Rect2(16, 14, 1248, 76), BRASS_COLOR.darkened(0.3), false, 2.0)
-	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "THE SANCTUM  ·  MOVEMENT CONSERVATORY", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "THE SANCTUM · MOVEMENT CONSERVATORY · BUILD %d/13" % loadout.active_points, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
 	draw_string(ThemeDB.fallback_font, Vector2(760, 40), status, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, ATTUNEMENT_COLOR)
 	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · MOUSE AIM · LMB/SPACE PRIMARY INPUT · ALT SPRINT · C CHAIN · V TECHNIQUE · F6 60/120 HZ", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
 	if dropped_time_seconds > 0.0:

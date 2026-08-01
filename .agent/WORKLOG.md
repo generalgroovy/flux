@@ -158,4 +158,51 @@ Known limitations and risks:
 - Authored elevation bands, hop/fall presentation, buffered inputs, Edgeweave,
   saved remapping, and interactive controller acceptance remain open.
 
+Commit: `8805be0`. Push: pending.
+
+## 2026-08-01 — Canonical ability and loadout configuration
+
+Branch: `agent/aider-godot-foundation`
+
+What changed and why:
+
+- Added a versioned ability catalog with stable string/wire IDs, roles,
+  counterplay, simulation authority, integer timing/resource fields, and
+  recursively canonical SHA-256 hashing.
+- Declared all twelve intended element families while failing closed on ability
+  use of Spirit, Chaos, Gravity, or Time until their later acceptance gates.
+- Added a legal foundation loadout with one passive, resource-free primary,
+  three unique positive-cost actives, champion mobility, and ultimate.
+  Charge/Light affinity discounts fill exactly 13 points and do not modify raw
+  damage or other power values.
+- Integrated catalog/loadout validation into bootstrap and documented the
+  promotion order before implementing casts.
+
+Files changed:
+
+- `content/abilities/foundation_abilities_v1.json`,
+  `content/loadouts/foundation_practitioner_v1.json`;
+- `src/content/canonical_content.gd`, `ability_catalog.gd`,
+  `loadout_definition.gd`, `src/app/bootstrap.gd`;
+- `tests/unit/test_ability_content.gd`, `tests/run_all.gd`;
+- `README.md`, `docs/ABILITY-CONFIGURATION.md`,
+  `docs/OVERHAUL-PLAN.md`.
+
+Validation:
+
+- Ability/loadout suite: 33 assertions covering stable hashes, twelve declared
+  families, eight enabled families, positive active contracts, reliable
+  zero-Flux primary, exact 13-point loadout, duplicate rejection, budget
+  rejection, and invalid active rejection; passed.
+- Final integrated headless gate: 559 assertions, zero failures; bootstrap
+  validated the catalog/hash and exact 13/13 build at both 60 and 120 Hz.
+- `git diff --check` and `bash -n scripts/*.sh`: passed.
+
+Known limitations and risks:
+
+- Authoring JSON is validated and hashed but not yet compiled to a locked
+  historical wire manifest or included in session/replay compatibility metadata.
+- The catalog is configuration only; input cannot cast, damage, or place
+  terrain until the focused combat slices.
+
 Commit: pending at pre-commit record time. Push: pending.

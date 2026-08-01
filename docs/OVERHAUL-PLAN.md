@@ -103,12 +103,12 @@ readable state, remappable inputs, and keyboard/controller acceptance.
 
 ### 4.2 Ability content and loadouts
 
-- [ ] Planned: compile versioned ability definitions with stable string IDs,
+- [x] Compile versioned ability definitions with stable string IDs,
   generated wire IDs, explicit defaults, content hashes, positive costs,
   cooldowns, startup/recovery, role, targeting, authority, and counterplay.
-- [ ] Planned: validate one passive, one primary, three unique catalog actives,
+- [x] Validate one passive, one primary, three unique catalog actives,
   one champion-mobility action, and one ultimate per loadout.
-- [ ] Planned: enforce the standard 13-point active budget; affinities reduce
+- [x] Enforce the standard 13-point active budget; affinities reduce
   build cost but never multiply raw damage; duplicate actives fail closed.
 - [ ] Planned: implement training configuration, preview, save-version migration,
   and host handshake compatibility.
@@ -215,8 +215,9 @@ features.
 3. **Checkpoint C — movement constraints:** deterministic wall identity and
    same-wall lockout, bounded external control states, and a 60/120 Hz advanced
    Conservatory route fixture. Edgeweave waits for Slice E projectiles.
-4. **Slice D — ability configuration:** stable ability registry, legal loadout
-   validator, affinities/budget, training configuration, hashes, and migrations.
+4. **Checkpoint D — ability configuration:** stable ability/wire registry,
+   canonical hashes, legal slot/loadout validator, eight enabled and four gated
+   elements, affinity-only discounts, and exact 13-point foundation build.
 5. **Slice E — first combat ability:** deterministic primary projectile plus one
    active with startup/cost/cooldown/counterplay and full replay/presentation.
 6. **Slice F — chemistry laboratory:** bounded material grid and a small readable

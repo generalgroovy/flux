@@ -46,8 +46,9 @@ even when design documentation already exists.
   - [x] Independent move/aim and held-primary command protocol
   - [ ] Reliable resource-free primary projectile and combat resolution
   - [ ] Passive, three budgeted actives, champion mobility, and ultimate slots
-  - [ ] Stable ability IDs, validation, 13-point loadout budget, and first
-    complete champion vertical slice
+  - [x] Stable ability/wire IDs, canonical hashes, affinity discounts, gated
+    elements, slot validation, and an exact 13-point foundation loadout
+  - [ ] Training configuration UI and first complete champion vertical slice
 - [ ] **Chapter 5 — [Elements and chemistry](docs/OVERHAUL-PLAN.md#chapter-5--elements-materials-and-reactions)**
   - [x] Deterministic reactive-material and immutable-worldbone design contract
   - [ ] Bounded 128 x 128 chemistry laboratory and the first eight element
@@ -218,8 +219,10 @@ input, keyboard/mouse/controller defaults, custom ordered collision, 60/120 Hz
 match startup, stable state hashes, replay recording, and headless verification.
 It proves the runtime boundary and migrates the first movement values from the
 browser FLUX prototype. The primary is command plumbing only until its
-projectile slice lands. The full hub art, combat, networking, chemistry runtime,
-content, animation, and release exports remain staged milestones.
+projectile slice lands. A canonical ability catalog and legal 13-point loadout
+validate at boot but do not cast yet. The full hub art, combat, networking,
+chemistry runtime, content, animation, and release exports remain staged
+milestones.
 
 Run it offline after the engine archive has been prepared once:
 
@@ -260,5 +263,6 @@ waived to make a feature list look complete.
 - [Visual direction](docs/VISUAL-DIRECTION.md)
 - [Reactive pixel-material and chemistry system](docs/reactive-material-system.md)
 - [Movement migration](docs/MIGRATION-FLUX-MOVEMENT.md)
+- [Ability and loadout configuration](docs/ABILITY-CONFIGURATION.md)
 - [Development and offline setup](docs/DEVELOPMENT.md)
 - [Character and skeleton reference](reference/character-sprites/README.md)

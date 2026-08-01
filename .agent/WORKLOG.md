@@ -117,4 +117,45 @@ Known limitations and risks:
 - Edgeweave, authored elevation, and the remaining launched/grappled/status
   movement contracts remain the next Movement Conservatory slice.
 
+Commit: `7ffd6e6`. Push: pending.
+
+## 2026-08-01 — Movement constraints and Conservatory route
+
+Branch: `agent/aider-godot-foundation`
+
+What changed and why:
+
+- Added deterministic wall identities and the FLUX-derived 220 ms per-wall
+  lockout so repeated contact cannot refresh infinite wall kicks.
+- Added bounded launched, grappled, charging, stunned, rooted, and slowed
+  control-state contracts. External speeds clamp to the authored movement
+  ceiling and all resulting movement still resolves through ordered collision.
+- Added a 60/120 Hz Movement Conservatory integration fixture that completes
+  sprint-to-slide, late slide jump, air redirect, marked vault, and crest
+  superglide in the same semantic order.
+- Explicitly deferred Edgeweave until the projectile slice can distinguish a
+  swept hostile miss band from the inner hit volume and prevent repeat farming.
+
+Files changed:
+
+- `src/sim/world/collision_world.gd`, `src/sim/entities/player_state.gd`,
+  `src/sim/movement/movement_system.gd`, `movement_tuning.gd`;
+- `tests/unit/test_movement.gd`,
+  `tests/integration/test_conservatory_route.gd`, `tests/run_all.gd`;
+- `README.md`, `docs/OVERHAUL-PLAN.md`,
+  `docs/MIGRATION-FLUX-MOVEMENT.md`.
+
+Validation:
+
+- Full headless gate: 526 assertions, zero failures.
+- Godot import and 60/120 Hz protocol-2 bootstrap: passed with no script/runtime
+  diagnostics (restricted-sandbox editor socket warnings only).
+
+Known limitations and risks:
+
+- The control states expose safe simulation contracts for later abilities and
+  statuses; no current input or content grants them.
+- Authored elevation bands, hop/fall presentation, buffered inputs, Edgeweave,
+  saved remapping, and interactive controller acceptance remain open.
+
 Commit: pending at pre-commit record time. Push: pending.

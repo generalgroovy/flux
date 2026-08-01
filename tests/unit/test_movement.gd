@@ -8,7 +8,9 @@ func run() -> int:
 		_test_slide_and_slide_jump(tick_rate)
 		_test_air_dodge_and_wavedash(tick_rate)
 		_test_wall_contact_and_wall_kick(tick_rate)
+		_test_same_wall_lockout(tick_rate)
 		_test_vault_and_superglide(tick_rate)
+		_test_control_states(tick_rate)
 	return finish("movement")
 
 
@@ -91,6 +93,25 @@ func _test_wall_contact_and_wall_kick(tick_rate: int) -> void:
 	equal(state.movement_mode, PlayerState.MovementMode.WALL_KICK, "%d Hz wall kick remains explicit state" % tick_rate)
 
 
+func _test_same_wall_lockout(tick_rate: int) -> void:
+	var world := SimWorld.new(tick_rate)
+	var state: PlayerState = world.player()
+	state.position_x = state.radius + 1000
+	state.velocity_x = -MovementTuning.BASE_SPEED
+	_step(world, -1000, 0)
+	var contacted_wall: int = state.wall_contact_id
+	_step(world, -1000, 0, 0, SimCommand.PRESSED_JUMP)
+	equal(state.wall_lockout_id, contacted_wall, "%d Hz wall kick records wall identity" % tick_rate)
+	check(state.wall_lockout_ticks > 0, "%d Hz same-wall lockout starts" % tick_rate)
+	state.hop_ticks = 0
+	state.hop_cooldown_ticks = 0
+	state.wall_memory_ticks = 0
+	state.position_x = state.radius + 1000
+	state.velocity_x = -MovementTuning.BASE_SPEED
+	_step(world, -1000, 0)
+	equal(state.wall_memory_ticks, 0, "%d Hz same wall cannot immediately refresh a kick" % tick_rate)
+
+
 func _test_vault_and_superglide(tick_rate: int) -> void:
 	var world := SimWorld.new(tick_rate)
 	var state: PlayerState = world.player()
@@ -106,3 +127,30 @@ func _test_vault_and_superglide(tick_rate: int) -> void:
 	equal(state.last_event, "superglide", "%d Hz crest jump converts" % tick_rate)
 	check(state.superglide_ticks > 0, "%d Hz superglide is active" % tick_rate)
 	check(absi(state.velocity_x) <= MovementTuning.MAX_AUTHORED_SPEED, "%d Hz speed stays bounded" % tick_rate)
+
+
+func _test_control_states(tick_rate: int) -> void:
+	var rooted_world := SimWorld.new(tick_rate)
+	var rooted: PlayerState = rooted_world.player()
+	var rooted_start := Vector2i(rooted.position_x, rooted.position_y)
+	check(MovementSystem.apply_control_state(rooted, PlayerState.ControlState.ROOTED, 200, Vector2i.RIGHT, 0, rooted_world.config), "%d Hz root applies" % tick_rate)
+	_step(rooted_world, 1000, 0, SimCommand.HELD_SPRINT, SimCommand.PRESSED_JUMP)
+	equal(Vector2i(rooted.position_x, rooted.position_y), rooted_start, "%d Hz root blocks movement and movement actions" % tick_rate)
+	equal(rooted.movement_mode, PlayerState.MovementMode.ROOTED, "%d Hz root is explicit presentation state" % tick_rate)
+
+	var launch_world := SimWorld.new(tick_rate)
+	var launched: PlayerState = launch_world.player()
+	var launch_start: int = launched.position_x
+	check(MovementSystem.apply_control_state(launched, PlayerState.ControlState.LAUNCHED, 200, Vector2i.RIGHT, 2_000_000, launch_world.config), "%d Hz launch applies" % tick_rate)
+	_step(launch_world, -1000, 0, SimCommand.HELD_SPRINT, SimCommand.PRESSED_TECHNIQUE)
+	check(launched.position_x > launch_start, "%d Hz launch overrides player steering" % tick_rate)
+	check(launched.velocity_x <= MovementTuning.MAX_AUTHORED_SPEED, "%d Hz launch respects authored speed ceiling" % tick_rate)
+	equal(launched.movement_mode, PlayerState.MovementMode.LAUNCHED, "%d Hz launch is explicit presentation state" % tick_rate)
+
+	var slow_world := SimWorld.new(tick_rate)
+	var slowed: PlayerState = slow_world.player()
+	check(MovementSystem.apply_control_state(slowed, PlayerState.ControlState.SLOWED, 200, Vector2i.RIGHT, 0, slow_world.config, 500), "%d Hz slow applies" % tick_rate)
+	_step(slow_world, 1000, 0)
+	check(slowed.velocity_x > 0 and slowed.velocity_x < slow_world.config.per_tick(MovementTuning.ACCELERATION), "%d Hz slow scales ordinary acceleration" % tick_rate)
+	equal(slowed.movement_mode, PlayerState.MovementMode.SLOWED, "%d Hz slow is explicit presentation state" % tick_rate)
+	check(not MovementSystem.apply_control_state(slowed, 99, 200, Vector2i.RIGHT, 0, slow_world.config), "%d Hz unknown control state fails closed" % tick_rate)

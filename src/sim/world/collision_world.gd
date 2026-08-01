@@ -38,10 +38,16 @@ class MoveResult:
 	extends RefCounted
 	var position: Vector2i
 	var wall_normal: Vector2i
+	var wall_id: int
 
-	func _init(requested_position: Vector2i, requested_normal: Vector2i = Vector2i.ZERO) -> void:
+	func _init(
+		requested_position: Vector2i,
+		requested_normal: Vector2i = Vector2i.ZERO,
+		requested_wall_id: int = 0,
+	) -> void:
 		position = requested_position
 		wall_normal = requested_normal
+		wall_id = requested_wall_id
 
 
 var width: int
@@ -62,34 +68,41 @@ func add_obstacle(obstacle: Obstacle) -> void:
 func move_box(position: Vector2i, delta: Vector2i, radius: int) -> MoveResult:
 	var resolved := position
 	var normal := Vector2i.ZERO
+	var wall_id: int = 0
 	var next_x: int = clampi(position.x + delta.x, radius, width - radius)
 	if next_x != position.x + delta.x:
 		normal.x = -signi(delta.x) * 1000
+		wall_id = -1
 	for obstacle: Obstacle in obstacles:
 		if not _ranges_overlap(position.y - radius, position.y + radius, obstacle.minimum_y, obstacle.maximum_y):
 			continue
 		if delta.x > 0 and position.x + radius <= obstacle.minimum_x and next_x + radius > obstacle.minimum_x:
 			next_x = mini(next_x, obstacle.minimum_x - radius)
 			normal.x = -1000
+			wall_id = obstacle.obstacle_id
 		elif delta.x < 0 and position.x - radius >= obstacle.maximum_x and next_x - radius < obstacle.maximum_x:
 			next_x = maxi(next_x, obstacle.maximum_x + radius)
 			normal.x = 1000
+			wall_id = obstacle.obstacle_id
 	resolved.x = next_x
 
 	var next_y: int = clampi(position.y + delta.y, radius, height - radius)
 	if next_y != position.y + delta.y:
 		normal.y = -signi(delta.y) * 1000
+		wall_id = -2
 	for obstacle: Obstacle in obstacles:
 		if not _ranges_overlap(resolved.x - radius, resolved.x + radius, obstacle.minimum_x, obstacle.maximum_x):
 			continue
 		if delta.y > 0 and position.y + radius <= obstacle.minimum_y and next_y + radius > obstacle.minimum_y:
 			next_y = mini(next_y, obstacle.minimum_y - radius)
 			normal.y = -1000
+			wall_id = obstacle.obstacle_id
 		elif delta.y < 0 and position.y - radius >= obstacle.maximum_y and next_y - radius < obstacle.maximum_y:
 			next_y = maxi(next_y, obstacle.maximum_y + radius)
 			normal.y = 1000
+			wall_id = obstacle.obstacle_id
 	resolved.y = next_y
-	return MoveResult.new(resolved, normal)
+	return MoveResult.new(resolved, normal, wall_id)
 
 
 func find_vault_candidate(position: Vector2i, direction: Vector2i, radius: int) -> Obstacle:

@@ -35,11 +35,13 @@ even when design documentation already exists.
   — deterministic universal grammar in progress
   - [x] Sprint, counter-strafe, hop/double jump, wall kick, air redirect/dodge,
     wavedash, slide/slide jump, vault, superglide, and landing cut
-  - [x] Ordered integer collision, speed ceiling, 60/120 Hz replay verification
+  - [x] Ordered integer collision, per-wall lockout, speed ceiling, explicit
+    launch/grapple/charge/stun/root/slow contracts, and 60/120 Hz route/replay
+    verification
   - [x] Separate Health, Stamina, and spell Flux; independent quantized aim and
     keyboard/mouse/controller action defaults
-  - [ ] Add Edgeweave, authored elevation, input buffering, saved remapping, and
-    route acceptance
+  - [ ] Add Edgeweave after hostile projectiles exist, authored elevation, input
+    buffering, saved remapping, and interactive route acceptance
 - [ ] **Chapter 4 — [Combat and abilities](docs/OVERHAUL-PLAN.md#chapter-4--combat-and-ability-configuration)**
   - [x] Independent move/aim and held-primary command protocol
   - [ ] Reliable resource-free primary projectile and combat resolution

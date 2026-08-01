@@ -1,7 +1,7 @@
 # FLUX to FLUX2 movement migration
 
 Source baseline: `generalgroovy/flux` at commit `d49c9a9`, inspected 2026-08-01.
-Target baseline: Godot 4.7.1, protocol version 1.
+Target baseline: Godot 4.7.1, protocol version 2.
 
 ## Decisions
 
@@ -15,6 +15,9 @@ Target baseline: Godot 4.7.1, protocol version 1.
 | Air dodge and wavedash | Preserve | Fixed lane, late angled queue, bounded committed steering |
 | Slide and slide jump | Preserve | Entry-speed gate, paid slide, authored late conversion window |
 | Marked-cover vault/superglide | Preserve | Stable obstacle IDs, explicit vaultable flag, safe landing query |
+| Same-wall lockout | Preserve | Stable collision wall identity and a 220 ms per-wall kick lockout |
+| Launched/grappled/charging/status movement | Reinterpret | Explicit bounded control states that still use ordered collision |
+| Edgeweave hostile near-miss | Stage with combat | Deferred until projectile sweeps can prove miss-vs-hit and one reward per projectile |
 | Canvas swept-circle collision | Replace | Renderer-independent ordered integer box queries for the foundation |
 | Scene/render loop ownership | Replace | Pure simulation state mirrored by a presentation-only Node2D |
 | Browser networking implementation | Archive | Semantics remain reference input; Godot transport work is a later phase |
@@ -31,10 +34,24 @@ Durations are authored in integer milliseconds, then rounded upward to ticks
 for the selected rate. Position integration carries integer remainders so
 per-second velocities do not accumulate truncation drift.
 
+## Second movement checkpoint
+
+The source prototype's 220 ms same-wall lockout now uses stable integer wall
+identities. Launched, grappled, charging, stunned, rooted, and slowed states are
+explicit, bounded contracts; external speed clamps to 900 and all resulting
+motion still resolves through the ordered collision world. A Conservatory
+integration route independently verifies slide, late slide jump, air redirect,
+marked vault, and crest superglide at 60 and 120 Hz.
+
+Edgeweave is intentionally staged with projectile combat. Its acceptance must
+prove a swept hostile outer miss band, inner-hit exclusion, committed-speed
+threshold, per-player cooldown, per-projectile reward identity, full-Stamina
+rejection, training-pressure rejection, and a bounded 9-Stamina return.
+
 ## Not yet migrated
 
-Variable jump/fast fall, character-specific mobility, launched/grappled/
-charging/status movement, moving platforms, elevation columns, full authored
-map collision, network prediction/reconciliation, and chemistry-derived
-surface modifiers remain explicit subsequent slices. Their enum/schema space
-must be added with tests rather than inferred from presentation.
+Variable jump/fast fall, character-specific mobility, moving platforms,
+elevation columns, full authored map collision, Edgeweave/projectile sweeps,
+network prediction/reconciliation, and chemistry-derived surface modifiers
+remain explicit subsequent slices. Their schema space must be added with tests
+rather than inferred from presentation.

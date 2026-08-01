@@ -64,6 +64,11 @@ attune/travel without a menu-only hidden state or an unsafe destination.
   double jump, wall kick/contact memory, air redirect, air dodge, wavedash,
   slide, slide jump, vault, superglide, landing cut, Stamina recovery timing, and a
   hard authored speed ceiling.
+- [x] Identify collision walls deterministically, prevent same-wall kick loops,
+  bound external speed, and represent launched, grappled, charging, stunned,
+  rooted, and slowed control states without bypassing collision.
+- [x] Verify an advanced Conservatory route fixture reaches the same slide,
+  slide-jump, redirect, vault, and superglide transitions at 60 and 120 Hz.
 - [x] Compile real-time windows independently for 60 and 120 Hz and verify replay
   determinism at each rate.
 - [x] Separate universal Stamina, spell Flux, and Health with deterministic
@@ -73,10 +78,11 @@ attune/travel without a menu-only hidden state or an unsafe destination.
 - [ ] In progress: persist player remapping and verify controller command
   equivalence through an interactive acceptance fixture.
 - [ ] Planned: add buffered transitions, variable hop/fall presentation state,
-  authored elevation/low-cover queries, per-wall lockout, launch/grapple/charge/
-  stun/root/slow contracts, and Edgeweave stamina recovery.
-- [ ] Planned: build and measure every ordinary and advanced movement route in
-  the Conservatory, including exact speed/time records and accessibility bypass.
+  authored elevation/low-cover queries, and Edgeweave Stamina recovery once
+  hostile projectile sweeps exist.
+- [ ] In progress: build and measure every ordinary and advanced movement route
+  in the authored Conservatory, including exact speed/time records and an
+  accessibility bypass; the deterministic integration fixture is complete.
 
 Exit gate: the complete universal grammar works in the live Sanctum with
 separate resources, independent aim, deterministic replay, collision safety,
@@ -206,8 +212,9 @@ features.
 2. **Checkpoint B — resource and input truth:** separate Stamina/Flux/Health,
    version independent aim and primary input, add action-based controller
    defaults, update HUD/replay tests, and harden smoke-error detection.
-3. **Slice C — movement completion:** Edgeweave, remaining authoritative movement
-   states, authored elevation/low-cover semantics, and Conservatory route fixture.
+3. **Checkpoint C — movement constraints:** deterministic wall identity and
+   same-wall lockout, bounded external control states, and a 60/120 Hz advanced
+   Conservatory route fixture. Edgeweave waits for Slice E projectiles.
 4. **Slice D — ability configuration:** stable ability registry, legal loadout
    validator, affinities/budget, training configuration, hashes, and migrations.
 5. **Slice E — first combat ability:** deterministic primary projectile plus one

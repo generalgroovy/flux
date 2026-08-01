@@ -15,6 +15,22 @@ enum MovementMode {
 	WALL_KICK,
 	VAULT,
 	SUPERGLIDE,
+	LAUNCHED,
+	GRAPPLED,
+	CHARGING,
+	STUNNED,
+	ROOTED,
+	SLOWED,
+}
+
+enum ControlState {
+	FREE,
+	LAUNCHED,
+	GRAPPLED,
+	CHARGING,
+	STUNNED,
+	ROOTED,
+	SLOWED,
 }
 
 var entity_id: int = 1
@@ -76,8 +92,17 @@ var superglide_y: int = 0
 var wall_memory_ticks: int = 0
 var wall_x: int = 0
 var wall_y: int = 0
+var wall_contact_id: int = 0
+var wall_lockout_id: int = 0
+var wall_lockout_ticks: int = 0
 var landing_ticks: int = 0
 var sprinting: bool = false
+var control_state: int = ControlState.FREE
+var control_ticks: int = 0
+var control_x: int = 1000
+var control_y: int = 0
+var control_speed: int = 0
+var slow_ratio: int = 1000
 var last_event: String = "spawn"
 
 
@@ -105,5 +130,7 @@ func canonical_values() -> PackedInt64Array:
 		slide_ticks, slide_cooldown_ticks, slide_x, slide_y,
 		vault_ticks, vault_cooldown_ticks, vault_x, vault_y,
 		superglide_ticks, superglide_x, superglide_y,
-		wall_memory_ticks, wall_x, wall_y, landing_ticks, int(sprinting),
+		wall_memory_ticks, wall_x, wall_y, wall_contact_id,
+		wall_lockout_id, wall_lockout_ticks, landing_ticks, int(sprinting),
+		control_state, control_ticks, control_x, control_y, control_speed, slow_ratio,
 	])

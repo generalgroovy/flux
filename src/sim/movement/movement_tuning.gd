@@ -22,6 +22,10 @@ const HOP_DURATION_MS: int = 160
 const HOP_COOLDOWN_MS: int = 500
 const WALL_KICK_SPEED: int = 780_000
 const WALL_MEMORY_MS: int = 160
+const SAME_WALL_LOCKOUT_MS: int = 220
+
+const SLOW_MINIMUM_RATIO: int = 250
+const SLOW_MAXIMUM_RATIO: int = 1000
 
 const DOUBLE_JUMP_COST: int = 24_000
 const DOUBLE_JUMP_SPEED: int = 700_000

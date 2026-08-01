@@ -9,41 +9,88 @@ static func step(state: PlayerState, command: SimCommand, config: SimConfig, wor
 		state.facing_x = direction.x
 		state.facing_y = direction.y
 
-	if command.has_pressed(SimCommand.PRESSED_JUMP):
-		if state.vault_ticks > 0:
-			_try_superglide(state, direction, config)
-		elif state.slide_ticks > 0:
-			_try_slide_jump(state, direction, config)
-		elif state.hop_ticks > 0:
-			_try_double_jump(state, direction, config)
-		elif command.has_held(SimCommand.HELD_SPRINT):
-			_try_slide(state, direction, config)
-		else:
-			_try_hop(state, direction, config)
-
-	if command.has_pressed(SimCommand.PRESSED_TECHNIQUE):
-		if state.is_airborne():
-			if command.has_held(SimCommand.HELD_SPRINT):
-				_try_air_dodge(state, direction, config)
+	var control_locked: bool = state.control_state in [
+		PlayerState.ControlState.LAUNCHED,
+		PlayerState.ControlState.GRAPPLED,
+		PlayerState.ControlState.CHARGING,
+		PlayerState.ControlState.STUNNED,
+		PlayerState.ControlState.ROOTED,
+	]
+	if not control_locked:
+		if command.has_pressed(SimCommand.PRESSED_JUMP):
+			if state.vault_ticks > 0:
+				_try_superglide(state, direction, config)
+			elif state.slide_ticks > 0:
+				_try_slide_jump(state, direction, config)
+			elif state.hop_ticks > 0:
+				_try_double_jump(state, direction, config)
+			elif command.has_held(SimCommand.HELD_SPRINT):
+				_try_slide(state, direction, config)
 			else:
-				_try_air_redirect(state, direction, config)
-		else:
-			_try_vault(state, direction, config, world)
+				_try_hop(state, direction, config)
 
-	_apply_velocity(state, command, direction, config)
+		if command.has_pressed(SimCommand.PRESSED_TECHNIQUE):
+			if state.is_airborne():
+				if command.has_held(SimCommand.HELD_SPRINT):
+					_try_air_dodge(state, direction, config)
+				else:
+					_try_air_redirect(state, direction, config)
+			else:
+				_try_vault(state, direction, config, world)
+
+	if control_locked:
+		_apply_control_velocity(state, config)
+	else:
+		_apply_velocity(state, command, direction, config)
+		if state.control_state == PlayerState.ControlState.SLOWED:
+			@warning_ignore("integer_division")
+			state.velocity_x = state.velocity_x * state.slow_ratio / 1000
+			@warning_ignore("integer_division")
+			state.velocity_y = state.velocity_y * state.slow_ratio / 1000
 	_integrate(state, config, world)
 	_update_mode(state, command)
+
+
+static func apply_control_state(
+	state: PlayerState,
+	requested_state: int,
+	duration_ms: int,
+	direction: Vector2i,
+	speed: int,
+	config: SimConfig,
+	slow_ratio: int = 1000,
+) -> bool:
+	if requested_state < PlayerState.ControlState.FREE or requested_state > PlayerState.ControlState.SLOWED:
+		return false
+	if requested_state == PlayerState.ControlState.FREE:
+		state.control_state = PlayerState.ControlState.FREE
+		state.control_ticks = 0
+		state.control_speed = 0
+		state.slow_ratio = 1000
+		return true
+	if duration_ms <= 0:
+		return false
+	var normalized := _direction(direction.x, direction.y, Vector2i(state.facing_x, state.facing_y))
+	state.control_state = requested_state
+	state.control_ticks = config.milliseconds_to_ticks(duration_ms)
+	state.control_x = normalized.x
+	state.control_y = normalized.y
+	state.control_speed = clampi(speed, 0, MovementTuning.MAX_AUTHORED_SPEED)
+	state.slow_ratio = clampi(slow_ratio, MovementTuning.SLOW_MINIMUM_RATIO, MovementTuning.SLOW_MAXIMUM_RATIO)
+	state.last_event = "control_%d" % requested_state
+	return true
 
 
 static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 	var was_hopping: bool = state.hop_ticks > 0
 	var was_air_dodging: bool = state.air_dodge_ticks > 0
+	var previous_control_state: int = state.control_state
 	for property_name: StringName in [
 		&"stamina_recovery_delay_ticks", &"hop_ticks", &"hop_cooldown_ticks",
 		&"air_dodge_ticks", &"air_dodge_cooldown_ticks", &"wave_dash_ticks",
 		&"slide_ticks", &"slide_cooldown_ticks", &"vault_ticks",
 		&"vault_cooldown_ticks", &"superglide_ticks", &"wall_memory_ticks",
-		&"landing_ticks",
+		&"landing_ticks", &"wall_lockout_ticks", &"control_ticks",
 	]:
 		state.set(property_name, maxi(0, int(state.get(property_name)) - 1))
 	if was_hopping and state.hop_ticks == 0:
@@ -60,6 +107,11 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 		else:
 			state.landing_ticks = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
 		state.wave_dash_queued = false
+	if previous_control_state != PlayerState.ControlState.FREE and state.control_ticks == 0:
+		state.control_state = PlayerState.ControlState.FREE
+		state.control_speed = 0
+		state.slow_ratio = 1000
+		state.last_event = "control_end"
 
 
 static func _try_hop(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
@@ -78,6 +130,10 @@ static func _try_hop(state: PlayerState, direction: Vector2i, config: SimConfig)
 	state.hop_y = direction.y
 	state.air_redirects_remaining = 1
 	state.wall_memory_ticks = 0
+	if wall_kick:
+		state.wall_lockout_id = state.wall_contact_id
+		state.wall_lockout_ticks = config.milliseconds_to_ticks(MovementTuning.SAME_WALL_LOCKOUT_MS)
+	state.wall_contact_id = 0
 	state.sprinting = false
 	state.last_event = "wall_kick" if wall_kick else "hop"
 	return true
@@ -232,6 +288,20 @@ static func _apply_velocity(state: PlayerState, command: SimCommand, direction: 
 		_apply_ground_velocity(state, command, direction, config)
 
 
+static func _apply_control_velocity(state: PlayerState, config: SimConfig) -> void:
+	state.sprinting = false
+	match state.control_state:
+		PlayerState.ControlState.LAUNCHED, PlayerState.ControlState.GRAPPLED, PlayerState.ControlState.CHARGING:
+			_set_directional_velocity(state, Vector2i(state.control_x, state.control_y), state.control_speed)
+		PlayerState.ControlState.STUNNED:
+			var braking: int = config.per_tick(MovementTuning.DECELERATION)
+			state.velocity_x = _approach(state.velocity_x, 0, braking)
+			state.velocity_y = _approach(state.velocity_y, 0, braking)
+		PlayerState.ControlState.ROOTED:
+			state.velocity_x = 0
+			state.velocity_y = 0
+
+
 static func _apply_ground_velocity(state: PlayerState, command: SimCommand, direction: Vector2i, config: SimConfig) -> void:
 	var moving: bool = command.move_x != 0 or command.move_y != 0
 	var sprinting: bool = moving and command.has_held(SimCommand.HELD_SPRINT) and state.stamina > 0
@@ -273,9 +343,11 @@ static func _integrate(state: PlayerState, config: SimConfig, world: CollisionWo
 	state.position_x = result.position.x
 	state.position_y = result.position.y
 	if result.wall_normal != Vector2i.ZERO:
-		state.wall_memory_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_MEMORY_MS)
-		state.wall_x = result.wall_normal.x
-		state.wall_y = result.wall_normal.y
+		if result.wall_id != state.wall_lockout_id or state.wall_lockout_ticks == 0:
+			state.wall_memory_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_MEMORY_MS)
+			state.wall_x = result.wall_normal.x
+			state.wall_y = result.wall_normal.y
+			state.wall_contact_id = result.wall_id
 		state.position_remainder_x = 0 if result.wall_normal.x != 0 else state.position_remainder_x
 		state.position_remainder_y = 0 if result.wall_normal.y != 0 else state.position_remainder_y
 		if result.wall_normal.x != 0:
@@ -292,7 +364,9 @@ static func _integrate(state: PlayerState, config: SimConfig, world: CollisionWo
 
 
 static func _update_mode(state: PlayerState, command: SimCommand) -> void:
-	if state.superglide_ticks > 0:
+	if state.control_state != PlayerState.ControlState.FREE:
+		state.movement_mode = PlayerState.MovementMode.LAUNCHED + state.control_state - PlayerState.ControlState.LAUNCHED
+	elif state.superglide_ticks > 0:
 		state.movement_mode = PlayerState.MovementMode.SUPERGLIDE
 	elif state.air_dodge_ticks > 0:
 		state.movement_mode = PlayerState.MovementMode.AIR_DODGE

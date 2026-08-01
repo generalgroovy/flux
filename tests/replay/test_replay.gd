@@ -12,12 +12,14 @@ func _test_replay_at_rate(tick_rate: int) -> void:
 	var commands: Array[SimCommand] = []
 	for tick: int in range(tick_rate * 2):
 		var held: int = SimCommand.HELD_SPRINT if tick < tick_rate else 0
+		if tick >= tick_rate / 2 and tick < tick_rate / 2 + tick_rate / 4:
+			held |= SimCommand.HELD_PRIMARY
 		var pressed: int = 0
 		if tick == tick_rate / 3:
 			pressed |= SimCommand.PRESSED_JUMP
 		if tick == tick_rate / 3 + 2:
 			pressed |= SimCommand.PRESSED_TECHNIQUE
-		commands.append(SimCommand.new(tick, 1, 1000, 0, held, pressed))
+		commands.append(SimCommand.new(tick, 1, 1000, 0, held, pressed, 0, -1000))
 	var first: ReplayData = ReplayData.record(commands, tick_rate, 8675309)
 	var second: ReplayData = ReplayData.record(commands, tick_rate, 8675309)
 	equal(first.expected_hashes, second.expected_hashes, "%d Hz repeated recording has identical hashes" % tick_rate)

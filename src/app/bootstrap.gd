@@ -105,6 +105,11 @@ func _draw() -> void:
 		)
 		draw_rect(rectangle, TIMBER_COLOR if obstacle.vaultable else WORLDBONE_COLOR, true)
 		draw_rect(rectangle, BRASS_COLOR if obstacle.vaultable else PALE_STONE_COLOR.darkened(0.35), false, 3.0)
+	for projectile: ProjectileState in world.projectiles:
+		var projectile_position := Vector2(float(projectile.position_x) / 1000.0, float(projectile.position_y) / 1000.0)
+		var projectile_color: Color = ATTUNEMENT_COLOR if projectile.source_wire_id == CombatTuning.PRIMARY_WIRE_ID else FLUX_COLOR
+		draw_circle(projectile_position, float(projectile.radius) / 1000.0 + 7.0, Color(projectile_color, 0.18))
+		draw_circle(projectile_position, float(projectile.radius) / 1000.0, projectile_color)
 	var alpha: float = clampf(accumulator_seconds * float(tick_rate), 0.0, 1.0)
 	var rendered_position: Vector2 = previous_position.lerp(current_position, alpha)
 	var state: PlayerState = world.player()
@@ -112,19 +117,20 @@ func _draw() -> void:
 	draw_circle(rendered_position, float(state.radius) / 1000.0, PLAYER_COLOR)
 	draw_arc(rendered_position, float(state.radius) / 1000.0 + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
 	draw_line(rendered_position, rendered_position + Vector2(state.aim_x, state.aim_y) * 0.032, Color.WHITE, 3.0)
-	var status := "%d HZ · TICK %d · HP %.0f · ST %.0f · FX %.0f · %s" % [
+	var status := "%d HZ · T%d · HP %.0f · ST %.0f · FX %.0f · P%d · %s" % [
 		tick_rate,
 		world.tick,
 		float(state.health) / 1000.0,
 		float(state.stamina) / 1000.0,
 		float(state.flux) / 1000.0,
+		world.projectiles.size(),
 		state.last_event,
 	]
 	draw_rect(Rect2(16, 14, 1248, 76), PANEL_COLOR, true)
 	draw_rect(Rect2(16, 14, 1248, 76), BRASS_COLOR.darkened(0.3), false, 2.0)
 	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "THE SANCTUM · MOVEMENT CONSERVATORY · BUILD %d/13" % loadout.active_points, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
 	draw_string(ThemeDB.fallback_font, Vector2(760, 40), status, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, ATTUNEMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · MOUSE AIM · LMB/SPACE PRIMARY INPUT · ALT SPRINT · C CHAIN · V TECHNIQUE · F6 60/120 HZ", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · MOUSE AIM · LMB/SPACE ARC PRIMARY · RMB/E VECTOR LANCE · ALT SPRINT · C CHAIN · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
 	if dropped_time_seconds > 0.0:
 		draw_string(ThemeDB.fallback_font, Vector2(32, 112), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
 

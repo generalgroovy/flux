@@ -40,11 +40,14 @@ even when design documentation already exists.
     verification
   - [x] Separate Health, Stamina, and spell Flux; independent quantized aim and
     keyboard/mouse/controller action defaults
-  - [ ] Add Edgeweave after hostile projectiles exist, authored elevation, input
-    buffering, saved remapping, and interactive route acceptance
+  - [x] Edgeweave swept hostile near-miss reward with speed, cooldown,
+    miss-vs-hit, full-Stamina, training, and per-projectile farming guards
+  - [ ] Add authored elevation, input buffering, saved remapping, and interactive
+    route acceptance
 - [ ] **Chapter 4 — [Combat and abilities](docs/OVERHAUL-PLAN.md#chapter-4--combat-and-ability-configuration)**
   - [x] Independent move/aim and held-primary command protocol
-  - [ ] Reliable resource-free primary projectile and combat resolution
+  - [x] Resource-free Arc Primary and Flux-paid Vector Lance through startup,
+    deterministic projectile, swept hit, damage, cooldown, and replay
   - [ ] Passive, three budgeted actives, champion mobility, and ultimate slots
   - [x] Stable ability/wire IDs, canonical hashes, affinity discounts, gated
     elements, slot validation, and an exact 13-point foundation loadout
@@ -214,14 +217,14 @@ run headlessly, serialize, replay, and verify without rendering. See the
 
 The repository currently contains a small executable slice, not a finished
 game: a styled Sanctum training-room presentation over a deterministic movement
-arena, separate Health/Stamina/Flux state, independent quantized aim and primary
-input, keyboard/mouse/controller defaults, custom ordered collision, 60/120 Hz
-match startup, stable state hashes, replay recording, and headless verification.
-It proves the runtime boundary and migrates the first movement values from the
-browser FLUX prototype. The primary is command plumbing only until its
-projectile slice lands. A canonical ability catalog and legal 13-point loadout
-validate at boot but do not cast yet. The full hub art, combat, networking,
-chemistry runtime, content, animation, and release exports remain staged
+arena, separate Health/Stamina/Flux state, independent quantized aim,
+keyboard/mouse/controller defaults, custom ordered collision, resource-free Arc
+Primary, Flux-paid Vector Lance, authoritative projectiles/damage, Edgeweave,
+60/120 Hz match startup, stable state hashes, replay recording, and headless
+verification. It proves the runtime boundary and migrates the first movement and
+combat contracts from the browser FLUX prototype. A canonical ability catalog
+and legal 13-point loadout validate at boot. The full hub art, champion kit,
+networking, chemistry runtime, animation, and release exports remain staged
 milestones.
 
 Run it offline after the engine archive has been prepared once:
@@ -233,11 +236,12 @@ scripts/test.sh
 scripts/run.sh --tick-rate=120
 ```
 
-Controls: WASD moves, mouse aims, left click or Space submits primary input, Alt
-sprints, C uses the jump/movement chain, V uses the contextual technique, R
-restarts the match, and F6 restarts at the other supported tick rate. Controller
-defaults use left/right sticks, triggers, shoulders, and east face button. The
-rate never mutates inside a running match.
+Controls: WASD moves, mouse aims, left click or Space fires Arc Primary, right
+click or E casts Vector Lance, Alt sprints, C uses the jump/movement chain, V
+uses the contextual technique, R restarts the match, and F6 restarts at the
+other supported tick rate. Controller defaults use left/right sticks, right
+trigger, west/east face buttons, and shoulders. The rate never mutates inside a
+running match.
 
 See [development setup](docs/DEVELOPMENT.md) and the
 [FLUX movement migration record](docs/MIGRATION-FLUX-MOVEMENT.md).
@@ -264,5 +268,6 @@ waived to make a feature list look complete.
 - [Reactive pixel-material and chemistry system](docs/reactive-material-system.md)
 - [Movement migration](docs/MIGRATION-FLUX-MOVEMENT.md)
 - [Ability and loadout configuration](docs/ABILITY-CONFIGURATION.md)
+- [Deterministic combat foundation](docs/COMBAT-FOUNDATION.md)
 - [Development and offline setup](docs/DEVELOPMENT.md)
 - [Character and skeleton reference](reference/character-sprites/README.md)

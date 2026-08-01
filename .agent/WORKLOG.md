@@ -205,4 +205,51 @@ Known limitations and risks:
 - The catalog is configuration only; input cannot cast, damage, or place
   terrain until the focused combat slices.
 
+Commit: `e7e8ded`. Push: pending.
+
+## 2026-08-01 — Deterministic projectile combat and Edgeweave
+
+Branch: `agent/aider-godot-foundation`
+
+What changed and why:
+
+- Versioned protocol 3 with pressed active-one input and aligned keyboard,
+  mouse, and controller defaults.
+- Implemented resource-free Arc Primary and 24-Flux Vector Lance through
+  startup, aim snapshot, recovery, cooldown, stable projectile IDs, integer
+  movement/remainders, ordered collision, swept hostile hits, authoritative
+  Health damage, lifetime/impact events, presentation, state hashing, and replay.
+- Implemented FLUX-derived Edgeweave: a 16-unit hostile outer miss band at
+  260+ speed rewards at most 9 Stamina with a 220 ms fighter lockout; hits,
+  full Stamina, training sources, and repeated projectile/fighter pairs do not
+  reward.
+- Documented tick order and deliberate combat limitations rather than implying
+  projectile clash, defenses, statuses, or chemistry already exist.
+
+Files changed:
+
+- `src/sim/combat/`, `src/sim/core/sim_command.gd`, `sim_config.gd`,
+  `sim_world.gd`, `src/sim/entities/player_state.gd`;
+- `src/app/input_router.gd`, `bootstrap.gd`;
+- `tests/unit/test_combat.gd`, `test_ability_content.gd`,
+  `test_input_router.gd`, `tests/replay/test_replay.gd`, `tests/run_all.gd`;
+- `README.md`, `docs/COMBAT-FOUNDATION.md`,
+  `docs/ABILITY-CONFIGURATION.md`, `docs/DEVELOPMENT.md`,
+  `docs/OVERHAUL-PLAN.md`.
+
+Validation:
+
+- Full headless gate before final documentation: 727 assertions, zero failures.
+- Both 60 and 120 Hz pass primary/active startup and hit tests, exact Flux and
+  damage checks, refusal diagnostics, Edgeweave reward/hit/training/repeat
+  guards, command-stream replay, import, and protocol-3 bootstrap.
+
+Known limitations and risks:
+
+- Defeat/respawn, clash, defense, statuses, knockback, pierce, fields, bots,
+  network packets, chemistry, and production telegraphs are still explicit
+  later slices.
+- Runtime tuning is guarded against catalog drift by tests; a generated locked
+  wire/runtime table remains preferable before wider catalog growth.
+
 Commit: pending at pre-commit record time. Push: pending.

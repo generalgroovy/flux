@@ -24,11 +24,10 @@ the simulation, becomes replay compatibility metadata, and cannot change
 inside a running match. F6 restarts the local debug match at the other rate; it
 does not mutate a live simulation.
 
-Controls: WASD movement, mouse aim, left click or Space primary input, Alt
-sprint, C jump/movement-chain input, V technique, R reset, and F6 restart at
-60/120 Hz. Controller defaults use left/right sticks, right trigger, shoulders,
-and the east face button. Primary input is protocol plumbing in this checkpoint;
-it does not create a projectile yet.
+Controls: WASD movement, mouse aim, left click or Space Arc Primary, right click
+or E Vector Lance, Alt sprint, C jump/movement-chain input, V technique, R reset,
+and F6 restart at 60/120 Hz. Controller defaults use left/right sticks, right
+trigger, shoulders, and west/east face buttons.
 
 ## Architecture boundary
 

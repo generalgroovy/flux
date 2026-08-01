@@ -34,6 +34,7 @@ enum ControlState {
 }
 
 var entity_id: int = 1
+var team_id: int = 1
 var position_x: int = 160_000
 var position_y: int = 360_000
 var position_remainder_x: int = 0
@@ -47,6 +48,14 @@ var aim_y: int = 0
 var radius: int = MovementTuning.PLAYER_RADIUS
 var movement_mode: int = MovementMode.IDLE
 var primary_held: bool = false
+var pending_cast_wire_id: int = 0
+var pending_cast_ticks: int = 0
+var pending_cast_aim_x: int = 1000
+var pending_cast_aim_y: int = 0
+var cast_recovery_ticks: int = 0
+var primary_cooldown_ticks: int = 0
+var active_1_cooldown_ticks: int = 0
+var edgeweave_cooldown_ticks: int = 0
 
 var health: int = PlayerTuning.HEALTH_MAXIMUM
 var health_recovery_remainder: int = 0
@@ -116,10 +125,13 @@ func is_airborne() -> bool:
 
 func canonical_values() -> PackedInt64Array:
 	return PackedInt64Array([
-		entity_id,
+		entity_id, team_id,
 		position_x, position_y, position_remainder_x, position_remainder_y,
 		velocity_x, velocity_y, facing_x, facing_y, aim_x, aim_y, radius, movement_mode,
 		int(primary_held),
+		pending_cast_wire_id, pending_cast_ticks, pending_cast_aim_x, pending_cast_aim_y,
+		cast_recovery_ticks, primary_cooldown_ticks, active_1_cooldown_ticks,
+		edgeweave_cooldown_ticks,
 		health, health_recovery_remainder, health_recovery_delay_ticks,
 		flux, flux_recovery_remainder, flux_recovery_delay_ticks,
 		stamina, stamina_remainder, stamina_recovery_delay_ticks,

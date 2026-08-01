@@ -10,6 +10,9 @@ var collision: CollisionWorld
 var tick: int = 0
 var seed: int = 1
 var players: Array[PlayerState] = []
+var projectiles: Array[ProjectileState] = []
+var next_projectile_id: int = 1000
+var combat_events: Array[Dictionary] = []
 var last_error: String = ""
 
 
@@ -42,6 +45,7 @@ func step(commands: Array[SimCommand]) -> bool:
 	var ordered: Array[SimCommand] = commands.duplicate()
 	ordered.sort_custom(func(left: SimCommand, right: SimCommand) -> bool: return left.entity_id < right.entity_id)
 	var seen: Dictionary[int, bool] = {}
+	combat_events = []
 	for command: SimCommand in ordered:
 		if command.tick != tick:
 			last_error = "command tick %d does not match world tick %d" % [command.tick, tick]
@@ -59,18 +63,33 @@ func step(commands: Array[SimCommand]) -> bool:
 		state.primary_held = command.has_held(SimCommand.HELD_PRIMARY)
 		PlayerResourcesSystem.step(state, config)
 		MovementSystem.step(state, command, config, collision)
+		var spawned: ProjectileState = CombatSystem.step_player(
+			state, command, config, next_projectile_id, collision, combat_events
+		)
+		if spawned != null:
+			projectiles.append(spawned)
+			next_projectile_id += 1
 	for state: PlayerState in players:
 		if not seen.has(state.entity_id):
 			state.primary_held = false
 			PlayerResourcesSystem.step(state, config)
-			MovementSystem.step(state, SimCommand.new(tick, state.entity_id), config, collision)
+			var idle_command := SimCommand.new(tick, state.entity_id, 0, 0, 0, 0, state.aim_x, state.aim_y)
+			MovementSystem.step(state, idle_command, config, collision)
+			var spawned: ProjectileState = CombatSystem.step_player(
+				state, idle_command, config, next_projectile_id, collision, combat_events
+			)
+			if spawned != null:
+				projectiles.append(spawned)
+				next_projectile_id += 1
+	projectiles.sort_custom(func(left: ProjectileState, right: ProjectileState) -> bool: return left.entity_id < right.entity_id)
+	projectiles = CombatSystem.advance_projectiles(projectiles, players, config, collision, combat_events)
 	tick += 1
 	return true
 
 
 func state_hash() -> String:
 	var payload := PackedByteArray()
-	for value: int in [SimConfig.PROTOCOL_VERSION, config.tick_rate, tick, seed]:
+	for value: int in [SimConfig.PROTOCOL_VERSION, config.tick_rate, tick, seed, next_projectile_id]:
 		CanonicalBytes.append_i64(payload, value)
 	CanonicalBytes.append_string(payload, MAP_ID)
 	CanonicalBytes.append_string(payload, MAP_HASH)
@@ -79,5 +98,9 @@ func state_hash() -> String:
 	CanonicalBytes.append_i64(payload, ordered.size())
 	for state: PlayerState in ordered:
 		for value: int in state.canonical_values():
+			CanonicalBytes.append_i64(payload, value)
+	CanonicalBytes.append_i64(payload, projectiles.size())
+	for projectile: ProjectileState in projectiles:
+		for value: int in projectile.canonical_values():
 			CanonicalBytes.append_i64(payload, value)
 	return CanonicalBytes.sha256_hex(payload)

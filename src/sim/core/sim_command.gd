@@ -6,6 +6,7 @@ const HELD_SPRINT: int = 1 << 0
 const HELD_PRIMARY: int = 1 << 1
 const PRESSED_JUMP: int = 1 << 0
 const PRESSED_TECHNIQUE: int = 1 << 1
+const PRESSED_ACTIVE_1: int = 1 << 2
 
 var tick: int
 var entity_id: int

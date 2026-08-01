@@ -78,8 +78,10 @@ attune/travel without a menu-only hidden state or an unsafe destination.
 - [ ] In progress: persist player remapping and verify controller command
   equivalence through an interactive acceptance fixture.
 - [ ] Planned: add buffered transitions, variable hop/fall presentation state,
-  authored elevation/low-cover queries, and Edgeweave Stamina recovery once
-  hostile projectile sweeps exist.
+  and authored elevation/low-cover queries.
+- [x] Add Edgeweave Stamina recovery with hostile swept miss-vs-hit geometry,
+  committed-speed/full-Stamina/cooldown/training guards, and one reward per
+  projectile/fighter pair.
 - [ ] In progress: build and measure every ordinary and advanced movement route
   in the authored Conservatory, including exact speed/time records and an
   accessibility bypass; the deterministic integration fixture is complete.
@@ -96,10 +98,12 @@ readable state, remappable inputs, and keyboard/controller acceptance.
   primary state; stale/duplicate commands remain rejected.
 - [ ] Planned: add packet decoding limits and reject malformed wire vectors
   before constructing semantic commands.
-- [ ] Planned: implement deterministic projectile identity, movement, collision,
-  expiry, ownership, impact events, and a reliable no-Flux primary.
-- [ ] Planned: add Health, damage, invulnerability/status timing, defeat, respawn,
-  and out-of-combat recovery with state-hash/replay coverage.
+- [x] Implement deterministic projectile identity, movement, world/player
+  collision, expiry, ownership/team filtering, impact events, state hashing, and
+  a reliable no-Flux primary.
+- [x] Add authoritative Health damage and out-of-combat recovery with replay
+  coverage.
+- [ ] Planned: add invulnerability/status timing, defeat, and respawn.
 
 ### 4.2 Ability content and loadouts
 
@@ -218,8 +222,9 @@ features.
 4. **Checkpoint D — ability configuration:** stable ability/wire registry,
    canonical hashes, legal slot/loadout validator, eight enabled and four gated
    elements, affinity-only discounts, and exact 13-point foundation build.
-5. **Slice E — first combat ability:** deterministic primary projectile plus one
-   active with startup/cost/cooldown/counterplay and full replay/presentation.
+5. **Checkpoint E — first combat abilities:** protocol-3 primary/active input,
+   Arc Primary and Vector Lance startup/resource/cooldown/recovery, deterministic
+   projectile/hit/damage/replay/presentation, and complete Edgeweave guards.
 6. **Slice F — chemistry laboratory:** bounded material grid and a small readable
    reaction set in the Proving Grounds.
 

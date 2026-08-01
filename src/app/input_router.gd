@@ -14,11 +14,13 @@ const KEY_ACTIONS: Dictionary[StringName, int] = {
 	&"toggle_tick_rate": KEY_F6,
 }
 const PRIMARY_ACTION: StringName = &"primary"
+const ACTIVE_1_ACTION: StringName = &"active_1"
 const AIM_DEADZONE: float = 0.25
 
 var entity_id: int
 var jump_was_down: bool = false
 var technique_was_down: bool = false
+var active_1_was_down: bool = false
 
 
 func _init(requested_entity_id: int = 1) -> void:
@@ -33,6 +35,9 @@ static func ensure_input_map() -> void:
 	_ensure_action(PRIMARY_ACTION)
 	_add_key(PRIMARY_ACTION, KEY_SPACE)
 	_add_mouse_button(PRIMARY_ACTION, MOUSE_BUTTON_LEFT)
+	_ensure_action(ACTIVE_1_ACTION)
+	_add_key(ACTIVE_1_ACTION, KEY_E)
+	_add_mouse_button(ACTIVE_1_ACTION, MOUSE_BUTTON_RIGHT)
 
 	_add_joy_axis(&"move_left", JOY_AXIS_LEFT_X, -1.0)
 	_add_joy_axis(&"move_right", JOY_AXIS_LEFT_X, 1.0)
@@ -47,6 +52,7 @@ static func ensure_input_map() -> void:
 	_add_joy_axis(&"aim_up", JOY_AXIS_RIGHT_Y, -1.0)
 	_add_joy_axis(&"aim_down", JOY_AXIS_RIGHT_Y, 1.0)
 	_add_joy_axis(PRIMARY_ACTION, JOY_AXIS_TRIGGER_RIGHT, 1.0)
+	_add_joy_button(ACTIVE_1_ACTION, JOY_BUTTON_X)
 	_add_joy_button(&"sprint", JOY_BUTTON_LEFT_SHOULDER)
 	_add_joy_button(&"jump", JOY_BUTTON_RIGHT_SHOULDER)
 	_add_joy_button(&"technique", JOY_BUTTON_B)
@@ -99,13 +105,17 @@ func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> S
 		held |= SimCommand.HELD_PRIMARY
 	var jump_down: bool = Input.is_action_pressed(&"jump")
 	var technique_down: bool = Input.is_action_pressed(&"technique")
+	var active_1_down: bool = Input.is_action_pressed(ACTIVE_1_ACTION)
 	var pressed: int = 0
 	if jump_down and not jump_was_down:
 		pressed |= SimCommand.PRESSED_JUMP
 	if technique_down and not technique_was_down:
 		pressed |= SimCommand.PRESSED_TECHNIQUE
+	if active_1_down and not active_1_was_down:
+		pressed |= SimCommand.PRESSED_ACTIVE_1
 	jump_was_down = jump_down
 	technique_was_down = technique_down
+	active_1_was_down = active_1_down
 
 	var aim_delta: Vector2 = pointer_position - player_position
 	var joy_aim := Vector2(

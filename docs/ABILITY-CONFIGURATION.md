@@ -55,9 +55,9 @@ This demonstrates discounts without granting elemental damage superiority.
 
 1. Canonical catalog/loadout validation and boot integration — complete.
 2. Match compatibility metadata and save migration for selected loadouts.
-3. Deterministic resource-free Arc Primary projectile.
-4. One active with startup, Flux spend, cooldown, recovery, impact, and explicit
-   counterplay.
+3. Deterministic resource-free Arc Primary projectile — complete foundation.
+4. Vector Lance with startup, Flux spend, cooldown, recovery, and impact —
+   complete foundation; full visual/audio counterplay acceptance remains.
 5. Training configuration UI and authoritative host ready-check.
 6. One approved champion through bot, replay, network, reconnect, spectator,
    accessibility, and platform gates.

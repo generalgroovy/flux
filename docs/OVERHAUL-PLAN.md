@@ -74,7 +74,7 @@ attune/travel without a menu-only hidden state or an unsafe destination.
 - [x] Separate universal Stamina, spell Flux, and Health with deterministic
   delays/rates; movement cannot spend Flux or Health.
 - [x] Add independent quantized aim, primary command state, action-based
-  keyboard/mouse/controller defaults, protocol-v2 bytes, and replay hashing.
+  keyboard/mouse/controller defaults, protocol-v3 bytes, and replay hashing.
 - [ ] In progress: persist player remapping and verify controller command
   equivalence through an interactive acceptance fixture.
 - [ ] Planned: add buffered transitions, variable hop/fall presentation state,
@@ -94,8 +94,8 @@ readable state, remappable inputs, and keyboard/controller acceptance.
 
 ### 4.1 Command and combat kernel
 
-- [x] Version command protocol 2 for independent deterministic aim and held
-  primary state; stale/duplicate commands remain rejected.
+- [x] Version command protocol 3 for independent deterministic aim, held
+  primary, and active-one presses; stale/duplicate commands remain rejected.
 - [ ] Planned: add packet decoding limits and reject malformed wire vectors
   before constructing semantic commands.
 - [x] Implement deterministic projectile identity, movement, world/player

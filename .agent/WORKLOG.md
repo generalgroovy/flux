@@ -70,7 +70,7 @@ Known limitations and risks:
   development is ready, but offline release export preparation remains.
 - CI is configured but its first remote run is pending the branch push.
 
-Commit: `8e6bce6`. Push: pending.
+Commit: `8e6bce6`. Push: `origin/agent/aider-godot-foundation`.
 
 ## 2026-08-01 — Resource and independent-input truth
 
@@ -117,7 +117,7 @@ Known limitations and risks:
 - Edgeweave, authored elevation, and the remaining launched/grappled/status
   movement contracts remain the next Movement Conservatory slice.
 
-Commit: `7ffd6e6`. Push: pending.
+Commit: `7ffd6e6`. Push: `origin/agent/aider-godot-foundation`.
 
 ## 2026-08-01 — Movement constraints and Conservatory route
 
@@ -158,7 +158,7 @@ Known limitations and risks:
 - Authored elevation bands, hop/fall presentation, buffered inputs, Edgeweave,
   saved remapping, and interactive controller acceptance remain open.
 
-Commit: `8805be0`. Push: pending.
+Commit: `8805be0`. Push: `origin/agent/aider-godot-foundation`.
 
 ## 2026-08-01 — Canonical ability and loadout configuration
 
@@ -205,7 +205,7 @@ Known limitations and risks:
 - The catalog is configuration only; input cannot cast, damage, or place
   terrain until the focused combat slices.
 
-Commit: `e7e8ded`. Push: pending.
+Commit: `e7e8ded`. Push: `origin/agent/aider-godot-foundation`.
 
 ## 2026-08-01 — Deterministic projectile combat and Edgeweave
 
@@ -252,4 +252,35 @@ Known limitations and risks:
 - Runtime tuning is guarded against catalog drift by tests; a generated locked
   wire/runtime table remains preferable before wider catalog growth.
 
-Commit: pending at pre-commit record time. Push: pending.
+Commit: `2896ce6`. Push: `origin/agent/aider-godot-foundation`.
+
+## 2026-08-01 — Published foundation checkpoint
+
+Branch: `agent/aider-godot-foundation`
+
+What changed and why:
+
+- Reconciled the pre-commit worklog records with the five focused commits that
+  now exist on the remote branch.
+- Updated the implementation plan to identify protocol 3 as the current
+  command contract after active-one casting extended the protocol-2 aim work.
+- Published the branch as draft PR #5 against the reviewed Godot architecture
+  branch so the stacked foundation remains reviewable without targeting main.
+
+Validation:
+
+- Full local headless gate: 727 assertions, zero failures.
+- Clean Godot import/bootstrap at both 60 and 120 Hz with protocol 3: passed.
+- GitHub draft PR #5: both `headless` checks passed for the current remote
+  foundation commits.
+
+Known limitations and risks:
+
+- This checkpoint is a playable engineering skeleton, not a content-complete
+  overhaul. The unchecked README/plan items remain deliberately open.
+- Export templates, Windows acceptance, networking, authored hub tiles,
+  chemistry runtime, and the first complete champion are later gated slices.
+
+Implementation commits: `8e6bce6`, `7ffd6e6`, `8805be0`, `e7e8ded`, and
+`2896ce6`. Draft PR: `https://github.com/generalgroovy/flux2/pull/5`.
+Documentation commit: pending at pre-commit record time.

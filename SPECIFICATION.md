@@ -6,6 +6,10 @@ This document is the normative technical specification for reimplementing FLUX i
 
 The implementation must remain incremental. Existing gameplay concepts and reference assets are inputs, not reasons to preserve unsuitable runtime architecture.
 
+Current implementation checkpoint: F1 completes the C0 material registry/
+world-column storage and C1 Material Yard seed/worldbone/reset foundation. It
+loads a static 128 x 128 preview at boot; material reactions remain gated.
+
 ## 2. Product target
 
 FLUX is a fast top-down elemental arena game emphasizing:
@@ -234,6 +238,10 @@ The reactive-material specification remains authoritative for chemistry behavior
 - Keep chemistry budgets deterministic and independent of camera visibility.
 
 The first implementation target is one 128 x 128 chemistry-cell region with at least worldbone, stone, brick, wood, water, oil, fire, steam, ice, Charge, and rubble.
+F1 now provides their validated packed storage, static seed, immutable mask,
+bounded canonical work queue, hashes, exact reset, and one-texture debug preview.
+F2 must add the single authoritative phase orchestrator before any seeded sample
+is described as an active reaction.
 
 ## 11. Multiplayer topology
 

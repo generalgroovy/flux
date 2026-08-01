@@ -144,8 +144,16 @@ authoritative, replayable, and testable without rendering.
 
 - [x] Specify immutable worldbone, deterministic 2.5D columns, stable material
   IDs, bounded awake queues, reset groups, safety rules, and semantic replication.
-- [ ] Planned: implement one 128 x 128 Proving Grounds laboratory with packed
-  cells, worldbone mask, dirty chunks, fixed budgets, reset, hashes, and tests.
+- [x] Implement C0/C1 foundations: canonical material catalog and wire IDs,
+  packed 128 x 128 amount/temperature/wetness/Charge/elevation columns,
+  validated compact seed import, complete immutable worldbone perimeter/plinth,
+  deterministic bounded awake queue, state/worldbone hashes, exact reset,
+  60/120 Hz tests, and a read-only one-texture preview.
+- [ ] Planned: implement C2 typed structural damage, damaged stages, support,
+  warned ordered collapse, rubble, derived dirty collision, and route safety.
+- [ ] Planned: implement C3 heat transfer, Fire/combustion, phase changes,
+  steam/ice, thermal shock, conservation/budgets, and semantic cues under one
+  authoritative material phase orchestrator.
 - [ ] Planned: promote Earth, Fire, Water, Wind, Ice, Charge, Light, and Dark with
   shape/sound/timing/residue language and representative neutral reactions.
 - [ ] Planned: integrate material-derived traversal, collision, AI queries,
@@ -278,26 +286,30 @@ features.
 5. **Checkpoint E — first combat abilities:** protocol-3 primary/active input,
    Arc Primary and Vector Lance startup/resource/cooldown/recovery, deterministic
    projectile/hit/damage/replay/presentation, and complete Edgeweave guards.
-6. **Slice F — chemistry laboratory:** bounded material grid and a small readable
-   reaction set in the Proving Grounds.
-7. **Slice G — authored traversal:** Nexus-to-Conservatory elevation route,
+6. **Checkpoint F1 — chemistry storage/safety:** canonical material registry,
+   packed 128 x 128 columns, compact Material Yard seed, immutable worldbone,
+   bounded canonical work queue, hashes, exact reset, and read-only preview.
+7. **Slice F2 — structural/thermal reactions:** single phase orchestrator,
+   typed damage/stages/rubble/derived collision, then heat/Fire/steam/ice and
+   readable deterministic reaction events.
+8. **Slice G — authored traversal:** Nexus-to-Conservatory elevation route,
    variable hop/fast fall, input buffers/remapping, interactive controller gate,
    and shared traversal devices.
-8. **Slice H — first complete champion:** reconcile one approved design through
+9. **Slice H — first complete champion:** reconcile one approved design through
    ancestry, full kit/loadout UI, cues, dummy/bot, replay, network schema,
    accessibility, and Linux/Windows source gates.
-9. **Slice I — two-player authority:** loopback then ENet host/join, handshake
+10. **Slice I — two-player authority:** loopback then ENet host/join, handshake
    hashes, prediction/reconciliation, snapshot replay, diagnostics, and clean
    shutdown.
-10. **Slice J — first arena/mode:** one original map package with objective,
+11. **Slice J — first arena/mode:** one original map package with objective,
     chemistry/destruction safety, duel/team rules, bots, rounds, rematch, and
     results.
-11. **Slice K — continuity:** late join, reconnect, spectators, and forced host
+12. **Slice K — continuity:** late join, reconnect, spectators, and forced host
     migration before optional WebRTC/signalling/relay work.
-12. **Slices L–M — breadth on proven systems:** cooperative survival/siege,
+13. **Slices L–M — breadth on proven systems:** cooperative survival/siege,
     then PvPvE expedition, seeded roguelike dungeons, lane/stronghold experiment,
     and only then a measured battle-royale slice.
-13. **Slices N–O — content and release:** expand one champion/ancestry/biome/
+14. **Slices N–O — content and release:** expand one champion/ancestry/biome/
     reaction/enemy family at a time, then complete original art/audio,
     accessibility/performance, packages, migration, rollback, and release gates.
 

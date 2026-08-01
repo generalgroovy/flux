@@ -29,6 +29,10 @@ or E Vector Lance, Alt sprint, C jump/movement-chain input, V technique, R reset
 and F6 restart at 60/120 Hz. Controller defaults use left/right sticks, right
 trigger, shoulders, and west/east face buttons.
 
+The lower-right `MATERIAL YARD F1` panel is a read-only texture generated from
+the canonical 128 x 128 seed. Its labels identify the static seed/worldbone
+hashes that booted; it is not yet an interactive reaction simulation.
+
 ## Architecture boundary
 
 `src/sim/` owns canonical integer state. It has no Node, renderer, input,

@@ -1168,6 +1168,11 @@ later or earlier phase directly.
 
 ## 28. Delivery sequence
 
+Current Flux2 status: the F1 checkpoint implements the C0 registry/world-column
+foundation and C1 worldbone/seed/reset safety foundation. C2 and later behavior
+remains gated; static seeded Fire, steam, ice, liquids, Charge, and rubble are
+storage/preview proof, not active reactions.
+
 | Gate | Scope | Acceptance before advancing |
 | ---: | --- | --- |
 | C0 | Registry, schemas, IDs, fixed-point conventions, world-column model | Content validation and serialization round-trip |

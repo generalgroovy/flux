@@ -337,3 +337,59 @@ Known limitations and risks:
   own implementation and acceptance slices pass.
 
 Commit: pending at pre-commit record time. Push: pending.
+
+## 2026-08-01 — F1 deterministic Material Yard storage foundation
+
+Branch: `agent/aider-godot-foundation`
+
+What changed and why:
+
+- Added a fail-closed, stable-wire material catalog for the first eleven
+  occupancy materials while keeping charge as an independent field so water
+  and other matter can carry stored force without changing identity.
+- Added an exact 128-by-128 authored Material Yard seed definition with
+  immutable Worldbone, a complete perimeter, deterministic reset ownership,
+  elevation samples, and a rate-independent work budget.
+- Implemented packed parallel material fields, guarded writes, deterministic
+  sorted/deduplicated awake work, reset, and stable state/Worldbone hashes.
+- Integrated catalog and yard validation into startup and exposed a read-only
+  in-world development preview; rendering cannot mutate simulation state.
+- Reordered the production plan around the new F1 checkpoint. Reaction
+  scheduling remains F2 and is intentionally absent from this storage slice.
+
+Files changed:
+
+- `content/materials/foundation_materials_v1.json`;
+- `content/maps/sanctum_material_yard_v1.json`;
+- `src/content/material_registry.gd`;
+- `src/content/material_yard_definition.gd`;
+- `src/sim/materials/material_grid.gd`;
+- `src/app/bootstrap.gd`;
+- `tests/unit/test_material_content.gd`;
+- `tests/unit/test_material_grid.gd`;
+- `tests/run_all.gd`;
+- `README.md`, `SPECIFICATION.md`, and the related development/overhaul/material
+  documentation.
+
+Validation:
+
+- Full headless gate at the final source state: 818 assertions, zero failures.
+- Clean bootstrap at both 60 and 120 Hz: passed; material catalog hash
+  `1c9b15a12d94`, yard hash `3b466b916d6e`.
+- Interactive AMD Radeon 610M compatibility-renderer smoke: passed. The preview
+  frame, plinth, material bands, charged-water cue, and hashes were visible and
+  left the training lanes unobstructed.
+- `bash -n scripts/*.sh` and `git diff --check`: passed.
+
+Known limitations and risks:
+
+- This slice establishes storage, validation, work ordering, reset, and a
+  diagnostic preview only. It does not yet execute reactions, destruction,
+  propagation, or network deltas.
+- The current training court is still a schematic mechanics harness, not the
+  approved vast Living Sanctum presentation. Authored Sanctum topology and
+  visual replacement have been promoted immediately after the requested
+  control/POV checkpoint.
+- Material Yard colors are diagnostic and are not shipping art direction.
+
+Commit: pending at pre-commit record time. Push: pending.

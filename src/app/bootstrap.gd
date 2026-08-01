@@ -5,6 +5,8 @@ const MAX_CATCH_UP_STEPS: int = 8
 const HUB_DEFINITION_PATH: String = "res://content/maps/sanctum_hub_v1.json"
 const ABILITY_CATALOG_PATH: String = "res://content/abilities/foundation_abilities_v1.json"
 const LOADOUT_PATH: String = "res://content/loadouts/foundation_practitioner_v1.json"
+const MATERIAL_CATALOG_PATH: String = "res://content/materials/foundation_materials_v1.json"
+const MATERIAL_YARD_PATH: String = "res://content/maps/sanctum_material_yard_v1.json"
 const WATER_COLOR := Color("153c4a")
 const WATER_HIGHLIGHT_COLOR := Color("28677a")
 const FOREST_SHADOW_COLOR := Color("17261b")
@@ -27,6 +29,10 @@ var input_router: InputRouter
 var hub_definition: HubDefinition
 var ability_catalog: AbilityCatalog
 var loadout: LoadoutDefinition
+var material_registry: MaterialRegistry
+var material_yard: MaterialYardDefinition
+var material_grid: MaterialGrid
+var material_preview_texture: ImageTexture
 var tick_rate: int = 120
 var accumulator_seconds: float = 0.0
 var previous_position := Vector2.ZERO
@@ -50,10 +56,22 @@ func _ready() -> void:
 		push_error(loadout.last_error)
 		get_tree().quit(1)
 		return
+	material_registry = MaterialRegistry.new()
+	if not material_registry.load_from_file(MATERIAL_CATALOG_PATH):
+		push_error(material_registry.last_error)
+		get_tree().quit(1)
+		return
+	material_yard = MaterialYardDefinition.new()
+	if not material_yard.load_from_file(MATERIAL_YARD_PATH, material_registry):
+		push_error(material_yard.last_error)
+		get_tree().quit(1)
+		return
 	tick_rate = _requested_tick_rate()
-	_start_match(tick_rate)
+	if not _start_match(tick_rate):
+		get_tree().quit(1)
+		return
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, Sanctum districts %d, travel nodes %d, ability catalog %s, build %d/13"
+		"FLUX2 bootstrap: %d Hz, protocol %d, Sanctum districts %d, travel nodes %d, ability catalog %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -61,6 +79,8 @@ func _ready() -> void:
 			hub_definition.travel_nodes_by_id.size(),
 			ability_catalog.content_hash.left(12),
 			loadout.active_points,
+			material_registry.content_hash.left(12),
+			material_yard.content_hash.left(12),
 		]
 	)
 	set_process(true)
@@ -69,9 +89,13 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if Input.is_action_just_pressed(&"reset_match"):
-		_start_match(tick_rate)
+		if not _start_match(tick_rate):
+			set_process(false)
+			return
 	if Input.is_action_just_pressed(&"toggle_tick_rate"):
-		_start_match(60 if tick_rate == 120 else 120)
+		if not _start_match(60 if tick_rate == 120 else 120):
+			set_process(false)
+			return
 
 	var fixed_delta: float = 1.0 / float(tick_rate)
 	accumulator_seconds += minf(delta, 0.1)
@@ -98,6 +122,7 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	_draw_sanctum_training_court()
+	_draw_material_yard_preview()
 	for obstacle: CollisionWorld.Obstacle in world.collision.obstacles:
 		var rectangle := Rect2(
 			Vector2(float(obstacle.minimum_x) / 1000.0, float(obstacle.minimum_y) / 1000.0),
@@ -133,6 +158,26 @@ func _draw() -> void:
 	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · MOUSE AIM · LMB/SPACE ARC PRIMARY · RMB/E VECTOR LANCE · ALT SPRINT · C CHAIN · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
 	if dropped_time_seconds > 0.0:
 		draw_string(ThemeDB.fallback_font, Vector2(32, 112), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
+
+
+func _draw_material_yard_preview() -> void:
+	if material_preview_texture == null or material_grid == null:
+		return
+	var panel := Rect2(1082, 492, 174, 194)
+	draw_rect(panel, PANEL_COLOR, true)
+	draw_rect(panel, BRASS_COLOR.darkened(0.25), false, 2.0)
+	draw_string(ThemeDB.fallback_font, Vector2(1094, 515), "MATERIAL YARD F1", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PARCHMENT_COLOR)
+	draw_texture_rect(material_preview_texture, Rect2(1105, 526, 128, 128), false)
+	draw_rect(Rect2(1105, 526, 128, 128), PALE_STONE_COLOR.darkened(0.2), false, 2.0)
+	draw_string(
+		ThemeDB.fallback_font,
+		Vector2(1094, 675),
+		"SEED %s · WB %s" % [material_grid.seed_state_hash.left(6), material_grid.seed_worldbone_hash.left(6)],
+		HORIZONTAL_ALIGNMENT_LEFT,
+		-1.0,
+		11,
+		ATTUNEMENT_COLOR,
+	)
 
 
 func _draw_sanctum_training_court() -> void:
@@ -183,15 +228,61 @@ func _draw_sanctum_training_court() -> void:
 		draw_circle(flower_position + Vector2(4, 2), 3.0, PARCHMENT_COLOR)
 
 
-func _start_match(requested_tick_rate: int) -> void:
+func _start_match(requested_tick_rate: int) -> bool:
 	tick_rate = requested_tick_rate
 	world = SimWorld.new(tick_rate, 8675309)
+	material_grid = MaterialGrid.new()
+	if not material_grid.initialize(material_yard, material_registry, world.config):
+		push_error(material_grid.last_error)
+		return false
+	_refresh_material_preview()
 	input_router = InputRouter.new(1)
 	accumulator_seconds = 0.0
 	dropped_time_seconds = 0.0
 	current_position = _player_position()
 	previous_position = current_position
 	print("FLUX2 match initialized at %d Hz" % tick_rate)
+	return true
+
+
+func _refresh_material_preview() -> void:
+	var image := Image.create(material_grid.width, material_grid.height, false, Image.FORMAT_RGBA8)
+	for cell_y: int in range(material_grid.height):
+		for cell_x: int in range(material_grid.width):
+			var cell_index := cell_y * material_grid.width + cell_x
+			var material_id := material_registry.material_id(material_grid.material_wire_ids[cell_index])
+			var color := _material_color(material_id)
+			var charge_ratio := float(material_grid.charges[cell_index]) / float(SimConfig.FIXED_SCALE)
+			if charge_ratio > 0.0:
+				color = color.lerp(ATTUNEMENT_COLOR, charge_ratio * 0.7)
+			image.set_pixel(cell_x, cell_y, color)
+	material_preview_texture = ImageTexture.create_from_image(image)
+
+
+func _material_color(material_id: String) -> Color:
+	match material_id:
+		"worldbone":
+			return WORLDBONE_COLOR
+		"stone":
+			return PALE_STONE_COLOR.darkened(0.28)
+		"brick":
+			return Color("8f5745")
+		"wood":
+			return TIMBER_COLOR
+		"water":
+			return WATER_HIGHLIGHT_COLOR
+		"oil":
+			return Color("342f42")
+		"fire":
+			return FIRE_COLOR
+		"steam":
+			return Color("b8c8c6")
+		"ice":
+			return Color("9bc7d9")
+		"rubble":
+			return Color("685e54")
+		_:
+			return Color("151711")
 
 
 func _requested_tick_rate() -> int:

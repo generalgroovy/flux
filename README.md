@@ -57,8 +57,11 @@ even when design documentation already exists.
   - [ ] First complete champion vertical slice
 - [ ] **Chapter 5 — [Elements, chemistry, and destruction](#elements-chemistry-and-destruction)**
   - [x] Deterministic reactive-material and immutable-worldbone design contract
-  - [ ] Bounded 128 x 128 chemistry laboratory and the first eight element
-    families; Spirit, Chaos, Gravity, and Time remain gated
+  - [x] Validated material registry, bounded packed 128 x 128 Material Yard
+    seed, separate Charge/elevation fields, immutable perimeter/plinth,
+    deterministic work queue, hashes, exact reset, and read-only preview
+  - [ ] Structural damage and the first live material reactions; the first
+    eight element families remain staged and Spirit/Chaos/Gravity/Time gated
   - [ ] Structural fracture, fluids, fire/heat, ice, Charge, gases, residues,
     cleanup, reset, replication, and readable reaction presentation
 - [ ] **Chapter 6 — [Ancestries and champions](#ancestries-and-champions)**
@@ -82,8 +85,9 @@ even when design documentation already exists.
 - [ ] **Chapter 9 — [Production roadmap](#production-roadmap)**
   - [x] Pinned Godot, headless suites, Linux offline setup, CI definition, and
     original visual-direction provenance
-  - [x] Focused reversible checkpoints A–E remain playable and published
-  - [ ] Checkpoints F onward: chemistry, authored traversal, first champion,
+- [x] Focused reversible checkpoints A–E remain playable and published
+  - [x] Checkpoint F1 establishes chemistry storage/worldbone/reset safety
+  - [ ] Checkpoints F2 onward: reactions, authored traversal, first champion,
     host/join, maps/modes, content scale, accessibility, packaging, and release
 
 The complete gate order, slice boundaries, current status, and definition of a
@@ -633,9 +637,11 @@ Primary, Flux-paid Vector Lance, authoritative projectiles/damage, Edgeweave,
 60/120 Hz match startup, stable state hashes, replay recording, and headless
 verification. It proves the runtime boundary and migrates the first movement and
 combat contracts from the browser FLUX prototype. A canonical ability catalog
-and legal 13-point loadout validate at boot. The full hub art, champion kit,
-networking, chemistry runtime, animation, and release exports remain staged
-milestones.
+and legal 13-point loadout validate at boot. A canonical material registry and
+packed 128 x 128 Sanctum Material Yard seed also validate, hash, reset, and
+render as a read-only debug preview; reactions do not step yet. The full hub art,
+champion kit, networking, active chemistry, animation, and release exports
+remain staged milestones.
 
 Run it offline after the engine archive has been prepared once:
 
@@ -671,7 +677,8 @@ tools, accessibility, and compatibility agree.
 | C — movement constraints | Same-wall lockout, bounded control states, advanced Conservatory route fixture | Complete |
 | D — ability configuration | Stable ability/element/wire IDs, canonical hashes, legal 13-point loadout, gated families | Complete |
 | E — first combat path | Arc Primary, Vector Lance, projectiles, swept hit/damage, replay and full Edgeweave invariants | Complete |
-| F — Sanctum Material Yard | 128 x 128 packed chemistry grid, worldbone, structural damage, water/oil/fire/steam/ice/Charge/rubble, reset, debug views | Next production slice |
+| F1 — chemistry storage/safety | Validated material registry, 128 x 128 packed columns, seeded materials/Charge/elevation, immutable worldbone, canonical queue/budgets/hashes, exact reset, read-only preview | Complete |
+| F2 — structural/thermal reactions | Typed structure damage and rubble, then heat/Fire/steam/ice/thermal shock under one simulation orchestrator | Next production slice |
 | G — authored traversal | Nexus-to-Conservatory multi-elevation route, variable hop/fast fall, buffering/remapping, interactive controller acceptance, traversal devices | Planned |
 | H — first complete champion | Approved ancestry/profile, full slot kit/configuration UI, dummy/bot, cues, replay and platform acceptance | Planned |
 | I — two-player authority | Loopback then ENet host/join, handshake hashes, prediction/reconciliation, snapshot replay, clean shutdown | Planned |
@@ -734,6 +741,7 @@ look complete.
 - [Sanctum hub and fast-travel contract](docs/SANCTUM-HUB.md)
 - [Visual direction](docs/VISUAL-DIRECTION.md)
 - [Reactive pixel-material and chemistry system](docs/reactive-material-system.md)
+- [Material registry/grid foundation](docs/MATERIAL-GRID-FOUNDATION.md)
 - [Movement migration](docs/MIGRATION-FLUX-MOVEMENT.md)
 - [Ability and loadout configuration](docs/ABILITY-CONFIGURATION.md)
 - [Deterministic combat foundation](docs/COMBAT-FOUNDATION.md)

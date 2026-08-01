@@ -12,4 +12,4 @@ godot_bin="${GODOT_BIN:-$(command -v godot4 || command -v godot || true)}"
   printf 'Godot is missing. Run scripts/install-godot.sh while connected.\n' >&2
   exit 1
 }
-exec "$godot_bin" --path "$repo_root" -- --tick-rate="$tick_rate"
+exec "$godot_bin" --path "$repo_root" -- --tick-rate="$tick_rate" "$@"

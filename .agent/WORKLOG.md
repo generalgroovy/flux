@@ -338,6 +338,76 @@ Known limitations and risks:
 
 Commit: pending at pre-commit record time. Push: pending.
 
+## 2026-08-01 — G1 offline controls and configurable POV
+
+Branch: `agent/aider-godot-foundation`
+
+What changed and why:
+
+- Added a versioned local-only player-preferences profile with safe defaults,
+  exact JSON persistence, schema/bounds validation, conflict rejection, and
+  explicit per-action physical-key unbinding while retaining mouse/controller
+  events.
+- Added independent `world_relative` and `aim_relative` movement presets. The
+  latter treats independent aim as forward and converts forward/strafe intent
+  into the same bounded world command with integer math.
+- Added independent `full` and `cone` POV presentation. Cone mode accepts
+  15–360 degrees and a 160–4096 unit range, including a finite circular
+  360-degree view; the mask renders after actors and before HUD/debug panels.
+- Added F7–F10 saved runtime controls and exact launcher overrides for movement
+  reference, POV mode, angle, and range. The launch script now forwards user
+  arguments to Godot.
+- Defined the multiplayer trust boundary: local POV can restrict presentation,
+  while any mode-owned hidden information must be host-enforced and omitted
+  from replication.
+- Promoted G2—the first authored Nexus-to-Conservatory topology/visual slice—
+  ahead of F2 reaction work, and explicitly documented that the current
+  concentric court is only a mechanics fixture, not accepted Sanctum art.
+- Began bounded G2/Sanctum-V1 preproduction during G1 final verification: the
+  first product acceptance matrix now requires spacious authored areas,
+  environment charm/readability, base body/jump/interaction/taunt, chemistry,
+  friends/presence/join, host teams/friendly-fire/practice/travel controls,
+  authoritative LOS with foreground cutaways, and co-equal Garuda Linux/Sway
+  plus Windows source/package evidence before later gameplay modes.
+
+Files changed:
+
+- `src/app/player_preferences.gd`;
+- `src/app/input_router.gd` and `src/app/bootstrap.gd`;
+- `scripts/run.sh`;
+- `tests/unit/test_player_preferences.gd`, input-router coverage, and the suite
+  runner;
+- `docs/PLAYER-CONTROLS-AND-POV.md`, README, specification, Sanctum contract,
+  Living Sanctum V1 acceptance contract, visual direction, development
+  instructions, and overhaul plan.
+
+Validation:
+
+- Full headless gate: 872 assertions, zero failures.
+- Clean bootstrap at 60 and 120 Hz: passed with protocol 3 and safe default
+  `world_relative`/`full` settings.
+- Offline save/load round trip, unknown/conflicting actions, explicit unbind,
+  numeric bounds, exact 360-degree view, both movement transforms, and retained
+  controller/mouse events: passed.
+- Interactive AMD Radeon 610M compatibility-renderer smoke using
+  `aim_relative`, `cone`, 135 degrees, and 520 units: passed. Cone direction and
+  finite range were visible; HUD and Material Yard diagnostics remained
+  unobscured.
+- `bash -n scripts/*.sh` and `git diff --check`: passed.
+
+Known limitations and risks:
+
+- The current cone is a local presentation option, not authoritative wall
+  occlusion. Competitive limited-information modes must add host visibility
+  queries and information-leak tests before use.
+- Physical keyboard bindings are editable in the generated offline JSON. The
+  Settings station, interactive input capture, per-device sensitivity/dead-zone
+  curves, controller profile persistence, and import/export remain G3 work.
+- The current Sanctum renderer remains the visibly inadequate schematic that
+  G2 now replaces next; this checkpoint does not claim visual acceptance.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-01 — F1 deterministic Material Yard storage foundation
 
 Branch: `agent/aider-godot-foundation`

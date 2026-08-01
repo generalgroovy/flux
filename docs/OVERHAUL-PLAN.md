@@ -12,6 +12,12 @@ hashes are stable; the project imports and launches headlessly; presentation
 does not own authority; documentation and the worklog state limitations; and a
 focused commit can be reverted without discarding later unrelated work.
 
+Production uses a rolling handoff: when the current runtime slice enters final
+verification, the next slice begins bounded preproduction—acceptance fixtures,
+schema/content drafts, original-asset provenance, and interface contracts. Only
+one runtime behavior slice is promoted at a time, so overlap removes idle time
+without mixing two unstable system changes or losing the previous green build.
+
 ## Source-of-truth order
 
 1. `SPECIFICATION.md` governs runtime architecture, determinism, networking,
@@ -43,10 +49,15 @@ rates launch, and deterministic state never depends on rendering.
   outbound exits, deep-movement routes, and nine attunement nodes.
 - [x] Validate known/unique IDs, layers, entrances, routes, travel endpoints,
   unlocks, blocked states, host authority, and destination clearance.
-- [x] Present the palette and spatial language in the playable foundation room.
-- [ ] In progress: author Nexus Court to Movement Conservatory topology with
-  worldbone, elevation, traversal bands, reset zones, and ordinary/advanced
-  paths.
+- [x] Present a schematic palette/mechanics room; explicitly reject it as the
+  final topology, perspective, density, landmark, or environment-art target.
+- [ ] In progress (immediate G2): replace that schematic with the first authored
+  Nexus Court to Movement Conservatory world slice: distinct connected areas,
+  worldbone/elevation, traversal bands, reset zones, ordinary/advanced paths,
+  landmarks, distant context, and an original modular pixel kit.
+- [ ] Planned: implement shared semantic LOS plus presentation cutaway/fade/
+  ownership silhouette so high terrain/buildings/constructs never cover a
+  LOS-visible character and no cue leaks a LOS-hidden character.
 - [ ] Planned: implement walk-up station commands for training, muster/friends,
   champions, realm/modes, guide/codex, rites/profile, wardrobe/social, and
   settings/accessibility.
@@ -54,9 +65,13 @@ rates launch, and deterministic state never depends on rendering.
   persistence, safe party travel, district streaming, and offline capability
   states.
 
-Exit gate: a player spawns directly into the Sanctum, can complete onboarding,
-move between the Nexus and Conservatory, use all essential menus offline, and
-attune/travel without a menu-only hidden state or an unsafe destination.
+Exit gate (first product acceptance): a player spawns directly into a spacious,
+charming, fleshed-out Sanctum; can complete onboarding, movement, chemistry,
+spell, interaction, profile/loadout, guide, settings and social flows; can
+attune/travel safely; and can see/invite/join friends through privacy-safe
+presence. A host can administer teams, friendly fire, training and safe travel.
+All essential flows work offline where applicable and source/package acceptance
+passes on Garuda Linux/Sway and Windows.
 
 ## Chapter 3 — Sanctum movement
 
@@ -75,10 +90,21 @@ attune/travel without a menu-only hidden state or an unsafe destination.
   delays/rates; movement cannot spend Flux or Health.
 - [x] Add independent quantized aim, primary command state, action-based
   keyboard/mouse/controller defaults, protocol-v3 bytes, and replay hashing.
-- [ ] In progress: persist player remapping and verify controller command
-  equivalence through an interactive acceptance fixture.
+- [x] Persist an offline schema-versioned player profile with validated physical
+  keyboard remapping, explicit unbinds, conflict rejection, safe fallback, and
+  independent world-relative/aim-relative movement presets.
+- [x] Add local full view or aim-facing ranged-cone presentation with an exact
+  15–360 degree angle, 160–4096 unit range, saved hotkeys, CLI overrides, and a
+  HUD-visible state. It never changes simulation or bypasses host visibility.
+- [ ] In progress: add the controller-friendly Settings station, interactive
+  event capture/conflict explanation, per-device sensitivity/dead-zone curves,
+  reset/import/export, and controller command-equivalence acceptance.
 - [ ] Planned: add buffered transitions, variable hop/fall presentation state,
   and authored elevation/low-cover queries.
+- [ ] Planned (G3): present every jump as an original compact top-down body-lift
+  arc with a ground-anchored changing shadow, clear apex, landing anticipation/
+  impact, and reduced-motion equivalent, inspired only by classic handheld
+  adventure readability rather than copied sprites/frames/timing.
 - [ ] Planned: add variable-hop/fast-fall authority, bounded launched-trajectory
   influence, collision-safe timed ground recovery, and marked wall skims without
   weakening stun, recovery, same-wall lockout, or the global speed ceiling.
@@ -94,7 +120,8 @@ attune/travel without a menu-only hidden state or an unsafe destination.
 
 Exit gate: the complete universal grammar works in the live Sanctum with
 separate resources, independent aim, deterministic replay, collision safety,
-readable state, remappable inputs, and keyboard/controller acceptance.
+readable state, remappable inputs, authority-safe visibility, and keyboard/
+controller acceptance.
 
 ## Chapter 4 — Combat and ability configuration
 
@@ -135,6 +162,10 @@ readable state, remappable inputs, and keyboard/controller acceptance.
   reconciliation; migrate it through definition, selection, training dummy,
   local bot, replay, host/client, reconnect, spectator, accessibility, Linux,
   Windows, and package tests before beginning the next champion.
+- [ ] Planned: add one rate-limited semantic taunt input with an interruptible
+  shared fallback, then require one original readable taunt animation/audio cue
+  per accepted champion; taunts grant no combat, movement, concealment, or
+  collision advantage.
 
 Exit gate: one complete champion has a useful primary and configurable legal
 loadout; every cast is affordable, interruptible/readable where designed,
@@ -222,12 +253,41 @@ the same package resets/replays/replicates deterministically.
   shutdown.
 - [ ] Planned: implement join-in-progress, reconnect tokens/checkpoints,
   spectators, and forced-loss host migration before claiming resilience.
+- [ ] Planned: make any mode-limited sight authoritative: the host computes
+  permitted information and does not replicate hidden actors/events. Local POV
+  preferences may restrict that result further and can never reveal more.
 - [ ] Planned: add WebRTC/signalling and replaceable self-hosted relay paths only
   after native authority is proven.
 
-### 8.2 Mode order
+### 8.2 Sanctum friends and host administration
 
-- [ ] Planned: fundamentals/freeplay, First Rite, one champion, one map.
+- [ ] Planned before any other mode: show privacy-safe friend presence states—
+  offline, online, away, in Sanctum/activity, joinable, invite-only, full, and
+  incompatible—with clear join-disabled reasons and no IP/session leakage.
+- [ ] Planned: support local friends/recent peers/favorites/blocking, LAN
+  discovery, direct address, validated invite links/codes, and an optional
+  replaceable self-hosted directory/presence adapter. Established sessions must
+  survive optional presence loss; offline functionality cannot depend on it.
+- [ ] Planned: expose host open/lock/invite/approve/kick/mute/co-host/transfer,
+  spectator reservations, readiness, privacy, late join, bot fill, diagnostics,
+  announcements, clean end, and sanitized session-report controls.
+- [ ] Planned: expose versioned friendly-fire policies (`off`, reduced team, or
+  full plus explicit self/reflection/heal/collision rules), named/colored teams,
+  assignment/invite/auto-balance/randomize/roster locks, and freeze competitive
+  policy at ready/start.
+- [ ] Planned: expose shared waypoints, trial/dummy/bot/laboratory reset,
+  resource refill, safe party travel/summon, and whole-session transitions.
+  Forced ports require an opted-in host-managed practice policy, countdown,
+  reason, safe anchor, state clearance, and a visible session-timeline event.
+- [ ] Planned: fuzz authorization/rate/size/state boundaries; host privilege
+  never permits remote shell/files, client setting mutation, content injection,
+  secret mid-round policy changes, or simulation bypass.
+
+### 8.3 Mode order (after Living Sanctum V1)
+
+- [ ] Planned first: fundamentals/freeplay and First Rite over the already
+  accepted Sanctum physics, chemistry, environment, base skeleton/movement,
+  ancestry, champion, spell, interaction, taunt, friend, and host systems.
 - [ ] Planned: PvP duel/team/control/draft/mirror, bots, rounds, rematch.
 - [ ] Planned: PvPvE neutral threats, contestable objectives, late join, bounded
   rewards, extraction/convergence.
@@ -262,6 +322,9 @@ budgets.
   rendering, memory, import size, and load/transition time on modest hardware.
 - [ ] Planned: prove Linux and Windows source, headless, interactive, package,
   save migration, update/rollback, and clean uninstall.
+- [ ] Planned: make Garuda Linux/Sway window/input/audio/portal behavior and a
+  supported Windows desktop version co-equal Living Sanctum V1 acceptance gates;
+  record exact OS/driver/package evidence rather than assuming engine parity.
 - [ ] Planned: publish only from clean reviewed commits with provenance, license,
   replay/protocol/content compatibility notes, checksums, and known limitations.
 
@@ -289,29 +352,49 @@ features.
 6. **Checkpoint F1 — chemistry storage/safety:** canonical material registry,
    packed 128 x 128 columns, compact Material Yard seed, immutable worldbone,
    bounded canonical work queue, hashes, exact reset, and read-only preview.
-7. **Slice F2 — structural/thermal reactions:** single phase orchestrator,
-   typed damage/stages/rubble/derived collision, then heat/Fire/steam/ice and
-   readable deterministic reaction events.
-8. **Slice G — authored traversal:** Nexus-to-Conservatory elevation route,
-   variable hop/fast fall, input buffers/remapping, interactive controller gate,
-   and shared traversal devices.
-9. **Slice H — first complete champion:** reconcile one approved design through
-   ancestry, full kit/loadout UI, cues, dummy/bot, replay, network schema,
-   accessibility, and Linux/Windows source gates.
-10. **Slice I — two-player authority:** loopback then ENet host/join, handshake
-   hashes, prediction/reconciliation, snapshot replay, diagnostics, and clean
-   shutdown.
-11. **Slice J — first arena/mode:** one original map package with objective,
+7. **Checkpoint G1 — player configuration:** versioned offline physical-key
+   bindings; world-relative and aim-relative movement; full or ranged-cone POV;
+   exact angle/range; persisted hotkeys; CLI overrides; deterministic command
+   transforms; authority-safe visibility contract.
+8. **Slice G2 — immediate authored Sanctum replacement:** replace the schematic
+   mechanics court with the first vast Nexus-to-Conservatory topology/visual
+   slice, district silhouettes, route hierarchy, elevation reads, fast-travel
+   context, charming responsive edge dressing, and an original modular pixel
+   environment kit. G2 preproduction begins during G1 final verification.
+9. **Slice G3 — base body and jump presentation:** reusable ground/body/aim/
+   shadow/effect skeleton, original compact handheld-readable body-lift jump,
+   landing, interactions, shared fallback taunt, reduced motion, and semantic
+   presentation events.
+10. **Slice F2 — structural/thermal reactions:** resume with one phase
+   orchestrator, typed damage/stages/rubble/derived collision, then heat/Fire/
+   steam/ice and readable deterministic reaction events.
+11. **Slice G4 — authored traversal and interaction depth:** variable hop/fast
+   fall, input buffers, interactive binding/controller gate, and shared
+   traversal devices inside the accepted Sanctum route.
+12. **Slice H1 — ancestry/champion/spell foundation:** reconcile body plans and
+   one approved design through ancestry, full kit/loadout UI, cues, unique taunt,
+   dummy/bot, replay, schema, accessibility, and platform source gates.
+13. **Slice I1 — shared Sanctum authority:** loopback then ENet host/join,
+   handshake hashes, prediction/reconciliation, snapshot replay, friend status,
+   presence adapter boundary, diagnostics, reconnect, and clean shutdown.
+14. **Slice I2 — lobby host tools:** teams, friendly-fire/session policy,
+   readiness/privacy, moderation, practice controls, safe group travel/ports,
+   audit timeline, invalid-permission tests, and Settings/muster UI.
+15. **Sanctum V1 acceptance:** complete the remaining walk-up/overlay flows,
+   original environment/body/audio polish, performance/accessibility, offline,
+   save migration, and Garuda Linux/Sway plus Windows source/package matrix.
+16. **Slice J — first arena/mode:** one original map package with objective,
     chemistry/destruction safety, duel/team rules, bots, rounds, rematch, and
     results.
-12. **Slice K — continuity:** late join, reconnect, spectators, and forced host
+17. **Slice K — continuity:** late join, reconnect, spectators, and forced host
     migration before optional WebRTC/signalling/relay work.
-13. **Slices L–M — breadth on proven systems:** cooperative survival/siege,
+18. **Slices L–M — breadth on proven systems:** cooperative survival/siege,
     then PvPvE expedition, seeded roguelike dungeons, lane/stronghold experiment,
     and only then a measured battle-royale slice.
-14. **Slices N–O — content and release:** expand one champion/ancestry/biome/
+19. **Slices N–O — content and release:** expand one champion/ancestry/biome/
     reaction/enemy family at a time, then complete original art/audio,
     accessibility/performance, packages, migration, rollback, and release gates.
 
-Only one slice is promoted at a time. If a later experiment fails, the previous
-checkpoint remains runnable and does not need reconstruction.
+Only one runtime slice is promoted at a time. Bounded next-slice preproduction
+starts during final verification of the current slice. If a later experiment
+fails, the previous checkpoint remains runnable and does not need reconstruction.

@@ -11,6 +11,15 @@ The authoritative layout seed is versioned in
 [`content/maps/sanctum_hub_v1.json`](../content/maps/sanctum_hub_v1.json). The
 concept image communicates atmosphere only. Final topology will be authored as
 worldbone, traversal, elevation, material, presentation, and navigation layers.
+The current concentric training court is a mechanics/debug fixture and does not
+pass this contract's topology, district-silhouette, pixel-art, density, or scale
+bar. Replacing it begins in G2, immediately after the completed control/POV
+checkpoint.
+
+Living Sanctum V1 is the first product acceptance gate. The hub must be fully
+usable offline and must also support privacy-safe friend presence, direct/LAN/
+invite joining, hosted shared Sanctum sessions, and bounded host administration
+on Garuda Linux/Sway and Windows before later gameplay modes are accepted.
 
 ## Spatial structure
 
@@ -74,6 +83,22 @@ and already-attuned travel. World desks, gates, portals, and shrines open the
 same focused screens with additional spatial context. Network-dependent actions
 state why they are unavailable offline; offline play never waits for a service.
 
+## Shared Sanctum and host tools
+
+The friends/muster surface reports only privacy-approved states: offline,
+online, away, in Sanctum/activity, joinable, invite-only, full, blocked, or
+incompatible. Optional directory/presence/signalling/relay infrastructure is
+replaceable and self-hostable; direct/LAN joining and the complete offline hub
+remain first-class.
+
+The host may manage privacy/capacity, invitations, co-host/ownership, teams,
+readiness, spectators, late join, bot fill, friendly-fire/self-damage/healing/
+collision policy, trials, dummies, laboratory reset, shared waypoints, safe
+group travel, announcements, moderation, diagnostics, and clean end. All host
+commands are typed, authorized, bounded, visible, and locally auditable. Forced
+porting is limited to an explicitly opted-in host-managed practice policy with
+a reason/countdown and valid state/anchor/clearance checks.
+
 ## Traversal and safety rules
 
 - Ordinary paths remain readable and do not demand advanced movement.
@@ -82,6 +107,9 @@ state why they are unavailable offline; offline play never waits for a service.
 - Water, pits, moving machinery, and mutable laboratories reset locally and do
   not destroy profile progress or worldbone.
 - Combat-capable training regions are partitioned from social/spawn safety.
+- Foreground terrain, roofs, foliage, buildings, and constructs fade/cut away
+  or expose an ownership-readable silhouette when they cover a character inside
+  authoritative LOS. Actors outside LOS receive no presentation/debug leak.
 - The hub supports solo use first; multiplayer presence is an additive session
   layer, not a dependency for menus or content access.
 - Each district can stream independently, while transition anchors preserve
@@ -91,11 +119,25 @@ state why they are unavailable offline; offline play never waits for a service.
 
 1. Validate the map/district/travel definition and present a styled training
    room over the deterministic movement foundation.
-2. Add a map shell, overlay menu state machine, one shrine interaction, and an
-   authored Nexus-to-Conservatory route.
-3. Add the Proving Grounds with one projectile family and a bounded 128 x 128
-   chemistry laboratory.
-4. Add district streaming, persistence, party consent, destination clearance,
+2. Replace the schematic court with a multi-area Nexus-to-Conservatory world
+   slice using distinct silhouettes, ordinary/advanced paths, readable
+   elevation, distant district context, original pixel modules, and one visible
+   fast-travel destination.
+3. Add the map shell, overlay parity, one shrine interaction, and the complete
+   measured route through that accepted world slice.
+4. Add the Proving Grounds around the existing projectile family and bounded
+   128 x 128 chemistry laboratory, then promote active reactions.
+5. Add district streaming, persistence, party consent, destination clearance,
    and replay-visible transitions.
-5. Build the original modular pixel-art kit and replace foundation debug draws
-   only after topology, readability, performance, and provenance gates pass.
+
+The G2 art kit is deliberately narrow but shipping-oriented: ground/cliff
+ramps, paths/plazas, water/shore, grass/garden edges, walls/arches, one roof
+family, one shrine, and navigation landmarks. Additional districts expand that
+kit only after gameplay-zoom readability, collision alignment, grayscale,
+performance, provenance, and 60/120 Hz presentation smokes pass.
+
+Composition may study the broad clarity of richly staged isometric action
+environments—layered depth, memorable room silhouettes, dramatic landmarks,
+responsive ambience, dense edges and clear floors—while retaining original
+FLUX 2 pixel perspective, topology, materials, palette, props, lighting, UI,
+animation, camera metrics, and trade dress.

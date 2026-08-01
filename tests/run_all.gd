@@ -10,6 +10,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/unit/test_input_router.gd"),
 	preload("res://tests/unit/test_material_content.gd"),
 	preload("res://tests/unit/test_material_grid.gd"),
+	preload("res://tests/unit/test_player_preferences.gd"),
 	preload("res://tests/unit/test_movement.gd"),
 	preload("res://tests/unit/test_player_resources.gd"),
 	preload("res://tests/replay/test_replay.gd"),

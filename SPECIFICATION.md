@@ -7,8 +7,47 @@ This document is the normative technical specification for reimplementing FLUX i
 The implementation must remain incremental. Existing gameplay concepts and reference assets are inputs, not reasons to preserve unsuitable runtime architecture.
 
 Current implementation checkpoint: F1 completes the C0 material registry/
-world-column storage and C1 Material Yard seed/worldbone/reset foundation. It
-loads a static 128 x 128 preview at boot; material reactions remain gated.
+world-column storage and C1 Material Yard seed/worldbone/reset foundation. G1
+adds versioned offline player bindings, world/aim-relative movement reference,
+and configurable full/ranged-cone POV without changing command protocol or
+simulation authority. Material reactions remain gated; G2 replaces the current
+schematic court with the first authored Sanctum topology/visual slice.
+
+### 1.1 First product acceptance target: Living Sanctum V1
+
+The first product acceptance test is not a combat mode or a single mechanics
+room. It is a fully usable Living Sanctum vertical product that proves the game
+can carry every later system without becoming a collection of disconnected
+prototypes. Acceptance requires:
+
+- spacious, charming, clearly differentiated Nexus, Conservatory, Proving,
+  social/muster, settings, archive/guide, champion, rest/garden, and service
+  areas with ordinary paths, deep-movement routes, landmarks, and fast travel;
+- a readable original environment kit with strong material/elevation depth,
+  dense scenic edges, clear play lanes, responsive props, and no copied assets,
+  maps, palettes, layouts, typography, animation frames, or trade dress;
+- complete offline arrival, onboarding, settings, training, profile/loadout,
+  guide, local interaction, reset/cleanup, and graceful quit flows;
+- a basic presentation skeleton whose ground anchor, body lift, shadow,
+  facing/aim, movement states, collision, and animation events remain separate;
+- satisfying movement and jump presentation, foundational physics/material
+  chemistry, at least one safe practice spell path, and stable interactions;
+- a friend/session surface that clearly reports privacy-safe presence and makes
+  hosting, inviting, joining, leaving, reconnecting, and returning to the same
+  Sanctum understandable;
+- host administration for lobby policy, teams, training state, safe group
+  travel, moderation, and diagnostics with explicit permissions and audit cues;
+- one semantic taunt action with an interruptible shared fallback and a unique
+  readable animation/cue contract for every later accepted champion;
+- headless, replay, 60/120 Hz, modest-hardware, Garuda Linux/Sway and Windows,
+  offline, network, accessibility, save migration, package, and clean-shutdown
+  evidence.
+
+Other gameplay modes remain gated until Sanctum V1 and its underlying physics,
+chemistry, environment, base body/movement, ancestry, champion, spell, and user-
+interaction foundations pass their named slices. Online presence is additive:
+the Sanctum and all local foundations remain functional without an account,
+subscription, lobby service, relay, or internet connection.
 
 ## 2. Product target
 
@@ -188,6 +227,53 @@ Required baseline grammar:
 
 Use custom deterministic collision queries against authored collision data. Godot physics nodes may support presentation and editor visualization, but network-critical resolution must use stable rules and explicit ordering.
 
+### 8.1 Player input and view policy
+
+Physical input is player-local configuration. It maps through named actions and
+an approved movement reference into bounded semantic move/aim fields before a
+command enters simulation. World-relative input uses fixed screen/world axes;
+aim-relative input treats independent aim as forward and rotates local forward/
+strafe intent into the same world-space command. Preferences, device type,
+sensitivity, and display mode never change acceleration, collision, resources,
+cooldowns, damage, or other authoritative outcomes.
+
+Player settings use a versioned offline schema, validate known actions and
+value bounds, reject ambiguous non-zero keyboard conflicts, and preserve mouse/
+controller events when one keyboard action is rebound or explicitly unbound.
+Invalid settings fall back safely and may not prevent offline launch.
+
+Full viewport and ranged-cone POV are presentation policies. If a mode uses
+limited vision as a game rule, the host must compute visibility and omit hidden
+information from replication, late join, reconnect, spectators, diagnostics,
+and client-accessible event streams. A local preference may restrict the
+authoritative result but can never widen it. Camera visibility never controls
+simulation work, chemistry, collision, bot knowledge, or network authority.
+
+Perspective occlusion is separate from gameplay line of sight. If an actor is
+inside the authoritative viewer's permitted LOS but would be covered on screen
+by higher terrain, a roof, foliage, building, or construct, presentation must
+fade/cut away the foreground or draw a restrained ownership-readable silhouette
+so the actor remains visible. If authoritative LOS is blocked, no silhouette,
+nameplate, shadow, effect, audio marker, material event, or diagnostics may
+reveal the actor. Destructible/moving occluders update both the authoritative LOS
+query and presentation cutaway from the same semantic geometry revision.
+
+### 8.2 Jump and body-lift presentation
+
+Jump authority stores ground-plane position and elevation separately.
+Presentation uses a compact, immediately readable top-down hop inspired only by
+the broad clarity of classic handheld adventure games: the body lifts cleanly
+from a stable ground anchor, an attached shadow remains on the receiving
+surface and changes scale/value, the apex is unmistakable, and landing has a
+short anticipation/impact read. FLUX 2 defines original arcs, timing, sprites,
+silhouettes, effects, sounds, and controls; it does not reproduce protected
+frames or animation data.
+
+Body lift may not change the ground collision footprint, hide a landing cell,
+or invent invulnerability. Elevation affects collision and targeting only
+through authoritative elevation bands. Reduced-motion mode keeps the same
+timing and uses clearer shadow/outline/value cues with less visual displacement.
+
 ## 9. Content model
 
 Characters, races, elements, abilities, materials, reactions, and maps use versioned data definitions. Godot `Resource` files may be used for authoring, but release builds must compile and validate them into stable registries.
@@ -280,6 +366,51 @@ Direct internet hosting may require:
 
 No permanent gameplay server is required for ordinary hosted sessions. Infrastructure dependencies must be replaceable and self-hostable.
 
+### 11.4 Friends, presence, and joining
+
+Friend identity and presence use replaceable adapters over a local profile and
+stable public identifier. When supported and permitted by privacy settings, the
+Sanctum roster distinguishes offline, online, away, in Sanctum, in another
+activity, joinable, invite-only, full, and incompatible-version states. It
+shows why a join is unavailable without leaking a private location, session
+code, IP address, concealed mode state, or unapproved activity.
+
+Joining supports LAN discovery, direct address, signed/validated invite URI or
+code, and an optional self-hostable directory/presence service. Presence loss
+does not terminate an established direct session. Offline profiles, local
+friends, recent peers, block lists, favorites, and direct/LAN hosting remain
+useful without a central service or subscription.
+
+### 11.5 Lobby host capabilities
+
+The lobby host owns a versioned session policy and may, within declared limits:
+
+- open/close, lock, invite, approve, kick, block, mute, reserve spectator
+  places, promote a co-host, and transfer ownership;
+- create/rename/color teams, invite or assign players, auto-balance, randomize,
+  lock rosters, configure bot fill, and expose every reassignment visibly;
+- select friendly-fire `off`, `team_reduced`, or `full`, with exact multipliers,
+  self-damage, reflected-damage, healing, collision, and training exceptions;
+- choose legal content/rules, privacy, late join, spectators, readiness,
+  diagnostics, accessibility floor, tick rate, material budgets, reset policy,
+  and practice mutators before the session freezes;
+- set shared waypoints, start/stop/reset trials, restore resources, manage
+  dummies/bots, reset bounded laboratories, and select ambient presentation
+  variants that do not change hidden gameplay rules;
+- initiate safe party travel, summon requests, or whole-session transitions to
+  validated anchors. Forced relocation is limited to an explicitly opted-in
+  host-managed practice session, displays a countdown/reason, and never crosses
+  worldbone, active combat, blocked state, or uncleared destination rules;
+- pause a private practice session, publish announcements, inspect rate/desync/
+  readiness health, export a sanitized session report, and end cleanly.
+
+Policy mutations are authorized, rate-limited, validated, logged in the local
+session timeline, and replicated as semantic events. Competitive configuration
+freezes at ready/start; it cannot be changed secretly mid-round. Host power does
+not permit arbitrary file access, remote commands, client setting changes,
+hidden content injection, or bypass of simulation rules. Players always retain
+leave, block, report/export, audio/accessibility, and privacy controls.
+
 ## 12. Network protocol
 
 All packets include protocol version, session ID, sender ID, sequence, acknowledgment data, and simulation tick where applicable.
@@ -365,6 +496,16 @@ Presentation nodes subscribe to simulation snapshots and events. They may interp
 
 AnimationTree state is derived from simulation state. Hit frames, invulnerability, projectile creation, and movement impulses are simulation events, not animation callbacks.
 
+The first body renderer uses a reusable basic skeleton with separate ground
+anchor, body/elevation pivot, facing/aim pivot, shadow, equipment/focus points,
+effect anchors, and ancestry/champion attachment hooks. Locomotion, jump,
+landing, cast, hit, interact, and taunt consume semantic state/events. Every
+accepted champion eventually owns an original signature taunt animation and
+cue; until then an explicit shared fallback is shown rather than a fake unique
+animation. Taunts have no damage, dodge, cancel, concealment, or collision
+benefit, are rate-limited, and are interrupted by movement, damage, combat
+commitment, travel, or menu/session transitions.
+
 ## 17. Map authoring
 
 A map package contains:
@@ -395,6 +536,16 @@ required. Offline solo use executes the same validation locally and never
 requires an online service. Each major district also retains an ordinary route
 and an authored deep-movement route so fast travel remains convenience rather
 than a level-design dependency.
+
+Sanctum composition may study only broad environmental principles associated
+with richly staged isometric action games: strong room silhouettes, layered
+foreground/midground/background depth, dramatic but readable lighting, densely
+dressed non-play edges, responsive ambient props, memorable transitions, and
+landmarks visible before labels. FLUX 2 expresses them through its own pixel
+perspective, materials, palette ramps, topology, architecture, props, lighting,
+characters, UI, and animation. Hades/Hades II maps, assets, palettes, symbols,
+rooms, characters, effects, interfaces, camera metrics, and trade dress are not
+production inputs.
 
 ### 17.2 Reusable interactions and mode rules
 
@@ -487,36 +638,40 @@ projectiles/fields, hit resolution, statuses, loadout/formula validation, and
 authoritative event cues. Promote one champion only after its complete slot kit
 is readable and replayable.
 
-### Phase 4: reactive materials
+### Phase 4: material and environment foundation
 
-Implement chunk storage, worldbone, bounded reactions, rendering, collision updates, semantic replication, and correction snapshots.
+Implement chunk storage, worldbone, bounded reactions, rendering, collision
+updates, semantic replication, correction snapshots, and the first original
+environment modules needed by the Sanctum.
 
-### Phase 5: authored movement, content, and Sanctum
+### Phase 5: Living Sanctum V1 acceptance track
 
-Build elevation/traversal interactions, modular ancestry/champion content, and
-the Sanctum training/lobby area with movement, dummies, bots, configuration,
-settings, host/join, map selection, and debug instrumentation.
+Deliver the first acceptance target through small green slices: authored
+spacious districts; elevation/traversal and compact top-down body lift; base
+skeleton and interactions; offline stations/settings/profile; training physics,
+chemistry, spells and resets; ancestry/champion presentation; taunts; friend
+presence; host/join; lobby administration; attunement travel; accessibility;
+diagnostics; saves; and clean Garuda Linux/Sway and Windows packages.
 
-### Phase 6: hosted multiplayer
+The networking slices inside this phase implement local loopback and ENet,
+command batching, snapshots, prediction, reconciliation, remote interpolation,
+presence adapters, diagnostics, reconnect, and disconnect handling. Hosted
+Sanctum sessions are product infrastructure, not a separate competitive mode.
 
-Implement local loopback and ENet host/join, command batching, snapshots,
-prediction, reconciliation, remote interpolation, diagnostics, and disconnect
-handling.
-
-### Phase 7: first arena and mode
+### Phase 6: first arena and mode
 
 Complete one original modular arena through destruction/material safety,
 objectives, bots, duel/team rules, rounds, rematch, results, replay, network,
 performance, accessibility, and package gates.
 
-### Phase 8: continuity, WebRTC, and browser gate
+### Phase 7: continuity, WebRTC, and browser gate
 
 Add reconnect, spectators, forced host migration, signalling, WebRTC transport,
 browser exports, browser performance fixtures, and replaceable relay/TURN
 fallback. Disable unsupported features explicitly rather than silently changing
 simulation behavior.
 
-### Phase 9: mode/content expansion and release
+### Phase 8: mode/content expansion and release
 
 Add cooperative PvE, PvPvE, seeded roguelike dungeons, lane/stronghold
 experiments, and a measured battle-royale slice only on proven shared systems.
@@ -524,20 +679,41 @@ Expand one champion/ancestry/biome/reaction/enemy family at a time, then satisfy
 Linux/Windows packaging, accessibility, performance, update/rollback, and
 release-provenance gates.
 
-## 22. Vertical-slice acceptance criteria
+## 22. Living Sanctum V1 acceptance criteria
 
-The first Godot vertical slice is accepted only when:
+The first product acceptance test passes only when:
 
-1. Linux and Windows clients can host and join the same match.
-2. A Web client can join through WebRTC if the browser milestone is enabled.
-3. Two players can execute the core movement slice under simulated latency and packet loss.
-4. Prediction corrections do not create wall traversal or invalid invulnerability.
-5. A recorded match replays to identical state hashes.
-6. One bounded reactive region supports the required initial material set.
-7. Material changes replicate and recover from an injected desync.
-8. Disconnect and reconnect restore the same authoritative state.
-9. Headless tests run without rendering or audio.
-10. Profiling confirms that no architecture relies on one node per simulated cell.
+1. Fresh Garuda Linux/Sway and Windows source launches and packages enter the
+   same spacious authored Sanctum, preserve settings/saves, and stop cleanly.
+2. Offline users can onboard, traverse, fast travel, configure controls/view/
+   audio/accessibility, inspect the guide/roster/loadout, train, interact,
+   reset, and quit without a service or subscription.
+3. The Nexus, Conservatory, Proving Grounds, social/muster, archive, champion,
+   settings, and recovery functions are visually/spatially distinct, charming,
+   legible at gameplay zoom, and reachable by accessible ordinary routes.
+4. The original basic body skeleton presents facing, aim, locomotion, compact
+   body-lift jump/shadow/apex/landing, cast, hit, interact, and fallback taunt
+   without presentation owning collision, invulnerability, or outcomes.
+5. Foundational physics/movement, one bounded chemistry laboratory, one legal
+   loadout/spell path, basic ancestry/champion data, and shared interactions
+   work at 60 and 120 Hz with deterministic replay/reset evidence.
+6. Friends can understand privacy-safe online/joinable state, invite or join by
+   supported direct/LAN/optional directory paths, leave/reconnect, and retain an
+   established session if optional presence goes away.
+7. A host can configure friendly fire, teams, readiness, privacy, late join,
+   bots/dummies, trials, safe travel/summons, moderation, diagnostics, and clean
+   shutdown; permission errors and policy changes are visible and tested.
+8. Two Garuda Linux/Sway and Windows clients can share the Sanctum under tested
+   latency/loss; prediction never crosses worldbone or creates invalid state.
+9. Saved/reconnected state and recorded sessions reproduce authoritative hashes;
+   chemistry and host policy recover from injected desync/invalid commands.
+10. Headless and interactive performance passes modest-hardware budgets with no
+    node-per-cell architecture, hidden online dependency, credential leakage,
+    inaccessible essential flow, or unresolved critical cleanup failure.
+
+Web participation is a later optional acceptance extension. PvP, cooperative
+PvE, PvPvE, roguelike, stronghold, and battle-royale product modes begin only
+after this Sanctum acceptance track is green.
 
 ## 23. Definition of done
 

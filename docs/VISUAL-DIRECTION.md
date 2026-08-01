@@ -28,6 +28,17 @@ camera metrics, tiles, protected routes, or authoritative chemistry cells.
 5. **Places have silhouettes.** A district remains identifiable on the map with
    color removed: conservatory loops, archive towers, proving-ground basins,
    foundry cylinders, gardens, observatory domes, and portal rings.
+6. **Perspective never steals information.** A foreground roof, wall, canopy,
+   construct, or high ledge fades/cuts away or yields to a restrained ownership
+   silhouette when it covers a character inside authoritative LOS. No such cue
+   appears for an actor outside permitted LOS.
+
+Broad environmental study may include strongly staged room silhouettes,
+layered depth, landmark-first composition, dramatic readable lighting,
+responsive ambience, dense scenic edges, and clear combat floors seen in
+polished isometric action games. FLUX 2 does not copy Hades/Hades II rooms,
+assets, layouts, camera metrics, palettes, props, characters, UI, effects,
+symbols, animation, or trade dress.
 
 ## Foundation palette
 
@@ -61,6 +72,11 @@ anchors, not permission to flatten pixel art into solid fills.
   value field around their silhouette during combat.
 - Decorations never obscure protected route edges, spawn safety, telegraphs, or
   chemistry state. Foliage and roof layers fade or cut away predictably.
+- Basic jumps present an original compact body lift above a stable ground
+  anchor, with a ground-receiving shadow that changes size/value, a clear apex,
+  and a crisp landing. This studies only the readability of classic handheld
+  top-down adventure jumps and copies no sprite, frames, timing, sound, input,
+  item, or map behavior.
 - Effects budgets are per category and support reduced-motion and low-density
   modes without hiding authoritative events.
 

@@ -8,6 +8,8 @@ func run() -> int:
 		&"aim_left", &"aim_right", &"aim_up", &"aim_down",
 		&"sprint", &"jump", &"technique", &"primary", &"active_1",
 		&"reset_match", &"toggle_tick_rate",
+		&"toggle_movement_reference", &"toggle_pov_mode",
+		&"adjust_pov_angle", &"adjust_pov_range",
 	]:
 		check(InputMap.has_action(action), "input action exists: %s" % action)
 		check(not InputMap.action_get_events(action).is_empty(), "input action has a default: %s" % action)

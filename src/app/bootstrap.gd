@@ -23,6 +23,8 @@ const FIRE_COLOR := Color("e58a38")
 const PARCHMENT_COLOR := Color("e2d8b2")
 const PANEL_COLOR := Color("11130ee6")
 const PLAYER_COLOR := ATTUNEMENT_COLOR
+const POV_MASK_COLOR := Color("090d0be8")
+const POV_EDGE_COLOR := Color("6f8c72a8")
 
 var world: SimWorld
 var input_router: InputRouter
@@ -33,6 +35,7 @@ var material_registry: MaterialRegistry
 var material_yard: MaterialYardDefinition
 var material_grid: MaterialGrid
 var material_preview_texture: ImageTexture
+var player_preferences: PlayerPreferences
 var tick_rate: int = 120
 var accumulator_seconds: float = 0.0
 var previous_position := Vector2.ZERO
@@ -41,6 +44,14 @@ var dropped_time_seconds: float = 0.0
 
 
 func _ready() -> void:
+	player_preferences = PlayerPreferences.new()
+	var preferences_existed: bool = FileAccess.file_exists(PlayerPreferences.DEFAULT_PATH)
+	if not player_preferences.load_from_file():
+		push_warning("%s; using safe defaults" % player_preferences.last_error)
+		player_preferences.reset_to_defaults()
+	if not preferences_existed and not player_preferences.save_to_file():
+		push_warning(player_preferences.last_error)
+	_apply_preference_overrides()
 	hub_definition = HubDefinition.new()
 	if not hub_definition.load_from_file(HUB_DEFINITION_PATH):
 		push_error(hub_definition.last_error)
@@ -71,10 +82,14 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, Sanctum districts %d, travel nodes %d, ability catalog %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, Sanctum districts %d, travel nodes %d, ability catalog %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
+			player_preferences.movement_reference,
+			player_preferences.pov_mode,
+			player_preferences.pov_angle_degrees,
+			player_preferences.pov_range,
 			hub_definition.districts_by_id.size(),
 			hub_definition.travel_nodes_by_id.size(),
 			ability_catalog.content_hash.left(12),
@@ -88,6 +103,7 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	_handle_preference_actions()
 	if Input.is_action_just_pressed(&"reset_match"):
 		if not _start_match(tick_rate):
 			set_process(false)
@@ -122,7 +138,6 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	_draw_sanctum_training_court()
-	_draw_material_yard_preview()
 	for obstacle: CollisionWorld.Obstacle in world.collision.obstacles:
 		var rectangle := Rect2(
 			Vector2(float(obstacle.minimum_x) / 1000.0, float(obstacle.minimum_y) / 1000.0),
@@ -142,6 +157,7 @@ func _draw() -> void:
 	draw_circle(rendered_position, float(state.radius) / 1000.0, PLAYER_COLOR)
 	draw_arc(rendered_position, float(state.radius) / 1000.0 + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
 	draw_line(rendered_position, rendered_position + Vector2(state.aim_x, state.aim_y) * 0.032, Color.WHITE, 3.0)
+	_draw_pov_mask(rendered_position, Vector2(state.aim_x, state.aim_y))
 	var status := "%d HZ · T%d · HP %.0f · ST %.0f · FX %.0f · P%d · %s" % [
 		tick_rate,
 		world.tick,
@@ -151,13 +167,64 @@ func _draw() -> void:
 		world.projectiles.size(),
 		state.last_event,
 	]
-	draw_rect(Rect2(16, 14, 1248, 76), PANEL_COLOR, true)
-	draw_rect(Rect2(16, 14, 1248, 76), BRASS_COLOR.darkened(0.3), false, 2.0)
+	draw_rect(Rect2(16, 14, 1248, 96), PANEL_COLOR, true)
+	draw_rect(Rect2(16, 14, 1248, 96), BRASS_COLOR.darkened(0.3), false, 2.0)
 	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "THE SANCTUM · MOVEMENT CONSERVATORY · BUILD %d/13" % loadout.active_points, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
 	draw_string(ThemeDB.fallback_font, Vector2(760, 40), status, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, ATTUNEMENT_COLOR)
 	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · MOUSE AIM · LMB/SPACE ARC PRIMARY · RMB/E VECTOR LANCE · ALT SPRINT · C CHAIN · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
+	var view_description := "FULL" if player_preferences.pov_mode == PlayerPreferences.POV_FULL else "CONE %d°/%d" % [player_preferences.pov_angle_degrees, player_preferences.pov_range]
+	draw_string(
+		ThemeDB.fallback_font,
+		Vector2(32, 96),
+		"F6 RATE · F7 MOVE %s · F8 VIEW %s · F9 ANGLE ±15° · F10 RANGE ±80 (hold Shift to reduce)"
+		% [player_preferences.movement_reference.to_upper(), view_description],
+		HORIZONTAL_ALIGNMENT_LEFT,
+		-1.0,
+		13,
+		ATTUNEMENT_COLOR,
+	)
 	if dropped_time_seconds > 0.0:
-		draw_string(ThemeDB.fallback_font, Vector2(32, 112), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
+		draw_string(ThemeDB.fallback_font, Vector2(32, 132), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
+	_draw_material_yard_preview()
+
+
+func _draw_pov_mask(origin: Vector2, aim: Vector2) -> void:
+	if player_preferences.pov_mode != PlayerPreferences.POV_CONE:
+		return
+	var sight_range: float = float(player_preferences.pov_range)
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var outer_radius: float = maxf(viewport_size.x, viewport_size.y) * 2.25
+	var segment_count: int = 96
+	for segment: int in range(segment_count):
+		var angle_a: float = TAU * float(segment) / float(segment_count)
+		var angle_b: float = TAU * float(segment + 1) / float(segment_count)
+		_draw_mask_quad(origin, sight_range, outer_radius, angle_a, angle_b)
+
+	var visible_radians: float = deg_to_rad(float(player_preferences.pov_angle_degrees))
+	var aim_angle: float = aim.angle() if aim.length_squared() > 0.01 else 0.0
+	var half_visible: float = visible_radians * 0.5
+	if player_preferences.pov_angle_degrees < PlayerPreferences.MAX_POV_ANGLE_DEGREES:
+		var hidden_span: float = TAU - visible_radians
+		var hidden_segments: int = maxi(1, ceili(float(segment_count) * hidden_span / TAU))
+		var hidden_start: float = aim_angle + half_visible
+		var player_safe_radius: float = 30.0
+		for segment: int in range(hidden_segments):
+			var angle_a: float = hidden_start + hidden_span * float(segment) / float(hidden_segments)
+			var angle_b: float = hidden_start + hidden_span * float(segment + 1) / float(hidden_segments)
+			_draw_mask_quad(origin, player_safe_radius, sight_range, angle_a, angle_b)
+		draw_line(origin + Vector2.from_angle(aim_angle - half_visible) * player_safe_radius, origin + Vector2.from_angle(aim_angle - half_visible) * sight_range, POV_EDGE_COLOR, 1.5)
+		draw_line(origin + Vector2.from_angle(aim_angle + half_visible) * player_safe_radius, origin + Vector2.from_angle(aim_angle + half_visible) * sight_range, POV_EDGE_COLOR, 1.5)
+	draw_arc(origin, sight_range, aim_angle - half_visible, aim_angle + half_visible, maxi(12, ceili(48.0 * visible_radians / TAU)), POV_EDGE_COLOR, 1.5)
+
+
+func _draw_mask_quad(origin: Vector2, inner_radius: float, outer_radius: float, angle_a: float, angle_b: float) -> void:
+	var points := PackedVector2Array([
+		origin + Vector2.from_angle(angle_a) * inner_radius,
+		origin + Vector2.from_angle(angle_a) * outer_radius,
+		origin + Vector2.from_angle(angle_b) * outer_radius,
+		origin + Vector2.from_angle(angle_b) * inner_radius,
+	])
+	draw_colored_polygon(points, POV_MASK_COLOR)
 
 
 func _draw_material_yard_preview() -> void:
@@ -237,6 +304,12 @@ func _start_match(requested_tick_rate: int) -> bool:
 		return false
 	_refresh_material_preview()
 	input_router = InputRouter.new(1)
+	if not input_router.configure_movement_reference(player_preferences.movement_reference):
+		push_error("Invalid movement reference reached match startup")
+		return false
+	if not input_router.configure_keyboard_bindings(player_preferences.keyboard_bindings):
+		push_error("Invalid keyboard bindings reached match startup")
+		return false
 	accumulator_seconds = 0.0
 	dropped_time_seconds = 0.0
 	current_position = _player_position()
@@ -294,6 +367,52 @@ func _requested_tick_rate() -> int:
 		push_warning("Unsupported tick rate %d; falling back to 120" % configured)
 		return 120
 	return configured
+
+
+func _apply_preference_overrides() -> void:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--movement-reference="):
+			var requested_reference: String = argument.trim_prefix("--movement-reference=")
+			if not player_preferences.apply_control_preset(requested_reference):
+				push_warning(player_preferences.last_error)
+		elif argument.begins_with("--pov-mode="):
+			var requested_mode: String = argument.trim_prefix("--pov-mode=")
+			if not player_preferences.set_pov_mode(requested_mode):
+				push_warning(player_preferences.last_error)
+		elif argument.begins_with("--pov-angle="):
+			var angle_text: String = argument.trim_prefix("--pov-angle=")
+			if angle_text.is_valid_int():
+				player_preferences.set_pov_angle_degrees(angle_text.to_int())
+			else:
+				push_warning("Invalid --pov-angle value: %s" % angle_text)
+		elif argument.begins_with("--pov-range="):
+			var range_text: String = argument.trim_prefix("--pov-range=")
+			if range_text.is_valid_int():
+				player_preferences.set_pov_range(range_text.to_int())
+			else:
+				push_warning("Invalid --pov-range value: %s" % range_text)
+
+
+func _handle_preference_actions() -> void:
+	var changed: bool = false
+	if Input.is_action_just_pressed(&"toggle_movement_reference"):
+		var next_reference := PlayerPreferences.MOVEMENT_AIM_RELATIVE if player_preferences.movement_reference == PlayerPreferences.MOVEMENT_WORLD_RELATIVE else PlayerPreferences.MOVEMENT_WORLD_RELATIVE
+		changed = player_preferences.apply_control_preset(next_reference)
+		if changed and input_router != null:
+			input_router.configure_movement_reference(next_reference)
+	if Input.is_action_just_pressed(&"toggle_pov_mode"):
+		var next_mode := PlayerPreferences.POV_CONE if player_preferences.pov_mode == PlayerPreferences.POV_FULL else PlayerPreferences.POV_FULL
+		changed = player_preferences.set_pov_mode(next_mode) or changed
+	if Input.is_action_just_pressed(&"adjust_pov_angle"):
+		var angle_delta: int = -15 if Input.is_key_pressed(KEY_SHIFT) else 15
+		player_preferences.set_pov_angle_degrees(player_preferences.pov_angle_degrees + angle_delta)
+		changed = true
+	if Input.is_action_just_pressed(&"adjust_pov_range"):
+		var range_delta: int = -80 if Input.is_key_pressed(KEY_SHIFT) else 80
+		player_preferences.set_pov_range(player_preferences.pov_range + range_delta)
+		changed = true
+	if changed and not player_preferences.save_to_file():
+		push_warning(player_preferences.last_error)
 
 
 func _player_position() -> Vector2:

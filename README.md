@@ -29,7 +29,12 @@ even when design documentation already exists.
   complete; authored multi-layer runtime map in progress
   - [x] Nine combined districts and three-layer layout contract
   - [x] Validated attunement-node and fail-closed fast-travel rules
-  - [x] Styled playable Movement Conservatory foundation
+  - [x] Playable schematic mechanics court (not accepted Sanctum art/topology)
+  - [ ] Authored Nexus-to-Conservatory world slice matching the approved scale,
+    dense-edge/clear-lane composition, district landmarks, and pixel direction
+  - [ ] Offline-complete stations plus privacy-safe friends/presence, simple
+    host/join, host teams/rules/practice/travel tools, and Garuda Sway/Windows
+    acceptance
   - [ ] Walk-up stations, overlay menu state machine, map UI, streaming, and
     destination persistence
 - [ ] **Chapter 3 — [Movement and traversal](#movement-and-traversal)**
@@ -41,10 +46,14 @@ even when design documentation already exists.
     verification
   - [x] Separate Health, Stamina, and spell Flux; independent quantized aim and
     keyboard/mouse/controller action defaults
+  - [x] Offline saved keyboard bindings, world-relative and aim-relative
+    movement presets, and full/ranged-cone POV with 15–360° angle and adjustable
+    range
   - [x] Edgeweave swept hostile near-miss reward with speed, cooldown,
     miss-vs-hit, full-Stamina, training, and per-projectile farming guards
   - [ ] Add variable hop/fast fall, bounded impact influence, ground recovery,
-    wall skims, authored elevation, input buffering, saved remapping, and
+    wall skims, authored elevation, compact body-lift/shadow jump presentation,
+    input buffering, interactive binding UI, controller profile persistence, and
     interactive route acceptance
 - [ ] **Chapter 4 — [Aiming, combat, and abilities](#aiming-combat-and-ability-composition)**
   - [x] Independent move/aim and held-primary command protocol
@@ -70,7 +79,7 @@ even when design documentation already exists.
   - [ ] Reconcile the 23 named designs, temporary Angel slot, visual references,
     affinities, statistics, lore approval, and fighting-game selection grid
   - [ ] One champion at a time through selection, bots, network, replay,
-    accessibility, and platform gates
+    accessibility, original per-character taunt, and platform gates
 - [ ] **Chapter 7 — [Maps and world interactions](#maps-and-world-interactions)**
   - [x] Worldbone, map-package, reset-group, route, hazard, objective, and
     mutable-region contracts
@@ -79,7 +88,8 @@ even when design documentation already exists.
 - [ ] **Chapter 8 — [Modes and networking](#modes-networking-and-progression)**
   - [x] Host-authority, protocol, prediction, reconnect, spectator, and
     host-migration contracts
-  - [ ] ENet host/join vertical slice, duel/team/objective PvP, cooperative PvE,
+  - [ ] Living Sanctum friend presence/join and host administration before other
+    modes; ENet host/join vertical slice, duel/team/objective PvP, cooperative PvE,
     PvPvE extraction/convergence, roguelike dungeons, lane/stronghold modes,
     battle royale, bots, and measured scale beyond eight players
 - [ ] **Chapter 9 — [Production roadmap](#production-roadmap)**
@@ -87,8 +97,10 @@ even when design documentation already exists.
     original visual-direction provenance
 - [x] Focused reversible checkpoints A–E remain playable and published
   - [x] Checkpoint F1 establishes chemistry storage/worldbone/reset safety
-  - [ ] Checkpoints F2 onward: reactions, authored traversal, first champion,
-    host/join, maps/modes, content scale, accessibility, packaging, and release
+  - [x] Checkpoint G1 adds persisted controls and configurable POV
+  - [ ] G2 begins the Living Sanctum V1 track: authored world, body/jump,
+    reactions/interactions, first ancestry/champion/spells, friends/host tools,
+    then Garuda Sway/Windows acceptance before other modes
 
 The complete gate order, slice boundaries, current status, and definition of a
 working checkpoint live in the [FLUX 2 overhaul implementation plan](docs/OVERHAUL-PLAN.md).
@@ -111,6 +123,8 @@ compatible documented license.
 | --- | --- | --- |
 | Titanfall/Apex family | Movement routes, momentum conversion, readable traversal objects, independent aim, squad legibility | A stamina-bounded universal movement grammar in authored top-down elevation lanes; champion mobility never bypasses collision or the global speed ceiling |
 | Super Smash Bros. Melee | Commitment, recovery, precise landing timing, momentum expression, bounded launch influence | Top-down landing cuts, wavedash geometry, readable startup/active/recovery phases, and future collision-safe impact influence—without copying characters, stages, move data, or control layout |
+| Classic handheld Zelda games | A top-down jump reads instantly through compact body lift, a grounded shadow, apex, and crisp landing | An original authoritative elevation arc and original body/shadow presentation; no copied sprite, frame, timing, sound, map, input, or item behavior |
+| Hades / Hades II | Strong room silhouettes, layered depth, dramatic landmarks, dense scenic edges, responsive ambience, and clear combat floors | Original pixel-perspective Sanctum districts with FLUX materials, architecture, palette ramps, props, routes, lighting, UI, and interaction grammar; no copied rooms, assets, camera metrics, palette, symbols, or trade dress |
 | Noita | Materials and spells producing systemic consequences | A deterministic, host-authoritative, bounded 2.5D chemistry grid with reset groups, work budgets, explicit ownership, and immutable worldbone |
 | Magicka | Element composition as a learnable casting language | Versioned Flux Formulas made from approved source, geometry, operation, and catalyst components; competitive recipes are hashed content, not arbitrary unvalidated packets |
 | League of Legends | Skillshot clarity, role composition, cooldown/resource decisions, objective pressure | Shape-first aimed abilities, loadout roles, contestable terrain, and modular objective rules without copying champions, abilities, map topology, terminology, or presentation |
@@ -205,6 +219,42 @@ any safe shrine. Combat, scripted trials, and invalid destinations fail closed.
 See [the Sanctum contract](docs/SANCTUM-HUB.md) and its versioned
 [map definition](content/maps/sanctum_hub_v1.json).
 
+### Living Sanctum V1 — first acceptance test
+
+The first accepted product is the Sanctum itself, not an isolated duel or
+chemistry demo. It must feel spacious, charming, inhabited, and coherent while
+serving as the fully functional application shell. Nexus, movement, chemistry,
+social/muster, champion/loadout, archive/guide, settings, recovery, and service
+areas need memorable silhouettes, layered elevation, clear ordinary routes,
+rewarding advanced routes, environmental responses, and fast travel.
+
+Offline users can arrive, onboard, configure, train, inspect builds/guide,
+interact, reset laboratories, traverse, save, and quit without a service. When
+connected, the muster/friends surface shows privacy-safe presence such as
+offline, online, away, in Sanctum/activity, joinable, invite-only, full, or
+incompatible, with a clear reason when joining is unavailable. Direct/LAN and
+validated invite joining remain primary; any directory, signalling, or relay is
+replaceable and self-hostable.
+
+The host can form/name/color/lock teams, invite/assign/auto-balance players,
+choose explicit friendly-fire/self-damage/healing/collision policy, manage
+privacy/readiness/late join/spectators/bots, run/reset trials and dummies,
+restore practice resources, set shared waypoints, initiate validated group
+travel or opted-in announced practice ports, moderate, inspect diagnostics, and
+end cleanly. Changes are permission-checked, visible, rate-limited, logged, and
+frozen where competition demands it; hosting never grants remote file/shell or
+client-setting control.
+
+Foreground terrain, roofs, foliage, buildings, and constructs fade/cut away or
+yield to an ownership-readable silhouette when they overlap a character that is
+inside the viewer's authoritative line of sight. A character outside LOS is not
+revealed by silhouettes, labels, shadows, effects, audio markers, or debug UI.
+
+Acceptance is co-equal on Garuda Linux with Sway and supported Windows: source
+and packaged launch, input/window/audio behavior, saves, networking, reconnect,
+performance, accessibility, cleanup, and uninstall/rollback evidence. See the
+[Living Sanctum V1 acceptance contract](docs/SANCTUM-V1-ACCEPTANCE.md).
+
 ## Movement and traversal
 
 Movement must feel expressive at ordinary speed and become deep through timing,
@@ -213,6 +263,29 @@ actions spend Stamina; spells and champion actions spend Flux. A character may
 specialize in movement, but ancestry, loadout, map devices, or a champion skill
 cannot disable ordered collision, erase recovery, or exceed the authored global
 speed ceiling.
+
+### Control reference and point of view
+
+Control style and information presentation are independent player choices. The
+default `world_relative` preset keeps W/A/S/D aligned to the screen while aim
+remains independent. The `aim_relative` preset treats mouse/right-stick aim as
+forward: W/S move along facing and A/D strafe perpendicular to it. Neither
+preset changes movement tuning or authority; both compile to the same bounded
+world-space command fields before tick zero processing.
+
+The default `full` view exposes the whole local viewport. The optional `cone`
+view follows aim and accepts an exact integer angle from 15 through 360 degrees
+and a range from 160 through 4096 world units. A 360-degree cone is therefore a
+circular ranged view, distinct from unrestricted full view. This checkpoint is
+a local presentation option; competitive hidden information must later be
+host-enforced, and clients may never use a preference to reveal state the mode
+did not replicate.
+
+Current physical keyboard bindings, movement reference, view mode, angle, and
+range persist in an offline versioned profile. See
+[player controls and POV](docs/PLAYER-CONTROLS-AND-POV.md) for hotkeys, exact
+command-line values, the editable JSON schema, bounds, and future Settings
+station acceptance.
 
 ### Universal movement grammar
 
@@ -509,7 +582,8 @@ One champion is promoted at a time through stable definition/wire IDs, ancestry
 budget, six displayed statistics, legal loadout, passive/primary/actives/
 mobility/ultimate, training dummy, bot behavior, local replay, network authority,
 reconnect, spectator view, accessibility cues, Linux/Windows source launch,
-package smoke, and visual/audio acceptance. Character-specific mechanics may
+package smoke, a unique interruptible semantic taunt, and visual/audio
+acceptance. Character-specific mechanics may
 extend validated systems but may not introduce a private physics engine,
 material simulation, status language, or network rule.
 
@@ -553,6 +627,11 @@ selects player/team limits, maps, actors, spawn/defeat rules, objectives,
 scoring, round flow, legal catalogs, material budgets, persistence, late join,
 spectating, bot fill, and network requirements. It does not fork movement,
 combat, chemistry, or champion implementations.
+
+Hosted Sanctum presence, joining, and lobby administration are application
+infrastructure and therefore precede these gameplay modes. PvP, PvE, PvPvE,
+roguelike, stronghold, battle-royale, and custom mode claims begin only after
+Living Sanctum V1 passes its full foundation and two-platform acceptance matrix.
 
 | Family | Planned first expression | Production gate |
 | --- | --- | --- |
@@ -630,9 +709,10 @@ run headlessly, serialize, replay, and verify without rendering. See the
 ## Current playable foundation
 
 The repository currently contains a small executable slice, not a finished
-game: a styled Sanctum training-room presentation over a deterministic movement
+game: a schematic Sanctum mechanics-room presentation over a deterministic movement
 arena, separate Health/Stamina/Flux state, independent quantized aim,
-keyboard/mouse/controller defaults, custom ordered collision, resource-free Arc
+persisted keyboard bindings, world/aim-relative movement presets, full/ranged-
+cone POV, keyboard/mouse/controller defaults, custom ordered collision, resource-free Arc
 Primary, Flux-paid Vector Lance, authoritative projectiles/damage, Edgeweave,
 60/120 Hz match startup, stable state hashes, replay recording, and headless
 verification. It proves the runtime boundary and migrates the first movement and
@@ -641,7 +721,9 @@ and legal 13-point loadout validate at boot. A canonical material registry and
 packed 128 x 128 Sanctum Material Yard seed also validate, hash, reset, and
 render as a read-only debug preview; reactions do not step yet. The full hub art,
 champion kit, networking, active chemistry, animation, and release exports
-remain staged milestones.
+remain staged milestones. The current room does not yet meet the approved
+Sanctum image, topology, density, perspective, or environmental-art target; its
+authored replacement is the immediate G2 checkpoint.
 
 Run it offline after the engine archive has been prepared once:
 
@@ -655,9 +737,10 @@ scripts/run.sh --tick-rate=120
 Controls: WASD moves, mouse aims, left click or Space fires Arc Primary, right
 click or E casts Vector Lance, Alt sprints, C uses the jump/movement chain, V
 uses the contextual technique, R restarts the match, and F6 restarts at the
-other supported tick rate. Controller defaults use left/right sticks, right
-trigger, west/east face buttons, and shoulders. The rate never mutates inside a
-running match.
+other supported tick rate. F7 changes movement reference, F8 changes view, and
+F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
+left/right sticks, right trigger, west/east face buttons, and shoulders. The
+rate never mutates inside a running match.
 
 See [development setup](docs/DEVELOPMENT.md) and the
 [FLUX movement migration record](docs/MIGRATION-FLUX-MOVEMENT.md).
@@ -678,10 +761,13 @@ tools, accessibility, and compatibility agree.
 | D — ability configuration | Stable ability/element/wire IDs, canonical hashes, legal 13-point loadout, gated families | Complete |
 | E — first combat path | Arc Primary, Vector Lance, projectiles, swept hit/damage, replay and full Edgeweave invariants | Complete |
 | F1 — chemistry storage/safety | Validated material registry, 128 x 128 packed columns, seeded materials/Charge/elevation, immutable worldbone, canonical queue/budgets/hashes, exact reset, read-only preview | Complete |
-| F2 — structural/thermal reactions | Typed structure damage and rubble, then heat/Fire/steam/ice/thermal shock under one simulation orchestrator | Next production slice |
-| G — authored traversal | Nexus-to-Conservatory multi-elevation route, variable hop/fast fall, buffering/remapping, interactive controller acceptance, traversal devices | Planned |
-| H — first complete champion | Approved ancestry/profile, full slot kit/configuration UI, dummy/bot, cues, replay and platform acceptance | Planned |
-| I — two-player authority | Loopback then ENet host/join, handshake hashes, prediction/reconciliation, snapshot replay, clean shutdown | Planned |
+| G1 — player configuration | Persisted keyboard remapping, world/aim-relative movement, full/cone POV, exact angle/range, CLI/hotkey controls, deterministic transforms | Complete |
+| G2 — authored Sanctum | Replace the schematic court with the first vast Nexus-to-Conservatory multi-area topology/visual slice, clear routes, landmarks, elevations, responsive ambience, fast-travel context, and original pixel kit | Next; preproduction started during G1 verification |
+| G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | Planned |
+| F2/G4 — systemic Sanctum | Structural/thermal reactions, authored traversal devices, input/controller UI, physics/chemistry practice and reset | Planned |
+| H1 — first ancestry/champion/spells | One approved body plan and character through loadout, unique taunt, dummy/bot, cues, replay, accessibility and platform source gates | Planned |
+| I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | Planned |
+| Sanctum V1 acceptance | Complete stations/overlays, LOS cutaways, charm/readability polish, offline/save/network/accessibility/performance, Garuda Sway and Windows packages/cleanup | First product acceptance |
 | J — first complete arena/mode | Original modular map, objectives, destruction/material safety, duel/team rules, bots, round/rematch/results | Planned |
 | K — session continuity | Late join, reconnect, spectators, forced host migration, diagnostics, self-hostable online boundary | Planned |
 | L — cooperative content | Enemy grammar, survival/siege, elite/boss, difficulty, save/rejoin stability | Planned |
@@ -739,6 +825,7 @@ look complete.
 
 - [Production specification](SPECIFICATION.md)
 - [Sanctum hub and fast-travel contract](docs/SANCTUM-HUB.md)
+- [Living Sanctum V1 acceptance contract](docs/SANCTUM-V1-ACCEPTANCE.md)
 - [Visual direction](docs/VISUAL-DIRECTION.md)
 - [Reactive pixel-material and chemistry system](docs/reactive-material-system.md)
 - [Material registry/grid foundation](docs/MATERIAL-GRID-FOUNDATION.md)

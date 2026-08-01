@@ -2,17 +2,7 @@ class_name InputRouter
 extends RefCounted
 
 
-const KEY_ACTIONS: Dictionary[StringName, int] = {
-	&"move_left": KEY_A,
-	&"move_right": KEY_D,
-	&"move_up": KEY_W,
-	&"move_down": KEY_S,
-	&"sprint": KEY_ALT,
-	&"jump": KEY_C,
-	&"technique": KEY_V,
-	&"reset_match": KEY_R,
-	&"toggle_tick_rate": KEY_F6,
-}
+const KEY_ACTIONS: Dictionary[StringName, int] = PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS
 const PRIMARY_ACTION: StringName = &"primary"
 const ACTIVE_1_ACTION: StringName = &"active_1"
 const AIM_DEADZONE: float = 0.25
@@ -21,6 +11,8 @@ var entity_id: int
 var jump_was_down: bool = false
 var technique_was_down: bool = false
 var active_1_was_down: bool = false
+var movement_reference: String = PlayerPreferences.MOVEMENT_WORLD_RELATIVE
+var last_quantized_aim := Vector2i(1000, 0)
 
 
 func _init(requested_entity_id: int = 1) -> void:
@@ -96,8 +88,8 @@ static func _add_event_once(action: StringName, event: InputEvent) -> void:
 
 
 func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> SimCommand:
-	var move_x := roundi((Input.get_action_strength(&"move_right") - Input.get_action_strength(&"move_left")) * 1000.0)
-	var move_y := roundi((Input.get_action_strength(&"move_down") - Input.get_action_strength(&"move_up")) * 1000.0)
+	var raw_move_x := roundi((Input.get_action_strength(&"move_right") - Input.get_action_strength(&"move_left")) * 1000.0)
+	var raw_move_y := roundi((Input.get_action_strength(&"move_down") - Input.get_action_strength(&"move_up")) * 1000.0)
 	var held: int = 0
 	if Input.is_action_pressed(&"sprint"):
 		held |= SimCommand.HELD_SPRINT
@@ -124,17 +116,68 @@ func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> S
 	)
 	if joy_aim.length() >= AIM_DEADZONE:
 		aim_delta = joy_aim
-	var quantized_aim := Vector2i(1000, 0)
+	var quantized_aim := last_quantized_aim
 	if aim_delta.length_squared() > 0.01:
 		var normalized_aim: Vector2 = aim_delta.normalized() * 1000.0
 		quantized_aim = Vector2i(roundi(normalized_aim.x), roundi(normalized_aim.y))
+		last_quantized_aim = quantized_aim
+	var transformed_move := transform_movement(
+		raw_move_x,
+		raw_move_y,
+		quantized_aim.x,
+		quantized_aim.y,
+		movement_reference,
+	)
 	return SimCommand.new(
 		tick,
 		entity_id,
-		move_x,
-		move_y,
+		transformed_move.x,
+		transformed_move.y,
 		held,
 		pressed,
 		quantized_aim.x,
 		quantized_aim.y,
 	)
+
+
+func configure_movement_reference(requested_reference: String) -> bool:
+	if not PlayerPreferences.is_valid_movement_reference(requested_reference):
+		return false
+	movement_reference = requested_reference
+	return true
+
+
+func configure_keyboard_bindings(requested_bindings: Dictionary) -> bool:
+	if not PlayerPreferences.validate_keyboard_bindings(requested_bindings).is_empty():
+		return false
+	for action: StringName in PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS:
+		var retained_events: Array[InputEvent] = []
+		for existing: InputEvent in InputMap.action_get_events(action):
+			if not existing is InputEventKey:
+				retained_events.append(existing)
+		InputMap.action_erase_events(action)
+		for retained: InputEvent in retained_events:
+			InputMap.action_add_event(action, retained)
+		var physical_keycode: int = int(requested_bindings.get(action, PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS[action]))
+		if physical_keycode != 0:
+			_add_key(action, physical_keycode)
+	return true
+
+
+static func transform_movement(
+	raw_move_x: int,
+	raw_move_y: int,
+	aim_x: int,
+	aim_y: int,
+	reference: String,
+) -> Vector2i:
+	var clamped_x := clampi(raw_move_x, -1000, 1000)
+	var clamped_y := clampi(raw_move_y, -1000, 1000)
+	if reference != PlayerPreferences.MOVEMENT_AIM_RELATIVE:
+		return Vector2i(clamped_x, clamped_y)
+	var forward := SimCommand._normalized_direction(aim_x, aim_y)
+	@warning_ignore("integer_division")
+	var world_x: int = (forward.x * -clamped_y - forward.y * clamped_x) / 1000
+	@warning_ignore("integer_division")
+	var world_y: int = (forward.y * -clamped_y + forward.x * clamped_x) / 1000
+	return Vector2i(clampi(world_x, -1000, 1000), clampi(world_y, -1000, 1000))

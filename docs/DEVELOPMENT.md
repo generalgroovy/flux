@@ -17,6 +17,7 @@ scripts/doctor.sh
 scripts/test.sh
 scripts/run.sh
 FLUX2_TICK_RATE=60 scripts/run.sh
+scripts/run.sh --movement-reference=aim_relative --pov-mode=cone --pov-angle=120 --pov-range=800
 ```
 
 The match tick rate is exactly 60 or 120 Hz. It is chosen before constructing
@@ -28,6 +29,12 @@ Controls: WASD movement, mouse aim, left click or Space Arc Primary, right click
 or E Vector Lance, Alt sprint, C jump/movement-chain input, V technique, R reset,
 and F6 restart at 60/120 Hz. Controller defaults use left/right sticks, right
 trigger, shoulders, and west/east face buttons.
+
+F7 switches world-relative/aim-relative movement, F8 switches full/cone view,
+and F9/F10 increase angle/range; hold Shift with F9/F10 to reduce them. Changes
+persist offline in `user://player_preferences_v1.json`. Physical keyboard
+keycodes can be remapped in that validated file without removing mouse or
+controller defaults. See [player controls and POV](PLAYER-CONTROLS-AND-POV.md).
 
 The lower-right `MATERIAL YARD F1` panel is a read-only texture generated from
 the canonical 128 x 128 seed. Its labels identify the static seed/worldbone

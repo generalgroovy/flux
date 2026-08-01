@@ -200,6 +200,26 @@ Every network-visible definition requires:
 
 IDs may be deprecated but never silently reassigned.
 
+Content composition has three explicit character layers:
+
+1. an **ancestry/body plan** owns collision class, presentation skeleton,
+   locomotion/attachment hooks, size range, and bounded physical modifiers;
+2. a **champion** owns identity, affinities, statistics within that budget,
+   passive, primary, mobility, ultimate, cues, and lore/visual profile;
+3. a **loadout** selects mode-legal catalog actives inside the declared point
+   budget.
+
+The existing twenty FLUX ancestry foundations and any expansion—including the
+planned arachnoid body-plan family—must enter through this schema. Additional
+limbs, tails, wings, roots, reach, or wall-route hooks are explicit tested data,
+not presentation-derived hitboxes or unbudgeted attacks.
+
+Composable spell variants are compiled content. A formula may combine an
+approved source family, targeting geometry, operation, catalyst, and bounded
+constraints, but the result receives its own stable ID, wire ID, defaults,
+counterplay, and content hash before selection. Clients never transmit arbitrary
+damage, terrain, status, or reaction parameters as a formula.
+
 ## 10. Reactive material integration
 
 The reactive-material specification remains authoritative for chemistry behavior. Godot integration follows these additional rules:
@@ -368,6 +388,24 @@ requires an online service. Each major district also retains an ordinary route
 and an authored deep-movement route so fast travel remains convenience rather
 than a level-design dependency.
 
+### 17.2 Reusable interactions and mode rules
+
+Doors, switches, relays, capacitors, pumps, sluices, furnaces, prisms, mirrors,
+lifts, moving platforms, rails, ziplines, traps, portals, and movable cover are
+typed reusable simulation devices. Each declares activation/target shapes,
+ownership, capacity, cooldown, material/element ports, collision, reset group,
+failure diagnostics, accessibility cues, and network serialization. A map may
+compose devices but may not hide unique authoritative rules in presentation
+scene scripts.
+
+A mode is a versioned ruleset referencing shared maps, actors, catalogs, and
+systems. It owns team/player limits, spawns/defeat, objectives, score, rounds,
+legal content, friendly fire, material budgets, persistence, late join,
+spectating, bots, and networking requirements. Duel, team objectives,
+cooperative PvE, PvPvE, roguelike dungeons, lane/stronghold experiments, and
+battle royale may add actors/objectives but may not fork movement, combat,
+chemistry, champion, replay, or trust-boundary code.
+
 ## 18. Testing strategy
 
 ### 18.1 Unit tests
@@ -434,29 +472,49 @@ Create the pinned project, directory structure, bootstrap scene, settings, input
 
 Implement one player, one room, fixed-tick commands, custom collision, state hashing, replay recording, and presentation interpolation.
 
-### Phase 3: hosted multiplayer
+### Phase 3: combat and ability foundation
 
-Implement local loopback and ENet host/join, command batching, snapshots, prediction, reconciliation, remote interpolation, and disconnect handling.
+Implement Health/Flux/Stamina separation, independent aim, representative
+projectiles/fields, hit resolution, statuses, loadout/formula validation, and
+authoritative event cues. Promote one champion only after its complete slot kit
+is readable and replayable.
 
-### Phase 4: combat and abilities
-
-Implement health, resources, hit resolution, representative projectile/field abilities, statuses, and authoritative event cues.
-
-### Phase 5: reactive materials
+### Phase 4: reactive materials
 
 Implement chunk storage, worldbone, bounded reactions, rendering, collision updates, semantic replication, and correction snapshots.
 
-### Phase 6: content and Sanctum
+### Phase 5: authored movement, content, and Sanctum
 
-Build modular character content and the Sanctum training/lobby area with movement, dummies, bots, settings, host/join, map selection, and debug instrumentation.
+Build elevation/traversal interactions, modular ancestry/champion content, and
+the Sanctum training/lobby area with movement, dummies, bots, configuration,
+settings, host/join, map selection, and debug instrumentation.
 
-### Phase 7: WebRTC and browser gate
+### Phase 6: hosted multiplayer
 
-Add signalling, WebRTC transport, browser exports, browser performance fixtures, and TURN fallback. Disable unsupported features explicitly rather than silently changing simulation behavior.
+Implement local loopback and ENet host/join, command batching, snapshots,
+prediction, reconciliation, remote interpolation, diagnostics, and disconnect
+handling.
 
-### Phase 8: reconnect, spectators, migration
+### Phase 7: first arena and mode
 
-Add robust session continuity only after baseline networking is stable.
+Complete one original modular arena through destruction/material safety,
+objectives, bots, duel/team rules, rounds, rematch, results, replay, network,
+performance, accessibility, and package gates.
+
+### Phase 8: continuity, WebRTC, and browser gate
+
+Add reconnect, spectators, forced host migration, signalling, WebRTC transport,
+browser exports, browser performance fixtures, and replaceable relay/TURN
+fallback. Disable unsupported features explicitly rather than silently changing
+simulation behavior.
+
+### Phase 9: mode/content expansion and release
+
+Add cooperative PvE, PvPvE, seeded roguelike dungeons, lane/stronghold
+experiments, and a measured battle-royale slice only on proven shared systems.
+Expand one champion/ancestry/biome/reaction/enemy family at a time, then satisfy
+Linux/Windows packaging, accessibility, performance, update/rollback, and
+release-provenance gates.
 
 ## 22. Vertical-slice acceptance criteria
 

@@ -284,3 +284,56 @@ Known limitations and risks:
 Implementation commits: `8e6bce6`, `7ffd6e6`, `8805be0`, `e7e8ded`, and
 `2896ce6`. Draft PR: `https://github.com/generalgroovy/flux2/pull/5`.
 Documentation commit: pending at pre-commit record time.
+
+## 2026-08-01 — Game breadth and gate-ordered production roadmap
+
+Branch: `agent/aider-godot-foundation`
+
+What changed and why:
+
+- Expanded the README opening status/index from a terse system list into nine
+  linked chapters with honest implemented/planned subchapter checkboxes.
+- Defined the original movement/traversal grammar, map interactions, targeting
+  families, fighter commitments, resources/loadout, validated Flux Formula
+  composition, element gates, destruction layers, reusable map packages/devices,
+  progression boundaries, and shared-system mode families.
+- Carried all 23 named FLUX champion designs plus the unapproved Angel slot as
+  migration inputs, separated ancestry/champion/loadout responsibilities, and
+  added three provisional original arachnoid body plans without making them
+  selectable or inventing permanent champion identities.
+- Recorded inspiration only as broad design principles and explicitly barred
+  copied characters, assets, abilities, maps, layouts, terminology, code, and
+  trade dress.
+- Reconciled normative specification and overhaul ordering through checkpoints
+  F–O; corrected stale migration/configuration prose now that protocol 3,
+  projectile casting, and Edgeweave are implemented.
+
+Files changed:
+
+- `README.md`;
+- `SPECIFICATION.md`;
+- `docs/OVERHAUL-PLAN.md`;
+- `docs/MIGRATION-FLUX-MOVEMENT.md`;
+- `docs/ABILITY-CONFIGURATION.md`;
+- `.agent/WORKLOG.md`.
+
+Validation:
+
+- Full headless gate: 727 assertions, zero failures.
+- Godot import and protocol-3 bootstrap at 60 and 120 Hz: passed.
+- `bash -n scripts/*.sh` and `git diff --check`: passed.
+- Reviewed all changed Markdown links and confirmed no protected image, audio,
+  archive, or other binary asset changed.
+
+Known limitations and risks:
+
+- This is a design/production-management checkpoint; runtime behavior remains
+  the previously green checkpoint E combat foundation.
+- Weaverkin, Scorpionkin, and Harvestkin are provisional body-plan labels. Names,
+  lore, visual designs, traits, and champions require explicit approval before
+  data/runtime promotion.
+- Formula composition, advanced traversal, ancestry registries, map devices,
+  chemistry, networks, modes, and checkpoints F–O remain unchecked until their
+  own implementation and acceptance slices pass.
+
+Commit: pending at pre-commit record time. Push: pending.

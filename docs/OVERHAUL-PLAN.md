@@ -79,6 +79,12 @@ attune/travel without a menu-only hidden state or an unsafe destination.
   equivalence through an interactive acceptance fixture.
 - [ ] Planned: add buffered transitions, variable hop/fall presentation state,
   and authored elevation/low-cover queries.
+- [ ] Planned: add variable-hop/fast-fall authority, bounded launched-trajectory
+  influence, collision-safe timed ground recovery, and marked wall skims without
+  weakening stun, recovery, same-wall lockout, or the global speed ceiling.
+- [ ] Planned: add deterministic moving-platform relative motion, rails,
+  ziplines, lifts, pressure/launch surfaces, currents, wind lanes, grapple
+  anchors, and chemistry-derived traction/visibility route modifiers.
 - [x] Add Edgeweave Stamina recovery with hostile swept miss-vs-hit geometry,
   committed-speed/full-Stamina/cooldown/training guards, and one reward per
   projectile/fighter pair.
@@ -96,14 +102,17 @@ readable state, remappable inputs, and keyboard/controller acceptance.
 
 - [x] Version command protocol 3 for independent deterministic aim, held
   primary, and active-one presses; stale/duplicate commands remain rejected.
-- [ ] Planned: add packet decoding limits and reject malformed wire vectors
+- [ ] Planned: add packet decoding limits, reject malformed wire vectors, and
+  validate projectile/ray/arc/volume/geometry/tether/mobility target requests
   before constructing semantic commands.
 - [x] Implement deterministic projectile identity, movement, world/player
   collision, expiry, ownership/team filtering, impact events, state hashing, and
   a reliable no-Flux primary.
 - [x] Add authoritative Health damage and out-of-combat recovery with replay
   coverage.
-- [ ] Planned: add invulnerability/status timing, defeat, and respawn.
+- [ ] Planned: add active/contact volumes, launch/impact influence, invulnerability
+  and status timing, projectile clash, guard/parry/absorb/reflect roles,
+  deployables/fields/tethers, defeat, respawn, and mode-owned friendly fire.
 
 ### 4.2 Ability content and loadouts
 
@@ -116,6 +125,9 @@ readable state, remappable inputs, and keyboard/controller acceptance.
   build cost but never multiply raw damage; duplicate actives fail closed.
 - [ ] Planned: implement training configuration, preview, save-version migration,
   and host handshake compatibility.
+- [ ] Planned: compile Flux Formula variants from approved source-family,
+  geometry, operation, catalyst, and constraint components; competitive clients
+  request stable formula IDs and never supply outcome parameters.
 
 ### 4.3 First complete champion slice
 
@@ -148,7 +160,12 @@ worldbone or exceeding fixed work budgets.
 ## Chapter 6 — Champions, ancestries, and progression
 
 - [ ] Planned: reconcile the 24 visual slots, 23 named champions, temporary
-  Angel slot, 20 ancestry templates, and the smaller validated data catalog.
+  Angel slot, 20 existing ancestry templates, three provisional arachnoid body
+  plans, and the smaller validated data catalog.
+- [ ] Planned: approve or rename Weaverkin, Scorpionkin, and Harvestkin body
+  plans; validate their normalized footprints, limbs/attachment bones, route
+  hooks, size budgets, accessibility reads, and original lore before assigning
+  a selectable champion.
 - [ ] Planned: centralize bounded size/ancestry changes to health, recovery,
   speed, acceleration, mass, radius, knockback, air control, and utility—never
   passive raw spell superiority.
@@ -162,9 +179,34 @@ worldbone or exceeding fixed work budgets.
 Exit gate: roster data and visuals agree, no placeholder is presented as final,
 and every selectable champion passes the same full vertical-slice matrix.
 
-## Chapter 7 — Modes, networking, and scale
+## Chapter 7 — Maps and world interactions
 
-### 7.1 Host/join foundation
+- [x] Specify versioned map packages containing worldbone/topology, elevation
+  bands, mutable seeds, spawns/objectives/portals/interactions, simulation and
+  reset groups, navigation/safety hints, presentation layers, and hashes.
+- [ ] Planned: implement deterministic elevation/vision/projectile bands,
+  bridges/overpasses/undercrofts, low cover, moving surfaces, and derived dirty
+  collision/navigation without delegating authority to Godot physics nodes.
+- [ ] Planned: define typed reusable devices for doors, switches, relays,
+  capacitors, pumps, sluices, furnaces, prisms, mirrors, lifts, cranes, traps,
+  portals, and movable cover instead of map-specific scene logic.
+- [ ] Planned: author ordinary, committed, and material-created route classes
+  with bot costs, accessibility alternatives, spawn/objective route minima, and
+  60/120 Hz completion/performance fixtures.
+- [ ] Planned: ship one original modular competitive arena through destruction,
+  chemistry, objective, reset/rematch, bot, replay, network, dense-fight,
+  Linux/Windows, and package acceptance before converting additional maps.
+- [ ] Planned: build editor/CI validators for immutable-mask preservation,
+  spawn clearance, objective reachability, route redundancy, support/collapse,
+  mutable-cell/entity budgets, cleanup, permeability, and content hashes.
+
+Exit gate: maps create meaningful route and material decisions, every device
+uses shared typed systems, critical topology survives maximum destruction, and
+the same package resets/replays/replicates deterministically.
+
+## Chapter 8 — Modes, networking, and scale
+
+### 8.1 Host/join foundation
 
 - [ ] Planned: implement transport-independent loopback and ENet adapters,
   protocol handshake, capability/content/map hashes, input batches, snapshots,
@@ -175,7 +217,7 @@ and every selectable champion passes the same full vertical-slice matrix.
 - [ ] Planned: add WebRTC/signalling and replaceable self-hosted relay paths only
   after native authority is proven.
 
-### 7.2 Mode order
+### 8.2 Mode order
 
 - [ ] Planned: fundamentals/freeplay, First Rite, one champion, one map.
 - [ ] Planned: PvP duel/team/control/draft/mirror, bots, rounds, rematch.
@@ -183,14 +225,25 @@ and every selectable champion passes the same full vertical-slice matrix.
   rewards, extraction/convergence.
 - [ ] Planned: cooperative PvE survival/siege, enemy grammar, elites, bosses,
   difficulty, and save stability.
+- [ ] Planned: seeded roguelike dungeons with branching rooms, run-scoped
+  formulas/items, recovery saves, and no competitive-stat leakage.
+- [ ] Planned: an original lane/stronghold experiment using shared objectives,
+  generated forces, destructible outer structures, and immutable cores; do not
+  copy a MOBA map, role roster, item system, terminology, or presentation.
+- [ ] Planned: a small battle-royale survival slice with closing pressure and
+  reactive sectors only after authority, streaming, spawn/loot fairness,
+  reconnect, hardware, and readability gates pass.
 - [ ] Planned: measure eight-player readability/authority first; design protocol
   limits for 32+, and attempt larger modes only after profiling and recovery.
+- [ ] Planned: encode every mode as a versioned ruleset over shared movement,
+  combat, chemistry, champion, map, AI, replay, and network systems rather than
+  forking simulation code.
 
 Exit gate: ownership is unambiguous under latency/loss, local/offline modes use
 the same rules, and no scale claim exceeds tested simulation/network/visual
 budgets.
 
-## Chapter 8 — Production, accessibility, and release
+## Chapter 9 — Production, accessibility, and release
 
 - [ ] Planned: create original pixel-art environment, character, projectile,
   reaction, UI, animation, and audio kits from the approved direction.
@@ -218,7 +271,7 @@ features.
    defaults, update HUD/replay tests, and harden smoke-error detection.
 3. **Checkpoint C — movement constraints:** deterministic wall identity and
    same-wall lockout, bounded external control states, and a 60/120 Hz advanced
-   Conservatory route fixture. Edgeweave waits for Slice E projectiles.
+   Conservatory route fixture. Edgeweave was staged until Slice E projectiles.
 4. **Checkpoint D — ability configuration:** stable ability/wire registry,
    canonical hashes, legal slot/loadout validator, eight enabled and four gated
    elements, affinity-only discounts, and exact 13-point foundation build.
@@ -227,6 +280,26 @@ features.
    projectile/hit/damage/replay/presentation, and complete Edgeweave guards.
 6. **Slice F — chemistry laboratory:** bounded material grid and a small readable
    reaction set in the Proving Grounds.
+7. **Slice G — authored traversal:** Nexus-to-Conservatory elevation route,
+   variable hop/fast fall, input buffers/remapping, interactive controller gate,
+   and shared traversal devices.
+8. **Slice H — first complete champion:** reconcile one approved design through
+   ancestry, full kit/loadout UI, cues, dummy/bot, replay, network schema,
+   accessibility, and Linux/Windows source gates.
+9. **Slice I — two-player authority:** loopback then ENet host/join, handshake
+   hashes, prediction/reconciliation, snapshot replay, diagnostics, and clean
+   shutdown.
+10. **Slice J — first arena/mode:** one original map package with objective,
+    chemistry/destruction safety, duel/team rules, bots, rounds, rematch, and
+    results.
+11. **Slice K — continuity:** late join, reconnect, spectators, and forced host
+    migration before optional WebRTC/signalling/relay work.
+12. **Slices L–M — breadth on proven systems:** cooperative survival/siege,
+    then PvPvE expedition, seeded roguelike dungeons, lane/stronghold experiment,
+    and only then a measured battle-royale slice.
+13. **Slices N–O — content and release:** expand one champion/ancestry/biome/
+    reaction/enemy family at a time, then complete original art/audio,
+    accessibility/performance, packages, migration, rollback, and release gates.
 
 Only one slice is promoted at a time. If a later experiment fails, the previous
 checkpoint remains runnable and does not need reconstruction.

@@ -2,10 +2,12 @@
 
 ## Scope
 
-This checkpoint introduces validated, canonical ability configuration. It does
-not cast an ability yet. The split is deliberate: network-visible identities,
-resource rules, loadout legality, affinity behavior, and compatibility hashes
-must be trustworthy before combat code consumes them.
+This contract began as the validated canonical configuration checkpoint and now
+also records the boundary consumed by protocol-3 combat. Arc Primary and Vector
+Lance cast end to end; the remaining catalog entries are still configuration
+only. Network-visible identities, resource rules, loadout legality, affinity
+behavior, and compatibility hashes remain trustworthy before any additional
+combat code may promote an entry.
 
 Runtime boot validates:
 
@@ -61,6 +63,10 @@ This demonstrates discounts without granting elemental damage superiority.
 5. Training configuration UI and authoritative host ready-check.
 6. One approved champion through bot, replay, network, reconnect, spectator,
    accessibility, and platform gates.
+7. Compile optional Flux Formula variants from approved source-family,
+   geometry, operation, catalyst, and constraint components; the host accepts
+   stable variant IDs, never client-authored outcome parameters.
 
-No additional catalog breadth is useful until one complete ability is playable
-and readable end to end.
+No additional catalog breadth is useful until the promoted foundation abilities
+are playable and readable end to end and one complete champion passes every
+vertical-slice gate.

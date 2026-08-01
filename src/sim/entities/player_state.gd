@@ -1,0 +1,97 @@
+class_name PlayerState
+extends RefCounted
+
+
+enum MovementMode {
+	IDLE,
+	WALK,
+	SPRINT,
+	HOP,
+	DOUBLE_JUMP,
+	SLIDE,
+	SLIDE_JUMP,
+	AIR_DODGE,
+	WAVE_DASH,
+	WALL_KICK,
+	VAULT,
+	SUPERGLIDE,
+}
+
+var entity_id: int = 1
+var position_x: int = 160_000
+var position_y: int = 360_000
+var position_remainder_x: int = 0
+var position_remainder_y: int = 0
+var velocity_x: int = 0
+var velocity_y: int = 0
+var facing_x: int = 1000
+var facing_y: int = 0
+var radius: int = MovementTuning.PLAYER_RADIUS
+var movement_mode: int = MovementMode.IDLE
+
+var flow: int = MovementTuning.FLOW_MAXIMUM
+var flow_remainder: int = 0
+var flow_recovery_delay_ticks: int = 0
+
+var hop_ticks: int = 0
+var hop_cooldown_ticks: int = 0
+var hop_stage: int = 0
+var hop_mode: int = MovementMode.HOP
+var hop_speed: int = 0
+var hop_x: int = 1000
+var hop_y: int = 0
+var air_redirects_remaining: int = 0
+
+var air_dodge_ticks: int = 0
+var air_dodge_cooldown_ticks: int = 0
+var air_dodge_x: int = 1000
+var air_dodge_y: int = 0
+var wave_dash_queued: bool = false
+var wave_dash_ticks: int = 0
+var wave_dash_x: int = 1000
+var wave_dash_y: int = 0
+
+var slide_ticks: int = 0
+var slide_cooldown_ticks: int = 0
+var slide_x: int = 1000
+var slide_y: int = 0
+
+var vault_ticks: int = 0
+var vault_cooldown_ticks: int = 0
+var vault_x: int = 1000
+var vault_y: int = 0
+var superglide_ticks: int = 0
+var superglide_x: int = 1000
+var superglide_y: int = 0
+
+var wall_memory_ticks: int = 0
+var wall_x: int = 0
+var wall_y: int = 0
+var landing_ticks: int = 0
+var sprinting: bool = false
+var last_event: String = "spawn"
+
+
+func _init(requested_entity_id: int = 1) -> void:
+	entity_id = requested_entity_id
+
+
+func is_airborne() -> bool:
+	return hop_ticks > 0 or air_dodge_ticks > 0 or superglide_ticks > 0
+
+
+func canonical_values() -> PackedInt64Array:
+	return PackedInt64Array([
+		entity_id,
+		position_x, position_y, position_remainder_x, position_remainder_y,
+		velocity_x, velocity_y, facing_x, facing_y, radius, movement_mode,
+		flow, flow_remainder, flow_recovery_delay_ticks,
+		hop_ticks, hop_cooldown_ticks, hop_stage, hop_mode, hop_speed, hop_x, hop_y,
+		air_redirects_remaining,
+		air_dodge_ticks, air_dodge_cooldown_ticks, air_dodge_x, air_dodge_y,
+		int(wave_dash_queued), wave_dash_ticks, wave_dash_x, wave_dash_y,
+		slide_ticks, slide_cooldown_ticks, slide_x, slide_y,
+		vault_ticks, vault_cooldown_ticks, vault_x, vault_y,
+		superglide_ticks, superglide_x, superglide_y,
+		wall_memory_ticks, wall_x, wall_y, landing_ticks, int(sprinting),
+	])

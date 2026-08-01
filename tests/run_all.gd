@@ -1,0 +1,26 @@
+extends SceneTree
+
+
+const SUITES: Array[Script] = [
+	preload("res://tests/unit/test_core.gd"),
+	preload("res://tests/unit/test_hub_definition.gd"),
+	preload("res://tests/unit/test_movement.gd"),
+	preload("res://tests/replay/test_replay.gd"),
+]
+
+
+func _initialize() -> void:
+	call_deferred("_run")
+
+
+func _run() -> void:
+	var failures: int = 0
+	for suite_script: Script in SUITES:
+		var suite: FluxTestSuite = suite_script.new()
+		failures += suite.run()
+	if failures == 0:
+		print("PASS: all FLUX2 headless suites")
+		quit(0)
+	else:
+		print("FAIL: %d assertion(s) failed" % failures)
+		quit(1)

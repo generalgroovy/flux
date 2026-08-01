@@ -119,7 +119,10 @@ Autoloads must be few and explicit. Global mutable state is prohibited except fo
 
 ### 6.1 Fixed tick
 
-- Canonical simulation runs at 60 ticks per second unless profiling establishes another fixed value.
+- Canonical simulation runs at a match-selected 60 or 120 ticks per second.
+  The selected rate is frozen before tick zero, negotiated as compatibility
+  metadata, and may never change during a match. 60 Hz is the baseline; 120 Hz
+  is the high-frequency option for hosts that pass performance budgets.
 - Rendering may run at any rate and interpolates between confirmed simulation states.
 - Inputs are converted to semantic commands tagged with simulation tick and player identity.
 - Catch-up work is bounded. The game must not silently execute unbounded simulation steps after a stall.
@@ -137,12 +140,16 @@ Autoloads must be few and explicit. Global mutable state is prohibited except fo
 A replay contains:
 
 - protocol and content versions;
+- the frozen 60 or 120 Hz authoritative tick rate;
 - map ID and immutable-map hash;
 - initial seed and match configuration;
 - ordered player and system commands;
 - periodic state hashes and optional checkpoints.
 
 Running the same replay on supported platforms must produce identical authoritative hashes at every checkpoint.
+Determinism is verified independently at both supported rates; hashes are not
+expected to match between rates because the tick stream is part of the replay
+contract.
 
 ## 7. Entity model
 
@@ -344,6 +351,22 @@ A map package contains:
 - deterministic content and base-map hashes.
 
 Editor tools must validate spawn clearance, route minima, objective access, worldbone protection, resetability, maximum mutable-cell counts, and competitive hazard budgets.
+
+### 17.1 Sanctum application hub
+
+The Sanctum is a versioned map package and application shell, not an exception
+to simulation or content boundaries. District, layer, connection, travel-node,
+and outbound-exit metadata must validate before the hub loads. Spatial desks,
+gates, portals, and shrines invoke the same typed application commands as the
+overlay menus; neither directly mutates session or simulation state.
+
+The attunement network is session-host authoritative. Both endpoints must be
+known, enabled, unlocked, and safe; the origin and destination must differ;
+combat/trial/transition/reset states block travel; and destination clearance is
+required. Offline solo use executes the same validation locally and never
+requires an online service. Each major district also retains an ordinary route
+and an authored deep-movement route so fast travel remains convenience rather
+than a level-design dependency.
 
 ## 18. Testing strategy
 

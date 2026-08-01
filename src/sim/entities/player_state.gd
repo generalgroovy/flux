@@ -26,12 +26,21 @@ var velocity_x: int = 0
 var velocity_y: int = 0
 var facing_x: int = 1000
 var facing_y: int = 0
+var aim_x: int = 1000
+var aim_y: int = 0
 var radius: int = MovementTuning.PLAYER_RADIUS
 var movement_mode: int = MovementMode.IDLE
+var primary_held: bool = false
 
-var flow: int = MovementTuning.FLOW_MAXIMUM
-var flow_remainder: int = 0
-var flow_recovery_delay_ticks: int = 0
+var health: int = PlayerTuning.HEALTH_MAXIMUM
+var health_recovery_remainder: int = 0
+var health_recovery_delay_ticks: int = 0
+var flux: int = PlayerTuning.FLUX_MAXIMUM
+var flux_recovery_remainder: int = 0
+var flux_recovery_delay_ticks: int = 0
+var stamina: int = MovementTuning.STAMINA_MAXIMUM
+var stamina_remainder: int = 0
+var stamina_recovery_delay_ticks: int = 0
 
 var hop_ticks: int = 0
 var hop_cooldown_ticks: int = 0
@@ -84,8 +93,11 @@ func canonical_values() -> PackedInt64Array:
 	return PackedInt64Array([
 		entity_id,
 		position_x, position_y, position_remainder_x, position_remainder_y,
-		velocity_x, velocity_y, facing_x, facing_y, radius, movement_mode,
-		flow, flow_remainder, flow_recovery_delay_ticks,
+		velocity_x, velocity_y, facing_x, facing_y, aim_x, aim_y, radius, movement_mode,
+		int(primary_held),
+		health, health_recovery_remainder, health_recovery_delay_ticks,
+		flux, flux_recovery_remainder, flux_recovery_delay_ticks,
+		stamina, stamina_remainder, stamina_recovery_delay_ticks,
 		hop_ticks, hop_cooldown_ticks, hop_stage, hop_mode, hop_speed, hop_x, hop_y,
 		air_redirects_remaining,
 		air_dodge_ticks, air_dodge_cooldown_ticks, air_dodge_x, air_dodge_y,

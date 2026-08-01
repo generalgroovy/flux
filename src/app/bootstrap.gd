@@ -62,7 +62,11 @@ func _process(delta: float) -> void:
 	var steps: int = 0
 	while accumulator_seconds >= fixed_delta and steps < MAX_CATCH_UP_STEPS:
 		previous_position = current_position
-		var command: SimCommand = input_router.sample(world.tick)
+		var command: SimCommand = input_router.sample(
+			world.tick,
+			current_position,
+			get_viewport().get_mouse_position(),
+		)
 		if not world.step([command]):
 			push_error(world.last_error)
 			set_process(false)
@@ -91,18 +95,20 @@ func _draw() -> void:
 	draw_circle(rendered_position, float(state.radius) / 1000.0 + 5.0, Color(ATTUNEMENT_COLOR, 0.18))
 	draw_circle(rendered_position, float(state.radius) / 1000.0, PLAYER_COLOR)
 	draw_arc(rendered_position, float(state.radius) / 1000.0 + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
-	draw_line(rendered_position, rendered_position + Vector2(state.facing_x, state.facing_y) * 0.025, Color.WHITE, 3.0)
-	var status := "%d HZ  ·  TICK %d  ·  FLOW %.1f  ·  %s" % [
+	draw_line(rendered_position, rendered_position + Vector2(state.aim_x, state.aim_y) * 0.032, Color.WHITE, 3.0)
+	var status := "%d HZ · TICK %d · HP %.0f · ST %.0f · FX %.0f · %s" % [
 		tick_rate,
 		world.tick,
-		float(state.flow) / 1000.0,
+		float(state.health) / 1000.0,
+		float(state.stamina) / 1000.0,
+		float(state.flux) / 1000.0,
 		state.last_event,
 	]
 	draw_rect(Rect2(16, 14, 1248, 76), PANEL_COLOR, true)
 	draw_rect(Rect2(16, 14, 1248, 76), BRASS_COLOR.darkened(0.3), false, 2.0)
 	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "THE SANCTUM  ·  MOVEMENT CONSERVATORY", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(830, 40), status, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 15, ATTUNEMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE  ·  SHIFT SPRINT  ·  SPACE CHAIN  ·  E TECHNIQUE  ·  F6 60/120 HZ  ·  R RESET", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(760, 40), status, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, ATTUNEMENT_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · MOUSE AIM · LMB/SPACE PRIMARY INPUT · ALT SPRINT · C CHAIN · V TECHNIQUE · F6 60/120 HZ", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
 	if dropped_time_seconds > 0.0:
 		draw_string(ThemeDB.fallback_font, Vector2(32, 112), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
 

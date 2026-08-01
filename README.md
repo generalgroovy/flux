@@ -36,10 +36,13 @@ even when design documentation already exists.
   - [x] Sprint, counter-strafe, hop/double jump, wall kick, air redirect/dodge,
     wavedash, slide/slide jump, vault, superglide, and landing cut
   - [x] Ordered integer collision, speed ceiling, 60/120 Hz replay verification
-  - [ ] Separate Stamina from spell Flux and add Edgeweave, authored elevation,
-    input buffering/remapping, controller aim, and route acceptance
+  - [x] Separate Health, Stamina, and spell Flux; independent quantized aim and
+    keyboard/mouse/controller action defaults
+  - [ ] Add Edgeweave, authored elevation, input buffering, saved remapping, and
+    route acceptance
 - [ ] **Chapter 4 — [Combat and abilities](docs/OVERHAUL-PLAN.md#chapter-4--combat-and-ability-configuration)**
-  - [ ] Independent move/aim commands and reliable resource-free primary
+  - [x] Independent move/aim and held-primary command protocol
+  - [ ] Reliable resource-free primary projectile and combat resolution
   - [ ] Passive, three budgeted actives, champion mobility, and ultimate slots
   - [ ] Stable ability IDs, validation, 13-point loadout budget, and first
     complete champion vertical slice
@@ -208,11 +211,13 @@ run headlessly, serialize, replay, and verify without rendering. See the
 
 The repository currently contains a small executable slice, not a finished
 game: a styled Sanctum training-room presentation over a deterministic movement
-arena, semantic input, custom ordered collision, 60/120 Hz match startup,
-stable state hashes, replay recording, and headless verification. It proves the
-runtime boundary and migrates the first movement values from the browser FLUX
-prototype. The full hub art, combat, networking, chemistry runtime, content,
-animation, and release exports remain staged milestones.
+arena, separate Health/Stamina/Flux state, independent quantized aim and primary
+input, keyboard/mouse/controller defaults, custom ordered collision, 60/120 Hz
+match startup, stable state hashes, replay recording, and headless verification.
+It proves the runtime boundary and migrates the first movement values from the
+browser FLUX prototype. The primary is command plumbing only until its
+projectile slice lands. The full hub art, combat, networking, chemistry runtime,
+content, animation, and release exports remain staged milestones.
 
 Run it offline after the engine archive has been prepared once:
 
@@ -223,9 +228,11 @@ scripts/test.sh
 scripts/run.sh --tick-rate=120
 ```
 
-Controls: WASD moves, Shift sprints, Space uses the jump/movement chain, E uses
-the contextual technique, R restarts the match, and F6 restarts at the other
-supported tick rate. The rate never mutates inside a running match.
+Controls: WASD moves, mouse aims, left click or Space submits primary input, Alt
+sprints, C uses the jump/movement chain, V uses the contextual technique, R
+restarts the match, and F6 restarts at the other supported tick rate. Controller
+defaults use left/right sticks, triggers, shoulders, and east face button. The
+rate never mutates inside a running match.
 
 See [development setup](docs/DEVELOPMENT.md) and the
 [FLUX movement migration record](docs/MIGRATION-FLUX-MOVEMENT.md).

@@ -39,7 +39,7 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 	var was_hopping: bool = state.hop_ticks > 0
 	var was_air_dodging: bool = state.air_dodge_ticks > 0
 	for property_name: StringName in [
-		&"flow_recovery_delay_ticks", &"hop_ticks", &"hop_cooldown_ticks",
+		&"stamina_recovery_delay_ticks", &"hop_ticks", &"hop_cooldown_ticks",
 		&"air_dodge_ticks", &"air_dodge_cooldown_ticks", &"wave_dash_ticks",
 		&"slide_ticks", &"slide_cooldown_ticks", &"vault_ticks",
 		&"vault_cooldown_ticks", &"superglide_ticks", &"wall_memory_ticks",
@@ -63,12 +63,12 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 
 
 static func _try_hop(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
-	if state.hop_cooldown_ticks > 0 or state.flow < MovementTuning.HOP_COST:
+	if state.hop_cooldown_ticks > 0 or state.stamina < MovementTuning.HOP_COST:
 		return false
 	var wall_kick: bool = state.wall_memory_ticks > 0
 	if wall_kick:
 		direction = _wall_kick_direction(direction, Vector2i(state.wall_x, state.wall_y))
-	_spend_flow(state, MovementTuning.HOP_COST, config)
+	_spend_stamina(state, MovementTuning.HOP_COST, config)
 	state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS)
 	state.hop_cooldown_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_COOLDOWN_MS)
 	state.hop_stage = 1
@@ -84,9 +84,9 @@ static func _try_hop(state: PlayerState, direction: Vector2i, config: SimConfig)
 
 
 static func _try_double_jump(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
-	if state.hop_stage != 1 or state.flow < MovementTuning.DOUBLE_JUMP_COST:
+	if state.hop_stage != 1 or state.stamina < MovementTuning.DOUBLE_JUMP_COST:
 		return false
-	_spend_flow(state, MovementTuning.DOUBLE_JUMP_COST, config)
+	_spend_stamina(state, MovementTuning.DOUBLE_JUMP_COST, config)
 	state.hop_stage = 2
 	state.hop_mode = PlayerState.MovementMode.DOUBLE_JUMP
 	state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.DOUBLE_JUMP_DURATION_MS)
@@ -99,9 +99,9 @@ static func _try_double_jump(state: PlayerState, direction: Vector2i, config: Si
 
 
 static func _try_air_redirect(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
-	if state.hop_ticks <= 0 or state.air_redirects_remaining <= 0 or state.flow < MovementTuning.AIR_REDIRECT_COST:
+	if state.hop_ticks <= 0 or state.air_redirects_remaining <= 0 or state.stamina < MovementTuning.AIR_REDIRECT_COST:
 		return false
-	_spend_flow(state, MovementTuning.AIR_REDIRECT_COST, config)
+	_spend_stamina(state, MovementTuning.AIR_REDIRECT_COST, config)
 	state.hop_x = _blend_axis(state.hop_x, direction.x, MovementTuning.AIR_REDIRECT_BLEND)
 	state.hop_y = _blend_axis(state.hop_y, direction.y, MovementTuning.AIR_REDIRECT_BLEND)
 	var redirected: Vector2i = _direction(state.hop_x, state.hop_y, direction)
@@ -113,7 +113,7 @@ static func _try_air_redirect(state: PlayerState, direction: Vector2i, config: S
 
 
 static func _try_air_dodge(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
-	if state.hop_ticks <= 0 or state.air_dodge_cooldown_ticks > 0 or state.flow < MovementTuning.AIR_DODGE_COST:
+	if state.hop_ticks <= 0 or state.air_dodge_cooldown_ticks > 0 or state.stamina < MovementTuning.AIR_DODGE_COST:
 		return false
 	var dot: int = state.hop_x * direction.x + state.hop_y * direction.y
 	var turn: int = 1_000_000 - dot
@@ -121,7 +121,7 @@ static func _try_air_dodge(state: PlayerState, direction: Vector2i, config: SimC
 		state.hop_ticks <= config.milliseconds_to_ticks(MovementTuning.WAVE_DASH_INPUT_WINDOW_MS)
 		and turn >= MovementTuning.WAVE_DASH_MINIMUM_TURN
 	)
-	_spend_flow(state, MovementTuning.AIR_DODGE_COST, config)
+	_spend_stamina(state, MovementTuning.AIR_DODGE_COST, config)
 	state.hop_ticks = 0
 	state.hop_stage = 0
 	state.air_redirects_remaining = 0
@@ -138,11 +138,11 @@ static func _try_slide(state: PlayerState, direction: Vector2i, config: SimConfi
 	if (
 		state.slide_cooldown_ticks > 0 or state.slide_ticks > 0 or state.is_airborne()
 		or state.wave_dash_ticks > 0 or state.vault_ticks > 0 or state.superglide_ticks > 0
-		or state.flow < MovementTuning.SLIDE_COST
+		or state.stamina < MovementTuning.SLIDE_COST
 		or _speed_squared(state.velocity_x, state.velocity_y) < MovementTuning.SLIDE_ENTRY_SPEED * MovementTuning.SLIDE_ENTRY_SPEED
 	):
 		return false
-	_spend_flow(state, MovementTuning.SLIDE_COST, config)
+	_spend_stamina(state, MovementTuning.SLIDE_COST, config)
 	state.slide_ticks = config.milliseconds_to_ticks(MovementTuning.SLIDE_DURATION_MS)
 	state.slide_cooldown_ticks = config.milliseconds_to_ticks(MovementTuning.SLIDE_COOLDOWN_MS)
 	state.slide_x = direction.x
@@ -153,9 +153,9 @@ static func _try_slide(state: PlayerState, direction: Vector2i, config: SimConfi
 
 
 static func _try_slide_jump(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
-	if state.slide_ticks > config.milliseconds_to_ticks(MovementTuning.SLIDE_JUMP_WINDOW_MS) or state.flow < MovementTuning.SLIDE_JUMP_COST:
+	if state.slide_ticks > config.milliseconds_to_ticks(MovementTuning.SLIDE_JUMP_WINDOW_MS) or state.stamina < MovementTuning.SLIDE_JUMP_COST:
 		return false
-	_spend_flow(state, MovementTuning.SLIDE_JUMP_COST, config)
+	_spend_stamina(state, MovementTuning.SLIDE_JUMP_COST, config)
 	state.slide_ticks = 0
 	state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.SLIDE_JUMP_DURATION_MS)
 	state.hop_stage = 1
@@ -169,7 +169,7 @@ static func _try_slide_jump(state: PlayerState, direction: Vector2i, config: Sim
 
 
 static func _try_vault(state: PlayerState, direction: Vector2i, config: SimConfig, world: CollisionWorld) -> bool:
-	if state.vault_cooldown_ticks > 0 or state.flow < MovementTuning.VAULT_COST:
+	if state.vault_cooldown_ticks > 0 or state.stamina < MovementTuning.VAULT_COST:
 		return false
 	var obstacle: CollisionWorld.Obstacle = world.find_vault_candidate(Vector2i(state.position_x, state.position_y), direction, state.radius)
 	if obstacle == null:
@@ -179,7 +179,7 @@ static func _try_vault(state: PlayerState, direction: Vector2i, config: SimConfi
 	if destination == Vector2i(state.position_x, state.position_y):
 		state.last_event = "vault_blocked"
 		return false
-	_spend_flow(state, MovementTuning.VAULT_COST, config)
+	_spend_stamina(state, MovementTuning.VAULT_COST, config)
 	state.position_x = destination.x
 	state.position_y = destination.y
 	state.position_remainder_x = 0
@@ -197,9 +197,9 @@ static func _try_vault(state: PlayerState, direction: Vector2i, config: SimConfi
 static func _try_superglide(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
 	var crest_start: int = config.milliseconds_to_ticks(MovementTuning.VAULT_CREST_START_MS)
 	var crest_end: int = config.milliseconds_to_ticks(MovementTuning.VAULT_CREST_END_MS)
-	if state.vault_ticks < crest_start or state.vault_ticks > crest_end or state.flow < MovementTuning.SUPERGLIDE_COST:
+	if state.vault_ticks < crest_start or state.vault_ticks > crest_end or state.stamina < MovementTuning.SUPERGLIDE_COST:
 		return false
-	_spend_flow(state, MovementTuning.SUPERGLIDE_COST, config)
+	_spend_stamina(state, MovementTuning.SUPERGLIDE_COST, config)
 	state.vault_ticks = 0
 	state.superglide_ticks = config.milliseconds_to_ticks(MovementTuning.SUPERGLIDE_DURATION_MS)
 	state.superglide_x = direction.x
@@ -234,7 +234,7 @@ static func _apply_velocity(state: PlayerState, command: SimCommand, direction: 
 
 static func _apply_ground_velocity(state: PlayerState, command: SimCommand, direction: Vector2i, config: SimConfig) -> void:
 	var moving: bool = command.move_x != 0 or command.move_y != 0
-	var sprinting: bool = moving and command.has_held(SimCommand.HELD_SPRINT) and state.flow > 0
+	var sprinting: bool = moving and command.has_held(SimCommand.HELD_SPRINT) and state.stamina > 0
 	var speed: int = MovementTuning.BASE_SPEED
 	if sprinting:
 		@warning_ignore("integer_division")
@@ -256,10 +256,10 @@ static func _apply_ground_velocity(state: PlayerState, command: SimCommand, dire
 	state.velocity_y = _approach(state.velocity_y, desired_y, step_amount)
 	state.sprinting = sprinting
 	if sprinting:
-		_apply_flow_rate(state, -MovementTuning.SPRINT_DRAIN_PER_SECOND, config)
-		state.flow_recovery_delay_ticks = config.milliseconds_to_ticks(MovementTuning.FLOW_RECOVERY_DELAY_MS)
-	elif state.flow_recovery_delay_ticks == 0:
-		_apply_flow_rate(state, MovementTuning.FLOW_RECOVERY_PER_SECOND, config)
+		_apply_stamina_rate(state, -MovementTuning.SPRINT_DRAIN_PER_SECOND, config)
+		state.stamina_recovery_delay_ticks = config.milliseconds_to_ticks(MovementTuning.STAMINA_RECOVERY_DELAY_MS)
+	elif state.stamina_recovery_delay_ticks == 0:
+		_apply_stamina_rate(state, MovementTuning.STAMINA_RECOVERY_PER_SECOND, config)
 
 
 static func _integrate(state: PlayerState, config: SimConfig, world: CollisionWorld) -> void:
@@ -312,18 +312,18 @@ static func _update_mode(state: PlayerState, command: SimCommand) -> void:
 		state.movement_mode = PlayerState.MovementMode.IDLE
 
 
-static func _spend_flow(state: PlayerState, amount: int, config: SimConfig) -> void:
-	state.flow = maxi(0, state.flow - amount)
-	state.flow_remainder = 0
-	state.flow_recovery_delay_ticks = config.milliseconds_to_ticks(MovementTuning.FLOW_RECOVERY_DELAY_MS)
+static func _spend_stamina(state: PlayerState, amount: int, config: SimConfig) -> void:
+	state.stamina = maxi(0, state.stamina - amount)
+	state.stamina_remainder = 0
+	state.stamina_recovery_delay_ticks = config.milliseconds_to_ticks(MovementTuning.STAMINA_RECOVERY_DELAY_MS)
 
 
-static func _apply_flow_rate(state: PlayerState, rate_per_second: int, config: SimConfig) -> void:
-	var total: int = state.flow_remainder + rate_per_second
+static func _apply_stamina_rate(state: PlayerState, rate_per_second: int, config: SimConfig) -> void:
+	var total: int = state.stamina_remainder + rate_per_second
 	@warning_ignore("integer_division")
 	var amount: int = total / config.tick_rate
-	state.flow_remainder = total - amount * config.tick_rate
-	state.flow = clampi(state.flow + amount, 0, MovementTuning.FLOW_MAXIMUM)
+	state.stamina_remainder = total - amount * config.tick_rate
+	state.stamina = clampi(state.stamina + amount, 0, MovementTuning.STAMINA_MAXIMUM)
 
 
 static func _direction(input_x: int, input_y: int, fallback: Vector2i) -> Vector2i:

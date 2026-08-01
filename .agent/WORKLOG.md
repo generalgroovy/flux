@@ -70,4 +70,51 @@ Known limitations and risks:
   development is ready, but offline release export preparation remains.
 - CI is configured but its first remote run is pending the branch push.
 
+Commit: `8e6bce6`. Push: pending.
+
+## 2026-08-01 — Resource and independent-input truth
+
+Branch: `agent/aider-godot-foundation`
+
+What changed and why:
+
+- Corrected the FLUX contract by separating universal movement Stamina from
+  spell/champion Flux and Health; each has independent integer bounds, recovery
+  rates, remainders, and delays at both supported match rates.
+- Versioned canonical commands/state to protocol 2 with deterministic
+  independent aim and held-primary input. Moving and aiming in different
+  directions is now an explicit replayable state.
+- Aligned player-one defaults with the source brief: WASD/mouse, Alt sprint, C
+  movement chain, V technique, left click/Space primary, plus action-based
+  left/right-stick, trigger, shoulder, and east-button controller defaults.
+- Hardened `scripts/test.sh` so Godot parse, compile, load, and invalid-call
+  diagnostics fail the gate even when the engine process exits zero.
+- Added resource and input-map suites and updated the public implementation
+  status/overhaul plan without claiming that primary input fires yet.
+
+Files changed:
+
+- `src/sim/entities/player_state.gd`, `player_tuning.gd`,
+  `player_resources_system.gd`;
+- `src/sim/core/sim_command.gd`, `sim_config.gd`, `sim_world.gd`;
+- `src/sim/movement/`, `src/app/`, `tests/unit/`, `tests/run_all.gd`;
+- `scripts/test.sh`, `README.md`, `docs/DEVELOPMENT.md`,
+  `docs/OVERHAUL-PLAN.md`.
+
+Validation:
+
+- Full headless gate: 478 assertions, zero failures.
+- Godot import and bootstrap at 60 and 120 Hz: passed with protocol 2 and no
+  script/runtime diagnostics (restricted-sandbox editor socket warnings only).
+- `git diff --check` and `bash -n scripts/*.sh`: passed after whitespace cleanup.
+
+Known limitations and risks:
+
+- Primary input is canonical protocol/state only; it intentionally creates no
+  projectile until the focused combat slice.
+- Controller defaults are registered and tested structurally; interactive
+  device acceptance and saved remapping remain open.
+- Edgeweave, authored elevation, and the remaining launched/grappled/status
+  movement contracts remain the next Movement Conservatory slice.
+
 Commit: pending at pre-commit record time. Push: pending.

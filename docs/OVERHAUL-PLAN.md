@@ -62,14 +62,16 @@ attune/travel without a menu-only hidden state or an unsafe destination.
 
 - [x] Implement walk, acceleration, braking, sprint, counter-strafe, hop,
   double jump, wall kick/contact memory, air redirect, air dodge, wavedash,
-  slide, slide jump, vault, superglide, landing cut, flow recovery timing, and a
+  slide, slide jump, vault, superglide, landing cut, Stamina recovery timing, and a
   hard authored speed ceiling.
 - [x] Compile real-time windows independently for 60 and 120 Hz and verify replay
   determinism at each rate.
-- [ ] In progress: rename/separate the universal movement resource as Stamina;
-  add independent spell Flux, health, and out-of-combat recovery state.
-- [ ] In progress: add independent quantized aim, primary input, remapping, and
-  keyboard/mouse/controller command equivalence.
+- [x] Separate universal Stamina, spell Flux, and Health with deterministic
+  delays/rates; movement cannot spend Flux or Health.
+- [x] Add independent quantized aim, primary command state, action-based
+  keyboard/mouse/controller defaults, protocol-v2 bytes, and replay hashing.
+- [ ] In progress: persist player remapping and verify controller command
+  equivalence through an interactive acceptance fixture.
 - [ ] Planned: add buffered transitions, variable hop/fall presentation state,
   authored elevation/low-cover queries, per-wall lockout, launch/grapple/charge/
   stun/root/slow contracts, and Edgeweave stamina recovery.
@@ -84,8 +86,10 @@ readable state, remappable inputs, and keyboard/controller acceptance.
 
 ### 4.1 Command and combat kernel
 
-- [ ] Planned: version the command protocol for independent aim and held/pressed
-  combat actions; reject malformed vectors and stale/duplicate commands.
+- [x] Version command protocol 2 for independent deterministic aim and held
+  primary state; stale/duplicate commands remain rejected.
+- [ ] Planned: add packet decoding limits and reject malformed wire vectors
+  before constructing semantic commands.
 - [ ] Planned: implement deterministic projectile identity, movement, collision,
   expiry, ownership, impact events, and a reliable no-Flux primary.
 - [ ] Planned: add Health, damage, invulnerability/status timing, defeat, respawn,
@@ -199,9 +203,9 @@ features.
 1. **Checkpoint A — present branch:** deterministic movement/replay core,
    expanded Sanctum definition/visual target, validated fast-travel eligibility,
    and styled training room.
-2. **Slice B — resource and input truth:** separate Stamina/Flux/Health, version
-   independent aim and primary input, add remapping/controller defaults, update
-   HUD and replay tests.
+2. **Checkpoint B — resource and input truth:** separate Stamina/Flux/Health,
+   version independent aim and primary input, add action-based controller
+   defaults, update HUD/replay tests, and harden smoke-error detection.
 3. **Slice C — movement completion:** Edgeweave, remaining authoritative movement
    states, authored elevation/low-cover semantics, and Conservatory route fixture.
 4. **Slice D — ability configuration:** stable ability registry, legal loadout

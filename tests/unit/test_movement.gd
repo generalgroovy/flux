@@ -22,11 +22,11 @@ func _test_sprint_and_hop(tick_rate: int) -> void:
 		_step(world, 1000, 0, SimCommand.HELD_SPRINT)
 	var state: PlayerState = world.player()
 	check(state.position_x > 160_000, "%d Hz sprint advances" % tick_rate)
-	check(state.flow < MovementTuning.FLOW_MAXIMUM, "%d Hz sprint drains flow" % tick_rate)
-	var before_flow: int = state.flow
+	check(state.stamina < MovementTuning.STAMINA_MAXIMUM, "%d Hz sprint drains Stamina" % tick_rate)
+	var before_stamina: int = state.stamina
 	_step(world, 1000, 0, 0, SimCommand.PRESSED_JUMP)
 	equal(state.last_event, "hop", "%d Hz starts hop" % tick_rate)
-	equal(state.flow, before_flow - MovementTuning.HOP_COST, "%d Hz hop cost is exact" % tick_rate)
+	equal(state.stamina, before_stamina - MovementTuning.HOP_COST, "%d Hz hop Stamina cost is exact" % tick_rate)
 	check(state.hop_ticks > 0, "%d Hz hop is airborne" % tick_rate)
 
 
@@ -34,14 +34,14 @@ func _test_double_jump(tick_rate: int) -> void:
 	var world := SimWorld.new(tick_rate)
 	var state: PlayerState = world.player()
 	_step(world, 1000, 0, 0, SimCommand.PRESSED_JUMP)
-	var after_hop: int = state.flow
+	var after_hop: int = state.stamina
 	_step(world, 0, -1000, 0, SimCommand.PRESSED_JUMP)
 	equal(state.last_event, "double_jump", "%d Hz second edge triggers double jump" % tick_rate)
-	equal(state.flow, after_hop - MovementTuning.DOUBLE_JUMP_COST, "%d Hz double jump cost is exact" % tick_rate)
+	equal(state.stamina, after_hop - MovementTuning.DOUBLE_JUMP_COST, "%d Hz double jump Stamina cost is exact" % tick_rate)
 	equal(state.hop_stage, 2, "%d Hz double jump is bounded to stage two" % tick_rate)
-	var after_double: int = state.flow
+	var after_double: int = state.stamina
 	_step(world, -1000, 0, 0, SimCommand.PRESSED_JUMP)
-	equal(state.flow, after_double, "%d Hz third jump cannot stack" % tick_rate)
+	equal(state.stamina, after_double, "%d Hz third jump cannot stack" % tick_rate)
 
 
 func _test_slide_and_slide_jump(tick_rate: int) -> void:
@@ -84,7 +84,7 @@ func _test_wall_contact_and_wall_kick(tick_rate: int) -> void:
 	_step(world, -1000, 0)
 	check(state.wall_memory_ticks > 0, "%d Hz collision records wall memory" % tick_rate)
 	state.hop_cooldown_ticks = 0
-	state.flow = MovementTuning.FLOW_MAXIMUM
+	state.stamina = MovementTuning.STAMINA_MAXIMUM
 	_step(world, -1000, 1000, 0, SimCommand.PRESSED_JUMP)
 	equal(state.last_event, "wall_kick", "%d Hz hop consumes wall memory" % tick_rate)
 	equal(state.hop_speed, MovementTuning.WALL_KICK_SPEED, "%d Hz wall kick speed is authored" % tick_rate)

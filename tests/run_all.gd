@@ -4,7 +4,9 @@ extends SceneTree
 const SUITES: Array[Script] = [
 	preload("res://tests/unit/test_core.gd"),
 	preload("res://tests/unit/test_hub_definition.gd"),
+	preload("res://tests/unit/test_input_router.gd"),
 	preload("res://tests/unit/test_movement.gd"),
+	preload("res://tests/unit/test_player_resources.gd"),
 	preload("res://tests/replay/test_replay.gd"),
 ]
 

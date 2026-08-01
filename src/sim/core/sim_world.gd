@@ -54,9 +54,15 @@ func step(commands: Array[SimCommand]) -> bool:
 		if state == null:
 			last_error = "unknown entity %d" % command.entity_id
 			return false
+		state.aim_x = command.aim_x
+		state.aim_y = command.aim_y
+		state.primary_held = command.has_held(SimCommand.HELD_PRIMARY)
+		PlayerResourcesSystem.step(state, config)
 		MovementSystem.step(state, command, config, collision)
 	for state: PlayerState in players:
 		if not seen.has(state.entity_id):
+			state.primary_held = false
+			PlayerResourcesSystem.step(state, config)
 			MovementSystem.step(state, SimCommand.new(tick, state.entity_id), config, collision)
 	tick += 1
 	return true

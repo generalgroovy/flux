@@ -1,1263 +1,837 @@
-# flux2
+# FLUX 2
 
-Experimental and reference workspace for FLUX.
+FLUX 2 is a fast, top-down magic-and-chemistry arena shooter about mastering
+movement, shaping reactive battlefields, and turning elemental rules into
+deliberate plays. It is both the Godot 4 reimplementation of FLUX and the
+production workspace in which those ideas are made deterministic, hostable,
+testable, and expandable.
 
-This repository contains production references, technical design contracts, and
-prototype-support material for the main FLUX game. Content in this repository is
-not automatically active in the shipped runtime; a system must still pass its
-implementation, determinism, networking, performance, gameplay, and visual
-acceptance gates before promotion.
+The target is not a conventional twin-stick shooter with elemental damage
+types painted over static rooms. Players preserve momentum through a deep
+universal movement grammar, combine character and loadout abilities, and
+manipulate a bounded 2.5D material simulation: water conducts Charge, oil
+spreads fire, heat creates steam, cold freezes routes, impacts fracture cover,
+and immutable `worldbone` guarantees that a match can never destroy its own
+critical topology.
 
-## Character reference material
+## Game and implementation map
 
-[Open the full character sprite and skeleton reference](reference/character-sprites/README.md)
+Checkboxes report repository truth on the current branch: checked means the
+named foundation and its tests exist; unchecked means planned or in progress,
+even when design documentation already exists.
 
-![Front view reference preview](reference/character-sprites/front-views-board.png)
+- [x] **Chapter 1 — [Product promise](#product-promise)**
+  - [x] [Design pillars](#design-pillars)
+  - [x] [Player loop](#player-loop)
+  - [x] [Reference principles and originality boundary](#reference-principles-and-originality-boundary)
+  - [x] [Visual and audio identity](#visual-and-audio-identity)
+- [ ] **Chapter 2 — [The Sanctum](#the-sanctum)** — data/visual foundation
+  complete; authored multi-layer runtime map in progress
+  - [x] Nine combined districts and three-layer layout contract
+  - [x] Validated attunement-node and fail-closed fast-travel rules
+  - [x] Playable schematic mechanics court (not accepted Sanctum art/topology)
+  - [ ] Authored Nexus-to-Conservatory world slice matching the approved scale,
+    dense-edge/clear-lane composition, district landmarks, and pixel direction
+  - [ ] Offline-complete stations plus privacy-safe friends/presence, simple
+    host/join, host teams/rules/practice/travel tools, and Garuda Sway/Windows
+    acceptance
+  - [ ] Walk-up stations, overlay menu state machine, map UI, streaming, and
+    destination persistence
+- [ ] **Chapter 3 — [Movement and traversal](#movement-and-traversal)**
+  — deterministic universal grammar in progress
+  - [x] Sprint, counter-strafe, hop/double jump, wall kick, air redirect/dodge,
+    wavedash, slide/slide jump, vault, superglide, and landing cut
+  - [x] Ordered integer collision, per-wall lockout, speed ceiling, explicit
+    launch/grapple/charge/stun/root/slow contracts, and 60/120 Hz route/replay
+    verification
+  - [x] Separate Health, Stamina, and spell Flux; independent quantized aim and
+    keyboard/mouse/controller action defaults
+  - [x] Offline saved keyboard bindings, world-relative and aim-relative
+    movement presets, and full/ranged-cone POV with 15–360° angle and adjustable
+    range
+  - [x] Edgeweave swept hostile near-miss reward with speed, cooldown,
+    miss-vs-hit, full-Stamina, training, and per-projectile farming guards
+  - [ ] Add variable hop/fast fall, bounded impact influence, ground recovery,
+    wall skims, authored elevation, compact body-lift/shadow jump presentation,
+    input buffering, interactive binding UI, controller profile persistence, and
+    interactive route acceptance
+- [ ] **Chapter 4 — [Aiming, combat, and abilities](#aiming-combat-and-ability-composition)**
+  - [x] Independent move/aim and held-primary command protocol
+  - [x] Resource-free Arc Primary and Flux-paid Vector Lance through startup,
+    deterministic projectile, swept hit, damage, cooldown, and replay
+  - [x] Stable ability/wire IDs, canonical hashes, affinity discounts, gated
+    elements, slot validation, and an exact 13-point foundation loadout
+  - [ ] Complete targeting families, defense/clash/launch/status rules, passive,
+    three actives, mobility, ultimate, formula variants, and configuration UI
+  - [ ] First complete champion vertical slice
+- [ ] **Chapter 5 — [Elements, chemistry, and destruction](#elements-chemistry-and-destruction)**
+  - [x] Deterministic reactive-material and immutable-worldbone design contract
+  - [x] Validated material registry, bounded packed 128 x 128 Material Yard
+    seed, separate Charge/elevation fields, immutable perimeter/plinth,
+    deterministic work queue, hashes, exact reset, and read-only preview
+  - [ ] Structural damage and the first live material reactions; the first
+    eight element families remain staged and Spirit/Chaos/Gravity/Time gated
+  - [ ] Structural fracture, fluids, fire/heat, ice, Charge, gases, residues,
+    cleanup, reset, replication, and readable reaction presentation
+- [ ] **Chapter 6 — [Ancestries and champions](#ancestries-and-champions)**
+  - [ ] Versioned ancestry/body budgets for the existing twenty foundations and
+    an original three-body-plan arachnoid family
+  - [ ] Reconcile the 23 named designs, temporary Angel slot, visual references,
+    affinities, statistics, lore approval, and fighting-game selection grid
+  - [ ] One champion at a time through selection, bots, network, replay,
+    accessibility, original per-character taunt, and platform gates
+- [ ] **Chapter 7 — [Maps and world interactions](#maps-and-world-interactions)**
+  - [x] Worldbone, map-package, reset-group, route, hazard, objective, and
+    mutable-region contracts
+  - [ ] Multi-elevation arena kit, devices, moving surfaces, traversal helpers,
+    destructible shortcuts, biome reactions, validators, and modular maps
+- [ ] **Chapter 8 — [Modes and networking](#modes-networking-and-progression)**
+  - [x] Host-authority, protocol, prediction, reconnect, spectator, and
+    host-migration contracts
+  - [ ] Living Sanctum friend presence/join and host administration before other
+    modes; ENet host/join vertical slice, duel/team/objective PvP, cooperative PvE,
+    PvPvE extraction/convergence, roguelike dungeons, lane/stronghold modes,
+    battle royale, bots, and measured scale beyond eight players
+- [ ] **Chapter 9 — [Production roadmap](#production-roadmap)**
+  - [x] Pinned Godot, headless suites, Linux offline setup, CI definition, and
+    original visual-direction provenance
+- [x] Focused reversible checkpoints A–E remain playable and published
+  - [x] Checkpoint F1 establishes chemistry storage/worldbone/reset safety
+  - [x] Checkpoint G1 adds persisted controls and configurable POV
+  - [ ] G2 begins the Living Sanctum V1 track: authored world, body/jump,
+    reactions/interactions, first ancestry/champion/spells, friends/host tools,
+    then Garuda Sway/Windows acceptance before other modes
 
-# Reactive pixel-material and chemistry system
+The complete gate order, slice boundaries, current status, and definition of a
+working checkpoint live in the [FLUX 2 overhaul implementation plan](docs/OVERHAUL-PLAN.md).
 
-## Status and purpose
+![Expanded Sanctum visual direction](assets/concept/sanctum-hub-visual-direction-v1.png)
 
-This section is the ground-up design contract for a persistent reactive-material
-system inspired by the systemic possibilities of falling-sand games without
-copying any protected implementation, content, material catalog, map, asset, or
-trade dress.
+The image above is an original visual target, not collision geometry or a final
+tile set. Its palette, district scale, magical-travel language, layered island
+structure, and dense handcrafted pixel-art character define the starting hub
+direction.
 
-The target is not a scientific molecular simulator. The target is a deterministic,
-server-authoritative **game chemistry** in which every authored map cell has
-explicit material properties and can participate in understandable physical,
-thermal, electrical, chemical, biological, and elemental reactions.
+## Reference principles and originality boundary
 
-FLUX is a top-down arena game, so its simulation must not use the conventional
-screen-bottom gravity of a side-view falling-sand game. It uses a **2.5D column
-grid**: every cell has authored elevation, occupancy, depth, permeability, and
-material layers. Liquids follow hydraulic head, powders settle down elevation
-gradients, gases diffuse through connected air space, and structures occupy
-explicit collision height.
+FLUX 2 studies successful design principles without reproducing protected
+content. Every sprite, sound, name, character, ability, map, mode presentation,
+icon, font, animation, layout, and line of code must be original or carry a
+compatible documented license.
 
-## Design goals
-
-1. Maps are assembled from reusable materials rather than inert decorative
-   tiles.
-2. Fire, water, ice, Charge, wind, impact, corrosion, growth, decay, and other
-   effects change routes in predictable ways.
-3. The same material definitions drive map authoring, simulation, collision,
-   rendering, sound, status effects, AI queries, networking, replay, and tests.
-4. Emergent interactions create tactical decisions without producing random,
-   unreadable, or permanently softlocked competitive maps.
-5. A truly immutable material forms the permanent skeleton of every map.
-6. Reactions remain computationally bounded on modest Linux and Windows
-   hardware.
-7. Identical seed, content version, map state, and command history always produce
-   the same result.
-
-## Non-goals
-
-- Molecular dynamics or atom-by-atom chemistry.
-- Display-resolution simulation of the entire map.
-- Unbounded pressure, turbulence, structural finite-element analysis, or rigid
-  body fragmentation.
-- Hidden instant-kill reactions.
-- Arbitrary player-authored reaction scripts in authoritative competitive play.
-- Destruction of objective anchors, spawn safety, critical traversal guarantees,
-  or the immutable map skeleton.
-- Camera-distance simulation shortcuts that would change authoritative outcomes.
-
-## Hard invariants
-
-| Invariant | Required rule |
-| --- | --- |
-| Immutable topology | `worldbone` is stored in a read-only mask and can never be damaged, heated, cooled, charged, wetted, corroded, transmuted, displaced, replaced, copied, teleported, or erased at runtime. |
-| Server authority | Only the authoritative simulation may create, move, react, damage, or delete material. Clients submit semantic actions, never cell writes. |
-| Determinism | Fixed-point integer state, fixed processing order, stable rule IDs, seeded hash randomness, and deterministic budgets are mandatory. |
-| Bounded simulation | Only authored simulation zones and awakened chunks execute material rules. Work carries over in stable order when a budget is reached. |
-| Competitive safety | Spawn clearance, objective clearance, route minima, maximum hazard depth, and reset groups are validated independently from material type. |
-| Readability | Dangerous state changes require shape, value, sound, timing, and residue cues; color alone is insufficient. |
-| Resetability | Every mutable map region can be restored from its authored seed without rewriting `worldbone`. |
-| Layer separation | Rendering pixels never become authority by themselves. Collision and chemistry derive from simulation data, not sampled screen color. |
-| Stable content | Material and reaction IDs are versioned wire-format identifiers and may not be silently repurposed. |
-
-## 1. Spatial model: a top-down 2.5D material column
-
-A simulation cell is a world-space material column, not necessarily one monitor
-pixel. The initial target is one chemistry cell per **4 × 4 world units**. A
-1600 × 900 arena therefore contains 400 × 225 cells, or 90,000 possible cells,
-most of which remain asleep.
-
-Each column can contain the following layers:
-
-| Layer | Function |
-| --- | --- |
-| Immutable base | `worldbone`, permanent void, authored floor elevation, cliff and foundation topology |
-| Structural occupant | Wall, pillar, bridge, door, brickwork, timber, metal, glass, crystal, root structure |
-| Loose fill | Soil, sand, gravel, rubble, ash, snow, salt, coal dust; represented by material and depth |
-| Liquid | Dominant liquid, depth, optional second immiscible layer, and dissolved solutes |
-| Surface coating | Wetness, oil, resin, frost, poison, soot, conductive film, holy or dark residue |
-| Gas | Dominant gas mixture, concentration, temperature, and local pressure impulse |
-| Energy overlays | Heat sources, fire, electrical potential, wind vector, Light, Dark, Gravity, Time, or other fields |
-| Derived navigation | Solid occupancy, soft obstruction, friction, hazard, visibility, conductivity, and AI traversal cost |
-
-### Elevation and flow
-
-Every cell owns a base elevation and an effective surface height.
-
-```text
-surfaceHeight = baseElevation
-              + structuralHeight
-              + looseDepth
-              + liquidDepth
-```
-
-Liquids move toward neighboring cells with lower hydraulic head. Density decides
-which immiscible liquid occupies the lower layer. Powders and rubble move toward
-lower supported surfaces when their slope and cohesion thresholds are exceeded.
-Gases diffuse through connected non-solid volume and are advected by Wind.
-Nothing uses screen-down direction as physical gravity.
-
-### Traversal height
-
-A structural cell exposes explicit height bands:
-
-- `surface`: no blocking volume; modifies friction or status only.
-- `low`: blocks ground movement but can be jumped or vaulted when authored.
-- `full`: blocks actors and ordinary projectiles.
-- `roof`: blocks selected vertical or lobbed effects while permitting passage
-  beneath where the map defines an interior.
-- `immutable`: permanent full collision owned by `worldbone`.
-
-## 2. Immutable map skeleton: `worldbone`
-
-`worldbone` is not “very strong stone.” It is topology outside ordinary material
-simulation.
-
-```js
-{
-  id: "worldbone",
-  phase: "immutable",
-  collision: "immutable",
-  immutable: true,
-  runtimeWritable: false,
-  destructible: false,
-  replaceable: false,
-  movable: false,
-  thermal: false,
-  electrical: false,
-  wettable: false,
-  soluble: false,
-  corrodible: false,
-  transmutable: false,
-  simulated: false
-}
-```
-
-Required implementation protections:
-
-1. The immutable mask is loaded into a separate read-only array.
-2. Every mutation API rejects coordinates covered by that mask before looking up
-   the requested material or effect.
-3. Map reset restores mutable layers around the mask; it never rewrites the mask.
-4. Network snapshots transmit a base-map hash, not mutable worldbone cells.
-5. Tests hash the immutable mask before and after every destructive, corrosive,
-   elemental, chaos, replay, reconnect, and migration scenario.
-6. Visual skins may present worldbone as ancient black stone, runic metal,
-   cliff-bedrock, roots, or architecture, but all skins resolve to identical
-   mechanics.
-
-## 3. Material taxonomy
-
-| Phase | Motion model | Examples |
+| Broad reference | Principle considered | Original FLUX 2 interpretation |
 | --- | --- | --- |
-| Immutable | Never processed | Worldbone |
-| Structural solid | Fixed until damaged, transformed, or support-failed | Stone, brick, wood, metal, glass |
-| Loose solid | Settles by elevation, slope, density, cohesion, and support | Soil, sand, rubble, salt, snow, ash |
-| Liquid | Moves by hydraulic head, viscosity, permeability, and density | Water, oil, acid, lava, mud |
-| Gas | Diffuses through air connectivity and responds to Wind | Steam, smoke, toxic gas, flammable gas |
-| Coating | Adheres to surfaces and entities; may drip, evaporate, burn, or react | Wetness, oil film, frost, resin, soot |
-| Biological | Consumes substrate and grows through allowed cells | Grass, roots, plague growth, fungus |
-| Energy or field | Modifies matter without replacing its bulk material slot | Fire, Charge, Wind, Light, Dark, cold |
+| Titanfall/Apex family | Movement routes, momentum conversion, readable traversal objects, independent aim, squad legibility | A stamina-bounded universal movement grammar in authored top-down elevation lanes; champion mobility never bypasses collision or the global speed ceiling |
+| Super Smash Bros. Melee | Commitment, recovery, precise landing timing, momentum expression, bounded launch influence | Top-down landing cuts, wavedash geometry, readable startup/active/recovery phases, and future collision-safe impact influence—without copying characters, stages, move data, or control layout |
+| Classic handheld Zelda games | A top-down jump reads instantly through compact body lift, a grounded shadow, apex, and crisp landing | An original authoritative elevation arc and original body/shadow presentation; no copied sprite, frame, timing, sound, map, input, or item behavior |
+| Hades / Hades II | Strong room silhouettes, layered depth, dramatic landmarks, dense scenic edges, responsive ambience, and clear combat floors | Original pixel-perspective Sanctum districts with FLUX materials, architecture, palette ramps, props, routes, lighting, UI, and interaction grammar; no copied rooms, assets, camera metrics, palette, symbols, or trade dress |
+| Noita | Materials and spells producing systemic consequences | A deterministic, host-authoritative, bounded 2.5D chemistry grid with reset groups, work budgets, explicit ownership, and immutable worldbone |
+| Magicka | Element composition as a learnable casting language | Versioned Flux Formulas made from approved source, geometry, operation, and catalyst components; competitive recipes are hashed content, not arbitrary unvalidated packets |
+| League of Legends | Skillshot clarity, role composition, cooldown/resource decisions, objective pressure | Shape-first aimed abilities, loadout roles, contestable terrain, and modular objective rules without copying champions, abilities, map topology, terminology, or presentation |
+| StarCraft/Warcraft | Strong faction/body silhouettes and asymmetric strategic identity | Original ancestry body plans and bounded physical budgets; ancestry never grants automatic spell-damage superiority and no existing faction, creature, lore, or visual design is imported |
+| The FINALS | Destruction creating tactical routes | Authored structural layers and contestable shortcuts whose collapse can never destroy spawn safety, objectives, or critical topology |
 
-## 4. Material definition schema
+These references are design-review shorthand, not dependencies or acceptance
+criteria. When a reference conflicts with FLUX 2 readability, determinism,
+fairness, accessibility, performance, or originality, the FLUX 2 rule wins.
 
-All authored materials use one registry schema. Optional fields use explicit
-neutral defaults; simulation code must not contain material-name special cases
-when a property or reaction rule can express the behavior.
+## Product promise
 
-```js
-{
-  id: "wood",
-  version: 1,
-  displayName: "Wood",
-  phase: "structural",
-  tags: ["organic", "flammable", "porous", "cuttable"],
+A successful FLUX 2 encounter should let a new player understand why they were
+hit, let a practiced player express a personal movement style, and let an expert
+discover useful interactions that remain explainable and reproducible. The game
+should feel fast without becoming visually noisy, systemic without becoming
+random, and competitive without sacrificing expressive PvE, co-op, training,
+social, or experimental modes.
 
-  // Geometry and movement
-  density: 105,
-  cohesion: 210,
-  viscosity: 0,
-  permeability: 70,
-  structuralHeight: "full",
-  supportStrength: 130,
-  friction: 150,
+### Design pillars
 
-  // Damage and structure
-  integrity: 110,
-  hardness: 60,
-  impactResistance: 65,
-  cuttingResistance: 30,
-  blastResistance: 45,
-  compressionResistance: 80,
-  fractureInto: "wood_debris",
-  unsupportedInto: "wood_debris",
+1. **Movement is a weapon.** Walking, sprinting, counter-strafing, hops, wall
+   kicks, double jumps, redirects, air dodges, wavedashes, slides, vaults, and
+   superglides share one learnable grammar. Momentum creates options rather than
+   bypassing level design.
+2. **Chemistry changes decisions.** Materials and elemental fields alter cover,
+   traction, visibility, conductivity, routes, hazards, and ability behavior.
+   Reactions are telegraphed, deterministic, bounded, and resettable.
+3. **Readability outranks spectacle.** Silhouette, shape, motion, timing, sound,
+   value, and residue communicate state. Color supports those channels but is
+   never the only one.
+4. **Depth comes from composition.** Races, characters, abilities, equipment,
+   elements, terrain, objectives, and teammates create combinations with
+   explicit costs and counterplay instead of one dominant build.
+5. **Every mode uses the same rules.** Training, local play, hosted PvP, co-op
+   PvE, PvPvE, bots, spectating, and replay analysis share one authoritative
+   simulation and content registry.
+6. **Players can own the session.** Linux and Windows players can host directly;
+   optional signalling or relay services are replaceable and self-hostable.
+   Offline solo, bots, training, local tools, documentation, and development
+   remain fully usable without a subscription.
 
-  // Thermal
-  thermalConductivity: 25,
-  heatCapacity: 90,
-  ignitionTemperature: 300,
-  autoIgnitionTemperature: 420,
-  fuel: 220,
-  burnRate: 14,
-  burnInto: "charcoal",
-  smokeInto: "smoke",
-  meltTemperature: null,
-  freezeTemperature: null,
-  boilTemperature: null,
+## Player loop
 
-  // Liquid and solution behavior
-  moistureCapacity: 220,
-  absorptionRate: 18,
-  solubility: {},
-  acidResistance: 35,
-  baseResistance: 85,
-  oxidationResistance: 70,
+The Sanctum is the persistent starting, training, social, and configuration
+space. A player learns or tunes a build there, joins a hosted session or chooses
+an expedition, enters a resettable arena, then returns with mastery, records,
+cosmetic expression, and newly attuned destinations—not power that invalidates
+competitive fairness.
 
-  // Electrical and optical
-  electricalConductivityDry: 4,
-  electricalConductivityWet: 70,
-  electricalCapacity: 10,
-  opacity: 255,
-  refraction: 0,
-  reflectivity: 20,
-
-  // Entity and presentation
-  entityEffects: [],
-  paletteRamp: "wood_warm",
-  soundSet: "wood",
-  residueMark: "splinter"
-}
-```
-
-### Property scales
-
-Most properties use deterministic integer tuning scales, not scientific units.
-
-| Scale | Meaning |
-| --- | --- |
-| `0..255` | None through maximum normal material value |
-| Integrity | Damage required to remove or transform one occupied unit |
-| Hardness | Minimum tool, impact, or blast penetration class |
-| Density | Relative displacement and liquid-layer ordering |
-| Cohesion | Resistance to loose-flow separation and slope collapse |
-| Viscosity | Resistance to liquid lateral movement |
-| Conductivity | Fraction of heat or charge transferred per simulation step |
-| Capacity | Amount of heat, charge, moisture, or solute retained |
-| Temperature | Signed integer degrees Celsius for readable tuning; calculations remain fixed-point |
-| Depth or amount | `0..255` fraction of the cell column |
-
-## 5. Runtime cell state
-
-A dense baseline representation should remain compact and serializable. Rare
-mixture data may live in sparse side tables.
-
-```js
-{
-  structureId,       // Uint16
-  structureIntegrity,// Uint8
-  looseId,           // Uint16
-  looseAmount,       // Uint8
-  liquidId,          // Uint16
-  liquidAmount,      // Uint8
-  gasId,             // Uint16
-  gasAmount,         // Uint8
-  coatingId,         // Uint16
-  coatingAmount,     // Uint8
-  temperature,       // Int16
-  moisture,          // Uint8
-  charge,            // Int16
-  flags              // Uint16
-}
-```
-
-Sparse records are created only when required:
-
-- second immiscible liquid layer;
-- up to three dissolved solutes;
-- gas-mixture components in sealed or chemically active cells;
-- catalyst or contamination records;
-- structural support links;
-- reaction cooldown and ownership metadata.
-
-## 6. Solutions, mixtures, and concentrations
-
-A separate material ID for every possible mixture would grow combinatorially.
-Liquids therefore use a dominant solvent plus bounded composition slots.
-
-```js
-{
-  solventId: "water",
-  amount: 190,
-  solutes: [
-    { id: "salt", concentration: 48 },
-    { id: "toxin", concentration: 12 }
-  ],
-  acidity: 4,
-  oxidationPotential: 8
-}
-```
-
-Rules:
-
-1. A liquid cell supports one dominant solvent and at most three dissolved
-   components.
-2. Components below the trace threshold merge into a generic contaminant scalar.
-3. Saturated solutes precipitate as loose material.
-4. Miscible liquids combine according to registry rules.
-5. Up to two immiscible liquid layers coexist and order by density.
-6. A third immiscible layer displaces the smallest layer into a neighbor or
-   converts it into a defined emulsion.
-7. Concentration is conserved during flow, dilution, evaporation, and transfer
-   within integer-rounding tolerances.
-8. Competitive reactions use coarse, clearly communicated concentration bands:
-   trace, weak, active, concentrated.
-
-## 7. Game-chemistry axes
-
-Curated material and reaction data use a small set of chemical axes rather than
-attempting a complete periodic table.
-
-| Axis | Purpose |
-| --- | --- |
-| Acidity / alkalinity | Neutralization, corrosion, cleansing, precipitation |
-| Oxidizing / reducing potential | Rust, bleaching, combustion support, decay control |
-| Solvent strength | Dissolution of organic, mineral, metallic, or magical matter |
-| Fuel | Combustible energy available to Fire |
-| Oxidizer | Ability to sustain or intensify combustion |
-| Nutrient | Growth support for roots, grass, fungus, or bloom |
-| Toxicity | Entity exposure and biological suppression |
-| Salinity | Conductivity, freezing behavior, corrosion, growth suppression |
-| Volatility | Evaporation and flammable-vapor production |
-| Catalysis tags | Required accelerators such as Light, Charge, heat, crystal, or living tissue |
-| Magical signature | Earth, Fire, Water, Wind, Ice, Charge, Light, Dark, and later approved families |
-
-These values exist to generate stable tactical rules. They do not claim to be
-real laboratory measurements.
-
-## 8. Reaction definition schema
-
-Reactions are registry entries indexed by reactant IDs, tags, phase, and trigger.
-The engine must not scan every rule for every cell.
-
-```js
-{
-  id: "water_lava_quench",
-  version: 1,
-  trigger: "contact",
-  priority: 220,
-
-  reactants: [
-    { layer: "liquid", id: "water", amount: 24 },
-    { layer: "liquid", id: "lava", amount: 16 }
-  ],
-
-  conditions: {
-    minimumTemperature: 650,
-    maximumTemperature: null,
-    acidityRange: null,
-    requiresTags: [],
-    catalystTags: [],
-    inhibitorTags: ["worldbone"]
-  },
-
-  rate: 16,
-  maximumExecutionsPerCellStep: 2,
-  products: [
-    { layer: "structure", id: "basalt", amount: 12 },
-    { layer: "gas", id: "steam", amount: 24 }
-  ],
-
-  heatDelta: -180,
-  pressureImpulse: 18,
-  ownership: "neutral",
-  cue: "quench_burst",
-  residue: "wet_basalt"
-}
-```
-
-### Supported reaction classes
-
-| Class | Example |
-| --- | --- |
-| Phase transition | Water freezes, ice melts, water boils, steam condenses |
-| Contact conversion | Water and lava form basalt and steam |
-| Dissolution | Salt dissolves into water; acid dissolves vulnerable mortar |
-| Precipitation | Saturated brine dries and leaves salt |
-| Neutralization | Acid and alkaline wash produce neutral solution, salt, and heat |
-| Combustion | Wood, oil, resin, or gas consumes fuel and produces heat and residue |
-| Corrosion | Water and oxygen rust iron; brine and Charge accelerate it |
-| Thermal decomposition | Heated organic matter becomes charcoal, ash, smoke, or gas |
-| Electrochemical | Charge moves through brine and metal; resistance produces heat |
-| Catalytic | Light or crystal enables a reaction without being consumed |
-| Biological | Wet soil supports roots; toxin or salt suppresses growth |
-| Decay | Dark corruption converts living matter into plague growth or sludge |
-| Mechanical transformation | Impact cracks brick; blast shatters glass; unsupported wall becomes rubble |
-| Magical transmutation | Explicit whitelisted conversions driven by an approved elemental ability |
-
-## 9. Thermal system
-
-### Heat transfer
-
-Temperature is stored per cell. Neighbor exchange uses fixed-point integer math:
+Moment to moment:
 
 ```text
-transfer = conductivityPair
-         × temperatureDifference
-         ÷ heatCapacityPair
-         ÷ thermalStepDivisor
+read terrain -> choose a route -> preserve or spend momentum
+      -> cast / fire / interact -> trigger material reactions
+      -> read the changed arena -> reposition, counter, or commit
 ```
 
-The transfer is clamped so one step cannot overshoot equilibrium. Material heat
-capacity controls how quickly temperature changes; conductivity controls how
-quickly heat spreads.
+Combat should support precise projectiles, shaped fields, melee or contact
+techniques, movement attacks, deployables, defensive conversions, and utility.
+Aim, collision, damage, cooldowns, reaction ownership, and material mutations
+belong to the deterministic simulation; animation, particles, camera, and audio
+present confirmed outcomes.
 
-### Phase transitions
+## The Sanctum
 
-Each transition defines:
+The hub is a vast magical academy-fortress spread across a central island,
+satellite terraces, rooftop routes, an undercroft, suspended gardens, and
+outbound gates. Related activities are combined into memorable districts rather
+than isolated menu booths:
 
-- threshold temperature;
-- hysteresis band to stop rapid toggling;
-- required energy or cooling debt;
-- output material and amount ratio;
-- dissolved-solute behavior;
-- gas expansion or contraction;
-- residue and visual cue.
+- the **Nexus Court** anchors onboarding and the attunement network;
+- the **Wayfarer Concourse** combines social, appearance, host/join, modes, and
+  expedition staging;
+- the **Movement Conservatory** combines fundamentals, advanced routes, races,
+  and traversal labs;
+- the **Alchemical Proving Grounds** combines aim, bots, destructibles, and safe
+  elemental reaction basins;
+- the **Living Archive** combines lore, codex, replays, analytics, and research;
+- the **Verdant Recovery** combines rest, ingredients, interaction practice,
+  dummies, and low-pressure crafting;
+- the **Foundry Deep** houses fabrication, the transmutation engine, and the
+  flooded undercroft;
+- the **Crown Observatory** combines settings, accessibility, diagnostics, and
+  session monitoring;
+- the **Seasonal Expanse** offers shifting biome pockets and private trials.
 
-Examples:
+Local movement remains rewarding, but distance is never busywork. The central
+fountain and district shrines form a diegetic fast-travel network. A shrine must
+be discovered and attuned once; unlocked destinations can then be selected from
+any safe shrine. Combat, scripted trials, and invalid destinations fail closed.
+See [the Sanctum contract](docs/SANCTUM-HUB.md) and its versioned
+[map definition](content/maps/sanctum_hub_v1.json).
 
-| Transition | Result |
-| --- | --- |
-| Water below freezing threshold | Ice; salt lowers the effective freezing threshold |
-| Ice above melting threshold | Water and loss of brittle collision |
-| Water above boiling threshold | Steam; dissolved solutes remain or precipitate |
-| Steam on sufficiently cold surfaces | Water coating or liquid deposit |
-| Sand under sustained extreme heat | Molten glass |
-| Molten glass below solidification threshold | Glass, with thermal-shock brittleness |
-| Lava after sufficient cooling | Basalt or stone depending on cooling rate |
-| Metal under approved extreme heat | Molten metal; disabled in early competitive implementation unless a map explicitly uses it |
+### Living Sanctum V1 — first acceptance test
 
-### Thermal shock
+The first accepted product is the Sanctum itself, not an isolated duel or
+chemistry demo. It must feel spacious, charming, inhabited, and coherent while
+serving as the fully functional application shell. Nexus, movement, chemistry,
+social/muster, champion/loadout, archive/guide, settings, recovery, and service
+areas need memorable silhouettes, layered elevation, clear ordinary routes,
+rewarding advanced routes, environmental responses, and fast travel.
 
-Brittle materials track recent temperature delta. Rapid heating or cooling can
-convert stone, brick, glass, ceramic, or ice into cracked variants before final
-breakage. This produces telegraphed staged destruction rather than instantaneous
-removal.
+Offline users can arrive, onboard, configure, train, inspect builds/guide,
+interact, reset laboratories, traverse, save, and quit without a service. When
+connected, the muster/friends surface shows privacy-safe presence such as
+offline, online, away, in Sanctum/activity, joinable, invite-only, full, or
+incompatible, with a clear reason when joining is unavailable. Direct/LAN and
+validated invite joining remain primary; any directory, signalling, or relay is
+replaceable and self-hostable.
 
-## 10. Combustion system
+The host can form/name/color/lock teams, invite/assign/auto-balance players,
+choose explicit friendly-fire/self-damage/healing/collision policy, manage
+privacy/readiness/late join/spectators/bots, run/reset trials and dummies,
+restore practice resources, set shared waypoints, initiate validated group
+travel or opted-in announced practice ports, moderate, inspect diagnostics, and
+end cleanly. Changes are permission-checked, visible, rate-limited, logged, and
+frozen where competition demands it; hosting never grants remote file/shell or
+client-setting control.
 
-Fire is an energy overlay coupled to material fuel, temperature, moisture, and
-local oxidizer availability.
+Foreground terrain, roofs, foliage, buildings, and constructs fade/cut away or
+yield to an ownership-readable silhouette when they overlap a character that is
+inside the viewer's authoritative line of sight. A character outside LOS is not
+revealed by silhouettes, labels, shadows, effects, audio markers, or debug UI.
 
-A combustion step requires:
+Acceptance is co-equal on Garuda Linux with Sway and supported Windows: source
+and packaged launch, input/window/audio behavior, saves, networking, reconnect,
+performance, accessibility, cleanup, and uninstall/rollback evidence. See the
+[Living Sanctum V1 acceptance contract](docs/SANCTUM-V1-ACCEPTANCE.md).
 
-1. fuel above zero;
-2. temperature above flash or ignition threshold;
-3. moisture below the suppression threshold;
-4. oxidizer available from ambient air or a local gas mixture;
-5. no extinguishing or inhibitor reaction winning at higher priority.
+## Movement and traversal
 
-Combustion consumes fuel and oxidizer, adds heat, creates smoke or vapor, and
-transforms the source material through authored stages.
+Movement must feel expressive at ordinary speed and become deep through timing,
+route knowledge, and composition—not through undocumented exploits. Universal
+actions spend Stamina; spells and champion actions spend Flux. A character may
+specialize in movement, but ancestry, loadout, map devices, or a champion skill
+cannot disable ordered collision, erase recovery, or exceed the authored global
+speed ceiling.
 
-```text
-wood -> scorched wood -> charcoal -> ash
-```
+### Control reference and point of view
 
-Important rules:
+Control style and information presentation are independent player choices. The
+default `world_relative` preset keeps W/A/S/D aligned to the screen while aim
+remains independent. The `aim_relative` preset treats mouse/right-stick aim as
+forward: W/S move along facing and A/D strafe perpendicular to it. Neither
+preset changes movement tuning or authority; both compile to the same bounded
+world-space command fields before tick zero processing.
 
-- Wet wood may steam and dry before sustained ignition.
-- Oil film spreads Fire across connected surfaces and may float on water.
-- Flammable gas produces a bounded pressure burst only after a visible ignition
-  cue.
-- Wind moves flame fronts and gases but does not create fuel.
-- Fire never propagates through worldbone or across disallowed simulation zones.
-- Open outdoor cells receive ambient oxidizer. Sealed authored gas zones may
-  track oxygen explicitly.
+The default `full` view exposes the whole local viewport. The optional `cone`
+view follows aim and accepts an exact integer angle from 15 through 360 degrees
+and a range from 160 through 4096 world units. A 360-degree cone is therefore a
+circular ranged view, distinct from unrestricted full view. This checkpoint is
+a local presentation option; competitive hidden information must later be
+host-enforced, and clients may never use a preference to reveal state the mode
+did not replicate.
 
-## 11. Electricity and Charge
+Current physical keyboard bindings, movement reference, view mode, angle, and
+range persist in an offline versioned profile. See
+[player controls and POV](docs/PLAYER-CONTROLS-AND-POV.md) for hotkeys, exact
+command-line values, the editable JSON schema, bounds, and future Settings
+station acceptance.
 
-Charge is stored separately from matter so water, metal, wet wood, crystal, or
-an entity can all carry electrical state.
+### Universal movement grammar
 
-### Conductive graph
+| Action | Tactical purpose | Commitment and counterplay | Runtime status |
+| --- | --- | --- | --- |
+| Move + independent aim | Strafe, lead targets, hold crossfire, and retreat without surrendering aim | Acceleration, braking, and counter-strafe timing preserve readable momentum | Implemented |
+| Sprint | Pursuit, disengagement, and objective rotation | Continuous Stamina drain and delayed recovery; loud/visible movement signature planned | Implemented |
+| Hop / double jump | Clear ground pressure and vary elevation/timing | Paid edges, bounded aerial options, explicit landing state | Foundation implemented; authored elevation pending |
+| Slide / slide jump | Commit low and fast, then convert late into a longer route | Entry-speed gate, weak steering, Stamina cost, recovery, and hard cover stops | Implemented |
+| Air redirect / air dodge | Correct one line or make one committed aerial escape | Limited use, high cost, fixed duration, collision-safe recovery | Implemented |
+| Wavedash | Convert a late angled air dodge into grounded momentum | Exact landing geometry, one queued conversion, no free stacking | Implemented |
+| Wall contact / wall kick | Rebound from a brief valid wall-contact window | Stable wall identity and a 220 ms same-wall lockout prevent loops | Implemented |
+| Vault / superglide | Cross marked low cover and convert the narrow crest window | Only authored vault surfaces qualify; destination clearance and fixed ceiling are mandatory | Implemented against foundation geometry |
+| Landing cut | Trade a timed landing input for reduced recovery and route continuity | Never deletes an attack/status commitment and must remain readable | Foundation implemented |
+| Edgeweave | Skim the swept edge of a hostile projectile at committed speed to regain Stamina | No reward on hit, full Stamina, training pressure, low speed, cooldown, or repeat contact | Implemented |
+| Variable hop / fast fall | Change aerial duration and contest timing without a new jump | Bounded elevation curve and explicit landing recovery | Planned |
+| Impact influence / brace | Bend a launched trajectory slightly or time a safe ground recovery | Cannot cancel knockback, cross worldbone, or remove the attacker’s earned advantage | Planned |
+| Wall skim | Run briefly along an authored traversable wall | Stamina drain, maximum duration, exit recovery, same-surface lockout | Planned |
 
-At each electrical step:
+The input layer will buffer only named transitions for short real-time windows
+compiled independently at 60 and 120 Hz. It will not buffer arbitrary actions
+through stun, charge, grapple, menus, or network correction. Every action has a
+semantic event and a presentation state, so tutorials, bots, replay analysis,
+audio cues, and accessibility assists consume the same truth.
 
-1. Resolve conductive cells from material conductivity, moisture, dissolved
-   salinity, coatings, and active fields.
-2. Build or incrementally update connected conductive components in dirty chunks.
-3. Inject authored source potential.
-4. Propagate charge with material-dependent loss.
-5. Apply resistive heating.
-6. Telegraph overloaded cells before arcs or entity interruption.
-7. Discharge through valid adjacent gaps or grounded endpoints.
-8. Clear or retain charge according to capacity and leakage.
+### Traversal interactions
 
-### Conductivity examples
+Map traversal extends the universal grammar through visible authored objects:
 
-| Material state | Conductivity |
-| --- | --- |
-| Dry wood | Very low |
-| Wet wood | Medium |
-| Fresh water | Medium |
-| Brine | Very high |
-| Copper | Maximum normal conductor |
-| Iron or steel | High |
-| Rusted iron | Reduced and resistive |
-| Ice | Low to medium, depending on impurities |
-| Prism crystal | Medium conductor with high storage capacity |
-| Oil and dry glass | Insulating |
+- rails, grind lines, ropes, ziplines, lifts, moving platforms, pressure vents,
+  launch surfaces, spring growth, water currents, wind lanes, portals, and
+  grapple anchors;
+- marked vault/ledge profiles, wall-skim bands, breakable shortcuts, collapsing
+  floors, doors, gates, switches, pressure plates, relays, and counterweights;
+- ice, mud, oil, water depth, rubble, webbing, vegetation, smoke, steam, low
+  gravity, and other surfaces that modify traction, visibility, acceleration,
+  or route availability through explicit bounded rules;
+- champion mobility that targets a valid anchor, direction, or destination and
+  pays Flux rather than masquerading as free universal movement.
 
-Charge may interrupt, reveal, activate devices, accelerate corrosion, ignite
-suitable gas, or heat resistance points. It must not silently damage every cell
-of a large water body on the same tick; danger propagates with a visible warning
-front and bounded discharge timing.
+An interaction declares ownership, activation shape, capacity, cooldown,
+failure reason, collision behavior, network authority, reset group, and
+accessibility cue. A moving platform carries riders through deterministic
+relative motion; a zipline cannot teleport through blocked geometry; a grapple
+must resolve a visible anchor and safe arc; a destructible shortcut must leave a
+valid route after collapse.
 
-## 12. Acids, bases, corrosion, and cleansing
+### Route and movement acceptance
 
-### Acid and alkaline capacity
+Every competitive map provides at least three understandable route classes: a
+low-risk ordinary route, a faster committed route, and a situational route
+created or changed by combat/material state. Each route is measured at both
+tick rates for completion time, maximum speed, Stamina/Flux cost, failure
+recovery, collision clearance, camera readability, bot navigation, and an
+accessibility alternative. No advanced technique is required to leave spawn,
+reach an objective, or recover from fast travel.
 
-Liquids carry signed acidity and neutralization capacity. Contact consumes both
-capacities. Neutralization may produce heat, salt, gas, precipitation, or a
-neutral solution according to an explicit rule.
+## Aiming, combat, and ability composition
 
-### Corrosion
+FLUX 2 combines shooter precision with fighter commitment. Moving never points
+the character’s aim automatically. Mouse, right stick, keyboard aim, bots, and
+replay commands all produce the same quantized direction; the simulation owns
+the final ray, sweep, projectile, volume, or placement query.
 
-Corrosion damage depends on:
+### Aim language and targeting
 
-```text
-corrosion rate
-× reactive concentration
-× exposed surface
-× material vulnerability
-× catalyst multiplier
-```
-
-Catalysts may include heat, salinity, moisture, or electrical potential.
-Worldbone always rejects the mutation before corrosion is evaluated.
-
-### Readability and pacing
-
-Acid is a slow topology-changing tool, not an invisible eraser. Vulnerable
-structures discolor, hiss, lose integrity, crack, and create residue before
-opening a route. Competitive acid volumes, lifetimes, and maximum affected cells
-are mode-bounded.
-
-## 13. Structural damage and support
-
-Structural matter receives typed damage:
-
-- cutting;
-- impact;
-- piercing;
-- compression;
-- blast;
-- heat;
-- cold shock;
-- corrosion;
-- decay;
-- approved Chaos transmutation.
-
-Damage first compares penetration class against hardness, then consumes integrity
-using the relevant resistance. Materials may transition through damaged variants:
-
-```text
-brick -> cracked_brick -> rubble
-wood -> splintered_wood -> wood_debris
-iron -> bent_iron -> scrap
-stone -> fractured_stone -> stone_rubble
-glass -> cracked_glass -> glass_shards
-```
-
-### Bounded support model
-
-FLUX does not need unrestricted rigid-body building collapse. Structural cells
-use authored support classes:
-
-- foundation-supported;
-- wall-supported;
-- beam-supported;
-- self-supporting;
-- hanging;
-- temporary construct.
-
-Dirty structural regions run a bounded connectivity check. Unsupported material
-waits through a visible collapse warning, then converts into debris or falls to
-an adjacent lower elevation. Large structures use authored break groups so the
-result remains readable and performant.
-
-## 14. Entity exposure and surface status
-
-Entities sample the cells under their ground anchor, nearby gas concentration,
-and attached coatings. Effects use thresholds and decay rather than one-frame
-contact toggles.
-
-| Status | Source | Principal effect |
+| Targeting family | Examples of decisions | Required read |
 | --- | --- | --- |
-| Wet | Water, mist, wet coating | Raises conductivity, suppresses burning, supports freezing |
-| Soaked | Sustained deep water | Stronger conductivity and longer dry time |
-| Oily | Oil or resin coating | Increases ignition risk and flame persistence |
-| Burning | Fire plus available fuel | Damage over time and heat emission; removable by water or sufficient cold |
-| Chilled | Cold exposure | Reduced traction or recovery according to balance tuning |
-| Frozen | Wet plus sufficient cold | Brief brittle control state with explicit breakout and immunity window |
-| Conductive | Charge retained on wet or metallic equipment | Enables linked discharge and device interactions |
-| Corroded | Acid or electrochemical exposure | Temporary armor or structure weakness, never permanent character-stat loss |
-| Muddy | Mud depth or coating | Ground acceleration and braking penalty |
-| Toxic | Sludge or toxic gas | Bounded damage or resource disruption with clear meter |
-| Obscured | Smoke or steam concentration | Visibility reduction capped so silhouettes and threat outlines remain readable |
-| Brittle | Thermal shock, Ice, or material-specific state | Increased structural fracture, not generic bonus character damage |
+| Projectile | Lead, intercept, weave, clash, reflect, or use cover | Origin, direction, speed class, radius, ownership, element, impact, expiry |
+| Ray / beam | Hold a lane, sweep deliberately, interrupt a channel | Startup line, active duration, obstruction, break state, recovery |
+| Arc / cone / contact | Commit close, punish movement, protect a flank | Facing, reach, active window, launch direction, punishable recovery |
+| Ground or elevation volume | Deny, cleanse, heal, reveal, slow, or prime terrain | Exact boundary, elevation band, activation delay, duration, owner, escape |
+| Placed geometry | Create cover, a prism, bridge, trap, relay, or structure | Placement validity, construction time, health/support, collision, destruction answer |
+| Tether / channel | Pull, sustain, transfer, guide, or contest | Source/target line, range, interruption, occlusion, sever rule |
+| Mobility target | Dash, grapple, vault, launch, swap, or redirect | Destination/anchor validity, path, collision, safe landing, recovery |
 
-Statuses must include source ownership, duration, intensity, stack rule,
-cleansing rule, immunity window, UI cue, and network serialization.
+Competitive assists may tune stick response, dead zone, sensitivity, reticle
+contrast, target friction, limited slowdown, and motion/audio indicators. They
+never fabricate a hit, lead perfectly, see concealed targets, alter canonical
+projectiles, or differ by network authority. Training-only lead and trajectory
+previews are labeled and unavailable where a mode forbids them.
 
-## 15. Element-to-chemistry contract
+### Fighter rules inside a shooter
 
-Elements inject energy, matter, or catalysts through the same material APIs.
-They do not bypass worldbone, map safety masks, cell budgets, or reaction order.
+Attacks and defenses use explicit startup, active/travel, impact, recovery,
+cooldown, ownership, interruption, and expiry phases. Planned combat depth
+includes projectile clash priority, guard/parry/absorb/reflect roles, shields
+with visible break state, typed stagger and launch, bounded victim impact
+influence, collision-safe ground recovery, pierce/bounce/split rules, channels,
+fields, deployables, status cleansing, and friendly-fire policy per mode.
 
-| Element | Chemistry role |
+Cancel routes are an authored graph, never an animation accident. Hit pause,
+camera impulse, particles, and controller rumble may emphasize a confirmed
+event but cannot delay or create authority. Every damaging or controlling
+action exposes a reaction window or a deliberate positional answer; unavoidable
+combos require an explicit short cap and escape rule.
+
+### Resources and loadout
+
+| Layer | Contract |
 | --- | --- |
-| Earth | Creates approved mineral, metal, soil, sand, or growth matter; fractures or supports structures; never creates worldbone |
-| Fire | Adds heat, ignition, drying, combustion pressure, and molten states |
-| Water | Deposits liquid, Wet, pressure flow, dilution, cooling, cleansing, and solution transport |
-| Wind | Adds directional advection for gas, flame, ash, loose light matter, surface water, and projectiles |
-| Ice | Removes heat, freezes liquids, creates frost coating, and raises brittleness |
-| Charge | Injects electrical potential, interrupts, activates devices, heats resistance, and drives electrochemical reactions |
-| Light | Reveals, refracts, sterilizes selected toxins or Dark growth, and catalyzes approved photochemical reactions |
-| Dark | Accelerates decay, corrupts biological matter, preserves toxins, and creates explicit plague materials |
-| Spirit | Later: affects living or psyche-linked material only through approved catalyst rules; no topology erasure |
-| Chaos | Later: whitelisted temporary transmutations with strict cell, duration, and collapse limits |
-| Gravity | Later: changes effective weight or flow vector inside a field; never moves worldbone or critical anchors |
-| Time | Later: changes reaction rate or expiry inside a field; never duplicates direct-hit damage or rewinds immutable topology |
+| Health | Defeat resource; recovery begins only after the authored no-damage delay and remains mode configurable |
+| Stamina | Universal movement resource for sprinting, hops, slides, air actions, wall routes, and selected recovery techniques |
+| Flux | Spell/champion resource; casting delays recovery and insufficient Flux refuses the cast before outcome creation |
+| Ultimate charge | Earned through active combat/objective contribution; never passive waiting, self-damage, or target-dummy farming |
+| Passive | One champion-defining behavior with a demonstrated trigger, visible state, and anti-farming lockout |
+| Primary | Reliable independent-aim pressure that remains useful at zero Flux |
+| Active slots | Three unique catalog abilities inside the mode budget; damage, defense, support, terrain, control, and mobility are roles rather than mandatory duplicates |
+| Champion mobility | One identity-bearing Flux-paid traversal/combat action, still bounded by collision and speed rules |
+| Ultimate | One high-impact commitment with startup, safe routes, ownership, interruption/destruction, expiry, and recovery rules |
 
-## 16. Initial material catalog
+The standard competitive active budget is 13 points. An affinity may reduce an
+aligned active’s build cost to its declared minimum; it never silently
+multiplies damage, healing, duration, radius, control strength, or resource
+capacity. Alternative modes may publish a different budget as part of their
+hashed ruleset rather than mutate a live match.
 
-The first production catalog should be broad enough to build distinctive maps
-while remaining understandable.
+### Flux Formulas
 
-### Immutable and mineral structures
+The expandable magic layer is a validated formula system, not an unbounded
+runtime scripting language. A formula composes approved components:
 
-| Material | Phase | Defining properties | Key reactions and role |
-| --- | --- | --- | --- |
-| Worldbone | Immutable | Infinite topology, no runtime state | Permanent map skeleton and critical foundations |
-| Stone | Structural | Hard, heat-storing, weak conductor | Heavy blast fractures it; sustained heat creates heated stone or lava in approved maps |
-| Basalt | Structural | Dense, heat-resistant, brittle under severe shock | Produced by rapid lava cooling; strong volcanic cover |
-| Limestone | Structural | Medium hardness, acid-vulnerable | Slowly dissolves and may release gas; readable corrosion routes |
-| Brick | Structural | Medium hardness, high heat capacity | Cracks from impact or thermal shock; standard destructible wall |
-| Cracked brick | Structural | Low integrity, porous | Breaks into rubble and absorbs water |
-| Mortar | Structural binder | Soft, porous, acid-sensitive | Saturation weakens joints and enables staged wall collapse |
-| Clay | Loose or structural | Plastic when wet, hard when fired | Water forms workable clay; heat produces ceramic |
-| Ceramic | Structural | Heat-resistant, brittle | Strong thermal use, poor impact resistance |
-| Glass | Structural | Transparent, insulating, brittle | Blast and shock produce shards; extreme heat creates molten glass |
-| Prism crystal | Structural crystal | Refractive, charge-storing | Splits Light, stores Charge, fractures into crystal debris |
+```text
+source family + geometry + operation + optional catalyst + constraints
+      -> stable ability variant ID + canonical parameters + counterplay
+```
 
-### Metals and technical matter
+- **Source family** supplies Earth, Fire, Water, Wind, Ice, Charge, Light,
+  Dark, or a later approved family.
+- **Geometry** chooses a bolt, ray, arc, pulse, field, wall, tether, orbit,
+  structure, trail, or movement route.
+- **Operation** describes physical intent such as heat, cool, wet, charge,
+  push, pull, lift, bind, fracture, grow, decay, cleanse, reveal, refract, or
+  redirect.
+- **Catalyst** is a second approved element, carried reagent, device, champion
+  hook, or material already present in the arena.
+- **Constraints** declare cost, points, startup, recovery, cooldown, targeting,
+  capacity, cell/entity budgets, ownership, friendly fire, cleanup, and every
+  counterplay rule.
 
-| Material | Phase | Defining properties | Key reactions and role |
-| --- | --- | --- | --- |
-| Iron | Structural metal | Strong, conductive, oxidizable | Rusts with water and oxygen; acid and brine accelerate damage |
-| Steel | Structural metal | Harder than iron, conductive | High-value gates and machinery; extreme heat softens it |
-| Copper | Structural metal | Excellent conductor, softer | Electrical routing, devices, visible circuits |
-| Bronze | Structural metal | Corrosion-resistant, medium conductor | Durable mechanisms and ancient machinery |
-| Rusted iron | Brittle structural | Lower integrity and conductivity | Breaks into scrap and rust powder |
-| Scrap metal | Loose heavy solid | Conductive, irregular | Explosion residue, salvage, partial obstruction |
-| Rune alloy | Structural magical metal | Stores one approved elemental signature | Device and objective material with strict authored reactions |
-| Molten metal | Heavy liquid | Extremely hot, conductive | Late-phase or authored hazard; cools into metal or slag |
+Authored recipes compile to stable IDs and content hashes before selection.
+Competitive play exposes a curated legal catalog; the Proving Grounds, custom
+games, and roguelike modes may expose larger experimental catalogs while using
+the same validator. A client can request only an approved formula ID—never send
+arbitrary damage, reaction, or geometry parameters to the host.
 
-### Organic and biological matter
+## Elements, chemistry, and destruction
 
-| Material | Phase | Defining properties | Key reactions and role |
-| --- | --- | --- | --- |
-| Wood | Structural organic | Porous, cuttable, flammable | Absorbs water; burns through scorched and charcoal stages |
-| Wood debris | Loose organic | Light, flammable | Wind-movable residue and secondary fuel |
-| Charcoal | Loose or structural fuel | High fuel, low integrity | Burns hot and becomes ash |
-| Grass | Biological coating | Fast growth and fast ignition | Spreads over wet nutrient soil; transmits fire |
-| Roots | Biological structure | Grows through allowed soil, porous | Creates cover; burns, freezes, or corrupts |
-| Moss | Biological coating | Retains moisture | Slows drying and supports growth, but carries Charge when wet |
-| Cloth | Structural/coating | Absorbent, light, flammable | Banners, ropes, curtains, temporary fire paths |
-| Resin | Viscous coating/liquid | Sticky, volatile | Bonds debris, slows movement, ignites into persistent fire |
-| Bone or chitin | Brittle organic solid | Medium hardness, low conductivity | Breaks into fragments; Dark may animate or corrupt only through approved content |
-| Bloom growth | Biological structure | Light- and water-responsive | Support terrain that can be cut, burned, salted, or cleansed |
-| Plague growth | Corrupted biological | Toxic, Dark-supported | Spreads through nutrient matter; stopped by source destruction, Light, salt, or fire |
+Elements describe magical intent; materials describe arena state. Neither is a
+hidden damage wheel. A Fire champion is not automatically stronger against an
+Ice champion. Power comes from aim, timing, geometry, material preparation,
+movement, ownership, and the opponent’s visible responses.
 
-### Loose and granular matter
-
-| Material | Phase | Defining properties | Key reactions and role |
-| --- | --- | --- | --- |
-| Soil | Loose | Nutrient, absorbent | Water creates mud; heat dries it; supports roots |
-| Sand | Loose | Low cohesion, moderate density | Settles on slopes; extreme heat forms molten glass |
-| Gravel | Loose | Heavy, noisy, high friction | Fills pits and forms unstable routes |
-| Rubble | Loose/soft obstruction | Heavy, irregular | Created by masonry destruction; depth slows or blocks movement |
-| Ash | Fine loose | Very light, absorbent | Wind carries it; water creates ash slurry |
-| Salt | Soluble loose | High solubility | Creates brine, suppresses growth, precipitates after evaporation |
-| Snow | Light loose | Cold, absorbent | Melts to water, compacts into ice, drifts under Wind |
-| Coal | Loose fuel | High fuel, dirty combustion | Burns into heat, smoke, and ash |
-| Crystal dust | Loose crystal | Refractive trace, charge-sensitive | Used in magical solutions and conductive residue |
-| Volatile dust | Fictional loose reagent | Ignites only under explicit authored thresholds | Bounded explosive environmental setup without real-world formulation data |
-
-### Liquids and slurries
-
-| Material | Phase | Defining properties | Key reactions and role |
-| --- | --- | --- | --- |
-| Water | Liquid | Medium density, high heat capacity | Wet, cooling, freezing, boiling, dilution, Charge conduction |
-| Brine | Liquid solution | Dense, highly conductive | Salt water; stronger corrosion and lower freezing point |
-| Mud | Slurry | Dense, viscous, high friction | Soil plus water; dries, freezes, and slows grounded movement |
-| Oil | Liquid | Light, immiscible, flammable | Floats on water, coats surfaces, creates spreading fire |
-| Acid | Liquid solution | Corrosive, toxic | Slowly attacks vulnerable matter; neutralized by alkaline wash |
-| Alkaline wash | Liquid solution | Cleansing, neutralizing | Reduces acid and selected toxins; may leave salts |
-| Toxic sludge | Viscous liquid | Toxic, nutrient-corrupting | Water dilutes it; Fire produces toxic smoke; Dark preserves it |
-| Sap | Viscous liquid | Nutrient, sticky, flammable | Supports growth, forms resin, attracts fire risk |
-| Lava | Heavy hot liquid | Extreme heat, high viscosity | Ignites fuel; water creates basalt and steam |
-| Molten glass | Heavy hot liquid | Very viscous, insulating | Cools into brittle glass; shock creates fragments |
-| Healing spring | Magical solution | Cleansing, low toxicity | Support material with strict ownership and anti-stall limits |
-| Void ichor | Magical liquid | Dark catalyst, toxic | Corrupts living matter but is neutralized by approved Light or cleansing reactions |
-
-### Gases and transient matter
-
-| Material | Phase | Defining properties | Key reactions and role |
-| --- | --- | --- | --- |
-| Steam | Gas | Hot, wet, medium diffusion | Condenses on cold surfaces and obscures within capped limits |
-| Smoke | Gas | Light, opaque, irritating | Wind-driven combustion residue; disperses and stains surfaces |
-| Toxic smoke | Gas | Toxic, medium diffusion | Produced from burning sludge or plague matter; mist helps remove it |
-| Flammable gas | Gas | Volatile | Ignites after a visible cue and bounded pressure burst |
-| Frost mist | Gas/coating | Cold, wet | Chills and deposits frost on nearby surfaces |
-| Charged vapor | Gas/energy mixture | Conductive, short-lived | Creates visible arc paths and interruption zones |
-| Spore cloud | Biological gas | Growth vector | Seeds only allowed nutrient cells; fire, Light, or filters remove it |
-| Darkness haze | Magical gas/field | Concealing, decay catalyst | Must retain silhouette outlines and have explicit source and duration |
-
-### Residues and derived materials
-
-| Material | Created by | Purpose |
+| Family | Spatial/chemical identity | Runtime gate |
 | --- | --- | --- |
-| Heated stone | Stone plus sustained heat | Delayed ground hazard and thermal storage |
-| Scorched wood | Partial combustion | Warning stage before structural loss |
-| Charcoal | Wood pyrolysis | Secondary high-temperature fuel |
-| Ash slurry | Ash plus water | Dark slippery residue that dries back to ash |
-| Slag | Impure molten metal cooling | Heavy low-value obstruction |
-| Glass shards | Glass fracture | Sharp debris and readable opened sightline |
-| Rust powder | Advanced iron corrosion | Weak loose residue and color cue |
-| Neutral solution | Acid-base neutralization | Safe or mildly saline liquid depending on products |
-| Dirty water | Diluted toxin, ash, or soil | Reduced but nonzero hazard and visibility cue |
-| Frozen mud | Mud plus strong cold | Brittle slow terrain that shatters into soil and ice |
+| Earth | Mass, stone, metal, growth, structure, roots, fracture, grounded routes | Catalog enabled; chemistry pending |
+| Fire | Heat, ignition, ash, smoke, spreading pressure, delayed bursts | Catalog enabled; chemistry pending |
+| Water | Flow, pressure, wetness, current, cleansing, displacement | Catalog enabled; chemistry pending |
+| Wind | Directional pressure, sound, push/lift, projectile bending, gas motion | Catalog enabled; chemistry pending |
+| Ice | Cooling, brittle matter, frozen terrain, friction, shatter setup | Catalog enabled; chemistry pending |
+| Charge | Conductivity, stored force, linked devices, interrupt, delayed discharge | Catalog enabled; projectile foundation live |
+| Light | Refraction, reveal, life, healing, geometric protection | Catalog enabled; chemistry pending |
+| Dark | Decay, death, blood, shadow, concealment, sacrifice, attrition | Catalog enabled; chemistry pending |
+| Spirit | Psyche, dream, resolve, illusion, memory, possession boundaries | Declared but runtime gated |
+| Chaos | Entropy, instability, mutation, spatial failure, dangerous rule disruption | Declared but runtime gated |
+| Gravity | Weight, pull, orbit, anchoring, curved trajectories, vertical commitment | Declared but runtime gated |
+| Time | Delay, haste, echo, recorded state, bounded rewind, cooldown distortion | Declared but runtime gated |
 
-## 17. Core reaction catalog
+The initial chemistry laboratory uses bounded packed cells and at least
+worldbone, stone, brick, timber, metal, glass, soil, vegetation, water, oil,
+fire, steam, smoke, ice, Charge, and rubble. It proves deterministic heat,
+wetness/flow, ignition, freezing, conductivity, structural damage, derived
+collision, reset, replay, and semantic network correction before additional
+materials are promoted.
 
-| Inputs | Conditions | Outputs | Tactical consequence |
+Representative decisions include water conducting a warned Charge discharge;
+oil moving before it burns; Fire and Water creating occluding steam; Water and
+Ice creating a breakable low-friction route; thermal shock cracking glass or
+stone; Earth and Water creating mud; Wind driving gases and loose matter; Light
+refracting through a temporary prism; growth creating cover that can later burn;
+and collapse producing rubble that changes movement without deleting worldbone.
+
+### Destruction safety
+
+Every map separates three structural layers:
+
+1. **Worldbone** is immutable critical topology: outer bounds, spawn safety,
+   objective foundations, essential portals, reset machinery, and minimum
+   connectivity.
+2. **Authored structure** is staged and destructible: walls, floors, supports,
+   doors, bridges, glass, devices, trees, and cover with typed damage and clear
+   damaged states.
+3. **Transient matter** is bounded match state: liquids, gases, loose solids,
+   fields, residues, growth, debris, and ability-created geometry with explicit
+   capacity and cleanup.
+
+Support loss enters a warned failure stage before ordered collapse. Safety
+validators prove spawn clearance, objective access, route minima, resetability,
+active-cell limits, debris limits, and immutable-mask hashes before a map can be
+selected. Competitive cleanup is predictable; PvE may allow longer persistence
+but still obeys hard budgets.
+
+## Ancestries and champions
+
+“Race” in older notes maps to **ancestry** in current content. An ancestry owns
+body geometry, locomotion hooks, anatomy attachments, material read, size range,
+and bounded physical modifiers. A champion separately owns identity, posture,
+equipment, affinities, passive, primary, mobility, ultimate, voice/audio, lore,
+and visual profile. A loadout then selects catalog actives. This separation lets
+new champions reuse tested body plans without copied renderers or changed
+competitive hitboxes.
+
+### Ancestry body-plan catalog
+
+The twenty FLUX foundations remain design inputs. The arachnoid expansion adds
+three provisional original body plans; names and lore remain subject to author
+approval before player-facing use.
+
+| Ancestry/body plan | Direction and bounded gameplay hooks |
+| --- | --- |
+| Human | Adaptable gear-led silhouette; no extreme body advantage |
+| Dwarf | Broad grounded form, structure resistance, slower route profile |
+| Gnome | Tiny device specialist, low health/mass, compact readable equipment |
+| Hobbit | Low profile and recovery focus, increased launch vulnerability |
+| Elf | Tall precise posture and air control, fragile body budget |
+| Orc | Heavy commitments and bounded interruption resistance, slower recovery |
+| Troll | Huge enduring body, delayed recovery, very readable actions |
+| Minotaur | Forward momentum and structural impact, poor turning/miss recovery |
+| Seakin | Fins and water-route steering whose value depends on authored currents |
+| Wyrmborn | Scaled wing silhouette and one strong aerial commitment, reduced Stamina |
+| Stoneborn | Braced mineral mass and structure synergy, slow movement |
+| Treefolk | Rooted stability and growth hooks, large fire-vulnerable presentation |
+| Sylph | Streamer-wing air control with very low health and mass |
+| Undead | Remnant/rune anatomy, reduced ordinary healing, explicit restoration rules |
+| Goblin | Fast tool-led play and bounded salvage, fragile body |
+| Nymph | Bloom/support interactions whose power depends on readable reactions |
+| Vampire | Controlled pursuit and interruptible sustain through Dark/blood setup |
+| Werewolf | Forward-weighted breaker with strong commitment and weak turning |
+| Angel | Feather-wing visual/body foundation only; permanent champion identity remains unapproved |
+| Demon | Angular redirect silhouette without sexualized anatomy or religious caricature |
+| Weaverkin (provisional arachnoid) | Low, wide eight-limb runner with authored wall/web route hooks; normalized combat footprint and no passive wall bypass |
+| Scorpionkin (provisional arachnoid) | Braced pincers and segmented tail with long readable attack attachments; armor/mass paid by speed, radius, and recovery budget |
+| Harvestkin (provisional arachnoid) | Tall long-limbed sensor/stride profile with fragile joints and clear ground footprint; reach never silently enlarges hitboxes or spell damage |
+
+Size classes modify only bounded Health, recovery, speed, acceleration, mass,
+footprint, knockback response, air control, camera/readability, and traversal
+clearance. Auxiliary arms, wings, tails, roots, horns, fins, and arachnoid legs
+declare presentation bones and ability anchors; they are not surprise hitboxes
+or free attacks. Every ancestry must fit standardized navigation footprints or
+an explicitly tested large-body class.
+
+### Existing character design roster
+
+The following FLUX designs are migration inputs, not automatically selectable
+Flux2 content. “Void” is an unresolved older label and must be explicitly mapped
+to Dark, Chaos, or a separately approved family before affected champions can
+enter the runtime.
+
+| Champion | Ancestry | Draft affinities | Intended identity |
 | --- | --- | --- | --- |
-| Wood + Fire | Dry enough and above ignition | Scorched wood, charcoal, ash, smoke | Cover degrades gradually and becomes secondary fuel |
-| Wet wood + Fire | Moisture above suppression | Steam, drying, limited scorching | Water buys time rather than granting permanent immunity |
-| Oil + Fire | Oil film above flash threshold | Burning oil, smoke | Flame travels across surfaces and floats on water |
-| Flammable gas + Fire/Charge | Concentration and ignition cue complete | Pressure impulse, fire, smoke | Telegraphed environmental burst |
-| Water + Fire | Sufficient water and heat capacity | Reduced fire, steam | Converts denial into temporary obscuration |
-| Water + Ice/cold | Below transition threshold | Ice or frost | Creates slippery and brittle routes |
-| Ice + heat | Above melt threshold | Water | Restores conductivity and removes brittle collision |
-| Water + lava | Contact and temperature threshold | Basalt, steam, pressure impulse | Turns lethal liquid into new destructible terrain |
-| Sand + extreme heat | Sustained energy | Molten glass | Creates a delayed construction material |
-| Molten glass + cooling | Below solidification threshold | Glass | Forms brittle transparent cover |
-| Heated glass/brick + rapid water or Ice | Thermal delta above shock threshold | Cracked material, shards or rubble | Opens routes through preparation and timing |
-| Soil + water | Saturation reached | Mud | Converts neutral floor into slow terrain |
-| Mud + heat/wind | Moisture falls below threshold | Soil or cracked clay | Route recovers gradually |
-| Mud + strong cold | Below freezing threshold | Frozen mud | Hard brittle slow terrain |
-| Salt + water | Solubility available | Brine | Creates a highly conductive, corrosive route |
-| Brine + evaporation | Water amount falls | Concentrated brine, then salt precipitate | Conductive zone contracts visibly |
-| Acid + alkaline wash | Capacities overlap | Neutral solution, salt, heat | Direct cleansing counterplay |
-| Acid + limestone/mortar | Resistance check and concentration | Integrity loss, residue, possible gas | Slow visible route cutting |
-| Water + iron + oxygen | Long exposure | Rusted iron | Persistent environmental aging |
-| Brine + iron + Charge | Conductive contact | Accelerated corrosion, heat | Electrical routes trade power for structure damage |
-| Copper/metal + Charge | Connected conductive graph | Propagated charge, resistive heat | Device circuits and linked hazard lanes |
-| Water/brine + Charge | Connected wet cells | Warning front, delayed discharge | Large threatened region with reaction time |
-| Roots + wet soil | Growth budget and allowed mask | New roots | Creates contestable organic cover |
-| Roots/grass + Fire | Fuel and ignition | Charcoal, ash, smoke | Growth becomes a fire liability |
-| Roots + Dark | Sustained corruption | Plague growth | Spreading hazard with cleanse and source counters |
-| Plague growth + Light | Approved intensity and exposure | Sterile residue or normal roots | Light supports recovery without instant map reset |
-| Toxic sludge + water | Dilution threshold | Weaker sludge or dirty water | Cleansing reduces rather than erases danger |
-| Toxic sludge + Fire | High heat | Toxic smoke, residue | Punishes careless burning |
-| Smoke/steam + Wind | Active vector | Advected gas | Wind changes sightline and hazard geometry |
-| Snow/ash + Wind | Force above movement threshold | Drifted loose material | Makes wind direction visible in the environment |
-| Prism crystal + Light | Beam contact | Refracted beam path | Geometric light routing |
-| Prism crystal + Charge | Capacity available | Stored charge, delayed discharge | Breakable electrical capacitor |
-| Heavy impact + brick/stone/glass | Penetration exceeds hardness | Cracks, rubble, shards | Destruction depends on attack class |
-| Blast + loose material | Pressure impulse | Scattered debris and dust | Temporary visibility and route change |
+| Oh Tipi | Seakin | Water, Ice, Charge | Conductive-field skirmisher and current rider |
+| S. Wayne | Hobbit | Dark, Light | Eclipse-boundary tactician and decoy router |
+| The Red Baron | Undead | Void, Fire, Ice | Airborne formation controller with punishable landings |
+| Steezo | Goblin | Fire, Charge, Light | Volatile construct engineer and detonation sequencer |
+| Treevor the Mason | Treefolk | Earth, Wind, Fire | Terrain mason creating routes, cover, and fire liabilities |
+| Oll' I | Werewolf | Earth, Fire, Light | Forward structural breaker with high commitment |
+| Fluup | Orc | Charge, Wind, Ice | Storm bruiser converting committed landings |
+| Wa Bidi | Goblin | Charge, Wind, Fire | Fast battlecry route specialist with visible/audio cues |
+| Grace Reava | Sylph | Wind, Water, Light | Luminous-current aerial duelist |
+| Nico Lai | Gnome | Charge, Light | Precision shared-device engineer |
+| Spai Si | Demon | Wind, Light, Earth | Redirect duelist converting hostile intent into angles |
+| Leaf the Hidden | Treefolk | Water, Earth, Light | Concealed grove support and planned-route grower |
+| Ha Rekt | Wyrmborn | Ice, Wind, Fire | Aerial cold-line hunter with marked escape routes |
+| Dr. Apex | Stoneborn | Earth, Light, Water | Armored combat medic with contestable support zones |
+| Haara | Nymph | Light, Wind, Spirit | Bloom planner with flexible resource routing |
+| Hesus Christo | Elf | Earth, Water | Tall renewal vanguard rebuilding broken routes |
+| Grimm Bow | Troll | Void, Earth, Water | Terrain archer converting displacement into precision, never bonus damage |
+| Biggy Bob | Dwarf | Earth, Fire, Light | Forge-line breacher and masonry specialist |
+| Jan Wicked | Human | Ice, Dark, Charge | Black-ice circuit hunter |
+| Ba Djoh | Minotaur | Earth, Fire, Water | Three-current charge breaker |
+| Urzh | Stoneborn | Earth, Fire, Charge | Conductive kiln bulwark and lane anchor |
+| Donnok | Dwarf | Earth, Fire, Water | Forge-rhythm terrain shaper |
+| Djonah Thaan | Vampire | Dark, Charge, Fire | Grave-current pursuit controller |
+| Unnamed Angel | Angel | Wind, Light, Spirit | Visual placeholder only; identity, lore, and kit unapproved |
 
-## 18. Deterministic simulation order
+New arachnoid champions occupy expansion slots only after the three body plans,
+names, lore, silhouettes, skeletons, movement clearance, trait budgets, and one
+complete kit are reviewed. No placeholder becomes selectable merely to fill a
+roster column.
 
-The chemistry simulation runs at a fixed divisor of the main authoritative tick.
-The initial target is 120 Hz actor simulation and 30 Hz material simulation.
+### Champion promotion pipeline
 
-Every material step executes in this order:
+One champion is promoted at a time through stable definition/wire IDs, ancestry
+budget, six displayed statistics, legal loadout, passive/primary/actives/
+mobility/ultimate, training dummy, bot behavior, local replay, network authority,
+reconnect, spectator view, accessibility cues, Linux/Windows source launch,
+package smoke, a unique interruptible semantic taunt, and visual/audio
+acceptance. Character-specific mechanics may
+extend validated systems but may not introduce a private physics engine,
+material simulation, status language, or network rule.
 
-1. Validate content version, chunk order, and immutable-mask hash.
-2. Apply queued external actions in stable command sequence order: deposits,
-   impacts, cuts, blasts, heat, cold, Charge, and fields.
-3. Apply structural integrity damage and mark support regions dirty.
-4. Exchange heat and update reaction energy accumulators.
-5. Resolve phase transitions with hysteresis.
-6. Resolve high-priority contact, neutralization, and extinguishing reactions.
-7. Resolve combustion and thermal decomposition.
-8. Move liquids by hydraulic head, viscosity, permeability, and density.
-9. Mix solutions, dissolve solutes, and precipitate saturation excess.
-10. Settle powders, rubble, snow, and other loose matter by elevation and slope.
-11. Diffuse and advect gases; apply bounded pressure impulses.
-12. Rebuild dirty conductive components and propagate Charge.
-13. Resolve electrochemical reactions and resistive heating.
-14. Resolve corrosion, biological growth, decay, and catalysts.
-15. Resolve support failure and schedule warned collapse for a later step.
-16. Aggregate entity surface, coating, gas, and hazard exposure.
-17. Rebuild dirty collision, navigation, visibility, and AI-cost masks.
-18. Emit ordered events, chunk checksums, and compressed network deltas.
-19. Put unchanged chunks to sleep after the stable-step threshold.
+## Maps and world interactions
 
-A reaction created in a later phase does not jump backward in the same step. It
-becomes eligible in the next material step unless a rule explicitly defines an
-immediate bounded secondary product. This prevents order-dependent reaction
-loops.
+A FLUX 2 map is a versioned package, not one monolithic scene. It contains
+immutable topology, elevation/traversal bands, mutable material seeds, collision
+and navigation sources, spawns, objectives, devices, portals, interaction
+anchors, reset groups, active-simulation regions, presentation layers, and
+canonical hashes.
 
-## 19. Determinism and conflict resolution
-
-- Use integers or fixed-point values only in authoritative material state.
-- Never call `Math.random()` from material simulation.
-- Probabilistic-looking behavior uses a stateless hash of map seed, material
-  tick, cell coordinate, rule ID, and attempt index.
-- Candidate reactions sort by priority, stable rule ID, and coordinate.
-- Each cell may participate in a bounded number of reactions per step.
-- Double-buffer movement phases or deterministic checkerboard partitions prevent
-  two cells claiming the same destination.
-- Alternating neighbor order derives from tick parity and seed, not wall-clock
-  state.
-- Budget exhaustion records a deterministic continuation cursor.
-- Replay checksums cover all authoritative material arrays and sparse records.
-- Content hashes are part of replay and network compatibility.
-
-## 20. Chunking and performance budget
-
-Recommended initial configuration:
-
-| Setting | Initial target |
-| --- | ---: |
-| Cell size | 4 × 4 world units |
-| Arena cells | 400 × 225 for a 1600 × 900 map |
-| Chunk size | 16 × 16 cells |
-| Maximum chunks | 25 × 15 = 375 |
-| Material rate | 30 fixed steps per second |
-| Maximum mobile moves | One primary move plus one bounded secondary spread per material step |
-| Stable sleep threshold | 8 unchanged material steps |
-| Initial active-cell budget | 12,000 processed cell-phase operations per material step, tuned from profiling |
-| Gas cap | Authored per zone and globally bounded |
-| Persistent residue cap | Coalesce equivalent neighboring residues before deleting meaningful state |
-
-Authority may never reduce chemistry based on camera distance. Performance comes
-from simulation zones, sleeping chunks, dirty masks, indexed reaction lookup,
-coalesced residues, bounded products, and deterministic work carryover.
-
-## 21. Collision, projectiles, and navigation
-
-### Collision derivation
-
-A single isolated solid pixel should not create an unreadable full wall. Collision
-uses connected occupancy, depth, height, and authored thresholds.
-
-| Condition | Derived result |
+| Map layer | Responsibilities |
 | --- | --- |
-| Worldbone | Permanent full collision |
-| Supported full-height structure | Solid actor and projectile blocker |
-| Low supported structure | Ground blocker; vault or jump only when authored |
-| Thin or damaged structure below occupancy threshold | Soft obstruction or projectile attenuation |
-| Loose fill below shallow threshold | Surface modifier only |
-| Deep rubble, snow, or sand | Increasing traversal cost; may become soft blocker |
-| Liquid | Surface and depth effects, not ordinary collision |
-| Ice sheet | Surface friction and optional low collision where sufficient depth freezes |
-| Gas | No collision; visibility and exposure only |
+| Topology/worldbone | Bounds, minimum routes, spawn/objective safety, portal foundations, critical supports |
+| Elevation | Ground height, low cover, ledges, overpasses, bridges, undercrofts, projectile/vision bands |
+| Structural shell | Typed destructible walls, floors, roofs, supports, doors, glass, vegetation, devices |
+| Material seed | Solids, loose matter, liquids, gases, coatings, temperature, wetness, charge, residues |
+| Traversal graph | Ordinary paths, advanced chains, accessibility alternatives, bot costs, interaction anchors |
+| Objective graph | Capture/escort/extract/defend/deliver/spawn relationships independent of decoration |
+| Reset and budget regions | Deterministic restoration, awake-cell/entity limits, cleanup and mode overrides |
+| Presentation | Original tiles, props, parallax/elevation read, audio zones, landmarks, weather, non-authoritative effects |
 
-### Projectile-material interaction
+World interactions include doors and switches; destructible circuits; pumps,
+sluices, turbines, furnaces, capacitors, prisms, mirrors, lifts, cranes, bells,
+traps, bridges, and portals; harvestable or reactive vegetation; movable cover;
+neutral creatures; hazards; and mode objectives. Devices expose typed ports for
+pressure, flow, heat, Charge, Light, physical impact, ownership, and reset, so a
+map can compose systems rather than add bespoke scene scripts.
 
-Projectiles declare:
+Arena layouts must support readable lanes without becoming static corridors.
+Elevation creates over/under routes and projectile bands; destruction opens
+temporary angles; fluids and gases cross boundaries only through authored
+permeability; and objectives force players to choose between controlling the
+current arena state and preparing the next rotation. Dense art frames playable
+space but never hides collision, danger, ownership, or the minimum safe route.
 
-- penetration class;
-- material damage type;
-- energy or damage budget;
-- heat, cold, Charge, liquid, coating, or catalyst deposit;
-- ricochet and refraction behavior;
-- maximum affected cells;
-- residue and ownership.
+## Modes, networking, and progression
 
-A projectile spends penetration energy while crossing occupied cells. Heavy
-projectiles may pass through low-integrity material after reducing their remaining
-energy; ordinary projectiles stop at stable full cover.
+Modes are versioned rulesets over the same authoritative simulation. A mode
+selects player/team limits, maps, actors, spawn/defeat rules, objectives,
+scoring, round flow, legal catalogs, material budgets, persistence, late join,
+spectating, bot fill, and network requirements. It does not fork movement,
+combat, chemistry, or champion implementations.
 
-### AI queries
+Hosted Sanctum presence, joining, and lobby administration are application
+infrastructure and therefore precede these gameplay modes. PvP, PvE, PvPvE,
+roguelike, stronghold, battle-royale, and custom mode claims begin only after
+Living Sanctum V1 passes its full foundation and two-platform acceptance matrix.
 
-Bots read derived fields rather than raw materials:
+| Family | Planned first expression | Production gate |
+| --- | --- | --- |
+| Training / freeplay | Sanctum practice, field guide, configurable dummy/bot, chemistry reset, movement time trials | Fully offline, instant reset, instrumentation, accessibility paths |
+| First Rite / campaign onboarding | Short authored sequence teaching movement, aim, one reaction, one objective, return to Sanctum | Skippable/replayable, no hidden permanent power, save migration |
+| PvP duel | 1v1 stock/round and timed variants on one compact arena | Spawn fairness, rematch, replay, bots, latency/loss, deterministic results |
+| Team PvP | 2v2–4v4 skirmish, control, delivery, territory, draft/mirror variants | Team readability, objective telemetry, role diversity, no dominant composition |
+| Cooperative PvE | Survival and siege with enemy families, elites, bosses, hazards, difficulty and revive rules | Deterministic AI, save stability, scalable encounter budgets, drop-in/out policy |
+| PvPvE expedition | Teams contest neutral threats, material-rich objectives, bounded loot, extraction or convergence | Ownership, late join, anti-snowball rewards, reconnect, spectator information rules |
+| Roguelike dungeons | Seeded rooms/biomes, branching routes, run-scoped formulas/items, bosses, return to Sanctum | Reproducible seeds, run-save recovery, no run power leaking into competitive stats |
+| Lane / stronghold | Teams escort generated forces, contest reactors and destroy authored outer structures around immutable cores | AI/nav budgets, objective clarity, match length, comeback rules, no copied MOBA topology |
+| Battle royale | Small measured survival slice with closing pressure and reactive sectors before any 32+ claim | Large-map streaming, spawn/loot fairness, authority, recovery, bandwidth, readability and hardware profiling |
+| Custom / laboratory | Host-approved rules, maps, formulas, bots, mutators, replay sharing | Versioned manifests, safe limits, explicit incompatibility, no arbitrary client authority |
 
-- passable;
-- movement cost;
-- expected hazard over time;
-- cover strength;
-- visibility attenuation;
-- conductivity risk;
-- likely imminent reaction;
-- destructible shortcut cost;
-- reset-safe objective route.
+Native multiplayer begins with loopback and ENet host/join. Input prediction,
+reconciliation, interpolation, rate limits, diagnostics, disconnect/reconnect,
+join-in-progress, spectators, and forced host-loss tests precede browser WebRTC,
+self-hostable signalling/relay, or large-player claims. Offline solo, local
+multiplayer, bots, replays, editors, and documentation never require an account
+or subscription.
 
-## 22. Map authoring contract
+Persistent progression records tutorials, mastery, records, cosmetics, presets,
+discoveries, codex entries, and attuned destinations. Competitive effectiveness
+comes from the selected legal build and player execution, not accumulated
+account power. PvE/roguelike run upgrades are mode-scoped and reset or convert
+to non-competitive rewards at the declared boundary.
 
-Each reactive map should contain the following source layers:
+## Visual and audio identity
+
+FLUX 2 uses richly authored top-down pixel art with warm masonry, dark timber,
+aged brass, lush vegetation, deep water, and localized cyan/violet magic. Dense
+detail frames clear gameplay lanes; immutable structure is dark and heavy,
+interactive systems glow and move, and hazardous chemistry uses distinct shapes
+and timing. UI is compact dark-brass instrument work with parchment text fields,
+not a wall of opaque fantasy panels. Audio reinforces material, distance,
+movement cadence, threat, and successful reactions.
+
+The runtime must remain legible with reduced motion, common color-vision
+differences, low effects density, keyboard/mouse, controller, and remapped input.
+See [visual direction](docs/VISUAL-DIRECTION.md).
+
+## Runtime architecture
+
+Godot owns presentation, authoring, input, audio, animation, UI, platform
+exports, and transport adapters. Canonical gameplay runs in a renderer-independent
+fixed-tick layer.
+
+- Engine: pinned Godot 4.7.1, compatibility renderer
+- Primary scripting: typed GDScript
+- Simulation: integer/fixed-point, deterministic, host-authoritative
+- Match tick rate: exactly 60 or 120 Hz, selected before tick zero and frozen
+- Native transport target: ENet
+- Browser transport target: WebRTC data channels
+- Initial platforms: Linux and Windows; Web when its gates pass
+- Native extensions: Rust or C++ only after profiling proves a hotspot
 
 ```text
-maps/<map-id>/
-  worldbone-mask.png
-  elevation.png
-  structure-materials.png
-  loose-materials.png
-  liquid-seed.png
-  coatings.png
-  simulation-zones.png
-  destruction-mask.png
-  deposition-mask.png
-  fluid-mask.png
-  growth-mask.png
-  objective-clearance.png
-  spawn-clearance.png
-  route-minimums.json
-  reset-groups.json
-  chemistry-overrides.json
-  material-palette.json
+semantic input commands
+          |
+          v
+deterministic fixed-tick simulation
+          |
+          +--> snapshots, state hashes, replay log, network authority
+          |
+          v
+presentation adapters
+          +--> pixel art, animation, particles, audio, camera, HUD
 ```
 
-### Safety masks
+Godot scene nodes never own the only copy of canonical state. A simulation must
+run headlessly, serialize, replay, and verify without rendering. See the
+[normative production specification](SPECIFICATION.md) and the
+[reactive chemistry contract](docs/reactive-material-system.md).
 
-| Mask or rule | Purpose |
-| --- | --- |
-| Immutable mask | Permanent topology and foundations |
-| Simulation zones | Only these chunks may awaken chemistry |
-| Destruction allowed | Limits structural damage |
-| Deposition allowed | Limits persistent player-created matter |
-| Fluid allowed | Prevents flooding outside intended basins |
-| Growth allowed | Bounds roots, bloom, fungus, and plague |
-| Spawn clearance | Prevents persistent obstruction or hazard at spawn |
-| Objective clearance | Preserves objective access and telegraph space |
-| Route minimum | Guarantees at least one legal path or triggers authored repair |
-| Maximum material depth | Prevents unbounded piles and floods |
-| Reset group | Restores selected structures between rounds or on practice reset |
-| Competitive lifetime override | Caps persistent ability-created matter without changing natural map material |
+## Current playable foundation
 
-### Authoring validator
+The repository currently contains a small executable slice, not a finished
+game: a schematic Sanctum mechanics-room presentation over a deterministic movement
+arena, separate Health/Stamina/Flux state, independent quantized aim,
+persisted keyboard bindings, world/aim-relative movement presets, full/ranged-
+cone POV, keyboard/mouse/controller defaults, custom ordered collision, resource-free Arc
+Primary, Flux-paid Vector Lance, authoritative projectiles/damage, Edgeweave,
+60/120 Hz match startup, stable state hashes, replay recording, and headless
+verification. It proves the runtime boundary and migrates the first movement and
+combat contracts from the browser FLUX prototype. A canonical ability catalog
+and legal 13-point loadout validate at boot. A canonical material registry and
+packed 128 x 128 Sanctum Material Yard seed also validate, hash, reset, and
+render as a read-only debug preview; reactions do not step yet. The full hub art,
+champion kit, networking, active chemistry, animation, and release exports
+remain staged milestones. The current room does not yet meet the approved
+Sanctum image, topology, density, perspective, or environmental-art target; its
+authored replacement is the immediate G2 checkpoint.
 
-The map build must fail when:
+Run it offline after the engine archive has been prepared once:
 
-- worldbone is missing around required outer bounds;
-- a mutable source overlaps worldbone;
-- a spawn or objective begins obstructed;
-- route-minimum analysis finds no permanent path;
-- a reaction can create an unbounded product chain;
-- a material or reaction ID is unknown or version-incompatible;
-- a simulation zone exceeds its allowed active-cell or gas budget;
-- reset groups reference immutable or unowned cells;
-- an authored liquid has no valid basin or depth cap;
-- a hazard lacks visual, audio, timing, and cleanup metadata.
-
-## 23. Networking, replay, reconnect, and host migration
-
-The authoritative host or dedicated server owns all material state.
-
-### Snapshot format
-
-```js
-{
-  materialVersion,
-  registryHash,
-  mapBaseHash,
-  materialTick,
-  continuationCursor,
-  changedChunks: [
-    {
-      chunkId,
-      checksum,
-      encoding: "rle-delta-v1",
-      payload
-    }
-  ]
-}
+```bash
+scripts/install-godot.sh
+scripts/doctor.sh
+scripts/test.sh
+scripts/run.sh --tick-rate=120
 ```
 
-Rules:
+Controls: WASD moves, mouse aims, left click or Space fires Arc Primary, right
+click or E casts Vector Lance, Alt sprints, C uses the jump/movement chain, V
+uses the contextual technique, R restarts the match, and F6 restarts at the
+other supported tick rate. F7 changes movement reference, F8 changes view, and
+F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
+left/right sticks, right trigger, west/east face buttons, and shoulders. The
+rate never mutates inside a running match.
 
-1. Base map material and worldbone are referenced by hash.
-2. Only changed mutable chunks are transmitted after initial synchronization.
-3. Chunk payloads use run-length or palette-indexed deltas plus sparse mixture
-   records.
-4. Clients interpolate visual flow but do not predict authoritative reactions
-   that affect collision, damage, or traversal.
-5. Reconnect receives the base hash, full changed-chunk set, current material
-   tick, and pending warned reactions.
-6. Spectators receive the same authoritative state without command rights.
-7. Replays store seed, content hashes, semantic commands, and authoritative
-   exceptional events; deterministic resimulation verifies checksums.
-8. Host migration includes a verified complete material snapshot and pending work
-   cursor before authority transfers.
-9. A checksum mismatch requests chunk repair; it never silently accepts divergent
-   chemistry.
+See [development setup](docs/DEVELOPMENT.md) and the
+[FLUX movement migration record](docs/MIGRATION-FLUX-MOVEMENT.md).
 
-## 24. Presentation and readability
+## Production roadmap
 
-Every material needs compact palette ramps, edge rules, damage stages, and
-state cues that fit FLUX’s three-quarter pixel perspective.
+Production advances through small vertical slices. Each checkpoint must leave a
+launchable game, focused history, truthful status index, known rollback commit,
+and enough instrumentation to diagnose the next slice. Features remain behind
+validated content/runtime gates until their simulation, presentation, tests,
+tools, accessibility, and compatibility agree.
 
-Required visible distinctions:
+| Checkpoint | Deliverable | Status / exit evidence |
+| --- | --- | --- |
+| A — deterministic Sanctum foundation | Pinned engine, pure integer movement/replay core, styled room, vast hub definition, original visual target, attunement rules | Complete: 60/120 Hz tests and playable foundation |
+| B — resource/input truth | Separate Health/Stamina/Flux, independent aim, action defaults, protocol and HUD state | Complete |
+| C — movement constraints | Same-wall lockout, bounded control states, advanced Conservatory route fixture | Complete |
+| D — ability configuration | Stable ability/element/wire IDs, canonical hashes, legal 13-point loadout, gated families | Complete |
+| E — first combat path | Arc Primary, Vector Lance, projectiles, swept hit/damage, replay and full Edgeweave invariants | Complete |
+| F1 — chemistry storage/safety | Validated material registry, 128 x 128 packed columns, seeded materials/Charge/elevation, immutable worldbone, canonical queue/budgets/hashes, exact reset, read-only preview | Complete |
+| G1 — player configuration | Persisted keyboard remapping, world/aim-relative movement, full/cone POV, exact angle/range, CLI/hotkey controls, deterministic transforms | Complete |
+| G2 — authored Sanctum | Replace the schematic court with the first vast Nexus-to-Conservatory multi-area topology/visual slice, clear routes, landmarks, elevations, responsive ambience, fast-travel context, and original pixel kit | Next; preproduction started during G1 verification |
+| G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | Planned |
+| F2/G4 — systemic Sanctum | Structural/thermal reactions, authored traversal devices, input/controller UI, physics/chemistry practice and reset | Planned |
+| H1 — first ancestry/champion/spells | One approved body plan and character through loadout, unique taunt, dummy/bot, cues, replay, accessibility and platform source gates | Planned |
+| I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | Planned |
+| Sanctum V1 acceptance | Complete stations/overlays, LOS cutaways, charm/readability polish, offline/save/network/accessibility/performance, Garuda Sway and Windows packages/cleanup | First product acceptance |
+| J — first complete arena/mode | Original modular map, objectives, destruction/material safety, duel/team rules, bots, round/rematch/results | Planned |
+| K — session continuity | Late join, reconnect, spectators, forced host migration, diagnostics, self-hostable online boundary | Planned |
+| L — cooperative content | Enemy grammar, survival/siege, elite/boss, difficulty, save/rejoin stability | Planned |
+| M — systemic mode expansion | PvPvE expedition, roguelike dungeons, lane/stronghold experiment, then measured battle-royale slice | Planned |
+| N — roster/biome expansion | One accepted champion, ancestry, map biome, reaction pack, and enemy family at a time | Planned |
+| O — production acceptance | Original art/audio kit, accessibility, performance budgets, Linux/Windows packages, migration/update/rollback, release provenance | Planned |
 
-- dry, damp, wet, and flooded;
-- cold, frozen, warm, hot, and molten;
-- intact, stressed, cracked, and collapsing;
-- uncharged, conducting, overloaded, and discharged;
-- clean, contaminated, toxic, corrupted, and neutralized;
-- inert fuel, smoldering, burning, and spent residue.
+### Slice contract
 
-Danger priority is:
+Every implementation slice follows the same sequence:
 
-```text
-objective and collision edge
-> imminent reaction warning
-> active hazard core
-> champion and projectile silhouette
-> persistent material state
-> decorative texture
-```
+1. define the player decision, authority boundary, data/schema IDs, failure
+   behavior, performance budget, and counterplay;
+2. add or migrate the smallest canonical content set without widening the legal
+   runtime catalog accidentally;
+3. implement pure deterministic simulation and failure diagnostics;
+4. add presentation as a consumer of semantic state/events;
+5. add unit, integration, replay, invalid-content, 60/120 Hz, and applicable
+   network/performance/accessibility fixtures;
+6. expose debug views, reset/cleanup, configuration, and operator commands;
+7. update README status, focused contracts, migration notes, and the append-only
+   worklog before committing;
+8. launch/import/test from a clean checkout, publish a focused reversible commit,
+   and retain the preceding green checkpoint.
 
-Smoke, steam, haze, darkness, vegetation, and debris may never fully remove
-champion outlines, ownership marks, critical projectiles, objective edges, or
-exit routes.
+Content breadth does not outrun system depth: one champion completes every gate
+before the next begins; one material reaction proves the full data-to-network
+path before a catalog expands; one mode reuses shared rules before another mode
+adds new objectives. Experimental content fails closed when its schema, feature
+flag, content hash, map budget, or host capability is absent.
 
-## 25. Debugging and editor tools
+### Management and sources of truth
 
-The development build should expose:
+- `README.md` is the public game brief, chapter index, and honest implementation
+  status.
+- `SPECIFICATION.md` is normative for architecture, determinism, trust,
+  networking, map packages, tests, and release gates.
+- `docs/OVERHAUL-PLAN.md` owns ordered checkpoints and chapter exit criteria.
+- Focused documents own Sanctum, visual, movement-migration, abilities, combat,
+  chemistry, and development contracts.
+- Versioned content manifests own selectable data; code defaults may not create
+  undeclared network-visible content.
+- `.agent/WORKLOG.md` records exact changes, validation, limitations, commit, and
+  push state for every slice.
+- FLUX is the legacy playable prototype and design/tuning evidence. It is not a
+  Flux2 runtime dependency, and conflicting legacy behavior requires an explicit
+  preserve/reinterpret/replace/archive decision.
 
-- material inspector under cursor;
-- layer-by-layer cell view;
-- temperature, moisture, charge, acidity, toxicity, and support overlays;
-- active and sleeping chunk view;
-- reaction candidate and winner trace;
-- deterministic hash input and result;
-- per-phase cell-operation counters;
-- network chunk checksum comparison;
-- pause and single material-step;
-- seed, fill, drain, heat, cool, charge, wet, ignite, damage, and reset brushes;
-- route-minimum and spawn/objective safety overlay;
-- worldbone write-attempt log;
-- replay checksum timeline.
+A slice advances only when determinism, authority, performance, readability,
+map safety, replay, accessibility, offline operation, and applicable platform
+gates pass. Scope may grow; correctness is never waived to make a feature list
+look complete.
 
-Debug tools must use the same public mutation commands as gameplay or clearly mark
-the state as non-authoritative.
+## Project documents
 
-## 26. Test strategy and invariants
-
-### Unit tests
-
-- Property defaulting and registry validation.
-- Density and immiscible-liquid ordering.
-- Hydraulic-head flow across elevation.
-- Powder slope, cohesion, and support behavior.
-- Heat exchange and phase hysteresis.
-- Combustion fuel, moisture, and residue stages.
-- Dissolution, dilution, saturation, and precipitation.
-- Neutralization and corrosion resistance.
-- Conductive-component propagation and resistive heating.
-- Structural damage, support warnings, and rubble conversion.
-- Status threshold, cleansing, and immunity windows.
-
-### Determinism tests
-
-- Same seed and actions produce byte-identical cell arrays.
-- Different frame rates do not change material results.
-- Chunk sleep and wake preserve results.
-- Budget carryover produces the same final state as an unlimited reference step.
-- Reordered network delivery cannot reorder authoritative commands.
-- Replay checksums remain stable on Linux and Windows.
-
-### Safety invariants
-
-- Worldbone hash never changes.
-- No mutable material exists outside allowed cells.
-- No negative amount, invalid material ID, overflow, or non-finite state.
-- Spawn and objective clearance remain valid or execute the authored repair rule.
-- Persistent depth and active gases remain below map budgets.
-- Reaction graph contains no zero-cost infinite production cycle.
-- Every destructive reaction declares ownership, cell cap, and cleanup behavior.
-
-### Network and soak tests
-
-- Late join during active fire, flow, collapse, and Charge.
-- Reconnect after chunk delta loss.
-- Spectator consistency.
-- Host migration with active chemistry.
-- Eight-player ability spam in the maximum authored active region.
-- One-hour seeded soak with checksum comparison and memory ceiling.
-- Reset and rematch after maximum destruction.
-
-### Gameplay acceptance
-
-- Players can predict the next reaction from visible state.
-- Reactions create choices rather than unavoidable damage.
-- Destruction opens and closes routes without eliminating all valid paths.
-- Material residue remains strategically relevant but does not accumulate into
-  unreadable noise.
-- Counters exist for every persistent hazard.
-- Color-blind, high-contrast, reduced-motion, 720p, 1080p, 1440p, and narrow-window
-  modes remain readable.
-
-## 27. Implementation structure
-
-Proposed runtime modules:
-
-```text
-src/materials/
-  material-registry.mjs
-  reaction-registry.mjs
-  material-world.mjs
-  material-chunks.mjs
-  material-mutations.mjs
-  step-external.mjs
-  step-structure.mjs
-  step-thermal.mjs
-  step-phase.mjs
-  step-reactions.mjs
-  step-liquids.mjs
-  step-solutions.mjs
-  step-granular.mjs
-  step-gases.mjs
-  step-electric.mjs
-  step-biology.mjs
-  material-exposure.mjs
-  material-collision.mjs
-  material-navigation.mjs
-  material-network.mjs
-  material-replay.mjs
-  material-render.mjs
-  material-debug.mjs
-
-tests/materials/
-  registry.test.mjs
-  flow.test.mjs
-  thermal.test.mjs
-  reactions.test.mjs
-  electricity.test.mjs
-  structure.test.mjs
-  determinism.test.mjs
-  network.test.mjs
-  safety.test.mjs
-  soak.test.mjs
-```
-
-A single orchestrator owns phase order. Individual phase modules may not call a
-later or earlier phase directly.
-
-## 28. Delivery sequence
-
-| Gate | Scope | Acceptance before advancing |
-| ---: | --- | --- |
-| C0 | Registry, schemas, IDs, fixed-point conventions, world-column model | Content validation and serialization round-trip |
-| C1 | Worldbone, elevation, map import, masks, reset groups | Immutable hash and map-safety tests |
-| C2 | Structural materials, typed damage, damaged stages, rubble, derived collision | Deterministic destruction and route validation |
-| C3 | Heat, phase transitions, thermal shock, Fire and combustion | Wood, water, ice, brick, glass, smoke end-to-end |
-| C4 | Hydraulic liquids, wetness, coatings, mud, oil | Elevation-aware flow and bounded flooding |
-| C5 | Charge, conductive graphs, brine, metal, resistive heat | Telegraph, delayed discharge, reconnect consistency |
-| C6 | Solutions, concentration, dissolution, precipitation, acid/base, corrosion | Conservation and readable acid counterplay |
-| C7 | Gases, diffusion, Wind advection, sealed-zone oxidizer, pressure impulses | Visibility caps and gas budgets |
-| C8 | Growth, roots, grass, plague, nutrients, toxin, Light cleansing | Growth masks and counter rules |
-| C9 | Complete elemental integration through public material commands | No element bypasses safety or authority |
-| C10 | Chunk deltas, replay, spectator, reconnect, host migration | Cross-platform deterministic network tests |
-| C11 | Material editor, inspector, validators, profiling overlays | Author can build and diagnose a region without code changes |
-| C12 | Living Sanctum Material Yard vertical slice | All core reactions playable in one resettable bounded area |
-| C13 | One competitive map conversion | Eight-player stress, safety, readability, balance, package smoke |
-| C14 | Regional material expansion and remaining maps | No duplicated special-case logic; full acceptance suite |
-
-## 29. First playable vertical slice: Sanctum Material Yard
-
-Build a resettable Material Yard inside the Living Sanctum before converting a
-competitive arena.
-
-| Station | Materials and proof |
-| --- | --- |
-| Permanent frame | Worldbone perimeter, foundations, and reset plinth |
-| Masonry lane | Brick, mortar, cracked brick, rubble, impact, blast, saturation, acid |
-| Timber lane | Wood, water, Fire, charcoal, ash, smoke, collapse warning |
-| Flow basin | Elevation, water, mud, ice, steam, drainage and depth limits |
-| Conductivity lane | Water, brine, copper, iron, Charge warning front and discharge |
-| Thermal forge | Sand, glass, lava, basalt, thermal shock |
-| Organic garden | Soil, water, grass, roots, salt, Fire, Dark corruption, Light cleansing |
-| Gas chamber | Steam, smoke, toxic smoke, Wind, sealed-zone limit and visibility cap |
-| Reset station | Restores all mutable cells from seed while worldbone hash remains identical |
-
-Vertical-slice acceptance:
-
-- Identical result from identical seed and actions.
-- No worldbone mutation under any tool or reaction.
-- All reactions remain inside the authored simulation zone.
-- No station, spawn, or exit can be permanently blocked.
-- Reset restores the initial mutable state exactly.
-- Spectator and reconnect reconstruct active chemistry.
-- High-contrast and reduced-motion cues remain complete.
-- Material processing remains inside the profiled fixed budget.
-
-## 30. Further proposals after the core system
-
-These are later extensions, not initial requirements:
-
-- Seasonal temperature and moisture profiles per map.
-- Authored current fields, pumps, drains, sluices, gates, and pressure plates.
-- Conductive devices, switches, relays, capacitors, and destructible circuits.
-- Alchemical objectives based on safely producing or neutralizing a material.
-- PvE creatures that consume, excrete, freeze, ignite, infect, or build materials.
-- Material-carrying projectiles and bounded container breakage.
-- Player tools for scooping, spraying, vacuuming, filtering, freezing, grounding,
-  or compacting matter.
-- Regional material ecologies such as tidal salt marsh, glass desert, fungal
-  undercroft, volcanic forge, frozen aqueduct, plague garden, and storm archive.
-- Reaction discovery codex that records observed inputs, conditions, products,
-  counters, and tactical use without exposing hidden numeric internals.
-- Destructible sound propagation, footprints, scent, and AI tracking derived from
-  material state.
-- Material-driven crafting only where it supports immediate arena decisions and
-  does not create inventory grind.
-- Offline sandbox rulesets with relaxed budgets and additional fictional
-  substances, kept separate from competitive content hashes.
-
-## Research basis
-
-The design uses broad public lessons from these references while remaining an
-original FLUX architecture:
-
-- Noita official site and Falling Everything Engine overview:
-  https://noitagame.com/
-- Noita community material categories and properties:
-  https://noita.wiki.gg/wiki/Material
-- Noita community material information table:
-  https://noita.wiki.gg/wiki/Material_Information_Table
-- The Powder Toy, a sandbox combining elements, heat, pressure, gravity, and
-  electronics:
-  https://powdertoy.co.uk/
-- Falling Turnip, a cellular-automata falling-sand implementation using local
-  block rules:
-  https://github.com/tranma/falling-turnip
-- Devlin and Schuster, “Probabilistic Cellular Automata for Granular Media in
-  Video Games”:
-  https://arxiv.org/abs/2008.06341
-
-The main adaptation is deliberate: side-view falling-sand behavior is translated
-into a deterministic top-down elevation-column model suitable for FLUX movement,
-collision, networking, map safety, and competitive readability.
+- [Production specification](SPECIFICATION.md)
+- [Sanctum hub and fast-travel contract](docs/SANCTUM-HUB.md)
+- [Living Sanctum V1 acceptance contract](docs/SANCTUM-V1-ACCEPTANCE.md)
+- [Visual direction](docs/VISUAL-DIRECTION.md)
+- [Reactive pixel-material and chemistry system](docs/reactive-material-system.md)
+- [Material registry/grid foundation](docs/MATERIAL-GRID-FOUNDATION.md)
+- [Movement migration](docs/MIGRATION-FLUX-MOVEMENT.md)
+- [Ability and loadout configuration](docs/ABILITY-CONFIGURATION.md)
+- [Deterministic combat foundation](docs/COMBAT-FOUNDATION.md)
+- [Gate-ordered overhaul implementation plan](docs/OVERHAUL-PLAN.md)
+- [Development and offline setup](docs/DEVELOPMENT.md)
+- [Character and skeleton reference](reference/character-sprites/README.md)

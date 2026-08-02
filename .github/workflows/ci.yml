@@ -1,0 +1,30 @@
+name: Godot foundation
+
+on:
+  push:
+    branches: [main, "agent/**", "docs/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  headless:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install pinned Godot
+        env:
+          GODOT_INSTALL_ROOT: ${{ runner.temp }}/godot
+          GODOT_BIN_ROOT: ${{ runner.temp }}/bin
+          XDG_CACHE_HOME: ${{ runner.temp }}/cache
+        run: |
+          scripts/install-godot.sh
+          echo "${{ runner.temp }}/bin" >> "$GITHUB_PATH"
+      - name: Headless import and tests
+        run: scripts/test.sh
+      - name: Shell syntax
+        run: bash -n scripts/*.sh
+      - name: Diff hygiene
+        run: git diff --check

@@ -1,0 +1,420 @@
+extends Node2D
+
+
+const MAX_CATCH_UP_STEPS: int = 8
+const HUB_DEFINITION_PATH: String = "res://content/maps/sanctum_hub_v1.json"
+const ABILITY_CATALOG_PATH: String = "res://content/abilities/foundation_abilities_v1.json"
+const LOADOUT_PATH: String = "res://content/loadouts/foundation_practitioner_v1.json"
+const MATERIAL_CATALOG_PATH: String = "res://content/materials/foundation_materials_v1.json"
+const MATERIAL_YARD_PATH: String = "res://content/maps/sanctum_material_yard_v1.json"
+const WATER_COLOR := Color("153c4a")
+const WATER_HIGHLIGHT_COLOR := Color("28677a")
+const FOREST_SHADOW_COLOR := Color("17261b")
+const GRASS_COLOR := Color("304b27")
+const MOSS_COLOR := Color("66834a")
+const PATH_COLOR := Color("8b7045")
+const PALE_STONE_COLOR := Color("b6a477")
+const WORLDBONE_COLOR := Color("26282a")
+const TIMBER_COLOR := Color("4b3226")
+const BRASS_COLOR := Color("b88438")
+const ATTUNEMENT_COLOR := Color("55dbe0")
+const FLUX_COLOR := Color("9b65d9")
+const FIRE_COLOR := Color("e58a38")
+const PARCHMENT_COLOR := Color("e2d8b2")
+const PANEL_COLOR := Color("11130ee6")
+const PLAYER_COLOR := ATTUNEMENT_COLOR
+const POV_MASK_COLOR := Color("090d0be8")
+const POV_EDGE_COLOR := Color("6f8c72a8")
+
+var world: SimWorld
+var input_router: InputRouter
+var hub_definition: HubDefinition
+var ability_catalog: AbilityCatalog
+var loadout: LoadoutDefinition
+var material_registry: MaterialRegistry
+var material_yard: MaterialYardDefinition
+var material_grid: MaterialGrid
+var material_preview_texture: ImageTexture
+var player_preferences: PlayerPreferences
+var tick_rate: int = 120
+var accumulator_seconds: float = 0.0
+var previous_position := Vector2.ZERO
+var current_position := Vector2.ZERO
+var dropped_time_seconds: float = 0.0
+
+
+func _ready() -> void:
+	player_preferences = PlayerPreferences.new()
+	var preferences_existed: bool = FileAccess.file_exists(PlayerPreferences.DEFAULT_PATH)
+	if not player_preferences.load_from_file():
+		push_warning("%s; using safe defaults" % player_preferences.last_error)
+		player_preferences.reset_to_defaults()
+	if not preferences_existed and not player_preferences.save_to_file():
+		push_warning(player_preferences.last_error)
+	_apply_preference_overrides()
+	hub_definition = HubDefinition.new()
+	if not hub_definition.load_from_file(HUB_DEFINITION_PATH):
+		push_error(hub_definition.last_error)
+		get_tree().quit(1)
+		return
+	ability_catalog = AbilityCatalog.new()
+	if not ability_catalog.load_from_file(ABILITY_CATALOG_PATH):
+		push_error(ability_catalog.last_error)
+		get_tree().quit(1)
+		return
+	loadout = LoadoutDefinition.new()
+	if not loadout.load_from_file(LOADOUT_PATH, ability_catalog):
+		push_error(loadout.last_error)
+		get_tree().quit(1)
+		return
+	material_registry = MaterialRegistry.new()
+	if not material_registry.load_from_file(MATERIAL_CATALOG_PATH):
+		push_error(material_registry.last_error)
+		get_tree().quit(1)
+		return
+	material_yard = MaterialYardDefinition.new()
+	if not material_yard.load_from_file(MATERIAL_YARD_PATH, material_registry):
+		push_error(material_yard.last_error)
+		get_tree().quit(1)
+		return
+	tick_rate = _requested_tick_rate()
+	if not _start_match(tick_rate):
+		get_tree().quit(1)
+		return
+	print(
+		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, Sanctum districts %d, travel nodes %d, ability catalog %s, build %d/13, materials %s, yard %s"
+		% [
+			tick_rate,
+			SimConfig.PROTOCOL_VERSION,
+			player_preferences.movement_reference,
+			player_preferences.pov_mode,
+			player_preferences.pov_angle_degrees,
+			player_preferences.pov_range,
+			hub_definition.districts_by_id.size(),
+			hub_definition.travel_nodes_by_id.size(),
+			ability_catalog.content_hash.left(12),
+			loadout.active_points,
+			material_registry.content_hash.left(12),
+			material_yard.content_hash.left(12),
+		]
+	)
+	set_process(true)
+	queue_redraw()
+
+
+func _process(delta: float) -> void:
+	_handle_preference_actions()
+	if Input.is_action_just_pressed(&"reset_match"):
+		if not _start_match(tick_rate):
+			set_process(false)
+			return
+	if Input.is_action_just_pressed(&"toggle_tick_rate"):
+		if not _start_match(60 if tick_rate == 120 else 120):
+			set_process(false)
+			return
+
+	var fixed_delta: float = 1.0 / float(tick_rate)
+	accumulator_seconds += minf(delta, 0.1)
+	var steps: int = 0
+	while accumulator_seconds >= fixed_delta and steps < MAX_CATCH_UP_STEPS:
+		previous_position = current_position
+		var command: SimCommand = input_router.sample(
+			world.tick,
+			current_position,
+			get_viewport().get_mouse_position(),
+		)
+		if not world.step([command]):
+			push_error(world.last_error)
+			set_process(false)
+			break
+		current_position = _player_position()
+		accumulator_seconds -= fixed_delta
+		steps += 1
+	if accumulator_seconds >= fixed_delta:
+		dropped_time_seconds += accumulator_seconds - fmod(accumulator_seconds, fixed_delta)
+		accumulator_seconds = fmod(accumulator_seconds, fixed_delta)
+	queue_redraw()
+
+
+func _draw() -> void:
+	_draw_sanctum_training_court()
+	for obstacle: CollisionWorld.Obstacle in world.collision.obstacles:
+		var rectangle := Rect2(
+			Vector2(float(obstacle.minimum_x) / 1000.0, float(obstacle.minimum_y) / 1000.0),
+			Vector2(float(obstacle.maximum_x - obstacle.minimum_x) / 1000.0, float(obstacle.maximum_y - obstacle.minimum_y) / 1000.0),
+		)
+		draw_rect(rectangle, TIMBER_COLOR if obstacle.vaultable else WORLDBONE_COLOR, true)
+		draw_rect(rectangle, BRASS_COLOR if obstacle.vaultable else PALE_STONE_COLOR.darkened(0.35), false, 3.0)
+	for projectile: ProjectileState in world.projectiles:
+		var projectile_position := Vector2(float(projectile.position_x) / 1000.0, float(projectile.position_y) / 1000.0)
+		var projectile_color: Color = ATTUNEMENT_COLOR if projectile.source_wire_id == CombatTuning.PRIMARY_WIRE_ID else FLUX_COLOR
+		draw_circle(projectile_position, float(projectile.radius) / 1000.0 + 7.0, Color(projectile_color, 0.18))
+		draw_circle(projectile_position, float(projectile.radius) / 1000.0, projectile_color)
+	var alpha: float = clampf(accumulator_seconds * float(tick_rate), 0.0, 1.0)
+	var rendered_position: Vector2 = previous_position.lerp(current_position, alpha)
+	var state: PlayerState = world.player()
+	draw_circle(rendered_position, float(state.radius) / 1000.0 + 5.0, Color(ATTUNEMENT_COLOR, 0.18))
+	draw_circle(rendered_position, float(state.radius) / 1000.0, PLAYER_COLOR)
+	draw_arc(rendered_position, float(state.radius) / 1000.0 + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
+	draw_line(rendered_position, rendered_position + Vector2(state.aim_x, state.aim_y) * 0.032, Color.WHITE, 3.0)
+	_draw_pov_mask(rendered_position, Vector2(state.aim_x, state.aim_y))
+	var status := "%d HZ · T%d · HP %.0f · ST %.0f · FX %.0f · P%d · %s" % [
+		tick_rate,
+		world.tick,
+		float(state.health) / 1000.0,
+		float(state.stamina) / 1000.0,
+		float(state.flux) / 1000.0,
+		world.projectiles.size(),
+		state.last_event,
+	]
+	draw_rect(Rect2(16, 14, 1248, 96), PANEL_COLOR, true)
+	draw_rect(Rect2(16, 14, 1248, 96), BRASS_COLOR.darkened(0.3), false, 2.0)
+	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "THE SANCTUM · MOVEMENT CONSERVATORY · BUILD %d/13" % loadout.active_points, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(760, 40), status, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, ATTUNEMENT_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · MOUSE AIM · LMB/SPACE ARC PRIMARY · RMB/E VECTOR LANCE · ALT SPRINT · C CHAIN · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
+	var view_description := "FULL" if player_preferences.pov_mode == PlayerPreferences.POV_FULL else "CONE %d°/%d" % [player_preferences.pov_angle_degrees, player_preferences.pov_range]
+	draw_string(
+		ThemeDB.fallback_font,
+		Vector2(32, 96),
+		"F6 RATE · F7 MOVE %s · F8 VIEW %s · F9 ANGLE ±15° · F10 RANGE ±80 (hold Shift to reduce)"
+		% [player_preferences.movement_reference.to_upper(), view_description],
+		HORIZONTAL_ALIGNMENT_LEFT,
+		-1.0,
+		13,
+		ATTUNEMENT_COLOR,
+	)
+	if dropped_time_seconds > 0.0:
+		draw_string(ThemeDB.fallback_font, Vector2(32, 132), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
+	_draw_material_yard_preview()
+
+
+func _draw_pov_mask(origin: Vector2, aim: Vector2) -> void:
+	if player_preferences.pov_mode != PlayerPreferences.POV_CONE:
+		return
+	var sight_range: float = float(player_preferences.pov_range)
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var outer_radius: float = maxf(viewport_size.x, viewport_size.y) * 2.25
+	var segment_count: int = 96
+	for segment: int in range(segment_count):
+		var angle_a: float = TAU * float(segment) / float(segment_count)
+		var angle_b: float = TAU * float(segment + 1) / float(segment_count)
+		_draw_mask_quad(origin, sight_range, outer_radius, angle_a, angle_b)
+
+	var visible_radians: float = deg_to_rad(float(player_preferences.pov_angle_degrees))
+	var aim_angle: float = aim.angle() if aim.length_squared() > 0.01 else 0.0
+	var half_visible: float = visible_radians * 0.5
+	if player_preferences.pov_angle_degrees < PlayerPreferences.MAX_POV_ANGLE_DEGREES:
+		var hidden_span: float = TAU - visible_radians
+		var hidden_segments: int = maxi(1, ceili(float(segment_count) * hidden_span / TAU))
+		var hidden_start: float = aim_angle + half_visible
+		var player_safe_radius: float = 30.0
+		for segment: int in range(hidden_segments):
+			var angle_a: float = hidden_start + hidden_span * float(segment) / float(hidden_segments)
+			var angle_b: float = hidden_start + hidden_span * float(segment + 1) / float(hidden_segments)
+			_draw_mask_quad(origin, player_safe_radius, sight_range, angle_a, angle_b)
+		draw_line(origin + Vector2.from_angle(aim_angle - half_visible) * player_safe_radius, origin + Vector2.from_angle(aim_angle - half_visible) * sight_range, POV_EDGE_COLOR, 1.5)
+		draw_line(origin + Vector2.from_angle(aim_angle + half_visible) * player_safe_radius, origin + Vector2.from_angle(aim_angle + half_visible) * sight_range, POV_EDGE_COLOR, 1.5)
+	draw_arc(origin, sight_range, aim_angle - half_visible, aim_angle + half_visible, maxi(12, ceili(48.0 * visible_radians / TAU)), POV_EDGE_COLOR, 1.5)
+
+
+func _draw_mask_quad(origin: Vector2, inner_radius: float, outer_radius: float, angle_a: float, angle_b: float) -> void:
+	var points := PackedVector2Array([
+		origin + Vector2.from_angle(angle_a) * inner_radius,
+		origin + Vector2.from_angle(angle_a) * outer_radius,
+		origin + Vector2.from_angle(angle_b) * outer_radius,
+		origin + Vector2.from_angle(angle_b) * inner_radius,
+	])
+	draw_colored_polygon(points, POV_MASK_COLOR)
+
+
+func _draw_material_yard_preview() -> void:
+	if material_preview_texture == null or material_grid == null:
+		return
+	var panel := Rect2(1082, 492, 174, 194)
+	draw_rect(panel, PANEL_COLOR, true)
+	draw_rect(panel, BRASS_COLOR.darkened(0.25), false, 2.0)
+	draw_string(ThemeDB.fallback_font, Vector2(1094, 515), "MATERIAL YARD F1", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PARCHMENT_COLOR)
+	draw_texture_rect(material_preview_texture, Rect2(1105, 526, 128, 128), false)
+	draw_rect(Rect2(1105, 526, 128, 128), PALE_STONE_COLOR.darkened(0.2), false, 2.0)
+	draw_string(
+		ThemeDB.fallback_font,
+		Vector2(1094, 675),
+		"SEED %s · WB %s" % [material_grid.seed_state_hash.left(6), material_grid.seed_worldbone_hash.left(6)],
+		HORIZONTAL_ALIGNMENT_LEFT,
+		-1.0,
+		11,
+		ATTUNEMENT_COLOR,
+	)
+
+
+func _draw_sanctum_training_court() -> void:
+	draw_rect(Rect2(Vector2.ZERO, Vector2(1280, 720)), WATER_COLOR)
+	for y: int in range(118, 720, 64):
+		draw_line(Vector2(0, y), Vector2(1280, y - 18), Color(WATER_HIGHLIGHT_COLOR, 0.32), 2.0)
+	draw_circle(Vector2(640, 390), 340.0, FOREST_SHADOW_COLOR)
+	draw_circle(Vector2(640, 390), 314.0, GRASS_COLOR)
+	draw_circle(Vector2(75, 360), 110.0, FOREST_SHADOW_COLOR)
+	draw_circle(Vector2(1205, 360), 110.0, FOREST_SHADOW_COLOR)
+
+	# Ordinary routes remain wide and calm; advanced routes sit along the edges.
+	draw_rect(Rect2(0, 310, 1280, 100), PATH_COLOR)
+	draw_rect(Rect2(590, 88, 100, 632), PATH_COLOR)
+	draw_circle(Vector2(650, 380), 188.0, PATH_COLOR)
+	draw_circle(Vector2(650, 380), 138.0, GRASS_COLOR)
+	draw_arc(Vector2(650, 380), 224.0, 0.0, TAU, 96, PALE_STONE_COLOR.darkened(0.18), 16.0)
+	draw_arc(Vector2(650, 380), 265.0, 0.0, TAU, 96, BRASS_COLOR.darkened(0.12), 5.0)
+
+	# A central attunement fountain establishes the hub's travel language.
+	draw_circle(Vector2(650, 380), 74.0, WORLDBONE_COLOR)
+	draw_circle(Vector2(650, 380), 62.0, BRASS_COLOR)
+	draw_circle(Vector2(650, 380), 51.0, WATER_HIGHLIGHT_COLOR)
+	draw_circle(Vector2(650, 380), 28.0, Color(ATTUNEMENT_COLOR, 0.35))
+	draw_circle(Vector2(650, 380), 12.0, ATTUNEMENT_COLOR)
+	draw_line(Vector2(650, 376), Vector2(650, 322), ATTUNEMENT_COLOR, 6.0)
+	draw_circle(Vector2(650, 316), 9.0, Color(ATTUNEMENT_COLOR, 0.55))
+
+	# Elemental practice basins preview chemistry without making pixels authoritative.
+	var basin_colors: Array[Color] = [WATER_HIGHLIGHT_COLOR, FIRE_COLOR, Color("b8dbe8"), Color("6fa84f"), FLUX_COLOR]
+	for index: int in basin_colors.size():
+		var basin_position := Vector2(382 + index * 134, 588)
+		draw_circle(basin_position, 27.0, WORLDBONE_COLOR)
+		draw_circle(basin_position, 21.0, BRASS_COLOR.darkened(0.18))
+		draw_circle(basin_position, 15.0, basin_colors[index])
+
+	# Distributed shrines communicate that the full campus is much larger.
+	for shrine_position: Vector2 in [Vector2(85, 360), Vector2(1195, 360), Vector2(650, 116), Vector2(650, 660)]:
+		draw_circle(shrine_position, 22.0, Color(FLUX_COLOR, 0.18))
+		draw_circle(shrine_position, 13.0, WORLDBONE_COLOR)
+		draw_circle(shrine_position, 8.0, FLUX_COLOR)
+		draw_arc(shrine_position, 18.0, 0.0, TAU, 16, BRASS_COLOR, 2.0)
+
+	# Garden detail is deterministic presentation and stays outside clear lanes.
+	for flower_position: Vector2 in [Vector2(290, 220), Vector2(322, 238), Vector2(1000, 232), Vector2(1034, 215), Vector2(280, 510), Vector2(1015, 515)]:
+		draw_circle(flower_position, 9.0, MOSS_COLOR)
+		draw_circle(flower_position + Vector2(-4, -3), 3.0, FLUX_COLOR)
+		draw_circle(flower_position + Vector2(4, 2), 3.0, PARCHMENT_COLOR)
+
+
+func _start_match(requested_tick_rate: int) -> bool:
+	tick_rate = requested_tick_rate
+	world = SimWorld.new(tick_rate, 8675309)
+	material_grid = MaterialGrid.new()
+	if not material_grid.initialize(material_yard, material_registry, world.config):
+		push_error(material_grid.last_error)
+		return false
+	_refresh_material_preview()
+	input_router = InputRouter.new(1)
+	if not input_router.configure_movement_reference(player_preferences.movement_reference):
+		push_error("Invalid movement reference reached match startup")
+		return false
+	if not input_router.configure_keyboard_bindings(player_preferences.keyboard_bindings):
+		push_error("Invalid keyboard bindings reached match startup")
+		return false
+	accumulator_seconds = 0.0
+	dropped_time_seconds = 0.0
+	current_position = _player_position()
+	previous_position = current_position
+	print("FLUX2 match initialized at %d Hz" % tick_rate)
+	return true
+
+
+func _refresh_material_preview() -> void:
+	var image := Image.create(material_grid.width, material_grid.height, false, Image.FORMAT_RGBA8)
+	for cell_y: int in range(material_grid.height):
+		for cell_x: int in range(material_grid.width):
+			var cell_index := cell_y * material_grid.width + cell_x
+			var material_id := material_registry.material_id(material_grid.material_wire_ids[cell_index])
+			var color := _material_color(material_id)
+			var charge_ratio := float(material_grid.charges[cell_index]) / float(SimConfig.FIXED_SCALE)
+			if charge_ratio > 0.0:
+				color = color.lerp(ATTUNEMENT_COLOR, charge_ratio * 0.7)
+			image.set_pixel(cell_x, cell_y, color)
+	material_preview_texture = ImageTexture.create_from_image(image)
+
+
+func _material_color(material_id: String) -> Color:
+	match material_id:
+		"worldbone":
+			return WORLDBONE_COLOR
+		"stone":
+			return PALE_STONE_COLOR.darkened(0.28)
+		"brick":
+			return Color("8f5745")
+		"wood":
+			return TIMBER_COLOR
+		"water":
+			return WATER_HIGHLIGHT_COLOR
+		"oil":
+			return Color("342f42")
+		"fire":
+			return FIRE_COLOR
+		"steam":
+			return Color("b8c8c6")
+		"ice":
+			return Color("9bc7d9")
+		"rubble":
+			return Color("685e54")
+		_:
+			return Color("151711")
+
+
+func _requested_tick_rate() -> int:
+	var configured: int = int(ProjectSettings.get_setting("flux/simulation/default_tick_rate", 120))
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--tick-rate="):
+			configured = argument.trim_prefix("--tick-rate=").to_int()
+	if not SimConfig.is_supported_tick_rate(configured):
+		push_warning("Unsupported tick rate %d; falling back to 120" % configured)
+		return 120
+	return configured
+
+
+func _apply_preference_overrides() -> void:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--movement-reference="):
+			var requested_reference: String = argument.trim_prefix("--movement-reference=")
+			if not player_preferences.apply_control_preset(requested_reference):
+				push_warning(player_preferences.last_error)
+		elif argument.begins_with("--pov-mode="):
+			var requested_mode: String = argument.trim_prefix("--pov-mode=")
+			if not player_preferences.set_pov_mode(requested_mode):
+				push_warning(player_preferences.last_error)
+		elif argument.begins_with("--pov-angle="):
+			var angle_text: String = argument.trim_prefix("--pov-angle=")
+			if angle_text.is_valid_int():
+				player_preferences.set_pov_angle_degrees(angle_text.to_int())
+			else:
+				push_warning("Invalid --pov-angle value: %s" % angle_text)
+		elif argument.begins_with("--pov-range="):
+			var range_text: String = argument.trim_prefix("--pov-range=")
+			if range_text.is_valid_int():
+				player_preferences.set_pov_range(range_text.to_int())
+			else:
+				push_warning("Invalid --pov-range value: %s" % range_text)
+
+
+func _handle_preference_actions() -> void:
+	var changed: bool = false
+	if Input.is_action_just_pressed(&"toggle_movement_reference"):
+		var next_reference := PlayerPreferences.MOVEMENT_AIM_RELATIVE if player_preferences.movement_reference == PlayerPreferences.MOVEMENT_WORLD_RELATIVE else PlayerPreferences.MOVEMENT_WORLD_RELATIVE
+		changed = player_preferences.apply_control_preset(next_reference)
+		if changed and input_router != null:
+			input_router.configure_movement_reference(next_reference)
+	if Input.is_action_just_pressed(&"toggle_pov_mode"):
+		var next_mode := PlayerPreferences.POV_CONE if player_preferences.pov_mode == PlayerPreferences.POV_FULL else PlayerPreferences.POV_FULL
+		changed = player_preferences.set_pov_mode(next_mode) or changed
+	if Input.is_action_just_pressed(&"adjust_pov_angle"):
+		var angle_delta: int = -15 if Input.is_key_pressed(KEY_SHIFT) else 15
+		player_preferences.set_pov_angle_degrees(player_preferences.pov_angle_degrees + angle_delta)
+		changed = true
+	if Input.is_action_just_pressed(&"adjust_pov_range"):
+		var range_delta: int = -80 if Input.is_key_pressed(KEY_SHIFT) else 80
+		player_preferences.set_pov_range(player_preferences.pov_range + range_delta)
+		changed = true
+	if changed and not player_preferences.save_to_file():
+		push_warning(player_preferences.last_error)
+
+
+func _player_position() -> Vector2:
+	var state: PlayerState = world.player()
+	return Vector2(float(state.position_x) / 1000.0, float(state.position_y) / 1000.0)

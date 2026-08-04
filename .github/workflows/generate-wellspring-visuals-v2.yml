@@ -69,7 +69,8 @@ jobs:
             tools/assets/wellspring_portraits_v3.py \
             tools/assets/wellspring_environment_v2.py \
             tools/assets/generate_wellspring_visual_catalog_v2.py \
-            tools/assets/validate_wellspring_visual_catalog_v2.py
+            tools/assets/validate_wellspring_visual_catalog_v2.py \
+            tools/assets/validate_visual_quality_v3.py
 
       - name: Validate committed legacy visual catalog
         run: |
@@ -80,6 +81,7 @@ jobs:
         run: |
           python tools/assets/generate_wellspring_visual_catalog_v2.py
           python tools/assets/validate_wellspring_visual_catalog_v2.py
+          python tools/assets/validate_visual_quality_v3.py
 
       - name: Confirm generated documentation tables
         run: |

@@ -1,0 +1,91 @@
+extends FluxTestSuite
+
+
+func run() -> int:
+	_test_repository_catalog()
+	_test_race_matrix()
+	_test_champion_packages()
+	_test_wellspring_identity_and_districts()
+	_test_support_catalogs()
+	_test_invalid_catalog_fails_closed()
+	return finish("wellspring-visual-catalog")
+
+
+func _test_repository_catalog() -> void:
+	var catalog := WellspringVisualCatalog.new()
+	check(catalog.load_from_file(), "Wellspring visual catalog validates: %s" % catalog.last_error)
+	equal(catalog.races.size(), 21, "all required race foundations are registered")
+	equal(catalog.champions.size(), 24, "all champion visual packages are registered")
+	equal(catalog.districts.size(), 9, "all Wellspring district packages are registered")
+
+
+func _test_race_matrix() -> void:
+	var catalog := WellspringVisualCatalog.new()
+	check(catalog.load_from_file(), "catalog loads for race matrix tests")
+	for required_race: String in ["human", "dwarf", "gnome", "hobbit", "elf", "orc", "troll", "minotaur", "seakin", "wyrmborn", "stoneborn", "treefolk", "sylph", "undead", "goblin", "nymph", "arachnoid", "vampire", "demon", "angel", "werewolf"]:
+		var race: Dictionary = catalog.race(required_race)
+		check(not race.is_empty(), "%s race foundation resolves" % required_race)
+		equal((race.get("supported_sizes", []) as Array).size(), 5, "%s exposes all five visual sizes" % required_race)
+		equal((race.get("presentations", []) as Array).size(), 2, "%s exposes masculine and feminine foundations" % required_race)
+		check(not (race.get("exemplar", {}) as Dictionary).is_empty(), "%s has a named complete exemplar" % required_race)
+	var arachnoid: Dictionary = catalog.race("arachnoid")
+	equal((arachnoid.get("subtypes", []) as Array).size(), 3, "Arachnoid retains three extensible subtype hooks")
+
+
+func _test_champion_packages() -> void:
+	var catalog := WellspringVisualCatalog.new()
+	check(catalog.load_from_file(), "catalog loads for champion tests")
+	for champion_id: String in catalog.champions:
+		var champion: Dictionary = catalog.champion(champion_id)
+		check(bool(champion.get("all_keyframes_included", false)), "%s includes every canonical keyframe" % champion_id)
+		equal(int(champion.get("animation_count", 0)), 25, "%s includes all canonical animations" % champion_id)
+		equal(int(champion.get("direction_count", 0)), 8, "%s includes all directions" % champion_id)
+	check(catalog.champion("s_wayne").get("ancestry") == "human", "S. Wayne uses the corrected Human foundation")
+	check(catalog.champion("oll_i").get("ancestry") == "minotaur", "Oll' I uses the corrected Minotaur foundation")
+	check(catalog.champion("wa_bidi").get("ancestry") == "sylph", "Wa Bidi uses the corrected Sylph foundation")
+	check(catalog.champion("spai_si").get("ancestry") == "elf", "Spai Si uses the corrected Elf foundation")
+	equal(str(catalog.champion("unnamed_angel").get("status", "")), "placeholder_unapproved", "legacy unnamed Angel slot remains explicitly unapproved")
+
+
+func _test_wellspring_identity_and_districts() -> void:
+	var catalog := WellspringVisualCatalog.new()
+	check(catalog.load_from_file(), "catalog loads for Wellspring tests")
+	equal(str(catalog.wellspring.get("name", "")), "The Wellspring", "central hub uses the confirmed player-facing name")
+	check((catalog.wellspring.get("legacy_aliases", []) as Array).has("sanctum"), "deprecated Sanctum alias remains loadable during migration")
+	var source_court: Dictionary = catalog.district("source_court")
+	check(not source_court.is_empty(), "Source Court resolves")
+	equal(str(source_court.get("landmark", "")), "Cosmic Wellspring", "Source Court is built around the cosmic Flux source")
+	for district_id: String in catalog.districts:
+		equal(str(catalog.district(district_id).get("status", "")), "integrated_candidate", "%s is an integrated modular district candidate" % district_id)
+
+
+func _test_support_catalogs() -> void:
+	var catalog := WellspringVisualCatalog.new()
+	check(catalog.load_from_file(), "catalog loads for support asset tests")
+	equal((catalog.materials.get("materials", []) as Array).size(), 11, "all foundation materials are represented")
+	equal((catalog.materials.get("states", []) as Array).size(), 12, "material presentation includes all required state families")
+	equal((catalog.props.get("props", []) as Array).size(), 20, "all planned prop families are represented")
+	equal((catalog.props.get("states", []) as Array).size(), 11, "all prop interaction states are represented")
+	equal((catalog.element_vfx.get("elements", []) as Array).size(), 8, "all enabled elements are represented")
+	equal((catalog.element_vfx.get("phases", []) as Array).size(), 8, "all VFX presentation phases are represented")
+	equal((catalog.ui.get("surfaces", []) as Array).size(), 20, "all planned UI surfaces are represented")
+
+
+func _test_invalid_catalog_fails_closed() -> void:
+	var catalog := WellspringVisualCatalog.new()
+	catalog.data = {
+		"schema_version": 2,
+		"id": "wellspring-visual-catalog-v2",
+		"character_contract": {
+			"cell_size": [64, 64],
+			"pivot": [32, 56],
+			"atlas_size": [1920, 2560],
+			"directions": [],
+			"animations": [],
+		},
+		"races": {},
+		"champions": {},
+		"wellspring": {"districts": {}},
+	}
+	check(not catalog.validate(), "incomplete Wellspring catalog fails closed")
+	check(not catalog.last_error.is_empty(), "Wellspring catalog failure is diagnosable")

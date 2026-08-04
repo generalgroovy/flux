@@ -25,11 +25,11 @@ even when design documentation already exists.
   - [x] [Player loop](#player-loop)
   - [x] [Reference principles and originality boundary](#reference-principles-and-originality-boundary)
   - [x] [Visual and audio identity](#visual-and-audio-identity)
-- [ ] **Chapter 2 — [The Sanctum](#the-sanctum)** — data/visual foundation
+- [ ] **Chapter 2 — [The Wellspring](#the-wellspring)** — data/visual foundation
   complete; authored multi-layer runtime map in progress
   - [x] Nine combined districts and three-layer layout contract
   - [x] Validated attunement-node and fail-closed fast-travel rules
-  - [x] Playable schematic mechanics court (not accepted Sanctum art/topology)
+  - [x] Playable schematic mechanics court (not accepted Wellspring art/topology)
   - [ ] Authored Nexus-to-Conservatory world slice matching the approved scale,
     dense-edge/clear-lane composition, district landmarks, and pixel direction
   - [ ] Offline-complete stations plus privacy-safe friends/presence, simple
@@ -88,7 +88,7 @@ even when design documentation already exists.
 - [ ] **Chapter 8 — [Modes and networking](#modes-networking-and-progression)**
   - [x] Host-authority, protocol, prediction, reconnect, spectator, and
     host-migration contracts
-  - [ ] Living Sanctum friend presence/join and host administration before other
+  - [ ] Living Wellspring friend presence/join and host administration before other
     modes; ENet host/join vertical slice, duel/team/objective PvP, cooperative PvE,
     PvPvE extraction/convergence, roguelike dungeons, lane/stronghold modes,
     battle royale, bots, and measured scale beyond eight players
@@ -98,14 +98,14 @@ even when design documentation already exists.
 - [x] Focused reversible checkpoints A–E remain playable and published
   - [x] Checkpoint F1 establishes chemistry storage/worldbone/reset safety
   - [x] Checkpoint G1 adds persisted controls and configurable POV
-  - [ ] G2 begins the Living Sanctum V1 track: authored world, body/jump,
+  - [ ] G2 begins the Living Wellspring V1 track: authored world, body/jump,
     reactions/interactions, first ancestry/champion/spells, friends/host tools,
     then Garuda Sway/Windows acceptance before other modes
 
 The complete gate order, slice boundaries, current status, and definition of a
 working checkpoint live in the [FLUX 2 overhaul implementation plan](docs/OVERHAUL-PLAN.md).
 
-![Expanded Sanctum visual direction](assets/concept/sanctum-hub-visual-direction-v1.png)
+![Expanded Wellspring visual direction](assets/concept/sanctum-hub-visual-direction-v1.png)
 
 The image above is an original visual target, not collision geometry or a final
 tile set. Its palette, district scale, magical-travel language, layered island
@@ -124,7 +124,7 @@ compatible documented license.
 | Titanfall/Apex family | Movement routes, momentum conversion, readable traversal objects, independent aim, squad legibility | A stamina-bounded universal movement grammar in authored top-down elevation lanes; champion mobility never bypasses collision or the global speed ceiling |
 | Super Smash Bros. Melee | Commitment, recovery, precise landing timing, momentum expression, bounded launch influence | Top-down landing cuts, wavedash geometry, readable startup/active/recovery phases, and future collision-safe impact influence—without copying characters, stages, move data, or control layout |
 | Classic handheld Zelda games | A top-down jump reads instantly through compact body lift, a grounded shadow, apex, and crisp landing | An original authoritative elevation arc and original body/shadow presentation; no copied sprite, frame, timing, sound, map, input, or item behavior |
-| Hades / Hades II | Strong room silhouettes, layered depth, dramatic landmarks, dense scenic edges, responsive ambience, and clear combat floors | Original pixel-perspective Sanctum districts with FLUX materials, architecture, palette ramps, props, routes, lighting, UI, and interaction grammar; no copied rooms, assets, camera metrics, palette, symbols, or trade dress |
+| Hades / Hades II | Strong room silhouettes, layered depth, dramatic landmarks, dense scenic edges, responsive ambience, and clear combat floors | Original pixel-perspective Wellspring districts with FLUX materials, architecture, palette ramps, props, routes, lighting, UI, and interaction grammar; no copied rooms, assets, camera metrics, palette, symbols, or trade dress |
 | Noita | Materials and spells producing systemic consequences | A deterministic, host-authoritative, bounded 2.5D chemistry grid with reset groups, work budgets, explicit ownership, and immutable worldbone |
 | Magicka | Element composition as a learnable casting language | Versioned Flux Formulas made from approved source, geometry, operation, and catalyst components; competitive recipes are hashed content, not arbitrary unvalidated packets |
 | League of Legends | Skillshot clarity, role composition, cooldown/resource decisions, objective pressure | Shape-first aimed abilities, loadout roles, contestable terrain, and modular objective rules without copying champions, abilities, map topology, terminology, or presentation |
@@ -169,7 +169,7 @@ social, or experimental modes.
 
 ## Player loop
 
-The Sanctum is the persistent starting, training, social, and configuration
+The Wellspring is the persistent starting, training, social, and configuration
 space. A player learns or tunes a build there, joins a hosted session or chooses
 an expedition, enters a resettable arena, then returns with mastery, records,
 cosmetic expression, and newly attuned destinations—not power that invalidates
@@ -189,7 +189,7 @@ Aim, collision, damage, cooldowns, reaction ownership, and material mutations
 belong to the deterministic simulation; animation, particles, camera, and audio
 present confirmed outcomes.
 
-## The Sanctum
+## The Wellspring
 
 The hub is a vast magical academy-fortress spread across a central island,
 satellite terraces, rooftop routes, an undercroft, suspended gardens, and
@@ -216,12 +216,12 @@ Local movement remains rewarding, but distance is never busywork. The central
 fountain and district shrines form a diegetic fast-travel network. A shrine must
 be discovered and attuned once; unlocked destinations can then be selected from
 any safe shrine. Combat, scripted trials, and invalid destinations fail closed.
-See [the Sanctum contract](docs/SANCTUM-HUB.md) and its versioned
-[map definition](content/maps/sanctum_hub_v1.json).
+See [the Wellspring contract](docs/WELLSPRING-HUB.md) and its versioned
+[map definition](content/maps/wellspring_hub_v2.json).
 
-### Living Sanctum V1 — first acceptance test
+### Living Wellspring V1 — first acceptance test
 
-The first accepted product is the Sanctum itself, not an isolated duel or
+The first accepted product is the Wellspring itself, not an isolated duel or
 chemistry demo. It must feel spacious, charming, inhabited, and coherent while
 serving as the fully functional application shell. Nexus, movement, chemistry,
 social/muster, champion/loadout, archive/guide, settings, recovery, and service
@@ -231,7 +231,7 @@ rewarding advanced routes, environmental responses, and fast travel.
 Offline users can arrive, onboard, configure, train, inspect builds/guide,
 interact, reset laboratories, traverse, save, and quit without a service. When
 connected, the muster/friends surface shows privacy-safe presence such as
-offline, online, away, in Sanctum/activity, joinable, invite-only, full, or
+offline, online, away, in Wellspring/activity, joinable, invite-only, full, or
 incompatible, with a clear reason when joining is unavailable. Direct/LAN and
 validated invite joining remain primary; any directory, signalling, or relay is
 replaceable and self-hostable.
@@ -253,7 +253,7 @@ revealed by silhouettes, labels, shadows, effects, audio markers, or debug UI.
 Acceptance is co-equal on Garuda Linux with Sway and supported Windows: source
 and packaged launch, input/window/audio behavior, saves, networking, reconnect,
 performance, accessibility, cleanup, and uninstall/rollback evidence. See the
-[Living Sanctum V1 acceptance contract](docs/SANCTUM-V1-ACCEPTANCE.md).
+[Living Wellspring V1 acceptance contract](docs/SANCTUM-V1-ACCEPTANCE.md).
 
 ## Movement and traversal
 
@@ -631,7 +631,7 @@ combat, chemistry, or champion implementations.
 Hosted Sanctum presence, joining, and lobby administration are application
 infrastructure and therefore precede these gameplay modes. PvP, PvE, PvPvE,
 roguelike, stronghold, battle-royale, and custom mode claims begin only after
-Living Sanctum V1 passes its full foundation and two-platform acceptance matrix.
+Living Wellspring V1 passes its full foundation and two-platform acceptance matrix.
 
 | Family | Planned first expression | Production gate |
 | --- | --- | --- |
@@ -825,7 +825,7 @@ look complete.
 
 - [Production specification](SPECIFICATION.md)
 - [Sanctum hub and fast-travel contract](docs/SANCTUM-HUB.md)
-- [Living Sanctum V1 acceptance contract](docs/SANCTUM-V1-ACCEPTANCE.md)
+- [Living Wellspring V1 acceptance contract](docs/SANCTUM-V1-ACCEPTANCE.md)
 - [Visual direction](docs/VISUAL-DIRECTION.md)
 - [Reactive pixel-material and chemistry system](docs/reactive-material-system.md)
 - [Material registry/grid foundation](docs/MATERIAL-GRID-FOUNDATION.md)
@@ -835,3 +835,19 @@ look complete.
 - [Gate-ordered overhaul implementation plan](docs/OVERHAUL-PLAN.md)
 - [Development and offline setup](docs/DEVELOPMENT.md)
 - [Character and skeleton reference](reference/character-sprites/README.md)
+
+<!-- BEGIN WELLSPRING_VISUAL_V2 -->
+## Wellspring visual-production v2
+
+| Asset family | Complete |
+| --- | ---: |
+| Race foundations: 21 races × 5 sizes × 2 presentations | 210 |
+| Complete race exemplars | 21 |
+| Complete champion visual packages | 24 |
+| Wellspring district packages | 9 |
+| Enabled element VFX families | 8 |
+| Material/state cells | 132 |
+| Prop/state cells | 220 |
+
+See [the complete tabular visual catalog](docs/WELLSPRING-VISUAL-PRODUCTION.md).
+<!-- END WELLSPRING_VISUAL_V2 -->

@@ -14,6 +14,7 @@ from wellspring_catalog_data_v2 import (
     DIRECTIONS, DISTRICTS, ELEMENTS, MATERIALS, MATERIAL_STATES, PRESENTATIONS,
     PROPS, PROP_STATES, RACES, SIZE_IDS, UI_SURFACES, VFX_PHASES,
 )
+from wellspring_environment_v2 import MAP_PIXELS
 from wellspring_pixel_art_v2 import ATLAS_SIZE
 
 ROOT = Path(__file__).resolve().parents[2]

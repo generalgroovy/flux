@@ -24,18 +24,18 @@
     },
     {
       "path": "assets/sprites/champions/nico_lai/nico_lai_atlas.png",
-      "bytes": 57583,
-      "sha256": "e8009027740c5f7df89279d0a3ec08d804267703cef476fc1bb02bcfd2ac4684"
+      "bytes": 60452,
+      "sha256": "68392d57cac6d0f9954937a51802ba58326b78c68e60e84c3b4f7d3edee6ca93"
     },
     {
       "path": "assets/sprites/champions/nico_lai/nico_lai_direction_preview.png",
-      "bytes": 1470,
-      "sha256": "561da04887f62b0b86c0d0536dae8523894cb7c2849cdff632d1057a363d0b8d"
+      "bytes": 1447,
+      "sha256": "eea58a45997c6b09b69b8796174c8736365284c99d2afd3d5639086aa5b9f7ab"
     },
     {
       "path": "assets/sprites/champions/nico_lai/nico_lai_overlay_debug_atlas.png",
-      "bytes": 69829,
-      "sha256": "6a0e1ccb0791b9321d92063d14824ddb96bc9bea3699af2dc4230aa6684dc446"
+      "bytes": 70694,
+      "sha256": "33c0fee9130a78bd9616b8c1df1fc59a06a8bfb3f8f4390e6d52e8a11b0270bb"
     },
     {
       "path": "assets/sprites/skeletons/size_1_tiny/skeleton_atlas.png",
@@ -90,7 +90,7 @@
     {
       "path": "assets/sprites/skeletons/skeleton_animation_pngs_v1.zip",
       "bytes": 198182,
-      "sha256": "275233b18240623c386defa66503e270814d5944121715baba758f0e5b18c06d"
+      "sha256": "9d732ec9bd52519aff5e8ee16faca32bfeff31b284c71f1504efdef30c521059"
     },
     {
       "path": "assets/sprites/skeletons/skeleton_overlay_validation.png",
@@ -117,5 +117,6 @@
       "bytes": 22580,
       "sha256": "13a6add97dae786919cfb72d1c5645bd4497225b9184a20e072407b7afcb069b"
     }
-  ]
+  ],
+  "refreshed_after": "tools/assets/generate_complete_visual_catalog_v1.py"
 }

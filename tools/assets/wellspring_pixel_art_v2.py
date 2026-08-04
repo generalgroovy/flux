@@ -54,7 +54,7 @@ def blend(a: str, b: str, t: float) -> str:
 
 def save_png(image: Image.Image, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    image.save(path, "PNG", optimize=True, compress_level=9)
+    image.save(path, "PNG", optimize=False, compress_level=4)
 
 
 def scaled_geometry(size_id: str, animation: str, direction: int, frame_index: int) -> tuple[dict[str, tuple[int, int]], dict[str, int]]:
@@ -218,7 +218,7 @@ def draw_torso(draw: ImageDraw.ImageDraw, profile: dict[str, Any], z: dict[str, 
     draw.line((shx - shoulder + 1, shy + 3, hx - waist + 1, hy + lower - 2), fill=rgba(pal["primary_shadow"]), width=2)
     draw.line((shx, shy + 2, hx, hy + lower), fill=rgba(pal["secondary"]), width=2)
     draw.rectangle((hx - waist, hy + lower - 2, hx + waist, hy + lower + 1), fill=rgba(INK))
-    draw.rectangle((hx - waist + 2, hy + lower - 1, hx + waist - 2, hy), fill=rgba(pal["secondary"]))
+    draw.rectangle((hx - waist + 2, hy + lower - 1, hx + waist - 2, hy + lower), fill=rgba(pal["secondary"]))
 
 
 def draw_hair(draw: ImageDraw.ImageDraw, profile: dict[str, Any], head: tuple[int, int], radius: int, pal: dict[str, str], direction: int) -> None:

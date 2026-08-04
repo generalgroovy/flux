@@ -61,7 +61,7 @@ jobs:
         run: |
           grep -q 'The Wellspring visual-production catalog v2' docs/WELLSPRING-VISUAL-PRODUCTION.md
           grep -q 'WELLSPRING_VISUAL_V2' README.md
-          grep -q '| Race and ancestry catalog' docs/WELLSPRING-VISUAL-PRODUCTION.md || true
+          grep -q '## Race and ancestry catalog' docs/WELLSPRING-VISUAL-PRODUCTION.md
           test -s content/visual/wellspring_visual_catalog_v2.json
           test -s content/visual/wellspring_visual_hashes_v2.json
 
@@ -71,9 +71,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add \
             README.md \
-            docs/WELLSPRING-VISUAL-PRODUCTION.md \
-            docs/WELLSPRING-HUB.md \
-            docs/WELLSPRING-V1-ACCEPTANCE.md \
+            docs/WELLSPRING*.md \
             assets/icons \
             assets/effects \
             assets/maps \

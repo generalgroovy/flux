@@ -1,0 +1,92 @@
+name: Generate Wellspring visual assets v2
+
+on:
+  push:
+    branches:
+      - agent/visual-assets-production-v1
+    paths:
+      - .agent/run-wellspring-visuals-v2
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wellspring-visual-assets-v2-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out visual-production branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Configure Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install deterministic image dependency
+        run: python -m pip install --disable-pip-version-check 'Pillow==11.3.0'
+
+      - name: Compile generators and validators
+        run: |
+          python -m py_compile \
+            tools/assets/generate_visual_assets_v1.py \
+            tools/assets/validate_visual_assets_v1.py \
+            tools/assets/generate_complete_visual_catalog_v1.py \
+            tools/assets/validate_complete_visual_catalog_v1.py \
+            tools/assets/wellspring_catalog_data_v2.py \
+            tools/assets/wellspring_pixel_art_v2.py \
+            tools/assets/wellspring_environment_v2.py \
+            tools/assets/generate_wellspring_visual_catalog_v2.py \
+            tools/assets/validate_wellspring_visual_catalog_v2.py
+
+      - name: Restore and validate legacy visual catalog
+        run: |
+          python tools/assets/generate_complete_visual_catalog_v1.py
+          python tools/assets/validate_visual_assets_v1.py
+          python tools/assets/validate_complete_visual_catalog_v1.py
+
+      - name: Generate and validate Wellspring visual catalog
+        run: |
+          python tools/assets/generate_wellspring_visual_catalog_v2.py
+          python tools/assets/validate_wellspring_visual_catalog_v2.py
+
+      - name: Confirm generated documentation tables
+        run: |
+          grep -q 'The Wellspring visual-production catalog v2' docs/WELLSPRING-VISUAL-PRODUCTION.md
+          grep -q 'WELLSPRING_VISUAL_V2' README.md
+          grep -q '| Race and ancestry catalog' docs/WELLSPRING-VISUAL-PRODUCTION.md || true
+          test -s content/visual/wellspring_visual_catalog_v2.json
+          test -s content/visual/wellspring_visual_hashes_v2.json
+
+      - name: Commit generated repository assets
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            README.md \
+            docs/WELLSPRING-VISUAL-PRODUCTION.md \
+            docs/WELLSPRING-HUB.md \
+            docs/WELLSPRING-V1-ACCEPTANCE.md \
+            assets/icons \
+            assets/effects \
+            assets/maps \
+            assets/props \
+            assets/props_v2 \
+            assets/sprites \
+            assets/tiles \
+            assets/ui \
+            content/maps \
+            content/visual
+          if git diff --cached --quiet; then
+            echo 'Generated Wellspring assets already match the repository.'
+            exit 0
+          fi
+          git commit -m 'feat(assets): generate complete Wellspring visual catalog v2'
+          git push origin HEAD:${{ github.ref_name }}

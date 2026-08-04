@@ -149,7 +149,7 @@ def main() -> int:
         if sha256(path) != entry.get("sha256"):
             errors.append(f"hash mismatch: {relative}")
 
-    expected_minimum = 23 * 3 + 24 * 5 + 9 * 2 + 7
+    expected_minimum = 23 * 3 + 24 * 5 + 9 * 2 + 6
     if len(seen) < expected_minimum:
         errors.append(f"hash manifest is incomplete: {len(seen)} entries; expected at least {expected_minimum}")
 

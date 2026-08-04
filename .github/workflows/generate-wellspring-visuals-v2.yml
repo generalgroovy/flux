@@ -39,18 +39,27 @@ jobs:
       - name: Install deterministic image dependency
         run: python -m pip install --disable-pip-version-check 'Pillow==11.3.0'
 
-      - name: Persist faster deterministic PNG encoding
+      - name: Persist deterministic renderer fixes
         run: |
           python - <<'PY'
           from pathlib import Path
           path = Path('tools/assets/wellspring_pixel_art_v2.py')
           text = path.read_text(encoding='utf-8')
-          old = 'image.save(path, "PNG", optimize=True, compress_level=9)'
-          new = 'image.save(path, "PNG", optimize=False, compress_level=4)'
-          if old in text:
-              path.write_text(text.replace(old, new), encoding='utf-8')
-          elif new not in text:
-              raise SystemExit('unexpected save_png implementation')
+          replacements = {
+              'image.save(path, "PNG", optimize=True, compress_level=9)':
+                  'image.save(path, "PNG", optimize=False, compress_level=4)',
+              'draw.rectangle((hx - waist + 2, hy + lower - 1, hx + waist - 2, hy), fill=rgba(pal["secondary"]))':
+                  'draw.rectangle((hx - waist + 2, hy + lower - 1, hx + waist - 2, hy + lower), fill=rgba(pal["secondary"]))',
+          }
+          changed = False
+          for old, new in replacements.items():
+              if old in text:
+                  text = text.replace(old, new)
+                  changed = True
+              elif new not in text:
+                  raise SystemExit(f'unexpected renderer implementation: {old}')
+          if changed:
+              path.write_text(text, encoding='utf-8')
           PY
 
       - name: Compile generators and validators

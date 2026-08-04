@@ -1,0 +1,24 @@
+{
+  "id": "new_race",
+  "name": "New Race",
+  "feature": "new_anatomy",
+  "default_size": "size_3_medium",
+  "skin": "#9b8069",
+  "primary": "#455b68",
+  "secondary": "#91734c",
+  "accent": "#55dbe0",
+  "exemplar": "Named Exemplar",
+  "status": "production_foundation",
+  "supported_sizes": [
+    "size_1_tiny",
+    "size_2_small",
+    "size_3_medium",
+    "size_4_large",
+    "size_5_huge"
+  ],
+  "presentations": [
+    "masculine",
+    "feminine"
+  ],
+  "notes": "Add explicit renderer anatomy when palette and equipment cannot communicate the body plan."
+}

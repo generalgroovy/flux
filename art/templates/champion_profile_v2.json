@@ -1,0 +1,20 @@
+{
+  "id": "new_champion",
+  "name": "New Champion",
+  "ancestry": "human",
+  "size": "size_3_medium",
+  "presentation": "neutral",
+  "skin": "#b98263",
+  "primary": "#3d5b72",
+  "secondary": "#b99761",
+  "accent": "#55dbe0",
+  "hair": "short_dark",
+  "feature": "human",
+  "weapon": "arc_blade",
+  "elements": [
+    "wind",
+    "light"
+  ],
+  "status": "integrated_candidate",
+  "notes": "Rendered pixels are presentation only; gameplay authority remains in content registries."
+}

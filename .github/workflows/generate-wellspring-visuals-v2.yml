@@ -39,39 +39,6 @@ jobs:
       - name: Install deterministic image dependency
         run: python -m pip install --disable-pip-version-check 'Pillow==11.3.0'
 
-      - name: Persist deterministic generator fixes
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          renderer = Path('tools/assets/wellspring_pixel_art_v2.py')
-          renderer_text = renderer.read_text(encoding='utf-8')
-          renderer_replacements = {
-              'image.save(path, "PNG", optimize=True, compress_level=9)':
-                  'image.save(path, "PNG", optimize=False, compress_level=4)',
-              'draw.rectangle((hx - waist + 2, hy + lower - 1, hx + waist - 2, hy), fill=rgba(pal["secondary"]))':
-                  'draw.rectangle((hx - waist + 2, hy + lower - 1, hx + waist - 2, hy + lower), fill=rgba(pal["secondary"]))',
-          }
-          renderer_changed = False
-          for old, new in renderer_replacements.items():
-              if old in renderer_text:
-                  renderer_text = renderer_text.replace(old, new)
-                  renderer_changed = True
-              elif new not in renderer_text:
-                  raise SystemExit(f'unexpected renderer implementation: {old}')
-          if renderer_changed:
-              renderer.write_text(renderer_text, encoding='utf-8')
-
-          validator = Path('tools/assets/validate_wellspring_visual_catalog_v2.py')
-          validator_text = validator.read_text(encoding='utf-8')
-          old_import = 'from wellspring_pixel_art_v2 import ATLAS_SIZE'
-          new_import = 'from wellspring_environment_v2 import MAP_PIXELS\nfrom wellspring_pixel_art_v2 import ATLAS_SIZE'
-          if old_import in validator_text:
-              validator.write_text(validator_text.replace(old_import, new_import), encoding='utf-8')
-          elif new_import not in validator_text:
-              raise SystemExit('unexpected Wellspring validator imports')
-          PY
-
       - name: Compile generators and validators
         run: |
           python -m py_compile \
@@ -86,10 +53,8 @@ jobs:
             tools/assets/generate_wellspring_visual_catalog_v2.py \
             tools/assets/validate_wellspring_visual_catalog_v2.py
 
-      - name: Restore and validate legacy visual catalog
+      - name: Validate committed legacy visual catalog
         run: |
-          python tools/assets/generate_complete_visual_catalog_v1.py
-          python tools/assets/refresh_visual_hashes_v1.py
           python tools/assets/validate_visual_assets_v1.py
           python tools/assets/validate_complete_visual_catalog_v1.py
 
@@ -113,21 +78,23 @@ jobs:
           git add \
             README.md \
             docs/WELLSPRING*.md \
-            tools/assets/wellspring_pixel_art_v2.py \
-            tools/assets/validate_wellspring_visual_catalog_v2.py \
             assets/icons \
             assets/effects \
             assets/maps \
-            assets/props \
             assets/props_v2 \
-            assets/sprites \
-            assets/tiles \
-            assets/ui \
-            content/maps \
-            content/visual
+            assets/sprites/races_v2 \
+            assets/sprites/champions_v2 \
+            assets/tiles/wellspring \
+            assets/tiles/materials_v2 \
+            assets/ui/wellspring_v2 \
+            content/maps/wellspring \
+            content/maps/wellspring_hub_v2.json \
+            content/maps/sanctum_to_wellspring_alias_v2.json \
+            content/visual/wellspring_visual_catalog_v2.json \
+            content/visual/wellspring_visual_hashes_v2.json
           if git diff --cached --quiet; then
             echo 'Generated Wellspring assets already match the repository.'
             exit 0
           fi
-          git commit -m 'feat(assets): generate complete Wellspring visual catalog v2'
+          git commit -m 'feat(assets): regenerate Wellspring visual catalog v2'
           git push origin HEAD:${{ github.event.pull_request.head.ref }}

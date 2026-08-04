@@ -1,0 +1,77 @@
+name: Generate FLUX visual gold standard v3
+
+on:
+  push:
+    branches:
+      - agent/visual-assets-production-v1
+    paths:
+      - .agent/run-visual-ai-v3
+      - tools/visual_ai/**
+      - content/visual/visual_iteration_manifest_v3.json
+  workflow_dispatch:
+    inputs:
+      attempts:
+        description: Candidate attempts per item
+        required: false
+        default: "2"
+      max_calls:
+        description: Hard provider-call budget
+        required: false
+        default: "10"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: flux-visual-ai-v3-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  gold-standard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      FAL_KEY: ${{ secrets.FAL_KEY }}
+      FLUX_VISUAL_MAX_CALLS: ${{ inputs.max_calls || '10' }}
+      FLUX_VISUAL_MODEL: openai/gpt-image-2
+      FLUX_VISUAL_QUALITY: high
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Require explicit provider secret
+        run: |
+          if [ -z "${FAL_KEY:-}" ]; then
+            echo "::error::FAL_KEY repository secret is required for visual generation."
+            exit 1
+          fi
+
+      - name: Install pinned visual-pipeline dependencies
+        working-directory: tools/visual_ai
+        run: npm install --no-audit --no-fund
+
+      - name: Validate manifest and references
+        working-directory: tools/visual_ai
+        run: npm run validate
+
+      - name: Generate gold-standard concepts
+        working-directory: tools/visual_ai
+        run: node src/cli.mjs run-slice --slice gold_standard_concepts --attempts "${{ inputs.attempts || '2' }}"
+
+      - name: Commit generated candidates and review boards
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add art/production_v3 art/review/v3 content/visual/visual_iteration_results_v3.json
+          if git diff --cached --quiet; then
+            echo "No generated changes."
+            exit 0
+          fi
+          git commit -m "feat(art): generate FLUX v3 gold-standard candidates"
+          git push origin HEAD:${{ github.ref_name }}

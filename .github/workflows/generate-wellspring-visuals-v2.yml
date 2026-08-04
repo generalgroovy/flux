@@ -1,9 +1,13 @@
 name: Generate Wellspring visual assets v2
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/visual-assets-production-v1
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
     paths:
       - .agent/run-wellspring-visuals-v2
 
@@ -11,18 +15,20 @@ permissions:
   contents: write
 
 concurrency:
-  group: wellspring-visual-assets-v2-${{ github.ref }}
+  group: wellspring-visual-assets-v2-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
   generate:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
       - name: Check out visual-production branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
       - name: Configure Python
@@ -102,4 +108,4 @@ jobs:
             exit 0
           fi
           git commit -m 'feat(assets): generate complete Wellspring visual catalog v2'
-          git push origin HEAD:${{ github.ref_name }}
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}

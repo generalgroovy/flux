@@ -59,6 +59,7 @@ jobs:
             tools/assets/generate_visual_assets_v1.py \
             tools/assets/validate_visual_assets_v1.py \
             tools/assets/generate_complete_visual_catalog_v1.py \
+            tools/assets/refresh_visual_hashes_v1.py \
             tools/assets/validate_complete_visual_catalog_v1.py \
             tools/assets/wellspring_catalog_data_v2.py \
             tools/assets/wellspring_pixel_art_v2.py \
@@ -69,6 +70,7 @@ jobs:
       - name: Restore and validate legacy visual catalog
         run: |
           python tools/assets/generate_complete_visual_catalog_v1.py
+          python tools/assets/refresh_visual_hashes_v1.py
           python tools/assets/validate_visual_assets_v1.py
           python tools/assets/validate_complete_visual_catalog_v1.py
 

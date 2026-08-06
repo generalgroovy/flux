@@ -539,42 +539,714 @@ an explicitly tested large-body class.
 
 ### Existing character design roster
 
-The following FLUX designs are migration inputs, not automatically selectable
-Flux2 content. “Void” is an unresolved older label and must be explicitly mapped
-to Dark, Chaos, or a separately approved family before affected champions can
-enter the runtime.
+<!-- BEGIN CHARACTER_ROSTER_V1 -->
 
-| Champion | Ancestry | Draft affinities | Intended identity |
-| --- | --- | --- | --- |
-| Oh Tipi | Seakin | Water, Ice, Charge | Conductive-field skirmisher and current rider |
-| S. Wayne | Hobbit | Dark, Light | Eclipse-boundary tactician and decoy router |
-| The Red Baron | Undead | Void, Fire, Ice | Airborne formation controller with punishable landings |
-| Steezo | Goblin | Fire, Charge, Light | Volatile construct engineer and detonation sequencer |
-| Treevor the Mason | Treefolk | Earth, Wind, Fire | Terrain mason creating routes, cover, and fire liabilities |
-| Oll' I | Werewolf | Earth, Fire, Light | Forward structural breaker with high commitment |
-| Fluup | Orc | Charge, Wind, Ice | Storm bruiser converting committed landings |
-| Wa Bidi | Goblin | Charge, Wind, Fire | Fast battlecry route specialist with visible/audio cues |
-| Grace Reava | Sylph | Wind, Water, Light | Luminous-current aerial duelist |
-| Nico Lai | Gnome | Charge, Light | Precision shared-device engineer |
-| Spai Si | Demon | Wind, Light, Earth | Redirect duelist converting hostile intent into angles |
-| Leaf the Hidden | Treefolk | Water, Earth, Light | Concealed grove support and planned-route grower |
-| Ha Rekt | Wyrmborn | Ice, Wind, Fire | Aerial cold-line hunter with marked escape routes |
-| Dr. Apex | Stoneborn | Earth, Light, Water | Armored combat medic with contestable support zones |
-| Haara | Nymph | Light, Wind, Spirit | Bloom planner with flexible resource routing |
-| Hesus Christo | Elf | Earth, Water | Tall renewal vanguard rebuilding broken routes |
-| Grimm Bow | Troll | Void, Earth, Water | Terrain archer converting displacement into precision, never bonus damage |
-| Biggy Bob | Dwarf | Earth, Fire, Light | Forge-line breacher and masonry specialist |
-| Jan Wicked | Human | Ice, Dark, Charge | Black-ice circuit hunter |
-| Ba Djoh | Minotaur | Earth, Fire, Water | Three-current charge breaker |
-| Urzh | Stoneborn | Earth, Fire, Charge | Conductive kiln bulwark and lane anchor |
-| Donnok | Dwarf | Earth, Fire, Water | Forge-rhythm terrain shaper |
-| Djonah Thaan | Vampire | Dark, Charge, Fire | Grave-current pursuit controller |
-| Unnamed Angel | Angel | Wind, Light, Spirit | Visual placeholder only; identity, lore, and kit unapproved |
+The 24 entries below are the current migration roster: 23 named designs
+and one deliberately unapproved Angel slot. **Ancestry** is the current
+term for race. Each card embeds the eight-direction documentation preview
+that ships beside the runtime-addressable atlas; the preview is for README
+inspection, while the linked atlas is the asset consumed by presentation
+loaders. These generated packages are integrated candidates, not accepted
+final art and not proof that a champion is selectable.
 
-New arachnoid champions occupy expansion slots only after the three body plans,
-names, lore, silhouettes, skeletons, movement clearance, trait budgets, and one
-complete kit are reviewed. No placeholder becomes selectable merely to fill a
-roster column.
+![Current runtime-addressable champion sprite roster](assets/sprites/champions/roster_overview_v1.png)
+
+| Repository fact | Current meaning |
+| --- | --- |
+| Executable shared combat foundation | Arc Primary and Vector Lance exist, but they are not final per-champion kits |
+| Preserved named kits | Oh Tipi, S. Wayne, The Red Baron, Steezo, Treevor the Mason, Oll' I and Fluup retain approved ability names; mechanics remain unimplemented |
+| Remaining named champions | Identity, ancestry, elements, role and sprite package exist; character-specific ability names remain pending |
+| Void terminology | The Red Baron and Grimm Bow still carry legacy Void design data while visual generation currently uses Dark; this must be reconciled explicitly |
+| Angel slot | Body-plan and visual placeholder only; identity, lore and kit remain unapproved and non-selectable |
+
+### Character roster index
+
+| Sprite | Champion | Ancestry (race) | Size | Elements | Intended role | Kit state |
+| --- | --- | --- | --- | --- | --- | --- |
+| <img src="assets/sprites/champions/oh_tipi/oh_tipi_direction_preview.png" alt="Oh Tipi directional in-game sprite preview" width="192"> | **Oh Tipi** | Seakin | Medium | Water · Ice · Charge | Conductive-field skirmisher and current rider | Named design kit; not implemented |
+| <img src="assets/sprites/champions/s_wayne/s_wayne_direction_preview.png" alt="S. Wayne directional in-game sprite preview" width="192"> | **S. Wayne** | Hobbit | Small | Dark · Light | Eclipse-boundary tactician and decoy router | Named design kit; not implemented |
+| <img src="assets/sprites/champions/red_baron/red_baron_direction_preview.png" alt="The Red Baron directional in-game sprite preview" width="192"> | **The Red Baron** | Undead | Medium | Void (legacy, unresolved) · Fire · Ice | Airborne formation controller with punishable landings | Named design kit; not implemented |
+| <img src="assets/sprites/champions/steezo/steezo_direction_preview.png" alt="Steezo directional in-game sprite preview" width="192"> | **Steezo** | Goblin | Small | Fire · Charge · Light | Volatile construct engineer and detonation sequencer | Named design kit; not implemented |
+| <img src="assets/sprites/champions/treevor_mason/treevor_mason_direction_preview.png" alt="Treevor the Mason directional in-game sprite preview" width="192"> | **Treevor the Mason** | Treefolk | Large | Earth · Wind · Fire | Terrain mason creating routes, cover and fire liabilities | Named design kit; not implemented |
+| <img src="assets/sprites/champions/oll_i/oll_i_direction_preview.png" alt="Oll' I directional in-game sprite preview" width="192"> | **Oll' I** | Werewolf | Large | Earth · Fire · Light | Forward structural breaker with high commitment | Named design kit; not implemented |
+| <img src="assets/sprites/champions/fluup/fluup_direction_preview.png" alt="Fluup directional in-game sprite preview" width="192"> | **Fluup** | Orc | Large | Charge · Wind · Ice | Storm bruiser converting committed landings | Named design kit; not implemented |
+| <img src="assets/sprites/champions/wa_bidi/wa_bidi_direction_preview.png" alt="Wa Bidi directional in-game sprite preview" width="192"> | **Wa Bidi** | Goblin | Small | Charge · Wind · Fire | Fast battlecry route specialist with visible and audible cues | Kit pending |
+| <img src="assets/sprites/champions/grace_reava/grace_reava_direction_preview.png" alt="Grace Reava directional in-game sprite preview" width="192"> | **Grace Reava** | Sylph | Small | Wind · Water · Light | Luminous-current aerial duelist | Kit pending |
+| <img src="assets/sprites/champions/nico_lai/nico_lai_direction_preview.png" alt="Nico Lai directional in-game sprite preview" width="192"> | **Nico Lai** | Gnome | Tiny | Charge · Light | Precision shared-device engineer | Kit pending |
+| <img src="assets/sprites/champions/spai_si/spai_si_direction_preview.png" alt="Spai Si directional in-game sprite preview" width="192"> | **Spai Si** | Demon | Medium | Wind · Light · Earth | Redirect duelist converting hostile intent into angles | Kit pending |
+| <img src="assets/sprites/champions/leaf_hidden/leaf_hidden_direction_preview.png" alt="Leaf the Hidden directional in-game sprite preview" width="192"> | **Leaf the Hidden** | Treefolk | Medium | Water · Earth · Light | Concealed grove support and planned-route grower | Kit pending |
+| <img src="assets/sprites/champions/ha_rekt/ha_rekt_direction_preview.png" alt="Ha Rekt directional in-game sprite preview" width="192"> | **Ha Rekt** | Wyrmborn | Large | Ice · Wind · Fire | Aerial cold-line hunter with marked escape routes | Kit pending |
+| <img src="assets/sprites/champions/dr_apex/dr_apex_direction_preview.png" alt="Dr. Apex directional in-game sprite preview" width="192"> | **Dr. Apex** | Stoneborn | Large | Earth · Light · Water | Armored combat medic with contestable support zones | Kit pending |
+| <img src="assets/sprites/champions/haara/haara_direction_preview.png" alt="Haara directional in-game sprite preview" width="192"> | **Haara** | Nymph | Small | Light · Wind · Spirit | Bloom planner with flexible resource routing | Kit pending |
+| <img src="assets/sprites/champions/hesus_christo/hesus_christo_direction_preview.png" alt="Hesus Christo directional in-game sprite preview" width="192"> | **Hesus Christo** | Elf | Medium | Earth · Water | Tall renewal vanguard rebuilding broken routes | Kit pending |
+| <img src="assets/sprites/champions/grimm_bow/grimm_bow_direction_preview.png" alt="Grimm Bow directional in-game sprite preview" width="192"> | **Grimm Bow** | Troll | Huge | Void (legacy, unresolved) · Earth · Water | Terrain archer converting displacement into precision, never bonus damage | Kit pending |
+| <img src="assets/sprites/champions/biggy_bob/biggy_bob_direction_preview.png" alt="Biggy Bob directional in-game sprite preview" width="192"> | **Biggy Bob** | Dwarf | Medium | Earth · Fire · Light | Forge-line breacher and masonry specialist | Kit pending |
+| <img src="assets/sprites/champions/jan_wicked/jan_wicked_direction_preview.png" alt="Jan Wicked directional in-game sprite preview" width="192"> | **Jan Wicked** | Human | Medium | Ice · Dark · Charge | Black-ice circuit hunter | Kit pending |
+| <img src="assets/sprites/champions/ba_djoh/ba_djoh_direction_preview.png" alt="Ba Djoh directional in-game sprite preview" width="192"> | **Ba Djoh** | Minotaur | Huge | Earth · Fire · Water | Three-current charge breaker | Kit pending |
+| <img src="assets/sprites/champions/urzh/urzh_direction_preview.png" alt="Urzh directional in-game sprite preview" width="192"> | **Urzh** | Stoneborn | Large | Earth · Fire · Charge | Conductive kiln bulwark and lane anchor | Kit pending |
+| <img src="assets/sprites/champions/donnok/donnok_direction_preview.png" alt="Donnok directional in-game sprite preview" width="192"> | **Donnok** | Dwarf | Medium | Earth · Fire · Water | Forge-rhythm terrain shaper | Kit pending |
+| <img src="assets/sprites/champions/djonah_thaan/djonah_thaan_direction_preview.png" alt="Djonah Thaan directional in-game sprite preview" width="192"> | **Djonah Thaan** | Vampire | Medium | Dark · Charge · Fire | Grave-current pursuit controller | Kit pending |
+| <img src="assets/sprites/champions/unnamed_angel/unnamed_angel_direction_preview.png" alt="Unnamed Angel directional in-game sprite preview" width="192"> | **Unnamed Angel** | Angel | Medium | Wind · Light · Spirit | Visual and body-plan placeholder only | Unapproved placeholder |
+
+### Detailed character cards
+
+<details id="champion-oh_tipi">
+<summary><strong>Oh Tipi</strong> — Seakin · Water · Ice · Charge</summary>
+
+<img src="assets/sprites/champions/oh_tipi/oh_tipi_direction_preview.png" alt="Oh Tipi eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Seakin** |
+| Visual size class | **Medium** |
+| Draft affinities | **Water · Ice · Charge** |
+| Signature equipment | **Conduit** |
+| Core gameplay identity | Conductive-field skirmisher and current rider |
+| Identity and migration notes | Large head fins and a route-first silhouette distinguish water setup, freezing and current traversal. |
+| Runtime atlas | [`assets/sprites/champions/oh_tipi/oh_tipi_atlas.png`](assets/sprites/champions/oh_tipi/oh_tipi_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/oh_tipi/oh_tipi_portrait.png`](assets/sprites/champions/oh_tipi/oh_tipi_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Preserved design name | Implementation state |
+| --- | --- | --- |
+| Passive | **Living Current** | Named design input; simulation and balance not implemented |
+| Champion primary | Not committed | Current Arc Primary is a shared foundation placeholder, not the final champion primary |
+| Active I | **Tideline** | Named design input; simulation and balance not implemented |
+| Active II | **Flash Freeze** | Named design input; simulation and balance not implemented |
+| Mobility | **Eel Step** | Named design input; must obey global collision and speed limits |
+| Ultimate | **Stormtide Basin** | Named design input; charge, startup, interruption and recovery rules pending |
+
+</details>
+
+<details id="champion-s_wayne">
+<summary><strong>S. Wayne</strong> — Hobbit · Dark · Light</summary>
+
+<img src="assets/sprites/champions/s_wayne/s_wayne_direction_preview.png" alt="S. Wayne eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Hobbit** |
+| Visual size class | **Small** |
+| Draft affinities | **Dark · Light** |
+| Signature equipment | **Eclipse disc** |
+| Core gameplay identity | Eclipse-boundary tactician and decoy router |
+| Identity and migration notes | The preserved kit names were authored under the legacy name Samwise DeWayne and require identity/affinity reconciliation before promotion. |
+| Runtime atlas | [`assets/sprites/champions/s_wayne/s_wayne_atlas.png`](assets/sprites/champions/s_wayne/s_wayne_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/s_wayne/s_wayne_portrait.png`](assets/sprites/champions/s_wayne/s_wayne_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Preserved design name | Implementation state |
+| --- | --- | --- |
+| Passive | **Small Target, Big Exit** | Named design input; simulation and balance not implemented |
+| Champion primary | Not committed | Current Arc Primary is a shared foundation placeholder, not the final champion primary |
+| Active I | **Pocket Tempest** | Named design input; simulation and balance not implemented |
+| Active II | **Burrowed Shadow** | Named design input; simulation and balance not implemented |
+| Mobility | **Campfire Feint** | Named design input; must obey global collision and speed limits |
+| Ultimate | **There and Back Again** | Named design input; charge, startup, interruption and recovery rules pending |
+
+</details>
+
+<details id="champion-red_baron">
+<summary><strong>The Red Baron</strong> — Undead · Void (legacy, unresolved) · Fire · Ice</summary>
+
+<img src="assets/sprites/champions/red_baron/red_baron_direction_preview.png" alt="The Red Baron eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Undead** |
+| Visual size class | **Medium** |
+| Draft affinities | **Void (legacy, unresolved) · Fire · Ice** |
+| Signature equipment | **Sabre** |
+| Core gameplay identity | Airborne formation controller with punishable landings |
+| Identity and migration notes | The visual catalog currently tags Dark, while the design roster still says Void. Selection remains blocked until that mapping is approved. |
+| Runtime atlas | [`assets/sprites/champions/red_baron/red_baron_atlas.png`](assets/sprites/champions/red_baron/red_baron_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/red_baron/red_baron_portrait.png`](assets/sprites/champions/red_baron/red_baron_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Preserved design name | Implementation state |
+| --- | --- | --- |
+| Passive | **Cold Ashes** | Named design input; simulation and balance not implemented |
+| Champion primary | Not committed | Current Arc Primary is a shared foundation placeholder, not the final champion primary |
+| Active I | **Crimson Comet** | Named design input; simulation and balance not implemented |
+| Active II | **Night Flak** | Named design input; simulation and balance not implemented |
+| Mobility | **Rime Wing** | Named design input; must obey global collision and speed limits |
+| Ultimate | **The Dead Sky** | Named design input; charge, startup, interruption and recovery rules pending |
+
+</details>
+
+<details id="champion-steezo">
+<summary><strong>Steezo</strong> — Goblin · Fire · Charge · Light</summary>
+
+<img src="assets/sprites/champions/steezo/steezo_direction_preview.png" alt="Steezo eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Goblin** |
+| Visual size class | **Small** |
+| Draft affinities | **Fire · Charge · Light** |
+| Signature equipment | **Detonator** |
+| Core gameplay identity | Volatile construct engineer and detonation sequencer |
+| Identity and migration notes | Red skin, tool-led silhouette and readable devices are identity requirements rather than optional cosmetics. |
+| Runtime atlas | [`assets/sprites/champions/steezo/steezo_atlas.png`](assets/sprites/champions/steezo/steezo_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/steezo/steezo_portrait.png`](assets/sprites/champions/steezo/steezo_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Preserved design name | Implementation state |
+| --- | --- | --- |
+| Passive | **Questionable Engineering** | Named design input; simulation and balance not implemented |
+| Champion primary | Not committed | Current Arc Primary is a shared foundation placeholder, not the final champion primary |
+| Active I | **Spark Keg** | Named design input; simulation and balance not implemented |
+| Active II | **Prism Tripwire** | Named design input; simulation and balance not implemented |
+| Mobility | **Coil Hopper** | Named design input; must obey global collision and speed limits |
+| Ultimate | **Perfectly Safe Machine** | Named design input; charge, startup, interruption and recovery rules pending |
+
+</details>
+
+<details id="champion-treevor_mason">
+<summary><strong>Treevor the Mason</strong> — Treefolk · Earth · Wind · Fire</summary>
+
+<img src="assets/sprites/champions/treevor_mason/treevor_mason_direction_preview.png" alt="Treevor the Mason eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Treefolk** |
+| Visual size class | **Large** |
+| Draft affinities | **Earth · Wind · Fire** |
+| Signature equipment | **Mason hammer** |
+| Core gameplay identity | Terrain mason creating routes, cover and fire liabilities |
+| Identity and migration notes | Canopy, roots and masonry equipment must remain readable independently of elemental effects. |
+| Runtime atlas | [`assets/sprites/champions/treevor_mason/treevor_mason_atlas.png`](assets/sprites/champions/treevor_mason/treevor_mason_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/treevor_mason/treevor_mason_portrait.png`](assets/sprites/champions/treevor_mason/treevor_mason_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Preserved design name | Implementation state |
+| --- | --- | --- |
+| Passive | **Deep Roots** | Named design input; simulation and balance not implemented |
+| Champion primary | Not committed | Current Arc Primary is a shared foundation placeholder, not the final champion primary |
+| Active I | **Root Rampart** | Named design input; simulation and balance not implemented |
+| Active II | **Branch Gale** | Named design input; simulation and balance not implemented |
+| Mobility | **Ember Seed** | Named design input; must obey global collision and speed limits |
+| Ultimate | **Crown of the Wildfire** | Named design input; charge, startup, interruption and recovery rules pending |
+
+</details>
+
+<details id="champion-oll_i">
+<summary><strong>Oll' I</strong> — Werewolf · Earth · Fire · Light</summary>
+
+<img src="assets/sprites/champions/oll_i/oll_i_direction_preview.png" alt="Oll' I eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Werewolf** |
+| Visual size class | **Large** |
+| Draft affinities | **Earth · Fire · Light** |
+| Signature equipment | **Impact gauntlets** |
+| Core gameplay identity | Forward structural breaker with high commitment |
+| Identity and migration notes | Current Flux2 ancestry is Werewolf; older Minotaur imagery is migration reference, not current repository truth. |
+| Runtime atlas | [`assets/sprites/champions/oll_i/oll_i_atlas.png`](assets/sprites/champions/oll_i/oll_i_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/oll_i/oll_i_portrait.png`](assets/sprites/champions/oll_i/oll_i_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Preserved design name | Implementation state |
+| --- | --- | --- |
+| Passive | **Labyrinth Momentum** | Named design input; simulation and balance not implemented |
+| Champion primary | Not committed | Current Arc Primary is a shared foundation placeholder, not the final champion primary |
+| Active I | **Sunhorn Charge** | Named design input; simulation and balance not implemented |
+| Active II | **Furnace Stomp** | Named design input; simulation and balance not implemented |
+| Mobility | **Mirror Bulwark** | Named design input; must obey global collision and speed limits |
+| Ultimate | **The Burning Maze** | Named design input; charge, startup, interruption and recovery rules pending |
+
+</details>
+
+<details id="champion-fluup">
+<summary><strong>Fluup</strong> — Orc · Charge · Wind · Ice</summary>
+
+<img src="assets/sprites/champions/fluup/fluup_direction_preview.png" alt="Fluup eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Orc** |
+| Visual size class | **Large** |
+| Draft affinities | **Charge · Wind · Ice** |
+| Signature equipment | **Storm maul** |
+| Core gameplay identity | Storm bruiser converting committed landings |
+| Identity and migration notes | Heavy action timing and storm effects must preserve the underlying Orc silhouette and recovery read. |
+| Runtime atlas | [`assets/sprites/champions/fluup/fluup_atlas.png`](assets/sprites/champions/fluup/fluup_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/fluup/fluup_portrait.png`](assets/sprites/champions/fluup/fluup_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Preserved design name | Implementation state |
+| --- | --- | --- |
+| Passive | **Stormweight** | Named design input; simulation and balance not implemented |
+| Champion primary | Not committed | Current Arc Primary is a shared foundation placeholder, not the final champion primary |
+| Active I | **Thunder Shove** | Named design input; simulation and balance not implemented |
+| Active II | **Squall Leap** | Named design input; simulation and balance not implemented |
+| Mobility | **Rime Crash** | Named design input; must obey global collision and speed limits |
+| Ultimate | **Bad Weather** | Named design input; charge, startup, interruption and recovery rules pending |
+
+</details>
+
+<details id="champion-wa_bidi">
+<summary><strong>Wa Bidi</strong> — Goblin · Charge · Wind · Fire</summary>
+
+<img src="assets/sprites/champions/wa_bidi/wa_bidi_direction_preview.png" alt="Wa Bidi eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Goblin** |
+| Visual size class | **Small** |
+| Draft affinities | **Charge · Wind · Fire** |
+| Signature equipment | **Battle horn** |
+| Core gameplay identity | Fast battlecry route specialist with visible and audible cues |
+| Identity and migration notes | No approved character-specific ability names are committed yet. |
+| Runtime atlas | [`assets/sprites/champions/wa_bidi/wa_bidi_atlas.png`](assets/sprites/champions/wa_bidi/wa_bidi_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/wa_bidi/wa_bidi_portrait.png`](assets/sprites/champions/wa_bidi/wa_bidi_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-grace_reava">
+<summary><strong>Grace Reava</strong> — Sylph · Wind · Water · Light</summary>
+
+<img src="assets/sprites/champions/grace_reava/grace_reava_direction_preview.png" alt="Grace Reava eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Sylph** |
+| Visual size class | **Small** |
+| Draft affinities | **Wind · Water · Light** |
+| Signature equipment | **Rapier** |
+| Core gameplay identity | Luminous-current aerial duelist |
+| Identity and migration notes | No approved character-specific ability names are committed yet. |
+| Runtime atlas | [`assets/sprites/champions/grace_reava/grace_reava_atlas.png`](assets/sprites/champions/grace_reava/grace_reava_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/grace_reava/grace_reava_portrait.png`](assets/sprites/champions/grace_reava/grace_reava_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-nico_lai">
+<summary><strong>Nico Lai</strong> — Gnome · Charge · Light</summary>
+
+<img src="assets/sprites/champions/nico_lai/nico_lai_direction_preview.png" alt="Nico Lai eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Gnome** |
+| Visual size class | **Tiny** |
+| Draft affinities | **Charge · Light** |
+| Signature equipment | **Charge gauntlet** |
+| Core gameplay identity | Precision shared-device engineer |
+| Identity and migration notes | Bald crown, strong swept side-hair silhouette and oversized engineering equipment are required identity anchors. |
+| Runtime atlas | [`assets/sprites/champions/nico_lai/nico_lai_atlas.png`](assets/sprites/champions/nico_lai/nico_lai_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/nico_lai/nico_lai_portrait.png`](assets/sprites/champions/nico_lai/nico_lai_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-spai_si">
+<summary><strong>Spai Si</strong> — Demon · Wind · Light · Earth</summary>
+
+<img src="assets/sprites/champions/spai_si/spai_si_direction_preview.png" alt="Spai Si eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Demon** |
+| Visual size class | **Medium** |
+| Draft affinities | **Wind · Light · Earth** |
+| Signature equipment | **Redirect blade** |
+| Core gameplay identity | Redirect duelist converting hostile intent into angles |
+| Identity and migration notes | Current design is male with short dark hair; no approved character-specific ability names are committed yet. |
+| Runtime atlas | [`assets/sprites/champions/spai_si/spai_si_atlas.png`](assets/sprites/champions/spai_si/spai_si_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/spai_si/spai_si_portrait.png`](assets/sprites/champions/spai_si/spai_si_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-leaf_hidden">
+<summary><strong>Leaf the Hidden</strong> — Treefolk · Water · Earth · Light</summary>
+
+<img src="assets/sprites/champions/leaf_hidden/leaf_hidden_direction_preview.png" alt="Leaf the Hidden eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Treefolk** |
+| Visual size class | **Medium** |
+| Draft affinities | **Water · Earth · Light** |
+| Signature equipment | **Grove staff** |
+| Core gameplay identity | Concealed grove support and planned-route grower |
+| Identity and migration notes | Legacy art may label this design Hidin Leef; Flux2 uses Leaf the Hidden. |
+| Runtime atlas | [`assets/sprites/champions/leaf_hidden/leaf_hidden_atlas.png`](assets/sprites/champions/leaf_hidden/leaf_hidden_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/leaf_hidden/leaf_hidden_portrait.png`](assets/sprites/champions/leaf_hidden/leaf_hidden_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-ha_rekt">
+<summary><strong>Ha Rekt</strong> — Wyrmborn · Ice · Wind · Fire</summary>
+
+<img src="assets/sprites/champions/ha_rekt/ha_rekt_direction_preview.png" alt="Ha Rekt eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Wyrmborn** |
+| Visual size class | **Large** |
+| Draft affinities | **Ice · Wind · Fire** |
+| Signature equipment | **Cold lance** |
+| Core gameplay identity | Aerial cold-line hunter with marked escape routes |
+| Identity and migration notes | Wyrmborn is an anthropomorphic scaled body plan, not a conventional quadrupedal wyrm. |
+| Runtime atlas | [`assets/sprites/champions/ha_rekt/ha_rekt_atlas.png`](assets/sprites/champions/ha_rekt/ha_rekt_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/ha_rekt/ha_rekt_portrait.png`](assets/sprites/champions/ha_rekt/ha_rekt_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-dr_apex">
+<summary><strong>Dr. Apex</strong> — Stoneborn · Earth · Light · Water</summary>
+
+<img src="assets/sprites/champions/dr_apex/dr_apex_direction_preview.png" alt="Dr. Apex eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Stoneborn** |
+| Visual size class | **Large** |
+| Draft affinities | **Earth · Light · Water** |
+| Signature equipment | **Medic prism** |
+| Core gameplay identity | Armored combat medic with contestable support zones |
+| Identity and migration notes | No approved character-specific ability names are committed yet. |
+| Runtime atlas | [`assets/sprites/champions/dr_apex/dr_apex_atlas.png`](assets/sprites/champions/dr_apex/dr_apex_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/dr_apex/dr_apex_portrait.png`](assets/sprites/champions/dr_apex/dr_apex_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-haara">
+<summary><strong>Haara</strong> — Nymph · Light · Wind · Spirit</summary>
+
+<img src="assets/sprites/champions/haara/haara_direction_preview.png" alt="Haara eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Nymph** |
+| Visual size class | **Small** |
+| Draft affinities | **Light · Wind · Spirit** |
+| Signature equipment | **Bloom orb** |
+| Core gameplay identity | Bloom planner with flexible resource routing |
+| Identity and migration notes | Short dark hair is the current identity direction. Spirit remains runtime gated. |
+| Runtime atlas | [`assets/sprites/champions/haara/haara_atlas.png`](assets/sprites/champions/haara/haara_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/haara/haara_portrait.png`](assets/sprites/champions/haara/haara_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-hesus_christo">
+<summary><strong>Hesus Christo</strong> — Elf · Earth · Water</summary>
+
+<img src="assets/sprites/champions/hesus_christo/hesus_christo_direction_preview.png" alt="Hesus Christo eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Elf** |
+| Visual size class | **Medium** |
+| Draft affinities | **Earth · Water** |
+| Signature equipment | **Renewal staff** |
+| Core gameplay identity | Tall renewal vanguard rebuilding broken routes |
+| Identity and migration notes | No approved character-specific ability names are committed yet. |
+| Runtime atlas | [`assets/sprites/champions/hesus_christo/hesus_christo_atlas.png`](assets/sprites/champions/hesus_christo/hesus_christo_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/hesus_christo/hesus_christo_portrait.png`](assets/sprites/champions/hesus_christo/hesus_christo_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-grimm_bow">
+<summary><strong>Grimm Bow</strong> — Troll · Void (legacy, unresolved) · Earth · Water</summary>
+
+<img src="assets/sprites/champions/grimm_bow/grimm_bow_direction_preview.png" alt="Grimm Bow eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Troll** |
+| Visual size class | **Huge** |
+| Draft affinities | **Void (legacy, unresolved) · Earth · Water** |
+| Signature equipment | **Greatbow** |
+| Core gameplay identity | Terrain archer converting displacement into precision, never bonus damage |
+| Identity and migration notes | The visual catalog currently tags Dark, while the design roster still says Void. Selection remains blocked until that mapping is approved. |
+| Runtime atlas | [`assets/sprites/champions/grimm_bow/grimm_bow_atlas.png`](assets/sprites/champions/grimm_bow/grimm_bow_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/grimm_bow/grimm_bow_portrait.png`](assets/sprites/champions/grimm_bow/grimm_bow_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-biggy_bob">
+<summary><strong>Biggy Bob</strong> — Dwarf · Earth · Fire · Light</summary>
+
+<img src="assets/sprites/champions/biggy_bob/biggy_bob_direction_preview.png" alt="Biggy Bob eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Dwarf** |
+| Visual size class | **Medium** |
+| Draft affinities | **Earth · Fire · Light** |
+| Signature equipment | **Breach hammer** |
+| Core gameplay identity | Forge-line breacher and masonry specialist |
+| Identity and migration notes | No approved character-specific ability names are committed yet. |
+| Runtime atlas | [`assets/sprites/champions/biggy_bob/biggy_bob_atlas.png`](assets/sprites/champions/biggy_bob/biggy_bob_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/biggy_bob/biggy_bob_portrait.png`](assets/sprites/champions/biggy_bob/biggy_bob_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-jan_wicked">
+<summary><strong>Jan Wicked</strong> — Human · Ice · Dark · Charge</summary>
+
+<img src="assets/sprites/champions/jan_wicked/jan_wicked_direction_preview.png" alt="Jan Wicked eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Human** |
+| Visual size class | **Medium** |
+| Draft affinities | **Ice · Dark · Charge** |
+| Signature equipment | **Ice blade** |
+| Core gameplay identity | Black-ice circuit hunter |
+| Identity and migration notes | No approved character-specific ability names are committed yet. |
+| Runtime atlas | [`assets/sprites/champions/jan_wicked/jan_wicked_atlas.png`](assets/sprites/champions/jan_wicked/jan_wicked_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/jan_wicked/jan_wicked_portrait.png`](assets/sprites/champions/jan_wicked/jan_wicked_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-ba_djoh">
+<summary><strong>Ba Djoh</strong> — Minotaur · Earth · Fire · Water</summary>
+
+<img src="assets/sprites/champions/ba_djoh/ba_djoh_direction_preview.png" alt="Ba Djoh eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Minotaur** |
+| Visual size class | **Huge** |
+| Draft affinities | **Earth · Fire · Water** |
+| Signature equipment | **Breaker** |
+| Core gameplay identity | Three-current charge breaker |
+| Identity and migration notes | No approved character-specific ability names are committed yet. |
+| Runtime atlas | [`assets/sprites/champions/ba_djoh/ba_djoh_atlas.png`](assets/sprites/champions/ba_djoh/ba_djoh_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/ba_djoh/ba_djoh_portrait.png`](assets/sprites/champions/ba_djoh/ba_djoh_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-urzh">
+<summary><strong>Urzh</strong> — Stoneborn · Earth · Fire · Charge</summary>
+
+<img src="assets/sprites/champions/urzh/urzh_direction_preview.png" alt="Urzh eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Stoneborn** |
+| Visual size class | **Large** |
+| Draft affinities | **Earth · Fire · Charge** |
+| Signature equipment | **Kiln shield** |
+| Core gameplay identity | Conductive kiln bulwark and lane anchor |
+| Identity and migration notes | No approved character-specific ability names are committed yet. |
+| Runtime atlas | [`assets/sprites/champions/urzh/urzh_atlas.png`](assets/sprites/champions/urzh/urzh_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/urzh/urzh_portrait.png`](assets/sprites/champions/urzh/urzh_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-donnok">
+<summary><strong>Donnok</strong> — Dwarf · Earth · Fire · Water</summary>
+
+<img src="assets/sprites/champions/donnok/donnok_direction_preview.png" alt="Donnok eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Dwarf** |
+| Visual size class | **Medium** |
+| Draft affinities | **Earth · Fire · Water** |
+| Signature equipment | **Terrain hammer** |
+| Core gameplay identity | Forge-rhythm terrain shaper |
+| Identity and migration notes | No approved character-specific ability names are committed yet. |
+| Runtime atlas | [`assets/sprites/champions/donnok/donnok_atlas.png`](assets/sprites/champions/donnok/donnok_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/donnok/donnok_portrait.png`](assets/sprites/champions/donnok/donnok_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-djonah_thaan">
+<summary><strong>Djonah Thaan</strong> — Vampire · Dark · Charge · Fire</summary>
+
+<img src="assets/sprites/champions/djonah_thaan/djonah_thaan_direction_preview.png" alt="Djonah Thaan eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Vampire** |
+| Visual size class | **Medium** |
+| Draft affinities | **Dark · Charge · Fire** |
+| Signature equipment | **Grave coil** |
+| Core gameplay identity | Grave-current pursuit controller |
+| Identity and migration notes | No approved character-specific ability names are committed yet. |
+| Runtime atlas | [`assets/sprites/champions/djonah_thaan/djonah_thaan_atlas.png`](assets/sprites/champions/djonah_thaan/djonah_thaan_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/djonah_thaan/djonah_thaan_portrait.png`](assets/sprites/champions/djonah_thaan/djonah_thaan_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive | Pending champion promotion; no approved name or mechanic is committed |
+| Champion primary | Pending; Arc Primary remains the shared executable foundation |
+| Active I / Active II | Pending; intended role is recorded above, but a kit is not invented by this README |
+| Mobility | Pending; must use the universal collision, Stamina/Flux and speed-ceiling contracts |
+| Ultimate | Pending; requires charge, startup, counterplay, interruption, expiry and recovery definitions |
+
+</details>
+
+<details id="champion-unnamed_angel">
+<summary><strong>Unnamed Angel</strong> — Angel · Wind · Light · Spirit</summary>
+
+<img src="assets/sprites/champions/unnamed_angel/unnamed_angel_direction_preview.png" alt="Unnamed Angel eight-direction runtime sprite preview" width="512">
+
+| Field | Repository state |
+| --- | --- |
+| Ancestry / legacy race | **Angel** |
+| Visual size class | **Medium** |
+| Draft affinities | **Wind · Light · Spirit** |
+| Signature equipment | **Placeholder orb** |
+| Core gameplay identity | Visual and body-plan placeholder only |
+| Identity and migration notes | Identity, lore, kit and selection status are unapproved. This slot must not become playable merely to fill the roster. |
+| Runtime atlas | [`assets/sprites/champions/unnamed_angel/unnamed_angel_atlas.png`](assets/sprites/champions/unnamed_angel/unnamed_angel_atlas.png) |
+| Portrait candidate | [`assets/sprites/champions/unnamed_angel/unnamed_angel_portrait.png`](assets/sprites/champions/unnamed_angel/unnamed_angel_portrait.png) |
+| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+
+| Ability slot | Status |
+| --- | --- |
+| Passive, primary, actives, mobility and ultimate | **Unapproved placeholder.** No names or mechanics may be inferred from the temporary artwork. |
+
+</details>
+
+New arachnoid champions occupy expansion slots only after the body plans,
+names, lore, silhouettes, skeletons, movement clearance, trait budgets and
+one complete kit are reviewed. No placeholder becomes selectable merely to
+fill a roster column.
+
+<!-- END CHARACTER_ROSTER_V1 -->
 
 ### Champion promotion pipeline
 

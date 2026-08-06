@@ -543,11 +543,18 @@ an explicitly tested large-body class.
 
 The 24 entries below are the current migration roster: 23 named designs
 and one deliberately unapproved Angel slot. **Ancestry** is the current
-term for race. Each card embeds the eight-direction documentation preview
-that ships beside the runtime-addressable atlas; the preview is for README
-inspection, while the linked atlas is the asset consumed by presentation
-loaders. These generated packages are integrated candidates, not accepted
-final art and not proof that a champion is selectable.
+term for race. The supplied FLUX Champions sheet below is the minimum
+accepted visual baseline for character expression, silhouette, equipment,
+materials, elemental framing and pixel-art density. Canonical Flux2 data
+still overrides conflicting labels visible in that reference.
+
+![FLUX Champions minimum character-art baseline](art/reference/flux-champions-style-baseline.png)
+
+Every roster entry therefore shows both the higher-detail character
+candidate and the current eight-direction runtime sprite. The runtime image
+is the one connected to the in-game atlas; the larger image is a visual
+review candidate. Neither is accepted final art until the runtime sprite
+matches or exceeds the baseline and passes the ordered visual-quality gate.
 
 ![Current runtime-addressable champion sprite roster](assets/sprites/champions/roster_overview_v1.png)
 
@@ -563,37 +570,46 @@ final art and not proof that a champion is selectable.
 
 | Sprite | Champion | Ancestry (race) | Size | Elements | Intended role | Kit state |
 | --- | --- | --- | --- | --- | --- | --- |
-| <img src="assets/sprites/champions/oh_tipi/oh_tipi_direction_preview.png" alt="Oh Tipi directional in-game sprite preview" width="192"> | **Oh Tipi** | Seakin | Medium | Water · Ice · Charge | Conductive-field skirmisher and current rider | Named design kit; not implemented |
-| <img src="assets/sprites/champions/s_wayne/s_wayne_direction_preview.png" alt="S. Wayne directional in-game sprite preview" width="192"> | **S. Wayne** | Hobbit | Small | Dark · Light | Eclipse-boundary tactician and decoy router | Named design kit; not implemented |
-| <img src="assets/sprites/champions/red_baron/red_baron_direction_preview.png" alt="The Red Baron directional in-game sprite preview" width="192"> | **The Red Baron** | Undead | Medium | Void (legacy, unresolved) · Fire · Ice | Airborne formation controller with punishable landings | Named design kit; not implemented |
-| <img src="assets/sprites/champions/steezo/steezo_direction_preview.png" alt="Steezo directional in-game sprite preview" width="192"> | **Steezo** | Goblin | Small | Fire · Charge · Light | Volatile construct engineer and detonation sequencer | Named design kit; not implemented |
-| <img src="assets/sprites/champions/treevor_mason/treevor_mason_direction_preview.png" alt="Treevor the Mason directional in-game sprite preview" width="192"> | **Treevor the Mason** | Treefolk | Large | Earth · Wind · Fire | Terrain mason creating routes, cover and fire liabilities | Named design kit; not implemented |
-| <img src="assets/sprites/champions/oll_i/oll_i_direction_preview.png" alt="Oll' I directional in-game sprite preview" width="192"> | **Oll' I** | Werewolf | Large | Earth · Fire · Light | Forward structural breaker with high commitment | Named design kit; not implemented |
-| <img src="assets/sprites/champions/fluup/fluup_direction_preview.png" alt="Fluup directional in-game sprite preview" width="192"> | **Fluup** | Orc | Large | Charge · Wind · Ice | Storm bruiser converting committed landings | Named design kit; not implemented |
-| <img src="assets/sprites/champions/wa_bidi/wa_bidi_direction_preview.png" alt="Wa Bidi directional in-game sprite preview" width="192"> | **Wa Bidi** | Goblin | Small | Charge · Wind · Fire | Fast battlecry route specialist with visible and audible cues | Kit pending |
-| <img src="assets/sprites/champions/grace_reava/grace_reava_direction_preview.png" alt="Grace Reava directional in-game sprite preview" width="192"> | **Grace Reava** | Sylph | Small | Wind · Water · Light | Luminous-current aerial duelist | Kit pending |
-| <img src="assets/sprites/champions/nico_lai/nico_lai_direction_preview.png" alt="Nico Lai directional in-game sprite preview" width="192"> | **Nico Lai** | Gnome | Tiny | Charge · Light | Precision shared-device engineer | Kit pending |
-| <img src="assets/sprites/champions/spai_si/spai_si_direction_preview.png" alt="Spai Si directional in-game sprite preview" width="192"> | **Spai Si** | Demon | Medium | Wind · Light · Earth | Redirect duelist converting hostile intent into angles | Kit pending |
-| <img src="assets/sprites/champions/leaf_hidden/leaf_hidden_direction_preview.png" alt="Leaf the Hidden directional in-game sprite preview" width="192"> | **Leaf the Hidden** | Treefolk | Medium | Water · Earth · Light | Concealed grove support and planned-route grower | Kit pending |
-| <img src="assets/sprites/champions/ha_rekt/ha_rekt_direction_preview.png" alt="Ha Rekt directional in-game sprite preview" width="192"> | **Ha Rekt** | Wyrmborn | Large | Ice · Wind · Fire | Aerial cold-line hunter with marked escape routes | Kit pending |
-| <img src="assets/sprites/champions/dr_apex/dr_apex_direction_preview.png" alt="Dr. Apex directional in-game sprite preview" width="192"> | **Dr. Apex** | Stoneborn | Large | Earth · Light · Water | Armored combat medic with contestable support zones | Kit pending |
-| <img src="assets/sprites/champions/haara/haara_direction_preview.png" alt="Haara directional in-game sprite preview" width="192"> | **Haara** | Nymph | Small | Light · Wind · Spirit | Bloom planner with flexible resource routing | Kit pending |
-| <img src="assets/sprites/champions/hesus_christo/hesus_christo_direction_preview.png" alt="Hesus Christo directional in-game sprite preview" width="192"> | **Hesus Christo** | Elf | Medium | Earth · Water | Tall renewal vanguard rebuilding broken routes | Kit pending |
-| <img src="assets/sprites/champions/grimm_bow/grimm_bow_direction_preview.png" alt="Grimm Bow directional in-game sprite preview" width="192"> | **Grimm Bow** | Troll | Huge | Void (legacy, unresolved) · Earth · Water | Terrain archer converting displacement into precision, never bonus damage | Kit pending |
-| <img src="assets/sprites/champions/biggy_bob/biggy_bob_direction_preview.png" alt="Biggy Bob directional in-game sprite preview" width="192"> | **Biggy Bob** | Dwarf | Medium | Earth · Fire · Light | Forge-line breacher and masonry specialist | Kit pending |
-| <img src="assets/sprites/champions/jan_wicked/jan_wicked_direction_preview.png" alt="Jan Wicked directional in-game sprite preview" width="192"> | **Jan Wicked** | Human | Medium | Ice · Dark · Charge | Black-ice circuit hunter | Kit pending |
-| <img src="assets/sprites/champions/ba_djoh/ba_djoh_direction_preview.png" alt="Ba Djoh directional in-game sprite preview" width="192"> | **Ba Djoh** | Minotaur | Huge | Earth · Fire · Water | Three-current charge breaker | Kit pending |
-| <img src="assets/sprites/champions/urzh/urzh_direction_preview.png" alt="Urzh directional in-game sprite preview" width="192"> | **Urzh** | Stoneborn | Large | Earth · Fire · Charge | Conductive kiln bulwark and lane anchor | Kit pending |
-| <img src="assets/sprites/champions/donnok/donnok_direction_preview.png" alt="Donnok directional in-game sprite preview" width="192"> | **Donnok** | Dwarf | Medium | Earth · Fire · Water | Forge-rhythm terrain shaper | Kit pending |
-| <img src="assets/sprites/champions/djonah_thaan/djonah_thaan_direction_preview.png" alt="Djonah Thaan directional in-game sprite preview" width="192"> | **Djonah Thaan** | Vampire | Medium | Dark · Charge · Fire | Grave-current pursuit controller | Kit pending |
-| <img src="assets/sprites/champions/unnamed_angel/unnamed_angel_direction_preview.png" alt="Unnamed Angel directional in-game sprite preview" width="192"> | **Unnamed Angel** | Angel | Medium | Wind · Light · Spirit | Visual and body-plan placeholder only | Unapproved placeholder |
+| <img src="assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png" alt="Oh Tipi high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/oh_tipi/oh_tipi_direction_preview.png" alt="Oh Tipi current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Oh Tipi** | Seakin | Medium | Water · Ice · Charge | Conductive-field skirmisher and current rider | Named design kit; not implemented |
+| <img src="assets/sprites/champions_v2/s_wayne/hero_portrait_256.png" alt="S. Wayne high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/s_wayne/s_wayne_direction_preview.png" alt="S. Wayne current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **S. Wayne** | Hobbit | Small | Dark · Light | Eclipse-boundary tactician and decoy router | Named design kit; not implemented |
+| <img src="assets/sprites/champions_v2/red_baron/hero_portrait_256.png" alt="The Red Baron high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/red_baron/red_baron_direction_preview.png" alt="The Red Baron current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **The Red Baron** | Undead | Medium | Void (legacy, unresolved) · Fire · Ice | Airborne formation controller with punishable landings | Named design kit; not implemented |
+| <img src="assets/sprites/champions_v2/steezo/hero_portrait_256.png" alt="Steezo high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/steezo/steezo_direction_preview.png" alt="Steezo current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Steezo** | Goblin | Small | Fire · Charge · Light | Volatile construct engineer and detonation sequencer | Named design kit; not implemented |
+| <img src="assets/sprites/champions_v2/treevor_mason/hero_portrait_256.png" alt="Treevor the Mason high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/treevor_mason/treevor_mason_direction_preview.png" alt="Treevor the Mason current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Treevor the Mason** | Treefolk | Large | Earth · Wind · Fire | Terrain mason creating routes, cover and fire liabilities | Named design kit; not implemented |
+| <img src="assets/sprites/champions_v2/oll_i/hero_portrait_256.png" alt="Oll' I high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/oll_i/oll_i_direction_preview.png" alt="Oll' I current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Oll' I** | Werewolf | Large | Earth · Fire · Light | Forward structural breaker with high commitment | Named design kit; not implemented |
+| <img src="assets/sprites/champions_v2/fluup/hero_portrait_256.png" alt="Fluup high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/fluup/fluup_direction_preview.png" alt="Fluup current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Fluup** | Orc | Large | Charge · Wind · Ice | Storm bruiser converting committed landings | Named design kit; not implemented |
+| <img src="assets/sprites/champions_v2/wa_bidi/hero_portrait_256.png" alt="Wa Bidi high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/wa_bidi/wa_bidi_direction_preview.png" alt="Wa Bidi current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Wa Bidi** | Goblin | Small | Charge · Wind · Fire | Fast battlecry route specialist with visible and audible cues | Kit pending |
+| <img src="assets/sprites/champions_v2/grace_reava/hero_portrait_256.png" alt="Grace Reava high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/grace_reava/grace_reava_direction_preview.png" alt="Grace Reava current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Grace Reava** | Sylph | Small | Wind · Water · Light | Luminous-current aerial duelist | Kit pending |
+| <img src="assets/sprites/champions_v2/nico_lai/hero_portrait_256.png" alt="Nico Lai high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/nico_lai/nico_lai_direction_preview.png" alt="Nico Lai current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Nico Lai** | Gnome | Tiny | Charge · Light | Precision shared-device engineer | Kit pending |
+| <img src="assets/sprites/champions_v2/spai_si/hero_portrait_256.png" alt="Spai Si high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/spai_si/spai_si_direction_preview.png" alt="Spai Si current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Spai Si** | Demon | Medium | Wind · Light · Earth | Redirect duelist converting hostile intent into angles | Kit pending |
+| <img src="assets/sprites/champions_v2/leaf_hidden/hero_portrait_256.png" alt="Leaf the Hidden high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/leaf_hidden/leaf_hidden_direction_preview.png" alt="Leaf the Hidden current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Leaf the Hidden** | Treefolk | Medium | Water · Earth · Light | Concealed grove support and planned-route grower | Kit pending |
+| <img src="assets/sprites/champions_v2/ha_rekt/hero_portrait_256.png" alt="Ha Rekt high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/ha_rekt/ha_rekt_direction_preview.png" alt="Ha Rekt current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Ha Rekt** | Wyrmborn | Large | Ice · Wind · Fire | Aerial cold-line hunter with marked escape routes | Kit pending |
+| <img src="assets/sprites/champions_v2/dr_apex/hero_portrait_256.png" alt="Dr. Apex high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/dr_apex/dr_apex_direction_preview.png" alt="Dr. Apex current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Dr. Apex** | Stoneborn | Large | Earth · Light · Water | Armored combat medic with contestable support zones | Kit pending |
+| <img src="assets/sprites/champions_v2/haara/hero_portrait_256.png" alt="Haara high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/haara/haara_direction_preview.png" alt="Haara current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Haara** | Nymph | Small | Light · Wind · Spirit | Bloom planner with flexible resource routing | Kit pending |
+| <img src="assets/sprites/champions_v2/hesus_christo/hero_portrait_256.png" alt="Hesus Christo high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/hesus_christo/hesus_christo_direction_preview.png" alt="Hesus Christo current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Hesus Christo** | Elf | Medium | Earth · Water | Tall renewal vanguard rebuilding broken routes | Kit pending |
+| <img src="assets/sprites/champions_v2/grimm_bow/hero_portrait_256.png" alt="Grimm Bow high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/grimm_bow/grimm_bow_direction_preview.png" alt="Grimm Bow current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Grimm Bow** | Troll | Huge | Void (legacy, unresolved) · Earth · Water | Terrain archer converting displacement into precision, never bonus damage | Kit pending |
+| <img src="assets/sprites/champions_v2/biggy_bob/hero_portrait_256.png" alt="Biggy Bob high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/biggy_bob/biggy_bob_direction_preview.png" alt="Biggy Bob current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Biggy Bob** | Dwarf | Medium | Earth · Fire · Light | Forge-line breacher and masonry specialist | Kit pending |
+| <img src="assets/sprites/champions_v2/jan_wicked/hero_portrait_256.png" alt="Jan Wicked high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/jan_wicked/jan_wicked_direction_preview.png" alt="Jan Wicked current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Jan Wicked** | Human | Medium | Ice · Dark · Charge | Black-ice circuit hunter | Kit pending |
+| <img src="assets/sprites/champions_v2/ba_djoh/hero_portrait_256.png" alt="Ba Djoh high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/ba_djoh/ba_djoh_direction_preview.png" alt="Ba Djoh current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Ba Djoh** | Minotaur | Huge | Earth · Fire · Water | Three-current charge breaker | Kit pending |
+| <img src="assets/sprites/champions_v2/urzh/hero_portrait_256.png" alt="Urzh high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/urzh/urzh_direction_preview.png" alt="Urzh current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Urzh** | Stoneborn | Large | Earth · Fire · Charge | Conductive kiln bulwark and lane anchor | Kit pending |
+| <img src="assets/sprites/champions_v2/donnok/hero_portrait_256.png" alt="Donnok high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/donnok/donnok_direction_preview.png" alt="Donnok current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Donnok** | Dwarf | Medium | Earth · Fire · Water | Forge-rhythm terrain shaper | Kit pending |
+| <img src="assets/sprites/champions_v2/djonah_thaan/hero_portrait_256.png" alt="Djonah Thaan high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/djonah_thaan/djonah_thaan_direction_preview.png" alt="Djonah Thaan current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Djonah Thaan** | Vampire | Medium | Dark · Charge · Fire | Grave-current pursuit controller | Kit pending |
+| <img src="assets/sprites/champions_v2/unnamed_angel/hero_portrait_256.png" alt="Unnamed Angel high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/unnamed_angel/unnamed_angel_direction_preview.png" alt="Unnamed Angel current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Unnamed Angel** | Angel | Medium | Wind · Light · Spirit | Visual and body-plan placeholder only | Unapproved placeholder |
 
 ### Detailed character cards
 
 <details id="champion-oh_tipi">
 <summary><strong>Oh Tipi</strong> — Seakin · Water · Ice · Charge</summary>
 
-<img src="assets/sprites/champions/oh_tipi/oh_tipi_direction_preview.png" alt="Oh Tipi eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png" alt="Oh Tipi high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/oh_tipi/oh_tipi_direction_preview.png" alt="Oh Tipi current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -604,7 +620,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Conductive-field skirmisher and current rider |
 | Identity and migration notes | Large head fins and a route-first silhouette distinguish water setup, freezing and current traversal. |
 | Runtime atlas | [`assets/sprites/champions/oh_tipi/oh_tipi_atlas.png`](assets/sprites/champions/oh_tipi/oh_tipi_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/oh_tipi/oh_tipi_portrait.png`](assets/sprites/champions/oh_tipi/oh_tipi_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/oh_tipi/oh_tipi_portrait.png`](assets/sprites/champions/oh_tipi/oh_tipi_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png`](assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/oh_tipi/keyframe_board.png`](assets/sprites/champions_v2/oh_tipi/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Preserved design name | Implementation state |
@@ -621,7 +640,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-s_wayne">
 <summary><strong>S. Wayne</strong> — Hobbit · Dark · Light</summary>
 
-<img src="assets/sprites/champions/s_wayne/s_wayne_direction_preview.png" alt="S. Wayne eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/s_wayne/hero_portrait_256.png" alt="S. Wayne high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/s_wayne/s_wayne_direction_preview.png" alt="S. Wayne current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -632,7 +660,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Eclipse-boundary tactician and decoy router |
 | Identity and migration notes | The preserved kit names were authored under the legacy name Samwise DeWayne and require identity/affinity reconciliation before promotion. |
 | Runtime atlas | [`assets/sprites/champions/s_wayne/s_wayne_atlas.png`](assets/sprites/champions/s_wayne/s_wayne_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/s_wayne/s_wayne_portrait.png`](assets/sprites/champions/s_wayne/s_wayne_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/s_wayne/s_wayne_portrait.png`](assets/sprites/champions/s_wayne/s_wayne_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/s_wayne/hero_portrait_256.png`](assets/sprites/champions_v2/s_wayne/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/s_wayne/keyframe_board.png`](assets/sprites/champions_v2/s_wayne/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Preserved design name | Implementation state |
@@ -649,7 +680,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-red_baron">
 <summary><strong>The Red Baron</strong> — Undead · Void (legacy, unresolved) · Fire · Ice</summary>
 
-<img src="assets/sprites/champions/red_baron/red_baron_direction_preview.png" alt="The Red Baron eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/red_baron/hero_portrait_256.png" alt="The Red Baron high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/red_baron/red_baron_direction_preview.png" alt="The Red Baron current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -660,7 +700,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Airborne formation controller with punishable landings |
 | Identity and migration notes | The visual catalog currently tags Dark, while the design roster still says Void. Selection remains blocked until that mapping is approved. |
 | Runtime atlas | [`assets/sprites/champions/red_baron/red_baron_atlas.png`](assets/sprites/champions/red_baron/red_baron_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/red_baron/red_baron_portrait.png`](assets/sprites/champions/red_baron/red_baron_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/red_baron/red_baron_portrait.png`](assets/sprites/champions/red_baron/red_baron_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/red_baron/hero_portrait_256.png`](assets/sprites/champions_v2/red_baron/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/red_baron/keyframe_board.png`](assets/sprites/champions_v2/red_baron/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Preserved design name | Implementation state |
@@ -677,7 +720,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-steezo">
 <summary><strong>Steezo</strong> — Goblin · Fire · Charge · Light</summary>
 
-<img src="assets/sprites/champions/steezo/steezo_direction_preview.png" alt="Steezo eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/steezo/hero_portrait_256.png" alt="Steezo high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/steezo/steezo_direction_preview.png" alt="Steezo current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -688,7 +740,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Volatile construct engineer and detonation sequencer |
 | Identity and migration notes | Red skin, tool-led silhouette and readable devices are identity requirements rather than optional cosmetics. |
 | Runtime atlas | [`assets/sprites/champions/steezo/steezo_atlas.png`](assets/sprites/champions/steezo/steezo_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/steezo/steezo_portrait.png`](assets/sprites/champions/steezo/steezo_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/steezo/steezo_portrait.png`](assets/sprites/champions/steezo/steezo_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/steezo/hero_portrait_256.png`](assets/sprites/champions_v2/steezo/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/steezo/keyframe_board.png`](assets/sprites/champions_v2/steezo/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Preserved design name | Implementation state |
@@ -705,7 +760,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-treevor_mason">
 <summary><strong>Treevor the Mason</strong> — Treefolk · Earth · Wind · Fire</summary>
 
-<img src="assets/sprites/champions/treevor_mason/treevor_mason_direction_preview.png" alt="Treevor the Mason eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/treevor_mason/hero_portrait_256.png" alt="Treevor the Mason high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/treevor_mason/treevor_mason_direction_preview.png" alt="Treevor the Mason current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -716,7 +780,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Terrain mason creating routes, cover and fire liabilities |
 | Identity and migration notes | Canopy, roots and masonry equipment must remain readable independently of elemental effects. |
 | Runtime atlas | [`assets/sprites/champions/treevor_mason/treevor_mason_atlas.png`](assets/sprites/champions/treevor_mason/treevor_mason_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/treevor_mason/treevor_mason_portrait.png`](assets/sprites/champions/treevor_mason/treevor_mason_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/treevor_mason/treevor_mason_portrait.png`](assets/sprites/champions/treevor_mason/treevor_mason_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/treevor_mason/hero_portrait_256.png`](assets/sprites/champions_v2/treevor_mason/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/treevor_mason/keyframe_board.png`](assets/sprites/champions_v2/treevor_mason/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Preserved design name | Implementation state |
@@ -733,7 +800,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-oll_i">
 <summary><strong>Oll' I</strong> — Werewolf · Earth · Fire · Light</summary>
 
-<img src="assets/sprites/champions/oll_i/oll_i_direction_preview.png" alt="Oll' I eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/oll_i/hero_portrait_256.png" alt="Oll' I high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/oll_i/oll_i_direction_preview.png" alt="Oll' I current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -744,7 +820,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Forward structural breaker with high commitment |
 | Identity and migration notes | Current Flux2 ancestry is Werewolf; older Minotaur imagery is migration reference, not current repository truth. |
 | Runtime atlas | [`assets/sprites/champions/oll_i/oll_i_atlas.png`](assets/sprites/champions/oll_i/oll_i_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/oll_i/oll_i_portrait.png`](assets/sprites/champions/oll_i/oll_i_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/oll_i/oll_i_portrait.png`](assets/sprites/champions/oll_i/oll_i_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/oll_i/hero_portrait_256.png`](assets/sprites/champions_v2/oll_i/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/oll_i/keyframe_board.png`](assets/sprites/champions_v2/oll_i/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Preserved design name | Implementation state |
@@ -761,7 +840,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-fluup">
 <summary><strong>Fluup</strong> — Orc · Charge · Wind · Ice</summary>
 
-<img src="assets/sprites/champions/fluup/fluup_direction_preview.png" alt="Fluup eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/fluup/hero_portrait_256.png" alt="Fluup high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/fluup/fluup_direction_preview.png" alt="Fluup current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -772,7 +860,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Storm bruiser converting committed landings |
 | Identity and migration notes | Heavy action timing and storm effects must preserve the underlying Orc silhouette and recovery read. |
 | Runtime atlas | [`assets/sprites/champions/fluup/fluup_atlas.png`](assets/sprites/champions/fluup/fluup_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/fluup/fluup_portrait.png`](assets/sprites/champions/fluup/fluup_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/fluup/fluup_portrait.png`](assets/sprites/champions/fluup/fluup_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/fluup/hero_portrait_256.png`](assets/sprites/champions_v2/fluup/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/fluup/keyframe_board.png`](assets/sprites/champions_v2/fluup/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Preserved design name | Implementation state |
@@ -789,7 +880,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-wa_bidi">
 <summary><strong>Wa Bidi</strong> — Goblin · Charge · Wind · Fire</summary>
 
-<img src="assets/sprites/champions/wa_bidi/wa_bidi_direction_preview.png" alt="Wa Bidi eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/wa_bidi/hero_portrait_256.png" alt="Wa Bidi high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/wa_bidi/wa_bidi_direction_preview.png" alt="Wa Bidi current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -800,7 +900,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Fast battlecry route specialist with visible and audible cues |
 | Identity and migration notes | No approved character-specific ability names are committed yet. |
 | Runtime atlas | [`assets/sprites/champions/wa_bidi/wa_bidi_atlas.png`](assets/sprites/champions/wa_bidi/wa_bidi_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/wa_bidi/wa_bidi_portrait.png`](assets/sprites/champions/wa_bidi/wa_bidi_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/wa_bidi/wa_bidi_portrait.png`](assets/sprites/champions/wa_bidi/wa_bidi_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/wa_bidi/hero_portrait_256.png`](assets/sprites/champions_v2/wa_bidi/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/wa_bidi/keyframe_board.png`](assets/sprites/champions_v2/wa_bidi/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -816,7 +919,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-grace_reava">
 <summary><strong>Grace Reava</strong> — Sylph · Wind · Water · Light</summary>
 
-<img src="assets/sprites/champions/grace_reava/grace_reava_direction_preview.png" alt="Grace Reava eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/grace_reava/hero_portrait_256.png" alt="Grace Reava high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/grace_reava/grace_reava_direction_preview.png" alt="Grace Reava current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -827,7 +939,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Luminous-current aerial duelist |
 | Identity and migration notes | No approved character-specific ability names are committed yet. |
 | Runtime atlas | [`assets/sprites/champions/grace_reava/grace_reava_atlas.png`](assets/sprites/champions/grace_reava/grace_reava_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/grace_reava/grace_reava_portrait.png`](assets/sprites/champions/grace_reava/grace_reava_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/grace_reava/grace_reava_portrait.png`](assets/sprites/champions/grace_reava/grace_reava_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/grace_reava/hero_portrait_256.png`](assets/sprites/champions_v2/grace_reava/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/grace_reava/keyframe_board.png`](assets/sprites/champions_v2/grace_reava/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -843,7 +958,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-nico_lai">
 <summary><strong>Nico Lai</strong> — Gnome · Charge · Light</summary>
 
-<img src="assets/sprites/champions/nico_lai/nico_lai_direction_preview.png" alt="Nico Lai eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/nico_lai/hero_portrait_256.png" alt="Nico Lai high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/nico_lai/nico_lai_direction_preview.png" alt="Nico Lai current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -854,7 +978,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Precision shared-device engineer |
 | Identity and migration notes | Bald crown, strong swept side-hair silhouette and oversized engineering equipment are required identity anchors. |
 | Runtime atlas | [`assets/sprites/champions/nico_lai/nico_lai_atlas.png`](assets/sprites/champions/nico_lai/nico_lai_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/nico_lai/nico_lai_portrait.png`](assets/sprites/champions/nico_lai/nico_lai_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/nico_lai/nico_lai_portrait.png`](assets/sprites/champions/nico_lai/nico_lai_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/nico_lai/hero_portrait_256.png`](assets/sprites/champions_v2/nico_lai/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/nico_lai/keyframe_board.png`](assets/sprites/champions_v2/nico_lai/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -870,7 +997,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-spai_si">
 <summary><strong>Spai Si</strong> — Demon · Wind · Light · Earth</summary>
 
-<img src="assets/sprites/champions/spai_si/spai_si_direction_preview.png" alt="Spai Si eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/spai_si/hero_portrait_256.png" alt="Spai Si high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/spai_si/spai_si_direction_preview.png" alt="Spai Si current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -881,7 +1017,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Redirect duelist converting hostile intent into angles |
 | Identity and migration notes | Current design is male with short dark hair; no approved character-specific ability names are committed yet. |
 | Runtime atlas | [`assets/sprites/champions/spai_si/spai_si_atlas.png`](assets/sprites/champions/spai_si/spai_si_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/spai_si/spai_si_portrait.png`](assets/sprites/champions/spai_si/spai_si_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/spai_si/spai_si_portrait.png`](assets/sprites/champions/spai_si/spai_si_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/spai_si/hero_portrait_256.png`](assets/sprites/champions_v2/spai_si/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/spai_si/keyframe_board.png`](assets/sprites/champions_v2/spai_si/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -897,7 +1036,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-leaf_hidden">
 <summary><strong>Leaf the Hidden</strong> — Treefolk · Water · Earth · Light</summary>
 
-<img src="assets/sprites/champions/leaf_hidden/leaf_hidden_direction_preview.png" alt="Leaf the Hidden eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/leaf_hidden/hero_portrait_256.png" alt="Leaf the Hidden high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/leaf_hidden/leaf_hidden_direction_preview.png" alt="Leaf the Hidden current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -908,7 +1056,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Concealed grove support and planned-route grower |
 | Identity and migration notes | Legacy art may label this design Hidin Leef; Flux2 uses Leaf the Hidden. |
 | Runtime atlas | [`assets/sprites/champions/leaf_hidden/leaf_hidden_atlas.png`](assets/sprites/champions/leaf_hidden/leaf_hidden_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/leaf_hidden/leaf_hidden_portrait.png`](assets/sprites/champions/leaf_hidden/leaf_hidden_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/leaf_hidden/leaf_hidden_portrait.png`](assets/sprites/champions/leaf_hidden/leaf_hidden_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/leaf_hidden/hero_portrait_256.png`](assets/sprites/champions_v2/leaf_hidden/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/leaf_hidden/keyframe_board.png`](assets/sprites/champions_v2/leaf_hidden/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -924,7 +1075,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-ha_rekt">
 <summary><strong>Ha Rekt</strong> — Wyrmborn · Ice · Wind · Fire</summary>
 
-<img src="assets/sprites/champions/ha_rekt/ha_rekt_direction_preview.png" alt="Ha Rekt eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/ha_rekt/hero_portrait_256.png" alt="Ha Rekt high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/ha_rekt/ha_rekt_direction_preview.png" alt="Ha Rekt current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -935,7 +1095,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Aerial cold-line hunter with marked escape routes |
 | Identity and migration notes | Wyrmborn is an anthropomorphic scaled body plan, not a conventional quadrupedal wyrm. |
 | Runtime atlas | [`assets/sprites/champions/ha_rekt/ha_rekt_atlas.png`](assets/sprites/champions/ha_rekt/ha_rekt_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/ha_rekt/ha_rekt_portrait.png`](assets/sprites/champions/ha_rekt/ha_rekt_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/ha_rekt/ha_rekt_portrait.png`](assets/sprites/champions/ha_rekt/ha_rekt_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/ha_rekt/hero_portrait_256.png`](assets/sprites/champions_v2/ha_rekt/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/ha_rekt/keyframe_board.png`](assets/sprites/champions_v2/ha_rekt/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -951,7 +1114,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-dr_apex">
 <summary><strong>Dr. Apex</strong> — Stoneborn · Earth · Light · Water</summary>
 
-<img src="assets/sprites/champions/dr_apex/dr_apex_direction_preview.png" alt="Dr. Apex eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/dr_apex/hero_portrait_256.png" alt="Dr. Apex high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/dr_apex/dr_apex_direction_preview.png" alt="Dr. Apex current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -962,7 +1134,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Armored combat medic with contestable support zones |
 | Identity and migration notes | No approved character-specific ability names are committed yet. |
 | Runtime atlas | [`assets/sprites/champions/dr_apex/dr_apex_atlas.png`](assets/sprites/champions/dr_apex/dr_apex_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/dr_apex/dr_apex_portrait.png`](assets/sprites/champions/dr_apex/dr_apex_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/dr_apex/dr_apex_portrait.png`](assets/sprites/champions/dr_apex/dr_apex_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/dr_apex/hero_portrait_256.png`](assets/sprites/champions_v2/dr_apex/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/dr_apex/keyframe_board.png`](assets/sprites/champions_v2/dr_apex/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -978,7 +1153,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-haara">
 <summary><strong>Haara</strong> — Nymph · Light · Wind · Spirit</summary>
 
-<img src="assets/sprites/champions/haara/haara_direction_preview.png" alt="Haara eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/haara/hero_portrait_256.png" alt="Haara high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/haara/haara_direction_preview.png" alt="Haara current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -989,7 +1173,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Bloom planner with flexible resource routing |
 | Identity and migration notes | Short dark hair is the current identity direction. Spirit remains runtime gated. |
 | Runtime atlas | [`assets/sprites/champions/haara/haara_atlas.png`](assets/sprites/champions/haara/haara_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/haara/haara_portrait.png`](assets/sprites/champions/haara/haara_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/haara/haara_portrait.png`](assets/sprites/champions/haara/haara_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/haara/hero_portrait_256.png`](assets/sprites/champions_v2/haara/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/haara/keyframe_board.png`](assets/sprites/champions_v2/haara/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1005,7 +1192,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-hesus_christo">
 <summary><strong>Hesus Christo</strong> — Elf · Earth · Water</summary>
 
-<img src="assets/sprites/champions/hesus_christo/hesus_christo_direction_preview.png" alt="Hesus Christo eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/hesus_christo/hero_portrait_256.png" alt="Hesus Christo high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/hesus_christo/hesus_christo_direction_preview.png" alt="Hesus Christo current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -1016,7 +1212,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Tall renewal vanguard rebuilding broken routes |
 | Identity and migration notes | No approved character-specific ability names are committed yet. |
 | Runtime atlas | [`assets/sprites/champions/hesus_christo/hesus_christo_atlas.png`](assets/sprites/champions/hesus_christo/hesus_christo_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/hesus_christo/hesus_christo_portrait.png`](assets/sprites/champions/hesus_christo/hesus_christo_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/hesus_christo/hesus_christo_portrait.png`](assets/sprites/champions/hesus_christo/hesus_christo_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/hesus_christo/hero_portrait_256.png`](assets/sprites/champions_v2/hesus_christo/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/hesus_christo/keyframe_board.png`](assets/sprites/champions_v2/hesus_christo/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1032,7 +1231,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-grimm_bow">
 <summary><strong>Grimm Bow</strong> — Troll · Void (legacy, unresolved) · Earth · Water</summary>
 
-<img src="assets/sprites/champions/grimm_bow/grimm_bow_direction_preview.png" alt="Grimm Bow eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/grimm_bow/hero_portrait_256.png" alt="Grimm Bow high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/grimm_bow/grimm_bow_direction_preview.png" alt="Grimm Bow current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -1043,7 +1251,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Terrain archer converting displacement into precision, never bonus damage |
 | Identity and migration notes | The visual catalog currently tags Dark, while the design roster still says Void. Selection remains blocked until that mapping is approved. |
 | Runtime atlas | [`assets/sprites/champions/grimm_bow/grimm_bow_atlas.png`](assets/sprites/champions/grimm_bow/grimm_bow_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/grimm_bow/grimm_bow_portrait.png`](assets/sprites/champions/grimm_bow/grimm_bow_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/grimm_bow/grimm_bow_portrait.png`](assets/sprites/champions/grimm_bow/grimm_bow_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/grimm_bow/hero_portrait_256.png`](assets/sprites/champions_v2/grimm_bow/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/grimm_bow/keyframe_board.png`](assets/sprites/champions_v2/grimm_bow/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1059,7 +1270,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-biggy_bob">
 <summary><strong>Biggy Bob</strong> — Dwarf · Earth · Fire · Light</summary>
 
-<img src="assets/sprites/champions/biggy_bob/biggy_bob_direction_preview.png" alt="Biggy Bob eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/biggy_bob/hero_portrait_256.png" alt="Biggy Bob high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/biggy_bob/biggy_bob_direction_preview.png" alt="Biggy Bob current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -1070,7 +1290,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Forge-line breacher and masonry specialist |
 | Identity and migration notes | No approved character-specific ability names are committed yet. |
 | Runtime atlas | [`assets/sprites/champions/biggy_bob/biggy_bob_atlas.png`](assets/sprites/champions/biggy_bob/biggy_bob_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/biggy_bob/biggy_bob_portrait.png`](assets/sprites/champions/biggy_bob/biggy_bob_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/biggy_bob/biggy_bob_portrait.png`](assets/sprites/champions/biggy_bob/biggy_bob_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/biggy_bob/hero_portrait_256.png`](assets/sprites/champions_v2/biggy_bob/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/biggy_bob/keyframe_board.png`](assets/sprites/champions_v2/biggy_bob/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1086,7 +1309,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-jan_wicked">
 <summary><strong>Jan Wicked</strong> — Human · Ice · Dark · Charge</summary>
 
-<img src="assets/sprites/champions/jan_wicked/jan_wicked_direction_preview.png" alt="Jan Wicked eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/jan_wicked/hero_portrait_256.png" alt="Jan Wicked high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/jan_wicked/jan_wicked_direction_preview.png" alt="Jan Wicked current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -1097,7 +1329,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Black-ice circuit hunter |
 | Identity and migration notes | No approved character-specific ability names are committed yet. |
 | Runtime atlas | [`assets/sprites/champions/jan_wicked/jan_wicked_atlas.png`](assets/sprites/champions/jan_wicked/jan_wicked_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/jan_wicked/jan_wicked_portrait.png`](assets/sprites/champions/jan_wicked/jan_wicked_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/jan_wicked/jan_wicked_portrait.png`](assets/sprites/champions/jan_wicked/jan_wicked_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/jan_wicked/hero_portrait_256.png`](assets/sprites/champions_v2/jan_wicked/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/jan_wicked/keyframe_board.png`](assets/sprites/champions_v2/jan_wicked/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1113,7 +1348,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-ba_djoh">
 <summary><strong>Ba Djoh</strong> — Minotaur · Earth · Fire · Water</summary>
 
-<img src="assets/sprites/champions/ba_djoh/ba_djoh_direction_preview.png" alt="Ba Djoh eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/ba_djoh/hero_portrait_256.png" alt="Ba Djoh high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/ba_djoh/ba_djoh_direction_preview.png" alt="Ba Djoh current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -1124,7 +1368,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Three-current charge breaker |
 | Identity and migration notes | No approved character-specific ability names are committed yet. |
 | Runtime atlas | [`assets/sprites/champions/ba_djoh/ba_djoh_atlas.png`](assets/sprites/champions/ba_djoh/ba_djoh_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/ba_djoh/ba_djoh_portrait.png`](assets/sprites/champions/ba_djoh/ba_djoh_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/ba_djoh/ba_djoh_portrait.png`](assets/sprites/champions/ba_djoh/ba_djoh_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/ba_djoh/hero_portrait_256.png`](assets/sprites/champions_v2/ba_djoh/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/ba_djoh/keyframe_board.png`](assets/sprites/champions_v2/ba_djoh/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1140,7 +1387,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-urzh">
 <summary><strong>Urzh</strong> — Stoneborn · Earth · Fire · Charge</summary>
 
-<img src="assets/sprites/champions/urzh/urzh_direction_preview.png" alt="Urzh eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/urzh/hero_portrait_256.png" alt="Urzh high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/urzh/urzh_direction_preview.png" alt="Urzh current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -1151,7 +1407,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Conductive kiln bulwark and lane anchor |
 | Identity and migration notes | No approved character-specific ability names are committed yet. |
 | Runtime atlas | [`assets/sprites/champions/urzh/urzh_atlas.png`](assets/sprites/champions/urzh/urzh_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/urzh/urzh_portrait.png`](assets/sprites/champions/urzh/urzh_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/urzh/urzh_portrait.png`](assets/sprites/champions/urzh/urzh_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/urzh/hero_portrait_256.png`](assets/sprites/champions_v2/urzh/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/urzh/keyframe_board.png`](assets/sprites/champions_v2/urzh/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1167,7 +1426,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-donnok">
 <summary><strong>Donnok</strong> — Dwarf · Earth · Fire · Water</summary>
 
-<img src="assets/sprites/champions/donnok/donnok_direction_preview.png" alt="Donnok eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/donnok/hero_portrait_256.png" alt="Donnok high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/donnok/donnok_direction_preview.png" alt="Donnok current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -1178,7 +1446,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Forge-rhythm terrain shaper |
 | Identity and migration notes | No approved character-specific ability names are committed yet. |
 | Runtime atlas | [`assets/sprites/champions/donnok/donnok_atlas.png`](assets/sprites/champions/donnok/donnok_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/donnok/donnok_portrait.png`](assets/sprites/champions/donnok/donnok_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/donnok/donnok_portrait.png`](assets/sprites/champions/donnok/donnok_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/donnok/hero_portrait_256.png`](assets/sprites/champions_v2/donnok/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/donnok/keyframe_board.png`](assets/sprites/champions_v2/donnok/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1194,7 +1465,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-djonah_thaan">
 <summary><strong>Djonah Thaan</strong> — Vampire · Dark · Charge · Fire</summary>
 
-<img src="assets/sprites/champions/djonah_thaan/djonah_thaan_direction_preview.png" alt="Djonah Thaan eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/djonah_thaan/hero_portrait_256.png" alt="Djonah Thaan high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/djonah_thaan/djonah_thaan_direction_preview.png" alt="Djonah Thaan current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -1205,7 +1485,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Grave-current pursuit controller |
 | Identity and migration notes | No approved character-specific ability names are committed yet. |
 | Runtime atlas | [`assets/sprites/champions/djonah_thaan/djonah_thaan_atlas.png`](assets/sprites/champions/djonah_thaan/djonah_thaan_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/djonah_thaan/djonah_thaan_portrait.png`](assets/sprites/champions/djonah_thaan/djonah_thaan_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/djonah_thaan/djonah_thaan_portrait.png`](assets/sprites/champions/djonah_thaan/djonah_thaan_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/djonah_thaan/hero_portrait_256.png`](assets/sprites/champions_v2/djonah_thaan/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/djonah_thaan/keyframe_board.png`](assets/sprites/champions_v2/djonah_thaan/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1221,7 +1504,16 @@ final art and not proof that a champion is selectable.
 <details id="champion-unnamed_angel">
 <summary><strong>Unnamed Angel</strong> — Angel · Wind · Light · Spirit</summary>
 
-<img src="assets/sprites/champions/unnamed_angel/unnamed_angel_direction_preview.png" alt="Unnamed Angel eight-direction runtime sprite preview" width="512">
+<table>
+<tr>
+<td align="center"><img src="assets/sprites/champions_v2/unnamed_angel/hero_portrait_256.png" alt="Unnamed Angel high-detail character candidate" width="256"></td>
+<td align="center"><img src="assets/sprites/champions/unnamed_angel/unnamed_angel_direction_preview.png" alt="Unnamed Angel current eight-direction in-game sprite" width="512"></td>
+</tr>
+<tr>
+<td align="center"><strong>Character-detail candidate</strong><br>expression, materials, equipment and elemental identity</td>
+<td align="center"><strong>Current runtime sprite</strong><br>eight directions linked to the in-game atlas</td>
+</tr>
+</table>
 
 | Field | Repository state |
 | --- | --- |
@@ -1232,7 +1524,10 @@ final art and not proof that a champion is selectable.
 | Core gameplay identity | Visual and body-plan placeholder only |
 | Identity and migration notes | Identity, lore, kit and selection status are unapproved. This slot must not become playable merely to fill the roster. |
 | Runtime atlas | [`assets/sprites/champions/unnamed_angel/unnamed_angel_atlas.png`](assets/sprites/champions/unnamed_angel/unnamed_angel_atlas.png) |
-| Portrait candidate | [`assets/sprites/champions/unnamed_angel/unnamed_angel_portrait.png`](assets/sprites/champions/unnamed_angel/unnamed_angel_portrait.png) |
+| Runtime portrait candidate | [`assets/sprites/champions/unnamed_angel/unnamed_angel_portrait.png`](assets/sprites/champions/unnamed_angel/unnamed_angel_portrait.png) |
+| High-detail portrait candidate | [`assets/sprites/champions_v2/unnamed_angel/hero_portrait_256.png`](assets/sprites/champions_v2/unnamed_angel/hero_portrait_256.png) |
+| Animation/keyframe board | [`assets/sprites/champions_v2/unnamed_angel/keyframe_board.png`](assets/sprites/champions_v2/unnamed_angel/keyframe_board.png) |
+| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |

@@ -1,0 +1,33 @@
+{
+  "schema": "flux2.reference_style_front_sprites.v3",
+  "source_reference": "art/reference/flux-champions-style-baseline.png",
+  "runtime_cell_recommendation": [96, 96],
+  "pivot": [48, 88],
+  "status_note": "Front-facing high-detail candidates only. Existing directional and animation atlases remain authoritative until individually redrawn and accepted.",
+  "champions": {
+    "oh_tipi": {"front_sprite": "res://assets/sprites/champions_v3/oh_tipi/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},
+    "s_wayne": {"front_sprite": "res://assets/sprites/champions_v3/s_wayne/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},
+    "red_baron": {"front_sprite": "res://assets/sprites/champions_v3/red_baron/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},
+    "steezo": {"front_sprite": "res://assets/sprites/champions_v3/steezo/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},
+    "treevor_mason": {"front_sprite": "res://assets/sprites/champions_v3/treevor_mason/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},
+    "oll_i": {"front_sprite": "res://assets/sprites/champions_v3/oll_i/front_sprite_256.png", "status": "reference_style_derived_candidate"},
+    "fluup": {"front_sprite": "res://assets/sprites/champions_v3/fluup/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},
+    "wa_bidi": {"front_sprite": "res://assets/sprites/champions_v3/wa_bidi/front_sprite_256.png", "status": "reference_style_derived_candidate"},
+    "grace_reava": {"front_sprite": "res://assets/sprites/champions_v3/grace_reava/front_sprite_256.png", "status": "reference_style_derived_candidate"},
+    "nico_lai": {"front_sprite": "res://assets/sprites/champions_v3/nico_lai/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},
+    "spai_si": {"front_sprite": "res://assets/sprites/champions_v3/spai_si/front_sprite_256.png", "status": "reference_style_derived_candidate"},
+    "leaf_hidden": {"front_sprite": "res://assets/sprites/champions_v3/leaf_hidden/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},
+    "ha_rekt": {"front_sprite": "res://assets/sprites/champions_v3/ha_rekt/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},
+    "dr_apex": {"front_sprite": "res://assets/sprites/champions_v3/dr_apex/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},
+    "haara": {"front_sprite": "res://assets/sprites/champions_v3/haara/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},
+    "hesus_christo": {"front_sprite": "res://assets/sprites/champions_v3/hesus_christo/front_sprite_256.png", "status": "reference_style_derived_candidate"},
+    "grimm_bow": {"front_sprite": "res://assets/sprites/champions_v3/grimm_bow/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},
+    "biggy_bob": {"front_sprite": "res://assets/sprites/champions_v3/biggy_bob/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},
+    "jan_wicked": {"front_sprite": "res://assets/sprites/champions_v3/jan_wicked/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},
+    "ba_djoh": {"front_sprite": "res://assets/sprites/champions_v3/ba_djoh/front_sprite_256.png", "status": "reference_style_derived_candidate"},
+    "urzh": {"front_sprite": "res://assets/sprites/champions_v3/urzh/front_sprite_256.png", "status": "reference_style_derived_candidate"},
+    "donnok": {"front_sprite": "res://assets/sprites/champions_v3/donnok/front_sprite_256.png", "status": "reference_style_derived_candidate"},
+    "djonah_thaan": {"front_sprite": "res://assets/sprites/champions_v3/djonah_thaan/front_sprite_256.png", "status": "reference_style_derived_candidate"},
+    "unnamed_angel": {"front_sprite": "res://assets/sprites/champions_v3/unnamed_angel/front_sprite_256.png", "status": "reference_style_derived_candidate_unapproved"}
+  }
+}

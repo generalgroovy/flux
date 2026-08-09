@@ -61,10 +61,14 @@ even when design documentation already exists.
     receiving-surface shadow for hop, wall kick, double jump, slide jump, air
     dodge, vault, and superglide; reduced-motion and 60/120 Hz presentation
     samples are covered without moving collision, camera, or POV authority
+  - [x] Oh Tipi's manifest-backed integrated-candidate atlas is the first
+    playable sprite body: semantic movement selects its 25-action/eight-direction
+    regions with nearest-neighbor rendering, composed with the shared jump lift
+    and ground shadow before POV masking, and fails closed to the procedural body
   - [ ] Add variable hop/fast fall, bounded impact influence, ground recovery,
     wall skims, authored elevation, input buffering, interactive binding UI,
-    controller profile persistence, per-champion animation frames, and
-    interactive route acceptance
+    controller profile persistence, accepted final per-champion animation art,
+    remaining champion runtime integration, and interactive route acceptance
 - [ ] **Chapter 4 — [Aiming, combat, and abilities](#aiming-combat-and-ability-composition)**
   - [x] Independent move/aim and held-primary command protocol
   - [x] Resource-free Arc Primary and Flux-paid Vector Lance through startup,
@@ -636,7 +640,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | High-detail portrait candidate | [`assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png`](assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/oh_tipi/keyframe_board.png`](assets/sprites/champions_v2/oh_tipi/keyframe_board.png) |
 | Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
-| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+| Sprite status | Exercised by the playable bootstrap as the first manifest-backed runtime candidate; not final accepted art and not proof that the remaining champions are integrated |
 
 | Ability slot | Preserved design name | Implementation state |
 | --- | --- | --- |

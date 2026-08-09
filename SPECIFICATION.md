@@ -285,8 +285,17 @@ wall kick, double jump, slide jump, air dodge, vault, and superglide. It drives
 whole-pixel body lift plus a separate broader/darker receiving-surface shadow
 from existing authoritative timers. Camera focus, POV origin, collision radius,
 canonical serialization, replay data, and gameplay position remain on the
-unshifted ground anchor. This is the reusable generic presentation foundation;
-it does not complete any champion's required sprite animation manifest.
+unshifted ground anchor.
+
+Oh Tipi is the first playable manifest-backed sprite candidate. Presentation
+maps canonical control and movement states to the existing 25-action atlas,
+maps the quantized facing vector to one of eight directions, and derives loop or
+action frames from the simulation clock and normalized action phase. Rendering
+uses nearest-neighbor sampling, applies lift only to the sprite body, and draws
+the body before the authority-preserving POV mask. Missing, invalid, or
+unsynchronizable candidate data fails closed to the procedural body. This proves
+the runtime integration contract, not final visual acceptance of Oh Tipi or
+completion of the remaining champions.
 
 Body lift may not change the ground collision footprint, hide a landing cell,
 or invent invulnerability. Elevation affects collision and targeting only

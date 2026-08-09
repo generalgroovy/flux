@@ -51,6 +51,9 @@ func _process(delta: float) -> void:
 
 func load_source() -> bool:
 	last_error = ""
+	texture = null
+	region_enabled = false
+	animation_lookup.clear()
 	catalog = _load_json(CATALOG_PATH)
 	if catalog.is_empty():
 		return false
@@ -62,6 +65,7 @@ func load_source() -> bool:
 	if not atlas_resource is Texture2D:
 		return _fail("character atlas could not be loaded: %s" % atlas_path)
 	texture = atlas_resource
+	region_enabled = true
 	return set_animation_state(animation_id, direction_index, true)
 
 
@@ -110,15 +114,128 @@ func set_direction(new_direction_index: int) -> void:
 	_apply_region()
 
 
-func set_frame(new_frame: int) -> void:
+func set_animation_frame(new_frame: int) -> void:
 	current_frame = clampi(new_frame, 0, max(0, frame_count - 1))
 	_apply_region()
+
+
+func sync_from_player(
+	state: PlayerState,
+	config: SimConfig,
+	simulation_tick: int,
+	interpolation_alpha: float = 0.0,
+) -> bool:
+	if texture == null:
+		return _fail("character texture is not loaded")
+	if config == null or not config.is_valid() or simulation_tick < 0:
+		return _fail("character presentation requires a valid simulation clock")
+	var requested_animation := animation_id_for_player(state)
+	var requested_direction := direction_index_from_vector(state.facing_x, state.facing_y)
+	var restart := requested_animation != animation_id
+	if not set_animation_state(requested_animation, requested_direction, restart):
+		return false
+	var definition: Dictionary = animation_lookup[animation_id]
+	var requested_frame: int = 0
+	if animation_loop:
+		var frames_per_second := maxi(1, int(definition.get("fps", 1)))
+		@warning_ignore("integer_division")
+		requested_frame = (simulation_tick * frames_per_second / config.tick_rate) % frame_count
+	else:
+		var phase := _action_phase(state, config, interpolation_alpha, animation_id)
+		requested_frame = mini(frame_count - 1, floori(phase * float(frame_count)))
+	set_animation_frame(requested_frame)
+	return true
+
+
+static func animation_id_for_player(state: PlayerState) -> String:
+	if state.control_state == PlayerState.ControlState.STUNNED:
+		return "stunned"
+	if state.control_state == PlayerState.ControlState.ROOTED:
+		return "rooted"
+	if state.landing_ticks > 0 and not state.is_airborne() and state.vault_ticks == 0:
+		return "land"
+	match state.movement_mode:
+		PlayerState.MovementMode.WALK, PlayerState.MovementMode.SLOWED:
+			return "walk"
+		PlayerState.MovementMode.SPRINT, PlayerState.MovementMode.CHARGING:
+			return "sprint"
+		PlayerState.MovementMode.HOP:
+			return "hop"
+		PlayerState.MovementMode.DOUBLE_JUMP:
+			return "double_jump"
+		PlayerState.MovementMode.SLIDE:
+			return "slide"
+		PlayerState.MovementMode.SLIDE_JUMP:
+			return "slide_jump"
+		PlayerState.MovementMode.AIR_DODGE:
+			return "air_dodge"
+		PlayerState.MovementMode.WAVE_DASH:
+			return "wavedash"
+		PlayerState.MovementMode.WALL_KICK:
+			return "wall_kick"
+		PlayerState.MovementMode.VAULT:
+			return "vault"
+		PlayerState.MovementMode.SUPERGLIDE:
+			return "superglide"
+		PlayerState.MovementMode.LAUNCHED:
+			return "hit"
+		PlayerState.MovementMode.GRAPPLED:
+			return "fall"
+		PlayerState.MovementMode.STUNNED:
+			return "stunned"
+		PlayerState.MovementMode.ROOTED:
+			return "rooted"
+		_:
+			return "idle"
+
+
+static func direction_index_from_vector(x: int, y: int) -> int:
+	if x == 0 and y == 0:
+		return 0
+	var absolute_x := absi(x)
+	var absolute_y := absi(y)
+	if absolute_x * 2 < absolute_y:
+		return 0 if y > 0 else 4
+	if absolute_y * 2 < absolute_x:
+		return 2 if x > 0 else 6
+	if x > 0:
+		return 1 if y > 0 else 3
+	return 7 if y > 0 else 5
+
+
+static func destination_rect(body_anchor: Vector2) -> Rect2:
+	return Rect2(body_anchor - Vector2(PIVOT), Vector2(CELL_SIZE))
 
 
 func _apply_region() -> void:
 	var x := _block.x * BLOCK_SIZE.x + current_frame * CELL_SIZE.x
 	var y := _block.y * BLOCK_SIZE.y + direction_index * CELL_SIZE.y
 	region_rect = Rect2(Vector2(x, y), Vector2(CELL_SIZE))
+
+
+func _action_phase(state: PlayerState, config: SimConfig, interpolation_alpha: float, requested_animation: String) -> float:
+	if requested_animation in ["hop", "double_jump", "wall_kick", "air_dodge", "slide_jump", "vault", "superglide"]:
+		return JumpPresentation.sample(state, config, interpolation_alpha).normalized_phase
+	if requested_animation == "land":
+		return _remaining_phase(
+			state.landing_ticks,
+			config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS),
+			interpolation_alpha,
+		)
+	if requested_animation == "wavedash":
+		return _remaining_phase(
+			state.wave_dash_ticks,
+			config.milliseconds_to_ticks(MovementTuning.WAVE_DASH_DURATION_MS),
+			interpolation_alpha,
+		)
+	return 0.0
+
+
+func _remaining_phase(remaining_ticks: int, total_ticks: int, interpolation_alpha: float) -> float:
+	if remaining_ticks <= 0 or total_ticks <= 0:
+		return 0.0
+	var elapsed_ticks := float(total_ticks - remaining_ticks) + clampf(interpolation_alpha, 0.0, 1.0)
+	return clampf(elapsed_ticks / float(total_ticks), 0.0, 1.0)
 
 
 func _resolve_atlas_path() -> String:

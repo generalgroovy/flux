@@ -137,7 +137,15 @@ passes on Garuda Linux/Sway and Windows.
   Normalized 60/120 Hz samples, reduced motion, canonical-state immutability and
   all seven current hop/aerial/vault modes are covered by 154 assertions. The
   readability reference is broad classic handheld adventure grammar, never
-  copied sprites/frames/timing. Per-champion frame animation remains pending.
+  copied sprites/frames/timing.
+- [x] G3 first sprite-body integration: Oh Tipi's manifest-backed
+  integrated-candidate atlas now renders in the playable bootstrap with
+  nearest-neighbor sampling, semantic 25-action/eight-direction selection,
+  normalized action frames, shared jump lift/ground shadow, pre-POV-mask draw
+  ordering and fail-closed procedural fallback. Sixty focused assertions plus
+  the full suite and leak-free 60/120 Hz launches pass. This is runtime plumbing,
+  not final visual approval; accepted Oh Tipi art and every remaining champion
+  integration are still required.
 - [ ] Planned: add variable-hop/fast-fall authority, bounded launched-trajectory
   influence, collision-safe timed ground recovery, and marked wall skims without
   weakening stun, recovery, same-wall lockout, or the global speed ceiling.
@@ -413,8 +421,10 @@ features.
    shadow/effect skeleton, original compact handheld-readable body-lift jump,
    landing, interactions, shared fallback taunt, reduced motion, and semantic
    presentation events. The timer-normalized generic body-lift/shadow sampler is
-   implemented; sprite-body integration, landing/interaction frames, fallback
-   taunt and semantic presentation-event wiring remain open.
+   implemented, and Oh Tipi proves the manifest-backed sprite-body runtime path;
+   accepted final art, remaining champion integration, landing/interaction
+   event completion, fallback taunt and semantic presentation-event wiring
+   remain open.
 10. **Slice F2 — structural/thermal reactions:** resume with one phase
    orchestrator, typed damage/stages/rubble/derived collision, then heat/Fire/
    steam/ice and readable deterministic reaction events.

@@ -4,6 +4,11 @@ This catalog is generated from deterministic source code and is directly usable 
 Godot. Rendered pixels never define collision, damage, reach, chemistry or other
 simulation authority.
 
+Runtime status: Oh Tipi is the first `integrated_candidate` exercised by the
+playable bootstrap across semantic movement states and eight directions. It is
+still a candidate: the supplied FLUX Champions board remains the minimum visual
+quality target, and neither Oh Tipi nor the remaining roster is final art.
+
 ## Production status
 
 | Category | Planned | Complete | Candidate | Gated | Validation |

@@ -39,6 +39,7 @@ var material_yard: MaterialYardDefinition
 var material_grid: MaterialGrid
 var material_preview_texture: ImageTexture
 var player_preferences: PlayerPreferences
+var player_sprite: WellspringCharacterSprite
 var tick_rate: int = 120
 var accumulator_seconds: float = 0.0
 var previous_position := Vector2.ZERO
@@ -49,6 +50,7 @@ var capture_pointer_world := Vector2i(-1, -1)
 
 
 func _ready() -> void:
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	player_preferences = PlayerPreferences.new()
 	var preferences_existed: bool = FileAccess.file_exists(PlayerPreferences.DEFAULT_PATH)
 	if not player_preferences.load_from_file():
@@ -57,6 +59,7 @@ func _ready() -> void:
 	if not preferences_existed and not player_preferences.save_to_file():
 		push_warning(player_preferences.last_error)
 	_apply_preference_overrides()
+	_load_player_sprite_candidate()
 	hub_definition = HubDefinition.new()
 	if not hub_definition.load_from_file(HUB_DEFINITION_PATH):
 		push_error(hub_definition.last_error)
@@ -113,6 +116,10 @@ func _ready() -> void:
 	)
 	set_process(true)
 	queue_redraw()
+
+
+func _exit_tree() -> void:
+	_clear_player_sprite_candidate()
 
 
 func _process(delta: float) -> void:
@@ -183,9 +190,23 @@ func _draw() -> void:
 	draw_circle(Vector2.ZERO, 1.0, Color(FOREST_SHADOW_COLOR, presentation.shadow_opacity))
 	draw_set_transform(-camera_origin)
 	var body_position := rendered_position + Vector2(0.0, -float(presentation.body_lift_pixels))
-	draw_circle(body_position, player_radius + 5.0, Color(ATTUNEMENT_COLOR, 0.18))
-	draw_circle(body_position, player_radius, PLAYER_COLOR)
-	draw_arc(body_position, player_radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
+	var sprite_drawn: bool = false
+	if player_sprite != null:
+		if player_sprite.sync_from_player(state, world.config, world.tick, alpha):
+			var sprite_anchor := shadow_center + Vector2(0.0, -float(presentation.body_lift_pixels))
+			draw_texture_rect_region(
+				player_sprite.texture,
+				WellspringCharacterSprite.destination_rect(sprite_anchor),
+				player_sprite.region_rect,
+			)
+			sprite_drawn = true
+		else:
+			push_warning("Oh Tipi presentation candidate disabled: %s" % player_sprite.last_error)
+			_clear_player_sprite_candidate()
+	if not sprite_drawn:
+		draw_circle(body_position, player_radius + 5.0, Color(ATTUNEMENT_COLOR, 0.18))
+		draw_circle(body_position, player_radius, PLAYER_COLOR)
+		draw_arc(body_position, player_radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
 	draw_line(body_position, body_position + Vector2(state.aim_x, state.aim_y) * 0.032, Color.WHITE, 3.0)
 	draw_set_transform(Vector2.ZERO)
 	var rendered_screen_position: Vector2 = rendered_position - camera_origin
@@ -324,6 +345,25 @@ func _refresh_material_preview() -> void:
 				color = color.lerp(ATTUNEMENT_COLOR, charge_ratio * 0.7)
 			image.set_pixel(cell_x, cell_y, color)
 	material_preview_texture = ImageTexture.create_from_image(image)
+
+
+func _load_player_sprite_candidate() -> void:
+	_clear_player_sprite_candidate()
+	player_sprite = WellspringCharacterSprite.new()
+	player_sprite.source_kind = "champion"
+	player_sprite.source_id = "oh_tipi"
+	player_sprite.playing = false
+	if not player_sprite.load_source():
+		push_warning("Oh Tipi presentation candidate unavailable: %s; using procedural fallback" % player_sprite.last_error)
+		_clear_player_sprite_candidate()
+
+
+func _clear_player_sprite_candidate() -> void:
+	if player_sprite == null:
+		return
+	player_sprite.texture = null
+	player_sprite.free()
+	player_sprite = null
 
 
 func _material_color(material_id: String) -> Color:

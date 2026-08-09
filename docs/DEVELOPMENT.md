@@ -40,6 +40,15 @@ normalized phases at 60/120 Hz for hop, wall kick, double jump, slide jump, air
 dodge, vault, and superglide. This shared sampler is not evidence that any
 champion's frame-complete sprite manifest is finished.
 
+`src/presentation/wellspring_character_sprite.gd` now loads Oh Tipi's existing
+v2 integrated-candidate atlas and selects its semantic action, eight-direction
+region, and clock-derived frame. The bootstrap draws that region with nearest
+filtering, lifts only the body over the receiving-surface shadow, and draws it
+before the POV mask. Invalid loading or synchronization releases the candidate
+and retains the procedural fallback. The focused suite covers 60 assertions;
+this runtime exercise does not promote the candidate to final art or claim the
+rest of the roster is playable.
+
 F7 switches world-relative/aim-relative movement, F8 switches full/cone view,
 and F9/F10 increase angle/range; hold Shift with F9/F10 to reduce them. Changes
 persist offline in `user://player_preferences_v1.json`. Physical keyboard

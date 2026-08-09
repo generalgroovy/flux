@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="FLUX — Flow. Learn. Unleash. eXecute. A systemic skill arena."
+    />
+    <meta name="theme-color" content="#070a10" />
+    <title>FLUX — Flow. Learn. Unleash. eXecute.</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main id="app" data-view="game" data-panel="practice">
+      <canvas id="arena" aria-label="FLUX arena"></canvas>
+
+      <section id="hud" class="hud" aria-live="polite">
+        <div class="score score-alpha">
+          <span>ALPHA</span>
+          <strong id="score-alpha">0</strong>
+        </div>
+        <div class="match-readout">
+          <span id="mode-label">THE FIRST RITE · THE SUNDERED ROAD</span>
+          <strong id="match-clock">03:00</strong>
+          <span id="network-readout">LOCAL · 120 TICK</span>
+        </div>
+        <div class="score score-beta">
+          <span>BETA</span>
+          <strong id="score-beta">0</strong>
+        </div>
+        <div id="roster-hud" class="roster-hud"></div>
+      </section>
+
+      <div id="game-tools" class="game-tools">
+        <button
+          id="hud-detail-toggle"
+          class="button button-quiet info-toggle"
+          type="button"
+          aria-pressed="false"
+        >
+          Show details
+        </button>
+        <button
+          id="info-toggle"
+          class="button button-quiet info-toggle"
+          type="button"
+          aria-controls="info-overlay"
+          aria-expanded="false"
+        >
+          Field info <kbd>F1</kbd>
+        </button>
+      </div>
+
+      <aside
+        id="info-overlay"
+        class="info-overlay hidden"
+        aria-label="Live field information"
+      >
+        <header>
+          <div>
+            <span class="eyebrow">LIVE FIELD INFO</span>
+            <h2 id="info-operation">THE FIRST RITE</h2>
+          </div>
+          <button
+            id="info-close"
+            class="icon-button"
+            type="button"
+            aria-label="Close field information"
+          >
+            ×
+          </button>
+        </header>
+        <div class="info-readout">
+          <section>
+            <span>Current read</span>
+            <strong id="info-objective">Learn the four-action language.</strong>
+            <p id="info-status">Round 1 · THE SUNDERED ROAD</p>
+          </section>
+          <section class="info-agent">
+            <span id="info-agent-glyph" aria-hidden="true">◇</span>
+            <div>
+              <strong id="info-agent-name">AERWYN</strong>
+              <p id="info-agent-role">Briar gale duelist</p>
+            </div>
+          </section>
+        </div>
+        <div id="info-kit" class="info-kit"></div>
+        <dl class="info-controls">
+          <div><dt>Move / aim</dt><dd><kbd data-binding-summary="move">WASD</kbd> / mouse</dd></div>
+          <div><dt>Stamina movement</dt><dd><kbd data-binding-label="sprint">Alt</kbd> sprint / <kbd data-binding-label="hop">C</kbd> jump / <kbd data-binding-label="technique">V</kbd> technique</dd></div>
+          <div><dt>Actions</dt><dd><kbd>MB1</kbd><kbd data-binding-label="tactical">E</kbd><kbd data-binding-label="defense">Q</kbd><kbd data-binding-label="mobility">Shift</kbd><kbd data-binding-label="ultimate">F</kbd></dd></div>
+          <div><dt>Reset / pause</dt><dd><kbd>R</kbd> / <kbd>Esc</kbd></dd></div>
+        </dl>
+        <p class="info-hint">Press <kbd>F1</kbd> at any time to close this panel. Combat continues.</p>
+      </aside>
+
+      <section id="coach" class="coach" aria-live="polite">
+        <span class="eyebrow">LIVE READ</span>
+        <strong id="coach-text">Move, aim, and fire. The arena never waits.</strong>
+        <button id="skip-coach" type="button">Skip intro</button>
+        <div id="coach-progress" class="coach-progress" aria-label="Introduction progress">
+          <span data-coach-step="0"><i>01</i><b data-binding-summary="coachFlow">ALT + C / slide</b></span>
+          <span data-coach-step="1"><i>02</i><b data-binding-summary="coachFire">Move + SPACE</b></span>
+          <span data-coach-step="2"><i>03</i><b data-binding-summary="coachDefense">SHIFT + Q</b></span>
+          <span data-coach-step="3"><i>04</i><b data-binding-summary="coachTactical">Commit E</b></span>
+        </div>
+      </section>
+
+      <section id="ability-bar" class="ability-bar" aria-label="Abilities">
+        <div class="ability flow-ability" data-ability="flow">
+          <kbd data-binding-summary="flow">ALT/C/V</kbd>
+          <span><b>STAMINA</b><small id="flow-detail">Sprint / jump / technique</small></span>
+          <i id="flow-charge"></i>
+        </div>
+        <div class="ability flux-ability" data-ability="flux">
+          <kbd>CAST</kbd>
+          <span><b>FLUX</b><small id="flux-detail">Raw magic 100</small></span>
+          <i id="flux-charge"></i>
+        </div>
+        <div class="ability" data-ability="primary">
+          <kbd data-binding-summary="primary">MB1/SPACE</kbd>
+          <span><b id="primary-name">NEEDLE</b><small id="primary-detail">Precision fire</small></span>
+          <i id="primary-charge"></i>
+        </div>
+        <div class="ability" data-ability="special">
+          <kbd data-binding-label="tactical">E</kbd>
+          <span><b id="special-name">SHEAR</b><small id="special-detail">Close strike</small></span>
+          <i id="special-charge"></i>
+        </div>
+        <div class="ability" data-ability="defense">
+          <kbd data-binding-label="defense">Q</kbd>
+          <span><b id="defense-name">SLIP</b><small id="defense-detail">Return fire</small></span>
+          <i id="defense-charge"></i>
+        </div>
+        <div class="ability" data-ability="mobility">
+          <kbd data-binding-label="mobility">SHIFT</kbd>
+          <span><b id="mobility-name">VECTOR</b><small id="mobility-detail">Directional dash</small></span>
+          <i id="mobility-charge"></i>
+        </div>
+        <div id="ultimate-ability" class="ability ultimate-ability" data-ability="ultimate" hidden>
+          <kbd data-binding-label="ultimate">F</kbd>
+          <span><b id="ultimate-name">ULTIMATE</b><small id="ultimate-detail">Earn through active combat</small></span>
+          <i id="ultimate-charge"></i>
+        </div>
+      </section>
+
+      <div id="toast-stack" class="toast-stack" aria-live="assertive"></div>
+
+      <section id="match-overlay" class="match-overlay hidden" aria-modal="true">
+        <span class="eyebrow">CONTEST COMPLETE</span>
+        <h2 id="result-title">OATH CLAIMED</h2>
+        <p id="result-copy">The read was made. Run it back.</p>
+        <div class="button-row">
+          <button class="button button-primary" id="rematch" type="button">Rematch <kbd>R</kbd></button>
+          <button class="button" data-action="menu" type="button">Enter Sanctum</button>
+        </div>
+      </section>
+
+      <section id="pause-overlay" class="pause-overlay hidden" aria-modal="true">
+        <span class="eyebrow">TACTICAL PAUSE</span>
+        <h2 id="pause-title">Contest held</h2>
+        <p id="pause-copy">Local simulation is frozen.</p>
+        <div class="button-stack">
+          <button class="button button-primary" data-action="resume" type="button">Resume <kbd>Esc</kbd></button>
+          <button class="button" data-action="restart" type="button">Restart match</button>
+          <button class="button" data-action="online" type="button">Friends & lobbies</button>
+          <button class="button button-quiet" data-action="menu" type="button">Enter Sanctum</button>
+        </div>
+      </section>
+
+      <section id="practice-tools" class="practice-tools" aria-label="Sanctum practice controls" hidden>
+        <div>
+          <span class="eyebrow">LIVING SANCTUM</span>
+          <strong id="practice-live-character">AERWYN</strong>
+        </div>
+        <span class="practice-tools-hint">Walk to a marked station · interact to open · F2 field guide</span>
+      </section>
+
+      <aside id="sanctum-station-prompt" class="sanctum-station-prompt" aria-live="polite" hidden>
+        <span id="sanctum-station-glyph" aria-hidden="true">◇</span>
+        <div>
+          <small>NEARBY STATION</small>
+          <strong id="sanctum-station-name">TRAINING COURT</strong>
+        </div>
+        <kbd id="sanctum-station-key">E</kbd>
+        <em>INTERACT</em>
+      </aside>
+
+      <aside id="practice-overview" class="practice-overview" aria-label="Game reference" hidden>
+        <header>
+          <div><span class="eyebrow">FIELD GUIDE</span><h2>Test reference</h2></div>
+          <button class="icon-button" data-practice-action="overview-close" type="button" aria-label="Close game reference">&times;</button>
+        </header>
+        <div id="practice-overview-content" class="practice-overview-content"></div>
+      </aside>
+
+      <section id="front-end" class="front-end">
+        <header class="topbar">
+          <div class="wordmark" aria-label="FLUX Sanctum station">
+            <b>FLUX</b>
+            <span>Flow. Learn.<br />Unleash. eXecute.</span>
+          </div>
+          <div class="server-status" id="server-status">
+            <i></i>
+            <span>SANCTUM READY</span>
+          </div>
+          <button class="button button-quiet sanctum-return" id="menu-close" type="button">
+            Return to Sanctum
+          </button>
+        </header>
+
+        <div class="menu-layout">
+          <nav class="primary-nav" aria-label="Legacy navigation" hidden>
+            <button class="nav-item active" data-panel="home" type="button">
+              <span>01</span><b>Sanctum</b>
+            </button>
+            <button class="nav-item" data-panel="practice" type="button">
+              <span>02</span><b>Practice</b><em>LIVE</em>
+            </button>
+            <button class="nav-item" data-panel="play" type="button">
+              <span>03</span><b>Muster</b>
+            </button>
+            <button class="nav-item" data-panel="online" type="button">
+              <span>04</span><b>Friends</b><em>REMOTE</em>
+            </button>
+            <button class="nav-item" data-panel="agents" type="button">
+              <span>05</span><b>Champions</b><em>10</em>
+            </button>
+            <button class="nav-item" data-panel="arenas" type="button">
+              <span>06</span><b>Realm & Rites</b>
+            </button>
+            <button class="nav-item" data-panel="guide" type="button">
+              <span>07</span><b>Guide</b>
+            </button>
+            <button class="nav-item" data-panel="settings" type="button">
+              <span>08</span><b>Settings</b>
+            </button>
+          </nav>
+
+          <div class="panel-stage">
+            <article class="menu-panel active" data-menu-panel="home">
+              <div class="hero">
+                <div>
+                  <span class="eyebrow">THE LIVING SANCTUM / BUILD 0.34.3</span>
+                  <h1>Gather.<br /><em>Shape the field.</em></h1>
+                  <p>
+                    Your shared hearth between contests: gather friends, choose a champion,
+                    study the realm, tune controls, and enter a rite without leaving the party.
+                  </p>
+                  <div class="button-row">
+                    <button class="button button-primary button-large" data-panel="practice" type="button">
+                      Enter practice floor <kbd>↵</kbd>
+                    </button>
+                    <button class="button button-large" data-panel="play" type="button">Enter muster hall</button>
+                  </div>
+                  <div id="sanctum-party" class="sanctum-party" hidden>
+                    <span><i></i><b id="sanctum-party-name">REMOTE COMPANY</b></span>
+                    <small id="sanctum-party-detail">Friends remain connected throughout the Sanctum.</small>
+                    <button class="text-button" data-action="resume" type="button">Return to contest →</button>
+                  </div>
+                  <div class="sanctum-shortcuts" aria-label="Quick rites">
+                    <button type="button" data-launch-mode="duel"><b>OATH DUEL</b><span>Duel</span></button>
+                    <button type="button" data-launch-mode="control"><b>RUNEHOLD</b><span>Control</span></button>
+                    <button type="button" data-launch-mode="convergence"><b>WILDMARCH</b><span>PvPvE</span></button>
+                    <button type="button" data-launch-mode="survival"><b>NIGHT SIEGE</b><span>Co-op PvE</span></button>
+                  </div>
+                </div>
+                <div class="sanctum-sigil" aria-hidden="true">
+                  <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                </div>
+              </div>
+              <div class="feature-strip">
+                <div><b>10</b><span>race-bound champions</span></div>
+                <div><b>8</b><span>authored battlegrounds</span></div>
+                <div><b>5</b><span>solo / PvP / PvPvE / PvE modes</span></div>
+                <div><b>120</b><span>authoritative simulation tick</span></div>
+              </div>
+            </article>
+
+            <article class="menu-panel practice-panel" data-menu-panel="practice" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">MOVEMENT CLOISTER / SPELL COURT</span><h2>Practice without a match</h2></div>
+                <p>Test the complete movement language and every equipped ability, switch champions instantly, and return here without losing a remote company.</p>
+              </header>
+              <div class="practice-layout">
+                <section class="practice-launch-card">
+                  <span class="eyebrow">YOUR PRACTICE RITE</span>
+                  <label>
+                    <span>Champion</span>
+                    <select id="practice-character"></select>
+                  </label>
+                  <label class="toggle-setting">
+                    <span><b>Stationary practice shade</b><small>Target for damage, reactions, cooldowns, and ultimate charge.</small></span>
+                    <input id="practice-target" type="checkbox" checked />
+                  </label>
+                  <div id="practice-character-readout" class="practice-character-readout" aria-live="polite"></div>
+                  <button class="button button-primary button-large" data-practice-action="start" type="button">Apply training setup</button>
+                  <div class="button-row">
+                    <button class="button button-quiet" data-practice-action="previous" type="button">Previous champion</button>
+                    <button class="button button-quiet" data-practice-action="next" type="button">Next champion</button>
+                    <button class="button" data-practice-action="refill" type="button">Refill</button>
+                    <button class="button" data-practice-action="reset" type="button">Reset floor</button>
+                    <button class="button" id="practice-overview-toggle" data-practice-action="overview" type="button" aria-controls="practice-overview" aria-expanded="false">Field guide</button>
+                  </div>
+                  <small>Applying a setup returns you directly to the floor. Every other option lives at a marked Sanctum station.</small>
+                </section>
+                <section class="practice-map" aria-label="Sanctum practice areas">
+                  <div class="practice-map-ring"><i></i><i></i><i></i><i></i></div>
+                  <article data-zone="movement"><b>Movement Cloister</b><span>Jump chains, air routes, marked vault rails, superglide</span></article>
+                  <article data-zone="spell"><b>Spell Court</b><span>Primary, tactical, defense, mobility, ultimate</span></article>
+                  <article data-zone="ward"><b>Mirror Ward</b><span>Target pressure, aim, spacing, cooldown reads</span></article>
+                  <article data-zone="gate"><b>Gathering Gate</b><span>Champion switch, refill, reset, return</span></article>
+                </section>
+                <section class="practice-reference-card">
+                  <header><span class="eyebrow">TOGGLEABLE FIELD GUIDE</span><h3>Know what you are testing</h3></header>
+                  <div id="practice-menu-reference" class="practice-reference"></div>
+                </section>
+              </div>
+            </article>
+
+            <article class="menu-panel" data-menu-panel="play" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">MUSTER HALL</span><h2>Prepare the contest</h2></div>
+                <p>Defaults are tuned for immediate play. Every choice has a clean counter-read.</p>
+              </header>
+              <form id="match-form" class="match-builder">
+                <div class="muster-flow">
+                  <section class="muster-section match-rules">
+                    <fieldset>
+                      <legend>1 · Contestants</legend>
+                      <div class="segmented">
+                        <label><input type="radio" name="format" value="solo" checked /><span>Solo + bots</span></label>
+                        <label><input type="radio" name="format" value="local" /><span>Local 2P</span></label>
+                      </div>
+                    </fieldset>
+                    <fieldset>
+                      <legend>2 · Rite</legend>
+                      <div id="mode-options" class="choice-grid mode-options"></div>
+                    </fieldset>
+                  </section>
+
+                  <fieldset class="muster-section champion-field">
+                    <legend>3 · Player 1 champion</legend>
+                    <p class="field-guidance">Races form columns. Hover or focus a portrait to inspect it; click to lock your champion.</p>
+                    <aside id="agent-preview" class="champion-preview" aria-live="polite"></aside>
+                    <div id="agent-options" class="race-champion-matrix"></div>
+                  </fieldset>
+
+                  <fieldset id="player-two-field" class="muster-section champion-field" hidden>
+                    <legend>4 · Player 2 champion</legend>
+                    <aside id="agent-two-preview" class="champion-preview" aria-live="polite"></aside>
+                    <div id="agent-two-options" class="race-champion-matrix"></div>
+                  </fieldset>
+
+                  <fieldset class="muster-section arena-field">
+                    <legend id="arena-step-label">4 · Battleground</legend>
+                    <div class="atlas-toolbar" aria-label="Realm chart depth">
+                      <button class="text-button active" type="button" data-atlas-scope="realm">Realm</button>
+                      <span aria-hidden="true">›</span>
+                      <button class="text-button" type="button" data-atlas-scope="fracture">The Fracture</button>
+                      <small id="atlas-caption">Choose a region, or enter The Fracture for four battle scales.</small>
+                    </div>
+                    <div id="map-options" class="choice-grid map-options"></div>
+                  </fieldset>
+                </div>
+
+                <aside class="deployment-sidebar" aria-label="Match configuration summary">
+                  <span class="eyebrow">MUSTER SUMMARY</span>
+                  <div id="selected-champion" class="selected-champion" data-element="gale">
+                    <span id="selected-champion-glyph" aria-hidden="true">◇</span>
+                    <div><b id="selected-champion-name">AERWYN</b><small id="selected-champion-line">Briar Elf · Gale</small></div>
+                  </div>
+                  <dl class="deployment-readout">
+                    <div><dt>Rite</dt><dd id="selected-mode-name">Oath Duel</dd></div>
+                    <div><dt>Field</dt><dd id="selected-map-name">The Sundered Road</dd></div>
+                    <div><dt>Element</dt><dd id="selected-element-name">Gale · curved force</dd></div>
+                  </dl>
+                  <fieldset id="bot-field">
+                    <legend>Opposition</legend>
+                    <label class="range-setting compact-setting">
+                      <span><b>Bot count</b><small>More bodies, same rules.</small></span>
+                      <input id="bot-count" type="range" min="1" max="5" value="1" />
+                      <output id="bot-count-output">1</output>
+                    </label>
+                  </fieldset>
+                  <label class="toggle-setting compact-setting">
+                    <span><b>Map hazards</b><small>Disable authored hazards, never cover.</small></span>
+                    <input id="match-hazards" name="hazards" type="checkbox" checked />
+                  </label>
+                  <div class="deployment-action">
+                    <span><b>READY</b><small id="deployment-summary">OATH DUEL · BRIAR ELF AERWYN · THE SUNDERED ROAD</small></span>
+                    <button class="button button-primary button-large deploy-button" type="submit">Enter arena</button>
+                  </div>
+                </aside>
+              </form>
+            </article>
+
+            <article class="menu-panel" data-menu-panel="online" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">THE FRIEND GATE</span><h2>Remote company</h2></div>
+                <p>Host, discover, or join a live rite. Your connection persists while you visit every Sanctum chamber.</p>
+              </header>
+              <div class="online-layout">
+                <section class="network-card identity-card">
+                  <h3>Identity</h3>
+                  <label>
+                    <span>Callsign</span>
+                    <input id="online-name" type="text" maxlength="20" value="PLAYER" />
+                  </label>
+                  <label>
+                    <span>Champion</span>
+                    <select id="online-agent"></select>
+                  </label>
+                  <label>
+                    <span>Champion ancestry</span>
+                    <select id="online-race" disabled aria-describedby="online-race-note"></select>
+                  </label>
+                  <small id="online-race-note">Bound to the selected champion for a readable silhouette and fair racial tradeoff.</small>
+                  <label>
+                    <span>Server address</span>
+                    <input id="server-address" type="url" placeholder="http://host:8000" />
+                  </label>
+                  <small>The desktop friend launcher fills this automatically. Manual hosts may use a reachable LAN/VPN address.</small>
+                </section>
+                <section class="network-card">
+                  <h3>Host a lobby</h3>
+                  <label>
+                    <span>Lobby name</span>
+                    <input id="lobby-name" type="text" maxlength="30" value="OPEN ARENA" />
+                  </label>
+                  <div class="form-split">
+                    <label><span>Mode</span><select id="online-mode"></select></label>
+                    <label><span>Map</span><select id="online-map"></select></label>
+                  </div>
+                  <label class="toggle-setting">
+                    <span><b>Public listing</b><small>Visible in the lobby browser.</small></span>
+                    <input id="lobby-public" type="checkbox" checked />
+                  </label>
+                  <label class="toggle-setting">
+                    <span><b>Map hazards</b><small>Authored arena hazards remain authoritative.</small></span>
+                    <input id="lobby-hazards" type="checkbox" checked />
+                  </label>
+                  <button class="button button-primary" id="host-lobby" type="button">Open lobby</button>
+                  <div id="share-link-row" class="join-row" hidden>
+                    <input id="share-link" type="url" readonly aria-label="Shareable lobby link" />
+                    <button class="button" id="copy-share-link" type="button">Copy link</button>
+                  </div>
+                </section>
+                <section class="network-card">
+                  <h3>Join by code</h3>
+                  <div class="join-row">
+                    <input id="join-code" class="code-input" type="text" maxlength="6" placeholder="ABC234" />
+                    <button class="button" id="join-lobby" type="button">Join</button>
+                  </div>
+                  <button class="button button-quiet" id="reconnect-lobby" type="button" hidden>
+                    Reconnect last session
+                  </button>
+                  <button class="button button-quiet" id="leave-lobby" type="button" hidden>
+                    Leave remote company
+                  </button>
+                  <div id="network-message" class="network-message">Not connected.</div>
+                </section>
+                <section class="network-card lobby-browser">
+                  <div class="section-title">
+                    <h3>Live public lobbies</h3>
+                    <button class="text-button" id="refresh-lobbies" type="button">Refresh</button>
+                  </div>
+                  <div id="lobby-list" class="lobby-list">
+                    <p class="empty-state">Refresh to scan this server.</p>
+                  </div>
+                </section>
+              </div>
+            </article>
+
+            <article class="menu-panel" data-menu-panel="agents" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">CHAMPION CHRONICLE</span><h2>Ten old-world champions</h2></div>
+                <p>Each champion belongs to a people, shapes one discipline, and keeps the shared core readable; authored passives and ultimates appear only when complete.</p>
+              </header>
+              <div id="agent-codex" class="agent-codex"></div>
+            </article>
+
+            <article class="menu-panel" data-menu-panel="arenas" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">THE REALM CHART</span><h2>Regions & contests</h2></div>
+                <p>Read each old road, ruin, and current. The land changes decisions, never grants victory.</p>
+              </header>
+              <h3 class="section-heading">Known battlegrounds</h3>
+              <div id="map-codex" class="codex-grid"></div>
+              <h3 class="section-heading">Ways of contest</h3>
+              <div id="mode-codex" class="codex-grid"></div>
+            </article>
+
+            <article class="menu-panel" data-menu-panel="guide" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">FIELD GUIDE</span><h2>One language, every champion</h2></div>
+                <p>Actions keep the same input across the roster. Learn intent once; master expression forever.</p>
+              </header>
+              <div class="guide-grid">
+                <section>
+                  <h3>Player 1</h3>
+                  <dl class="control-list">
+                    <div><dt>Move</dt><dd><kbd data-binding-label="moveUp">W</kbd><kbd data-binding-label="moveLeft">A</kbd><kbd data-binding-label="moveDown">S</kbd><kbd data-binding-label="moveRight">D</kbd></dd></div>
+                    <div><dt>Sprint / jump / slide</dt><dd><kbd data-binding-label="sprint">Alt</kbd> / <kbd data-binding-label="hop">C</kbd> / both</dd></div>
+                    <div><dt>Technique / air dodge</dt><dd><kbd data-binding-label="technique">V</kbd> / <kbd data-binding-label="sprint">Alt</kbd> + <kbd data-binding-label="technique">V</kbd></dd></div>
+                    <div><dt>Aim</dt><dd>Mouse</dd></div>
+                    <div><dt>Primary</dt><dd><kbd>MB1</kbd> / <kbd data-binding-label="fire">Space</kbd></dd></div>
+                    <div><dt>Tactical</dt><dd><kbd>MB2</kbd> / <kbd data-binding-label="tactical">E</kbd></dd></div>
+                    <div><dt>Ultimate</dt><dd><kbd data-binding-label="ultimate">F</kbd></dd></div>
+                    <div><dt>Defense</dt><dd><kbd data-binding-label="defense">Q</kbd></dd></div>
+                    <div><dt>Mobility</dt><dd><kbd data-binding-label="mobility">Shift</kbd></dd></div>
+                  </dl>
+                </section>
+                <section>
+                  <h3>Player 2</h3>
+                  <dl class="control-list">
+                    <div><dt>Move</dt><dd>Arrow keys</dd></div>
+                    <div><dt>Sprint / jump / slide</dt><dd><kbd>,</kbd> / <kbd>.</kbd> / both</dd></div>
+                    <div><dt>Technique / air dodge</dt><dd><kbd>/</kbd> / <kbd>,</kbd> + <kbd>/</kbd></dd></div>
+                    <div><dt>Aim</dt><dd><kbd>I</kbd><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd></dd></div>
+                    <div><dt>Primary</dt><dd><kbd>U</kbd></dd></div>
+                    <div><dt>Tactical</dt><dd><kbd>O</kbd></dd></div>
+                    <div><dt>Ultimate</dt><dd><kbd>H</kbd></dd></div>
+                    <div><dt>Defense</dt><dd><kbd>P</kbd></dd></div>
+                    <div><dt>Mobility</dt><dd><kbd>Enter</kbd></dd></div>
+                  </dl>
+                </section>
+                <section>
+                  <h3>Gamepad</h3>
+                  <dl class="control-list">
+                    <div><dt>Move / aim</dt><dd>Left / right stick</dd></div>
+                    <div><dt>Sprint / jump</dt><dd>Left / right shoulder</dd></div>
+                    <div><dt>Technique / air dodge</dt><dd>East button / left shoulder + east</dd></div>
+                    <div><dt>Primary</dt><dd>Right trigger</dd></div>
+                    <div><dt>Tactical</dt><dd>West button</dd></div>
+                    <div><dt>Ultimate</dt><dd>North button</dd></div>
+                    <div><dt>Defense</dt><dd>Left trigger</dd></div>
+                    <div><dt>Mobility</dt><dd>South button</dd></div>
+                  </dl>
+                </section>
+                <section>
+                  <h3>System</h3>
+                  <dl class="control-list">
+                    <div><dt>Pause / network menu</dt><dd><kbd>Esc</kbd></dd></div>
+                    <div><dt>Instant restart</dt><dd><kbd>R</kbd></dd></div>
+                    <div><dt>Skip introduction</dt><dd><kbd>T</kbd></dd></div>
+                    <div><dt>Toggle field info</dt><dd><kbd>F1</kbd></dd></div>
+                  </dl>
+                </section>
+              </div>
+              <div class="principles">
+                <article><b>Shots clash</b><span>Equal projectiles erase; heavy shots win the lane.</span></article>
+                <article><b>Cover is absolute</b><span>No attacks or movement tunnel through geometry.</span></article>
+                <article><b>Defense is specific</b><span>Reflect, guard, phase, absorb, and counter demand different reads.</span></article>
+                <article><b>Spawns are protected</b><span>Joining and resetting never hands out a free hit.</span></article>
+                <article><b>Stamina is universal</b><span>Every sprint, jump conversion, air route, vault, and edgeweave uses one shared resource on every champion.</span></article>
+                <article><b>Reverse with intent</b><span>Press against committed momentum to counter-strafe: brake and re-angle faster, with less control on ice.</span></article>
+                <article><b>Carry a curve</b><span>Jump across your travel line to preserve bounded lateral momentum into evasive arcs and wall approaches.</span></article>
+                <article><b>Cut the landing</b><span>Reverse once in the brief post-hop window to steal a sharper turn. The window is consumed immediately.</span></article>
+                <article><b>Commit low</b><span>While moving fast, hold sprint and hop together to slide. Steering is limited and cover breaks the attempt.</span></article>
+                <article><b>Convert the route</b><span>Jump late from a slide, jump once more in air, or spend one technique input to redirect; each conversion is limited and paid.</span></article>
+                <article><b>Ground an angle</b><span>Use sprint plus technique late in a jump and turn across the current line; a valid angled landing becomes one bounded wavedash.</span></article>
+                <article><b>Read low cover</b><span>Vault only rails marked V with the technique key. Jump during the short crest cue to superglide; early and late presses do nothing.</span></article>
+                <article><b>Thread the edge</b><span>Move at committed speed through a hostile spell's narrow miss band to restore 9 Stamina. Hits, practice marks, and repeated fan shots do not pay.</span></article>
+                <article><b>Flux is commitment</b><span>Tactical, defense, and character mobility compete for raw magic; primary attacks and Stamina movement remain available when dry.</span></article>
+                <article><b>Shrines answer movement</b><span>Cross a ready covenant at high speed while missing Flux. The exposed route restores magic, then locks for everyone.</span></article>
+                <article><b>Wayseals choose the fight</b><span>In WILDMARCH, defeat a warden, carry its seal to either outer waystone, and move the scoring rune without gaining combat stats.</span></article>
+                <article><b>Elements alter routes</b><span>Wind carries fire; water douses fire; fire melts ice; ice freezes water.</span></article>
+                <article><b>Reactions stay readable</b><span>Lightning conducts through water. Explosive mechanics shatter earth; explosion is not an element.</span></article>
+                <article><b>Movement still wins</b><span>Fields create a short decision window; aim, timing, spacing, and Stamina secure the advantage.</span></article>
+              </div>
+            </article>
+
+            <article class="menu-panel" data-menu-panel="settings" hidden>
+              <header class="panel-header">
+                <div><span class="eyebrow">SANCTUM SETTINGS</span><h2>Clarity without compromise</h2></div>
+                <p>Presentation and Player 1 keyboard bindings apply live and persist locally.</p>
+              </header>
+              <form id="settings-form" class="settings-grid">
+                <label class="range-setting">
+                  <span><b>Screen response</b><small>Impact shake strength.</small></span>
+                  <input name="screenShake" type="range" min="0" max="100" value="55" />
+                  <output>55</output>
+                </label>
+                <label class="range-setting">
+                  <span><b>Interface scale</b><small>HUD and crosshair size.</small></span>
+                  <input name="interfaceScale" type="range" min="80" max="130" value="100" />
+                  <output>100</output>
+                </label>
+                <label class="range-setting">
+                  <span><b>Sound</b><small>Procedural feedback volume.</small></span>
+                  <input name="sound" type="range" min="0" max="100" value="45" />
+                  <output>45</output>
+                </label>
+                <label class="toggle-setting">
+                  <span><b>Live coaching</b><small>Short behavior-driven hints.</small></span>
+                  <input name="coaching" type="checkbox" checked />
+                </label>
+                <label class="toggle-setting">
+                  <span><b>Reduced motion</b><small>Removes shake and long trails.</small></span>
+                  <input name="reducedMotion" type="checkbox" />
+                </label>
+                <label class="toggle-setting">
+                  <span><b>High contrast</b><small>Stronger team and hazard edges.</small></span>
+                  <input name="highContrast" type="checkbox" />
+                </label>
+                <fieldset class="binding-settings">
+                  <legend>Player 1 keyboard</legend>
+                  <p>Choose an action, then press a key. Existing assignments swap; match and Player 2 keys stay protected.</p>
+                  <div class="binding-grid">
+                    <label><span>Move up</span><button type="button" data-bind-action="moveUp">W</button></label>
+                    <label><span>Move left</span><button type="button" data-bind-action="moveLeft">A</button></label>
+                    <label><span>Move down</span><button type="button" data-bind-action="moveDown">S</button></label>
+                    <label><span>Move right</span><button type="button" data-bind-action="moveRight">D</button></label>
+                    <label><span>Primary key</span><button type="button" data-bind-action="fire">SPACE</button></label>
+                    <label><span>Tactical</span><button type="button" data-bind-action="tactical">E</button></label>
+                    <label><span>Defense</span><button type="button" data-bind-action="defense">Q</button></label>
+                    <label><span>Mobility</span><button type="button" data-bind-action="mobility">SHIFT</button></label>
+                    <label><span>Sprint</span><button type="button" data-bind-action="sprint">ALT</button></label>
+                    <label><span>Jump</span><button type="button" data-bind-action="hop">C</button></label>
+                    <label><span>Movement technique</span><button type="button" data-bind-action="technique">V</button></label>
+                    <label><span>Ultimate</span><button type="button" data-bind-action="ultimate">F</button></label>
+                  </div>
+                  <output id="binding-status" aria-live="polite">Select an action to rebind.</output>
+                </fieldset>
+                <fieldset class="binding-settings network-lab-settings">
+                  <legend>Deterministic network lab</legend>
+                  <p>Remote gameplay traffic only. Real diagnostics stay visible; zero is the shipping path.</p>
+                  <label class="range-setting">
+                    <span><b>Added latency</b><small>Input and snapshot delay in milliseconds.</small></span>
+                    <input name="networkLatency" type="range" min="0" max="250" step="5" value="0" />
+                    <output>0</output>
+                  </label>
+                  <label class="range-setting">
+                    <span><b>Jitter</b><small>Seeded delay variation in milliseconds.</small></span>
+                    <input name="networkJitter" type="range" min="0" max="100" step="5" value="0" />
+                    <output>0</output>
+                  </label>
+                  <label class="range-setting">
+                    <span><b>Packet loss</b><small>Seeded gameplay packet loss percentage.</small></span>
+                    <input name="networkLoss" type="range" min="0" max="20" step="1" value="0" />
+                    <output>0</output>
+                  </label>
+                </fieldset>
+                <button class="button" id="reset-settings" type="button">Reset all defaults</button>
+              </form>
+            </article>
+          </div>
+        </div>
+
+        <footer class="menu-footer">
+          <span>FLUX / THE LIVING SANCTUM</span>
+          <span id="build-diagnostic">OFFLINE READY · NO INSTALL STEP</span>
+        </footer>
+      </section>
+    </main>
+    <script type="module" src="./src/game.mjs"></script>
+  </body>
+</html>

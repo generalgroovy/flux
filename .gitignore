@@ -1,4 +1,5 @@
 .godot/
+.autocode/
 *.import
 build/
 exports/

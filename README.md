@@ -6,6 +6,12 @@ deliberate plays. It is both the Godot 4 reimplementation of FLUX and the
 production workspace in which those ideas are made deterministic, hostable,
 testable, and expandable.
 
+This is the canonical unified FLUX repository. The Godot project at the root is
+authoritative; the consolidated historical browser implementation is preserved
+with its Git ancestry under [`legacy/web-prototype`](legacy/web-prototype) for
+reference and migration evidence. Legacy JavaScript state never overrides the
+normative Godot specification or simulation.
+
 The target is not a conventional twin-stick shooter with elemental damage
 types painted over static rooms. Players preserve momentum through a deep
 universal movement grammar, combine character and loadout abilities, and

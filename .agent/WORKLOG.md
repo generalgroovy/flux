@@ -578,3 +578,35 @@ Known limitations and risks:
   installed without approval.
 
 Commit: pending at pre-commit record time. Push: pending.
+
+## 2026-08-09 — canonical FLUX repository unification
+
+Branch: `integration/all-branches-20260809`
+
+What changed and why:
+
+- Consolidated every fetched legacy browser FLUX branch into tip `1d0c807`.
+  Later pixel work was merged normally; superseded archival tips were retained
+  as tree-preserving merge parents with an explicit audit record.
+- Imported that complete legacy ancestry under `legacy/web-prototype/` while
+  keeping the Godot project at repository root authoritative.
+- Updated the root README and branch-consolidation record with the canonical
+  layout and the legacy dependency limitation.
+
+Validation:
+
+- Imported subtree tree object exactly matches legacy tip `1d0c807`:
+  `3675a862d23de980e5b7700fe02fa0162fb50ff9`.
+- Godot full gate: 12,250 assertions, zero failures; clean 60 and 120 Hz boots.
+- Legacy dependency-independent gate: 149 tests, 149 pass, zero failures.
+- The three excluded legacy test files remain explicitly dependency-blocked by
+  absent locked `linkedom`/`ws`; they are not represented as passing.
+- Every fetched branch tip in both source repositories is retained as an
+  ancestor of its consolidated lineage.
+
+Known limitations and risks:
+
+- Exact legacy `npm test` still requires preparing the locked dependencies.
+- Repository cutover and remote push remain separate reversible operations.
+
+Commit: pending at pre-commit record time. Push: pending.

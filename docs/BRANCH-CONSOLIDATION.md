@@ -33,11 +33,23 @@ the canonical checkout. `.godot/` remains an ignored machine-local cache.
 
 ## Cross-repository layout
 
-The distinct legacy JavaScript FLUX history is preserved as a web-prototype
-lineage and will be imported beneath `legacy/web-prototype/` after its complete
-DOM test dependency is prepared. Godot remains the authoritative root described
-by `SPECIFICATION.md`; legacy presentation and simulation code does not become
+The distinct legacy JavaScript FLUX history is preserved, consolidated, and
+imported with full ancestry beneath `legacy/web-prototype/` at legacy tip
+`1d0c807`. Godot remains the authoritative root described by
+`SPECIFICATION.md`; legacy presentation and simulation code does not become
 canonical merely because its history is retained.
+
+Every fetched legacy branch tip is an ancestor of that imported tip. The four
+newer pixel-prototype commits were merged normally. Four superseded archival
+tips were joined with the current legacy tree retained; the rationale and exact
+dependency-limited test evidence live in
+`legacy/web-prototype/docs/BRANCH-CONSOLIDATION.md`.
+
+The legacy gate currently has 149 passing tests and three dependency-blocked
+test files (`linkedom`, `ws`, and the server process that imports `ws`). The
+Godot runtime does not load or package this subtree. Preparing the locked Node
+dependencies and running exact `npm test` remains required before independently
+promoting the web prototype as release-green.
 
 Dirty work from the former `/home/otp/Projects/flux2` checkout is applied only
 after its binary patch/archive recovery state is verified. Tool caches and chat

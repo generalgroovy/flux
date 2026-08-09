@@ -20,7 +20,13 @@ The dependency-free `SpriteSheetExtractor` is the structural gate between
 reviewed sheets and file-producing tooling. It requires an exact grid and exact
 frame count, transparent nonempty cells with an unclipped border, then uses
 nearest-neighbor scaling to place every frame in a 96×96 cell at the shared
-bottom-center `(48, 92)` presentation pivot without mutating the caller image.
+bottom-center `(48, 84)` presentation pivot without mutating the caller image.
+That pivot is the exact normalized form of the current 64×64 runtime foot
+anchor `(32, 56)`; the twelve pixels below it remain reserved presentation
+space. `VisualProductionContract` rejects drift between the production
+manifest, front-reference catalog, extractor and unchanged runtime semantics.
+It also proves that five authored directions plus three declared mirrors derive
+the eight runtime directions and that all 25 frame/FPS/loop contracts agree.
 Its in-memory manifest records the decoded RGBA source hash, source/content
 bounds and deterministic normalized PNG hashes while remaining
 `presentation_only` and `runtime_approved: false`. The quarantined 1254×1254 Oh
@@ -33,7 +39,7 @@ dimensions, discard edge pixels, write candidate frames, or promote art.
 
 | Champion | Race | Gold standard | Status |
 |---|---|---:|---|
-| Oh Tipi | seakin | yes | not_started |
+| Oh Tipi | seakin | yes | concept_candidate_quarantined |
 | S. Wayne | human | no | not_started |
 | The Red Baron | undead | no | not_started |
 | Steezo | goblin | no | not_started |

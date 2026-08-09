@@ -34,7 +34,7 @@ func _test_valid_grid_normalizes_deterministically() -> void:
 	equal(first.manifest.get("authority"), "presentation_only", "extracted art cannot own gameplay")
 	check(not bool(first.manifest.get("runtime_approved", true)), "extraction never grants runtime approval")
 	equal(first.manifest.get("target_dimensions"), [96, 96], "runtime frame dimensions are normalized")
-	equal(first.manifest.get("pivot"), [48, 92], "shared pivot is bottom-center above the margin")
+	equal(first.manifest.get("pivot"), [48, 84], "shared pivot preserves the normalized runtime foot anchor")
 	equal(String(first.manifest.get("source_rgba8_png_sha256", "")).length(), 64, "decoded source image has SHA-256 evidence")
 	equal(first.manifest.get("source_rgba8_png_sha256"), second.manifest.get("source_rgba8_png_sha256"), "repeat extraction source hash is deterministic")
 	var first_records: Array = first.manifest.get("frames", [])
@@ -44,12 +44,12 @@ func _test_valid_grid_normalizes_deterministically() -> void:
 		var record: Dictionary = first_records[index]
 		var repeat: Dictionary = second_records[index]
 		equal(int(record.get("index", -1)), index, "frame ordering remains row-major")
-		equal(record.get("pivot"), [48, 92], "frame pivot matches manifest pivot")
+		equal(record.get("pivot"), [48, 84], "frame pivot matches manifest pivot")
 		equal(String(record.get("sha256", "")).length(), 64, "frame PNG has SHA-256 evidence")
 		equal(record.get("sha256"), repeat.get("sha256"), "repeat extraction hash is deterministic")
 		var offset: Array = record.get("offset", [])
 		var size: Array = record.get("normalized_size", [])
-		equal(int(offset[1]) + int(size[1]), 92, "visible content is aligned to the bottom pivot")
+		equal(int(offset[1]) + int(size[1]), 84, "visible content is aligned to the bottom pivot")
 		equal(first.normalized_frames[index].get_size(), Vector2i(96, 96), "normalized image is 96 square")
 	check(String((first_records[0] as Dictionary).get("sha256")) != String((first_records[1] as Dictionary).get("sha256")), "different ordered frames retain distinct pixel hashes")
 

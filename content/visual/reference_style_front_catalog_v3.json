@@ -2,7 +2,7 @@
   "schema": "flux2.reference_style_front_sprites.v3",
   "source_reference": "assets/concept/flux-champions-visual-style-v1.png",
   "runtime_cell_recommendation": [96, 96],
-  "pivot": [48, 88],
+  "pivot": [48, 84],
   "status_note": "Front-facing high-detail candidates only. Existing directional and animation atlases remain authoritative until individually redrawn and accepted.",
   "champions": {
     "oh_tipi": {"front_sprite": "res://assets/sprites/champions_v3/oh_tipi/front_sprite_256.png", "status": "reference_exact_or_corrected_candidate"},

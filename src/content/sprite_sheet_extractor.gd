@@ -5,7 +5,7 @@ extends RefCounted
 const SCHEMA_VERSION: int = 1
 const TARGET_SIZE: int = 96
 const CONTENT_MARGIN: int = 4
-const PIVOT: Vector2i = Vector2i(TARGET_SIZE / 2, TARGET_SIZE - CONTENT_MARGIN)
+const PIVOT: Vector2i = Vector2i(TARGET_SIZE / 2, 84)
 const ALPHA_THRESHOLD: float = 1.0 / 255.0
 
 var normalized_frames: Array[Image] = []
@@ -46,8 +46,9 @@ func extract(source: Image, columns: int, rows: int, frame_count: int) -> bool:
 			return _fail("Sprite sheet frame %d %s" % [index, String(inspection.get("error", "is invalid"))])
 		var bounds: Rect2i = inspection["bounds"]
 		var content: Image = cell.get_region(bounds)
-		var available := TARGET_SIZE - CONTENT_MARGIN * 2
-		var scale := minf(float(available) / float(content.get_width()), float(available) / float(content.get_height()))
+		var available_width := TARGET_SIZE - CONTENT_MARGIN * 2
+		var available_height := PIVOT.y - CONTENT_MARGIN
+		var scale := minf(float(available_width) / float(content.get_width()), float(available_height) / float(content.get_height()))
 		var normalized_size := Vector2i(
 			maxi(1, int(floor(float(content.get_width()) * scale))),
 			maxi(1, int(floor(float(content.get_height()) * scale)))

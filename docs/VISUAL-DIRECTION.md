@@ -12,6 +12,13 @@ The generated [Sanctum visual target](../assets/concept/sanctum-hub-visual-direc
 establishes atmosphere and district scale. It does not define final geometry,
 camera metrics, tiles, protected routes, or authoritative chemistry cells.
 
+The user-passed
+[champion board](../assets/concept/flux-champions-visual-style-v1.png) is the
+mandatory minimum character-style target: compact expressive bodies, strong
+ancestry silhouettes, readable equipment/materials, and immediately legible
+elemental personality. Its labels are not gameplay authority and its pixels are
+not runtime frames.
+
 ## Visual pillars
 
 1. **Handmade precision.** Crisp pixel clusters, deliberate ramps, restrained
@@ -73,12 +80,40 @@ anchors, not permission to flatten pixel art into solid fills.
 - Decorations never obscure protected route edges, spawn safety, telegraphs, or
   chemistry state. Foliage and roof layers fade or cut away predictably.
 - Basic jumps present an original compact body lift above a stable ground
-  anchor, with a ground-receiving shadow that changes size/value, a clear apex,
-  and a crisp landing. This studies only the readability of classic handheld
+  anchor. A separate shadow remains on the receiving surface, grows broader and
+  darker during ascent, is largest at the apex, contracts during descent, and
+  settles on a crisp landing. Space is the production default jump key. The
+  same normalized authoritative phase drives presentation at 60 and 120 Hz.
+  This studies only the readability of classic handheld
   top-down adventure jumps and copies no sprite, frames, timing, sound, input,
   item, or map behavior.
 - Effects budgets are per category and support reduced-motion and low-density
   modes without hiding authoritative events.
+
+### Compact handheld readability target
+
+FLUX may study the broad production discipline of Game Boy Color-era top-down
+adventure graphics, including the compact tiles, economical color ramps,
+character-to-environment scale and immediate landmark silhouettes associated
+with *The Legend of Zelda: Oracle of Ages* and *Oracle of Seasons*. The target is
+that level of clarity, not those games' content. FLUX must use original sprites,
+tiles, maps, palettes, characters, props, symbols, animation, UI and trade dress.
+
+Generated or user-passed character boards are concept references only. The
+passed eighteen-champion board sets the minimum visual bar and may help review
+compact body proportions,
+directional separation and equipment cues, but they are not approved runtime
+sprite sheets and cannot set hitboxes, animation timing or final scale. Any
+future promotion requires local provenance, immutable hashes, declared grid,
+frame and pivot metadata, animation alignment, and gameplay-zoom accessibility
+and performance evidence shared with the environment kit.
+
+Every pictured champion requires a complete original in-game sprite set. The
+current runtime-addressable direction atlases and 25-action skeleton contract
+are integration foundations, not final animation acceptance. Each champion must
+pass idle, movement, jump/rise/fall/land, traversal, combat, defense/damage,
+interaction, defeat, and signature/fallback taunt coverage applicable to its
+kit, with deterministic semantic event binding and no animation-owned outcomes.
 
 ## Environment kit
 

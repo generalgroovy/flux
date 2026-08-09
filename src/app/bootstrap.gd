@@ -3,6 +3,7 @@ extends Node2D
 
 const MAX_CATCH_UP_STEPS: int = 8
 const HUB_DEFINITION_PATH: String = "res://content/maps/sanctum_hub_v1.json"
+const CAMPUS_LAYOUT_PATH: String = "res://content/maps/sanctum_campus_g2_v1.json"
 const ABILITY_CATALOG_PATH: String = "res://content/abilities/foundation_abilities_v1.json"
 const LOADOUT_PATH: String = "res://content/loadouts/foundation_practitioner_v1.json"
 const MATERIAL_CATALOG_PATH: String = "res://content/materials/foundation_materials_v1.json"
@@ -29,6 +30,8 @@ const POV_EDGE_COLOR := Color("6f8c72a8")
 var world: SimWorld
 var input_router: InputRouter
 var hub_definition: HubDefinition
+var campus_layout: SanctumCampusLayout
+var campus_renderer: SanctumCampusRenderer
 var ability_catalog: AbilityCatalog
 var loadout: LoadoutDefinition
 var material_registry: MaterialRegistry
@@ -41,6 +44,8 @@ var accumulator_seconds: float = 0.0
 var previous_position := Vector2.ZERO
 var current_position := Vector2.ZERO
 var dropped_time_seconds: float = 0.0
+var show_debug_overlay: bool = false
+var capture_pointer_world := Vector2i(-1, -1)
 
 
 func _ready() -> void:
@@ -57,6 +62,13 @@ func _ready() -> void:
 		push_error(hub_definition.last_error)
 		get_tree().quit(1)
 		return
+	campus_layout = SanctumCampusLayout.new()
+	if not campus_layout.load_from_file(CAMPUS_LAYOUT_PATH):
+		push_error(campus_layout.last_error)
+		get_tree().quit(1)
+		return
+	campus_renderer = SanctumCampusRenderer.new()
+	capture_pointer_world = _requested_capture_pointer()
 	ability_catalog = AbilityCatalog.new()
 	if not ability_catalog.load_from_file(ABILITY_CATALOG_PATH):
 		push_error(ability_catalog.last_error)
@@ -82,7 +94,7 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, Sanctum districts %d, travel nodes %d, ability catalog %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -92,6 +104,7 @@ func _ready() -> void:
 			player_preferences.pov_range,
 			hub_definition.districts_by_id.size(),
 			hub_definition.travel_nodes_by_id.size(),
+			campus_layout.content_hash.left(12),
 			ability_catalog.content_hash.left(12),
 			loadout.active_points,
 			material_registry.content_hash.left(12),
@@ -104,6 +117,8 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_handle_preference_actions()
+	if Input.is_action_just_pressed(&"toggle_debug_overlay"):
+		show_debug_overlay = not show_debug_overlay
 	if Input.is_action_just_pressed(&"reset_match"):
 		if not _start_match(tick_rate):
 			set_process(false)
@@ -118,10 +133,11 @@ func _process(delta: float) -> void:
 	var steps: int = 0
 	while accumulator_seconds >= fixed_delta and steps < MAX_CATCH_UP_STEPS:
 		previous_position = current_position
+		var pointer_world_position := Vector2(capture_pointer_world) if capture_pointer_world.x >= 0 else get_viewport().get_mouse_position() + _camera_origin(current_position)
 		var command: SimCommand = input_router.sample(
 			world.tick,
 			current_position,
-			get_viewport().get_mouse_position(),
+			pointer_world_position,
 		)
 		if not world.step([command]):
 			push_error(world.last_error)
@@ -137,27 +153,32 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	_draw_sanctum_training_court()
-	for obstacle: CollisionWorld.Obstacle in world.collision.obstacles:
-		var rectangle := Rect2(
-			Vector2(float(obstacle.minimum_x) / 1000.0, float(obstacle.minimum_y) / 1000.0),
-			Vector2(float(obstacle.maximum_x - obstacle.minimum_x) / 1000.0, float(obstacle.maximum_y - obstacle.minimum_y) / 1000.0),
-		)
-		draw_rect(rectangle, TIMBER_COLOR if obstacle.vaultable else WORLDBONE_COLOR, true)
-		draw_rect(rectangle, BRASS_COLOR if obstacle.vaultable else PALE_STONE_COLOR.darkened(0.35), false, 3.0)
+	var alpha: float = clampf(accumulator_seconds * float(tick_rate), 0.0, 1.0)
+	var rendered_position: Vector2 = previous_position.lerp(current_position, alpha)
+	var camera_origin: Vector2 = _camera_origin(rendered_position)
+	draw_set_transform(-camera_origin)
+	campus_renderer.draw(self, campus_layout, world.tick)
+	if show_debug_overlay:
+		for obstacle: CollisionWorld.Obstacle in world.collision.obstacles:
+			var rectangle := Rect2(
+				Vector2(float(obstacle.minimum_x) / 1000.0, float(obstacle.minimum_y) / 1000.0),
+				Vector2(float(obstacle.maximum_x - obstacle.minimum_x) / 1000.0, float(obstacle.maximum_y - obstacle.minimum_y) / 1000.0),
+			)
+			draw_rect(rectangle, Color(BRASS_COLOR if obstacle.vaultable else ATTUNEMENT_COLOR, 0.18), true)
+			draw_rect(rectangle, BRASS_COLOR if obstacle.vaultable else ATTUNEMENT_COLOR, false, 2.0)
 	for projectile: ProjectileState in world.projectiles:
 		var projectile_position := Vector2(float(projectile.position_x) / 1000.0, float(projectile.position_y) / 1000.0)
 		var projectile_color: Color = ATTUNEMENT_COLOR if projectile.source_wire_id == CombatTuning.PRIMARY_WIRE_ID else FLUX_COLOR
 		draw_circle(projectile_position, float(projectile.radius) / 1000.0 + 7.0, Color(projectile_color, 0.18))
 		draw_circle(projectile_position, float(projectile.radius) / 1000.0, projectile_color)
-	var alpha: float = clampf(accumulator_seconds * float(tick_rate), 0.0, 1.0)
-	var rendered_position: Vector2 = previous_position.lerp(current_position, alpha)
 	var state: PlayerState = world.player()
 	draw_circle(rendered_position, float(state.radius) / 1000.0 + 5.0, Color(ATTUNEMENT_COLOR, 0.18))
 	draw_circle(rendered_position, float(state.radius) / 1000.0, PLAYER_COLOR)
 	draw_arc(rendered_position, float(state.radius) / 1000.0 + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
 	draw_line(rendered_position, rendered_position + Vector2(state.aim_x, state.aim_y) * 0.032, Color.WHITE, 3.0)
-	_draw_pov_mask(rendered_position, Vector2(state.aim_x, state.aim_y))
+	draw_set_transform(Vector2.ZERO)
+	var rendered_screen_position: Vector2 = rendered_position - camera_origin
+	_draw_pov_mask(rendered_screen_position, Vector2(state.aim_x, state.aim_y))
 	var status := "%d HZ · T%d · HP %.0f · ST %.0f · FX %.0f · P%d · %s" % [
 		tick_rate,
 		world.tick,
@@ -169,23 +190,24 @@ func _draw() -> void:
 	]
 	draw_rect(Rect2(16, 14, 1248, 96), PANEL_COLOR, true)
 	draw_rect(Rect2(16, 14, 1248, 96), BRASS_COLOR.darkened(0.3), false, 2.0)
-	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "THE SANCTUM · MOVEMENT CONSERVATORY · BUILD %d/13" % loadout.active_points, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "THE SANCTUM · LIVING CAMPUS G2 · BUILD %d/13" % loadout.active_points, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
 	draw_string(ThemeDB.fallback_font, Vector2(760, 40), status, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, ATTUNEMENT_COLOR)
 	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · MOUSE AIM · LMB/SPACE ARC PRIMARY · RMB/E VECTOR LANCE · ALT SPRINT · C CHAIN · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
 	var view_description := "FULL" if player_preferences.pov_mode == PlayerPreferences.POV_FULL else "CONE %d°/%d" % [player_preferences.pov_angle_degrees, player_preferences.pov_range]
 	draw_string(
 		ThemeDB.fallback_font,
 		Vector2(32, 96),
-		"F6 RATE · F7 MOVE %s · F8 VIEW %s · F9 ANGLE ±15° · F10 RANGE ±80 (hold Shift to reduce)"
+		"F1 DEBUG · F6 RATE · F7 MOVE %s · F8 VIEW %s · F9 ANGLE ±15° · F10 RANGE ±80 (Shift reduces)"
 		% [player_preferences.movement_reference.to_upper(), view_description],
 		HORIZONTAL_ALIGNMENT_LEFT,
 		-1.0,
 		13,
 		ATTUNEMENT_COLOR,
 	)
-	if dropped_time_seconds > 0.0:
+	if show_debug_overlay and dropped_time_seconds > 0.0:
 		draw_string(ThemeDB.fallback_font, Vector2(32, 132), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
-	_draw_material_yard_preview()
+	if show_debug_overlay:
+		_draw_material_yard_preview()
 
 
 func _draw_pov_mask(origin: Vector2, aim: Vector2) -> void:
@@ -247,57 +269,18 @@ func _draw_material_yard_preview() -> void:
 	)
 
 
-func _draw_sanctum_training_court() -> void:
-	draw_rect(Rect2(Vector2.ZERO, Vector2(1280, 720)), WATER_COLOR)
-	for y: int in range(118, 720, 64):
-		draw_line(Vector2(0, y), Vector2(1280, y - 18), Color(WATER_HIGHLIGHT_COLOR, 0.32), 2.0)
-	draw_circle(Vector2(640, 390), 340.0, FOREST_SHADOW_COLOR)
-	draw_circle(Vector2(640, 390), 314.0, GRASS_COLOR)
-	draw_circle(Vector2(75, 360), 110.0, FOREST_SHADOW_COLOR)
-	draw_circle(Vector2(1205, 360), 110.0, FOREST_SHADOW_COLOR)
-
-	# Ordinary routes remain wide and calm; advanced routes sit along the edges.
-	draw_rect(Rect2(0, 310, 1280, 100), PATH_COLOR)
-	draw_rect(Rect2(590, 88, 100, 632), PATH_COLOR)
-	draw_circle(Vector2(650, 380), 188.0, PATH_COLOR)
-	draw_circle(Vector2(650, 380), 138.0, GRASS_COLOR)
-	draw_arc(Vector2(650, 380), 224.0, 0.0, TAU, 96, PALE_STONE_COLOR.darkened(0.18), 16.0)
-	draw_arc(Vector2(650, 380), 265.0, 0.0, TAU, 96, BRASS_COLOR.darkened(0.12), 5.0)
-
-	# A central attunement fountain establishes the hub's travel language.
-	draw_circle(Vector2(650, 380), 74.0, WORLDBONE_COLOR)
-	draw_circle(Vector2(650, 380), 62.0, BRASS_COLOR)
-	draw_circle(Vector2(650, 380), 51.0, WATER_HIGHLIGHT_COLOR)
-	draw_circle(Vector2(650, 380), 28.0, Color(ATTUNEMENT_COLOR, 0.35))
-	draw_circle(Vector2(650, 380), 12.0, ATTUNEMENT_COLOR)
-	draw_line(Vector2(650, 376), Vector2(650, 322), ATTUNEMENT_COLOR, 6.0)
-	draw_circle(Vector2(650, 316), 9.0, Color(ATTUNEMENT_COLOR, 0.55))
-
-	# Elemental practice basins preview chemistry without making pixels authoritative.
-	var basin_colors: Array[Color] = [WATER_HIGHLIGHT_COLOR, FIRE_COLOR, Color("b8dbe8"), Color("6fa84f"), FLUX_COLOR]
-	for index: int in basin_colors.size():
-		var basin_position := Vector2(382 + index * 134, 588)
-		draw_circle(basin_position, 27.0, WORLDBONE_COLOR)
-		draw_circle(basin_position, 21.0, BRASS_COLOR.darkened(0.18))
-		draw_circle(basin_position, 15.0, basin_colors[index])
-
-	# Distributed shrines communicate that the full campus is much larger.
-	for shrine_position: Vector2 in [Vector2(85, 360), Vector2(1195, 360), Vector2(650, 116), Vector2(650, 660)]:
-		draw_circle(shrine_position, 22.0, Color(FLUX_COLOR, 0.18))
-		draw_circle(shrine_position, 13.0, WORLDBONE_COLOR)
-		draw_circle(shrine_position, 8.0, FLUX_COLOR)
-		draw_arc(shrine_position, 18.0, 0.0, TAU, 16, BRASS_COLOR, 2.0)
-
-	# Garden detail is deterministic presentation and stays outside clear lanes.
-	for flower_position: Vector2 in [Vector2(290, 220), Vector2(322, 238), Vector2(1000, 232), Vector2(1034, 215), Vector2(280, 510), Vector2(1015, 515)]:
-		draw_circle(flower_position, 9.0, MOSS_COLOR)
-		draw_circle(flower_position + Vector2(-4, -3), 3.0, FLUX_COLOR)
-		draw_circle(flower_position + Vector2(4, 2), 3.0, PARCHMENT_COLOR)
-
-
 func _start_match(requested_tick_rate: int) -> bool:
 	tick_rate = requested_tick_rate
-	world = SimWorld.new(tick_rate, 8675309)
+	world = SimWorld.new(
+		tick_rate,
+		8675309,
+		campus_layout.build_collision_world(),
+		String(campus_layout.data.get("id", "")),
+		campus_layout.content_hash,
+	)
+	var player_state: PlayerState = world.player()
+	player_state.position_x = campus_layout.spawn.x * SimConfig.FIXED_SCALE
+	player_state.position_y = campus_layout.spawn.y * SimConfig.FIXED_SCALE
 	material_grid = MaterialGrid.new()
 	if not material_grid.initialize(material_yard, material_registry, world.config):
 		push_error(material_grid.last_error)
@@ -369,6 +352,28 @@ func _requested_tick_rate() -> int:
 	return configured
 
 
+func _requested_capture_pointer() -> Vector2i:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--capture-pointer="):
+			var parsed := parse_capture_pointer(argument, campus_layout.canvas_size)
+			if parsed.x < 0:
+				push_warning("Invalid capture pointer; expected --capture-pointer=X,Y inside the campus")
+			return parsed
+	return Vector2i(-1, -1)
+
+
+static func parse_capture_pointer(argument: String, canvas_size: Vector2i) -> Vector2i:
+	if not argument.begins_with("--capture-pointer="):
+		return Vector2i(-1, -1)
+	var components := argument.trim_prefix("--capture-pointer=").split(",", false)
+	if components.size() != 2 or not components[0].is_valid_int() or not components[1].is_valid_int():
+		return Vector2i(-1, -1)
+	var point := Vector2i(components[0].to_int(), components[1].to_int())
+	if point.x < 0 or point.y < 0 or point.x >= canvas_size.x or point.y >= canvas_size.y:
+		return Vector2i(-1, -1)
+	return point
+
+
 func _apply_preference_overrides() -> void:
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--movement-reference="):
@@ -418,3 +423,15 @@ func _handle_preference_actions() -> void:
 func _player_position() -> Vector2:
 	var state: PlayerState = world.player()
 	return Vector2(float(state.position_x) / 1000.0, float(state.position_y) / 1000.0)
+
+
+func _camera_origin(focus_position: Vector2) -> Vector2:
+	if campus_layout == null:
+		return Vector2.ZERO
+	var viewport_size := Vector2(campus_layout.viewport_size)
+	var focus_screen := Vector2(viewport_size.x * 0.5, (float(campus_layout.reserved_ui_top) + viewport_size.y) * 0.5)
+	var maximum_origin := Vector2(campus_layout.canvas_size - campus_layout.viewport_size)
+	return Vector2(
+		clampf(focus_position.x - focus_screen.x, 0.0, maximum_origin.x),
+		clampf(focus_position.y - focus_screen.y, 0.0, maximum_origin.y),
+	)

@@ -25,6 +25,7 @@ const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"primary": KEY_SPACE,
 	&"active_1": KEY_E,
 	&"reset_match": KEY_R,
+	&"toggle_debug_overlay": KEY_F1,
 	&"toggle_tick_rate": KEY_F6,
 	&"toggle_movement_reference": KEY_F7,
 	&"toggle_pov_mode": KEY_F8,

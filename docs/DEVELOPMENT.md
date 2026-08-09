@@ -40,6 +40,25 @@ The lower-right `MATERIAL YARD F1` panel is a read-only texture generated from
 the canonical 128 x 128 seed. Its labels identify the static seed/worldbone
 hashes that booted; it is not yet an interactive reaction simulation.
 
+## Deterministic presentation capture
+
+Visual regression capture must not inherit the host cursor position. Use an
+explicit bounded world pointer together with Godot's fixed-rate movie writer:
+
+```bash
+mkdir -p /tmp/flux2-g2-capture
+godot --path "$PWD" \
+  --write-movie /tmp/flux2-g2-capture/frame.png \
+  --quit-after 3 --fixed-fps 60 --resolution 1280x720 \
+  -- --tick-rate=60 --capture-pointer=1600,720
+```
+
+`--capture-pointer=X,Y` is a testing-only user argument. It accepts an integer
+point inside the authored campus and replaces mouse sampling only when present;
+normal input remains unchanged. Independent fixed-pointer 60 Hz captures must
+be byte-identical. At equal frame count, the world region below the HUD must
+also match between 60 and 120 Hz; only intentional rate text may differ.
+
 ## Architecture boundary
 
 `src/sim/` owns canonical integer state. It has no Node, renderer, input,

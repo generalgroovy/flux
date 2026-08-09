@@ -9,6 +9,8 @@ var config: SimConfig
 var collision: CollisionWorld
 var tick: int = 0
 var seed: int = 1
+var map_id: String = MAP_ID
+var map_hash: String = MAP_HASH
 var players: Array[PlayerState] = []
 var projectiles: Array[ProjectileState] = []
 var next_projectile_id: int = 1000
@@ -16,13 +18,22 @@ var combat_events: Array[Dictionary] = []
 var last_error: String = ""
 
 
-func _init(requested_tick_rate: int = 60, requested_seed: int = 1) -> void:
+func _init(
+	requested_tick_rate: int = 60,
+	requested_seed: int = 1,
+	requested_collision: CollisionWorld = null,
+	requested_map_id: String = MAP_ID,
+	requested_map_hash: String = MAP_HASH,
+) -> void:
 	config = SimConfig.new(requested_tick_rate)
 	seed = requested_seed
-	collision = CollisionWorld.new()
+	map_id = requested_map_id
+	map_hash = requested_map_hash
+	collision = requested_collision if requested_collision != null else CollisionWorld.new()
 	if config.is_valid():
-		collision.add_obstacle(CollisionWorld.Obstacle.new(1, 560_000, 250_000, 620_000, 470_000, false))
-		collision.add_obstacle(CollisionWorld.Obstacle.new(2, 820_000, 300_000, 900_000, 380_000, true))
+		if requested_collision == null:
+			collision.add_obstacle(CollisionWorld.Obstacle.new(1, 560_000, 250_000, 620_000, 470_000, false))
+			collision.add_obstacle(CollisionWorld.Obstacle.new(2, 820_000, 300_000, 900_000, 380_000, true))
 		players.append(PlayerState.new(1))
 	else:
 		last_error = "unsupported tick rate: %d; expected 60 or 120" % requested_tick_rate
@@ -91,8 +102,8 @@ func state_hash() -> String:
 	var payload := PackedByteArray()
 	for value: int in [SimConfig.PROTOCOL_VERSION, config.tick_rate, tick, seed, next_projectile_id]:
 		CanonicalBytes.append_i64(payload, value)
-	CanonicalBytes.append_string(payload, MAP_ID)
-	CanonicalBytes.append_string(payload, MAP_HASH)
+	CanonicalBytes.append_string(payload, map_id)
+	CanonicalBytes.append_string(payload, map_hash)
 	var ordered: Array[PlayerState] = players.duplicate()
 	ordered.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
 	CanonicalBytes.append_i64(payload, ordered.size())

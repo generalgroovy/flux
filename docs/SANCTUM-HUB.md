@@ -7,14 +7,18 @@ space, test laboratory, and expedition threshold. It must feel vast and worth
 learning without making routine configuration or matchmaking slow. Spatial
 interactions and overlay menus are two views of the same application commands.
 
-The authoritative layout seed is versioned in
+The original hub/function seed is versioned in
 [`content/maps/sanctum_hub_v1.json`](../content/maps/sanctum_hub_v1.json). The
 concept image communicates atmosphere only. Final topology will be authored as
 worldbone, traversal, elevation, material, presentation, and navigation layers.
-The current concentric training court is a mechanics/debug fixture and does not
-pass this contract's topology, district-silhouette, pixel-art, density, or scale
-bar. Replacing it begins in G2, immediately after the completed control/POV
-checkpoint.
+G2 now loads the separate canonical
+[`sanctum_campus_g2_v1.json`](../content/maps/sanctum_campus_g2_v1.json), whose
+connected district graph, bridge ownership, worldbone buildings, elevation
+queries, route classes, accessible ordinary coverage, reset-zone metadata,
+landmarks, spawn clearance and map hash fail closed before play. Its scrolling
+procedural renderer replaces the old concentric court but does not yet pass this
+contract's modular pixel-art, provenance, silhouette, density or accessibility
+bar; G2 therefore remains in progress.
 
 Living Sanctum V1 is the first product acceptance gate. The hub must be fully
 usable offline and must also support privacy-safe friend presence, direct/LAN/

@@ -121,6 +121,7 @@ compatible documented license.
 
 | Broad reference | Principle considered | Original FLUX 2 interpretation |
 | --- | --- | --- |
+| The Legend of Zelda: Oracle of Ages / Oracle of Seasons | Compact Game Boy Color-era top-down tiles, economical color ramps, strong character-to-environment scale, readable silhouettes, and clear interaction landmarks | An original FLUX virtual-pixel grid, palette, architecture, characters, props, animation, UI, and effects; no copied sprites, tiles, maps, symbols, palette extraction, characters, animation frames, or trade dress |
 | Titanfall/Apex family | Movement routes, momentum conversion, readable traversal objects, independent aim, squad legibility | A stamina-bounded universal movement grammar in authored top-down elevation lanes; champion mobility never bypasses collision or the global speed ceiling |
 | Super Smash Bros. Melee | Commitment, recovery, precise landing timing, momentum expression, bounded launch influence | Top-down landing cuts, wavedash geometry, readable startup/active/recovery phases, and future collision-safe impact influence—without copying characters, stages, move data, or control layout |
 | Classic handheld Zelda games | A top-down jump reads instantly through compact body lift, a grounded shadow, apex, and crisp landing | An original authoritative elevation arc and original body/shadow presentation; no copied sprite, frame, timing, sound, map, input, or item behavior |
@@ -548,7 +549,7 @@ accepted visual baseline for character expression, silhouette, equipment,
 materials, elemental framing and pixel-art density. Canonical Flux2 data
 still overrides conflicting labels visible in that reference.
 
-![FLUX Champions minimum character-art baseline](art/reference/flux-champions-style-baseline.png)
+![FLUX Champions minimum character-art baseline](assets/concept/flux-champions-visual-style-v1.png)
 
 Every roster entry therefore shows both the higher-detail character
 candidate and the current eight-direction runtime sprite. The runtime image
@@ -623,7 +624,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/oh_tipi/oh_tipi_portrait.png`](assets/sprites/champions/oh_tipi/oh_tipi_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png`](assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/oh_tipi/keyframe_board.png`](assets/sprites/champions_v2/oh_tipi/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Preserved design name | Implementation state |
@@ -663,7 +664,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/s_wayne/s_wayne_portrait.png`](assets/sprites/champions/s_wayne/s_wayne_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/s_wayne/hero_portrait_256.png`](assets/sprites/champions_v2/s_wayne/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/s_wayne/keyframe_board.png`](assets/sprites/champions_v2/s_wayne/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Preserved design name | Implementation state |
@@ -703,7 +704,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/red_baron/red_baron_portrait.png`](assets/sprites/champions/red_baron/red_baron_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/red_baron/hero_portrait_256.png`](assets/sprites/champions_v2/red_baron/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/red_baron/keyframe_board.png`](assets/sprites/champions_v2/red_baron/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Preserved design name | Implementation state |
@@ -743,7 +744,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/steezo/steezo_portrait.png`](assets/sprites/champions/steezo/steezo_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/steezo/hero_portrait_256.png`](assets/sprites/champions_v2/steezo/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/steezo/keyframe_board.png`](assets/sprites/champions_v2/steezo/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Preserved design name | Implementation state |
@@ -783,7 +784,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/treevor_mason/treevor_mason_portrait.png`](assets/sprites/champions/treevor_mason/treevor_mason_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/treevor_mason/hero_portrait_256.png`](assets/sprites/champions_v2/treevor_mason/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/treevor_mason/keyframe_board.png`](assets/sprites/champions_v2/treevor_mason/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Preserved design name | Implementation state |
@@ -823,7 +824,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/oll_i/oll_i_portrait.png`](assets/sprites/champions/oll_i/oll_i_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/oll_i/hero_portrait_256.png`](assets/sprites/champions_v2/oll_i/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/oll_i/keyframe_board.png`](assets/sprites/champions_v2/oll_i/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Preserved design name | Implementation state |
@@ -863,7 +864,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/fluup/fluup_portrait.png`](assets/sprites/champions/fluup/fluup_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/fluup/hero_portrait_256.png`](assets/sprites/champions_v2/fluup/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/fluup/keyframe_board.png`](assets/sprites/champions_v2/fluup/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Preserved design name | Implementation state |
@@ -903,7 +904,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/wa_bidi/wa_bidi_portrait.png`](assets/sprites/champions/wa_bidi/wa_bidi_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/wa_bidi/hero_portrait_256.png`](assets/sprites/champions_v2/wa_bidi/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/wa_bidi/keyframe_board.png`](assets/sprites/champions_v2/wa_bidi/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -942,7 +943,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/grace_reava/grace_reava_portrait.png`](assets/sprites/champions/grace_reava/grace_reava_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/grace_reava/hero_portrait_256.png`](assets/sprites/champions_v2/grace_reava/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/grace_reava/keyframe_board.png`](assets/sprites/champions_v2/grace_reava/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -981,7 +982,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/nico_lai/nico_lai_portrait.png`](assets/sprites/champions/nico_lai/nico_lai_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/nico_lai/hero_portrait_256.png`](assets/sprites/champions_v2/nico_lai/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/nico_lai/keyframe_board.png`](assets/sprites/champions_v2/nico_lai/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1020,7 +1021,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/spai_si/spai_si_portrait.png`](assets/sprites/champions/spai_si/spai_si_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/spai_si/hero_portrait_256.png`](assets/sprites/champions_v2/spai_si/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/spai_si/keyframe_board.png`](assets/sprites/champions_v2/spai_si/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1059,7 +1060,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/leaf_hidden/leaf_hidden_portrait.png`](assets/sprites/champions/leaf_hidden/leaf_hidden_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/leaf_hidden/hero_portrait_256.png`](assets/sprites/champions_v2/leaf_hidden/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/leaf_hidden/keyframe_board.png`](assets/sprites/champions_v2/leaf_hidden/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1098,7 +1099,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/ha_rekt/ha_rekt_portrait.png`](assets/sprites/champions/ha_rekt/ha_rekt_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/ha_rekt/hero_portrait_256.png`](assets/sprites/champions_v2/ha_rekt/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/ha_rekt/keyframe_board.png`](assets/sprites/champions_v2/ha_rekt/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1137,7 +1138,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/dr_apex/dr_apex_portrait.png`](assets/sprites/champions/dr_apex/dr_apex_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/dr_apex/hero_portrait_256.png`](assets/sprites/champions_v2/dr_apex/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/dr_apex/keyframe_board.png`](assets/sprites/champions_v2/dr_apex/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1176,7 +1177,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/haara/haara_portrait.png`](assets/sprites/champions/haara/haara_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/haara/hero_portrait_256.png`](assets/sprites/champions_v2/haara/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/haara/keyframe_board.png`](assets/sprites/champions_v2/haara/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1215,7 +1216,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/hesus_christo/hesus_christo_portrait.png`](assets/sprites/champions/hesus_christo/hesus_christo_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/hesus_christo/hero_portrait_256.png`](assets/sprites/champions_v2/hesus_christo/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/hesus_christo/keyframe_board.png`](assets/sprites/champions_v2/hesus_christo/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1254,7 +1255,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/grimm_bow/grimm_bow_portrait.png`](assets/sprites/champions/grimm_bow/grimm_bow_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/grimm_bow/hero_portrait_256.png`](assets/sprites/champions_v2/grimm_bow/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/grimm_bow/keyframe_board.png`](assets/sprites/champions_v2/grimm_bow/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1293,7 +1294,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/biggy_bob/biggy_bob_portrait.png`](assets/sprites/champions/biggy_bob/biggy_bob_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/biggy_bob/hero_portrait_256.png`](assets/sprites/champions_v2/biggy_bob/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/biggy_bob/keyframe_board.png`](assets/sprites/champions_v2/biggy_bob/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1332,7 +1333,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/jan_wicked/jan_wicked_portrait.png`](assets/sprites/champions/jan_wicked/jan_wicked_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/jan_wicked/hero_portrait_256.png`](assets/sprites/champions_v2/jan_wicked/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/jan_wicked/keyframe_board.png`](assets/sprites/champions_v2/jan_wicked/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1371,7 +1372,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/ba_djoh/ba_djoh_portrait.png`](assets/sprites/champions/ba_djoh/ba_djoh_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/ba_djoh/hero_portrait_256.png`](assets/sprites/champions_v2/ba_djoh/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/ba_djoh/keyframe_board.png`](assets/sprites/champions_v2/ba_djoh/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1410,7 +1411,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/urzh/urzh_portrait.png`](assets/sprites/champions/urzh/urzh_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/urzh/hero_portrait_256.png`](assets/sprites/champions_v2/urzh/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/urzh/keyframe_board.png`](assets/sprites/champions_v2/urzh/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1449,7 +1450,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/donnok/donnok_portrait.png`](assets/sprites/champions/donnok/donnok_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/donnok/hero_portrait_256.png`](assets/sprites/champions_v2/donnok/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/donnok/keyframe_board.png`](assets/sprites/champions_v2/donnok/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1488,7 +1489,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/djonah_thaan/djonah_thaan_portrait.png`](assets/sprites/champions/djonah_thaan/djonah_thaan_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/djonah_thaan/hero_portrait_256.png`](assets/sprites/champions_v2/djonah_thaan/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/djonah_thaan/keyframe_board.png`](assets/sprites/champions_v2/djonah_thaan/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1527,7 +1528,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Runtime portrait candidate | [`assets/sprites/champions/unnamed_angel/unnamed_angel_portrait.png`](assets/sprites/champions/unnamed_angel/unnamed_angel_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/unnamed_angel/hero_portrait_256.png`](assets/sprites/champions_v2/unnamed_angel/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/unnamed_angel/keyframe_board.png`](assets/sprites/champions_v2/unnamed_angel/keyframe_board.png) |
-| Visual acceptance target | Must match or exceed [`art/reference/flux-champions-style-baseline.png`](art/reference/flux-champions-style-baseline.png) in expression, silhouette, material detail and charm |
+| Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
 | Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
 
 | Ability slot | Status |
@@ -1636,6 +1637,29 @@ and timing. UI is compact dark-brass instrument work with parchment text fields,
 not a wall of opaque fantasy panels. Audio reinforces material, distance,
 movement cadence, threat, and successful reactions.
 
+The production grid targets the compact readability of Game Boy Color-era
+top-down adventure art, including the broad tile economy and silhouette clarity
+associated with *Oracle of Ages* and *Oracle of Seasons*. This is direction,
+not a source library: FLUX uses original pixels, ramps, proportions, maps,
+characters, props, symbols, animation and interface language. Historical
+generated character boards from earlier repository history may inform body-scale
+and silhouette discussion, but their own manifest labels them concept/reference
+only. They do not become accepted sprite sheets unless restored with provenance,
+hashes, a virtual-pixel/frame/pivot manifest and an explicit visual acceptance
+record.
+
+The user-passed
+[eighteen-champion board](assets/concept/flux-champions-visual-style-v1.png)
+is now the mandatory local minimum for champion silhouette, expression,
+materials, equipment, ancestry shape language, and elemental personality
+(SHA-256
+`cb8aa1b3f4e1c41498a35dd37303a3783b0f8fa2c0bbb0b75a89cbd02934732f`).
+Its labels do not override canonical roster data, and the board itself is not a
+sprite sheet. Every pictured champion still requires an original, aligned
+in-game sprite set covering all applicable required animations. Existing
+eight-direction runtime candidates and the 25-action skeleton manifest are
+production foundations, not proof that those animations are final.
+
 The runtime must remain legible with reduced motion, common color-vision
 differences, low effects density, keyboard/mouse, controller, and remapped input.
 See [visual direction](docs/VISUAL-DIRECTION.md).
@@ -1676,7 +1700,7 @@ run headlessly, serialize, replay, and verify without rendering. See the
 ## Current playable foundation
 
 The repository currently contains a small executable slice, not a finished
-game: a schematic Sanctum mechanics-room presentation over a deterministic movement
+game: an in-progress scrolling G2 Sanctum campus over a deterministic movement
 arena, separate Health/Stamina/Flux state, independent quantized aim,
 persisted keyboard bindings, world/aim-relative movement presets, full/ranged-
 cone POV, keyboard/mouse/controller defaults, custom ordered collision, resource-free Arc
@@ -1688,9 +1712,12 @@ and legal 13-point loadout validate at boot. A canonical material registry and
 packed 128 x 128 Sanctum Material Yard seed also validate, hash, reset, and
 render as a read-only debug preview; reactions do not step yet. The full hub art,
 champion kit, networking, active chemistry, animation, and release exports
-remain staged milestones. The current room does not yet meet the approved
-Sanctum image, topology, density, perspective, or environmental-art target; its
-authored replacement is the immediate G2 checkpoint.
+remain staged milestones. The G2 campus now has renderer-independent connected
+district topology, explicit worldbone collision, queryable elevation, ordinary/
+advanced routes, one accessible ordinary route per district, bounded reset-zone
+metadata, landmarks and canonical map identity. Its procedural presentation is
+still below the approved modular-pixel-art, density, provenance and visual-
+accessibility bar, so G2 remains in progress.
 
 Run it offline after the engine archive has been prepared once:
 
@@ -1701,13 +1728,21 @@ scripts/test.sh
 scripts/run.sh --tick-rate=120
 ```
 
-Controls: WASD moves, mouse aims, left click or Space fires Arc Primary, right
-click or E casts Vector Lance, Alt sprints, C uses the jump/movement chain, V
+Current foundation controls: WASD moves, mouse aims, left click or Space fires
+Arc Primary, right click or E casts Vector Lance, Alt sprints, C uses the
+jump/movement chain, V
 uses the contextual technique, R restarts the match, and F6 restarts at the
 other supported tick rate. F7 changes movement reference, F8 changes view, and
 F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
 left/right sticks, right trigger, west/east face buttons, and shoulders. The
 rate never mutates inside a running match.
+
+G3 migrates the production default so Space invokes the semantic jump action
+and primary no longer aliases Space. Saved user overrides remain supported and
+the migration must be conflict-safe. Jump presentation keeps the collision
+anchor grounded while the body rises and a separate receiving-surface shadow
+grows broader/darker to the apex, then contracts through descent at equivalent
+60/120 Hz phase.
 
 See [development setup](docs/DEVELOPMENT.md) and the
 [FLUX movement migration record](docs/MIGRATION-FLUX-MOVEMENT.md).
@@ -1729,7 +1764,7 @@ tools, accessibility, and compatibility agree.
 | E — first combat path | Arc Primary, Vector Lance, projectiles, swept hit/damage, replay and full Edgeweave invariants | Complete |
 | F1 — chemistry storage/safety | Validated material registry, 128 x 128 packed columns, seeded materials/Charge/elevation, immutable worldbone, canonical queue/budgets/hashes, exact reset, read-only preview | Complete |
 | G1 — player configuration | Persisted keyboard remapping, world/aim-relative movement, full/cone POV, exact angle/range, CLI/hotkey controls, deterministic transforms | Complete |
-| G2 — authored Sanctum | Replace the schematic court with the first vast Nexus-to-Conservatory multi-area topology/visual slice, clear routes, landmarks, elevations, responsive ambience, fast-travel context, and original pixel kit | Next; preproduction started during G1 verification |
+| G2 — authored Sanctum | Replace the schematic court with the first vast Nexus-to-Conservatory multi-area topology/visual slice, clear routes, landmarks, elevations, responsive ambience, fast-travel context, and original pixel kit | In progress: canonical campus topology, routes, worldbone, elevation/reset metadata, camera and procedural presentation validate; a generated 12-module source/alpha candidate now has hash/provenance/authority validation but remains excluded and unapproved pending crop/alignment, license, import, performance and visual gates |
 | G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | Planned |
 | F2/G4 — systemic Sanctum | Structural/thermal reactions, authored traversal devices, input/controller UI, physics/chemistry practice and reset | Planned |
 | H1 — first ancestry/champion/spells | One approved body plan and character through loadout, unique taunt, dummy/bot, cues, replay, accessibility and platform source gates | Planned |

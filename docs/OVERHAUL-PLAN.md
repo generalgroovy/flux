@@ -55,6 +55,30 @@ rates launch, and deterministic state never depends on rendering.
   Nexus Court to Movement Conservatory world slice: distinct connected areas,
   worldbone/elevation, traversal bands, reset zones, ordinary/advanced paths,
   landmarks, distant context, and an original modular pixel kit.
+  - Implemented: canonical three-quarter campus identity, graph-connected
+    bridges with district-owned endpoints, explicit immutable worldbone,
+    deterministic elevation queries, per-district ordinary/advanced routes,
+    accessible ordinary coverage, bounded movement/proving reset-zone metadata,
+    landmarks, scrolling camera and procedural distant/edge presentation.
+  - Candidate evidence: a newly generated twelve-module sheet and alpha version
+    have immutable hashes, generator/prompt metadata, explicit presentation-only
+    authority, candidate status, transparent-corner/chroma checks and a
+    fail-closed 4 x 3 manifest. A Godot-only offline preparation tool now creates
+    twelve byte-reproducible alpha-trimmed crops with manifest-bound hashes,
+    dimensions and presentation pivots. All files remain excluded from import.
+  - Still required for G2 promotion: coherent world-unit/nearest-neighbor import
+    rules, license review and explicit approval, a runtime modular pixel kit,
+    gameplay-zoom silhouette/readability and grayscale/color-vision review,
+    collision/art alignment, measured presentation/import budget, and current
+    Garuda/Sway visual evidence. Concept candidates are not runtime assets.
+  - Pixel-direction constraint: use original FLUX pixels while targeting the
+    compact tile economy, limited-ramp clarity, strong silhouettes and readable
+    character-to-world scale broadly associated with Game Boy Color-era
+    top-down adventures such as *Oracle of Ages* and *Oracle of Seasons*. Never
+    copy or extract their sprites, tiles, maps, palettes, symbols, animation or
+    trade dress. Historical generated FLUX character boards remain reference
+    material, not passed sprite sheets, until manifest/provenance and full
+    gameplay-zoom asset acceptance are checked into this branch.
 - [ ] Planned: implement shared semantic LOS plus presentation cutaway/fade/
   ownership silhouette so high terrain/buildings/constructs never cover a
   LOS-visible character and no cue leaks a LOS-hidden character.
@@ -102,9 +126,13 @@ passes on Garuda Linux/Sway and Windows.
 - [ ] Planned: add buffered transitions, variable hop/fall presentation state,
   and authored elevation/low-cover queries.
 - [ ] Planned (G3): present every jump as an original compact top-down body-lift
-  arc with a ground-anchored changing shadow, clear apex, landing anticipation/
-  impact, and reduced-motion equivalent, inspired only by classic handheld
-  adventure readability rather than copied sprites/frames/timing.
+  arc. Make Space the migrated production-default semantic jump input; keep the
+  body ground anchor/collision stable while the rendered body rises; keep a
+  separate shadow on the receiving surface that grows broader/darker through
+  ascent, peaks at the apex, contracts on descent, and settles at landing.
+  Verify equivalent normalized presentation phase at 60/120 Hz and a
+  reduced-motion equivalent. The readability reference is broad classic
+  handheld adventure grammar, never copied sprites/frames/timing.
 - [ ] Planned: add variable-hop/fast-fall authority, bounded launched-trajectory
   influence, collision-safe timed ground recovery, and marked wall skims without
   weakening stun, recovery, same-wall lockout, or the global speed ceiling.
@@ -157,6 +185,17 @@ controller acceptance.
   request stable formula IDs and never supply outcome parameters.
 
 ### 4.3 First complete champion slice
+
+- [x] Preserve the passed eighteen-champion visual board locally with immutable
+  SHA-256 provenance and make it the minimum silhouette/expression/material
+  quality bar. Treat its labels as non-authoritative and its pixels as concept
+  reference, never animation frames or collision data.
+- [ ] Planned: replace each pictured champion's integrated direction candidate
+  with an accepted original gameplay sprite set covering all applicable actions
+  in the 25-action manifest. Require Godot runtime playback, frame/pivot/
+  alignment validation, gameplay-zoom and accessibility review, and semantic
+  60/120 Hz presentation tests. Do not infer completion from portraits,
+  direction previews, skeleton atlases, or generated keyframe boards.
 
 - [ ] Planned: select one FLUX-approved champion profile after source/content
   reconciliation; migrate it through definition, selection, training dummy,
@@ -315,6 +354,10 @@ budgets.
 
 - [ ] Planned: create original pixel-art environment, character, projectile,
   reaction, UI, animation, and audio kits from the approved direction.
+- [ ] Planned: lock one virtual-pixel grid and integer camera scale across the
+  environment kit and the first accepted character sheet; validate module/frame
+  dimensions, pivots, palette ramps, nearest-neighbor import, silhouettes and
+  animation alignment before expanding either library.
 - [ ] Planned: enforce shape-before-color, collision/danger priority, reduced
   motion/effects, color-vision/grayscale, remapping, controller, readable text,
   and audio-cue alternatives.

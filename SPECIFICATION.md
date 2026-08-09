@@ -269,6 +269,17 @@ short anticipation/impact read. FLUX 2 defines original arcs, timing, sprites,
 silhouettes, effects, sounds, and controls; it does not reproduce protected
 frames or animation data.
 
+The production default maps the physical Space key to the semantic jump action.
+Saved bindings remain remappable, but migration must remove the prototype's
+ambiguous Space-to-primary alias without losing an explicit user override. On
+takeoff the rendered body rises independently while its collision/ground anchor
+stays fixed to authoritative ground-plane motion. A separate shadow stays on
+the receiving surface, grows broader and darker through ascent, is largest at
+the apex, contracts through descent, and settles crisply on landing. Shadow
+phase, body lift, and animation selection derive from normalized authoritative
+jump phase and must present equivalent states at 60 and 120 Hz; they never
+create height, collision, dodge, invulnerability, or targeting authority.
+
 Body lift may not change the ground collision footprint, hide a landing cell,
 or invent invulnerability. Elevation affects collision and targeting only
 through authoritative elevation bands. Reduced-motion mode keeps the same
@@ -546,6 +557,34 @@ perspective, materials, palette ramps, topology, architecture, props, lighting,
 characters, UI, and animation. Hades/Hades II maps, assets, palettes, symbols,
 rooms, characters, effects, interfaces, camera metrics, and trade dress are not
 production inputs.
+
+The pixel-production contract may also study the broad readability constraints
+of Game Boy Color-era top-down adventure games, especially the compact tile
+economy, restrained ramps, landmark clarity and character/environment scale
+associated with *The Legend of Zelda: Oracle of Ages* and *Oracle of Seasons*.
+Production inputs must remain original FLUX work: no source sprite, tile, map,
+palette extraction, symbol, character, frame, camera metric or trade dress from
+those games may enter the repository. Runtime pixel assets use a declared
+virtual-pixel grid, nearest-neighbor sampling, integer presentation scale and
+manifest-bound dimensions, pivots, animation frames, hashes and provenance.
+
+Historical generated character reference boards are not accepted sprite sheets.
+They may constrain review of compact proportions, directional silhouette and
+equipment readability only after their provenance is available locally. They
+cannot define hitboxes, timing, stats or final palettes, and promotion requires
+an explicit asset manifest plus gameplay-zoom, grayscale, color-vision,
+alignment, animation, import, memory and performance acceptance evidence.
+
+The user-passed eighteen-champion board at
+`assets/concept/flux-champions-visual-style-v1.png` is the mandatory local
+minimum for compact silhouette, expression, material/equipment readability,
+ancestry identity and elemental personality. Its SHA-256 is
+`cb8aa1b3f4e1c41498a35dd37303a3783b0f8fa2c0bbb0b75a89cbd02934732f`.
+Its text is non-authoritative where canonical roster data disagrees. Each
+pictured champion must ultimately ship as original gameplay sprites covering
+every required manifest action and direction; a portrait, direction preview,
+skeleton atlas, generated keyframe board, or runtime-addressable candidate does
+not satisfy that gate by itself.
 
 ### 17.2 Reusable interactions and mode rules
 

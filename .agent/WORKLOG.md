@@ -338,6 +338,73 @@ Known limitations and risks:
 
 Commit: pending at pre-commit record time. Push: pending.
 
+## 2026-08-08 — G2 authored campus topology verification (in progress)
+
+Branch: `agent/aider-godot-foundation`
+
+What changed and why:
+
+- Replaced edge-count topology acceptance with an actual connected-district
+  traversal; self-links, unknown districts and bridge endpoints outside their
+  declared districts fail closed.
+- Declared the current campus buildings as immutable worldbone and made
+  district elevation queryable without consulting rendering or scene nodes.
+- Required ordinary and advanced routes in every visible district, one
+  accessible ordinary route per district, and route points owned by their
+  declared district.
+- Added bounded Conservatory movement and Proving practice reset-zone metadata.
+- Preserved the existing G2 camera, procedural presentation, canonical map
+  identity and all unrelated dirty work.
+
+Validation:
+
+- AUTOCODE offline executor: complete `bash scripts/test.sh` gate passed with
+  external networking isolated and a private safe `/dev`.
+- Sanctum campus suite: 86 assertions, zero failures; complete repository gate:
+  960 assertions, zero failures.
+- Godot import and bootstrap at 60 and 120 Hz passed.
+- A deterministic 1280 x 720 three-frame runtime capture completed through the
+  offline executor; the capture confirms the scrolling campus is functional but
+  remains visibly sparse and procedural.
+- `bash -n scripts/*.sh` and `git diff --check` passed.
+
+Known limitations and risks:
+
+- G2 is not complete. The older untracked `v1` environment sheet remains an
+  unreviewed candidate and is untouched. The new generated `v2` source/alpha
+  candidate has immutable hashes, generator/prompt provenance, a fail-closed
+  twelve-slot manifest and alpha/chroma validation, but license review remains
+  pending and it is intentionally excluded from runtime import.
+- The runtime presentation is code-drawn and does not yet pass modular pixel-kit,
+  gameplay-zoom silhouette, grayscale/color-vision, collision/art alignment,
+  import/memory/performance, or Garuda/Sway visual acceptance.
+- Reset zones are validated map metadata only; typed reset execution remains a
+  later systemic Sanctum slice.
+
+Asset-pipeline evidence added after the topology gate:
+
+- `assets/concept/sanctum-modular-kit-generated-source-v2.png` and
+  `sanctum-modular-kit-alpha-candidate-v2.png`;
+- `content/assets/sanctum_modular_kit_candidate_v2.json`;
+- `src/content/environment_kit_manifest.gd` and
+  `tests/unit/test_environment_kit_manifest.gd`;
+- environment manifest: 36 assertions, zero failures; complete offline gate:
+  996 assertions, zero failures.
+- deterministic Godot-only preparation now emits twelve alpha-trimmed candidate
+  crops with manifest-bound paths, hashes, dimensions and bottom-center
+  presentation pivots. Hash replay was byte-identical; the expanded asset suite
+  passes 64 assertions and the complete offline gate passes 1,024.
+- Added bounded `--capture-pointer=X,Y` visual-test input so movie capture does
+  not inherit nondeterministic host cursor state. Two independent 60 Hz captures
+  were byte-identical; the world region below the HUD was pixel-identical at 60
+  and 120 Hz for the same capture frame. A 1280 x 720 grayscale inspection kept
+  player, path, vault, building-edge and shrine silhouettes legible.
+- These checks prove repeatable presentation output, not artistic acceptance:
+  the procedural campus remains sparse and the candidate crops are still
+  excluded from runtime pending approval and alignment gates.
+
+Commit: deferred until the complete G2 promotion gate passes. Push: deferred.
+
 ## 2026-08-01 — G1 offline controls and configurable POV
 
 Branch: `agent/aider-godot-foundation`
@@ -461,5 +528,53 @@ Known limitations and risks:
   visual replacement have been promoted immediately after the requested
   control/POV checkpoint.
 - Material Yard colors are diagnostic and are not shipping art direction.
+
+Commit: pending at pre-commit record time. Push: pending.
+
+## 2026-08-09 — unified G2 topology/runtime-kit and champion visual contract
+
+Branch: `integration/all-branches-20260809`
+
+What changed and why:
+
+- Integrated the preserved dirty G2 work over the consolidated FLUX2 branch
+  lineage: canonical Sanctum campus topology, immutable worldbone, elevation,
+  ordinary/advanced/accessibility routes, reset metadata, renderer, content
+  validators, deterministic local runtime-kit generator, and tests.
+- Preserved the user-passed eighteen-champion board at
+  `assets/concept/flux-champions-visual-style-v1.png`; recorded its dimensions,
+  SHA-256, visual-reference authority, and non-authoritative label boundary.
+- Repaired visual-production manifests that referenced missing local images.
+  All champion style references now resolve to the preserved board.
+- Updated README, normative specification, visual direction, and overhaul plan
+  with the mandatory compact expressive pixel-art bar, the original-art and
+  asset-promotion gates, complete per-champion animation requirement, and the
+  production Space-to-jump migration.
+- Defined jump presentation precisely: stable authoritative ground anchor,
+  independently lifted body, separate receiving-surface shadow that broadens
+  and darkens through ascent, peaks at apex, contracts on descent, and is driven
+  from equivalent normalized authoritative phase at 60 and 120 Hz.
+
+Validation:
+
+- Full Godot headless gate: 12,250 assertions, zero failures.
+- Clean bootstrap at 60 and 120 Hz: passed with campus hash `13bd675242c8`.
+- Both visual JSON manifests parse and all 26 collected reference paths exist.
+- Supplied board: 1536 x 1024 RGBA PNG, SHA-256
+  `cb8aa1b3f4e1c41498a35dd37303a3783b0f8fa2c0bbb0b75a89cbd02934732f`.
+- `git diff --check`: passed.
+
+Known limitations and risks:
+
+- Runtime-addressable eight-direction champion candidates and a 25-action
+  skeleton contract exist, but the production animations remain planned; no
+  portrait, direction preview, skeleton atlas, or generated keyframe board is
+  claimed as final in-game animation acceptance.
+- Visual validators currently emit Godot export warnings because they load PNG
+  files through `Image.load_from_file`; assertions and boots pass, but an
+  export-safe validator-loading cleanup remains required.
+- The legacy browser FLUX test gate is 145/146 locally because `linkedom` is not
+  installed and no package manager is available. No dependency was fetched or
+  installed without approval.
 
 Commit: pending at pre-commit record time. Push: pending.

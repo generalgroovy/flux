@@ -4,6 +4,7 @@ extends FluxTestSuite
 func run() -> int:
 	_test_defaults_and_presets()
 	_test_validation()
+	_test_schema_v1_migration_and_reduced_motion()
 	_test_keyboard_bindings()
 	_test_persistence_round_trip()
 	_test_movement_transforms()
@@ -16,6 +17,10 @@ func _test_defaults_and_presets() -> void:
 	equal(preferences.pov_mode, PlayerPreferences.POV_FULL, "full view is the safe default")
 	equal(preferences.pov_angle_degrees, 120, "cone angle remains ready when cone view is selected")
 	equal(preferences.pov_range, 720, "cone range remains ready when cone view is selected")
+	equal(PlayerPreferences.SCHEMA_VERSION, 2, "player preferences save schema v2")
+	equal(preferences.keyboard_bindings[&"jump"], KEY_SPACE, "Space is the production-default jump key")
+	equal(preferences.keyboard_bindings[&"primary"], 0, "primary has no default keyboard alias")
+	check(not preferences.reduced_motion, "reduced motion defaults off")
 	check(preferences.apply_control_preset(PlayerPreferences.MOVEMENT_AIM_RELATIVE), "aim-relative preset is accepted")
 	equal(preferences.movement_reference, PlayerPreferences.MOVEMENT_AIM_RELATIVE, "aim-relative preset applies")
 	check(preferences.apply_control_preset(PlayerPreferences.MOVEMENT_WORLD_RELATIVE), "world-relative preset is accepted")
@@ -24,18 +29,19 @@ func _test_defaults_and_presets() -> void:
 
 func _test_validation() -> void:
 	var valid := {
-		"schema_version": 1,
+		"schema_version": 2,
 		"movement_reference": "aim_relative",
 		"pov_mode": "cone",
 		"pov_angle_degrees": 360,
 		"pov_range": 2048,
+		"reduced_motion": false,
 	}
 	var preferences := PlayerPreferences.new()
 	check(preferences.apply_dictionary(valid), "valid exact settings load")
 	equal(preferences.pov_angle_degrees, 360, "360-degree ranged view is legal")
 	equal(preferences.pov_range, 2048, "custom view length is legal")
 	for mutation: Dictionary in [
-		{"schema_version": 2},
+		{"schema_version": 3},
 		{"movement_reference": "camera_relative"},
 		{"pov_mode": "wallhack"},
 		{"pov_angle_degrees": 14},
@@ -43,6 +49,7 @@ func _test_validation() -> void:
 		{"pov_angle_degrees": 90.5},
 		{"pov_range": 159},
 		{"pov_range": 4097},
+		{"reduced_motion": "false"},
 	]:
 		var candidate: Dictionary = valid.duplicate(true)
 		for key: Variant in mutation:
@@ -62,6 +69,45 @@ func _test_validation() -> void:
 	equal(preferences.pov_range, PlayerPreferences.MAX_POV_RANGE, "runtime range clamps to maximum")
 
 
+func _base_preferences(schema_version: int, bindings: Dictionary) -> Dictionary:
+	return {
+		"schema_version": schema_version,
+		"movement_reference": PlayerPreferences.MOVEMENT_WORLD_RELATIVE,
+		"pov_mode": PlayerPreferences.POV_FULL,
+		"pov_angle_degrees": PlayerPreferences.DEFAULT_POV_ANGLE_DEGREES,
+		"pov_range": PlayerPreferences.DEFAULT_POV_RANGE,
+		"keyboard_bindings": bindings,
+	}
+
+
+func _test_schema_v1_migration_and_reduced_motion() -> void:
+	var legacy_defaults: Dictionary = PlayerPreferences.LEGACY_DEFAULT_KEYBOARD_BINDINGS.duplicate()
+	var migrated := PlayerPreferences.new()
+	check(migrated.apply_dictionary(_base_preferences(1, legacy_defaults)), "schema-v1 defaults migrate")
+	equal(migrated.keyboard_bindings[&"jump"], KEY_SPACE, "schema-v1 default C migrates to Space jump")
+	equal(migrated.keyboard_bindings[&"primary"], 0, "schema-v1 default Space primary alias is removed")
+	check(not migrated.reduced_motion, "schema-v1 reduced_motion defaults false")
+
+	var explicit: Dictionary = legacy_defaults.duplicate()
+	explicit[&"jump"] = KEY_J
+	explicit[&"primary"] = KEY_P
+	var preserved := PlayerPreferences.new()
+	check(preserved.apply_dictionary(_base_preferences(1, explicit)), "schema-v1 explicit bindings migrate")
+	equal(preserved.keyboard_bindings[&"jump"], KEY_J, "explicit jump override is preserved")
+	equal(preserved.keyboard_bindings[&"primary"], KEY_P, "explicit primary override is preserved")
+
+	var current: Dictionary = migrated.to_dictionary()
+	current["reduced_motion"] = true
+	var loaded := PlayerPreferences.new()
+	check(loaded.apply_dictionary(current), "schema-v2 preferences load")
+	check(loaded.reduced_motion, "schema-v2 reduced_motion loads")
+	var before: Dictionary = loaded.to_dictionary().duplicate(true)
+	var malformed: Dictionary = current.duplicate(true)
+	malformed["reduced_motion"] = "false"
+	check(not loaded.apply_dictionary(malformed), "non-boolean reduced_motion fails closed")
+	equal(loaded.to_dictionary(), before, "invalid reduced_motion never partially mutates preferences")
+
+
 func _test_persistence_round_trip() -> void:
 	var path := "user://flux2_player_preferences_test.json"
 	var saved := PlayerPreferences.new()
@@ -69,6 +115,7 @@ func _test_persistence_round_trip() -> void:
 	check(saved.set_pov_mode(PlayerPreferences.POV_CONE), "round-trip POV mode applies")
 	saved.set_pov_angle_degrees(225)
 	saved.set_pov_range(1360)
+	saved.reduced_motion = true
 	check(saved.save_to_file(path), "preferences save offline")
 	var loaded := PlayerPreferences.new()
 	check(loaded.load_from_file(path), "preferences load offline")

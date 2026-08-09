@@ -2244,3 +2244,79 @@
 - **Next:** Run one Garuda local-agent P0 iteration, review the original
   perspective specimen at desktop/narrow/grayscale/high-contrast/reduced-motion,
   and accept or revise the foundation before any P1 runtime Sanctum conversion.
+
+# 2026-07-29 — P0 pixel-perspective foundation accepted
+
+- **Central contract:** Added `src/pixel-perspective.mjs` with a 384x216 virtual
+  canvas, integer snapping, nearest-neighbour scaling, feet-ground anchoring,
+  orthographic three-quarter projection, explicit draw layers, seven shared
+  values, and compact original material plus Charge/Light ramps.
+- **Non-shipping proof:** Added an excluded specimen that demonstrates original
+  ground, worn route, water, cliff top/front, stairs, blocker, foliage, station,
+  Nico-scale body/shadow, and shape-first Charge/Light motifs without importing
+  the contract into the shipping runtime.
+- **Observed review:** The local browser rendered the board at 1280x900 and
+  480x900. Color, grayscale, high contrast, reduced motion, responsive stacking,
+  and nearest-neighbour canvas scaling all worked; the narrow page reported no
+  horizontal overflow and browser diagnostics contained no warnings or errors.
+- **Regression boundary:** The focused visual suite passed 3/3 and found one
+  malformed grayscale-ramp construction, which was corrected before acceptance.
+  The specimen routes are explicit while all `tools/` content remains excluded
+  from packaged files; `src/game.mjs` still has no P0 runtime import.
+- **Handoff:** P0 is complete. Every tracked Odysseus/Aider state and current
+  implementation prompt now routes the next bounded local run to P1 Living
+  Sanctum terrain/elevation presentation while freezing geometry and mechanics.
+- **Next:** Implement and visually review P1 against the accepted material,
+  layering, snapping, grayscale, and no-label-navigation contract.
+
+# 2026-07-29 — P1 Living Sanctum pixel terrain accepted
+
+- **Presentation-only renderer:** Added `src/pixel-sanctum-renderer.mjs`, which
+  reuses the P0 ramps and snapping contract for the Sanctum's water boundary,
+  grass clusters, worn station routes, shallow courts, mirror ward, collision
+  rails, station plinths, foreground edge, and distinct Rite Gate silhouette.
+- **Rule isolation:** Only `living_sanctum` opts into the new ground/obstacle/
+  station pass. Competitive maps keep their renderer; Sanctum content geometry,
+  obstacles, stations, spawns, collision, movement, practice state, and remote
+  company contracts are untouched.
+- **Observed review:** The live loopback game rendered at 1280x720 and after a
+  clean reload at 480x720. Route hierarchy, station endpoints, blockers, courts,
+  outer water, central ward, and exit gate remained distinguishable at both
+  sizes. No browser warnings or errors were present; 480px had no horizontal
+  overflow. High-contrast draw paths and value ordering are regression-covered.
+- **Verification:** `node scripts/ci-verify.mjs` passed 143 standard tests plus
+  the live network lifecycle and server cleanup (145 total), all recursive
+  JavaScript syntax checks passed, and `git diff --check` passed.
+- **Next:** P2 converts Nico's live renderer to compact cardinal pixel reads and
+  a clear feet/shadow ground anchor while preserving stable `volt` mechanics.
+
+# 2026-07-29 — P2 Nico cardinal pixel runtime accepted
+
+- **Dedicated renderer:** Nico alone now opts into a `pixel-cardinal` runtime
+  path. Dominant-axis facing resolves to up/down/left/right without quantizing
+  any other champion, and the stable registry remains the only game consumer.
+- **Complete state read:** The sprite board and live build show compact cap/head,
+  short practical frame, coil pack, device, feet, team mark, Charge/Light pixels,
+  low-health wear, split-device hit, forward defend bracket, and pixel-collapse
+  defeat across idle/move/commit/hit/defend/defeated states.
+- **Ground anchor:** Nico owns a persistent stepped shadow at authoritative X/Y;
+  the body lifts independently while jumping/vaulting, and the shadow widens and
+  darkens toward lift without changing movement or collision.
+- **Observed review:** The live Sanctum rendered the new sprite; the focused
+  board passed desktop and 480px review, including all facings/states, with no
+  browser warnings or errors. Nearest-neighbour CSS and canvas smoothing rules
+  remain explicit.
+- **Verification:** `node scripts/ci-verify.mjs` passed 144 standard tests plus
+  live network and cleanup checks (146 total), recursive syntax, and diff checks.
+- **Next:** P3 converts Nico's Charge/Light spell tells, lanes, impacts,
+  ownership, and expiry to the same shape-first pixel grammar.
+
+# 2026-07-29 — P3 in progress: Coil Dart travel read
+
+- Added a bounded `pixel-spell-renderer.mjs` contract covering the required
+  anticipation/travel/impact/expiry vocabulary for all four Nico abilities.
+- Migrated only live `volt`-owned primary projectiles to a compact forked Charge
+  dart with an explicit team-colored split tail; all other projectiles retain
+  their renderer and the projectile simulation object is unchanged.
+- Focused visual and DOM checks pass. P3 remains active and incomplete: Arc
+  Chain, Prism Ground, Coil Hop, and Nico-specific impact/expiry reads are next.

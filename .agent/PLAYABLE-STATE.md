@@ -226,3 +226,35 @@ is given.
 - Steezo and other champion expansion are paused until both new task contracts
   pass. This update changes priority and acceptance only; the current playable
   runtime, controls, movement, maps, spells, networking, and roster are unchanged.
+
+## 2026-07-29 P0 visual foundation checkpoint
+
+- The central pixel-perspective contract and its non-shipping review board are
+  implemented and accepted after desktop, narrow, grayscale, high-contrast,
+  reduced-motion, regression, and browser-diagnostics review.
+- The packaged playable game remains behaviorally identical because P0 is not
+  imported by `src/game.mjs`; Living Sanctum conversion begins only in P1.
+- The current handoff task is P1 presentation only: preserve every collision,
+  station trigger, spawn, movement rule, company/network state, and stable ID.
+
+## 2026-07-29 P1 Living Sanctum presentation checkpoint
+
+- The playable Sanctum now uses the accepted original pixel material grammar
+  for floor, route, water edge, shallow courts, ward, rails, station landmarks,
+  and Rite Gate; competitive arenas are unchanged.
+- Desktop and reloaded 480px loopback play surfaces rendered without browser
+  warnings/errors or horizontal overflow, and the complete 145-check verification
+  remained green.
+- P2 Nico sprite work is now active. His live identity remains `volt`, and no
+  hitbox, stat, ability, command, movement, simulation, or network change is in
+  scope.
+
+## 2026-07-29 P2 Nico pixel runtime checkpoint
+
+- Nico's stable `volt` slot now renders a compact four-facing pixel Gnome with
+  six action/damage states, coil/device reads, ownership mark, health wear, and
+  feet-ground shadow separation; all mechanics and network identifiers remain
+  unchanged.
+- Desktop live Sanctum plus desktop/narrow specimen review completed without
+  browser diagnostics, and the full 146-check verification remained green.
+- P3 Charge/Light spell presentation is active; ability rules are frozen.

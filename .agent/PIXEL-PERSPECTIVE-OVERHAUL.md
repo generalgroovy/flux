@@ -60,6 +60,16 @@ repository-authored, and mechanically honest.
 | P4 | HUD, field guide, prompts, and text converted to the restrained pixel/manuscript system | Information, focus order, shortcuts, accessibility, and remapping |
 | P5 | Integrated desktop/narrow/high-contrast/reduced-motion/eight-agent acceptance and Windows/Linux source/package smoke | All game rules |
 
+## Slice status
+
+| Slice | State | Evidence / next boundary |
+| ---: | --- | --- |
+| P0 | Accepted 2026-07-29 | `src/pixel-perspective.mjs` centralizes the 384x216 virtual canvas, feet anchor, projection/layer order, seven-value ladder, and four-value material/Charge/Light ramps; the non-shipping specimen passed desktop, 480px narrow, grayscale, high-contrast, and reduced-motion browser review with no console warnings or errors, and its focused tests pass |
+| P1 | Accepted 2026-07-29 | The live Sanctum now uses the accepted materials and stepped layers for water boundary, grass, routes, courts, mirror ward, collision rails, station plinths, and a distinct Rite Gate; desktop and reloaded 480px browser review passed without warnings/errors while map data and rules remained unchanged |
+| P2 | Accepted 2026-07-29 | Nico's live `volt` presentation now uses four cardinal pixel reads, all six states, persistent feet/shadow separation, jump-lift shadow scaling, team marks, health wear, coil/device breakage, and sparse Charge/Light pixels; live Sanctum plus desktop/narrow specimen review passed with no rule changes |
+| P3 | Active | Convert Nico's live Charge/Light spell anticipation, travel, impact, ownership, and expiry presentation without changing any timing, range, damage, cost, cooldown, reaction, or authority |
+| P4-P5 | Pending | Begin only after the preceding slice is implemented, visually reviewed, tested, and recorded |
+
 Do not start Steezo or another champion until P0-P5 are accepted. A complete
 foundation prevents every later character/map/spell from being rebuilt twice.
 

@@ -16,7 +16,10 @@ import {
   drawOverhaulCharacterAura,
   drawOverhaulCharacterDefeat,
   drawOverhaulCharacterDetails,
+  drawOverhaulPixelCharacter,
   getOverhaulCharacterVisualProfile,
+  isOverhaulPixelCharacter,
+  resolveCardinalFacing,
   resolveOverhaulCharacterVisualState,
   traceOverhaulCharacterBody,
 } from "../src/overhaul-character-visuals.mjs";
@@ -120,6 +123,36 @@ test("Nico Lai is a tiny Gnome engineer with a breakable owned device read", () 
   assert.match(profile.affinityRead, /Charge forks.*Light calibration diamonds/);
   assert.equal(profile.focusProp, "calibrated coil pack");
   assert.match(profile.deviceRead, /breakable coil.*team tether/);
+  assert.equal(isOverhaulPixelCharacter(profile), true);
+});
+
+test("Nico pixel runtime preserves four cardinal facings and six states", () => {
+  const profile = getOverhaulCharacterVisualProfile("nico");
+  const context = fakeContext();
+  assert.equal(resolveCardinalFacing(1, 0.2), "right");
+  assert.equal(resolveCardinalFacing(-1, 0.2), "left");
+  assert.equal(resolveCardinalFacing(0.2, 1), "down");
+  assert.equal(resolveCardinalFacing(0.2, -1), "up");
+  assert.equal(resolveCardinalFacing(Number.NaN, Number.NaN), "right");
+  for (const facing of ["up", "down", "left", "right"]) {
+    for (const state of OVERHAUL_CHARACTER_VISUAL_STATES) {
+      assert.equal(
+        drawOverhaulPixelCharacter(
+          context,
+          profile,
+          state,
+          24,
+          "alpha",
+          "#77f7ce",
+          state === "hit" ? 0.2 : 1,
+          facing,
+        ),
+        true,
+        `${facing}:${state}`,
+      );
+    }
+  }
+  assert.equal(drawOverhaulPixelCharacter(context, null, "idle", 24, "alpha", "#fff", 1, "down"), false);
 });
 
 test("every authored character visual renders all six states through the registry", () => {

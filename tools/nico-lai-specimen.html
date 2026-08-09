@@ -25,12 +25,12 @@
       </header>
 
       <section class="state-grid" aria-label="Nico Lai gameplay visual states">
-        <figure data-state="idle"><canvas width="360" height="280"></canvas><figcaption><b>Idle</b><span>Docked coil + short calibration pulse</span></figcaption></figure>
-        <figure data-state="move"><canvas width="360" height="280"></canvas><figcaption><b>Move</b><span>Measured segmented charge trail</span></figcaption></figure>
-        <figure data-state="commit"><canvas width="360" height="280"></canvas><figcaption><b>Commit</b><span>Forward device + open light aperture</span></figcaption></figure>
-        <figure data-state="hit"><canvas width="360" height="280"></canvas><figcaption><b>Hit / low health</b><span>Broken tether + split device</span></figcaption></figure>
-        <figure data-state="defend"><canvas width="360" height="280"></canvas><figcaption><b>Defend</b><span>Calibrated bracket + exposed rear</span></figcaption></figure>
-        <figure data-state="defeated"><canvas width="360" height="280"></canvas><figcaption><b>Defeated</b><span>Collapsed cap + separated coil halves</span></figcaption></figure>
+        <figure data-state="idle" data-facing="down"><canvas width="360" height="280"></canvas><figcaption><b>Idle · down</b><span>Docked coil + short calibration pulse</span></figcaption></figure>
+        <figure data-state="move" data-facing="right"><canvas width="360" height="280"></canvas><figcaption><b>Move · right</b><span>Measured segmented charge trail</span></figcaption></figure>
+        <figure data-state="commit" data-facing="up"><canvas width="360" height="280"></canvas><figcaption><b>Commit · up</b><span>Forward device + open light aperture</span></figcaption></figure>
+        <figure data-state="hit" data-facing="left"><canvas width="360" height="280"></canvas><figcaption><b>Hit · left</b><span>Broken tether + split device</span></figcaption></figure>
+        <figure data-state="defend" data-facing="down"><canvas width="360" height="280"></canvas><figcaption><b>Defend · down</b><span>Calibrated bracket + exposed rear</span></figcaption></figure>
+        <figure data-state="defeated" data-facing="right"><canvas width="360" height="280"></canvas><figcaption><b>Defeated · right</b><span>Collapsed cap + separated coil halves</span></figcaption></figure>
       </section>
 
       <aside>
@@ -39,7 +39,7 @@
       </aside>
       <footer>
         <span>Alpha uses a rear chevron · Beta uses paired rear bars</span>
-        <span>Presentation only · no runtime or simulation changes</span>
+        <span>Live pixel presentation · no simulation changes</span>
       </footer>
     </main>
     <script type="module" src="./nico-lai-specimen.mjs"></script>

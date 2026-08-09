@@ -31,7 +31,7 @@ champion production:
 
 | Priority | Contract | State |
 | ---: | --- | --- |
-| 1 | `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md` P0-P5: original three-quarter top-down pixel perspective across characters, Sanctum/maps, spells/elements, text, and interface | Active; begin P0 only |
+| 1 | `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md` P0-P5: original three-quarter top-down pixel perspective across characters, Sanctum/maps, spells/elements, text, and interface | P0-P2 accepted; P3 Nico Charge/Light spells active |
 | 2 | `.agent/MOVEMENT-INPUT-OVERHAUL.md` M0-M5: conventional remappable keyboard/controller layout, stronger jump/shadow read, revalidation of advanced movement, then bounded tap-strafe/aerial turn | Blocked by P5 acceptance |
 | 3 | Resume V1 champion production with Steezo | Blocked by M5 acceptance |
 

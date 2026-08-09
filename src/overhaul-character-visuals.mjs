@@ -56,6 +56,17 @@ export function getOverhaulCharacterVisualProfile(characterId) {
   return OVERHAUL_CHARACTER_VISUAL_PROFILES[characterId] ?? null;
 }
 
+export function resolveCardinalFacing(x, y) {
+  const safeX = finite(x);
+  const safeY = finite(y);
+  if (Math.abs(safeX) >= Math.abs(safeY)) return safeX < 0 ? "left" : "right";
+  return safeY < 0 ? "up" : "down";
+}
+
+export function isOverhaulPixelCharacter(profile) {
+  return profile?.renderer === "pixel-cardinal";
+}
+
 export function resolveOverhaulCharacterVisualState(entity, cooldowns = {}) {
   if (!entity?.alive) return "defeated";
   if (positive(entity.hitFlash)) return "hit";
@@ -129,6 +140,30 @@ export function drawOverhaulCharacterDefeat(
 ) {
   const visual = profile ? VISUAL_BY_ID.get(profile.id) : null;
   return visual?.drawDefeat(context, profile, radius, teamColor) ?? false;
+}
+
+export function drawOverhaulPixelCharacter(
+  context,
+  profile,
+  state,
+  radius,
+  team,
+  teamColor,
+  healthRatio,
+  facing,
+) {
+  const visual = profile ? VISUAL_BY_ID.get(profile.id) : null;
+  if (!visual?.drawPixel) return false;
+  return visual.drawPixel(
+    context,
+    profile,
+    state,
+    radius,
+    team,
+    teamColor,
+    healthRatio,
+    facing,
+  );
 }
 
 function transfer(

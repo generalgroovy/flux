@@ -2,6 +2,24 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+import {
+  PIXEL_PERSPECTIVE,
+  PERSPECTIVE_SPECIMEN_FEATURES,
+  drawPixelPerspectiveSpecimen,
+  snapVirtualPixel,
+  validatePixelPerspective,
+} from "../src/pixel-perspective.mjs";
+import { SANCTUM_PRACTICE_MAP } from "../src/content.mjs";
+import {
+  SANCTUM_PIXEL_STYLE,
+  drawPixelSanctumForeground,
+  drawPixelSanctumGround,
+  drawPixelSanctumObstacle,
+  drawPixelSanctumStation,
+  validateSanctumPixelStyle,
+} from "../src/pixel-sanctum-renderer.mjs";
+import { NICO_SPELL_VISUALS, drawNicoCoilDart, validateNicoSpellVisuals } from "../src/pixel-spell-renderer.mjs";
+
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 const channel = (value) => {
@@ -72,6 +90,134 @@ test("V0 visual tokens and the non-shipping specimen stay complete and bounded",
   assert.equal(buildFiles.some((entry) => entry.startsWith("tools/")), false);
 });
 
+test("P0 pixel perspective foundation is bounded, responsive, and source-only", async () => {
+  const [specimen, specimenStyles, runner, server, packageJson, game] = await Promise.all([
+    read("tools/pixel-perspective-specimen.html"),
+    read("tools/pixel-perspective-specimen.css"),
+    read("tools/pixel-perspective-specimen.mjs"),
+    read("scripts/serve.mjs"),
+    read("package.json"),
+    read("src/game.mjs"),
+  ]);
+
+  assert.deepEqual(validatePixelPerspective(), []);
+  assert.equal(PIXEL_PERSPECTIVE.virtualWidth, 384);
+  assert.equal(PIXEL_PERSPECTIVE.virtualHeight, 216);
+  assert.equal(PIXEL_PERSPECTIVE.projection, "orthographic-three-quarter");
+  assert.equal(PIXEL_PERSPECTIVE.groundAnchor, "feet");
+  assert.equal(new Set(PIXEL_PERSPECTIVE.layers).size, PIXEL_PERSPECTIVE.layers.length);
+  assert.ok(PIXEL_PERSPECTIVE.layers.indexOf("ground") < PIXEL_PERSPECTIVE.layers.indexOf("champion"));
+  assert.ok(PIXEL_PERSPECTIVE.layers.indexOf("ground-shadow") < PIXEL_PERSPECTIVE.layers.indexOf("champion"));
+  assert.ok(PIXEL_PERSPECTIVE.layers.indexOf("champion") < PIXEL_PERSPECTIVE.layers.indexOf("element"));
+  for (const feature of [
+    "walkable-ground", "worn-path", "shallow-water", "cliff-top", "cliff-front",
+    "stairs", "stone-blocker", "foliage", "station-landmark",
+    "nico-scale-champion", "ground-anchor-shadow", "charge-motif", "light-motif",
+  ]) {
+    assert.ok(PERSPECTIVE_SPECIMEN_FEATURES.includes(feature), feature);
+  }
+  for (const ramp of Object.values(PIXEL_PERSPECTIVE.materials)) assert.equal(ramp.length, 4);
+  assert.equal(snapVirtualPixel(7.4, 2), 8);
+  assert.equal(snapVirtualPixel(Number.NaN, 0), 0);
+
+  const operations = [];
+  let smoothing = true;
+  const context = {
+    save() {},
+    restore() {},
+    fillRect(...values) { operations.push(["fill", ...values]); },
+    strokeRect(...values) { operations.push(["stroke", ...values]); },
+    set fillStyle(value) {},
+    set strokeStyle(value) {},
+    set lineWidth(value) {},
+    set imageSmoothingEnabled(value) { smoothing = value; },
+  };
+  drawPixelPerspectiveSpecimen(context, { grayscale: true, highContrast: true });
+  assert.equal(smoothing, false);
+  assert.ok(operations.length > 100, "specimen draws a complete proof scene");
+
+  assert.match(specimen, /P0[^<]*NON-SHIPPING PERSPECTIVE FOUNDATION/);
+  assert.match(specimen, /canvas id="pixel-scene" width="384" height="216"/);
+  for (const id of ["grayscale", "high-contrast", "reduced-motion"]) {
+    assert.match(specimen, new RegExp(`id="${id}"`));
+  }
+  assert.match(specimenStyles, /image-rendering:\s*pixelated/);
+  assert.match(specimenStyles, /@media \(max-width:\s*30rem\)/);
+  assert.match(specimenStyles, /prefers-reduced-motion:\s*reduce/);
+  assert.match(runner, /from "\.\.\/src\/pixel-perspective\.mjs"/);
+  for (const path of [
+    "/src/pixel-perspective.mjs",
+    "/tools/pixel-perspective-specimen.html",
+    "/tools/pixel-perspective-specimen.css",
+    "/tools/pixel-perspective-specimen.mjs",
+  ]) {
+    assert.match(server, new RegExp(path.replaceAll("/", "\\/").replaceAll(".", "\\.")));
+  }
+  assert.doesNotMatch(game, /pixel-perspective/);
+  assert.equal(JSON.parse(packageJson).build.files.some((entry) => entry.startsWith("tools/")), false);
+});
+
+test("P1 Living Sanctum renderer changes presentation without owning game rules", async () => {
+  const [renderer, game, server] = await Promise.all([
+    read("src/pixel-sanctum-renderer.mjs"),
+    read("src/game.mjs"),
+    read("scripts/serve.mjs"),
+  ]);
+  assert.deepEqual(validateSanctumPixelStyle(), []);
+  assert.equal(SANCTUM_PIXEL_STYLE.materials, PIXEL_PERSPECTIVE.materials);
+  assert.equal(SANCTUM_PIXEL_STYLE.worldPixel, 4);
+
+  const operations = [];
+  const context = {
+    save() {},
+    restore() {},
+    fillRect(...values) { operations.push(["fill", ...values]); },
+    strokeRect(...values) { operations.push(["stroke", ...values]); },
+    fillText(...values) { operations.push(["text", ...values]); },
+    set fillStyle(value) {},
+    set strokeStyle(value) {},
+    set lineWidth(value) {},
+    set font(value) {},
+    set textAlign(value) {},
+    set textBaseline(value) {},
+    set imageSmoothingEnabled(value) {},
+  };
+  assert.equal(drawPixelSanctumGround(context, { id: "not-sanctum" }), false);
+  assert.equal(drawPixelSanctumGround(context, SANCTUM_PRACTICE_MAP, { highContrast: true }), true);
+  for (const obstacle of SANCTUM_PRACTICE_MAP.obstacles) {
+    drawPixelSanctumObstacle(context, obstacle, { highContrast: true });
+  }
+  for (const station of SANCTUM_PRACTICE_MAP.stations) {
+    drawPixelSanctumStation(context, station, { active: station.id === "training", highContrast: true });
+  }
+  assert.equal(drawPixelSanctumForeground(context, SANCTUM_PRACTICE_MAP, { highContrast: true }), true);
+  assert.ok(operations.length > 250, "renderer produces a complete terrain and landmark pass");
+  assert.ok(operations.every((operation) => operation.slice(1).every((value) => typeof value !== "number" || Number.isFinite(value))));
+
+  assert.match(renderer, /from "\.\/pixel-perspective\.mjs"/);
+  assert.doesNotMatch(renderer, /from "\.\/content|from "\.\/match|Math\.random/);
+  assert.match(game, /drawPixelSanctumGround\(context, map/);
+  assert.match(game, /drawPixelSanctumForeground\(context, map/);
+  assert.match(game, /function drawArena\(map, time\) \{\s+if \(drawPixelSanctumGround\(context, map/);
+  assert.ok(game.indexOf("drawEntities(time)") < game.indexOf("drawPixelSanctumForeground(context, map"));
+  assert.match(server, /"\/src\/pixel-sanctum-renderer\.mjs"/);
+});
+
+test("P3 Nico spell contract begins with an owner-shaped Coil Dart", () => {
+  assert.deepEqual(validateNicoSpellVisuals(), []);
+  assert.deepEqual(Object.keys(NICO_SPELL_VISUALS), ["coilDart", "arcChain", "prismGround", "coilHop"]);
+  const operations = [];
+  const context = {
+    save() {}, restore() {},
+    fillRect(...values) { operations.push(values); },
+    set fillStyle(value) {}, set imageSmoothingEnabled(value) {},
+  };
+  assert.equal(drawNicoCoilDart(context, { ownerCharacterId: "cinder" }, "#fff"), false);
+  assert.equal(drawNicoCoilDart(context, { ownerCharacterId: "volt", vx: 1240, vy: 0, heavy: false }, "#77f7ce"), true);
+  assert.ok(operations.length >= 7);
+  assert.ok(operations.flat().every(Number.isFinite));
+});
+
 test("V1 character specimens share one responsive non-shipping harness", async () => {
   const [
     sharedStyles,
@@ -108,6 +254,12 @@ test("V1 character specimens share one responsive non-shipping harness", async (
     assert.equal((html.match(/data-state=/g) ?? []).length, 6, name);
     assert.match(html, /NON-SHIPPING REFERENCE/, name);
   }
+  assert.equal((nico.match(/data-facing=/g) ?? []).length, 6);
+  for (const facing of ["up", "down", "left", "right"]) {
+    assert.match(nico, new RegExp(`data-facing="${facing}"`));
+  }
+  assert.match(sharedStyles, /image-rendering:\s*pixelated/);
+  assert.match(sharedRunner, /drawOverhaulPixelCharacter/);
   for (const path of [
     "/tools/character-specimen.css",
     "/tools/character-specimen.mjs",

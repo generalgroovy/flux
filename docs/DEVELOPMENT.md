@@ -85,6 +85,16 @@ audio, transport, or `CharacterBody2D` dependency. `src/app/bootstrap.gd`
 samples semantic commands and interpolates confirmed positions for drawing.
 Never move authoritative outcomes into the bootstrap scene.
 
+## AUTOCODE specialist contracts
+
+Project-local specialist roles are declared in `.autocode/roles.toml` for the
+FLUX director, simulation, movement, combat, chemistry, networking, map,
+champion, asset-pipeline, performance, and adversarial-QA boundaries. The file
+is tracked; all other `.autocode` run state, logs, caches, task graphs, and
+checkpoint archives remain ignored. Roles propose bounded work, while the
+repository's deterministic tests, manifests, replay hashes, runtime checks, and
+acceptance contracts decide whether a slice advances.
+
 Godot export presets are present for Linux and Windows. Export templates are a
 large optional preparation artifact and are not silently downloaded by test or
 run scripts. Cache the matching 4.7.1 templates before an offline release

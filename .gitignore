@@ -1,5 +1,6 @@
 .godot/
-.autocode/
+.autocode/*
+!.autocode/roles.toml
 *.import
 build/
 exports/

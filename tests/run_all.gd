@@ -8,6 +8,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/unit/test_core.gd"),
 	preload("res://tests/unit/test_environment_kit_manifest.gd"),
 	preload("res://tests/unit/test_visual_candidate_manifest.gd"),
+	preload("res://tests/unit/test_sprite_sheet_extractor.gd"),
 	preload("res://tests/unit/test_hub_definition.gd"),
 	preload("res://tests/unit/test_input_router.gd"),
 	preload("res://tests/unit/test_jump_presentation.gd"),
@@ -34,7 +35,15 @@ func _initialize() -> void:
 func _run() -> void:
 	var failures: int = 0
 	for suite_script: Script in SUITES:
+		if not suite_script.can_instantiate():
+			failures += 1
+			print("FAIL: test suite script cannot instantiate: ", suite_script.resource_path)
+			continue
 		var suite: FluxTestSuite = suite_script.new()
+		if suite == null:
+			failures += 1
+			print("FAIL: test suite constructor returned null: ", suite_script.resource_path)
+			continue
 		failures += suite.run()
 	if failures == 0:
 		print("PASS: all FLUX2 headless suites")

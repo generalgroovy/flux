@@ -16,6 +16,17 @@ presented as accepted final art.
 | Integration | Pack runtime frames and update catalog | Godot import and playback green |
 | Promotion | Replace candidate status | Explicit visual acceptance only |
 
+The dependency-free `SpriteSheetExtractor` is the structural gate between
+reviewed sheets and file-producing tooling. It requires an exact grid and exact
+frame count, transparent nonempty cells with an unclipped border, then uses
+nearest-neighbor scaling to place every frame in a 96×96 cell at the shared
+bottom-center `(48, 92)` presentation pivot without mutating the caller image.
+Its in-memory manifest records the decoded RGBA source hash, source/content
+bounds and deterministic normalized PNG hashes while remaining
+`presentation_only` and `runtime_approved: false`. The quarantined 1254×1254 Oh
+Tipi study deliberately fails this gate; extraction cannot silently floor cell
+dimensions, discard edge pixels, write candidate frames, or promote art.
+
 ## Inventory
 
 ### Champions

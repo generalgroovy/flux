@@ -7,6 +7,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/unit/test_combat.gd"),
 	preload("res://tests/unit/test_core.gd"),
 	preload("res://tests/unit/test_environment_kit_manifest.gd"),
+	preload("res://tests/unit/test_visual_candidate_manifest.gd"),
 	preload("res://tests/unit/test_hub_definition.gd"),
 	preload("res://tests/unit/test_input_router.gd"),
 	preload("res://tests/unit/test_jump_presentation.gd"),

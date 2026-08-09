@@ -203,6 +203,12 @@ controller acceptance.
   SHA-256 provenance and make it the minimum silhouette/expression/material
   quality bar. Treat its labels as non-authoritative and its pixels as concept
   reference, never animation frames or collision data.
+- [x] Generate and quarantine the first higher-detail Oh Tipi 25-pose study
+  with immutable generator/reference/hash provenance. It advances silhouette,
+  material and Water/Ice/Charge language but is not runtime art: the raw 1254
+  square is not evenly divisible by five, supplies only one view per action,
+  and still requires body/effect separation, alpha cleanup, grid normalization,
+  pivots, timing, eight-direction completion and gameplay review.
 - [ ] Planned: replace each pictured champion's integrated direction candidate
   with an accepted original gameplay sprite set covering all applicable actions
   in the 25-action manifest. Require Godot runtime playback, frame/pivot/

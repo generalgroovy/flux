@@ -566,6 +566,17 @@ still overrides conflicting labels visible in that reference.
 
 ![FLUX Champions minimum character-art baseline](assets/concept/flux-champions-visual-style-v1.png)
 
+The first higher-detail action study is a quarantined 25-pose Oh Tipi board:
+
+![Oh Tipi quarantined 25-pose visual candidate](assets/concept/champion_keypose_candidates/oh_tipi/oh_tipi_keypose_imagegen_v1.png)
+
+It is deliberately excluded from Godot import. It improves the identity,
+silhouette, equipment and elemental read, but it is not a sprite atlas: its
+1254-pixel grid is not evenly divisible into five cells, it has one view per
+action rather than eight, and its body/effects still require deterministic
+extraction, transparent cleanup, pivot alignment and runtime validation. The
+current v2 atlas therefore remains the playable candidate.
+
 Every roster entry therefore shows both the higher-detail character
 candidate and the current eight-direction runtime sprite. The runtime image
 is the one connected to the in-game atlas; the larger image is a visual

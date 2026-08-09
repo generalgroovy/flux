@@ -57,9 +57,13 @@ even when design documentation already exists.
     range
   - [x] Edgeweave swept hostile near-miss reward with speed, cooldown,
     miss-vs-hit, full-Stamina, training, and per-projectile farming guards
+  - [x] Space-only default jump plus timer-normalized body lift and a separate
+    receiving-surface shadow for hop, wall kick, double jump, slide jump, air
+    dodge, vault, and superglide; reduced-motion and 60/120 Hz presentation
+    samples are covered without moving collision, camera, or POV authority
   - [ ] Add variable hop/fast fall, bounded impact influence, ground recovery,
-    wall skims, authored elevation, compact body-lift/shadow jump presentation,
-    input buffering, interactive binding UI, controller profile persistence, and
+    wall skims, authored elevation, input buffering, interactive binding UI,
+    controller profile persistence, per-champion animation frames, and
     interactive route acceptance
 - [ ] **Chapter 4 — [Aiming, combat, and abilities](#aiming-combat-and-ability-composition)**
   - [x] Independent move/aim and held-primary command protocol
@@ -104,7 +108,8 @@ even when design documentation already exists.
 - [x] Focused reversible checkpoints A–E remain playable and published
   - [x] Checkpoint F1 establishes chemistry storage/worldbone/reset safety
   - [x] Checkpoint G1 adds persisted controls and configurable POV
-  - [ ] G2 begins the Living Wellspring V1 track: authored world, body/jump,
+  - [ ] G2/G3 continue the Living Wellspring V1 track: authored world, complete
+    champion body/animation integration,
     reactions/interactions, first ancestry/champion/spells, friends/host tools,
     then Garuda Sway/Windows acceptance before other modes
 
@@ -1772,7 +1777,7 @@ tools, accessibility, and compatibility agree.
 | F1 — chemistry storage/safety | Validated material registry, 128 x 128 packed columns, seeded materials/Charge/elevation, immutable worldbone, canonical queue/budgets/hashes, exact reset, read-only preview | Complete |
 | G1 — player configuration | Persisted keyboard remapping, world/aim-relative movement, full/cone POV, exact angle/range, CLI/hotkey controls, deterministic transforms | Complete |
 | G2 — authored Sanctum | Replace the schematic court with the first vast Nexus-to-Conservatory multi-area topology/visual slice, clear routes, landmarks, elevations, responsive ambience, fast-travel context, and original pixel kit | In progress: canonical campus topology, routes, worldbone, elevation/reset metadata, camera and procedural presentation validate; a generated 12-module source/alpha candidate now has hash/provenance/authority validation but remains excluded and unapproved pending crop/alignment, license, import, performance and visual gates |
-| G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: schema-v2 Space-jump migration, primary separation, saved-override preservation and reduced-motion storage validate; body/shadow presentation remains pending |
+| G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: Space-jump migration and the timer-normalized shared body-lift/shadow sampler validate; sprite-body integration, per-champion frames, landing/interact/fallback taunt and semantic event wiring remain pending |
 | F2/G4 — systemic Sanctum | Structural/thermal reactions, authored traversal devices, input/controller UI, physics/chemistry practice and reset | Planned |
 | H1 — first ancestry/champion/spells | One approved body plan and character through loadout, unique taunt, dummy/bot, cues, replay, accessibility and platform source gates | Planned |
 | I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | Planned |

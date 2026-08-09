@@ -31,6 +31,15 @@ and F6 restart at 60/120 Hz. Controller defaults use left/right sticks, right
 trigger, shoulders, and west/east face buttons. Schema-v1 saved C-jump and
 Space-primary defaults migrate automatically; explicit saved alternatives remain.
 
+`src/presentation/jump_presentation.gd` derives a draw-only body lift and
+receiving-surface shadow from the existing movement timers. The bootstrap keeps
+the canonical position as the collision, camera, and POV anchor and offsets only
+the drawn body. The normal apex lift is 28 whole pixels; reduced motion caps it
+at seven while retaining a broader/darker shadow cue. Unit coverage compares
+normalized phases at 60/120 Hz for hop, wall kick, double jump, slide jump, air
+dodge, vault, and superglide. This shared sampler is not evidence that any
+champion's frame-complete sprite manifest is finished.
+
 F7 switches world-relative/aim-relative movement, F8 switches full/cone view,
 and F9/F10 increase angle/range; hold Shift with F9/F10 to reduce them. Changes
 persist offline in `user://player_preferences_v1.json`. Physical keyboard

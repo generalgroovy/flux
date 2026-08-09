@@ -172,10 +172,21 @@ func _draw() -> void:
 		draw_circle(projectile_position, float(projectile.radius) / 1000.0 + 7.0, Color(projectile_color, 0.18))
 		draw_circle(projectile_position, float(projectile.radius) / 1000.0, projectile_color)
 	var state: PlayerState = world.player()
-	draw_circle(rendered_position, float(state.radius) / 1000.0 + 5.0, Color(ATTUNEMENT_COLOR, 0.18))
-	draw_circle(rendered_position, float(state.radius) / 1000.0, PLAYER_COLOR)
-	draw_arc(rendered_position, float(state.radius) / 1000.0 + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
-	draw_line(rendered_position, rendered_position + Vector2(state.aim_x, state.aim_y) * 0.032, Color.WHITE, 3.0)
+	var presentation := JumpPresentation.sample(state, world.config, alpha, player_preferences.reduced_motion)
+	var player_radius: float = float(state.radius) / 1000.0
+	var shadow_center := rendered_position + Vector2(0.0, player_radius * 0.58)
+	draw_set_transform(
+		shadow_center - camera_origin,
+		0.0,
+		Vector2(player_radius * presentation.shadow_scale.x, player_radius * presentation.shadow_scale.y),
+	)
+	draw_circle(Vector2.ZERO, 1.0, Color(FOREST_SHADOW_COLOR, presentation.shadow_opacity))
+	draw_set_transform(-camera_origin)
+	var body_position := rendered_position + Vector2(0.0, -float(presentation.body_lift_pixels))
+	draw_circle(body_position, player_radius + 5.0, Color(ATTUNEMENT_COLOR, 0.18))
+	draw_circle(body_position, player_radius, PLAYER_COLOR)
+	draw_arc(body_position, player_radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
+	draw_line(body_position, body_position + Vector2(state.aim_x, state.aim_y) * 0.032, Color.WHITE, 3.0)
 	draw_set_transform(Vector2.ZERO)
 	var rendered_screen_position: Vector2 = rendered_position - camera_origin
 	_draw_pov_mask(rendered_screen_position, Vector2(state.aim_x, state.aim_y))

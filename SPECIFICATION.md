@@ -280,6 +280,14 @@ phase, body lift, and animation selection derive from normalized authoritative
 jump phase and must present equivalent states at 60 and 120 Hz; they never
 create height, collision, dodge, invulnerability, or targeting authority.
 
+The current G3 checkpoint implements the shared presentation sample for hop,
+wall kick, double jump, slide jump, air dodge, vault, and superglide. It drives
+whole-pixel body lift plus a separate broader/darker receiving-surface shadow
+from existing authoritative timers. Camera focus, POV origin, collision radius,
+canonical serialization, replay data, and gameplay position remain on the
+unshifted ground anchor. This is the reusable generic presentation foundation;
+it does not complete any champion's required sprite animation manifest.
+
 Body lift may not change the ground collision footprint, hide a landing cell,
 or invent invulnerability. Elevation affects collision and targeting only
 through authoritative elevation bands. Reduced-motion mode keeps the same

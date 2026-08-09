@@ -129,14 +129,15 @@ passes on Garuda Linux/Sway and Windows.
   schema-v2 Space jump/no-key primary without replacing explicit saved
   alternatives; malformed reduced-motion data fails closed and left mouse plus
   controller primary inputs remain intact.
-- [ ] In progress (G3): present every jump as an original compact top-down
-  body-lift arc. Keep the
+- [x] G3 shared jump presentation: present every current aerial traversal as an
+  original compact top-down body-lift arc. Keep the
   body ground anchor/collision stable while the rendered body rises; keep a
   separate shadow on the receiving surface that grows broader/darker through
   ascent, peaks at the apex, contracts on descent, and settles at landing.
-  Verify equivalent normalized presentation phase at 60/120 Hz and a
-  reduced-motion equivalent. The readability reference is broad classic
-  handheld adventure grammar, never copied sprites/frames/timing.
+  Normalized 60/120 Hz samples, reduced motion, canonical-state immutability and
+  all seven current hop/aerial/vault modes are covered by 154 assertions. The
+  readability reference is broad classic handheld adventure grammar, never
+  copied sprites/frames/timing. Per-champion frame animation remains pending.
 - [ ] Planned: add variable-hop/fast-fall authority, bounded launched-trajectory
   influence, collision-safe timed ground recovery, and marked wall skims without
   weakening stun, recovery, same-wall lockout, or the global speed ceiling.
@@ -411,7 +412,9 @@ features.
 9. **Slice G3 — base body and jump presentation:** reusable ground/body/aim/
    shadow/effect skeleton, original compact handheld-readable body-lift jump,
    landing, interactions, shared fallback taunt, reduced motion, and semantic
-   presentation events.
+   presentation events. The timer-normalized generic body-lift/shadow sampler is
+   implemented; sprite-body integration, landing/interaction frames, fallback
+   taunt and semantic presentation-event wiring remain open.
 10. **Slice F2 — structural/thermal reactions:** resume with one phase
    orchestrator, typed damage/stages/rubble/derived collision, then heat/Fire/
    steam/ice and readable deterministic reaction events.

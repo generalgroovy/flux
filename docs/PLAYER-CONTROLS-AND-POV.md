@@ -95,9 +95,10 @@ curves, per-device profiles, conflict explanation, reset-by-category, and
 import/export are the next presentation layer over this same schema.
 
 The schema persists `reduced_motion` strictly as a boolean. It defaults to false,
-fails closed on malformed values, and does not alter canonical simulation. G3's
-body-lift/shadow slice will consume it through an equivalent readable
-presentation path.
+fails closed on malformed values, and does not alter canonical simulation. The
+G3 presentation sampler consumes it with a seven-pixel maximum whole-pixel body
+lift and a lower-scale but still broader/darker shadow cue, instead of the
+normal 28-pixel apex lift. Timing and authoritative movement remain identical.
 
 ## Acceptance and authority
 
@@ -105,6 +106,10 @@ presentation path.
   construction; replay stores the resulting world vector and independent aim.
 - Saved profiles round-trip without network access.
 - Both 60 and 120 Hz boot with the same selected preferences.
+- Equivalent normalized jump samples at 60/120 Hz produce the same body lift,
+  shadow width, and shadow opacity across all current aerial traversal modes.
+- Jump presentation sampling does not mutate position, collision radius,
+  canonical values, replay data, camera focus, or POV origin.
 - The mask is drawn after world actors but before HUD/debug panels, so it cannot
   hide configuration state or create simulation authority.
 - Future server-enforced vision must be hashed mode content and tested for

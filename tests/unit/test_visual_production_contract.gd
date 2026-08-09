@@ -4,6 +4,7 @@ extends FluxTestSuite
 func run() -> int:
 	_test_repository_contract()
 	_test_contract_fails_closed()
+	_test_present_front_reference_file_contract()
 	_test_failed_reload_clears_state()
 	return finish("visual-production-contract")
 
@@ -30,6 +31,12 @@ func _test_repository_contract() -> void:
 			oh_tipi = character
 			break
 	equal(String(oh_tipi.get("status", "")), "concept_candidate_quarantined", "Oh Tipi progress is truthful without claiming animation approval")
+	var front_champions: Dictionary = contract.front_reference_data.get("champions", {})
+	equal(front_champions.size(), 24, "front-reference catalog accounts for every production character")
+	var front_oh_tipi: Dictionary = front_champions.get("oh_tipi", {})
+	equal(String(front_oh_tipi.get("availability", "")), "planned_missing", "absent Oh Tipi front sprite is explicit")
+	equal(String(front_oh_tipi.get("planned_front_sprite", "")), "res://assets/sprites/champions_v3/oh_tipi/front_sprite_256.png", "planned Oh Tipi path is canonical")
+	check(not front_oh_tipi.has("front_sprite"), "missing Oh Tipi art cannot claim a present sprite")
 
 
 func _test_contract_fails_closed() -> void:
@@ -45,6 +52,12 @@ func _test_contract_fails_closed() -> void:
 		func(contract: VisualProductionContract) -> void: (contract.data["quality_gate"] as Dictionary)["minimum_structural_score"] = 0.2,
 		func(contract: VisualProductionContract) -> void: (contract.data["quality_gate"] as Dictionary)["auto_finalization"] = true,
 		func(contract: VisualProductionContract) -> void: contract.front_reference_data["pivot"] = [48, 92],
+		func(contract: VisualProductionContract) -> void: (contract.front_reference_data["champions"] as Dictionary).erase("oh_tipi"),
+		func(contract: VisualProductionContract) -> void: ((contract.front_reference_data["champions"] as Dictionary)["oh_tipi"] as Dictionary)["availability"] = "candidate_present",
+		func(contract: VisualProductionContract) -> void: ((contract.front_reference_data["champions"] as Dictionary)["oh_tipi"] as Dictionary)["front_sprite"] = "res://assets/sprites/champions_v3/oh_tipi/front_sprite_256.png",
+		func(contract: VisualProductionContract) -> void: ((contract.front_reference_data["champions"] as Dictionary)["oh_tipi"] as Dictionary)["planned_front_sprite"] = "res://assets/sprites/champions_v3/wrong.png",
+		func(contract: VisualProductionContract) -> void: ((contract.front_reference_data["champions"] as Dictionary)["oh_tipi"] as Dictionary)["status"] = "reference_exact_or_corrected_candidate",
+		func(contract: VisualProductionContract) -> void: ((contract.front_reference_data["champions"] as Dictionary)["oh_tipi"] as Dictionary)["availability"] = "unknown",
 		func(contract: VisualProductionContract) -> void: ((contract.runtime_data["character_contract"] as Dictionary)["pivot"] as Array)[1] = 57,
 		func(contract: VisualProductionContract) -> void: (contract.data["animations"] as Dictionary).erase("idle"),
 		func(contract: VisualProductionContract) -> void: ((contract.data["animations"] as Dictionary)["idle"] as Dictionary)["frames"] = 5,
@@ -66,6 +79,28 @@ func _test_contract_fails_closed() -> void:
 		check(not contract.last_error.is_empty(), "unsafe v3 contract mutation is actionable")
 		equal(contract.derived_directions, [], "failed contract exposes no derived directions")
 		equal(contract.animations, {}, "failed contract exposes no animation outputs")
+
+
+func _test_present_front_reference_file_contract() -> void:
+	var path := "user://visual-production-front-reference-fixture.png"
+	var image := Image.create(256, 256, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0.0, 0.0, 0.0, 0.0))
+	for y: int in range(80, 200):
+		for x: int in range(96, 160):
+			image.set_pixel(x, y, Color(0.1, 0.45, 0.9, 1.0))
+	equal(image.save_png(path), OK, "temporary front-reference fixture writes")
+	var contract := VisualProductionContract.new()
+	var entry := {"sha256": contract._sha256(path)}
+	check(contract._validate_present_front_reference(entry, path, "fixture"), "valid 256px RGBA alpha candidate passes file contract: %s" % contract.last_error)
+	entry["sha256"] = "0".repeat(64)
+	check(not contract._validate_present_front_reference(entry, path, "fixture"), "stale front-reference hash fails closed")
+	entry["sha256"] = contract._sha256(path)
+	var opaque := Image.create(256, 256, false, Image.FORMAT_RGBA8)
+	opaque.fill(Color.WHITE)
+	equal(opaque.save_png(path), OK, "opaque adversarial fixture writes")
+	entry["sha256"] = contract._sha256(path)
+	check(not contract._validate_present_front_reference(entry, path, "fixture"), "opaque front reference fails alpha contract")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
 func _test_failed_reload_clears_state() -> void:

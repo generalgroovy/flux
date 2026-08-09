@@ -23,6 +23,11 @@ const EXPECTED_MIRRORS := {
 	"north_west": "north_east",
 }
 const ALLOWED_ANIMATION_STATUSES: Array[String] = ["planned", "candidate", "reviewed"]
+const ALLOWED_PLANNED_FRONT_STATUSES: Array[String] = [
+	"planned_reference_exact_or_corrected",
+	"planned_reference_style_derived",
+	"planned_reference_style_derived_unapproved",
+]
 
 var data: Dictionary = {}
 var runtime_data: Dictionary = {}
@@ -160,6 +165,36 @@ func validate() -> bool:
 		return _fail("V3 front-reference cell recommendation differs from production")
 	if _vector2i(front_reference_data.get("pivot", [])) != EXPECTED_PIVOT:
 		return _fail("V3 front-reference pivot differs from production")
+	var front_champions: Dictionary = front_reference_data.get("champions", {})
+	var production_characters: Array = data.get("characters", [])
+	if front_champions.size() != 24 or production_characters.size() != 24:
+		return _fail("V3 front-reference catalog must account for all 24 production characters")
+	for character_value: Variant in production_characters:
+		var character: Dictionary = character_value
+		var champion_id := String(character.get("id", ""))
+		if champion_id.is_empty() or not front_champions.has(champion_id):
+			return _fail("V3 front-reference catalog is missing character: %s" % champion_id)
+		var entry: Dictionary = front_champions[champion_id]
+		var expected_path := "res://assets/sprites/champions_v3/%s/front_sprite_256.png" % champion_id
+		match String(entry.get("availability", "")):
+			"planned_missing":
+				if String(entry.get("status", "")) not in ALLOWED_PLANNED_FRONT_STATUSES:
+					return _fail("Planned v3 front reference has invalid status: %s" % champion_id)
+				if String(entry.get("planned_front_sprite", "")) != expected_path:
+					return _fail("Planned v3 front reference path is invalid: %s" % champion_id)
+				if entry.has("front_sprite"):
+					return _fail("Missing v3 front reference cannot claim a front_sprite: %s" % champion_id)
+				if FileAccess.file_exists(expected_path):
+					return _fail("V3 front reference availability is stale; file is present: %s" % champion_id)
+			"candidate_present":
+				if String(entry.get("status", "")) != "candidate_needs_visual_review":
+					return _fail("Present v3 front reference must remain a review candidate: %s" % champion_id)
+				if entry.has("planned_front_sprite") or String(entry.get("front_sprite", "")) != expected_path:
+					return _fail("Present v3 front reference path is invalid: %s" % champion_id)
+				if not _validate_present_front_reference(entry, expected_path, champion_id):
+					return false
+			_:
+				return _fail("V3 front reference availability is invalid: %s" % champion_id)
 	return true
 
 
@@ -180,6 +215,39 @@ func _load_json(path: String, label: String) -> Dictionary:
 
 func _resource_path(path: String) -> String:
 	return path if path.begins_with("res://") else "res://%s" % path
+
+
+func _validate_present_front_reference(entry: Dictionary, path: String, label: String) -> bool:
+	if not FileAccess.file_exists(path):
+		return _fail("Present v3 front reference is missing: %s" % label)
+	var expected_hash := String(entry.get("sha256", ""))
+	if expected_hash.length() != 64 or expected_hash != _sha256(path):
+		return _fail("Present v3 front reference hash is invalid: %s" % label)
+	var image := Image.load_from_file(path)
+	if image == null or image.is_empty():
+		return _fail("Present v3 front reference cannot be decoded: %s" % label)
+	if image.get_size() != Vector2i(256, 256) or image.get_format() != Image.FORMAT_RGBA8:
+		return _fail("Present v3 front reference must be a 256 x 256 RGBA PNG: %s" % label)
+	var visible_pixels: int = 0
+	var transparent_pixels: int = 0
+	for y: int in image.get_height():
+		for x: int in image.get_width():
+			if image.get_pixel(x, y).a <= 1.0 / 255.0:
+				transparent_pixels += 1
+			else:
+				visible_pixels += 1
+	if visible_pixels == 0 or transparent_pixels == 0:
+		return _fail("Present v3 front reference requires visible art and transparent background: %s" % label)
+	return true
+
+
+func _sha256(path: String) -> String:
+	var context := HashingContext.new()
+	if context.start(HashingContext.HASH_SHA256) != OK:
+		return ""
+	if context.update(FileAccess.get_file_as_bytes(path)) != OK:
+		return ""
+	return context.finish().hex_encode()
 
 
 func _vector2i(value: Variant) -> Vector2i:

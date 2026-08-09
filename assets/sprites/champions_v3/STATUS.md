@@ -1,3 +1,7 @@
 ## Integration status
 
-The 24 front-view sprite candidates are being added as binary PNG assets. They must not be treated as completed gameplay animation until eight directions and every canonical keyframe are redrawn and pass the visual baseline gate.
+All 24 front-view paths are planned and currently missing. The catalog may move
+one entry to `candidate_present` only when its exact 256×256 RGBA PNG and hash
+validate. A present candidate still is not completed gameplay animation: eight
+directions and every canonical keyframe must be redrawn and pass the visual
+baseline gate.

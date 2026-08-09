@@ -1734,8 +1734,8 @@ scripts/test.sh
 scripts/run.sh --tick-rate=120
 ```
 
-Current foundation controls: WASD moves, mouse aims, left click or Space fires
-Arc Primary, right click or E casts Vector Lance, Alt sprints, C uses the
+Current foundation controls: WASD moves, mouse aims, left click fires Arc
+Primary, right click or E casts Vector Lance, Alt sprints, Space uses the
 jump/movement chain, V
 uses the contextual technique, R restarts the match, and F6 restarts at the
 other supported tick rate. F7 changes movement reference, F8 changes view, and
@@ -1743,9 +1743,10 @@ F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
 left/right sticks, right trigger, west/east face buttons, and shoulders. The
 rate never mutates inside a running match.
 
-G3 migrates the production default so Space invokes the semantic jump action
-and primary no longer aliases Space. Saved user overrides remain supported and
-the migration must be conflict-safe. Jump presentation keeps the collision
+G3 now migrates the production default so Space invokes the semantic jump action
+and primary no longer aliases Space. Schema-v1 defaults migrate to schema v2,
+explicit saved alternatives remain supported, and malformed reduced-motion data
+fails closed. The pending jump presentation keeps the collision
 anchor grounded while the body rises and a separate receiving-surface shadow
 grows broader/darker to the apex, then contracts through descent at equivalent
 60/120 Hz phase.
@@ -1771,7 +1772,7 @@ tools, accessibility, and compatibility agree.
 | F1 — chemistry storage/safety | Validated material registry, 128 x 128 packed columns, seeded materials/Charge/elevation, immutable worldbone, canonical queue/budgets/hashes, exact reset, read-only preview | Complete |
 | G1 — player configuration | Persisted keyboard remapping, world/aim-relative movement, full/cone POV, exact angle/range, CLI/hotkey controls, deterministic transforms | Complete |
 | G2 — authored Sanctum | Replace the schematic court with the first vast Nexus-to-Conservatory multi-area topology/visual slice, clear routes, landmarks, elevations, responsive ambience, fast-travel context, and original pixel kit | In progress: canonical campus topology, routes, worldbone, elevation/reset metadata, camera and procedural presentation validate; a generated 12-module source/alpha candidate now has hash/provenance/authority validation but remains excluded and unapproved pending crop/alignment, license, import, performance and visual gates |
-| G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | Planned |
+| G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: schema-v2 Space-jump migration, primary separation, saved-override preservation and reduced-motion storage validate; body/shadow presentation remains pending |
 | F2/G4 — systemic Sanctum | Structural/thermal reactions, authored traversal devices, input/controller UI, physics/chemistry practice and reset | Planned |
 | H1 — first ancestry/champion/spells | One approved body plan and character through loadout, unique taunt, dummy/bot, cues, replay, accessibility and platform source gates | Planned |
 | I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | Planned |

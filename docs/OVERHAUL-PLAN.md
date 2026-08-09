@@ -125,8 +125,12 @@ passes on Garuda Linux/Sway and Windows.
   reset/import/export, and controller command-equivalence acceptance.
 - [ ] Planned: add buffered transitions, variable hop/fall presentation state,
   and authored elevation/low-cover queries.
-- [ ] Planned (G3): present every jump as an original compact top-down body-lift
-  arc. Make Space the migrated production-default semantic jump input; keep the
+- [x] G3 input migration: schema-v1 C-jump/Space-primary defaults migrate to
+  schema-v2 Space jump/no-key primary without replacing explicit saved
+  alternatives; malformed reduced-motion data fails closed and left mouse plus
+  controller primary inputs remain intact.
+- [ ] In progress (G3): present every jump as an original compact top-down
+  body-lift arc. Keep the
   body ground anchor/collision stable while the rendered body rises; keep a
   separate shadow on the receiving surface that grows broader/darker through
   ascent, peaks at the apex, contracts on descent, and settles at landing.

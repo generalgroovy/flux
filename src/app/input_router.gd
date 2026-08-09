@@ -23,9 +23,10 @@ func _init(requested_entity_id: int = 1) -> void:
 static func ensure_input_map() -> void:
 	for action: StringName in KEY_ACTIONS:
 		_ensure_action(action)
-		_add_key(action, KEY_ACTIONS[action])
+		var physical_keycode: int = KEY_ACTIONS[action]
+		if physical_keycode != 0:
+			_add_key(action, physical_keycode)
 	_ensure_action(PRIMARY_ACTION)
-	_add_key(PRIMARY_ACTION, KEY_SPACE)
 	_add_mouse_button(PRIMARY_ACTION, MOUSE_BUTTON_LEFT)
 	_ensure_action(ACTIVE_1_ACTION)
 	_add_key(ACTIVE_1_ACTION, KEY_E)

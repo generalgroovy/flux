@@ -25,10 +25,11 @@ the simulation, becomes replay compatibility metadata, and cannot change
 inside a running match. F6 restarts the local debug match at the other rate; it
 does not mutate a live simulation.
 
-Controls: WASD movement, mouse aim, left click or Space Arc Primary, right click
-or E Vector Lance, Alt sprint, C jump/movement-chain input, V technique, R reset,
+Controls: WASD movement, mouse aim, left click Arc Primary, right click or E
+Vector Lance, Alt sprint, Space jump/movement-chain input, V technique, R reset,
 and F6 restart at 60/120 Hz. Controller defaults use left/right sticks, right
-trigger, shoulders, and west/east face buttons.
+trigger, shoulders, and west/east face buttons. Schema-v1 saved C-jump and
+Space-primary defaults migrate automatically; explicit saved alternatives remain.
 
 F7 switches world-relative/aim-relative movement, F8 switches full/cone view,
 and F9/F10 increase angle/range; hold Shift with F9/F10 to reduce them. Changes

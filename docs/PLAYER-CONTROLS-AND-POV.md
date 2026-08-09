@@ -2,18 +2,26 @@
 
 ## Implemented checkpoint
 
-FLUX 2 now loads one versioned offline profile from
-`user://player_preferences_v1.json`. On Linux this normally resolves below
+FLUX 2 now loads schema-v2 preferences from the stable offline profile
+`user://player_preferences_v1.json`. The legacy filename is retained so existing
+schema-v1 installations are discovered and migrated in place. On Linux it
+normally resolves below
 `~/.local/share/godot/app_userdata/FLUX 2/`; Godot selects the equivalent user
 data location on other platforms. The file is created with safe defaults on the
 first launch and requires no account, network, subscription, or cloud service.
 
-The profile owns four independent concerns:
+The profile owns five independent concerns:
 
 - physical-key bindings for every current keyboard action;
 - the movement reference preset;
 - full-screen versus ranged-cone presentation;
 - ranged-cone angle and length.
+- the reduced-motion accessibility preference used by G3 presentation.
+
+Schema-v1 profiles migrate only the former default bindings: C jump becomes
+Space jump and the former Space primary alias becomes unbound. Explicit saved
+alternatives, including J jump or P primary, remain unchanged. New defaults bind
+Space only to semantic jump; Arc Primary keeps left mouse and controller trigger.
 
 Unknown actions, unknown modes, conflicting non-zero keyboard keycodes,
 fractional values, unsupported schema versions, and values outside documented
@@ -64,6 +72,9 @@ cue, or diagnostic leak.
 
 | Input | Action |
 | --- | --- |
+| `Space` | Semantic jump / movement-chain press |
+| Left mouse | Arc Primary; no default Space alias |
+| `E` / right mouse | Vector Lance |
 | `F7` | Toggle world-relative / aim-relative movement and save |
 | `F8` | Toggle full / cone view and save |
 | `F9` / `Shift+F9` | Increase / decrease cone angle by 15 degrees and save |
@@ -82,6 +93,11 @@ changed in the generated JSON file while the game is stopped. A controller-
 friendly Settings station, interactive event capture, sensitivity/dead-zone
 curves, per-device profiles, conflict explanation, reset-by-category, and
 import/export are the next presentation layer over this same schema.
+
+The schema persists `reduced_motion` strictly as a boolean. It defaults to false,
+fails closed on malformed values, and does not alter canonical simulation. G3's
+body-lift/shadow slice will consume it through an equivalent readable
+presentation path.
 
 ## Acceptance and authority
 

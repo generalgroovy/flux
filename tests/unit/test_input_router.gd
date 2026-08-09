@@ -5,6 +5,9 @@ const BootstrapScript: Script = preload("res://src/app/bootstrap.gd")
 
 
 func run() -> int:
+	for action: StringName in [&"jump", &"primary"]:
+		if InputMap.has_action(action):
+			InputMap.erase_action(action)
 	InputRouter.ensure_input_map()
 	for action: StringName in [
 		&"move_left", &"move_right", &"move_up", &"move_down",
@@ -16,10 +19,28 @@ func run() -> int:
 	]:
 		check(InputMap.has_action(action), "input action exists: %s" % action)
 		check(not InputMap.action_get_events(action).is_empty(), "input action has a default: %s" % action)
-	check(InputMap.action_get_events(&"primary").size() >= 3, "primary supports mouse, keyboard, and controller trigger")
+	equal(_keycodes(&"jump"), [KEY_SPACE], "jump defaults to Space exactly once")
+	check(not _keycodes(&"primary").has(KEY_SPACE), "primary has no Space keyboard alias")
+	check(_has_mouse_button(&"primary", MOUSE_BUTTON_LEFT), "primary retains left mouse")
+	check(InputMap.action_get_events(&"primary").size() >= 2, "primary supports mouse and controller trigger")
 	check(InputMap.action_get_events(&"active_1").size() >= 3, "active one supports mouse, keyboard, and controller button")
 	_test_capture_pointer_parser()
 	return finish("input-router")
+
+
+func _keycodes(action: StringName) -> Array[int]:
+	var result: Array[int] = []
+	for event: InputEvent in InputMap.action_get_events(action):
+		if event is InputEventKey:
+			result.append(event.physical_keycode)
+	return result
+
+
+func _has_mouse_button(action: StringName, button: int) -> bool:
+	for event: InputEvent in InputMap.action_get_events(action):
+		if event is InputEventMouseButton and event.button_index == button:
+			return true
+	return false
 
 
 func _test_capture_pointer_parser() -> void:

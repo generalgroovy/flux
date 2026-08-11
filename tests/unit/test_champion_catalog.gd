@@ -47,8 +47,8 @@ func _test_profiles_are_authoritative() -> void:
 	state.stamina = 54_000
 	check(catalog.apply_to_player(state, "s_wayne", true), "S. Wayne profile applies with ratios preserved")
 	equal(state.champion_wire_id, 2, "S. Wayne owns stable wire id 2")
-	equal(state.primary_wire_id, CombatTuning.PRIMARY_WIRE_ID, "S. Wayne retains the foundation primary pending his kit slice")
-	equal(state.active_1_wire_id, CombatTuning.ACTIVE_1_WIRE_ID, "S. Wayne retains Vector Lance pending his kit slice")
+	equal(state.primary_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "S. Wayne equips Eclipse Disc")
+	equal(state.active_1_wire_id, CombatTuning.POCKET_ECLIPSE_WIRE_ID, "S. Wayne equips Pocket Eclipse")
 	equal(state.health, 45_000, "Health ratio survives an in-world champion switch")
 	equal(state.flux, 56_000, "Flux ratio survives an in-world champion switch")
 	equal(state.stamina, 48_000, "Stamina ratio survives an in-world champion switch")

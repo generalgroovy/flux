@@ -38,7 +38,12 @@ func _test_catalog() -> void:
 	equal(int(first.ability("tideline")["wire_id"]), CombatTuning.TIDELINE_WIRE_ID, "Tideline wire matches compiled Oh Tipi kit")
 	equal(int(first.ability("tideline")["flux_cost"]) * 1000, CombatTuning.TIDELINE_FLUX_COST, "Tideline Flux cost matches compiled behavior")
 	equal(int(first.ability("tideline")["startup_ms"]), CombatTuning.TIDELINE_STARTUP_MS, "Tideline startup matches compiled behavior")
-	for active_id: String in ["vector-lance", "prism-ward", "stone-channel", "tideline"]:
+	equal(int(first.ability("eclipse-disc")["wire_id"]), CombatTuning.ECLIPSE_DISC_WIRE_ID, "Eclipse Disc wire matches compiled S. Wayne kit")
+	equal(int(first.ability("eclipse-disc")["flux_cost"]), 0, "S. Wayne primary remains resource-free")
+	equal(int(first.ability("pocket-eclipse")["wire_id"]), CombatTuning.POCKET_ECLIPSE_WIRE_ID, "Pocket Eclipse wire matches compiled S. Wayne kit")
+	equal(int(first.ability("pocket-eclipse")["flux_cost"]) * 1000, CombatTuning.POCKET_ECLIPSE_FLUX_COST, "Pocket Eclipse Flux cost matches compiled behavior")
+	equal(int(first.ability("pocket-eclipse")["startup_ms"]), CombatTuning.POCKET_ECLIPSE_STARTUP_MS, "Pocket Eclipse startup matches compiled behavior")
+	for active_id: String in ["vector-lance", "prism-ward", "stone-channel", "tideline", "pocket-eclipse"]:
 		var active: Dictionary = first.ability(active_id)
 		check(int(active["points"]) > 0, "%s has positive build cost" % active_id)
 		check(int(active["flux_cost"]) > 0, "%s has positive Flux cost" % active_id)

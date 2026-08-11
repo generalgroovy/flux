@@ -21,6 +21,8 @@ var lifetime_ticks: int
 var hit_control_state: int = CombatTuning.NO_HIT_CONTROL_STATE
 var hit_control_duration_ms: int = 0
 var hit_control_speed: int = 0
+var hit_control_slow_ratio: int = 1000
+var remaining_bounces: int = 0
 var grazed_entity_ids := PackedInt64Array()
 
 
@@ -38,6 +40,8 @@ func _init(
 	requested_hit_control_state: int = CombatTuning.NO_HIT_CONTROL_STATE,
 	requested_hit_control_duration_ms: int = 0,
 	requested_hit_control_speed: int = 0,
+	requested_hit_control_slow_ratio: int = 1000,
+	requested_remaining_bounces: int = 0,
 ) -> void:
 	entity_id = requested_entity_id
 	owner_id = requested_owner_id
@@ -56,6 +60,8 @@ func _init(
 	hit_control_state = requested_hit_control_state
 	hit_control_duration_ms = requested_hit_control_duration_ms
 	hit_control_speed = requested_hit_control_speed
+	hit_control_slow_ratio = requested_hit_control_slow_ratio
+	remaining_bounces = requested_remaining_bounces
 
 
 func canonical_values() -> PackedInt64Array:
@@ -65,6 +71,7 @@ func canonical_values() -> PackedInt64Array:
 		velocity_x, velocity_y, remainder_x, remainder_y,
 		radius, damage, lifetime_ticks,
 		hit_control_state, hit_control_duration_ms, hit_control_speed,
+		hit_control_slow_ratio, remaining_bounces,
 	])
 	values.append(grazed_entity_ids.size())
 	for grazed_id: int in grazed_entity_ids:

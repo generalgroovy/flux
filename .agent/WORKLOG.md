@@ -1,5 +1,47 @@
 # FLUX2 agent worklog
 
+## 2026-08-11 — S. Wayne basic combat pair
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Replaced S. Wayne's shared placeholders with **Eclipse Disc** (wire 142), a
+  resource-free Dark primary whose slower, larger lane can ricochet exactly once,
+  and **Pocket Eclipse** (wire 143), a 20-Flux Light active that exchanges burst
+  damage for a readable 600 ms movement slow at 55% speed.
+- Added canonical projectile bounce count and on-hit slow strength. World
+  collision owns axis reflection, every bounce emits a semantic event, and
+  protocol advanced to 12 so replay/session mismatch cannot omit either field.
+- Gave the spells distinct presentation silhouettes: the disc reads as a split
+  Dark/Light ring with a trail, while Pocket Eclipse reads as a bright occluded
+  orb with four restrained rays. Presentation reads confirmed simulation state
+  and owns no reflection, damage or status decisions.
+
+Validation:
+
+- Canonical JSON parse and `git diff --check`: passed.
+- Pinned Godot 4.7.1 full headless gate: 14,074 assertions, zero failures.
+  New 60/120 Hz coverage proves catalog/compiler parity, champion kit binding,
+  exact cost/startup/damage, one surviving world ricochet, reflected velocity,
+  consumed bounce count and exact bounded slow duration/ratio.
+- Pinned Godot 4.7.1 import: passed with no script/import/runtime error markers.
+- Independent 60/120 Hz bootstrap smokes passed with protocol 12, ability hash
+  `566a637aa616`, champion hash `81962afbff12` and campus hash `a26f6ecd6105`.
+- A compatibility-renderer 1280 x 720 S. Wayne capture passed and was visually
+  inspected: selected champion, exact resource maxima and both named controls
+  are readable in the always-visible Wellspring HUD.
+
+Known limitations and next task:
+
+- The two champions now have working, differentiated basic pairs but still need
+  deeper dummy behavior, defense, full kits, final animation/audio, accessibility,
+  replay/network and Windows/Linux package acceptance.
+- Next slice promotes the Wellspring's host/join stations and authoritative ENet
+  loopback boundary so two players can connect, move and interact without a menu.
+
+Commit: pending. Push: pending.
+
 ## 2026-08-11 — Oh Tipi basic combat pair and sparring effigy
 
 Branch: `codex/continuous-overhaul`

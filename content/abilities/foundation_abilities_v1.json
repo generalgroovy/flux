@@ -161,6 +161,38 @@
       "roles": ["displacement", "lane_pressure"],
       "counterplay": ["visible_startup", "sidestep", "cover"],
       "authority": "simulation"
+    },
+    {
+      "id": "eclipse-disc",
+      "wire_id": 142,
+      "display_name": "Eclipse Disc",
+      "slot_kind": "primary",
+      "element": "dark",
+      "points": 0,
+      "affinity_discount": 0,
+      "flux_cost": 0,
+      "cooldown_ms": 260,
+      "startup_ms": 70,
+      "recovery_ms": 90,
+      "roles": ["angle_pressure", "ricochet"],
+      "counterplay": ["read_single_bounce", "change_lane", "cover"],
+      "authority": "simulation"
+    },
+    {
+      "id": "pocket-eclipse",
+      "wire_id": 143,
+      "display_name": "Pocket Eclipse",
+      "slot_kind": "active",
+      "element": "light",
+      "points": 5,
+      "affinity_discount": 1,
+      "flux_cost": 20,
+      "cooldown_ms": 1800,
+      "startup_ms": 190,
+      "recovery_ms": 200,
+      "roles": ["tempo_control", "pursuit_break"],
+      "counterplay": ["visible_startup", "sidestep", "wait_out_slow"],
+      "authority": "simulation"
     }
   ]
 }

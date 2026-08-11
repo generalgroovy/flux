@@ -43,8 +43,8 @@
         "movement_speed_ratio": 1060
       },
       "foundation_kit": {
-        "primary": "arc-primary",
-        "active_1": "vector-lance"
+        "primary": "eclipse-disc",
+        "active_1": "pocket-eclipse"
       }
     }
   ]

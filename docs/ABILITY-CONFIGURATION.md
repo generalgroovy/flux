@@ -3,8 +3,9 @@
 ## Scope
 
 This contract began as the validated canonical configuration checkpoint and now
-records the boundary consumed by protocol-11 combat. Arc Primary, Vector Lance,
-Oh Tipi's Rillshot and Tideline cast end to end; the remaining catalog entries
+records the boundary consumed by protocol-12 combat. Arc Primary, Vector Lance,
+Oh Tipi's Rillshot/Tideline and S. Wayne's Eclipse Disc/Pocket Eclipse cast end
+to end; the remaining catalog entries
 are configuration only. Network-visible identities, resource rules, loadout legality, affinity
 behavior, and compatibility hashes remain trustworthy before any additional
 combat code may promote an entry.
@@ -63,10 +64,12 @@ This demonstrates discounts without granting elemental damage superiority.
    complete foundation; full visual/audio counterplay acceptance remains.
 5. Oh Tipi Rillshot/Tideline plus resettable sparring effigy — complete basic
    pair; defense, full kit, final art/audio and balance acceptance remain.
-6. Training configuration UI and authoritative host ready-check.
-7. One approved champion through bot, replay, network, reconnect, spectator,
+6. S. Wayne Eclipse Disc/Pocket Eclipse — complete basic pair with a canonical
+   single ricochet and bounded slow; deeper dummy and accessibility reads remain.
+7. Training configuration UI and authoritative host ready-check.
+8. One approved champion through bot, replay, network, reconnect, spectator,
    accessibility, and platform gates.
-8. Compile optional Flux Formula variants from approved source-family,
+9. Compile optional Flux Formula variants from approved source-family,
    geometry, operation, catalyst, and constraint components; the host accepts
    stable variant IDs, never client-authored outcome parameters.
 

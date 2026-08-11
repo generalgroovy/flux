@@ -49,8 +49,34 @@ const TIDELINE_DAMAGE: int = 14_000
 const TIDELINE_LIFETIME_MS: int = 1_300
 const TIDELINE_LAUNCH_DURATION_MS: int = 180
 const TIDELINE_LAUNCH_SPEED: int = 420_000
+
+const ECLIPSE_DISC_WIRE_ID: int = 142
+const ECLIPSE_DISC_ELEMENT_WIRE_ID: int = 8
+const ECLIPSE_DISC_FLUX_COST: int = 0
+const ECLIPSE_DISC_COOLDOWN_MS: int = 260
+const ECLIPSE_DISC_STARTUP_MS: int = 70
+const ECLIPSE_DISC_RECOVERY_MS: int = 90
+const ECLIPSE_DISC_SPEED: int = 900_000
+const ECLIPSE_DISC_RADIUS: int = 9_000
+const ECLIPSE_DISC_DAMAGE: int = 10_000
+const ECLIPSE_DISC_LIFETIME_MS: int = 1_600
+const ECLIPSE_DISC_BOUNCES: int = 1
+
+const POCKET_ECLIPSE_WIRE_ID: int = 143
+const POCKET_ECLIPSE_ELEMENT_WIRE_ID: int = 7
+const POCKET_ECLIPSE_FLUX_COST: int = 20_000
+const POCKET_ECLIPSE_COOLDOWN_MS: int = 1_800
+const POCKET_ECLIPSE_STARTUP_MS: int = 190
+const POCKET_ECLIPSE_RECOVERY_MS: int = 200
+const POCKET_ECLIPSE_SPEED: int = 820_000
+const POCKET_ECLIPSE_RADIUS: int = 10_000
+const POCKET_ECLIPSE_DAMAGE: int = 8_000
+const POCKET_ECLIPSE_LIFETIME_MS: int = 1_400
+const POCKET_ECLIPSE_SLOW_DURATION_MS: int = 600
+const POCKET_ECLIPSE_SLOW_RATIO: int = 550
 const NO_HIT_CONTROL_STATE: int = 0
 const LAUNCHED_HIT_CONTROL_STATE: int = 1
+const SLOWED_HIT_CONTROL_STATE: int = 6
 
 const PROJECTILE_SPAWN_CLEARANCE: int = 4_000
 const EDGEWEAVE_MARGIN: int = 16_000
@@ -72,6 +98,16 @@ static func projectile_definition(wire_id: int) -> Dictionary:
 			result["hit_control_state"] = LAUNCHED_HIT_CONTROL_STATE
 			result["hit_control_duration_ms"] = TIDELINE_LAUNCH_DURATION_MS
 			result["hit_control_speed"] = TIDELINE_LAUNCH_SPEED
+			return result
+		ECLIPSE_DISC_WIRE_ID:
+			var result := _definition(ECLIPSE_DISC_ELEMENT_WIRE_ID, ECLIPSE_DISC_FLUX_COST, ECLIPSE_DISC_COOLDOWN_MS, ECLIPSE_DISC_STARTUP_MS, ECLIPSE_DISC_RECOVERY_MS, ECLIPSE_DISC_SPEED, ECLIPSE_DISC_RADIUS, ECLIPSE_DISC_DAMAGE, ECLIPSE_DISC_LIFETIME_MS)
+			result["remaining_bounces"] = ECLIPSE_DISC_BOUNCES
+			return result
+		POCKET_ECLIPSE_WIRE_ID:
+			var result := _definition(POCKET_ECLIPSE_ELEMENT_WIRE_ID, POCKET_ECLIPSE_FLUX_COST, POCKET_ECLIPSE_COOLDOWN_MS, POCKET_ECLIPSE_STARTUP_MS, POCKET_ECLIPSE_RECOVERY_MS, POCKET_ECLIPSE_SPEED, POCKET_ECLIPSE_RADIUS, POCKET_ECLIPSE_DAMAGE, POCKET_ECLIPSE_LIFETIME_MS)
+			result["hit_control_state"] = SLOWED_HIT_CONTROL_STATE
+			result["hit_control_duration_ms"] = POCKET_ECLIPSE_SLOW_DURATION_MS
+			result["hit_control_slow_ratio"] = POCKET_ECLIPSE_SLOW_RATIO
 			return result
 	return {}
 
@@ -100,4 +136,6 @@ static func _definition(
 		"hit_control_state": NO_HIT_CONTROL_STATE,
 		"hit_control_duration_ms": 0,
 		"hit_control_speed": 0,
+		"hit_control_slow_ratio": 1000,
+		"remaining_bounces": 0,
 	}

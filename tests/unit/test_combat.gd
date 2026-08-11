@@ -7,6 +7,9 @@ func run() -> int:
 		_test_vector_lance_flux_and_hit(tick_rate)
 		_test_oh_tipi_rillshot(tick_rate)
 		_test_oh_tipi_tideline(tick_rate)
+		_test_s_wayne_eclipse_disc(tick_rate)
+		_test_s_wayne_disc_ricochet(tick_rate)
+		_test_s_wayne_pocket_eclipse(tick_rate)
 		_test_edgeweave(tick_rate)
 	return finish("combat")
 
@@ -30,6 +33,14 @@ func _apply_oh_tipi(state: PlayerState) -> void:
 	var champions := ChampionCatalog.new()
 	check(champions.load_from_file("res://content/champions/foundation_champions_v1.json", abilities), "champion catalog loads for Oh Tipi combat")
 	check(champions.apply_to_player(state, "oh_tipi"), "Oh Tipi combat profile applies")
+
+
+func _apply_s_wayne(state: PlayerState) -> void:
+	var abilities := AbilityCatalog.new()
+	check(abilities.load_from_file("res://content/abilities/foundation_abilities_v1.json"), "ability catalog loads for S. Wayne combat")
+	var champions := ChampionCatalog.new()
+	check(champions.load_from_file("res://content/champions/foundation_champions_v1.json", abilities), "champion catalog loads for S. Wayne combat")
+	check(champions.apply_to_player(state, "s_wayne"), "S. Wayne combat profile applies")
 
 
 func _test_resource_free_primary(tick_rate: int) -> void:
@@ -125,6 +136,73 @@ func _test_oh_tipi_tideline(tick_rate: int) -> void:
 	equal(enemy.control_state, PlayerState.ControlState.LAUNCHED, "%d Hz Tideline applies bounded launch control" % tick_rate)
 	equal(enemy.control_speed, CombatTuning.TIDELINE_LAUNCH_SPEED, "%d Hz Tideline launch speed is exact" % tick_rate)
 	equal(enemy.control_ticks, world.config.milliseconds_to_ticks(CombatTuning.TIDELINE_LAUNCH_DURATION_MS), "%d Hz Tideline launch duration is exact" % tick_rate)
+
+
+func _test_s_wayne_eclipse_disc(tick_rate: int) -> void:
+	var world := SimWorld.new(tick_rate)
+	var caster: PlayerState = world.player()
+	_apply_s_wayne(caster)
+	var enemy: PlayerState = _add_enemy(world, Vector2i(360_000, 360_000))
+	var initial_flux: int = caster.flux
+	check(_step(world, SimCommand.new(0, 1, 0, 0, SimCommand.HELD_PRIMARY, 0, 1000)), "%d Hz Eclipse Disc starts" % tick_rate)
+	equal(caster.pending_cast_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "%d Hz S. Wayne primary is Eclipse Disc" % tick_rate)
+	equal(caster.flux, initial_flux, "%d Hz Eclipse Disc is resource-free" % tick_rate)
+	var saw_hit: bool = false
+	for _index: int in range(tick_rate):
+		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Eclipse Disc flight steps" % tick_rate)
+		saw_hit = saw_hit or world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "projectile_hit" and int(event.get("source_wire_id", 0)) == CombatTuning.ECLIPSE_DISC_WIRE_ID)
+		if saw_hit:
+			break
+	check(saw_hit, "%d Hz Eclipse Disc hits authoritatively" % tick_rate)
+	equal(enemy.health, enemy.health_maximum - CombatTuning.ECLIPSE_DISC_DAMAGE, "%d Hz Eclipse Disc damage is exact" % tick_rate)
+
+
+func _test_s_wayne_disc_ricochet(tick_rate: int) -> void:
+	var collision := CollisionWorld.new(800_000, 720_000)
+	collision.add_obstacle(CollisionWorld.Obstacle.new(77, 300_000, 200_000, 340_000, 500_000))
+	var owner := PlayerState.new(1)
+	var projectile := ProjectileState.new(
+		9004, owner.entity_id, owner.team_id,
+		CombatTuning.ECLIPSE_DISC_WIRE_ID, CombatTuning.ECLIPSE_DISC_ELEMENT_WIRE_ID,
+		Vector2i(250_000, 350_000), Vector2i(CombatTuning.ECLIPSE_DISC_SPEED, 0),
+		CombatTuning.ECLIPSE_DISC_RADIUS, CombatTuning.ECLIPSE_DISC_DAMAGE,
+		tick_rate, CombatTuning.NO_HIT_CONTROL_STATE, 0, 0, 1000,
+		CombatTuning.ECLIPSE_DISC_BOUNCES,
+	)
+	var projectiles: Array[ProjectileState] = [projectile]
+	var bounced: bool = false
+	for _index: int in range(tick_rate):
+		var events: Array[Dictionary] = []
+		projectiles = CombatSystem.advance_projectiles(projectiles, [owner], SimConfig.new(tick_rate), collision, events)
+		bounced = bounced or events.any(func(event: Dictionary) -> bool: return event.get("type") == "projectile_bounced" and int(event.get("wall_id", 0)) == 77)
+		if bounced:
+			break
+	check(bounced, "%d Hz Eclipse Disc emits one authored ricochet" % tick_rate)
+	equal(projectiles.size(), 1, "%d Hz Eclipse Disc survives its available ricochet" % tick_rate)
+	if not projectiles.is_empty():
+		check(projectiles[0].velocity_x < 0, "%d Hz Eclipse Disc reflects away from the wall" % tick_rate)
+		equal(projectiles[0].remaining_bounces, 0, "%d Hz Eclipse Disc consumes its only ricochet" % tick_rate)
+
+
+func _test_s_wayne_pocket_eclipse(tick_rate: int) -> void:
+	var world := SimWorld.new(tick_rate)
+	var caster: PlayerState = world.player()
+	_apply_s_wayne(caster)
+	var enemy: PlayerState = _add_enemy(world, Vector2i(420_000, 360_000))
+	check(_step(world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_ACTIVE_1, 1000)), "%d Hz Pocket Eclipse starts" % tick_rate)
+	equal(caster.pending_cast_wire_id, CombatTuning.POCKET_ECLIPSE_WIRE_ID, "%d Hz S. Wayne active is Pocket Eclipse" % tick_rate)
+	equal(caster.flux, caster.flux_maximum - CombatTuning.POCKET_ECLIPSE_FLUX_COST, "%d Hz Pocket Eclipse Flux spend is exact" % tick_rate)
+	var saw_hit: bool = false
+	for _index: int in range(tick_rate * 2):
+		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Pocket Eclipse flight steps" % tick_rate)
+		saw_hit = saw_hit or world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "projectile_hit" and int(event.get("source_wire_id", 0)) == CombatTuning.POCKET_ECLIPSE_WIRE_ID)
+		if saw_hit:
+			break
+	check(saw_hit, "%d Hz Pocket Eclipse hits authoritatively" % tick_rate)
+	equal(enemy.health, enemy.health_maximum - CombatTuning.POCKET_ECLIPSE_DAMAGE, "%d Hz Pocket Eclipse damage is exact" % tick_rate)
+	equal(enemy.control_state, PlayerState.ControlState.SLOWED, "%d Hz Pocket Eclipse applies bounded slow control" % tick_rate)
+	equal(enemy.slow_ratio, CombatTuning.POCKET_ECLIPSE_SLOW_RATIO, "%d Hz Pocket Eclipse slow ratio is exact" % tick_rate)
+	equal(enemy.control_ticks, world.config.milliseconds_to_ticks(CombatTuning.POCKET_ECLIPSE_SLOW_DURATION_MS), "%d Hz Pocket Eclipse slow duration is exact" % tick_rate)
 
 
 func _test_edgeweave(tick_rate: int) -> void:

@@ -89,6 +89,7 @@ static func advance_projectiles(
 						SimCommand._normalized_direction(projectile.velocity_x, projectile.velocity_y),
 						projectile.hit_control_speed,
 						config,
+						projectile.hit_control_slow_ratio,
 					)
 				hit_entity_id = target.entity_id
 				events.append({
@@ -105,8 +106,17 @@ static func advance_projectiles(
 		if hit_entity_id != 0:
 			continue
 		if result.wall_normal != Vector2i.ZERO:
-			events.append({"type": "projectile_impact", "projectile_id": projectile.entity_id, "wall_id": result.wall_id})
-			continue
+			if projectile.remaining_bounces <= 0:
+				events.append({"type": "projectile_impact", "projectile_id": projectile.entity_id, "wall_id": result.wall_id})
+				continue
+			_reflect_projectile(projectile, result.wall_normal)
+			projectile.remaining_bounces -= 1
+			events.append({
+				"type": "projectile_bounced",
+				"projectile_id": projectile.entity_id,
+				"wall_id": result.wall_id,
+				"remaining_bounces": projectile.remaining_bounces,
+			})
 		projectile.lifetime_ticks = maxi(0, projectile.lifetime_ticks - 1)
 		if projectile.lifetime_ticks == 0:
 			events.append({"type": "projectile_expired", "projectile_id": projectile.entity_id})
@@ -178,10 +188,21 @@ static func _release_cast(
 		int(definition["hit_control_state"]),
 		int(definition["hit_control_duration_ms"]),
 		int(definition["hit_control_speed"]),
+		int(definition["hit_control_slow_ratio"]),
+		int(definition["remaining_bounces"]),
 	)
 	events.append({"type": "projectile_spawned", "projectile_id": projectile_id, "owner_id": state.entity_id, "wire_id": wire_id})
 	state.last_event = "cast_release_%d" % wire_id
 	return projectile
+
+
+static func _reflect_projectile(projectile: ProjectileState, wall_normal: Vector2i) -> void:
+	if wall_normal.x != 0:
+		projectile.velocity_x = -projectile.velocity_x
+		projectile.remainder_x = -projectile.remainder_x
+	if wall_normal.y != 0:
+		projectile.velocity_y = -projectile.velocity_y
+		projectile.remainder_y = -projectile.remainder_y
 
 
 static func _resolve_edgeweave(

@@ -51,8 +51,10 @@ exercise does not promote either candidate to final art.
 
 `content/champions/foundation_champions_v1.json` is the canonical first-roster
 source for stable champion wire IDs, affinities, ancestry, size, bounded stats,
-and foundation kit references. The simulation owns applied maxima, recovery
-rates, and ground-speed ratios. Use `--champion=oh_tipi` or
+and foundation kit references. Oh Tipi currently binds Rillshot/Tideline while
+S. Wayne binds Eclipse Disc/Pocket Eclipse; the simulation owns their costs,
+timing, hit results, ricochet/slow state, applied maxima, recovery rates, and
+ground-speed ratios. Use `--champion=oh_tipi` or
 `--champion=s_wayne` only for deterministic launch/capture diagnostics; normal
 players switch at the in-world Champion Loom.
 

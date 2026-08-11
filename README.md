@@ -90,6 +90,8 @@ even when design documentation already exists.
     elements, slot validation, and an exact 13-point foundation loadout
   - [x] Oh Tipi's Water Rillshot primary and Tideline active: distinct cadence,
     Flux cost, readable projectile, bounded launch, sparring effigy and reset
+  - [x] S. Wayne's Dark Eclipse Disc and Light Pocket Eclipse: one readable
+    ricochet, bounded slow, exact resource/timing rules and distinct spell shapes
   - [ ] Complete targeting families, defense/clash/launch/status rules, passive,
     three actives, mobility, ultimate, formula variants, and configuration UI
   - [ ] First complete champion vertical slice
@@ -613,7 +615,8 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | --- | --- |
 | Executable shared combat foundation | Arc Primary and Vector Lance remain the fallback pair while later champions receive distinct kits |
 | First champion combat pair | Oh Tipi's resource-free Water **Rillshot** and Flux-paid **Tideline** are authoritative; Tideline trades burst for bounded launch |
-| Preserved named kits | S. Wayne, The Red Baron, Steezo, Treevor the Mason, Oll' I and Fluup retain approved ability names; mechanics remain unimplemented |
+| Second champion combat pair | S. Wayne's free Dark **Eclipse Disc** owns one readable ricochet; paid Light **Pocket Eclipse** trades damage for a bounded slow |
+| Preserved named kits | The Red Baron, Steezo, Treevor the Mason, Oll' I and Fluup retain approved ability names; mechanics remain unimplemented |
 | Remaining named champions | Identity, ancestry, elements, role and sprite package exist; character-specific ability names remain pending |
 | Void terminology | The Red Baron and Grimm Bow still carry legacy Void design data while visual generation currently uses Dark; this must be reconciled explicitly |
 | Angel slot | Body-plan and visual placeholder only; identity, lore and kit remain unapproved and non-selectable |
@@ -623,7 +626,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Sprite | Champion | Ancestry (race) | Size | Elements | Intended role | Kit state |
 | --- | --- | --- | --- | --- | --- | --- |
 | <img src="assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png" alt="Oh Tipi high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/oh_tipi/oh_tipi_direction_preview.png" alt="Oh Tipi current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Oh Tipi** | Seakin | Medium | Water · Ice · Charge | Conductive-field skirmisher and current rider | Playable Rillshot/Tideline basic pair; deeper kit pending |
-| <img src="assets/sprites/champions_v2/s_wayne/hero_portrait_256.png" alt="S. Wayne high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/s_wayne/s_wayne_direction_preview.png" alt="S. Wayne current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **S. Wayne** | Hobbit | Small | Dark · Light | Eclipse-boundary tactician and decoy router | Playable identity/stats; distinct basic kit pending |
+| <img src="assets/sprites/champions_v2/s_wayne/hero_portrait_256.png" alt="S. Wayne high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/s_wayne/s_wayne_direction_preview.png" alt="S. Wayne current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **S. Wayne** | Hobbit | Small | Dark · Light | Eclipse-boundary tactician and decoy router | Playable Eclipse Disc/Pocket Eclipse basic pair; deeper kit pending |
 | <img src="assets/sprites/champions_v2/red_baron/hero_portrait_256.png" alt="The Red Baron high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/red_baron/red_baron_direction_preview.png" alt="The Red Baron current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **The Red Baron** | Undead | Medium | Void (legacy, unresolved) · Fire · Ice | Airborne formation controller with punishable landings | Named design kit; not implemented |
 | <img src="assets/sprites/champions_v2/steezo/hero_portrait_256.png" alt="Steezo high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/steezo/steezo_direction_preview.png" alt="Steezo current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Steezo** | Goblin | Small | Fire · Charge · Light | Volatile construct engineer and detonation sequencer | Named design kit; not implemented |
 | <img src="assets/sprites/champions_v2/treevor_mason/hero_portrait_256.png" alt="Treevor the Mason high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/treevor_mason/treevor_mason_direction_preview.png" alt="Treevor the Mason current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Treevor the Mason** | Treefolk | Large | Earth · Wind · Fire | Terrain mason creating routes, cover and fire liabilities | Named design kit; not implemented |
@@ -710,7 +713,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Draft affinities | **Dark · Light** |
 | Signature equipment | **Eclipse disc** |
 | Core gameplay identity | Eclipse-boundary tactician and decoy router |
-| Identity and migration notes | The preserved kit names were authored under the legacy name Samwise DeWayne and require identity/affinity reconciliation before promotion. |
+| Identity and migration notes | The current Hobbit identity and Dark/Light affinity boundary supersede incompatible legacy placeholders. |
 | Runtime atlas | [`assets/sprites/champions/s_wayne/s_wayne_atlas.png`](assets/sprites/champions/s_wayne/s_wayne_atlas.png) |
 | Runtime portrait candidate | [`assets/sprites/champions/s_wayne/s_wayne_portrait.png`](assets/sprites/champions/s_wayne/s_wayne_portrait.png) |
 | High-detail portrait candidate | [`assets/sprites/champions_v2/s_wayne/hero_portrait_256.png`](assets/sprites/champions_v2/s_wayne/hero_portrait_256.png) |
@@ -721,8 +724,8 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Ability slot | Preserved design name | Implementation state |
 | --- | --- | --- |
 | Passive | **Small Target, Big Exit** | Named design input; simulation and balance not implemented |
-| Champion primary | Not committed | Current Arc Primary is a shared foundation placeholder, not the final champion primary |
-| Active I | **Pocket Tempest** | Named design input; simulation and balance not implemented |
+| Champion primary | **Eclipse Disc** | Implemented: free Dark disc; 70 ms startup, 260 ms cooldown, 10 damage and exactly one world ricochet |
+| Active I | **Pocket Eclipse** | Implemented: 20 Flux Light shot; 190 ms startup, 8 damage and a bounded 600 ms 55% slow |
 | Active II | **Burrowed Shadow** | Named design input; simulation and balance not implemented |
 | Mobility | **Campfire Feint** | Named design input; must obey global collision and speed limits |
 | Ultimate | **There and Back Again** | Named design input; charge, startup, interruption and recovery rules pending |
@@ -1764,11 +1767,13 @@ also validates at boot: Oh Tipi and S. Wayne own stable protocol IDs, distinct
 Health/Flux/Stamina recovery and capacity profiles, bounded ground-speed ratios,
 and in-world sprite switching while retaining the universal movement grammar.
 A canonical 80-Health sparring effigy beside spawn receives real projectile
-damage and Tideline launch; the Practice Bell restores its seeded state.
+damage, Tideline launch and Pocket Eclipse slow; the Practice Bell restores its
+seeded state. Oh Tipi and S. Wayne now each own a distinct resource-free primary
+and paid active with different timing, geometry and control decisions.
 A canonical material registry and
 packed 128 x 128 Sanctum Material Yard seed also validate, hash, reset, and
 render as a read-only debug preview; reactions do not step yet. The full hub art,
-distinct champion kits, networking, active chemistry, animation, and release exports
+complete champion kits, networking, active chemistry, animation, and release exports
 remain staged milestones. The G2 campus now has renderer-independent connected
 district topology, explicit worldbone collision, queryable elevation, ordinary/
 advanced routes, one accessible ordinary route per district, bounded reset-zone
@@ -1794,7 +1799,7 @@ F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
 left/right sticks, right trigger, west/east face buttons, and shoulders. The
 rate never mutates inside a running match.
 
-G3 now uses protocol 11 and preference schema 3: Space invokes the semantic jump
+The current simulation uses protocol 12 and preference schema 3: Space invokes the semantic jump
 action, Shift sprints, Ctrl/C directly slides, and primary no longer aliases
 Space. Schema-v1/v2 defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision

@@ -195,8 +195,7 @@ func _draw() -> void:
 	for projectile: ProjectileState in world.projectiles:
 		var projectile_position := Vector2(float(projectile.position_x) / 1000.0, float(projectile.position_y) / 1000.0)
 		var projectile_color: Color = _projectile_color(projectile.element_wire_id)
-		draw_circle(projectile_position, float(projectile.radius) / 1000.0 + 7.0, Color(projectile_color, 0.18))
-		draw_circle(projectile_position, float(projectile.radius) / 1000.0, projectile_color)
+		_draw_projectile(projectile, projectile_position, projectile_color)
 	var state: PlayerState = world.player()
 	var presentation := JumpPresentation.sample(state, world.config, alpha, player_preferences.reduced_motion)
 	var landing := LandingPresentation.sample(state, world.config, alpha, player_preferences.reduced_motion)
@@ -633,6 +632,27 @@ func _projectile_color(element_wire_id: int) -> Color:
 			return FLUX_COLOR.darkened(0.12)
 		_:
 			return FLUX_COLOR
+
+
+func _draw_projectile(projectile: ProjectileState, position: Vector2, color: Color) -> void:
+	var radius: float = float(projectile.radius) / 1000.0
+	var previous := Vector2(float(projectile.previous_x) / 1000.0, float(projectile.previous_y) / 1000.0)
+	draw_line(previous, position, Color(color, 0.42), maxf(2.0, radius * 0.65))
+	match projectile.source_wire_id:
+		CombatTuning.ECLIPSE_DISC_WIRE_ID:
+			draw_circle(position, radius + 8.0, Color(color, 0.16))
+			draw_circle(position, radius, Color("241d2e"))
+			draw_arc(position, radius, -2.35, 0.78, 16, color.lightened(0.2), 3.0)
+			draw_arc(position, radius - 3.0, 0.78, 3.93, 16, PARCHMENT_COLOR.darkened(0.25), 2.0)
+		CombatTuning.POCKET_ECLIPSE_WIRE_ID:
+			draw_circle(position, radius + 10.0, Color(color, 0.14))
+			draw_circle(position, radius, color)
+			draw_circle(position + Vector2(radius * 0.45, 0.0), radius * 0.82, Color("30243d"))
+			for ray: Vector2 in [Vector2.UP, Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT]:
+				draw_line(position + ray * (radius + 2.0), position + ray * (radius + 6.0), Color(color, 0.8), 2.0)
+		_:
+			draw_circle(position, radius + 7.0, Color(color, 0.18))
+			draw_circle(position, radius, color)
 
 
 func _requested_tick_rate() -> int:

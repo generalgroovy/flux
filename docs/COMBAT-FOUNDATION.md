@@ -2,13 +2,15 @@
 
 ## Implemented slice
 
-The protocol-11 slice extends the first complete command-to-impact path:
+The protocol-12 slice extends the first complete command-to-impact path:
 
 - independent scale-1000 aim and held primary input;
 - pressed active-one input;
 - startup, recovery, and cooldown state compiled independently at 60/120 Hz;
-- resource-free Arc Primary/Rillshot and Flux-paid Vector Lance/Tideline;
-- stable projectile/entity/owner/team/source/element IDs;
+- resource-free Arc Primary/Rillshot/Eclipse Disc and Flux-paid Vector
+  Lance/Tideline/Pocket Eclipse;
+- stable projectile/entity/owner/team/source/element IDs plus canonical bounce
+  count and on-hit slow strength;
 - integer movement/remainders, ordered world collision, swept player hits,
   authoritative damage, lifetime, semantic events, and state hashing;
 - replay verification with active primary command streams;
@@ -43,6 +45,8 @@ cast.
 | Vector Lance | 110 | 24 Flux | 180 ms | 1400 ms | 25 Health projectile, speed 980, 1500 ms lifetime |
 | Rillshot (Oh Tipi) | 140 | 0 Flux | 55 ms | 190 ms | 9 Health Water projectile, speed 1060, 1150 ms lifetime |
 | Tideline (Oh Tipi) | 141 | 22 Flux | 170 ms | 1600 ms | 14 Health Water crest, speed 780, 180 ms launch at speed 420 |
+| Eclipse Disc (S. Wayne) | 142 | 0 Flux | 70 ms | 260 ms | 10 Health Dark disc, speed 900, exactly one world ricochet |
+| Pocket Eclipse (S. Wayne) | 143 | 20 Flux | 190 ms | 1800 ms | 8 Health Light shot, speed 820, 600 ms slow to 55% movement |
 
 Values are integer milli-units in simulation. The ability-content suite prevents
 compiled wire, Flux, startup, and cooldown values from drifting away from the
@@ -70,5 +74,6 @@ This is a combat kernel, not the full champion slice. It does not yet implement
 defeat/respawn, projectile clash, defense, broad status application, teams beyond
 integer ownership, launch influence, pierce, fields, material reactions, bots,
 network packets, or animation/audio telegraphs. Tideline is the first bounded
-authoritative launch, and the Nexus effigy is the first resettable target; each
-remaining behavior stays gated rather than silently approximated.
+authoritative launch, Eclipse Disc the first bounded ricochet and Pocket Eclipse
+the first bounded slow; the Nexus effigy remains the first resettable target.
+Each remaining behavior stays gated rather than silently approximated.

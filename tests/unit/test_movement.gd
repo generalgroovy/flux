@@ -7,6 +7,7 @@ func run() -> int:
 		_test_double_jump(tick_rate)
 		_test_slide_and_slide_jump(tick_rate)
 		_test_action_buffers(tick_rate)
+		_test_variable_jump_and_fast_fall(tick_rate)
 		_test_air_dodge_and_wavedash(tick_rate)
 		_test_wall_contact_and_wall_kick(tick_rate)
 		_test_same_wall_lockout(tick_rate)
@@ -131,6 +132,37 @@ func _test_wall_contact_and_wall_kick(tick_rate: int) -> void:
 	equal(state.last_event, "wall_kick", "%d Hz hop consumes wall memory" % tick_rate)
 	equal(state.hop_speed, MovementTuning.WALL_KICK_SPEED, "%d Hz wall kick speed is authored" % tick_rate)
 	equal(state.movement_mode, PlayerState.MovementMode.WALL_KICK, "%d Hz wall kick remains explicit state" % tick_rate)
+
+
+func _test_variable_jump_and_fast_fall(tick_rate: int) -> void:
+	var held_world := SimWorld.new(tick_rate)
+	var held_state: PlayerState = held_world.player()
+	_step(held_world, 1000, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+	for _index: int in range(3):
+		_step(held_world, 1000, 0, SimCommand.HELD_JUMP)
+	var held_remaining: int = held_state.hop_ticks
+
+	var cut_world := SimWorld.new(tick_rate)
+	var cut_state: PlayerState = cut_world.player()
+	_step(cut_world, 1000, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+	_step(cut_world, 1000, 0)
+	equal(cut_state.last_event, "jump_cut", "%d Hz releasing jump cuts the authored arc" % tick_rate)
+	equal(cut_state.hop_ticks, cut_world.config.milliseconds_to_ticks(MovementTuning.VARIABLE_JUMP_MINIMUM_MS), "%d Hz release preserves the bounded minimum arc" % tick_rate)
+	check(cut_state.hop_ticks < held_remaining, "%d Hz released jump lands before held jump" % tick_rate)
+
+	var fall_world := SimWorld.new(tick_rate)
+	var fall_state: PlayerState = fall_world.player()
+	_step(fall_world, 1000, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+	_step(fall_world, 1000, 0, SimCommand.HELD_JUMP)
+	var before_fall: int = fall_state.hop_ticks
+	_step(fall_world, 1000, 0, SimCommand.HELD_FAST_FALL)
+	equal(fall_state.last_event, "fast_fall", "%d Hz airborne Ctrl/C starts fast fall" % tick_rate)
+	check(fall_state.fast_falling, "%d Hz fast fall is explicit canonical state" % tick_rate)
+	equal(fall_state.hop_ticks, before_fall - 1 - MovementTuning.FAST_FALL_EXTRA_TICKS, "%d Hz fast fall advances the arc by its bounded extra rate" % tick_rate)
+	equal(fall_state.movement_mode, PlayerState.MovementMode.FAST_FALL, "%d Hz fast fall has an explicit presentation mode" % tick_rate)
+	var stamina_before: int = fall_state.stamina
+	_step(fall_world, 1000, 0, SimCommand.HELD_FAST_FALL)
+	equal(fall_state.stamina, stamina_before, "%d Hz fast fall is commitment rather than a Stamina purchase" % tick_rate)
 
 
 func _test_same_wall_lockout(tick_rate: int) -> void:

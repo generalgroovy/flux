@@ -21,6 +21,7 @@ static func step(state: PlayerState, command: SimCommand, config: SimConfig, wor
 		_consume_slide_buffer(state, direction, config)
 		_consume_jump_buffer(state, command, direction, config)
 		_consume_technique_buffer(state, command, direction, config, world)
+	_apply_variable_air_time(state, command, config)
 
 	if control_locked:
 		_apply_control_velocity(state, config)
@@ -81,6 +82,28 @@ static func _consume_technique_buffer(state: PlayerState, command: SimCommand, d
 		consumed = _try_vault(state, direction, config, world)
 	if consumed:
 		state.technique_buffer_ticks = 0
+		if state.is_airborne():
+			state.variable_jump_grace_ticks = 1
+
+
+static func _apply_variable_air_time(state: PlayerState, command: SimCommand, config: SimConfig) -> void:
+	if state.hop_ticks <= 0:
+		state.fast_falling = false
+		return
+	if command.has_held(SimCommand.HELD_FAST_FALL):
+		state.hop_ticks = maxi(1, state.hop_ticks - MovementTuning.FAST_FALL_EXTRA_TICKS)
+		if not state.fast_falling:
+			state.last_event = "fast_fall"
+		state.fast_falling = true
+		return
+	state.fast_falling = false
+	if state.variable_jump_grace_ticks > 0:
+		return
+	var jump_is_held: bool = command.has_held(SimCommand.HELD_JUMP) or command.has_pressed(SimCommand.PRESSED_JUMP)
+	var minimum_ticks: int = config.milliseconds_to_ticks(MovementTuning.VARIABLE_JUMP_MINIMUM_MS)
+	if not jump_is_held and state.hop_ticks > minimum_ticks:
+		state.hop_ticks = minimum_ticks
+		state.last_event = "jump_cut"
 
 
 static func apply_control_state(
@@ -124,11 +147,13 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 		&"vault_cooldown_ticks", &"superglide_ticks", &"wall_memory_ticks",
 		&"landing_ticks", &"wall_lockout_ticks", &"control_ticks",
 		&"jump_buffer_ticks", &"technique_buffer_ticks", &"slide_buffer_ticks",
+		&"variable_jump_grace_ticks",
 	]:
 		state.set(property_name, maxi(0, int(state.get(property_name)) - 1))
 	if was_hopping and state.hop_ticks == 0:
 		state.hop_stage = 0
 		state.air_redirects_remaining = 0
+		state.fast_falling = false
 		state.landing_ticks = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
 		state.last_event = "land"
 	if was_air_dodging and state.air_dodge_ticks == 0:
@@ -155,6 +180,7 @@ static func _try_hop(state: PlayerState, direction: Vector2i, config: SimConfig)
 		direction = _wall_kick_direction(direction, Vector2i(state.wall_x, state.wall_y))
 	_spend_stamina(state, MovementTuning.HOP_COST, config)
 	state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS)
+	state.variable_jump_grace_ticks = 1
 	state.hop_cooldown_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_COOLDOWN_MS)
 	state.hop_stage = 1
 	state.hop_mode = PlayerState.MovementMode.WALL_KICK if wall_kick else PlayerState.MovementMode.HOP
@@ -179,6 +205,7 @@ static func _try_double_jump(state: PlayerState, direction: Vector2i, config: Si
 	state.hop_stage = 2
 	state.hop_mode = PlayerState.MovementMode.DOUBLE_JUMP
 	state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.DOUBLE_JUMP_DURATION_MS)
+	state.variable_jump_grace_ticks = 1
 	state.hop_speed = MovementTuning.DOUBLE_JUMP_SPEED
 	state.hop_x = direction.x
 	state.hop_y = direction.y
@@ -247,6 +274,7 @@ static func _try_slide_jump(state: PlayerState, direction: Vector2i, config: Sim
 	_spend_stamina(state, MovementTuning.SLIDE_JUMP_COST, config)
 	state.slide_ticks = 0
 	state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.SLIDE_JUMP_DURATION_MS)
+	state.variable_jump_grace_ticks = 1
 	state.hop_stage = 1
 	state.hop_mode = PlayerState.MovementMode.SLIDE_JUMP
 	state.hop_speed = MovementTuning.SLIDE_JUMP_SPEED
@@ -410,7 +438,7 @@ static func _update_mode(state: PlayerState, command: SimCommand) -> void:
 	elif state.slide_ticks > 0:
 		state.movement_mode = PlayerState.MovementMode.SLIDE
 	elif state.hop_ticks > 0:
-		state.movement_mode = state.hop_mode
+		state.movement_mode = PlayerState.MovementMode.FAST_FALL if state.fast_falling else state.hop_mode
 	elif state.sprinting:
 		state.movement_mode = PlayerState.MovementMode.SPRINT
 	elif command.move_x != 0 or command.move_y != 0:

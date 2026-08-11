@@ -1,5 +1,46 @@
 # FLUX2 agent worklog
 
+## 2026-08-11 — variable jump and explicit fast fall
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added canonical held-jump and fast-fall command bits. Holding Space preserves
+  the authored arc, releasing cuts remaining air time to a bounded 90 ms
+  minimum, and airborne Ctrl/C advances descent by one extra tick per tick.
+- Added explicit fast-fall simulation/presentation state and mapped it to the
+  existing validated fall animation contract; fast fall costs no Stamina because
+  accepting an earlier landing is the commitment.
+- Added one canonical transition-grace tick so slide-jump and air-redirect events
+  remain observable before release-cut timing begins.
+- Advanced protocol to 6 and updated movement documentation and status.
+- Corrected three earlier worklog assertion totals by summing their preserved
+  test logs; no test outcome changed.
+
+Validation:
+
+- `git diff --check`: passed.
+- Pinned Godot 4.7.1 full headless gate: 13,106 assertions, zero failures.
+- At both 60 and 120 Hz: held jumps outlast released jumps, release preserves
+  the exact bounded minimum, fast fall has an explicit mode and exact extra
+  descent rate, spends no Stamina, and all Conservatory route transitions remain
+  ordered and observable.
+- Headless bootstrap at 60 and 120 Hz passed with protocol 6 and unchanged
+  canonical campus/ability/material hashes.
+
+Known limitations and next task:
+
+- Jump authority remains a timer-normalized top-down body lift, not a separate
+  vertical collision axis; this intentionally preserves the current 2.5D
+  topology contract.
+- Wall skim and fuller landing/recovery cues remain the final named universal
+  movement-feel slices before interactive physical-controller acceptance.
+- Next implementation slice adds bounded same-surface wall skim, then begins
+  walk-up Wellspring station interactions.
+
+Commit: pending. Push: pending.
+
 ## 2026-08-11 — deterministic movement intent buffering
 
 Branch: `codex/continuous-overhaul`
@@ -19,7 +60,7 @@ What changed and why:
 Validation:
 
 - `git diff --check`: passed.
-- Pinned Godot 4.7.1 full headless gate: 12,895 assertions, zero failures.
+- Pinned Godot 4.7.1 full headless gate: 13,081 assertions, zero failures.
 - At both 60 and 120 Hz: an early slide fires only after legal entry speed, an
   early jump converts inside the late slide-jump window, successful actions
   consume their buffer, and impossible standing slide expires with no Stamina
@@ -59,7 +100,7 @@ What changed and why:
 Validation:
 
 - Pinned Godot 4.7.1 import: passed and registered `SightOcclusion`.
-- Full headless gate: 12,758 assertions, zero failures; tangent ownership,
+- Full headless gate: 12,944 assertions, zero failures; tangent ownership,
   projection direction, bounded distance, opposite-side viewing and invalid
   inputs are covered.
 - 60/120 Hz headless boots with cone 360°/720: passed with protocol 4 and
@@ -104,7 +145,7 @@ What changed and why:
 Validation:
 
 - `git diff --check`: passed.
-- Pinned Godot 4.7.1 full headless gate: 12,747 assertions, zero failures.
+- Pinned Godot 4.7.1 full headless gate: 12,933 assertions, zero failures.
 - Dedicated slide entry/cost passed at 60 and 120 Hz; schema 1/2 migrations,
   Shift/Ctrl/C input defaults and portable generator provenance are covered.
 - Headless bootstrap at 60 and 120 Hz: passed with protocol 4 and canonical

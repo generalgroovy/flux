@@ -49,6 +49,12 @@ The buffer stores intent only: speed, aerial stage, cooldown, collision target,
 Stamina and control-lock requirements are rechecked every tick, and an expired
 or still-illegal action changes no state and spends no resource.
 
+Holding Space preserves the authored jump arc. Releasing it cuts remaining air
+time to a 90 ms minimum; holding Ctrl/C while airborne advances the fall by one
+additional simulation tick per tick. Fast fall costs no Stamina because the
+earlier landing is its commitment, and its explicit canonical/presentation state
+is replayed identically rather than inferred from animation.
+
 ## View modes
 
 `full` leaves the complete viewport visible. `cone` presents only the selected

@@ -177,6 +177,8 @@ static func animation_id_for_player(state: PlayerState) -> String:
 			return "vault"
 		PlayerState.MovementMode.SUPERGLIDE:
 			return "superglide"
+		PlayerState.MovementMode.FAST_FALL:
+			return "fall"
 		PlayerState.MovementMode.LAUNCHED:
 			return "hit"
 		PlayerState.MovementMode.GRAPPLED:

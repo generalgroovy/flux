@@ -52,6 +52,8 @@ even when design documentation already exists.
     verification
   - [x] Semantic slide, jump-chain and technique presses buffer for 180 ms while
     every eventual transition still revalidates state, collision and Stamina
+  - [x] Holding Space preserves the full jump arc, release cuts to a bounded
+    minimum, and airborne Ctrl/C fast-falls through explicit canonical state
   - [x] Separate Health, Stamina, and spell Flux; independent quantized aim and
     keyboard/mouse/controller action defaults
   - [x] Offline saved keyboard bindings, world-relative and aim-relative
@@ -1768,7 +1770,7 @@ F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
 left/right sticks, right trigger, west/east face buttons, and shoulders. The
 rate never mutates inside a running match.
 
-G3 now uses protocol 5 and preference schema 3: Space invokes the semantic jump
+G3 now uses protocol 6 and preference schema 3: Space invokes the semantic jump
 action, Shift sprints, Ctrl/C directly slides, and primary no longer aliases
 Space. Schema-v1/v2 defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision

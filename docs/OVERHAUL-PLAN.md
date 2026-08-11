@@ -125,7 +125,9 @@ passes on Garuda Linux/Sway and Windows.
   reset/import/export, and controller command-equivalence acceptance.
 - [x] Implemented: add 180 ms semantic buffers for slide, jump-chain and
   technique transitions with deterministic expiry and resource-safe rechecks.
-- [ ] Planned: add variable hop/fall presentation state,
+- [x] Implemented: add held/released variable jump timing and explicit Ctrl/C
+  fast-fall authority/presentation state at bounded rates.
+- [ ] Planned: add fuller landing/recovery presentation state,
   and authored elevation/low-cover queries.
 - [x] G3 input migration: schema-v1 C-jump/Space-primary defaults migrate to
   schema-v3 Shift sprint/Ctrl slide/Space jump/no-key primary without replacing explicit saved

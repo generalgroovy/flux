@@ -4,6 +4,8 @@ extends RefCounted
 
 const HELD_SPRINT: int = 1 << 0
 const HELD_PRIMARY: int = 1 << 1
+const HELD_JUMP: int = 1 << 2
+const HELD_FAST_FALL: int = 1 << 3
 const PRESSED_JUMP: int = 1 << 0
 const PRESSED_TECHNIQUE: int = 1 << 1
 const PRESSED_ACTIVE_1: int = 1 << 2

@@ -211,20 +211,15 @@ func _draw() -> void:
 	draw_set_transform(Vector2.ZERO)
 	var rendered_screen_position: Vector2 = rendered_position - camera_origin
 	_draw_pov_mask(rendered_screen_position, Vector2(state.aim_x, state.aim_y))
-	var status := "%d HZ · T%d · HP %.0f · ST %.0f · FX %.0f · P%d · %s" % [
-		tick_rate,
-		world.tick,
-		float(state.health) / 1000.0,
-		float(state.stamina) / 1000.0,
-		float(state.flux) / 1000.0,
-		world.projectiles.size(),
-		state.last_event,
-	]
 	draw_rect(Rect2(16, 14, 1248, 96), PANEL_COLOR, true)
 	draw_rect(Rect2(16, 14, 1248, 96), BRASS_COLOR.darkened(0.3), false, 2.0)
-	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "THE SANCTUM · LIVING CAMPUS G2 · BUILD %d/13" % loadout.active_points, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(760, 40), status, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, ATTUNEMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · MOUSE AIM · LMB ARC PRIMARY · RMB/E VECTOR LANCE · ALT SPRINT · SPACE JUMP · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "THE WELLSPRING · BUILD %d/13" % loadout.active_points, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
+	var movement_name: String = String(PlayerState.MovementMode.keys()[state.movement_mode]).replace("_", " ")
+	draw_string(ThemeDB.fallback_font, Vector2(400, 40), "%s · %s" % [movement_name, state.last_event.to_upper()], HORIZONTAL_ALIGNMENT_RIGHT, 280.0, 13, ATTUNEMENT_COLOR)
+	_draw_resource_bar(Rect2(700, 24, 168, 20), "HEALTH", state.health, PlayerTuning.HEALTH_MAXIMUM, Color("d9634f"))
+	_draw_resource_bar(Rect2(884, 24, 168, 20), "FLUX", state.flux, PlayerTuning.FLUX_MAXIMUM, FLUX_COLOR)
+	_draw_resource_bar(Rect2(1068, 24, 168, 20), "STAMINA", state.stamina, MovementTuning.STAMINA_MAXIMUM, ATTUNEMENT_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · SHIFT SPRINT · CTRL/C SLIDE · SPACE JUMP · V VAULT/AIR TURN", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
 	var view_description := "FULL" if player_preferences.pov_mode == PlayerPreferences.POV_FULL else "CONE %d°/%d" % [player_preferences.pov_angle_degrees, player_preferences.pov_range]
 	draw_string(
 		ThemeDB.fallback_font,
@@ -240,6 +235,14 @@ func _draw() -> void:
 		draw_string(ThemeDB.fallback_font, Vector2(32, 132), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
 	if show_debug_overlay:
 		_draw_material_yard_preview()
+
+
+func _draw_resource_bar(rectangle: Rect2, label: String, value: int, maximum: int, color: Color) -> void:
+	var ratio: float = clampf(float(value) / float(maximum), 0.0, 1.0)
+	draw_rect(rectangle, Color(FOREST_SHADOW_COLOR, 0.92), true)
+	draw_rect(Rect2(rectangle.position + Vector2(2, 2), Vector2((rectangle.size.x - 4.0) * ratio, rectangle.size.y - 4.0)), color, true)
+	draw_rect(rectangle, Color(PARCHMENT_COLOR, 0.65), false, 1.0)
+	draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(7, 15), "%s %d" % [label, value / 1000], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 12.0, 12, Color.WHITE)
 
 
 func _draw_pov_mask(origin: Vector2, aim: Vector2) -> void:

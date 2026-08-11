@@ -81,9 +81,19 @@ func _validate_provenance() -> bool:
 	var generator_hash := String(provenance.get("generator_sha256", ""))
 	if generator_path != "res://scripts/generate_sanctum_runtime_kit.gd" or not FileAccess.file_exists(generator_path):
 		return _fail("Sanctum runtime-kit generator path is invalid")
-	if generator_hash.length() != 64 or FileAccess.get_sha256(generator_path) != generator_hash:
+	if generator_hash.length() != 64 or canonical_text_sha256(generator_path) != generator_hash:
 		return _fail("Sanctum runtime-kit generator hash changed")
 	return true
+
+
+static func canonical_text_sha256(path: String) -> String:
+	if not FileAccess.file_exists(path):
+		return ""
+	var source := FileAccess.get_file_as_string(path).replace("\r\n", "\n").replace("\r", "\n")
+	var hashing := HashingContext.new()
+	if hashing.start(HashingContext.HASH_SHA256) != OK or hashing.update(source.to_utf8_buffer()) != OK:
+		return ""
+	return hashing.finish().hex_encode()
 
 
 func _validate_pixel_contract() -> bool:

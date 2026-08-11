@@ -17,7 +17,9 @@ func _test_defaults_and_presets() -> void:
 	equal(preferences.pov_mode, PlayerPreferences.POV_FULL, "full view is the safe default")
 	equal(preferences.pov_angle_degrees, 120, "cone angle remains ready when cone view is selected")
 	equal(preferences.pov_range, 720, "cone range remains ready when cone view is selected")
-	equal(PlayerPreferences.SCHEMA_VERSION, 2, "player preferences save schema v2")
+	equal(PlayerPreferences.SCHEMA_VERSION, 3, "player preferences save schema v3")
+	equal(preferences.keyboard_bindings[&"sprint"], KEY_SHIFT, "Shift is the production-default sprint key")
+	equal(preferences.keyboard_bindings[&"slide"], KEY_CTRL, "Ctrl is the persisted slide key")
 	equal(preferences.keyboard_bindings[&"jump"], KEY_SPACE, "Space is the production-default jump key")
 	equal(preferences.keyboard_bindings[&"primary"], 0, "primary has no default keyboard alias")
 	check(not preferences.reduced_motion, "reduced motion defaults off")
@@ -29,7 +31,7 @@ func _test_defaults_and_presets() -> void:
 
 func _test_validation() -> void:
 	var valid := {
-		"schema_version": 2,
+		"schema_version": 3,
 		"movement_reference": "aim_relative",
 		"pov_mode": "cone",
 		"pov_angle_degrees": 360,
@@ -41,7 +43,7 @@ func _test_validation() -> void:
 	equal(preferences.pov_angle_degrees, 360, "360-degree ranged view is legal")
 	equal(preferences.pov_range, 2048, "custom view length is legal")
 	for mutation: Dictionary in [
-		{"schema_version": 3},
+		{"schema_version": 4},
 		{"movement_reference": "camera_relative"},
 		{"pov_mode": "wallhack"},
 		{"pov_angle_degrees": 14},
@@ -86,7 +88,13 @@ func _test_schema_v1_migration_and_reduced_motion() -> void:
 	check(migrated.apply_dictionary(_base_preferences(1, legacy_defaults)), "schema-v1 defaults migrate")
 	equal(migrated.keyboard_bindings[&"jump"], KEY_SPACE, "schema-v1 default C migrates to Space jump")
 	equal(migrated.keyboard_bindings[&"primary"], 0, "schema-v1 default Space primary alias is removed")
+	equal(migrated.keyboard_bindings[&"sprint"], KEY_SHIFT, "schema-v1 Alt sprint migrates to Shift")
+	equal(migrated.keyboard_bindings[&"slide"], KEY_CTRL, "schema-v1 gains the Ctrl slide action")
 	check(not migrated.reduced_motion, "schema-v1 reduced_motion defaults false")
+	var schema_two := PlayerPreferences.new()
+	check(schema_two.apply_dictionary(_base_preferences(2, PlayerPreferences.SCHEMA_V2_DEFAULT_KEYBOARD_BINDINGS)), "schema-v2 defaults migrate")
+	equal(schema_two.keyboard_bindings[&"sprint"], KEY_SHIFT, "schema-v2 Alt sprint migrates to Shift")
+	equal(schema_two.keyboard_bindings[&"slide"], KEY_CTRL, "schema-v2 gains the Ctrl slide action")
 
 	var explicit: Dictionary = legacy_defaults.duplicate()
 	explicit[&"jump"] = KEY_J
@@ -99,8 +107,8 @@ func _test_schema_v1_migration_and_reduced_motion() -> void:
 	var current: Dictionary = migrated.to_dictionary()
 	current["reduced_motion"] = true
 	var loaded := PlayerPreferences.new()
-	check(loaded.apply_dictionary(current), "schema-v2 preferences load")
-	check(loaded.reduced_motion, "schema-v2 reduced_motion loads")
+	check(loaded.apply_dictionary(current), "schema-v3 preferences load")
+	check(loaded.reduced_motion, "schema-v3 reduced_motion loads")
 	var before: Dictionary = loaded.to_dictionary().duplicate(true)
 	var malformed: Dictionary = current.duplicate(true)
 	malformed["reduced_motion"] = "false"

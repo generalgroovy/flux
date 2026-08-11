@@ -54,7 +54,8 @@ even when design documentation already exists.
     keyboard/mouse/controller action defaults
   - [x] Offline saved keyboard bindings, world-relative and aim-relative
     movement presets, and full/ranged-cone POV with 15–360° angle and adjustable
-    range
+    range; production defaults are Shift sprint, Ctrl/C direct slide and Space
+    jump
   - [x] Edgeweave swept hostile near-miss reward with speed, cooldown,
     miss-vs-hit, full-Stamina, training, and per-projectile farming guards
   - [x] Space-only default jump plus timer-normalized body lift and a separate
@@ -1755,18 +1756,18 @@ scripts/run.sh --tick-rate=120
 ```
 
 Current foundation controls: WASD moves, mouse aims, left click fires Arc
-Primary, right click or E casts Vector Lance, Alt sprints, Space uses the
-jump/movement chain, V
-uses the contextual technique, R restarts the match, and F6 restarts at the
+Primary, right click or E casts Vector Lance, Shift sprints, Ctrl or C slides,
+Space uses the jump/movement chain, V uses the contextual vault/air technique,
+R restarts the match, and F6 restarts at the
 other supported tick rate. F7 changes movement reference, F8 changes view, and
 F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
 left/right sticks, right trigger, west/east face buttons, and shoulders. The
 rate never mutates inside a running match.
 
-G3 now migrates the production default so Space invokes the semantic jump action
-and primary no longer aliases Space. Schema-v1 defaults migrate to schema v2,
-explicit saved alternatives remain supported, and malformed reduced-motion data
-fails closed. The pending jump presentation keeps the collision
+G3 now uses protocol 4 and preference schema 3: Space invokes the semantic jump
+action, Shift sprints, Ctrl/C directly slides, and primary no longer aliases
+Space. Schema-v1/v2 defaults migrate safely, explicit saved alternatives remain
+supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision
 anchor grounded while the body rises and a separate receiving-surface shadow
 grows broader/darker to the apex, then contracts through descent at equivalent
 60/120 Hz phase.

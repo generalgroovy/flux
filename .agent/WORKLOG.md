@@ -1,5 +1,50 @@
 # FLUX2 agent worklog
 
+## 2026-08-11 — continuous directive and discoverable movement controls
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added the repository-owned continuous implementation directive and compact
+  active backlog, prioritizing movement, honest visibility, charming readable
+  presentation, two complete champions, interactive Wellspring stations and
+  authoritative friend hosting/joining while preserving a green checkpoint.
+- Versioned commands to protocol 4 with a dedicated slide edge. Shift now
+  sprints, Ctrl/C directly slides after the existing readable entry-speed
+  commitment, Space jumps/chains, and V retains contextual vault/air control;
+  keyboard remapping and controller inputs remain supported.
+- Migrated preference schema 1/2 defaults to schema 3 without replacing
+  explicit saved alternatives.
+- Replaced compressed HP/ST/FX text with distinct Health, Flux and Stamina bars,
+  a bounded live movement/event lane and a concise production control legend.
+- Made runtime-kit generator provenance hashing newline-canonical so the exact
+  approved source validates on Windows CRLF and Linux LF checkouts.
+
+Validation:
+
+- `git diff --check`: passed.
+- Pinned Godot 4.7.1 full headless gate: 12,747 assertions, zero failures.
+- Dedicated slide entry/cost passed at 60 and 120 Hz; schema 1/2 migrations,
+  Shift/Ctrl/C input defaults and portable generator provenance are covered.
+- Headless bootstrap at 60 and 120 Hz: passed with protocol 4 and canonical
+  campus/ability/material hashes.
+- Windows interactive compatibility-renderer smoke: responsive `FLUX 2
+  (DEBUG)` window at 1280 x 720; computer-control capture exposed and verified
+  repair of an initial title/state overlap; resource bars and controls remain
+  legible over the world.
+
+Known limitations and next task:
+
+- Direct slide intentionally requires ordinary movement speed; it is not a
+  free standing dash. Input buffering and additional feel work remain backlog.
+- The HUD is still code-drawn and uses the fallback font; accepted pixel font,
+  bubbles, cooldown cues and settings UI remain later visual slices.
+- Cone view still masks by angle/range only. The next slice adds deterministic
+  `los_cutaway` building occlusion without granting presentation authority.
+
+Commit: pending. Push: pending.
+
 ## 2026-08-01 — Godot deterministic movement foundation
 
 Branch: `agent/aider-godot-foundation`

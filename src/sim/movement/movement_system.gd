@@ -17,6 +17,8 @@ static func step(state: PlayerState, command: SimCommand, config: SimConfig, wor
 		PlayerState.ControlState.ROOTED,
 	]
 	if not control_locked:
+		if command.has_pressed(SimCommand.PRESSED_SLIDE) and not state.is_airborne():
+			_try_slide(state, direction, config)
 		if command.has_pressed(SimCommand.PRESSED_JUMP):
 			if state.vault_ticks > 0:
 				_try_superglide(state, direction, config)

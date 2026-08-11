@@ -126,7 +126,7 @@ passes on Garuda Linux/Sway and Windows.
 - [ ] Planned: add buffered transitions, variable hop/fall presentation state,
   and authored elevation/low-cover queries.
 - [x] G3 input migration: schema-v1 C-jump/Space-primary defaults migrate to
-  schema-v2 Space jump/no-key primary without replacing explicit saved
+  schema-v3 Shift sprint/Ctrl slide/Space jump/no-key primary without replacing explicit saved
   alternatives; malformed reduced-motion data fails closed and left mouse plus
   controller primary inputs remain intact.
 - [x] G3 shared jump presentation: present every current aerial traversal as an

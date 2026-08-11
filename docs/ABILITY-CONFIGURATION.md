@@ -3,7 +3,7 @@
 ## Scope
 
 This contract began as the validated canonical configuration checkpoint and now
-also records the boundary consumed by protocol-3 combat. Arc Primary and Vector
+also records the boundary consumed by protocol-4 combat. Arc Primary and Vector
 Lance cast end to end; the remaining catalog entries are still configuration
 only. Network-visible identities, resource rules, loadout legality, affinity
 behavior, and compatibility hashes remain trustworthy before any additional

@@ -5,12 +5,14 @@ extends RefCounted
 const KEY_ACTIONS: Dictionary[StringName, int] = PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS
 const PRIMARY_ACTION: StringName = &"primary"
 const ACTIVE_1_ACTION: StringName = &"active_1"
+const SLIDE_ACTION: StringName = &"slide"
 const AIM_DEADZONE: float = 0.25
 
 var entity_id: int
 var jump_was_down: bool = false
 var technique_was_down: bool = false
 var active_1_was_down: bool = false
+var slide_was_down: bool = false
 var movement_reference: String = PlayerPreferences.MOVEMENT_WORLD_RELATIVE
 var last_quantized_aim := Vector2i(1000, 0)
 
@@ -26,6 +28,7 @@ static func ensure_input_map() -> void:
 		var physical_keycode: int = KEY_ACTIONS[action]
 		if physical_keycode != 0:
 			_add_key(action, physical_keycode)
+	_add_key(SLIDE_ACTION, KEY_C)
 	_ensure_action(PRIMARY_ACTION)
 	_add_mouse_button(PRIMARY_ACTION, MOUSE_BUTTON_LEFT)
 	_ensure_action(ACTIVE_1_ACTION)
@@ -49,6 +52,7 @@ static func ensure_input_map() -> void:
 	_add_joy_button(&"sprint", JOY_BUTTON_LEFT_SHOULDER)
 	_add_joy_button(&"jump", JOY_BUTTON_RIGHT_SHOULDER)
 	_add_joy_button(&"technique", JOY_BUTTON_B)
+	_add_joy_button(SLIDE_ACTION, JOY_BUTTON_A)
 
 
 static func _ensure_action(action: StringName) -> void:
@@ -99,6 +103,7 @@ func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> S
 	var jump_down: bool = Input.is_action_pressed(&"jump")
 	var technique_down: bool = Input.is_action_pressed(&"technique")
 	var active_1_down: bool = Input.is_action_pressed(ACTIVE_1_ACTION)
+	var slide_down: bool = Input.is_action_pressed(SLIDE_ACTION)
 	var pressed: int = 0
 	if jump_down and not jump_was_down:
 		pressed |= SimCommand.PRESSED_JUMP
@@ -106,9 +111,12 @@ func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> S
 		pressed |= SimCommand.PRESSED_TECHNIQUE
 	if active_1_down and not active_1_was_down:
 		pressed |= SimCommand.PRESSED_ACTIVE_1
+	if slide_down and not slide_was_down:
+		pressed |= SimCommand.PRESSED_SLIDE
 	jump_was_down = jump_down
 	technique_was_down = technique_down
 	active_1_was_down = active_1_down
+	slide_was_down = slide_down
 
 	var aim_delta: Vector2 = pointer_position - player_position
 	var joy_aim := Vector2(
@@ -162,6 +170,8 @@ func configure_keyboard_bindings(requested_bindings: Dictionary) -> bool:
 		var physical_keycode: int = int(requested_bindings.get(action, PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS[action]))
 		if physical_keycode != 0:
 			_add_key(action, physical_keycode)
+	if int(requested_bindings.get(SLIDE_ACTION, 0)) == PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS[SLIDE_ACTION]:
+		_add_key(SLIDE_ACTION, KEY_C)
 	return true
 
 

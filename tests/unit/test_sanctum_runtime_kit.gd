@@ -10,6 +10,11 @@ func run() -> int:
 func _test_repository_runtime_kit() -> void:
 	var kit := SanctumRuntimeKit.new()
 	check(kit.load_from_file(), "runtime kit validates and imports: %s" % kit.last_error)
+	equal(
+		SanctumRuntimeKit.canonical_text_sha256("res://scripts/generate_sanctum_runtime_kit.gd"),
+		String((kit.data.get("provenance", {}) as Dictionary).get("generator_sha256", "")),
+		"generator provenance hash is stable across platform line endings",
+	)
 	equal(String(kit.data.get("status")), "runtime-approved", "runtime approval is explicit")
 	check(not bool(kit.data.get("release_approved", true)), "release approval remains false")
 	equal(String(kit.data.get("authority")), "presentation-only", "runtime kit cannot define gameplay")

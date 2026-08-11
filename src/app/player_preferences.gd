@@ -2,7 +2,7 @@ class_name PlayerPreferences
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 2
+const SCHEMA_VERSION: int = 3
 const DEFAULT_PATH: String = "user://player_preferences_v1.json"
 const MOVEMENT_WORLD_RELATIVE: String = "world_relative"
 const MOVEMENT_AIM_RELATIVE: String = "aim_relative"
@@ -32,12 +32,31 @@ const LEGACY_DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"adjust_pov_angle": KEY_F9,
 	&"adjust_pov_range": KEY_F10,
 }
-const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
+const SCHEMA_V2_DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"move_left": KEY_A,
 	&"move_right": KEY_D,
 	&"move_up": KEY_W,
 	&"move_down": KEY_S,
 	&"sprint": KEY_ALT,
+	&"jump": KEY_SPACE,
+	&"technique": KEY_V,
+	&"primary": 0,
+	&"active_1": KEY_E,
+	&"reset_match": KEY_R,
+	&"toggle_debug_overlay": KEY_F1,
+	&"toggle_tick_rate": KEY_F6,
+	&"toggle_movement_reference": KEY_F7,
+	&"toggle_pov_mode": KEY_F8,
+	&"adjust_pov_angle": KEY_F9,
+	&"adjust_pov_range": KEY_F10,
+}
+const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
+	&"move_left": KEY_A,
+	&"move_right": KEY_D,
+	&"move_up": KEY_W,
+	&"move_down": KEY_S,
+	&"sprint": KEY_SHIFT,
+	&"slide": KEY_CTRL,
 	&"jump": KEY_SPACE,
 	&"technique": KEY_V,
 	&"primary": 0,
@@ -86,16 +105,16 @@ func apply_control_preset(preset_id: String) -> bool:
 func apply_dictionary(data: Dictionary) -> bool:
 	var raw_schema: Variant = data.get("schema_version", -1)
 	if not _is_whole_number(raw_schema):
-		last_error = "Player preferences require schema_version 1 or 2"
+		last_error = "Player preferences require schema_version 1, 2 or 3"
 		return false
 	var requested_schema: int = int(raw_schema)
-	if requested_schema != 1 and requested_schema != SCHEMA_VERSION:
-		last_error = "Player preferences require schema_version 1 or 2"
+	if requested_schema != 1 and requested_schema != 2 and requested_schema != SCHEMA_VERSION:
+		last_error = "Player preferences require schema_version 1, 2 or 3"
 		return false
 	var requested_movement: String = str(data.get("movement_reference", ""))
 	var requested_pov_mode: String = str(data.get("pov_mode", ""))
 	var requested_reduced_motion: bool = false
-	if requested_schema == SCHEMA_VERSION:
+	if requested_schema >= 2:
 		var raw_reduced_motion: Variant = data.get("reduced_motion", false)
 		if not raw_reduced_motion is bool:
 			last_error = "reduced_motion must be a boolean"
@@ -124,6 +143,8 @@ func apply_dictionary(data: Dictionary) -> bool:
 	var requested_bindings: Dictionary[StringName, int]
 	if requested_schema == 1:
 		requested_bindings = LEGACY_DEFAULT_KEYBOARD_BINDINGS.duplicate()
+	elif requested_schema == 2:
+		requested_bindings = SCHEMA_V2_DEFAULT_KEYBOARD_BINDINGS.duplicate()
 	else:
 		requested_bindings = DEFAULT_KEYBOARD_BINDINGS.duplicate()
 	var binding_data: Variant = data.get("keyboard_bindings", {})
@@ -148,6 +169,10 @@ func apply_dictionary(data: Dictionary) -> bool:
 			requested_bindings[&"jump"] = DEFAULT_KEYBOARD_BINDINGS[&"jump"]
 		if requested_bindings[&"primary"] == LEGACY_DEFAULT_KEYBOARD_BINDINGS[&"primary"]:
 			requested_bindings[&"primary"] = DEFAULT_KEYBOARD_BINDINGS[&"primary"]
+	if requested_schema <= 2:
+		if requested_bindings[&"sprint"] == KEY_ALT:
+			requested_bindings[&"sprint"] = DEFAULT_KEYBOARD_BINDINGS[&"sprint"]
+		requested_bindings[&"slide"] = DEFAULT_KEYBOARD_BINDINGS[&"slide"]
 	var binding_error: String = validate_keyboard_bindings(requested_bindings)
 	if not binding_error.is_empty():
 		last_error = binding_error

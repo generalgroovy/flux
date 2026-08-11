@@ -47,6 +47,14 @@ func _test_double_jump(tick_rate: int) -> void:
 
 
 func _test_slide_and_slide_jump(tick_rate: int) -> void:
+	var direct_world := SimWorld.new(tick_rate)
+	var direct_state: PlayerState = direct_world.player()
+	while direct_state.velocity_x < MovementTuning.SLIDE_ENTRY_SPEED:
+		_step(direct_world, 1000, 0)
+	_step(direct_world, 1000, 0, 0, SimCommand.PRESSED_SLIDE)
+	equal(direct_state.last_event, "slide", "%d Hz dedicated slide enters slide directly" % tick_rate)
+	equal(direct_state.stamina, MovementTuning.STAMINA_MAXIMUM - MovementTuning.SLIDE_COST, "%d Hz dedicated slide has the authored Stamina cost" % tick_rate)
+
 	var world := SimWorld.new(tick_rate)
 	var state: PlayerState = world.player()
 	@warning_ignore("integer_division")

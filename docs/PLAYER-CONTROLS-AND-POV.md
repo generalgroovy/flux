@@ -2,7 +2,7 @@
 
 ## Implemented checkpoint
 
-FLUX 2 now loads schema-v2 preferences from the stable offline profile
+FLUX 2 now loads schema-v3 preferences from the stable offline profile
 `user://player_preferences_v1.json`. The legacy filename is retained so existing
 schema-v1 installations are discovered and migrated in place. On Linux it
 normally resolves below
@@ -18,8 +18,9 @@ The profile owns five independent concerns:
 - ranged-cone angle and length.
 - the reduced-motion accessibility preference used by G3 presentation.
 
-Schema-v1 profiles migrate only the former default bindings: C jump becomes
-Space jump and the former Space primary alias becomes unbound. Explicit saved
+Schema-v1/v2 profiles migrate the former defaults: C jump becomes Space jump,
+Alt sprint becomes Shift sprint, Ctrl gains the dedicated slide action, and the
+former Space primary alias becomes unbound. Explicit saved
 alternatives, including J jump or P primary, remain unchanged. New defaults bind
 Space only to semantic jump; Arc Primary keeps left mouse and controller trigger.
 
@@ -72,6 +73,8 @@ cue, or diagnostic leak.
 
 | Input | Action |
 | --- | --- |
+| `Shift` | Sprint while held |
+| `Ctrl` / `C` | Dedicated grounded slide press |
 | `Space` | Semantic jump / movement-chain press |
 | Left mouse | Arc Primary; no default Space alias |
 | `E` / right mouse | Vector Lance |

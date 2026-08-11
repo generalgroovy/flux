@@ -1,5 +1,55 @@
 # FLUX2 agent worklog
 
+## 2026-08-11 — authoritative Farflow travellers and movement snapshots
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added stable session entity IDs 1-8, accepted/disconnected presence queues and
+  trusted peer-to-entity stamping. The host owns the roster; the first guest is
+  S. Wayne beside host Oh Tipi so the playable network check exercises both
+  foundation champions instead of cloning one placeholder.
+- Added `AuthoritativeSession`: it creates/removes collision-cleared peer actors,
+  merges one-shot inputs without losing presses, stamps every command to the host
+  tick, simulates all travellers together and fails stale remote input to idle
+  after 250 ms. Clients still cannot choose position, resources or outcomes.
+- Added a compact, strictly validated snapshot schema for up to eight sorted
+  travellers. The host publishes at 60 Hz from both supported simulation rates;
+  guests follow their assigned actor and render authoritative movement, jump,
+  resources, champion kit, display names and the other traveller's champion
+  sprite/health. Projectiles are deliberately the next replication slice.
+- Added diagnostic `--farflow=host|join` startup switches for repeatable platform
+  smoke tests while preserving the walk-up Farflow stations as the player-facing
+  flow. Client reset, tick-rate and attunement mutations now explain that host
+  authorization is required instead of silently diverging.
+
+Validation:
+
+- Pinned Godot 4.7.1 import and full headless suite passed with **14,197
+  assertions**, zero failures. New evidence: `authoritative-session` 54,
+  `session-transport` 44 and `session-snapshot` 18 assertions.
+- Independent 60/120 Hz boots passed at protocol 12 with campus/ability/champion
+  hashes `c981419a5b33` / `566a637aa616` / `81962afbff12`.
+- Two complete Windows headless game processes connected over UDP localhost on
+  diagnostic port 24873: host logged `RiverGuest` as entity 2 and guest applied
+  a two-traveller snapshot at host tick 150. This caught and fixed a runtime-only
+  typed-array startup failure that import and unit parsing did not expose.
+- `git diff --check`: passed; generated `dist/` and `node_modules/` stayed out of
+  scope.
+
+Known limitations and next task:
+
+- Guest movement/resources are authoritative and visible, but projectile state,
+  semantic combat feedback, shared station requests, emotes, prediction and
+  reconciliation are not yet replicated.
+- Windows localhost is proven; packaged Windows and Garuda Linux direct-IP
+  acceptance, firewall UX, reconnect and host shutdown remain required.
+- Next slice adds bounded projectile snapshots and shared impact/cast feedback,
+  then host-authorized Wellspring interaction and a transparent social emote.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-11 — diegetic Farflow ENet transport boundary
 
 Branch: `codex/continuous-overhaul`

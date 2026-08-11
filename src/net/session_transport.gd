@@ -23,6 +23,8 @@ const PACKET_HELLO: int = 1
 const PACKET_ACCEPT: int = 2
 const PACKET_REJECT: int = 3
 const PACKET_INPUT: int = 4
+const PACKET_SNAPSHOT: int = 5
+const MAX_QUEUED_SNAPSHOTS: int = 2
 
 var peer: ENetMultiplayerPeer
 var mode: int = Mode.OFFLINE
@@ -34,9 +36,15 @@ var last_error: String = ""
 var status_detail: String = "Offline"
 var accepted: bool = false
 var local_peer_id: int = 0
+var local_entity_id: int = 0
 var accepted_peer_ids := PackedInt32Array()
 var incoming_inputs: Array[Dictionary] = []
+var incoming_snapshots: Array[Dictionary] = []
+var joined_peers: Array[Dictionary] = []
+var disconnected_peers: Array[Dictionary] = []
 var last_input_sequence_by_peer: Dictionary[int, int] = {}
+var entity_by_peer: Dictionary[int, int] = {}
+var name_by_peer: Dictionary[int, String] = {}
 var _hello_sent: bool = false
 var _connect_started_ms: int = 0
 
@@ -79,6 +87,7 @@ func start_host(port: int, signature: String, requested_player_name: String = "H
 	player_name = safe_name
 	bound_port = peer.host.get_local_port()
 	local_peer_id = SERVER_PEER_ID
+	local_entity_id = SERVER_PEER_ID
 	accepted = true
 	accepted_peer_ids = PackedInt32Array()
 	status_detail = "Hosting %d/8 on UDP %d" % [player_count(), bound_port]
@@ -111,6 +120,7 @@ func start_join(address: String, port: int, signature: String, requested_player_
 	bound_port = port
 	accepted = false
 	local_peer_id = 0
+	local_entity_id = 0
 	_hello_sent = false
 	_connect_started_ms = Time.get_ticks_msec()
 	status_detail = "Seeking %s:%d" % [join_address, bound_port]
@@ -198,6 +208,48 @@ func take_inputs() -> Array[Dictionary]:
 	return result
 
 
+func take_joined_peers() -> Array[Dictionary]:
+	var result: Array[Dictionary] = joined_peers
+	joined_peers = []
+	return result
+
+
+func take_disconnected_peers() -> Array[Dictionary]:
+	var result: Array[Dictionary] = disconnected_peers
+	disconnected_peers = []
+	return result
+
+
+func host_roster() -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if not is_host():
+		return result
+	for peer_id: int in accepted_peer_ids:
+		result.append({
+			"peer_id": peer_id,
+			"entity_id": int(entity_by_peer.get(peer_id, 0)),
+			"name": String(name_by_peer.get(peer_id, "Traveller")),
+		})
+	result.sort_custom(func(left: Dictionary, right: Dictionary) -> bool: return int(left["entity_id"]) < int(right["entity_id"]))
+	return result
+
+
+func broadcast_snapshot(snapshot: Dictionary) -> bool:
+	if not is_host() or not SessionSnapshot.validate(snapshot):
+		return false
+	var packet := {"kind": PACKET_SNAPSHOT, "snapshot": snapshot}
+	var all_sent: bool = true
+	for peer_id: int in accepted_peer_ids:
+		all_sent = _send_to(peer_id, packet, MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED) and all_sent
+	return all_sent
+
+
+func take_snapshots() -> Array[Dictionary]:
+	var result: Array[Dictionary] = incoming_snapshots
+	incoming_snapshots = []
+	return result
+
+
 func _handle_packet(sender_id: int, packet_bytes: PackedByteArray) -> void:
 	if packet_bytes.is_empty() or packet_bytes.size() > MAX_PACKET_BYTES:
 		return
@@ -221,18 +273,34 @@ func _handle_packet(sender_id: int, packet_bytes: PackedByteArray) -> void:
 				):
 					var accepted_input: Dictionary = packet.duplicate(true)
 					accepted_input["peer_id"] = sender_id
+					accepted_input["entity_id"] = int(entity_by_peer.get(sender_id, 0))
 					incoming_inputs.append(accepted_input)
 					last_input_sequence_by_peer[sender_id] = sequence
 		return
-	if sender_id != SERVER_PEER_ID or mode != Mode.CONNECTING:
+	if sender_id != SERVER_PEER_ID:
 		return
-	match kind:
-		PACKET_ACCEPT:
-			accepted = true
-			mode = Mode.CLIENT
-			status_detail = "Joined %s:%d" % [join_address, bound_port]
-		PACKET_REJECT:
-			_disconnect_with_error(String(packet.get("reason", "Join refused")).left(80))
+	if mode == Mode.CONNECTING:
+		match kind:
+			PACKET_ACCEPT:
+				var assigned_entity_id: int = int(packet.get("entity_id", 0))
+				if assigned_entity_id < 2 or assigned_entity_id > MAX_PLAYERS:
+					_disconnect_with_error("Host assigned an invalid traveller identity")
+					return
+				local_entity_id = assigned_entity_id
+				accepted = true
+				mode = Mode.CLIENT
+				status_detail = "Joined %s:%d" % [join_address, bound_port]
+			PACKET_REJECT:
+				_disconnect_with_error(String(packet.get("reason", "Join refused")).left(80))
+		return
+	if mode == Mode.CLIENT and kind == PACKET_SNAPSHOT:
+		var snapshot_value: Variant = packet.get("snapshot")
+		if snapshot_value is Dictionary and SessionSnapshot.validate(snapshot_value):
+			var snapshot: Dictionary = snapshot_value
+			if incoming_snapshots.is_empty() or int(snapshot["tick"]) > int(incoming_snapshots.back()["tick"]):
+				incoming_snapshots.append(snapshot)
+				while incoming_snapshots.size() > MAX_QUEUED_SNAPSHOTS:
+					incoming_snapshots.pop_front()
 
 
 func _handle_hello(sender_id: int, packet: Dictionary) -> void:
@@ -248,33 +316,52 @@ func _handle_hello(sender_id: int, packet: Dictionary) -> void:
 	if safe_name.is_empty():
 		_send_to(sender_id, {"kind": PACKET_REJECT, "reason": "Invalid traveller name"})
 		return
+	var entity_id := _allocate_entity_id()
+	if entity_id == 0:
+		_send_to(sender_id, {"kind": PACKET_REJECT, "reason": "Session roster is full"})
+		return
 	accepted_peer_ids.append(sender_id)
 	accepted_peer_ids.sort()
+	entity_by_peer[sender_id] = entity_id
+	name_by_peer[sender_id] = safe_name
 	last_input_sequence_by_peer[sender_id] = -1
+	joined_peers.append({"peer_id": sender_id, "entity_id": entity_id, "name": safe_name})
 	_send_to(sender_id, {
 		"kind": PACKET_ACCEPT,
 		"peer_id": sender_id,
+		"entity_id": entity_id,
 		"player_count": player_count(),
 	})
 	status_detail = "Hosting %d/8 on UDP %d" % [player_count(), bound_port]
 
 
-func _send_to(target_peer_id: int, packet: Dictionary) -> bool:
+func _send_to(
+	target_peer_id: int,
+	packet: Dictionary,
+	transfer_mode: int = MultiplayerPeer.TRANSFER_MODE_RELIABLE,
+) -> bool:
 	if peer == null:
 		return false
 	var encoded: PackedByteArray = var_to_bytes(packet)
 	if encoded.is_empty() or encoded.size() > MAX_PACKET_BYTES:
 		return false
 	peer.set_target_peer(target_peer_id)
+	peer.transfer_mode = transfer_mode
 	return peer.put_packet(encoded) == OK
 
 
 func _on_peer_disconnected(peer_id: int) -> void:
 	if is_host():
+		var entity_id: int = entity_by_peer.get(peer_id, 0)
+		var disconnected_name: String = name_by_peer.get(peer_id, "Traveller")
 		var index: int = accepted_peer_ids.find(peer_id)
 		if index >= 0:
 			accepted_peer_ids.remove_at(index)
+		if entity_id > 0:
+			disconnected_peers.append({"peer_id": peer_id, "entity_id": entity_id, "name": disconnected_name})
 		last_input_sequence_by_peer.erase(peer_id)
+		entity_by_peer.erase(peer_id)
+		name_by_peer.erase(peer_id)
 		status_detail = "Hosting %d/8 on UDP %d" % [player_count(), bound_port]
 	elif peer_id == SERVER_PEER_ID:
 		_disconnect_with_error("Host left the session")
@@ -296,9 +383,15 @@ func _close_peer() -> void:
 	session_signature = ""
 	accepted = false
 	local_peer_id = 0
+	local_entity_id = 0
 	accepted_peer_ids = PackedInt32Array()
 	incoming_inputs = []
+	incoming_snapshots = []
+	joined_peers = []
+	disconnected_peers = []
 	last_input_sequence_by_peer = {}
+	entity_by_peer = {}
+	name_by_peer = {}
 	_hello_sent = false
 	_connect_started_ms = 0
 
@@ -307,6 +400,16 @@ func _fail(message: String) -> bool:
 	last_error = message
 	status_detail = message
 	return false
+
+
+func _allocate_entity_id() -> int:
+	var used: Dictionary[int, bool] = {SERVER_PEER_ID: true}
+	for entity_id: int in entity_by_peer.values():
+		used[entity_id] = true
+	for candidate: int in range(2, MAX_PLAYERS + 1):
+		if not used.has(candidate):
+			return candidate
+	return 0
 
 
 static func _valid_port(port: int, allow_automatic: bool) -> bool:

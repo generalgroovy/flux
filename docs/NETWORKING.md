@@ -9,10 +9,13 @@ FLUX 2 now exposes two walk-up Farflow stations in the eastern Wellspring:
 | **Host Farflow** | Opens an ENet server on UDP `24872`, accepts at most seven remote clients, and shows the live count |
 | **Join Farflow** | Connects to the configured address, verifies compatibility, and shows seeking/joined/refused state |
 
-This checkpoint proves transport, compatibility, validation, lifecycle and
-diegetic controls. It does **not** yet claim playable shared simulation: the
-next slice registers an authoritative actor for each accepted peer, consumes
-validated input on the host, publishes snapshots, and renders both travellers.
+This checkpoint includes a first playable shared-movement loop. The host maps
+accepted peers to stable entities 2-8, gives the first guest S. Wayne beside the
+host's Oh Tipi, consumes only validated inputs, simulates every traveller, and
+publishes compact snapshots at 60 Hz. Each client follows its assigned actor,
+renders the named remote traveller, and receives authoritative resources and
+movement state. Projectile presentation, authorized shared station requests and
+prediction/reconciliation remain the next slices.
 
 ## Windows and Linux direct-IP smoke
 
@@ -34,6 +37,10 @@ are deliberately not claimed by this early direct-IP slice.
 `--player-name=` accepts one to 24 non-control characters. Without overrides,
 Join Farflow targets `127.0.0.1`, making two local processes a safe first test.
 Pressing F at either Farflow station again closes the local peer cleanly.
+
+For repeatable local diagnostics, `--farflow=host` or `--farflow=join` opens the
+same station action immediately after boot. These switches exist for automated
+Windows/Linux smoke tests and do not introduce a detached player-facing menu.
 
 ## Trust and compatibility boundary
 
@@ -58,8 +65,9 @@ trusted sender ID, tick, position, damage, cooldown, resource, score or outcome.
 | Slice | Acceptance |
 | --- | --- |
 | Transport/handshake | Implemented: real ENet loopback, match/refusal, bounded input and disconnect cleanup |
-| Authoritative presence | Host registers/removes peer actors, maps network ID to stable entity ID and broadcasts roster |
-| Movement snapshots | Host stamps inputs to its tick, simulates all actors, sends bounded snapshots; guest interpolates and reconciles |
+| Authoritative presence | Implemented: host registers/removes named peer actors and maps network peers to stable entities 2-8 |
+| Movement snapshots | Implemented: host stamps inputs to its tick, simulates all actors, bounds stale input and sends 60 Hz snapshots; guest interpolates presentation |
+| Shared projectiles | Next: replicate compact projectile state and semantic combat feedback without trusting guest outcomes |
 | Shared Wellspring interaction | Host authorizes reset/emote/station requests and all peers see the confirmed result |
 | Remote platform smoke | Windows and Garuda Linux direct-IP packages connect, move, leave and reconnect with diagnostics |
 | Session continuity | Join-in-progress, timeouts, reconnect token, host shutdown, moderation and later host migration |

@@ -44,7 +44,9 @@ even when design documentation already exists.
     Practice Bell, Champion Loom and ENet Host/Join Farflow gates with bubbles
   - [x] Direct-IP ENet host/join lifecycle, protocol/content handshake, eight-player
     cap, bounded validated input transport, mismatch refusal and loopback test
-  - [ ] Shared actor/snapshot simulation, settings/travel stations; overlay parity, map UI,
+  - [x] Stable host/guest actors, host-authoritative input and movement, bounded
+    60 Hz snapshots, named remote sprites and Windows localhost process smoke
+  - [ ] Shared projectile/interaction replication, settings/travel stations; overlay parity, map UI,
     streaming, and destination persistence
 - [ ] **Chapter 3 — [Movement and traversal](#movement-and-traversal)**
   — deterministic universal grammar in progress
@@ -1802,8 +1804,9 @@ rate never mutates inside a running match.
 
 The eastern **Host Farflow** and **Join Farflow** stations expose the first ENet
 friend-session boundary without a menu. Host listens on UDP `24872`; Join targets
-`127.0.0.1` or `--join-address=IP`. Compatibility and bounded-input loopback are
-live, while shared actor simulation/snapshots remain the next slice; see the
+`127.0.0.1` or `--join-address=IP`. Compatibility, bounded input, stable
+two-character actors and 60 Hz movement snapshots are live; shared projectiles
+and station requests remain next; see the
 [networking contract](docs/NETWORKING.md).
 
 The current simulation uses protocol 12 and preference schema 3: Space invokes the semantic jump
@@ -1838,7 +1841,7 @@ tools, accessibility, and compatibility agree.
 | G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: Oh Tipi/S. Wayne candidate bodies, shared lift/shadow, landing cue, five walk-up stations and sparring effigy are live; accepted champion art, remaining station flows and fallback taunt remain |
 | F2/G4 — systemic Sanctum | Structural/thermal reactions, authored traversal devices, input/controller UI, physics/chemistry practice and reset | Planned |
 | H1 — first ancestry/champion/spells | One approved body plan and character through loadout, unique taunt, dummy/bot, cues, replay, accessibility and platform source gates | Planned |
-| I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | In progress: direct-IP transport/handshake/input boundary and diegetic Host/Join gates live; authoritative shared actors/snapshots next |
+| I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | In progress: direct-IP gates, stable authoritative actors, host input and 60 Hz movement snapshots pass Windows localhost; shared projectiles/interactions, reconciliation, reconnect and Linux smoke next |
 | Sanctum V1 acceptance | Complete stations/overlays, LOS cutaways, charm/readability polish, offline/save/network/accessibility/performance, Garuda Sway and Windows packages/cleanup | First product acceptance |
 | J — first complete arena/mode | Original modular map, objectives, destruction/material safety, duel/team rules, bots, round/rematch/results | Planned |
 | K — session continuity | Late join, reconnect, spectators, forced host migration, diagnostics, self-hostable online boundary | Planned |

@@ -42,6 +42,12 @@ func _test_enet_loopback_handshake_and_input() -> void:
 	check(host.is_host(), "host remains authoritative after client handshake")
 	equal(host.player_count(), 2, "host counts itself plus accepted client")
 	check(client.local_peer_id > SessionTransport.SERVER_PEER_ID, "client receives a positive non-host peer id")
+	equal(client.local_entity_id, 2, "first guest receives stable session entity two")
+	var joined := host.take_joined_peers()
+	equal(joined.size(), 1, "host exposes one accepted presence event")
+	if not joined.is_empty():
+		equal(int(joined[0].get("entity_id", 0)), 2, "presence event owns the stable entity mapping")
+		equal(String(joined[0].get("name", "")), "River Guest", "presence event carries the validated display name")
 
 	var command := SimCommand.new(0, 1, 700, -300, SimCommand.HELD_SPRINT, SimCommand.PRESSED_JUMP, 1000, 0)
 	check(client.send_input(17, command), "accepted client sends a bounded input packet")
@@ -52,6 +58,7 @@ func _test_enet_loopback_handshake_and_input() -> void:
 		equal(int(inputs[0].get("sequence", -1)), 17, "input sequence survives transport")
 		equal(int(inputs[0].get("move_x", 0)), 700, "input movement survives transport")
 		equal(int(inputs[0].get("peer_id", 0)), client.local_peer_id, "host stamps trusted sender identity")
+		equal(int(inputs[0].get("entity_id", 0)), client.local_entity_id, "host stamps the trusted simulation entity")
 	check(host.take_inputs().is_empty(), "host input drain is single-consumer")
 	check(client.send_input(17, command), "client can retransmit but cannot authorize a repeated sequence")
 	for _index: int in range(20):
@@ -66,8 +73,25 @@ func _test_enet_loopback_handshake_and_input() -> void:
 	check(incompatible.last_error.contains("Incompatible"), "compatibility refusal explains the mismatch")
 	equal(host.player_count(), 2, "rejected client never enters authoritative roster")
 
+	var source := SimWorld.new(120, 1, CollisionWorld.new())
+	source.player().champion_wire_id = 1
+	var guest := PlayerState.new(2)
+	guest.champion_wire_id = 2
+	source.players.append(guest)
+	var snapshot := SessionSnapshot.capture(source, {1: "Lantern Host", 2: "River Guest"})
+	check(host.broadcast_snapshot(snapshot), "host broadcasts a validated authoritative snapshot")
+	check(_poll_until(host, client, func() -> bool: return not client.incoming_snapshots.is_empty()), "client receives the snapshot through unreliable-ordered ENet")
+	var snapshots := client.take_snapshots()
+	equal(snapshots.size(), 1, "client drains one validated snapshot")
+	if not snapshots.is_empty():
+		equal(int(snapshots[0].get("tick", -1)), source.tick, "snapshot tick survives transport")
+
 	client.stop()
 	check(_poll_until(host, client, func() -> bool: return host.player_count() == 1), "host removes a disconnected accepted peer")
+	var disconnected := host.take_disconnected_peers()
+	equal(disconnected.size(), 1, "host exposes one accepted disconnect event")
+	if not disconnected.is_empty():
+		equal(int(disconnected[0].get("entity_id", 0)), 2, "disconnect event preserves the released entity mapping")
 	host.stop()
 	check(not host.is_online() and not client.is_online(), "loopback peers close cleanly")
 

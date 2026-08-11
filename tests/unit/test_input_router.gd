@@ -61,3 +61,6 @@ func _test_capture_pointer_parser() -> void:
 	equal(BootstrapScript.parse_capture_pointer("--capture-pointer=bad,720", canvas), Vector2i(-1, -1), "capture pointer rejects malformed coordinates")
 	equal(BootstrapScript.parse_capture_pointer("--capture-pointer=-1,720", canvas), Vector2i(-1, -1), "capture pointer rejects negative coordinates")
 	equal(BootstrapScript.parse_capture_pointer("--capture-pointer=2560,720", canvas), Vector2i(-1, -1), "capture pointer rejects the exclusive canvas boundary")
+	equal(BootstrapScript.parse_farflow_mode("--farflow=host"), "host", "diagnostic Farflow host mode parses")
+	equal(BootstrapScript.parse_farflow_mode("--farflow=JOIN"), "join", "diagnostic Farflow join mode is case-insensitive")
+	equal(BootstrapScript.parse_farflow_mode("--farflow=relay"), "", "unknown Farflow mode fails closed")

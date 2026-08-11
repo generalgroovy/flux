@@ -2,6 +2,7 @@ extends Node2D
 
 
 const MAX_CATCH_UP_STEPS: int = 8
+const SNAPSHOT_TICK_INTERVAL: int = 2
 const HUB_DEFINITION_PATH: String = "res://content/maps/sanctum_hub_v1.json"
 const CAMPUS_LAYOUT_PATH: String = "res://content/maps/sanctum_campus_g2_v1.json"
 const ABILITY_CATALOG_PATH: String = "res://content/abilities/foundation_abilities_v1.json"
@@ -43,6 +44,9 @@ var material_preview_texture: ImageTexture
 var player_preferences: PlayerPreferences
 var player_sprite: WellspringCharacterSprite
 var session_transport: SessionTransport
+var authoritative_session: AuthoritativeSession
+var session_names_by_entity: Dictionary[int, String] = {}
+var remote_player_sprites: Dictionary[int, WellspringCharacterSprite] = {}
 var tick_rate: int = 120
 var accumulator_seconds: float = 0.0
 var previous_position := Vector2.ZERO
@@ -58,6 +62,10 @@ var selected_champion_id: String = "oh_tipi"
 var join_address: String = "127.0.0.1"
 var session_port: int = SessionTransport.DEFAULT_PORT
 var local_player_name: String = "Traveller"
+var requested_farflow_mode: String = ""
+var client_input_sequence: int = 0
+var client_replica_active: bool = false
+var last_client_snapshot_tick: int = -1
 
 
 func _ready() -> void:
@@ -96,7 +104,9 @@ func _ready() -> void:
 	join_address = _requested_join_address()
 	session_port = _requested_session_port()
 	local_player_name = _requested_player_name()
+	requested_farflow_mode = _requested_farflow_mode()
 	session_transport = SessionTransport.new()
+	authoritative_session = AuthoritativeSession.new()
 	_load_player_sprite_candidate()
 	loadout = LoadoutDefinition.new()
 	if not loadout.load_from_file(LOADOUT_PATH, ability_catalog):
@@ -117,6 +127,7 @@ func _ready() -> void:
 	if not _start_match(tick_rate):
 		get_tree().quit(1)
 		return
+	_start_requested_farflow()
 	print(
 		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
@@ -144,20 +155,28 @@ func _exit_tree() -> void:
 	if session_transport != null:
 		session_transport.stop()
 	_clear_player_sprite_candidate()
+	_clear_remote_player_sprites()
 
 
 func _process(delta: float) -> void:
 	if session_transport != null:
 		session_transport.poll()
+		_sync_session_transport()
 	_handle_preference_actions()
 	if Input.is_action_just_pressed(&"toggle_debug_overlay"):
 		show_debug_overlay = not show_debug_overlay
 	if Input.is_action_just_pressed(&"reset_match"):
-		if not _start_match(tick_rate):
+		if session_transport.is_connected_client():
+			station_notice = "Only the Farflow host can restore the shared court."
+			station_notice_seconds = 2.5
+		elif not _start_match(tick_rate):
 			set_process(false)
 			return
 	if Input.is_action_just_pressed(&"toggle_tick_rate"):
-		if not _start_match(60 if tick_rate == 120 else 120):
+		if session_transport.is_online():
+			station_notice = "Close Farflow before changing the simulation cadence."
+			station_notice_seconds = 2.5
+		elif not _start_match(60 if tick_rate == 120 else 120):
 			set_process(false)
 			return
 	_update_station_focus()
@@ -176,11 +195,22 @@ func _process(delta: float) -> void:
 			current_position,
 			pointer_world_position,
 		)
-		if not world.step([command]):
-			push_error(world.last_error)
-			set_process(false)
-			break
-		current_position = _player_position()
+		if session_transport.is_connected_client():
+			client_input_sequence += 1
+			if not session_transport.send_input(client_input_sequence, command):
+				station_notice = "Farflow input could not reach the host."
+				station_notice_seconds = 1.0
+		else:
+			var commands: Array[SimCommand] = [command]
+			if session_transport.is_host():
+				commands = authoritative_session.commands_for_tick(command)
+			if not world.step(commands):
+				push_error(world.last_error)
+				set_process(false)
+				break
+			if session_transport.is_host() and world.tick % SNAPSHOT_TICK_INTERVAL == 0:
+				session_transport.broadcast_snapshot(authoritative_session.capture_snapshot())
+			current_position = _player_position()
 		accumulator_seconds -= fixed_delta
 		steps += 1
 	if accumulator_seconds >= fixed_delta:
@@ -208,7 +238,10 @@ func _draw() -> void:
 		var projectile_position := Vector2(float(projectile.position_x) / 1000.0, float(projectile.position_y) / 1000.0)
 		var projectile_color: Color = _projectile_color(projectile.element_wire_id)
 		_draw_projectile(projectile, projectile_position, projectile_color)
-	var state: PlayerState = world.player()
+	var state: PlayerState = _local_player_state()
+	if state == null:
+		return
+	_draw_remote_travellers(camera_origin, state.entity_id)
 	var presentation := JumpPresentation.sample(state, world.config, alpha, player_preferences.reduced_motion)
 	var landing := LandingPresentation.sample(state, world.config, alpha, player_preferences.reduced_motion)
 	var player_radius: float = float(state.radius) / 1000.0
@@ -288,6 +321,88 @@ func _draw_resource_bar(rectangle: Rect2, label: String, value: int, maximum: in
 	draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(7, 15), "%s %d/%d" % [label, value / 1000, maximum / 1000], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 12.0, 12, Color.WHITE)
 
 
+func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int) -> void:
+	for remote_state: PlayerState in world.players:
+		if remote_state.actor_kind != PlayerState.ActorKind.CHAMPION or remote_state.entity_id == local_entity_id:
+			continue
+		var position := Vector2(float(remote_state.position_x) / 1000.0, float(remote_state.position_y) / 1000.0)
+		var presentation := JumpPresentation.sample(remote_state, world.config, 0.0, player_preferences.reduced_motion)
+		var landing := LandingPresentation.sample(remote_state, world.config, 0.0, player_preferences.reduced_motion)
+		var radius := float(remote_state.radius) / 1000.0
+		var shadow_center := position + Vector2(0.0, radius * 0.58)
+		var shadow_scale: Vector2 = landing.shadow_scale if landing.active else presentation.shadow_scale
+		draw_set_transform(shadow_center - camera_origin, 0.0, Vector2(radius * shadow_scale.x, radius * shadow_scale.y))
+		draw_circle(Vector2.ZERO, 1.0, Color(FOREST_SHADOW_COLOR, presentation.shadow_opacity))
+		draw_set_transform(-camera_origin)
+		if landing.active:
+			_draw_landing_cue(shadow_center, landing)
+		var body_position := position + Vector2(0.0, -float(presentation.body_lift_pixels))
+		var sprite := _remote_player_sprite(remote_state)
+		var sprite_drawn: bool = false
+		if sprite != null and sprite.sync_from_player(remote_state, world.config, world.tick, 0.0):
+			var sprite_anchor := shadow_center + Vector2(0.0, -float(presentation.body_lift_pixels))
+			draw_texture_rect_region(sprite.texture, WellspringCharacterSprite.destination_rect(sprite_anchor), sprite.region_rect)
+			sprite_drawn = true
+		if not sprite_drawn:
+			var body_color := FLUX_COLOR if remote_state.champion_wire_id == 2 else ATTUNEMENT_COLOR
+			draw_circle(body_position, radius + 5.0, Color(body_color, 0.18))
+			draw_circle(body_position, radius, body_color)
+			draw_arc(body_position, radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
+		draw_line(body_position, body_position + Vector2(remote_state.aim_x, remote_state.aim_y) * 0.032, Color(PARCHMENT_COLOR, 0.9), 2.0)
+		var display_name := String(session_names_by_entity.get(remote_state.entity_id, "TRAVELLER %d" % remote_state.entity_id)).to_upper()
+		var name_width := ThemeDB.fallback_font.get_string_size(display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x
+		var label_position := body_position + Vector2(-name_width * 0.5, -43.0)
+		draw_string(ThemeDB.fallback_font, label_position, display_name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 10, PARCHMENT_COLOR)
+		var health_bar := Rect2(body_position + Vector2(-22.0, -37.0), Vector2(44.0, 4.0))
+		draw_rect(health_bar, Color(FOREST_SHADOW_COLOR, 0.9), true)
+		var health_ratio := clampf(float(remote_state.health) / float(maxi(1, remote_state.health_maximum)), 0.0, 1.0)
+		draw_rect(Rect2(health_bar.position + Vector2.ONE, Vector2((health_bar.size.x - 2.0) * health_ratio, 2.0)), Color("d9634f"), true)
+	draw_set_transform(-camera_origin)
+
+
+func _remote_player_sprite(state: PlayerState) -> WellspringCharacterSprite:
+	var champion_id := champion_catalog.champion_id_from_wire(state.champion_wire_id)
+	if champion_id.is_empty():
+		return null
+	if remote_player_sprites.has(state.entity_id):
+		var retained: WellspringCharacterSprite = remote_player_sprites[state.entity_id]
+		if retained.source_id == champion_id:
+			return retained
+		_clear_remote_player_sprite(state.entity_id)
+	var sprite := WellspringCharacterSprite.new()
+	sprite.source_kind = "champion"
+	sprite.source_id = champion_id
+	sprite.playing = false
+	if not sprite.load_source():
+		sprite.free()
+		return null
+	remote_player_sprites[state.entity_id] = sprite
+	return sprite
+
+
+func _clear_remote_player_sprite(entity_id: int) -> void:
+	if not remote_player_sprites.has(entity_id):
+		return
+	var sprite: WellspringCharacterSprite = remote_player_sprites[entity_id]
+	sprite.texture = null
+	sprite.free()
+	remote_player_sprites.erase(entity_id)
+
+
+func _clear_remote_player_sprites() -> void:
+	var entity_ids: Array[int] = remote_player_sprites.keys()
+	for entity_id: int in entity_ids:
+		_clear_remote_player_sprite(entity_id)
+
+
+func _prune_remote_player_sprites() -> void:
+	var entity_ids: Array[int] = remote_player_sprites.keys()
+	for entity_id: int in entity_ids:
+		var state: PlayerState = world.player(entity_id)
+		if state == null or state.actor_kind != PlayerState.ActorKind.CHAMPION:
+			_clear_remote_player_sprite(entity_id)
+
+
 func _readable_event(state: PlayerState) -> String:
 	for prefix: String in ["cast_start_", "cast_release_", "cast_blocked_"]:
 		if state.last_event.begins_with(prefix):
@@ -352,6 +467,59 @@ func _station_lines(station: Dictionary) -> Array:
 	]
 
 
+func _sync_session_transport() -> void:
+	if session_transport.is_host():
+		var joined := session_transport.take_joined_peers()
+		if not joined.is_empty():
+			authoritative_session.register_peers(joined)
+			session_names_by_entity = authoritative_session.names_by_entity.duplicate()
+			for event: Dictionary in joined:
+				print("FLUX2 farflow host: joined entity %d (%s)" % [int(event.get("entity_id", 0)), String(event.get("name", "Traveller"))])
+		var disconnected := session_transport.take_disconnected_peers()
+		if not disconnected.is_empty():
+			for event: Dictionary in disconnected:
+				_clear_remote_player_sprite(int(event.get("entity_id", 0)))
+				print("FLUX2 farflow host: left entity %d (%s)" % [int(event.get("entity_id", 0)), String(event.get("name", "Traveller"))])
+			authoritative_session.remove_peers(disconnected)
+			session_names_by_entity = authoritative_session.names_by_entity.duplicate()
+		authoritative_session.ingest_inputs(session_transport.take_inputs())
+		return
+	if session_transport.is_connected_client():
+		client_replica_active = true
+		var snapshots := session_transport.take_snapshots()
+		if snapshots.is_empty():
+			return
+		var snapshot: Dictionary = snapshots.back()
+		if int(snapshot.get("tick", -1)) <= last_client_snapshot_tick:
+			return
+		var first_snapshot: bool = last_client_snapshot_tick < 0
+		if SessionSnapshot.apply_to_world(snapshot, world):
+			last_client_snapshot_tick = int(snapshot["tick"])
+			session_names_by_entity = SessionSnapshot.names(snapshot)
+			_prune_remote_player_sprites()
+			input_router.entity_id = session_transport.local_entity_id
+			var local_state := _local_player_state()
+			if local_state != null:
+				if first_snapshot:
+					print("FLUX2 farflow replica: local entity %d, snapshot tick %d, travellers %d" % [local_state.entity_id, world.tick, session_names_by_entity.size()])
+				var replicated_champion_id := champion_catalog.champion_id_from_wire(local_state.champion_wire_id)
+				if not replicated_champion_id.is_empty() and replicated_champion_id != selected_champion_id:
+					selected_champion_id = replicated_champion_id
+					_load_player_sprite_candidate()
+				var replicated_position := _player_position()
+				previous_position = replicated_position if first_snapshot else current_position
+				current_position = replicated_position
+		return
+	if client_replica_active and session_transport.mode == SessionTransport.Mode.OFFLINE:
+		var disconnect_message := session_transport.last_error
+		client_replica_active = false
+		client_input_sequence = 0
+		last_client_snapshot_tick = -1
+		if _start_match(tick_rate):
+			station_notice = disconnect_message if not disconnect_message.is_empty() else "The Farflow gate is closed."
+			station_notice_seconds = 3.0
+
+
 func _draw_transparent_bubble(anchor: Vector2, title: String, lines: Array, expanded: bool) -> void:
 	var width: float = 264.0 if expanded else 216.0
 	var height: float = 38.0 + float(lines.size()) * 17.0
@@ -373,7 +541,7 @@ func _update_station_focus() -> void:
 	if world == null:
 		focused_station_id = ""
 		return
-	var state: PlayerState = world.player()
+	var state: PlayerState = _local_player_state()
 	var next_focus := SanctumStationModel.nearest_station_id(
 		campus_layout.stations_by_id,
 		Vector2i(state.position_x, state.position_y),
@@ -391,13 +559,20 @@ func _activate_focused_station() -> void:
 		"movement_guide":
 			expanded_station_id = "" if expanded_station_id == focused_station_id else focused_station_id
 		"training_reset":
-			if _start_match(tick_rate):
+			if session_transport.is_connected_client():
+				station_notice = "Only the Farflow host can restore the shared court."
+				station_notice_seconds = 2.5
+			elif _start_match(tick_rate):
 				station_notice = "The practice court is restored."
 				station_notice_seconds = 2.0
 				_update_station_focus()
 		"champion_switch":
+			if session_transport.is_connected_client():
+				station_notice = "Shared attunement requests arrive in the next Farflow slice."
+				station_notice_seconds = 2.5
+				return
 			selected_champion_id = champion_catalog.next_champion_id(selected_champion_id)
-			if champion_catalog.apply_to_player(world.player(), selected_champion_id):
+			if champion_catalog.apply_to_player(_local_player_state(), selected_champion_id):
 				_load_player_sprite_candidate()
 				var champion_name := String(champion_catalog.champion(selected_champion_id).get("display_name", selected_champion_id))
 				station_notice = "Attuned to %s." % champion_name
@@ -412,11 +587,18 @@ func _activate_focused_station() -> void:
 func _toggle_host_session() -> void:
 	if session_transport.mode != SessionTransport.Mode.OFFLINE:
 		session_transport.stop()
+		client_replica_active = false
+		client_input_sequence = 0
+		last_client_snapshot_tick = -1
+		_start_match(tick_rate)
 		station_notice = "The Farflow gate is closed."
 	else:
 		var signature := _session_compatibility_signature()
 		if session_transport.start_host(session_port, signature, local_player_name):
+			authoritative_session.bind(world, champion_catalog, campus_layout.spawn, local_player_name)
+			session_names_by_entity = authoritative_session.names_by_entity.duplicate()
 			station_notice = "Friend gate open on UDP %d." % session_port
+			print("FLUX2 farflow host: listening on UDP %d" % session_transport.bound_port)
 		else:
 			station_notice = session_transport.last_error
 	station_notice_seconds = 3.0
@@ -426,11 +608,16 @@ func _toggle_host_session() -> void:
 func _toggle_join_session() -> void:
 	if session_transport.mode != SessionTransport.Mode.OFFLINE:
 		session_transport.stop()
+		client_replica_active = false
+		client_input_sequence = 0
+		last_client_snapshot_tick = -1
+		_start_match(tick_rate)
 		station_notice = "The Farflow gate is closed."
 	else:
 		var signature := _session_compatibility_signature()
 		if session_transport.start_join(join_address, session_port, signature, local_player_name):
 			station_notice = "Seeking %s:%d." % [join_address, session_port]
+			print("FLUX2 farflow join: seeking %s:%d" % [join_address, session_port])
 		else:
 			station_notice = session_transport.last_error
 	station_notice_seconds = 3.0
@@ -455,6 +642,14 @@ func _session_label() -> String:
 	if session_transport.is_connected_client():
 		return "FARFLOW JOINED · %s" % join_address
 	return "FARFLOW SEEKING · %s" % join_address
+
+
+func _start_requested_farflow() -> void:
+	match requested_farflow_mode:
+		"host":
+			_toggle_host_session()
+		"join":
+			_toggle_join_session()
 
 
 func _draw_pov_mask(origin: Vector2, aim: Vector2, camera_origin: Vector2) -> void:
@@ -552,6 +747,14 @@ func _start_match(requested_tick_rate: int) -> bool:
 		push_error("Selected champion could not be applied: %s" % selected_champion_id)
 		return false
 	_spawn_practice_targets()
+	var existing_roster: Array[Dictionary] = []
+	if session_transport != null and session_transport.is_host():
+		existing_roster = session_transport.host_roster()
+	if not authoritative_session.bind(world, champion_catalog, campus_layout.spawn, local_player_name, existing_roster):
+		push_error(authoritative_session.last_error)
+		return false
+	session_names_by_entity = authoritative_session.names_by_entity.duplicate()
+	_clear_remote_player_sprites()
 	material_grid = MaterialGrid.new()
 	if not material_grid.initialize(material_yard, material_registry, world.config):
 		push_error(material_grid.last_error)
@@ -766,6 +969,23 @@ func _requested_player_name() -> String:
 	return "Traveller"
 
 
+func _requested_farflow_mode() -> String:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--farflow="):
+			var requested := parse_farflow_mode(argument)
+			if not requested.is_empty():
+				return requested
+			push_warning("Invalid Farflow override; expected --farflow=host or --farflow=join")
+	return ""
+
+
+static func parse_farflow_mode(argument: String) -> String:
+	if not argument.begins_with("--farflow="):
+		return ""
+	var requested := argument.trim_prefix("--farflow=").strip_edges().to_lower()
+	return requested if requested in ["host", "join"] else ""
+
+
 func _requested_champion_id() -> String:
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--champion="):
@@ -845,8 +1065,20 @@ func _handle_preference_actions() -> void:
 
 
 func _player_position() -> Vector2:
-	var state: PlayerState = world.player()
+	var state: PlayerState = _local_player_state()
+	if state == null:
+		return current_position
 	return Vector2(float(state.position_x) / 1000.0, float(state.position_y) / 1000.0)
+
+
+func _local_player_state() -> PlayerState:
+	if world == null:
+		return null
+	var entity_id: int = SessionTransport.SERVER_PEER_ID
+	if session_transport != null and session_transport.is_connected_client() and session_transport.local_entity_id > 0:
+		entity_id = session_transport.local_entity_id
+	var state: PlayerState = world.player(entity_id)
+	return state if state != null else world.player(SessionTransport.SERVER_PEER_ID)
 
 
 func _camera_origin(focus_position: Vector2) -> Vector2:

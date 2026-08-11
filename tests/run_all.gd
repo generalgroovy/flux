@@ -2,6 +2,7 @@ extends SceneTree
 
 
 const SUITES: Array[Script] = [
+	preload("res://tests/unit/test_authoritative_session.gd"),
 	preload("res://tests/integration/test_conservatory_route.gd"),
 	preload("res://tests/unit/test_ability_content.gd"),
 	preload("res://tests/unit/test_champion_catalog.gd"),
@@ -21,6 +22,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/unit/test_sanctum_campus_layout.gd"),
 	preload("res://tests/unit/test_sanctum_station_model.gd"),
 	preload("res://tests/unit/test_session_transport.gd"),
+	preload("res://tests/unit/test_session_snapshot.gd"),
 	preload("res://tests/unit/test_sanctum_runtime_kit.gd"),
 	preload("res://tests/unit/test_sight_occlusion.gd"),
 	preload("res://tests/unit/test_movement.gd"),

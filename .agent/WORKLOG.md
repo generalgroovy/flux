@@ -1,5 +1,46 @@
 # FLUX2 agent worklog
 
+## 2026-08-11 — diegetic Farflow ENet transport boundary
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added a platform-native raw ENet/UDP session transport with direct host/join,
+  an eight-player public cap, explicit offline/hosting/seeking/joined state and
+  safe leave/refusal/disconnect cleanup. It uses no external service or account.
+- Added a fail-closed SHA-256 handshake over protocol, tick rate, campus, ability
+  and champion hashes. Packets are object-free, capped at 8 KiB and processed
+  under a 64-packet budget; host input validation is strictly typed/ranged,
+  sequence-monotonic and bounded to 28 queued commands.
+- Advanced the campus to schema 4 and added distinct **Host Farflow** and **Join
+  Farflow** walk-up stations in the eastern concourse. F opens/closes each gate;
+  bubbles and the always-visible HUD report offline, seeking, host count, joined
+  or refusal state. Join defaults to loopback and accepts direct-IP CLI overrides.
+- Added `docs/NETWORKING.md` with exact friend setup, firewall/UDP constraints,
+  security limitations, current truth and the authoritative replication order.
+
+Validation:
+
+- Real single-process ENet loopback passes compatible handshake, sender-stamped
+  bounded input, mismatched-build rejection and accepted-peer disconnect cleanup.
+- Full pinned Godot 4.7.1 headless gate passed after station integration with
+  14,111 assertions and zero failures; transport itself contributed 33 assertions.
+- Canonical campus JSON parse, pinned import and `git diff --check`: passed.
+- Independent 60/120 Hz bootstrap smokes passed with protocol 12 and campus hash
+  `c981419a5b33`; ability/champion hashes remained `566a637aa616`/`81962afbff12`.
+
+Known limitations and next task:
+
+- Connected peers do not yet share simulation actors or snapshots; this is a
+  working transport/handshake checkpoint, not a claim of remote gameplay.
+- Direct Internet hosting currently needs manual UDP firewall/router forwarding;
+  discovery, relay, NAT traversal, encryption and authentication are future gates.
+- Next slice maps accepted peer IDs to authoritative simulation actors, consumes
+  inputs on the host, broadcasts a bounded roster/snapshot and renders both peers.
+
+Commit: pending. Push: pending.
+
 ## 2026-08-11 — S. Wayne basic combat pair
 
 Branch: `codex/continuous-overhaul`

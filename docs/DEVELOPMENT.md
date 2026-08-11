@@ -58,6 +58,13 @@ ground-speed ratios. Use `--champion=oh_tipi` or
 `--champion=s_wayne` only for deterministic launch/capture diagnostics; normal
 players switch at the in-world Champion Loom.
 
+`src/net/session_transport.gd` is the raw ENet/UDP friend-session boundary.
+The eastern Host/Join Farflow stations operate it without a detached menu; use
+`--join-address=IP`, `--session-port=24872` and `--player-name=Name` for direct-IP
+diagnostics. Its real loopback suite covers compatibility, bounded validated
+input, mismatch refusal and disconnect cleanup. Shared actor/snapshot simulation
+is intentionally still gated; see [friend-session networking](NETWORKING.md).
+
 F7 switches world-relative/aim-relative movement, F8 switches full/cone view,
 and F9/F10 increase angle/range; hold Shift with F9/F10 to reduce them. Changes
 persist offline in `user://player_preferences_v1.json`. Physical keyboard

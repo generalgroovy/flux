@@ -235,7 +235,7 @@ func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int) -> void:
 	var position := Vector2(float(values[0]), float(values[1]))
 	var kind := String(station.get("kind", ""))
 	var pulse: float = 0.12 + 0.06 * sin(float(tick) * 0.08)
-	var accent: Color = CYAN if kind == "guide" else (VIOLET if kind == "champion" else FIRE)
+	var accent: Color = CYAN if kind in ["guide", "farflow"] else (VIOLET if kind == "champion" else FIRE)
 	canvas.draw_circle(position + Vector2(2, 5), 19.0, Color(DEEP_FOREST, 0.72))
 	canvas.draw_circle(position, 17.0, CLIFF)
 	canvas.draw_arc(position, 14.0, 0.0, TAU, 16, BRASS, 3.0)
@@ -257,6 +257,13 @@ func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int) -> void:
 		canvas.draw_polyline(loom_points, PARCHMENT, 2.0)
 		canvas.draw_line(loom_points[-1], loom_points[0], PARCHMENT, 2.0)
 		canvas.draw_circle(position, 3.0, VIOLET)
+	elif kind == "farflow":
+		canvas.draw_arc(position, 8.0, -2.45, 0.7, 12, PARCHMENT, 2.0)
+		canvas.draw_arc(position, 8.0, 0.7, 3.85, 12, CYAN, 2.0)
+		var direction: float = -1.0 if String(station.get("command", "")) == "host_session" else 1.0
+		canvas.draw_line(position + Vector2(-6.0 * direction, 0), position + Vector2(6.0 * direction, 0), PARCHMENT, 2.0)
+		canvas.draw_line(position + Vector2(6.0 * direction, 0), position + Vector2(2.0 * direction, -4), PARCHMENT, 2.0)
+		canvas.draw_line(position + Vector2(6.0 * direction, 0), position + Vector2(2.0 * direction, 4), PARCHMENT, 2.0)
 	else:
 		canvas.draw_arc(position, 7.0, -2.2, 2.0, 10, PARCHMENT, 2.0)
 		canvas.draw_line(position + Vector2(-6, -6), position + Vector2(-10, -2), PARCHMENT, 2.0)

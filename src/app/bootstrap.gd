@@ -42,6 +42,7 @@ var material_grid: MaterialGrid
 var material_preview_texture: ImageTexture
 var player_preferences: PlayerPreferences
 var player_sprite: WellspringCharacterSprite
+var session_transport: SessionTransport
 var tick_rate: int = 120
 var accumulator_seconds: float = 0.0
 var previous_position := Vector2.ZERO
@@ -54,6 +55,9 @@ var expanded_station_id: String = ""
 var station_notice: String = ""
 var station_notice_seconds: float = 0.0
 var selected_champion_id: String = "oh_tipi"
+var join_address: String = "127.0.0.1"
+var session_port: int = SessionTransport.DEFAULT_PORT
+var local_player_name: String = "Traveller"
 
 
 func _ready() -> void:
@@ -89,6 +93,10 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	selected_champion_id = _requested_champion_id()
+	join_address = _requested_join_address()
+	session_port = _requested_session_port()
+	local_player_name = _requested_player_name()
+	session_transport = SessionTransport.new()
 	_load_player_sprite_candidate()
 	loadout = LoadoutDefinition.new()
 	if not loadout.load_from_file(LOADOUT_PATH, ability_catalog):
@@ -133,10 +141,14 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	if session_transport != null:
+		session_transport.stop()
 	_clear_player_sprite_candidate()
 
 
 func _process(delta: float) -> void:
+	if session_transport != null:
+		session_transport.poll()
 	_handle_preference_actions()
 	if Input.is_action_just_pressed(&"toggle_debug_overlay"):
 		show_debug_overlay = not show_debug_overlay
@@ -250,6 +262,7 @@ func _draw() -> void:
 	_draw_resource_bar(Rect2(884, 24, 168, 20), "FLUX", state.flux, state.flux_maximum, FLUX_COLOR)
 	_draw_resource_bar(Rect2(1068, 24, 168, 20), "STAMINA", state.stamina, state.stamina_maximum, ATTUNEMENT_COLOR)
 	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · SHIFT SPRINT · CTRL/C SLIDE · SPACE JUMP · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(700, 70), _session_label(), HORIZONTAL_ALIGNMENT_RIGHT, 536.0, 12, ATTUNEMENT_COLOR if session_transport.is_online() else PALE_STONE_COLOR)
 	var view_description := "FULL" if player_preferences.pov_mode == PlayerPreferences.POV_FULL else "CONE %d°/%d" % [player_preferences.pov_angle_degrees, player_preferences.pov_range]
 	draw_string(
 		ThemeDB.fallback_font,
@@ -321,7 +334,12 @@ func _draw_station_bubble(player_position: Vector2) -> void:
 
 
 func _station_lines(station: Dictionary) -> Array:
-	if String(station.get("command", "")) != "champion_switch":
+	var command := String(station.get("command", ""))
+	if command == "host_session":
+		return [session_transport.status_detail, "UDP %d · %d/8 travellers" % [session_port, session_transport.player_count()], "F closes the gate" if session_transport.is_host() else "F opens a direct friend gate"]
+	if command == "join_session":
+		return [session_transport.status_detail, "%s:%d" % [join_address, session_port], "F closes the gate" if session_transport.mode != SessionTransport.Mode.OFFLINE else "F seeks the configured friend gate"]
+	if command != "champion_switch":
 		return station.get("lines", [])
 	var current: Dictionary = champion_catalog.champion(selected_champion_id)
 	var stats: Dictionary = current.get("stats", {})
@@ -385,6 +403,58 @@ func _activate_focused_station() -> void:
 				station_notice = "Attuned to %s." % champion_name
 				station_notice_seconds = 2.0
 				expanded_station_id = ""
+		"host_session":
+			_toggle_host_session()
+		"join_session":
+			_toggle_join_session()
+
+
+func _toggle_host_session() -> void:
+	if session_transport.mode != SessionTransport.Mode.OFFLINE:
+		session_transport.stop()
+		station_notice = "The Farflow gate is closed."
+	else:
+		var signature := _session_compatibility_signature()
+		if session_transport.start_host(session_port, signature, local_player_name):
+			station_notice = "Friend gate open on UDP %d." % session_port
+		else:
+			station_notice = session_transport.last_error
+	station_notice_seconds = 3.0
+	expanded_station_id = focused_station_id
+
+
+func _toggle_join_session() -> void:
+	if session_transport.mode != SessionTransport.Mode.OFFLINE:
+		session_transport.stop()
+		station_notice = "The Farflow gate is closed."
+	else:
+		var signature := _session_compatibility_signature()
+		if session_transport.start_join(join_address, session_port, signature, local_player_name):
+			station_notice = "Seeking %s:%d." % [join_address, session_port]
+		else:
+			station_notice = session_transport.last_error
+	station_notice_seconds = 3.0
+	expanded_station_id = focused_station_id
+
+
+func _session_compatibility_signature() -> String:
+	return SessionTransport.compatibility_signature(
+		SimConfig.PROTOCOL_VERSION,
+		tick_rate,
+		campus_layout.content_hash,
+		ability_catalog.content_hash,
+		champion_catalog.content_hash,
+	)
+
+
+func _session_label() -> String:
+	if session_transport == null or session_transport.mode == SessionTransport.Mode.OFFLINE:
+		return "FARFLOW OFFLINE"
+	if session_transport.is_host():
+		return "FARFLOW HOST %d/8 · UDP %d" % [session_transport.player_count(), session_transport.bound_port]
+	if session_transport.is_connected_client():
+		return "FARFLOW JOINED · %s" % join_address
+	return "FARFLOW SEEKING · %s" % join_address
 
 
 func _draw_pov_mask(origin: Vector2, aim: Vector2, camera_origin: Vector2) -> void:
@@ -664,6 +734,36 @@ func _requested_tick_rate() -> int:
 		push_warning("Unsupported tick rate %d; falling back to 120" % configured)
 		return 120
 	return configured
+
+
+func _requested_join_address() -> String:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--join-address="):
+			var requested := argument.trim_prefix("--join-address=").strip_edges()
+			if SessionTransport._valid_address(requested):
+				return requested
+			push_warning("Invalid join address override; using 127.0.0.1")
+	return "127.0.0.1"
+
+
+func _requested_session_port() -> int:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--session-port="):
+			var requested: int = argument.trim_prefix("--session-port=").to_int()
+			if SessionTransport._valid_port(requested, false):
+				return requested
+			push_warning("Invalid session port override; using %d" % SessionTransport.DEFAULT_PORT)
+	return SessionTransport.DEFAULT_PORT
+
+
+func _requested_player_name() -> String:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--player-name="):
+			var requested := SessionTransport._validated_player_name(argument.trim_prefix("--player-name="))
+			if not requested.is_empty():
+				return requested
+			push_warning("Invalid player name override; using Traveller")
+	return "Traveller"
 
 
 func _requested_champion_id() -> String:

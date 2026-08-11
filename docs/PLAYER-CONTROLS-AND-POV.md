@@ -44,6 +44,11 @@ network authority, replay bytes, or tick-rate behavior. If the pointer overlaps
 the player exactly, aim-relative movement retains the last valid aim direction
 rather than producing an undefined basis.
 
+Slide, jump-chain and contextual technique press edges are retained for 180 ms.
+The buffer stores intent only: speed, aerial stage, cooldown, collision target,
+Stamina and control-lock requirements are rechecked every tick, and an expired
+or still-illegal action changes no state and spends no resource.
+
 ## View modes
 
 `full` leaves the complete viewport visible. `cone` presents only the selected

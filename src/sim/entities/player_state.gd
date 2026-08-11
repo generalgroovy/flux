@@ -67,6 +67,10 @@ var stamina: int = MovementTuning.STAMINA_MAXIMUM
 var stamina_remainder: int = 0
 var stamina_recovery_delay_ticks: int = 0
 
+var jump_buffer_ticks: int = 0
+var technique_buffer_ticks: int = 0
+var slide_buffer_ticks: int = 0
+
 var hop_ticks: int = 0
 var hop_cooldown_ticks: int = 0
 var hop_stage: int = 0
@@ -135,6 +139,7 @@ func canonical_values() -> PackedInt64Array:
 		health, health_recovery_remainder, health_recovery_delay_ticks,
 		flux, flux_recovery_remainder, flux_recovery_delay_ticks,
 		stamina, stamina_remainder, stamina_recovery_delay_ticks,
+		jump_buffer_ticks, technique_buffer_ticks, slide_buffer_ticks,
 		hop_ticks, hop_cooldown_ticks, hop_stage, hop_mode, hop_speed, hop_x, hop_y,
 		air_redirects_remaining,
 		air_dodge_ticks, air_dodge_cooldown_ticks, air_dodge_x, air_dodge_y,

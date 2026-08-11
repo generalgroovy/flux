@@ -6,6 +6,7 @@ func run() -> int:
 		_test_sprint_and_hop(tick_rate)
 		_test_double_jump(tick_rate)
 		_test_slide_and_slide_jump(tick_rate)
+		_test_action_buffers(tick_rate)
 		_test_air_dodge_and_wavedash(tick_rate)
 		_test_wall_contact_and_wall_kick(tick_rate)
 		_test_same_wall_lockout(tick_rate)
@@ -84,6 +85,37 @@ func _test_air_dodge_and_wavedash(tick_rate: int) -> void:
 		_step(world, 0, 1000)
 	equal(state.last_event, "wave_dash", "%d Hz queued wavedash starts once" % tick_rate)
 	check(state.wave_dash_ticks > 0, "%d Hz wavedash remains bounded" % tick_rate)
+
+
+func _test_action_buffers(tick_rate: int) -> void:
+	var slide_world := SimWorld.new(tick_rate)
+	var slider: PlayerState = slide_world.player()
+	_step(slide_world, 1000, 0, 0, SimCommand.PRESSED_SLIDE)
+	check(slider.slide_buffer_ticks > 0, "%d Hz early slide intent is buffered" % tick_rate)
+	while slider.slide_ticks == 0 and slider.slide_buffer_ticks > 0:
+		_step(slide_world, 1000, 0)
+	equal(slider.last_event, "slide", "%d Hz buffered slide fires after reaching entry speed" % tick_rate)
+	equal(slider.slide_buffer_ticks, 0, "%d Hz successful slide consumes its buffer" % tick_rate)
+
+	var expiry_world := SimWorld.new(tick_rate)
+	var expiry: PlayerState = expiry_world.player()
+	_step(expiry_world, 0, 0, 0, SimCommand.PRESSED_SLIDE)
+	for _index: int in range(expiry_world.config.milliseconds_to_ticks(MovementTuning.INPUT_BUFFER_MS) + 1):
+		_step(expiry_world)
+	equal(expiry.slide_buffer_ticks, 0, "%d Hz impossible slide intent expires" % tick_rate)
+	equal(expiry.stamina, MovementTuning.STAMINA_MAXIMUM, "%d Hz expired slide spends no Stamina" % tick_rate)
+
+	var chain_world := SimWorld.new(tick_rate)
+	var chainer: PlayerState = chain_world.player()
+	while chainer.velocity_x < MovementTuning.SLIDE_ENTRY_SPEED:
+		_step(chain_world, 1000, 0)
+	_step(chain_world, 1000, 0, 0, SimCommand.PRESSED_SLIDE)
+	_step(chain_world, 1000, 0, 0, SimCommand.PRESSED_JUMP)
+	check(chainer.jump_buffer_ticks > 0, "%d Hz early slide-jump intent is buffered" % tick_rate)
+	while chainer.last_event != "slide_jump" and chainer.jump_buffer_ticks > 0:
+		_step(chain_world, 1000, 0)
+	equal(chainer.last_event, "slide_jump", "%d Hz buffered jump fires in the slide conversion window" % tick_rate)
+	equal(chainer.jump_buffer_ticks, 0, "%d Hz slide jump consumes its buffer" % tick_rate)
 
 
 func _test_wall_contact_and_wall_kick(tick_rate: int) -> void:

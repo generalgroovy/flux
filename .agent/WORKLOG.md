@@ -1,5 +1,45 @@
 # FLUX2 agent worklog
 
+## 2026-08-11 — deterministic movement intent buffering
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added a shared 180 ms deterministic buffer for dedicated slide, jump-chain
+  and contextual technique press edges so slightly early inputs survive narrow
+  transition windows without making movement automatic.
+- Buffers store semantic intent only. Every tick rechecks speed, aerial stage,
+  cooldown, collision target, Stamina and control locks; success consumes the
+  matching buffer and expiry spends no resource.
+- Included all buffer timers in canonical player state and advanced the command
+  protocol to 5 so older replays/sessions cannot silently interpret new timing.
+- Updated the public movement contract, overhaul status and active backlog.
+
+Validation:
+
+- `git diff --check`: passed.
+- Pinned Godot 4.7.1 full headless gate: 12,895 assertions, zero failures.
+- At both 60 and 120 Hz: an early slide fires only after legal entry speed, an
+  early jump converts inside the late slide-jump window, successful actions
+  consume their buffer, and impossible standing slide expires with no Stamina
+  loss.
+- Headless bootstrap at 60 and 120 Hz passed with protocol 5 and unchanged
+  canonical campus/ability/material hashes.
+- Windows interactive compatibility-renderer smoke launched and remained
+  responsive with the verified HUD and control legend.
+
+Known limitations and next task:
+
+- Variable jump/fast fall, wall skim and fuller landing/recovery feedback remain
+  the open non-ability movement work.
+- Controller mapping is structurally tested, but a physical-device acceptance
+  session remains required.
+- Next slice adds variable jump and fast fall as authoritative bounded state,
+  then continues to the Wellspring walk-up interaction layer.
+
+Commit: pending. Push: pending.
+
 ## 2026-08-11 — bounded building occlusion for cone view
 
 Branch: `codex/continuous-overhaul`

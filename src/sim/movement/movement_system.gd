@@ -8,6 +8,7 @@ static func step(state: PlayerState, command: SimCommand, config: SimConfig, wor
 	if command.move_x != 0 or command.move_y != 0:
 		state.facing_x = direction.x
 		state.facing_y = direction.y
+	_capture_action_buffers(state, command, config)
 
 	var control_locked: bool = state.control_state in [
 		PlayerState.ControlState.LAUNCHED,
@@ -17,28 +18,9 @@ static func step(state: PlayerState, command: SimCommand, config: SimConfig, wor
 		PlayerState.ControlState.ROOTED,
 	]
 	if not control_locked:
-		if command.has_pressed(SimCommand.PRESSED_SLIDE) and not state.is_airborne():
-			_try_slide(state, direction, config)
-		if command.has_pressed(SimCommand.PRESSED_JUMP):
-			if state.vault_ticks > 0:
-				_try_superglide(state, direction, config)
-			elif state.slide_ticks > 0:
-				_try_slide_jump(state, direction, config)
-			elif state.hop_ticks > 0:
-				_try_double_jump(state, direction, config)
-			elif command.has_held(SimCommand.HELD_SPRINT):
-				_try_slide(state, direction, config)
-			else:
-				_try_hop(state, direction, config)
-
-		if command.has_pressed(SimCommand.PRESSED_TECHNIQUE):
-			if state.is_airborne():
-				if command.has_held(SimCommand.HELD_SPRINT):
-					_try_air_dodge(state, direction, config)
-				else:
-					_try_air_redirect(state, direction, config)
-			else:
-				_try_vault(state, direction, config, world)
+		_consume_slide_buffer(state, direction, config)
+		_consume_jump_buffer(state, command, direction, config)
+		_consume_technique_buffer(state, command, direction, config, world)
 
 	if control_locked:
 		_apply_control_velocity(state, config)
@@ -51,6 +33,54 @@ static func step(state: PlayerState, command: SimCommand, config: SimConfig, wor
 			state.velocity_y = state.velocity_y * state.slow_ratio / 1000
 	_integrate(state, config, world)
 	_update_mode(state, command)
+
+
+static func _capture_action_buffers(state: PlayerState, command: SimCommand, config: SimConfig) -> void:
+	var buffer_ticks: int = config.milliseconds_to_ticks(MovementTuning.INPUT_BUFFER_MS)
+	if command.has_pressed(SimCommand.PRESSED_JUMP):
+		state.jump_buffer_ticks = buffer_ticks
+	if command.has_pressed(SimCommand.PRESSED_TECHNIQUE):
+		state.technique_buffer_ticks = buffer_ticks
+	if command.has_pressed(SimCommand.PRESSED_SLIDE):
+		state.slide_buffer_ticks = buffer_ticks
+
+
+static func _consume_slide_buffer(state: PlayerState, direction: Vector2i, config: SimConfig) -> void:
+	if state.slide_buffer_ticks > 0 and not state.is_airborne() and _try_slide(state, direction, config):
+		state.slide_buffer_ticks = 0
+
+
+static func _consume_jump_buffer(state: PlayerState, command: SimCommand, direction: Vector2i, config: SimConfig) -> void:
+	if state.jump_buffer_ticks <= 0:
+		return
+	var consumed: bool = false
+	if state.vault_ticks > 0:
+		consumed = _try_superglide(state, direction, config)
+	elif state.slide_ticks > 0:
+		consumed = _try_slide_jump(state, direction, config)
+	elif state.hop_ticks > 0:
+		consumed = _try_double_jump(state, direction, config)
+	elif command.has_held(SimCommand.HELD_SPRINT):
+		consumed = _try_slide(state, direction, config)
+	else:
+		consumed = _try_hop(state, direction, config)
+	if consumed:
+		state.jump_buffer_ticks = 0
+
+
+static func _consume_technique_buffer(state: PlayerState, command: SimCommand, direction: Vector2i, config: SimConfig, world: CollisionWorld) -> void:
+	if state.technique_buffer_ticks <= 0:
+		return
+	var consumed: bool = false
+	if state.is_airborne():
+		if command.has_held(SimCommand.HELD_SPRINT):
+			consumed = _try_air_dodge(state, direction, config)
+		else:
+			consumed = _try_air_redirect(state, direction, config)
+	else:
+		consumed = _try_vault(state, direction, config, world)
+	if consumed:
+		state.technique_buffer_ticks = 0
 
 
 static func apply_control_state(
@@ -93,6 +123,7 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 		&"slide_ticks", &"slide_cooldown_ticks", &"vault_ticks",
 		&"vault_cooldown_ticks", &"superglide_ticks", &"wall_memory_ticks",
 		&"landing_ticks", &"wall_lockout_ticks", &"control_ticks",
+		&"jump_buffer_ticks", &"technique_buffer_ticks", &"slide_buffer_ticks",
 	]:
 		state.set(property_name, maxi(0, int(state.get(property_name)) - 1))
 	if was_hopping and state.hop_ticks == 0:

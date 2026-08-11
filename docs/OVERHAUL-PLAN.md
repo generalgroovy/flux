@@ -123,7 +123,9 @@ passes on Garuda Linux/Sway and Windows.
 - [ ] In progress: add the controller-friendly Settings station, interactive
   event capture/conflict explanation, per-device sensitivity/dead-zone curves,
   reset/import/export, and controller command-equivalence acceptance.
-- [ ] Planned: add buffered transitions, variable hop/fall presentation state,
+- [x] Implemented: add 180 ms semantic buffers for slide, jump-chain and
+  technique transitions with deterministic expiry and resource-safe rechecks.
+- [ ] Planned: add variable hop/fall presentation state,
   and authored elevation/low-cover queries.
 - [x] G3 input migration: schema-v1 C-jump/Space-primary defaults migrate to
   schema-v3 Shift sprint/Ctrl slide/Space jump/no-key primary without replacing explicit saved

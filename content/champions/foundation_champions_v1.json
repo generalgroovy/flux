@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "id": "foundation-champions-v1",
+  "default_champion_id": "oh_tipi",
+  "champions": [
+    {
+      "id": "oh_tipi",
+      "wire_id": 1,
+      "display_name": "Oh Tipi",
+      "ancestry": "seakin",
+      "size": "size_3_medium",
+      "affinities": ["water", "ice", "charge"],
+      "playstyle": "Steady current keeper with forgiving reserves and deliberate footwork.",
+      "stats": {
+        "health_maximum": 108000,
+        "health_recovery_per_second": 1800,
+        "flux_maximum": 104000,
+        "flux_recovery_per_second": 19000,
+        "stamina_maximum": 108000,
+        "stamina_recovery_per_second": 30000,
+        "movement_speed_ratio": 980
+      },
+      "foundation_kit": {
+        "primary": "arc-primary",
+        "active_1": "vector-lance"
+      }
+    },
+    {
+      "id": "s_wayne",
+      "wire_id": 2,
+      "display_name": "S. Wayne",
+      "ancestry": "hobbit",
+      "size": "size_2_small",
+      "affinities": ["dark", "light"],
+      "playstyle": "Swift boundary tactician with lean reserves and rapid Flux recovery.",
+      "stats": {
+        "health_maximum": 90000,
+        "health_recovery_per_second": 2200,
+        "flux_maximum": 112000,
+        "flux_recovery_per_second": 23000,
+        "stamina_maximum": 96000,
+        "stamina_recovery_per_second": 28000,
+        "movement_speed_ratio": 1060
+      },
+      "foundation_kit": {
+        "primary": "arc-primary",
+        "active_1": "vector-lance"
+      }
+    }
+  ]
+}

@@ -426,7 +426,8 @@ static func _apply_control_velocity(state: PlayerState, config: SimConfig) -> vo
 static func _apply_ground_velocity(state: PlayerState, command: SimCommand, direction: Vector2i, config: SimConfig) -> void:
 	var moving: bool = command.move_x != 0 or command.move_y != 0
 	var sprinting: bool = moving and command.has_held(SimCommand.HELD_SPRINT) and state.stamina > 0
-	var speed: int = MovementTuning.BASE_SPEED
+	@warning_ignore("integer_division")
+	var speed: int = MovementTuning.BASE_SPEED * state.movement_speed_ratio / 1000
 	if sprinting:
 		@warning_ignore("integer_division")
 		speed = speed * MovementTuning.SPRINT_MULTIPLIER / 1000
@@ -451,7 +452,7 @@ static func _apply_ground_velocity(state: PlayerState, command: SimCommand, dire
 		_apply_stamina_rate(state, -MovementTuning.SPRINT_DRAIN_PER_SECOND, config)
 		state.stamina_recovery_delay_ticks = config.milliseconds_to_ticks(MovementTuning.STAMINA_RECOVERY_DELAY_MS)
 	elif state.stamina_recovery_delay_ticks == 0:
-		_apply_stamina_rate(state, MovementTuning.STAMINA_RECOVERY_PER_SECOND, config)
+		_apply_stamina_rate(state, state.stamina_recovery_per_second, config)
 
 
 static func _integrate(state: PlayerState, config: SimConfig, world: CollisionWorld) -> void:
@@ -540,7 +541,7 @@ static func _apply_stamina_rate(state: PlayerState, rate_per_second: int, config
 	@warning_ignore("integer_division")
 	var amount: int = total / config.tick_rate
 	state.stamina_remainder = total - amount * config.tick_rate
-	state.stamina = clampi(state.stamina + amount, 0, MovementTuning.STAMINA_MAXIMUM)
+	state.stamina = clampi(state.stamina + amount, 0, state.stamina_maximum)
 
 
 static func _direction(input_x: int, input_y: int, fallback: Vector2i) -> Vector2i:

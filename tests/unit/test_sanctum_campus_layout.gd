@@ -27,7 +27,7 @@ func _test_repository_layout() -> void:
 	equal(layout.buildings_by_id.size(), 10, "authored buildings and low cover are registered")
 	equal(layout.landmarks_by_id.size(), 6, "combined quarters retain multiple memorable landmarks")
 	equal(layout.reset_zones_by_id.size(), 2, "movement and proving reset zones are explicit")
-	equal(layout.stations_by_id.size(), 2, "guide and practice stations are explicit")
+	equal(layout.stations_by_id.size(), 3, "guide, practice and champion stations are explicit")
 	equal(layout.elevation_at(Vector2i(1280, 720)), 2, "Nexus elevation is queryable without rendering")
 	equal(layout.elevation_at(Vector2i(300, 720)), 1, "Conservatory elevation is queryable without rendering")
 	equal(layout.elevation_at(Vector2i(10, 200)), 0, "water outside districts has no ground elevation")

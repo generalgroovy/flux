@@ -189,7 +189,7 @@ static func _resolve_edgeweave(
 			or target.team_id == projectile.team_id
 			or target.health <= 0
 			or target.edgeweave_cooldown_ticks > 0
-			or target.stamina >= MovementTuning.STAMINA_MAXIMUM
+			or target.stamina >= target.stamina_maximum
 			or projectile.has_grazed(target.entity_id)
 			or target.velocity_x * target.velocity_x + target.velocity_y * target.velocity_y < CombatTuning.EDGEWEAVE_MINIMUM_SPEED * CombatTuning.EDGEWEAVE_MINIMUM_SPEED
 		):
@@ -199,7 +199,7 @@ static func _resolve_edgeweave(
 			continue
 		if not _segment_circle_hit(projectile, target, hit_radius + CombatTuning.EDGEWEAVE_MARGIN):
 			continue
-		var reward: int = mini(CombatTuning.EDGEWEAVE_REWARD, MovementTuning.STAMINA_MAXIMUM - target.stamina)
+		var reward: int = mini(CombatTuning.EDGEWEAVE_REWARD, target.stamina_maximum - target.stamina)
 		target.stamina += reward
 		target.stamina_remainder = 0
 		target.stamina_recovery_delay_ticks = config.milliseconds_to_ticks(MovementTuning.STAMINA_RECOVERY_DELAY_MS)

@@ -33,7 +33,8 @@
   ],
   "stations": [
     {"id": "movement-guide", "district": "nexus-commons", "kind": "guide", "command": "movement_guide", "authority": "local", "position": [1180, 780], "interaction_radius": 96, "title": "MOVEMENT GUIDE", "prompt": "F  STUDY THE ROUTES", "lines": ["SHIFT sprint  ·  CTRL/C slide", "SPACE hop  ·  hold or release", "V vault, wall skim, or air turn", "F closes this field note"]},
-    {"id": "training-reset", "district": "nexus-commons", "kind": "training", "command": "training_reset", "authority": "host", "position": [1380, 780], "interaction_radius": 96, "title": "PRACTICE BELL", "prompt": "F  RESTORE THE COURT", "lines": ["Restores Health, Flux and Stamina", "Returns every local trial to its seed"]}
+    {"id": "training-reset", "district": "nexus-commons", "kind": "training", "command": "training_reset", "authority": "host", "position": [1380, 780], "interaction_radius": 96, "title": "PRACTICE BELL", "prompt": "F  RESTORE THE COURT", "lines": ["Restores Health, Flux and Stamina", "Returns every local trial to its seed"]},
+    {"id": "champion-loom", "district": "nexus-commons", "kind": "champion", "command": "champion_switch", "authority": "local", "position": [1280, 900], "interaction_radius": 96, "title": "CHAMPION LOOM", "prompt": "F  CHANGE CHAMPION", "lines": ["Attunes body, reserves and silhouette", "Each champion keeps every movement technique"]}
   ],
   "buildings": [
     {"id": 101, "district": "conservatory-gardens", "name": "Routekeeper Lodge", "bounds": [96, 300, 244, 154], "style": "timber_hall", "worldbone": true, "vaultable": false, "occlusion_policy": "los_cutaway"},

@@ -235,7 +235,7 @@ func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int) -> void:
 	var position := Vector2(float(values[0]), float(values[1]))
 	var kind := String(station.get("kind", ""))
 	var pulse: float = 0.12 + 0.06 * sin(float(tick) * 0.08)
-	var accent: Color = CYAN if kind == "guide" else FIRE
+	var accent: Color = CYAN if kind == "guide" else (VIOLET if kind == "champion" else FIRE)
 	canvas.draw_circle(position + Vector2(2, 5), 19.0, Color(DEEP_FOREST, 0.72))
 	canvas.draw_circle(position, 17.0, CLIFF)
 	canvas.draw_arc(position, 14.0, 0.0, TAU, 16, BRASS, 3.0)
@@ -247,6 +247,16 @@ func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int) -> void:
 		canvas.draw_line(position + Vector2(8, -5), position + Vector2(8, 6), PARCHMENT, 2.0)
 		canvas.draw_line(position + Vector2(-8, 6), position + Vector2(0, 8), PARCHMENT, 2.0)
 		canvas.draw_line(position + Vector2(8, 6), position + Vector2(0, 8), PARCHMENT, 2.0)
+	elif kind == "champion":
+		var loom_points := PackedVector2Array([
+			position + Vector2(0, -9),
+			position + Vector2(8, 0),
+			position + Vector2(0, 9),
+			position + Vector2(-8, 0),
+		])
+		canvas.draw_polyline(loom_points, PARCHMENT, 2.0)
+		canvas.draw_line(loom_points[-1], loom_points[0], PARCHMENT, 2.0)
+		canvas.draw_circle(position, 3.0, VIOLET)
 	else:
 		canvas.draw_arc(position, 7.0, -2.2, 2.0, 10, PARCHMENT, 2.0)
 		canvas.draw_line(position + Vector2(-6, -6), position + Vector2(-10, -2), PARCHMENT, 2.0)

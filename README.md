@@ -41,10 +41,10 @@ even when design documentation already exists.
   - [ ] Offline-complete stations plus privacy-safe friends/presence, simple
     host/join, host teams/rules/practice/travel tools, and Garuda Sway/Windows
     acceptance
-  - [x] Fixed-point walk-up focus plus the first two diegetic stations: a
-    Movement Guide and host-authority Practice Bell with transparent bubbles
-  - [ ] Champion, settings, muster/host/join and travel stations; overlay parity,
-    map UI, streaming, and destination persistence
+  - [x] Fixed-point walk-up focus plus three diegetic stations: a Movement Guide,
+    host-authority Practice Bell, and local Champion Loom with transparent bubbles
+  - [ ] Settings, muster/host/join and travel stations; overlay parity, map UI,
+    streaming, and destination persistence
 - [ ] **Chapter 3 — [Movement and traversal](#movement-and-traversal)**
   — deterministic universal grammar in progress
   - [x] Sprint, counter-strafe, hop/double jump, wall kick, air redirect/dodge,
@@ -274,12 +274,14 @@ end cleanly. Changes are permission-checked, visible, rate-limited, logged, and
 frozen where competition demands it; hosting never grants remote file/shell or
 client-setting control.
 
-The current playable campus begins that shell with two walk-up objects below
+The current playable campus begins that shell with three walk-up objects below
 spawn. The **Movement Guide** toggles concise movement notes in a transparent
 world bubble; the **Practice Bell** restores the deterministic local court and
-all three resources. F and controller north-face activate the nearest station,
-with fixed-point radius checks and stable identity tie-breaking. The remaining
-champion, settings, muster/host/join and travel stations are still gated work.
+all three resources; the **Champion Loom** cycles the current playable champion,
+authoritative resource profile, movement profile, and runtime sprite. F and
+controller north-face activate the nearest station, with fixed-point radius
+checks and stable identity tie-breaking. Settings, muster/host/join and travel
+stations remain gated work.
 
 Foreground terrain, roofs, foliage, buildings, and constructs fade/cut away or
 yield to an ownership-readable silhouette when they overlap a character that is
@@ -617,8 +619,8 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 
 | Sprite | Champion | Ancestry (race) | Size | Elements | Intended role | Kit state |
 | --- | --- | --- | --- | --- | --- | --- |
-| <img src="assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png" alt="Oh Tipi high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/oh_tipi/oh_tipi_direction_preview.png" alt="Oh Tipi current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Oh Tipi** | Seakin | Medium | Water · Ice · Charge | Conductive-field skirmisher and current rider | Named design kit; not implemented |
-| <img src="assets/sprites/champions_v2/s_wayne/hero_portrait_256.png" alt="S. Wayne high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/s_wayne/s_wayne_direction_preview.png" alt="S. Wayne current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **S. Wayne** | Hobbit | Small | Dark · Light | Eclipse-boundary tactician and decoy router | Named design kit; not implemented |
+| <img src="assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png" alt="Oh Tipi high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/oh_tipi/oh_tipi_direction_preview.png" alt="Oh Tipi current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Oh Tipi** | Seakin | Medium | Water · Ice · Charge | Conductive-field skirmisher and current rider | Playable identity/stats; distinct basic kit pending |
+| <img src="assets/sprites/champions_v2/s_wayne/hero_portrait_256.png" alt="S. Wayne high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/s_wayne/s_wayne_direction_preview.png" alt="S. Wayne current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **S. Wayne** | Hobbit | Small | Dark · Light | Eclipse-boundary tactician and decoy router | Playable identity/stats; distinct basic kit pending |
 | <img src="assets/sprites/champions_v2/red_baron/hero_portrait_256.png" alt="The Red Baron high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/red_baron/red_baron_direction_preview.png" alt="The Red Baron current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **The Red Baron** | Undead | Medium | Void (legacy, unresolved) · Fire · Ice | Airborne formation controller with punishable landings | Named design kit; not implemented |
 | <img src="assets/sprites/champions_v2/steezo/hero_portrait_256.png" alt="Steezo high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/steezo/steezo_direction_preview.png" alt="Steezo current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Steezo** | Goblin | Small | Fire · Charge · Light | Volatile construct engineer and detonation sequencer | Named design kit; not implemented |
 | <img src="assets/sprites/champions_v2/treevor_mason/hero_portrait_256.png" alt="Treevor the Mason high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/treevor_mason/treevor_mason_direction_preview.png" alt="Treevor the Mason current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Treevor the Mason** | Treefolk | Large | Earth · Wind · Fire | Terrain mason creating routes, cover and fire liabilities | Named design kit; not implemented |
@@ -711,7 +713,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | High-detail portrait candidate | [`assets/sprites/champions_v2/s_wayne/hero_portrait_256.png`](assets/sprites/champions_v2/s_wayne/hero_portrait_256.png) |
 | Animation/keyframe board | [`assets/sprites/champions_v2/s_wayne/keyframe_board.png`](assets/sprites/champions_v2/s_wayne/keyframe_board.png) |
 | Visual acceptance target | Must match or exceed [`assets/concept/flux-champions-visual-style-v1.png`](assets/concept/flux-champions-visual-style-v1.png) in expression, silhouette, material detail and charm |
-| Sprite status | Runtime-addressable integrated candidate; not final accepted art and not proof of playability |
+| Sprite status | Exercised as a selectable runtime candidate through the Champion Loom; not final accepted art |
 
 | Ability slot | Preserved design name | Implementation state |
 | --- | --- | --- |
@@ -1754,10 +1756,14 @@ Primary, Flux-paid Vector Lance, authoritative projectiles/damage, Edgeweave,
 60/120 Hz match startup, stable state hashes, replay recording, and headless
 verification. It proves the runtime boundary and migrates the first movement and
 combat contracts from the browser FLUX prototype. A canonical ability catalog
-and legal 13-point loadout validate at boot. A canonical material registry and
+and legal 13-point loadout validate at boot. A canonical two-champion catalog
+also validates at boot: Oh Tipi and S. Wayne own stable protocol IDs, distinct
+Health/Flux/Stamina recovery and capacity profiles, bounded ground-speed ratios,
+and in-world sprite switching while retaining the universal movement grammar.
+A canonical material registry and
 packed 128 x 128 Sanctum Material Yard seed also validate, hash, reset, and
 render as a read-only debug preview; reactions do not step yet. The full hub art,
-champion kit, networking, active chemistry, animation, and release exports
+distinct champion kits, networking, active chemistry, animation, and release exports
 remain staged milestones. The G2 campus now has renderer-independent connected
 district topology, explicit worldbone collision, queryable elevation, ordinary/
 advanced routes, one accessible ordinary route per district, bounded reset-zone
@@ -1783,7 +1789,7 @@ F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
 left/right sticks, right trigger, west/east face buttons, and shoulders. The
 rate never mutates inside a running match.
 
-G3 now uses protocol 8 and preference schema 3: Space invokes the semantic jump
+G3 now uses protocol 9 and preference schema 3: Space invokes the semantic jump
 action, Shift sprints, Ctrl/C directly slides, and primary no longer aliases
 Space. Schema-v1/v2 defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision

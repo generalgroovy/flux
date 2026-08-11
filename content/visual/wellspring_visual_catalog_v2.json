@@ -425,7 +425,7 @@
     },
     "s_wayne": {
       "all_keyframes_included": true,
-      "ancestry": "human",
+      "ancestry": "hobbit",
       "animation_count": 25,
       "atlas": "res://assets/sprites/champions_v2/s_wayne/atlas.png",
       "debug_atlas": "res://assets/sprites/champions_v2/s_wayne/debug_atlas.png",
@@ -435,7 +435,7 @@
         "dark",
         "light"
       ],
-      "feature": "vampire_cloak",
+      "feature": "eclipse_disc",
       "hero_portrait": "res://assets/sprites/champions_v2/s_wayne/hero_portrait_256.png",
       "hud_portrait": "res://assets/sprites/champions_v2/s_wayne/hud_portrait_64.png",
       "keyframe_board": "res://assets/sprites/champions_v2/s_wayne/keyframe_board.png",
@@ -443,7 +443,7 @@
       "presentation": "neutral",
       "roster_portrait": "res://assets/sprites/champions_v2/s_wayne/roster_portrait_128.png",
       "selection_icon": "res://assets/sprites/champions_v2/s_wayne/selection_icon_48.png",
-      "size": "size_3_medium",
+      "size": "size_2_small",
       "status": "integrated_candidate",
       "weapon": "disc"
     },

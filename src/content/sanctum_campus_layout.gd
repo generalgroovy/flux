@@ -23,8 +23,8 @@ const ALLOWED_STYLES: Array[String] = ["garden", "nexus", "archive", "wayfarer",
 const ALLOWED_OCCLUSION: Array[String] = ["los_cutaway", "low_never_occludes"]
 const ALLOWED_ROUTE_KINDS: Array[String] = ["ordinary", "advanced", "garden"]
 const ALLOWED_RESET_KINDS: Array[String] = ["movement", "practice"]
-const ALLOWED_STATION_KINDS: Array[String] = ["guide", "training"]
-const ALLOWED_STATION_COMMANDS: Array[String] = ["movement_guide", "training_reset"]
+const ALLOWED_STATION_KINDS: Array[String] = ["guide", "training", "champion"]
+const ALLOWED_STATION_COMMANDS: Array[String] = ["movement_guide", "training_reset", "champion_switch"]
 const ALLOWED_STATION_AUTHORITIES: Array[String] = ["local", "host"]
 
 var data: Dictionary = {}
@@ -271,7 +271,7 @@ func validate() -> bool:
 		if interaction_radius < 48 or interaction_radius > 160:
 			return _fail("Sanctum station interaction radius is outside bounds: %s" % station_id)
 		stations_by_id[station_id] = station
-	for required_station_id: String in ["movement-guide", "training-reset"]:
+	for required_station_id: String in ["movement-guide", "training-reset", "champion-loom"]:
 		if not stations_by_id.has(required_station_id):
 			return _fail("Sanctum campus is missing required station: %s" % required_station_id)
 

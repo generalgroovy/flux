@@ -6,9 +6,9 @@ static func step(state: PlayerState, config: SimConfig) -> void:
 	state.health_recovery_delay_ticks = maxi(0, state.health_recovery_delay_ticks - 1)
 	state.flux_recovery_delay_ticks = maxi(0, state.flux_recovery_delay_ticks - 1)
 	if state.health > 0 and state.health_recovery_delay_ticks == 0:
-		_apply_health_rate(state, PlayerTuning.HEALTH_RECOVERY_PER_SECOND, config)
+		_apply_health_rate(state, state.health_recovery_per_second, config)
 	if state.flux_recovery_delay_ticks == 0:
-		_apply_flux_rate(state, PlayerTuning.FLUX_RECOVERY_PER_SECOND, config)
+		_apply_flux_rate(state, state.flux_recovery_per_second, config)
 
 
 static func damage(state: PlayerState, amount: int, config: SimConfig) -> bool:
@@ -34,7 +34,7 @@ static func _apply_health_rate(state: PlayerState, rate_per_second: int, config:
 	@warning_ignore("integer_division")
 	var amount: int = total / config.tick_rate
 	state.health_recovery_remainder = total - amount * config.tick_rate
-	state.health = clampi(state.health + amount, 0, PlayerTuning.HEALTH_MAXIMUM)
+	state.health = clampi(state.health + amount, 0, state.health_maximum)
 
 
 static func _apply_flux_rate(state: PlayerState, rate_per_second: int, config: SimConfig) -> void:
@@ -42,4 +42,4 @@ static func _apply_flux_rate(state: PlayerState, rate_per_second: int, config: S
 	@warning_ignore("integer_division")
 	var amount: int = total / config.tick_rate
 	state.flux_recovery_remainder = total - amount * config.tick_rate
-	state.flux = clampi(state.flux + amount, 0, PlayerTuning.FLUX_MAXIMUM)
+	state.flux = clampi(state.flux + amount, 0, state.flux_maximum)

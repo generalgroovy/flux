@@ -40,7 +40,7 @@ dimensions, discard edge pixels, write candidate frames, or promote art.
 | Champion | Race | Gold standard | Status |
 |---|---|---:|---|
 | Oh Tipi | seakin | yes | concept_candidate_quarantined |
-| S. Wayne | human | no | not_started |
+| S. Wayne | hobbit | no | not_started |
 | The Red Baron | undead | no | not_started |
 | Steezo | goblin | no | not_started |
 | Treevor the Mason | treefolk | no | not_started |

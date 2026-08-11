@@ -57,7 +57,7 @@ gameplay permission for every race/size combination.
 | ID | Name | Race | Size | Affinities | Status | Atlas | Hero portrait |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `oh_tipi` | Oh Tipi | seakin | Medium | water, ice, charge | integrated_candidate | `res://assets/sprites/champions_v2/oh_tipi/atlas.png` | `res://assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png` |
-| `s_wayne` | S. Wayne | human | Medium | dark, light | integrated_candidate | `res://assets/sprites/champions_v2/s_wayne/atlas.png` | `res://assets/sprites/champions_v2/s_wayne/hero_portrait_256.png` |
+| `s_wayne` | S. Wayne | hobbit | Small | dark, light | integrated_candidate | `res://assets/sprites/champions_v2/s_wayne/atlas.png` | `res://assets/sprites/champions_v2/s_wayne/hero_portrait_256.png` |
 | `red_baron` | The Red Baron | undead | Medium | dark, fire, ice | integrated_candidate | `res://assets/sprites/champions_v2/red_baron/atlas.png` | `res://assets/sprites/champions_v2/red_baron/hero_portrait_256.png` |
 | `steezo` | Steezo | goblin | Small | fire, charge, light | integrated_candidate | `res://assets/sprites/champions_v2/steezo/atlas.png` | `res://assets/sprites/champions_v2/steezo/hero_portrait_256.png` |
 | `treevor_mason` | Treevor the Mason | treefolk | Large | earth, wind, fire | integrated_candidate | `res://assets/sprites/champions_v2/treevor_mason/atlas.png` | `res://assets/sprites/champions_v2/treevor_mason/hero_portrait_256.png` |

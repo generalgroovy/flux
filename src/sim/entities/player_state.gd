@@ -37,6 +37,7 @@ enum ControlState {
 
 var entity_id: int = 1
 var team_id: int = 1
+var champion_wire_id: int = 0
 var position_x: int = 160_000
 var position_y: int = 360_000
 var position_remainder_x: int = 0
@@ -59,13 +60,20 @@ var primary_cooldown_ticks: int = 0
 var active_1_cooldown_ticks: int = 0
 var edgeweave_cooldown_ticks: int = 0
 
-var health: int = PlayerTuning.HEALTH_MAXIMUM
+var health_maximum: int = PlayerTuning.HEALTH_MAXIMUM
+var health_recovery_per_second: int = PlayerTuning.HEALTH_RECOVERY_PER_SECOND
+var health: int = health_maximum
 var health_recovery_remainder: int = 0
 var health_recovery_delay_ticks: int = 0
-var flux: int = PlayerTuning.FLUX_MAXIMUM
+var flux_maximum: int = PlayerTuning.FLUX_MAXIMUM
+var flux_recovery_per_second: int = PlayerTuning.FLUX_RECOVERY_PER_SECOND
+var flux: int = flux_maximum
 var flux_recovery_remainder: int = 0
 var flux_recovery_delay_ticks: int = 0
-var stamina: int = MovementTuning.STAMINA_MAXIMUM
+var stamina_maximum: int = MovementTuning.STAMINA_MAXIMUM
+var stamina_recovery_per_second: int = MovementTuning.STAMINA_RECOVERY_PER_SECOND
+var movement_speed_ratio: int = 1000
+var stamina: int = stamina_maximum
 var stamina_remainder: int = 0
 var stamina_recovery_delay_ticks: int = 0
 
@@ -141,15 +149,18 @@ func is_airborne() -> bool:
 
 func canonical_values() -> PackedInt64Array:
 	return PackedInt64Array([
-		entity_id, team_id,
+		entity_id, team_id, champion_wire_id,
 		position_x, position_y, position_remainder_x, position_remainder_y,
 		velocity_x, velocity_y, facing_x, facing_y, aim_x, aim_y, radius, movement_mode,
 		int(primary_held),
 		pending_cast_wire_id, pending_cast_ticks, pending_cast_aim_x, pending_cast_aim_y,
 		cast_recovery_ticks, primary_cooldown_ticks, active_1_cooldown_ticks,
 		edgeweave_cooldown_ticks,
+		health_maximum, health_recovery_per_second,
 		health, health_recovery_remainder, health_recovery_delay_ticks,
+		flux_maximum, flux_recovery_per_second,
 		flux, flux_recovery_remainder, flux_recovery_delay_ticks,
+		stamina_maximum, stamina_recovery_per_second, movement_speed_ratio,
 		stamina, stamina_remainder, stamina_recovery_delay_ticks,
 		jump_buffer_ticks, technique_buffer_ticks, slide_buffer_ticks, int(fast_falling), variable_jump_grace_ticks,
 		hop_ticks, hop_cooldown_ticks, hop_stage, hop_mode, hop_speed, hop_x, hop_y,

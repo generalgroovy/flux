@@ -25,7 +25,7 @@ func _test_separate_resources(tick_rate: int) -> void:
 	for _index: int in range(tick_rate / 2):
 		all_steps_succeeded = world.step([SimCommand.new(world.tick, 1, 1000, 0, SimCommand.HELD_SPRINT)]) and all_steps_succeeded
 	check(all_steps_succeeded, "%d Hz sprint resource ticks step" % tick_rate)
-	check(state.stamina < MovementTuning.STAMINA_MAXIMUM, "%d Hz movement spends Stamina" % tick_rate)
+	check(state.stamina < state.stamina_maximum, "%d Hz movement spends Stamina" % tick_rate)
 	equal(state.flux, initial_flux, "%d Hz movement never spends Flux" % tick_rate)
 	equal(state.health, initial_health, "%d Hz movement never spends Health" % tick_rate)
 
@@ -40,7 +40,7 @@ func _test_health_recovery_delay(tick_rate: int) -> void:
 	equal(state.health, 90_000, "%d Hz Health does not recover during delay" % tick_rate)
 	_step_empty(world, tick_rate)
 	check(state.health > 90_000, "%d Hz Health recovers after 5.5 second delay" % tick_rate)
-	check(state.health <= PlayerTuning.HEALTH_MAXIMUM, "%d Hz Health recovery is bounded" % tick_rate)
+	check(state.health <= state.health_maximum, "%d Hz Health recovery is bounded" % tick_rate)
 
 
 func _test_flux_spend_and_recovery(tick_rate: int) -> void:
@@ -54,4 +54,4 @@ func _test_flux_spend_and_recovery(tick_rate: int) -> void:
 	equal(state.flux, 75_000, "%d Hz Flux does not recover during delay" % tick_rate)
 	_step_empty(world, tick_rate)
 	check(state.flux > 75_000, "%d Hz Flux recovers after its delay" % tick_rate)
-	check(state.flux <= PlayerTuning.FLUX_MAXIMUM, "%d Hz Flux recovery is bounded" % tick_rate)
+	check(state.flux <= state.flux_maximum, "%d Hz Flux recovery is bounded" % tick_rate)

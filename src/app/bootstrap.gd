@@ -5,6 +5,7 @@ const MAX_CATCH_UP_STEPS: int = 8
 const HUB_DEFINITION_PATH: String = "res://content/maps/sanctum_hub_v1.json"
 const CAMPUS_LAYOUT_PATH: String = "res://content/maps/sanctum_campus_g2_v1.json"
 const ABILITY_CATALOG_PATH: String = "res://content/abilities/foundation_abilities_v1.json"
+const CHAMPION_CATALOG_PATH: String = "res://content/champions/foundation_champions_v1.json"
 const LOADOUT_PATH: String = "res://content/loadouts/foundation_practitioner_v1.json"
 const MATERIAL_CATALOG_PATH: String = "res://content/materials/foundation_materials_v1.json"
 const MATERIAL_YARD_PATH: String = "res://content/maps/sanctum_material_yard_v1.json"
@@ -33,6 +34,7 @@ var hub_definition: HubDefinition
 var campus_layout: SanctumCampusLayout
 var campus_renderer: SanctumCampusRenderer
 var ability_catalog: AbilityCatalog
+var champion_catalog: ChampionCatalog
 var loadout: LoadoutDefinition
 var material_registry: MaterialRegistry
 var material_yard: MaterialYardDefinition
@@ -51,6 +53,7 @@ var focused_station_id: String = ""
 var expanded_station_id: String = ""
 var station_notice: String = ""
 var station_notice_seconds: float = 0.0
+var selected_champion_id: String = "oh_tipi"
 
 
 func _ready() -> void:
@@ -63,7 +66,6 @@ func _ready() -> void:
 	if not preferences_existed and not player_preferences.save_to_file():
 		push_warning(player_preferences.last_error)
 	_apply_preference_overrides()
-	_load_player_sprite_candidate()
 	hub_definition = HubDefinition.new()
 	if not hub_definition.load_from_file(HUB_DEFINITION_PATH):
 		push_error(hub_definition.last_error)
@@ -81,6 +83,13 @@ func _ready() -> void:
 		push_error(ability_catalog.last_error)
 		get_tree().quit(1)
 		return
+	champion_catalog = ChampionCatalog.new()
+	if not champion_catalog.load_from_file(CHAMPION_CATALOG_PATH, ability_catalog):
+		push_error(champion_catalog.last_error)
+		get_tree().quit(1)
+		return
+	selected_champion_id = _requested_champion_id()
+	_load_player_sprite_candidate()
 	loadout = LoadoutDefinition.new()
 	if not loadout.load_from_file(LOADOUT_PATH, ability_catalog):
 		push_error(loadout.last_error)
@@ -101,7 +110,7 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -113,6 +122,7 @@ func _ready() -> void:
 			hub_definition.travel_nodes_by_id.size(),
 			campus_layout.content_hash.left(12),
 			ability_catalog.content_hash.left(12),
+			champion_catalog.content_hash.left(12),
 			loadout.active_points,
 			material_registry.content_hash.left(12),
 			material_yard.content_hash.left(12),
@@ -213,7 +223,7 @@ func _draw() -> void:
 			)
 			sprite_drawn = true
 		else:
-			push_warning("Oh Tipi presentation candidate disabled: %s" % player_sprite.last_error)
+			push_warning("Champion presentation candidate disabled: %s" % player_sprite.last_error)
 			_clear_player_sprite_candidate()
 	if not sprite_drawn:
 		draw_circle(body_position, player_radius + 5.0, Color(ATTUNEMENT_COLOR, 0.18))
@@ -226,12 +236,14 @@ func _draw() -> void:
 	_draw_pov_mask(rendered_screen_position, Vector2(state.aim_x, state.aim_y), camera_origin)
 	draw_rect(Rect2(16, 14, 1248, 96), PANEL_COLOR, true)
 	draw_rect(Rect2(16, 14, 1248, 96), BRASS_COLOR.darkened(0.3), false, 2.0)
-	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "THE WELLSPRING · BUILD %d/13" % loadout.active_points, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
+	var champion_data: Dictionary = champion_catalog.champion(selected_champion_id)
+	var champion_name := String(champion_data.get("display_name", selected_champion_id))
+	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "%s · THE WELLSPRING" % champion_name.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
 	var movement_name: String = String(PlayerState.MovementMode.keys()[state.movement_mode]).replace("_", " ")
 	draw_string(ThemeDB.fallback_font, Vector2(400, 40), "%s · %s" % [movement_name, state.last_event.to_upper()], HORIZONTAL_ALIGNMENT_RIGHT, 280.0, 13, ATTUNEMENT_COLOR)
-	_draw_resource_bar(Rect2(700, 24, 168, 20), "HEALTH", state.health, PlayerTuning.HEALTH_MAXIMUM, Color("d9634f"))
-	_draw_resource_bar(Rect2(884, 24, 168, 20), "FLUX", state.flux, PlayerTuning.FLUX_MAXIMUM, FLUX_COLOR)
-	_draw_resource_bar(Rect2(1068, 24, 168, 20), "STAMINA", state.stamina, MovementTuning.STAMINA_MAXIMUM, ATTUNEMENT_COLOR)
+	_draw_resource_bar(Rect2(700, 24, 168, 20), "HEALTH", state.health, state.health_maximum, Color("d9634f"))
+	_draw_resource_bar(Rect2(884, 24, 168, 20), "FLUX", state.flux, state.flux_maximum, FLUX_COLOR)
+	_draw_resource_bar(Rect2(1068, 24, 168, 20), "STAMINA", state.stamina, state.stamina_maximum, ATTUNEMENT_COLOR)
 	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · SHIFT SPRINT · CTRL/C SLIDE · SPACE JUMP · V TECHNIQUE · F INTERACT", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
 	var view_description := "FULL" if player_preferences.pov_mode == PlayerPreferences.POV_FULL else "CONE %d°/%d" % [player_preferences.pov_angle_degrees, player_preferences.pov_range]
 	draw_string(
@@ -277,8 +289,22 @@ func _draw_station_bubble(player_position: Vector2) -> void:
 	var values: Array = station.get("position", [])
 	var station_position := Vector2(float(values[0]), float(values[1]))
 	var expanded: bool = expanded_station_id == focused_station_id
-	var lines: Array = station.get("lines", []) if expanded else [String(station.get("prompt", "F  INTERACT"))]
+	var lines: Array = _station_lines(station) if expanded else [String(station.get("prompt", "F  INTERACT"))]
 	_draw_transparent_bubble(station_position + Vector2(0, -54), String(station.get("title", "STATION")), lines, expanded)
+
+
+func _station_lines(station: Dictionary) -> Array:
+	if String(station.get("command", "")) != "champion_switch":
+		return station.get("lines", [])
+	var current: Dictionary = champion_catalog.champion(selected_champion_id)
+	var stats: Dictionary = current.get("stats", {})
+	var next_id := champion_catalog.next_champion_id(selected_champion_id)
+	var next: Dictionary = champion_catalog.champion(next_id)
+	return [
+		"ATTUNED: %s · %s" % [String(current.get("display_name", "")).to_upper(), String(current.get("ancestry", "")).to_upper()],
+		"HP %d · FLUX %d · STAMINA %d · SPEED %d%%" % [int(stats.get("health_maximum", 0)) / 1000, int(stats.get("flux_maximum", 0)) / 1000, int(stats.get("stamina_maximum", 0)) / 1000, int(stats.get("movement_speed_ratio", 0)) / 10],
+		"F attunes %s" % String(next.get("display_name", next_id)),
+	]
 
 
 func _draw_transparent_bubble(anchor: Vector2, title: String, lines: Array, expanded: bool) -> void:
@@ -324,6 +350,14 @@ func _activate_focused_station() -> void:
 				station_notice = "The practice court is restored."
 				station_notice_seconds = 2.0
 				_update_station_focus()
+		"champion_switch":
+			selected_champion_id = champion_catalog.next_champion_id(selected_champion_id)
+			if champion_catalog.apply_to_player(world.player(), selected_champion_id):
+				_load_player_sprite_candidate()
+				var champion_name := String(champion_catalog.champion(selected_champion_id).get("display_name", selected_champion_id))
+				station_notice = "Attuned to %s." % champion_name
+				station_notice_seconds = 2.0
+				expanded_station_id = ""
 
 
 func _draw_pov_mask(origin: Vector2, aim: Vector2, camera_origin: Vector2) -> void:
@@ -417,6 +451,9 @@ func _start_match(requested_tick_rate: int) -> bool:
 	var player_state: PlayerState = world.player()
 	player_state.position_x = campus_layout.spawn.x * SimConfig.FIXED_SCALE
 	player_state.position_y = campus_layout.spawn.y * SimConfig.FIXED_SCALE
+	if not champion_catalog.apply_to_player(player_state, selected_champion_id):
+		push_error("Selected champion could not be applied: %s" % selected_champion_id)
+		return false
 	material_grid = MaterialGrid.new()
 	if not material_grid.initialize(material_yard, material_registry, world.config):
 		push_error(material_grid.last_error)
@@ -455,10 +492,10 @@ func _load_player_sprite_candidate() -> void:
 	_clear_player_sprite_candidate()
 	player_sprite = WellspringCharacterSprite.new()
 	player_sprite.source_kind = "champion"
-	player_sprite.source_id = "oh_tipi"
+	player_sprite.source_id = selected_champion_id
 	player_sprite.playing = false
 	if not player_sprite.load_source():
-		push_warning("Oh Tipi presentation candidate unavailable: %s; using procedural fallback" % player_sprite.last_error)
+		push_warning("%s presentation candidate unavailable: %s; using procedural fallback" % [selected_champion_id, player_sprite.last_error])
 		_clear_player_sprite_candidate()
 
 
@@ -505,6 +542,16 @@ func _requested_tick_rate() -> int:
 		push_warning("Unsupported tick rate %d; falling back to 120" % configured)
 		return 120
 	return configured
+
+
+func _requested_champion_id() -> String:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--champion="):
+			var requested := argument.trim_prefix("--champion=")
+			if champion_catalog.champions_by_id.has(requested):
+				return requested
+			push_warning("Unknown champion %s; falling back to %s" % [requested, champion_catalog.default_champion_id])
+	return champion_catalog.default_champion_id
 
 
 func _requested_capture_pointer() -> Vector2i:

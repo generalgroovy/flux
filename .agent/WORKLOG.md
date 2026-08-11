@@ -1,5 +1,57 @@
 # FLUX2 agent worklog
 
+## 2026-08-11 — canonical first two champion identities
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added a fail-closed `foundation-champions-v1` content catalog for Oh Tipi and
+  S. Wayne with stable positive wire IDs, two-to-three validated affinities,
+  ancestry/size identity, bounded simulation stats and valid foundation ability
+  references. Oh Tipi is a steady Seakin; S. Wayne is now consistently a small
+  Hobbit rather than the stale Human/vampire-cloak production entry.
+- Promoted champion identity, maxima, recovery rates and bounded ground-speed
+  ratio into canonical `PlayerState`; recovery, movement, Edgeweave, HUD and
+  replay hashing consume those authoritative fields. Protocol advanced to 9.
+- Added the collision-clear Champion Loom below spawn. F/controller north-face
+  cycles Oh Tipi and S. Wayne, atomically applies the profile, reloads the
+  eight-direction candidate sprite and reports the attunement in a transparent
+  world bubble. Both champions keep the full universal movement grammar.
+- Added `--champion=oh_tipi|s_wayne` as a deterministic visual/boot diagnostic,
+  not as a player-facing menu. Updated the runtime HUD, roadmap, roster truth,
+  visual production notes and active backlog.
+
+Validation:
+
+- Pinned Godot 4.7.1 import: passed and generated tracked UIDs for the champion
+  catalog and focused suite.
+- Full pinned headless gate: 13,728 assertions, zero failures. Coverage proves
+  catalog refusal, exact 60/120 Hz profile movement/recovery, resource-ratio
+  migration, stable cycling, station focus and canonical identity divergence.
+- Independent 60 and 120 Hz bootstrap smokes: passed with protocol 9, champion
+  catalog hash `9f807091310f` and campus hash `2700e76503bd`.
+- Compatibility-renderer three-frame captures passed for both Oh Tipi and
+  S. Wayne at 1280 x 720. Both distinct sprites, named HUD profiles, exact
+  resource maxima and the labeled Champion Loom were visually inspected.
+- A dummy-renderer movie attempt crashed inside Godot's null texture storage;
+  the equivalent compatibility-renderer capture passed, so visual capture must
+  continue without `--headless` when runtime textures are drawn.
+- `git diff --check`: passed; only pre-existing `dist/` and `node_modules/`
+  remain intentionally untracked.
+
+Known limitations and next task:
+
+- The two champions still share Arc Primary and Vector Lance as explicit
+  foundation placeholders. The next slice gives Oh Tipi the first distinct,
+  readable basic primary/active behavior and a deterministic practice target,
+  then gives S. Wayne a counterplaying Dark/Light basic kit.
+- Physical F/controller activation still needs the user's normal hardware
+  playtest because external synthetic physical-key injection is unreliable in
+  Godot; catalog, station focus and app action paths are otherwise covered.
+
+Commit: pending. Push: pending.
+
 ## 2026-08-11 — first diegetic walk-up stations
 
 Branch: `codex/continuous-overhaul`

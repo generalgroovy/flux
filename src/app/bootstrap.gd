@@ -66,6 +66,8 @@ var requested_farflow_mode: String = ""
 var client_input_sequence: int = 0
 var client_replica_active: bool = false
 var last_client_snapshot_tick: int = -1
+var network_projectile_overflow: int = 0
+var combat_cues: Array[Dictionary] = []
 
 
 func _ready() -> void:
@@ -181,6 +183,7 @@ func _process(delta: float) -> void:
 			return
 	_update_station_focus()
 	station_notice_seconds = maxf(0.0, station_notice_seconds - delta)
+	_update_combat_cues(delta)
 	if Input.is_action_just_pressed(InputRouter.INTERACT_ACTION):
 		_activate_focused_station()
 
@@ -208,8 +211,13 @@ func _process(delta: float) -> void:
 				push_error(world.last_error)
 				set_process(false)
 				break
+			_ingest_combat_cues(world.combat_events)
 			if session_transport.is_host() and world.tick % SNAPSHOT_TICK_INTERVAL == 0:
-				session_transport.broadcast_snapshot(authoritative_session.capture_snapshot())
+				authoritative_session.record_combat_events(world.combat_events)
+				if session_transport.broadcast_snapshot(authoritative_session.capture_snapshot()):
+					authoritative_session.acknowledge_snapshot()
+			elif session_transport.is_host():
+				authoritative_session.record_combat_events(world.combat_events)
 			current_position = _player_position()
 		accumulator_seconds -= fixed_delta
 		steps += 1
@@ -238,6 +246,7 @@ func _draw() -> void:
 		var projectile_position := Vector2(float(projectile.position_x) / 1000.0, float(projectile.position_y) / 1000.0)
 		var projectile_color: Color = _projectile_color(projectile.element_wire_id)
 		_draw_projectile(projectile, projectile_position, projectile_color)
+	_draw_combat_cues(camera_origin)
 	var state: PlayerState = _local_player_state()
 	if state == null:
 		return
@@ -319,6 +328,86 @@ func _draw_resource_bar(rectangle: Rect2, label: String, value: int, maximum: in
 	draw_rect(Rect2(rectangle.position + Vector2(2, 2), Vector2((rectangle.size.x - 4.0) * ratio, rectangle.size.y - 4.0)), color, true)
 	draw_rect(rectangle, Color(PARCHMENT_COLOR, 0.65), false, 1.0)
 	draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(7, 15), "%s %d/%d" % [label, value / 1000, maximum / 1000], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 12.0, 12, Color.WHITE)
+
+
+func _ingest_combat_cues(events: Array[Dictionary]) -> void:
+	for event: Dictionary in events:
+		var kind := String(event.get("type", ""))
+		if kind not in ["projectile_hit", "edgeweave", "cast_refused", "cast_blocked", "projectile_bounced"]:
+			continue
+		var anchor := _combat_event_anchor(event)
+		if anchor.is_empty():
+			continue
+		var label: String = ""
+		var color: Color = ATTUNEMENT_COLOR
+		match kind:
+			"projectile_hit":
+				label = "-%d" % (int(event.get("damage", 0)) / 1000)
+				color = FIRE_COLOR
+			"edgeweave":
+				label = "EDGE +%d" % (int(event.get("stamina", 0)) / 1000)
+				color = ATTUNEMENT_COLOR
+			"cast_refused":
+				label = "NO FLUX" if String(event.get("reason", "")) == "flux" else "CAST REFUSED"
+				color = FLUX_COLOR
+			"cast_blocked":
+				label = "BLOCKED"
+				color = PALE_STONE_COLOR
+			"projectile_bounced":
+				label = "RICOCHET"
+				color = PARCHMENT_COLOR
+		combat_cues.append({
+			"position": anchor["position"],
+			"label": label,
+			"color": color,
+			"remaining": 0.55,
+			"duration": 0.55,
+		})
+	while combat_cues.size() > 24:
+		combat_cues.pop_front()
+
+
+func _combat_event_anchor(event: Dictionary) -> Dictionary:
+	var kind := String(event.get("type", ""))
+	var entity_id: int = 0
+	if kind == "projectile_hit":
+		entity_id = int(event.get("target_id", 0))
+	elif kind in ["edgeweave", "cast_refused", "cast_blocked"]:
+		entity_id = int(event.get("entity_id", 0))
+	if entity_id > 0:
+		var state: PlayerState = world.player(entity_id)
+		if state != null:
+			return {"position": Vector2(float(state.position_x) / 1000.0, float(state.position_y) / 1000.0)}
+	var projectile_id := int(event.get("projectile_id", 0))
+	for projectile: ProjectileState in world.projectiles:
+		if projectile.entity_id == projectile_id:
+			return {"position": Vector2(float(projectile.position_x) / 1000.0, float(projectile.position_y) / 1000.0)}
+	return {}
+
+
+func _update_combat_cues(delta: float) -> void:
+	for index: int in range(combat_cues.size() - 1, -1, -1):
+		var cue: Dictionary = combat_cues[index]
+		cue["remaining"] = float(cue.get("remaining", 0.0)) - delta
+		if float(cue["remaining"]) <= 0.0:
+			combat_cues.remove_at(index)
+		else:
+			combat_cues[index] = cue
+
+
+func _draw_combat_cues(camera_origin: Vector2) -> void:
+	draw_set_transform(-camera_origin)
+	for cue: Dictionary in combat_cues:
+		var remaining := float(cue.get("remaining", 0.0))
+		var duration := maxf(0.001, float(cue.get("duration", 0.55)))
+		var phase := clampf(1.0 - remaining / duration, 0.0, 1.0)
+		var position: Vector2 = cue.get("position", Vector2.ZERO)
+		var color: Color = cue.get("color", ATTUNEMENT_COLOR)
+		var opacity := 1.0 - phase
+		draw_arc(position, 10.0 + phase * 22.0, 0.0, TAU, 20, Color(color, opacity * 0.8), 2.0)
+		var label := String(cue.get("label", ""))
+		var label_width := ThemeDB.fallback_font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
+		draw_string(ThemeDB.fallback_font, position + Vector2(-label_width * 0.5, -28.0 - phase * 18.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 11, Color(color, opacity))
 
 
 func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int) -> void:
@@ -495,8 +584,10 @@ func _sync_session_transport() -> void:
 		var first_snapshot: bool = last_client_snapshot_tick < 0
 		if SessionSnapshot.apply_to_world(snapshot, world):
 			last_client_snapshot_tick = int(snapshot["tick"])
+			network_projectile_overflow = int(snapshot.get("projectile_overflow", 0))
 			session_names_by_entity = SessionSnapshot.names(snapshot)
 			_prune_remote_player_sprites()
+			_ingest_combat_cues(world.combat_events)
 			input_router.entity_id = session_transport.local_entity_id
 			var local_state := _local_player_state()
 			if local_state != null:
@@ -515,6 +606,7 @@ func _sync_session_transport() -> void:
 		client_replica_active = false
 		client_input_sequence = 0
 		last_client_snapshot_tick = -1
+		network_projectile_overflow = 0
 		if _start_match(tick_rate):
 			station_notice = disconnect_message if not disconnect_message.is_empty() else "The Farflow gate is closed."
 			station_notice_seconds = 3.0
@@ -590,6 +682,7 @@ func _toggle_host_session() -> void:
 		client_replica_active = false
 		client_input_sequence = 0
 		last_client_snapshot_tick = -1
+		network_projectile_overflow = 0
 		_start_match(tick_rate)
 		station_notice = "The Farflow gate is closed."
 	else:
@@ -611,6 +704,7 @@ func _toggle_join_session() -> void:
 		client_replica_active = false
 		client_input_sequence = 0
 		last_client_snapshot_tick = -1
+		network_projectile_overflow = 0
 		_start_match(tick_rate)
 		station_notice = "The Farflow gate is closed."
 	else:
@@ -637,6 +731,8 @@ func _session_compatibility_signature() -> String:
 func _session_label() -> String:
 	if session_transport == null or session_transport.mode == SessionTransport.Mode.OFFLINE:
 		return "FARFLOW OFFLINE"
+	if session_transport.is_connected_client() and network_projectile_overflow > 0:
+		return "FARFLOW LOAD +%d BOLTS" % network_projectile_overflow
 	if session_transport.is_host():
 		return "FARFLOW HOST %d/8 · UDP %d" % [session_transport.player_count(), session_transport.bound_port]
 	if session_transport.is_connected_client():

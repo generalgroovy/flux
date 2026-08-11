@@ -52,8 +52,12 @@ func _test_authoritative_presence_and_input() -> void:
 	equal(stale_commands[1].move_x, 0, "stale remote movement fails safe to idle")
 	equal(stale_commands[1].held_actions, 0, "stale remote held actions fail safe to idle")
 
+	equal(session.record_combat_events([{"type": "cast_started", "entity_id": 2, "wire_id": CombatTuning.ECLIPSE_DISC_WIRE_ID}]), 1, "semantic host combat event enters the next snapshot")
 	var snapshot := session.capture_snapshot()
 	check(SessionSnapshot.validate(snapshot), "authority emits a validated roster snapshot")
 	equal(SessionSnapshot.names(snapshot), {1: "Lantern Host", 2: "River Guest"}, "snapshot exposes authoritative presence names")
+	equal((snapshot.get("events", []) as Array).size(), 1, "pending combat feedback is included once")
+	session.acknowledge_snapshot()
+	equal((session.capture_snapshot().get("events", []) as Array).size(), 0, "acknowledged combat feedback does not replay forever")
 	equal(session.remove_peers([{"entity_id": 2, "name": "River Guest"}]), 1, "disconnect removes the remote actor")
 	check(world.player(2) == null, "removed remote actor leaves no simulation ghost")

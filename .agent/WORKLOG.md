@@ -1,5 +1,48 @@
 # FLUX2 agent worklog
 
+## 2026-08-11 — protocol-13 Farflow combat presentation
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Advanced the network protocol to 13 and snapshot schema to 2 so older peers
+  fail compatibility instead of joining and silently dropping combat state.
+- Extended snapshots with the player cast/cooldown fields needed by the HUD,
+  compact render-only projectile lanes, readable last-action state and strictly
+  encoded cast, hit, impact, bounce and Edgeweave events. Guests reconstruct
+  presentation only; projectile collision, damage, control and resources still
+  come solely from the host simulation.
+- Added short, restrained in-world feedback rings/labels for damage, Edgeweave,
+  refused/blocked casts and ricochets on both host and guest.
+- Preserved the 8 KiB packet cap. The measured public envelope covers eight
+  maximum-name travellers, 26 simultaneous projectiles and 12 recent events;
+  excess presentation is counted and surfaced as Farflow load rather than
+  silently expanding the trust/memory boundary.
+
+Validation:
+
+- Full pinned Godot 4.7.1 suite passed with **14,216 assertions**, zero failures;
+  `authoritative-session` contributed 57, real-ENet `session-transport` 46 and
+  `session-snapshot` 32 assertions.
+- Maximum-envelope serialization, projectile/event round-trip, malformed field
+  rejection and one-shot event acknowledgement pass.
+- Two complete Windows headless processes connected over UDP localhost on port
+  24874 under protocol 13; guest entity 2 applied the schema-2 two-player stream.
+- Independent 60/120 Hz boots passed with campus/ability/champion hashes
+  `c981419a5b33` / `566a637aa616` / `81962afbff12`.
+
+Known limitations and next task:
+
+- Snapshot overflow is explicit but still a visual omission; a later measured
+  batching/delta scheme is required before dense eight-player combat acceptance.
+- Host-authorized station interaction, champion requests, emotes, prediction,
+  reconciliation, reconnect and Linux direct-IP packaging remain.
+- Next slice adds a validated client request/host confirmation channel, starting
+  with a transparent social emote and shared Practice Bell restoration.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-11 — authoritative Farflow travellers and movement snapshots
 
 Branch: `codex/continuous-overhaul`

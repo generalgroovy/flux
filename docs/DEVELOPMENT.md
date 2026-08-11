@@ -63,8 +63,9 @@ The eastern Host/Join Farflow stations operate it without a detached menu; use
 `--join-address=IP`, `--session-port=24872` and `--player-name=Name` for direct-IP
 diagnostics. Its real loopback suite covers compatibility, bounded validated
 input, mismatch refusal and disconnect cleanup. Stable peer actors, host-side
-movement simulation and compact 60 Hz guest snapshots are live; projectile
-presentation and shared station requests remain gated. See
+movement simulation and compact 60 Hz guest snapshots are live. Protocol 13
+adds bounded projectile lanes and semantic combat feedback without moving any
+outcome authority to clients; shared station requests remain gated. See
 [friend-session networking](NETWORKING.md).
 
 F7 switches world-relative/aim-relative movement, F8 switches full/cone view,

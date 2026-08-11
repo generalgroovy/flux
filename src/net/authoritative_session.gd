@@ -18,6 +18,7 @@ var champion_catalog: ChampionCatalog
 var spawn: Vector2i
 var names_by_entity: Dictionary[int, String] = {}
 var latest_input_by_entity: Dictionary[int, Dictionary] = {}
+var pending_combat_events: Array[Dictionary] = []
 var last_error: String = ""
 
 
@@ -39,6 +40,7 @@ func bind(
 	spawn = spawn_pixels
 	names_by_entity = {SessionTransport.SERVER_PEER_ID: safe_host_name}
 	latest_input_by_entity = {}
+	pending_combat_events = []
 	return register_peers(existing_roster) == existing_roster.size()
 
 
@@ -150,7 +152,23 @@ func commands_for_tick(local_command: SimCommand) -> Array[SimCommand]:
 func capture_snapshot() -> Dictionary:
 	if world == null:
 		return {}
-	return SessionSnapshot.capture(world, names_by_entity)
+	return SessionSnapshot.capture(world, names_by_entity, pending_combat_events)
+
+
+func record_combat_events(events: Array[Dictionary]) -> int:
+	var accepted: int = 0
+	for event: Dictionary in events:
+		if SessionSnapshot.encode_event(event).is_empty():
+			continue
+		pending_combat_events.append(event.duplicate(true))
+		accepted += 1
+	while pending_combat_events.size() > SessionSnapshot.MAX_EVENTS:
+		pending_combat_events.pop_front()
+	return accepted
+
+
+func acknowledge_snapshot() -> void:
+	pending_combat_events = []
 
 
 func _spawn_position(entity_id: int, radius: int) -> Vector2i:

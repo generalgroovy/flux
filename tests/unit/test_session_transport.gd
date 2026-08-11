@@ -78,13 +78,24 @@ func _test_enet_loopback_handshake_and_input() -> void:
 	var guest := PlayerState.new(2)
 	guest.champion_wire_id = 2
 	source.players.append(guest)
-	var snapshot := SessionSnapshot.capture(source, {1: "Lantern Host", 2: "River Guest"})
+	source.projectiles.append(ProjectileState.new(
+		1000, 2, 2, CombatTuning.ECLIPSE_DISC_WIRE_ID, 8,
+		Vector2i(500_000, 500_000), Vector2i(400_000, 0),
+		14_000, 10_000, 90,
+	))
+	var snapshot := SessionSnapshot.capture(
+		source,
+		{1: "Lantern Host", 2: "River Guest"},
+		[{"type": "projectile_spawned", "projectile_id": 1000, "owner_id": 2, "wire_id": CombatTuning.ECLIPSE_DISC_WIRE_ID}],
+	)
 	check(host.broadcast_snapshot(snapshot), "host broadcasts a validated authoritative snapshot")
 	check(_poll_until(host, client, func() -> bool: return not client.incoming_snapshots.is_empty()), "client receives the snapshot through unreliable-ordered ENet")
 	var snapshots := client.take_snapshots()
 	equal(snapshots.size(), 1, "client drains one validated snapshot")
 	if not snapshots.is_empty():
 		equal(int(snapshots[0].get("tick", -1)), source.tick, "snapshot tick survives transport")
+		equal((snapshots[0].get("projectiles", []) as Array).size(), 1, "projectile lane survives unreliable-ordered transport")
+		equal((snapshots[0].get("events", []) as Array).size(), 1, "semantic combat event survives unreliable-ordered transport")
 
 	client.stop()
 	check(_poll_until(host, client, func() -> bool: return host.player_count() == 1), "host removes a disconnected accepted peer")

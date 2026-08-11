@@ -13,8 +13,10 @@ This checkpoint includes a first playable shared-movement loop. The host maps
 accepted peers to stable entities 2-8, gives the first guest S. Wayne beside the
 host's Oh Tipi, consumes only validated inputs, simulates every traveller, and
 publishes compact snapshots at 60 Hz. Each client follows its assigned actor,
-renders the named remote traveller, and receives authoritative resources and
-movement state. Projectile presentation, authorized shared station requests and
+renders the named remote traveller, and receives authoritative resources,
+movement, projectiles and semantic cast/hit/graze feedback. The render snapshot
+keeps the 8 KiB cap at eight travellers, 26 projectile lanes and 12 events;
+overflow is explicit in the guest HUD. Authorized shared station requests and
 prediction/reconciliation remain the next slices.
 
 ## Windows and Linux direct-IP smoke
@@ -67,7 +69,7 @@ trusted sender ID, tick, position, damage, cooldown, resource, score or outcome.
 | Transport/handshake | Implemented: real ENet loopback, match/refusal, bounded input and disconnect cleanup |
 | Authoritative presence | Implemented: host registers/removes named peer actors and maps network peers to stable entities 2-8 |
 | Movement snapshots | Implemented: host stamps inputs to its tick, simulates all actors, bounds stale input and sends 60 Hz snapshots; guest interpolates presentation |
-| Shared projectiles | Next: replicate compact projectile state and semantic combat feedback without trusting guest outcomes |
+| Shared projectiles | Implemented: compact projectile lanes and bounded cast/hit/graze events render on guests while outcomes remain host-owned |
 | Shared Wellspring interaction | Host authorizes reset/emote/station requests and all peers see the confirmed result |
 | Remote platform smoke | Windows and Garuda Linux direct-IP packages connect, move, leave and reconnect with diagnostics |
 | Session continuity | Join-in-progress, timeouts, reconnect token, host shutdown, moderation and later host migration |

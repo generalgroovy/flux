@@ -153,6 +153,9 @@ passes on Garuda Linux/Sway and Windows.
 - [x] Implement held/released variable-hop timing, explicit fast fall, and
   authored-obstacle wall skim with bounded Stamina, duration, exit recovery,
   world-edge exclusion, canonical state and same-surface lockout.
+- [x] Implement canonical per-route landing intensity and presentation-owned
+  land-strip, shadow-squash and expanding rune-ring cues with normalized 60/120
+  Hz timing, reduced-motion equivalence and authority immutability.
 - [ ] Planned: add bounded launched-trajectory influence and collision-safe
   timed ground recovery without weakening stun, earned launch, recovery, or the
   global speed ceiling.

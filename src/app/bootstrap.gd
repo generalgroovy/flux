@@ -180,15 +180,19 @@ func _draw() -> void:
 		draw_circle(projectile_position, float(projectile.radius) / 1000.0, projectile_color)
 	var state: PlayerState = world.player()
 	var presentation := JumpPresentation.sample(state, world.config, alpha, player_preferences.reduced_motion)
+	var landing := LandingPresentation.sample(state, world.config, alpha, player_preferences.reduced_motion)
 	var player_radius: float = float(state.radius) / 1000.0
 	var shadow_center := rendered_position + Vector2(0.0, player_radius * 0.58)
+	var shadow_scale: Vector2 = landing.shadow_scale if landing.active else presentation.shadow_scale
 	draw_set_transform(
 		shadow_center - camera_origin,
 		0.0,
-		Vector2(player_radius * presentation.shadow_scale.x, player_radius * presentation.shadow_scale.y),
+		Vector2(player_radius * shadow_scale.x, player_radius * shadow_scale.y),
 	)
 	draw_circle(Vector2.ZERO, 1.0, Color(FOREST_SHADOW_COLOR, presentation.shadow_opacity))
 	draw_set_transform(-camera_origin)
+	if landing.active:
+		_draw_landing_cue(shadow_center, landing)
 	var body_position := rendered_position + Vector2(0.0, -float(presentation.body_lift_pixels))
 	var sprite_drawn: bool = false
 	if player_sprite != null:
@@ -219,7 +223,7 @@ func _draw() -> void:
 	_draw_resource_bar(Rect2(700, 24, 168, 20), "HEALTH", state.health, PlayerTuning.HEALTH_MAXIMUM, Color("d9634f"))
 	_draw_resource_bar(Rect2(884, 24, 168, 20), "FLUX", state.flux, PlayerTuning.FLUX_MAXIMUM, FLUX_COLOR)
 	_draw_resource_bar(Rect2(1068, 24, 168, 20), "STAMINA", state.stamina, MovementTuning.STAMINA_MAXIMUM, ATTUNEMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · SHIFT SPRINT · CTRL/C SLIDE · SPACE JUMP · V VAULT/AIR TURN", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · SHIFT SPRINT · CTRL/C SLIDE · SPACE JUMP · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
 	var view_description := "FULL" if player_preferences.pov_mode == PlayerPreferences.POV_FULL else "CONE %d°/%d" % [player_preferences.pov_angle_degrees, player_preferences.pov_range]
 	draw_string(
 		ThemeDB.fallback_font,
@@ -243,6 +247,15 @@ func _draw_resource_bar(rectangle: Rect2, label: String, value: int, maximum: in
 	draw_rect(Rect2(rectangle.position + Vector2(2, 2), Vector2((rectangle.size.x - 4.0) * ratio, rectangle.size.y - 4.0)), color, true)
 	draw_rect(rectangle, Color(PARCHMENT_COLOR, 0.65), false, 1.0)
 	draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(7, 15), "%s %d" % [label, value / 1000], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 12.0, 12, Color.WHITE)
+
+
+func _draw_landing_cue(center: Vector2, landing: LandingPresentation.Sample) -> void:
+	var color := Color(ATTUNEMENT_COLOR, landing.ring_opacity)
+	draw_arc(center, landing.ring_radius, 0.0, TAU, 20, color, landing.ring_width)
+	for direction: Vector2 in [Vector2.UP, Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT]:
+		var inner := center + direction * (landing.ring_radius - 2.0)
+		var outer := center + direction * (landing.ring_radius + 2.0)
+		draw_line(inner, outer, color, landing.ring_width)
 
 
 func _draw_pov_mask(origin: Vector2, aim: Vector2, camera_origin: Vector2) -> void:

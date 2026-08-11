@@ -61,6 +61,12 @@ identity excludes outer world boundaries, a 900 ms same-surface lockout prevents
 loops, and the end exposes a short recovery cue. The same semantic V press keeps
 its existing vault, aerial redirect and sprint-held air-dodge roles.
 
+Every completed aerial route and wall-skim exit records a bounded 0–1000 landing
+intensity in canonical state. Presentation turns that truth into the champion's
+land strip, a short shadow squash and an expanding four-mark rune ring; heavier
+routes and fast fall read more strongly without changing collision or recovery.
+Reduced motion preserves the timing cue with a smaller, thinner, dimmer pulse.
+
 ## View modes
 
 `full` leaves the complete viewport visible. `cone` presents only the selected

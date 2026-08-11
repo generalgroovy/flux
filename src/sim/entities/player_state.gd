@@ -120,6 +120,7 @@ var wall_skim_surface_id: int = 0
 var wall_skim_lockout_id: int = 0
 var wall_skim_lockout_ticks: int = 0
 var landing_ticks: int = 0
+var landing_intensity: int = 0
 var sprinting: bool = false
 var control_state: int = ControlState.FREE
 var control_ticks: int = 0
@@ -162,6 +163,6 @@ func canonical_values() -> PackedInt64Array:
 		wall_lockout_id, wall_lockout_ticks,
 		wall_skim_ticks, wall_skim_cooldown_ticks, wall_skim_x, wall_skim_y,
 		wall_skim_surface_id, wall_skim_lockout_id, wall_skim_lockout_ticks,
-		landing_ticks, int(sprinting),
+		landing_ticks, landing_intensity, int(sprinting),
 		control_state, control_ticks, control_x, control_y, control_speed, slow_ratio,
 	])

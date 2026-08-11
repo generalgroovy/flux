@@ -164,6 +164,16 @@ func _test_variable_jump_and_fast_fall(tick_rate: int) -> void:
 	var stamina_before: int = fall_state.stamina
 	_step(fall_world, 1000, 0, SimCommand.HELD_FAST_FALL)
 	equal(fall_state.stamina, stamina_before, "%d Hz fast fall is commitment rather than a Stamina purchase" % tick_rate)
+	while fall_state.hop_ticks > 0:
+		_step(fall_world, 1000, 0, SimCommand.HELD_FAST_FALL)
+	equal(
+		fall_state.landing_intensity,
+		MovementTuning.LANDING_HOP_INTENSITY + MovementTuning.LANDING_FAST_FALL_BONUS,
+		"%d Hz fast-fall commitment survives as authored landing intensity" % tick_rate,
+	)
+	while fall_state.landing_ticks > 0:
+		_step(fall_world)
+	equal(fall_state.landing_intensity, 0, "%d Hz landing intensity clears with its recovery window" % tick_rate)
 
 
 func _test_same_wall_lockout(tick_rate: int) -> void:
@@ -206,6 +216,7 @@ func _test_wall_skim(tick_rate: int) -> void:
 		_step(world, 0, 1000)
 	equal(state.last_event, "wall_skim_end", "%d Hz wall skim emits an explicit recovery event" % tick_rate)
 	check(state.landing_ticks > 0, "%d Hz wall skim exposes its readable recovery window" % tick_rate)
+	equal(state.landing_intensity, MovementTuning.LANDING_WALL_SKIM_INTENSITY, "%d Hz wall skim exit uses its lighter authored pulse" % tick_rate)
 	state.wall_memory_ticks = world.config.milliseconds_to_ticks(MovementTuning.WALL_MEMORY_MS)
 	state.wall_contact_id = skim_surface
 	state.wall_x = -1000

@@ -140,8 +140,10 @@ static func apply_control_state(
 
 static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 	var was_hopping: bool = state.hop_ticks > 0
+	var was_fast_falling: bool = state.fast_falling
 	var was_air_dodging: bool = state.air_dodge_ticks > 0
 	var was_wall_skimming: bool = state.wall_skim_ticks > 0
+	var was_landing: bool = state.landing_ticks > 0
 	var previous_control_state: int = state.control_state
 	for property_name: StringName in [
 		&"stamina_recovery_delay_ticks", &"hop_ticks", &"hop_cooldown_ticks",
@@ -154,7 +156,10 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 		&"variable_jump_grace_ticks",
 	]:
 		state.set(property_name, maxi(0, int(state.get(property_name)) - 1))
+	if was_landing and state.landing_ticks == 0:
+		state.landing_intensity = 0
 	if was_hopping and state.hop_ticks == 0:
+		state.landing_intensity = _hop_landing_intensity(state.hop_mode, was_fast_falling)
 		state.hop_stage = 0
 		state.air_redirects_remaining = 0
 		state.fast_falling = false
@@ -168,10 +173,12 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 			state.last_event = "wave_dash"
 		else:
 			state.landing_ticks = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
+			state.landing_intensity = MovementTuning.LANDING_AIR_DODGE_INTENSITY
 		state.wave_dash_queued = false
 	if was_wall_skimming and state.wall_skim_ticks == 0:
 		state.wall_skim_surface_id = 0
 		state.landing_ticks = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
+		state.landing_intensity = MovementTuning.LANDING_WALL_SKIM_INTENSITY
 		state.last_event = "wall_skim_end"
 	if previous_control_state != PlayerState.ControlState.FREE and state.control_ticks == 0:
 		state.control_state = PlayerState.ControlState.FREE
@@ -196,6 +203,7 @@ static func _try_hop(state: PlayerState, direction: Vector2i, config: SimConfig)
 	state.hop_x = direction.x
 	state.hop_y = direction.y
 	state.air_redirects_remaining = 1
+	_clear_landing_cue(state)
 	state.wall_memory_ticks = 0
 	if wall_kick:
 		state.wall_lockout_id = state.wall_contact_id
@@ -253,7 +261,7 @@ static func _try_air_dodge(state: PlayerState, direction: Vector2i, config: SimC
 	state.air_dodge_cooldown_ticks = config.milliseconds_to_ticks(MovementTuning.AIR_DODGE_COOLDOWN_MS)
 	state.air_dodge_x = direction.x
 	state.air_dodge_y = direction.y
-	state.landing_ticks = 0
+	_clear_landing_cue(state)
 	state.last_event = "air_dodge"
 	return true
 
@@ -289,6 +297,7 @@ static func _try_slide_jump(state: PlayerState, direction: Vector2i, config: Sim
 	state.hop_x = direction.x
 	state.hop_y = direction.y
 	state.air_redirects_remaining = 1
+	_clear_landing_cue(state)
 	state.last_event = "slide_jump"
 	return true
 
@@ -315,6 +324,7 @@ static func _try_vault(state: PlayerState, direction: Vector2i, config: SimConfi
 	state.vault_cooldown_ticks = config.milliseconds_to_ticks(MovementTuning.VAULT_COOLDOWN_MS)
 	state.vault_x = direction.x
 	state.vault_y = direction.y
+	_clear_landing_cue(state)
 	state.last_event = "vault"
 	return true
 
@@ -367,6 +377,7 @@ static func _try_wall_skim(state: PlayerState, direction: Vector2i, config: SimC
 	state.wall_skim_lockout_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_SKIM_SAME_SURFACE_LOCKOUT_MS)
 	state.wall_memory_ticks = 0
 	state.wall_contact_id = 0
+	_clear_landing_cue(state)
 	state.sprinting = false
 	state.last_event = "wall_skim"
 	return true
@@ -430,6 +441,7 @@ static func _apply_ground_velocity(state: PlayerState, command: SimCommand, dire
 			@warning_ignore("integer_division")
 			rate = rate * MovementTuning.LANDING_CUT_MULTIPLIER / 1000
 			state.landing_ticks = 0
+			state.landing_intensity = 0
 			state.last_event = "landing_cut"
 	var step_amount: int = config.per_tick(rate)
 	state.velocity_x = _approach(state.velocity_x, desired_x, step_amount)
@@ -502,6 +514,25 @@ static func _spend_stamina(state: PlayerState, amount: int, config: SimConfig) -
 	state.stamina = maxi(0, state.stamina - amount)
 	state.stamina_remainder = 0
 	state.stamina_recovery_delay_ticks = config.milliseconds_to_ticks(MovementTuning.STAMINA_RECOVERY_DELAY_MS)
+
+
+static func _clear_landing_cue(state: PlayerState) -> void:
+	state.landing_ticks = 0
+	state.landing_intensity = 0
+
+
+static func _hop_landing_intensity(hop_mode: int, fast_falling: bool) -> int:
+	var intensity: int = MovementTuning.LANDING_HOP_INTENSITY
+	match hop_mode:
+		PlayerState.MovementMode.DOUBLE_JUMP:
+			intensity = MovementTuning.LANDING_DOUBLE_JUMP_INTENSITY
+		PlayerState.MovementMode.SLIDE_JUMP:
+			intensity = MovementTuning.LANDING_SLIDE_JUMP_INTENSITY
+		PlayerState.MovementMode.WALL_KICK:
+			intensity = MovementTuning.LANDING_WALL_KICK_INTENSITY
+	if fast_falling:
+		intensity += MovementTuning.LANDING_FAST_FALL_BONUS
+	return mini(1000, intensity)
 
 
 static func _apply_stamina_rate(state: PlayerState, rate_per_second: int, config: SimConfig) -> void:

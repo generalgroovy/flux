@@ -1,5 +1,48 @@
 # FLUX2 agent worklog
 
+## 2026-08-11 — intensity-scaled landing readability
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added canonical 0–1000 landing intensity selected from the completed route:
+  hop, double jump, slide jump, wall kick, fast fall, air dodge and wall skim
+  now retain distinct readable impact weight through the short landing window.
+- Added a pure presentation sampler with normalized phase, intensity-scaled
+  shadow squash and an expanding/fading four-mark rune ring. Reduced motion
+  keeps the timing information while limiting travel, opacity and stroke width.
+- The runtime composes the pulse beneath the existing semantic land animation,
+  clears it on a new traversal action or landing cut, and labels V as the
+  contextual technique instead of the incomplete vault/air-only wording.
+- Advanced protocol to 8 so replay/session mismatch cannot silently omit the
+  canonical landing intensity.
+
+Validation:
+
+- `git diff --check`: passed.
+- Pinned Godot 4.7.1 import: passed and generated tracked UIDs for the new
+  presentation sampler and focused test suite.
+- Pinned Godot 4.7.1 full headless gate: 13,293 assertions, zero failures.
+- Landing phase, ring radius/opacity, shadow width and reduced-motion behavior
+  are normalized at 60/120 Hz; sampling does not mutate canonical authority.
+- Simulation verifies fast-fall intensity survives to landing, wall-skim exit
+  uses its authored lighter pulse, and intensity clears with recovery expiry.
+- Independent 60 and 120 Hz headless bootstrap smokes exited successfully with
+  protocol 8; Windows interactive smoke remained responsive.
+
+Known limitations and next task:
+
+- The ring is procedural original presentation; accepted atlas-specific dust,
+  material contact particles and audio remain later polish.
+- Collision-safe combat knockdown recovery remains a separate combat slice and
+  must not become a universal cancel or erase earned launch advantage.
+- Next implementation slice begins walk-up Wellspring station interactions,
+  starting with a reusable deterministic proximity/selection model and the
+  Movement Guide plus training-reset stations.
+
+Commit: pending. Push: pending.
+
 ## 2026-08-11 — bounded authored-obstacle wall skim
 
 Branch: `codex/continuous-overhaul`

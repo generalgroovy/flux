@@ -56,6 +56,8 @@ even when design documentation already exists.
     minimum, and airborne Ctrl/C fast-falls through explicit canonical state
   - [x] V converts recent authored-obstacle contact into a bounded wall skim;
     world edges are excluded and same-surface chaining is locked out
+  - [x] Landing intensity is canonical and drives a restrained expanding rune
+    ring, shadow squash, accepted land strip, and reduced-motion equivalent
   - [x] Separate Health, Stamina, and spell Flux; independent quantized aim and
     keyboard/mouse/controller action defaults
   - [x] Offline saved keyboard bindings, world-relative and aim-relative
@@ -324,7 +326,7 @@ station acceptance.
 | Wavedash | Convert a late angled air dodge into grounded momentum | Exact landing geometry, one queued conversion, no free stacking | Implemented |
 | Wall contact / wall kick | Rebound from a brief valid wall-contact window | Stable wall identity and a 220 ms same-wall lockout prevent loops | Implemented |
 | Vault / superglide | Cross marked low cover and convert the narrow crest window | Only authored vault surfaces qualify; destination clearance and fixed ceiling are mandatory | Implemented against foundation geometry |
-| Landing cut | Trade a timed landing input for reduced recovery and route continuity | Never deletes an attack/status commitment and must remain readable | Foundation implemented |
+| Landing cut | Trade a timed landing input for reduced recovery and route continuity | Canonical intensity drives a land strip, shadow squash and fading rune ring; never deletes an attack/status commitment | Foundation and readable impact cue implemented |
 | Edgeweave | Skim the swept edge of a hostile projectile at committed speed to regain Stamina | No reward on hit, full Stamina, training pressure, low speed, cooldown, or repeat contact | Implemented |
 | Variable hop / fast fall | Change aerial duration and contest timing without a new jump | Held/released duration and a no-cost committed fast fall remain bounded and canonical | Implemented |
 | Impact influence / brace | Bend a launched trajectory slightly or time a safe ground recovery | Cannot cancel knockback, cross worldbone, or remove the attacker’s earned advantage | Planned |
@@ -1772,7 +1774,7 @@ F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
 left/right sticks, right trigger, west/east face buttons, and shoulders. The
 rate never mutates inside a running match.
 
-G3 now uses protocol 7 and preference schema 3: Space invokes the semantic jump
+G3 now uses protocol 8 and preference schema 3: Space invokes the semantic jump
 action, Shift sprints, Ctrl/C directly slides, and primary no longer aliases
 Space. Schema-v1/v2 defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision

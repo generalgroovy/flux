@@ -102,6 +102,7 @@ cue, or diagnostic leak.
 | `Ctrl` / `C` | Dedicated grounded slide press |
 | `Space` | Semantic jump / movement-chain press |
 | `V` | Contextual vault, recent-contact wall skim, air redirect, or sprint-held air dodge |
+| `F` | Activate the nearest walk-up Wellspring station; controller north-face is equivalent |
 | Left mouse | Arc Primary; no default Space alias |
 | `E` / right mouse | Vector Lance |
 | `F7` | Toggle world-relative / aim-relative movement and save |

@@ -82,9 +82,10 @@ rates launch, and deterministic state never depends on rendering.
 - [ ] Planned: implement shared semantic LOS plus presentation cutaway/fade/
   ownership silhouette so high terrain/buildings/constructs never cover a
   LOS-visible character and no cue leaks a LOS-hidden character.
-- [ ] Planned: implement walk-up station commands for training, muster/friends,
-  champions, realm/modes, guide/codex, rites/profile, wardrobe/social, and
-  settings/accessibility.
+- [ ] In progress: implement walk-up station commands. Schema-v2 fixed-point
+  focus, transparent world bubbles, the local Movement Guide and host-authority
+  Practice Bell reset are live; muster/friends, champions, realm/modes,
+  guide/codex depth, rites/profile, wardrobe/social, travel and settings remain.
 - [ ] Planned: implement overlay parity, map UI, shrine interaction, attunement
   persistence, safe party travel, district streaming, and offline capability
   states.

@@ -41,8 +41,10 @@ even when design documentation already exists.
   - [ ] Offline-complete stations plus privacy-safe friends/presence, simple
     host/join, host teams/rules/practice/travel tools, and Garuda Sway/Windows
     acceptance
-  - [ ] Walk-up stations, overlay menu state machine, map UI, streaming, and
-    destination persistence
+  - [x] Fixed-point walk-up focus plus the first two diegetic stations: a
+    Movement Guide and host-authority Practice Bell with transparent bubbles
+  - [ ] Champion, settings, muster/host/join and travel stations; overlay parity,
+    map UI, streaming, and destination persistence
 - [ ] **Chapter 3 — [Movement and traversal](#movement-and-traversal)**
   — deterministic universal grammar in progress
   - [x] Sprint, counter-strafe, hop/double jump, wall kick, air redirect/dodge,
@@ -57,7 +59,7 @@ even when design documentation already exists.
   - [x] V converts recent authored-obstacle contact into a bounded wall skim;
     world edges are excluded and same-surface chaining is locked out
   - [x] Landing intensity is canonical and drives a restrained expanding rune
-    ring, shadow squash, accepted land strip, and reduced-motion equivalent
+    ring, shadow squash, semantic land strip, and reduced-motion equivalent
   - [x] Separate Health, Stamina, and spell Flux; independent quantized aim and
     keyboard/mouse/controller action defaults
   - [x] Offline saved keyboard bindings, world-relative and aim-relative
@@ -271,6 +273,13 @@ travel or opted-in announced practice ports, moderate, inspect diagnostics, and
 end cleanly. Changes are permission-checked, visible, rate-limited, logged, and
 frozen where competition demands it; hosting never grants remote file/shell or
 client-setting control.
+
+The current playable campus begins that shell with two walk-up objects below
+spawn. The **Movement Guide** toggles concise movement notes in a transparent
+world bubble; the **Practice Bell** restores the deterministic local court and
+all three resources. F and controller north-face activate the nearest station,
+with fixed-point radius checks and stable identity tie-breaking. The remaining
+champion, settings, muster/host/join and travel stations are still gated work.
 
 Foreground terrain, roofs, foliage, buildings, and constructs fade/cut away or
 yield to an ownership-readable silhouette when they overlap a character that is
@@ -1768,7 +1777,7 @@ scripts/run.sh --tick-rate=120
 Current foundation controls: WASD moves, mouse aims, left click fires Arc
 Primary, right click or E casts Vector Lance, Shift sprints, Ctrl or C slides,
 Space uses the jump/movement chain, V uses the contextual vault/wall-skim/air technique,
-R restarts the match, and F6 restarts at the
+F interacts with the nearest Wellspring station, R restarts the match, and F6 restarts at the
 other supported tick rate. F7 changes movement reference, F8 changes view, and
 F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
 left/right sticks, right trigger, west/east face buttons, and shoulders. The
@@ -1802,8 +1811,8 @@ tools, accessibility, and compatibility agree.
 | E — first combat path | Arc Primary, Vector Lance, projectiles, swept hit/damage, replay and full Edgeweave invariants | Complete |
 | F1 — chemistry storage/safety | Validated material registry, 128 x 128 packed columns, seeded materials/Charge/elevation, immutable worldbone, canonical queue/budgets/hashes, exact reset, read-only preview | Complete |
 | G1 — player configuration | Persisted keyboard remapping, world/aim-relative movement, full/cone POV, exact angle/range, CLI/hotkey controls, deterministic transforms | Complete |
-| G2 — authored Sanctum | Replace the schematic court with the first vast Nexus-to-Conservatory multi-area topology/visual slice, clear routes, landmarks, elevations, responsive ambience, fast-travel context, and original pixel kit | In progress: canonical campus topology, routes, worldbone, elevation/reset metadata, camera and procedural presentation validate; a generated 12-module source/alpha candidate now has hash/provenance/authority validation but remains excluded and unapproved pending crop/alignment, license, import, performance and visual gates |
-| G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: Space-jump migration and the timer-normalized shared body-lift/shadow sampler validate; sprite-body integration, per-champion frames, landing/interact/fallback taunt and semantic event wiring remain pending |
+| G2 — authored Sanctum | Replace the schematic court with the first vast Nexus-to-Conservatory multi-area topology/visual slice, clear routes, landmarks, elevations, responsive ambience, fast-travel context, and original pixel kit | In progress: canonical campus topology, routes, worldbone, elevation/reset/station metadata, camera and procedural presentation validate; a generated 12-module source/alpha candidate remains unapproved pending visual/import gates |
+| G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: Oh Tipi candidate body, shared lift/shadow, intensity landing cue, deterministic walk-up focus, Movement Guide and Practice Bell are live; accepted champion art, remaining station flows and fallback taunt remain |
 | F2/G4 — systemic Sanctum | Structural/thermal reactions, authored traversal devices, input/controller UI, physics/chemistry practice and reset | Planned |
 | H1 — first ancestry/champion/spells | One approved body plan and character through loadout, unique taunt, dummy/bot, cues, replay, accessibility and platform source gates | Planned |
 | I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | Planned |

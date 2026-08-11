@@ -1,5 +1,51 @@
 # FLUX2 agent worklog
 
+## 2026-08-11 — first diegetic walk-up stations
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Advanced the campus to schema 2 with two collision-clear Nexus stations: the
+  Movement Guide exposes concise movement notes and the Practice Bell restores
+  the deterministic training court and all player resources.
+- Added a pure fixed-point nearest-station model with bounded authored radii,
+  stable lexical tie-breaking and fail-closed malformed-entry behavior.
+- Added F and controller north-face interaction defaults. The Guide toggles a
+  transparent world-space bubble; the host-authority Bell executes locally in
+  offline play and shows a short player-anchored restoration notice.
+- Added original pulsing book/bell pedestals and concise labels. Station content
+  validates known command, authority, district, collision clearance, radius and
+  one-to-six-line copy before the campus can boot; no detached menu was added.
+
+Validation:
+
+- `git diff --check`: passed; campus JSON parses as schema 2 with two stations.
+- Pinned Godot 4.7.1 import: passed and generated tracked UIDs for the station
+  focus model and focused test suite.
+- Pinned Godot 4.7.1 full headless gate: 13,315 assertions, zero failures.
+- Repository stations, exact-range exit, nearest choice, equal-distance stable
+  tie-break, invalid entry refusal, invalid command/radius/collision placement,
+  F binding and controller binding are covered.
+- Independent 60 and 120 Hz headless bootstrap smokes exited successfully.
+- Windows interactive smoke remained responsive; both labeled pedestals and
+  the F interaction legend were visible at gameplay zoom.
+
+Known limitations and next task:
+
+- External synthetic keyboard injection did not produce reliable Godot
+  physical-key events, so bubble activation still needs the user's normal
+  keyboard/controller playtest; model, bindings and app flow are structurally
+  covered and the build remains open for that check.
+- Offline play is the local host, but network request/authorization transport
+  does not exist yet; the Practice Bell's declared host authority is content
+  policy in preparation for that slice.
+- Next slice extends the reusable station contract with champion switching,
+  then implements Oh Tipi and S. Wayne selection/runtime identity before
+  settings and host/join stations.
+
+Commit: pending. Push: pending.
+
 ## 2026-08-11 — intensity-scaled landing readability
 
 Branch: `codex/continuous-overhaul`

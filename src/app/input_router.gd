@@ -6,6 +6,7 @@ const KEY_ACTIONS: Dictionary[StringName, int] = PlayerPreferences.DEFAULT_KEYBO
 const PRIMARY_ACTION: StringName = &"primary"
 const ACTIVE_1_ACTION: StringName = &"active_1"
 const SLIDE_ACTION: StringName = &"slide"
+const INTERACT_ACTION: StringName = &"interact"
 const AIM_DEADZONE: float = 0.25
 
 var entity_id: int
@@ -29,6 +30,8 @@ static func ensure_input_map() -> void:
 		if physical_keycode != 0:
 			_add_key(action, physical_keycode)
 	_add_key(SLIDE_ACTION, KEY_C)
+	_ensure_action(INTERACT_ACTION)
+	_add_key(INTERACT_ACTION, KEY_F)
 	_ensure_action(PRIMARY_ACTION)
 	_add_mouse_button(PRIMARY_ACTION, MOUSE_BUTTON_LEFT)
 	_ensure_action(ACTIVE_1_ACTION)
@@ -53,6 +56,7 @@ static func ensure_input_map() -> void:
 	_add_joy_button(&"jump", JOY_BUTTON_RIGHT_SHOULDER)
 	_add_joy_button(&"technique", JOY_BUTTON_B)
 	_add_joy_button(SLIDE_ACTION, JOY_BUTTON_A)
+	_add_joy_button(INTERACT_ACTION, JOY_BUTTON_Y)
 
 
 static func _ensure_action(action: StringName) -> void:

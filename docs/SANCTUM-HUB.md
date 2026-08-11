@@ -87,6 +87,20 @@ and already-attuned travel. World desks, gates, portals, and shrines open the
 same focused screens with additional spatial context. Network-dependent actions
 state why they are unavailable offline; offline play never waits for a service.
 
+### Current walk-up slice
+
+The schema-v2 campus currently places a **Movement Guide** and **Practice Bell**
+below the Nexus spawn. Nearest focus uses fixed-point distance, authored radius
+and stable station-ID tie-breaking. F or controller north-face toggles the
+Guide's concise transparent world bubble; the Bell executes the same
+host-authority training-reset command that shared sessions will later validate,
+while an offline player is the local host. No detached main menu is introduced.
+
+Station data must declare a known command, local/host authority, district,
+collision-clear position, bounded interaction radius, concise title/prompt and
+one to six readable detail lines. Champion, settings, muster/host/join and
+travel stations remain next slices over this same contract.
+
 ## Shared Sanctum and host tools
 
 The friends/muster surface reports only privacy-approved states: offline,

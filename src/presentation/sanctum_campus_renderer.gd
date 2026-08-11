@@ -45,6 +45,8 @@ func draw(canvas: CanvasItem, layout: SanctumCampusLayout, presentation_tick: in
 		_draw_building(canvas, building_value as Dictionary)
 	for landmark_value: Variant in layout.data.get("landmarks", []):
 		_draw_landmark(canvas, landmark_value as Dictionary, presentation_tick)
+	for station_value: Variant in layout.data.get("stations", []):
+		_draw_station(canvas, station_value as Dictionary, presentation_tick)
 	for district_value: Variant in layout.data.get("districts", []):
 		_draw_district_label(canvas, district_value as Dictionary)
 
@@ -226,6 +228,33 @@ func _draw_landmark(canvas: CanvasItem, landmark: Dictionary, tick: int) -> void
 			canvas.draw_arc(position, 17.0, 0.0, TAU, 16, BRASS, 2.0)
 	if bool(landmark.get("fast_travel", false)):
 		canvas.draw_circle(position, glow_radius + 8.0, Color(CYAN, 0.12))
+
+
+func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int) -> void:
+	var values: Array = station.get("position", [])
+	var position := Vector2(float(values[0]), float(values[1]))
+	var kind := String(station.get("kind", ""))
+	var pulse: float = 0.12 + 0.06 * sin(float(tick) * 0.08)
+	var accent: Color = CYAN if kind == "guide" else FIRE
+	canvas.draw_circle(position + Vector2(2, 5), 19.0, Color(DEEP_FOREST, 0.72))
+	canvas.draw_circle(position, 17.0, CLIFF)
+	canvas.draw_arc(position, 14.0, 0.0, TAU, 16, BRASS, 3.0)
+	canvas.draw_circle(position, 10.0, Color(accent, 0.20 + pulse))
+	if kind == "guide":
+		canvas.draw_line(position + Vector2(-8, -5), position + Vector2(-1, -2), PARCHMENT, 2.0)
+		canvas.draw_line(position + Vector2(8, -5), position + Vector2(1, -2), PARCHMENT, 2.0)
+		canvas.draw_line(position + Vector2(-8, -5), position + Vector2(-8, 6), PARCHMENT, 2.0)
+		canvas.draw_line(position + Vector2(8, -5), position + Vector2(8, 6), PARCHMENT, 2.0)
+		canvas.draw_line(position + Vector2(-8, 6), position + Vector2(0, 8), PARCHMENT, 2.0)
+		canvas.draw_line(position + Vector2(8, 6), position + Vector2(0, 8), PARCHMENT, 2.0)
+	else:
+		canvas.draw_arc(position, 7.0, -2.2, 2.0, 10, PARCHMENT, 2.0)
+		canvas.draw_line(position + Vector2(-6, -6), position + Vector2(-10, -2), PARCHMENT, 2.0)
+		canvas.draw_line(position + Vector2(-6, -6), position + Vector2(-2, -7), PARCHMENT, 2.0)
+	var title := String(station.get("title", ""))
+	var text_width: float = ThemeDB.fallback_font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x
+	canvas.draw_rect(Rect2(position.x - text_width * 0.5 - 5.0, position.y + 23.0, text_width + 10.0, 16.0), PANEL, true)
+	canvas.draw_string(ThemeDB.fallback_font, Vector2(position.x - text_width * 0.5, position.y + 35.0), title, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 10, PARCHMENT)
 
 
 func _draw_district_label(canvas: CanvasItem, district: Dictionary) -> void:

@@ -5,14 +5,14 @@ const BootstrapScript: Script = preload("res://src/app/bootstrap.gd")
 
 
 func run() -> int:
-	for action: StringName in [&"jump", &"primary", &"sprint", &"slide"]:
+	for action: StringName in [&"jump", &"primary", &"sprint", &"slide", &"interact"]:
 		if InputMap.has_action(action):
 			InputMap.erase_action(action)
 	InputRouter.ensure_input_map()
 	for action: StringName in [
 		&"move_left", &"move_right", &"move_up", &"move_down",
 		&"aim_left", &"aim_right", &"aim_up", &"aim_down",
-		&"sprint", &"slide", &"jump", &"technique", &"primary", &"active_1",
+		&"sprint", &"slide", &"jump", &"technique", &"interact", &"primary", &"active_1",
 		&"reset_match", &"toggle_debug_overlay", &"toggle_tick_rate",
 		&"toggle_movement_reference", &"toggle_pov_mode",
 		&"adjust_pov_angle", &"adjust_pov_range",
@@ -22,6 +22,8 @@ func run() -> int:
 	equal(_keycodes(&"jump"), [KEY_SPACE], "jump defaults to Space exactly once")
 	equal(_keycodes(&"sprint"), [KEY_SHIFT], "sprint defaults to Shift")
 	equal(_keycodes(&"slide"), [KEY_CTRL, KEY_C], "slide defaults to Ctrl with a C alias")
+	equal(_keycodes(&"interact"), [KEY_F], "walk-up interaction defaults to F")
+	check(_has_joy_button(&"interact", JOY_BUTTON_Y), "walk-up interaction retains a controller face button")
 	check(not _keycodes(&"primary").has(KEY_SPACE), "primary has no Space keyboard alias")
 	check(_has_mouse_button(&"primary", MOUSE_BUTTON_LEFT), "primary retains left mouse")
 	check(InputMap.action_get_events(&"primary").size() >= 2, "primary supports mouse and controller trigger")
@@ -41,6 +43,13 @@ func _keycodes(action: StringName) -> Array[int]:
 func _has_mouse_button(action: StringName, button: int) -> bool:
 	for event: InputEvent in InputMap.action_get_events(action):
 		if event is InputEventMouseButton and event.button_index == button:
+			return true
+	return false
+
+
+func _has_joy_button(action: StringName, button: int) -> bool:
+	for event: InputEvent in InputMap.action_get_events(action):
+		if event is InputEventJoypadButton and event.button_index == button:
 			return true
 	return false
 

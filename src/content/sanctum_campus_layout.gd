@@ -2,7 +2,7 @@ class_name SanctumCampusLayout
 extends RefCounted
 
 
-const SUPPORTED_SCHEMA_VERSION: int = 1
+const SUPPORTED_SCHEMA_VERSION: int = 2
 const REQUIRED_CANVAS := Vector2i(2560, 1440)
 const REQUIRED_VIEWPORT := Vector2i(1280, 720)
 const REQUIRED_DISTRICTS: Array[String] = [
@@ -23,6 +23,9 @@ const ALLOWED_STYLES: Array[String] = ["garden", "nexus", "archive", "wayfarer",
 const ALLOWED_OCCLUSION: Array[String] = ["los_cutaway", "low_never_occludes"]
 const ALLOWED_ROUTE_KINDS: Array[String] = ["ordinary", "advanced", "garden"]
 const ALLOWED_RESET_KINDS: Array[String] = ["movement", "practice"]
+const ALLOWED_STATION_KINDS: Array[String] = ["guide", "training"]
+const ALLOWED_STATION_COMMANDS: Array[String] = ["movement_guide", "training_reset"]
+const ALLOWED_STATION_AUTHORITIES: Array[String] = ["local", "host"]
 
 var data: Dictionary = {}
 var last_error: String = ""
@@ -31,6 +34,7 @@ var districts_by_id: Dictionary[String, Dictionary] = {}
 var buildings_by_id: Dictionary[int, Dictionary] = {}
 var landmarks_by_id: Dictionary[String, Dictionary] = {}
 var reset_zones_by_id: Dictionary[String, Dictionary] = {}
+var stations_by_id: Dictionary[String, Dictionary] = {}
 var canvas_size := Vector2i.ZERO
 var viewport_size := Vector2i.ZERO
 var reserved_ui_top: int = 0
@@ -59,6 +63,7 @@ func validate() -> bool:
 	buildings_by_id = {}
 	landmarks_by_id = {}
 	reset_zones_by_id = {}
+	stations_by_id = {}
 	if int(data.get("schema_version", 0)) != SUPPORTED_SCHEMA_VERSION:
 		return _fail("Unsupported Sanctum campus schema")
 	if String(data.get("id", "")).is_empty():
@@ -231,6 +236,45 @@ func validate() -> bool:
 		if not reset_zones_by_id.has(required_reset_zone_id):
 			return _fail("Sanctum campus is missing required reset zone: %s" % required_reset_zone_id)
 
+	for value: Variant in data.get("stations", []):
+		if not value is Dictionary:
+			return _fail("Every Sanctum station must be an object")
+		var station: Dictionary = value
+		var station_id := String(station.get("id", ""))
+		var station_district_id := String(station.get("district", ""))
+		if station_id.is_empty() or stations_by_id.has(station_id):
+			return _fail("Sanctum station ids must be non-empty and unique")
+		if not districts_by_id.has(station_district_id):
+			return _fail("Sanctum station references an unknown district: %s" % station_id)
+		if not ALLOWED_STATION_KINDS.has(String(station.get("kind", ""))):
+			return _fail("Sanctum station kind is unsupported: %s" % station_id)
+		if not ALLOWED_STATION_COMMANDS.has(String(station.get("command", ""))):
+			return _fail("Sanctum station command is unsupported: %s" % station_id)
+		if not ALLOWED_STATION_AUTHORITIES.has(String(station.get("authority", ""))):
+			return _fail("Sanctum station authority is unsupported: %s" % station_id)
+		if String(station.get("title", "")).is_empty() or String(station.get("prompt", "")).is_empty():
+			return _fail("Sanctum station text is incomplete: %s" % station_id)
+		var station_lines_value: Variant = station.get("lines", [])
+		if not station_lines_value is Array:
+			return _fail("Sanctum station lines must be an array: %s" % station_id)
+		var station_lines: Array = station_lines_value
+		if station_lines.is_empty() or station_lines.size() > 6:
+			return _fail("Sanctum station requires one to six concise lines: %s" % station_id)
+		for line_value: Variant in station_lines:
+			if String(line_value).is_empty() or String(line_value).length() > 52:
+				return _fail("Sanctum station line is invalid: %s" % station_id)
+		var station_position := _parse_point(station.get("position", []))
+		var station_district_bounds := _parse_bounds((districts_by_id[station_district_id] as Dictionary).get("bounds", []))
+		if not station_district_bounds.has_point(station_position):
+			return _fail("Sanctum station is outside its district: %s" % station_id)
+		var interaction_radius := int(station.get("interaction_radius", 0))
+		if interaction_radius < 48 or interaction_radius > 160:
+			return _fail("Sanctum station interaction radius is outside bounds: %s" % station_id)
+		stations_by_id[station_id] = station
+	for required_station_id: String in ["movement-guide", "training-reset"]:
+		if not stations_by_id.has(required_station_id):
+			return _fail("Sanctum campus is missing required station: %s" % required_station_id)
+
 	var vaultable_count: int = 0
 	for value: Variant in data.get("buildings", []):
 		if not value is Dictionary:
@@ -285,6 +329,10 @@ func validate() -> bool:
 	var spawn_fixed := spawn * SimConfig.FIXED_SCALE
 	if not collision.can_occupy(spawn_fixed, MovementTuning.PLAYER_RADIUS):
 		return _fail("Sanctum campus spawn overlaps authored collision")
+	for station_id: String in stations_by_id:
+		var station_position := _parse_point((stations_by_id[station_id] as Dictionary).get("position", [])) * SimConfig.FIXED_SCALE
+		if not collision.can_occupy(station_position, MovementTuning.PLAYER_RADIUS):
+			return _fail("Sanctum station overlaps authored collision: %s" % station_id)
 	content_hash = CanonicalContent.sha256(data)
 	return content_hash.length() == 64 or _fail("Sanctum campus hash failed")
 

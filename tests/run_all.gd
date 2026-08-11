@@ -18,6 +18,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/unit/test_material_grid.gd"),
 	preload("res://tests/unit/test_player_preferences.gd"),
 	preload("res://tests/unit/test_sanctum_campus_layout.gd"),
+	preload("res://tests/unit/test_sanctum_station_model.gd"),
 	preload("res://tests/unit/test_sanctum_runtime_kit.gd"),
 	preload("res://tests/unit/test_sight_occlusion.gd"),
 	preload("res://tests/unit/test_movement.gd"),

@@ -47,6 +47,10 @@ var current_position := Vector2.ZERO
 var dropped_time_seconds: float = 0.0
 var show_debug_overlay: bool = false
 var capture_pointer_world := Vector2i(-1, -1)
+var focused_station_id: String = ""
+var expanded_station_id: String = ""
+var station_notice: String = ""
+var station_notice_seconds: float = 0.0
 
 
 func _ready() -> void:
@@ -134,6 +138,10 @@ func _process(delta: float) -> void:
 		if not _start_match(60 if tick_rate == 120 else 120):
 			set_process(false)
 			return
+	_update_station_focus()
+	station_notice_seconds = maxf(0.0, station_notice_seconds - delta)
+	if Input.is_action_just_pressed(InputRouter.INTERACT_ACTION):
+		_activate_focused_station()
 
 	var fixed_delta: float = 1.0 / float(tick_rate)
 	accumulator_seconds += minf(delta, 0.1)
@@ -212,6 +220,7 @@ func _draw() -> void:
 		draw_circle(body_position, player_radius, PLAYER_COLOR)
 		draw_arc(body_position, player_radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
 	draw_line(body_position, body_position + Vector2(state.aim_x, state.aim_y) * 0.032, Color.WHITE, 3.0)
+	_draw_station_bubble(rendered_position)
 	draw_set_transform(Vector2.ZERO)
 	var rendered_screen_position: Vector2 = rendered_position - camera_origin
 	_draw_pov_mask(rendered_screen_position, Vector2(state.aim_x, state.aim_y), camera_origin)
@@ -223,7 +232,7 @@ func _draw() -> void:
 	_draw_resource_bar(Rect2(700, 24, 168, 20), "HEALTH", state.health, PlayerTuning.HEALTH_MAXIMUM, Color("d9634f"))
 	_draw_resource_bar(Rect2(884, 24, 168, 20), "FLUX", state.flux, PlayerTuning.FLUX_MAXIMUM, FLUX_COLOR)
 	_draw_resource_bar(Rect2(1068, 24, 168, 20), "STAMINA", state.stamina, MovementTuning.STAMINA_MAXIMUM, ATTUNEMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · SHIFT SPRINT · CTRL/C SLIDE · SPACE JUMP · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · SHIFT SPRINT · CTRL/C SLIDE · SPACE JUMP · V TECHNIQUE · F INTERACT", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
 	var view_description := "FULL" if player_preferences.pov_mode == PlayerPreferences.POV_FULL else "CONE %d°/%d" % [player_preferences.pov_angle_degrees, player_preferences.pov_range]
 	draw_string(
 		ThemeDB.fallback_font,
@@ -256,6 +265,65 @@ func _draw_landing_cue(center: Vector2, landing: LandingPresentation.Sample) -> 
 		var inner := center + direction * (landing.ring_radius - 2.0)
 		var outer := center + direction * (landing.ring_radius + 2.0)
 		draw_line(inner, outer, color, landing.ring_width)
+
+
+func _draw_station_bubble(player_position: Vector2) -> void:
+	if station_notice_seconds > 0.0 and not station_notice.is_empty():
+		_draw_transparent_bubble(player_position + Vector2(0, -76), "WELLSPRING", [station_notice], true)
+		return
+	if focused_station_id.is_empty() or not campus_layout.stations_by_id.has(focused_station_id):
+		return
+	var station: Dictionary = campus_layout.stations_by_id[focused_station_id]
+	var values: Array = station.get("position", [])
+	var station_position := Vector2(float(values[0]), float(values[1]))
+	var expanded: bool = expanded_station_id == focused_station_id
+	var lines: Array = station.get("lines", []) if expanded else [String(station.get("prompt", "F  INTERACT"))]
+	_draw_transparent_bubble(station_position + Vector2(0, -54), String(station.get("title", "STATION")), lines, expanded)
+
+
+func _draw_transparent_bubble(anchor: Vector2, title: String, lines: Array, expanded: bool) -> void:
+	var width: float = 264.0 if expanded else 216.0
+	var height: float = 38.0 + float(lines.size()) * 17.0
+	var rectangle := Rect2(anchor.x - width * 0.5, anchor.y - height, width, height)
+	draw_rect(rectangle, Color(PANEL_COLOR, 0.82), true)
+	draw_rect(rectangle, Color(BRASS_COLOR, 0.78), false, 2.0)
+	var tail := PackedVector2Array([
+		Vector2(anchor.x - 8.0, anchor.y),
+		Vector2(anchor.x + 8.0, anchor.y),
+		Vector2(anchor.x, anchor.y + 10.0),
+	])
+	draw_colored_polygon(tail, Color(PANEL_COLOR, 0.82))
+	draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(12, 18), title, HORIZONTAL_ALIGNMENT_LEFT, width - 24.0, 12, PARCHMENT_COLOR)
+	for index: int in range(lines.size()):
+		draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(12, 37 + index * 17), String(lines[index]), HORIZONTAL_ALIGNMENT_LEFT, width - 24.0, 11, PALE_STONE_COLOR)
+
+
+func _update_station_focus() -> void:
+	if world == null:
+		focused_station_id = ""
+		return
+	var state: PlayerState = world.player()
+	var next_focus := SanctumStationModel.nearest_station_id(
+		campus_layout.stations_by_id,
+		Vector2i(state.position_x, state.position_y),
+	)
+	if not expanded_station_id.is_empty() and expanded_station_id != next_focus:
+		expanded_station_id = ""
+	focused_station_id = next_focus
+
+
+func _activate_focused_station() -> void:
+	if focused_station_id.is_empty() or not campus_layout.stations_by_id.has(focused_station_id):
+		return
+	var station: Dictionary = campus_layout.stations_by_id[focused_station_id]
+	match String(station.get("command", "")):
+		"movement_guide":
+			expanded_station_id = "" if expanded_station_id == focused_station_id else focused_station_id
+		"training_reset":
+			if _start_match(tick_rate):
+				station_notice = "The practice court is restored."
+				station_notice_seconds = 2.0
+				_update_station_focus()
 
 
 func _draw_pov_mask(origin: Vector2, aim: Vector2, camera_origin: Vector2) -> void:
@@ -334,6 +402,10 @@ func _draw_material_yard_preview() -> void:
 
 
 func _start_match(requested_tick_rate: int) -> bool:
+	focused_station_id = ""
+	expanded_station_id = ""
+	station_notice = ""
+	station_notice_seconds = 0.0
 	tick_rate = requested_tick_rate
 	world = SimWorld.new(
 		tick_rate,

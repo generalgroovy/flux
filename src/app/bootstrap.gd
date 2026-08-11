@@ -3,6 +3,7 @@ extends Node2D
 
 const MAX_CATCH_UP_STEPS: int = 8
 const SNAPSHOT_TICK_INTERVAL: int = 2
+const EMOTE_COOLDOWN_MS: int = 1200
 const HUB_DEFINITION_PATH: String = "res://content/maps/sanctum_hub_v1.json"
 const CAMPUS_LAYOUT_PATH: String = "res://content/maps/sanctum_campus_g2_v1.json"
 const ABILITY_CATALOG_PATH: String = "res://content/abilities/foundation_abilities_v1.json"
@@ -68,6 +69,11 @@ var client_replica_active: bool = false
 var last_client_snapshot_tick: int = -1
 var network_projectile_overflow: int = 0
 var combat_cues: Array[Dictionary] = []
+var client_request_sequence: int = 0
+var emote_ready_tick_by_entity: Dictionary[int, int] = {}
+var social_bubbles: Array[Dictionary] = []
+var requested_emote_smoke: bool = false
+var emote_smoke_sent: bool = false
 
 
 func _ready() -> void:
@@ -107,6 +113,7 @@ func _ready() -> void:
 	session_port = _requested_session_port()
 	local_player_name = _requested_player_name()
 	requested_farflow_mode = _requested_farflow_mode()
+	requested_emote_smoke = _requested_emote_smoke()
 	session_transport = SessionTransport.new()
 	authoritative_session = AuthoritativeSession.new()
 	_load_player_sprite_candidate()
@@ -184,8 +191,11 @@ func _process(delta: float) -> void:
 	_update_station_focus()
 	station_notice_seconds = maxf(0.0, station_notice_seconds - delta)
 	_update_combat_cues(delta)
+	_update_social_bubbles(delta)
 	if Input.is_action_just_pressed(InputRouter.INTERACT_ACTION):
 		_activate_focused_station()
+	if Input.is_action_just_pressed(InputRouter.EMOTE_ACTION):
+		_submit_session_request(SessionTransport.REQUEST_EMOTE)
 
 	var fixed_delta: float = 1.0 / float(tick_rate)
 	accumulator_seconds += minf(delta, 0.1)
@@ -284,6 +294,7 @@ func _draw() -> void:
 		draw_circle(body_position, player_radius, PLAYER_COLOR)
 		draw_arc(body_position, player_radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
 	draw_line(body_position, body_position + Vector2(state.aim_x, state.aim_y) * 0.032, Color.WHITE, 3.0)
+	_draw_social_bubbles(camera_origin)
 	_draw_station_bubble(rendered_position)
 	draw_set_transform(Vector2.ZERO)
 	var rendered_screen_position: Vector2 = rendered_position - camera_origin
@@ -309,7 +320,7 @@ func _draw() -> void:
 	draw_string(
 		ThemeDB.fallback_font,
 		Vector2(32, 96),
-		"LMB %s · RMB/E %s · F INTERACT · F8 VIEW %s"
+		"LMB %s · RMB/E %s · F INTERACT · T HELLO · F8 VIEW %s"
 		% [primary_name.to_upper(), _active_hint(state, active_name, active_ability), view_description],
 		HORIZONTAL_ALIGNMENT_LEFT,
 		-1.0,
@@ -572,6 +583,7 @@ func _sync_session_transport() -> void:
 			authoritative_session.remove_peers(disconnected)
 			session_names_by_entity = authoritative_session.names_by_entity.duplicate()
 		authoritative_session.ingest_inputs(session_transport.take_inputs())
+		_handle_session_requests(session_transport.take_requests())
 		return
 	if session_transport.is_connected_client():
 		client_replica_active = true
@@ -584,10 +596,12 @@ func _sync_session_transport() -> void:
 		var first_snapshot: bool = last_client_snapshot_tick < 0
 		if SessionSnapshot.apply_to_world(snapshot, world):
 			last_client_snapshot_tick = int(snapshot["tick"])
-			network_projectile_overflow = int(snapshot.get("projectile_overflow", 0))
+			var overflow: PackedInt32Array = snapshot.get("overflow", PackedInt32Array([0, 0, 0]))
+			network_projectile_overflow = overflow[0]
 			session_names_by_entity = SessionSnapshot.names(snapshot)
 			_prune_remote_player_sprites()
 			_ingest_combat_cues(world.combat_events)
+			_ingest_session_feedback(world.combat_events)
 			input_router.entity_id = session_transport.local_entity_id
 			var local_state := _local_player_state()
 			if local_state != null:
@@ -600,16 +614,149 @@ func _sync_session_transport() -> void:
 				var replicated_position := _player_position()
 				previous_position = replicated_position if first_snapshot else current_position
 				current_position = replicated_position
+			if first_snapshot and requested_emote_smoke and not emote_smoke_sent:
+				emote_smoke_sent = true
+				_submit_session_request(SessionTransport.REQUEST_EMOTE)
+				print("FLUX2 farflow social: guest emote request sent")
 		return
 	if client_replica_active and session_transport.mode == SessionTransport.Mode.OFFLINE:
 		var disconnect_message := session_transport.last_error
 		client_replica_active = false
 		client_input_sequence = 0
+		client_request_sequence = 0
 		last_client_snapshot_tick = -1
 		network_projectile_overflow = 0
 		if _start_match(tick_rate):
 			station_notice = disconnect_message if not disconnect_message.is_empty() else "The Farflow gate is closed."
 			station_notice_seconds = 3.0
+
+
+func _submit_session_request(action: int) -> void:
+	if session_transport.is_connected_client():
+		client_request_sequence += 1
+		if session_transport.send_request(client_request_sequence, action):
+			station_notice = "Request sent through Farflow."
+		else:
+			station_notice = "Farflow could not carry that request."
+		station_notice_seconds = 1.5
+		return
+	_handle_session_requests([{
+		"entity_id": SessionTransport.SERVER_PEER_ID,
+		"action": action,
+	}])
+
+
+func _handle_session_requests(requests: Array[Dictionary]) -> void:
+	for request: Dictionary in requests:
+		var entity_id := int(request.get("entity_id", 0))
+		var action := int(request.get("action", 0))
+		var state: PlayerState = world.player(entity_id)
+		if state == null or state.actor_kind != PlayerState.ActorKind.CHAMPION:
+			continue
+		var ready_tick: int = emote_ready_tick_by_entity.get(entity_id, 0)
+		var refusal_reason := SessionRequestPolicy.validate(
+			action,
+			state,
+			campus_layout.stations_by_id,
+			world.tick,
+			ready_tick,
+		)
+		if refusal_reason != SessionRequestPolicy.ACCEPTED:
+			_publish_session_event({"type": "request_refused", "entity_id": entity_id, "action": action, "reason": refusal_reason})
+			continue
+		match action:
+			SessionTransport.REQUEST_EMOTE:
+				emote_ready_tick_by_entity[entity_id] = world.tick + world.config.milliseconds_to_ticks(EMOTE_COOLDOWN_MS)
+				_publish_session_event({"type": "social_emote", "entity_id": entity_id, "emote_id": 1})
+			SessionTransport.REQUEST_TRAINING_RESET:
+				var attunements := _champion_attunements()
+				if not _start_match(tick_rate):
+					_publish_session_event({"type": "request_refused", "entity_id": entity_id, "action": action, "reason": SessionRequestPolicy.REFUSED_UNAVAILABLE})
+					continue
+				_restore_champion_attunements(attunements)
+				_publish_session_event({"type": "station_confirmed", "entity_id": entity_id, "action": action})
+			SessionTransport.REQUEST_CHAMPION_NEXT:
+				var current_id := champion_catalog.champion_id_from_wire(state.champion_wire_id)
+				var next_id := champion_catalog.next_champion_id(current_id)
+				if not champion_catalog.apply_to_player(state, next_id, true):
+					_publish_session_event({"type": "request_refused", "entity_id": entity_id, "action": action, "reason": SessionRequestPolicy.REFUSED_UNAVAILABLE})
+					continue
+				if entity_id == SessionTransport.SERVER_PEER_ID:
+					selected_champion_id = next_id
+					_load_player_sprite_candidate()
+				_publish_session_event({"type": "champion_attuned", "entity_id": entity_id, "champion_wire_id": state.champion_wire_id})
+
+
+func _publish_session_event(event: Dictionary) -> void:
+	authoritative_session.record_combat_events([event])
+	_ingest_session_feedback([event])
+
+
+func _champion_attunements() -> Dictionary[int, String]:
+	var result: Dictionary[int, String] = {}
+	for state: PlayerState in world.players:
+		if state.actor_kind == PlayerState.ActorKind.CHAMPION:
+			result[state.entity_id] = champion_catalog.champion_id_from_wire(state.champion_wire_id)
+	return result
+
+
+func _restore_champion_attunements(attunements: Dictionary[int, String]) -> void:
+	for entity_id: int in attunements:
+		var state: PlayerState = world.player(entity_id)
+		if state != null:
+			champion_catalog.apply_to_player(state, attunements[entity_id])
+
+
+func _ingest_session_feedback(events: Array[Dictionary]) -> void:
+	for event: Dictionary in events:
+		var kind := String(event.get("type", ""))
+		var entity_id := int(event.get("entity_id", 0))
+		match kind:
+			"social_emote":
+				for index: int in range(social_bubbles.size() - 1, -1, -1):
+					if int(social_bubbles[index].get("entity_id", 0)) == entity_id:
+						social_bubbles.remove_at(index)
+				social_bubbles.append({"entity_id": entity_id, "text": "HELLO!", "remaining": 2.0})
+				print("FLUX2 farflow social: shared emote entity %d" % entity_id)
+			"station_confirmed":
+				station_notice = "%s restored the practice court." % String(session_names_by_entity.get(entity_id, "A traveller"))
+				station_notice_seconds = 2.5
+			"champion_attuned":
+				var champion_id := champion_catalog.champion_id_from_wire(int(event.get("champion_wire_id", 0)))
+				var champion_name := String(champion_catalog.champion(champion_id).get("display_name", champion_id))
+				station_notice = "%s attuned to %s." % [String(session_names_by_entity.get(entity_id, "A traveller")), champion_name]
+				station_notice_seconds = 2.5
+			"request_refused":
+				var local_state := _local_player_state()
+				if local_state != null and local_state.entity_id == entity_id:
+					var reason := int(event.get("reason", 0))
+					station_notice = "Wait a breath." if reason == 1 else ("Stand beside the station." if reason == 2 else "That request is unavailable.")
+					station_notice_seconds = 2.0
+
+
+func _update_social_bubbles(delta: float) -> void:
+	for index: int in range(social_bubbles.size() - 1, -1, -1):
+		var bubble: Dictionary = social_bubbles[index]
+		bubble["remaining"] = float(bubble.get("remaining", 0.0)) - delta
+		if float(bubble["remaining"]) <= 0.0 or world.player(int(bubble.get("entity_id", 0))) == null:
+			social_bubbles.remove_at(index)
+		else:
+			social_bubbles[index] = bubble
+
+
+func _draw_social_bubbles(camera_origin: Vector2) -> void:
+	draw_set_transform(-camera_origin)
+	for bubble: Dictionary in social_bubbles:
+		var state: PlayerState = world.player(int(bubble.get("entity_id", 0)))
+		if state == null:
+			continue
+		var position := Vector2(float(state.position_x) / 1000.0, float(state.position_y) / 1000.0) + Vector2(0, -62)
+		var text_value := String(bubble.get("text", "HELLO!"))
+		var rectangle := Rect2(position + Vector2(-42, -28), Vector2(84, 28))
+		draw_rect(rectangle, Color(PANEL_COLOR, 0.72), true)
+		draw_rect(rectangle, Color(PARCHMENT_COLOR, 0.78), false, 1.5)
+		draw_colored_polygon(PackedVector2Array([position + Vector2(-6, 0), position + Vector2(6, 0), position + Vector2(0, 8)]), Color(PANEL_COLOR, 0.72))
+		draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(8, 19), text_value, HORIZONTAL_ALIGNMENT_CENTER, rectangle.size.x - 16.0, 12, PARCHMENT_COLOR)
 
 
 func _draw_transparent_bubble(anchor: Vector2, title: String, lines: Array, expanded: bool) -> void:
@@ -651,25 +798,9 @@ func _activate_focused_station() -> void:
 		"movement_guide":
 			expanded_station_id = "" if expanded_station_id == focused_station_id else focused_station_id
 		"training_reset":
-			if session_transport.is_connected_client():
-				station_notice = "Only the Farflow host can restore the shared court."
-				station_notice_seconds = 2.5
-			elif _start_match(tick_rate):
-				station_notice = "The practice court is restored."
-				station_notice_seconds = 2.0
-				_update_station_focus()
+			_submit_session_request(SessionTransport.REQUEST_TRAINING_RESET)
 		"champion_switch":
-			if session_transport.is_connected_client():
-				station_notice = "Shared attunement requests arrive in the next Farflow slice."
-				station_notice_seconds = 2.5
-				return
-			selected_champion_id = champion_catalog.next_champion_id(selected_champion_id)
-			if champion_catalog.apply_to_player(_local_player_state(), selected_champion_id):
-				_load_player_sprite_candidate()
-				var champion_name := String(champion_catalog.champion(selected_champion_id).get("display_name", selected_champion_id))
-				station_notice = "Attuned to %s." % champion_name
-				station_notice_seconds = 2.0
-				expanded_station_id = ""
+			_submit_session_request(SessionTransport.REQUEST_CHAMPION_NEXT)
 		"host_session":
 			_toggle_host_session()
 		"join_session":
@@ -681,6 +812,7 @@ func _toggle_host_session() -> void:
 		session_transport.stop()
 		client_replica_active = false
 		client_input_sequence = 0
+		client_request_sequence = 0
 		last_client_snapshot_tick = -1
 		network_projectile_overflow = 0
 		_start_match(tick_rate)
@@ -703,6 +835,7 @@ func _toggle_join_session() -> void:
 		session_transport.stop()
 		client_replica_active = false
 		client_input_sequence = 0
+		client_request_sequence = 0
 		last_client_snapshot_tick = -1
 		network_projectile_overflow = 0
 		_start_match(tick_rate)
@@ -828,6 +961,9 @@ func _start_match(requested_tick_rate: int) -> bool:
 	expanded_station_id = ""
 	station_notice = ""
 	station_notice_seconds = 0.0
+	emote_ready_tick_by_entity = {}
+	social_bubbles = []
+	combat_cues = []
 	tick_rate = requested_tick_rate
 	world = SimWorld.new(
 		tick_rate,
@@ -1073,6 +1209,17 @@ func _requested_farflow_mode() -> String:
 				return requested
 			push_warning("Invalid Farflow override; expected --farflow=host or --farflow=join")
 	return ""
+
+
+func _requested_emote_smoke() -> bool:
+	for argument: String in OS.get_cmdline_user_args():
+		if has_emote_smoke_argument(argument):
+			return true
+	return false
+
+
+static func has_emote_smoke_argument(argument: String) -> bool:
+	return argument == "--farflow-smoke-emote"
 
 
 static func parse_farflow_mode(argument: String) -> String:

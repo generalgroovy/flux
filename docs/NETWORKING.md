@@ -2,7 +2,8 @@
 
 ## Current runnable boundary
 
-FLUX 2 now exposes two walk-up Farflow stations in the eastern Wellspring:
+FLUX 2 protocol 14 / snapshot schema 3 exposes two walk-up Farflow stations in
+the eastern Wellspring:
 
 | Station | Current action |
 | --- | --- |
@@ -14,10 +15,13 @@ accepted peers to stable entities 2-8, gives the first guest S. Wayne beside the
 host's Oh Tipi, consumes only validated inputs, simulates every traveller, and
 publishes compact snapshots at 60 Hz. Each client follows its assigned actor,
 renders the named remote traveller, and receives authoritative resources,
-movement, projectiles and semantic cast/hit/graze feedback. The render snapshot
-keeps the 8 KiB cap at eight travellers, 26 projectile lanes and 12 events;
-overflow is explicit in the guest HUD. Authorized shared station requests and
-prediction/reconciliation remain the next slices.
+movement, projectiles, training-target health and semantic feedback. `T` /
+controller D-pad up sends a shared HELLO bubble; the host also authorizes
+Practice Bell resets and per-actor Champion Loom attunement from authoritative
+station proximity. The render snapshot keeps the 8 KiB cap at eight travellers,
+26 projectile lanes, four targets and 12 events; overflow is explicit in the
+guest HUD. A representative two-player combat snapshot stays within one
+1,392-byte ENet MTU. Prediction/reconciliation remains the next slice.
 
 ## Windows and Linux direct-IP smoke
 
@@ -43,6 +47,8 @@ Pressing F at either Farflow station again closes the local peer cleanly.
 For repeatable local diagnostics, `--farflow=host` or `--farflow=join` opens the
 same station action immediately after boot. These switches exist for automated
 Windows/Linux smoke tests and do not introduce a detached player-facing menu.
+`--farflow-smoke-emote` asks a diagnostic joining process to send one emote after
+its first snapshot so the reliable request/confirmation path can be exercised.
 
 ## Trust and compatibility boundary
 
@@ -62,6 +68,12 @@ inputs can wait for host consumption; each peer's sequence must increase, so
 duplicate or replayed actions are discarded. Remote peers never choose their
 trusted sender ID, tick, position, damage, cooldown, resource, score or outcome.
 
+Reliable interaction requests have their own monotonic sequence and bounded
+queue. The host stamps the peer's trusted entity ID, checks action type,
+authoritative station distance and emote cooldown, performs the mutation, then
+publishes a semantic confirmation or refusal. Guests never reset the court or
+change a champion speculatively.
+
 ## Implementation order from here
 
 | Slice | Acceptance |
@@ -70,7 +82,8 @@ trusted sender ID, tick, position, damage, cooldown, resource, score or outcome.
 | Authoritative presence | Implemented: host registers/removes named peer actors and maps network peers to stable entities 2-8 |
 | Movement snapshots | Implemented: host stamps inputs to its tick, simulates all actors, bounds stale input and sends 60 Hz snapshots; guest interpolates presentation |
 | Shared projectiles | Implemented: compact projectile lanes and bounded cast/hit/graze events render on guests while outcomes remain host-owned |
-| Shared Wellspring interaction | Host authorizes reset/emote/station requests and all peers see the confirmed result |
+| Shared Wellspring interaction | Implemented: host authorizes HELLO, Practice Bell and Champion Loom requests; confirmations/refusals and target state replicate |
+| Prediction/reconciliation | Bounded local input history, host acknowledgement, deterministic replay, correction thresholds and diagnostics without client outcome authority |
 | Remote platform smoke | Windows and Garuda Linux direct-IP packages connect, move, leave and reconnect with diagnostics |
 | Session continuity | Join-in-progress, timeouts, reconnect token, host shutdown, moderation and later host migration |
 

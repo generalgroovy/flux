@@ -10,6 +10,7 @@ func run() -> int:
 
 
 func _test_snapshot_round_trip() -> void:
+	equal(SessionSnapshot.SCHEMA_VERSION, 3, "compact target-aware snapshot schema is explicit")
 	var source := SimWorld.new(120, 7, CollisionWorld.new(3_000_000, 2_000_000))
 	var host: PlayerState = source.player()
 	host.champion_wire_id = 1
@@ -33,6 +34,15 @@ func _test_snapshot_round_trip() -> void:
 	guest.primary_wire_id = CombatTuning.ECLIPSE_DISC_WIRE_ID
 	guest.active_1_wire_id = CombatTuning.POCKET_ECLIPSE_WIRE_ID
 	source.players.append(guest)
+	var source_target := PlayerState.new(900)
+	source_target.actor_kind = PlayerState.ActorKind.TRAINING_TARGET
+	source_target.position_x = 1_500_000
+	source_target.position_y = 720_000
+	source_target.radius = 18_000
+	source_target.health_maximum = 80_000
+	source_target.health = 51_000
+	source_target.health_recovery_per_second = 0
+	source.players.append(source_target)
 	check(source.step([SimCommand.new(0, 1), SimCommand.new(0, 2, 1000, 0, SimCommand.HELD_SPRINT)]), "authoritative source advances before capture")
 	var snapshot := SessionSnapshot.capture(source, {1: "Lantern Host", 2: "River Guest"})
 	check(SessionSnapshot.validate(snapshot), "bounded two-player snapshot validates")
@@ -49,7 +59,8 @@ func _test_snapshot_round_trip() -> void:
 	equal(replica.player(2).position_x, source.player(2).position_x, "guest authoritative position round-trips")
 	equal(replica.player(2).movement_mode, PlayerState.MovementMode.SPRINT, "guest movement mode round-trips")
 	equal(replica.player(2).primary_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "guest kit identity round-trips")
-	check(replica.player(900) != null, "local practice actors survive champion snapshot replacement")
+	check(replica.player(900) != null, "authoritative practice actor is reconstructed")
+	equal(replica.player(900).health, 51_000, "practice actor health round-trips")
 	equal(SessionSnapshot.names(snapshot), {1: "Lantern Host", 2: "River Guest"}, "display names round-trip separately from simulation state")
 
 
@@ -67,6 +78,7 @@ func _test_projectile_and_event_round_trip() -> void:
 	var events: Array[Dictionary] = [
 		{"type": "projectile_hit", "projectile_id": 1000, "source_wire_id": CombatTuning.RILLSHOT_WIRE_ID, "owner_id": 1, "target_id": 900, "damage": 9_000},
 		{"type": "edgeweave", "entity_id": 1, "projectile_id": 1000, "stamina": 8_000},
+		{"type": "social_emote", "entity_id": 1, "emote_id": 1},
 	]
 	var snapshot := SessionSnapshot.capture(source, {1: "Host"}, events)
 	check(SessionSnapshot.validate(snapshot), "projectile/event snapshot validates")
@@ -76,10 +88,11 @@ func _test_projectile_and_event_round_trip() -> void:
 	if not replica.projectiles.is_empty():
 		equal(replica.projectiles[0].source_wire_id, CombatTuning.RILLSHOT_WIRE_ID, "projectile spell identity round-trips")
 		equal(replica.projectiles[0].previous_x, 996_000, "projectile lane origin round-trips")
-	equal(replica.combat_events.size(), 2, "semantic combat events round-trip")
-	if replica.combat_events.size() == 2:
+	equal(replica.combat_events.size(), 3, "semantic combat and social events round-trip")
+	if replica.combat_events.size() == 3:
 		equal(String(replica.combat_events[0].get("type", "")), "projectile_hit", "hit event decodes")
 		equal(int(replica.combat_events[1].get("stamina", 0)), 8_000, "edgeweave reward decodes")
+		equal(String(replica.combat_events[2].get("type", "")), "social_emote", "social emote decodes")
 	equal(replica.player().last_event, "cast_release_140", "readable cast event round-trips")
 
 
@@ -110,6 +123,15 @@ func _test_maximum_envelope_fits_transport() -> void:
 	var events: Array[Dictionary] = []
 	for index: int in range(SessionSnapshot.MAX_EVENTS):
 		events.append({"type": "projectile_hit", "projectile_id": 1000 + index, "source_wire_id": CombatTuning.RILLSHOT_WIRE_ID, "owner_id": 1, "target_id": 2, "damage": 9_000})
+	for index: int in range(SessionSnapshot.MAX_TARGETS):
+		var target := PlayerState.new(900 + index)
+		target.actor_kind = PlayerState.ActorKind.TRAINING_TARGET
+		target.position_x = 900_000 + index * 40_000
+		target.position_y = 800_000
+		target.radius = 18_000
+		target.health_maximum = 80_000
+		target.health = 40_000
+		world.players.append(target)
 	var snapshot := SessionSnapshot.capture(world, names_by_entity, events)
 	check(SessionSnapshot.validate(snapshot), "maximum public snapshot envelope validates")
 	var packet_size := var_to_bytes({"kind": SessionTransport.PACKET_SNAPSHOT, "snapshot": snapshot}).size()
@@ -125,11 +147,11 @@ func _test_snapshot_validation_fails_closed() -> void:
 		func(value: Dictionary) -> void: value["tick"] = -1,
 		func(value: Dictionary) -> void: value["state_hash"] = "forged",
 		func(value: Dictionary) -> void: (value["players"] as Array).append((value["players"] as Array)[0].duplicate(true)),
-		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Dictionary)["entity_id"] = 9,
-		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Dictionary)["name"] = "",
-		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Dictionary)["event"] = "BAD EVENT",
-		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Dictionary)["values"] = PackedInt64Array([1]),
-		func(value: Dictionary) -> void: value["projectile_overflow"] = -1,
+		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Array)[0] = 9,
+		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Array)[1] = "",
+		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Array)[2] = "BAD EVENT",
+		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Array)[3] = PackedInt64Array([1]),
+		func(value: Dictionary) -> void: value["overflow"] = PackedInt32Array([-1, 0, 0]),
 		func(value: Dictionary) -> void: value["events"] = [PackedInt64Array([99, 0, 0, 0, 0, 0])],
 	]:
 		var malformed: Dictionary = valid.duplicate(true)

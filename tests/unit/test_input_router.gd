@@ -5,14 +5,14 @@ const BootstrapScript: Script = preload("res://src/app/bootstrap.gd")
 
 
 func run() -> int:
-	for action: StringName in [&"jump", &"primary", &"sprint", &"slide", &"interact"]:
+	for action: StringName in [&"jump", &"primary", &"sprint", &"slide", &"interact", &"emote"]:
 		if InputMap.has_action(action):
 			InputMap.erase_action(action)
 	InputRouter.ensure_input_map()
 	for action: StringName in [
 		&"move_left", &"move_right", &"move_up", &"move_down",
 		&"aim_left", &"aim_right", &"aim_up", &"aim_down",
-		&"sprint", &"slide", &"jump", &"technique", &"interact", &"primary", &"active_1",
+		&"sprint", &"slide", &"jump", &"technique", &"interact", &"emote", &"primary", &"active_1",
 		&"reset_match", &"toggle_debug_overlay", &"toggle_tick_rate",
 		&"toggle_movement_reference", &"toggle_pov_mode",
 		&"adjust_pov_angle", &"adjust_pov_range",
@@ -24,6 +24,8 @@ func run() -> int:
 	equal(_keycodes(&"slide"), [KEY_CTRL, KEY_C], "slide defaults to Ctrl with a C alias")
 	equal(_keycodes(&"interact"), [KEY_F], "walk-up interaction defaults to F")
 	check(_has_joy_button(&"interact", JOY_BUTTON_Y), "walk-up interaction retains a controller face button")
+	equal(_keycodes(&"emote"), [KEY_T], "social speech defaults to T")
+	check(_has_joy_button(&"emote", JOY_BUTTON_DPAD_UP), "social speech retains a controller d-pad shortcut")
 	check(not _keycodes(&"primary").has(KEY_SPACE), "primary has no Space keyboard alias")
 	check(_has_mouse_button(&"primary", MOUSE_BUTTON_LEFT), "primary retains left mouse")
 	check(InputMap.action_get_events(&"primary").size() >= 2, "primary supports mouse and controller trigger")
@@ -64,3 +66,5 @@ func _test_capture_pointer_parser() -> void:
 	equal(BootstrapScript.parse_farflow_mode("--farflow=host"), "host", "diagnostic Farflow host mode parses")
 	equal(BootstrapScript.parse_farflow_mode("--farflow=JOIN"), "join", "diagnostic Farflow join mode is case-insensitive")
 	equal(BootstrapScript.parse_farflow_mode("--farflow=relay"), "", "unknown Farflow mode fails closed")
+	check(BootstrapScript.has_emote_smoke_argument("--farflow-smoke-emote"), "diagnostic social smoke switch parses exactly")
+	check(not BootstrapScript.has_emote_smoke_argument("--farflow-smoke-emote=true"), "diagnostic social smoke switch fails closed on alternate syntax")

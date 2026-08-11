@@ -15,6 +15,16 @@ interactive Wellspring starting area, and host/join play that friends can use.
 After those outcomes pass, immediately select the next smallest complete game
 slice and continue.
 
+## Current verified frontier
+
+The working checkpoint has both foundation champions and the full planned
+non-ability movement grammar in the Wellspring, honest cone occlusion, readable
+Health/Flux/Stamina, walk-up Guide/Bell/Loom/Farflow stations, direct-IP ENet
+host/join, authoritative two-player movement/combat/targets, and host-confirmed
+HELLO/Bell/Loom interactions. Preserve those capabilities. The next executable
+slice is bounded guest prediction plus reconciliation and diagnostics, followed
+by reconnect/host-loss behavior and packaged Windows/Garuda direct-IP proof.
+
 ## Immediate product order
 
 1. Make movement discoverable, smooth and expressive: WASD/stick movement,
@@ -36,7 +46,8 @@ slice and continue.
    test movement/combat, change champion, configure sessions and travel together.
 6. Prove host/join early: authoritative ENet loopback first, then LAN/direct-IP
    remote play, clear address/status/errors, two players moving and interacting,
-   reconnect/leave safety and diagnostics; current public lobby cap is eight.
+   bounded prediction/reconciliation, reconnect/leave safety and diagnostics;
+   current public lobby cap is eight.
 7. Complete two basic champions one at a time through data, stats, movement,
    primary/active kit, presentation, selection, network, replay, dummy and tests.
 8. Continue into chemistry, objectives, rounds, bots, arenas, more champions,

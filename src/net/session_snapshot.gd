@@ -2,13 +2,15 @@ class_name SessionSnapshot
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 2
+const SCHEMA_VERSION: int = 3
 const MAX_PLAYERS: int = 8
 const PLAYER_VALUE_COUNT: int = 43
 const PROJECTILE_VALUE_COUNT: int = 12
 const EVENT_VALUE_COUNT: int = 6
+const TARGET_VALUE_COUNT: int = 6
 const MAX_PROJECTILES: int = 26
 const MAX_EVENTS: int = 12
+const MAX_TARGETS: int = 4
 const MAX_ABSOLUTE_POSITION: int = 100_000_000
 const MAX_TIMER_TICKS: int = 1_000_000
 
@@ -23,13 +25,13 @@ static func capture(
 		if state.actor_kind == PlayerState.ActorKind.CHAMPION:
 			ordered.append(state)
 	ordered.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
-	var players: Array[Dictionary] = []
+	var players: Array[Array] = []
 	for state: PlayerState in ordered:
-		players.append({
-			"entity_id": state.entity_id,
-			"name": _safe_name(String(names_by_entity.get(state.entity_id, "Traveller %d" % state.entity_id))),
-			"event": _safe_event_name(state.last_event),
-			"values": PackedInt64Array([
+		players.append([
+			state.entity_id,
+			_safe_name(String(names_by_entity.get(state.entity_id, "Traveller %d" % state.entity_id))),
+			_safe_event_name(state.last_event),
+			PackedInt64Array([
 				state.champion_wire_id,
 				state.position_x, state.position_y,
 				state.velocity_x, state.velocity_y,
@@ -53,7 +55,7 @@ static func capture(
 				state.edgeweave_cooldown_ticks, int(state.primary_held),
 				state.pending_cast_aim_x, state.pending_cast_aim_y,
 			]),
-		})
+		])
 	var ordered_projectiles: Array[ProjectileState] = world.projectiles.duplicate()
 	ordered_projectiles.sort_custom(func(left: ProjectileState, right: ProjectileState) -> bool: return left.entity_id < right.entity_id)
 	var projectiles: Array[PackedInt64Array] = []
@@ -73,15 +75,33 @@ static func capture(
 		var encoded_event := encode_event(combat_events[index])
 		if not encoded_event.is_empty():
 			events.append(encoded_event)
+	var ordered_targets: Array[PlayerState] = []
+	for state: PlayerState in world.players:
+		if state.actor_kind == PlayerState.ActorKind.TRAINING_TARGET:
+			ordered_targets.append(state)
+	ordered_targets.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
+	var targets: Array[PackedInt64Array] = []
+	for index: int in range(mini(ordered_targets.size(), MAX_TARGETS)):
+		var target: PlayerState = ordered_targets[index]
+		targets.append(PackedInt64Array([
+			target.entity_id,
+			target.position_x, target.position_y,
+			target.radius,
+			target.health_maximum, target.health,
+		]))
 	return {
 		"schema": SCHEMA_VERSION,
 		"tick": world.tick,
-		"state_hash": world.state_hash(),
+		"state_hash": world.state_hash().hex_decode(),
 		"players": players,
 		"projectiles": projectiles,
-		"projectile_overflow": maxi(0, ordered_projectiles.size() - MAX_PROJECTILES),
 		"events": events,
-		"event_overflow": maxi(0, combat_events.size() - MAX_EVENTS),
+		"targets": targets,
+		"overflow": PackedInt32Array([
+			maxi(0, ordered_projectiles.size() - MAX_PROJECTILES),
+			maxi(0, combat_events.size() - MAX_EVENTS),
+			maxi(0, ordered_targets.size() - MAX_TARGETS),
+		]),
 	}
 
 
@@ -90,8 +110,8 @@ static func validate(snapshot: Dictionary) -> bool:
 		return false
 	if typeof(snapshot.get("tick")) != TYPE_INT or int(snapshot["tick"]) < 0 or int(snapshot["tick"]) > 0x7fffffff:
 		return false
-	var state_hash := String(snapshot.get("state_hash", ""))
-	if not _is_sha256(state_hash):
+	var state_hash_value: Variant = snapshot.get("state_hash")
+	if typeof(state_hash_value) != TYPE_PACKED_BYTE_ARRAY or (state_hash_value as PackedByteArray).size() != 32:
 		return false
 	var players_value: Variant = snapshot.get("players")
 	if not players_value is Array:
@@ -102,21 +122,21 @@ static func validate(snapshot: Dictionary) -> bool:
 	var seen: Dictionary[int, bool] = {}
 	var previous_entity_id: int = 0
 	for player_value: Variant in players:
-		if not player_value is Dictionary:
+		if not player_value is Array or player_value.size() != 4:
 			return false
-		var player: Dictionary = player_value
-		if typeof(player.get("entity_id")) != TYPE_INT:
+		var player: Array = player_value
+		if typeof(player[0]) != TYPE_INT:
 			return false
-		var entity_id := int(player["entity_id"])
+		var entity_id := int(player[0])
 		if entity_id < 1 or entity_id > MAX_PLAYERS or entity_id <= previous_entity_id or seen.has(entity_id):
 			return false
 		previous_entity_id = entity_id
 		seen[entity_id] = true
-		if _safe_name(String(player.get("name", ""))).is_empty():
+		if _safe_name(String(player[1])).is_empty():
 			return false
-		if _safe_event_name(String(player.get("event", ""))).is_empty():
+		if _safe_event_name(String(player[2])).is_empty():
 			return false
-		var values_value: Variant = player.get("values")
+		var values_value: Variant = player[3]
 		if typeof(values_value) != TYPE_PACKED_INT64_ARRAY:
 			return false
 		var values: PackedInt64Array = values_value
@@ -135,8 +155,6 @@ static func validate(snapshot: Dictionary) -> bool:
 		if values[0] <= previous_projectile_id:
 			return false
 		previous_projectile_id = values[0]
-	if not _valid_overflow(snapshot.get("projectile_overflow")):
-		return false
 	var events_value: Variant = snapshot.get("events")
 	if not events_value is Array or events_value.size() > MAX_EVENTS:
 		return false
@@ -146,8 +164,23 @@ static func validate(snapshot: Dictionary) -> bool:
 		var values: PackedInt64Array = values_value
 		if values.size() != EVENT_VALUE_COUNT or not _valid_event_values(values):
 			return false
-	if not _valid_overflow(snapshot.get("event_overflow")):
+	var targets_value: Variant = snapshot.get("targets")
+	if not targets_value is Array or targets_value.size() > MAX_TARGETS:
 		return false
+	var previous_target_id: int = MAX_PLAYERS
+	for values_value: Variant in targets_value:
+		if typeof(values_value) != TYPE_PACKED_INT64_ARRAY:
+			return false
+		var values: PackedInt64Array = values_value
+		if values.size() != TARGET_VALUE_COUNT or not _valid_target_values(values) or values[0] <= previous_target_id:
+			return false
+		previous_target_id = values[0]
+	var overflow_value: Variant = snapshot.get("overflow")
+	if typeof(overflow_value) != TYPE_PACKED_INT32_ARRAY or (overflow_value as PackedInt32Array).size() != 3:
+		return false
+	for overflow_count: int in overflow_value:
+		if overflow_count < 0:
+			return false
 	return true
 
 
@@ -156,15 +189,32 @@ static func apply_to_world(snapshot: Dictionary, world: SimWorld) -> bool:
 		return false
 	var retained: Array[PlayerState] = []
 	for state: PlayerState in world.players:
-		if state.actor_kind != PlayerState.ActorKind.CHAMPION:
+		if state.actor_kind not in [PlayerState.ActorKind.CHAMPION, PlayerState.ActorKind.TRAINING_TARGET]:
 			retained.append(state)
 	world.players = retained
 	for player_value: Variant in snapshot["players"]:
-		var player: Dictionary = player_value
-		var state := PlayerState.new(int(player["entity_id"]))
-		_apply_values(state, player["values"])
-		state.last_event = String(player["event"])
+		var player: Array = player_value
+		var state := PlayerState.new(int(player[0]))
+		_apply_values(state, player[3])
+		state.last_event = String(player[2])
 		world.players.append(state)
+	for values_value: Variant in snapshot["targets"]:
+		var values: PackedInt64Array = values_value
+		var target := PlayerState.new(values[0])
+		target.actor_kind = PlayerState.ActorKind.TRAINING_TARGET
+		target.team_id = 2
+		target.position_x = values[1]
+		target.position_y = values[2]
+		target.radius = values[3]
+		target.health_maximum = values[4]
+		target.health = values[5]
+		target.health_recovery_per_second = 0
+		target.flux_maximum = 0
+		target.flux = 0
+		target.stamina_maximum = 0
+		target.stamina = 0
+		target.movement_speed_ratio = 0
+		world.players.append(target)
 	world.players.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
 	world.tick = int(snapshot["tick"])
 	world.projectiles = []
@@ -181,8 +231,8 @@ static func names(snapshot: Dictionary) -> Dictionary[int, String]:
 	if not validate(snapshot):
 		return result
 	for player_value: Variant in snapshot["players"]:
-		var player: Dictionary = player_value
-		result[int(player["entity_id"])] = String(player["name"])
+		var player: Array = player_value
+		result[int(player[0])] = String(player[1])
 	return result
 
 
@@ -308,6 +358,17 @@ static func _valid_projectile_values(values: PackedInt64Array) -> bool:
 	return values[10] > 0 and values[10] <= 100_000 and values[11] >= 0 and values[11] <= MAX_TIMER_TICKS
 
 
+static func _valid_target_values(values: PackedInt64Array) -> bool:
+	if values[0] <= MAX_PLAYERS or values[0] > 0x7fffffff:
+		return false
+	for index: int in [1, 2]:
+		if absi(values[index]) > MAX_ABSOLUTE_POSITION:
+			return false
+	if values[3] <= 0 or values[3] > 100_000:
+		return false
+	return values[4] > 0 and values[4] <= 10_000_000 and values[5] >= 0 and values[5] <= values[4]
+
+
 static func encode_event(event: Dictionary) -> PackedInt64Array:
 	match String(event.get("type", "")):
 		"cast_started":
@@ -329,6 +390,14 @@ static func encode_event(event: Dictionary) -> PackedInt64Array:
 			return PackedInt64Array([8, int(event.get("projectile_id", 0)), 0, 0, 0, 0])
 		"edgeweave":
 			return PackedInt64Array([9, int(event.get("entity_id", 0)), int(event.get("projectile_id", 0)), int(event.get("stamina", 0)), 0, 0])
+		"social_emote":
+			return PackedInt64Array([10, int(event.get("entity_id", 0)), int(event.get("emote_id", 0)), 0, 0, 0])
+		"station_confirmed":
+			return PackedInt64Array([11, int(event.get("entity_id", 0)), int(event.get("action", 0)), 0, 0, 0])
+		"champion_attuned":
+			return PackedInt64Array([12, int(event.get("entity_id", 0)), int(event.get("champion_wire_id", 0)), 0, 0, 0])
+		"request_refused":
+			return PackedInt64Array([13, int(event.get("entity_id", 0)), int(event.get("action", 0)), int(event.get("reason", 0)), 0, 0])
 		_:
 			return PackedInt64Array()
 
@@ -354,12 +423,20 @@ static func decode_event(values: PackedInt64Array) -> Dictionary:
 			return {"type": "projectile_expired", "projectile_id": values[1]}
 		9:
 			return {"type": "edgeweave", "entity_id": values[1], "projectile_id": values[2], "stamina": values[3]}
+		10:
+			return {"type": "social_emote", "entity_id": values[1], "emote_id": values[2]}
+		11:
+			return {"type": "station_confirmed", "entity_id": values[1], "action": values[2]}
+		12:
+			return {"type": "champion_attuned", "entity_id": values[1], "champion_wire_id": values[2]}
+		13:
+			return {"type": "request_refused", "entity_id": values[1], "action": values[2], "reason": values[3]}
 	return {}
 
 
 static func _valid_event_values(values: PackedInt64Array) -> bool:
 	var kind := int(values[0])
-	if kind < 1 or kind > 9:
+	if kind < 1 or kind > 13:
 		return false
 	if kind in [1, 2, 3]:
 		if values[1] < 1 or values[1] > MAX_PLAYERS or values[2] <= 0 or values[2] > 65_535:
@@ -373,11 +450,17 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 		return values[1] > 0 and values[2] >= 0 and (kind != 7 or (values[3] >= 0 and values[3] <= 8))
 	if kind == 8:
 		return values[1] > 0
-	return values[1] >= 1 and values[1] <= MAX_PLAYERS and values[2] > 0 and values[3] > 0 and values[3] <= 1_000_000
-
-
-static func _valid_overflow(value: Variant) -> bool:
-	return typeof(value) == TYPE_INT and int(value) >= 0 and int(value) <= 0x7fffffff
+	if kind == 9:
+		return values[1] >= 1 and values[1] <= MAX_PLAYERS and values[2] > 0 and values[3] > 0 and values[3] <= 1_000_000
+	if values[1] < 1 or values[1] > MAX_PLAYERS:
+		return false
+	if kind == 10:
+		return values[2] == 1
+	if kind == 11:
+		return values[2] == SessionTransport.REQUEST_TRAINING_RESET
+	if kind == 12:
+		return values[2] > 0 and values[2] <= 4096
+	return values[2] in [SessionTransport.REQUEST_EMOTE, SessionTransport.REQUEST_TRAINING_RESET, SessionTransport.REQUEST_CHAMPION_NEXT] and values[3] >= 1 and values[3] <= 3
 
 
 static func _safe_event_name(requested_name: String) -> String:
@@ -399,12 +482,3 @@ static func _safe_name(requested_name: String) -> String:
 		if codepoint < 32 or codepoint == 127:
 			return ""
 	return safe_name
-
-
-static func _is_sha256(value: String) -> bool:
-	if value.length() != 64:
-		return false
-	for character: String in value:
-		if character not in "0123456789abcdef":
-			return false
-	return true

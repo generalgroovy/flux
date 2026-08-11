@@ -1,5 +1,56 @@
 # FLUX2 agent worklog
 
+## 2026-08-11 — host-authorized Wellspring interactions
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added a bounded reliable request channel for social emotes, Practice Bell
+  restoration and Champion Loom attunement. The server stamps the trusted peer
+  identity, rejects replayed sequences and validates every station request
+  against the authoritative actor position before changing shared state.
+- Made `T` / controller D-pad up produce a transparent in-world **HELLO!**
+  bubble with a host-enforced cooldown. Accepted and refused requests are
+  returned as semantic events so a guest receives an explicit result instead
+  of guessing whether an interaction happened.
+- Replicated the four bounded training-target states, including health and
+  reset, so remote combat and the Practice Bell now describe the same court.
+  Champion attunements survive a practice reset and only the actor at the Loom
+  changes champion.
+- Compacted player entries, hashes and overflow counters so a representative
+  two-player combat snapshot with target state fits within one 1,392-byte ENet
+  MTU while the measured eight-player public envelope remains capped at 8 KiB.
+
+Validation:
+
+- Full pinned Godot 4.7.1 suite passed with **14,246 assertions**, zero
+  failures across 32 suites; request policy, malformed/replayed packets, social
+  events, shared target health and the single-MTU fixture are covered.
+- Two complete Windows headless processes connected over UDP localhost on port
+  24876 under protocol 14. The guest sent an emote request after its first snapshot; the host
+  accepted RiverGuest as entity 2 and both processes confirmed the same shared
+  emote.
+- Advanced the wire boundary to protocol 14 / snapshot schema 3 so older
+  protocol-13 combat clients fail the handshake instead of decoding the compact
+  target-aware tuple layout incorrectly.
+- Independent 60/120 Hz boots passed with protocol 14 and campus/ability/
+  champion hashes `c981419a5b33` / `566a637aa616` / `81962afbff12`.
+- `git diff --check` passed; generated `dist/` and `node_modules/` remained out
+  of scope.
+
+Known limitations and next task:
+
+- Guests still render interpolated authority without local prediction or
+  correction metrics; the next slice adds bounded input history, prediction,
+  reconciliation and visible latency/correction diagnostics.
+- Reconnect identity, forced host shutdown, packaged Garuda Linux direct-IP,
+  encryption/authentication, richer social actions and settings/travel remain.
+- Dense eight-player combat may exceed one MTU even though it remains below the
+  explicit packet cap; measured delta/batching work precedes that acceptance.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-11 — protocol-13 Farflow combat presentation
 
 Branch: `codex/continuous-overhaul`

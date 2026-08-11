@@ -24,7 +24,12 @@ const PACKET_ACCEPT: int = 2
 const PACKET_REJECT: int = 3
 const PACKET_INPUT: int = 4
 const PACKET_SNAPSHOT: int = 5
+const PACKET_REQUEST: int = 6
 const MAX_QUEUED_SNAPSHOTS: int = 2
+const MAX_QUEUED_REQUESTS: int = MAX_REMOTE_CLIENTS * 4
+const REQUEST_EMOTE: int = 1
+const REQUEST_TRAINING_RESET: int = 2
+const REQUEST_CHAMPION_NEXT: int = 3
 
 var peer: ENetMultiplayerPeer
 var mode: int = Mode.OFFLINE
@@ -40,9 +45,11 @@ var local_entity_id: int = 0
 var accepted_peer_ids := PackedInt32Array()
 var incoming_inputs: Array[Dictionary] = []
 var incoming_snapshots: Array[Dictionary] = []
+var incoming_requests: Array[Dictionary] = []
 var joined_peers: Array[Dictionary] = []
 var disconnected_peers: Array[Dictionary] = []
 var last_input_sequence_by_peer: Dictionary[int, int] = {}
+var last_request_sequence_by_peer: Dictionary[int, int] = {}
 var entity_by_peer: Dictionary[int, int] = {}
 var name_by_peer: Dictionary[int, String] = {}
 var _hello_sent: bool = false
@@ -202,9 +209,24 @@ func send_input(sequence: int, command: SimCommand) -> bool:
 	return _send_to(SERVER_PEER_ID, payload)
 
 
+func send_request(sequence: int, action: int) -> bool:
+	if not is_connected_client():
+		return false
+	var payload := {"kind": PACKET_REQUEST, "sequence": sequence, "action": action}
+	if not _valid_request_packet(payload):
+		return false
+	return _send_to(SERVER_PEER_ID, payload)
+
+
 func take_inputs() -> Array[Dictionary]:
 	var result: Array[Dictionary] = incoming_inputs
 	incoming_inputs = []
+	return result
+
+
+func take_requests() -> Array[Dictionary]:
+	var result: Array[Dictionary] = incoming_requests
+	incoming_requests = []
 	return result
 
 
@@ -276,6 +298,22 @@ func _handle_packet(sender_id: int, packet_bytes: PackedByteArray) -> void:
 					accepted_input["entity_id"] = int(entity_by_peer.get(sender_id, 0))
 					incoming_inputs.append(accepted_input)
 					last_input_sequence_by_peer[sender_id] = sequence
+			PACKET_REQUEST:
+				var sequence: int = int(packet.get("sequence", -1))
+				var previous_sequence: int = last_request_sequence_by_peer.get(sender_id, -1)
+				if (
+					accepted_peer_ids.has(sender_id)
+					and _valid_request_packet(packet)
+					and sequence > previous_sequence
+					and incoming_requests.size() < MAX_QUEUED_REQUESTS
+				):
+					incoming_requests.append({
+						"peer_id": sender_id,
+						"entity_id": int(entity_by_peer.get(sender_id, 0)),
+						"sequence": sequence,
+						"action": int(packet["action"]),
+					})
+					last_request_sequence_by_peer[sender_id] = sequence
 		return
 	if sender_id != SERVER_PEER_ID:
 		return
@@ -325,6 +363,7 @@ func _handle_hello(sender_id: int, packet: Dictionary) -> void:
 	entity_by_peer[sender_id] = entity_id
 	name_by_peer[sender_id] = safe_name
 	last_input_sequence_by_peer[sender_id] = -1
+	last_request_sequence_by_peer[sender_id] = -1
 	joined_peers.append({"peer_id": sender_id, "entity_id": entity_id, "name": safe_name})
 	_send_to(sender_id, {
 		"kind": PACKET_ACCEPT,
@@ -360,6 +399,7 @@ func _on_peer_disconnected(peer_id: int) -> void:
 		if entity_id > 0:
 			disconnected_peers.append({"peer_id": peer_id, "entity_id": entity_id, "name": disconnected_name})
 		last_input_sequence_by_peer.erase(peer_id)
+		last_request_sequence_by_peer.erase(peer_id)
 		entity_by_peer.erase(peer_id)
 		name_by_peer.erase(peer_id)
 		status_detail = "Hosting %d/8 on UDP %d" % [player_count(), bound_port]
@@ -387,9 +427,11 @@ func _close_peer() -> void:
 	accepted_peer_ids = PackedInt32Array()
 	incoming_inputs = []
 	incoming_snapshots = []
+	incoming_requests = []
 	joined_peers = []
 	disconnected_peers = []
 	last_input_sequence_by_peer = {}
+	last_request_sequence_by_peer = {}
 	entity_by_peer = {}
 	name_by_peer = {}
 	_hello_sent = false
@@ -458,3 +500,11 @@ static func _valid_input_packet(packet: Dictionary) -> bool:
 	var held: int = int(packet["held"])
 	var pressed: int = int(packet["pressed"])
 	return held >= 0 and held <= 0xffff and pressed >= 0 and pressed <= 0xffff
+
+
+static func _valid_request_packet(packet: Dictionary) -> bool:
+	if typeof(packet.get("sequence")) != TYPE_INT or typeof(packet.get("action")) != TYPE_INT:
+		return false
+	var sequence := int(packet["sequence"])
+	var action := int(packet["action"])
+	return sequence >= 0 and sequence <= 0x7fffffff and action in [REQUEST_EMOTE, REQUEST_TRAINING_RESET, REQUEST_CHAMPION_NEXT]

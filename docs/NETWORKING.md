@@ -2,7 +2,7 @@
 
 ## Current runnable boundary
 
-FLUX 2 protocol 14 / snapshot schema 3 exposes two walk-up Farflow stations in
+FLUX 2 protocol 15 / snapshot schema 3 exposes two walk-up Farflow stations in
 the eastern Wellspring:
 
 | Station | Current action |
@@ -21,7 +21,13 @@ Practice Bell resets and per-actor Champion Loom attunement from authoritative
 station proximity. The render snapshot keeps the 8 KiB cap at eight travellers,
 26 projectile lanes, four targets and 12 events; overflow is explicit in the
 guest HUD. A representative two-player combat snapshot stays within one
-1,392-byte ENet MTU. Prediction/reconciliation remains the next slice.
+1,392-byte ENet MTU. Each guest also predicts only its own movement from at most
+48 sent inputs; a separate one-MTU ordered reconciliation carries full movement
+state and the last host-processed sequence. Small draw corrections decay,
+unsafe corrections snap, and combat/resources remain authoritative.
+Semantic combat/social events carry stable IDs for four consecutive snapshots;
+the client keeps a bounded 64-ID inbox, so superseded unreliable packets do not
+silently erase feedback and redundant arrivals never replay the cue.
 
 ## Windows and Linux direct-IP smoke
 
@@ -49,6 +55,8 @@ same station action immediately after boot. These switches exist for automated
 Windows/Linux smoke tests and do not introduce a detached player-facing menu.
 `--farflow-smoke-emote` asks a diagnostic joining process to send one emote after
 its first snapshot so the reliable request/confirmation path can be exercised.
+`--farflow-smoke-prediction` adds a brief rightward input and reports only after
+host-authoritative movement returns through reconciliation.
 
 ## Trust and compatibility boundary
 
@@ -83,7 +91,7 @@ change a champion speculatively.
 | Movement snapshots | Implemented: host stamps inputs to its tick, simulates all actors, bounds stale input and sends 60 Hz snapshots; guest interpolates presentation |
 | Shared projectiles | Implemented: compact projectile lanes and bounded cast/hit/graze events render on guests while outcomes remain host-owned |
 | Shared Wellspring interaction | Implemented: host authorizes HELLO, Practice Bell and Champion Loom requests; confirmations/refusals and target state replicate |
-| Prediction/reconciliation | Bounded local input history, host acknowledgement, deterministic replay, correction thresholds and diagnostics without client outcome authority |
+| Prediction/reconciliation | Implemented: 48-input movement-only history, peer-scoped processed-sequence acknowledgement, deterministic replay, bounded correction and ACK/correction HUD without client outcome authority |
 | Remote platform smoke | Windows and Garuda Linux direct-IP packages connect, move, leave and reconnect with diagnostics |
 | Session continuity | Join-in-progress, timeouts, reconnect token, host shutdown, moderation and later host migration |
 

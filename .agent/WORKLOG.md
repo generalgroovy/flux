@@ -1,5 +1,59 @@
 # FLUX2 agent worklog
 
+## 2026-08-12 — bounded Farflow movement prediction
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Advanced the friend-session boundary to protocol 15 and added a separate
+  unreliable-ordered reconciliation channel. Every remote traveller receives
+  only its own full movement state plus the last input sequence the host
+  actually processed; the shared combat/target snapshot remains unchanged.
+- Added `ClientPrediction`, which strips all combat bits, keeps at most 48
+  movement inputs, predicts the complete universal movement grammar against the
+  authored collision world, drops acknowledged inputs and deterministically
+  replays the remainder from each host state.
+- Small corrections retain a capped, rapidly decaying draw-only offset; large,
+  reduced-motion or history-overflow corrections snap explicitly. Health, Flux,
+  damage, spells, cooldowns, targets and stations remain snapshot/host-owned.
+- The Farflow HUD now shows estimated acknowledgement delay and the last
+  correction magnitude. Diagnostic `--farflow-smoke-prediction` produces a
+  short movement input without adding a player-facing menu.
+- Corrected the shared snapshot cadence to one tick at 60 Hz and two ticks at
+  120 Hz so both supported simulations publish the contracted 60 snapshots per
+  second.
+- Added stable semantic event IDs, four-snapshot redundancy and a bounded
+  64-event client inbox. This prevents a fresher unreliable snapshot from
+  erasing HELLO/combat feedback before presentation while deduplicating every
+  retained resend.
+
+Validation:
+
+- Full pinned Godot 4.7.1 suite passed with **14,384 assertions**, zero failures
+  across 33 suites. The 111 prediction assertions cover 60/120 Hz convergence,
+  complete jump/movement state, combat-bit stripping, bounded history, stale
+  authority, soft correction decay/cap and hard-snap behavior.
+- Real ENet tests keep the reconciliation packet below one 1,392-byte MTU,
+  scope it to the target peer/entity and isolate it from the shared snapshot
+  channel.
+- Two complete Windows headless processes connected over UDP localhost on port
+  24878 under protocol 15. RiverGuest confirmed host-authoritative displacement
+  at input sequence 10 and also completed the shared HELLO path.
+- Independent 60/120 Hz boots passed with campus/ability/champion hashes
+  `c981419a5b33` / `566a637aa616` / `81962afbff12`.
+
+Known limitations and next task:
+
+- `ACK ~ms` is an outstanding-input age estimate, not a network round-trip ping;
+  timestamped RTT/jitter/loss diagnostics remain.
+- Reconnect identity, forced host shutdown, packaged Garuda Linux direct-IP,
+  authentication/encryption and dense eight-player snapshot batching remain.
+- Next slice reserves a bounded reconnect identity, communicates host loss and
+  proves leave/rejoin cleanup before broader session configuration.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-11 — host-authorized Wellspring interactions
 
 Branch: `codex/continuous-overhaul`

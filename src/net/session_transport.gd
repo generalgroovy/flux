@@ -25,8 +25,12 @@ const PACKET_REJECT: int = 3
 const PACKET_INPUT: int = 4
 const PACKET_SNAPSHOT: int = 5
 const PACKET_REQUEST: int = 6
+const PACKET_RECONCILIATION: int = 7
 const MAX_QUEUED_SNAPSHOTS: int = 2
 const MAX_QUEUED_REQUESTS: int = MAX_REMOTE_CLIENTS * 4
+const MAX_QUEUED_RECONCILIATIONS: int = 2
+const SNAPSHOT_CHANNEL: int = 0
+const RECONCILIATION_CHANNEL: int = 1
 const REQUEST_EMOTE: int = 1
 const REQUEST_TRAINING_RESET: int = 2
 const REQUEST_CHAMPION_NEXT: int = 3
@@ -46,6 +50,7 @@ var accepted_peer_ids := PackedInt32Array()
 var incoming_inputs: Array[Dictionary] = []
 var incoming_snapshots: Array[Dictionary] = []
 var incoming_requests: Array[Dictionary] = []
+var incoming_reconciliations: Array[Dictionary] = []
 var joined_peers: Array[Dictionary] = []
 var disconnected_peers: Array[Dictionary] = []
 var last_input_sequence_by_peer: Dictionary[int, int] = {}
@@ -230,6 +235,26 @@ func take_requests() -> Array[Dictionary]:
 	return result
 
 
+func send_reconciliation(peer_id: int, reconciliation: Dictionary) -> bool:
+	if not is_host() or not accepted_peer_ids.has(peer_id) or not ClientPrediction.validate_packet(reconciliation):
+		return false
+	var values: PackedInt64Array = reconciliation["values"]
+	if values[0] != int(entity_by_peer.get(peer_id, 0)):
+		return false
+	return _send_to(
+		peer_id,
+		{"kind": PACKET_RECONCILIATION, "reconciliation": reconciliation},
+		MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED,
+		RECONCILIATION_CHANNEL,
+	)
+
+
+func take_reconciliations() -> Array[Dictionary]:
+	var result: Array[Dictionary] = incoming_reconciliations
+	incoming_reconciliations = []
+	return result
+
+
 func take_joined_peers() -> Array[Dictionary]:
 	var result: Array[Dictionary] = joined_peers
 	joined_peers = []
@@ -262,7 +287,7 @@ func broadcast_snapshot(snapshot: Dictionary) -> bool:
 	var packet := {"kind": PACKET_SNAPSHOT, "snapshot": snapshot}
 	var all_sent: bool = true
 	for peer_id: int in accepted_peer_ids:
-		all_sent = _send_to(peer_id, packet, MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED) and all_sent
+		all_sent = _send_to(peer_id, packet, MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED, SNAPSHOT_CHANNEL) and all_sent
 	return all_sent
 
 
@@ -331,14 +356,24 @@ func _handle_packet(sender_id: int, packet_bytes: PackedByteArray) -> void:
 			PACKET_REJECT:
 				_disconnect_with_error(String(packet.get("reason", "Join refused")).left(80))
 		return
-	if mode == Mode.CLIENT and kind == PACKET_SNAPSHOT:
-		var snapshot_value: Variant = packet.get("snapshot")
-		if snapshot_value is Dictionary and SessionSnapshot.validate(snapshot_value):
-			var snapshot: Dictionary = snapshot_value
-			if incoming_snapshots.is_empty() or int(snapshot["tick"]) > int(incoming_snapshots.back()["tick"]):
-				incoming_snapshots.append(snapshot)
-				while incoming_snapshots.size() > MAX_QUEUED_SNAPSHOTS:
-					incoming_snapshots.pop_front()
+	if mode == Mode.CLIENT:
+		if kind == PACKET_SNAPSHOT:
+			var snapshot_value: Variant = packet.get("snapshot")
+			if snapshot_value is Dictionary and SessionSnapshot.validate(snapshot_value):
+				var snapshot: Dictionary = snapshot_value
+				if incoming_snapshots.is_empty() or int(snapshot["tick"]) > int(incoming_snapshots.back()["tick"]):
+					incoming_snapshots.append(snapshot)
+					while incoming_snapshots.size() > MAX_QUEUED_SNAPSHOTS:
+						incoming_snapshots.pop_front()
+		elif kind == PACKET_RECONCILIATION:
+			var reconciliation_value: Variant = packet.get("reconciliation")
+			if reconciliation_value is Dictionary and ClientPrediction.validate_packet(reconciliation_value):
+				var reconciliation: Dictionary = reconciliation_value
+				var values: PackedInt64Array = reconciliation["values"]
+				if values[0] == local_entity_id and (incoming_reconciliations.is_empty() or int(reconciliation["tick"]) > int(incoming_reconciliations.back()["tick"])):
+					incoming_reconciliations.append(reconciliation)
+					while incoming_reconciliations.size() > MAX_QUEUED_RECONCILIATIONS:
+						incoming_reconciliations.pop_front()
 
 
 func _handle_hello(sender_id: int, packet: Dictionary) -> void:
@@ -378,6 +413,7 @@ func _send_to(
 	target_peer_id: int,
 	packet: Dictionary,
 	transfer_mode: int = MultiplayerPeer.TRANSFER_MODE_RELIABLE,
+	transfer_channel: int = 0,
 ) -> bool:
 	if peer == null:
 		return false
@@ -386,6 +422,7 @@ func _send_to(
 		return false
 	peer.set_target_peer(target_peer_id)
 	peer.transfer_mode = transfer_mode
+	peer.transfer_channel = transfer_channel
 	return peer.put_packet(encoded) == OK
 
 
@@ -428,6 +465,7 @@ func _close_peer() -> void:
 	incoming_inputs = []
 	incoming_snapshots = []
 	incoming_requests = []
+	incoming_reconciliations = []
 	joined_peers = []
 	disconnected_peers = []
 	last_input_sequence_by_peer = {}

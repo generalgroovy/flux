@@ -20,10 +20,11 @@ slice and continue.
 The working checkpoint has both foundation champions and the full planned
 non-ability movement grammar in the Wellspring, honest cone occlusion, readable
 Health/Flux/Stamina, walk-up Guide/Bell/Loom/Farflow stations, direct-IP ENet
-host/join, authoritative two-player movement/combat/targets, and host-confirmed
-HELLO/Bell/Loom interactions. Preserve those capabilities. The next executable
-slice is bounded guest prediction plus reconciliation and diagnostics, followed
-by reconnect/host-loss behavior and packaged Windows/Garuda direct-IP proof.
+host/join, authoritative two-player movement/combat/targets, host-confirmed
+HELLO/Bell/Loom interactions, and bounded movement-only guest prediction with
+reconciliation diagnostics. Preserve those capabilities. The next executable
+slice is reconnect identity plus explicit host-loss behavior, followed by
+packaged Windows/Garuda direct-IP proof.
 
 ## Immediate product order
 

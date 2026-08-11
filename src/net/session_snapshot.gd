@@ -13,6 +13,8 @@ const MAX_EVENTS: int = 12
 const MAX_TARGETS: int = 4
 const MAX_ABSOLUTE_POSITION: int = 100_000_000
 const MAX_TIMER_TICKS: int = 1_000_000
+const EVENT_KIND_MASK: int = 0xff
+const MAX_EVENT_ID: int = 0x7fffffff
 
 
 static func capture(
@@ -370,72 +372,87 @@ static func _valid_target_values(values: PackedInt64Array) -> bool:
 
 
 static func encode_event(event: Dictionary) -> PackedInt64Array:
+	var event_id := int(event.get("event_id", 0))
+	if event_id < 0 or event_id > MAX_EVENT_ID:
+		return PackedInt64Array()
 	match String(event.get("type", "")):
 		"cast_started":
-			return PackedInt64Array([1, int(event.get("entity_id", 0)), int(event.get("wire_id", 0)), 0, 0, 0])
+			return PackedInt64Array([_event_header(1, event_id), int(event.get("entity_id", 0)), int(event.get("wire_id", 0)), 0, 0, 0])
 		"cast_refused":
 			var reason_code: int = {"kit": 1, "flux": 2}.get(String(event.get("reason", "")), 3)
-			return PackedInt64Array([2, int(event.get("entity_id", 0)), int(event.get("wire_id", 0)), reason_code, 0, 0])
+			return PackedInt64Array([_event_header(2, event_id), int(event.get("entity_id", 0)), int(event.get("wire_id", 0)), reason_code, 0, 0])
 		"cast_blocked":
-			return PackedInt64Array([3, int(event.get("entity_id", 0)), int(event.get("wire_id", 0)), 0, 0, 0])
+			return PackedInt64Array([_event_header(3, event_id), int(event.get("entity_id", 0)), int(event.get("wire_id", 0)), 0, 0, 0])
 		"projectile_spawned":
-			return PackedInt64Array([4, int(event.get("projectile_id", 0)), int(event.get("owner_id", 0)), int(event.get("wire_id", 0)), 0, 0])
+			return PackedInt64Array([_event_header(4, event_id), int(event.get("projectile_id", 0)), int(event.get("owner_id", 0)), int(event.get("wire_id", 0)), 0, 0])
 		"projectile_hit":
-			return PackedInt64Array([5, int(event.get("projectile_id", 0)), int(event.get("source_wire_id", 0)), int(event.get("owner_id", 0)), int(event.get("target_id", 0)), int(event.get("damage", 0))])
+			return PackedInt64Array([_event_header(5, event_id), int(event.get("projectile_id", 0)), int(event.get("source_wire_id", 0)), int(event.get("owner_id", 0)), int(event.get("target_id", 0)), int(event.get("damage", 0))])
 		"projectile_impact":
-			return PackedInt64Array([6, int(event.get("projectile_id", 0)), int(event.get("wall_id", 0)), 0, 0, 0])
+			return PackedInt64Array([_event_header(6, event_id), int(event.get("projectile_id", 0)), int(event.get("wall_id", 0)), 0, 0, 0])
 		"projectile_bounced":
-			return PackedInt64Array([7, int(event.get("projectile_id", 0)), int(event.get("wall_id", 0)), int(event.get("remaining_bounces", 0)), 0, 0])
+			return PackedInt64Array([_event_header(7, event_id), int(event.get("projectile_id", 0)), int(event.get("wall_id", 0)), int(event.get("remaining_bounces", 0)), 0, 0])
 		"projectile_expired":
-			return PackedInt64Array([8, int(event.get("projectile_id", 0)), 0, 0, 0, 0])
+			return PackedInt64Array([_event_header(8, event_id), int(event.get("projectile_id", 0)), 0, 0, 0, 0])
 		"edgeweave":
-			return PackedInt64Array([9, int(event.get("entity_id", 0)), int(event.get("projectile_id", 0)), int(event.get("stamina", 0)), 0, 0])
+			return PackedInt64Array([_event_header(9, event_id), int(event.get("entity_id", 0)), int(event.get("projectile_id", 0)), int(event.get("stamina", 0)), 0, 0])
 		"social_emote":
-			return PackedInt64Array([10, int(event.get("entity_id", 0)), int(event.get("emote_id", 0)), 0, 0, 0])
+			return PackedInt64Array([_event_header(10, event_id), int(event.get("entity_id", 0)), int(event.get("emote_id", 0)), 0, 0, 0])
 		"station_confirmed":
-			return PackedInt64Array([11, int(event.get("entity_id", 0)), int(event.get("action", 0)), 0, 0, 0])
+			return PackedInt64Array([_event_header(11, event_id), int(event.get("entity_id", 0)), int(event.get("action", 0)), 0, 0, 0])
 		"champion_attuned":
-			return PackedInt64Array([12, int(event.get("entity_id", 0)), int(event.get("champion_wire_id", 0)), 0, 0, 0])
+			return PackedInt64Array([_event_header(12, event_id), int(event.get("entity_id", 0)), int(event.get("champion_wire_id", 0)), 0, 0, 0])
 		"request_refused":
-			return PackedInt64Array([13, int(event.get("entity_id", 0)), int(event.get("action", 0)), int(event.get("reason", 0)), 0, 0])
+			return PackedInt64Array([_event_header(13, event_id), int(event.get("entity_id", 0)), int(event.get("action", 0)), int(event.get("reason", 0)), 0, 0])
 		_:
 			return PackedInt64Array()
 
 
 static func decode_event(values: PackedInt64Array) -> Dictionary:
-	match values[0]:
+	var header := int(values[0])
+	var kind := header & EVENT_KIND_MASK
+	var event_id := header >> 8
+	var result: Dictionary = {}
+	match kind:
 		1:
-			return {"type": "cast_started", "entity_id": values[1], "wire_id": values[2]}
+			result = {"type": "cast_started", "entity_id": values[1], "wire_id": values[2]}
 		2:
 			var reason: String = {1: "kit", 2: "flux", 3: "other"}.get(values[3], "other")
-			return {"type": "cast_refused", "entity_id": values[1], "wire_id": values[2], "reason": reason}
+			result = {"type": "cast_refused", "entity_id": values[1], "wire_id": values[2], "reason": reason}
 		3:
-			return {"type": "cast_blocked", "entity_id": values[1], "wire_id": values[2]}
+			result = {"type": "cast_blocked", "entity_id": values[1], "wire_id": values[2]}
 		4:
-			return {"type": "projectile_spawned", "projectile_id": values[1], "owner_id": values[2], "wire_id": values[3]}
+			result = {"type": "projectile_spawned", "projectile_id": values[1], "owner_id": values[2], "wire_id": values[3]}
 		5:
-			return {"type": "projectile_hit", "projectile_id": values[1], "source_wire_id": values[2], "owner_id": values[3], "target_id": values[4], "damage": values[5]}
+			result = {"type": "projectile_hit", "projectile_id": values[1], "source_wire_id": values[2], "owner_id": values[3], "target_id": values[4], "damage": values[5]}
 		6:
-			return {"type": "projectile_impact", "projectile_id": values[1], "wall_id": values[2]}
+			result = {"type": "projectile_impact", "projectile_id": values[1], "wall_id": values[2]}
 		7:
-			return {"type": "projectile_bounced", "projectile_id": values[1], "wall_id": values[2], "remaining_bounces": values[3]}
+			result = {"type": "projectile_bounced", "projectile_id": values[1], "wall_id": values[2], "remaining_bounces": values[3]}
 		8:
-			return {"type": "projectile_expired", "projectile_id": values[1]}
+			result = {"type": "projectile_expired", "projectile_id": values[1]}
 		9:
-			return {"type": "edgeweave", "entity_id": values[1], "projectile_id": values[2], "stamina": values[3]}
+			result = {"type": "edgeweave", "entity_id": values[1], "projectile_id": values[2], "stamina": values[3]}
 		10:
-			return {"type": "social_emote", "entity_id": values[1], "emote_id": values[2]}
+			result = {"type": "social_emote", "entity_id": values[1], "emote_id": values[2]}
 		11:
-			return {"type": "station_confirmed", "entity_id": values[1], "action": values[2]}
+			result = {"type": "station_confirmed", "entity_id": values[1], "action": values[2]}
 		12:
-			return {"type": "champion_attuned", "entity_id": values[1], "champion_wire_id": values[2]}
+			result = {"type": "champion_attuned", "entity_id": values[1], "champion_wire_id": values[2]}
 		13:
-			return {"type": "request_refused", "entity_id": values[1], "action": values[2], "reason": values[3]}
-	return {}
+			result = {"type": "request_refused", "entity_id": values[1], "action": values[2], "reason": values[3]}
+	if not result.is_empty() and event_id > 0:
+		result["event_id"] = event_id
+	return result
 
 
 static func _valid_event_values(values: PackedInt64Array) -> bool:
-	var kind := int(values[0])
+	var header := int(values[0])
+	if header <= 0:
+		return false
+	var kind := header & EVENT_KIND_MASK
+	var event_id := header >> 8
+	if event_id < 0 or event_id > MAX_EVENT_ID:
+		return false
 	if kind < 1 or kind > 13:
 		return false
 	if kind in [1, 2, 3]:
@@ -461,6 +478,10 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 	if kind == 12:
 		return values[2] > 0 and values[2] <= 4096
 	return values[2] in [SessionTransport.REQUEST_EMOTE, SessionTransport.REQUEST_TRAINING_RESET, SessionTransport.REQUEST_CHAMPION_NEXT] and values[3] >= 1 and values[3] <= 3
+
+
+static func _event_header(kind: int, event_id: int) -> int:
+	return (event_id << 8) | kind
 
 
 static func _safe_event_name(requested_name: String) -> String:

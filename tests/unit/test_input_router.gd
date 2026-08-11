@@ -68,3 +68,8 @@ func _test_capture_pointer_parser() -> void:
 	equal(BootstrapScript.parse_farflow_mode("--farflow=relay"), "", "unknown Farflow mode fails closed")
 	check(BootstrapScript.has_emote_smoke_argument("--farflow-smoke-emote"), "diagnostic social smoke switch parses exactly")
 	check(not BootstrapScript.has_emote_smoke_argument("--farflow-smoke-emote=true"), "diagnostic social smoke switch fails closed on alternate syntax")
+	check(BootstrapScript.has_prediction_smoke_argument("--farflow-smoke-prediction"), "diagnostic prediction smoke switch parses exactly")
+	check(not BootstrapScript.has_prediction_smoke_argument("--farflow-smoke-prediction=true"), "diagnostic prediction smoke switch fails closed on alternate syntax")
+	equal(BootstrapScript.snapshot_tick_interval(60), 1, "60 Hz match publishes 60 snapshots per second")
+	equal(BootstrapScript.snapshot_tick_interval(120), 2, "120 Hz match publishes 60 snapshots per second")
+	equal(BootstrapScript.snapshot_tick_interval(90), 0, "unsupported match cadence cannot derive a snapshot interval")

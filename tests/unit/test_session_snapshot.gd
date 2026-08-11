@@ -4,6 +4,7 @@ extends FluxTestSuite
 func run() -> int:
 	_test_snapshot_round_trip()
 	_test_projectile_and_event_round_trip()
+	_test_event_inbox_deduplicates_redundancy()
 	_test_maximum_envelope_fits_transport()
 	_test_snapshot_validation_fails_closed()
 	return finish("session-snapshot")
@@ -76,9 +77,9 @@ func _test_projectile_and_event_round_trip() -> void:
 	projectile.previous_x = 996_000
 	source.projectiles.append(projectile)
 	var events: Array[Dictionary] = [
-		{"type": "projectile_hit", "projectile_id": 1000, "source_wire_id": CombatTuning.RILLSHOT_WIRE_ID, "owner_id": 1, "target_id": 900, "damage": 9_000},
-		{"type": "edgeweave", "entity_id": 1, "projectile_id": 1000, "stamina": 8_000},
-		{"type": "social_emote", "entity_id": 1, "emote_id": 1},
+		{"type": "projectile_hit", "event_id": 41, "projectile_id": 1000, "source_wire_id": CombatTuning.RILLSHOT_WIRE_ID, "owner_id": 1, "target_id": 900, "damage": 9_000},
+		{"type": "edgeweave", "event_id": 42, "entity_id": 1, "projectile_id": 1000, "stamina": 8_000},
+		{"type": "social_emote", "event_id": 43, "entity_id": 1, "emote_id": 1},
 	]
 	var snapshot := SessionSnapshot.capture(source, {1: "Host"}, events)
 	check(SessionSnapshot.validate(snapshot), "projectile/event snapshot validates")
@@ -93,7 +94,22 @@ func _test_projectile_and_event_round_trip() -> void:
 		equal(String(replica.combat_events[0].get("type", "")), "projectile_hit", "hit event decodes")
 		equal(int(replica.combat_events[1].get("stamina", 0)), 8_000, "edgeweave reward decodes")
 		equal(String(replica.combat_events[2].get("type", "")), "social_emote", "social emote decodes")
+		equal(int(replica.combat_events[2].get("event_id", 0)), 43, "semantic event identity round-trips inside the fixed header")
 	equal(replica.player().last_event, "cast_release_140", "readable cast event round-trips")
+
+
+func _test_event_inbox_deduplicates_redundancy() -> void:
+	var inbox := SessionEventInbox.new()
+	var first: Array[Dictionary] = [{"type": "social_emote", "event_id": 7, "entity_id": 2, "emote_id": 1}]
+	equal(inbox.take_unseen(first).size(), 1, "first semantic event reaches presentation")
+	equal(inbox.take_unseen(first).size(), 0, "redundant snapshot event is deduplicated")
+	var repeated_action: Array[Dictionary] = [{"type": "social_emote", "event_id": 8, "entity_id": 2, "emote_id": 1}]
+	equal(inbox.take_unseen(repeated_action).size(), 1, "same action with a new identity remains a real event")
+	for event_id: int in range(9, 80):
+		inbox.take_unseen([{"type": "projectile_expired", "event_id": event_id, "projectile_id": event_id}])
+	equal(inbox.seen_event_ids.size(), SessionEventInbox.MAX_SEEN_EVENT_IDS, "event deduplication memory is bounded")
+	inbox.reset()
+	equal(inbox.seen_event_ids.size(), 0, "event deduplication resets at session boundary")
 
 
 func _test_maximum_envelope_fits_transport() -> void:

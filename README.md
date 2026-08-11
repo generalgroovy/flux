@@ -50,8 +50,10 @@ even when design documentation already exists.
     the existing 8 KiB packet cap with explicit presentation overflow
   - [x] Host-authorized HELLO, Practice Bell and Champion Loom requests with
     replicated confirmations/refusals and shared training-target state
-  - [ ] Prediction/reconciliation, reconnect, settings/travel stations; overlay
-    parity, map UI, streaming, and destination persistence
+  - [x] Peer-scoped host acknowledgement plus bounded movement-only prediction,
+    deterministic reconciliation and readable ACK/correction diagnostics
+  - [ ] Reconnect, settings/travel stations; overlay parity, map UI, streaming,
+    and destination persistence
 - [ ] **Chapter 3 — [Movement and traversal](#movement-and-traversal)**
   — deterministic universal grammar in progress
   - [x] Sprint, counter-strafe, hop/double jump, wall kick, air redirect/dodge,
@@ -1812,10 +1814,11 @@ friend-session boundary without a menu. Host listens on UDP `24872`; Join target
 `127.0.0.1` or `--join-address=IP`. Compatibility, bounded input, stable
 two-character actors, 60 Hz movement snapshots and bounded combat presentation
 are live. HELLO, Practice Bell, Champion Loom and training-target state are
-host-authorized and shared; guest prediction/reconciliation remains next. See the
+host-authorized and shared; guests predict only movement from a bounded input
+history and reconcile to peer-scoped host state. Reconnect remains next. See the
 [networking contract](docs/NETWORKING.md).
 
-The current simulation uses protocol 14, snapshot schema 3 and preference schema 3: Space invokes the semantic jump
+The current simulation uses protocol 15, snapshot schema 3 and preference schema 3: Space invokes the semantic jump
 action, Shift sprints, Ctrl/C directly slides, and primary no longer aliases
 Space. Schema-v1/v2 defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision
@@ -1847,7 +1850,7 @@ tools, accessibility, and compatibility agree.
 | G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: Oh Tipi/S. Wayne candidate bodies, shared lift/shadow, landing cue, five walk-up stations and sparring effigy are live; accepted champion art, remaining station flows and fallback taunt remain |
 | F2/G4 — systemic Sanctum | Structural/thermal reactions, authored traversal devices, input/controller UI, physics/chemistry practice and reset | Planned |
 | H1 — first ancestry/champion/spells | One approved body plan and character through loadout, unique taunt, dummy/bot, cues, replay, accessibility and platform source gates | Planned |
-| I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | In progress: direct-IP gates, stable authoritative actors, 60 Hz movement/combat/targets, host-confirmed HELLO/Bell/Loom and Windows localhost pass; prediction/reconciliation, reconnect and Linux smoke next |
+| I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | In progress: direct-IP gates, stable authoritative actors, 60 Hz movement/combat/targets, host-confirmed HELLO/Bell/Loom, bounded movement prediction/reconciliation and Windows localhost pass; reconnect and Linux smoke next |
 | Sanctum V1 acceptance | Complete stations/overlays, LOS cutaways, charm/readability polish, offline/save/network/accessibility/performance, Garuda Sway and Windows packages/cleanup | First product acceptance |
 | J — first complete arena/mode | Original modular map, objectives, destruction/material safety, duel/team rules, bots, round/rematch/results | Planned |
 | K — session continuity | Late join, reconnect, spectators, forced host migration, diagnostics, self-hostable online boundary | Planned |

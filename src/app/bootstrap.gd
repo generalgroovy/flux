@@ -2,7 +2,7 @@ extends Node2D
 
 
 const MAX_CATCH_UP_STEPS: int = 8
-const SNAPSHOT_TICK_INTERVAL: int = 2
+const SNAPSHOT_RATE: int = 60
 const EMOTE_COOLDOWN_MS: int = 1200
 const HUB_DEFINITION_PATH: String = "res://content/maps/sanctum_hub_v1.json"
 const CAMPUS_LAYOUT_PATH: String = "res://content/maps/sanctum_campus_g2_v1.json"
@@ -46,6 +46,8 @@ var player_preferences: PlayerPreferences
 var player_sprite: WellspringCharacterSprite
 var session_transport: SessionTransport
 var authoritative_session: AuthoritativeSession
+var client_prediction: ClientPrediction
+var session_event_inbox: SessionEventInbox
 var session_names_by_entity: Dictionary[int, String] = {}
 var remote_player_sprites: Dictionary[int, WellspringCharacterSprite] = {}
 var tick_rate: int = 120
@@ -74,6 +76,10 @@ var emote_ready_tick_by_entity: Dictionary[int, int] = {}
 var social_bubbles: Array[Dictionary] = []
 var requested_emote_smoke: bool = false
 var emote_smoke_sent: bool = false
+var requested_prediction_smoke: bool = false
+var prediction_smoke_started: bool = false
+var prediction_smoke_start_x: float = 0.0
+var prediction_smoke_reported: bool = false
 
 
 func _ready() -> void:
@@ -114,8 +120,11 @@ func _ready() -> void:
 	local_player_name = _requested_player_name()
 	requested_farflow_mode = _requested_farflow_mode()
 	requested_emote_smoke = _requested_emote_smoke()
+	requested_prediction_smoke = _requested_prediction_smoke()
 	session_transport = SessionTransport.new()
 	authoritative_session = AuthoritativeSession.new()
+	client_prediction = ClientPrediction.new()
+	session_event_inbox = SessionEventInbox.new()
 	_load_player_sprite_candidate()
 	loadout = LoadoutDefinition.new()
 	if not loadout.load_from_file(LOADOUT_PATH, ability_catalog):
@@ -192,6 +201,10 @@ func _process(delta: float) -> void:
 	station_notice_seconds = maxf(0.0, station_notice_seconds - delta)
 	_update_combat_cues(delta)
 	_update_social_bubbles(delta)
+	if client_prediction != null:
+		client_prediction.advance_visual(delta)
+		if session_transport.is_connected_client() and client_prediction.is_ready():
+			current_position = client_prediction.presented_position_pixels()
 	if Input.is_action_just_pressed(InputRouter.INTERACT_ACTION):
 		_activate_focused_station()
 	if Input.is_action_just_pressed(InputRouter.EMOTE_ACTION):
@@ -208,11 +221,24 @@ func _process(delta: float) -> void:
 			current_position,
 			pointer_world_position,
 		)
+		if session_transport.is_connected_client() and requested_prediction_smoke and last_client_snapshot_tick >= 0 and client_input_sequence < 18:
+			command = SimCommand.new(world.tick, input_router.entity_id, 1000, 0, 0, 0, 1000, 0)
 		if session_transport.is_connected_client():
 			client_input_sequence += 1
 			if not session_transport.send_input(client_input_sequence, command):
 				station_notice = "Farflow input could not reach the host."
 				station_notice_seconds = 1.0
+			if client_prediction.queue_input(client_input_sequence, command):
+				current_position = client_prediction.presented_position_pixels()
+			if (
+				requested_prediction_smoke
+				and prediction_smoke_started
+				and not prediction_smoke_reported
+				and client_prediction.last_acknowledged_sequence >= 1
+				and client_prediction.last_authoritative_position_pixels.x > prediction_smoke_start_x + 4.0
+			):
+				prediction_smoke_reported = true
+				print("FLUX2 farflow prediction smoke: authoritative movement confirmed at sequence %d" % client_prediction.last_acknowledged_sequence)
 		else:
 			var commands: Array[SimCommand] = [command]
 			if session_transport.is_host():
@@ -222,9 +248,11 @@ func _process(delta: float) -> void:
 				set_process(false)
 				break
 			_ingest_combat_cues(world.combat_events)
-			if session_transport.is_host() and world.tick % SNAPSHOT_TICK_INTERVAL == 0:
+			if session_transport.is_host() and world.tick % snapshot_tick_interval(tick_rate) == 0:
 				authoritative_session.record_combat_events(world.combat_events)
-				if session_transport.broadcast_snapshot(authoritative_session.capture_snapshot()):
+				var snapshot_sent := session_transport.broadcast_snapshot(authoritative_session.capture_snapshot())
+				_send_host_reconciliations()
+				if snapshot_sent:
 					authoritative_session.acknowledge_snapshot()
 			elif session_transport.is_host():
 				authoritative_session.record_combat_events(world.combat_events)
@@ -235,6 +263,15 @@ func _process(delta: float) -> void:
 		dropped_time_seconds += accumulator_seconds - fmod(accumulator_seconds, fixed_delta)
 		accumulator_seconds = fmod(accumulator_seconds, fixed_delta)
 	queue_redraw()
+
+
+func _send_host_reconciliations() -> void:
+	for roster_entry: Dictionary in session_transport.host_roster():
+		var peer_id := int(roster_entry.get("peer_id", 0))
+		var entity_id := int(roster_entry.get("entity_id", 0))
+		var reconciliation := authoritative_session.capture_reconciliation(entity_id)
+		if reconciliation.is_empty() or not session_transport.send_reconciliation(peer_id, reconciliation):
+			push_warning("Farflow could not send reconciliation for entity %d" % entity_id)
 
 
 func _draw() -> void:
@@ -261,9 +298,10 @@ func _draw() -> void:
 	if state == null:
 		return
 	_draw_remote_travellers(camera_origin, state.entity_id)
-	var presentation := JumpPresentation.sample(state, world.config, alpha, player_preferences.reduced_motion)
-	var landing := LandingPresentation.sample(state, world.config, alpha, player_preferences.reduced_motion)
-	var player_radius: float = float(state.radius) / 1000.0
+	var presentation_state: PlayerState = client_prediction.predicted_state if session_transport.is_connected_client() and client_prediction.is_ready() else state
+	var presentation := JumpPresentation.sample(presentation_state, world.config, alpha, player_preferences.reduced_motion)
+	var landing := LandingPresentation.sample(presentation_state, world.config, alpha, player_preferences.reduced_motion)
+	var player_radius: float = float(presentation_state.radius) / 1000.0
 	var shadow_center := rendered_position + Vector2(0.0, player_radius * 0.58)
 	var shadow_scale: Vector2 = landing.shadow_scale if landing.active else presentation.shadow_scale
 	draw_set_transform(
@@ -278,7 +316,7 @@ func _draw() -> void:
 	var body_position := rendered_position + Vector2(0.0, -float(presentation.body_lift_pixels))
 	var sprite_drawn: bool = false
 	if player_sprite != null:
-		if player_sprite.sync_from_player(state, world.config, world.tick, alpha):
+		if player_sprite.sync_from_player(presentation_state, world.config, world.tick, alpha):
 			var sprite_anchor := shadow_center + Vector2(0.0, -float(presentation.body_lift_pixels))
 			draw_texture_rect_region(
 				player_sprite.texture,
@@ -293,12 +331,12 @@ func _draw() -> void:
 		draw_circle(body_position, player_radius + 5.0, Color(ATTUNEMENT_COLOR, 0.18))
 		draw_circle(body_position, player_radius, PLAYER_COLOR)
 		draw_arc(body_position, player_radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
-	draw_line(body_position, body_position + Vector2(state.aim_x, state.aim_y) * 0.032, Color.WHITE, 3.0)
+	draw_line(body_position, body_position + Vector2(presentation_state.aim_x, presentation_state.aim_y) * 0.032, Color.WHITE, 3.0)
 	_draw_social_bubbles(camera_origin)
 	_draw_station_bubble(rendered_position)
 	draw_set_transform(Vector2.ZERO)
 	var rendered_screen_position: Vector2 = rendered_position - camera_origin
-	_draw_pov_mask(rendered_screen_position, Vector2(state.aim_x, state.aim_y), camera_origin)
+	_draw_pov_mask(rendered_screen_position, Vector2(presentation_state.aim_x, presentation_state.aim_y), camera_origin)
 	draw_rect(Rect2(16, 14, 1248, 96), PANEL_COLOR, true)
 	draw_rect(Rect2(16, 14, 1248, 96), BRASS_COLOR.darkened(0.3), false, 2.0)
 	var champion_data: Dictionary = champion_catalog.champion(selected_champion_id)
@@ -309,8 +347,8 @@ func _draw() -> void:
 	var primary_name := String(primary_ability.get("display_name", "PRIMARY"))
 	var active_name := String(active_ability.get("display_name", "ACTIVE"))
 	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "%s · THE WELLSPRING" % champion_name.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
-	var movement_name: String = String(PlayerState.MovementMode.keys()[state.movement_mode]).replace("_", " ")
-	draw_string(ThemeDB.fallback_font, Vector2(400, 40), "%s · %s" % [movement_name, _readable_event(state)], HORIZONTAL_ALIGNMENT_RIGHT, 280.0, 13, ATTUNEMENT_COLOR)
+	var movement_name: String = String(PlayerState.MovementMode.keys()[presentation_state.movement_mode]).replace("_", " ")
+	draw_string(ThemeDB.fallback_font, Vector2(400, 40), "%s · %s" % [movement_name, _readable_event(presentation_state)], HORIZONTAL_ALIGNMENT_RIGHT, 280.0, 13, ATTUNEMENT_COLOR)
 	_draw_resource_bar(Rect2(700, 24, 168, 20), "HEALTH", state.health, state.health_maximum, Color("d9634f"))
 	_draw_resource_bar(Rect2(884, 24, 168, 20), "FLUX", state.flux, state.flux_maximum, FLUX_COLOR)
 	_draw_resource_bar(Rect2(1068, 24, 168, 20), "STAMINA", state.stamina, state.stamina_maximum, ATTUNEMENT_COLOR)
@@ -587,43 +625,60 @@ func _sync_session_transport() -> void:
 		return
 	if session_transport.is_connected_client():
 		client_replica_active = true
+		input_router.entity_id = session_transport.local_entity_id
+		if client_prediction.local_entity_id != session_transport.local_entity_id:
+			if not client_prediction.configure(world.config, world.collision, session_transport.local_entity_id):
+				push_error("Farflow prediction could not bind the local traveller")
+				return
 		var snapshots := session_transport.take_snapshots()
-		if snapshots.is_empty():
-			return
-		var snapshot: Dictionary = snapshots.back()
-		if int(snapshot.get("tick", -1)) <= last_client_snapshot_tick:
-			return
 		var first_snapshot: bool = last_client_snapshot_tick < 0
-		if SessionSnapshot.apply_to_world(snapshot, world):
-			last_client_snapshot_tick = int(snapshot["tick"])
-			var overflow: PackedInt32Array = snapshot.get("overflow", PackedInt32Array([0, 0, 0]))
-			network_projectile_overflow = overflow[0]
-			session_names_by_entity = SessionSnapshot.names(snapshot)
-			_prune_remote_player_sprites()
-			_ingest_combat_cues(world.combat_events)
-			_ingest_session_feedback(world.combat_events)
-			input_router.entity_id = session_transport.local_entity_id
-			var local_state := _local_player_state()
-			if local_state != null:
-				if first_snapshot:
-					print("FLUX2 farflow replica: local entity %d, snapshot tick %d, travellers %d" % [local_state.entity_id, world.tick, session_names_by_entity.size()])
-				var replicated_champion_id := champion_catalog.champion_id_from_wire(local_state.champion_wire_id)
-				if not replicated_champion_id.is_empty() and replicated_champion_id != selected_champion_id:
-					selected_champion_id = replicated_champion_id
-					_load_player_sprite_candidate()
-				var replicated_position := _player_position()
-				previous_position = replicated_position if first_snapshot else current_position
-				current_position = replicated_position
-			if first_snapshot and requested_emote_smoke and not emote_smoke_sent:
-				emote_smoke_sent = true
-				_submit_session_request(SessionTransport.REQUEST_EMOTE)
-				print("FLUX2 farflow social: guest emote request sent")
+		if not snapshots.is_empty():
+			var snapshot: Dictionary = snapshots.back()
+			if int(snapshot.get("tick", -1)) > last_client_snapshot_tick and SessionSnapshot.apply_to_world(snapshot, world):
+				last_client_snapshot_tick = int(snapshot["tick"])
+				var overflow: PackedInt32Array = snapshot.get("overflow", PackedInt32Array([0, 0, 0]))
+				network_projectile_overflow = overflow[0]
+				session_names_by_entity = SessionSnapshot.names(snapshot)
+				_prune_remote_player_sprites()
+				var unseen_events := session_event_inbox.take_unseen(world.combat_events)
+				world.combat_events = unseen_events
+				_ingest_combat_cues(unseen_events)
+				_ingest_session_feedback(unseen_events)
+				var local_state := _local_player_state()
+				if local_state != null:
+					if first_snapshot:
+						print("FLUX2 farflow replica: local entity %d, snapshot tick %d, travellers %d" % [local_state.entity_id, world.tick, session_names_by_entity.size()])
+					var replicated_champion_id := champion_catalog.champion_id_from_wire(local_state.champion_wire_id)
+					if not replicated_champion_id.is_empty() and replicated_champion_id != selected_champion_id:
+						selected_champion_id = replicated_champion_id
+						_load_player_sprite_candidate()
+					if not client_prediction.is_ready():
+						var replicated_position := _player_position()
+						previous_position = replicated_position if first_snapshot else current_position
+						current_position = replicated_position
+				if first_snapshot and requested_emote_smoke and not emote_smoke_sent:
+					emote_smoke_sent = true
+					_submit_session_request(SessionTransport.REQUEST_EMOTE)
+					print("FLUX2 farflow social: guest emote request sent")
+		var reconciliations := session_transport.take_reconciliations()
+		if not reconciliations.is_empty():
+			var local_authority := _local_player_state()
+			var authority_event := local_authority.last_event if local_authority != null else "network_snapshot"
+			if client_prediction.reconcile(reconciliations.back(), authority_event, player_preferences.reduced_motion):
+				previous_position = current_position
+				current_position = client_prediction.presented_position_pixels()
+				if requested_prediction_smoke and not prediction_smoke_started:
+					prediction_smoke_started = true
+					prediction_smoke_start_x = client_prediction.last_authoritative_position_pixels.x
+				if client_prediction.last_acknowledged_sequence < 1:
+					print("FLUX2 farflow prediction: entity %d reconciles at tick %d" % [session_transport.local_entity_id, client_prediction.last_authoritative_tick])
 		return
 	if client_replica_active and session_transport.mode == SessionTransport.Mode.OFFLINE:
 		var disconnect_message := session_transport.last_error
 		client_replica_active = false
 		client_input_sequence = 0
 		client_request_sequence = 0
+		client_prediction.reset()
 		last_client_snapshot_tick = -1
 		network_projectile_overflow = 0
 		if _start_match(tick_rate):
@@ -869,7 +924,9 @@ func _session_label() -> String:
 	if session_transport.is_host():
 		return "FARFLOW HOST %d/8 · UDP %d" % [session_transport.player_count(), session_transport.bound_port]
 	if session_transport.is_connected_client():
-		return "FARFLOW JOINED · %s" % join_address
+		if client_prediction != null and client_prediction.is_ready():
+			return "FARFLOW JOINED · ACK ~%dms · CORR %.1fpx" % [client_prediction.estimated_ack_delay_ms(), client_prediction.last_correction_pixels]
+		return "FARFLOW JOINED · SYNCING"
 	return "FARFLOW SEEKING · %s" % join_address
 
 
@@ -964,6 +1021,13 @@ func _start_match(requested_tick_rate: int) -> bool:
 	emote_ready_tick_by_entity = {}
 	social_bubbles = []
 	combat_cues = []
+	if client_prediction != null:
+		client_prediction.reset()
+	if session_event_inbox != null:
+		session_event_inbox.reset()
+	prediction_smoke_started = false
+	prediction_smoke_start_x = 0.0
+	prediction_smoke_reported = false
 	tick_rate = requested_tick_rate
 	world = SimWorld.new(
 		tick_rate,
@@ -1222,6 +1286,24 @@ static func has_emote_smoke_argument(argument: String) -> bool:
 	return argument == "--farflow-smoke-emote"
 
 
+func _requested_prediction_smoke() -> bool:
+	for argument: String in OS.get_cmdline_user_args():
+		if has_prediction_smoke_argument(argument):
+			return true
+	return false
+
+
+static func has_prediction_smoke_argument(argument: String) -> bool:
+	return argument == "--farflow-smoke-prediction"
+
+
+static func snapshot_tick_interval(requested_tick_rate: int) -> int:
+	if not SimConfig.is_supported_tick_rate(requested_tick_rate):
+		return 0
+	@warning_ignore("integer_division")
+	return requested_tick_rate / SNAPSHOT_RATE
+
+
 static func parse_farflow_mode(argument: String) -> String:
 	if not argument.begins_with("--farflow="):
 		return ""
@@ -1308,6 +1390,8 @@ func _handle_preference_actions() -> void:
 
 
 func _player_position() -> Vector2:
+	if session_transport != null and session_transport.is_connected_client() and client_prediction != null and client_prediction.is_ready():
+		return client_prediction.presented_position_pixels()
 	var state: PlayerState = _local_player_state()
 	if state == null:
 		return current_position

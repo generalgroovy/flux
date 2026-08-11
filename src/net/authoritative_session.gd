@@ -3,6 +3,7 @@ extends RefCounted
 
 
 const REMOTE_INPUT_TIMEOUT_MS: int = 250
+const EVENT_REDUNDANCY_SNAPSHOTS: int = 4
 const SPAWN_OFFSETS: Array[Vector2i] = [
 	Vector2i(72, 0),
 	Vector2i(-72, 0),
@@ -18,7 +19,9 @@ var champion_catalog: ChampionCatalog
 var spawn: Vector2i
 var names_by_entity: Dictionary[int, String] = {}
 var latest_input_by_entity: Dictionary[int, Dictionary] = {}
+var last_processed_input_sequence_by_entity: Dictionary[int, int] = {}
 var pending_combat_events: Array[Dictionary] = []
+var next_event_id: int = 1
 var last_error: String = ""
 
 
@@ -40,7 +43,9 @@ func bind(
 	spawn = spawn_pixels
 	names_by_entity = {SessionTransport.SERVER_PEER_ID: safe_host_name}
 	latest_input_by_entity = {}
+	last_processed_input_sequence_by_entity = {}
 	pending_combat_events = []
+	next_event_id = 1
 	return register_peers(existing_roster) == existing_roster.size()
 
 
@@ -66,6 +71,7 @@ func register_peers(events: Array[Dictionary]) -> int:
 		state.last_event = "farflow_arrival"
 		world.players.append(state)
 		names_by_entity[entity_id] = safe_name
+		last_processed_input_sequence_by_entity[entity_id] = -1
 		registered += 1
 	world.players.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
 	return registered
@@ -85,6 +91,7 @@ func remove_peers(events: Array[Dictionary]) -> int:
 				break
 		names_by_entity.erase(entity_id)
 		latest_input_by_entity.erase(entity_id)
+		last_processed_input_sequence_by_entity.erase(entity_id)
 	return removed
 
 
@@ -140,6 +147,8 @@ func commands_for_tick(local_command: SimCommand) -> Array[SimCommand]:
 			state.aim_y if stale else int(packet.get("aim_y", state.aim_y)),
 		))
 		if not packet.is_empty():
+			if not stale:
+				last_processed_input_sequence_by_entity[entity_id] = int(packet.get("sequence", -1))
 			packet["pressed"] = 0
 			if stale:
 				packet["move_x"] = 0
@@ -155,12 +164,29 @@ func capture_snapshot() -> Dictionary:
 	return SessionSnapshot.capture(world, names_by_entity, pending_combat_events)
 
 
+func capture_reconciliation(entity_id: int) -> Dictionary:
+	if world == null:
+		return {}
+	var state: PlayerState = world.player(entity_id)
+	if state == null or state.actor_kind != PlayerState.ActorKind.CHAMPION or entity_id <= SessionTransport.SERVER_PEER_ID:
+		return {}
+	return ClientPrediction.capture_packet(
+		state,
+		world.tick,
+		int(last_processed_input_sequence_by_entity.get(entity_id, -1)),
+	)
+
+
 func record_combat_events(events: Array[Dictionary]) -> int:
 	var accepted: int = 0
 	for event: Dictionary in events:
 		if SessionSnapshot.encode_event(event).is_empty():
 			continue
-		pending_combat_events.append(event.duplicate(true))
+		var retained := event.duplicate(true)
+		retained["event_id"] = next_event_id
+		retained["_remaining_snapshots"] = EVENT_REDUNDANCY_SNAPSHOTS
+		next_event_id = 1 if next_event_id >= SessionSnapshot.MAX_EVENT_ID else next_event_id + 1
+		pending_combat_events.append(retained)
 		accepted += 1
 	while pending_combat_events.size() > SessionSnapshot.MAX_EVENTS:
 		pending_combat_events.pop_front()
@@ -168,7 +194,13 @@ func record_combat_events(events: Array[Dictionary]) -> int:
 
 
 func acknowledge_snapshot() -> void:
-	pending_combat_events = []
+	for index: int in range(pending_combat_events.size() - 1, -1, -1):
+		var event: Dictionary = pending_combat_events[index]
+		event["_remaining_snapshots"] = int(event.get("_remaining_snapshots", 1)) - 1
+		if int(event["_remaining_snapshots"]) <= 0:
+			pending_combat_events.remove_at(index)
+		else:
+			pending_combat_events[index] = event
 
 
 func _spawn_position(entity_id: int, radius: int) -> Vector2i:

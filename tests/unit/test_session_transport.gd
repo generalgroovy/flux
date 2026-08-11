@@ -31,6 +31,12 @@ func _test_validation_fails_closed() -> void:
 	check(SessionTransport._valid_request_packet({"sequence": 0, "action": SessionTransport.REQUEST_EMOTE}), "known typed interaction request validates")
 	check(not SessionTransport._valid_request_packet({"sequence": 0, "action": 99}), "unknown interaction request fails closed")
 	check(not SessionTransport._valid_request_packet({"sequence": "0", "action": SessionTransport.REQUEST_EMOTE}), "coerced interaction sequence fails closed")
+	var prediction_state := PlayerState.new(2)
+	var reconciliation := ClientPrediction.capture_packet(prediction_state, 4, -1)
+	check(ClientPrediction.validate_packet(reconciliation), "typed reconciliation packet validates")
+	var malformed_reconciliation := reconciliation.duplicate(true)
+	malformed_reconciliation["sequence"] = "0"
+	check(not ClientPrediction.validate_packet(malformed_reconciliation), "coerced reconciliation acknowledgement fails closed")
 	equal(SessionTransport.MAX_PACKETS_PER_POLL, 64, "transport processing has a per-poll work budget")
 	equal(SessionTransport.MAX_QUEUED_INPUTS, 28, "accepted input memory is bounded for seven remote peers")
 
@@ -113,6 +119,16 @@ func _test_enet_loopback_handshake_and_input() -> void:
 		[{"type": "projectile_spawned", "projectile_id": 1000, "owner_id": 2, "wire_id": CombatTuning.ECLIPSE_DISC_WIRE_ID}],
 	)
 	check(var_to_bytes({"kind": SessionTransport.PACKET_SNAPSHOT, "snapshot": snapshot}).size() <= 1_392, "normal two-player combat snapshot stays within one ENet MTU")
+	var reconciliation := ClientPrediction.capture_packet(guest, source.tick, 17)
+	check(var_to_bytes({"kind": SessionTransport.PACKET_RECONCILIATION, "reconciliation": reconciliation}).size() <= 1_392, "movement reconciliation stays within its own ENet MTU")
+	check(host.send_reconciliation(client.local_peer_id, reconciliation), "host sends scoped movement authority on a separate ordered channel")
+	check(_poll_until(host, client, func() -> bool: return not client.incoming_reconciliations.is_empty()), "client receives movement reconciliation through ENet")
+	var reconciliations := client.take_reconciliations()
+	equal(reconciliations.size(), 1, "client drains one newest reconciliation")
+	if not reconciliations.is_empty():
+		equal(int(reconciliations[0].get("sequence", -1)), 17, "input acknowledgement survives reconciliation transport")
+	var wrong_state := PlayerState.new(3)
+	check(not host.send_reconciliation(client.local_peer_id, ClientPrediction.capture_packet(wrong_state, source.tick, 17)), "host refuses reconciliation for another entity")
 	check(host.broadcast_snapshot(snapshot), "host broadcasts a validated authoritative snapshot")
 	check(_poll_until(host, client, func() -> bool: return not client.incoming_snapshots.is_empty()), "client receives the snapshot through unreliable-ordered ENet")
 	var snapshots := client.take_snapshots()

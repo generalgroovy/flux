@@ -210,7 +210,7 @@ func _draw() -> void:
 	draw_line(body_position, body_position + Vector2(state.aim_x, state.aim_y) * 0.032, Color.WHITE, 3.0)
 	draw_set_transform(Vector2.ZERO)
 	var rendered_screen_position: Vector2 = rendered_position - camera_origin
-	_draw_pov_mask(rendered_screen_position, Vector2(state.aim_x, state.aim_y))
+	_draw_pov_mask(rendered_screen_position, Vector2(state.aim_x, state.aim_y), camera_origin)
 	draw_rect(Rect2(16, 14, 1248, 96), PANEL_COLOR, true)
 	draw_rect(Rect2(16, 14, 1248, 96), BRASS_COLOR.darkened(0.3), false, 2.0)
 	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "THE WELLSPRING · BUILD %d/13" % loadout.active_points, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
@@ -245,7 +245,7 @@ func _draw_resource_bar(rectangle: Rect2, label: String, value: int, maximum: in
 	draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(7, 15), "%s %d" % [label, value / 1000], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 12.0, 12, Color.WHITE)
 
 
-func _draw_pov_mask(origin: Vector2, aim: Vector2) -> void:
+func _draw_pov_mask(origin: Vector2, aim: Vector2, camera_origin: Vector2) -> void:
 	if player_preferences.pov_mode != PlayerPreferences.POV_CONE:
 		return
 	var sight_range: float = float(player_preferences.pov_range)
@@ -271,7 +271,23 @@ func _draw_pov_mask(origin: Vector2, aim: Vector2) -> void:
 			_draw_mask_quad(origin, player_safe_radius, sight_range, angle_a, angle_b)
 		draw_line(origin + Vector2.from_angle(aim_angle - half_visible) * player_safe_radius, origin + Vector2.from_angle(aim_angle - half_visible) * sight_range, POV_EDGE_COLOR, 1.5)
 		draw_line(origin + Vector2.from_angle(aim_angle + half_visible) * player_safe_radius, origin + Vector2.from_angle(aim_angle + half_visible) * sight_range, POV_EDGE_COLOR, 1.5)
+	_draw_building_occlusion_shadows(origin, camera_origin, outer_radius)
 	draw_arc(origin, sight_range, aim_angle - half_visible, aim_angle + half_visible, maxi(12, ceili(48.0 * visible_radians / TAU)), POV_EDGE_COLOR, 1.5)
+
+
+func _draw_building_occlusion_shadows(origin: Vector2, camera_origin: Vector2, outer_distance: float) -> void:
+	for building_value: Variant in campus_layout.data.get("buildings", []):
+		var building: Dictionary = building_value
+		if String(building.get("occlusion_policy", "")) != "los_cutaway":
+			continue
+		var world_bounds := SanctumCampusLayout._parse_bounds(building.get("bounds", []))
+		var screen_bounds := Rect2(Vector2(world_bounds.position) - camera_origin, Vector2(world_bounds.size))
+		var shadow := SightOcclusion.shadow_polygon(origin, screen_bounds, outer_distance)
+		if shadow.size() != 4:
+			continue
+		draw_colored_polygon(shadow, POV_MASK_COLOR)
+		draw_line(shadow[0], shadow[1], POV_EDGE_COLOR, 1.0)
+		draw_line(shadow[3], shadow[2], POV_EDGE_COLOR, 1.0)
 
 
 func _draw_mask_quad(origin: Vector2, inner_radius: float, outer_radius: float, angle_a: float, angle_b: float) -> void:

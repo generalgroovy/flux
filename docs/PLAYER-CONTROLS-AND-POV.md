@@ -55,8 +55,10 @@ aim-facing angle inside the selected range:
 - full view is a distinct mode and has no artificial range boundary.
 
 The current checkpoint is a local presentation/accessibility policy in the
-offline Sanctum. It does not yet claim wall occlusion or conceal networked
-entities. A competitive or PvPvE mode that restricts information must enforce
+offline Sanctum. In cone mode every authored `los_cutaway` building projects a
+bounded presentation shadow through its silhouette corners; low traversal rails
+remain explicitly non-occluding. It does not yet conceal networked entities. A
+competitive or PvPvE mode that restricts information must enforce
 visibility on the authoritative host and replicate no hidden actor state; a
 client preference may make that view more restrictive, never less restrictive.
 Chemistry work budgets and simulation decisions never depend on the camera or

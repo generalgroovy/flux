@@ -1,5 +1,45 @@
 # FLUX2 agent worklog
 
+## 2026-08-11 — bounded building occlusion for cone view
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added pure `SightOcclusion` geometry that projects each axis-aligned
+  occluder's two silhouette tangents away from the viewer to a bounded outer
+  distance without consulting renderer-owned game state.
+- Cone mode now masks space behind every campus building declared
+  `los_cutaway`; `low_never_occludes` traversal rails remain visible.
+- Preserved the existing validated 15–360° angle and 160–4096 range bounds;
+  full-view Sanctum presentation remains the default.
+- Updated the public controls/POV contract and active backlog without claiming
+  host-side hidden-entity filtering before networking exists.
+
+Validation:
+
+- Pinned Godot 4.7.1 import: passed and registered `SightOcclusion`.
+- Full headless gate: 12,758 assertions, zero failures; tangent ownership,
+  projection direction, bounded distance, opposite-side viewing and invalid
+  inputs are covered.
+- 60/120 Hz headless boots with cone 360°/720: passed with protocol 4 and
+  identical canonical content hashes.
+- Windows interactive 1280 x 720 cone smoke at 120°/720: building north of
+  spawn visibly occluded the space behind it while the adjacent vault rail
+  remained visible; HUD stayed outside the mask.
+
+Known limitations and next task:
+
+- This is local presentation policy. Authoritative multiplayer modes must omit
+  hidden actors/effects/audio from replication and test reconnect, spectator,
+  replay and bot paths before cone visibility can govern competitive secrecy.
+- Occlusion currently uses a strong opaque wedge. Roof cutaways, soft
+  ownership-readable edges and accepted art remain visual-polish work.
+- Next slice returns to movement feel completion, then walk-up Wellspring
+  interactions and the first two champion vertical slices.
+
+Commit: pending. Push: pending.
+
 ## 2026-08-11 — continuous directive and discoverable movement controls
 
 Branch: `codex/continuous-overhaul`

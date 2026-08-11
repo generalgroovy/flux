@@ -56,6 +56,8 @@ even when design documentation already exists.
     movement presets, and full/ranged-cone POV with 15–360° angle and adjustable
     range; production defaults are Shift sprint, Ctrl/C direct slide and Space
     jump
+  - [x] Cone presentation clamps to 15–360° and masks space behind authored
+    `los_cutaway` buildings while low traversal rails remain visible
   - [x] Edgeweave swept hostile near-miss reward with speed, cooldown,
     miss-vs-hit, full-Stamina, training, and per-projectile farming guards
   - [x] Space-only default jump plus timer-normalized body lift and a separate

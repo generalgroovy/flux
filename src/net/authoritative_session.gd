@@ -58,7 +58,14 @@ func register_peers(events: Array[Dictionary]) -> int:
 		var safe_name := SessionTransport._validated_player_name(String(event.get("name", "")))
 		if entity_id < 2 or entity_id > SessionTransport.MAX_PLAYERS or safe_name.is_empty():
 			continue
-		if world.player(entity_id) != null:
+		var existing_state: PlayerState = world.player(entity_id)
+		if existing_state != null and bool(event.get("resumed", false)):
+			names_by_entity[entity_id] = safe_name
+			last_processed_input_sequence_by_entity[entity_id] = -1
+			existing_state.last_event = "farflow_return"
+			registered += 1
+			continue
+		if existing_state != null:
 			continue
 		var state := PlayerState.new(entity_id)
 		var champion_id := "s_wayne" if entity_id % 2 == 0 else champion_catalog.default_champion_id
@@ -75,6 +82,24 @@ func register_peers(events: Array[Dictionary]) -> int:
 		registered += 1
 	world.players.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
 	return registered
+
+
+func suspend_peers(events: Array[Dictionary]) -> int:
+	if world == null:
+		return 0
+	var suspended: int = 0
+	for event: Dictionary in events:
+		if not bool(event.get("reserved", false)):
+			continue
+		var entity_id := int(event.get("entity_id", 0))
+		var state: PlayerState = world.player(entity_id)
+		if state == null or state.actor_kind != PlayerState.ActorKind.CHAMPION:
+			continue
+		latest_input_by_entity.erase(entity_id)
+		state.primary_held = false
+		state.last_event = "farflow_returning"
+		suspended += 1
+	return suspended
 
 
 func remove_peers(events: Array[Dictionary]) -> int:

@@ -4,6 +4,7 @@ extends FluxTestSuite
 func run() -> int:
 	_test_validation_fails_closed()
 	_test_enet_loopback_handshake_and_input()
+	_test_reconnect_identity_and_host_loss()
 	return finish("session-transport")
 
 
@@ -39,6 +40,10 @@ func _test_validation_fails_closed() -> void:
 	check(not ClientPrediction.validate_packet(malformed_reconciliation), "coerced reconciliation acknowledgement fails closed")
 	equal(SessionTransport.MAX_PACKETS_PER_POLL, 64, "transport processing has a per-poll work budget")
 	equal(SessionTransport.MAX_QUEUED_INPUTS, 28, "accepted input memory is bounded for seven remote peers")
+	var return_token := SessionTransport._new_reconnect_token()
+	check(SessionTransport._valid_reconnect_token(return_token), "host creates a typed 256-bit return token")
+	check(not SessionTransport._valid_reconnect_token(return_token.to_upper()), "return token encoding fails closed on alternate case")
+	check(not SessionTransport._valid_reconnect_token("a".repeat(62)), "short return token fails closed")
 
 
 func _test_enet_loopback_handshake_and_input() -> void:
@@ -146,6 +151,57 @@ func _test_enet_loopback_handshake_and_input() -> void:
 		equal(int(disconnected[0].get("entity_id", 0)), 2, "disconnect event preserves the released entity mapping")
 	host.stop()
 	check(not host.is_online() and not client.is_online(), "loopback peers close cleanly")
+
+
+func _test_reconnect_identity_and_host_loss() -> void:
+	var host := SessionTransport.new()
+	var client := SessionTransport.new()
+	check(host.start_host(0, _signature(), "Lantern Host"), "reconnect host binds")
+	check(client.start_join("127.0.0.1", host.bound_port, _signature(), "River Guest"), "reconnect client begins first join")
+	check(_poll_until(host, client, func() -> bool: return client.is_connected_client()), "reconnect client receives first identity")
+	equal(client.local_entity_id, 2, "first reconnect identity is entity two")
+	var first_token := client.reconnect_token
+	check(SessionTransport._valid_reconnect_token(first_token), "accepted client retains an in-memory return capability")
+	check(not str(host.host_roster()).contains(first_token), "return capability is absent from public roster serialization")
+	check(not host.status_detail.contains(first_token), "return capability is absent from host diagnostics")
+	host.take_joined_peers()
+	client.stop()
+	check(_poll_until(host, client, func() -> bool: return host.reserved_count() == 1), "host reserves disconnected identity")
+	equal(host.player_count(), 1, "return reservation is not reported as a connected player")
+	equal(host.host_session_roster().size(), 1, "return reservation remains in session actor roster")
+	var first_disconnect := host.take_disconnected_peers()
+	check(not first_disconnect.is_empty() and bool(first_disconnect[0].get("reserved", false)), "disconnect event distinguishes a reserved return")
+	var attacker := SessionTransport.new()
+	attacker.reconnect_token = first_token
+	attacker.reconnect_address = "127.0.0.1"
+	attacker.reconnect_port = host.bound_port
+	attacker.reconnect_signature = _signature()
+	check(attacker.start_join("127.0.0.1", host.bound_port, _signature(), "False Guest"), "name-mismatch attacker reaches handshake")
+	check(_poll_until(host, attacker, func() -> bool: return attacker.mode == SessionTransport.Mode.OFFLINE and not attacker.last_error.is_empty()), "name-mismatch return is rejected")
+	check(attacker.last_error.contains("name"), "return name mismatch is explicit")
+	equal(host.reserved_count(), 1, "failed token use does not consume reservation")
+	check(client.start_join("127.0.0.1", host.bound_port, _signature(), "River Guest"), "original client begins return")
+	check(_poll_until(host, client, func() -> bool: return client.is_connected_client()), "original client reclaims reserved identity")
+	equal(client.local_entity_id, 2, "return reclaims exact entity two")
+	check(client.reconnect_token != first_token and SessionTransport._valid_reconnect_token(client.reconnect_token), "successful return rotates the capability")
+	var resumed := host.take_joined_peers()
+	check(not resumed.is_empty() and bool(resumed[0].get("resumed", false)), "host presence event distinguishes resumed identity")
+	client.stop()
+	check(_poll_until(host, client, func() -> bool: return host.reserved_count() == 1), "second disconnect reserves rotated capability")
+	host.take_disconnected_peers()
+	var expiry_ms := Time.get_ticks_msec() + SessionTransport.RECONNECT_WINDOW_MS + 1
+	equal(host._expire_reconnect_reservations(expiry_ms), 1, "bounded return window expires deterministically")
+	equal(host.reserved_count(), 0, "expired reservation releases capacity")
+	var expired := host.take_disconnected_peers()
+	check(not expired.is_empty() and bool(expired[0].get("expired", false)) and not bool(expired[0].get("reserved", true)), "expiry event authorizes actor removal")
+	var observer := SessionTransport.new()
+	check(observer.start_join("127.0.0.1", host.bound_port, _signature(), "Observer"), "host-loss observer joins")
+	check(_poll_until(host, observer, func() -> bool: return observer.is_connected_client()), "host-loss observer is accepted")
+	host.stop()
+	check(_poll_until(host, observer, func() -> bool: return observer.mode == SessionTransport.Mode.OFFLINE), "forced host loss closes observer")
+	check(observer.last_error.contains("Host"), "forced host loss is explicit")
+	check(observer.can_reconnect(), "host-loss client retains its endpoint-scoped return capability in memory")
+	observer.stop()
 
 
 func _poll_until(host: SessionTransport, client: SessionTransport, predicate: Callable) -> bool:

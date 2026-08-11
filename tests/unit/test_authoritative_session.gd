@@ -73,3 +73,12 @@ func _test_authoritative_presence_and_input() -> void:
 	equal(session.remove_peers([{"entity_id": 2, "name": "River Guest"}]), 1, "disconnect removes the remote actor")
 	check(world.player(2) == null, "removed remote actor leaves no simulation ghost")
 	check(session.capture_reconciliation(2).is_empty(), "removed traveller leaves no reconciliation state")
+	equal(session.register_peers([{"peer_id": 43, "entity_id": 2, "name": "River Guest"}]), 1, "removed traveller can join again")
+	var returning_state: PlayerState = world.player(2)
+	returning_state.position_x += 17_000
+	returning_state.health -= 4_000
+	equal(session.suspend_peers([{"entity_id": 2, "name": "River Guest", "reserved": true}]), 1, "reserved disconnect suspends actor instead of removing it")
+	check(world.player(2) == returning_state, "suspended return keeps the exact authoritative actor")
+	equal(session.register_peers([{"peer_id": 44, "entity_id": 2, "name": "River Guest", "resumed": true}]), 1, "resumed presence reclaims suspended actor")
+	check(world.player(2) == returning_state, "resumed identity preserves position, health and champion state")
+	equal(world.player(2).health, returning_state.health, "resumed identity keeps authoritative health")

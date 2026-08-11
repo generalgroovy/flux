@@ -80,6 +80,10 @@ var requested_prediction_smoke: bool = false
 var prediction_smoke_started: bool = false
 var prediction_smoke_start_x: float = 0.0
 var prediction_smoke_reported: bool = false
+var requested_reconnect_smoke: bool = false
+var reconnect_smoke_stage: int = 0
+var reconnect_smoke_delay_seconds: float = 0.0
+var reconnect_smoke_entity_id: int = 0
 
 
 func _ready() -> void:
@@ -121,6 +125,7 @@ func _ready() -> void:
 	requested_farflow_mode = _requested_farflow_mode()
 	requested_emote_smoke = _requested_emote_smoke()
 	requested_prediction_smoke = _requested_prediction_smoke()
+	requested_reconnect_smoke = _requested_reconnect_smoke()
 	session_transport = SessionTransport.new()
 	authoritative_session = AuthoritativeSession.new()
 	client_prediction = ClientPrediction.new()
@@ -180,6 +185,7 @@ func _process(delta: float) -> void:
 	if session_transport != null:
 		session_transport.poll()
 		_sync_session_transport()
+	_update_reconnect_smoke(delta)
 	_handle_preference_actions()
 	if Input.is_action_just_pressed(&"toggle_debug_overlay"):
 		show_debug_overlay = not show_debug_overlay
@@ -612,13 +618,21 @@ func _sync_session_transport() -> void:
 			authoritative_session.register_peers(joined)
 			session_names_by_entity = authoritative_session.names_by_entity.duplicate()
 			for event: Dictionary in joined:
-				print("FLUX2 farflow host: joined entity %d (%s)" % [int(event.get("entity_id", 0)), String(event.get("name", "Traveller"))])
+				print("FLUX2 farflow host: %s entity %d (%s)" % ["returned" if bool(event.get("resumed", false)) else "joined", int(event.get("entity_id", 0)), String(event.get("name", "Traveller"))])
 		var disconnected := session_transport.take_disconnected_peers()
 		if not disconnected.is_empty():
+			var suspended: Array[Dictionary] = []
+			var removed: Array[Dictionary] = []
 			for event: Dictionary in disconnected:
-				_clear_remote_player_sprite(int(event.get("entity_id", 0)))
-				print("FLUX2 farflow host: left entity %d (%s)" % [int(event.get("entity_id", 0)), String(event.get("name", "Traveller"))])
-			authoritative_session.remove_peers(disconnected)
+				if bool(event.get("reserved", false)):
+					suspended.append(event)
+					print("FLUX2 farflow host: return reserved for entity %d (%s)" % [int(event.get("entity_id", 0)), String(event.get("name", "Traveller"))])
+				else:
+					removed.append(event)
+					_clear_remote_player_sprite(int(event.get("entity_id", 0)))
+					print("FLUX2 farflow host: %s entity %d (%s)" % ["return expired for" if bool(event.get("expired", false)) else "left", int(event.get("entity_id", 0)), String(event.get("name", "Traveller"))])
+			authoritative_session.suspend_peers(suspended)
+			authoritative_session.remove_peers(removed)
 			session_names_by_entity = authoritative_session.names_by_entity.duplicate()
 		authoritative_session.ingest_inputs(session_transport.take_inputs())
 		_handle_session_requests(session_transport.take_requests())
@@ -660,6 +674,16 @@ func _sync_session_transport() -> void:
 					emote_smoke_sent = true
 					_submit_session_request(SessionTransport.REQUEST_EMOTE)
 					print("FLUX2 farflow social: guest emote request sent")
+				if first_snapshot and requested_reconnect_smoke:
+					if reconnect_smoke_stage == 0:
+						reconnect_smoke_entity_id = session_transport.local_entity_id
+						reconnect_smoke_stage = 1
+						reconnect_smoke_delay_seconds = 0.75
+						session_transport.stop()
+						print("FLUX2 farflow reconnect smoke: left entity %d" % reconnect_smoke_entity_id)
+					elif reconnect_smoke_stage == 2 and session_transport.local_entity_id == reconnect_smoke_entity_id:
+						reconnect_smoke_stage = 3
+						print("FLUX2 farflow reconnect smoke: returned entity %d" % reconnect_smoke_entity_id)
 		var reconciliations := session_transport.take_reconciliations()
 		if not reconciliations.is_empty():
 			var local_authority := _local_player_state()
@@ -684,6 +708,20 @@ func _sync_session_transport() -> void:
 		if _start_match(tick_rate):
 			station_notice = disconnect_message if not disconnect_message.is_empty() else "The Farflow gate is closed."
 			station_notice_seconds = 3.0
+
+
+func _update_reconnect_smoke(delta: float) -> void:
+	if not requested_reconnect_smoke or reconnect_smoke_stage != 1 or session_transport.mode != SessionTransport.Mode.OFFLINE:
+		return
+	reconnect_smoke_delay_seconds = maxf(0.0, reconnect_smoke_delay_seconds - delta)
+	if reconnect_smoke_delay_seconds > 0.0:
+		return
+	if session_transport.start_join(join_address, session_port, _session_compatibility_signature(), local_player_name):
+		reconnect_smoke_stage = 2
+		print("FLUX2 farflow reconnect smoke: seeking reserved identity")
+	else:
+		reconnect_smoke_stage = 4
+		push_error("FLUX2 farflow reconnect smoke failed: %s" % session_transport.last_error)
 
 
 func _submit_session_request(action: int) -> void:
@@ -918,7 +956,7 @@ func _session_compatibility_signature() -> String:
 
 func _session_label() -> String:
 	if session_transport == null or session_transport.mode == SessionTransport.Mode.OFFLINE:
-		return "FARFLOW OFFLINE"
+		return "FARFLOW RETURN READY" if session_transport != null and session_transport.can_reconnect() else "FARFLOW OFFLINE"
 	if session_transport.is_connected_client() and network_projectile_overflow > 0:
 		return "FARFLOW LOAD +%d BOLTS" % network_projectile_overflow
 	if session_transport.is_host():
@@ -1045,7 +1083,7 @@ func _start_match(requested_tick_rate: int) -> bool:
 	_spawn_practice_targets()
 	var existing_roster: Array[Dictionary] = []
 	if session_transport != null and session_transport.is_host():
-		existing_roster = session_transport.host_roster()
+		existing_roster = session_transport.host_session_roster()
 	if not authoritative_session.bind(world, champion_catalog, campus_layout.spawn, local_player_name, existing_roster):
 		push_error(authoritative_session.last_error)
 		return false
@@ -1295,6 +1333,17 @@ func _requested_prediction_smoke() -> bool:
 
 static func has_prediction_smoke_argument(argument: String) -> bool:
 	return argument == "--farflow-smoke-prediction"
+
+
+func _requested_reconnect_smoke() -> bool:
+	for argument: String in OS.get_cmdline_user_args():
+		if has_reconnect_smoke_argument(argument):
+			return true
+	return false
+
+
+static func has_reconnect_smoke_argument(argument: String) -> bool:
+	return argument == "--farflow-smoke-reconnect"
 
 
 static func snapshot_tick_interval(requested_tick_rate: int) -> int:

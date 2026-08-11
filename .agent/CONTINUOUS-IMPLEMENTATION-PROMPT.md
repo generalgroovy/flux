@@ -21,10 +21,11 @@ The working checkpoint has both foundation champions and the full planned
 non-ability movement grammar in the Wellspring, honest cone occlusion, readable
 Health/Flux/Stamina, walk-up Guide/Bell/Loom/Farflow stations, direct-IP ENet
 host/join, authoritative two-player movement/combat/targets, host-confirmed
-HELLO/Bell/Loom interactions, and bounded movement-only guest prediction with
-reconciliation diagnostics. Preserve those capabilities. The next executable
-slice is reconnect identity plus explicit host-loss behavior, followed by
-packaged Windows/Garuda direct-IP proof.
+HELLO/Bell/Loom interactions, bounded movement-only guest prediction, and a
+15-second memory-only exact-identity return path with explicit host loss.
+Preserve those capabilities. The next executable slice is packaged Windows/
+Garuda direct-IP proof and launch diagnostics, followed by diegetic session
+settings and host administration.
 
 ## Immediate product order
 

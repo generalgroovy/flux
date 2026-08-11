@@ -73,3 +73,5 @@ func _test_capture_pointer_parser() -> void:
 	equal(BootstrapScript.snapshot_tick_interval(60), 1, "60 Hz match publishes 60 snapshots per second")
 	equal(BootstrapScript.snapshot_tick_interval(120), 2, "120 Hz match publishes 60 snapshots per second")
 	equal(BootstrapScript.snapshot_tick_interval(90), 0, "unsupported match cadence cannot derive a snapshot interval")
+	check(BootstrapScript.has_reconnect_smoke_argument("--farflow-smoke-reconnect"), "diagnostic reconnect smoke switch parses exactly")
+	check(not BootstrapScript.has_reconnect_smoke_argument("--farflow-smoke-reconnect=true"), "diagnostic reconnect smoke switch fails closed on alternate syntax")

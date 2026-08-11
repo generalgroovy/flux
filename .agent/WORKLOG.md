@@ -1,5 +1,53 @@
 # FLUX2 agent worklog
 
+## 2026-08-12 — bounded Farflow return continuity
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Advanced the friend-session boundary to protocol 16 and added a 15-second
+  in-memory return reservation. A disconnected guest's exact authoritative
+  actor becomes safely idle instead of disappearing; a valid return resumes its
+  entity, champion, position, health and resources without client-owned state.
+- Each accepted guest receives a random 256-bit endpoint/build-scoped capability
+  that never enters snapshots, public rosters, logs or files. A return requires
+  the token and original validated name, rotates the capability on success and
+  fails closed after expiry or mismatch.
+- Reservations count against the eight-player capacity. Expiry emits an
+  explicit host-side removal event, releases the slot and prevents permanent
+  ghosts. Established clients now convert ENet host loss into an actionable
+  offline status while retaining the memory-only capability for a restarted
+  host at the same endpoint/build.
+- Added `--farflow-smoke-reconnect` for repeatable full-game leave/resume proof;
+  normal players simply use Join Farflow again during the return window.
+
+Validation:
+
+- Full pinned Godot 4.7.1 suite passed with **14,424 assertions**, zero failures
+  across 33 suites; `session-transport` contributed 96 and
+  `authoritative-session` 71 assertions.
+- Real ENet coverage proves token shape/secrecy, name mismatch refusal without
+  consumption, token rotation, exact entity recovery, capacity reservation,
+  deterministic expiry and explicit forced host-loss state.
+- Two complete Windows headless processes connected over UDP localhost on port
+  24881 under protocol 16. RiverGuest joined entity 2, left, received a host
+  reservation, returned as entity 2 and resumed reconciliation at host tick 104.
+- Independent 60/120 Hz boots passed with campus/ability/champion hashes
+  `c981419a5b33` / `566a637aa616` / `81962afbff12`.
+
+Known limitations and next task:
+
+- Capabilities are intentionally memory-only, so a client process restart does
+  not yet rejoin; encrypted/versioned persistence requires a product/security
+  decision and is not implied by this foundation.
+- There is no automatic retry loop, host process restart recovery, moderation,
+  authentication/encryption, NAT traversal or host migration.
+- Next slice is packaged Windows/Garuda Linux direct-IP acceptance plus doctor/
+  launch diagnostics, followed by a small diegetic host/session settings flow.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-12 — bounded Farflow movement prediction
 
 Branch: `codex/continuous-overhaul`

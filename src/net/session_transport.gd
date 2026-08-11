@@ -17,6 +17,8 @@ const MAX_PACKETS_PER_POLL: int = 64
 const MAX_QUEUED_INPUTS: int = MAX_REMOTE_CLIENTS * 4
 const MAX_PLAYER_NAME_LENGTH: int = 24
 const CONNECT_TIMEOUT_MS: int = 5_000
+const RECONNECT_WINDOW_MS: int = 15_000
+const RECONNECT_TOKEN_BYTES: int = 32
 const SERVER_PEER_ID: int = 1
 
 const PACKET_HELLO: int = 1
@@ -57,6 +59,12 @@ var last_input_sequence_by_peer: Dictionary[int, int] = {}
 var last_request_sequence_by_peer: Dictionary[int, int] = {}
 var entity_by_peer: Dictionary[int, int] = {}
 var name_by_peer: Dictionary[int, String] = {}
+var reconnect_token_by_peer: Dictionary[int, String] = {}
+var reconnect_reservations: Dictionary[String, Dictionary] = {}
+var reconnect_token: String = ""
+var reconnect_address: String = ""
+var reconnect_port: int = 0
+var reconnect_signature: String = ""
 var _hello_sent: bool = false
 var _connect_started_ms: int = 0
 
@@ -102,7 +110,7 @@ func start_host(port: int, signature: String, requested_player_name: String = "H
 	local_entity_id = SERVER_PEER_ID
 	accepted = true
 	accepted_peer_ids = PackedInt32Array()
-	status_detail = "Hosting %d/8 on UDP %d" % [player_count(), bound_port]
+	status_detail = _host_status()
 	return true
 
 
@@ -135,14 +143,19 @@ func start_join(address: String, port: int, signature: String, requested_player_
 	local_entity_id = 0
 	_hello_sent = false
 	_connect_started_ms = Time.get_ticks_msec()
-	status_detail = "Seeking %s:%d" % [join_address, bound_port]
+	status_detail = "%s %s:%d" % ["Returning to" if not _reconnect_token_for_current_endpoint().is_empty() else "Seeking", join_address, bound_port]
 	return true
 
 
 func poll() -> void:
 	if peer == null:
 		return
+	if is_host():
+		_expire_reconnect_reservations(Time.get_ticks_msec())
 	peer.poll()
+	if mode == Mode.CLIENT and peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
+		_disconnect_with_error("Host left the session")
+		return
 	if mode == Mode.CONNECTING:
 		var connection_status: int = peer.get_connection_status()
 		if connection_status == MultiplayerPeer.CONNECTION_CONNECTED and not _hello_sent:
@@ -151,6 +164,7 @@ func poll() -> void:
 				"kind": PACKET_HELLO,
 				"signature": session_signature,
 				"name": player_name,
+				"reconnect_token": _reconnect_token_for_current_endpoint(),
 			})
 			_hello_sent = true
 			status_detail = "Verifying session"
@@ -194,6 +208,14 @@ func player_count() -> int:
 	if is_connected_client():
 		return 2
 	return 1
+
+
+func reserved_count() -> int:
+	return reconnect_reservations.size() if is_host() else 0
+
+
+func can_reconnect() -> bool:
+	return _valid_reconnect_token(reconnect_token) and not reconnect_address.is_empty() and reconnect_port > 0 and _valid_signature(reconnect_signature)
 
 
 func send_input(sequence: int, command: SimCommand) -> bool:
@@ -281,6 +303,21 @@ func host_roster() -> Array[Dictionary]:
 	return result
 
 
+func host_session_roster() -> Array[Dictionary]:
+	var result := host_roster()
+	if not is_host():
+		return result
+	for reservation: Dictionary in reconnect_reservations.values():
+		result.append({
+			"peer_id": 0,
+			"entity_id": int(reservation.get("entity_id", 0)),
+			"name": String(reservation.get("name", "Traveller")),
+			"reserved": true,
+		})
+	result.sort_custom(func(left: Dictionary, right: Dictionary) -> bool: return int(left["entity_id"]) < int(right["entity_id"]))
+	return result
+
+
 func broadcast_snapshot(snapshot: Dictionary) -> bool:
 	if not is_host() or not SessionSnapshot.validate(snapshot):
 		return false
@@ -350,6 +387,14 @@ func _handle_packet(sender_id: int, packet_bytes: PackedByteArray) -> void:
 					_disconnect_with_error("Host assigned an invalid traveller identity")
 					return
 				local_entity_id = assigned_entity_id
+				var assigned_reconnect_token := String(packet.get("reconnect_token", ""))
+				if not _valid_reconnect_token(assigned_reconnect_token):
+					_disconnect_with_error("Host assigned an invalid return token")
+					return
+				reconnect_token = assigned_reconnect_token
+				reconnect_address = join_address
+				reconnect_port = bound_port
+				reconnect_signature = session_signature
 				accepted = true
 				mode = Mode.CLIENT
 				status_detail = "Joined %s:%d" % [join_address, bound_port]
@@ -382,31 +427,56 @@ func _handle_hello(sender_id: int, packet: Dictionary) -> void:
 	if String(packet.get("signature", "")) != session_signature:
 		_send_to(sender_id, {"kind": PACKET_REJECT, "reason": "Incompatible build or session rules"})
 		return
-	if accepted_peer_ids.size() >= MAX_REMOTE_CLIENTS:
-		_send_to(sender_id, {"kind": PACKET_REJECT, "reason": "Session is full"})
-		return
 	var safe_name := _validated_player_name(String(packet.get("name", "")))
 	if safe_name.is_empty():
 		_send_to(sender_id, {"kind": PACKET_REJECT, "reason": "Invalid traveller name"})
 		return
-	var entity_id := _allocate_entity_id()
+	var requested_reconnect_token := String(packet.get("reconnect_token", ""))
+	var resumed: bool = false
+	var entity_id: int = 0
+	var consumed_reconnect_token: String = ""
+	if not requested_reconnect_token.is_empty():
+		if not _valid_reconnect_token(requested_reconnect_token) or not reconnect_reservations.has(requested_reconnect_token):
+			_send_to(sender_id, {"kind": PACKET_REJECT, "reason": "Return token expired or is invalid"})
+			return
+		var reservation: Dictionary = reconnect_reservations[requested_reconnect_token]
+		if String(reservation.get("name", "")) != safe_name:
+			_send_to(sender_id, {"kind": PACKET_REJECT, "reason": "Return token does not match traveller name"})
+			return
+		entity_id = int(reservation.get("entity_id", 0))
+		consumed_reconnect_token = requested_reconnect_token
+		resumed = true
+	else:
+		if accepted_peer_ids.size() + reconnect_reservations.size() >= MAX_REMOTE_CLIENTS:
+			_send_to(sender_id, {"kind": PACKET_REJECT, "reason": "Session is full"})
+			return
+		entity_id = _allocate_entity_id()
 	if entity_id == 0:
 		_send_to(sender_id, {"kind": PACKET_REJECT, "reason": "Session roster is full"})
 		return
+	var rotated_reconnect_token := _new_reconnect_token()
+	if rotated_reconnect_token.is_empty():
+		_send_to(sender_id, {"kind": PACKET_REJECT, "reason": "Host could not reserve a secure return path"})
+		return
+	if resumed:
+		reconnect_reservations.erase(consumed_reconnect_token)
 	accepted_peer_ids.append(sender_id)
 	accepted_peer_ids.sort()
 	entity_by_peer[sender_id] = entity_id
 	name_by_peer[sender_id] = safe_name
+	reconnect_token_by_peer[sender_id] = rotated_reconnect_token
 	last_input_sequence_by_peer[sender_id] = -1
 	last_request_sequence_by_peer[sender_id] = -1
-	joined_peers.append({"peer_id": sender_id, "entity_id": entity_id, "name": safe_name})
+	joined_peers.append({"peer_id": sender_id, "entity_id": entity_id, "name": safe_name, "resumed": resumed})
 	_send_to(sender_id, {
 		"kind": PACKET_ACCEPT,
 		"peer_id": sender_id,
 		"entity_id": entity_id,
 		"player_count": player_count(),
+		"reconnect_token": rotated_reconnect_token,
+		"resumed": resumed,
 	})
-	status_detail = "Hosting %d/8 on UDP %d" % [player_count(), bound_port]
+	status_detail = _host_status()
 
 
 func _send_to(
@@ -430,16 +500,25 @@ func _on_peer_disconnected(peer_id: int) -> void:
 	if is_host():
 		var entity_id: int = entity_by_peer.get(peer_id, 0)
 		var disconnected_name: String = name_by_peer.get(peer_id, "Traveller")
+		var return_token: String = reconnect_token_by_peer.get(peer_id, "")
 		var index: int = accepted_peer_ids.find(peer_id)
 		if index >= 0:
 			accepted_peer_ids.remove_at(index)
-		if entity_id > 0:
-			disconnected_peers.append({"peer_id": peer_id, "entity_id": entity_id, "name": disconnected_name})
+		if entity_id > 0 and _valid_reconnect_token(return_token):
+			reconnect_reservations[return_token] = {
+				"entity_id": entity_id,
+				"name": disconnected_name,
+				"expires_ms": Time.get_ticks_msec() + RECONNECT_WINDOW_MS,
+			}
+			disconnected_peers.append({"peer_id": peer_id, "entity_id": entity_id, "name": disconnected_name, "reserved": true})
+		elif entity_id > 0:
+			disconnected_peers.append({"peer_id": peer_id, "entity_id": entity_id, "name": disconnected_name, "reserved": false})
 		last_input_sequence_by_peer.erase(peer_id)
 		last_request_sequence_by_peer.erase(peer_id)
 		entity_by_peer.erase(peer_id)
 		name_by_peer.erase(peer_id)
-		status_detail = "Hosting %d/8 on UDP %d" % [player_count(), bound_port]
+		reconnect_token_by_peer.erase(peer_id)
+		status_detail = _host_status()
 	elif peer_id == SERVER_PEER_ID:
 		_disconnect_with_error("Host left the session")
 
@@ -472,6 +551,8 @@ func _close_peer() -> void:
 	last_request_sequence_by_peer = {}
 	entity_by_peer = {}
 	name_by_peer = {}
+	reconnect_token_by_peer = {}
+	reconnect_reservations = {}
 	_hello_sent = false
 	_connect_started_ms = 0
 
@@ -486,10 +567,66 @@ func _allocate_entity_id() -> int:
 	var used: Dictionary[int, bool] = {SERVER_PEER_ID: true}
 	for entity_id: int in entity_by_peer.values():
 		used[entity_id] = true
+	for reservation: Dictionary in reconnect_reservations.values():
+		used[int(reservation.get("entity_id", 0))] = true
 	for candidate: int in range(2, MAX_PLAYERS + 1):
 		if not used.has(candidate):
 			return candidate
 	return 0
+
+
+func _expire_reconnect_reservations(now_ms: int) -> int:
+	if not is_host():
+		return 0
+	var expired_tokens: Array[String] = []
+	for return_token: String in reconnect_reservations:
+		var reservation: Dictionary = reconnect_reservations[return_token]
+		if now_ms >= int(reservation.get("expires_ms", 0)):
+			expired_tokens.append(return_token)
+	for return_token: String in expired_tokens:
+		var reservation: Dictionary = reconnect_reservations[return_token]
+		disconnected_peers.append({
+			"peer_id": 0,
+			"entity_id": int(reservation.get("entity_id", 0)),
+			"name": String(reservation.get("name", "Traveller")),
+			"reserved": false,
+			"expired": true,
+		})
+		reconnect_reservations.erase(return_token)
+	if not expired_tokens.is_empty():
+		status_detail = _host_status()
+	return expired_tokens.size()
+
+
+func _reconnect_token_for_current_endpoint() -> String:
+	if (
+		_valid_reconnect_token(reconnect_token)
+		and reconnect_address == join_address
+		and reconnect_port == bound_port
+		and reconnect_signature == session_signature
+	):
+		return reconnect_token
+	return ""
+
+
+func _host_status() -> String:
+	var returns := reconnect_reservations.size()
+	return "Hosting %d/8 on UDP %d" % [player_count(), bound_port] if returns == 0 else "Hosting %d/8 + %d returning on UDP %d" % [player_count(), returns, bound_port]
+
+
+static func _valid_reconnect_token(token: String) -> bool:
+	if token.length() != RECONNECT_TOKEN_BYTES * 2:
+		return false
+	for character: String in token:
+		if character not in "0123456789abcdef":
+			return false
+	return true
+
+
+static func _new_reconnect_token() -> String:
+	var bytes := Crypto.new().generate_random_bytes(RECONNECT_TOKEN_BYTES)
+	var token := bytes.hex_encode()
+	return token if _valid_reconnect_token(token) else ""
 
 
 static func _valid_port(port: int, allow_automatic: bool) -> bool:

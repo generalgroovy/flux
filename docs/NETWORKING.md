@@ -2,7 +2,7 @@
 
 ## Current runnable boundary
 
-FLUX 2 protocol 15 / snapshot schema 3 exposes two walk-up Farflow stations in
+FLUX 2 protocol 16 / snapshot schema 3 exposes two walk-up Farflow stations in
 the eastern Wellspring:
 
 | Station | Current action |
@@ -28,6 +28,13 @@ unsafe corrections snap, and combat/resources remain authoritative.
 Semantic combat/social events carry stable IDs for four consecutive snapshots;
 the client keeps a bounded 64-ID inbox, so superseded unreliable packets do not
 silently erase feedback and redundant arrivals never replay the cue.
+
+If a guest connection drops, the host keeps that exact actor safely idle for 15
+seconds. Selecting Join Farflow again within that window uses a memory-only,
+endpoint/build-scoped 256-bit return capability; the original name must match,
+the capability rotates on success and expiry removes the actor/releases the
+slot. Tokens never enter snapshots, rosters, logs or files. Closing/restarting
+the client therefore does not preserve a return capability yet.
 
 ## Windows and Linux direct-IP smoke
 
@@ -57,6 +64,8 @@ Windows/Linux smoke tests and do not introduce a detached player-facing menu.
 its first snapshot so the reliable request/confirmation path can be exercised.
 `--farflow-smoke-prediction` adds a brief rightward input and reports only after
 host-authoritative movement returns through reconciliation.
+`--farflow-smoke-reconnect` closes the guest once, waits briefly, and reports
+only after it returns as the same session entity.
 
 ## Trust and compatibility boundary
 
@@ -92,8 +101,9 @@ change a champion speculatively.
 | Shared projectiles | Implemented: compact projectile lanes and bounded cast/hit/graze events render on guests while outcomes remain host-owned |
 | Shared Wellspring interaction | Implemented: host authorizes HELLO, Practice Bell and Champion Loom requests; confirmations/refusals and target state replicate |
 | Prediction/reconciliation | Implemented: 48-input movement-only history, peer-scoped processed-sequence acknowledgement, deterministic replay, bounded correction and ACK/correction HUD without client outcome authority |
+| Return continuity | Implemented on Windows localhost: 15-second exact-actor reservation, random memory-only capability, name binding, rotation, expiry and explicit host loss |
 | Remote platform smoke | Windows and Garuda Linux direct-IP packages connect, move, leave and reconnect with diagnostics |
-| Session continuity | Join-in-progress, timeouts, reconnect token, host shutdown, moderation and later host migration |
+| Later continuity | Client-process persistence, host restart, moderation, spectators and eventual host migration |
 
 The public lobby cap remains eight while the architecture reserves a later
 32-player scaling gate; no higher count is advertised until measured.

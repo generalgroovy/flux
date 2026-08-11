@@ -2,7 +2,7 @@ class_name SanctumCampusLayout
 extends RefCounted
 
 
-const SUPPORTED_SCHEMA_VERSION: int = 2
+const SUPPORTED_SCHEMA_VERSION: int = 3
 const REQUIRED_CANVAS := Vector2i(2560, 1440)
 const REQUIRED_VIEWPORT := Vector2i(1280, 720)
 const REQUIRED_DISTRICTS: Array[String] = [
@@ -35,6 +35,7 @@ var buildings_by_id: Dictionary[int, Dictionary] = {}
 var landmarks_by_id: Dictionary[String, Dictionary] = {}
 var reset_zones_by_id: Dictionary[String, Dictionary] = {}
 var stations_by_id: Dictionary[String, Dictionary] = {}
+var practice_targets_by_id: Dictionary[String, Dictionary] = {}
 var canvas_size := Vector2i.ZERO
 var viewport_size := Vector2i.ZERO
 var reserved_ui_top: int = 0
@@ -64,6 +65,7 @@ func validate() -> bool:
 	landmarks_by_id = {}
 	reset_zones_by_id = {}
 	stations_by_id = {}
+	practice_targets_by_id = {}
 	if int(data.get("schema_version", 0)) != SUPPORTED_SCHEMA_VERSION:
 		return _fail("Unsupported Sanctum campus schema")
 	if String(data.get("id", "")).is_empty():
@@ -275,6 +277,37 @@ func validate() -> bool:
 		if not stations_by_id.has(required_station_id):
 			return _fail("Sanctum campus is missing required station: %s" % required_station_id)
 
+	var target_entity_ids: Dictionary[int, bool] = {}
+	for value: Variant in data.get("practice_targets", []):
+		if not value is Dictionary:
+			return _fail("Every Sanctum practice target must be an object")
+		var target: Dictionary = value
+		var target_id := String(target.get("id", ""))
+		var entity_id := int(target.get("entity_id", 0))
+		var target_district_id := String(target.get("district", ""))
+		if target_id.is_empty() or practice_targets_by_id.has(target_id):
+			return _fail("Sanctum practice target ids must be non-empty and unique")
+		if entity_id < 100 or target_entity_ids.has(entity_id):
+			return _fail("Sanctum practice target entity ids must be stable and unique: %s" % target_id)
+		if not districts_by_id.has(target_district_id):
+			return _fail("Sanctum practice target references an unknown district: %s" % target_id)
+		var target_position := _parse_point(target.get("position", []))
+		var target_district_bounds := _parse_bounds((districts_by_id[target_district_id] as Dictionary).get("bounds", []))
+		if not target_district_bounds.has_point(target_position):
+			return _fail("Sanctum practice target is outside its district: %s" % target_id)
+		var target_radius := int(target.get("radius", 0))
+		if target_radius < 12 or target_radius > 32:
+			return _fail("Sanctum practice target radius is outside bounds: %s" % target_id)
+		var target_health := int(target.get("health", 0))
+		if target_health < 20_000 or target_health > 200_000:
+			return _fail("Sanctum practice target Health is outside bounds: %s" % target_id)
+		if String(target.get("label", "")).is_empty() or String(target.get("reset_policy", "")) != "practice_bell":
+			return _fail("Sanctum practice target reset contract is incomplete: %s" % target_id)
+		practice_targets_by_id[target_id] = target
+		target_entity_ids[entity_id] = true
+	if not practice_targets_by_id.has("nexus-sparring-effigy"):
+		return _fail("Sanctum campus is missing its sparring effigy")
+
 	var vaultable_count: int = 0
 	for value: Variant in data.get("buildings", []):
 		if not value is Dictionary:
@@ -333,6 +366,12 @@ func validate() -> bool:
 		var station_position := _parse_point((stations_by_id[station_id] as Dictionary).get("position", [])) * SimConfig.FIXED_SCALE
 		if not collision.can_occupy(station_position, MovementTuning.PLAYER_RADIUS):
 			return _fail("Sanctum station overlaps authored collision: %s" % station_id)
+	for target_id: String in practice_targets_by_id:
+		var target: Dictionary = practice_targets_by_id[target_id]
+		var target_position := _parse_point(target.get("position", [])) * SimConfig.FIXED_SCALE
+		var target_radius := int(target.get("radius", 0)) * SimConfig.FIXED_SCALE
+		if not collision.can_occupy(target_position, target_radius):
+			return _fail("Sanctum practice target overlaps authored collision: %s" % target_id)
 	content_hash = CanonicalContent.sha256(data)
 	return content_hash.length() == 64 or _fail("Sanctum campus hash failed")
 

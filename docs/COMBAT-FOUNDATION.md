@@ -2,12 +2,12 @@
 
 ## Implemented slice
 
-Protocol 3 introduces the first complete command-to-impact path:
+The protocol-11 slice extends the first complete command-to-impact path:
 
 - independent scale-1000 aim and held primary input;
 - pressed active-one input;
 - startup, recovery, and cooldown state compiled independently at 60/120 Hz;
-- resource-free Arc Primary and Flux-paid Vector Lance;
+- resource-free Arc Primary/Rillshot and Flux-paid Vector Lance/Tideline;
 - stable projectile/entity/owner/team/source/element IDs;
 - integer movement/remainders, ordered world collision, swept player hits,
   authoritative damage, lifetime, semantic events, and state hashing;
@@ -41,6 +41,8 @@ cast.
 | --- | ---: | ---: | ---: | ---: | --- |
 | Arc Primary | 101 | 0 Flux | 60 ms | 220 ms | 10 Health projectile, speed 1120, 1200 ms lifetime |
 | Vector Lance | 110 | 24 Flux | 180 ms | 1400 ms | 25 Health projectile, speed 980, 1500 ms lifetime |
+| Rillshot (Oh Tipi) | 140 | 0 Flux | 55 ms | 190 ms | 9 Health Water projectile, speed 1060, 1150 ms lifetime |
+| Tideline (Oh Tipi) | 141 | 22 Flux | 170 ms | 1600 ms | 14 Health Water crest, speed 780, 180 ms launch at speed 420 |
 
 Values are integer milli-units in simulation. The ability-content suite prevents
 compiled wire, Flux, startup, and cooldown values from drifting away from the
@@ -65,8 +67,8 @@ The migration preserves the proven FLUX contract:
 ## Deliberate limitations
 
 This is a combat kernel, not the full champion slice. It does not yet implement
-defeat/respawn, projectile clash, defense, status application, teams beyond
-integer ownership, knockback, pierce, fields, material reactions, bots, network
-packets, or animation/audio telegraphs. The two projectiles use foundation
-debug visuals. Each missing behavior remains gated rather than silently
-approximated.
+defeat/respawn, projectile clash, defense, broad status application, teams beyond
+integer ownership, launch influence, pierce, fields, material reactions, bots,
+network packets, or animation/audio telegraphs. Tideline is the first bounded
+authoritative launch, and the Nexus effigy is the first resettable target; each
+remaining behavior stays gated rather than silently approximated.

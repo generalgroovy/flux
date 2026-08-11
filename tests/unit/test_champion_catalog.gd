@@ -38,6 +38,8 @@ func _test_profiles_are_authoritative() -> void:
 	var state := PlayerState.new()
 	check(catalog.apply_to_player(state, "oh_tipi"), "Oh Tipi profile applies")
 	equal(state.champion_wire_id, 1, "Oh Tipi owns stable wire id 1")
+	equal(state.primary_wire_id, CombatTuning.RILLSHOT_WIRE_ID, "Oh Tipi equips Rillshot")
+	equal(state.active_1_wire_id, CombatTuning.TIDELINE_WIRE_ID, "Oh Tipi equips Tideline")
 	equal(state.health, 108_000, "Oh Tipi starts at authored maximum Health")
 	equal(state.stamina_maximum, 108_000, "Oh Tipi has the larger Stamina reserve")
 	state.health = 54_000
@@ -45,6 +47,8 @@ func _test_profiles_are_authoritative() -> void:
 	state.stamina = 54_000
 	check(catalog.apply_to_player(state, "s_wayne", true), "S. Wayne profile applies with ratios preserved")
 	equal(state.champion_wire_id, 2, "S. Wayne owns stable wire id 2")
+	equal(state.primary_wire_id, CombatTuning.PRIMARY_WIRE_ID, "S. Wayne retains the foundation primary pending his kit slice")
+	equal(state.active_1_wire_id, CombatTuning.ACTIVE_1_WIRE_ID, "S. Wayne retains Vector Lance pending his kit slice")
 	equal(state.health, 45_000, "Health ratio survives an in-world champion switch")
 	equal(state.flux, 56_000, "Flux ratio survives an in-world champion switch")
 	equal(state.stamina, 48_000, "Stamina ratio survives an in-world champion switch")

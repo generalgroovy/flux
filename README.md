@@ -88,6 +88,8 @@ even when design documentation already exists.
     deterministic projectile, swept hit, damage, cooldown, and replay
   - [x] Stable ability/wire IDs, canonical hashes, affinity discounts, gated
     elements, slot validation, and an exact 13-point foundation loadout
+  - [x] Oh Tipi's Water Rillshot primary and Tideline active: distinct cadence,
+    Flux cost, readable projectile, bounded launch, sparring effigy and reset
   - [ ] Complete targeting families, defense/clash/launch/status rules, passive,
     three actives, mobility, ultimate, formula variants, and configuration UI
   - [ ] First complete champion vertical slice
@@ -609,8 +611,9 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 
 | Repository fact | Current meaning |
 | --- | --- |
-| Executable shared combat foundation | Arc Primary and Vector Lance exist, but they are not final per-champion kits |
-| Preserved named kits | Oh Tipi, S. Wayne, The Red Baron, Steezo, Treevor the Mason, Oll' I and Fluup retain approved ability names; mechanics remain unimplemented |
+| Executable shared combat foundation | Arc Primary and Vector Lance remain the fallback pair while later champions receive distinct kits |
+| First champion combat pair | Oh Tipi's resource-free Water **Rillshot** and Flux-paid **Tideline** are authoritative; Tideline trades burst for bounded launch |
+| Preserved named kits | S. Wayne, The Red Baron, Steezo, Treevor the Mason, Oll' I and Fluup retain approved ability names; mechanics remain unimplemented |
 | Remaining named champions | Identity, ancestry, elements, role and sprite package exist; character-specific ability names remain pending |
 | Void terminology | The Red Baron and Grimm Bow still carry legacy Void design data while visual generation currently uses Dark; this must be reconciled explicitly |
 | Angel slot | Body-plan and visual placeholder only; identity, lore and kit remain unapproved and non-selectable |
@@ -619,7 +622,7 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 
 | Sprite | Champion | Ancestry (race) | Size | Elements | Intended role | Kit state |
 | --- | --- | --- | --- | --- | --- | --- |
-| <img src="assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png" alt="Oh Tipi high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/oh_tipi/oh_tipi_direction_preview.png" alt="Oh Tipi current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Oh Tipi** | Seakin | Medium | Water · Ice · Charge | Conductive-field skirmisher and current rider | Playable identity/stats; distinct basic kit pending |
+| <img src="assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png" alt="Oh Tipi high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/oh_tipi/oh_tipi_direction_preview.png" alt="Oh Tipi current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Oh Tipi** | Seakin | Medium | Water · Ice · Charge | Conductive-field skirmisher and current rider | Playable Rillshot/Tideline basic pair; deeper kit pending |
 | <img src="assets/sprites/champions_v2/s_wayne/hero_portrait_256.png" alt="S. Wayne high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/s_wayne/s_wayne_direction_preview.png" alt="S. Wayne current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **S. Wayne** | Hobbit | Small | Dark · Light | Eclipse-boundary tactician and decoy router | Playable identity/stats; distinct basic kit pending |
 | <img src="assets/sprites/champions_v2/red_baron/hero_portrait_256.png" alt="The Red Baron high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/red_baron/red_baron_direction_preview.png" alt="The Red Baron current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **The Red Baron** | Undead | Medium | Void (legacy, unresolved) · Fire · Ice | Airborne formation controller with punishable landings | Named design kit; not implemented |
 | <img src="assets/sprites/champions_v2/steezo/hero_portrait_256.png" alt="Steezo high-detail character candidate" width="128"><br><sub>detail candidate</sub><br><img src="assets/sprites/champions/steezo/steezo_direction_preview.png" alt="Steezo current in-game directional sprite" width="192"><br><sub>current runtime sprite</sub> | **Steezo** | Goblin | Small | Fire · Charge · Light | Volatile construct engineer and detonation sequencer | Named design kit; not implemented |
@@ -678,8 +681,8 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Ability slot | Preserved design name | Implementation state |
 | --- | --- | --- |
 | Passive | **Living Current** | Named design input; simulation and balance not implemented |
-| Champion primary | Not committed | Current Arc Primary is a shared foundation placeholder, not the final champion primary |
-| Active I | **Tideline** | Named design input; simulation and balance not implemented |
+| Champion primary | **Rillshot** | Implemented: resource-free Water projectile; 55 ms startup, 190 ms cooldown, 9 damage |
+| Active I | **Tideline** | Implemented: 22 Flux Water crest; 170 ms startup, 14 damage and bounded 180 ms launch |
 | Active II | **Flash Freeze** | Named design input; simulation and balance not implemented |
 | Mobility | **Eel Step** | Named design input; must obey global collision and speed limits |
 | Ultimate | **Stormtide Basin** | Named design input; charge, startup, interruption and recovery rules pending |
@@ -1760,6 +1763,8 @@ and legal 13-point loadout validate at boot. A canonical two-champion catalog
 also validates at boot: Oh Tipi and S. Wayne own stable protocol IDs, distinct
 Health/Flux/Stamina recovery and capacity profiles, bounded ground-speed ratios,
 and in-world sprite switching while retaining the universal movement grammar.
+A canonical 80-Health sparring effigy beside spawn receives real projectile
+damage and Tideline launch; the Practice Bell restores its seeded state.
 A canonical material registry and
 packed 128 x 128 Sanctum Material Yard seed also validate, hash, reset, and
 render as a read-only debug preview; reactions do not step yet. The full hub art,
@@ -1780,8 +1785,8 @@ scripts/test.sh
 scripts/run.sh --tick-rate=120
 ```
 
-Current foundation controls: WASD moves, mouse aims, left click fires Arc
-Primary, right click or E casts Vector Lance, Shift sprints, Ctrl or C slides,
+Current foundation controls: WASD moves, mouse aims, left click fires the
+selected champion primary, right click or E casts active one, Shift sprints, Ctrl or C slides,
 Space uses the jump/movement chain, V uses the contextual vault/wall-skim/air technique,
 F interacts with the nearest Wellspring station, R restarts the match, and F6 restarts at the
 other supported tick rate. F7 changes movement reference, F8 changes view, and
@@ -1789,7 +1794,7 @@ F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
 left/right sticks, right trigger, west/east face buttons, and shoulders. The
 rate never mutates inside a running match.
 
-G3 now uses protocol 9 and preference schema 3: Space invokes the semantic jump
+G3 now uses protocol 11 and preference schema 3: Space invokes the semantic jump
 action, Shift sprints, Ctrl/C directly slides, and primary no longer aliases
 Space. Schema-v1/v2 defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision
@@ -1818,7 +1823,7 @@ tools, accessibility, and compatibility agree.
 | F1 — chemistry storage/safety | Validated material registry, 128 x 128 packed columns, seeded materials/Charge/elevation, immutable worldbone, canonical queue/budgets/hashes, exact reset, read-only preview | Complete |
 | G1 — player configuration | Persisted keyboard remapping, world/aim-relative movement, full/cone POV, exact angle/range, CLI/hotkey controls, deterministic transforms | Complete |
 | G2 — authored Sanctum | Replace the schematic court with the first vast Nexus-to-Conservatory multi-area topology/visual slice, clear routes, landmarks, elevations, responsive ambience, fast-travel context, and original pixel kit | In progress: canonical campus topology, routes, worldbone, elevation/reset/station metadata, camera and procedural presentation validate; a generated 12-module source/alpha candidate remains unapproved pending visual/import gates |
-| G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: Oh Tipi candidate body, shared lift/shadow, intensity landing cue, deterministic walk-up focus, Movement Guide and Practice Bell are live; accepted champion art, remaining station flows and fallback taunt remain |
+| G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: Oh Tipi/S. Wayne candidate bodies, shared lift/shadow, landing cue, Movement Guide, Practice Bell, Champion Loom and sparring effigy are live; accepted champion art, remaining station flows and fallback taunt remain |
 | F2/G4 — systemic Sanctum | Structural/thermal reactions, authored traversal devices, input/controller UI, physics/chemistry practice and reset | Planned |
 | H1 — first ancestry/champion/spells | One approved body plan and character through loadout, unique taunt, dummy/bot, cues, replay, accessibility and platform source gates | Planned |
 | I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | Planned |

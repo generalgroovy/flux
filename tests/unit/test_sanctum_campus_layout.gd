@@ -28,6 +28,10 @@ func _test_repository_layout() -> void:
 	equal(layout.landmarks_by_id.size(), 6, "combined quarters retain multiple memorable landmarks")
 	equal(layout.reset_zones_by_id.size(), 2, "movement and proving reset zones are explicit")
 	equal(layout.stations_by_id.size(), 3, "guide, practice and champion stations are explicit")
+	equal(layout.practice_targets_by_id.size(), 1, "the Nexus sparring effigy is explicit")
+	var effigy: Dictionary = layout.practice_targets_by_id["nexus-sparring-effigy"]
+	equal(int(effigy.get("entity_id", 0)), 900, "sparring effigy has a stable simulation entity id")
+	equal(int(effigy.get("health", 0)), 80_000, "sparring effigy has authored Health")
 	equal(layout.elevation_at(Vector2i(1280, 720)), 2, "Nexus elevation is queryable without rendering")
 	equal(layout.elevation_at(Vector2i(300, 720)), 1, "Conservatory elevation is queryable without rendering")
 	equal(layout.elevation_at(Vector2i(10, 200)), 0, "water outside districts has no ground elevation")
@@ -52,6 +56,8 @@ func _test_collision_compilation() -> void:
 	for index: int in range(collision.obstacles.size() - 1):
 		check(collision.obstacles[index].obstacle_id < collision.obstacles[index + 1].obstacle_id, "campus obstacle ids are canonical")
 	check(collision.can_occupy(layout.spawn * SimConfig.FIXED_SCALE, MovementTuning.PLAYER_RADIUS), "authored spawn has player clearance")
+	var target: Dictionary = layout.practice_targets_by_id["nexus-sparring-effigy"]
+	check(collision.can_occupy(Vector2i(1_500_000, 720_000), int(target.get("radius", 0)) * SimConfig.FIXED_SCALE), "sparring effigy has authored collision clearance")
 	check(not collision.can_occupy(Vector2i(180_000, 360_000), MovementTuning.PLAYER_RADIUS), "routekeeper lodge collision matches presentation bounds")
 	var vault: CollisionWorld.Obstacle = collision.find_vault_candidate(Vector2i(1_520_000, 720_000), Vector2i(1000, 0), MovementTuning.PLAYER_RADIUS)
 	check(vault != null, "marked campus vault rail is discoverable")
@@ -76,6 +82,9 @@ func _test_invalid_layouts_fail_closed() -> void:
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["interaction_radius"] = 900,
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["lines"] = "too vague",
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["position"] = [1200, 500],
+		func(data: Dictionary) -> void: (data["practice_targets"][0] as Dictionary)["health"] = 0,
+		func(data: Dictionary) -> void: (data["practice_targets"][0] as Dictionary)["entity_id"] = 1,
+		func(data: Dictionary) -> void: (data["practice_targets"][0] as Dictionary)["position"] = [1200, 500],
 		func(data: Dictionary) -> void: (data["buildings"][0] as Dictionary)["occlusion_policy"] = "always_xray",
 		func(data: Dictionary) -> void: (data["buildings"][0] as Dictionary)["worldbone"] = false,
 		func(data: Dictionary) -> void: (data["buildings"][9] as Dictionary)["vaultable"] = false,

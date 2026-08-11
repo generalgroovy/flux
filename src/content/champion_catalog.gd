@@ -27,6 +27,7 @@ var content_hash: String = ""
 var default_champion_id: String = ""
 var champions_by_id: Dictionary[String, Dictionary] = {}
 var champion_ids_by_wire: Dictionary[int, String] = {}
+var kit_wires_by_champion: Dictionary[String, Dictionary] = {}
 
 
 func load_from_file(path: String, abilities: AbilityCatalog) -> bool:
@@ -50,6 +51,7 @@ func validate(abilities: AbilityCatalog) -> bool:
 	default_champion_id = ""
 	champions_by_id = {}
 	champion_ids_by_wire = {}
+	kit_wires_by_champion = {}
 	if abilities == null or not abilities.last_error.is_empty() or abilities.content_hash.is_empty():
 		return _fail("champion catalog requires a valid ability catalog")
 	if int(data.get("schema_version", 0)) != SUPPORTED_SCHEMA_VERSION:
@@ -94,14 +96,17 @@ func validate(abilities: AbilityCatalog) -> bool:
 			if stat_value < bounds.x or stat_value > bounds.y:
 				return _fail("champion stat is outside safe bounds: %s/%s" % [champion_id, stat_name])
 		var kit: Dictionary = champion.get("foundation_kit", {})
+		var kit_wires: Dictionary = {}
 		for slot_name: String in ["primary", "active_1"]:
 			var ability_id := String(kit.get(slot_name, ""))
 			var ability: Dictionary = abilities.ability(ability_id)
 			var expected_kind := "primary" if slot_name == "primary" else "active"
 			if ability.is_empty() or String(ability.get("slot_kind", "")) != expected_kind:
 				return _fail("champion kit slot is invalid: %s/%s" % [champion_id, slot_name])
+			kit_wires[slot_name] = int(ability.get("wire_id", 0))
 		champions_by_id[champion_id] = champion
 		champion_ids_by_wire[wire_id] = champion_id
+		kit_wires_by_champion[champion_id] = kit_wires
 	default_champion_id = String(data.get("default_champion_id", ""))
 	if not champions_by_id.has(default_champion_id):
 		return _fail("default champion must resolve")
@@ -153,6 +158,14 @@ func apply_to_player(state: PlayerState, champion_id: String, preserve_resource_
 	state.stamina_maximum = int(stats["stamina_maximum"])
 	state.stamina_recovery_per_second = int(stats["stamina_recovery_per_second"])
 	state.movement_speed_ratio = int(stats["movement_speed_ratio"])
+	var kit_wires: Dictionary = kit_wires_by_champion[champion_id]
+	state.primary_wire_id = int(kit_wires["primary"])
+	state.active_1_wire_id = int(kit_wires["active_1"])
+	state.pending_cast_wire_id = 0
+	state.pending_cast_ticks = 0
+	state.cast_recovery_ticks = 0
+	state.primary_cooldown_ticks = 0
+	state.active_1_cooldown_ticks = 0
 	if preserve_resource_ratios:
 		state.health = clampi(old_health * state.health_maximum / old_health_maximum, 0, state.health_maximum)
 		state.flux = clampi(old_flux * state.flux_maximum / old_flux_maximum, 0, state.flux_maximum)

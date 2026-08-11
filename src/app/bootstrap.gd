@@ -183,6 +183,7 @@ func _draw() -> void:
 	var camera_origin: Vector2 = _camera_origin(rendered_position)
 	draw_set_transform(-camera_origin)
 	campus_renderer.draw(self, campus_layout, world.tick)
+	_draw_practice_targets(camera_origin)
 	if show_debug_overlay:
 		for obstacle: CollisionWorld.Obstacle in world.collision.obstacles:
 			var rectangle := Rect2(
@@ -193,7 +194,7 @@ func _draw() -> void:
 			draw_rect(rectangle, BRASS_COLOR if obstacle.vaultable else ATTUNEMENT_COLOR, false, 2.0)
 	for projectile: ProjectileState in world.projectiles:
 		var projectile_position := Vector2(float(projectile.position_x) / 1000.0, float(projectile.position_y) / 1000.0)
-		var projectile_color: Color = ATTUNEMENT_COLOR if projectile.source_wire_id == CombatTuning.PRIMARY_WIRE_ID else FLUX_COLOR
+		var projectile_color: Color = _projectile_color(projectile.element_wire_id)
 		draw_circle(projectile_position, float(projectile.radius) / 1000.0 + 7.0, Color(projectile_color, 0.18))
 		draw_circle(projectile_position, float(projectile.radius) / 1000.0, projectile_color)
 	var state: PlayerState = world.player()
@@ -238,19 +239,24 @@ func _draw() -> void:
 	draw_rect(Rect2(16, 14, 1248, 96), BRASS_COLOR.darkened(0.3), false, 2.0)
 	var champion_data: Dictionary = champion_catalog.champion(selected_champion_id)
 	var champion_name := String(champion_data.get("display_name", selected_champion_id))
+	var champion_kit: Dictionary = champion_data.get("foundation_kit", {})
+	var primary_ability: Dictionary = ability_catalog.ability(String(champion_kit.get("primary", "")))
+	var active_ability: Dictionary = ability_catalog.ability(String(champion_kit.get("active_1", "")))
+	var primary_name := String(primary_ability.get("display_name", "PRIMARY"))
+	var active_name := String(active_ability.get("display_name", "ACTIVE"))
 	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "%s · THE WELLSPRING" % champion_name.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
 	var movement_name: String = String(PlayerState.MovementMode.keys()[state.movement_mode]).replace("_", " ")
-	draw_string(ThemeDB.fallback_font, Vector2(400, 40), "%s · %s" % [movement_name, state.last_event.to_upper()], HORIZONTAL_ALIGNMENT_RIGHT, 280.0, 13, ATTUNEMENT_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(400, 40), "%s · %s" % [movement_name, _readable_event(state)], HORIZONTAL_ALIGNMENT_RIGHT, 280.0, 13, ATTUNEMENT_COLOR)
 	_draw_resource_bar(Rect2(700, 24, 168, 20), "HEALTH", state.health, state.health_maximum, Color("d9634f"))
 	_draw_resource_bar(Rect2(884, 24, 168, 20), "FLUX", state.flux, state.flux_maximum, FLUX_COLOR)
 	_draw_resource_bar(Rect2(1068, 24, 168, 20), "STAMINA", state.stamina, state.stamina_maximum, ATTUNEMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · SHIFT SPRINT · CTRL/C SLIDE · SPACE JUMP · V TECHNIQUE · F INTERACT", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · SHIFT SPRINT · CTRL/C SLIDE · SPACE JUMP · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
 	var view_description := "FULL" if player_preferences.pov_mode == PlayerPreferences.POV_FULL else "CONE %d°/%d" % [player_preferences.pov_angle_degrees, player_preferences.pov_range]
 	draw_string(
 		ThemeDB.fallback_font,
 		Vector2(32, 96),
-		"F1 DEBUG · F6 RATE · F7 MOVE %s · F8 VIEW %s · F9 ANGLE ±15° · F10 RANGE ±80 (Shift reduces)"
-		% [player_preferences.movement_reference.to_upper(), view_description],
+		"LMB %s · RMB/E %s · F INTERACT · F8 VIEW %s"
+		% [primary_name.to_upper(), _active_hint(state, active_name, active_ability), view_description],
 		HORIZONTAL_ALIGNMENT_LEFT,
 		-1.0,
 		13,
@@ -267,7 +273,29 @@ func _draw_resource_bar(rectangle: Rect2, label: String, value: int, maximum: in
 	draw_rect(rectangle, Color(FOREST_SHADOW_COLOR, 0.92), true)
 	draw_rect(Rect2(rectangle.position + Vector2(2, 2), Vector2((rectangle.size.x - 4.0) * ratio, rectangle.size.y - 4.0)), color, true)
 	draw_rect(rectangle, Color(PARCHMENT_COLOR, 0.65), false, 1.0)
-	draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(7, 15), "%s %d" % [label, value / 1000], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 12.0, 12, Color.WHITE)
+	draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(7, 15), "%s %d/%d" % [label, value / 1000, maximum / 1000], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 12.0, 12, Color.WHITE)
+
+
+func _readable_event(state: PlayerState) -> String:
+	for prefix: String in ["cast_start_", "cast_release_", "cast_blocked_"]:
+		if state.last_event.begins_with(prefix):
+			var wire_text := state.last_event.trim_prefix(prefix)
+			var ability_id := String(ability_catalog.ability_ids_by_wire.get(wire_text.to_int(), ""))
+			var ability_name := String(ability_catalog.ability(ability_id).get("display_name", "SPELL")).to_upper()
+			if prefix == "cast_start_":
+				return "CHANNEL %s" % ability_name
+			if prefix == "cast_blocked_":
+				return "%s BLOCKED" % ability_name
+			return ability_name
+	if state.last_event.begins_with("champion_"):
+		return "ATTUNED"
+	return state.last_event.replace("_", " ").to_upper()
+
+
+func _active_hint(state: PlayerState, ability_name: String, ability: Dictionary) -> String:
+	if state.active_1_cooldown_ticks > 0:
+		return "%s %.1fs" % [ability_name.to_upper(), float(state.active_1_cooldown_ticks) / float(world.config.tick_rate)]
+	return "%s %d FLUX" % [ability_name.to_upper(), int(ability.get("flux_cost", 0))]
 
 
 func _draw_landing_cue(center: Vector2, landing: LandingPresentation.Sample) -> void:
@@ -454,6 +482,7 @@ func _start_match(requested_tick_rate: int) -> bool:
 	if not champion_catalog.apply_to_player(player_state, selected_champion_id):
 		push_error("Selected champion could not be applied: %s" % selected_champion_id)
 		return false
+	_spawn_practice_targets()
 	material_grid = MaterialGrid.new()
 	if not material_grid.initialize(material_yard, material_registry, world.config):
 		push_error(material_grid.last_error)
@@ -472,6 +501,65 @@ func _start_match(requested_tick_rate: int) -> bool:
 	previous_position = current_position
 	print("FLUX2 match initialized at %d Hz" % tick_rate)
 	return true
+
+
+func _spawn_practice_targets() -> void:
+	var target_ids: Array[String] = campus_layout.practice_targets_by_id.keys()
+	target_ids.sort()
+	for target_id: String in target_ids:
+		var definition: Dictionary = campus_layout.practice_targets_by_id[target_id]
+		var target := PlayerState.new(int(definition.get("entity_id", 0)))
+		target.actor_kind = PlayerState.ActorKind.TRAINING_TARGET
+		target.team_id = 2
+		var position_values: Array = definition.get("position", [])
+		target.position_x = int(position_values[0]) * SimConfig.FIXED_SCALE
+		target.position_y = int(position_values[1]) * SimConfig.FIXED_SCALE
+		target.radius = int(definition.get("radius", 18)) * SimConfig.FIXED_SCALE
+		target.health_maximum = int(definition.get("health", 80_000))
+		target.health = target.health_maximum
+		target.health_recovery_per_second = 0
+		target.flux_maximum = 0
+		target.flux = 0
+		target.flux_recovery_per_second = 0
+		target.stamina_maximum = 0
+		target.stamina = 0
+		target.stamina_recovery_per_second = 0
+		target.movement_speed_ratio = 0
+		target.last_event = "target_ready"
+		world.players.append(target)
+
+
+func _draw_practice_targets(camera_origin: Vector2) -> void:
+	for target_id: String in campus_layout.practice_targets_by_id:
+		var definition: Dictionary = campus_layout.practice_targets_by_id[target_id]
+		var state: PlayerState = world.player(int(definition.get("entity_id", 0)))
+		if state == null:
+			continue
+		var position := Vector2(float(state.position_x) / 1000.0, float(state.position_y) / 1000.0)
+		var alive: bool = state.health > 0
+		draw_set_transform(position - camera_origin + Vector2(2, 9), 0.0, Vector2(20.0, 7.0))
+		draw_circle(Vector2.ZERO, 1.0, Color(FOREST_SHADOW_COLOR, 0.62))
+		draw_set_transform(-camera_origin)
+		var body_color := TIMBER_COLOR if alive else Color("4f463e")
+		draw_rect(Rect2(position.x - 4, position.y - 19, 8, 27), body_color, true)
+		draw_line(position + Vector2(-13, -7), position + Vector2(13, -7), body_color, 5.0)
+		draw_circle(position + Vector2(0, -20), 14.0, Color(WORLDBONE_COLOR, 0.96))
+		draw_arc(position + Vector2(0, -20), 11.0, 0.0, TAU, 16, BRASS_COLOR, 3.0)
+		if alive:
+			draw_circle(position + Vector2(0, -20), 5.0, WATER_HIGHLIGHT_COLOR)
+			draw_line(position + Vector2(-5, -25), position + Vector2(5, -15), PARCHMENT_COLOR, 1.5)
+			draw_line(position + Vector2(5, -25), position + Vector2(-5, -15), PARCHMENT_COLOR, 1.5)
+		else:
+			draw_line(position + Vector2(-8, -27), position + Vector2(8, -13), Color("8b6652"), 3.0)
+			draw_line(position + Vector2(8, -27), position + Vector2(-8, -13), Color("8b6652"), 3.0)
+		var bar := Rect2(position.x - 30, position.y - 43, 60, 6)
+		draw_rect(bar, Color(FOREST_SHADOW_COLOR, 0.9), true)
+		var health_ratio: float = clampf(float(state.health) / float(state.health_maximum), 0.0, 1.0)
+		draw_rect(Rect2(bar.position + Vector2.ONE, Vector2((bar.size.x - 2.0) * health_ratio, bar.size.y - 2.0)), Color("d9634f"), true)
+		var label := String(definition.get("label", "TARGET"))
+		var label_width: float = ThemeDB.fallback_font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x
+		draw_string(ThemeDB.fallback_font, Vector2(position.x - label_width * 0.5, position.y + 22), label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 9, PARCHMENT_COLOR if alive else Color("9b8a73"))
+	draw_set_transform(-camera_origin)
 
 
 func _refresh_material_preview() -> void:
@@ -531,6 +619,20 @@ func _material_color(material_id: String) -> Color:
 			return Color("685e54")
 		_:
 			return Color("151711")
+
+
+func _projectile_color(element_wire_id: int) -> Color:
+	match element_wire_id:
+		3:
+			return WATER_HIGHLIGHT_COLOR.lightened(0.28)
+		6:
+			return ATTUNEMENT_COLOR
+		7:
+			return PARCHMENT_COLOR
+		8:
+			return FLUX_COLOR.darkened(0.12)
+		_:
+			return FLUX_COLOR
 
 
 func _requested_tick_rate() -> int:

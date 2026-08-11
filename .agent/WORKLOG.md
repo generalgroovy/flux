@@ -1,5 +1,58 @@
 # FLUX2 agent worklog
 
+## 2026-08-11 — Oh Tipi basic combat pair and sparring effigy
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Replaced Oh Tipi's shared foundation kit with **Rillshot** (wire 140), a
+  resource-free Water primary with quick readable cadence, and **Tideline**
+  (wire 141), a slower 22-Flux Water crest that deals modest damage and applies
+  a bounded 180 ms launch. S. Wayne intentionally retains Arc Primary/Vector
+  Lance until the next distinct-kit slice.
+- Made equipped primary/active wire IDs canonical champion state. The combat
+  compiler now resolves all four projectile definitions by stable wire ID, and
+  projectile state carries canonical on-hit control without moving authority
+  into presentation. Protocol advanced to 11 for actor kind, equipped kit and
+  hit-control compatibility.
+- Advanced the campus to schema 3 with a validated 80-Health Sparring Effigy
+  beside spawn. It is a stable host-simulation entity, receives ordinary swept
+  hits and Tideline launch, has no hidden recovery, renders a clear target/Health
+  cue, and resets with the existing Practice Bell.
+- Reworked the always-visible HUD to show current/maximum Health, Flux and
+  Stamina, readable semantic cast names, each selected champion's actual LMB/RMB
+  actions, active Flux cost/cooldown, F interaction and current view mode.
+
+Validation:
+
+- Pinned Godot 4.7.1 import: passed.
+- Full pinned headless gate: 13,901 assertions, zero failures. New coverage
+  verifies catalog/compiled-value parity, champion kit binding, exact Rillshot
+  and Tideline startup/cost/damage/cooldown at 60/120 Hz, Tideline launch state,
+  canonical actor kind, target schema/placement/clearance and invalid refusal.
+- Independent 60 and 120 Hz bootstrap smokes: passed with protocol 11, ability
+  hash `c9339a6c7b62`, champion hash `18f62965e9e2` and campus hash
+  `a26f6ecd6105`.
+- A compatibility-renderer 1280 x 720 capture passed and was visually inspected:
+  named kit hints, exact maxima, the target and all three stations are readable.
+- Windows app control successfully aimed and fired Rillshot into the effigy;
+  its Health bar decreased. Synthetic right-click was interpreted as another
+  left click by the automation layer, so normal hardware Tideline activation
+  remains the user's interactive check; exact simulation behavior is covered.
+- `git diff --check`: passed; pre-existing `dist/` and `node_modules/` remain
+  untouched and untracked.
+
+Known limitations and next task:
+
+- Rillshot/Tideline still use economical procedural projectile VFX and no audio;
+  full counterplay presentation, defense, deeper kit slots and final art remain.
+- Next slice gives S. Wayne a distinct Dark/Light basic pair that counterplays
+  Oh Tipi without automatic elemental damage advantage, then both basic pairs
+  enter replay/effigy and local two-player acceptance before host/join transport.
+
+Commit: pending. Push: pending.
+
 ## 2026-08-11 — canonical first two champion identities
 
 Branch: `codex/continuous-overhaul`

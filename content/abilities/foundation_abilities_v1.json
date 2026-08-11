@@ -129,6 +129,38 @@
       "roles": ["signature", "area_control"],
       "counterplay": ["interruptible_startup", "marked_safe_routes", "destructible_core"],
       "authority": "simulation"
+    },
+    {
+      "id": "rillshot",
+      "wire_id": 140,
+      "display_name": "Rillshot",
+      "slot_kind": "primary",
+      "element": "water",
+      "points": 0,
+      "affinity_discount": 0,
+      "flux_cost": 0,
+      "cooldown_ms": 190,
+      "startup_ms": 55,
+      "recovery_ms": 70,
+      "roles": ["aimed_pressure", "cadence"],
+      "counterplay": ["dodge", "cover", "projectile_clash"],
+      "authority": "simulation"
+    },
+    {
+      "id": "tideline",
+      "wire_id": 141,
+      "display_name": "Tideline",
+      "slot_kind": "active",
+      "element": "water",
+      "points": 5,
+      "affinity_discount": 1,
+      "flux_cost": 22,
+      "cooldown_ms": 1600,
+      "startup_ms": 170,
+      "recovery_ms": 180,
+      "roles": ["displacement", "lane_pressure"],
+      "counterplay": ["visible_startup", "sidestep", "cover"],
+      "authority": "simulation"
     }
   ]
 }

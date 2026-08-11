@@ -27,15 +27,23 @@ static func step_player(
 	if command.has_pressed(SimCommand.PRESSED_ACTIVE_1):
 		if state.active_1_cooldown_ticks > 0:
 			return null
-		if not PlayerResourcesSystem.spend_flux(state, CombatTuning.ACTIVE_1_FLUX_COST, config):
-			events.append({"type": "cast_refused", "entity_id": state.entity_id, "wire_id": CombatTuning.ACTIVE_1_WIRE_ID, "reason": "flux"})
+		var active_definition := CombatTuning.projectile_definition(state.active_1_wire_id)
+		if active_definition.is_empty():
+			events.append({"type": "cast_refused", "entity_id": state.entity_id, "wire_id": state.active_1_wire_id, "reason": "kit"})
 			return null
-		_begin_cast(state, CombatTuning.ACTIVE_1_WIRE_ID, CombatTuning.ACTIVE_1_STARTUP_MS, config)
-		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": CombatTuning.ACTIVE_1_WIRE_ID})
+		if not PlayerResourcesSystem.spend_flux(state, int(active_definition["flux_cost"]), config):
+			events.append({"type": "cast_refused", "entity_id": state.entity_id, "wire_id": state.active_1_wire_id, "reason": "flux"})
+			return null
+		_begin_cast(state, state.active_1_wire_id, int(active_definition["startup_ms"]), config)
+		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": state.active_1_wire_id})
 		return null
 	if command.has_held(SimCommand.HELD_PRIMARY) and state.primary_cooldown_ticks == 0:
-		_begin_cast(state, CombatTuning.PRIMARY_WIRE_ID, CombatTuning.PRIMARY_STARTUP_MS, config)
-		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": CombatTuning.PRIMARY_WIRE_ID})
+		var primary_definition := CombatTuning.projectile_definition(state.primary_wire_id)
+		if primary_definition.is_empty():
+			events.append({"type": "cast_refused", "entity_id": state.entity_id, "wire_id": state.primary_wire_id, "reason": "kit"})
+			return null
+		_begin_cast(state, state.primary_wire_id, int(primary_definition["startup_ms"]), config)
+		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": state.primary_wire_id})
 	return null
 
 
@@ -73,6 +81,15 @@ static func advance_projectiles(
 			var hit_radius: int = target.radius + projectile.radius
 			if _segment_circle_hit(projectile, target, hit_radius):
 				PlayerResourcesSystem.damage(target, projectile.damage, config)
+				if target.health > 0 and projectile.hit_control_duration_ms > 0:
+					MovementSystem.apply_control_state(
+						target,
+						projectile.hit_control_state,
+						projectile.hit_control_duration_ms,
+						SimCommand._normalized_direction(projectile.velocity_x, projectile.velocity_y),
+						projectile.hit_control_speed,
+						config,
+					)
 				hit_entity_id = target.entity_id
 				events.append({
 					"type": "projectile_hit",
@@ -114,31 +131,22 @@ static func _release_cast(
 	events: Array[Dictionary],
 ) -> ProjectileState:
 	var wire_id: int = state.pending_cast_wire_id
-	var speed: int
-	var radius: int
-	var damage: int
-	var lifetime_ms: int
-	var element_wire_id: int
-	if wire_id == CombatTuning.PRIMARY_WIRE_ID:
-		speed = CombatTuning.PRIMARY_SPEED
-		radius = CombatTuning.PRIMARY_RADIUS
-		damage = CombatTuning.PRIMARY_DAMAGE
-		lifetime_ms = CombatTuning.PRIMARY_LIFETIME_MS
-		element_wire_id = CombatTuning.PRIMARY_ELEMENT_WIRE_ID
-		state.primary_cooldown_ticks = config.milliseconds_to_ticks(CombatTuning.PRIMARY_COOLDOWN_MS)
-		state.cast_recovery_ticks = config.milliseconds_to_ticks(CombatTuning.PRIMARY_RECOVERY_MS)
-	elif wire_id == CombatTuning.ACTIVE_1_WIRE_ID:
-		speed = CombatTuning.ACTIVE_1_SPEED
-		radius = CombatTuning.ACTIVE_1_RADIUS
-		damage = CombatTuning.ACTIVE_1_DAMAGE
-		lifetime_ms = CombatTuning.ACTIVE_1_LIFETIME_MS
-		element_wire_id = CombatTuning.ACTIVE_1_ELEMENT_WIRE_ID
-		state.active_1_cooldown_ticks = config.milliseconds_to_ticks(CombatTuning.ACTIVE_1_COOLDOWN_MS)
-		state.cast_recovery_ticks = config.milliseconds_to_ticks(CombatTuning.ACTIVE_1_RECOVERY_MS)
+	var definition := CombatTuning.projectile_definition(wire_id)
+	if definition.is_empty():
+		state.pending_cast_wire_id = 0
+		state.pending_cast_ticks = 0
+		return null
+	if wire_id == state.primary_wire_id:
+		state.primary_cooldown_ticks = config.milliseconds_to_ticks(int(definition["cooldown_ms"]))
+	elif wire_id == state.active_1_wire_id:
+		state.active_1_cooldown_ticks = config.milliseconds_to_ticks(int(definition["cooldown_ms"]))
 	else:
 		state.pending_cast_wire_id = 0
 		state.pending_cast_ticks = 0
 		return null
+	state.cast_recovery_ticks = config.milliseconds_to_ticks(int(definition["recovery_ms"]))
+	var speed := int(definition["speed"])
+	var radius := int(definition["radius"])
 
 	var direction := Vector2i(state.pending_cast_aim_x, state.pending_cast_aim_y)
 	@warning_ignore("integer_division")
@@ -161,12 +169,15 @@ static func _release_cast(
 		state.entity_id,
 		state.team_id,
 		wire_id,
-		element_wire_id,
+		int(definition["element_wire_id"]),
 		spawn_position,
 		velocity,
 		radius,
-		damage,
-		config.milliseconds_to_ticks(lifetime_ms),
+		int(definition["damage"]),
+		config.milliseconds_to_ticks(int(definition["lifetime_ms"])),
+		int(definition["hit_control_state"]),
+		int(definition["hit_control_duration_ms"]),
+		int(definition["hit_control_speed"]),
 	)
 	events.append({"type": "projectile_spawned", "projectile_id": projectile_id, "owner_id": state.entity_id, "wire_id": wire_id})
 	state.last_event = "cast_release_%d" % wire_id
@@ -180,7 +191,7 @@ static func _resolve_edgeweave(
 	config: SimConfig,
 	events: Array[Dictionary],
 ) -> void:
-	if projectile.source_wire_id not in [CombatTuning.PRIMARY_WIRE_ID, CombatTuning.ACTIVE_1_WIRE_ID]:
+	if CombatTuning.projectile_definition(projectile.source_wire_id).is_empty():
 		return
 	for target: PlayerState in players:
 		if (

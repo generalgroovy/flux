@@ -5,6 +5,7 @@ func run() -> int:
 	_test_supported_tick_rates()
 	_test_command_serialization()
 	_test_independent_aim()
+	_test_actor_kind_is_canonical()
 	_test_command_validation()
 	return finish("core")
 
@@ -40,3 +41,10 @@ func _test_command_validation() -> void:
 	equal(world.state_hash().length(), 64, "world state uses a SHA-256 compatibility hash")
 	check(not world.step([SimCommand.new(1, 1)]), "future command tick is rejected")
 	check(world.last_error.contains("does not match"), "tick rejection is diagnosable")
+
+
+func _test_actor_kind_is_canonical() -> void:
+	var champion_world := SimWorld.new(60)
+	var target_world := SimWorld.new(60)
+	target_world.player().actor_kind = PlayerState.ActorKind.TRAINING_TARGET
+	check(champion_world.state_hash() != target_world.state_hash(), "champion and practice-target actor kinds hash differently")

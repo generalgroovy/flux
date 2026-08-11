@@ -33,7 +33,12 @@ func _test_catalog() -> void:
 	equal(int(first.ability("vector-lance")["wire_id"]), CombatTuning.ACTIVE_1_WIRE_ID, "compiled active wire matches catalog")
 	equal(int(first.ability("vector-lance")["flux_cost"]) * 1000, CombatTuning.ACTIVE_1_FLUX_COST, "compiled active Flux cost matches catalog")
 	equal(int(first.ability("vector-lance")["startup_ms"]), CombatTuning.ACTIVE_1_STARTUP_MS, "compiled active startup matches catalog")
-	for active_id: String in ["vector-lance", "prism-ward", "stone-channel"]:
+	equal(int(first.ability("rillshot")["wire_id"]), CombatTuning.RILLSHOT_WIRE_ID, "Rillshot wire matches compiled Oh Tipi kit")
+	equal(int(first.ability("rillshot")["flux_cost"]), 0, "Oh Tipi primary remains resource-free")
+	equal(int(first.ability("tideline")["wire_id"]), CombatTuning.TIDELINE_WIRE_ID, "Tideline wire matches compiled Oh Tipi kit")
+	equal(int(first.ability("tideline")["flux_cost"]) * 1000, CombatTuning.TIDELINE_FLUX_COST, "Tideline Flux cost matches compiled behavior")
+	equal(int(first.ability("tideline")["startup_ms"]), CombatTuning.TIDELINE_STARTUP_MS, "Tideline startup matches compiled behavior")
+	for active_id: String in ["vector-lance", "prism-ward", "stone-channel", "tideline"]:
 		var active: Dictionary = first.ability(active_id)
 		check(int(active["points"]) > 0, "%s has positive build cost" % active_id)
 		check(int(active["flux_cost"]) > 0, "%s has positive Flux cost" % active_id)

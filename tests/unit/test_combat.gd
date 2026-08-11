@@ -5,6 +5,8 @@ func run() -> int:
 	for tick_rate: int in [60, 120]:
 		_test_resource_free_primary(tick_rate)
 		_test_vector_lance_flux_and_hit(tick_rate)
+		_test_oh_tipi_rillshot(tick_rate)
+		_test_oh_tipi_tideline(tick_rate)
 		_test_edgeweave(tick_rate)
 	return finish("combat")
 
@@ -20,6 +22,14 @@ func _add_enemy(world: SimWorld, position: Vector2i) -> PlayerState:
 	enemy.position_y = position.y
 	world.players.append(enemy)
 	return enemy
+
+
+func _apply_oh_tipi(state: PlayerState) -> void:
+	var abilities := AbilityCatalog.new()
+	check(abilities.load_from_file("res://content/abilities/foundation_abilities_v1.json"), "ability catalog loads for Oh Tipi combat")
+	var champions := ChampionCatalog.new()
+	check(champions.load_from_file("res://content/champions/foundation_champions_v1.json", abilities), "champion catalog loads for Oh Tipi combat")
+	check(champions.apply_to_player(state, "oh_tipi"), "Oh Tipi combat profile applies")
 
 
 func _test_resource_free_primary(tick_rate: int) -> void:
@@ -75,6 +85,46 @@ func _test_vector_lance_flux_and_hit(tick_rate: int) -> void:
 	equal(refused.pending_cast_wire_id, 0, "%d Hz unaffordable active does not enter startup" % tick_rate)
 	equal(refused.flux, CombatTuning.ACTIVE_1_FLUX_COST - 1, "%d Hz refused active spends nothing while recovery is held" % tick_rate)
 	check(refused_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused"), "%d Hz refused active emits a diagnostic event" % tick_rate)
+
+
+func _test_oh_tipi_rillshot(tick_rate: int) -> void:
+	var world := SimWorld.new(tick_rate)
+	var caster: PlayerState = world.player()
+	_apply_oh_tipi(caster)
+	var enemy: PlayerState = _add_enemy(world, Vector2i(360_000, 360_000))
+	var initial_flux: int = caster.flux
+	check(_step(world, SimCommand.new(0, 1, 0, 0, SimCommand.HELD_PRIMARY, 0, 1000)), "%d Hz Rillshot starts" % tick_rate)
+	equal(caster.pending_cast_wire_id, CombatTuning.RILLSHOT_WIRE_ID, "%d Hz Oh Tipi primary is Rillshot" % tick_rate)
+	equal(caster.flux, initial_flux, "%d Hz Rillshot is resource-free" % tick_rate)
+	var saw_hit: bool = false
+	for _index: int in range(tick_rate):
+		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Rillshot flight steps" % tick_rate)
+		saw_hit = saw_hit or world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "projectile_hit" and int(event.get("source_wire_id", 0)) == CombatTuning.RILLSHOT_WIRE_ID)
+		if saw_hit:
+			break
+	check(saw_hit, "%d Hz Rillshot hits authoritatively" % tick_rate)
+	equal(enemy.health, enemy.health_maximum - CombatTuning.RILLSHOT_DAMAGE, "%d Hz Rillshot damage is exact" % tick_rate)
+
+
+func _test_oh_tipi_tideline(tick_rate: int) -> void:
+	var world := SimWorld.new(tick_rate)
+	var caster: PlayerState = world.player()
+	_apply_oh_tipi(caster)
+	var enemy: PlayerState = _add_enemy(world, Vector2i(420_000, 360_000))
+	check(_step(world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_ACTIVE_1, 1000)), "%d Hz Tideline starts" % tick_rate)
+	equal(caster.pending_cast_wire_id, CombatTuning.TIDELINE_WIRE_ID, "%d Hz Oh Tipi active is Tideline" % tick_rate)
+	equal(caster.flux, caster.flux_maximum - CombatTuning.TIDELINE_FLUX_COST, "%d Hz Tideline Flux spend is exact" % tick_rate)
+	var saw_hit: bool = false
+	for _index: int in range(tick_rate * 2):
+		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Tideline flight steps" % tick_rate)
+		saw_hit = saw_hit or world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "projectile_hit" and int(event.get("source_wire_id", 0)) == CombatTuning.TIDELINE_WIRE_ID)
+		if saw_hit:
+			break
+	check(saw_hit, "%d Hz Tideline hits authoritatively" % tick_rate)
+	equal(enemy.health, enemy.health_maximum - CombatTuning.TIDELINE_DAMAGE, "%d Hz Tideline damage is exact" % tick_rate)
+	equal(enemy.control_state, PlayerState.ControlState.LAUNCHED, "%d Hz Tideline applies bounded launch control" % tick_rate)
+	equal(enemy.control_speed, CombatTuning.TIDELINE_LAUNCH_SPEED, "%d Hz Tideline launch speed is exact" % tick_rate)
+	equal(enemy.control_ticks, world.config.milliseconds_to_ticks(CombatTuning.TIDELINE_LAUNCH_DURATION_MS), "%d Hz Tideline launch duration is exact" % tick_rate)
 
 
 func _test_edgeweave(tick_rate: int) -> void:

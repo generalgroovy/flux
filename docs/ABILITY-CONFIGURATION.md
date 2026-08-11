@@ -3,15 +3,16 @@
 ## Scope
 
 This contract began as the validated canonical configuration checkpoint and now
-also records the boundary consumed by protocol-4 combat. Arc Primary and Vector
-Lance cast end to end; the remaining catalog entries are still configuration
-only. Network-visible identities, resource rules, loadout legality, affinity
+records the boundary consumed by protocol-11 combat. Arc Primary, Vector Lance,
+Oh Tipi's Rillshot and Tideline cast end to end; the remaining catalog entries
+are configuration only. Network-visible identities, resource rules, loadout legality, affinity
 behavior, and compatibility hashes remain trustworthy before any additional
 combat code may promote an entry.
 
 Runtime boot validates:
 
 - [`foundation_abilities_v1.json`](../content/abilities/foundation_abilities_v1.json);
+- [`foundation_champions_v1.json`](../content/champions/foundation_champions_v1.json);
 - [`foundation_practitioner_v1.json`](../content/loadouts/foundation_practitioner_v1.json).
 
 Invalid content fails boot and the headless gate. Definitions are canonicalized
@@ -60,10 +61,12 @@ This demonstrates discounts without granting elemental damage superiority.
 3. Deterministic resource-free Arc Primary projectile — complete foundation.
 4. Vector Lance with startup, Flux spend, cooldown, recovery, and impact —
    complete foundation; full visual/audio counterplay acceptance remains.
-5. Training configuration UI and authoritative host ready-check.
-6. One approved champion through bot, replay, network, reconnect, spectator,
+5. Oh Tipi Rillshot/Tideline plus resettable sparring effigy — complete basic
+   pair; defense, full kit, final art/audio and balance acceptance remain.
+6. Training configuration UI and authoritative host ready-check.
+7. One approved champion through bot, replay, network, reconnect, spectator,
    accessibility, and platform gates.
-7. Compile optional Flux Formula variants from approved source-family,
+8. Compile optional Flux Formula variants from approved source-family,
    geometry, operation, catalyst, and constraint components; the host accepts
    stable variant IDs, never client-authored outcome parameters.
 

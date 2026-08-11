@@ -22,6 +22,7 @@ enum MovementMode {
 	ROOTED,
 	SLOWED,
 	FAST_FALL,
+	WALL_SKIM,
 }
 
 enum ControlState {
@@ -111,6 +112,13 @@ var wall_y: int = 0
 var wall_contact_id: int = 0
 var wall_lockout_id: int = 0
 var wall_lockout_ticks: int = 0
+var wall_skim_ticks: int = 0
+var wall_skim_cooldown_ticks: int = 0
+var wall_skim_x: int = 0
+var wall_skim_y: int = 1000
+var wall_skim_surface_id: int = 0
+var wall_skim_lockout_id: int = 0
+var wall_skim_lockout_ticks: int = 0
 var landing_ticks: int = 0
 var sprinting: bool = false
 var control_state: int = ControlState.FREE
@@ -151,6 +159,9 @@ func canonical_values() -> PackedInt64Array:
 		vault_ticks, vault_cooldown_ticks, vault_x, vault_y,
 		superglide_ticks, superglide_x, superglide_y,
 		wall_memory_ticks, wall_x, wall_y, wall_contact_id,
-		wall_lockout_id, wall_lockout_ticks, landing_ticks, int(sprinting),
+		wall_lockout_id, wall_lockout_ticks,
+		wall_skim_ticks, wall_skim_cooldown_ticks, wall_skim_x, wall_skim_y,
+		wall_skim_surface_id, wall_skim_lockout_id, wall_skim_lockout_ticks,
+		landing_ticks, int(sprinting),
 		control_state, control_ticks, control_x, control_y, control_speed, slow_ratio,
 	])

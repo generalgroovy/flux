@@ -55,6 +55,12 @@ additional simulation tick per tick. Fast fall costs no Stamina because the
 earlier landing is its commitment, and its explicit canonical/presentation state
 is replayed identically rather than inferred from animation.
 
+V after recent contact with an authored obstacle starts a 420 ms wall skim
+along the requested tangent for one 18-Stamina purchase. Stable positive wall
+identity excludes outer world boundaries, a 900 ms same-surface lockout prevents
+loops, and the end exposes a short recovery cue. The same semantic V press keeps
+its existing vault, aerial redirect and sprint-held air-dodge roles.
+
 ## View modes
 
 `full` leaves the complete viewport visible. `cone` presents only the selected
@@ -89,6 +95,7 @@ cue, or diagnostic leak.
 | `Shift` | Sprint while held |
 | `Ctrl` / `C` | Dedicated grounded slide press |
 | `Space` | Semantic jump / movement-chain press |
+| `V` | Contextual vault, recent-contact wall skim, air redirect, or sprint-held air dodge |
 | Left mouse | Arc Primary; no default Space alias |
 | `E` / right mouse | Vector Lance |
 | `F7` | Toggle world-relative / aim-relative movement and save |

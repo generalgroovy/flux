@@ -7,7 +7,7 @@ the full gate order remains in `docs/OVERHAUL-PLAN.md`.
 | --- | --- | --- |
 | 1 | Discoverable movement controls and resource HUD | Shift sprint, Ctrl/C slide, Space jump and V technique work on keyboard; controller remains intact; direct slide is deterministic at 60/120 Hz; Health/Flux/Stamina and current movement state are legible |
 | 2 | Honest cone visibility (presentation complete) | Angle never exceeds 360 degrees; every `los_cutaway` building casts a tested occlusion shadow; host-side hidden-entity filtering remains required with networking |
-| 3 | Movement feel completion (buffer/jump/fall complete) | Wall skim and fuller landing/recovery cues remain; buffers, held/released jump and airborne Ctrl/C fast fall pass deterministic route and replay checks |
+| 3 | Movement feel completion (wall skim complete) | Fuller landing/recovery cues remain; buffers, variable jump, fast fall and authored-obstacle wall skim pass deterministic 60/120 Hz and replay checks |
 | 4 | Interactive Wellspring stations | Walk-up contextual prompts and transparent bubbles cover training reset, movement guide, champion switch, settings, host and join without a detached main menu |
 | 5 | First two complete champions | Oh Tipi then S. Wayne pass stats, movement, basic kit, readable original sprite/animation, selection, dummy, replay and accessibility gates |
 | 6 | Friend-play vertical slice | ENet host/join, two authoritative players, presence/status, interaction/emote, leave/reconnect and diagnostics pass loopback plus Windows/Linux direct-IP smoke |

@@ -173,6 +173,8 @@ static func animation_id_for_player(state: PlayerState) -> String:
 			return "wavedash"
 		PlayerState.MovementMode.WALL_KICK:
 			return "wall_kick"
+		PlayerState.MovementMode.WALL_SKIM:
+			return "wall_kick"
 		PlayerState.MovementMode.VAULT:
 			return "vault"
 		PlayerState.MovementMode.SUPERGLIDE:

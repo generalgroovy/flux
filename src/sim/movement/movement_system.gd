@@ -80,6 +80,8 @@ static func _consume_technique_buffer(state: PlayerState, command: SimCommand, d
 			consumed = _try_air_redirect(state, direction, config)
 	else:
 		consumed = _try_vault(state, direction, config, world)
+		if not consumed:
+			consumed = _try_wall_skim(state, direction, config)
 	if consumed:
 		state.technique_buffer_ticks = 0
 		if state.is_airborne():
@@ -139,12 +141,14 @@ static func apply_control_state(
 static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 	var was_hopping: bool = state.hop_ticks > 0
 	var was_air_dodging: bool = state.air_dodge_ticks > 0
+	var was_wall_skimming: bool = state.wall_skim_ticks > 0
 	var previous_control_state: int = state.control_state
 	for property_name: StringName in [
 		&"stamina_recovery_delay_ticks", &"hop_ticks", &"hop_cooldown_ticks",
 		&"air_dodge_ticks", &"air_dodge_cooldown_ticks", &"wave_dash_ticks",
 		&"slide_ticks", &"slide_cooldown_ticks", &"vault_ticks",
 		&"vault_cooldown_ticks", &"superglide_ticks", &"wall_memory_ticks",
+		&"wall_skim_ticks", &"wall_skim_cooldown_ticks", &"wall_skim_lockout_ticks",
 		&"landing_ticks", &"wall_lockout_ticks", &"control_ticks",
 		&"jump_buffer_ticks", &"technique_buffer_ticks", &"slide_buffer_ticks",
 		&"variable_jump_grace_ticks",
@@ -165,6 +169,10 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 		else:
 			state.landing_ticks = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
 		state.wave_dash_queued = false
+	if was_wall_skimming and state.wall_skim_ticks == 0:
+		state.wall_skim_surface_id = 0
+		state.landing_ticks = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
+		state.last_event = "wall_skim_end"
 	if previous_control_state != PlayerState.ControlState.FREE and state.control_ticks == 0:
 		state.control_state = PlayerState.ControlState.FREE
 		state.control_speed = 0
@@ -325,6 +333,45 @@ static func _try_superglide(state: PlayerState, direction: Vector2i, config: Sim
 	return true
 
 
+static func _try_wall_skim(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
+	if (
+		state.wall_memory_ticks <= 0 or state.wall_contact_id <= 0
+		or state.wall_skim_ticks > 0 or state.wall_skim_cooldown_ticks > 0
+		or (state.wall_skim_lockout_id == state.wall_contact_id and state.wall_skim_lockout_ticks > 0)
+		or state.slide_ticks > 0 or state.wave_dash_ticks > 0 or state.vault_ticks > 0
+		or state.stamina < MovementTuning.WALL_SKIM_COST
+	):
+		return false
+	var wall_normal := Vector2i(state.wall_x, state.wall_y)
+	if wall_normal == Vector2i.ZERO:
+		return false
+	var dot: int = direction.x * wall_normal.x + direction.y * wall_normal.y
+	@warning_ignore("integer_division")
+	var tangent := direction - Vector2i(
+		wall_normal.x * dot / 1_000_000,
+		wall_normal.y * dot / 1_000_000,
+	)
+	var clockwise := Vector2i(-wall_normal.y, wall_normal.x)
+	if tangent == Vector2i.ZERO:
+		if direction.x * clockwise.x + direction.y * clockwise.y < 0:
+			clockwise = -clockwise
+		tangent = clockwise
+	tangent = _direction(tangent.x, tangent.y, clockwise)
+	_spend_stamina(state, MovementTuning.WALL_SKIM_COST, config)
+	state.wall_skim_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_SKIM_DURATION_MS)
+	state.wall_skim_cooldown_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_SKIM_COOLDOWN_MS)
+	state.wall_skim_x = tangent.x
+	state.wall_skim_y = tangent.y
+	state.wall_skim_surface_id = state.wall_contact_id
+	state.wall_skim_lockout_id = state.wall_contact_id
+	state.wall_skim_lockout_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_SKIM_SAME_SURFACE_LOCKOUT_MS)
+	state.wall_memory_ticks = 0
+	state.wall_contact_id = 0
+	state.sprinting = false
+	state.last_event = "wall_skim"
+	return true
+
+
 static func _apply_velocity(state: PlayerState, command: SimCommand, direction: Vector2i, config: SimConfig) -> void:
 	if state.superglide_ticks > 0:
 		_set_directional_velocity(state, Vector2i(state.superglide_x, state.superglide_y), MovementTuning.SUPERGLIDE_SPEED)
@@ -345,6 +392,8 @@ static func _apply_velocity(state: PlayerState, command: SimCommand, direction: 
 		_set_directional_velocity(state, slide_direction, MovementTuning.SLIDE_SPEED)
 	elif state.hop_ticks > 0:
 		_set_directional_velocity(state, Vector2i(state.hop_x, state.hop_y), state.hop_speed)
+	elif state.wall_skim_ticks > 0:
+		_set_directional_velocity(state, Vector2i(state.wall_skim_x, state.wall_skim_y), MovementTuning.WALL_SKIM_SPEED)
 	else:
 		_apply_ground_velocity(state, command, direction, config)
 
@@ -439,6 +488,8 @@ static func _update_mode(state: PlayerState, command: SimCommand) -> void:
 		state.movement_mode = PlayerState.MovementMode.SLIDE
 	elif state.hop_ticks > 0:
 		state.movement_mode = PlayerState.MovementMode.FAST_FALL if state.fast_falling else state.hop_mode
+	elif state.wall_skim_ticks > 0:
+		state.movement_mode = PlayerState.MovementMode.WALL_SKIM
 	elif state.sprinting:
 		state.movement_mode = PlayerState.MovementMode.SPRINT
 	elif command.move_x != 0 or command.move_y != 0:

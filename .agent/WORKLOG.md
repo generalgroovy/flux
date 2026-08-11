@@ -1,5 +1,42 @@
 # FLUX2 agent worklog
 
+## 2026-08-11 — bounded authored-obstacle wall skim
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added a contextual V wall skim after recent contact with a positive-ID
+  authored obstacle: an 18-Stamina purchase produces 420 ms of fixed-speed
+  tangent travel and never activates on reserved negative-ID world boundaries.
+- Added a separate 300 ms general cooldown and 900 ms same-surface lockout so
+  the route is expressive but cannot loop one wall; vault retains priority and
+  airborne V retains redirect/air-dodge behavior.
+- Added canonical skim direction, timers, surface identity, lockout and explicit
+  movement/event state; the existing landing window now provides a short exit
+  recovery animation contract. Advanced protocol to 7.
+
+Validation:
+
+- `git diff --check`: passed.
+- Pinned Godot 4.7.1 full headless gate: 13,219 assertions, zero failures.
+- At both 60 and 120 Hz: positive obstacle contact starts the exact bounded
+  skim and cost, requested tangent advances, exit recovery appears, immediate
+  same-surface retry spends nothing, and outer boundaries cannot activate it.
+- Independent 60 and 120 Hz headless bootstrap smokes exited successfully with
+  protocol 7.
+
+Known limitations and next task:
+
+- Wall skim currently reuses the wall-kick animation family until accepted
+  character atlases receive a distinct skim strip and surface dust/audio cue.
+- Landing state exists and the skim now enters it, but authored intensity,
+  squash/ring/audio and collision-safe timed recovery remain incomplete.
+- Next implementation slice adds presentation-owned landing/recovery cues, then
+  begins walk-up Wellspring station interactions.
+
+Commit: pending. Push: pending.
+
 ## 2026-08-11 — variable jump and explicit fast fall
 
 Branch: `codex/continuous-overhaul`

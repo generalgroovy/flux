@@ -54,6 +54,8 @@ even when design documentation already exists.
     every eventual transition still revalidates state, collision and Stamina
   - [x] Holding Space preserves the full jump arc, release cuts to a bounded
     minimum, and airborne Ctrl/C fast-falls through explicit canonical state
+  - [x] V converts recent authored-obstacle contact into a bounded wall skim;
+    world edges are excluded and same-surface chaining is locked out
   - [x] Separate Health, Stamina, and spell Flux; independent quantized aim and
     keyboard/mouse/controller action defaults
   - [x] Offline saved keyboard bindings, world-relative and aim-relative
@@ -72,8 +74,8 @@ even when design documentation already exists.
     playable sprite body: semantic movement selects its 25-action/eight-direction
     regions with nearest-neighbor rendering, composed with the shared jump lift
     and ground shadow before POV masking, and fails closed to the procedural body
-  - [ ] Add variable hop/fast fall, bounded impact influence, ground recovery,
-    wall skims, authored elevation, input buffering, interactive binding UI,
+  - [ ] Add bounded impact influence, timed ground recovery,
+    authored elevation, interactive binding UI,
     controller profile persistence, accepted final per-champion animation art,
     remaining champion runtime integration, and interactive route acceptance
 - [ ] **Chapter 4 — [Aiming, combat, and abilities](#aiming-combat-and-ability-composition)**
@@ -324,9 +326,9 @@ station acceptance.
 | Vault / superglide | Cross marked low cover and convert the narrow crest window | Only authored vault surfaces qualify; destination clearance and fixed ceiling are mandatory | Implemented against foundation geometry |
 | Landing cut | Trade a timed landing input for reduced recovery and route continuity | Never deletes an attack/status commitment and must remain readable | Foundation implemented |
 | Edgeweave | Skim the swept edge of a hostile projectile at committed speed to regain Stamina | No reward on hit, full Stamina, training pressure, low speed, cooldown, or repeat contact | Implemented |
-| Variable hop / fast fall | Change aerial duration and contest timing without a new jump | Bounded elevation curve and explicit landing recovery | Planned |
+| Variable hop / fast fall | Change aerial duration and contest timing without a new jump | Held/released duration and a no-cost committed fast fall remain bounded and canonical | Implemented |
 | Impact influence / brace | Bend a launched trajectory slightly or time a safe ground recovery | Cannot cancel knockback, cross worldbone, or remove the attacker’s earned advantage | Planned |
-| Wall skim | Run briefly along an authored traversable wall | Stamina drain, maximum duration, exit recovery, same-surface lockout | Planned |
+| Wall skim | Run briefly along an authored traversable wall | One Stamina purchase, 420 ms maximum, exit recovery, same-surface lockout, and no world-edge activation | Implemented against authored obstacle identity |
 
 The input layer will buffer only named transitions for short real-time windows
 compiled independently at 60 and 120 Hz. It will not buffer arbitrary actions
@@ -1763,14 +1765,14 @@ scripts/run.sh --tick-rate=120
 
 Current foundation controls: WASD moves, mouse aims, left click fires Arc
 Primary, right click or E casts Vector Lance, Shift sprints, Ctrl or C slides,
-Space uses the jump/movement chain, V uses the contextual vault/air technique,
+Space uses the jump/movement chain, V uses the contextual vault/wall-skim/air technique,
 R restarts the match, and F6 restarts at the
 other supported tick rate. F7 changes movement reference, F8 changes view, and
 F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
 left/right sticks, right trigger, west/east face buttons, and shoulders. The
 rate never mutates inside a running match.
 
-G3 now uses protocol 6 and preference schema 3: Space invokes the semantic jump
+G3 now uses protocol 7 and preference schema 3: Space invokes the semantic jump
 action, Shift sprints, Ctrl/C directly slides, and primary no longer aliases
 Space. Schema-v1/v2 defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision

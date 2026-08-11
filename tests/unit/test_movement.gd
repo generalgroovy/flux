@@ -11,6 +11,7 @@ func run() -> int:
 		_test_air_dodge_and_wavedash(tick_rate)
 		_test_wall_contact_and_wall_kick(tick_rate)
 		_test_same_wall_lockout(tick_rate)
+		_test_wall_skim(tick_rate)
 		_test_vault_and_superglide(tick_rate)
 		_test_control_states(tick_rate)
 	return finish("movement")
@@ -182,6 +183,49 @@ func _test_same_wall_lockout(tick_rate: int) -> void:
 	state.velocity_x = -MovementTuning.BASE_SPEED
 	_step(world, -1000, 0)
 	equal(state.wall_memory_ticks, 0, "%d Hz same wall cannot immediately refresh a kick" % tick_rate)
+
+
+func _test_wall_skim(tick_rate: int) -> void:
+	var world := SimWorld.new(tick_rate)
+	var state: PlayerState = world.player()
+	state.position_x = 560_000 - state.radius - 1000
+	state.position_y = 340_000
+	state.velocity_x = MovementTuning.BASE_SPEED
+	_step(world, 1000, 0)
+	equal(state.wall_contact_id, 1, "%d Hz authored obstacle records a positive surface identity" % tick_rate)
+	var before_stamina: int = state.stamina
+	var start_y: int = state.position_y
+	_step(world, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE)
+	equal(state.last_event, "wall_skim", "%d Hz technique converts recent obstacle contact into wall skim" % tick_rate)
+	equal(state.stamina, before_stamina - MovementTuning.WALL_SKIM_COST, "%d Hz wall skim Stamina cost is exact" % tick_rate)
+	equal(state.movement_mode, PlayerState.MovementMode.WALL_SKIM, "%d Hz wall skim is explicit canonical state" % tick_rate)
+	check(state.wall_skim_ticks > 0, "%d Hz wall skim has a bounded authored duration" % tick_rate)
+	check(state.position_y > start_y, "%d Hz wall skim follows the requested wall tangent" % tick_rate)
+	var skim_surface: int = state.wall_skim_surface_id
+	while state.wall_skim_ticks > 0:
+		_step(world, 0, 1000)
+	equal(state.last_event, "wall_skim_end", "%d Hz wall skim emits an explicit recovery event" % tick_rate)
+	check(state.landing_ticks > 0, "%d Hz wall skim exposes its readable recovery window" % tick_rate)
+	state.wall_memory_ticks = world.config.milliseconds_to_ticks(MovementTuning.WALL_MEMORY_MS)
+	state.wall_contact_id = skim_surface
+	state.wall_x = -1000
+	state.wall_y = 0
+	state.stamina_recovery_delay_ticks = world.config.milliseconds_to_ticks(MovementTuning.STAMINA_RECOVERY_DELAY_MS)
+	var after_first_skim: int = state.stamina
+	_step(world, 0, -1000, 0, SimCommand.PRESSED_TECHNIQUE)
+	equal(state.wall_skim_ticks, 0, "%d Hz same surface cannot immediately chain another skim" % tick_rate)
+	equal(state.stamina, after_first_skim, "%d Hz rejected same-surface skim spends no Stamina" % tick_rate)
+
+	var boundary_world := SimWorld.new(tick_rate)
+	var boundary: PlayerState = boundary_world.player()
+	boundary.position_x = boundary.radius + 1000
+	boundary.velocity_x = -MovementTuning.BASE_SPEED
+	_step(boundary_world, -1000, 0)
+	check(boundary.wall_contact_id < 0, "%d Hz world boundary keeps its reserved surface identity" % tick_rate)
+	var boundary_stamina: int = boundary.stamina
+	_step(boundary_world, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE)
+	equal(boundary.wall_skim_ticks, 0, "%d Hz outer world boundary cannot be skimmed" % tick_rate)
+	equal(boundary.stamina, boundary_stamina, "%d Hz rejected boundary skim spends no Stamina" % tick_rate)
 
 
 func _test_vault_and_superglide(tick_rate: int) -> void:

@@ -150,9 +150,12 @@ passes on Garuda Linux/Sway and Windows.
   the full suite and leak-free 60/120 Hz launches pass. This is runtime plumbing,
   not final visual approval; accepted Oh Tipi art and every remaining champion
   integration are still required.
-- [ ] Planned: add variable-hop/fast-fall authority, bounded launched-trajectory
-  influence, collision-safe timed ground recovery, and marked wall skims without
-  weakening stun, recovery, same-wall lockout, or the global speed ceiling.
+- [x] Implement held/released variable-hop timing, explicit fast fall, and
+  authored-obstacle wall skim with bounded Stamina, duration, exit recovery,
+  world-edge exclusion, canonical state and same-surface lockout.
+- [ ] Planned: add bounded launched-trajectory influence and collision-safe
+  timed ground recovery without weakening stun, earned launch, recovery, or the
+  global speed ceiling.
 - [ ] Planned: add deterministic moving-platform relative motion, rails,
   ziplines, lifts, pressure/launch surfaces, currents, wind lanes, grapple
   anchors, and chemistry-derived traction/visibility route modifiers.

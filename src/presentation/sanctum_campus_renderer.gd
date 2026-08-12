@@ -259,7 +259,7 @@ func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int) -> void:
 	var position := Vector2(float(values[0]), float(values[1]))
 	var kind := String(station.get("kind", ""))
 	var pulse: float = 0.12 + 0.06 * sin(float(tick) * 0.08)
-	var accent: Color = CYAN if kind in ["guide", "farflow"] else (VIOLET if kind == "champion" else (BRASS if kind == "charter" else FIRE))
+	var accent: Color = CYAN if kind in ["guide", "farflow"] else (VIOLET if kind == "champion" else (BRASS if kind in ["charter", "ledger"] else FIRE))
 	canvas.draw_circle(position + Vector2(2, 5), 19.0, Color(DEEP_FOREST, 0.72))
 	canvas.draw_circle(position, 17.0, CLIFF)
 	canvas.draw_arc(position, 14.0, 0.0, TAU, 16, BRASS, 3.0)
@@ -303,6 +303,18 @@ func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int) -> void:
 		canvas.draw_colored_polygon(flame, FIRE)
 		canvas.draw_circle(position + Vector2(0, 2), 3.5, PARCHMENT)
 		canvas.draw_line(position + Vector2(-9, 9), position + Vector2(9, 9), BRASS, 2.0)
+	elif kind == "ledger":
+		canvas.draw_rect(Rect2(position + Vector2(-8, -9), Vector2(16, 18)), Color(PARCHMENT, 0.22), true)
+		canvas.draw_line(position + Vector2(-5, -6), position + Vector2(5, -6), PARCHMENT, 1.5)
+		canvas.draw_line(position + Vector2(-5, -1), position + Vector2(5, -1), PARCHMENT, 1.5)
+		canvas.draw_line(position + Vector2(-5, 4), position + Vector2(2, 4), PARCHMENT, 1.5)
+		canvas.draw_circle(position + Vector2(6, 7), 2.5, BRASS)
+	elif kind == "parting":
+		canvas.draw_arc(position + Vector2(0, 1), 8.0, PI, TAU, 12, PARCHMENT, 2.0)
+		canvas.draw_line(position + Vector2(-8, 1), position + Vector2(-5, -6), PARCHMENT, 2.0)
+		canvas.draw_line(position + Vector2(8, 1), position + Vector2(5, -6), PARCHMENT, 2.0)
+		canvas.draw_line(position + Vector2(-5, -6), position + Vector2(5, -6), PARCHMENT, 2.0)
+		canvas.draw_circle(position + Vector2(0, 6), 2.5, FIRE)
 	else:
 		canvas.draw_arc(position, 7.0, -2.2, 2.0, 10, PARCHMENT, 2.0)
 		canvas.draw_line(position + Vector2(-6, -6), position + Vector2(-10, -2), PARCHMENT, 2.0)

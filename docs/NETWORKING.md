@@ -2,16 +2,18 @@
 
 ## Current runnable boundary
 
-FLUX 2 protocol 19 / snapshot schema 6 exposes two walk-up Farflow stations, a
-Farflow Charter and a Session Hearth in
+FLUX 2 protocol 20 / snapshot schema 6 exposes nine walk-up Wellspring stations,
+including the Farflow Charter, Session Hearth and host stewardship tools in
 the eastern Wellspring:
 
 | Station | Current action |
 | --- | --- |
 | **Farflow Charter** | Before opening a gate, cycles three bounded host-owned social/combat profiles with visible capacity, traveller-damage and Bell-reset rules |
-| **Host Farflow** | Opens an ENet server on UDP `24872`, enforces the sealed Charter capacity, and shows the live count/profile |
+| **Host Farflow** | Opens an ENet server on UDP `24872`, enforces the sealed Charter capacity, and requires a second press within three seconds before closing the company |
 | **Join Farflow** | Connects to the configured address, verifies compatibility, and shows seeking/joined/refused state |
 | **Session Hearth** | Shows connected/returning travellers and readiness; all connected travellers ready here before the host begins a three-second synchronized Proving Court start |
+| **Company Ledger** | Lets only the host cycle connected guests in stable order; selection is visibly non-destructive and excludes returning reservations |
+| **Parting Bell** | Arms release of the Ledger selection, then requires a second matching press within three seconds; the guest receives a reason and no return reservation |
 | **Proving Court** | Receives the intact connected roster at authored spawns, assigns combat teams and wards, scores knockouts, respawns defeated travellers, resolves score/time results and returns the company to the Hearth |
 
 After a result, the connected roster gathers at eight collision-cleared points
@@ -61,6 +63,14 @@ the capability rotates on success and expiry removes the actor/releases the
 slot. Tokens never enter snapshots, rosters, logs or files. Closing/restarting
 the client therefore does not preserve a return capability yet.
 
+Administrative departures are deliberately different from network loss. Only
+the host transport boundary can name a connected entity for removal. A bounded
+reliable reason is delivered first; the guest clears its memory-only return
+capability and closes, while a 250 ms host deadline forcibly removes any client
+that ignores the notice. The host then emits a final, non-reserved departure.
+A client-sent administration packet is ignored. Closing the company applies the
+same reason-bearing path to every guest before the host returns offline.
+
 ## Windows and Linux direct-IP smoke
 
 The host launches normally, walks east to **Host Farflow**, and presses F. A
@@ -80,7 +90,9 @@ are deliberately not claimed by this early direct-IP slice.
 `--session-port=1024..65535` changes both the station's host port and join target.
 `--player-name=` accepts one to 24 non-control characters. Without overrides,
 Join Farflow targets `127.0.0.1`, making two local processes a safe first test.
-Pressing F at either Farflow station again closes the local peer cleanly.
+At Join Farflow, pressing F again leaves the company locally. At Host Farflow,
+the first press arms company closure and the second press within three seconds
+confirms; walking away or waiting lets the confirmation expire.
 
 `--session-charter=open_commons|sparring_circle|duel_knot` is a diagnostic host
 override; normal players turn the in-world Farflow Charter before hosting.
@@ -102,10 +114,14 @@ active packed round and appears in the same Proving Court serial as the host.
 `--farflow-smoke-rematch` then resolves diagnostic Round 1 after exact-actor
 return and reports only after both actors gather/ready at the Hearth and the
 guest validates active Round 2.
+`--farflow-smoke-steward` then confirms a host release and reports only after
+the guest receives the exact reason, clears its return capability and the host
+records a final departure without a reservation.
 
 The maintained two-process acceptance wrappers combine those diagnostics in a
 safe order—HELLO request, authoritative movement/reconciliation, Hearth
-readiness, Proving Court entry, leave, then exact-actor return—and always clean up their processes:
+readiness, Proving Court entry, leave, exact-actor return, rematch, then host
+stewardship—and always clean up their processes:
 
 ```bat
 scripts\smoke-farflow.cmd
@@ -165,9 +181,9 @@ change a champion speculatively.
 | Session Hearth | Implemented: compact connected/returning roster, per-traveller readiness, host-owned countdown, roster-change cancellation and monotonic shared reset events/ticks |
 | First arena round | Playable foundation: one authored bounded court with individual combat teams, spawn wards, first-to-three/90-second scoring, authoritative knockout/respawn, result freeze and automatic Hearth return |
 | Court readability/rematch | Complete foundation: persistent rules/countdown, eight validated gather positions, reset readiness, monotonic serial and same-roster Round 2 pass 60/120 Hz process journeys |
-| Host stewardship | Next: explicit-confirmation kick/close controls with trusted host authority and readable affected-client reasons |
+| Host stewardship | Complete foundation: stable host-only Ledger selection, separate double-confirm Parting Bell, double-confirm company close, bounded reliable reasons, revoked return capability, forged-packet refusal and live process proof |
 | Remote platform smoke | Windows and Garuda Linux direct-IP packages connect, move, leave and reconnect with diagnostics |
-| Later continuity | Client-process persistence, host restart, moderation, spectators and eventual host migration |
+| Later continuity | Client-process persistence, host restart, richer moderation, spectators and eventual host migration |
 
 The public lobby cap remains eight while the architecture reserves a later
 32-player scaling gate; no higher count is advertised until measured.

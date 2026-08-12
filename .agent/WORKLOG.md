@@ -1,5 +1,58 @@
 # FLUX2 agent worklog
 
+## 2026-08-12 — reason-bearing host stewardship
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Advanced friend play to protocol 20 and added two authored, collision-cleared
+  Wellspring stations. The Company Ledger cycles only connected guests in stable
+  order and takes no destructive action; the separate Parting Bell requires a
+  second press on the same selection within three seconds.
+- Host Farflow now uses the same explicit two-press confirmation before closing
+  a company. Join Farflow remains the guest's local leave boundary, so neither
+  side can accidentally close the other flow from the wrong station.
+- Added deterministic `SessionSteward` state for selection, action identity,
+  bounded confirmation and expiry. Changing the action/selection rearms rather
+  than confirming, stale guests clear safely, and unit coverage verifies the
+  one-press safety boundary.
+- Added a host-only reason-bearing transport packet. A cooperative guest clears
+  its memory-only return capability and closes after receipt; a modified client
+  is forcibly disconnected after a 250 ms bound. Administrative departures are
+  final, never create return reservations, and client-forged administration is
+  ignored.
+- Extended both maintained Windows and Bash Farflow journeys. Only after HELLO,
+  prediction, Hearth, Round 1, exact-actor return and active Round 2 does the
+  diagnostic confirm release; success requires the exact guest reason, revoked
+  return capability and host-observed non-reserved departure.
+
+Validation:
+
+- `scripts\test.cmd`: passed import, the full **14,709-assertion** suite and
+  independent 60/120 Hz boots with zero failures.
+- `scripts\smoke-farflow.cmd -Port 24928 -TickRate 120 -Charter open_commons
+  -TimeoutSeconds 30`: passed the complete Round-2-to-stewardship journey.
+- `scripts\smoke-farflow.cmd -Port 24929 -TickRate 60 -Charter duel_knot
+  -TimeoutSeconds 30`: passed the equivalent journey at 60 Hz.
+- Godot editor/import parsing and `git diff --check`: passed; matching export
+  templates and a physical Garuda run remain unavailable on this Windows host.
+- A deterministic 1280x720 capture at the Company Ledger was inspected: the
+  Ledger, Parting Bell, Hearth and Farflow gates remain distinct and readable in
+  one camera view, with the expanded transparent bubble anchored correctly.
+
+Known limitations and next slice:
+
+- The direct-IP boundary intentionally has no identity account, encryption,
+  relay, NAT traversal, persisted bans or host migration yet; test only with
+  trusted friends.
+- Late joiners safely wait outside an active court but do not yet receive a
+  deliberate spectator camera. The next slice gives them participant focus,
+  clear next-gathering status and automatic Hearth handoff without authority or
+  hidden-state leakage.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-12 — gathered Hearth return and same-roster rematch
 
 Branch: `codex/continuous-overhaul`

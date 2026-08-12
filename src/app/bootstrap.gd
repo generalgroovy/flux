@@ -4,6 +4,9 @@ extends Node2D
 const MAX_CATCH_UP_STEPS: int = 8
 const SNAPSHOT_RATE: int = 60
 const EMOTE_COOLDOWN_MS: int = 1200
+const STEWARD_CONFIRMATION_MS: int = 3000
+const GUEST_RELEASE_REASON: String = "The host released you from the Farflow company."
+const COMPANY_CLOSE_REASON: String = "The host closed the Farflow company."
 const HUB_DEFINITION_PATH: String = "res://content/maps/sanctum_hub_v1.json"
 const CAMPUS_LAYOUT_PATH: String = "res://content/maps/sanctum_campus_g2_v1.json"
 const ABILITY_CATALOG_PATH: String = "res://content/abilities/foundation_abilities_v1.json"
@@ -45,6 +48,7 @@ var material_preview_texture: ImageTexture
 var player_preferences: PlayerPreferences
 var player_sprite: WellspringCharacterSprite
 var session_transport: SessionTransport
+var session_steward: SessionSteward
 var authoritative_session: AuthoritativeSession
 var client_prediction: ClientPrediction
 var session_event_inbox: SessionEventInbox
@@ -98,6 +102,10 @@ var round_smoke_active_reported: bool = false
 var requested_rematch_smoke: bool = false
 var rematch_smoke_ready_sent: bool = false
 var rematch_smoke_active_reported: bool = false
+var requested_steward_smoke: bool = false
+var steward_smoke_due_tick: int = -1
+var steward_smoke_sent: bool = false
+var host_close_pending: bool = false
 
 
 func _ready() -> void:
@@ -146,7 +154,9 @@ func _ready() -> void:
 	requested_hearth_smoke = _requested_hearth_smoke()
 	requested_round_smoke = _requested_round_smoke()
 	requested_rematch_smoke = _requested_rematch_smoke()
+	requested_steward_smoke = _requested_steward_smoke()
 	session_transport = SessionTransport.new()
+	session_steward = SessionSteward.new()
 	authoritative_session = AuthoritativeSession.new()
 	client_prediction = ClientPrediction.new()
 	session_event_inbox = SessionEventInbox.new()
@@ -232,6 +242,8 @@ func _process(delta: float) -> void:
 			set_process(false)
 			return
 	_update_station_focus()
+	if session_steward != null and world != null:
+		session_steward.expire(world.tick)
 	station_notice_seconds = maxf(0.0, station_notice_seconds - delta)
 	_update_combat_cues(delta)
 	_update_social_bubbles(delta)
@@ -292,6 +304,7 @@ func _process(delta: float) -> void:
 			if session_transport.is_host():
 				var round_events := authoritative_session.advance_round(world.combat_events)
 				_ingest_session_feedback(round_events)
+				_update_steward_smoke()
 				if authoritative_session.round_return_due():
 					if _return_to_hearth():
 						queue_redraw()
@@ -648,7 +661,8 @@ func _draw_station_bubble(player_position: Vector2) -> void:
 func _station_lines(station: Dictionary) -> Array:
 	var command := String(station.get("command", ""))
 	if command == "host_session":
-		return [session_transport.status_detail, "UDP %d · %d/%d travellers" % [session_port, session_transport.player_count(), _selected_session_capacity()], "CHARTER: %s" % SessionCharter.display_name(selected_charter_id), "F closes the gate" if session_transport.is_host() else "F opens a direct friend gate"]
+		var closing_armed := session_transport.is_host() and session_steward.is_armed(SessionSteward.Action.CLOSE_COMPANY, 0, world.tick)
+		return [session_transport.status_detail, "UDP %d · %d/%d travellers" % [session_port, session_transport.player_count(), _selected_session_capacity()], "CHARTER: %s" % SessionCharter.display_name(selected_charter_id), "F CONFIRMS CLOSING THE COMPANY" if closing_armed else ("F arms a three-second close" if session_transport.is_host() else "F opens a direct friend gate")]
 	if command == "join_session":
 		var charter_line := "HOST CHARTER APPEARS AFTER JOIN" if not session_transport.is_connected_client() else "CHARTER: %s · %d PLACES" % [SessionCharter.display_name(selected_charter_id), session_transport.player_capacity()]
 		return [session_transport.status_detail, "%s:%d" % [join_address, session_port], charter_line, "F closes the gate" if session_transport.mode != SessionTransport.Mode.OFFLINE else "F seeks the configured friend gate"]
@@ -663,6 +677,10 @@ func _station_lines(station: Dictionary) -> Array:
 		]
 	if command == "session_hearth":
 		return _session_hearth_lines()
+	if command == "session_ledger":
+		return _session_ledger_lines()
+	if command == "session_parting":
+		return _session_parting_lines()
 	if command != "champion_switch":
 		return station.get("lines", [])
 	var current: Dictionary = champion_catalog.champion(selected_champion_id)
@@ -711,11 +729,18 @@ func _sync_session_transport() -> void:
 					removed.append(event)
 					_clear_remote_player_sprite(int(event.get("entity_id", 0)))
 					print("FLUX2 farflow host: %s entity %d (%s)" % ["return expired for" if bool(event.get("expired", false)) else "left", int(event.get("entity_id", 0)), String(event.get("name", "Traveller"))])
+					if requested_steward_smoke and bool(event.get("administrative", false)) and not bool(event.get("reserved", true)):
+						print("FLUX2 farflow steward smoke: guest removed without reservation")
 			authoritative_session.suspend_peers(suspended)
 			authoritative_session.remove_peers(removed)
 			if disconnect_cancelled_countdown:
 				_publish_session_event({"type": "practice_cancelled", "entity_id": SessionTransport.SERVER_PEER_ID, "reason": 1})
 			session_names_by_entity = authoritative_session.names_by_entity.duplicate()
+		if session_steward != null:
+			session_steward.reconcile_roster(session_transport.host_roster())
+		if host_close_pending and session_transport.host_roster().is_empty():
+			_finish_host_close()
+			return
 		authoritative_session.ingest_inputs(session_transport.take_inputs())
 		_handle_session_requests(session_transport.take_requests())
 		return
@@ -805,6 +830,7 @@ func _sync_session_transport() -> void:
 		return
 	if client_replica_active and session_transport.mode == SessionTransport.Mode.OFFLINE:
 		var disconnect_message := session_transport.last_error
+		var steward_release_received := requested_steward_smoke and disconnect_message == GUEST_RELEASE_REASON and not session_transport.can_reconnect()
 		client_replica_active = false
 		client_input_sequence = 0
 		client_request_sequence = 0
@@ -816,6 +842,8 @@ func _sync_session_transport() -> void:
 		if _start_match(tick_rate):
 			station_notice = disconnect_message if not disconnect_message.is_empty() else "The Farflow gate is closed."
 			station_notice_seconds = 3.0
+			if steward_release_received:
+				print("FLUX2 farflow steward smoke: guest received release reason and return revoked")
 
 
 func _update_reconnect_smoke(delta: float) -> void:
@@ -1087,6 +1115,10 @@ func _activate_focused_station() -> void:
 			_cycle_session_charter()
 		"session_hearth":
 			_activate_session_hearth()
+		"session_ledger":
+			_activate_session_ledger()
+		"session_parting":
+			_activate_session_parting()
 
 
 func _cycle_session_charter() -> void:
@@ -1114,39 +1146,88 @@ func _activate_session_hearth() -> void:
 	expanded_station_id = focused_station_id
 
 
-func _toggle_host_session() -> void:
-	if session_transport.mode != SessionTransport.Mode.OFFLINE:
-		session_transport.stop()
-		client_replica_active = false
-		client_input_sequence = 0
-		client_request_sequence = 0
-		last_client_snapshot_tick = -1
-		network_projectile_overflow = 0
-		_start_match(tick_rate)
-		station_notice = "The Farflow gate is closed."
+func _activate_session_ledger() -> void:
+	if not session_transport.is_host():
+		station_notice = "Only the Farflow host keeps the Company Ledger."
+		station_notice_seconds = 2.5
+		expanded_station_id = focused_station_id
+		return
+	var selected_entity_id := session_steward.cycle_guest(session_transport.host_roster())
+	if selected_entity_id == 0:
+		station_notice = "No connected guests are in the Ledger."
 	else:
-		var signature := _session_compatibility_signature()
-		if session_transport.start_host(session_port, signature, local_player_name, selected_charter_id, SessionCharter.profile_hash(selected_charter_id)):
-			authoritative_session.bind(world, champion_catalog, campus_layout.spawn, local_player_name, [], selected_charter_id)
-			session_names_by_entity = authoritative_session.names_by_entity.duplicate()
-			station_notice = "Friend gate open on UDP %d." % session_port
-			print("FLUX2 farflow host: listening on UDP %d · %s · %d places" % [session_transport.bound_port, SessionCharter.display_name(selected_charter_id), session_transport.player_capacity()])
+		station_notice = "%s is named for review; no action taken." % _session_guest_name(selected_entity_id)
+	station_notice_seconds = 2.5
+	expanded_station_id = focused_station_id
+
+
+func _activate_session_parting() -> void:
+	if not session_transport.is_host():
+		station_notice = "Only the Farflow host may ring the Parting Bell."
+		station_notice_seconds = 2.5
+		expanded_station_id = focused_station_id
+		return
+	if not session_steward.reconcile_roster(session_transport.host_roster()):
+		station_notice = "Name a connected guest at the Company Ledger first."
+		station_notice_seconds = 2.5
+		expanded_station_id = focused_station_id
+		return
+	var selected_entity_id := session_steward.selected_entity_id
+	var selected_name := _session_guest_name(selected_entity_id)
+	var decision := session_steward.request_release(world.tick, world.config.milliseconds_to_ticks(STEWARD_CONFIRMATION_MS))
+	if decision == SessionSteward.Decision.ARMED:
+		station_notice = "Press F again within three seconds to release %s." % selected_name
+	elif decision == SessionSteward.Decision.CONFIRMED:
+		if session_transport.host_remove_entity(selected_entity_id, GUEST_RELEASE_REASON):
+			station_notice = "%s is leaving the company." % selected_name
+			print("FLUX2 farflow steward: host released entity %d (%s)" % [selected_entity_id, selected_name])
 		else:
-			station_notice = session_transport.last_error
+			station_notice = "%s could not be released; the roster changed." % selected_name
+	else:
+		station_notice = "The Parting Bell would not arm."
+	station_notice_seconds = 3.0
+	expanded_station_id = focused_station_id
+
+
+func _toggle_host_session() -> void:
+	if session_transport.is_host():
+		var decision := session_steward.request_close(world.tick, world.config.milliseconds_to_ticks(STEWARD_CONFIRMATION_MS))
+		if decision == SessionSteward.Decision.ARMED:
+			station_notice = "Press F again within three seconds to close the company."
+		elif decision == SessionSteward.Decision.CONFIRMED:
+			_begin_host_close()
+		else:
+			station_notice = "The Host Farflow seal would not arm."
+		station_notice_seconds = 3.0
+		expanded_station_id = focused_station_id
+		return
+	if session_transport.mode != SessionTransport.Mode.OFFLINE:
+		station_notice = "Use Join Farflow to leave the host company."
+		station_notice_seconds = 2.5
+		expanded_station_id = focused_station_id
+		return
+	var signature := _session_compatibility_signature()
+	session_steward.reset()
+	host_close_pending = false
+	if session_transport.start_host(session_port, signature, local_player_name, selected_charter_id, SessionCharter.profile_hash(selected_charter_id)):
+		authoritative_session.bind(world, champion_catalog, campus_layout.spawn, local_player_name, [], selected_charter_id)
+		session_names_by_entity = authoritative_session.names_by_entity.duplicate()
+		station_notice = "Friend gate open on UDP %d." % session_port
+		print("FLUX2 farflow host: listening on UDP %d · %s · %d places" % [session_transport.bound_port, SessionCharter.display_name(selected_charter_id), session_transport.player_capacity()])
+	else:
+		station_notice = session_transport.last_error
 	station_notice_seconds = 3.0
 	expanded_station_id = focused_station_id
 
 
 func _toggle_join_session() -> void:
+	if session_transport.is_host():
+		station_notice = "Use Host Farflow to close the company."
+		station_notice_seconds = 2.5
+		expanded_station_id = focused_station_id
+		return
 	if session_transport.mode != SessionTransport.Mode.OFFLINE:
-		session_transport.stop()
-		client_replica_active = false
-		client_input_sequence = 0
-		client_request_sequence = 0
-		last_client_snapshot_tick = -1
-		network_projectile_overflow = 0
-		_start_match(tick_rate)
-		station_notice = "The Farflow gate is closed."
+		_return_to_offline("You left the Farflow company.")
 	else:
 		var signature := _session_compatibility_signature()
 		if session_transport.start_join(join_address, session_port, signature, local_player_name, SessionCharter.catalog_hash()):
@@ -1156,6 +1237,61 @@ func _toggle_join_session() -> void:
 			station_notice = session_transport.last_error
 	station_notice_seconds = 3.0
 	expanded_station_id = focused_station_id
+
+
+func _begin_host_close() -> void:
+	if not session_transport.is_host() or host_close_pending:
+		return
+	var roster := session_transport.host_roster()
+	if roster.is_empty():
+		_finish_host_close()
+		return
+	host_close_pending = true
+	var requested_count := 0
+	for entry: Dictionary in roster:
+		if session_transport.host_remove_entity(int(entry.get("entity_id", 0)), COMPANY_CLOSE_REASON):
+			requested_count += 1
+	if requested_count != roster.size():
+		host_close_pending = false
+		station_notice = "Farflow changed while closing; confirm again."
+		return
+	station_notice = "The company is closing after every guest receives word."
+	print("FLUX2 farflow steward: host closing company with %d guest(s)" % requested_count)
+
+
+func _finish_host_close() -> void:
+	host_close_pending = false
+	_return_to_offline("The Farflow company is closed.")
+	print("FLUX2 farflow steward: company closed cleanly")
+
+
+func _return_to_offline(notice: String) -> void:
+	session_transport.stop()
+	session_steward.reset()
+	client_replica_active = false
+	client_input_sequence = 0
+	client_request_sequence = 0
+	last_client_snapshot_tick = -1
+	network_projectile_overflow = 0
+	if _start_match(tick_rate):
+		station_notice = notice
+		station_notice_seconds = 3.0
+
+
+func _session_guest_name(entity_id: int) -> String:
+	for entry: Dictionary in session_transport.host_roster():
+		if int(entry.get("entity_id", 0)) == entity_id:
+			return String(entry.get("name", "Traveller")).left(SessionTransport.MAX_PLAYER_NAME_LENGTH)
+	return "Traveller %d" % entity_id
+
+
+static func _roster_has_entity(roster: Array[Dictionary], entity_id: int) -> bool:
+	if entity_id < 2 or entity_id > SessionTransport.MAX_PLAYERS:
+		return false
+	for entry: Dictionary in roster:
+		if int(entry.get("entity_id", 0)) == entity_id and int(entry.get("peer_id", 0)) > SessionTransport.SERVER_PEER_ID:
+			return true
+	return false
 
 
 func _session_compatibility_signature() -> String:
@@ -1283,6 +1419,38 @@ func _session_hearth_lines() -> Array:
 	return lines
 
 
+func _session_ledger_lines() -> Array:
+	if not session_transport.is_host():
+		return ["HOST STEWARDSHIP ONLY", "Open Host Farflow to keep a company Ledger"]
+	var roster := session_transport.host_roster()
+	if roster.is_empty():
+		return ["NO CONNECTED GUESTS", "Returning reservations are never selectable"]
+	var selected_id := session_steward.selected_entity_id
+	var selected_line := "NONE NAMED · F SELECTS FIRST"
+	if _roster_has_entity(roster, selected_id):
+		selected_line = "NAMED: %s" % _session_guest_name(selected_id).to_upper()
+	return [
+		"%d CONNECTED GUEST%s" % [roster.size(), "" if roster.size() == 1 else "S"],
+		selected_line,
+		"F selects the next connected traveller",
+		"Selection alone takes no action",
+	]
+
+
+func _session_parting_lines() -> Array:
+	if not session_transport.is_host():
+		return ["HOST STEWARDSHIP ONLY", "Guests cannot ring this Bell"]
+	var roster := session_transport.host_roster()
+	if not _roster_has_entity(roster, session_steward.selected_entity_id):
+		return ["NO TRAVELLER NAMED", "Use the Company Ledger first", "One press can never dismiss a guest"]
+	var selected_id := session_steward.selected_entity_id
+	var selected_name := _session_guest_name(selected_id).to_upper()
+	if session_steward.is_armed(SessionSteward.Action.RELEASE_GUEST, selected_id, world.tick):
+		var remaining_seconds := float(session_steward.remaining_ticks(world.tick)) / float(maxi(1, tick_rate))
+		return ["CONFIRM RELEASE: %s" % selected_name, "F confirms · %.1fs remain" % remaining_seconds, "No return reservation will remain"]
+	return ["NAMED: %s" % selected_name, "F arms a three-second release", "A second matching press must confirm"]
+
+
 func _start_requested_farflow() -> void:
 	match requested_farflow_mode:
 		"host":
@@ -1391,10 +1559,35 @@ func _begin_shared_practice() -> bool:
 	current_position = _player_position()
 	previous_position = current_position
 	_publish_session_event({"type": "practice_started", "entity_id": SessionTransport.SERVER_PEER_ID})
+	if requested_steward_smoke and authoritative_session.session_round.serial == 2:
+		steward_smoke_due_tick = world.tick + world.config.milliseconds_to_ticks(250)
 	station_notice = "The Proving Court opens. First to three."
 	station_notice_seconds = 2.0
 	print("FLUX2 farflow hearth: Proving Court round started at host tick %d" % world.tick)
 	return true
+
+
+func _update_steward_smoke() -> void:
+	if not requested_steward_smoke or steward_smoke_sent or steward_smoke_due_tick < 0 or world.tick < steward_smoke_due_tick:
+		return
+	var roster := session_transport.host_roster()
+	if roster.is_empty():
+		return
+	var selected_entity_id := session_steward.cycle_guest(roster)
+	var confirmation_ticks := world.config.milliseconds_to_ticks(STEWARD_CONFIRMATION_MS)
+	var armed := session_steward.request_release(world.tick, confirmation_ticks)
+	var confirmed := session_steward.request_release(world.tick, confirmation_ticks)
+	if (
+		selected_entity_id > 0
+		and armed == SessionSteward.Decision.ARMED
+		and confirmed == SessionSteward.Decision.CONFIRMED
+		and session_transport.host_remove_entity(selected_entity_id, GUEST_RELEASE_REASON)
+	):
+		steward_smoke_sent = true
+		print("FLUX2 farflow steward smoke: confirmed release sent for entity %d" % selected_entity_id)
+		return
+	push_error("FLUX2 farflow steward smoke failed to confirm release")
+	steward_smoke_sent = true
 
 
 func _return_to_hearth() -> bool:
@@ -1820,6 +2013,17 @@ func _requested_rematch_smoke() -> bool:
 
 static func has_rematch_smoke_argument(argument: String) -> bool:
 	return argument == "--farflow-smoke-rematch"
+
+
+func _requested_steward_smoke() -> bool:
+	for argument: String in OS.get_cmdline_user_args():
+		if has_steward_smoke_argument(argument):
+			return true
+	return false
+
+
+static func has_steward_smoke_argument(argument: String) -> bool:
+	return argument == "--farflow-smoke-steward"
 
 
 static func reconnect_smoke_prerequisites_met(

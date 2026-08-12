@@ -40,8 +40,9 @@ even when design documentation already exists.
     dense-edge/clear-lane composition, district landmarks, and pixel direction
   - [ ] Offline-complete stations plus privacy-safe friends/presence, host
     teams/rules/practice/travel tools, and Garuda Sway/Windows acceptance
-  - [x] Fixed-point walk-up focus plus seven diegetic stations: Movement Guide,
-    Practice Bell, Champion Loom, Farflow Charter, Session Hearth and ENet Host/Join gates with bubbles
+  - [x] Fixed-point walk-up focus plus nine diegetic stations: Movement Guide,
+    Practice Bell, Champion Loom, Charter, Hearth, Host/Join gates, Company Ledger
+    and Parting Bell with transparent bubbles
   - [x] Direct-IP ENet host/join lifecycle, protocol/content handshake, eight-player
     cap, bounded validated input transport, mismatch refusal and loopback test
   - [x] Stable host/guest actors, host-authoritative input and movement, bounded
@@ -63,6 +64,8 @@ even when design documentation already exists.
     score/time results and synchronized return to the Hearth
   - [x] Eight collision-cleared Hearth return positions, persistent round
     countdown/rules and a same-roster readiness loop proven through Round 2
+  - [x] Host-only Company Ledger selection, double-confirm Parting Bell release
+    and double-confirm company close with readable reasons and revoked return paths
   - [x] Windows/Bash doctor, test, run and package entry points plus a self-cleaning
     source two-process host/join/move/emote/reconnect acceptance journey
   - [ ] Install pinned export templates and record packaged Windows/physical
@@ -1823,8 +1826,8 @@ F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
 left/right sticks, right trigger, west/east face buttons, and shoulders. The
 rate never mutates inside a running match.
 
-The eastern **Farflow Charter**, **Host Farflow**, **Join Farflow**, and
-**Session Hearth** stations
+The eastern **Farflow Charter**, **Host Farflow**, **Join Farflow**,
+**Session Hearth**, **Company Ledger**, and **Parting Bell** stations
 expose the first ENet friend-session boundary without a menu. Before hosting,
 the player chooses Open Commons (8/social), Sparring Circle (4/combat), or Duel
 Knot (2/host-reset); capacity and traveller-damage/reset rules are visible and
@@ -1841,12 +1844,15 @@ spawn wards, knockout/respawn state, a visible result and automatic return to
 eight safe positions around the actual Hearth. Readiness resets there, the HUD
 names the next round/countdown, and the same company can enter Round 2 without
 reopening Farflow. A dropped guest can use Join Farflow within 15 seconds to reclaim
-its exact in-memory actor. Protocol 19 / snapshot schema 6 assign and validate
+its exact in-memory actor. The host can safely review connected guests in the
+Ledger and must confirm release at the separate Bell; closing the whole company
+also requires a second Host Farflow press. Affected guests receive the reason,
+and administrative departures cannot reclaim their actor. Protocol 20 / snapshot schema 6 assign and validate
 the sealed Charter and replicate authoritative court state; cross-platform
 package proof remains next. See the
 [networking contract](docs/NETWORKING.md).
 
-The current simulation uses protocol 19, snapshot schema 6 and preference schema 3: Space invokes the semantic jump
+The current simulation uses protocol 20, snapshot schema 6 and preference schema 3: Space invokes the semantic jump
 action, Shift sprints, Ctrl/C directly slides, and primary no longer aliases
 Space. Schema-v1/v2 defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision

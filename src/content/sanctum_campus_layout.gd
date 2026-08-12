@@ -23,8 +23,8 @@ const ALLOWED_STYLES: Array[String] = ["garden", "nexus", "archive", "wayfarer",
 const ALLOWED_OCCLUSION: Array[String] = ["los_cutaway", "low_never_occludes"]
 const ALLOWED_ROUTE_KINDS: Array[String] = ["ordinary", "advanced", "garden"]
 const ALLOWED_RESET_KINDS: Array[String] = ["movement", "practice"]
-const ALLOWED_STATION_KINDS: Array[String] = ["guide", "training", "champion", "farflow", "charter", "hearth"]
-const ALLOWED_STATION_COMMANDS: Array[String] = ["movement_guide", "training_reset", "champion_switch", "host_session", "join_session", "session_charter", "session_hearth"]
+const ALLOWED_STATION_KINDS: Array[String] = ["guide", "training", "champion", "farflow", "charter", "hearth", "ledger", "parting"]
+const ALLOWED_STATION_COMMANDS: Array[String] = ["movement_guide", "training_reset", "champion_switch", "host_session", "join_session", "session_charter", "session_hearth", "session_ledger", "session_parting"]
 const ALLOWED_STATION_AUTHORITIES: Array[String] = ["local", "host"]
 
 var data: Dictionary = {}
@@ -323,7 +323,7 @@ func validate() -> bool:
 						return _fail("Session Hearth gather spawns overlap")
 				gathered_points.append(gather_point)
 		stations_by_id[station_id] = station
-	for required_station_id: String in ["movement-guide", "training-reset", "champion-loom", "farflow-host", "farflow-join", "farflow-charter", "session-hearth"]:
+	for required_station_id: String in ["movement-guide", "training-reset", "champion-loom", "farflow-host", "farflow-join", "farflow-charter", "session-hearth", "company-ledger", "parting-bell"]:
 		if not stations_by_id.has(required_station_id):
 			return _fail("Sanctum campus is missing required station: %s" % required_station_id)
 

@@ -14,7 +14,7 @@ func run() -> int:
 func _test_repository_stations() -> void:
 	var layout := SanctumCampusLayout.new()
 	check(layout.load_from_file(CAMPUS_PATH), "campus loads for station focus")
-	equal(layout.stations_by_id.size(), 7, "walk-up slice exposes guide, practice, champion, Charter, Hearth and Farflow stations")
+	equal(layout.stations_by_id.size(), 9, "walk-up slice exposes play, Farflow and host-stewardship stations")
 	equal(
 		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(1_180_000, 780_000)),
 		"movement-guide",
@@ -49,6 +49,16 @@ func _test_repository_stations() -> void:
 		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(2_080_000, 620_000)),
 		"session-hearth",
 		"Session Hearth focuses at its world anchor",
+	)
+	equal(
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(2_300_000, 620_000)),
+		"company-ledger",
+		"Company Ledger focuses at its world anchor",
+	)
+	equal(
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(2_460_000, 620_000)),
+		"parting-bell",
+		"Parting Bell focuses at its world anchor",
 	)
 	equal(
 		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(1_280_000, 720_000)),

@@ -4,6 +4,7 @@ extends FluxTestSuite
 func run() -> int:
 	_test_validation_fails_closed()
 	_test_enet_loopback_handshake_and_input()
+	_test_host_administration()
 	_test_charter_assignment_and_capacity()
 	_test_reconnect_identity_and_host_loss()
 	return finish("session-transport")
@@ -50,6 +51,10 @@ func _test_validation_fails_closed() -> void:
 	check(SessionTransport._valid_reconnect_token(return_token), "host creates a typed 256-bit return token")
 	check(not SessionTransport._valid_reconnect_token(return_token.to_upper()), "return token encoding fails closed on alternate case")
 	check(not SessionTransport._valid_reconnect_token("a".repeat(62)), "short return token fails closed")
+	equal(SessionTransport._validated_administration_reason("  Company closed  "), "Company closed", "administration reason is bounded and trimmed")
+	equal(SessionTransport._validated_administration_reason(""), "", "empty administration reason fails closed")
+	equal(SessionTransport._validated_administration_reason("x".repeat(SessionTransport.MAX_ADMIN_REASON_LENGTH + 1)), "", "oversized administration reason fails closed")
+	equal(SessionTransport._validated_administration_reason("bad\nreason"), "", "control characters fail closed in administration reasons")
 
 
 func _test_enet_loopback_handshake_and_input() -> void:
@@ -164,6 +169,58 @@ func _test_enet_loopback_handshake_and_input() -> void:
 		equal(int(disconnected[0].get("entity_id", 0)), 2, "disconnect event preserves the released entity mapping")
 	host.stop()
 	check(not host.is_online() and not client.is_online(), "loopback peers close cleanly")
+
+
+func _test_host_administration() -> void:
+	var host := SessionTransport.new()
+	var client := SessionTransport.new()
+	var reason := "The host released you from the Farflow company."
+	check(host.start_host(0, _signature(), "Steward Host"), "steward host binds")
+	check(client.start_join("127.0.0.1", host.bound_port, _signature(), "River Guest"), "steward guest seeks host")
+	check(_poll_until(host, client, func() -> bool: return client.is_connected_client()), "steward guest completes guarded acceptance")
+	host.take_joined_peers()
+	check(not client.host_remove_entity(2, reason), "client cannot call the host-only removal boundary")
+	check(client._send_to(SessionTransport.SERVER_PEER_ID, {"kind": SessionTransport.PACKET_ADMIN_CLOSE, "reason": reason}), "forged administration packet reaches host packet boundary")
+	for _index: int in range(20):
+		host.poll()
+		client.poll()
+		OS.delay_msec(1)
+	equal(host.player_count(), 2, "host ignores client-forged administration packet")
+	check(host.take_disconnected_peers().is_empty(), "forged moderation emits no authoritative removal")
+	check(not host.host_remove_entity(1, reason), "host cannot target its own entity through guest removal")
+	check(not host.host_remove_entity(2, ""), "host cannot remove a guest without a readable reason")
+	check(host.host_remove_entity(2, reason), "host begins graceful reason-bearing guest removal")
+	check(_poll_until(host, client, func() -> bool: return host.player_count() == 1 and client.mode == SessionTransport.Mode.OFFLINE), "administrative removal reaches both peers")
+	equal(client.last_error, reason, "removed guest receives the exact bounded reason")
+	check(not client.can_reconnect(), "administratively removed guest loses the return capability")
+	equal(host.reserved_count(), 0, "administrative removal creates no return reservation")
+	var disconnected := host.take_disconnected_peers()
+	equal(disconnected.size(), 1, "host exposes one administrative departure")
+	if not disconnected.is_empty():
+		check(bool(disconnected[0].get("administrative", false)), "departure is explicitly administrative")
+		check(not bool(disconnected[0].get("reserved", true)), "administrative departure is final")
+		equal(String(disconnected[0].get("reason", "")), reason, "authoritative departure retains the public reason")
+	check(not host.host_remove_entity(2, reason), "removed entity cannot be targeted again")
+	var stubborn := SessionTransport.new()
+	var close_reason := "The host closed the Farflow company."
+	check(stubborn.start_join("127.0.0.1", host.bound_port, _signature(), "Stubborn Guest"), "unresponsive-client fixture seeks host")
+	check(_poll_until(host, stubborn, func() -> bool: return stubborn.is_connected_client()), "unresponsive-client fixture is accepted")
+	host.take_joined_peers()
+	check(host.host_remove_entity(2, close_reason), "host schedules bounded company-close notice")
+	equal(host._force_due_administrative_disconnects(Time.get_ticks_msec() + SessionTransport.ADMIN_DISCONNECT_GRACE_MS + 1), 1, "ignored administration notice reaches forced deadline")
+	var forced_removed := false
+	for _index: int in range(2_000):
+		host.poll()
+		if host.player_count() == 1:
+			forced_removed = true
+			break
+		OS.delay_msec(1)
+	check(forced_removed, "modified client cannot outwait final host removal")
+	equal(host.reserved_count(), 0, "forced administrative close also creates no reservation")
+	var forced_events := host.take_disconnected_peers()
+	check(not forced_events.is_empty() and bool(forced_events[0].get("administrative", false)) and String(forced_events[0].get("reason", "")) == close_reason, "forced departure preserves the company-close reason")
+	stubborn.stop()
+	host.stop()
 
 
 func _test_reconnect_identity_and_host_loss() -> void:

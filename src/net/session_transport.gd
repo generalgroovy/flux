@@ -18,6 +18,7 @@ const MAX_QUEUED_INPUTS: int = MAX_REMOTE_CLIENTS * 4
 const MAX_PLAYER_NAME_LENGTH: int = 24
 const CONNECT_TIMEOUT_MS: int = 5_000
 const RECONNECT_WINDOW_MS: int = 15_000
+const ADMIN_DISCONNECT_GRACE_MS: int = 250
 const RECONNECT_TOKEN_BYTES: int = 32
 const SERVER_PEER_ID: int = 1
 
@@ -28,6 +29,8 @@ const PACKET_INPUT: int = 4
 const PACKET_SNAPSHOT: int = 5
 const PACKET_REQUEST: int = 6
 const PACKET_RECONCILIATION: int = 7
+const PACKET_ADMIN_CLOSE: int = 8
+const MAX_ADMIN_REASON_LENGTH: int = 80
 const MAX_QUEUED_SNAPSHOTS: int = 2
 const MAX_QUEUED_REQUESTS: int = MAX_REMOTE_CLIENTS * 4
 const MAX_QUEUED_RECONCILIATIONS: int = 2
@@ -66,6 +69,8 @@ var entity_by_peer: Dictionary[int, int] = {}
 var name_by_peer: Dictionary[int, String] = {}
 var reconnect_token_by_peer: Dictionary[int, String] = {}
 var reconnect_reservations: Dictionary[String, Dictionary] = {}
+var administrative_disconnect_reason_by_peer: Dictionary[int, String] = {}
+var administrative_disconnect_deadline_by_peer: Dictionary[int, int] = {}
 var reconnect_token: String = ""
 var reconnect_address: String = ""
 var reconnect_port: int = 0
@@ -189,6 +194,8 @@ func poll() -> void:
 	if is_host():
 		_expire_reconnect_reservations(Time.get_ticks_msec())
 	peer.poll()
+	if is_host():
+		_force_due_administrative_disconnects(Time.get_ticks_msec())
 	if mode == Mode.CLIENT and peer.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
 		_disconnect_with_error("Host left the session")
 		return
@@ -359,6 +366,30 @@ func host_session_roster() -> Array[Dictionary]:
 	return result
 
 
+func host_remove_entity(entity_id: int, requested_reason: String) -> bool:
+	if not is_host() or entity_id < 2 or entity_id > MAX_PLAYERS:
+		return false
+	var reason := _validated_administration_reason(requested_reason)
+	if reason.is_empty():
+		return false
+	var target_peer_id: int = 0
+	for peer_id: int in accepted_peer_ids:
+		if int(entity_by_peer.get(peer_id, 0)) == entity_id:
+			target_peer_id = peer_id
+			break
+	if target_peer_id <= SERVER_PEER_ID:
+		return false
+	administrative_disconnect_reason_by_peer[target_peer_id] = reason
+	administrative_disconnect_deadline_by_peer[target_peer_id] = Time.get_ticks_msec() + ADMIN_DISCONNECT_GRACE_MS
+	if not _send_to(target_peer_id, {"kind": PACKET_ADMIN_CLOSE, "reason": reason}):
+		administrative_disconnect_reason_by_peer.erase(target_peer_id)
+		administrative_disconnect_deadline_by_peer.erase(target_peer_id)
+		return false
+	# Cooperative clients close on receipt. Poll enforces the same removal after
+	# a short bounded grace if a modified client ignores the reliable notice.
+	return true
+
+
 func broadcast_snapshot(snapshot: Dictionary) -> bool:
 	if not is_host() or not SessionSnapshot.validate(snapshot):
 		return false
@@ -455,6 +486,13 @@ func _handle_packet(sender_id: int, packet_bytes: PackedByteArray) -> void:
 				_disconnect_with_error(String(packet.get("reason", "Join refused")).left(80))
 		return
 	if mode == Mode.CLIENT:
+		if kind == PACKET_ADMIN_CLOSE:
+			var administration_reason := _validated_administration_reason(String(packet.get("reason", "")))
+			if administration_reason.is_empty():
+				return
+			_clear_return_path()
+			_disconnect_with_error(administration_reason)
+			return
 		if kind == PACKET_SNAPSHOT:
 			var snapshot_value: Variant = packet.get("snapshot")
 			if snapshot_value is Dictionary and SessionSnapshot.validate(snapshot_value):
@@ -560,10 +598,20 @@ func _on_peer_disconnected(peer_id: int) -> void:
 		var entity_id: int = entity_by_peer.get(peer_id, 0)
 		var disconnected_name: String = name_by_peer.get(peer_id, "Traveller")
 		var return_token: String = reconnect_token_by_peer.get(peer_id, "")
+		var administration_reason: String = administrative_disconnect_reason_by_peer.get(peer_id, "")
 		var index: int = accepted_peer_ids.find(peer_id)
 		if index >= 0:
 			accepted_peer_ids.remove_at(index)
-		if entity_id > 0 and _valid_reconnect_token(return_token):
+		if entity_id > 0 and not administration_reason.is_empty():
+			disconnected_peers.append({
+				"peer_id": peer_id,
+				"entity_id": entity_id,
+				"name": disconnected_name,
+				"reserved": false,
+				"administrative": true,
+				"reason": administration_reason,
+			})
+		elif entity_id > 0 and _valid_reconnect_token(return_token):
 			reconnect_reservations[return_token] = {
 				"entity_id": entity_id,
 				"name": disconnected_name,
@@ -577,6 +625,8 @@ func _on_peer_disconnected(peer_id: int) -> void:
 		entity_by_peer.erase(peer_id)
 		name_by_peer.erase(peer_id)
 		reconnect_token_by_peer.erase(peer_id)
+		administrative_disconnect_reason_by_peer.erase(peer_id)
+		administrative_disconnect_deadline_by_peer.erase(peer_id)
 		status_detail = _host_status()
 	elif peer_id == SERVER_PEER_ID:
 		_disconnect_with_error("Host left the session")
@@ -615,6 +665,8 @@ func _close_peer() -> void:
 	name_by_peer = {}
 	reconnect_token_by_peer = {}
 	reconnect_reservations = {}
+	administrative_disconnect_reason_by_peer = {}
+	administrative_disconnect_deadline_by_peer = {}
 	_hello_sent = false
 	_connect_started_ms = 0
 
@@ -660,6 +712,25 @@ func _expire_reconnect_reservations(now_ms: int) -> int:
 	return expired_tokens.size()
 
 
+func _force_due_administrative_disconnects(now_ms: int) -> int:
+	if not is_host() or peer == null:
+		return 0
+	var due_peer_ids: Array[int] = []
+	for peer_id: int in administrative_disconnect_deadline_by_peer:
+		if now_ms >= int(administrative_disconnect_deadline_by_peer[peer_id]):
+			due_peer_ids.append(peer_id)
+	due_peer_ids.sort()
+	for peer_id: int in due_peer_ids:
+		administrative_disconnect_deadline_by_peer.erase(peer_id)
+		if accepted_peer_ids.has(peer_id):
+			peer.disconnect_peer(peer_id, true)
+			# Some ENet backends defer the disconnect signal until the remote
+			# endpoint polls. Host authority must not depend on client cooperation.
+			if accepted_peer_ids.has(peer_id):
+				_on_peer_disconnected(peer_id)
+	return due_peer_ids.size()
+
+
 func _reconnect_token_for_current_endpoint() -> String:
 	if (
 		_valid_reconnect_token(reconnect_token)
@@ -689,6 +760,23 @@ static func _new_reconnect_token() -> String:
 	var bytes := Crypto.new().generate_random_bytes(RECONNECT_TOKEN_BYTES)
 	var token := bytes.hex_encode()
 	return token if _valid_reconnect_token(token) else ""
+
+
+func _clear_return_path() -> void:
+	reconnect_token = ""
+	reconnect_address = ""
+	reconnect_port = 0
+	reconnect_signature = ""
+
+
+static func _validated_administration_reason(requested_reason: String) -> String:
+	var reason := requested_reason.strip_edges()
+	if reason.is_empty() or reason.length() > MAX_ADMIN_REASON_LENGTH:
+		return ""
+	for character: String in reason:
+		if character.unicode_at(0) < 32:
+			return ""
+	return reason
 
 
 static func _valid_port(port: int, allow_automatic: bool) -> bool:

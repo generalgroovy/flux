@@ -92,7 +92,7 @@ The eastern Host/Join Farflow stations operate it without a detached menu; use
 `--join-address=IP`, `--session-port=24872` and `--player-name=Name` for direct-IP
 diagnostics. Its real loopback suite covers compatibility, bounded validated
 input, mismatch refusal and disconnect cleanup. Stable peer actors, host-side
-movement simulation and compact 60 Hz guest snapshots are live. Protocol 19 /
+movement simulation and compact 60 Hz guest snapshots are live. Protocol 20 /
 snapshot schema 6 carries bounded projectile lanes, target state, compact
 Hearth presence/readiness, packed Proving Court state and semantic
 feedback without moving any outcome authority to clients. Reliable
@@ -124,11 +124,18 @@ input. `--farflow-smoke-rematch` is combined by the maintained wrapper to prove
 the returned roster occupies the real Hearth, readies again and receives active
 Round 2; it is not a player-facing shortcut.
 
+The host reviews connected guests at the Company Ledger, which only changes a
+selection. Releasing that guest requires two Parting Bell presses within three
+seconds. Closing the entire company likewise requires two Host Farflow presses;
+both actions deliver a bounded reason, revoke the affected return path and
+create no 15-second reservation. The maintained journey finishes with
+`--farflow-smoke-steward`, proving that behavior after Round 2.
+
 Both 60 and 120 Hz simulations publish shared state at 60 snapshots per second.
 Semantic events are retained for four snapshots and deduplicated by stable ID;
 do not clear an event after only one unreliable send.
 
-Protocol 19 reserves a disconnected guest's exact actor for 15 seconds and
+Protocol 20 reserves a normally disconnected guest's exact actor for 15 seconds and
 binds return to a random in-memory capability plus the original name. A normal
 player uses Join Farflow again; `--farflow-smoke-reconnect` is test-only. Do not
 print, persist or add that capability to snapshots/diagnostics.

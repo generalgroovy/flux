@@ -49,6 +49,7 @@ var player_preferences: PlayerPreferences
 var player_sprite: WellspringCharacterSprite
 var session_transport: SessionTransport
 var session_steward: SessionSteward
+var spectator_focus: SpectatorFocus
 var authoritative_session: AuthoritativeSession
 var client_prediction: ClientPrediction
 var session_event_inbox: SessionEventInbox
@@ -105,6 +106,10 @@ var rematch_smoke_active_reported: bool = false
 var requested_steward_smoke: bool = false
 var steward_smoke_due_tick: int = -1
 var steward_smoke_sent: bool = false
+var requested_spectator_smoke: bool = false
+var spectator_smoke_active_reported: bool = false
+var spectator_smoke_handoff_reported: bool = false
+var spectator_smoke_round_reported: bool = false
 var host_close_pending: bool = false
 
 
@@ -155,8 +160,10 @@ func _ready() -> void:
 	requested_round_smoke = _requested_round_smoke()
 	requested_rematch_smoke = _requested_rematch_smoke()
 	requested_steward_smoke = _requested_steward_smoke()
+	requested_spectator_smoke = _requested_spectator_smoke()
 	session_transport = SessionTransport.new()
 	session_steward = SessionSteward.new()
+	spectator_focus = SpectatorFocus.new()
 	authoritative_session = AuthoritativeSession.new()
 	client_prediction = ClientPrediction.new()
 	session_event_inbox = SessionEventInbox.new()
@@ -251,7 +258,12 @@ func _process(delta: float) -> void:
 		client_prediction.advance_visual(delta)
 		if session_transport.is_connected_client() and client_prediction.is_ready():
 			current_position = client_prediction.presented_position_pixels()
-	if Input.is_action_just_pressed(InputRouter.INTERACT_ACTION):
+	if Input.is_action_just_pressed(InputRouter.SPECTATE_NEXT_ACTION) and _is_spectating():
+		var next_focus_id := spectator_focus.cycle_next()
+		if next_focus_id > 0:
+			station_notice = "Following %s." % _spectator_name(next_focus_id)
+			station_notice_seconds = 1.5
+	if Input.is_action_just_pressed(InputRouter.INTERACT_ACTION) and not _is_spectating():
 		_activate_focused_station()
 	if Input.is_action_just_pressed(InputRouter.EMOTE_ACTION):
 		_submit_session_request(SessionTransport.REQUEST_EMOTE)
@@ -261,7 +273,7 @@ func _process(delta: float) -> void:
 	var steps: int = 0
 	while accumulator_seconds >= fixed_delta and steps < MAX_CATCH_UP_STEPS:
 		previous_position = current_position
-		var pointer_world_position := Vector2(capture_pointer_world) if capture_pointer_world.x >= 0 else get_viewport().get_mouse_position() + _camera_origin(current_position)
+		var pointer_world_position := Vector2(capture_pointer_world) if capture_pointer_world.x >= 0 else get_viewport().get_mouse_position() + _camera_origin(_camera_focus_position(current_position))
 		var command: SimCommand = input_router.sample(
 			world.tick,
 			current_position,
@@ -271,12 +283,13 @@ func _process(delta: float) -> void:
 			command = SimCommand.new(world.tick, input_router.entity_id, 1000, 0, 0, 0, 1000, 0)
 			prediction_smoke_inputs_sent += 1
 		if session_transport.is_connected_client():
-			client_input_sequence += 1
-			if not session_transport.send_input(client_input_sequence, command):
-				station_notice = "Farflow input could not reach the host."
-				station_notice_seconds = 1.0
-			if client_prediction.queue_input(client_input_sequence, command):
-				current_position = client_prediction.presented_position_pixels()
+			if not _is_spectating():
+				client_input_sequence += 1
+				if not session_transport.send_input(client_input_sequence, command):
+					station_notice = "Farflow input could not reach the host."
+					station_notice_seconds = 1.0
+				if client_prediction.queue_input(client_input_sequence, command):
+					current_position = client_prediction.presented_position_pixels()
 			if (
 				requested_prediction_smoke
 				and prediction_smoke_started
@@ -334,6 +347,8 @@ func _send_host_reconciliations() -> void:
 	for roster_entry: Dictionary in session_transport.host_roster():
 		var peer_id := int(roster_entry.get("peer_id", 0))
 		var entity_id := int(roster_entry.get("entity_id", 0))
+		if authoritative_session.input_locked(entity_id):
+			continue
 		var reconciliation := authoritative_session.capture_reconciliation(entity_id)
 		if reconciliation.is_empty() or not session_transport.send_reconciliation(peer_id, reconciliation):
 			push_warning("Farflow could not send reconciliation for entity %d" % entity_id)
@@ -342,7 +357,8 @@ func _send_host_reconciliations() -> void:
 func _draw() -> void:
 	var alpha: float = clampf(accumulator_seconds * float(tick_rate), 0.0, 1.0)
 	var rendered_position: Vector2 = previous_position.lerp(current_position, alpha)
-	var camera_origin: Vector2 = _camera_origin(rendered_position)
+	var camera_focus_position := _camera_focus_position(rendered_position)
+	var camera_origin: Vector2 = _camera_origin(camera_focus_position)
 	draw_set_transform(-camera_origin)
 	campus_renderer.draw(self, campus_layout, world.tick)
 	_draw_practice_targets(camera_origin)
@@ -362,6 +378,10 @@ func _draw() -> void:
 	var state: PlayerState = _local_player_state()
 	if state == null:
 		return
+	var spectating := _is_spectating()
+	var observed_state: PlayerState = _spectator_state() if spectating else state
+	if observed_state == null:
+		observed_state = state
 	_draw_remote_travellers(camera_origin, state.entity_id)
 	var presentation_state: PlayerState = client_prediction.predicted_state if session_transport.is_connected_client() and client_prediction.is_ready() else state
 	var presentation := JumpPresentation.sample(presentation_state, world.config, alpha, player_preferences.reduced_motion)
@@ -403,32 +423,38 @@ func _draw() -> void:
 	_draw_social_bubbles(camera_origin)
 	_draw_station_bubble(rendered_position)
 	draw_set_transform(Vector2.ZERO)
-	var rendered_screen_position: Vector2 = rendered_position - camera_origin
-	_draw_pov_mask(rendered_screen_position, Vector2(presentation_state.aim_x, presentation_state.aim_y), camera_origin)
+	var observed_position := Vector2(float(observed_state.position_x) / SimConfig.FIXED_SCALE, float(observed_state.position_y) / SimConfig.FIXED_SCALE)
+	var pov_position := observed_position if spectating else rendered_position
+	_draw_pov_mask(pov_position - camera_origin, Vector2(observed_state.aim_x, observed_state.aim_y), camera_origin)
 	draw_rect(Rect2(16, 14, 1248, 96), PANEL_COLOR, true)
 	draw_rect(Rect2(16, 14, 1248, 96), BRASS_COLOR.darkened(0.3), false, 2.0)
-	var champion_data: Dictionary = champion_catalog.champion(selected_champion_id)
-	var champion_name := String(champion_data.get("display_name", selected_champion_id))
+	var observed_champion_id := champion_catalog.champion_id_from_wire(observed_state.champion_wire_id)
+	var champion_data: Dictionary = champion_catalog.champion(observed_champion_id)
+	var champion_name := String(champion_data.get("display_name", observed_champion_id))
 	var champion_kit: Dictionary = champion_data.get("foundation_kit", {})
 	var primary_ability: Dictionary = ability_catalog.ability(String(champion_kit.get("primary", "")))
 	var active_ability: Dictionary = ability_catalog.ability(String(champion_kit.get("active_1", "")))
 	var primary_name := String(primary_ability.get("display_name", "PRIMARY"))
 	var active_name := String(active_ability.get("display_name", "ACTIVE"))
 	var location_name := "PROVING COURT" if int(_current_round_state().get("phase", SessionRound.Phase.HEARTH)) != SessionRound.Phase.HEARTH else "THE WELLSPRING"
-	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "%s · %s" % [champion_name.to_upper(), location_name], HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
-	var movement_name: String = String(PlayerState.MovementMode.keys()[presentation_state.movement_mode]).replace("_", " ")
-	draw_string(ThemeDB.fallback_font, Vector2(400, 40), "%s · %s" % [movement_name, _readable_event(presentation_state)], HORIZONTAL_ALIGNMENT_RIGHT, 280.0, 13, ATTUNEMENT_COLOR)
-	_draw_resource_bar(Rect2(700, 24, 168, 20), "HEALTH", state.health, state.health_maximum, Color("d9634f"))
-	_draw_resource_bar(Rect2(884, 24, 168, 20), "FLUX", state.flux, state.flux_maximum, FLUX_COLOR)
-	_draw_resource_bar(Rect2(1068, 24, 168, 20), "STAMINA", state.stamina, state.stamina_maximum, ATTUNEMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "WASD MOVE · SHIFT SPRINT · CTRL/C SLIDE · SPACE JUMP · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
+	var observed_name := _spectator_name(observed_state.entity_id).to_upper() if spectating else champion_name.to_upper()
+	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "%s · %s" % ["WATCHING %s" % observed_name if spectating else observed_name, location_name], HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
+	var movement_name: String = String(PlayerState.MovementMode.keys()[observed_state.movement_mode]).replace("_", " ")
+	var state_line := "NEXT GATHERING · %s" % champion_name.to_upper() if spectating else "%s · %s" % [movement_name, _readable_event(presentation_state)]
+	draw_string(ThemeDB.fallback_font, Vector2(400, 40), state_line, HORIZONTAL_ALIGNMENT_RIGHT, 280.0, 13, ATTUNEMENT_COLOR)
+	_draw_resource_bar(Rect2(700, 24, 168, 20), "HEALTH", observed_state.health, observed_state.health_maximum, Color("d9634f"))
+	_draw_resource_bar(Rect2(884, 24, 168, 20), "FLUX", observed_state.flux, observed_state.flux_maximum, FLUX_COLOR)
+	_draw_resource_bar(Rect2(1068, 24, 168, 20), "STAMINA", observed_state.stamina, observed_state.stamina_maximum, ATTUNEMENT_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "TAB / D-PAD RIGHT FOLLOW NEXT · YOU JOIN AT THE HEARTH" if spectating else "WASD MOVE · SHIFT SPRINT · CTRL/C SLIDE · SPACE JUMP · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
 	draw_string(ThemeDB.fallback_font, Vector2(700, 70), _session_label(), HORIZONTAL_ALIGNMENT_RIGHT, 536.0, 12, ATTUNEMENT_COLOR if session_transport.is_online() else PALE_STONE_COLOR)
 	var view_description := "FULL" if player_preferences.pov_mode == PlayerPreferences.POV_FULL else "CONE %d°/%d" % [player_preferences.pov_angle_degrees, player_preferences.pov_range]
 	draw_string(
 		ThemeDB.fallback_font,
 		Vector2(32, 96),
-		"LMB %s · RMB/E %s · F INTERACT · T HELLO · F8 VIEW %s"
-		% [primary_name.to_upper(), _active_hint(state, active_name, active_ability), view_description],
+		("ROUND INPUT LOCKED · T HELLO · F8 VIEW %s" % view_description) if spectating else (
+			"LMB %s · RMB/E %s · F INTERACT · T HELLO · F8 VIEW %s"
+			% [primary_name.to_upper(), _active_hint(state, active_name, active_ability), view_description]
+		),
 		HORIZONTAL_ALIGNMENT_LEFT,
 		-1.0,
 		13,
@@ -749,7 +775,7 @@ func _sync_session_transport() -> void:
 			selected_charter_id = session_transport.session_charter_id
 		client_replica_active = true
 		input_router.entity_id = session_transport.local_entity_id
-		if client_prediction.local_entity_id != session_transport.local_entity_id:
+		if not _is_spectating() and client_prediction.local_entity_id != session_transport.local_entity_id:
 			if not client_prediction.configure(world.config, world.collision, session_transport.local_entity_id):
 				push_error("Farflow prediction could not bind the local traveller")
 				return
@@ -764,6 +790,7 @@ func _sync_session_transport() -> void:
 				session_names_by_entity = SessionSnapshot.names(snapshot)
 				session_hearth_values = SessionSnapshot.hearth_values(snapshot)
 				session_round_values = SessionSnapshot.round_values(snapshot)
+				_reconcile_spectator_focus()
 				_prune_remote_player_sprites()
 				var unseen_events := session_event_inbox.take_unseen(world.combat_events)
 				world.combat_events = unseen_events
@@ -801,7 +828,9 @@ func _sync_session_transport() -> void:
 					if reconnect_smoke_stage == 0:
 						reconnect_smoke_entity_id = session_transport.local_entity_id
 						reconnect_smoke_stage = 1
-						reconnect_smoke_delay_seconds = 0.25
+						# Leave enough time for the maintained third-process smoke to join
+						# the live court before this original traveller tests reconnection.
+						reconnect_smoke_delay_seconds = 2.0
 					elif reconnect_smoke_stage == 3 and session_transport.local_entity_id == reconnect_smoke_entity_id:
 						reconnect_smoke_stage = 4
 						print("FLUX2 farflow reconnect smoke: returned entity %d" % reconnect_smoke_entity_id)
@@ -816,7 +845,7 @@ func _sync_session_transport() -> void:
 					_submit_session_request(SessionTransport.REQUEST_READY_TOGGLE)
 					print("FLUX2 farflow rematch smoke: guest gathered and ready for round 2")
 		var reconciliations := session_transport.take_reconciliations()
-		if not reconciliations.is_empty():
+		if not reconciliations.is_empty() and not _is_spectating():
 			var local_authority := _local_player_state()
 			var authority_event := local_authority.last_event if local_authority != null else "network_snapshot"
 			if client_prediction.reconcile(reconciliations.back(), authority_event, player_preferences.reduced_motion):
@@ -839,6 +868,7 @@ func _sync_session_transport() -> void:
 		network_projectile_overflow = 0
 		session_hearth_values = PackedInt32Array()
 		session_round_values = PackedInt32Array()
+		spectator_focus.reset()
 		if _start_match(tick_rate):
 			station_notice = disconnect_message if not disconnect_message.is_empty() else "The Farflow gate is closed."
 			station_notice_seconds = 3.0
@@ -1022,6 +1052,15 @@ func _ingest_session_feedback(events: Array[Dictionary]) -> void:
 					if int(rematch_state.get("phase", SessionRound.Phase.HEARTH)) == SessionRound.Phase.ACTIVE and int(rematch_state.get("serial", 0)) == 2:
 						rematch_smoke_active_reported = true
 						print("FLUX2 farflow rematch smoke: guest active in Proving Court serial 2")
+				if requested_spectator_smoke and session_transport.is_connected_client() and not spectator_smoke_round_reported:
+					var spectator_round := _current_round_state()
+					var local_is_participant := (spectator_round.get("entries", []) as Array).any(
+						func(entry_value: Variant) -> bool:
+							return int((entry_value as Dictionary).get("entity_id", 0)) == session_transport.local_entity_id
+					)
+					if int(spectator_round.get("phase", SessionRound.Phase.HEARTH)) == SessionRound.Phase.ACTIVE and int(spectator_round.get("serial", 0)) == 2 and local_is_participant:
+						spectator_smoke_round_reported = true
+						print("FLUX2 farflow spectator smoke: joined Proving Court serial 2 as entity %d" % session_transport.local_entity_id)
 			"practice_cancelled":
 				station_notice = "The Hearth waits for the changed roster."
 				station_notice_seconds = 2.0
@@ -1640,6 +1679,8 @@ func _start_match(requested_tick_rate: int) -> bool:
 	expanded_station_id = ""
 	station_notice = ""
 	station_notice_seconds = 0.0
+	if spectator_focus != null:
+		spectator_focus.reset()
 	emote_ready_tick_by_entity = {}
 	social_bubbles = []
 	combat_cues = []
@@ -2026,6 +2067,17 @@ static func has_steward_smoke_argument(argument: String) -> bool:
 	return argument == "--farflow-smoke-steward"
 
 
+func _requested_spectator_smoke() -> bool:
+	for argument: String in OS.get_cmdline_user_args():
+		if has_spectator_smoke_argument(argument):
+			return true
+	return false
+
+
+static func has_spectator_smoke_argument(argument: String) -> bool:
+	return argument == "--farflow-smoke-spectator"
+
+
 static func reconnect_smoke_prerequisites_met(
 	requested_emote: bool,
 	emote_sent: bool,
@@ -2140,6 +2192,57 @@ func _player_position() -> Vector2:
 	if state == null:
 		return current_position
 	return Vector2(float(state.position_x) / 1000.0, float(state.position_y) / 1000.0)
+
+
+func _reconcile_spectator_focus() -> void:
+	if spectator_focus == null:
+		return
+	var was_spectating := spectator_focus.active
+	var available_ids: Array[int] = []
+	for state: PlayerState in world.players:
+		if state.actor_kind == PlayerState.ActorKind.CHAMPION:
+			available_ids.append(state.entity_id)
+	var now_spectating := spectator_focus.reconcile(
+		_current_round_state(),
+		session_transport.local_entity_id,
+		available_ids,
+	)
+	if now_spectating and not was_spectating:
+		client_prediction.reset()
+		station_notice = "The Court is underway. Follow now; join at the Hearth."
+		station_notice_seconds = 4.0
+		if requested_spectator_smoke and not spectator_smoke_active_reported:
+			spectator_smoke_active_reported = true
+			print("FLUX2 farflow spectator smoke: late guest following entity %d" % spectator_focus.focus_entity_id)
+	elif was_spectating and not now_spectating:
+		client_prediction.reset()
+		current_position = _player_position()
+		previous_position = current_position
+		station_notice = "The company gathered. Your champion is active at the Hearth."
+		station_notice_seconds = 4.0
+		if requested_spectator_smoke and not spectator_smoke_handoff_reported:
+			spectator_smoke_handoff_reported = true
+			_submit_session_request(SessionTransport.REQUEST_READY_TOGGLE)
+			station_notice = "Hearth handoff complete; ready for the next Court."
+			station_notice_seconds = 4.0
+			print("FLUX2 farflow spectator smoke: Hearth handoff ready for entity %d" % session_transport.local_entity_id)
+
+
+func _is_spectating() -> bool:
+	return session_transport != null and session_transport.is_connected_client() and spectator_focus != null and spectator_focus.active and _spectator_state() != null
+
+
+func _spectator_state() -> PlayerState:
+	return world.player(spectator_focus.focus_entity_id) if world != null and spectator_focus != null and spectator_focus.focus_entity_id > 0 else null
+
+
+func _spectator_name(entity_id: int) -> String:
+	return String(session_names_by_entity.get(entity_id, "Traveller %d" % entity_id)).left(SessionTransport.MAX_PLAYER_NAME_LENGTH)
+
+
+func _camera_focus_position(local_position: Vector2) -> Vector2:
+	var state := _spectator_state() if _is_spectating() else null
+	return Vector2(float(state.position_x) / SimConfig.FIXED_SCALE, float(state.position_y) / SimConfig.FIXED_SCALE) if state != null else local_position
 
 
 func _local_player_state() -> PlayerState:

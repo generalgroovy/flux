@@ -89,7 +89,7 @@ func register_peers(events: Array[Dictionary]) -> int:
 		state.position_x = spawn_position.x
 		state.position_y = spawn_position.y
 		_apply_charter_team(state)
-		if session_round != null and session_round.active():
+		if session_round != null and session_round.phase != SessionRound.Phase.HEARTH:
 			state.health = 0
 			state.last_event = "round_wait"
 		else:
@@ -226,11 +226,16 @@ func commands_for_tick(local_command: SimCommand) -> Array[SimCommand]:
 
 
 func _round_input_locked(entity_id: int) -> bool:
-	return (
-		session_round != null
-		and session_round.phase == SessionRound.Phase.RESULT
-		and session_round.scores_by_entity.has(entity_id)
-	)
+	if session_round == null or session_round.phase == SessionRound.Phase.HEARTH:
+		return false
+	# Every nonparticipant remains an inert next-gathering observer. During the
+	# result, participants are frozen as well. This is host authority, not a
+	# cooperative client convention.
+	return not session_round.scores_by_entity.has(entity_id) or session_round.phase == SessionRound.Phase.RESULT
+
+
+func input_locked(entity_id: int) -> bool:
+	return _round_input_locked(entity_id)
 
 
 func capture_snapshot() -> Dictionary:

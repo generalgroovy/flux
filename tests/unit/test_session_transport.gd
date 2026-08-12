@@ -141,9 +141,14 @@ func _test_enet_loopback_handshake_and_input() -> void:
 		{1: "Lantern Host", 2: "River Guest"},
 		[{"type": "projectile_spawned", "projectile_id": 1000, "owner_id": 2, "wire_id": CombatTuning.ECLIPSE_DISC_WIRE_ID}],
 	)
-	check(var_to_bytes({"kind": SessionTransport.PACKET_SNAPSHOT, "snapshot": snapshot}).size() <= 1_392, "normal two-player combat snapshot stays within one ENet MTU")
+	var snapshot_packet := SessionTransport._snapshot_wire_packet(snapshot)
+	check(not snapshot_packet.is_empty(), "normal snapshot packs into its bounded wire envelope")
+	check(var_to_bytes(snapshot_packet).size() <= SessionTransport.ENET_MTU_BYTES, "normal two-player combat snapshot stays within one ENet MTU")
+	var unpacked_snapshot := SessionTransport._snapshot_from_wire_packet(snapshot_packet)
+	equal(int(unpacked_snapshot.get("tick", -1)), source.tick, "compressed snapshot wire envelope round-trips exactly")
+	check(SessionTransport._snapshot_from_wire_packet({"raw_size": SessionTransport.MAX_SNAPSHOT_UNCOMPRESSED_BYTES + 1, "payload": PackedByteArray([1])}).is_empty(), "oversized snapshot expansion fails closed")
 	var reconciliation := ClientPrediction.capture_packet(guest, source.tick, 17)
-	check(var_to_bytes({"kind": SessionTransport.PACKET_RECONCILIATION, "reconciliation": reconciliation}).size() <= 1_392, "movement reconciliation stays within its own ENet MTU")
+	check(var_to_bytes({"kind": SessionTransport.PACKET_RECONCILIATION, "reconciliation": reconciliation}).size() <= SessionTransport.ENET_MTU_BYTES, "movement reconciliation stays within its own ENet MTU")
 	check(host.send_reconciliation(client.local_peer_id, reconciliation), "host sends scoped movement authority on a separate ordered channel")
 	check(_poll_until(host, client, func() -> bool: return not client.incoming_reconciliations.is_empty()), "client receives movement reconciliation through ENet")
 	var reconciliations := client.take_reconciliations()

@@ -12,7 +12,7 @@ func run() -> int:
 	for action: StringName in [
 		&"move_left", &"move_right", &"move_up", &"move_down",
 		&"aim_left", &"aim_right", &"aim_up", &"aim_down",
-		&"sprint", &"slide", &"jump", &"technique", &"interact", &"emote", &"primary", &"active_1",
+		&"sprint", &"slide", &"jump", &"technique", &"interact", &"emote", &"spectate_next", &"primary", &"active_1",
 		&"reset_match", &"toggle_debug_overlay", &"toggle_tick_rate",
 		&"toggle_movement_reference", &"toggle_pov_mode",
 		&"adjust_pov_angle", &"adjust_pov_range",
@@ -30,6 +30,7 @@ func run() -> int:
 	check(_has_mouse_button(&"primary", MOUSE_BUTTON_LEFT), "primary retains left mouse")
 	check(InputMap.action_get_events(&"primary").size() >= 2, "primary supports mouse and controller trigger")
 	check(InputMap.action_get_events(&"active_1").size() >= 3, "active one supports mouse, keyboard, and controller button")
+	check(InputMap.action_get_events(InputRouter.SPECTATE_NEXT_ACTION).size() >= 2, "spectator focus supports Tab and controller D-pad right")
 	_test_capture_pointer_parser()
 	return finish("input-router")
 
@@ -83,6 +84,8 @@ func _test_capture_pointer_parser() -> void:
 	check(not BootstrapScript.has_rematch_smoke_argument("--farflow-smoke-rematch=true"), "diagnostic rematch smoke switch fails closed on alternate syntax")
 	check(BootstrapScript.has_steward_smoke_argument("--farflow-smoke-steward"), "diagnostic stewardship smoke switch parses exactly")
 	check(not BootstrapScript.has_steward_smoke_argument("--farflow-smoke-steward=true"), "diagnostic stewardship smoke switch fails closed on alternate syntax")
+	check(BootstrapScript.has_spectator_smoke_argument("--farflow-smoke-spectator"), "diagnostic spectator smoke switch parses exactly")
+	check(not BootstrapScript.has_spectator_smoke_argument("--farflow-smoke-spectator=true"), "diagnostic spectator smoke switch fails closed on alternate syntax")
 	check(BootstrapScript.reconnect_smoke_prerequisites_met(false, false, false, false), "standalone reconnect smoke may begin after its first snapshot")
 	check(not BootstrapScript.reconnect_smoke_prerequisites_met(true, false, true, true), "combined smoke waits until the reliable social request is sent")
 	check(not BootstrapScript.reconnect_smoke_prerequisites_met(true, true, true, false), "combined smoke waits for authoritative movement confirmation")

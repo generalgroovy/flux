@@ -88,6 +88,24 @@ func _test_authoritative_presence_and_input() -> void:
 	equal(session.register_peers([{"peer_id": 45, "entity_id": 3, "name": "Late Guest"}]), 1, "active authority admits a late friend for the next gathering")
 	equal(world.player(3).health, 0, "late friend waits safely instead of entering the active result space")
 	equal(world.player(3).last_event, "round_wait", "late friend receives a readable next-round state")
+	var forged_late_input := {
+		"entity_id": 3,
+		"sequence": 1,
+		"move_x": 1000,
+		"move_y": -1000,
+		"held": SimCommand.HELD_PRIMARY | SimCommand.HELD_SPRINT,
+		"pressed": SimCommand.PRESSED_ACTIVE_1 | SimCommand.PRESSED_JUMP,
+		"aim_x": -1000,
+		"aim_y": 0,
+	}
+	equal(session.ingest_inputs([forged_late_input]), 1, "late spectator packet reaches host-owned command policy")
+	var late_commands := session.commands_for_tick(SimCommand.new(world.tick, 1))
+	equal(late_commands.size(), 3, "authority emits a command lane for the waiting actor")
+	equal(late_commands[2].move_x, 0, "nonparticipant movement is neutralized by host authority")
+	equal(late_commands[2].move_y, 0, "nonparticipant diagonal movement is neutralized")
+	equal(late_commands[2].held_actions, 0, "nonparticipant held casts and sprint are neutralized")
+	equal(late_commands[2].pressed_actions, 0, "nonparticipant jump and active presses are neutralized")
+	equal(int(session.last_processed_input_sequence_by_entity.get(3, -1)), -1, "neutralized spectator input is never acknowledged as simulated")
 	var late_snapshot := session.capture_snapshot()
 	check(SessionSnapshot.validate(late_snapshot), "late friend and active round subset share a valid snapshot")
 	equal((SessionSnapshot.round_state(late_snapshot).get("entries", []) as Array).size(), 2, "late friend cannot become an unspawned round participant")

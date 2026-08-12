@@ -27,7 +27,7 @@ Preserve those capabilities. Windows/Bash launch, test, package preflight and a
 self-cleaning source Farflow acceptance harness are now live. Actual package
 export is honestly blocked until matching 4.7.1 templates exist locally; keep
 that gate visible and continue with diegetic session settings and host
-administration without weakening the last green source checkpoint. Protocol 20
+administration without weakening the last green source checkpoint. Protocol 21
 seals one of three visible session Charters with host-owned 2/4/8 capacity,
 traveller damage teams and Practice Bell authority. The Session Hearth now
 replicates connected/returning presence, readiness and a host-owned shared-start
@@ -38,8 +38,12 @@ to validated positions around the real Hearth, where persistent countdown/rule
 presentation and reset readiness support a serial same-roster rematch through
 Round 2. Host-only Ledger selection, separate double-confirm release,
 double-confirm company close, readable reasons and non-reserved administrative
-departures are live. The next coherent slice is an authority-safe late-join
-spectator experience.
+departures are live. Late joiners now become host-input-locked observers, can
+cycle a stable replicated participant focus, receive a clear next-gathering HUD
+and automatically regain Hearth play for Round 2. Snapshot compression keeps
+the maximum fixture and live three-player journeys inside one ENet MTU. The next
+coherent slice is host-owned per-peer visibility filtering for
+limited-information network play.
 
 ## Immediate product order
 

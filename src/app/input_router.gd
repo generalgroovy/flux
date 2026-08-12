@@ -8,6 +8,7 @@ const ACTIVE_1_ACTION: StringName = &"active_1"
 const SLIDE_ACTION: StringName = &"slide"
 const INTERACT_ACTION: StringName = &"interact"
 const EMOTE_ACTION: StringName = &"emote"
+const SPECTATE_NEXT_ACTION: StringName = &"spectate_next"
 const AIM_DEADZONE: float = 0.25
 
 var entity_id: int
@@ -35,6 +36,8 @@ static func ensure_input_map() -> void:
 	_add_key(INTERACT_ACTION, KEY_F)
 	_ensure_action(EMOTE_ACTION)
 	_add_key(EMOTE_ACTION, KEY_T)
+	_ensure_action(SPECTATE_NEXT_ACTION)
+	_add_key(SPECTATE_NEXT_ACTION, KEY_TAB)
 	_ensure_action(PRIMARY_ACTION)
 	_add_mouse_button(PRIMARY_ACTION, MOUSE_BUTTON_LEFT)
 	_ensure_action(ACTIVE_1_ACTION)
@@ -61,6 +64,7 @@ static func ensure_input_map() -> void:
 	_add_joy_button(SLIDE_ACTION, JOY_BUTTON_A)
 	_add_joy_button(INTERACT_ACTION, JOY_BUTTON_Y)
 	_add_joy_button(EMOTE_ACTION, JOY_BUTTON_DPAD_UP)
+	_add_joy_button(SPECTATE_NEXT_ACTION, JOY_BUTTON_DPAD_RIGHT)
 
 
 static func _ensure_action(action: StringName) -> void:

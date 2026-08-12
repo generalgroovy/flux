@@ -1,5 +1,61 @@
 # FLUX2 agent worklog
 
+## 2026-08-12 — authority-safe late-join observer
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Advanced friend play to protocol 21. A guest accepted during an active or
+  result-phase Proving Court remains outside the participant roster and receives
+  a host-owned zero-input command; movement, casts, jumps and button holds cannot
+  influence the live round even if a modified client sends them.
+- Added a presentation-local spectator focus model over replicated public state.
+  It deterministically follows the lowest available participant, cycles with Tab
+  or controller D-pad right, survives participant departure/result state and
+  never converts an actual participant into an observer.
+- The camera, full/cone POV origin, compact Health/Flux/Stamina kit HUD and
+  next-gathering prompt follow the selected participant. The observer's own actor
+  remains inert; F is suppressed, T remains social, and no input/prediction or
+  reconciliation stream is sent while the court is locked.
+- On synchronized return, observer state clears, the local camera/actor return to
+  the real Hearth and ordinary validated readiness admits that traveller to
+  Round 2. No spectator-only world-state channel was added; host per-peer LOS
+  filtering remains the next limited-information gate.
+- Replaced raw public snapshot envelopes with validated, bounded FastLZ wire
+  envelopes. The receiver caps expansion, decodes without objects and validates
+  schema again; both the maximum eight-player fixture and live three-player
+  journey fit one 1,392-byte ENet MTU.
+- Extended Windows and Bash acceptance wrappers to launch a late third process
+  for Open Commons/Sparring Circle, verify observer focus, Hearth handoff and
+  Round-2 participation, and clean up all three processes. Duel Knot retains its
+  capacity-correct two-process path.
+
+Validation:
+
+- `scripts\test.cmd`: passed import, the full **14,740-assertion** suite and
+  independent 60/120 Hz protocol-21 boots with zero failures; spectator focus
+  14, authoritative session 111, session transport 154, session snapshot 51 and
+  input router 102 assertions all passed.
+- `scripts\smoke-farflow.cmd -Port 24937 -TickRate 120 -Charter open_commons
+  -TimeoutSeconds 45`: passed the complete three-process journey.
+- `scripts\smoke-farflow.cmd -Port 24938 -TickRate 60 -Charter sparring_circle
+  -TimeoutSeconds 45`: passed the equivalent journey; host/guest/late-guest stderr
+  remained empty and no late-observer prediction spam or ENet MTU warning remained.
+- `scripts\smoke-farflow.cmd -Port 24939 -TickRate 60 -Charter duel_knot
+  -TimeoutSeconds 45`: preserved the capacity-correct two-process journey.
+- Godot editor/import parsing, both boot logs and `git diff --check`: passed.
+
+Known limitations and next slice:
+
+- This is an observer over the same public replicated state, not a security claim
+  for fog-of-war play. Limited-information modes still need host-owned per-peer
+  actor/projectile/event/name omission, policy tests and bandwidth diagnostics.
+- Matching 4.7.1 export templates and physical Garuda Sway proof remain external
+  acceptance work; Bash wrapper parity is maintained but cannot run on this host.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-12 — reason-bearing host stewardship
 
 Branch: `codex/continuous-overhaul`

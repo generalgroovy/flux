@@ -9,9 +9,11 @@ charter="${FLUX2_SESSION_CHARTER:-open_commons}"
 log_root="$repo_root/.godot/farflow-smoke"
 host_log="$log_root/host.log"
 guest_log="$log_root/guest.log"
+late_log="$log_root/late-guest.log"
 mkdir -p -- "$log_root"
 : >"$host_log"
 : >"$guest_log"
+: >"$late_log"
 
 [[ "$tick_rate" == 60 || "$tick_rate" == 120 ]] || { printf 'FLUX2_TICK_RATE must be 60 or 120.\n' >&2; exit 2; }
 [[ "$port" =~ ^[0-9]+$ ]] && (( port >= 1024 && port <= 65535 )) || { printf 'FLUX2_SESSION_PORT must be 1024..65535.\n' >&2; exit 2; }
@@ -32,8 +34,9 @@ fi
 
 host_pid=''
 guest_pid=''
+late_pid=''
 cleanup() {
-  for pid in "$guest_pid" "$host_pid"; do
+  for pid in "$late_pid" "$guest_pid" "$host_pid"; do
     if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
       kill "$pid" 2>/dev/null || true
       wait "$pid" 2>/dev/null || true
@@ -67,6 +70,19 @@ wait_patterns "$host_pid" "$host_log" "FLUX2 farflow host: listening on UDP $por
 
 "$program" "${base_args[@]}" --tick-rate="$tick_rate" --farflow=join --join-address=127.0.0.1 --session-port="$port" '--player-name=River Guest' --farflow-smoke-emote --farflow-smoke-prediction --farflow-smoke-hearth --farflow-smoke-round --farflow-smoke-rematch --farflow-smoke-reconnect --farflow-smoke-steward >"$guest_log" 2>&1 &
 guest_pid=$!
+wait_patterns "$host_pid" "$host_log" \
+  'FLUX2 farflow hearth: Proving Court round started'
+
+if [[ "$charter" != duel_knot ]]; then
+  "$program" "${base_args[@]}" --tick-rate="$tick_rate" --farflow=join --join-address=127.0.0.1 --session-port="$port" '--player-name=Late Lantern' --farflow-smoke-spectator >"$late_log" 2>&1 &
+  late_pid=$!
+  wait_patterns "$late_pid" "$late_log" \
+    'FLUX2 farflow replica: local entity 3' \
+    'FLUX2 farflow spectator smoke: late guest following entity 1' \
+    'FLUX2 farflow spectator smoke: Hearth handoff ready for entity 3' \
+    'FLUX2 farflow spectator smoke: joined Proving Court serial 2 as entity 3'
+fi
+
 wait_patterns "$guest_pid" "$guest_log" \
   'FLUX2 farflow replica: local entity 2' \
   'FLUX2 farflow social: guest emote request sent' \
@@ -91,5 +107,12 @@ wait_patterns "$host_pid" "$host_log" \
   'FLUX2 farflow steward smoke: confirmed release sent for entity 2' \
   'FLUX2 farflow steward smoke: guest removed without reservation'
 
-printf 'PASS: Farflow host/join, shared HELLO, movement reconciliation, Hearth-to-Court round, exact-actor return, rematch and reason-bearing host stewardship passed at %s Hz on UDP %s.\n' "$tick_rate" "$port"
+if [[ "$charter" != duel_knot ]]; then
+  grep -Fq -- 'FLUX2 farflow host: joined entity 3 (Late Lantern)' "$host_log" || { printf 'Late spectator did not join. See %s\n' "$host_log" >&2; exit 1; }
+  spectator_result=', late-join spectating/Hearth handoff'
+else
+  spectator_result=''
+fi
+
+printf 'PASS: Farflow host/join, shared HELLO, movement reconciliation, Hearth-to-Court round%s, exact-actor return, rematch and reason-bearing host stewardship passed at %s Hz on UDP %s.\n' "$spectator_result" "$tick_rate" "$port"
 printf 'Logs: %s\n' "$log_root"

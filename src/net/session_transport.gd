@@ -13,6 +13,8 @@ const DEFAULT_PORT: int = 24_872
 const MAX_PLAYERS: int = 8
 const MAX_REMOTE_CLIENTS: int = MAX_PLAYERS - 1
 const MAX_PACKET_BYTES: int = 8_192
+const ENET_MTU_BYTES: int = 1_392
+const MAX_SNAPSHOT_UNCOMPRESSED_BYTES: int = MAX_PACKET_BYTES
 const MAX_PACKETS_PER_POLL: int = 64
 const MAX_QUEUED_INPUTS: int = MAX_REMOTE_CLIENTS * 4
 const MAX_PLAYER_NAME_LENGTH: int = 24
@@ -393,7 +395,9 @@ func host_remove_entity(entity_id: int, requested_reason: String) -> bool:
 func broadcast_snapshot(snapshot: Dictionary) -> bool:
 	if not is_host() or not SessionSnapshot.validate(snapshot):
 		return false
-	var packet := {"kind": PACKET_SNAPSHOT, "snapshot": snapshot}
+	var packet := _snapshot_wire_packet(snapshot)
+	if packet.is_empty():
+		return false
 	var all_sent: bool = true
 	for peer_id: int in accepted_peer_ids:
 		all_sent = _send_to(peer_id, packet, MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED, SNAPSHOT_CHANNEL) and all_sent
@@ -494,9 +498,8 @@ func _handle_packet(sender_id: int, packet_bytes: PackedByteArray) -> void:
 			_disconnect_with_error(administration_reason)
 			return
 		if kind == PACKET_SNAPSHOT:
-			var snapshot_value: Variant = packet.get("snapshot")
-			if snapshot_value is Dictionary and SessionSnapshot.validate(snapshot_value):
-				var snapshot: Dictionary = snapshot_value
+			var snapshot := _snapshot_from_wire_packet(packet)
+			if not snapshot.is_empty():
 				if incoming_snapshots.is_empty() or int(snapshot["tick"]) > int(incoming_snapshots.back()["tick"]):
 					incoming_snapshots.append(snapshot)
 					while incoming_snapshots.size() > MAX_QUEUED_SNAPSHOTS:
@@ -591,6 +594,46 @@ func _send_to(
 	peer.transfer_mode = transfer_mode
 	peer.transfer_channel = transfer_channel
 	return peer.put_packet(encoded) == OK
+
+
+static func _snapshot_wire_packet(snapshot: Dictionary) -> Dictionary:
+	if not SessionSnapshot.validate(snapshot):
+		return {}
+	var raw := var_to_bytes(snapshot)
+	if raw.is_empty() or raw.size() > MAX_SNAPSHOT_UNCOMPRESSED_BYTES:
+		return {}
+	var compressed := raw.compress(FileAccess.COMPRESSION_FASTLZ)
+	if compressed.is_empty():
+		return {}
+	var packet := {
+		"kind": PACKET_SNAPSHOT,
+		"raw_size": raw.size(),
+		"payload": compressed,
+	}
+	return packet if var_to_bytes(packet).size() <= ENET_MTU_BYTES else {}
+
+
+static func _snapshot_from_wire_packet(packet: Dictionary) -> Dictionary:
+	if typeof(packet.get("kind")) != TYPE_INT or int(packet["kind"]) != PACKET_SNAPSHOT or typeof(packet.get("raw_size")) != TYPE_INT:
+		return {}
+	var raw_size := int(packet["raw_size"])
+	var payload_value: Variant = packet.get("payload")
+	if (
+		raw_size < 1
+		or raw_size > MAX_SNAPSHOT_UNCOMPRESSED_BYTES
+		or typeof(payload_value) != TYPE_PACKED_BYTE_ARRAY
+	):
+		return {}
+	var payload: PackedByteArray = payload_value
+	if payload.is_empty() or payload.size() > MAX_PACKET_BYTES:
+		return {}
+	var raw := payload.decompress(raw_size, FileAccess.COMPRESSION_FASTLZ)
+	if raw.size() != raw_size:
+		return {}
+	var decoded: Variant = bytes_to_var(raw)
+	if not decoded is Dictionary or not SessionSnapshot.validate(decoded):
+		return {}
+	return decoded
 
 
 func _on_peer_disconnected(peer_id: int) -> void:

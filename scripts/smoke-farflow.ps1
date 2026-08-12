@@ -12,9 +12,11 @@ $logRoot = Join-Path $repoRoot '.godot\farflow-smoke'
 New-Item -ItemType Directory -Path $logRoot -Force | Out-Null
 $hostLog = Join-Path $logRoot 'host.log'
 $guestLog = Join-Path $logRoot 'guest.log'
+$lateLog = Join-Path $logRoot 'late-guest.log'
 $hostError = "$hostLog.err"
 $guestError = "$guestLog.err"
-foreach ($path in @($hostLog, $guestLog, $hostError, $guestError)) {
+$lateError = "$lateLog.err"
+foreach ($path in @($hostLog, $guestLog, $lateLog, $hostError, $guestError, $lateError)) {
     if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Force }
 }
 
@@ -58,7 +60,9 @@ function Wait-FluxSmokePattern([System.Diagnostics.Process]$Process, [string]$Ou
 
 $hostProcess = $null
 $guestProcess = $null
+$lateProcess = $null
 try {
+    $spectatorEnabled = $Charter -ne 'duel_knot'
     $charterDisplay = @{
         open_commons = 'OPEN COMMONS'
         sparring_circle = 'SPARRING CIRCLE'
@@ -71,6 +75,20 @@ try {
 
     $guestArguments = $baseArguments + @("--tick-rate=$TickRate", '--farflow=join', '--join-address=127.0.0.1', "--session-port=$Port", '--player-name=River Guest', '--farflow-smoke-emote', '--farflow-smoke-prediction', '--farflow-smoke-hearth', '--farflow-smoke-round', '--farflow-smoke-rematch', '--farflow-smoke-reconnect', '--farflow-smoke-steward')
     $guestProcess = Start-FluxSmokeProcess $guestArguments $guestLog $guestError
+    Wait-FluxSmokePattern $hostProcess $hostLog $hostError @(
+        'FLUX2 farflow hearth: Proving Court round started'
+    ) $deadline
+
+    if ($spectatorEnabled) {
+        $lateArguments = $baseArguments + @("--tick-rate=$TickRate", '--farflow=join', '--join-address=127.0.0.1', "--session-port=$Port", '--player-name=Late Lantern', '--farflow-smoke-spectator')
+        $lateProcess = Start-FluxSmokeProcess $lateArguments $lateLog $lateError
+        Wait-FluxSmokePattern $lateProcess $lateLog $lateError @(
+            'FLUX2 farflow replica: local entity 3',
+            'FLUX2 farflow spectator smoke: late guest following entity 1',
+            'FLUX2 farflow spectator smoke: Hearth handoff ready for entity 3',
+            'FLUX2 farflow spectator smoke: joined Proving Court serial 2 as entity 3'
+        ) $deadline
+    }
     Wait-FluxSmokePattern $guestProcess $guestLog $guestError @(
         'FLUX2 farflow replica: local entity 2',
         'FLUX2 farflow social: guest emote request sent',
@@ -84,7 +102,7 @@ try {
         'FLUX2 farflow rematch smoke: guest active in Proving Court serial 2',
         'FLUX2 farflow steward smoke: guest received release reason and return revoked'
     ) $deadline
-    Wait-FluxSmokePattern $hostProcess $hostLog $hostError @(
+    $hostPatterns = @(
         'FLUX2 farflow host: joined entity 2 (River Guest)',
         'FLUX2 farflow social: shared emote entity 2',
         'FLUX2 farflow hearth smoke: roster gathered and host ready',
@@ -95,11 +113,14 @@ try {
         'FLUX2 farflow rematch smoke: host gathered and ready for round 2',
         'FLUX2 farflow steward smoke: confirmed release sent for entity 2',
         'FLUX2 farflow steward smoke: guest removed without reservation'
-    ) $deadline
-    Write-Output "PASS: Farflow host/join, shared HELLO, movement reconciliation, Hearth-to-Court round, exact-actor return, rematch and reason-bearing host stewardship passed at $TickRate Hz on UDP $Port."
+    )
+    if ($spectatorEnabled) { $hostPatterns += 'FLUX2 farflow host: joined entity 3 (Late Lantern)' }
+    Wait-FluxSmokePattern $hostProcess $hostLog $hostError $hostPatterns $deadline
+    $spectatorResult = if ($spectatorEnabled) { ', late-join spectating/Hearth handoff' } else { '' }
+    Write-Output "PASS: Farflow host/join, shared HELLO, movement reconciliation, Hearth-to-Court round$spectatorResult, exact-actor return, rematch and reason-bearing host stewardship passed at $TickRate Hz on UDP $Port."
     Write-Output "Logs: $logRoot"
 } finally {
-    foreach ($process in @($guestProcess, $hostProcess)) {
+    foreach ($process in @($lateProcess, $guestProcess, $hostProcess)) {
         if ($null -ne $process -and -not $process.HasExited) {
             Stop-Process -Id $process.Id -Force
             $process.WaitForExit()

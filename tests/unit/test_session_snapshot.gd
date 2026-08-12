@@ -159,8 +159,11 @@ func _test_maximum_envelope_fits_transport() -> void:
 		world.players.append(target)
 	var snapshot := SessionSnapshot.capture(world, names_by_entity, events)
 	check(SessionSnapshot.validate(snapshot), "maximum public snapshot envelope validates")
-	var packet_size := var_to_bytes({"kind": SessionTransport.PACKET_SNAPSHOT, "snapshot": snapshot}).size()
-	check(packet_size <= SessionTransport.MAX_PACKET_BYTES, "maximum snapshot fits one guarded packet (%d/%d bytes)" % [packet_size, SessionTransport.MAX_PACKET_BYTES])
+	var wire_packet := SessionTransport._snapshot_wire_packet(snapshot)
+	var packet_size := var_to_bytes(wire_packet).size()
+	check(not wire_packet.is_empty(), "maximum public snapshot packs into a guarded wire envelope")
+	check(packet_size <= SessionTransport.ENET_MTU_BYTES, "maximum snapshot fits one ENet MTU (%d/%d bytes)" % [packet_size, SessionTransport.ENET_MTU_BYTES])
+	check(SessionTransport._snapshot_from_wire_packet(wire_packet) == snapshot, "maximum compressed snapshot round-trips exactly")
 
 
 func _test_snapshot_validation_fails_closed() -> void:

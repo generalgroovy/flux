@@ -2,7 +2,7 @@
 
 ## Current runnable boundary
 
-FLUX 2 protocol 20 / snapshot schema 6 exposes nine walk-up Wellspring stations,
+FLUX 2 protocol 21 / snapshot schema 6 exposes nine walk-up Wellspring stations,
 including the Farflow Charter, Session Hearth and host stewardship tools in
 the eastern Wellspring:
 
@@ -20,6 +20,16 @@ After a result, the connected roster gathers at eight collision-cleared points
 inside the actual Hearth interaction circle. Readiness resets, round serials
 remain monotonic, the HUD names the next round and live countdown, and the same
 company can start a rematch without reopening Farflow.
+
+A friend accepted after a court starts is a next-gathering observer, not a late
+participant. The host rejects their movement/ability authority, omits their
+reconciliation stream and keeps them out of scoring; their camera follows a
+replicated participant and Tab / controller D-pad right cycles stable available
+participant IDs. The HUD names the watched champion and explains the lock. On
+the synchronized Hearth return they regain their own actor, ready through the
+normal host-validated request and can join the next round. The observer receives
+only the existing public snapshot, so this creates no additional information
+channel; future limited-information modes still require per-peer host filtering.
 
 | Charter | Places | Traveller damage | Practice Bell |
 | --- | ---: | --- | --- |
@@ -44,10 +54,12 @@ renders the named remote traveller, and receives authoritative resources,
 movement, projectiles, training-target health and semantic feedback. `T` /
 controller D-pad up sends a shared HELLO bubble; the host also authorizes
 Practice Bell resets and per-actor Champion Loom attunement from authoritative
-station proximity. The render snapshot keeps the 8 KiB cap at eight travellers,
+station proximity. The render snapshot keeps the 8 KiB expansion cap at eight travellers,
 26 projectile lanes, four targets and 12 events; overflow is explicit in the
-guest HUD. A representative two-player combat snapshot and the post-Hearth
-round-start boundary stay within one 1,392-byte ENet MTU. Each guest also predicts
+guest HUD. Snapshots are validated, FastLZ-packed into a bounded protocol-21
+wire envelope, and validated again after bounded expansion. The maximum
+eight-player fixture and live three-player court stay within one 1,392-byte
+ENet MTU. Each participating guest also predicts
 only its own movement from at most
 48 sent inputs; a separate one-MTU ordered reconciliation carries full movement
 state and the last host-processed sequence. Small draw corrections decay,
@@ -117,11 +129,15 @@ guest validates active Round 2.
 `--farflow-smoke-steward` then confirms a host release and reports only after
 the guest receives the exact reason, clears its return capability and the host
 records a final departure without a reservation.
+`--farflow-smoke-spectator` is reserved for the maintained late guest: it reports
+only after following a participant, returning to the Hearth, readying and
+entering Round 2 as a participant.
 
-The maintained two-process acceptance wrappers combine those diagnostics in a
-safe order—HELLO request, authoritative movement/reconciliation, Hearth
-readiness, Proving Court entry, leave, exact-actor return, rematch, then host
-stewardship—and always clean up their processes:
+The maintained acceptance wrappers use two processes for Duel Knot and three
+for the larger Charters. They combine those diagnostics in a safe order—HELLO
+request, authoritative movement/reconciliation, Hearth readiness, Proving Court
+entry, late observation, leave, exact-actor return, observer Hearth handoff,
+rematch, then host stewardship—and always clean up their processes:
 
 ```bat
 scripts\smoke-farflow.cmd
@@ -182,8 +198,10 @@ change a champion speculatively.
 | First arena round | Playable foundation: one authored bounded court with individual combat teams, spawn wards, first-to-three/90-second scoring, authoritative knockout/respawn, result freeze and automatic Hearth return |
 | Court readability/rematch | Complete foundation: persistent rules/countdown, eight validated gather positions, reset readiness, monotonic serial and same-roster Round 2 pass 60/120 Hz process journeys |
 | Host stewardship | Complete foundation: stable host-only Ledger selection, separate double-confirm Parting Bell, double-confirm company close, bounded reliable reasons, revoked return capability, forged-packet refusal and live process proof |
+| Late-join observer | Complete foundation: host input lock, stable participant camera cycling, explicit HUD, no prediction/reconciliation stream, automatic Hearth handoff and Round-2 participation pass 60/120 Hz three-process journeys |
+| Per-peer visibility | Next: host-owned interest/LOS filtering and omission tests before any limited-information competitive mode |
 | Remote platform smoke | Windows and Garuda Linux direct-IP packages connect, move, leave and reconnect with diagnostics |
-| Later continuity | Client-process persistence, host restart, richer moderation, spectators and eventual host migration |
+| Later continuity | Client-process persistence, host restart, richer moderation and eventual host migration |
 
 The public lobby cap remains eight while the architecture reserves a later
 32-player scaling gate; no higher count is advertised until measured.

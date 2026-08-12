@@ -66,8 +66,10 @@ even when design documentation already exists.
     countdown/rules and a same-roster readiness loop proven through Round 2
   - [x] Host-only Company Ledger selection, double-confirm Parting Bell release
     and double-confirm company close with readable reasons and revoked return paths
-  - [x] Windows/Bash doctor, test, run and package entry points plus a self-cleaning
-    source two-process host/join/move/emote/reconnect acceptance journey
+  - [x] Late-court joiners become input-locked observers with stable participant
+    focus, Tab/D-pad cycling, a clear next-gathering HUD and automatic Hearth play
+  - [x] Windows/Bash doctor, test, run and package entry points plus self-cleaning
+    two/three-process host/join/move/observe/reconnect acceptance journeys
   - [ ] Install pinned export templates and record packaged Windows/physical
     Garuda proof; settings/travel stations, overlay parity, map UI, streaming,
     and destination persistence remain
@@ -1847,12 +1849,23 @@ reopening Farflow. A dropped guest can use Join Farflow within 15 seconds to rec
 its exact in-memory actor. The host can safely review connected guests in the
 Ledger and must confirm release at the separate Bell; closing the whole company
 also requires a second Host Farflow press. Affected guests receive the reason,
-and administrative departures cannot reclaim their actor. Protocol 20 / snapshot schema 6 assign and validate
+and administrative departures cannot reclaim their actor. Protocol 21 / snapshot schema 6 assign and validate
 the sealed Charter and replicate authoritative court state; cross-platform
 package proof remains next. See the
 [networking contract](docs/NETWORKING.md).
 
-The current simulation uses protocol 20, snapshot schema 6 and preference schema 3: Space invokes the semantic jump
+Friends who arrive after a court has opened remain outside its participant list:
+the host neutralizes every movement and ability input, the client sends no
+prediction stream, and the HUD follows a replicated participant. Tab or
+controller D-pad right cycles the stable participant order. When the company
+returns, the observer is placed at the Hearth, readies through the ordinary
+request path, and can enter the next round. Snapshot schema 6 now travels in a
+bounded compressed wire envelope whose maximum eight-player fixture and live
+three-player journeys fit one ENet MTU; protocol 21 rejects older peers. This
+spectator view adds no new information channel, but competitive limited-view
+modes still require host-side per-peer visibility filtering.
+
+The current simulation uses protocol 21, snapshot schema 6 and preference schema 3: Space invokes the semantic jump
 action, Shift sprints, Ctrl/C directly slides, and primary no longer aliases
 Space. Schema-v1/v2 defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision
@@ -1887,7 +1900,7 @@ tools, accessibility, and compatibility agree.
 | I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | In progress: direct-IP gates, stable authoritative actors, 60 Hz movement/combat/targets, HELLO/Bell/Loom, movement prediction/reconciliation, Hearth start, first bounded round and 15-second exact-actor return pass Windows localhost; moderation and packaged Garuda smoke next |
 | Sanctum V1 acceptance | Complete stations/overlays, LOS cutaways, charm/readability polish, offline/save/network/accessibility/performance, Garuda Sway and Windows packages/cleanup | First product acceptance |
 | J — first complete arena/mode | Original modular map, objectives, destruction/material safety, duel/team rules, bots, round/rematch/results | In progress: one authored bounded Proving Court now has host-owned spawns, wards, scoring, respawns, result and Hearth return; countdown presentation, rematch choice, bots, objectives and final arena art remain |
-| K — session continuity | Late join, reconnect, spectators, forced host migration, diagnostics, self-hostable online boundary | Planned |
+| K — session continuity | Late join, reconnect, spectators, forced host migration, diagnostics, self-hostable online boundary | In progress: exact-actor reconnect, reason-bearing stewardship and late-join observer-to-Hearth handoff pass real Windows process journeys; host restart/migration and packaged remote proof remain |
 | L — cooperative content | Enemy grammar, survival/siege, elite/boss, difficulty, save/rejoin stability | Planned |
 | M — systemic mode expansion | PvPvE expedition, roguelike dungeons, lane/stronghold experiment, then measured battle-royale slice | Planned |
 | N — roster/biome expansion | One accepted champion, ancestry, map biome, reaction pack, and enemy family at a time | Planned |

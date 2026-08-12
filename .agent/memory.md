@@ -6,7 +6,7 @@ each playable slice.
 ## Current green frontier — 2026-08-12
 
 - Branch: `codex/continuous-overhaul`.
-- Protocol 20, snapshot schema 6, player preference schema 3.
+- Protocol 21, snapshot schema 6, player preference schema 3.
 - Two basic champions, complete non-ability movement foundation, honest cone
   visibility, nine walk-up Wellspring stations, direct-IP Farflow, Charters,
   Hearth readiness and the first host-owned Proving Court round are live.
@@ -23,15 +23,19 @@ each playable slice.
   double-confirm Parting Bell; company close also requires two presses. Protocol
   reasons reach affected guests, administrative departures revoke return and
   clients cannot forge moderation.
-- Latest verification: `scripts\test.cmd` passed 14,709 assertions plus 60/120
-  Hz boots; Windows two-process Round-1-to-Round-2-to-stewardship source smoke
-  passed at 120 Hz/Open Commons on UDP 24928 and 60 Hz/Duel Knot on UDP 24929.
-  A deterministic 1280x720 Ledger capture was also visually inspected.
+- Late joins during active/result court state are input-locked observers: Tab or
+  D-pad right cycles stable available participants, the HUD names the focus and
+  next gathering, and Hearth return restores normal readiness/Round-2 play.
+- Snapshot schema 6 uses a bounded FastLZ wire envelope; the maximum eight-player
+  fixture and live three-player journeys stay within one 1,392-byte ENet MTU.
+- Latest verification: 14,740 assertions passed; Windows three-process
+  Round-1 spectator-to-Hearth-to-Round-2 journeys passed at 120 Hz/Open Commons
+  on UDP 24937 and 60 Hz/Sparring Circle on UDP 24938 with empty stderr logs.
 - Untracked `dist/` and `node_modules/` predate this slice and must remain
   untouched.
 
 ## Next acceptance-driven slice
 
-Give late joiners a useful spectator experience without entering or influencing
-the active round: replicated participant focus, safe camera cycling, clear
-next-gathering status, no hidden-state leak and automatic Hearth handoff.
+Add host-owned per-peer visibility/relevance envelopes so limited-information
+network modes omit actors, projectiles, cues, names and audio outside the legal
+view while full-view Wellspring and observer behavior remain intact.

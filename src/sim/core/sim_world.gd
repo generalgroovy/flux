@@ -69,6 +69,9 @@ func step(commands: Array[SimCommand]) -> bool:
 		if state == null:
 			last_error = "unknown entity %d" % command.entity_id
 			return false
+		if state.health <= 0:
+			_idle_defeated(state)
+			continue
 		state.aim_x = command.aim_x
 		state.aim_y = command.aim_y
 		state.primary_held = command.has_held(SimCommand.HELD_PRIMARY)
@@ -82,6 +85,9 @@ func step(commands: Array[SimCommand]) -> bool:
 			next_projectile_id += 1
 	for state: PlayerState in players:
 		if not seen.has(state.entity_id):
+			if state.health <= 0:
+				_idle_defeated(state)
+				continue
 			state.primary_held = false
 			PlayerResourcesSystem.step(state, config)
 			var idle_command := SimCommand.new(tick, state.entity_id, 0, 0, 0, 0, state.aim_x, state.aim_y)
@@ -96,6 +102,16 @@ func step(commands: Array[SimCommand]) -> bool:
 	projectiles = CombatSystem.advance_projectiles(projectiles, players, config, collision, combat_events)
 	tick += 1
 	return true
+
+
+static func _idle_defeated(state: PlayerState) -> void:
+	state.velocity_x = 0
+	state.velocity_y = 0
+	state.primary_held = false
+	state.pending_cast_wire_id = 0
+	state.pending_cast_ticks = 0
+	state.sprinting = false
+	state.movement_mode = PlayerState.MovementMode.IDLE
 
 
 func state_hash() -> String:

@@ -31,6 +31,17 @@
     {"id": "conservatory-route-reset", "district": "conservatory-gardens", "kind": "movement", "reset_group": "g2-conservatory", "bounds": [360, 560, 300, 260]},
     {"id": "proving-basin-reset", "district": "wayfarer-proving-quarter", "kind": "practice", "reset_group": "g2-proving", "bounds": [2180, 1130, 250, 170]}
   ],
+  "arena": {
+    "id": "proving-court-v1",
+    "district": "wayfarer-proving-quarter",
+    "bounds": [1820, 830, 660, 480],
+    "score_limit": 3,
+    "round_seconds": 90,
+    "result_seconds": 6,
+    "respawn_ms": 1800,
+    "spawn_protection_ms": 1200,
+    "spawns": [[1900, 860], [2420, 860], [1900, 1260], [2420, 1260], [1960, 1040], [2460, 1040], [1980, 1160], [2440, 1160]]
+  },
   "stations": [
     {"id": "movement-guide", "district": "nexus-commons", "kind": "guide", "command": "movement_guide", "authority": "local", "position": [1180, 780], "interaction_radius": 96, "title": "MOVEMENT GUIDE", "prompt": "F  STUDY THE ROUTES", "lines": ["SHIFT sprint  ·  CTRL/C slide", "SPACE hop  ·  hold or release", "V vault, wall skim, or air turn", "F closes this field note"]},
     {"id": "training-reset", "district": "nexus-commons", "kind": "training", "command": "training_reset", "authority": "host", "position": [1380, 780], "interaction_radius": 96, "title": "PRACTICE BELL", "prompt": "F  RESTORE THE COURT", "lines": ["Restores Health, Flux and Stamina", "Returns every local trial to its seed"]},

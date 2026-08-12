@@ -58,6 +58,9 @@ even when design documentation already exists.
     traveller-damage teams, Bell authority and validated handshake assignment
   - [x] Replicated Session Hearth roster/readiness, host-owned three-second
     practice start and roster-change cancellation through real 60/120 Hz journeys
+  - [x] Host-owned Proving Court round: authored two-to-eight-player spawns,
+    visible spawn wards, sealed bounds, knockout scoring, timed respawns,
+    score/time results and synchronized return to the Hearth
   - [x] Windows/Bash doctor, test, run and package entry points plus a self-cleaning
     source two-process host/join/move/emote/reconnect acceptance journey
   - [ ] Install pinned export templates and record packaged Windows/physical
@@ -1830,13 +1833,16 @@ are live. HELLO, Practice Bell, Champion Loom and training-target state are
 host-authorized and shared; guests predict only movement from a bounded input
 history and reconcile to peer-scoped host state. Connected/returning travellers
 appear at the Hearth; everyone can ready there and only the host can begin its
-three-second synchronized practice start. A dropped guest can use Join Farflow
-within 15 seconds to reclaim its exact in-memory actor. Protocol 18 assigns and
-validates the sealed Charter during handshake; cross-platform
+three-second synchronized start. The intact company then enters the bounded
+Proving Court, where the first-to-three/90-second round owns combat teams,
+spawn wards, knockout/respawn state, a visible result and automatic return to
+the Hearth. A dropped guest can use Join Farflow within 15 seconds to reclaim
+its exact in-memory actor. Protocol 19 / snapshot schema 6 assign and validate
+the sealed Charter and replicate authoritative court state; cross-platform
 package proof remains next. See the
 [networking contract](docs/NETWORKING.md).
 
-The current simulation uses protocol 18, snapshot schema 5 and preference schema 3: Space invokes the semantic jump
+The current simulation uses protocol 19, snapshot schema 6 and preference schema 3: Space invokes the semantic jump
 action, Shift sprints, Ctrl/C directly slides, and primary no longer aliases
 Space. Schema-v1/v2 defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision
@@ -1868,9 +1874,9 @@ tools, accessibility, and compatibility agree.
 | G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: Oh Tipi/S. Wayne candidate bodies, shared lift/shadow, landing cue, six walk-up stations, three Farflow Charters and sparring effigy are live; accepted champion art, remaining station flows and fallback taunt remain |
 | F2/G4 — systemic Sanctum | Structural/thermal reactions, authored traversal devices, input/controller UI, physics/chemistry practice and reset | Planned |
 | H1 — first ancestry/champion/spells | One approved body plan and character through loadout, unique taunt, dummy/bot, cues, replay, accessibility and platform source gates | Planned |
-| I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | In progress: direct-IP gates, stable authoritative actors, 60 Hz movement/combat/targets, HELLO/Bell/Loom, movement prediction/reconciliation and 15-second exact-actor return pass Windows localhost; packaged Garuda smoke next |
+| I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | In progress: direct-IP gates, stable authoritative actors, 60 Hz movement/combat/targets, HELLO/Bell/Loom, movement prediction/reconciliation, Hearth start, first bounded round and 15-second exact-actor return pass Windows localhost; moderation and packaged Garuda smoke next |
 | Sanctum V1 acceptance | Complete stations/overlays, LOS cutaways, charm/readability polish, offline/save/network/accessibility/performance, Garuda Sway and Windows packages/cleanup | First product acceptance |
-| J — first complete arena/mode | Original modular map, objectives, destruction/material safety, duel/team rules, bots, round/rematch/results | Planned |
+| J — first complete arena/mode | Original modular map, objectives, destruction/material safety, duel/team rules, bots, round/rematch/results | In progress: one authored bounded Proving Court now has host-owned spawns, wards, scoring, respawns, result and Hearth return; countdown presentation, rematch choice, bots, objectives and final arena art remain |
 | K — session continuity | Late join, reconnect, spectators, forced host migration, diagnostics, self-hostable online boundary | Planned |
 | L — cooperative content | Enemy grammar, survival/siege, elite/boss, difficulty, save/rejoin stability | Planned |
 | M — systemic mode expansion | PvPvE expedition, roguelike dungeons, lane/stronghold experiment, then measured battle-royale slice | Planned |

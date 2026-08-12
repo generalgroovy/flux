@@ -41,6 +41,7 @@ func draw(canvas: CanvasItem, layout: SanctumCampusLayout, presentation_tick: in
 		district_index += 1
 	for route_value: Variant in layout.data.get("routes", []):
 		_draw_route(canvas, route_value as Dictionary)
+	_draw_arena(canvas, layout.arena_definition)
 	for building_value: Variant in layout.data.get("buildings", []):
 		_draw_building(canvas, building_value as Dictionary)
 	for landmark_value: Variant in layout.data.get("landmarks", []):
@@ -49,6 +50,29 @@ func draw(canvas: CanvasItem, layout: SanctumCampusLayout, presentation_tick: in
 		_draw_station(canvas, station_value as Dictionary, presentation_tick)
 	for district_value: Variant in layout.data.get("districts", []):
 		_draw_district_label(canvas, district_value as Dictionary)
+
+
+func _draw_arena(canvas: CanvasItem, definition: Dictionary) -> void:
+	if definition.is_empty():
+		return
+	var bounds := SanctumCampusLayout._parse_bounds(definition.get("bounds", []))
+	canvas.draw_rect(Rect2(bounds), Color(BRASS, 0.22), false, 4.0)
+	canvas.draw_rect(Rect2(bounds.grow(-8)), Color(PARCHMENT, 0.16), false, 2.0)
+	var court_label := "PROVING COURT · FIRST %d" % int(definition.get("score_limit", 0))
+	var label_rect := Rect2(
+		Vector2(bounds.position.x + (bounds.size.x - 218) / 2, bounds.position.y + 48),
+		Vector2(218, 25),
+	)
+	canvas.draw_rect(label_rect, Color(PANEL, 0.76), true)
+	canvas.draw_rect(label_rect, Color(BRASS, 0.5), false, 1.0)
+	canvas.draw_string(ThemeDB.fallback_font, label_rect.position + Vector2(10, 17), court_label, HORIZONTAL_ALIGNMENT_LEFT, label_rect.size.x - 20.0, 12, PARCHMENT)
+	for spawn_value: Variant in definition.get("spawns", []):
+		var point_values: Array = spawn_value
+		var point := Vector2(float(point_values[0]), float(point_values[1]))
+		canvas.draw_circle(point, 14.0, Color(PANEL, 0.68))
+		canvas.draw_arc(point, 14.0, 0.0, TAU, 16, Color(CYAN, 0.56), 2.0)
+		canvas.draw_line(point + Vector2(-5, 0), point + Vector2(5, 0), Color(PARCHMENT, 0.48), 1.0)
+		canvas.draw_line(point + Vector2(0, -5), point + Vector2(0, 5), Color(PARCHMENT, 0.48), 1.0)
 
 
 func _draw_water(canvas: CanvasItem, size: Vector2i, top: int, tick: int) -> void:

@@ -2,9 +2,9 @@ class_name SessionSnapshot
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 5
+const SCHEMA_VERSION: int = 6
 const MAX_PLAYERS: int = 8
-const PLAYER_VALUE_COUNT: int = 43
+const PLAYER_VALUE_COUNT: int = 44
 const PROJECTILE_VALUE_COUNT: int = 12
 const EVENT_VALUE_COUNT: int = 6
 const TARGET_VALUE_COUNT: int = 6
@@ -22,6 +22,7 @@ static func capture(
 	names_by_entity: Dictionary,
 	combat_events: Array[Dictionary] = [],
 	hearth_values: PackedInt32Array = PackedInt32Array(),
+	round_values: PackedInt32Array = PackedInt32Array(),
 ) -> Dictionary:
 	var ordered: Array[PlayerState] = []
 	for state: PlayerState in world.players:
@@ -57,6 +58,7 @@ static func capture(
 				state.primary_cooldown_ticks, state.active_1_cooldown_ticks,
 				state.edgeweave_cooldown_ticks, int(state.primary_held),
 				state.pending_cast_aim_x, state.pending_cast_aim_y,
+				state.spawn_protection_ticks,
 			]),
 		])
 	if hearth_values.is_empty():
@@ -66,6 +68,10 @@ static func capture(
 			if state.entity_id > SessionCharter.HOST_ENTITY_ID:
 				fallback_hearth.connect_entity(state.entity_id)
 		hearth_values = fallback_hearth.capture(world.tick, MAX_PLAYERS)
+	if round_values.is_empty():
+		var fallback_round := SessionRound.new()
+		fallback_round.bind_hearth()
+		round_values = fallback_round.capture(world)
 	var ordered_projectiles: Array[ProjectileState] = world.projectiles.duplicate()
 	ordered_projectiles.sort_custom(func(left: ProjectileState, right: ProjectileState) -> bool: return left.entity_id < right.entity_id)
 	var projectiles: Array[PackedInt64Array] = []
@@ -108,6 +114,7 @@ static func capture(
 		"events": events,
 		"targets": targets,
 		"hearth": hearth_values,
+		"round": round_values,
 		"overflow": PackedInt32Array([
 			maxi(0, ordered_projectiles.size() - MAX_PROJECTILES),
 			maxi(0, combat_events.size() - MAX_EVENTS),
@@ -201,6 +208,14 @@ static func validate(snapshot: Dictionary) -> bool:
 	for index: int in range(players.size()):
 		if SessionHearth.entity_id_at(hearth, index) != int((players[index] as Array)[0]):
 			return false
+	var round_value: Variant = snapshot.get("round")
+	if typeof(round_value) != TYPE_PACKED_INT32_ARRAY or not SessionRound.validate_packet(round_value):
+		return false
+	var round_state := SessionRound.decoded(round_value)
+	for entry_value: Variant in round_state.get("entries", []):
+		var round_entity_id := int((entry_value as Dictionary).get("entity_id", 0))
+		if not seen.has(round_entity_id):
+			return false
 	return true
 
 
@@ -264,6 +279,14 @@ static func hearth_values(snapshot: Dictionary) -> PackedInt32Array:
 	return snapshot.get("hearth", PackedInt32Array()).duplicate() if validate(snapshot) else PackedInt32Array()
 
 
+static func round_state(snapshot: Dictionary) -> Dictionary:
+	return SessionRound.decoded(snapshot.get("round", PackedInt32Array())) if validate(snapshot) else {}
+
+
+static func round_values(snapshot: Dictionary) -> PackedInt32Array:
+	return snapshot.get("round", PackedInt32Array()).duplicate() if validate(snapshot) else PackedInt32Array()
+
+
 static func _apply_values(state: PlayerState, values: PackedInt32Array) -> void:
 	state.champion_wire_id = values[0]
 	state.position_x = values[1]
@@ -308,6 +331,7 @@ static func _apply_values(state: PlayerState, values: PackedInt32Array) -> void:
 	state.primary_held = values[40] == 1
 	state.pending_cast_aim_x = values[41]
 	state.pending_cast_aim_y = values[42]
+	state.spawn_protection_ticks = values[43]
 
 
 static func _valid_player_values(values: PackedInt32Array) -> bool:
@@ -329,7 +353,7 @@ static func _valid_player_values(values: PackedInt32Array) -> bool:
 	for pair: Vector2i in [Vector2i(11, 12), Vector2i(13, 14), Vector2i(15, 16)]:
 		if values[pair.x] < 0 or values[pair.x] > 1_000_000 or values[pair.y] < 0 or values[pair.y] > values[pair.x]:
 			return false
-	for index: int in [17, 19, 20, 21, 22, 23, 24, 27, 34, 36, 37, 38, 39]:
+	for index: int in [17, 19, 20, 21, 22, 23, 24, 27, 34, 36, 37, 38, 39, 43]:
 		if values[index] < 0 or values[index] > MAX_TIMER_TICKS:
 			return false
 	if values[18] < 0 or values[18] >= PlayerState.MovementMode.size():
@@ -437,6 +461,14 @@ static func encode_event(event: Dictionary) -> PackedInt64Array:
 			return PackedInt64Array([_event_header(16, event_id), int(event.get("entity_id", 0)), 0, 0, 0, 0])
 		"practice_cancelled":
 			return PackedInt64Array([_event_header(17, event_id), int(event.get("entity_id", 0)), int(event.get("reason", 0)), 0, 0, 0])
+		"round_knockout":
+			return PackedInt64Array([_event_header(18, event_id), int(event.get("owner_id", 0)), int(event.get("target_id", 0)), int(event.get("score", 0)), 0, 0])
+		"round_respawned":
+			return PackedInt64Array([_event_header(19, event_id), int(event.get("entity_id", 0)), 0, 0, 0, 0])
+		"round_finished":
+			return PackedInt64Array([_event_header(20, event_id), int(event.get("winner_id", 0)), 0, 0, 0, 0])
+		"round_returning":
+			return PackedInt64Array([_event_header(21, event_id), SessionCharter.HOST_ENTITY_ID, 0, 0, 0, 0])
 		_:
 			return PackedInt64Array()
 
@@ -482,6 +514,14 @@ static func decode_event(values: PackedInt64Array) -> Dictionary:
 			result = {"type": "practice_started", "entity_id": values[1]}
 		17:
 			result = {"type": "practice_cancelled", "entity_id": values[1], "reason": values[2]}
+		18:
+			result = {"type": "round_knockout", "owner_id": values[1], "target_id": values[2], "score": values[3]}
+		19:
+			result = {"type": "round_respawned", "entity_id": values[1]}
+		20:
+			result = {"type": "round_finished", "winner_id": values[1]}
+		21:
+			result = {"type": "round_returning", "entity_id": values[1]}
 	if not result.is_empty() and event_id > 0:
 		result["event_id"] = event_id
 	return result
@@ -495,7 +535,7 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 	var event_id := header >> 8
 	if event_id < 0 or event_id > MAX_EVENT_ID:
 		return false
-	if kind < 1 or kind > 17:
+	if kind < 1 or kind > 21:
 		return false
 	if kind in [1, 2, 3]:
 		if values[1] < 1 or values[1] > MAX_PLAYERS or values[2] <= 0 or values[2] > 65_535:
@@ -511,6 +551,14 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 		return values[1] > 0
 	if kind == 9:
 		return values[1] >= 1 and values[1] <= MAX_PLAYERS and values[2] > 0 and values[3] > 0 and values[3] <= 1_000_000
+	if kind == 18:
+		return values[1] >= 1 and values[1] <= MAX_PLAYERS and values[2] >= 1 and values[2] <= MAX_PLAYERS and values[1] != values[2] and values[3] >= 0 and values[3] <= SessionRound.MAX_SCORE_LIMIT
+	if kind == 19:
+		return values[1] >= 1 and values[1] <= MAX_PLAYERS
+	if kind == 20:
+		return values[1] >= 0 and values[1] <= MAX_PLAYERS
+	if kind == 21:
+		return values[1] == SessionCharter.HOST_ENTITY_ID
 	if values[1] < 1 or values[1] > MAX_PLAYERS:
 		return false
 	if kind == 10:
@@ -527,7 +575,9 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 		return values[1] == SessionCharter.HOST_ENTITY_ID and values[2] > 0 and values[2] <= SessionHearth.MAX_COUNTDOWN_TICKS
 	if kind == 16:
 		return values[1] == SessionCharter.HOST_ENTITY_ID
-	return values[1] == SessionCharter.HOST_ENTITY_ID and values[2] in [1, 2]
+	if kind == 17:
+		return values[1] == SessionCharter.HOST_ENTITY_ID and values[2] in [1, 2]
+	return false
 
 
 static func _event_header(kind: int, event_id: int) -> int:

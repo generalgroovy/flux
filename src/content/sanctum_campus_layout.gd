@@ -36,6 +36,7 @@ var landmarks_by_id: Dictionary[String, Dictionary] = {}
 var reset_zones_by_id: Dictionary[String, Dictionary] = {}
 var stations_by_id: Dictionary[String, Dictionary] = {}
 var practice_targets_by_id: Dictionary[String, Dictionary] = {}
+var arena_definition: Dictionary = {}
 var canvas_size := Vector2i.ZERO
 var viewport_size := Vector2i.ZERO
 var reserved_ui_top: int = 0
@@ -66,6 +67,7 @@ func validate() -> bool:
 	reset_zones_by_id = {}
 	stations_by_id = {}
 	practice_targets_by_id = {}
+	arena_definition = {}
 	if int(data.get("schema_version", 0)) != SUPPORTED_SCHEMA_VERSION:
 		return _fail("Unsupported Sanctum campus schema")
 	if String(data.get("id", "")).is_empty():
@@ -238,6 +240,37 @@ func validate() -> bool:
 		if not reset_zones_by_id.has(required_reset_zone_id):
 			return _fail("Sanctum campus is missing required reset zone: %s" % required_reset_zone_id)
 
+	var arena_value: Variant = data.get("arena", {})
+	if not arena_value is Dictionary:
+		return _fail("Sanctum arena definition must be an object")
+	arena_definition = arena_value
+	if String(arena_definition.get("id", "")) != "proving-court-v1":
+		return _fail("Sanctum arena requires the stable proving court id")
+	var arena_district_id := String(arena_definition.get("district", ""))
+	if arena_district_id != "wayfarer-proving-quarter" or not districts_by_id.has(arena_district_id):
+		return _fail("Sanctum arena must belong to the proving quarter")
+	var arena_bounds := _parse_bounds(arena_definition.get("bounds", []))
+	var arena_district_bounds := _parse_bounds((districts_by_id[arena_district_id] as Dictionary).get("bounds", []))
+	if arena_bounds.size.x < 320 or arena_bounds.size.y < 240 or not arena_district_bounds.encloses(arena_bounds):
+		return _fail("Sanctum arena bounds are invalid")
+	if int(arena_definition.get("score_limit", 0)) < SessionRound.MIN_SCORE_LIMIT or int(arena_definition.get("score_limit", 0)) > SessionRound.MAX_SCORE_LIMIT:
+		return _fail("Sanctum arena score limit is invalid")
+	if int(arena_definition.get("round_seconds", 0)) < SessionRound.MIN_ROUND_SECONDS or int(arena_definition.get("round_seconds", 0)) > SessionRound.MAX_ROUND_SECONDS:
+		return _fail("Sanctum arena duration is invalid")
+	if int(arena_definition.get("result_seconds", 0)) < SessionRound.MIN_RESULT_SECONDS or int(arena_definition.get("result_seconds", 0)) > SessionRound.MAX_RESULT_SECONDS:
+		return _fail("Sanctum arena result duration is invalid")
+	if int(arena_definition.get("respawn_ms", 0)) < SessionRound.MIN_RESPAWN_MS or int(arena_definition.get("respawn_ms", 0)) > SessionRound.MAX_RESPAWN_MS:
+		return _fail("Sanctum arena respawn delay is invalid")
+	if int(arena_definition.get("spawn_protection_ms", 0)) < SessionRound.MIN_PROTECTION_MS or int(arena_definition.get("spawn_protection_ms", 0)) > SessionRound.MAX_PROTECTION_MS:
+		return _fail("Sanctum arena spawn protection is invalid")
+	var arena_spawns: Array = arena_definition.get("spawns", [])
+	if arena_spawns.size() != SessionRound.MAX_PLAYERS:
+		return _fail("Sanctum arena requires eight ordered spawn anchors")
+	for spawn_value: Variant in arena_spawns:
+		var arena_spawn := _parse_point(spawn_value)
+		if not arena_bounds.has_point(arena_spawn):
+			return _fail("Sanctum arena spawn leaves its bounds")
+
 	for value: Variant in data.get("stations", []):
 		if not value is Dictionary:
 			return _fail("Every Sanctum station must be an object")
@@ -372,6 +405,10 @@ func validate() -> bool:
 		var target_radius := int(target.get("radius", 0)) * SimConfig.FIXED_SCALE
 		if not collision.can_occupy(target_position, target_radius):
 			return _fail("Sanctum practice target overlaps authored collision: %s" % target_id)
+	for spawn_value: Variant in arena_definition.get("spawns", []):
+		var arena_spawn := _parse_point(spawn_value) * SimConfig.FIXED_SCALE
+		if not collision.can_occupy(arena_spawn, MovementTuning.PLAYER_RADIUS):
+			return _fail("Sanctum arena spawn overlaps authored collision")
 	content_hash = CanonicalContent.sha256(data)
 	return content_hash.length() == 64 or _fail("Sanctum campus hash failed")
 

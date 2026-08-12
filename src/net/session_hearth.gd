@@ -92,6 +92,15 @@ func all_connected_ready() -> bool:
 	return true
 
 
+func connected_entity_ids() -> Array[int]:
+	var result: Array[int] = []
+	for entity_id: int in presence_by_entity:
+		if int(presence_by_entity[entity_id]) == STATUS_CONNECTED:
+			result.append(entity_id)
+	result.sort()
+	return result
+
+
 func start_countdown(requester_entity_id: int, world_tick: int, duration_ticks: int) -> bool:
 	if (
 		requester_entity_id != SessionCharter.HOST_ENTITY_ID

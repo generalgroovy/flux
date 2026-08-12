@@ -73,6 +73,7 @@ var health_recovery_per_second: int = PlayerTuning.HEALTH_RECOVERY_PER_SECOND
 var health: int = health_maximum
 var health_recovery_remainder: int = 0
 var health_recovery_delay_ticks: int = 0
+var spawn_protection_ticks: int = 0
 var flux_maximum: int = PlayerTuning.FLUX_MAXIMUM
 var flux_recovery_per_second: int = PlayerTuning.FLUX_RECOVERY_PER_SECOND
 var flux: int = flux_maximum
@@ -155,6 +156,67 @@ func is_airborne() -> bool:
 	return hop_ticks > 0 or air_dodge_ticks > 0 or superglide_ticks > 0
 
 
+func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> void:
+	position_x = spawn_position.x
+	position_y = spawn_position.y
+	position_remainder_x = 0
+	position_remainder_y = 0
+	velocity_x = 0
+	velocity_y = 0
+	primary_held = false
+	pending_cast_wire_id = 0
+	pending_cast_ticks = 0
+	cast_recovery_ticks = 0
+	primary_cooldown_ticks = 0
+	active_1_cooldown_ticks = 0
+	edgeweave_cooldown_ticks = 0
+	jump_buffer_ticks = 0
+	technique_buffer_ticks = 0
+	slide_buffer_ticks = 0
+	fast_falling = false
+	variable_jump_grace_ticks = 0
+	hop_ticks = 0
+	hop_cooldown_ticks = 0
+	hop_stage = 0
+	air_redirects_remaining = 0
+	air_dodge_ticks = 0
+	air_dodge_cooldown_ticks = 0
+	wave_dash_queued = false
+	wave_dash_ticks = 0
+	slide_ticks = 0
+	slide_cooldown_ticks = 0
+	vault_ticks = 0
+	vault_cooldown_ticks = 0
+	superglide_ticks = 0
+	wall_memory_ticks = 0
+	wall_contact_id = 0
+	wall_lockout_id = 0
+	wall_lockout_ticks = 0
+	wall_skim_ticks = 0
+	wall_skim_cooldown_ticks = 0
+	wall_skim_surface_id = 0
+	wall_skim_lockout_id = 0
+	wall_skim_lockout_ticks = 0
+	landing_ticks = 0
+	landing_intensity = 0
+	sprinting = false
+	control_state = ControlState.FREE
+	control_ticks = 0
+	control_speed = 0
+	slow_ratio = 1000
+	health = health_maximum
+	health_recovery_remainder = 0
+	health_recovery_delay_ticks = 0
+	flux = flux_maximum
+	flux_recovery_remainder = 0
+	flux_recovery_delay_ticks = 0
+	stamina = stamina_maximum
+	stamina_remainder = 0
+	stamina_recovery_delay_ticks = 0
+	spawn_protection_ticks = maxi(0, protection_ticks)
+	last_event = "protected_spawn" if spawn_protection_ticks > 0 else "spawn"
+
+
 func canonical_values() -> PackedInt64Array:
 	return PackedInt64Array([
 		entity_id, team_id, actor_kind, champion_wire_id,
@@ -165,7 +227,7 @@ func canonical_values() -> PackedInt64Array:
 		cast_recovery_ticks, primary_cooldown_ticks, active_1_cooldown_ticks,
 		edgeweave_cooldown_ticks, primary_wire_id, active_1_wire_id,
 		health_maximum, health_recovery_per_second,
-		health, health_recovery_remainder, health_recovery_delay_ticks,
+		health, health_recovery_remainder, health_recovery_delay_ticks, spawn_protection_ticks,
 		flux_maximum, flux_recovery_per_second,
 		flux, flux_recovery_remainder, flux_recovery_delay_ticks,
 		stamina_maximum, stamina_recovery_per_second, movement_speed_ratio,

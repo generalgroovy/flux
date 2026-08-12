@@ -76,7 +76,7 @@ static func advance_projectiles(
 
 		var hit_entity_id: int = 0
 		for target: PlayerState in ordered_players:
-			if target.entity_id == projectile.owner_id or target.team_id == projectile.team_id or target.health <= 0:
+			if target.entity_id == projectile.owner_id or target.team_id == projectile.team_id or target.health <= 0 or target.spawn_protection_ticks > 0:
 				continue
 			var hit_radius: int = target.radius + projectile.radius
 			if _segment_circle_hit(projectile, target, hit_radius):
@@ -100,6 +100,13 @@ static func advance_projectiles(
 					"target_id": target.entity_id,
 					"damage": projectile.damage,
 				})
+				if target.actor_kind == PlayerState.ActorKind.CHAMPION and target.health == 0:
+					events.append({
+						"type": "champion_defeated",
+						"projectile_id": projectile.entity_id,
+						"owner_id": projectile.owner_id,
+						"target_id": target.entity_id,
+					})
 				break
 
 		_resolve_edgeweave(projectile, ordered_players, hit_entity_id, config, events)

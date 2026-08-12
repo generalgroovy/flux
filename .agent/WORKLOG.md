@@ -1,5 +1,73 @@
 # FLUX2 agent worklog
 
+## 2026-08-12 — first host-owned Proving Court round
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Advanced friend play to protocol 19 / snapshot schema 6 and replaced the
+  Hearth's shared-reset destination with the first real arena lifecycle.
+- Added a validated authored Proving Court definition with a fixed court
+  boundary, eight safe spawn anchors, first-to-three scoring, a 90-second clock,
+  1.8-second respawn, 1.2-second visible spawn ward and six-second result.
+- Added a simulation-owned `SessionRound` state machine. It moves the intact
+  connected roster into distinct combat teams, seals live actors to the court,
+  consumes only host-authored lethal-hit events, scores knockouts, respawns on
+  exact ticks, resolves score or time results, freezes the result and signals a
+  synchronized return to the Hearth.
+- Defeated champions now idle safely until round respawn. Spawn protection is
+  canonical, decrements at fixed tick, blocks projectile hits, renders as a ward
+  around local and remote champions, hashes into simulation state and replicates
+  through bounded packed player/round lanes.
+- The top HUD changes to Proving Court state with roster scores, time and score
+  target; semantic knockout, respawn, result and return events use redundant,
+  deduplicated snapshot feedback.
+- Extended both Windows and Bash two-process journeys with a diagnostic round
+  assertion that succeeds only after the guest validates the active packed
+  Proving Court serial. The normal in-world Hearth interaction remains the
+  player-facing start path.
+- Late joins during an active court now receive a replicated, safely idle
+  `round_wait` actor and a clear next-gathering notice. Non-social station
+  requests fail closed until the round returns, preventing a lobby-side Bell or
+  Hearth request from mutating live play; HELLO remains available.
+- Active/result court inputs cannot be bypassed through unresolved projectiles,
+  result-pause commands, the host's local reset hotkey or a departing last
+  rival; departures resolve for the survivor and stay snapshot-valid.
+- Round serials, simulation ticks, semantic event IDs, roster identities and
+  champion attunements remain monotonic/stable across Hearth returns and
+  rematches.
+
+Validation:
+
+- `scripts\test.cmd`: passed import, the full **14,636-assertion** suite and
+  independent 60/120 Hz boots with zero failures.
+- `scripts\smoke-farflow.cmd -Port 24922 -TickRate 120 -Charter open_commons
+  -TimeoutSeconds 30`: passed real source host/join, HELLO, prediction,
+  Hearth-to-Court entry, leave and exact-actor return.
+- `scripts\smoke-farflow.cmd -Port 24923 -TickRate 60 -Charter duel_knot
+  -TimeoutSeconds 30`: passed the equivalent real source journey at 60 Hz.
+- Maximum public snapshot envelope remains below the guarded 8 KiB transport
+  cap; malformed round/player/event state fails closed.
+- Renderer-backed 1280x720 AMD compatibility capture passed with the authored
+  court boundary, non-overlapping rules plaque, spawn runes, nearby Hearth and
+  Farflow stations readable in one camera journey.
+- `git diff --check`: passed before checkpoint.
+
+Known limitations and next slice:
+
+- Result and transition feedback are functional but still text-led; the next
+  slice should add a concise court countdown/result presentation and an
+  explicit same-roster rematch flow at the Hearth.
+- Late joins deliberately wait for the next Hearth gathering; a richer
+  spectator camera remains future work.
+- Explicit host confirmation for kick/close remains the following stewardship
+  slice.
+- Matching Godot 4.7.1 export templates and physical Garuda direct-IP evidence
+  remain unavailable locally; no packaged cross-platform claim is made.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-12 — Session Hearth and synchronized shared start
 
 Branch: `codex/continuous-overhaul`

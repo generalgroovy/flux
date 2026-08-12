@@ -11,7 +11,7 @@ func run() -> int:
 
 
 func _test_snapshot_round_trip() -> void:
-	equal(SessionSnapshot.SCHEMA_VERSION, 5, "compact Hearth-aware snapshot schema is explicit")
+	equal(SessionSnapshot.SCHEMA_VERSION, 6, "compact Hearth-and-round snapshot schema is explicit")
 	var source := SimWorld.new(120, 7, CollisionWorld.new(3_000_000, 2_000_000))
 	var host: PlayerState = source.player()
 	host.champion_wire_id = 1
@@ -32,6 +32,7 @@ func _test_snapshot_round_trip() -> void:
 	guest.flux = 54_000
 	guest.stamina_maximum = 96_000
 	guest.stamina = 33_000
+	guest.spawn_protection_ticks = 77
 	guest.primary_wire_id = CombatTuning.ECLIPSE_DISC_WIRE_ID
 	guest.active_1_wire_id = CombatTuning.POCKET_ECLIPSE_WIRE_ID
 	source.players.append(guest)
@@ -60,6 +61,7 @@ func _test_snapshot_round_trip() -> void:
 	equal(replica.player(2).position_x, source.player(2).position_x, "guest authoritative position round-trips")
 	equal(replica.player(2).movement_mode, PlayerState.MovementMode.SPRINT, "guest movement mode round-trips")
 	equal(replica.player(2).primary_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "guest kit identity round-trips")
+	equal(replica.player(2).spawn_protection_ticks, source.player(2).spawn_protection_ticks, "guest spawn protection round-trips")
 	check(replica.player(900) != null, "authoritative practice actor is reconstructed")
 	equal(replica.player(900).health, 51_000, "practice actor health round-trips")
 	equal(replica.player(900).team_id, 900, "practice actor has a distinct non-champion team after replication")
@@ -67,6 +69,7 @@ func _test_snapshot_round_trip() -> void:
 	var hearth_state := SessionSnapshot.hearth(snapshot)
 	equal(int(hearth_state.get("maximum_players", 0)), 8, "snapshot carries Hearth capacity")
 	equal((hearth_state.get("entries", []) as Array).size(), 2, "snapshot carries sorted Hearth roster")
+	equal(int(SessionSnapshot.round_state(snapshot).get("phase", -1)), SessionRound.Phase.HEARTH, "snapshot carries explicit Hearth round phase")
 
 
 func _test_projectile_and_event_round_trip() -> void:
@@ -176,6 +179,7 @@ func _test_snapshot_validation_fails_closed() -> void:
 		func(value: Dictionary) -> void: value["overflow"] = PackedInt32Array([-1, 0, 0]),
 		func(value: Dictionary) -> void: value["events"] = [PackedInt64Array([99, 0, 0, 0, 0, 0])],
 		func(value: Dictionary) -> void: value["hearth"] = PackedInt32Array([1, 8, 0, 8]),
+		func(value: Dictionary) -> void: value["round"] = PackedInt32Array([1, 9, 0, 0, 0, 3, 0]),
 	]:
 		var malformed: Dictionary = valid.duplicate(true)
 		mutation.call(malformed)

@@ -27,12 +27,15 @@ Preserve those capabilities. Windows/Bash launch, test, package preflight and a
 self-cleaning source Farflow acceptance harness are now live. Actual package
 export is honestly blocked until matching 4.7.1 templates exist locally; keep
 that gate visible and continue with diegetic session settings and host
-administration without weakening the last green source checkpoint. Protocol 18
+administration without weakening the last green source checkpoint. Protocol 19
 seals one of three visible session Charters with host-owned 2/4/8 capacity,
 traveller damage teams and Practice Bell authority. The Session Hearth now
 replicates connected/returning presence, readiness and a host-owned shared-start
-countdown through compact snapshot schema 5; the next coherent slice is the
-first bounded arena round and synchronized return/rematch loop.
+countdown through compact snapshot schema 6. The first playable Proving Court
+round now owns two-to-eight authored spawns, combat teams, spawn wards, bounds,
+knockout scoring, respawns, score/time results and return to the Hearth. The
+next coherent slice is court transition/result readability plus a deliberate
+rematch loop, followed by explicit host stewardship.
 
 ## Immediate product order
 

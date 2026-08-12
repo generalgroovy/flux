@@ -64,12 +64,12 @@ try {
         sparring_circle = 'SPARRING CIRCLE'
         duel_knot = 'DUEL KNOT'
     }[$Charter]
-    $hostArguments = $baseArguments + @("--tick-rate=$TickRate", '--farflow=host', "--session-port=$Port", "--session-charter=$Charter", '--player-name=Lantern Host', '--farflow-smoke-hearth')
+    $hostArguments = $baseArguments + @("--tick-rate=$TickRate", '--farflow=host', "--session-port=$Port", "--session-charter=$Charter", '--player-name=Lantern Host', '--farflow-smoke-hearth', '--farflow-smoke-round')
     $hostProcess = Start-FluxSmokeProcess $hostArguments $hostLog $hostError
     $deadline = [datetime]::UtcNow.AddSeconds($TimeoutSeconds)
     Wait-FluxSmokePattern $hostProcess $hostLog $hostError @("FLUX2 farflow host: listening on UDP $Port", $charterDisplay) $deadline
 
-    $guestArguments = $baseArguments + @("--tick-rate=$TickRate", '--farflow=join', '--join-address=127.0.0.1', "--session-port=$Port", '--player-name=River Guest', '--farflow-smoke-emote', '--farflow-smoke-prediction', '--farflow-smoke-hearth', '--farflow-smoke-reconnect')
+    $guestArguments = $baseArguments + @("--tick-rate=$TickRate", '--farflow=join', '--join-address=127.0.0.1', "--session-port=$Port", '--player-name=River Guest', '--farflow-smoke-emote', '--farflow-smoke-prediction', '--farflow-smoke-hearth', '--farflow-smoke-round', '--farflow-smoke-reconnect')
     $guestProcess = Start-FluxSmokeProcess $guestArguments $guestLog $guestError
     Wait-FluxSmokePattern $guestProcess $guestLog $guestError @(
         'FLUX2 farflow replica: local entity 2',
@@ -77,6 +77,7 @@ try {
         'FLUX2 farflow prediction smoke: authoritative movement confirmed',
         'FLUX2 farflow hearth smoke: guest readiness sent',
         'FLUX2 farflow hearth smoke: guest received shared practice start',
+        'FLUX2 farflow round smoke: guest active in Proving Court serial 1',
         'FLUX2 farflow reconnect smoke: left entity 2',
         'FLUX2 farflow reconnect smoke: returned entity 2'
     ) $deadline
@@ -85,11 +86,11 @@ try {
         'FLUX2 farflow social: shared emote entity 2',
         'FLUX2 farflow hearth smoke: roster gathered and host ready',
         'FLUX2 farflow hearth smoke: all ready; countdown started',
-        'FLUX2 farflow hearth: shared practice started',
+        'FLUX2 farflow hearth: Proving Court round started',
         'FLUX2 farflow host: return reserved for entity 2 (River Guest)',
         'FLUX2 farflow host: returned entity 2 (River Guest)'
     ) $deadline
-    Write-Output "PASS: Farflow host/join, shared HELLO, movement reconciliation, Hearth start and exact-actor return passed at $TickRate Hz on UDP $Port."
+    Write-Output "PASS: Farflow host/join, shared HELLO, movement reconciliation, Hearth-to-Court round start and exact-actor return passed at $TickRate Hz on UDP $Port."
     Write-Output "Logs: $logRoot"
 } finally {
     foreach ($process in @($guestProcess, $hostProcess)) {

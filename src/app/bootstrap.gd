@@ -69,6 +69,7 @@ var session_port: int = SessionTransport.DEFAULT_PORT
 var local_player_name: String = "Traveller"
 var selected_charter_id: String = SessionCharter.DEFAULT_ID
 var session_hearth_values := PackedInt32Array()
+var session_round_values := PackedInt32Array()
 var requested_farflow_mode: String = ""
 var client_input_sequence: int = 0
 var client_replica_active: bool = false
@@ -92,6 +93,8 @@ var reconnect_smoke_entity_id: int = 0
 var requested_hearth_smoke: bool = false
 var hearth_smoke_ready_sent: bool = false
 var hearth_smoke_started_reported: bool = false
+var requested_round_smoke: bool = false
+var round_smoke_active_reported: bool = false
 
 
 func _ready() -> void:
@@ -138,6 +141,7 @@ func _ready() -> void:
 	requested_prediction_smoke = _requested_prediction_smoke()
 	requested_reconnect_smoke = _requested_reconnect_smoke()
 	requested_hearth_smoke = _requested_hearth_smoke()
+	requested_round_smoke = _requested_round_smoke()
 	session_transport = SessionTransport.new()
 	authoritative_session = AuthoritativeSession.new()
 	client_prediction = ClientPrediction.new()
@@ -210,6 +214,9 @@ func _process(delta: float) -> void:
 		if session_transport.is_connected_client():
 			station_notice = "Only the Farflow host can restore the shared court."
 			station_notice_seconds = 2.5
+		elif session_transport.is_host() and int(_current_round_state().get("phase", SessionRound.Phase.HEARTH)) != SessionRound.Phase.HEARTH:
+			station_notice = "The live court resolves before the Hearth can be restored."
+			station_notice_seconds = 2.5
 		elif not _restart_shared_seed(tick_rate):
 			set_process(false)
 			return
@@ -278,6 +285,16 @@ func _process(delta: float) -> void:
 				push_error("Shared practice could not begin")
 				set_process(false)
 				return
+			if session_transport.is_host():
+				var round_events := authoritative_session.advance_round(world.combat_events)
+				_ingest_session_feedback(round_events)
+				if authoritative_session.round_return_due():
+					if _return_to_hearth():
+						queue_redraw()
+						return
+					push_error("Shared round could not return to the Hearth")
+					set_process(false)
+					return
 			_ingest_combat_cues(world.combat_events)
 			if session_transport.is_host() and world.tick % snapshot_tick_interval(tick_rate) == 0:
 				authoritative_session.record_combat_events(world.combat_events)
@@ -362,6 +379,9 @@ func _draw() -> void:
 		draw_circle(body_position, player_radius + 5.0, Color(ATTUNEMENT_COLOR, 0.18))
 		draw_circle(body_position, player_radius, PLAYER_COLOR)
 		draw_arc(body_position, player_radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
+	if state.spawn_protection_ticks > 0:
+		var protection_ratio := clampf(float(state.spawn_protection_ticks) / float(maxi(1, world.config.milliseconds_to_ticks(1200))), 0.0, 1.0)
+		draw_arc(body_position, player_radius + 9.0, 0.0, TAU, 28, Color(ATTUNEMENT_COLOR, 0.32 + protection_ratio * 0.42), 2.0)
 	draw_line(body_position, body_position + Vector2(presentation_state.aim_x, presentation_state.aim_y) * 0.032, Color.WHITE, 3.0)
 	_draw_social_bubbles(camera_origin)
 	_draw_station_bubble(rendered_position)
@@ -377,7 +397,8 @@ func _draw() -> void:
 	var active_ability: Dictionary = ability_catalog.ability(String(champion_kit.get("active_1", "")))
 	var primary_name := String(primary_ability.get("display_name", "PRIMARY"))
 	var active_name := String(active_ability.get("display_name", "ACTIVE"))
-	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "%s · THE WELLSPRING" % champion_name.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
+	var location_name := "PROVING COURT" if int(_current_round_state().get("phase", SessionRound.Phase.HEARTH)) != SessionRound.Phase.HEARTH else "THE WELLSPRING"
+	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "%s · %s" % [champion_name.to_upper(), location_name], HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
 	var movement_name: String = String(PlayerState.MovementMode.keys()[presentation_state.movement_mode]).replace("_", " ")
 	draw_string(ThemeDB.fallback_font, Vector2(400, 40), "%s · %s" % [movement_name, _readable_event(presentation_state)], HORIZONTAL_ALIGNMENT_RIGHT, 280.0, 13, ATTUNEMENT_COLOR)
 	_draw_resource_bar(Rect2(700, 24, 168, 20), "HEALTH", state.health, state.health_maximum, Color("d9634f"))
@@ -517,6 +538,9 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int) -> vo
 			draw_circle(body_position, radius + 5.0, Color(body_color, 0.18))
 			draw_circle(body_position, radius, body_color)
 			draw_arc(body_position, radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
+		if remote_state.spawn_protection_ticks > 0:
+			var protection_ratio := clampf(float(remote_state.spawn_protection_ticks) / float(maxi(1, world.config.milliseconds_to_ticks(1200))), 0.0, 1.0)
+			draw_arc(body_position, radius + 9.0, 0.0, TAU, 28, Color(ATTUNEMENT_COLOR, 0.32 + protection_ratio * 0.42), 2.0)
 		draw_line(body_position, body_position + Vector2(remote_state.aim_x, remote_state.aim_y) * 0.032, Color(PARCHMENT_COLOR, 0.9), 2.0)
 		var display_name := String(session_names_by_entity.get(remote_state.entity_id, "TRAVELLER %d" % remote_state.entity_id)).to_upper()
 		var name_width := ThemeDB.fallback_font.get_string_size(display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x
@@ -707,6 +731,7 @@ func _sync_session_transport() -> void:
 				network_projectile_overflow = overflow[0]
 				session_names_by_entity = SessionSnapshot.names(snapshot)
 				session_hearth_values = SessionSnapshot.hearth_values(snapshot)
+				session_round_values = SessionSnapshot.round_values(snapshot)
 				_prune_remote_player_sprites()
 				var unseen_events := session_event_inbox.take_unseen(world.combat_events)
 				world.combat_events = unseen_events
@@ -716,6 +741,14 @@ func _sync_session_transport() -> void:
 				if local_state != null:
 					if first_snapshot:
 						print("FLUX2 farflow replica: local entity %d, snapshot tick %d, travellers %d" % [local_state.entity_id, world.tick, session_names_by_entity.size()])
+						var first_round := _current_round_state()
+						var local_entered_round: bool = (first_round.get("entries", []) as Array).any(
+							func(entry_value: Variant) -> bool:
+								return int((entry_value as Dictionary).get("entity_id", 0)) == local_state.entity_id
+						)
+						if int(first_round.get("phase", SessionRound.Phase.HEARTH)) == SessionRound.Phase.ACTIVE and not local_entered_round:
+							station_notice = "The court is underway. You join the next gathering."
+							station_notice_seconds = 4.0
 					var replicated_champion_id := champion_catalog.champion_id_from_wire(local_state.champion_wire_id)
 					if not replicated_champion_id.is_empty() and replicated_champion_id != selected_champion_id:
 						selected_champion_id = replicated_champion_id
@@ -762,6 +795,7 @@ func _sync_session_transport() -> void:
 		last_client_snapshot_tick = -1
 		network_projectile_overflow = 0
 		session_hearth_values = PackedInt32Array()
+		session_round_values = PackedInt32Array()
 		if _start_match(tick_rate):
 			station_notice = disconnect_message if not disconnect_message.is_empty() else "The Farflow gate is closed."
 			station_notice_seconds = 3.0
@@ -829,6 +863,7 @@ func _handle_session_requests(requests: Array[Dictionary]) -> void:
 			campus_layout.stations_by_id,
 			world.tick,
 			ready_tick,
+			int(_current_round_state().get("phase", SessionRound.Phase.HEARTH)),
 		)
 		if refusal_reason != SessionRequestPolicy.ACCEPTED:
 			_publish_session_event({"type": "request_refused", "entity_id": entity_id, "action": action, "reason": refusal_reason})
@@ -932,9 +967,27 @@ func _ingest_session_feedback(events: Array[Dictionary]) -> void:
 				if requested_hearth_smoke and session_transport.is_connected_client() and not hearth_smoke_started_reported:
 					hearth_smoke_started_reported = true
 					print("FLUX2 farflow hearth smoke: guest received shared practice start")
+				if requested_round_smoke and session_transport.is_connected_client() and not round_smoke_active_reported:
+					var state := _current_round_state()
+					if int(state.get("phase", SessionRound.Phase.HEARTH)) == SessionRound.Phase.ACTIVE:
+						round_smoke_active_reported = true
+						print("FLUX2 farflow round smoke: guest active in Proving Court serial %d" % int(state.get("serial", 0)))
 			"practice_cancelled":
 				station_notice = "The Hearth waits for the changed roster."
 				station_notice_seconds = 2.0
+			"round_knockout":
+				station_notice = "%s scores against %s." % [String(session_names_by_entity.get(int(event.get("owner_id", 0)), "A traveller")), String(session_names_by_entity.get(int(event.get("target_id", 0)), "a rival"))]
+				station_notice_seconds = 1.5
+			"round_respawned":
+				station_notice = "%s returns under ward." % String(session_names_by_entity.get(entity_id, "A traveller"))
+				station_notice_seconds = 1.5
+			"round_finished":
+				var winner_id := int(event.get("winner_id", 0))
+				station_notice = "The court is drawn." if winner_id == 0 else "%s wins the court." % String(session_names_by_entity.get(winner_id, "A traveller"))
+				station_notice_seconds = 3.0
+			"round_returning":
+				station_notice = "The company returns to the Hearth."
+				station_notice_seconds = 2.5
 
 
 func _update_social_bubbles(delta: float) -> void:
@@ -1101,6 +1154,9 @@ func _selected_session_capacity() -> int:
 func _session_label() -> String:
 	if session_transport == null or session_transport.mode == SessionTransport.Mode.OFFLINE:
 		return "FARFLOW RETURN READY" if session_transport != null and session_transport.can_reconnect() else "FARFLOW OFFLINE"
+	var round_label := _round_label()
+	if not round_label.is_empty():
+		return round_label
 	if session_transport.is_connected_client() and network_projectile_overflow > 0:
 		return "FARFLOW LOAD +%d BOLTS" % network_projectile_overflow
 	if session_transport.is_host():
@@ -1110,6 +1166,46 @@ func _session_label() -> String:
 			return "FARFLOW JOINED · ACK ~%dms · CORR %.1fpx" % [client_prediction.estimated_ack_delay_ms(), client_prediction.last_correction_pixels]
 		return "FARFLOW JOINED · SYNCING"
 	return "FARFLOW SEEKING · %s" % join_address
+
+
+func _current_round_values() -> PackedInt32Array:
+	if session_transport.is_host() and authoritative_session != null and authoritative_session.session_round != null:
+		return authoritative_session.session_round.capture(world)
+	return session_round_values
+
+
+func _current_round_state() -> Dictionary:
+	return SessionRound.decoded(_current_round_values())
+
+
+func _round_label() -> String:
+	var state := _current_round_state()
+	var phase := int(state.get("phase", SessionRound.Phase.HEARTH))
+	if phase == SessionRound.Phase.HEARTH:
+		return ""
+	var entries: Array = (state.get("entries", []) as Array).duplicate(true)
+	entries.sort_custom(
+		func(left_value: Variant, right_value: Variant) -> bool:
+			var left: Dictionary = left_value
+			var right: Dictionary = right_value
+			var left_score := int(left.get("score", 0))
+			var right_score := int(right.get("score", 0))
+			return left_score > right_score if left_score != right_score else int(left.get("entity_id", 0)) < int(right.get("entity_id", 0))
+	)
+	var score_parts: Array[String] = []
+	for index: int in range(mini(entries.size(), 4)):
+		var entry: Dictionary = entries[index]
+		var entity_id := int(entry.get("entity_id", 0))
+		var name := String(session_names_by_entity.get(entity_id, "P%d" % entity_id)).left(9).to_upper()
+		score_parts.append("%s %d" % [name, int(entry.get("score", 0))])
+	if entries.size() > 4:
+		score_parts.append("+%d" % (entries.size() - 4))
+	var score_line := " · ".join(score_parts)
+	var seconds := ceili(float(int(state.get("remaining_ticks", 0))) / float(maxi(1, tick_rate)))
+	if phase == SessionRound.Phase.ACTIVE:
+		return "COURT · %s · %ds · FIRST %d" % [score_line, seconds, int(state.get("score_limit", 0))]
+	var winner_id := int(state.get("winner_entity_id", 0))
+	return "DRAW · HEARTH IN %ds" % seconds if winner_id == 0 else "%s WINS · HEARTH IN %ds" % [String(session_names_by_entity.get(winner_id, "TRAVELLER")).left(12).to_upper(), seconds]
 
 
 func _current_hearth_values() -> PackedInt32Array:
@@ -1246,10 +1342,12 @@ func _restart_shared_seed(requested_tick_rate: int) -> bool:
 	var attunements := _champion_attunements()
 	var continuous_tick := world.tick
 	var continuous_event_id := authoritative_session.next_event_id
+	var continuous_round_serial := authoritative_session.session_round.serial
 	if not _start_match(requested_tick_rate):
 		return false
 	world.tick = continuous_tick
 	authoritative_session.next_event_id = continuous_event_id
+	authoritative_session.session_round.serial = continuous_round_serial
 	_restore_champion_attunements(attunements)
 	return true
 
@@ -1257,10 +1355,26 @@ func _restart_shared_seed(requested_tick_rate: int) -> bool:
 func _begin_shared_practice() -> bool:
 	if not _restart_shared_seed(tick_rate):
 		return false
+	if not authoritative_session.begin_round(campus_layout.arena_definition):
+		return false
+	session_round_values = authoritative_session.session_round.capture(world)
+	current_position = _player_position()
+	previous_position = current_position
 	_publish_session_event({"type": "practice_started", "entity_id": SessionTransport.SERVER_PEER_ID})
-	station_notice = "Shared practice begins."
+	station_notice = "The Proving Court opens. First to three."
 	station_notice_seconds = 2.0
-	print("FLUX2 farflow hearth: shared practice started at host tick %d" % world.tick)
+	print("FLUX2 farflow hearth: Proving Court round started at host tick %d" % world.tick)
+	return true
+
+
+func _return_to_hearth() -> bool:
+	if not _restart_shared_seed(tick_rate):
+		return false
+	session_round_values = authoritative_session.session_round.capture(world)
+	_publish_session_event({"type": "round_returning", "entity_id": SessionTransport.SERVER_PEER_ID})
+	station_notice = "The company returns to the Hearth."
+	station_notice_seconds = 2.5
+	print("FLUX2 farflow hearth: company returned at host tick %d" % world.tick)
 	return true
 
 
@@ -1326,6 +1440,7 @@ func _start_match(requested_tick_rate: int) -> bool:
 		return false
 	session_names_by_entity = authoritative_session.names_by_entity.duplicate()
 	session_hearth_values = authoritative_session.hearth.capture(world.tick, SessionCharter.maximum_players(selected_charter_id))
+	session_round_values = authoritative_session.session_round.capture(world)
 	_clear_remote_player_sprites()
 	material_grid = MaterialGrid.new()
 	if not material_grid.initialize(material_yard, material_registry, world.config):
@@ -1639,6 +1754,17 @@ func _requested_hearth_smoke() -> bool:
 
 static func has_hearth_smoke_argument(argument: String) -> bool:
 	return argument == "--farflow-smoke-hearth"
+
+
+func _requested_round_smoke() -> bool:
+	for argument: String in OS.get_cmdline_user_args():
+		if has_round_smoke_argument(argument):
+			return true
+	return false
+
+
+static func has_round_smoke_argument(argument: String) -> bool:
+	return argument == "--farflow-smoke-round"
 
 
 static func reconnect_smoke_prerequisites_met(

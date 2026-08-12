@@ -25,6 +25,7 @@ var next_event_id: int = 1
 var last_error: String = ""
 var charter_id: String = SessionCharter.DEFAULT_ID
 var hearth: SessionHearth = SessionHearth.new()
+var session_round: SessionRound = SessionRound.new()
 
 
 func bind(
@@ -54,6 +55,8 @@ func bind(
 	charter_id = requested_charter_id
 	hearth = SessionHearth.new()
 	hearth.bind_host()
+	session_round = SessionRound.new()
+	session_round.bind_hearth()
 	_apply_charter_team(new_world.player())
 	return register_peers(existing_roster) == existing_roster.size()
 
@@ -86,7 +89,11 @@ func register_peers(events: Array[Dictionary]) -> int:
 		state.position_x = spawn_position.x
 		state.position_y = spawn_position.y
 		_apply_charter_team(state)
-		state.last_event = "farflow_arrival"
+		if session_round != null and session_round.active():
+			state.health = 0
+			state.last_event = "round_wait"
+		else:
+			state.last_event = "farflow_arrival"
 		world.players.append(state)
 		names_by_entity[entity_id] = safe_name
 		last_processed_input_sequence_by_entity[entity_id] = -1
@@ -138,6 +145,9 @@ func remove_peers(events: Array[Dictionary]) -> int:
 	var removed: int = 0
 	for event: Dictionary in events:
 		var entity_id := int(event.get("entity_id", 0))
+		var round_events: Array[Dictionary] = session_round.remove_participant(entity_id, world) if session_round != null else []
+		if not round_events.is_empty():
+			record_combat_events(round_events)
 		for index: int in range(world.players.size() - 1, -1, -1):
 			var state: PlayerState = world.players[index]
 			if state.entity_id == entity_id and state.actor_kind == PlayerState.ActorKind.CHAMPION:
@@ -172,13 +182,14 @@ func commands_for_tick(local_command: SimCommand) -> Array[SimCommand]:
 	var commands: Array[SimCommand] = []
 	if world == null or local_command == null:
 		return commands
+	var host_input_locked := _round_input_locked(SessionTransport.SERVER_PEER_ID)
 	commands.append(SimCommand.new(
 		world.tick,
 		SessionTransport.SERVER_PEER_ID,
-		local_command.move_x,
-		local_command.move_y,
-		local_command.held_actions,
-		local_command.pressed_actions,
+		0 if host_input_locked else local_command.move_x,
+		0 if host_input_locked else local_command.move_y,
+		0 if host_input_locked else local_command.held_actions,
+		0 if host_input_locked else local_command.pressed_actions,
 		local_command.aim_x,
 		local_command.aim_y,
 	))
@@ -191,7 +202,7 @@ func commands_for_tick(local_command: SimCommand) -> Array[SimCommand]:
 	for entity_id: int in remote_ids:
 		var state: PlayerState = world.player(entity_id)
 		var packet: Dictionary = latest_input_by_entity.get(entity_id, {})
-		var stale: bool = packet.is_empty() or world.tick - int(packet.get("received_tick", world.tick)) > timeout_ticks
+		var stale: bool = packet.is_empty() or world.tick - int(packet.get("received_tick", world.tick)) > timeout_ticks or _round_input_locked(entity_id)
 		commands.append(SimCommand.new(
 			world.tick,
 			entity_id,
@@ -214,6 +225,14 @@ func commands_for_tick(local_command: SimCommand) -> Array[SimCommand]:
 	return commands
 
 
+func _round_input_locked(entity_id: int) -> bool:
+	return (
+		session_round != null
+		and session_round.phase == SessionRound.Phase.RESULT
+		and session_round.scores_by_entity.has(entity_id)
+	)
+
+
 func capture_snapshot() -> Dictionary:
 	if world == null:
 		return {}
@@ -222,6 +241,7 @@ func capture_snapshot() -> Dictionary:
 		names_by_entity,
 		pending_combat_events,
 		hearth.capture(world.tick, SessionCharter.maximum_players(charter_id)),
+		session_round.capture(world),
 	)
 
 
@@ -250,6 +270,25 @@ func practice_countdown_completed() -> bool:
 func clear_practice_start() -> void:
 	if hearth != null:
 		hearth.clear_after_start()
+
+
+func begin_round(arena_definition: Dictionary) -> bool:
+	if session_round == null or hearth == null or world == null:
+		return false
+	return session_round.begin(world, hearth.connected_entity_ids(), arena_definition)
+
+
+func advance_round(events: Array[Dictionary]) -> Array[Dictionary]:
+	if session_round == null or world == null:
+		return []
+	var emitted := session_round.advance(world, events)
+	for event: Dictionary in emitted:
+		world.combat_events.append(event)
+	return emitted
+
+
+func round_return_due() -> bool:
+	return session_round != null and world != null and session_round.return_due(world.tick)
 
 
 func capture_reconciliation(entity_id: int) -> Dictionary:

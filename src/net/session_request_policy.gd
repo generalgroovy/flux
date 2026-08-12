@@ -14,8 +14,11 @@ static func validate(
 	stations_by_id: Dictionary[String, Dictionary],
 	world_tick: int,
 	emote_ready_tick: int,
+	round_phase: int = SessionRound.Phase.HEARTH,
 ) -> int:
 	if state == null or state.actor_kind != PlayerState.ActorKind.CHAMPION or world_tick < 0:
+		return REFUSED_UNAVAILABLE
+	if round_phase != SessionRound.Phase.HEARTH and action != SessionTransport.REQUEST_EMOTE:
 		return REFUSED_UNAVAILABLE
 	match action:
 		SessionTransport.REQUEST_EMOTE:

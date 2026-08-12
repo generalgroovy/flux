@@ -25,6 +25,8 @@ func run() -> int:
 	state.position_y = 620_000
 	equal(SessionRequestPolicy.validate(SessionTransport.REQUEST_READY_TOGGLE, state, layout.stations_by_id, 20, 0), SessionRequestPolicy.ACCEPTED, "readiness toggle is accepted only at the Session Hearth")
 	equal(SessionRequestPolicy.validate(SessionTransport.REQUEST_PRACTICE_START, state, layout.stations_by_id, 20, 0), SessionRequestPolicy.ACCEPTED, "practice start intent is accepted at the Session Hearth before host-role validation")
+	equal(SessionRequestPolicy.validate(SessionTransport.REQUEST_READY_TOGGLE, state, layout.stations_by_id, 20, 0, SessionRound.Phase.ACTIVE), SessionRequestPolicy.REFUSED_UNAVAILABLE, "active court refuses Hearth mutation")
+	equal(SessionRequestPolicy.validate(SessionTransport.REQUEST_EMOTE, state, layout.stations_by_id, 20, 0, SessionRound.Phase.ACTIVE), SessionRequestPolicy.ACCEPTED, "active court keeps bounded social emotes available")
 	state.position_x = 2_300_000
 	equal(SessionRequestPolicy.validate(SessionTransport.REQUEST_READY_TOGGLE, state, layout.stations_by_id, 20, 0), SessionRequestPolicy.REFUSED_DISTANCE, "remote readiness fails closed away from the Hearth")
 	state.actor_kind = PlayerState.ActorKind.TRAINING_TARGET

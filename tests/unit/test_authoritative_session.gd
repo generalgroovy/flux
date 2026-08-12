@@ -37,6 +37,18 @@ func _test_authoritative_presence_and_input() -> void:
 	check(session.start_practice_countdown(1), "authority host starts a deterministic practice countdown")
 	check(session.practice_countdown_active(), "authority owns active countdown state")
 	check(session.hearth.cancel_countdown(), "test fixture cancels countdown before movement exercise")
+	var round_definition := {
+		"bounds": [400, 300, 1200, 900],
+		"score_limit": 3,
+		"round_seconds": 15,
+		"result_seconds": 2,
+		"respawn_ms": 500,
+		"spawn_protection_ms": 250,
+		"spawns": [[500, 400], [1500, 1100]],
+	}
+	check(session.begin_round(round_definition), "authority starts a court from the connected Hearth roster")
+	equal(session.session_round.phase, SessionRound.Phase.ACTIVE, "authority owns active round phase")
+	equal(world.player(2).team_id, 2, "court makes the remote traveller independently damageable")
 
 	var packet := {
 		"entity_id": 2,
@@ -72,6 +84,20 @@ func _test_authoritative_presence_and_input() -> void:
 	var snapshot := session.capture_snapshot()
 	check(SessionSnapshot.validate(snapshot), "authority emits a validated roster snapshot")
 	equal((SessionSnapshot.hearth(snapshot).get("entries", []) as Array).size(), 2, "authority snapshot carries Hearth roster state")
+	equal(int(SessionSnapshot.round_state(snapshot).get("phase", -1)), SessionRound.Phase.ACTIVE, "authority snapshot carries live court state")
+	equal(session.register_peers([{"peer_id": 45, "entity_id": 3, "name": "Late Guest"}]), 1, "active authority admits a late friend for the next gathering")
+	equal(world.player(3).health, 0, "late friend waits safely instead of entering the active result space")
+	equal(world.player(3).last_event, "round_wait", "late friend receives a readable next-round state")
+	var late_snapshot := session.capture_snapshot()
+	check(SessionSnapshot.validate(late_snapshot), "late friend and active round subset share a valid snapshot")
+	equal((SessionSnapshot.round_state(late_snapshot).get("entries", []) as Array).size(), 2, "late friend cannot become an unspawned round participant")
+	equal(session.remove_peers([{"entity_id": 3, "name": "Late Guest"}]), 1, "late waiting friend leaves cleanly")
+	session.session_round.phase = SessionRound.Phase.RESULT
+	var locked_commands := session.commands_for_tick(SimCommand.new(world.tick, 1, 1000, 0, SimCommand.HELD_PRIMARY, SimCommand.PRESSED_ACTIVE_1))
+	equal(locked_commands[0].move_x, 0, "court result rejects host movement input")
+	equal(locked_commands[0].held_actions, 0, "court result rejects host cast input")
+	equal(locked_commands[1].move_x, 0, "court result rejects queued guest movement input")
+	session.session_round.phase = SessionRound.Phase.ACTIVE
 	var rebound_world := SimWorld.new(120, 10, CollisionWorld.new(3_000_000, 2_000_000))
 	check(champions.apply_to_player(rebound_world.player(), "oh_tipi"), "rebind host champion applies")
 	var rebound := AuthoritativeSession.new()
@@ -89,6 +115,9 @@ func _test_authoritative_presence_and_input() -> void:
 	equal((session.capture_snapshot().get("events", []) as Array).size(), 0, "bounded redundant combat feedback expires")
 	equal(session.remove_peers([{"entity_id": 2, "name": "River Guest"}]), 1, "disconnect removes the remote actor")
 	check(world.player(2) == null, "removed remote actor leaves no simulation ghost")
+	equal(session.session_round.phase, SessionRound.Phase.RESULT, "last active rival leaving resolves the court for the survivor")
+	equal(session.session_round.winner_entity_id, 1, "remaining host receives the bounded departure result")
+	check(SessionSnapshot.validate(session.capture_snapshot()), "departure result remains snapshot-valid after actor removal")
 	check(session.capture_reconciliation(2).is_empty(), "removed traveller leaves no reconciliation state")
 	equal(session.register_peers([{"peer_id": 43, "entity_id": 2, "name": "River Guest"}]), 1, "removed traveller can join again")
 	var returning_state: PlayerState = world.player(2)

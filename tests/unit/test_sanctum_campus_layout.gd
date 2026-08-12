@@ -29,6 +29,8 @@ func _test_repository_layout() -> void:
 	equal(layout.reset_zones_by_id.size(), 2, "movement and proving reset zones are explicit")
 	equal(layout.stations_by_id.size(), 7, "guide, practice, champion, Charter, Hearth and two Farflow stations are explicit")
 	equal(layout.practice_targets_by_id.size(), 1, "the Nexus sparring effigy is explicit")
+	equal(String(layout.arena_definition.get("id", "")), "proving-court-v1", "the first bounded arena has a stable authored identity")
+	equal((layout.arena_definition.get("spawns", []) as Array).size(), 8, "arena reserves eight ordered spawn anchors")
 	var effigy: Dictionary = layout.practice_targets_by_id["nexus-sparring-effigy"]
 	equal(int(effigy.get("entity_id", 0)), 900, "sparring effigy has a stable simulation entity id")
 	equal(int(effigy.get("health", 0)), 80_000, "sparring effigy has authored Health")
@@ -82,6 +84,9 @@ func _test_invalid_layouts_fail_closed() -> void:
 		func(data: Dictionary) -> void: (data["routes"][1] as Dictionary)["accessible"] = false,
 		func(data: Dictionary) -> void: (data["routes"][1] as Dictionary)["points"] = [[82, 720], [1500, 720]],
 		func(data: Dictionary) -> void: (data["reset_zones"][0] as Dictionary)["bounds"] = [800, 1200, 300, 300],
+		func(data: Dictionary) -> void: (data["arena"] as Dictionary)["score_limit"] = 99,
+		func(data: Dictionary) -> void: (data["arena"] as Dictionary)["spawns"] = [[1900, 860]],
+		func(data: Dictionary) -> void: (data["arena"] as Dictionary)["bounds"] = [0, 0, 100, 100],
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["command"] = "open_detached_menu",
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["interaction_radius"] = 900,
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["lines"] = "too vague",

@@ -3,6 +3,7 @@ extends RefCounted
 
 
 static func step(state: PlayerState, config: SimConfig) -> void:
+	state.spawn_protection_ticks = maxi(0, state.spawn_protection_ticks - 1)
 	state.health_recovery_delay_ticks = maxi(0, state.health_recovery_delay_ticks - 1)
 	state.flux_recovery_delay_ticks = maxi(0, state.flux_recovery_delay_ticks - 1)
 	if state.health > 0 and state.health_recovery_delay_ticks == 0:

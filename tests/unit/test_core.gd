@@ -11,7 +11,7 @@ func run() -> int:
 
 
 func _test_supported_tick_rates() -> void:
-	equal(SimConfig.PROTOCOL_VERSION, 18, "current friend-session wire protocol is explicit")
+	equal(SimConfig.PROTOCOL_VERSION, 19, "current round-aware friend-session wire protocol is explicit")
 	check(SimConfig.new(60).is_valid(), "60 Hz is supported")
 	check(SimConfig.new(120).is_valid(), "120 Hz is supported")
 	check(not SimConfig.new(90).is_valid(), "intermediate tick rates fail closed")

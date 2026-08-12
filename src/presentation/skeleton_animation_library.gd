@@ -1,0 +1,127 @@
+class_name SkeletonAnimationLibrary
+extends RefCounted
+
+const SUPPORTED_SCHEMA_VERSION: int = 1
+const DEFAULT_PATH: String = "res://content/animations/skeleton_animation_manifest_v1.json"
+
+var data: Dictionary = {}
+var last_error: String = ""
+var animations: Dictionary = {}
+var sizes: Dictionary = {}
+var directions: Array[String] = []
+var cell_size := Vector2i.ZERO
+var pivot := Vector2i.ZERO
+var atlas_size := Vector2i.ZERO
+var block_size := Vector2i.ZERO
+
+
+func load_from_file(path: String = DEFAULT_PATH) -> bool:
+	last_error = ""
+	if not FileAccess.file_exists(path):
+		return _fail("skeleton animation manifest does not exist: %s" % path)
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return _fail("could not open skeleton animation manifest: %s" % path)
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if not parsed is Dictionary:
+		return _fail("skeleton animation manifest root must be an object")
+	data = parsed
+	return validate()
+
+
+func validate() -> bool:
+	last_error = ""
+	if int(data.get("schema_version", -1)) != SUPPORTED_SCHEMA_VERSION:
+		return _fail("unsupported skeleton animation schema")
+	cell_size = _vector2i(data.get("cell_size", []))
+	pivot = _vector2i(data.get("pivot", []))
+	if cell_size.x <= 0 or cell_size.y <= 0:
+		return _fail("cell size must be positive")
+	if pivot.x < 0 or pivot.y < 0 or pivot.x >= cell_size.x or pivot.y >= cell_size.y:
+		return _fail("pivot must be inside the animation cell")
+	var layout: Dictionary = data.get("atlas_layout", {})
+	atlas_size = _vector2i(layout.get("atlas_size", []))
+	block_size = _vector2i(layout.get("block_size", []))
+	if atlas_size.x <= 0 or atlas_size.y <= 0 or block_size.x <= 0 or block_size.y <= 0:
+		return _fail("atlas and block sizes must be positive")
+	var raw_directions: Array = data.get("direction_order", [])
+	if raw_directions.size() != 8:
+		return _fail("exactly eight directions are required")
+	directions.clear()
+	for direction_value: Variant in raw_directions:
+		var direction_id := str(direction_value)
+		if direction_id.is_empty() or directions.has(direction_id):
+			return _fail("direction ids must be unique and non-empty")
+		directions.append(direction_id)
+	animations = data.get("animations", {})
+	sizes = data.get("sizes", {})
+	if animations.is_empty():
+		return _fail("at least one animation is required")
+	if sizes.size() != 5:
+		return _fail("exactly five skeleton sizes are required")
+	var occupied_blocks: Dictionary = {}
+	for animation_id: String in animations:
+		var animation: Dictionary = animations[animation_id]
+		var frames := int(animation.get("frames", 0))
+		var block := _vector2i(animation.get("block", []))
+		if frames <= 0 or frames * cell_size.x > block_size.x:
+			return _fail("%s has invalid frame count" % animation_id)
+		if block.x < 0 or block.y < 0:
+			return _fail("%s has invalid block coordinates" % animation_id)
+		var key := "%d:%d" % [block.x, block.y]
+		if occupied_blocks.has(key):
+			return _fail("animation blocks overlap: %s" % key)
+		occupied_blocks[key] = animation_id
+		var final_region := frame_region_from_values(block, directions.size() - 1, frames - 1)
+		if final_region.end.x > atlas_size.x or final_region.end.y > atlas_size.y:
+			return _fail("%s exceeds atlas bounds" % animation_id)
+	for size_id: String in sizes:
+		var size: Dictionary = sizes[size_id]
+		for path_key: String in ["atlas", "debug_atlas"]:
+			var asset_path := str(size.get(path_key, ""))
+			if asset_path.is_empty() or not FileAccess.file_exists(asset_path):
+				return _fail("%s is missing %s" % [size_id, path_key])
+			var image := Image.load_from_file(asset_path)
+			if image == null or image.get_size() != atlas_size:
+				return _fail("%s %s dimensions do not match manifest" % [size_id, path_key])
+	return true
+
+
+func frame_region(size_id: String, animation_id: String, direction_id: String, frame_index: int) -> Rect2i:
+	if not sizes.has(size_id) or not animations.has(animation_id):
+		return Rect2i()
+	var direction_index := directions.find(direction_id)
+	if direction_index < 0:
+		return Rect2i()
+	var animation: Dictionary = animations[animation_id]
+	var frames := int(animation.get("frames", 0))
+	if frame_index < 0 or frame_index >= frames:
+		return Rect2i()
+	return frame_region_from_values(_vector2i(animation.get("block", [])), direction_index, frame_index)
+
+
+func frame_region_from_values(block: Vector2i, direction_index: int, frame_index: int) -> Rect2i:
+	return Rect2i(
+		block.x * block_size.x + frame_index * cell_size.x,
+		block.y * block_size.y + direction_index * cell_size.y,
+		cell_size.x,
+		cell_size.y
+	)
+
+
+func atlas_path(size_id: String, debug: bool = false) -> String:
+	if not sizes.has(size_id):
+		return ""
+	var key := "debug_atlas" if debug else "atlas"
+	return str((sizes[size_id] as Dictionary).get(key, ""))
+
+
+func _vector2i(value: Variant) -> Vector2i:
+	if not value is Array or (value as Array).size() != 2:
+		return Vector2i(-1, -1)
+	return Vector2i(int((value as Array)[0]), int((value as Array)[1]))
+
+
+func _fail(message: String) -> bool:
+	last_error = message
+	return false

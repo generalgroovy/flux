@@ -1,0 +1,67 @@
+name: Update character README
+
+on:
+  push:
+    branches:
+      - agent/visual-assets-production-v1
+    paths:
+      - tools/assets/generate_character_readme_v1.py
+      - tools/assets/enhance_character_readme_v2.py
+      - art/reference/flux-champions-style-baseline.png
+      - .github/workflows/update-character-readme.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-character-readme-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out visual-production branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/visual-assets-production-v1
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate detailed character section
+        run: python tools/assets/generate_character_readme_v1.py
+
+      - name: Apply supplied-reference visual baseline
+        run: python tools/assets/enhance_character_readme_v2.py
+
+      - name: Validate generated Markdown
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          grep -q '<!-- BEGIN CHARACTER_ROSTER_V1 -->' README.md
+          grep -q '<!-- END CHARACTER_ROSTER_V1 -->' README.md
+          grep -q 'art/reference/flux-champions-style-baseline.png' README.md
+          test "$(grep -c '<details id="champion-' README.md)" -eq 24
+          test "$(grep -c '<strong>Character-detail candidate</strong>' README.md)" -eq 24
+          test "$(grep -c '<strong>Current runtime sprite</strong>' README.md)" -eq 24
+          test "$(grep -c '| Visual acceptance target |' README.md)" -eq 24
+
+      - name: Commit generated README
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- README.md; then
+            echo "README is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "Present champions against the reference art baseline"
+          git push origin HEAD:agent/visual-assets-production-v1

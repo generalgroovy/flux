@@ -1,0 +1,150 @@
+extends FluxTestSuite
+
+
+const ABILITY_PATH: String = "res://content/abilities/foundation_abilities_v1.json"
+const CHAMPION_PATH: String = "res://content/champions/foundation_champions_v1.json"
+
+
+func run() -> int:
+	_test_authoritative_presence_and_input()
+	return finish("authoritative-session")
+
+
+func _test_authoritative_presence_and_input() -> void:
+	var abilities := AbilityCatalog.new()
+	check(abilities.load_from_file(ABILITY_PATH), "abilities load for authoritative session")
+	var champions := ChampionCatalog.new()
+	check(champions.load_from_file(CHAMPION_PATH, abilities), "champions load for authoritative session")
+	var world := SimWorld.new(120, 9, CollisionWorld.new(3_000_000, 2_000_000))
+	check(champions.apply_to_player(world.player(), "oh_tipi"), "host champion applies")
+	var session := AuthoritativeSession.new()
+	check(session.bind(world, champions, Vector2i(1280, 720), "Lantern Host"), "authoritative session binds")
+	equal(session.register_peers([{"peer_id": 42, "entity_id": 2, "name": "River Guest"}]), 1, "accepted peer registers once")
+	equal(session.register_peers([{"peer_id": 42, "entity_id": 2, "name": "River Guest"}]), 0, "duplicate entity registration is ignored")
+	var guest: PlayerState = world.player(2)
+	check(guest != null, "guest owns a host-side simulation actor")
+	if guest != null:
+		equal(guest.champion_wire_id, 2, "first guest receives S. Wayne for a distinct two-character test")
+		equal(Vector2i(guest.position_x, guest.position_y), Vector2i(1_352_000, 720_000), "guest receives deterministic collision-cleared spawn offset")
+		equal(guest.team_id, 1, "Open Commons prevents traveller damage with a shared host-owned team")
+	check(session.set_charter("sparring_circle"), "host authority can seal a known sparring charter")
+	equal(world.player().team_id, 1, "sparring host keeps its stable combat team")
+	equal(world.player(2).team_id, 2, "sparring guest receives an individual combat team")
+	check(not session.set_charter("forged"), "unknown charter cannot mutate authority teams")
+	equal(session.hearth.connected_count(), 2, "authority Hearth tracks host and accepted guest")
+	check(session.toggle_ready(1) and session.toggle_ready(2), "both authoritative travellers can ready")
+	check(session.can_start_practice(), "authority exposes all-ready start gate")
+	check(session.start_practice_countdown(1), "authority host starts a deterministic practice countdown")
+	check(session.practice_countdown_active(), "authority owns active countdown state")
+	check(session.hearth.cancel_countdown(), "test fixture cancels countdown before movement exercise")
+	var round_definition := {
+		"bounds": [400, 300, 1200, 900],
+		"score_limit": 3,
+		"round_seconds": 15,
+		"result_seconds": 2,
+		"respawn_ms": 500,
+		"spawn_protection_ms": 250,
+		"spawns": [[500, 400], [1500, 1100]],
+	}
+	check(session.begin_round(round_definition), "authority starts a court from the connected Hearth roster")
+	equal(session.session_round.phase, SessionRound.Phase.ACTIVE, "authority owns active round phase")
+	equal(world.player(2).team_id, 2, "court makes the remote traveller independently damageable")
+
+	var packet := {
+		"entity_id": 2,
+		"sequence": 1,
+		"move_x": 1000,
+		"move_y": 0,
+		"held": SimCommand.HELD_JUMP,
+		"pressed": SimCommand.PRESSED_JUMP,
+		"aim_x": 1000,
+		"aim_y": 0,
+	}
+	equal(session.ingest_inputs([packet]), 1, "validated transport input enters authority controller")
+	var commands := session.commands_for_tick(SimCommand.new(world.tick, 1))
+	equal(commands.size(), 2, "authority emits one ordered command per traveller")
+	check(world.step(commands), "host simulates both travellers in one tick")
+	check(world.player(2).position_x > 1_352_000, "remote input moves only through host simulation")
+	check(world.player(2).hop_ticks > 0, "remote jump action executes once through the shared movement grammar")
+	var reconciliation := session.capture_reconciliation(2)
+	check(ClientPrediction.validate_packet(reconciliation), "authority emits a validated movement reconciliation")
+	equal(int(reconciliation.get("sequence", -1)), 1, "reconciliation acknowledges the input sequence actually processed")
+	var reconciliation_values: PackedInt64Array = reconciliation.get("values", PackedInt64Array())
+	equal(int(reconciliation_values[0]) if not reconciliation_values.is_empty() else 0, 2, "reconciliation is scoped to one remote traveller")
+	var second_commands := session.commands_for_tick(SimCommand.new(world.tick, 1))
+	equal(second_commands[1].pressed_actions, 0, "remote pressed action is consumed exactly once")
+	check(world.step(second_commands), "held remote command continues on the next tick")
+	for _index: int in range(world.config.milliseconds_to_ticks(AuthoritativeSession.REMOTE_INPUT_TIMEOUT_MS) + 2):
+		check(world.step(session.commands_for_tick(SimCommand.new(world.tick, 1))), "host advances toward remote input timeout")
+	var stale_commands := session.commands_for_tick(SimCommand.new(world.tick, 1))
+	equal(stale_commands[1].move_x, 0, "stale remote movement fails safe to idle")
+	equal(stale_commands[1].held_actions, 0, "stale remote held actions fail safe to idle")
+
+	equal(session.record_combat_events([{"type": "cast_started", "entity_id": 2, "wire_id": CombatTuning.ECLIPSE_DISC_WIRE_ID}]), 1, "semantic host combat event enters the next snapshot")
+	var snapshot := session.capture_snapshot()
+	check(SessionSnapshot.validate(snapshot), "authority emits a validated roster snapshot")
+	equal((SessionSnapshot.hearth(snapshot).get("entries", []) as Array).size(), 2, "authority snapshot carries Hearth roster state")
+	equal(int(SessionSnapshot.round_state(snapshot).get("phase", -1)), SessionRound.Phase.ACTIVE, "authority snapshot carries live court state")
+	equal(session.register_peers([{"peer_id": 45, "entity_id": 3, "name": "Late Guest"}]), 1, "active authority admits a late friend for the next gathering")
+	equal(world.player(3).health, 0, "late friend waits safely instead of entering the active result space")
+	equal(world.player(3).last_event, "round_wait", "late friend receives a readable next-round state")
+	var forged_late_input := {
+		"entity_id": 3,
+		"sequence": 1,
+		"move_x": 1000,
+		"move_y": -1000,
+		"held": SimCommand.HELD_PRIMARY | SimCommand.HELD_SPRINT,
+		"pressed": SimCommand.PRESSED_ACTIVE_1 | SimCommand.PRESSED_JUMP,
+		"aim_x": -1000,
+		"aim_y": 0,
+	}
+	equal(session.ingest_inputs([forged_late_input]), 1, "late spectator packet reaches host-owned command policy")
+	var late_commands := session.commands_for_tick(SimCommand.new(world.tick, 1))
+	equal(late_commands.size(), 3, "authority emits a command lane for the waiting actor")
+	equal(late_commands[2].move_x, 0, "nonparticipant movement is neutralized by host authority")
+	equal(late_commands[2].move_y, 0, "nonparticipant diagonal movement is neutralized")
+	equal(late_commands[2].held_actions, 0, "nonparticipant held casts and sprint are neutralized")
+	equal(late_commands[2].pressed_actions, 0, "nonparticipant jump and active presses are neutralized")
+	equal(int(session.last_processed_input_sequence_by_entity.get(3, -1)), -1, "neutralized spectator input is never acknowledged as simulated")
+	var late_snapshot := session.capture_snapshot()
+	check(SessionSnapshot.validate(late_snapshot), "late friend and active round subset share a valid snapshot")
+	equal((SessionSnapshot.round_state(late_snapshot).get("entries", []) as Array).size(), 2, "late friend cannot become an unspawned round participant")
+	equal(session.remove_peers([{"entity_id": 3, "name": "Late Guest"}]), 1, "late waiting friend leaves cleanly")
+	session.session_round.phase = SessionRound.Phase.RESULT
+	var locked_commands := session.commands_for_tick(SimCommand.new(world.tick, 1, 1000, 0, SimCommand.HELD_PRIMARY, SimCommand.PRESSED_ACTIVE_1))
+	equal(locked_commands[0].move_x, 0, "court result rejects host movement input")
+	equal(locked_commands[0].held_actions, 0, "court result rejects host cast input")
+	equal(locked_commands[1].move_x, 0, "court result rejects queued guest movement input")
+	session.session_round.phase = SessionRound.Phase.ACTIVE
+	var rebound_world := SimWorld.new(120, 10, CollisionWorld.new(3_000_000, 2_000_000))
+	check(champions.apply_to_player(rebound_world.player(), "oh_tipi"), "rebind host champion applies")
+	var rebound := AuthoritativeSession.new()
+	check(rebound.bind(rebound_world, champions, Vector2i(1280, 720), "Lantern Host", [{"entity_id": 2, "name": "River Guest", "reserved": false}], "open_commons"), "authority rebind preserves a connected live roster")
+	equal(rebound.hearth.connected_count(), 2, "rebound Hearth preserves connected presence")
+	equal(SessionSnapshot.names(snapshot), {1: "Lantern Host", 2: "River Guest"}, "snapshot exposes authoritative presence names")
+	equal((snapshot.get("events", []) as Array).size(), 1, "pending combat feedback is included once")
+	var decoded_event := SessionSnapshot.decode_event((snapshot["events"] as Array)[0])
+	check(int(decoded_event.get("event_id", 0)) > 0, "authority assigns a stable semantic event identity")
+	for resend_index: int in range(AuthoritativeSession.EVENT_REDUNDANCY_SNAPSHOTS - 1):
+		session.acknowledge_snapshot()
+		var redundant_snapshot := session.capture_snapshot()
+		equal((redundant_snapshot.get("events", []) as Array).size(), 1, "semantic event remains for redundancy snapshot %d" % (resend_index + 2))
+	session.acknowledge_snapshot()
+	equal((session.capture_snapshot().get("events", []) as Array).size(), 0, "bounded redundant combat feedback expires")
+	equal(session.remove_peers([{"entity_id": 2, "name": "River Guest"}]), 1, "disconnect removes the remote actor")
+	check(world.player(2) == null, "removed remote actor leaves no simulation ghost")
+	equal(session.session_round.phase, SessionRound.Phase.RESULT, "last active rival leaving resolves the court for the survivor")
+	equal(session.session_round.winner_entity_id, 1, "remaining host receives the bounded departure result")
+	check(SessionSnapshot.validate(session.capture_snapshot()), "departure result remains snapshot-valid after actor removal")
+	check(session.capture_reconciliation(2).is_empty(), "removed traveller leaves no reconciliation state")
+	equal(session.register_peers([{"peer_id": 43, "entity_id": 2, "name": "River Guest"}]), 1, "removed traveller can join again")
+	var returning_state: PlayerState = world.player(2)
+	returning_state.position_x += 17_000
+	returning_state.health -= 4_000
+	equal(session.suspend_peers([{"entity_id": 2, "name": "River Guest", "reserved": true}]), 1, "reserved disconnect suspends actor instead of removing it")
+	equal(session.hearth.returning_count(), 1, "reserved disconnect remains visible at the Hearth")
+	check(world.player(2) == returning_state, "suspended return keeps the exact authoritative actor")
+	equal(session.register_peers([{"peer_id": 44, "entity_id": 2, "name": "River Guest", "resumed": true}]), 1, "resumed presence reclaims suspended actor")
+	equal(session.hearth.connected_count(), 2, "resumed identity returns to connected Hearth presence")
+	check(world.player(2) == returning_state, "resumed identity preserves position, health and champion state")
+	equal(world.player(2).health, returning_state.health, "resumed identity keeps authoritative health")

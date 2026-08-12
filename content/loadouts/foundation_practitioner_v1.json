@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "foundation-practitioner-loadout-v1",
+  "champion_id": "foundation-practitioner",
+  "affinities": ["charge", "light"],
+  "active_budget": 13,
+  "slots": {
+    "passive": "foundation-focus",
+    "primary": "arc-primary",
+    "actives": ["vector-lance", "prism-ward", "stone-channel"],
+    "mobility": "phase-step",
+    "ultimate": "convergence-engine"
+  }
+}

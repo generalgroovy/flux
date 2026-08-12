@@ -78,6 +78,7 @@ var requested_emote_smoke: bool = false
 var emote_smoke_sent: bool = false
 var requested_prediction_smoke: bool = false
 var prediction_smoke_started: bool = false
+var prediction_smoke_inputs_sent: int = 0
 var prediction_smoke_start_x: float = 0.0
 var prediction_smoke_reported: bool = false
 var requested_reconnect_smoke: bool = false
@@ -227,8 +228,9 @@ func _process(delta: float) -> void:
 			current_position,
 			pointer_world_position,
 		)
-		if session_transport.is_connected_client() and requested_prediction_smoke and last_client_snapshot_tick >= 0 and client_input_sequence < 18:
+		if session_transport.is_connected_client() and requested_prediction_smoke and last_client_snapshot_tick >= 0 and prediction_smoke_inputs_sent < 18:
 			command = SimCommand.new(world.tick, input_router.entity_id, 1000, 0, 0, 0, 1000, 0)
+			prediction_smoke_inputs_sent += 1
 		if session_transport.is_connected_client():
 			client_input_sequence += 1
 			if not session_transport.send_input(client_input_sequence, command):
@@ -678,11 +680,9 @@ func _sync_session_transport() -> void:
 					if reconnect_smoke_stage == 0:
 						reconnect_smoke_entity_id = session_transport.local_entity_id
 						reconnect_smoke_stage = 1
-						reconnect_smoke_delay_seconds = 0.75
-						session_transport.stop()
-						print("FLUX2 farflow reconnect smoke: left entity %d" % reconnect_smoke_entity_id)
-					elif reconnect_smoke_stage == 2 and session_transport.local_entity_id == reconnect_smoke_entity_id:
-						reconnect_smoke_stage = 3
+						reconnect_smoke_delay_seconds = 0.25
+					elif reconnect_smoke_stage == 3 and session_transport.local_entity_id == reconnect_smoke_entity_id:
+						reconnect_smoke_stage = 4
 						print("FLUX2 farflow reconnect smoke: returned entity %d" % reconnect_smoke_entity_id)
 		var reconciliations := session_transport.take_reconciliations()
 		if not reconciliations.is_empty():
@@ -711,16 +711,33 @@ func _sync_session_transport() -> void:
 
 
 func _update_reconnect_smoke(delta: float) -> void:
-	if not requested_reconnect_smoke or reconnect_smoke_stage != 1 or session_transport.mode != SessionTransport.Mode.OFFLINE:
+	if not requested_reconnect_smoke:
+		return
+	if reconnect_smoke_stage == 1:
+		if not session_transport.is_connected_client() or not reconnect_smoke_prerequisites_met(
+			requested_emote_smoke,
+			emote_smoke_sent,
+			requested_prediction_smoke,
+			prediction_smoke_reported,
+		):
+			return
+		reconnect_smoke_delay_seconds = maxf(0.0, reconnect_smoke_delay_seconds - delta)
+		if reconnect_smoke_delay_seconds <= 0.0:
+			session_transport.stop()
+			reconnect_smoke_stage = 2
+			reconnect_smoke_delay_seconds = 0.75
+			print("FLUX2 farflow reconnect smoke: left entity %d" % reconnect_smoke_entity_id)
+		return
+	if reconnect_smoke_stage != 2 or session_transport.mode != SessionTransport.Mode.OFFLINE:
 		return
 	reconnect_smoke_delay_seconds = maxf(0.0, reconnect_smoke_delay_seconds - delta)
 	if reconnect_smoke_delay_seconds > 0.0:
 		return
 	if session_transport.start_join(join_address, session_port, _session_compatibility_signature(), local_player_name):
-		reconnect_smoke_stage = 2
+		reconnect_smoke_stage = 3
 		print("FLUX2 farflow reconnect smoke: seeking reserved identity")
 	else:
-		reconnect_smoke_stage = 4
+		reconnect_smoke_stage = 5
 		push_error("FLUX2 farflow reconnect smoke failed: %s" % session_transport.last_error)
 
 
@@ -1064,6 +1081,7 @@ func _start_match(requested_tick_rate: int) -> bool:
 	if session_event_inbox != null:
 		session_event_inbox.reset()
 	prediction_smoke_started = false
+	prediction_smoke_inputs_sent = 0
 	prediction_smoke_start_x = 0.0
 	prediction_smoke_reported = false
 	tick_rate = requested_tick_rate
@@ -1344,6 +1362,15 @@ func _requested_reconnect_smoke() -> bool:
 
 static func has_reconnect_smoke_argument(argument: String) -> bool:
 	return argument == "--farflow-smoke-reconnect"
+
+
+static func reconnect_smoke_prerequisites_met(
+	requested_emote: bool,
+	emote_sent: bool,
+	requested_prediction: bool,
+	prediction_confirmed: bool,
+) -> bool:
+	return (not requested_emote or emote_sent) and (not requested_prediction or prediction_confirmed)
 
 
 static func snapshot_tick_interval(requested_tick_rate: int) -> int:

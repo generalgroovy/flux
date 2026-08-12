@@ -1,5 +1,58 @@
 # FLUX2 agent worklog
 
+## 2026-08-12 — cross-platform source and release acceptance tooling
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added Windows `.cmd` entry points for doctor, test, run, package and Farflow
+  acceptance. They use a child-process-only PowerShell execution-policy bypass,
+  so a stock Windows policy can run the project without weakening machine
+  policy; paths with spaces and Windows PowerShell 5.1 remain supported.
+- Added symmetric Bash packaging and Farflow acceptance. Both package paths use
+  the pinned engine/presets, require exact platform release-template files,
+  write portable SHA-256 manifests and never download templates implicitly.
+- Added a source-or-package, two-process Farflow journey that proves host/join,
+  shared HELLO, authoritative movement reconciliation, leave and exact-actor
+  return before cleaning up both processes and retaining local logs.
+- The combined journey exposed and fixed two diagnostic sequencing bugs: input
+  sequence count was incorrectly used as its movement duration, and reconnect
+  could close a reliable interaction before it replicated. Diagnostics now
+  count their own movement inputs and wait for interaction send plus confirmed
+  movement before disconnecting; player-facing networking semantics are
+  unchanged.
+
+Validation:
+
+- PowerShell parser: all six `.ps1` files passed; Git Bash `bash -n`: doctor,
+  test, run, install, package and Farflow scripts passed.
+- `scripts\\doctor.cmd`: passed with exact Godot
+  `4.7.1.stable.official.a13da4feb`; it reports export templates missing while
+  leaving source use available.
+- `scripts\\test.cmd`: full suite passed with **14,428 assertions** and zero
+  failures; import plus independent 60/120 Hz boots passed at protocol 16 with
+  campus/ability/champion hashes
+  `c981419a5b33` / `566a637aa616` / `81962afbff12`.
+- `scripts\\smoke-farflow.cmd -Port 24894 -TimeoutSeconds 30`: passed the full
+  combined two-process Windows source journey and cleaned up both processes.
+- The same journey passed at 60 Hz on UDP 24895; the earlier 120 Hz run covered
+  the other supported cadence.
+- Windows package preflight failed as designed before export because
+  `windows_release_x86_64.exe` is absent from the local Godot 4.7.1 template
+  directory; no package success or Garuda evidence is claimed.
+
+Known limitations and next task:
+
+- Matching Godot 4.7.1 release templates must be installed/cached before an
+  actual Windows/Linux export can run. This machine has no physical Garuda Sway
+  environment, so physical Linux and remote-router proof remain external gates.
+- Next slice is a small diegetic host/session settings station: bounded capacity
+  and friendly/practice policy, with visible host authority and compatibility
+  identity rather than a detached menu.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-12 — bounded Farflow return continuity
 
 Branch: `codex/continuous-overhaul`

@@ -75,3 +75,7 @@ func _test_capture_pointer_parser() -> void:
 	equal(BootstrapScript.snapshot_tick_interval(90), 0, "unsupported match cadence cannot derive a snapshot interval")
 	check(BootstrapScript.has_reconnect_smoke_argument("--farflow-smoke-reconnect"), "diagnostic reconnect smoke switch parses exactly")
 	check(not BootstrapScript.has_reconnect_smoke_argument("--farflow-smoke-reconnect=true"), "diagnostic reconnect smoke switch fails closed on alternate syntax")
+	check(BootstrapScript.reconnect_smoke_prerequisites_met(false, false, false, false), "standalone reconnect smoke may begin after its first snapshot")
+	check(not BootstrapScript.reconnect_smoke_prerequisites_met(true, false, true, true), "combined smoke waits until the reliable social request is sent")
+	check(not BootstrapScript.reconnect_smoke_prerequisites_met(true, true, true, false), "combined smoke waits for authoritative movement confirmation")
+	check(BootstrapScript.reconnect_smoke_prerequisites_met(true, true, true, true), "combined smoke leaves only after interaction is sent and movement passes")

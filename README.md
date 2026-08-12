@@ -54,8 +54,11 @@ even when design documentation already exists.
     deterministic reconciliation and readable ACK/correction diagnostics
   - [x] Fifteen-second memory-only exact-actor return with random name-bound
     rotating capability, clean expiry and explicit host-loss state
-  - [ ] Cross-platform package proof, settings/travel stations; overlay parity,
-    map UI, streaming, and destination persistence
+  - [x] Windows/Bash doctor, test, run and package entry points plus a self-cleaning
+    source two-process host/join/move/emote/reconnect acceptance journey
+  - [ ] Install pinned export templates and record packaged Windows/physical
+    Garuda proof; settings/travel stations, overlay parity, map UI, streaming,
+    and destination persistence remain
 - [ ] **Chapter 3 — [Movement and traversal](#movement-and-traversal)**
   — deterministic universal grammar in progress
   - [x] Sprint, counter-strafe, hop/double jump, wall kick, air redirect/dodge,

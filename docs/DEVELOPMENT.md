@@ -11,6 +11,15 @@ scripts/install-godot.sh
 scripts/doctor.sh
 ```
 
+On Windows, use the checked-in `.cmd` wrappers. They apply an execution-policy
+bypass only to their child PowerShell process and do not change machine policy:
+
+```bat
+scripts\doctor.cmd
+scripts\test.cmd
+scripts\run.cmd
+```
+
 ## Daily commands
 
 ```bash
@@ -19,6 +28,24 @@ scripts/run.sh
 FLUX2_TICK_RATE=60 scripts/run.sh
 scripts/run.sh --movement-reference=aim_relative --pov-mode=cone --pov-angle=120 --pov-range=800
 ```
+
+Run the complete local friend-session journey with one command. It starts two
+hidden game processes, proves host/join, shared HELLO, authoritative movement,
+prediction/reconciliation and exact-actor leave/return, then cleans both up:
+
+```bash
+scripts/smoke-farflow.sh
+```
+
+```bat
+scripts\smoke-farflow.cmd
+```
+
+The source harness is the default. After packaging, pass
+`-Executable exports\windows\flux2.exe` on Windows or set
+`FLUX2_EXECUTABLE=exports/linux/flux2.x86_64` on Linux. Logs remain under
+`.godot/farflow-smoke/`; defaults use UDP 24892 and can be overridden without
+changing player defaults.
 
 The match tick rate is exactly 60 or 120 Hz. It is chosen before constructing
 the simulation, becomes replay compatibility metadata, and cannot change
@@ -128,7 +155,20 @@ checkpoint archives remain ignored. Roles propose bounded work, while the
 repository's deterministic tests, manifests, replay hashes, runtime checks, and
 acceptance contracts decide whether a slice advances.
 
-Godot export presets are present for Linux and Windows. Export templates are a
-large optional preparation artifact and are not silently downloaded by test or
-run scripts. Cache the matching 4.7.1 templates before an offline release
-build.
+Godot export presets and release commands are present for Linux and Windows.
+Export templates are a large optional preparation artifact and are never
+silently downloaded by test, run or package scripts. Install/cache the matching
+official 4.7.1 templates once, then build both platforms and their SHA-256
+manifest with:
+
+```bash
+scripts/package.sh all
+```
+
+```bat
+scripts\package.cmd -Target All
+```
+
+`GODOT_EXPORT_TEMPLATE_ROOT` may point at an offline template cache. Packaging
+fails before export with the exact missing platform template; source run/test
+and Farflow acceptance remain available.

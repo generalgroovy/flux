@@ -67,6 +67,24 @@ host-authoritative movement returns through reconciliation.
 `--farflow-smoke-reconnect` closes the guest once, waits briefly, and reports
 only after it returns as the same session entity.
 
+The maintained two-process acceptance wrappers combine those diagnostics in a
+safe order—HELLO request, authoritative movement/reconciliation, leave, then
+exact-actor return—and always clean up their processes:
+
+```bat
+scripts\smoke-farflow.cmd
+scripts\smoke-farflow.cmd -Executable exports\windows\flux2.exe
+```
+
+```bash
+scripts/smoke-farflow.sh
+FLUX2_EXECUTABLE=exports/linux/flux2.x86_64 scripts/smoke-farflow.sh
+```
+
+The wrapper is a localhost acceptance gate, not proof of router forwarding or a
+second operating system. A remote friend must still use the host's real address
+and the same commit/package while the host allows UDP 24872 (or the chosen port).
+
 ## Trust and compatibility boundary
 
 The server is authoritative from the first packet. A client sends a handshake

@@ -24,6 +24,7 @@ var pending_combat_events: Array[Dictionary] = []
 var next_event_id: int = 1
 var last_error: String = ""
 var charter_id: String = SessionCharter.DEFAULT_ID
+var hearth: SessionHearth = SessionHearth.new()
 
 
 func bind(
@@ -51,6 +52,8 @@ func bind(
 	pending_combat_events = []
 	next_event_id = 1
 	charter_id = requested_charter_id
+	hearth = SessionHearth.new()
+	hearth.bind_host()
 	_apply_charter_team(new_world.player())
 	return register_peers(existing_roster) == existing_roster.size()
 
@@ -70,6 +73,7 @@ func register_peers(events: Array[Dictionary]) -> int:
 			last_processed_input_sequence_by_entity[entity_id] = -1
 			existing_state.last_event = "farflow_return"
 			_apply_charter_team(existing_state)
+			hearth.connect_entity(entity_id)
 			registered += 1
 			continue
 		if existing_state != null:
@@ -86,6 +90,10 @@ func register_peers(events: Array[Dictionary]) -> int:
 		world.players.append(state)
 		names_by_entity[entity_id] = safe_name
 		last_processed_input_sequence_by_entity[entity_id] = -1
+		hearth.connect_entity(entity_id)
+		if bool(event.get("reserved", false)):
+			hearth.suspend_entity(entity_id)
+			state.last_event = "farflow_returning"
 		registered += 1
 	world.players.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
 	return registered
@@ -119,6 +127,7 @@ func suspend_peers(events: Array[Dictionary]) -> int:
 		latest_input_by_entity.erase(entity_id)
 		state.primary_held = false
 		state.last_event = "farflow_returning"
+		hearth.suspend_entity(entity_id)
 		suspended += 1
 	return suspended
 
@@ -138,6 +147,7 @@ func remove_peers(events: Array[Dictionary]) -> int:
 		names_by_entity.erase(entity_id)
 		latest_input_by_entity.erase(entity_id)
 		last_processed_input_sequence_by_entity.erase(entity_id)
+		hearth.remove_entity(entity_id)
 	return removed
 
 
@@ -207,7 +217,39 @@ func commands_for_tick(local_command: SimCommand) -> Array[SimCommand]:
 func capture_snapshot() -> Dictionary:
 	if world == null:
 		return {}
-	return SessionSnapshot.capture(world, names_by_entity, pending_combat_events)
+	return SessionSnapshot.capture(
+		world,
+		names_by_entity,
+		pending_combat_events,
+		hearth.capture(world.tick, SessionCharter.maximum_players(charter_id)),
+	)
+
+
+func toggle_ready(entity_id: int) -> bool:
+	return hearth.toggle_ready(entity_id) if hearth != null else false
+
+
+func can_start_practice() -> bool:
+	return hearth != null and hearth.all_connected_ready()
+
+
+func start_practice_countdown(entity_id: int) -> bool:
+	if hearth == null or world == null:
+		return false
+	return hearth.start_countdown(entity_id, world.tick, world.config.milliseconds_to_ticks(3000))
+
+
+func practice_countdown_active() -> bool:
+	return hearth != null and hearth.countdown_active()
+
+
+func practice_countdown_completed() -> bool:
+	return hearth != null and world != null and hearth.countdown_completed(world.tick)
+
+
+func clear_practice_start() -> void:
+	if hearth != null:
+		hearth.clear_after_start()
 
 
 func capture_reconciliation(entity_id: int) -> Dictionary:

@@ -270,6 +270,15 @@ func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int) -> void:
 		canvas.draw_line(position + Vector2(-6, -2), position + Vector2(4, -2), PARCHMENT, 1.0)
 		canvas.draw_line(position + Vector2(-6, 3), position + Vector2(5, 3), PARCHMENT, 1.0)
 		canvas.draw_circle(position + Vector2(5, 7), 3.0, BRASS)
+	elif kind == "hearth":
+		var flame := PackedVector2Array([
+			position + Vector2(0, -9), position + Vector2(6, -1),
+			position + Vector2(3, 7), position + Vector2(-4, 6),
+			position + Vector2(-7, 0),
+		])
+		canvas.draw_colored_polygon(flame, FIRE)
+		canvas.draw_circle(position + Vector2(0, 2), 3.5, PARCHMENT)
+		canvas.draw_line(position + Vector2(-9, 9), position + Vector2(9, 9), BRASS, 2.0)
 	else:
 		canvas.draw_arc(position, 7.0, -2.2, 2.0, 10, PARCHMENT, 2.0)
 		canvas.draw_line(position + Vector2(-6, -6), position + Vector2(-10, -2), PARCHMENT, 2.0)

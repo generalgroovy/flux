@@ -40,8 +40,8 @@ even when design documentation already exists.
     dense-edge/clear-lane composition, district landmarks, and pixel direction
   - [ ] Offline-complete stations plus privacy-safe friends/presence, host
     teams/rules/practice/travel tools, and Garuda Sway/Windows acceptance
-  - [x] Fixed-point walk-up focus plus six diegetic stations: Movement Guide,
-    Practice Bell, Champion Loom, Farflow Charter and ENet Host/Join gates with bubbles
+  - [x] Fixed-point walk-up focus plus seven diegetic stations: Movement Guide,
+    Practice Bell, Champion Loom, Farflow Charter, Session Hearth and ENet Host/Join gates with bubbles
   - [x] Direct-IP ENet host/join lifecycle, protocol/content handshake, eight-player
     cap, bounded validated input transport, mismatch refusal and loopback test
   - [x] Stable host/guest actors, host-authoritative input and movement, bounded
@@ -56,6 +56,8 @@ even when design documentation already exists.
     rotating capability, clean expiry and explicit host-loss state
   - [x] Three host-sealed in-world Charters with visible 2/4/8 capacity,
     traveller-damage teams, Bell authority and validated handshake assignment
+  - [x] Replicated Session Hearth roster/readiness, host-owned three-second
+    practice start and roster-change cancellation through real 60/120 Hz journeys
   - [x] Windows/Bash doctor, test, run and package entry points plus a self-cleaning
     source two-process host/join/move/emote/reconnect acceptance journey
   - [ ] Install pinned export templates and record packaged Windows/physical
@@ -1816,7 +1818,8 @@ F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
 left/right sticks, right trigger, west/east face buttons, and shoulders. The
 rate never mutates inside a running match.
 
-The eastern **Farflow Charter**, **Host Farflow**, and **Join Farflow** stations
+The eastern **Farflow Charter**, **Host Farflow**, **Join Farflow**, and
+**Session Hearth** stations
 expose the first ENet friend-session boundary without a menu. Before hosting,
 the player chooses Open Commons (8/social), Sparring Circle (4/combat), or Duel
 Knot (2/host-reset); capacity and traveller-damage/reset rules are visible and
@@ -1825,13 +1828,15 @@ host-authoritative. Host listens on UDP `24872`; Join targets
 two-character actors, 60 Hz movement snapshots and bounded combat presentation
 are live. HELLO, Practice Bell, Champion Loom and training-target state are
 host-authorized and shared; guests predict only movement from a bounded input
-history and reconcile to peer-scoped host state. A dropped guest can use Join
-Farflow within 15 seconds to reclaim its exact in-memory actor. Protocol 17
-assigns and validates the sealed Charter during handshake; cross-platform
+history and reconcile to peer-scoped host state. Connected/returning travellers
+appear at the Hearth; everyone can ready there and only the host can begin its
+three-second synchronized practice start. A dropped guest can use Join Farflow
+within 15 seconds to reclaim its exact in-memory actor. Protocol 18 assigns and
+validates the sealed Charter during handshake; cross-platform
 package proof remains next. See the
 [networking contract](docs/NETWORKING.md).
 
-The current simulation uses protocol 17, snapshot schema 3 and preference schema 3: Space invokes the semantic jump
+The current simulation uses protocol 18, snapshot schema 5 and preference schema 3: Space invokes the semantic jump
 action, Shift sprints, Ctrl/C directly slides, and primary no longer aliases
 Space. Schema-v1/v2 defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision

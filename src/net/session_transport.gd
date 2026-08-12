@@ -36,6 +36,8 @@ const RECONCILIATION_CHANNEL: int = 1
 const REQUEST_EMOTE: int = 1
 const REQUEST_TRAINING_RESET: int = 2
 const REQUEST_CHAMPION_NEXT: int = 3
+const REQUEST_READY_TOGGLE: int = 4
+const REQUEST_PRACTICE_START: int = 5
 
 var peer: ENetMultiplayerPeer
 var mode: int = Mode.OFFLINE
@@ -742,4 +744,4 @@ static func _valid_request_packet(packet: Dictionary) -> bool:
 		return false
 	var sequence := int(packet["sequence"])
 	var action := int(packet["action"])
-	return sequence >= 0 and sequence <= 0x7fffffff and action in [REQUEST_EMOTE, REQUEST_TRAINING_RESET, REQUEST_CHAMPION_NEXT]
+	return sequence >= 0 and sequence <= 0x7fffffff and action in [REQUEST_EMOTE, REQUEST_TRAINING_RESET, REQUEST_CHAMPION_NEXT, REQUEST_READY_TOGGLE, REQUEST_PRACTICE_START]

@@ -11,7 +11,7 @@ func run() -> int:
 
 
 func _test_snapshot_round_trip() -> void:
-	equal(SessionSnapshot.SCHEMA_VERSION, 3, "compact target-aware snapshot schema is explicit")
+	equal(SessionSnapshot.SCHEMA_VERSION, 5, "compact Hearth-aware snapshot schema is explicit")
 	var source := SimWorld.new(120, 7, CollisionWorld.new(3_000_000, 2_000_000))
 	var host: PlayerState = source.player()
 	host.champion_wire_id = 1
@@ -64,6 +64,9 @@ func _test_snapshot_round_trip() -> void:
 	equal(replica.player(900).health, 51_000, "practice actor health round-trips")
 	equal(replica.player(900).team_id, 900, "practice actor has a distinct non-champion team after replication")
 	equal(SessionSnapshot.names(snapshot), {1: "Lantern Host", 2: "River Guest"}, "display names round-trip separately from simulation state")
+	var hearth_state := SessionSnapshot.hearth(snapshot)
+	equal(int(hearth_state.get("maximum_players", 0)), 8, "snapshot carries Hearth capacity")
+	equal((hearth_state.get("entries", []) as Array).size(), 2, "snapshot carries sorted Hearth roster")
 
 
 func _test_projectile_and_event_round_trip() -> void:
@@ -81,6 +84,7 @@ func _test_projectile_and_event_round_trip() -> void:
 		{"type": "projectile_hit", "event_id": 41, "projectile_id": 1000, "source_wire_id": CombatTuning.RILLSHOT_WIRE_ID, "owner_id": 1, "target_id": 900, "damage": 9_000},
 		{"type": "edgeweave", "event_id": 42, "entity_id": 1, "projectile_id": 1000, "stamina": 8_000},
 		{"type": "social_emote", "event_id": 43, "entity_id": 1, "emote_id": 1},
+		{"type": "ready_changed", "event_id": 44, "entity_id": 1, "ready": true},
 	]
 	var snapshot := SessionSnapshot.capture(source, {1: "Host"}, events)
 	check(SessionSnapshot.validate(snapshot), "projectile/event snapshot validates")
@@ -90,12 +94,13 @@ func _test_projectile_and_event_round_trip() -> void:
 	if not replica.projectiles.is_empty():
 		equal(replica.projectiles[0].source_wire_id, CombatTuning.RILLSHOT_WIRE_ID, "projectile spell identity round-trips")
 		equal(replica.projectiles[0].previous_x, 996_000, "projectile lane origin round-trips")
-	equal(replica.combat_events.size(), 3, "semantic combat and social events round-trip")
-	if replica.combat_events.size() == 3:
+	equal(replica.combat_events.size(), 4, "semantic combat, social and Hearth events round-trip")
+	if replica.combat_events.size() == 4:
 		equal(String(replica.combat_events[0].get("type", "")), "projectile_hit", "hit event decodes")
 		equal(int(replica.combat_events[1].get("stamina", 0)), 8_000, "edgeweave reward decodes")
 		equal(String(replica.combat_events[2].get("type", "")), "social_emote", "social emote decodes")
 		equal(int(replica.combat_events[2].get("event_id", 0)), 43, "semantic event identity round-trips inside the fixed header")
+		check(bool(replica.combat_events[3].get("ready", false)), "Hearth readiness event decodes")
 	equal(replica.player().last_event, "cast_release_140", "readable cast event round-trips")
 
 
@@ -167,9 +172,10 @@ func _test_snapshot_validation_fails_closed() -> void:
 		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Array)[0] = 9,
 		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Array)[1] = "",
 		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Array)[2] = "BAD EVENT",
-		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Array)[3] = PackedInt64Array([1]),
+		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Array)[3] = PackedInt32Array([1]),
 		func(value: Dictionary) -> void: value["overflow"] = PackedInt32Array([-1, 0, 0]),
 		func(value: Dictionary) -> void: value["events"] = [PackedInt64Array([99, 0, 0, 0, 0, 0])],
+		func(value: Dictionary) -> void: value["hearth"] = PackedInt32Array([1, 8, 0, 8]),
 	]:
 		var malformed: Dictionary = valid.duplicate(true)
 		mutation.call(malformed)

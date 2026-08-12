@@ -1,5 +1,74 @@
 # FLUX2 agent worklog
 
+## 2026-08-12 — Session Hearth and synchronized shared start
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Advanced friend sessions to protocol 18 / snapshot schema 5 and added the
+  seventh walk-up Wellspring station, the **Session Hearth**, without adding a
+  detached lobby menu.
+- Added a host-owned packed Hearth model for connected/returning presence,
+  readiness, sealed capacity and a deterministic three-second countdown.
+  Returning, joining or expiring identities clear readiness and cancel a live
+  countdown; at least two connected travellers must all be ready.
+- Replicated Hearth state in every validated snapshot and added semantic
+  ready/countdown/start/cancel events. Reliable ready/start requests use the
+  same monotonic request lane, trusted entity stamping and authoritative
+  station-proximity checks as Bell/Loom interactions.
+- The Hearth bubble shows profile capacity, connected/returning counts, up to
+  four named roster entries, each readiness state and the correct local action.
+  The host alone starts after everyone readies.
+- Shared reset now preserves the session's monotonic simulation tick and event
+  ID sequence, preventing a guest from rejecting the new round or deduplicating
+  its start event as stale. Champion attunements and live Farflow roster survive.
+- Packed Hearth entries and 32-bit bounded player snapshot lanes recover MTU
+  headroom. The normal two-player combat and post-Hearth start packets remain
+  below ENet's 1,392-byte single-packet boundary.
+- Extended Windows and Bash Farflow journeys with a test-only Hearth diagnostic
+  that gathers the pair at the real station and still exercises normal guarded
+  request/authority paths before exact-actor reconnect.
+- Capture-only expanded-station state is applied after diagnostic host/join
+  startup, so startup notices cannot hide the station selected for visual QA.
+
+Validation:
+
+- `scripts\test.cmd`: passed import, the full **14,554-assertion** suite and
+  independent 60/120 Hz boots with zero failures at protocol 18, snapshot schema
+  5 and campus hash `0d09109383bb`.
+- `scripts\smoke-farflow.cmd -Port 24922 -TimeoutSeconds 30 -Charter
+  sparring_circle`: passed the final complete 120 Hz source journey in 6.5 seconds:
+  host/join, shared HELLO, authoritative movement/reconciliation, both-ready
+  Hearth countdown/start, leave and exact-actor return.
+- `scripts\smoke-farflow.cmd -Port 24921 -TimeoutSeconds 30 -TickRate 60
+  -Charter duel_knot`: passed the equivalent 60 Hz Duel Knot journey in 4.7
+  seconds.
+- The first black-box attempt exposed a 1,456-byte fragmented start snapshot;
+  the second exposed reset event-ID reuse. Both failures were repaired and the
+  exact same process gate passed at both supported cadences. No failed run is
+  represented as acceptance.
+- Matching Godot 4.7.1 export templates are still missing locally; source
+  run/test remains green, while packaged Windows and physical Garuda evidence
+  is not claimed. Existing untracked `dist/` and `node_modules/` were untouched.
+- A one-frame 1280×720 AMD Radeon compatibility-renderer capture at the online
+  Hearth confirmed its distinct marker and expanded Sparring Circle roster
+  bubble (`1/4`, host name, `WAITING`, action) are readable at gameplay scale.
+
+Known limitations and next task:
+
+- The Hearth does not yet provide explicit-confirmation kick/close moderation.
+  Eight travellers remain the public cap, but multi-player snapshot paging or
+  deltas must replace single whole-state unreliable packets before measured
+  eight-player load acceptance.
+- Hearth start currently restores the shared Wellspring practice seed. The next
+  slice is one bounded combat court with spawn safety, round countdown,
+  score/time limits, death/respawn, result and synchronized return/rematch.
+- Packaged Windows/physical Garuda direct-IP acceptance remains blocked only by
+  absent local release templates/hardware, not by the source launch path.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-12 — diegetic Farflow Charter
 
 Branch: `codex/continuous-overhaul`

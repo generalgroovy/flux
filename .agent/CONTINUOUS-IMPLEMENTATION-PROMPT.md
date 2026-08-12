@@ -19,7 +19,7 @@ slice and continue.
 
 The working checkpoint has both foundation champions and the full planned
 non-ability movement grammar in the Wellspring, honest cone occlusion, readable
-Health/Flux/Stamina, walk-up Guide/Bell/Loom/Charter/Farflow stations, direct-IP ENet
+Health/Flux/Stamina, walk-up Guide/Bell/Loom/Charter/Hearth/Farflow stations, direct-IP ENet
 host/join, authoritative two-player movement/combat/targets, host-confirmed
 HELLO/Bell/Loom interactions, bounded movement-only guest prediction, and a
 15-second memory-only exact-identity return path with explicit host loss.
@@ -27,10 +27,12 @@ Preserve those capabilities. Windows/Bash launch, test, package preflight and a
 self-cleaning source Farflow acceptance harness are now live. Actual package
 export is honestly blocked until matching 4.7.1 templates exist locally; keep
 that gate visible and continue with diegetic session settings and host
-administration without weakening the last green source checkpoint. Protocol 17
-now seals one of three visible session Charters with host-owned 2/4/8 capacity,
-traveller damage teams and Practice Bell authority; the next coherent slice is
-an in-world roster/readiness Hearth before the first bounded arena round.
+administration without weakening the last green source checkpoint. Protocol 18
+seals one of three visible session Charters with host-owned 2/4/8 capacity,
+traveller damage teams and Practice Bell authority. The Session Hearth now
+replicates connected/returning presence, readiness and a host-owned shared-start
+countdown through compact snapshot schema 5; the next coherent slice is the
+first bounded arena round and synchronized return/rematch loop.
 
 ## Immediate product order
 

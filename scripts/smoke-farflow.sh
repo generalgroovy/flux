@@ -61,23 +61,28 @@ wait_patterns() {
   return 1
 }
 
-"$program" "${base_args[@]}" --tick-rate="$tick_rate" --farflow=host --session-port="$port" --session-charter="$charter" '--player-name=Lantern Host' >"$host_log" 2>&1 &
+"$program" "${base_args[@]}" --tick-rate="$tick_rate" --farflow=host --session-port="$port" --session-charter="$charter" '--player-name=Lantern Host' --farflow-smoke-hearth >"$host_log" 2>&1 &
 host_pid=$!
 wait_patterns "$host_pid" "$host_log" "FLUX2 farflow host: listening on UDP $port"
 
-"$program" "${base_args[@]}" --tick-rate="$tick_rate" --farflow=join --join-address=127.0.0.1 --session-port="$port" '--player-name=River Guest' --farflow-smoke-emote --farflow-smoke-prediction --farflow-smoke-reconnect >"$guest_log" 2>&1 &
+"$program" "${base_args[@]}" --tick-rate="$tick_rate" --farflow=join --join-address=127.0.0.1 --session-port="$port" '--player-name=River Guest' --farflow-smoke-emote --farflow-smoke-prediction --farflow-smoke-hearth --farflow-smoke-reconnect >"$guest_log" 2>&1 &
 guest_pid=$!
 wait_patterns "$guest_pid" "$guest_log" \
   'FLUX2 farflow replica: local entity 2' \
   'FLUX2 farflow social: guest emote request sent' \
   'FLUX2 farflow prediction smoke: authoritative movement confirmed' \
+  'FLUX2 farflow hearth smoke: guest readiness sent' \
+  'FLUX2 farflow hearth smoke: guest received shared practice start' \
   'FLUX2 farflow reconnect smoke: left entity 2' \
   'FLUX2 farflow reconnect smoke: returned entity 2'
 wait_patterns "$host_pid" "$host_log" \
   'FLUX2 farflow host: joined entity 2 (River Guest)' \
   'FLUX2 farflow social: shared emote entity 2' \
+  'FLUX2 farflow hearth smoke: roster gathered and host ready' \
+  'FLUX2 farflow hearth smoke: all ready; countdown started' \
+  'FLUX2 farflow hearth: shared practice started' \
   'FLUX2 farflow host: return reserved for entity 2 (River Guest)' \
   'FLUX2 farflow host: returned entity 2 (River Guest)'
 
-printf 'PASS: Farflow host/join, shared HELLO, movement reconciliation and exact-actor return passed at %s Hz on UDP %s.\n' "$tick_rate" "$port"
+printf 'PASS: Farflow host/join, shared HELLO, movement reconciliation, Hearth start and exact-actor return passed at %s Hz on UDP %s.\n' "$tick_rate" "$port"
 printf 'Logs: %s\n' "$log_root"

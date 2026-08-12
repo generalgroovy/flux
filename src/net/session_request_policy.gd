@@ -24,6 +24,8 @@ static func validate(
 			return ACCEPTED if _focused_station(state, stations_by_id) == "training-reset" else REFUSED_DISTANCE
 		SessionTransport.REQUEST_CHAMPION_NEXT:
 			return ACCEPTED if _focused_station(state, stations_by_id) == "champion-loom" else REFUSED_DISTANCE
+		SessionTransport.REQUEST_READY_TOGGLE, SessionTransport.REQUEST_PRACTICE_START:
+			return ACCEPTED if _focused_station(state, stations_by_id) == "session-hearth" else REFUSED_DISTANCE
 	return REFUSED_UNAVAILABLE
 
 

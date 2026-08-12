@@ -2,8 +2,8 @@
 
 ## Current runnable boundary
 
-FLUX 2 protocol 17 / snapshot schema 3 exposes two walk-up Farflow stations and
-a Farflow Charter in
+FLUX 2 protocol 18 / snapshot schema 5 exposes two walk-up Farflow stations, a
+Farflow Charter and a Session Hearth in
 the eastern Wellspring:
 
 | Station | Current action |
@@ -11,6 +11,7 @@ the eastern Wellspring:
 | **Farflow Charter** | Before opening a gate, cycles three bounded host-owned social/combat profiles with visible capacity, traveller-damage and Bell-reset rules |
 | **Host Farflow** | Opens an ENet server on UDP `24872`, enforces the sealed Charter capacity, and shows the live count/profile |
 | **Join Farflow** | Connects to the configured address, verifies compatibility, and shows seeking/joined/refused state |
+| **Session Hearth** | Shows connected/returning travellers and readiness; all connected travellers ready here before the host begins a three-second shared practice start |
 
 | Charter | Places | Traveller damage | Practice Bell |
 | --- | ---: | --- | --- |
@@ -37,8 +38,9 @@ controller D-pad up sends a shared HELLO bubble; the host also authorizes
 Practice Bell resets and per-actor Champion Loom attunement from authoritative
 station proximity. The render snapshot keeps the 8 KiB cap at eight travellers,
 26 projectile lanes, four targets and 12 events; overflow is explicit in the
-guest HUD. A representative two-player combat snapshot stays within one
-1,392-byte ENet MTU. Each guest also predicts only its own movement from at most
+guest HUD. A representative two-player combat snapshot and the post-Hearth
+start boundary stay within one 1,392-byte ENet MTU. Each guest also predicts
+only its own movement from at most
 48 sent inputs; a separate one-MTU ordered reconciliation carries full movement
 state and the last host-processed sequence. Small draw corrections decay,
 unsafe corrections snap, and combat/resources remain authoritative.
@@ -86,10 +88,13 @@ its first snapshot so the reliable request/confirmation path can be exercised.
 host-authoritative movement returns through reconciliation.
 `--farflow-smoke-reconnect` closes the guest once, waits briefly, and reports
 only after it returns as the same session entity.
+`--farflow-smoke-hearth` gathers the diagnostic pair at the real station,
+submits readiness through the normal guarded request path, and reports only
+after the guest receives the host-owned shared start.
 
 The maintained two-process acceptance wrappers combine those diagnostics in a
-safe order—HELLO request, authoritative movement/reconciliation, leave, then
-exact-actor return—and always clean up their processes:
+safe order—HELLO request, authoritative movement/reconciliation, Hearth
+readiness/start, leave, then exact-actor return—and always clean up their processes:
 
 ```bat
 scripts\smoke-farflow.cmd
@@ -146,6 +151,8 @@ change a champion speculatively.
 | Prediction/reconciliation | Implemented: 48-input movement-only history, peer-scoped processed-sequence acknowledgement, deterministic replay, bounded correction and ACK/correction HUD without client outcome authority |
 | Return continuity | Implemented on Windows localhost: 15-second exact-actor reservation, random memory-only capability, name binding, rotation, expiry and explicit host loss |
 | Diegetic session charter | Implemented: three in-world profiles, 2/4/8 capacity, host-authoritative traveller damage teams, Bell-reset policy, handshake assignment and explicit full/incompatible refusal |
+| Session Hearth | Implemented: compact connected/returning roster, per-traveller readiness, host-owned countdown, roster-change cancellation and monotonic shared reset events/ticks |
+| First arena round | Next: one bounded court with spawn safety, scoring, time/score limits, death/respawn, result and return/rematch |
 | Remote platform smoke | Windows and Garuda Linux direct-IP packages connect, move, leave and reconnect with diagnostics |
 | Later continuity | Client-process persistence, host restart, moderation, spectators and eventual host migration |
 

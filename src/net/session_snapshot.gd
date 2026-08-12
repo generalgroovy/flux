@@ -2,7 +2,7 @@ class_name SessionSnapshot
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 3
+const SCHEMA_VERSION: int = 5
 const MAX_PLAYERS: int = 8
 const PLAYER_VALUE_COUNT: int = 43
 const PROJECTILE_VALUE_COUNT: int = 12
@@ -21,6 +21,7 @@ static func capture(
 	world: SimWorld,
 	names_by_entity: Dictionary,
 	combat_events: Array[Dictionary] = [],
+	hearth_values: PackedInt32Array = PackedInt32Array(),
 ) -> Dictionary:
 	var ordered: Array[PlayerState] = []
 	for state: PlayerState in world.players:
@@ -33,7 +34,7 @@ static func capture(
 			state.entity_id,
 			_safe_name(String(names_by_entity.get(state.entity_id, "Traveller %d" % state.entity_id))),
 			_safe_event_name(state.last_event),
-			PackedInt64Array([
+			PackedInt32Array([
 				state.champion_wire_id,
 				state.position_x, state.position_y,
 				state.velocity_x, state.velocity_y,
@@ -58,6 +59,13 @@ static func capture(
 				state.pending_cast_aim_x, state.pending_cast_aim_y,
 			]),
 		])
+	if hearth_values.is_empty():
+		var fallback_hearth := SessionHearth.new()
+		fallback_hearth.bind_host()
+		for state: PlayerState in ordered:
+			if state.entity_id > SessionCharter.HOST_ENTITY_ID:
+				fallback_hearth.connect_entity(state.entity_id)
+		hearth_values = fallback_hearth.capture(world.tick, MAX_PLAYERS)
 	var ordered_projectiles: Array[ProjectileState] = world.projectiles.duplicate()
 	ordered_projectiles.sort_custom(func(left: ProjectileState, right: ProjectileState) -> bool: return left.entity_id < right.entity_id)
 	var projectiles: Array[PackedInt64Array] = []
@@ -99,6 +107,7 @@ static func capture(
 		"projectiles": projectiles,
 		"events": events,
 		"targets": targets,
+		"hearth": hearth_values,
 		"overflow": PackedInt32Array([
 			maxi(0, ordered_projectiles.size() - MAX_PROJECTILES),
 			maxi(0, combat_events.size() - MAX_EVENTS),
@@ -139,9 +148,9 @@ static func validate(snapshot: Dictionary) -> bool:
 		if _safe_event_name(String(player[2])).is_empty():
 			return false
 		var values_value: Variant = player[3]
-		if typeof(values_value) != TYPE_PACKED_INT64_ARRAY:
+		if typeof(values_value) != TYPE_PACKED_INT32_ARRAY:
 			return false
-		var values: PackedInt64Array = values_value
+		var values: PackedInt32Array = values_value
 		if values.size() != PLAYER_VALUE_COUNT or not _valid_player_values(values):
 			return false
 	var projectiles_value: Variant = snapshot.get("projectiles")
@@ -182,6 +191,15 @@ static func validate(snapshot: Dictionary) -> bool:
 		return false
 	for overflow_count: int in overflow_value:
 		if overflow_count < 0:
+			return false
+	var hearth_value: Variant = snapshot.get("hearth")
+	if typeof(hearth_value) != TYPE_PACKED_INT32_ARRAY or not SessionHearth.validate_packet(hearth_value):
+		return false
+	var hearth: PackedInt32Array = hearth_value
+	if SessionHearth.entry_count(hearth) != players.size():
+		return false
+	for index: int in range(players.size()):
+		if SessionHearth.entity_id_at(hearth, index) != int((players[index] as Array)[0]):
 			return false
 	return true
 
@@ -238,7 +256,15 @@ static func names(snapshot: Dictionary) -> Dictionary[int, String]:
 	return result
 
 
-static func _apply_values(state: PlayerState, values: PackedInt64Array) -> void:
+static func hearth(snapshot: Dictionary) -> Dictionary:
+	return SessionHearth.decoded(snapshot.get("hearth", PackedInt32Array())) if validate(snapshot) else {}
+
+
+static func hearth_values(snapshot: Dictionary) -> PackedInt32Array:
+	return snapshot.get("hearth", PackedInt32Array()).duplicate() if validate(snapshot) else PackedInt32Array()
+
+
+static func _apply_values(state: PlayerState, values: PackedInt32Array) -> void:
 	state.champion_wire_id = values[0]
 	state.position_x = values[1]
 	state.position_y = values[2]
@@ -284,7 +310,7 @@ static func _apply_values(state: PlayerState, values: PackedInt64Array) -> void:
 	state.pending_cast_aim_y = values[42]
 
 
-static func _valid_player_values(values: PackedInt64Array) -> bool:
+static func _valid_player_values(values: PackedInt32Array) -> bool:
 	if values[0] <= 0 or values[0] > 4096:
 		return false
 	for index: int in [1, 2]:
@@ -403,6 +429,14 @@ static func encode_event(event: Dictionary) -> PackedInt64Array:
 			return PackedInt64Array([_event_header(12, event_id), int(event.get("entity_id", 0)), int(event.get("champion_wire_id", 0)), 0, 0, 0])
 		"request_refused":
 			return PackedInt64Array([_event_header(13, event_id), int(event.get("entity_id", 0)), int(event.get("action", 0)), int(event.get("reason", 0)), 0, 0])
+		"ready_changed":
+			return PackedInt64Array([_event_header(14, event_id), int(event.get("entity_id", 0)), int(bool(event.get("ready", false))), 0, 0, 0])
+		"practice_countdown":
+			return PackedInt64Array([_event_header(15, event_id), int(event.get("entity_id", 0)), int(event.get("duration_ticks", 0)), 0, 0, 0])
+		"practice_started":
+			return PackedInt64Array([_event_header(16, event_id), int(event.get("entity_id", 0)), 0, 0, 0, 0])
+		"practice_cancelled":
+			return PackedInt64Array([_event_header(17, event_id), int(event.get("entity_id", 0)), int(event.get("reason", 0)), 0, 0, 0])
 		_:
 			return PackedInt64Array()
 
@@ -440,6 +474,14 @@ static func decode_event(values: PackedInt64Array) -> Dictionary:
 			result = {"type": "champion_attuned", "entity_id": values[1], "champion_wire_id": values[2]}
 		13:
 			result = {"type": "request_refused", "entity_id": values[1], "action": values[2], "reason": values[3]}
+		14:
+			result = {"type": "ready_changed", "entity_id": values[1], "ready": values[2] == 1}
+		15:
+			result = {"type": "practice_countdown", "entity_id": values[1], "duration_ticks": values[2]}
+		16:
+			result = {"type": "practice_started", "entity_id": values[1]}
+		17:
+			result = {"type": "practice_cancelled", "entity_id": values[1], "reason": values[2]}
 	if not result.is_empty() and event_id > 0:
 		result["event_id"] = event_id
 	return result
@@ -453,7 +495,7 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 	var event_id := header >> 8
 	if event_id < 0 or event_id > MAX_EVENT_ID:
 		return false
-	if kind < 1 or kind > 13:
+	if kind < 1 or kind > 17:
 		return false
 	if kind in [1, 2, 3]:
 		if values[1] < 1 or values[1] > MAX_PLAYERS or values[2] <= 0 or values[2] > 65_535:
@@ -477,7 +519,15 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 		return values[2] == SessionTransport.REQUEST_TRAINING_RESET
 	if kind == 12:
 		return values[2] > 0 and values[2] <= 4096
-	return values[2] in [SessionTransport.REQUEST_EMOTE, SessionTransport.REQUEST_TRAINING_RESET, SessionTransport.REQUEST_CHAMPION_NEXT] and values[3] >= 1 and values[3] <= 3
+	if kind == 13:
+		return values[2] in [SessionTransport.REQUEST_EMOTE, SessionTransport.REQUEST_TRAINING_RESET, SessionTransport.REQUEST_CHAMPION_NEXT, SessionTransport.REQUEST_READY_TOGGLE, SessionTransport.REQUEST_PRACTICE_START] and values[3] >= 1 and values[3] <= 3
+	if kind == 14:
+		return values[2] in [0, 1]
+	if kind == 15:
+		return values[1] == SessionCharter.HOST_ENTITY_ID and values[2] > 0 and values[2] <= SessionHearth.MAX_COUNTDOWN_TICKS
+	if kind == 16:
+		return values[1] == SessionCharter.HOST_ENTITY_ID
+	return values[1] == SessionCharter.HOST_ENTITY_ID and values[2] in [1, 2]
 
 
 static func _event_header(kind: int, event_id: int) -> int:

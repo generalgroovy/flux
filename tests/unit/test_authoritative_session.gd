@@ -31,6 +31,12 @@ func _test_authoritative_presence_and_input() -> void:
 	equal(world.player().team_id, 1, "sparring host keeps its stable combat team")
 	equal(world.player(2).team_id, 2, "sparring guest receives an individual combat team")
 	check(not session.set_charter("forged"), "unknown charter cannot mutate authority teams")
+	equal(session.hearth.connected_count(), 2, "authority Hearth tracks host and accepted guest")
+	check(session.toggle_ready(1) and session.toggle_ready(2), "both authoritative travellers can ready")
+	check(session.can_start_practice(), "authority exposes all-ready start gate")
+	check(session.start_practice_countdown(1), "authority host starts a deterministic practice countdown")
+	check(session.practice_countdown_active(), "authority owns active countdown state")
+	check(session.hearth.cancel_countdown(), "test fixture cancels countdown before movement exercise")
 
 	var packet := {
 		"entity_id": 2,
@@ -65,6 +71,12 @@ func _test_authoritative_presence_and_input() -> void:
 	equal(session.record_combat_events([{"type": "cast_started", "entity_id": 2, "wire_id": CombatTuning.ECLIPSE_DISC_WIRE_ID}]), 1, "semantic host combat event enters the next snapshot")
 	var snapshot := session.capture_snapshot()
 	check(SessionSnapshot.validate(snapshot), "authority emits a validated roster snapshot")
+	equal((SessionSnapshot.hearth(snapshot).get("entries", []) as Array).size(), 2, "authority snapshot carries Hearth roster state")
+	var rebound_world := SimWorld.new(120, 10, CollisionWorld.new(3_000_000, 2_000_000))
+	check(champions.apply_to_player(rebound_world.player(), "oh_tipi"), "rebind host champion applies")
+	var rebound := AuthoritativeSession.new()
+	check(rebound.bind(rebound_world, champions, Vector2i(1280, 720), "Lantern Host", [{"entity_id": 2, "name": "River Guest", "reserved": false}], "open_commons"), "authority rebind preserves a connected live roster")
+	equal(rebound.hearth.connected_count(), 2, "rebound Hearth preserves connected presence")
 	equal(SessionSnapshot.names(snapshot), {1: "Lantern Host", 2: "River Guest"}, "snapshot exposes authoritative presence names")
 	equal((snapshot.get("events", []) as Array).size(), 1, "pending combat feedback is included once")
 	var decoded_event := SessionSnapshot.decode_event((snapshot["events"] as Array)[0])
@@ -83,7 +95,9 @@ func _test_authoritative_presence_and_input() -> void:
 	returning_state.position_x += 17_000
 	returning_state.health -= 4_000
 	equal(session.suspend_peers([{"entity_id": 2, "name": "River Guest", "reserved": true}]), 1, "reserved disconnect suspends actor instead of removing it")
+	equal(session.hearth.returning_count(), 1, "reserved disconnect remains visible at the Hearth")
 	check(world.player(2) == returning_state, "suspended return keeps the exact authoritative actor")
 	equal(session.register_peers([{"peer_id": 44, "entity_id": 2, "name": "River Guest", "resumed": true}]), 1, "resumed presence reclaims suspended actor")
+	equal(session.hearth.connected_count(), 2, "resumed identity returns to connected Hearth presence")
 	check(world.player(2) == returning_state, "resumed identity preserves position, health and champion state")
 	equal(world.player(2).health, returning_state.health, "resumed identity keeps authoritative health")

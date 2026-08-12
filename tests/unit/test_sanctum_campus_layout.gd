@@ -31,6 +31,8 @@ func _test_repository_layout() -> void:
 	equal(layout.practice_targets_by_id.size(), 1, "the Nexus sparring effigy is explicit")
 	equal(String(layout.arena_definition.get("id", "")), "proving-court-v1", "the first bounded arena has a stable authored identity")
 	equal((layout.arena_definition.get("spawns", []) as Array).size(), 8, "arena reserves eight ordered spawn anchors")
+	var hearth_station: Dictionary = layout.stations_by_id["session-hearth"]
+	equal((hearth_station.get("gather_spawns", []) as Array).size(), 8, "Hearth reserves one rematch gather spawn per supported traveller")
 	var effigy: Dictionary = layout.practice_targets_by_id["nexus-sparring-effigy"]
 	equal(int(effigy.get("entity_id", 0)), 900, "sparring effigy has a stable simulation entity id")
 	equal(int(effigy.get("health", 0)), 80_000, "sparring effigy has authored Health")
@@ -64,6 +66,9 @@ func _test_collision_compilation() -> void:
 	check(collision.can_occupy(Vector2i(2_180_000, 800_000), MovementTuning.PLAYER_RADIUS), "Farflow join station has authored collision clearance")
 	check(collision.can_occupy(Vector2i(2_380_000, 800_000), MovementTuning.PLAYER_RADIUS), "Farflow Charter has authored collision clearance")
 	check(collision.can_occupy(Vector2i(2_080_000, 620_000), MovementTuning.PLAYER_RADIUS), "Session Hearth has authored collision clearance")
+	for gather_value: Variant in (layout.stations_by_id["session-hearth"] as Dictionary).get("gather_spawns", []):
+		var gather_values: Array = gather_value
+		check(collision.can_occupy(Vector2i(int(gather_values[0]), int(gather_values[1])) * SimConfig.FIXED_SCALE, MovementTuning.PLAYER_RADIUS), "Hearth gather spawn has authored collision clearance")
 	check(not collision.can_occupy(Vector2i(180_000, 360_000), MovementTuning.PLAYER_RADIUS), "routekeeper lodge collision matches presentation bounds")
 	var vault: CollisionWorld.Obstacle = collision.find_vault_candidate(Vector2i(1_520_000, 720_000), Vector2i(1000, 0), MovementTuning.PLAYER_RADIUS)
 	check(vault != null, "marked campus vault rail is discoverable")
@@ -91,6 +96,9 @@ func _test_invalid_layouts_fail_closed() -> void:
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["interaction_radius"] = 900,
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["lines"] = "too vague",
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["position"] = [1200, 500],
+		func(data: Dictionary) -> void: (data["stations"][6] as Dictionary)["gather_spawns"] = [[2080, 620]],
+		func(data: Dictionary) -> void: ((data["stations"][6] as Dictionary)["gather_spawns"] as Array)[0] = [2300, 620],
+		func(data: Dictionary) -> void: ((data["stations"][6] as Dictionary)["gather_spawns"] as Array)[1] = [2144, 620],
 		func(data: Dictionary) -> void: (data["practice_targets"][0] as Dictionary)["health"] = 0,
 		func(data: Dictionary) -> void: (data["practice_targets"][0] as Dictionary)["entity_id"] = 1,
 		func(data: Dictionary) -> void: (data["practice_targets"][0] as Dictionary)["position"] = [1200, 500],

@@ -305,6 +305,23 @@ func validate() -> bool:
 		var interaction_radius := int(station.get("interaction_radius", 0))
 		if interaction_radius < 48 or interaction_radius > 160:
 			return _fail("Sanctum station interaction radius is outside bounds: %s" % station_id)
+		if station_id == "session-hearth":
+			var gather_spawns: Array = station.get("gather_spawns", [])
+			if gather_spawns.size() != SessionHearth.MAX_PLAYERS:
+				return _fail("Session Hearth requires eight gather spawns")
+			var gathered_points: Array[Vector2i] = []
+			for gather_value: Variant in gather_spawns:
+				var gather_point := _parse_point(gather_value)
+				if (
+					not station_district_bounds.has_point(gather_point)
+					or gather_point.distance_squared_to(station_position) > interaction_radius * interaction_radius
+				):
+					return _fail("Session Hearth gather spawn leaves its interaction circle")
+				for prior_point: Vector2i in gathered_points:
+					var minimum_separation := MovementTuning.PLAYER_RADIUS * 2 / SimConfig.FIXED_SCALE + 4
+					if gather_point.distance_squared_to(prior_point) < minimum_separation * minimum_separation:
+						return _fail("Session Hearth gather spawns overlap")
+				gathered_points.append(gather_point)
 		stations_by_id[station_id] = station
 	for required_station_id: String in ["movement-guide", "training-reset", "champion-loom", "farflow-host", "farflow-join", "farflow-charter", "session-hearth"]:
 		if not stations_by_id.has(required_station_id):
@@ -399,6 +416,11 @@ func validate() -> bool:
 		var station_position := _parse_point((stations_by_id[station_id] as Dictionary).get("position", [])) * SimConfig.FIXED_SCALE
 		if not collision.can_occupy(station_position, MovementTuning.PLAYER_RADIUS):
 			return _fail("Sanctum station overlaps authored collision: %s" % station_id)
+	var hearth_station: Dictionary = stations_by_id.get("session-hearth", {})
+	for gather_value: Variant in hearth_station.get("gather_spawns", []):
+		var gather_position := _parse_point(gather_value) * SimConfig.FIXED_SCALE
+		if not collision.can_occupy(gather_position, MovementTuning.PLAYER_RADIUS):
+			return _fail("Session Hearth gather spawn overlaps authored collision")
 	for target_id: String in practice_targets_by_id:
 		var target: Dictionary = practice_targets_by_id[target_id]
 		var target_position := _parse_point(target.get("position", [])) * SimConfig.FIXED_SCALE

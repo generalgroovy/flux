@@ -79,6 +79,8 @@ func _test_capture_pointer_parser() -> void:
 	check(not BootstrapScript.has_hearth_smoke_argument("--farflow-smoke-hearth=true"), "diagnostic Hearth smoke switch fails closed on alternate syntax")
 	check(BootstrapScript.has_round_smoke_argument("--farflow-smoke-round"), "diagnostic court smoke switch parses exactly")
 	check(not BootstrapScript.has_round_smoke_argument("--farflow-smoke-round=true"), "diagnostic court smoke switch fails closed on alternate syntax")
+	check(BootstrapScript.has_rematch_smoke_argument("--farflow-smoke-rematch"), "diagnostic rematch smoke switch parses exactly")
+	check(not BootstrapScript.has_rematch_smoke_argument("--farflow-smoke-rematch=true"), "diagnostic rematch smoke switch fails closed on alternate syntax")
 	check(BootstrapScript.reconnect_smoke_prerequisites_met(false, false, false, false), "standalone reconnect smoke may begin after its first snapshot")
 	check(not BootstrapScript.reconnect_smoke_prerequisites_met(true, false, true, true), "combined smoke waits until the reliable social request is sent")
 	check(not BootstrapScript.reconnect_smoke_prerequisites_met(true, true, true, false), "combined smoke waits for authoritative movement confirmation")

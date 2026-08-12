@@ -1,5 +1,51 @@
 # FLUX2 agent worklog
 
+## 2026-08-12 — gathered Hearth return and same-roster rematch
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Turned the post-result reset into a real diegetic return: every connected
+  champion now appears at one of eight validated, collision-cleared positions
+  around the Session Hearth, all inside its interaction circle.
+- Preserved round serials across world refreshes. The Hearth names the next
+  round, the persistent HUD shows its live three-second countdown and rules,
+  readiness resets explicitly, and the same roster can ready and enter Round 2
+  without closing or reopening Farflow.
+- Renamed remaining player-facing “shared practice” language to Proving Court
+  language while retaining stable compatibility event IDs internally.
+- The eight gather points are authored campus data with district, interaction-
+  radius, pair-separation and collision validation; malformed or overlapping
+  layouts fail closed.
+- Fixed the diagnostic reconnect path so a returning smoke actor is never
+  moved out of an active round. Added a bounded rematch diagnostic that closes
+  Round 1 only after exact-actor return, verifies both actors gather/readies at
+  the real Hearth, and succeeds only when the guest receives active Round 2.
+
+Validation:
+
+- `scripts\test.cmd`: passed import, the full **14,653-assertion** suite and
+  independent 60/120 Hz boots with zero failures.
+- `scripts\smoke-farflow.cmd -Port 24924 -TickRate 120 -Charter open_commons
+  -TimeoutSeconds 30`: passed host/join, movement, Hearth, Round 1, exact-actor
+  return, gathered Hearth readiness and active Round 2.
+- `scripts\smoke-farflow.cmd -Port 24925 -TickRate 60 -Charter duel_knot
+  -TimeoutSeconds 30`: passed the equivalent same-roster rematch at 60 Hz.
+- Godot editor/import parser and `git diff --check`: passed.
+
+Known limitations and next slice:
+
+- Court countdown/result state is now persistent and readable, but bespoke
+  character animation/audio for victory, defeat and rematch remain later art
+  work.
+- Explicit-confirmation host kick/close stewardship is the next coherent
+  friend-play slice; it must preserve the gathered/rematch loop.
+- Matching export templates and physical Garuda direct-IP proof remain external
+  acceptance work, not a claimed pass.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-12 — first host-owned Proving Court round
 
 Branch: `codex/continuous-overhaul`

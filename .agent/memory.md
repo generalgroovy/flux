@@ -16,15 +16,18 @@ each playable slice.
   Hearth return.
 - Late friends receive a safely idle next-gathering state and cannot mutate
   lobby stations during a live court; HELLO remains available.
-- Latest verification: `scripts\test.cmd` passed 14,636 assertions plus 60/120
-  Hz boots; Windows two-process source smokes passed at 120 Hz/Open Commons on
-  UDP 24922 and 60 Hz/Duel Knot on UDP 24923.
+- Results return up to eight connected champions to collision-cleared positions
+  around the actual Hearth; persistent countdown/rule text and reset readiness
+  support serial Round 2 without reopening Farflow.
+- Latest verification: `scripts\test.cmd` passed 14,653 assertions plus 60/120
+  Hz boots; Windows two-process Round-1-to-Round-2 source smokes passed at 120
+  Hz/Open Commons on UDP 24924 and 60 Hz/Duel Knot on UDP 24925.
 - Untracked `dist/` and `node_modules/` predate this slice and must remain
   untouched.
 
 ## Next acceptance-driven slice
 
-Add readable pre-round/result presentation and a deliberate same-roster rematch
-flow without weakening Hearth readiness, host authority, packet budgets or the
-last green Windows/Linux source tooling. Then implement explicit-confirmation
-host stewardship and a defined late-join spectator/next-round policy.
+Implement explicit-confirmation host stewardship: an in-world host can select a
+guest, confirm kick, or confirm closing the company; affected guests receive a
+readable reason, clients cannot forge moderation, and the gathered/rematch loop
+and packet budgets remain green. A richer late-join spectator camera follows.

@@ -14,6 +14,11 @@ the eastern Wellspring:
 | **Session Hearth** | Shows connected/returning travellers and readiness; all connected travellers ready here before the host begins a three-second synchronized Proving Court start |
 | **Proving Court** | Receives the intact connected roster at authored spawns, assigns combat teams and wards, scores knockouts, respawns defeated travellers, resolves score/time results and returns the company to the Hearth |
 
+After a result, the connected roster gathers at eight collision-cleared points
+inside the actual Hearth interaction circle. Readiness resets, round serials
+remain monotonic, the HUD names the next round and live countdown, and the same
+company can start a rematch without reopening Farflow.
+
 | Charter | Places | Traveller damage | Practice Bell |
 | --- | ---: | --- | --- |
 | **Open Commons** | 8 | Off; champions share a team | Any traveller |
@@ -94,6 +99,9 @@ submits readiness through the normal guarded request path, and reports only
 after the guest receives the host-owned shared start.
 `--farflow-smoke-round` additionally reports only after that guest validates an
 active packed round and appears in the same Proving Court serial as the host.
+`--farflow-smoke-rematch` then resolves diagnostic Round 1 after exact-actor
+return and reports only after both actors gather/ready at the Hearth and the
+guest validates active Round 2.
 
 The maintained two-process acceptance wrappers combine those diagnostics in a
 safe order—HELLO request, authoritative movement/reconciliation, Hearth
@@ -155,8 +163,9 @@ change a champion speculatively.
 | Return continuity | Implemented on Windows localhost: 15-second exact-actor reservation, random memory-only capability, name binding, rotation, expiry and explicit host loss |
 | Diegetic session charter | Implemented: three in-world profiles, 2/4/8 capacity, host-authoritative traveller damage teams, Bell-reset policy, handshake assignment and explicit full/incompatible refusal |
 | Session Hearth | Implemented: compact connected/returning roster, per-traveller readiness, host-owned countdown, roster-change cancellation and monotonic shared reset events/ticks |
-| First arena round | Playable foundation: one authored bounded court with individual combat teams, spawn wards, first-to-three/90-second scoring, authoritative knockout/respawn, result freeze and automatic Hearth return; explicit rematch presentation remains |
-| Court readability/rematch | Next: pre-round rules/spawn presentation, stronger result language and a deliberate repeat-round flow from the same Hearth roster |
+| First arena round | Playable foundation: one authored bounded court with individual combat teams, spawn wards, first-to-three/90-second scoring, authoritative knockout/respawn, result freeze and automatic Hearth return |
+| Court readability/rematch | Complete foundation: persistent rules/countdown, eight validated gather positions, reset readiness, monotonic serial and same-roster Round 2 pass 60/120 Hz process journeys |
+| Host stewardship | Next: explicit-confirmation kick/close controls with trusted host authority and readable affected-client reasons |
 | Remote platform smoke | Windows and Garuda Linux direct-IP packages connect, move, leave and reconnect with diagnostics |
 | Later continuity | Client-process persistence, host restart, moderation, spectators and eventual host migration |
 

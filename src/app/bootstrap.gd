@@ -95,6 +95,9 @@ var hearth_smoke_ready_sent: bool = false
 var hearth_smoke_started_reported: bool = false
 var requested_round_smoke: bool = false
 var round_smoke_active_reported: bool = false
+var requested_rematch_smoke: bool = false
+var rematch_smoke_ready_sent: bool = false
+var rematch_smoke_active_reported: bool = false
 
 
 func _ready() -> void:
@@ -142,6 +145,7 @@ func _ready() -> void:
 	requested_reconnect_smoke = _requested_reconnect_smoke()
 	requested_hearth_smoke = _requested_hearth_smoke()
 	requested_round_smoke = _requested_round_smoke()
+	requested_rematch_smoke = _requested_rematch_smoke()
 	session_transport = SessionTransport.new()
 	authoritative_session = AuthoritativeSession.new()
 	client_prediction = ClientPrediction.new()
@@ -678,8 +682,8 @@ func _sync_session_transport() -> void:
 		if not joined.is_empty():
 			var join_cancelled_countdown := authoritative_session.practice_countdown_active()
 			authoritative_session.register_peers(joined)
-			if requested_hearth_smoke:
-				_arrange_hearth_smoke_roster()
+			if requested_hearth_smoke and authoritative_session.session_round.phase == SessionRound.Phase.HEARTH:
+				_arrange_hearth_roster()
 				if not authoritative_session.hearth.is_ready(SessionTransport.SERVER_PEER_ID):
 					_handle_session_requests([{
 						"entity_id": SessionTransport.SERVER_PEER_ID,
@@ -691,6 +695,9 @@ func _sync_session_transport() -> void:
 			session_names_by_entity = authoritative_session.names_by_entity.duplicate()
 			for event: Dictionary in joined:
 				print("FLUX2 farflow host: %s entity %d (%s)" % ["returned" if bool(event.get("resumed", false)) else "joined", int(event.get("entity_id", 0)), String(event.get("name", "Traveller"))])
+				if requested_rematch_smoke and bool(event.get("resumed", false)) and authoritative_session.session_round.active():
+					authoritative_session.session_round.round_end_tick = world.tick + world.config.milliseconds_to_ticks(250)
+					print("FLUX2 farflow rematch smoke: closing round 1 after exact-actor return")
 		var disconnected := session_transport.take_disconnected_peers()
 		if not disconnected.is_empty():
 			var disconnect_cancelled_countdown := authoritative_session.practice_countdown_active()
@@ -773,6 +780,16 @@ func _sync_session_transport() -> void:
 					elif reconnect_smoke_stage == 3 and session_transport.local_entity_id == reconnect_smoke_entity_id:
 						reconnect_smoke_stage = 4
 						print("FLUX2 farflow reconnect smoke: returned entity %d" % reconnect_smoke_entity_id)
+				var replicated_round := _current_round_state()
+				if (
+					requested_rematch_smoke
+					and not rematch_smoke_ready_sent
+					and int(replicated_round.get("phase", SessionRound.Phase.HEARTH)) == SessionRound.Phase.HEARTH
+					and int(replicated_round.get("serial", 0)) == 1
+				):
+					rematch_smoke_ready_sent = true
+					_submit_session_request(SessionTransport.REQUEST_READY_TOGGLE)
+					print("FLUX2 farflow rematch smoke: guest gathered and ready for round 2")
 		var reconciliations := session_transport.take_reconciliations()
 		if not reconciliations.is_empty():
 			var local_authority := _local_player_state()
@@ -959,10 +976,10 @@ func _ingest_session_feedback(events: Array[Dictionary]) -> void:
 				station_notice = "%s is %s." % [String(session_names_by_entity.get(entity_id, "A traveller")), "ready" if bool(event.get("ready", false)) else "waiting"]
 				station_notice_seconds = 1.5
 			"practice_countdown":
-				station_notice = "The Hearth kindles. Shared practice begins in three."
+				station_notice = "The Hearth kindles. The Proving Court opens in three."
 				station_notice_seconds = 2.5
 			"practice_started":
-				station_notice = "Shared practice begins."
+				station_notice = "The Proving Court opens."
 				station_notice_seconds = 2.0
 				if requested_hearth_smoke and session_transport.is_connected_client() and not hearth_smoke_started_reported:
 					hearth_smoke_started_reported = true
@@ -972,6 +989,11 @@ func _ingest_session_feedback(events: Array[Dictionary]) -> void:
 					if int(state.get("phase", SessionRound.Phase.HEARTH)) == SessionRound.Phase.ACTIVE:
 						round_smoke_active_reported = true
 						print("FLUX2 farflow round smoke: guest active in Proving Court serial %d" % int(state.get("serial", 0)))
+				if requested_rematch_smoke and session_transport.is_connected_client() and not rematch_smoke_active_reported:
+					var rematch_state := _current_round_state()
+					if int(rematch_state.get("phase", SessionRound.Phase.HEARTH)) == SessionRound.Phase.ACTIVE and int(rematch_state.get("serial", 0)) == 2:
+						rematch_smoke_active_reported = true
+						print("FLUX2 farflow rematch smoke: guest active in Proving Court serial 2")
 			"practice_cancelled":
 				station_notice = "The Hearth waits for the changed roster."
 				station_notice_seconds = 2.0
@@ -1157,6 +1179,11 @@ func _session_label() -> String:
 	var round_label := _round_label()
 	if not round_label.is_empty():
 		return round_label
+	var hearth_state := SessionHearth.decoded(_current_hearth_values())
+	var countdown_ticks := int(hearth_state.get("countdown_ticks", 0))
+	if countdown_ticks > 0:
+		var next_round := int(_current_round_state().get("serial", 0)) + 1
+		return "ROUND %d IN %.1fs · FIRST 3 · 90s" % [next_round, float(countdown_ticks) / float(maxi(1, tick_rate))]
 	if session_transport.is_connected_client() and network_projectile_overflow > 0:
 		return "FARFLOW LOAD +%d BOLTS" % network_projectile_overflow
 	if session_transport.is_host():
@@ -1235,9 +1262,12 @@ func _session_hearth_lines() -> Array:
 		else:
 			returning += 1
 	var countdown_ticks := int(hearth_state.get("countdown_ticks", 0))
+	var completed_rounds := int(_current_round_state().get("serial", 0))
 	var lines: Array = []
 	if countdown_ticks > 0:
-		lines.append("PRACTICE IN %.1fs · %d/%d HERE" % [float(countdown_ticks) / float(tick_rate), connected, int(hearth_state.get("maximum_players", 0))])
+		lines.append("ROUND %d IN %.1fs · FIRST 3 · 90s" % [completed_rounds + 1, float(countdown_ticks) / float(tick_rate)])
+	elif completed_rounds > 0:
+		lines.append("REMATCH ROUND %d · %d/%d HERE" % [completed_rounds + 1, connected, int(hearth_state.get("maximum_players", 0))])
 	else:
 		lines.append("%s · %d/%d HERE%s" % [SessionCharter.display_name(selected_charter_id), connected, int(hearth_state.get("maximum_players", 0)), " · %d RETURNING" % returning if returning > 0 else ""])
 	var visible_entries := mini(entries.size(), 4)
@@ -1249,7 +1279,7 @@ func _session_hearth_lines() -> Array:
 	if entries.size() > visible_entries:
 		lines.append("+%d MORE · ALL MUST READY" % (entries.size() - visible_entries))
 	elif countdown_ticks <= 0:
-		lines.append("F toggles ready" if not session_transport.is_host() or not authoritative_session.can_start_practice() else "HOST F begins shared practice")
+		lines.append("F toggles ready" if not session_transport.is_host() or not authoritative_session.can_start_practice() else "HOST F begins round %d" % (completed_rounds + 1))
 	return lines
 
 
@@ -1370,32 +1400,46 @@ func _begin_shared_practice() -> bool:
 func _return_to_hearth() -> bool:
 	if not _restart_shared_seed(tick_rate):
 		return false
+	if not _arrange_hearth_roster():
+		return false
 	session_round_values = authoritative_session.session_round.capture(world)
+	current_position = _player_position()
+	previous_position = current_position
 	_publish_session_event({"type": "round_returning", "entity_id": SessionTransport.SERVER_PEER_ID})
+	if requested_rematch_smoke:
+		_handle_session_requests([{
+			"entity_id": SessionTransport.SERVER_PEER_ID,
+			"action": SessionTransport.REQUEST_READY_TOGGLE,
+		}])
+		print("FLUX2 farflow rematch smoke: host gathered and ready for round 2")
 	station_notice = "The company returns to the Hearth."
 	station_notice_seconds = 2.5
 	print("FLUX2 farflow hearth: company returned at host tick %d" % world.tick)
 	return true
 
 
-func _arrange_hearth_smoke_roster() -> void:
+func _arrange_hearth_roster() -> bool:
 	var station: Dictionary = campus_layout.stations_by_id.get("session-hearth", {})
-	var position_values: Array = station.get("position", [])
-	if position_values.size() != 2:
-		return
-	var center := Vector2i(int(position_values[0]), int(position_values[1])) * SimConfig.FIXED_SCALE
+	var gather_spawns: Array = station.get("gather_spawns", [])
 	var ordered: Array[PlayerState] = []
 	for state: PlayerState in world.players:
 		if state.actor_kind == PlayerState.ActorKind.CHAMPION:
 			ordered.append(state)
 	ordered.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
+	if gather_spawns.size() < ordered.size():
+		return false
 	for index: int in range(ordered.size()):
 		var state := ordered[index]
-		state.position_x = center.x + (index * 56 - 28) * SimConfig.FIXED_SCALE
-		state.position_y = center.y + 24 * SimConfig.FIXED_SCALE
+		var position_values: Array = gather_spawns[index]
+		var gather_position := Vector2i(int(position_values[0]), int(position_values[1])) * SimConfig.FIXED_SCALE
+		if not world.collision.can_occupy(gather_position, state.radius):
+			return false
+		state.position_x = gather_position.x
+		state.position_y = gather_position.y
 		state.velocity_x = 0
 		state.velocity_y = 0
 		state.last_event = "hearth_gathered"
+	return true
 
 
 func _start_match(requested_tick_rate: int) -> bool:
@@ -1765,6 +1809,17 @@ func _requested_round_smoke() -> bool:
 
 static func has_round_smoke_argument(argument: String) -> bool:
 	return argument == "--farflow-smoke-round"
+
+
+func _requested_rematch_smoke() -> bool:
+	for argument: String in OS.get_cmdline_user_args():
+		if has_rematch_smoke_argument(argument):
+			return true
+	return false
+
+
+static func has_rematch_smoke_argument(argument: String) -> bool:
+	return argument == "--farflow-smoke-rematch"
 
 
 static func reconnect_smoke_prerequisites_met(

@@ -61,6 +61,8 @@ even when design documentation already exists.
   - [x] Host-owned Proving Court round: authored two-to-eight-player spawns,
     visible spawn wards, sealed bounds, knockout scoring, timed respawns,
     score/time results and synchronized return to the Hearth
+  - [x] Eight collision-cleared Hearth return positions, persistent round
+    countdown/rules and a same-roster readiness loop proven through Round 2
   - [x] Windows/Bash doctor, test, run and package entry points plus a self-cleaning
     source two-process host/join/move/emote/reconnect acceptance journey
   - [ ] Install pinned export templates and record packaged Windows/physical
@@ -1836,7 +1838,9 @@ appear at the Hearth; everyone can ready there and only the host can begin its
 three-second synchronized start. The intact company then enters the bounded
 Proving Court, where the first-to-three/90-second round owns combat teams,
 spawn wards, knockout/respawn state, a visible result and automatic return to
-the Hearth. A dropped guest can use Join Farflow within 15 seconds to reclaim
+eight safe positions around the actual Hearth. Readiness resets there, the HUD
+names the next round/countdown, and the same company can enter Round 2 without
+reopening Farflow. A dropped guest can use Join Farflow within 15 seconds to reclaim
 its exact in-memory actor. Protocol 19 / snapshot schema 6 assign and validate
 the sealed Charter and replicate authoritative court state; cross-platform
 package proof remains next. See the

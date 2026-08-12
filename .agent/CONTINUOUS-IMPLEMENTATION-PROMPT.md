@@ -33,9 +33,10 @@ traveller damage teams and Practice Bell authority. The Session Hearth now
 replicates connected/returning presence, readiness and a host-owned shared-start
 countdown through compact snapshot schema 6. The first playable Proving Court
 round now owns two-to-eight authored spawns, combat teams, spawn wards, bounds,
-knockout scoring, respawns, score/time results and return to the Hearth. The
-next coherent slice is court transition/result readability plus a deliberate
-rematch loop, followed by explicit host stewardship.
+knockout scoring, respawns and score/time results. Up to eight champions return
+to validated positions around the real Hearth, where persistent countdown/rule
+presentation and reset readiness support a serial same-roster rematch through
+Round 2. The next coherent slice is explicit-confirmation host stewardship.
 
 ## Immediate product order
 

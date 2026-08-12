@@ -120,7 +120,9 @@ court, score knockouts to three or 90 seconds, respawn after 1.8 seconds, show a
 six-second result and return everyone to the Hearth. The maintained process
 journey includes `--farflow-smoke-hearth` and `--farflow-smoke-round`; both are
 strictly diagnostic and use the same proximity/request/authority path as player
-input.
+input. `--farflow-smoke-rematch` is combined by the maintained wrapper to prove
+the returned roster occupies the real Hearth, readies again and receives active
+Round 2; it is not a player-facing shortcut.
 
 Both 60 and 120 Hz simulations publish shared state at 60 snapshots per second.
 Semantic events are retained for four snapshots and deduplicated by stable ID;

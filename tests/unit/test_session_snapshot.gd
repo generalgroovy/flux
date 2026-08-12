@@ -62,6 +62,7 @@ func _test_snapshot_round_trip() -> void:
 	equal(replica.player(2).primary_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "guest kit identity round-trips")
 	check(replica.player(900) != null, "authoritative practice actor is reconstructed")
 	equal(replica.player(900).health, 51_000, "practice actor health round-trips")
+	equal(replica.player(900).team_id, 900, "practice actor has a distinct non-champion team after replication")
 	equal(SessionSnapshot.names(snapshot), {1: "Lantern Host", 2: "River Guest"}, "display names round-trip separately from simulation state")
 
 

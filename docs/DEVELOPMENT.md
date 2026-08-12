@@ -90,7 +90,7 @@ The eastern Host/Join Farflow stations operate it without a detached menu; use
 `--join-address=IP`, `--session-port=24872` and `--player-name=Name` for direct-IP
 diagnostics. Its real loopback suite covers compatibility, bounded validated
 input, mismatch refusal and disconnect cleanup. Stable peer actors, host-side
-movement simulation and compact 60 Hz guest snapshots are live. Protocol 16 /
+movement simulation and compact 60 Hz guest snapshots are live. Protocol 17 /
 snapshot schema 3 carries bounded projectile lanes, target state and semantic
 feedback without moving any outcome authority to clients. Reliable
 social/Bell/Loom requests are validated
@@ -100,11 +100,19 @@ last processed input and reconciles bounded movement-only guest prediction;
 combat, resources and world outcomes remain snapshot-owned. See
 [friend-session networking](NETWORKING.md).
 
+The adjacent Farflow Charter cycles Open Commons (8/social), Sparring Circle
+(4/player damage) and Duel Knot (2/host reset). The host seals one before
+opening Farflow; its profile hash/capacity are validated during acceptance and
+its team/reset rules are enforced by host simulation. Use
+`--session-charter=sparring_circle` only for repeatable diagnostics. Capture-only
+`--capture-spawn=X,Y` and `--capture-expanded-station=ID` support deterministic
+visual inspection without changing normal spawn or interaction behavior.
+
 Both 60 and 120 Hz simulations publish shared state at 60 snapshots per second.
 Semantic events are retained for four snapshots and deduplicated by stable ID;
 do not clear an event after only one unreliable send.
 
-Protocol 16 reserves a disconnected guest's exact actor for 15 seconds and
+Protocol 17 reserves a disconnected guest's exact actor for 15 seconds and
 binds return to a random in-memory capability plus the original name. A normal
 player uses Join Farflow again; `--farflow-smoke-reconnect` is test-only. Do not
 print, persist or add that capability to snapshots/diagnostics.

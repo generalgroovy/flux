@@ -27,7 +27,7 @@ func _test_repository_layout() -> void:
 	equal(layout.buildings_by_id.size(), 10, "authored buildings and low cover are registered")
 	equal(layout.landmarks_by_id.size(), 6, "combined quarters retain multiple memorable landmarks")
 	equal(layout.reset_zones_by_id.size(), 2, "movement and proving reset zones are explicit")
-	equal(layout.stations_by_id.size(), 5, "guide, practice, champion and two Farflow stations are explicit")
+	equal(layout.stations_by_id.size(), 6, "guide, practice, champion, charter and two Farflow stations are explicit")
 	equal(layout.practice_targets_by_id.size(), 1, "the Nexus sparring effigy is explicit")
 	var effigy: Dictionary = layout.practice_targets_by_id["nexus-sparring-effigy"]
 	equal(int(effigy.get("entity_id", 0)), 900, "sparring effigy has a stable simulation entity id")
@@ -60,6 +60,7 @@ func _test_collision_compilation() -> void:
 	check(collision.can_occupy(Vector2i(1_500_000, 720_000), int(target.get("radius", 0)) * SimConfig.FIXED_SCALE), "sparring effigy has authored collision clearance")
 	check(collision.can_occupy(Vector2i(1_980_000, 800_000), MovementTuning.PLAYER_RADIUS), "Farflow host station has authored collision clearance")
 	check(collision.can_occupy(Vector2i(2_180_000, 800_000), MovementTuning.PLAYER_RADIUS), "Farflow join station has authored collision clearance")
+	check(collision.can_occupy(Vector2i(2_380_000, 800_000), MovementTuning.PLAYER_RADIUS), "Farflow Charter has authored collision clearance")
 	check(not collision.can_occupy(Vector2i(180_000, 360_000), MovementTuning.PLAYER_RADIUS), "routekeeper lodge collision matches presentation bounds")
 	var vault: CollisionWorld.Obstacle = collision.find_vault_candidate(Vector2i(1_520_000, 720_000), Vector2i(1000, 0), MovementTuning.PLAYER_RADIUS)
 	check(vault != null, "marked campus vault rail is discoverable")

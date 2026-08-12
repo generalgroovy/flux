@@ -23,6 +23,7 @@ var last_processed_input_sequence_by_entity: Dictionary[int, int] = {}
 var pending_combat_events: Array[Dictionary] = []
 var next_event_id: int = 1
 var last_error: String = ""
+var charter_id: String = SessionCharter.DEFAULT_ID
 
 
 func bind(
@@ -31,6 +32,7 @@ func bind(
 	spawn_pixels: Vector2i,
 	host_name: String,
 	existing_roster: Array[Dictionary] = [],
+	requested_charter_id: String = SessionCharter.DEFAULT_ID,
 ) -> bool:
 	last_error = ""
 	if new_world == null or not new_world.is_valid() or new_champion_catalog == null:
@@ -38,6 +40,8 @@ func bind(
 	var safe_host_name := SessionTransport._validated_player_name(host_name)
 	if safe_host_name.is_empty():
 		return _fail("Authoritative host name is invalid")
+	if not SessionCharter.is_valid_id(requested_charter_id):
+		return _fail("Authoritative session charter is invalid")
 	world = new_world
 	champion_catalog = new_champion_catalog
 	spawn = spawn_pixels
@@ -46,6 +50,8 @@ func bind(
 	last_processed_input_sequence_by_entity = {}
 	pending_combat_events = []
 	next_event_id = 1
+	charter_id = requested_charter_id
+	_apply_charter_team(new_world.player())
 	return register_peers(existing_roster) == existing_roster.size()
 
 
@@ -63,6 +69,7 @@ func register_peers(events: Array[Dictionary]) -> int:
 			names_by_entity[entity_id] = safe_name
 			last_processed_input_sequence_by_entity[entity_id] = -1
 			existing_state.last_event = "farflow_return"
+			_apply_charter_team(existing_state)
 			registered += 1
 			continue
 		if existing_state != null:
@@ -74,7 +81,7 @@ func register_peers(events: Array[Dictionary]) -> int:
 		var spawn_position := _spawn_position(entity_id, state.radius)
 		state.position_x = spawn_position.x
 		state.position_y = spawn_position.y
-		state.team_id = entity_id
+		_apply_charter_team(state)
 		state.last_event = "farflow_arrival"
 		world.players.append(state)
 		names_by_entity[entity_id] = safe_name
@@ -82,6 +89,20 @@ func register_peers(events: Array[Dictionary]) -> int:
 		registered += 1
 	world.players.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
 	return registered
+
+
+func set_charter(requested_charter_id: String) -> bool:
+	if world == null or not SessionCharter.is_valid_id(requested_charter_id):
+		return false
+	charter_id = requested_charter_id
+	for state: PlayerState in world.players:
+		_apply_charter_team(state)
+	return true
+
+
+func _apply_charter_team(state: PlayerState) -> void:
+	if state != null and state.actor_kind == PlayerState.ActorKind.CHAMPION:
+		state.team_id = SessionCharter.team_for_champion(charter_id, state.entity_id)
 
 
 func suspend_peers(events: Array[Dictionary]) -> int:

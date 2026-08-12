@@ -2,13 +2,30 @@
 
 ## Current runnable boundary
 
-FLUX 2 protocol 16 / snapshot schema 3 exposes two walk-up Farflow stations in
+FLUX 2 protocol 17 / snapshot schema 3 exposes two walk-up Farflow stations and
+a Farflow Charter in
 the eastern Wellspring:
 
 | Station | Current action |
 | --- | --- |
-| **Host Farflow** | Opens an ENet server on UDP `24872`, accepts at most seven remote clients, and shows the live count |
+| **Farflow Charter** | Before opening a gate, cycles three bounded host-owned social/combat profiles with visible capacity, traveller-damage and Bell-reset rules |
+| **Host Farflow** | Opens an ENet server on UDP `24872`, enforces the sealed Charter capacity, and shows the live count/profile |
 | **Join Farflow** | Connects to the configured address, verifies compatibility, and shows seeking/joined/refused state |
+
+| Charter | Places | Traveller damage | Practice Bell |
+| --- | ---: | --- | --- |
+| **Open Commons** | 8 | Off; champions share a team | Any traveller |
+| **Sparring Circle** | 4 | On; each champion has an individual team | Any traveller |
+| **Duel Knot** | 2 | On; each champion has an individual team | Host only |
+
+The host seals the current Charter when opening Farflow; it cannot change while
+any peer is online. Guests receive and validate its ID, exact profile hash and
+capacity during acceptance. The physical ENet ceiling remains eight so an
+excess guest completes guarded hello and receives a readable `Session is full`
+refusal instead of a generic socket error. The Charter catalog contributes to
+build compatibility, while the selected profile remains host-owned session
+state. Practice actors use distinct teams so every charter can still exercise
+both champions against the effigy.
 
 This checkpoint includes a first playable shared-movement loop. The host maps
 accepted peers to stable entities 2-8, gives the first guest S. Wayne beside the
@@ -57,6 +74,9 @@ are deliberately not claimed by this early direct-IP slice.
 Join Farflow targets `127.0.0.1`, making two local processes a safe first test.
 Pressing F at either Farflow station again closes the local peer cleanly.
 
+`--session-charter=open_commons|sparring_circle|duel_knot` is a diagnostic host
+override; normal players turn the in-world Farflow Charter before hosting.
+
 For repeatable local diagnostics, `--farflow=host` or `--farflow=join` opens the
 same station action immediately after boot. These switches exist for automated
 Windows/Linux smoke tests and do not introduce a detached player-facing menu.
@@ -81,6 +101,10 @@ scripts/smoke-farflow.sh
 FLUX2_EXECUTABLE=exports/linux/flux2.x86_64 scripts/smoke-farflow.sh
 ```
 
+Use `-Charter sparring_circle` on Windows or
+`FLUX2_SESSION_CHARTER=sparring_circle` on Linux to exercise a non-default
+profile through the same complete journey.
+
 The wrapper is a localhost acceptance gate, not proof of router forwarding or a
 second operating system. A remote friend must still use the host's real address
 and the same commit/package while the host allows UDP 24872 (or the chosen port).
@@ -95,6 +119,7 @@ containing a display name and SHA-256 compatibility identity derived from:
 - campus/map content hash;
 - ability catalog hash;
 - champion catalog hash.
+- Farflow Charter catalog hash.
 
 Mismatches fail before the peer enters the session roster. Incoming variants
 are decoded without object construction, capped at 8 KiB, processed under a
@@ -120,6 +145,7 @@ change a champion speculatively.
 | Shared Wellspring interaction | Implemented: host authorizes HELLO, Practice Bell and Champion Loom requests; confirmations/refusals and target state replicate |
 | Prediction/reconciliation | Implemented: 48-input movement-only history, peer-scoped processed-sequence acknowledgement, deterministic replay, bounded correction and ACK/correction HUD without client outcome authority |
 | Return continuity | Implemented on Windows localhost: 15-second exact-actor reservation, random memory-only capability, name binding, rotation, expiry and explicit host loss |
+| Diegetic session charter | Implemented: three in-world profiles, 2/4/8 capacity, host-authoritative traveller damage teams, Bell-reset policy, handshake assignment and explicit full/incompatible refusal |
 | Remote platform smoke | Windows and Garuda Linux direct-IP packages connect, move, leave and reconnect with diagnostics |
 | Later continuity | Client-process persistence, host restart, moderation, spectators and eventual host migration |
 

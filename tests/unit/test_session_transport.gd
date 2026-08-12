@@ -4,6 +4,7 @@ extends FluxTestSuite
 func run() -> int:
 	_test_validation_fails_closed()
 	_test_enet_loopback_handshake_and_input()
+	_test_charter_assignment_and_capacity()
 	_test_reconnect_identity_and_host_loss()
 	return finish("session-transport")
 
@@ -21,6 +22,7 @@ func _signature(tick_rate: int = 120) -> String:
 func _test_validation_fails_closed() -> void:
 	var transport := SessionTransport.new()
 	equal(SessionTransport.MAX_PLAYERS, 8, "public session cap is eight players")
+	check(SessionCharter.catalog_hash().length() == 64, "session charter catalog contributes a bounded compatibility identity")
 	equal(_signature().length(), 64, "compatibility identity is a SHA-256 digest")
 	check(not transport.start_host(80, _signature()), "privileged production host port is rejected")
 	check(transport.last_error.contains("1024"), "invalid host port has an actionable error")
@@ -28,6 +30,8 @@ func _test_validation_fails_closed() -> void:
 	check(not transport.start_join("127.0.0.1", 70000, _signature()), "out-of-range join port is rejected")
 	check(not transport.start_host(0, "not-a-signature"), "malformed compatibility identity is rejected")
 	check(not transport.start_host(0, _signature(), ""), "empty player name is rejected")
+	check(not transport.start_host(0, _signature(), "Host", "forged"), "unknown host charter is rejected")
+	check(not transport.start_join("127.0.0.1", SessionTransport.DEFAULT_PORT, _signature(), "Guest", "bad-hash"), "malformed join charter identity is rejected")
 	check(not SessionTransport._valid_input_packet({"sequence": "0", "move_x": 0, "move_y": 0, "held": 0, "pressed": 0, "aim_x": 1000, "aim_y": 0}), "string-coerced input fields fail closed")
 	check(SessionTransport._valid_request_packet({"sequence": 0, "action": SessionTransport.REQUEST_EMOTE}), "known typed interaction request validates")
 	check(not SessionTransport._valid_request_packet({"sequence": 0, "action": 99}), "unknown interaction request fails closed")
@@ -54,6 +58,9 @@ func _test_enet_loopback_handshake_and_input() -> void:
 	check(client.start_join("127.0.0.1", host.bound_port, _signature(), "River Guest"), "loopback client begins joining: %s" % client.last_error)
 	check(_poll_until(host, client, func() -> bool: return client.is_connected_client()), "compatible loopback client completes handshake")
 	check(host.is_host(), "host remains authoritative after client handshake")
+	equal(host.session_charter_id, SessionCharter.DEFAULT_ID, "host opens with the safe social charter")
+	equal(client.session_charter_id, SessionCharter.DEFAULT_ID, "client receives the host charter during acceptance")
+	equal(client.player_capacity(), 8, "client receives the charter capacity from host authority")
 	equal(host.player_count(), 2, "host counts itself plus accepted client")
 	check(client.local_peer_id > SessionTransport.SERVER_PEER_ID, "client receives a positive non-host peer id")
 	equal(client.local_entity_id, 2, "first guest receives stable session entity two")
@@ -202,6 +209,29 @@ func _test_reconnect_identity_and_host_loss() -> void:
 	check(observer.last_error.contains("Host"), "forced host loss is explicit")
 	check(observer.can_reconnect(), "host-loss client retains its endpoint-scoped return capability in memory")
 	observer.stop()
+
+
+func _test_charter_assignment_and_capacity() -> void:
+	var host := SessionTransport.new()
+	var first := SessionTransport.new()
+	var excess := SessionTransport.new()
+	var incompatible := SessionTransport.new()
+	var charter_id := "duel_knot"
+	check(host.start_host(0, _signature(), "Duel Host", charter_id, SessionCharter.profile_hash(charter_id)), "Duel Knot host binds")
+	equal(host.player_capacity(), 2, "Duel Knot host enforces two places")
+	check(first.start_join("127.0.0.1", host.bound_port, _signature(), "First Guest"), "first Duel guest seeks host")
+	check(_poll_until(host, first, func() -> bool: return first.is_connected_client()), "first Duel guest is accepted")
+	equal(first.session_charter_id, charter_id, "accepted guest learns the Duel Knot charter")
+	equal(first.player_capacity(), 2, "accepted guest learns the authoritative capacity")
+	check(excess.start_join("127.0.0.1", host.bound_port, _signature(), "Excess Guest"), "excess Duel guest reaches guarded hello")
+	check(_poll_until(host, excess, func() -> bool: return excess.mode == SessionTransport.Mode.OFFLINE and not excess.last_error.is_empty()), "excess Duel guest receives an explicit refusal")
+	check(excess.last_error.contains("full"), "charter capacity refusal is readable")
+	check(incompatible.start_join("127.0.0.1", host.bound_port, _signature(), "Old Charter", "f".repeat(64)), "old charter catalog reaches guarded hello")
+	check(_poll_until(host, incompatible, func() -> bool: return incompatible.mode == SessionTransport.Mode.OFFLINE and not incompatible.last_error.is_empty()), "old charter catalog is refused")
+	check(incompatible.last_error.contains("charter"), "charter incompatibility refusal is explicit")
+	equal(host.player_count(), 2, "refused travellers never enter Duel roster")
+	first.stop()
+	host.stop()
 
 
 func _poll_until(host: SessionTransport, client: SessionTransport, predicate: Callable) -> bool:

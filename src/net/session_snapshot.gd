@@ -204,7 +204,7 @@ static func apply_to_world(snapshot: Dictionary, world: SimWorld) -> bool:
 		var values: PackedInt64Array = values_value
 		var target := PlayerState.new(values[0])
 		target.actor_kind = PlayerState.ActorKind.TRAINING_TARGET
-		target.team_id = 2
+		target.team_id = target.entity_id
 		target.position_x = values[1]
 		target.position_y = values[2]
 		target.radius = values[3]

@@ -57,6 +57,8 @@ var current_position := Vector2.ZERO
 var dropped_time_seconds: float = 0.0
 var show_debug_overlay: bool = false
 var capture_pointer_world := Vector2i(-1, -1)
+var capture_spawn_world := Vector2i(-1, -1)
+var capture_expanded_station_id: String = ""
 var focused_station_id: String = ""
 var expanded_station_id: String = ""
 var station_notice: String = ""
@@ -65,6 +67,7 @@ var selected_champion_id: String = "oh_tipi"
 var join_address: String = "127.0.0.1"
 var session_port: int = SessionTransport.DEFAULT_PORT
 var local_player_name: String = "Traveller"
+var selected_charter_id: String = SessionCharter.DEFAULT_ID
 var requested_farflow_mode: String = ""
 var client_input_sequence: int = 0
 var client_replica_active: bool = false
@@ -109,6 +112,8 @@ func _ready() -> void:
 		return
 	campus_renderer = SanctumCampusRenderer.new()
 	capture_pointer_world = _requested_capture_pointer()
+	capture_spawn_world = _requested_capture_spawn()
+	capture_expanded_station_id = _requested_capture_expanded_station()
 	ability_catalog = AbilityCatalog.new()
 	if not ability_catalog.load_from_file(ABILITY_CATALOG_PATH):
 		push_error(ability_catalog.last_error)
@@ -123,6 +128,7 @@ func _ready() -> void:
 	join_address = _requested_join_address()
 	session_port = _requested_session_port()
 	local_player_name = _requested_player_name()
+	selected_charter_id = _requested_session_charter_id()
 	requested_farflow_mode = _requested_farflow_mode()
 	requested_emote_smoke = _requested_emote_smoke()
 	requested_prediction_smoke = _requested_prediction_smoke()
@@ -151,6 +157,9 @@ func _ready() -> void:
 	if not _start_match(tick_rate):
 		get_tree().quit(1)
 		return
+	if not capture_expanded_station_id.is_empty():
+		focused_station_id = capture_expanded_station_id
+		expanded_station_id = capture_expanded_station_id
 	_start_requested_farflow()
 	print(
 		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
@@ -597,9 +606,19 @@ func _draw_station_bubble(player_position: Vector2) -> void:
 func _station_lines(station: Dictionary) -> Array:
 	var command := String(station.get("command", ""))
 	if command == "host_session":
-		return [session_transport.status_detail, "UDP %d · %d/8 travellers" % [session_port, session_transport.player_count()], "F closes the gate" if session_transport.is_host() else "F opens a direct friend gate"]
+		return [session_transport.status_detail, "UDP %d · %d/%d travellers" % [session_port, session_transport.player_count(), _selected_session_capacity()], "CHARTER: %s" % SessionCharter.display_name(selected_charter_id), "F closes the gate" if session_transport.is_host() else "F opens a direct friend gate"]
 	if command == "join_session":
-		return [session_transport.status_detail, "%s:%d" % [join_address, session_port], "F closes the gate" if session_transport.mode != SessionTransport.Mode.OFFLINE else "F seeks the configured friend gate"]
+		var charter_line := "HOST CHARTER APPEARS AFTER JOIN" if not session_transport.is_connected_client() else "CHARTER: %s · %d PLACES" % [SessionCharter.display_name(selected_charter_id), session_transport.player_capacity()]
+		return [session_transport.status_detail, "%s:%d" % [join_address, session_port], charter_line, "F closes the gate" if session_transport.mode != SessionTransport.Mode.OFFLINE else "F seeks the configured friend gate"]
+	if command == "session_charter":
+		var charter := SessionCharter.definition(selected_charter_id)
+		var locked := session_transport.is_online()
+		return [
+			"SEALED WHILE FARFLOW IS OPEN" if locked else "F turns to %s" % SessionCharter.display_name(SessionCharter.next_id(selected_charter_id)),
+			"%s · %d TRAVELLERS" % [String(charter.get("display_name", "")), int(charter.get("maximum_players", 0))],
+			"TRAVELLER DAMAGE %s" % ("ON" if bool(charter.get("player_damage", false)) else "OFF"),
+			"PRACTICE RESET: %s" % ("HOST ONLY" if String(charter.get("practice_reset", "")) == SessionCharter.RESET_HOST_ONLY else "ANY TRAVELLER"),
+		]
 	if command != "champion_switch":
 		return station.get("lines", [])
 	var current: Dictionary = champion_catalog.champion(selected_champion_id)
@@ -640,6 +659,8 @@ func _sync_session_transport() -> void:
 		_handle_session_requests(session_transport.take_requests())
 		return
 	if session_transport.is_connected_client():
+		if SessionCharter.is_valid_id(session_transport.session_charter_id):
+			selected_charter_id = session_transport.session_charter_id
 		client_replica_active = true
 		input_router.entity_id = session_transport.local_entity_id
 		if client_prediction.local_entity_id != session_transport.local_entity_id:
@@ -779,6 +800,9 @@ func _handle_session_requests(requests: Array[Dictionary]) -> void:
 				emote_ready_tick_by_entity[entity_id] = world.tick + world.config.milliseconds_to_ticks(EMOTE_COOLDOWN_MS)
 				_publish_session_event({"type": "social_emote", "entity_id": entity_id, "emote_id": 1})
 			SessionTransport.REQUEST_TRAINING_RESET:
+				if not SessionCharter.can_reset_practice(selected_charter_id, entity_id):
+					_publish_session_event({"type": "request_refused", "entity_id": entity_id, "action": action, "reason": SessionRequestPolicy.REFUSED_UNAVAILABLE})
+					continue
 				var attunements := _champion_attunements()
 				if not _start_match(tick_rate):
 					_publish_session_event({"type": "request_refused", "entity_id": entity_id, "action": action, "reason": SessionRequestPolicy.REFUSED_UNAVAILABLE})
@@ -915,6 +939,19 @@ func _activate_focused_station() -> void:
 			_toggle_host_session()
 		"join_session":
 			_toggle_join_session()
+		"session_charter":
+			_cycle_session_charter()
+
+
+func _cycle_session_charter() -> void:
+	if session_transport.is_online():
+		station_notice = "Close Farflow before turning the charter."
+	else:
+		selected_charter_id = SessionCharter.next_id(selected_charter_id)
+		authoritative_session.set_charter(selected_charter_id)
+		station_notice = "%s is ready to seal." % SessionCharter.display_name(selected_charter_id).capitalize()
+	station_notice_seconds = 2.5
+	expanded_station_id = focused_station_id
 
 
 func _toggle_host_session() -> void:
@@ -929,11 +966,11 @@ func _toggle_host_session() -> void:
 		station_notice = "The Farflow gate is closed."
 	else:
 		var signature := _session_compatibility_signature()
-		if session_transport.start_host(session_port, signature, local_player_name):
-			authoritative_session.bind(world, champion_catalog, campus_layout.spawn, local_player_name)
+		if session_transport.start_host(session_port, signature, local_player_name, selected_charter_id, SessionCharter.profile_hash(selected_charter_id)):
+			authoritative_session.bind(world, champion_catalog, campus_layout.spawn, local_player_name, [], selected_charter_id)
 			session_names_by_entity = authoritative_session.names_by_entity.duplicate()
 			station_notice = "Friend gate open on UDP %d." % session_port
-			print("FLUX2 farflow host: listening on UDP %d" % session_transport.bound_port)
+			print("FLUX2 farflow host: listening on UDP %d · %s · %d places" % [session_transport.bound_port, SessionCharter.display_name(selected_charter_id), session_transport.player_capacity()])
 		else:
 			station_notice = session_transport.last_error
 	station_notice_seconds = 3.0
@@ -952,7 +989,7 @@ func _toggle_join_session() -> void:
 		station_notice = "The Farflow gate is closed."
 	else:
 		var signature := _session_compatibility_signature()
-		if session_transport.start_join(join_address, session_port, signature, local_player_name):
+		if session_transport.start_join(join_address, session_port, signature, local_player_name, SessionCharter.catalog_hash()):
 			station_notice = "Seeking %s:%d." % [join_address, session_port]
 			print("FLUX2 farflow join: seeking %s:%d" % [join_address, session_port])
 		else:
@@ -968,7 +1005,12 @@ func _session_compatibility_signature() -> String:
 		campus_layout.content_hash,
 		ability_catalog.content_hash,
 		champion_catalog.content_hash,
+		SessionCharter.catalog_hash(),
 	)
+
+
+func _selected_session_capacity() -> int:
+	return session_transport.player_capacity() if session_transport.is_online() else SessionCharter.maximum_players(selected_charter_id)
 
 
 func _session_label() -> String:
@@ -977,7 +1019,7 @@ func _session_label() -> String:
 	if session_transport.is_connected_client() and network_projectile_overflow > 0:
 		return "FARFLOW LOAD +%d BOLTS" % network_projectile_overflow
 	if session_transport.is_host():
-		return "FARFLOW HOST %d/8 · UDP %d" % [session_transport.player_count(), session_transport.bound_port]
+		return "FARFLOW HOST %d/%d · %s" % [session_transport.player_count(), session_transport.player_capacity(), SessionCharter.display_name(selected_charter_id)]
 	if session_transport.is_connected_client():
 		if client_prediction != null and client_prediction.is_ready():
 			return "FARFLOW JOINED · ACK ~%dms · CORR %.1fpx" % [client_prediction.estimated_ack_delay_ms(), client_prediction.last_correction_pixels]
@@ -1093,8 +1135,11 @@ func _start_match(requested_tick_rate: int) -> bool:
 		campus_layout.content_hash,
 	)
 	var player_state: PlayerState = world.player()
-	player_state.position_x = campus_layout.spawn.x * SimConfig.FIXED_SCALE
-	player_state.position_y = campus_layout.spawn.y * SimConfig.FIXED_SCALE
+	var initial_position := campus_layout.spawn
+	if capture_spawn_world.x >= 0 and world.collision.can_occupy(capture_spawn_world * SimConfig.FIXED_SCALE, MovementTuning.PLAYER_RADIUS):
+		initial_position = capture_spawn_world
+	player_state.position_x = initial_position.x * SimConfig.FIXED_SCALE
+	player_state.position_y = initial_position.y * SimConfig.FIXED_SCALE
 	if not champion_catalog.apply_to_player(player_state, selected_champion_id):
 		push_error("Selected champion could not be applied: %s" % selected_champion_id)
 		return false
@@ -1102,7 +1147,7 @@ func _start_match(requested_tick_rate: int) -> bool:
 	var existing_roster: Array[Dictionary] = []
 	if session_transport != null and session_transport.is_host():
 		existing_roster = session_transport.host_session_roster()
-	if not authoritative_session.bind(world, champion_catalog, campus_layout.spawn, local_player_name, existing_roster):
+	if not authoritative_session.bind(world, champion_catalog, campus_layout.spawn, local_player_name, existing_roster, selected_charter_id):
 		push_error(authoritative_session.last_error)
 		return false
 	session_names_by_entity = authoritative_session.names_by_entity.duplicate()
@@ -1134,7 +1179,9 @@ func _spawn_practice_targets() -> void:
 		var definition: Dictionary = campus_layout.practice_targets_by_id[target_id]
 		var target := PlayerState.new(int(definition.get("entity_id", 0)))
 		target.actor_kind = PlayerState.ActorKind.TRAINING_TARGET
-		target.team_id = 2
+		# Practice actors use their stable entity as a non-champion team so every
+		# traveller can exercise combat in both social and sparring charters.
+		target.team_id = target.entity_id
 		var position_values: Array = definition.get("position", [])
 		target.position_x = int(position_values[0]) * SimConfig.FIXED_SCALE
 		target.position_y = int(position_values[1]) * SimConfig.FIXED_SCALE
@@ -1319,6 +1366,50 @@ func _requested_player_name() -> String:
 				return requested
 			push_warning("Invalid player name override; using Traveller")
 	return "Traveller"
+
+
+func _requested_session_charter_id() -> String:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--session-charter="):
+			var requested := argument.trim_prefix("--session-charter=").strip_edges().to_lower()
+			if SessionCharter.is_valid_id(requested):
+				return requested
+			push_warning("Invalid session charter override; using %s" % SessionCharter.DEFAULT_ID)
+	return SessionCharter.DEFAULT_ID
+
+
+func _requested_capture_spawn() -> Vector2i:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--capture-spawn="):
+			return parse_capture_spawn(argument, campus_layout.canvas_size)
+	return Vector2i(-1, -1)
+
+
+func _requested_capture_expanded_station() -> String:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--capture-expanded-station="):
+			return parse_capture_expanded_station(argument, campus_layout.stations_by_id)
+	return ""
+
+
+static func parse_session_charter(argument: String) -> String:
+	if not argument.begins_with("--session-charter="):
+		return ""
+	var requested := argument.trim_prefix("--session-charter=").strip_edges().to_lower()
+	return requested if SessionCharter.is_valid_id(requested) else ""
+
+
+static func parse_capture_spawn(argument: String, canvas_size: Vector2i) -> Vector2i:
+	if not argument.begins_with("--capture-spawn="):
+		return Vector2i(-1, -1)
+	return parse_capture_pointer(argument.replace("--capture-spawn=", "--capture-pointer="), canvas_size)
+
+
+static func parse_capture_expanded_station(argument: String, stations_by_id: Dictionary) -> String:
+	if not argument.begins_with("--capture-expanded-station="):
+		return ""
+	var station_id := argument.trim_prefix("--capture-expanded-station=").strip_edges()
+	return station_id if stations_by_id.has(station_id) else ""
 
 
 func _requested_farflow_mode() -> String:

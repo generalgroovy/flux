@@ -26,6 +26,11 @@ func _test_authoritative_presence_and_input() -> void:
 	if guest != null:
 		equal(guest.champion_wire_id, 2, "first guest receives S. Wayne for a distinct two-character test")
 		equal(Vector2i(guest.position_x, guest.position_y), Vector2i(1_352_000, 720_000), "guest receives deterministic collision-cleared spawn offset")
+		equal(guest.team_id, 1, "Open Commons prevents traveller damage with a shared host-owned team")
+	check(session.set_charter("sparring_circle"), "host authority can seal a known sparring charter")
+	equal(world.player().team_id, 1, "sparring host keeps its stable combat team")
+	equal(world.player(2).team_id, 2, "sparring guest receives an individual combat team")
+	check(not session.set_charter("forged"), "unknown charter cannot mutate authority teams")
 
 	var packet := {
 		"entity_id": 2,

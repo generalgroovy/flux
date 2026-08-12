@@ -40,8 +40,8 @@ even when design documentation already exists.
     dense-edge/clear-lane composition, district landmarks, and pixel direction
   - [ ] Offline-complete stations plus privacy-safe friends/presence, host
     teams/rules/practice/travel tools, and Garuda Sway/Windows acceptance
-  - [x] Fixed-point walk-up focus plus five diegetic stations: Movement Guide,
-    Practice Bell, Champion Loom and ENet Host/Join Farflow gates with bubbles
+  - [x] Fixed-point walk-up focus plus six diegetic stations: Movement Guide,
+    Practice Bell, Champion Loom, Farflow Charter and ENet Host/Join gates with bubbles
   - [x] Direct-IP ENet host/join lifecycle, protocol/content handshake, eight-player
     cap, bounded validated input transport, mismatch refusal and loopback test
   - [x] Stable host/guest actors, host-authoritative input and movement, bounded
@@ -54,6 +54,8 @@ even when design documentation already exists.
     deterministic reconciliation and readable ACK/correction diagnostics
   - [x] Fifteen-second memory-only exact-actor return with random name-bound
     rotating capability, clean expiry and explicit host-loss state
+  - [x] Three host-sealed in-world Charters with visible 2/4/8 capacity,
+    traveller-damage teams, Bell authority and validated handshake assignment
   - [x] Windows/Bash doctor, test, run and package entry points plus a self-cleaning
     source two-process host/join/move/emote/reconnect acceptance journey
   - [ ] Install pinned export templates and record packaged Windows/physical
@@ -1814,18 +1816,22 @@ F9/F10 adjust cone angle/range (hold Shift to reduce). Controller defaults use
 left/right sticks, right trigger, west/east face buttons, and shoulders. The
 rate never mutates inside a running match.
 
-The eastern **Host Farflow** and **Join Farflow** stations expose the first ENet
-friend-session boundary without a menu. Host listens on UDP `24872`; Join targets
+The eastern **Farflow Charter**, **Host Farflow**, and **Join Farflow** stations
+expose the first ENet friend-session boundary without a menu. Before hosting,
+the player chooses Open Commons (8/social), Sparring Circle (4/combat), or Duel
+Knot (2/host-reset); capacity and traveller-damage/reset rules are visible and
+host-authoritative. Host listens on UDP `24872`; Join targets
 `127.0.0.1` or `--join-address=IP`. Compatibility, bounded input, stable
 two-character actors, 60 Hz movement snapshots and bounded combat presentation
 are live. HELLO, Practice Bell, Champion Loom and training-target state are
 host-authorized and shared; guests predict only movement from a bounded input
 history and reconcile to peer-scoped host state. A dropped guest can use Join
-Farflow within 15 seconds to reclaim its exact in-memory actor; cross-platform
+Farflow within 15 seconds to reclaim its exact in-memory actor. Protocol 17
+assigns and validates the sealed Charter during handshake; cross-platform
 package proof remains next. See the
 [networking contract](docs/NETWORKING.md).
 
-The current simulation uses protocol 16, snapshot schema 3 and preference schema 3: Space invokes the semantic jump
+The current simulation uses protocol 17, snapshot schema 3 and preference schema 3: Space invokes the semantic jump
 action, Shift sprints, Ctrl/C directly slides, and primary no longer aliases
 Space. Schema-v1/v2 defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision
@@ -1854,7 +1860,7 @@ tools, accessibility, and compatibility agree.
 | F1 — chemistry storage/safety | Validated material registry, 128 x 128 packed columns, seeded materials/Charge/elevation, immutable worldbone, canonical queue/budgets/hashes, exact reset, read-only preview | Complete |
 | G1 — player configuration | Persisted keyboard remapping, world/aim-relative movement, full/cone POV, exact angle/range, CLI/hotkey controls, deterministic transforms | Complete |
 | G2 — authored Sanctum | Replace the schematic court with the first vast Nexus-to-Conservatory multi-area topology/visual slice, clear routes, landmarks, elevations, responsive ambience, fast-travel context, and original pixel kit | In progress: canonical campus topology, routes, worldbone, elevation/reset/station metadata, camera and procedural presentation validate; a generated 12-module source/alpha candidate remains unapproved pending visual/import gates |
-| G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: Oh Tipi/S. Wayne candidate bodies, shared lift/shadow, landing cue, five walk-up stations and sparring effigy are live; accepted champion art, remaining station flows and fallback taunt remain |
+| G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: Oh Tipi/S. Wayne candidate bodies, shared lift/shadow, landing cue, six walk-up stations, three Farflow Charters and sparring effigy are live; accepted champion art, remaining station flows and fallback taunt remain |
 | F2/G4 — systemic Sanctum | Structural/thermal reactions, authored traversal devices, input/controller UI, physics/chemistry practice and reset | Planned |
 | H1 — first ancestry/champion/spells | One approved body plan and character through loadout, unique taunt, dummy/bot, cues, replay, accessibility and platform source gates | Planned |
 | I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | In progress: direct-IP gates, stable authoritative actors, 60 Hz movement/combat/targets, HELLO/Bell/Loom, movement prediction/reconciliation and 15-second exact-actor return pass Windows localhost; packaged Garuda smoke next |

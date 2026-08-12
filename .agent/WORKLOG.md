@@ -1,5 +1,65 @@
 # FLUX2 agent worklog
 
+## 2026-08-12 — diegetic Farflow Charter
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Advanced friend sessions to protocol 17 and added a sixth fixed-position
+  Wellspring station, the **Farflow Charter**. Players turn it in-world before
+  hosting; no detached settings menu was introduced.
+- Added three validated profiles with distinct rule identities: Open Commons
+  (8 places, no traveller damage, any Bell user), Sparring Circle (4 places,
+  individual combat teams, any Bell user), and Duel Knot (2 places, individual
+  combat teams, host-only Bell reset).
+- The host seals one Charter while Farflow is open. Its catalog identity joins
+  build compatibility; exact profile ID/hash/capacity are assigned and
+  validated during guarded acceptance. The physical transport ceiling remains
+  eight so a charter-full traveller receives an explicit refusal.
+- Authoritative champion teams now follow the sealed profile, including return
+  identities. Practice actors use their stable entity as a separate team so
+  every champion can still damage the effigy in every profile.
+- Host/Join bubbles expose profile/capacity; the expanded parchment bubble shows
+  the next profile, current places, traveller damage and Practice Bell policy.
+  Capture-only spawn/expanded-station arguments make this state repeatable
+  without changing normal spawning or interaction.
+- Extended the source/package Farflow acceptance wrappers with a validated
+  Charter selector for Windows and Bash.
+
+Validation:
+
+- Full pinned Godot 4.7.1 Windows gate passed with **14,488 assertions**, zero
+  failures across 34 suites; import plus independent 60/120 Hz boots passed at
+  protocol 17 and campus hash `60f19ad129af`.
+- Transport coverage proves profile assignment/hash/capacity, explicit excess
+  refusal, catalog mismatch refusal, safe default and reconnect compatibility;
+  authority tests prove social versus sparring teams and invalid-rule rejection.
+- Real two-process Windows source journey passed Sparring Circle at 120 Hz on
+  UDP 24896 and Duel Knot at 60 Hz on UDP 24897, including host/join, shared
+  HELLO, authoritative movement reconciliation and exact-actor return.
+- Interactive Windows renderer inspection at the Charter anchor confirmed the
+  original parchment station marker, normal prompt and expanded four-line
+  profile bubble remain readable at the normal camera scale.
+- Godot's Windows dummy renderer crashed in headless movie-writer mode at
+  `texture_2d_get`; the visible renderer and ordinary headless run/test paths
+  remained green. No headless-movie success is claimed.
+- `git diff --check`: passed before checkpoint preparation; existing untracked
+  `dist/` and `node_modules/` remained untouched.
+
+Known limitations and next task:
+
+- Charter choice is intentionally session-memory only and fixed while online.
+  Player-facing lobby naming, roster/readiness, host moderation and a shared
+  practice-start flow remain.
+- Matching Godot 4.7.1 export templates and physical Garuda Sway hardware remain
+  required for packaged cross-platform acceptance.
+- Next slice is an in-world **Session Hearth**: visible connected/returning
+  roster, traveller readiness and host-authoritative practice start, followed
+  by the first bounded arena round.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-12 — cross-platform source and release acceptance tooling
 
 Branch: `codex/continuous-overhaul`

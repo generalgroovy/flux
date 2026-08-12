@@ -22,6 +22,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/unit/test_sanctum_campus_layout.gd"),
 	preload("res://tests/unit/test_sanctum_station_model.gd"),
 	preload("res://tests/unit/test_session_transport.gd"),
+	preload("res://tests/unit/test_session_charter.gd"),
 	preload("res://tests/unit/test_session_snapshot.gd"),
 	preload("res://tests/unit/test_client_prediction.gd"),
 	preload("res://tests/unit/test_session_request_policy.gd"),

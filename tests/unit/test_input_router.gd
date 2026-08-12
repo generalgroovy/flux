@@ -79,3 +79,13 @@ func _test_capture_pointer_parser() -> void:
 	check(not BootstrapScript.reconnect_smoke_prerequisites_met(true, false, true, true), "combined smoke waits until the reliable social request is sent")
 	check(not BootstrapScript.reconnect_smoke_prerequisites_met(true, true, true, false), "combined smoke waits for authoritative movement confirmation")
 	check(BootstrapScript.reconnect_smoke_prerequisites_met(true, true, true, true), "combined smoke leaves only after interaction is sent and movement passes")
+	equal(BootstrapScript.parse_session_charter("--session-charter=SPARRING_CIRCLE"), "sparring_circle", "diagnostic charter override is case-insensitive")
+	equal(BootstrapScript.parse_session_charter("--session-charter=unbounded"), "", "unknown diagnostic charter fails closed")
+	equal(BootstrapScript.parse_session_charter("--other=duel_knot"), "", "unrelated argument cannot change the charter")
+	equal(BootstrapScript.parse_capture_spawn("--capture-spawn=2380,800", canvas), Vector2i(2380, 800), "capture-only spawn accepts an in-campus station point")
+	equal(BootstrapScript.parse_capture_spawn("--capture-spawn=2560,800", canvas), Vector2i(-1, -1), "capture-only spawn rejects the canvas boundary")
+	equal(BootstrapScript.parse_capture_spawn("--other=2380,800", canvas), Vector2i(-1, -1), "unrelated argument cannot change capture spawn")
+	var capture_stations := {"farflow-charter": {}}
+	equal(BootstrapScript.parse_capture_expanded_station("--capture-expanded-station=farflow-charter", capture_stations), "farflow-charter", "capture-only station expansion accepts an authored station")
+	equal(BootstrapScript.parse_capture_expanded_station("--capture-expanded-station=missing", capture_stations), "", "capture-only station expansion rejects unknown stations")
+	equal(BootstrapScript.parse_capture_expanded_station("--other=farflow-charter", capture_stations), "", "unrelated argument cannot expand a station")

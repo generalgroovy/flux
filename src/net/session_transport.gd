@@ -42,6 +42,9 @@ var mode: int = Mode.OFFLINE
 var bound_port: int = 0
 var join_address: String = ""
 var session_signature: String = ""
+var session_charter_id: String = ""
+var session_charter_hash: String = ""
+var maximum_players: int = MAX_PLAYERS
 var player_name: String = "Traveller"
 var last_error: String = ""
 var status_detail: String = "Offline"
@@ -75,6 +78,7 @@ static func compatibility_signature(
 	map_hash: String,
 	ability_hash: String,
 	champion_hash: String,
+	charter_catalog_hash: String = "",
 ) -> String:
 	return CanonicalContent.sha256({
 		"protocol_version": protocol_version,
@@ -82,10 +86,17 @@ static func compatibility_signature(
 		"map_hash": map_hash,
 		"ability_hash": ability_hash,
 		"champion_hash": champion_hash,
+		"charter_catalog_hash": charter_catalog_hash,
 	})
 
 
-func start_host(port: int, signature: String, requested_player_name: String = "Host") -> bool:
+func start_host(
+	port: int,
+	signature: String,
+	requested_player_name: String = "Host",
+	requested_charter_id: String = SessionCharter.DEFAULT_ID,
+	requested_charter_hash: String = "",
+) -> bool:
 	last_error = ""
 	if not _valid_port(port, true):
 		return _fail("Host port must be 0 for automatic testing or 1024-65535")
@@ -94,8 +105,16 @@ func start_host(port: int, signature: String, requested_player_name: String = "H
 	var safe_name := _validated_player_name(requested_player_name)
 	if safe_name.is_empty():
 		return _fail("Player name must contain 1-24 safe characters")
+	var charter_hash := requested_charter_hash if not requested_charter_hash.is_empty() else SessionCharter.profile_hash(requested_charter_id)
+	if not SessionCharter.validate_assignment(requested_charter_id, charter_hash):
+		return _fail("Host session charter is invalid")
+	var charter_capacity := SessionCharter.maximum_players(requested_charter_id)
+	if charter_capacity < 2 or charter_capacity > MAX_PLAYERS:
+		return _fail("Host session charter capacity is invalid")
 	stop()
 	var candidate := ENetMultiplayerPeer.new()
+	# Keep the physical transport ceiling at eight so a charter-full client can
+	# complete the guarded hello and receive an explicit refusal.
 	var error: Error = candidate.create_server(port, MAX_REMOTE_CLIENTS)
 	if error != OK:
 		return _fail("Could not host UDP port %d (error %d)" % [port, error])
@@ -104,6 +123,9 @@ func start_host(port: int, signature: String, requested_player_name: String = "H
 	peer.peer_disconnected.connect(_on_peer_disconnected)
 	mode = Mode.HOSTING
 	session_signature = signature
+	session_charter_id = requested_charter_id
+	session_charter_hash = charter_hash
+	maximum_players = charter_capacity
 	player_name = safe_name
 	bound_port = peer.host.get_local_port()
 	local_peer_id = SERVER_PEER_ID
@@ -114,7 +136,13 @@ func start_host(port: int, signature: String, requested_player_name: String = "H
 	return true
 
 
-func start_join(address: String, port: int, signature: String, requested_player_name: String = "Traveller") -> bool:
+func start_join(
+	address: String,
+	port: int,
+	signature: String,
+	requested_player_name: String = "Traveller",
+	requested_charter_catalog_hash: String = "",
+) -> bool:
 	last_error = ""
 	var safe_address := address.strip_edges()
 	if not _valid_address(safe_address):
@@ -126,6 +154,9 @@ func start_join(address: String, port: int, signature: String, requested_player_
 	var safe_name := _validated_player_name(requested_player_name)
 	if safe_name.is_empty():
 		return _fail("Player name must contain 1-24 safe characters")
+	var charter_catalog_hash := requested_charter_catalog_hash if not requested_charter_catalog_hash.is_empty() else SessionCharter.catalog_hash()
+	if charter_catalog_hash.length() != 64:
+		return _fail("Join session charter catalog identity is invalid")
 	stop()
 	var candidate := ENetMultiplayerPeer.new()
 	var error: Error = candidate.create_client(safe_address, port)
@@ -135,6 +166,9 @@ func start_join(address: String, port: int, signature: String, requested_player_
 	peer.transfer_mode = MultiplayerPeer.TRANSFER_MODE_RELIABLE
 	mode = Mode.CONNECTING
 	session_signature = signature
+	session_charter_id = ""
+	session_charter_hash = charter_catalog_hash
+	maximum_players = MAX_PLAYERS
 	player_name = safe_name
 	join_address = safe_address
 	bound_port = port
@@ -165,6 +199,7 @@ func poll() -> void:
 				"signature": session_signature,
 				"name": player_name,
 				"reconnect_token": _reconnect_token_for_current_endpoint(),
+				"charter_catalog_hash": session_charter_hash,
 			})
 			_hello_sent = true
 			status_detail = "Verifying session"
@@ -208,6 +243,10 @@ func player_count() -> int:
 	if is_connected_client():
 		return 2
 	return 1
+
+
+func player_capacity() -> int:
+	return maximum_players
 
 
 func reserved_count() -> int:
@@ -386,6 +425,18 @@ func _handle_packet(sender_id: int, packet_bytes: PackedByteArray) -> void:
 				if assigned_entity_id < 2 or assigned_entity_id > MAX_PLAYERS:
 					_disconnect_with_error("Host assigned an invalid traveller identity")
 					return
+				var assigned_charter_id := String(packet.get("charter_id", ""))
+				var assigned_charter_hash := String(packet.get("charter_hash", ""))
+				var assigned_maximum_players := int(packet.get("maximum_players", 0))
+				if (
+					not SessionCharter.validate_assignment(assigned_charter_id, assigned_charter_hash)
+					or assigned_maximum_players != SessionCharter.maximum_players(assigned_charter_id)
+				):
+					_disconnect_with_error("Host assigned an invalid session charter")
+					return
+				session_charter_id = assigned_charter_id
+				session_charter_hash = assigned_charter_hash
+				maximum_players = assigned_maximum_players
 				local_entity_id = assigned_entity_id
 				var assigned_reconnect_token := String(packet.get("reconnect_token", ""))
 				if not _valid_reconnect_token(assigned_reconnect_token):
@@ -397,7 +448,7 @@ func _handle_packet(sender_id: int, packet_bytes: PackedByteArray) -> void:
 				reconnect_signature = session_signature
 				accepted = true
 				mode = Mode.CLIENT
-				status_detail = "Joined %s:%d" % [join_address, bound_port]
+				status_detail = "Joined %s · %s · %d places" % [join_address, SessionCharter.display_name(session_charter_id), maximum_players]
 			PACKET_REJECT:
 				_disconnect_with_error(String(packet.get("reason", "Join refused")).left(80))
 		return
@@ -427,6 +478,9 @@ func _handle_hello(sender_id: int, packet: Dictionary) -> void:
 	if String(packet.get("signature", "")) != session_signature:
 		_send_to(sender_id, {"kind": PACKET_REJECT, "reason": "Incompatible build or session rules"})
 		return
+	if String(packet.get("charter_catalog_hash", "")) != SessionCharter.catalog_hash():
+		_send_to(sender_id, {"kind": PACKET_REJECT, "reason": "Incompatible session charter catalog"})
+		return
 	var safe_name := _validated_player_name(String(packet.get("name", "")))
 	if safe_name.is_empty():
 		_send_to(sender_id, {"kind": PACKET_REJECT, "reason": "Invalid traveller name"})
@@ -447,7 +501,7 @@ func _handle_hello(sender_id: int, packet: Dictionary) -> void:
 		consumed_reconnect_token = requested_reconnect_token
 		resumed = true
 	else:
-		if accepted_peer_ids.size() + reconnect_reservations.size() >= MAX_REMOTE_CLIENTS:
+		if accepted_peer_ids.size() + reconnect_reservations.size() >= maximum_players - 1:
 			_send_to(sender_id, {"kind": PACKET_REJECT, "reason": "Session is full"})
 			return
 		entity_id = _allocate_entity_id()
@@ -475,6 +529,9 @@ func _handle_hello(sender_id: int, packet: Dictionary) -> void:
 		"player_count": player_count(),
 		"reconnect_token": rotated_reconnect_token,
 		"resumed": resumed,
+		"charter_id": session_charter_id,
+		"charter_hash": session_charter_hash,
+		"maximum_players": maximum_players,
 	})
 	status_detail = _host_status()
 
@@ -537,6 +594,9 @@ func _close_peer() -> void:
 	bound_port = 0
 	join_address = ""
 	session_signature = ""
+	session_charter_id = ""
+	session_charter_hash = ""
+	maximum_players = MAX_PLAYERS
 	accepted = false
 	local_peer_id = 0
 	local_entity_id = 0
@@ -611,7 +671,7 @@ func _reconnect_token_for_current_endpoint() -> String:
 
 func _host_status() -> String:
 	var returns := reconnect_reservations.size()
-	return "Hosting %d/8 on UDP %d" % [player_count(), bound_port] if returns == 0 else "Hosting %d/8 + %d returning on UDP %d" % [player_count(), returns, bound_port]
+	return "Hosting %d/%d on UDP %d" % [player_count(), maximum_players, bound_port] if returns == 0 else "Hosting %d/%d + %d returning on UDP %d" % [player_count(), maximum_players, returns, bound_port]
 
 
 static func _valid_reconnect_token(token: String) -> bool:

@@ -1,10 +1,23 @@
 # FLUX 2 continuous implementation directive
 
 Use this prompt as the standing handoff for every implementation agent. Read it
-with `README.md`, `SPECIFICATION.md`, `docs/VISUAL-DIRECTION.md`,
-`docs/OVERHAUL-PLAN.md`, `.agent/memory.md`, `.agent/BACKLOG.md` and the newest
-entries in `.agent/WORKLOG.md`; when they disagree, preserve tested runtime truth
-and update stale prose in the same slice.
+with `README.md`, `SPECIFICATION.md`, `.agent/VISUAL-OVERHAUL.md`,
+`.agent/OVERHAUL-IMPLEMENTATION.md`, `.agent/OVERHAUL-PROMPT.md`,
+`docs/VISUAL-DIRECTION.md`, `docs/OVERHAUL-PLAN.md`, `.agent/memory.md`,
+`.agent/BACKLOG.md` and the newest entries in `.agent/WORKLOG.md`; when they
+disagree, preserve tested runtime truth and update stale prose in the same slice.
+
+## Immediate hard gate
+
+The visual overhaul is Gate 0 and freezes every new mechanic. Do not select
+movement tuning, action chaining, spell economy/catalog, roster, material,
+networking or cleanup work until V0–V6 in `.agent/VISUAL-OVERHAUL.md` pass in the
+live game. Concepts, manifests and detached mockups are not acceptance. Preserve
+protocol 26 and all current gameplay while replacing the schematic runtime with
+an original charming Wellspring, two readable champions, current spell effects
+and compact four-cell/layered GUI. After visual acceptance, execute the strict
+movement → chaining → economy → global element-catalog order in
+`.agent/OVERHAUL-IMPLEMENTATION.md`.
 
 ## Mission
 
@@ -47,16 +60,17 @@ not runtime art, collision geometry or permission to ship generated pixels.
 
 | Order | Player-visible outcome | Acceptance gate |
 | ---: | --- | --- |
-| 1 | One-step portable play | A friend downloads one archive, extracts it, runs one obvious launcher without admin rights, enters the Wellspring, hosts or joins through one short in-world flow, can copy/paste a join card, and every quit path flushes local state, sends a bounded reason when online and leaves no child process; identical commit/content IDs and checksum instructions cover Windows and Linux. |
-| 2 | Comfortable in-game controls | A Wellspring Controls lectern exposes keyboard, mouse buttons, mouse-wheel directions and controller bindings; selecting an action captures the next input, shows conflicts and supports swap/unbind/reset/cancel. Defaults are WASD, Shift sprint, C slide, Space jump, V technique, wheel-up jump, wheel-down slide/fast-fall, buttons 1–4 and Ctrl/Alt layer actions. Bindings and 50/75/100% zoom persist, migrate, fail closed and work at 60/120 Hz. |
-| 3 | Twelve-position spell grammar | Stable semantic command bits select a 3×4 Plain/Ctrl/Alt weave without trusting the renderer or client. The HUD shows the active layer, input, element, shape, Flux, cooldown and refusal. The Wellspring Spell Loom edits all twelve legal positions and the Proving Grounds safely tests every enabled element through readable projectile, beam, spray, field or movement/defense representatives. |
-| 4 | Material-ready spell effects | Spell definitions declare shape, delivery, element, impact, residue and material operation through validated data. Wood, brick, stone, metal, glass, vegetation and immutable worldbone have stable IDs, budgets, hit/reaction hooks, reset ownership and debug fixtures before live destruction/reactions are enabled. Critical routes, spawns and objectives can never become invalid. |
-| 5 | In-world player codex | One toggleable, controller-navigable, translucent overview derives its tables from canonical content rather than copied README prose: current champion/stats/kit, twelve-position weave, all playable champions, ancestry, elements/effects/interactions, movement grammar, controls, session rules and network status. It never blocks urgent combat state and remains readable at 720p, reduced motion and common color-vision modes. |
-| 6 | Eight-way character expression | Hold the Talk action to open a transparent radial wheel, aim with mouse/stick, release to send and cancel by returning to center. Eight stable intents—greeting, taunt, scared, joke, follow me, retreat, thanks and “why are you running?”—map to original character-specific lines, bounded cooldowns and replicated semantic IDs; bubbles are mostly transparent, short, anchored and never reveal hidden actors. |
-| 7 | Gameplay-scale visual overhaul | Replace schematic terrain, tiny bodies and debug-strip HUD with an original modular pixel kit that meets the v3 specimen: moderately tilted facades over authoritative top-down floors, compact expressive champions, clean lane values, dense scenic edges, readable doors/water/cover, restrained auras, roof cutaways, translucent bubbles and compact brass/parchment HUD. Prove collision/art alignment, whole-pixel presentation, grayscale/color-vision readability, 720p/1080p clarity, reduced effects and stable frame budgets. |
-| 8 | Repository/product cleanup | Remove or quarantine obsolete Hex/Flow/operator/deployment vocabulary, superseded runtime graphics, dead adapters and duplicate documents only after replacement tests pass. Keep legacy history under its explicit archive, make the root README an honest player-first table overview, and keep scripts/docs short enough that a new contributor can locate launch, input, content, authority, rendering and verification boundaries quickly. |
-| 9 | Network visibility integrity | Limited-information modes use host-owned per-peer relevance envelopes that omit illegal actors, names, projectiles, effects, cues and audio. Full-view Wellspring and observer focus are explicit policies. Omission, re-entry, interpolation, bandwidth and modified-client tests precede any fog-of-war claim. |
-| 10 | Continue complete game slices | Finish one champion and one arena/mode vertically, then chemistry, bots, objectives, more champions, environments, enemies and modes one at a time through the same content/simulation/presentation/network/accessibility/platform gates. |
+| 0 | Gameplay-scale visual overhaul | Complete V0–V6 in `.agent/VISUAL-OVERHAUL.md`; no new mechanics until live integrated visual acceptance. |
+| 1 | Crisp readable movement | Slightly lower ordinary speed while tightening stop/reversal/control and preserving the full deterministic movement grammar. |
+| 2 | Universal action chaining | Every physically legal movement/spell transition works; no hidden global recovery or animation lock. |
+| 3 | Fast Flux/Stamina economy | Every offensive cast costs positive Flux, movement spends Stamina, and shorter action-specific cooldowns create rapid tradeoffs rather than idle time. |
+| 4 | Global element spell library | Each of twelve elements receives four runtime-proven role-distinct spells; every champion may configure every proven spell in the Wellspring 3×4 weave. |
+| 5 | One-step portable play | A friend downloads one archive, extracts it, runs one obvious launcher without admin rights, enters the Wellspring, hosts or joins through one short in-world flow, can copy/paste a join card, and every quit path flushes local state, sends a bounded reason when online and leaves no child process; identical commit/content IDs and checksum instructions cover Windows and Linux. |
+| 6 | Material-ready spell effects | Spell definitions declare shape, delivery, element, impact, residue and material operation through validated data; critical routes, spawns and objectives remain valid. |
+| 7 | In-world player codex and expression | Canonical translucent overview plus an eight-way character expression wheel remain readable, controller-friendly and visibility-safe. |
+| 8 | Repository/product cleanup | Remove obsolete vocabulary, graphics and adapters only after their accepted replacements pass. |
+| 9 | Network visibility integrity | Host-owned per-peer relevance envelopes omit all illegal information in limited-view modes. |
+| 10 | Continue complete game slices | Finish champions, arenas, chemistry, bots, objectives, environments, enemies and modes one vertical slice at a time. |
 
 Orders 1–8 are product priorities, not permission to scatter eight partial
 systems. If an earlier slice is externally blocked (for example a physical

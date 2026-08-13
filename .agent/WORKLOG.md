@@ -1,5 +1,41 @@
 # FLUX2 agent worklog
 
+## 2026-08-13 — visual-first continuation contract
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added a strict V0–V6 live visual gate using the approved Wellspring specimen
+  and newest user reference as mood/composition targets with an explicit
+  originality boundary.
+- Added the post-visual implementation order: crisp/slightly slower movement,
+  exhaustive physically legal action chaining, positive-Flux offense with
+  shorter action-specific cooldowns, then a globally selectable 48-spell
+  minimum across twelve elements.
+- Reconciled the reference's five visible buttons with FLUX's canonical twelve
+  positions: the HUD shows four active cells while Plain/Ctrl/Alt layers remain
+  independently configurable at the Spell Loom.
+- Updated the standing handoff, active backlog and compact memory so no agent
+  may select new mechanical work before integrated visual acceptance.
+
+Validation:
+
+- Documentation consistency search confirms Gate 0, V0–V6, four-cell HUD and
+  post-visual order are present across the active handoff files.
+- `git diff --check`: passed; only configured LF-to-CRLF notices were emitted.
+- Runtime tests were not rerun because this checkpoint changes documentation
+  and planning contracts only; published gameplay remains commit `8b94070`.
+
+Known limitations and risks:
+
+- The new image remains a concept/mood reference, not runtime art or visual
+  acceptance evidence.
+- Charm still requires live frame review; the rubric makes that review bounded
+  but does not pre-approve any generated or placeholder asset.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-13 — twelve-position spell weave, Rimewake and wider camera
 
 Branch: `codex/continuous-overhaul`

@@ -55,8 +55,12 @@ each playable slice.
 
 ## Next acceptance-driven slice
 
-Promote the first bounded defense spell through deterministic simulation,
-Flux/cooldown/refusal, damage/control counterplay, cues and snapshot state while
-keeping material operations sealed. Preserve the wider navigation read and
-3×4 spell weave; physical Garuda and real remote-friend proof remain explicit
-external acceptance gaps.
+Mechanics are frozen. Execute V0, the live visual baseline and token specimen,
+then proceed through the strict V1–V6 order in `.agent/VISUAL-OVERHAUL.md` until
+the actual Wellspring, two foundation champions, existing spells and compact
+four-cell/layered GUI meet the 720p/1080p readability, accessibility, alignment
+and charm rubric. Only after integrated visual acceptance may work continue in
+the order crisp/slightly slower movement → universal chaining → positive-Flux
+offense and shorter cooldown economy → globally selectable four-role catalogs
+for all twelve elements. Preserve the published protocol-26 green point and the
+user-owned untracked paths throughout.

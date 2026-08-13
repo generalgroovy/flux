@@ -1,0 +1,93 @@
+# FLUX immediate implementation order
+
+The current published green point is commit `8b94070`, protocol 26, snapshot
+schema 10 and preference schema 7. Preserve it as the rollback point. Work only
+in complete playable slices and checkpoint each accepted stage.
+
+| Order | Outcome | Scope | Exit condition |
+| ---: | --- | --- | --- |
+| 0 | Visual overhaul | Execute V0–V6 in `.agent/VISUAL-OVERHAUL.md`; mechanics are frozen. | Integrated visual rubric passes in live 720p/1080p frames and all existing tests/journeys remain green. |
+| 1 | Crisp readable movement | Reduce ordinary traversal speed slightly, tighten acceleration/deceleration/reversal, retain expressive momentum and retune camera-relative readability. | Blind A/B play checks, deterministic stop/reversal/distance fixtures and 60/120 parity show immediate control with more reaction time. |
+| 2 | Universal action chaining | Replace implicit/global lockouts with an explicit movement/spell transition graph; recovery may animate or gate the same action but cannot silently block an unrelated legal action. | Every legal pair and representative three-action chain works; refusals name only physical precondition, own cooldown, Stamina or Flux. |
+| 3 | Fast resource/cooldown economy | Every offensive cast, including primaries, costs positive Flux; movement spends Stamina; lower cooldowns toward fast decisions without making repetition free. | Sustained pressure exhausts Flux, deliberate pauses/repositioning recover it, mixed chains beat single-button holding, and no affinity creates free offense. |
+| 4 | Global element spell library | Promote complete, distinct catalogs for all twelve elements and expose all proven spells at the Wellspring regardless of champion. | Every element has the minimum catalog below, all entries pass shape/authority/counterplay tests, and any champion can configure any proven spell into the 3x4 weave. |
+
+## Movement tuning contract
+
+- Start with an 8–12% reduction to ordinary world traversal speed as a measured
+  candidate, not a blind final value. Preserve responsive input by shortening
+  stop/reversal distances rather than adding sluggish interpolation.
+- Walking, sprinting, counter-strafing, jumping, fast-fall, sliding, slide-jump,
+  wavedash, wall contact/jump, vault, superglide, aerial turn/tap-strafe and the
+  context technique remain available where their physical surfaces/states permit.
+- Measure distance per second, stop distance, reversal time, corner control,
+  jump landing accuracy and readability at 50/75/100% zoom at both tick rates.
+- Animation never owns displacement or legality; presentation follows the
+  fixed-tick simulation.
+
+## Chaining contract
+
+Create a data-backed transition matrix spanning every movement action and every
+spell shape. A transition may fail only because of:
+
+1. an explicit physical state such as no wall, no ledge, grounded-only or
+   airborne-only;
+2. that action's own cooldown or a clearly declared shared charge;
+3. insufficient Stamina for movement or insufficient Flux for a spell; or
+4. a spell's visible execution commitment, such as an interruptible channel,
+   where the commitment itself is the designed physical action.
+
+There is no hidden global cooldown, generic post-cast paralysis or animation
+lock. Buffer intent across short valid windows, define deterministic precedence
+for simultaneous commands and make every refusal observable. Exhaustively test
+pair transitions and selected long chains at 60/120 Hz, offline and through the
+authoritative host path.
+
+## Resource and cadence contract
+
+- `Flux` is the spell resource; `Stamina` is the movement resource. Do not
+  reintroduce Flow or show generic Mana as a third synonym in canonical UI.
+- Every damaging or pressure-producing cast has a positive Flux cost, including
+  Rillshot, Eclipse Disc and the shared Arc Primary. Holding a primary must
+  eventually demand a decision rather than provide infinite pressure.
+- Non-offensive utility may still cost Flux when it creates positional or tempo
+  value. Passive observation and ordinary walking do not cost Flux.
+- Prefer short action-specific cooldowns and meaningful costs over long idle
+  lockouts. Establish measured cadence tiers and tune them through encounter
+  fixtures rather than applying one blanket percentage.
+- Affinities may grant a small bounded cost/cadence/handling benefit but never
+  make a cast free, grant automatic elemental damage, or hard-lock other
+  elements.
+- Regeneration timing, combat-delay rules and costs are centralized, validated
+  and visible in the HUD and Spell Loom before balance claims.
+
+## Minimum complete spell catalog
+
+The canonical element families remain Earth, Fire, Water, Wind, Ice, Charge,
+Light, Dark, Spirit, Chaos, Gravity and Time. Each element is incomplete until
+it owns at least four mechanically distinct, runtime-proven choices:
+
+| Role | Requirement per element |
+| --- | --- |
+| Quick pressure | Aimable low-cost projectile, beam, spray or close expression with positive Flux cost and active counterplay. |
+| Control or defense | Field, ward, displacement, reveal, cleanse, interrupt or bounded protection with clear geometry and expiry. |
+| Movement or utility | Collision-safe repositioning, traversal, support or information tool that cannot bypass topology/visibility authority. |
+| High commitment | Strong signature action with readable startup, interruption/escape route, bounded duration and meaningful cost/cooldown. |
+
+This is a 48-spell minimum library, promoted one element-complete vertical slice
+at a time after the visual, movement, chaining and economy gates. Catalog-only
+entries are not selectable. The Spell Loom queries the global runtime-enabled
+catalog, not the current champion kit; any champion may weave any proven spell
+into Plain 1–4, Ctrl+1–4 or Alt+1–4. Character affinities affect bounded
+efficiency/identity only. Preserve stable wire IDs, migrate saved weaves
+explicitly and keep host validation authoritative.
+
+## Checkpoint discipline
+
+For every slice: capture the previous visual/runtime baseline; define observable
+acceptance; implement the smallest complete live result; run focused and full
+deterministic tests, import and 60/120 boots, relevant multi-process Farflow,
+visual/accessibility captures and an interactive smoke; inspect diff and packet
+budgets; update README, memory, backlog and worklog; then commit and push one
+reversible green checkpoint. Never claim charm, crispness, balance, remote play
+or platform parity without direct evidence.

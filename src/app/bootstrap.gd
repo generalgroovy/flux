@@ -42,6 +42,7 @@ var hub_definition: HubDefinition
 var campus_layout: SanctumCampusLayout
 var campus_renderer: SanctumCampusRenderer
 var visual_language: VisualLanguage
+var cartoon_champion_presenter: CartoonChampionPresenter
 var ability_catalog: AbilityCatalog
 var champion_catalog: ChampionCatalog
 var loadout: LoadoutDefinition
@@ -72,6 +73,7 @@ var capture_spawn_world := Vector2i(-1, -1)
 var capture_expanded_station_id: String = ""
 var requested_capture_active_cast: bool = false
 var requested_capture_spell_slot: int = 0
+var requested_capture_movement: String = ""
 var capture_active_cast_sent: bool = false
 var focused_station_id: String = ""
 var expanded_station_id: String = ""
@@ -162,12 +164,19 @@ func _ready() -> void:
 		push_error("Wellspring renderer could not bind the visual language")
 		get_tree().quit(1)
 		return
+	cartoon_champion_presenter = CartoonChampionPresenter.new()
+	if not cartoon_champion_presenter.configure(visual_language):
+		push_error(cartoon_champion_presenter.last_error)
+		get_tree().quit(1)
+		return
 	show_visual_specimen = OS.get_cmdline_user_args().has("--visual-specimen")
+	show_debug_overlay = OS.get_cmdline_user_args().has("--debug-overlay")
 	capture_pointer_world = _requested_capture_pointer()
 	capture_spawn_world = _requested_capture_spawn()
 	capture_expanded_station_id = _requested_capture_expanded_station()
 	requested_capture_active_cast = OS.get_cmdline_user_args().has("--capture-cast-active")
 	requested_capture_spell_slot = _requested_capture_spell_slot()
+	requested_capture_movement = _requested_capture_movement()
 	ability_catalog = AbilityCatalog.new()
 	if not ability_catalog.load_from_file(ABILITY_CATALOG_PATH):
 		push_error(ability_catalog.last_error)
@@ -230,7 +239,7 @@ func _ready() -> void:
 		elif capture_expanded_station_id == "spell-loom":
 			spell_loom_editor.open_editor(_local_player_state())
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, visual %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, visual %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -240,6 +249,8 @@ func _ready() -> void:
 			player_preferences.pov_range,
 			player_preferences.camera_zoom_percent,
 			visual_language.content_hash().left(12),
+			cartoon_champion_presenter.content_hash.left(12),
+			cartoon_champion_presenter.atlas_hash.left(12),
 			hub_definition.districts_by_id.size(),
 			hub_definition.travel_nodes_by_id.size(),
 			campus_layout.content_hash.left(12),
@@ -467,6 +478,8 @@ func _process(delta: float) -> void:
 				current_position,
 				pointer_world_position,
 			)
+		if not requested_capture_movement.is_empty() and not session_transport.is_connected_client():
+			command = capture_movement_command(requested_capture_movement, world.tick, input_router.entity_id)
 		if (requested_capture_active_cast or requested_capture_spell_slot > 0) and not capture_active_cast_sent and not session_transport.is_connected_client():
 			var capture_pressed := SimCommand.PRESSED_ACTIVE_1 if requested_capture_spell_slot == 0 else SimCommand.SPELL_PRESSED_BITS[requested_capture_spell_slot - 1]
 			command = SimCommand.new(world.tick, input_router.entity_id, 0, 0, 0, capture_pressed, command.aim_x, command.aim_y)
@@ -551,9 +564,9 @@ func _draw() -> void:
 	var rendered_position: Vector2 = previous_position.lerp(current_position, alpha)
 	var camera_focus_position := _camera_focus_position(rendered_position)
 	var camera_origin: Vector2 = _camera_origin(camera_focus_position)
+	var visual_tick := MinimalChampionMotion.tick_at_visual_rate(world.tick, tick_rate, alpha)
 	_set_world_transform(camera_origin)
-	campus_renderer.draw(self, campus_layout, world.tick, camera_focus_position)
-	_draw_practice_targets(camera_origin)
+	campus_renderer.draw(self, campus_layout, roundi(visual_tick), camera_focus_position, player_preferences.reduced_motion)
 	if show_debug_overlay:
 		for obstacle: CollisionWorld.Obstacle in world.collision.obstacles:
 			var rectangle := Rect2(
@@ -569,6 +582,7 @@ func _draw() -> void:
 		var projectile_color: Color = _projectile_color(projectile.element_wire_id)
 		_draw_projectile(projectile, projectile_position, projectile_color)
 	_draw_combat_cues(camera_origin)
+	_draw_practice_targets(camera_origin)
 	var state: PlayerState = _local_player_state()
 	if state == null:
 		return
@@ -576,12 +590,14 @@ func _draw() -> void:
 	var observed_state: PlayerState = _spectator_state() if spectating else state
 	if observed_state == null:
 		observed_state = state
-	_draw_remote_travellers(camera_origin, state.entity_id)
+	_draw_remote_travellers(camera_origin, state.entity_id, roundi(visual_tick))
 	var presentation_state: PlayerState = client_prediction.predicted_state if session_transport.is_connected_client() and client_prediction.is_ready() else state
 	var presentation := JumpPresentation.sample(presentation_state, world.config, alpha, player_preferences.reduced_motion)
 	var landing := LandingPresentation.sample(presentation_state, world.config, alpha, player_preferences.reduced_motion)
 	var player_radius: float = float(presentation_state.radius) / 1000.0
 	var shadow_center := rendered_position + Vector2(0.0, player_radius * 0.58)
+	if campus_renderer.natural_kit != null:
+		campus_renderer.natural_kit.draw_actor_contact(self, campus_layout, presentation_state, shadow_center, roundi(visual_tick), player_preferences.reduced_motion)
 	var shadow_scale: Vector2 = landing.shadow_scale if landing.active else presentation.shadow_scale
 	_set_world_local_transform(
 		shadow_center,
@@ -594,9 +610,20 @@ func _draw() -> void:
 		_draw_landing_cue(shadow_center, landing)
 	var body_position := rendered_position + Vector2(0.0, -float(presentation.body_lift_pixels))
 	var sprite_drawn: bool = false
-	if player_sprite != null:
+	var presentation_champion_id := champion_catalog.champion_id_from_wire(presentation_state.champion_wire_id)
+	var sprite_anchor := shadow_center + Vector2(0.0, -float(presentation.body_lift_pixels))
+	if cartoon_champion_presenter != null:
+		sprite_drawn = cartoon_champion_presenter.draw(
+			self,
+			presentation_state,
+			presentation_champion_id,
+			sprite_anchor,
+			roundi(visual_tick),
+			world.config,
+			player_preferences.reduced_motion,
+		)
+	if not sprite_drawn and player_sprite != null:
 		if player_sprite.sync_from_player(presentation_state, world.config, world.tick, alpha):
-			var sprite_anchor := shadow_center + Vector2(0.0, -float(presentation.body_lift_pixels))
 			draw_texture_rect_region(
 				player_sprite.texture,
 				WellspringCharacterSprite.destination_rect(sprite_anchor),
@@ -610,6 +637,8 @@ func _draw() -> void:
 		draw_circle(body_position, player_radius + 5.0, Color(ATTUNEMENT_COLOR, 0.18))
 		draw_circle(body_position, player_radius, PLAYER_COLOR)
 		draw_arc(body_position, player_radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
+	if show_debug_overlay:
+		_draw_actor_hitbox_diagnostic(body_position, player_radius, presentation_champion_id)
 	if state.spawn_protection_ticks > 0:
 		var protection_ratio := clampf(float(state.spawn_protection_ticks) / float(maxi(1, world.config.milliseconds_to_ticks(1200))), 0.0, 1.0)
 		draw_arc(body_position, player_radius + 9.0, 0.0, TAU, 28, Color(ATTUNEMENT_COLOR, 0.32 + protection_ratio * 0.42), 2.0)
@@ -945,7 +974,7 @@ func _draw_combat_cues(camera_origin: Vector2) -> void:
 		draw_string(ThemeDB.fallback_font, position + Vector2(-label_width * 0.5, -28.0 - phase * 18.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 11, Color(color, opacity))
 
 
-func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int) -> void:
+func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visual_tick: int) -> void:
 	for remote_state: PlayerState in world.players:
 		if remote_state.actor_kind != PlayerState.ActorKind.CHAMPION or remote_state.entity_id == local_entity_id:
 			continue
@@ -954,6 +983,8 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int) -> vo
 		var landing := LandingPresentation.sample(remote_state, world.config, 0.0, player_preferences.reduced_motion)
 		var radius := float(remote_state.radius) / 1000.0
 		var shadow_center := position + Vector2(0.0, radius * 0.58)
+		if campus_renderer.natural_kit != null:
+			campus_renderer.natural_kit.draw_actor_contact(self, campus_layout, remote_state, shadow_center, visual_tick, player_preferences.reduced_motion)
 		var shadow_scale: Vector2 = landing.shadow_scale if landing.active else presentation.shadow_scale
 		_set_world_local_transform(shadow_center, Vector2(radius * shadow_scale.x, radius * shadow_scale.y), camera_origin)
 		draw_circle(Vector2.ZERO, 1.0, Color(FOREST_SHADOW_COLOR, presentation.shadow_opacity))
@@ -961,10 +992,21 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int) -> vo
 		if landing.active:
 			_draw_landing_cue(shadow_center, landing)
 		var body_position := position + Vector2(0.0, -float(presentation.body_lift_pixels))
-		var sprite := _remote_player_sprite(remote_state)
 		var sprite_drawn: bool = false
-		if sprite != null and sprite.sync_from_player(remote_state, world.config, world.tick, 0.0):
-			var sprite_anchor := shadow_center + Vector2(0.0, -float(presentation.body_lift_pixels))
+		var champion_id := champion_catalog.champion_id_from_wire(remote_state.champion_wire_id)
+		var sprite_anchor := shadow_center + Vector2(0.0, -float(presentation.body_lift_pixels))
+		if cartoon_champion_presenter != null:
+			sprite_drawn = cartoon_champion_presenter.draw(
+				self,
+				remote_state,
+				champion_id,
+				sprite_anchor,
+				visual_tick,
+				world.config,
+				player_preferences.reduced_motion,
+			)
+		var sprite := _remote_player_sprite(remote_state) if not sprite_drawn else null
+		if not sprite_drawn and sprite != null and sprite.sync_from_player(remote_state, world.config, world.tick, 0.0):
 			draw_texture_rect_region(sprite.texture, WellspringCharacterSprite.destination_rect(sprite_anchor), sprite.region_rect)
 			sprite_drawn = true
 		if not sprite_drawn:
@@ -972,6 +1014,8 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int) -> vo
 			draw_circle(body_position, radius + 5.0, Color(body_color, 0.18))
 			draw_circle(body_position, radius, body_color)
 			draw_arc(body_position, radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
+		if show_debug_overlay:
+			_draw_actor_hitbox_diagnostic(body_position, radius, champion_id)
 		if remote_state.spawn_protection_ticks > 0:
 			var protection_ratio := clampf(float(remote_state.spawn_protection_ticks) / float(maxi(1, world.config.milliseconds_to_ticks(1200))), 0.0, 1.0)
 			draw_arc(body_position, radius + 9.0, 0.0, TAU, 28, Color(ATTUNEMENT_COLOR, 0.32 + protection_ratio * 0.42), 2.0)
@@ -985,6 +1029,14 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int) -> vo
 		var health_ratio := clampf(float(remote_state.health) / float(maxi(1, remote_state.health_maximum)), 0.0, 1.0)
 		draw_rect(Rect2(health_bar.position + Vector2.ONE, Vector2((health_bar.size.x - 2.0) * health_ratio, 2.0)), Color("d9634f"), true)
 	_set_world_transform(camera_origin)
+
+
+func _draw_actor_hitbox_diagnostic(center: Vector2, radius: float, champion_id: String) -> void:
+	draw_circle(center, radius, Color(visual_language.ui_color("danger"), 0.08))
+	draw_arc(center, radius, 0.0, TAU, 32, visual_language.ui_color("danger"), 2.0)
+	draw_line(center + Vector2(-radius, 0.0), center + Vector2(radius, 0.0), Color(PARCHMENT_COLOR, 0.72), 1.0)
+	draw_line(center + Vector2(0.0, -radius), center + Vector2(0.0, radius), Color(PARCHMENT_COLOR, 0.72), 1.0)
+	draw_string(ThemeDB.fallback_font, center + Vector2(radius + 4.0, 4.0), "%s HITBOX" % champion_id.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1.0, 9, visual_language.ui_color("danger"))
 
 
 func _remote_player_sprite(state: PlayerState) -> WellspringCharacterSprite:
@@ -2313,6 +2365,8 @@ func _refresh_material_preview() -> void:
 
 func _load_player_sprite_candidate() -> void:
 	_clear_player_sprite_candidate()
+	if cartoon_champion_presenter != null and cartoon_champion_presenter.can_present(selected_champion_id):
+		return
 	player_sprite = WellspringCharacterSprite.new()
 	player_sprite.source_kind = "champion"
 	player_sprite.source_id = selected_champion_id
@@ -2486,6 +2540,16 @@ func _requested_capture_spell_slot() -> int:
 	return 0
 
 
+func _requested_capture_movement() -> String:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--capture-movement="):
+			var requested := parse_capture_movement(argument)
+			if requested.is_empty():
+				push_warning("Invalid movement capture; expected walk, sprint, slide, jump, air_dodge, or technique")
+			return requested
+	return ""
+
+
 static func parse_session_charter(argument: String) -> String:
 	if not argument.begins_with("--session-charter="):
 		return ""
@@ -2514,6 +2578,32 @@ static func parse_capture_spell_slot(argument: String) -> int:
 		return 0
 	var slot_number := value.to_int()
 	return slot_number if slot_number >= 1 and slot_number <= PlayerState.SPELL_SLOT_COUNT else 0
+
+
+static func parse_capture_movement(argument: String) -> String:
+	if not argument.begins_with("--capture-movement="):
+		return ""
+	var requested := argument.trim_prefix("--capture-movement=").strip_edges().to_lower()
+	return requested if requested in ["walk", "sprint", "slide", "jump", "air_dodge", "technique"] else ""
+
+
+static func capture_movement_command(mode: String, tick: int, entity_id: int) -> SimCommand:
+	var held := 0
+	var pressed := 0
+	var move_x := 1000
+	if mode == "sprint" or mode == "slide":
+		held |= SimCommand.HELD_SPRINT
+	if mode in ["jump", "air_dodge"] and tick >= 4 and tick < 30:
+		held |= SimCommand.HELD_JUMP
+	if mode in ["jump", "air_dodge"] and tick == 4:
+		pressed |= SimCommand.PRESSED_JUMP
+	if mode == "slide" and tick == 6:
+		pressed |= SimCommand.PRESSED_SLIDE
+	if mode == "air_dodge" and tick == 12:
+		pressed |= SimCommand.PRESSED_TECHNIQUE
+	if mode == "technique" and tick == 6:
+		pressed |= SimCommand.PRESSED_TECHNIQUE
+	return SimCommand.new(tick, entity_id, move_x, 0, held, pressed, 1000, 0)
 
 
 func _requested_farflow_mode() -> String:

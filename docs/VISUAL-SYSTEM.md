@@ -81,3 +81,44 @@ overview. They remain internal evidence under `.godot/visual-gate-v1/`: the
 live map is still schematic and the v2 character atlases are still too small
 and crude. V2 therefore begins with compact cartoon production candidates for
 Oh Tipi and S. Wayne before further environment beautification.
+
+## V2 foundation champions and minimal motion
+
+Oh Tipi and S. Wayne now draw from one promoted 672x192 runtime atlas with
+96x96 cells, a 48x84 ground pivot and reviewed south/east/west/north, jump,
+cast and hit silhouettes. The 1.7 MB generation source remains provenance-only
+and is excluded from exports; the quantized runtime atlas is 46 KB. Atlas,
+decoded-pixel and source hashes are pinned by
+`content/visual/foundation_champion_visuals_v1.json` and
+`assets/sprites/champions_v3/foundation/provenance.json`.
+
+Animation is deliberately reusable rather than baked into gameplay code.
+`content/visual/minimal_champion_motion_v1.json` declares bounded idle, walk,
+sprint, low-profile, airborne, cast and hit keyframes for two motion profiles,
+plus one restrained visual accent for every advanced movement family. The live
+presenter derives pose selection only from authoritative state and samples one
+60 Hz visual timeline at either simulation rate. Offsets stay within four
+pixels, squash/stretch within 6%, reduced motion damps all three channels, and
+the `--debug-overlay` diagnostic proves the sprite never owns its hitbox.
+
+## V3 natural-map foundation in progress
+
+`content/visual/natural_map_kit_v1.json` is the editable environment recipe.
+It declares bounded district vocabularies, density, material ramps, seeded
+edge props, ground variation and walk/sprint/slide/air contact marks.
+`NaturalMapKit` validates the recipe, produces deterministic natural variation,
+smooths visual route polylines without changing authored endpoints, and never
+modifies collision, elevation, route metadata or simulation state. Actors and
+training targets render after environmental detail so decorative growth cannot
+hide gameplay information.
+
+Use the deterministic movement review harness on Windows, changing the final
+mode through `walk`, `sprint`, `slide`, `jump`, `air_dodge` and `technique`:
+
+```powershell
+scripts/run.cmd 60 --capture-spawn=300,720 --capture-pointer=900,720 --capture-movement=slide --champion=oh_tipi
+```
+
+This slice establishes animation/contact quality and reusable map resources; it
+does not claim final V3 environment charm. Central architecture, landmark and
+station art still require the next modular environment pass.

@@ -117,6 +117,12 @@ func _test_capture_pointer_parser() -> void:
 	equal(BootstrapScript.parse_capture_spell_slot("--capture-cast-slot=12"), 12, "diagnostic cast accepts Alt+4")
 	equal(BootstrapScript.parse_capture_spell_slot("--capture-cast-slot=13"), 0, "diagnostic cast rejects positions beyond the weave")
 	equal(BootstrapScript.parse_capture_spell_slot("--capture-cast-slot=bad"), 0, "diagnostic cast rejects malformed positions")
+	equal(BootstrapScript.parse_capture_movement("--capture-movement=SLIDE"), "slide", "diagnostic movement capture is case-insensitive")
+	equal(BootstrapScript.parse_capture_movement("--capture-movement=teleport"), "", "unknown movement capture fails closed")
+	var slide_capture: SimCommand = BootstrapScript.capture_movement_command("slide", 6, 1)
+	check(slide_capture.has_held(SimCommand.HELD_SPRINT) and slide_capture.has_pressed(SimCommand.PRESSED_SLIDE), "slide capture uses the ordinary semantic sprint-slide command")
+	var air_capture: SimCommand = BootstrapScript.capture_movement_command("air_dodge", 12, 1)
+	check(air_capture.has_held(SimCommand.HELD_JUMP) and air_capture.has_pressed(SimCommand.PRESSED_TECHNIQUE), "air capture uses the ordinary semantic airborne-technique command")
 	var capture_stations := {"farflow-charter": {}}
 	equal(BootstrapScript.parse_capture_expanded_station("--capture-expanded-station=farflow-charter", capture_stations), "farflow-charter", "capture-only station expansion accepts an authored station")
 	equal(BootstrapScript.parse_capture_expanded_station("--capture-expanded-station=missing", capture_stations), "", "capture-only station expansion rejects unknown stations")

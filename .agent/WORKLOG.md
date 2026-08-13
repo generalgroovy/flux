@@ -1,5 +1,54 @@
 # FLUX2 agent worklog
 
+## 2026-08-13 â€” visual Gate V2 and natural-motion V3 foundation
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Promoted original compact-cartoon Oh Tipi and S. Wayne candidates into a
+  pinned, quantized runtime atlas with explicit dimensions, pivot, directional
+  states, action states, decoded/source hashes and provenance; friend exports
+  omit the large source sheet.
+- Added editable data-driven minimal-motion profiles for idle, walk, sprint,
+  low movement, air, cast and hit, normalized to one 60 Hz visual clock at both
+  supported simulation rates. Every current movement enum maps to a readable
+  family, while double jump, slide, slide jump, air dodge, wavedash, wall kick,
+  vault, superglide, fast-fall and wall skim add bounded semantic accents.
+- Kept animation presentation-only: hitbox diagnostics stay separate, squash /
+  stretch cannot exceed 6%, offsets cannot exceed four pixels, reduced motion
+  damps translation/scale/aura, and simulation tuning/legality did not change.
+- Began V3 with a fail-closed NaturalMapKit. Editable recipes now own seeded
+  ground variation, natural edge props, gentle visual route curves and
+  surface-aware contact marks; authored topology, collision, elevation and
+  route endpoints remain unchanged. Gameplay actors render above decoration.
+- Added a deterministic `--capture-movement=` review harness for walk, sprint,
+  slide, jump, air dodge and contextual technique on unobstructed routes.
+
+Validation:
+
+- Full headless suite passed with 15,832 assertions and zero failures after
+  final documentation; focused import/source boots continued to pass at 60 and
+  120 Hz after the natural-map and movement-accent integrations.
+- Fresh checksummed Windows and Linux friend packages completed. The packaged
+  Windows launcher loaded the promoted visual stack and completed safe quit;
+  exports retain only the 46 KB runtime atlas while the large source image is
+  excluded and its reproducibility metadata remains available.
+- A fresh real three-process Farflow journey passed at 120 Hz on UDP 24970,
+  including movement reconciliation, shared emotes, Hearth-to-Court flow,
+  late-join observation, reconnect, rematch and reason-bearing stewardship.
+- Live 1280x720 fixed-pointer captures were produced and inspected for idle,
+  walk, sprint, slide, jump, air dodge and contextual technique; the open-route
+  captures prove distinct silhouette, jump lift/shadow and contact context.
+- `git diff --check` passed apart from configured LF-to-CRLF notices.
+
+Known limitations and risks:
+
+- This completes the V2 engineering candidate but not V6 human acceptance.
+- V3 remains visibly schematic in architecture, landmarks and stations; the
+  next visual slice must replace those with reusable modular environment art.
+- Existing bulk-catalog image-loader warnings predate this slice.
+
 ## 2026-08-13 — visual Gate V1 live renderer foundation
 
 Branch: `codex/continuous-overhaul`

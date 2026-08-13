@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "id": "foundation-champion-visuals-v1",
+  "authority": "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere",
+  "cell": [96, 96],
+  "pivot": [48, 84],
+  "atlas": {
+    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas.png",
+    "sha256": "f1c6c52abc341eb848942c0f5e296af83864a7e8110992bb0a4aae31c8b11e1c",
+    "imported_rgba_sha256": "732d5606f6623d5c95f9052be5dbb6a43af4cd26441b126c63fa74b76096dbfd",
+    "dimensions": [672, 192],
+    "rows": ["oh_tipi", "s_wayne"],
+    "columns": ["south", "east", "west", "north", "jump", "cast", "hit"]
+  },
+  "champions": {
+    "oh_tipi": {
+      "display_name": "Oh Tipi",
+      "ancestry": "seakin",
+      "height": 66,
+      "head_ratio": 0.43,
+      "build": "sturdy_current_keeper",
+      "motion_profile": "buoyant_keeper",
+      "equipment": "three_tined_current_staff",
+      "silhouette_features": ["fin_crown", "cheek_fins", "curling_tail", "trident"],
+      "affinities": ["water", "ice", "charge"],
+      "materials": {
+        "outline": ["worldbone", 0],
+        "skin_dark": ["deep_water", 2],
+        "skin": ["deep_water", 4],
+        "armor": ["indigo_roof", 2],
+        "trim": ["aged_brass", 3],
+        "eye": ["parchment", 4]
+      }
+    },
+    "s_wayne": {
+      "display_name": "S. Wayne",
+      "ancestry": "hobbit",
+      "height": 58,
+      "head_ratio": 0.44,
+      "build": "small_round_boundary_mage",
+      "motion_profile": "grounded_weaver",
+      "equipment": "orbiting_focus_orb",
+      "silhouette_features": ["round_hair", "short_cloak", "large_bare_feet", "focus_orb"],
+      "affinities": ["dark", "light"],
+      "materials": {
+        "outline": ["worldbone", 0],
+        "skin_dark": ["timber", 3],
+        "skin": ["warm_stone", 4],
+        "armor": ["indigo_roof", 1],
+        "trim": ["aged_brass", 3],
+        "hair": ["timber", 0],
+        "eye": ["parchment", 4]
+      }
+    }
+  }
+}

@@ -1931,6 +1931,13 @@ See [development setup](docs/DEVELOPMENT.md) and the
 
 ## Production roadmap
 
+Current visual frontier: V0–V2 are complete. Oh Tipi and S. Wayne use pinned
+compact-cartoon runtime art and editable, rate-independent minimal motion across
+the full movement grammar. V3 is active: the editable seeded NaturalMapKit now
+provides curved visual routes, natural edge growth, quiet ground variation and
+surface-aware contact while authored collision/topology remain unchanged;
+modular building, landmark and station art is next.
+
 Production advances through small vertical slices. Each checkpoint must leave a
 launchable game, focused history, truthful status index, known rollback commit,
 and enough instrumentation to diagnose the next slice. Features remain behind

@@ -35,12 +35,13 @@ each playable slice.
 - Camera presentation now defaults to a wider 75% scale and persists a bounded
   50/75/100% choice. Pointer aim, cone range and building occlusion transform
   with the same scale; F11 and `--camera-zoom=` expose it without changing rules.
-- Latest source verification is 15,692 assertions plus import/source 60/120 Hz
-  boots and a fresh 60 Hz three-process spectator-to-Hearth-to-Round-2,
+- Latest source verification is 15,832 assertions plus import/source 60/120 Hz
+  boots and a fresh 120 Hz three-process spectator-to-Hearth-to-Round-2,
   reconnect and stewardship journey. Diagnostic captures verify the compact
   active-layer HUD, wider 75% navigation view, Rimewake feedback and 3x4 Loom.
-- Both portable packages and packaged Windows safe quit passed at the preceding
-  green checkpoint; this slice did not overwrite the user-owned build folders.
+- Fresh Windows and Linux friend packages plus packaged Windows safe quit pass
+  with the promoted runtime atlas; the large editable source sheet is excluded.
+  User-owned `dist/`, `node_modules/` and `scripts/firewall.ps1` remain untouched.
 - Portable release tooling installs only the official Godot 4.7.1 Windows/Linux
   templates by bounded HTTP range with ZIP CRC/size validation, excludes
   non-runtime workspace content, emits checksummed Windows ZIP/Linux tar.gz
@@ -55,6 +56,18 @@ each playable slice.
 
 ## Next acceptance-driven slice
 
+Mechanics remain frozen. V0–V2 are complete. Oh Tipi and S. Wayne use a pinned,
+quantized compact-cartoon atlas with all critical directional/action states;
+their editable minimal-motion profiles cover the complete movement grammar,
+add bounded advanced-technique accents, normalize presentation at 60/120 Hz
+and damp under reduced motion. V3 is active: an editable fail-closed
+NaturalMapKit now seeds quiet ground variation, natural edge props, curved
+visual routes and surface-aware movement contact without changing topology or
+collision. Open-Conservatory captures cover walk, sprint, slide, jump, air
+dodge and contextual technique. Buildings, landmarks and stations remain the
+next modular environment-art gap, followed by V4–V6.
+
+<!-- Historical V1 handoff below is retained only as prior evidence. -->
 Mechanics remain frozen. V0 and V1 are complete: the validated visual language
 now fail-closed binds the actual Wellspring; shared material ramps, quiet
 cardinal floor cells, route seams, visible building footprints/thresholds,

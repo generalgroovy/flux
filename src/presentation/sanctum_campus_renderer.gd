@@ -29,6 +29,7 @@ var VIOLET := Color("9461d4")
 var FIRE := Color("df8335")
 var PANEL := Color("11140ee8")
 var language: VisualLanguage
+var natural_kit: NaturalMapKit
 
 
 func configure(visual_language: VisualLanguage) -> bool:
@@ -61,6 +62,9 @@ func configure(visual_language: VisualLanguage) -> bool:
 	VIOLET = language.element_color("dark", "bright")
 	FIRE = language.element_color("fire", "base")
 	PANEL = language.ui_color("panel_fill")
+	natural_kit = NaturalMapKit.new()
+	if not natural_kit.configure(language):
+		return false
 	return true
 
 
@@ -69,6 +73,7 @@ func draw(
 	layout: SanctumCampusLayout,
 	presentation_tick: int,
 	focus_world_position: Vector2 = Vector2(-1000000.0, -1000000.0),
+	reduced_effects: bool = false,
 ) -> void:
 	_draw_water(canvas, layout.canvas_size, layout.reserved_ui_top, presentation_tick)
 	_draw_distant_context(canvas)
@@ -76,7 +81,9 @@ func draw(
 		_draw_connection(canvas, connection_value as Dictionary)
 	var district_index: int = 0
 	for district_value: Variant in layout.data.get("districts", []):
-		_draw_district(canvas, district_value as Dictionary, district_index)
+		var district: Dictionary = district_value
+		_draw_district(canvas, district, district_index)
+		natural_kit.draw_district_details(canvas, district, district_index, presentation_tick, reduced_effects)
 		district_index += 1
 	for route_value: Variant in layout.data.get("routes", []):
 		_draw_route(canvas, route_value as Dictionary)
@@ -169,7 +176,7 @@ func _draw_district(canvas: CanvasItem, district: Dictionary, index: int) -> voi
 	canvas.draw_colored_polygon(_stepped_rect(ground_rect), ground_color)
 	_draw_cardinal_floor(canvas, ground_rect, style, index)
 
-	_draw_district_edge_garden(canvas, ground_rect, index)
+	# Edge groves and ground variation come from the editable NaturalMapKit.
 
 
 func _draw_cardinal_floor(canvas: CanvasItem, bounds: Rect2i, style: String, seed: int) -> void:
@@ -215,6 +222,7 @@ func _draw_route(canvas: CanvasItem, route: Dictionary) -> void:
 	elif kind == "garden":
 		route_color = Color("6f6843")
 		edge_color = MOSS
+	points = NaturalMapKit.smoothed_path(points, 1 if kind == "ordinary" else 2)
 	canvas.draw_polyline(points, Color(DEEP_FOREST, 0.7), width + 8.0, false)
 	canvas.draw_polyline(points, edge_color, width + 4.0, false)
 	canvas.draw_polyline(points, route_color, width, false)

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "asset_id": "flux-foundation-cartoon-champions-v1",
+  "status": "integrated_candidate_pending_human_acceptance",
+  "source": "OpenAI image generation, directed for this FLUX repository on 2026-08-13",
+  "originality": "Original Oh Tipi and S. Wayne production exploration; no third-party pixels, characters, symbols, maps or interface assets may be copied into the result.",
+  "reference_boundary": "assets/concept/visual-system-cartoon-perspective-v2.png supplied only the repository's own accepted cartoon proportion and material direction; its steep map projection remains rejected.",
+  "source_file": "source_sheet.png",
+  "source_sha256": "669bbae439ccf3e4da7f27530693d11d88bc1ecba29c09eae2c3393d237cd168",
+  "source_dimensions": [1536, 1024],
+  "runtime_file": "runtime_atlas.png",
+  "runtime_sha256": "f1c6c52abc341eb848942c0f5e296af83864a7e8110992bb0a4aae31c8b11e1c",
+  "runtime_imported_rgba_sha256": "732d5606f6623d5c95f9052be5dbb6a43af4cd26441b126c63fa74b76096dbfd",
+  "runtime_dimensions": [672, 192],
+  "runtime_cell": [96, 96],
+  "runtime_pivot": [48, 84],
+  "rows": ["oh_tipi", "s_wayne"],
+  "columns": ["south", "east", "west_mirrored_from_east", "north", "jump", "cast", "hit"],
+  "build_command": "python scripts/build_foundation_champion_sprites.py assets/sprites/champions_v3/foundation/source_sheet.png assets/sprites/champions_v3/foundation/runtime_atlas.png",
+  "import": "RGBA PNG, nearest-neighbor runtime sampling, no mipmaps, separate authoritative shadow and hitbox",
+  "license_note": "Repository-owned generated candidate; retain this provenance and perform human visual/originality review before release promotion."
+}

@@ -46,6 +46,7 @@ func _test_live_renderer_binding() -> void:
 	var renderer := SanctumCampusRenderer.new()
 	check(not renderer.configure(null), "live renderer refuses an absent visual language")
 	check(renderer.configure(language), "live renderer binds the validated language")
+	check(renderer.natural_kit != null and renderer.natural_kit.content_hash.length() == 64, "live renderer binds the reusable natural-map kit")
 	equal(renderer.WATER, language.ramp_color("deep_water", 1), "live water derives from the shared ramp")
 	equal(renderer.STONE, language.ramp_color("warm_stone", 2), "live stone derives from the shared ramp")
 	equal(renderer.BRASS, language.ramp_color("aged_brass", 2), "live brass derives from the shared ramp")

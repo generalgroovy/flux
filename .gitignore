@@ -2,6 +2,8 @@
 .autocode/*
 !.autocode/roles.toml
 *.import
+*.pyc
+__pycache__/
 build/
 exports/
 reports/

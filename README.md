@@ -20,6 +20,24 @@ spreads fire, heat creates steam, cold freezes routes, impacts fracture cover,
 and immutable `worldbone` guarantees that a match can never destroy its own
 critical topology.
 
+## Download, run, host, and close
+
+FLUX 2 produces portable friend builds: extract one archive and use the obvious
+launcher—`PLAY-FLUX.cmd` on Windows or `play-flux.sh` on Linux. No installer or
+administrator access is required. Both players must use the same archive and
+checksum; they spawn directly in the Wellspring and use its Host/Join Farflow
+stations. Public direct-IP play may still require the host to allow the shown
+UDP port through a router/firewall; in-world address entry/join cards and
+physical Garuda package proof are the next onboarding gates.
+
+For a source checkout, run `scripts/run.cmd` on Windows or `scripts/run.sh` on
+Linux. Release engineers run `scripts/install-export-templates.cmd` (or the
+matching `.sh`) once, then `scripts/package.cmd All` / `scripts/package.sh all`;
+checksummed ZIP/tar.gz bundles appear under `exports/release/`. Closing the game
+flushes preferences, closes its network peer and gives hosted guests a bounded
+reason before exit. See the compact
+[player-experience overhaul](docs/PLAYER-EXPERIENCE-OVERHAUL.md).
+
 ## Game and implementation map
 
 Checkboxes report repository truth on the current branch: checked means the
@@ -70,9 +88,11 @@ even when design documentation already exists.
     focus, Tab/D-pad cycling, a clear next-gathering HUD and automatic Hearth play
   - [x] Windows/Bash doctor, test, run and package entry points plus self-cleaning
     two/three-process host/join/move/observe/reconnect acceptance journeys
-  - [ ] Install pinned export templates and record packaged Windows/physical
-    Garuda proof; settings/travel stations, overlay parity, map UI, streaming,
-    and destination persistence remain
+  - [x] CRC-checked pinned desktop-template installer, runtime-only exports,
+    checksummed portable Windows/Linux archives and packaged Windows safe quit
+  - [ ] Record packaged two-PC friend play and physical Garuda/Sway proof;
+    in-world address/join-card flow, settings/travel, overlay parity, map UI,
+    streaming, and destination persistence remain
 - [ ] **Chapter 3 — [Movement and traversal](#movement-and-traversal)**
   — deterministic universal grammar in progress
   - [x] Sprint, counter-strafe, hop/double jump, wall kick, air redirect/dodge,

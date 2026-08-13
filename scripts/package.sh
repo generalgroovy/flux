@@ -58,4 +58,5 @@ fi
     | xargs -0 sha256sum \
     | sed 's#  \./#  #' > SHA256SUMS.txt
 )
-printf 'PASS: release exports and checksums written to %s/exports\n' "$repo_root"
+"$repo_root/scripts/bundle-release.sh" "$target" "$repo_root/exports" "$repo_root/exports/release"
+printf 'PASS: release exports, portable archives and checksums written to %s/exports\n' "$repo_root"

@@ -5,8 +5,10 @@ const MAX_CATCH_UP_STEPS: int = 8
 const SNAPSHOT_RATE: int = 60
 const EMOTE_COOLDOWN_MS: int = 1200
 const STEWARD_CONFIRMATION_MS: int = 3000
+const SAFE_QUIT_GRACE_MS: int = 500
 const GUEST_RELEASE_REASON: String = "The host released you from the Farflow company."
 const COMPANY_CLOSE_REASON: String = "The host closed the Farflow company."
+const APPLICATION_CLOSE_REASON: String = "The host safely closed FLUX 2."
 const HUB_DEFINITION_PATH: String = "res://content/maps/sanctum_hub_v1.json"
 const CAMPUS_LAYOUT_PATH: String = "res://content/maps/sanctum_campus_g2_v1.json"
 const ABILITY_CATALOG_PATH: String = "res://content/abilities/foundation_abilities_v1.json"
@@ -111,9 +113,14 @@ var spectator_smoke_active_reported: bool = false
 var spectator_smoke_handoff_reported: bool = false
 var spectator_smoke_round_reported: bool = false
 var host_close_pending: bool = false
+var requested_safe_quit_smoke: bool = false
+var safe_quit_smoke_seconds: float = 0.0
+var safe_quit_pending: bool = false
+var safe_quit_deadline_ms: int = 0
 
 
 func _ready() -> void:
+	get_tree().auto_accept_quit = false
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	player_preferences = PlayerPreferences.new()
 	var preferences_existed: bool = FileAccess.file_exists(PlayerPreferences.DEFAULT_PATH)
@@ -161,6 +168,7 @@ func _ready() -> void:
 	requested_rematch_smoke = _requested_rematch_smoke()
 	requested_steward_smoke = _requested_steward_smoke()
 	requested_spectator_smoke = _requested_spectator_smoke()
+	requested_safe_quit_smoke = _requested_safe_quit_smoke()
 	session_transport = SessionTransport.new()
 	session_steward = SessionSteward.new()
 	spectator_focus = SpectatorFocus.new()
@@ -216,7 +224,14 @@ func _ready() -> void:
 	queue_redraw()
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		_request_safe_quit("window")
+
+
 func _exit_tree() -> void:
+	if player_preferences != null and not player_preferences.save_to_file():
+		push_warning(player_preferences.last_error)
 	if session_transport != null:
 		session_transport.stop()
 	_clear_player_sprite_candidate()
@@ -227,6 +242,13 @@ func _process(delta: float) -> void:
 	if session_transport != null:
 		session_transport.poll()
 		_sync_session_transport()
+	if requested_safe_quit_smoke and not safe_quit_pending:
+		safe_quit_smoke_seconds += delta
+		if safe_quit_smoke_seconds >= 0.25:
+			_request_safe_quit("smoke")
+	if safe_quit_pending:
+		_advance_safe_quit()
+		return
 	_update_reconnect_smoke(delta)
 	_handle_preference_actions()
 	if Input.is_action_just_pressed(&"toggle_debug_overlay"):
@@ -1304,6 +1326,40 @@ func _finish_host_close() -> void:
 	print("FLUX2 farflow steward: company closed cleanly")
 
 
+func _request_safe_quit(source: String) -> void:
+	if safe_quit_pending:
+		return
+	safe_quit_pending = true
+	safe_quit_deadline_ms = Time.get_ticks_msec() + SAFE_QUIT_GRACE_MS
+	if player_preferences != null and not player_preferences.save_to_file():
+		push_warning(player_preferences.last_error)
+	var notified_guests: int = 0
+	if session_transport != null and session_transport.is_host():
+		for entry: Dictionary in session_transport.host_roster():
+			if session_transport.host_remove_entity(int(entry.get("entity_id", 0)), APPLICATION_CLOSE_REASON):
+				notified_guests += 1
+	print("FLUX2 safe quit: %s requested; notified %d guest(s)" % [source, notified_guests])
+	_advance_safe_quit()
+
+
+func _advance_safe_quit() -> void:
+	if not safe_quit_pending:
+		return
+	if (
+		session_transport != null
+		and session_transport.is_host()
+		and not session_transport.host_roster().is_empty()
+		and Time.get_ticks_msec() < safe_quit_deadline_ms
+	):
+		return
+	if session_transport != null:
+		session_transport.stop()
+	safe_quit_pending = false
+	set_process(false)
+	print("FLUX2 safe quit: local state flushed and network peer closed")
+	get_tree().quit(0)
+
+
 func _return_to_offline(notice: String) -> void:
 	session_transport.stop()
 	session_steward.reset()
@@ -2076,6 +2132,17 @@ func _requested_spectator_smoke() -> bool:
 
 static func has_spectator_smoke_argument(argument: String) -> bool:
 	return argument == "--farflow-smoke-spectator"
+
+
+func _requested_safe_quit_smoke() -> bool:
+	for argument: String in OS.get_cmdline_user_args():
+		if has_safe_quit_smoke_argument(argument):
+			return true
+	return false
+
+
+static func has_safe_quit_smoke_argument(argument: String) -> bool:
+	return argument == "--safe-quit-smoke"
 
 
 static func reconnect_smoke_prerequisites_met(

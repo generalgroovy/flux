@@ -12,6 +12,14 @@ The generated [Sanctum visual target](../assets/concept/sanctum-hub-visual-direc
 establishes atmosphere and district scale. It does not define final geometry,
 camera metrics, tiles, protected routes, or authoritative chemistry cells.
 
+The generated [gameplay-scale v3 specimen](../assets/concept/wellspring-gameplay-specimen-v3.png)
+narrows that atmosphere into an actual play view: larger expressive champions,
+moderately tilted facades over unambiguous top-down floors, dense scenic edges,
+clean movement lanes, readable material families, translucent bubbles and a
+compact three-resource/five-slot HUD. Its immutable provenance is stored beside
+it. It remains a specification target—not a shippable sprite sheet, tile set,
+HUD atlas, collision source or acceptance proof.
+
 The user-passed
 [champion board](../assets/concept/flux-champions-visual-style-v1.png) is the
 mandatory minimum character-style target: compact expressive bodies, strong

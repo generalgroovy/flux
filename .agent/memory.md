@@ -3,39 +3,35 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
-## Current green frontier — 2026-08-12
+## Current green frontier — 2026-08-13
 
 - Branch: `codex/continuous-overhaul`.
 - Protocol 21, snapshot schema 6, player preference schema 3.
-- Two basic champions, complete non-ability movement foundation, honest cone
-  visibility, nine walk-up Wellspring stations, direct-IP Farflow, Charters,
-  Hearth readiness and the first host-owned Proving Court round are live.
-- The court supports two to eight connected travellers, authored spawns,
-  distinct combat teams, visible wards, sealed bounds, first-to-three or
-  90-second result, knockout/1.8-second respawn, six-second result and automatic
-  Hearth return.
-- Late friends receive a safely idle next-gathering state and cannot mutate
-  lobby stations during a live court; HELLO remains available.
-- Results return up to eight connected champions to collision-cleared positions
-  around the actual Hearth; persistent countdown/rule text and reset readiness
-  support serial Round 2 without reopening Farflow.
-- Host stewardship uses a non-destructive Company Ledger plus a separate
-  double-confirm Parting Bell; company close also requires two presses. Protocol
-  reasons reach affected guests, administrative departures revoke return and
-  clients cannot forge moderation.
-- Late joins during active/result court state are input-locked observers: Tab or
-  D-pad right cycles stable available participants, the HUD names the focus and
-  next gathering, and Hearth return restores normal readiness/Round-2 play.
-- Snapshot schema 6 uses a bounded FastLZ wire envelope; the maximum eight-player
-  fixture and live three-player journeys stay within one 1,392-byte ENet MTU.
-- Latest verification: 14,740 assertions passed; Windows three-process
-  Round-1 spectator-to-Hearth-to-Round-2 journeys passed at 120 Hz/Open Commons
-  on UDP 24937 and 60 Hz/Sparring Circle on UDP 24938 with empty stderr logs.
-- Untracked `dist/` and `node_modules/` predate this slice and must remain
-  untouched.
+- Two basic champions, the non-ability movement foundation, cone occlusion,
+  nine walk-up Wellspring stations, direct-IP Farflow, Charters, Hearth,
+  Proving Court, reconnect, stewardship and late-join observation are live.
+- Up to eight players have authored court spawns, teams, wards, bounds,
+  knockout/respawn, results, Hearth return and same-roster Round 2.
+- Snapshot schema 6 uses a bounded FastLZ envelope; maximum fixtures and live
+  three-player journeys remain inside one 1,392-byte ENet MTU.
+- Latest inherited verification is 14,740 assertions plus Windows 60/120 Hz
+  three-process spectator-to-Hearth-to-Round-2 journeys with empty stderr.
+- Portable release tooling installs only the official Godot 4.7.1 Windows/Linux
+  templates by bounded HTTP range with ZIP CRC/size validation, excludes
+  non-runtime workspace content, emits checksummed Windows ZIP/Linux tar.gz
+  friend builds and preserves Linux executable modes across a Windows host.
+- Window close disables automatic quit, flushes preferences, gives hosted
+  guests a bounded semantic reason, closes ENet and then exits. Source 60/120 Hz
+  and real packaged Windows `PLAY-FLUX.cmd` safe-quit smokes pass.
+- The original v3 gameplay-scale Wellspring specimen is documented as a visual
+  target only; runtime art/collision and visual acceptance remain separate.
+- Untracked `dist/`, `node_modules/` and `scripts/firewall.ps1` are user-owned
+  and must remain untouched.
 
 ## Next acceptance-driven slice
 
-Add host-owned per-peer visibility/relevance envelopes so limited-information
-network modes omit actors, projectiles, cues, names and audio outside the legal
-view while full-view Wellspring and observer behavior remain intact.
+Ship preference schema 4 and the first in-world control-remapping slice: C-only
+slide, wheel-up jump, wheel-down slide/fast-fall and free Ctrl/Alt, then expose
+conflict-safe binding capture at a Wellspring Controls lectern. Preserve the
+packaged Windows green point; physical Garuda and real remote-friend proof remain
+explicit external acceptance gaps.

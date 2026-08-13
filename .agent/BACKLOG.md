@@ -1,23 +1,16 @@
 # FLUX 2 active backlog
 
 This queue is intentionally short. Completed evidence belongs in `WORKLOG.md`;
-the full gate order remains in `docs/OVERHAUL-PLAN.md`.
+the full order remains in `docs/OVERHAUL-PLAN.md` and the continuous prompt.
 
 | Order | Playable outcome | Acceptance |
-| --- | --- | --- |
-| 1 | Discoverable movement controls and resource HUD | Shift sprint, Ctrl/C slide, Space jump and V technique work on keyboard; controller remains intact; direct slide is deterministic at 60/120 Hz; Health/Flux/Stamina and current movement state are legible |
-| 2 | Honest cone visibility (presentation complete) | Angle never exceeds 360 degrees; every `los_cutaway` building casts a tested occlusion shadow; host-side hidden-entity filtering remains required with networking |
-| 3 | Movement feel foundation (presentation complete) | Buffers, variable jump, fast fall, wall skim and intensity-scaled landing cues pass deterministic 60/120 Hz and replay checks; physical-controller acceptance remains |
-| 4 | Interactive Wellspring stations (nine live) | Guide, Bell, Loom, Charter, Hearth, Host/Join Farflow, Ledger and Parting Bell have fixed-point focus, F/controller interaction and transparent bubbles; remaining settings and travel remain |
-| 5 | First two champion vertical slices (both basic pairs live) | Both identities/stats/sprites and basic pairs pass 60/120 Hz; deeper dummy, defense, replay, accessibility, audio/final-art and platform acceptance remain |
-| 6 | Friend-play vertical slice (shared interactions live) | Stable actors, host input, 60 Hz movement/combat/target snapshots, host-authorized emote/Bell/Loom, prediction and bounded reconnect pass Windows localhost; Linux direct-IP remains |
-| 7 | Responsive remote traveller (complete foundation) | Bounded movement-only history, peer-scoped host acknowledgement, deterministic 60/120 Hz replay, capped soft correction, hard-snap safety and visible ACK/correction diagnostics pass real Windows ENet |
-| 8 | Session continuity (Windows foundation complete) | A disconnected guest reserves its exact host actor for 15 seconds, securely reclaims and rotates its memory-only capability, expires cleanly and receives explicit host-loss status; packaged Garuda proof remains |
-| 9 | Cross-platform friend build (tooling ready) | Unsigned-script-safe Windows and Bash doctor/test/run/package wrappers plus a self-cleaning two-process friend journey pass source on Windows; install pinned export templates, build from one commit, then run equivalent packaged Windows and physical Garuda direct-IP move/emote/leave/reconnect evidence |
-| 10 | Diegetic session Charter (complete foundation) | Open Commons, Sparring Circle and Duel Knot expose 8/4/2 capacity, traveller-damage and Bell-reset rules in-world; host seals and enforces teams/capacity, guest validates assignment, excess join is explicit and Windows two-process Sparring/reconnect passes |
-| 11 | Session Hearth foundation (complete) | The walk-up station shows connected/returning travellers, lets each connected traveller visibly ready/unready, gives only the host a three-second all-ready start, cancels on roster changes and passes real 60/120 Hz two-process journeys |
-| 12 | First bounded arena round (playable foundation complete) | Hearth start moves the intact roster into an authored court; individual combat teams, wards, sealed bounds, score/time limit, knockout/respawn, result and synchronized return pass 60/120 Hz two-process journeys |
-| 13 | Host stewardship (complete foundation) | The host selects non-destructively, explicitly confirms kick/close actions in-world, every affected traveller receives a readable reason, return is revoked and moderation cannot be forged or triggered accidentally |
-| 14 | Court readability and rematch (complete foundation) | The transition names the rules/countdown, result state freezes clearly, eight safe gather points return the roster to the real Hearth, and 60/120 Hz process journeys prove the same company can ready into Round 2 without reopening Farflow |
-| 15 | Late-join spectator (complete foundation) | A guest joining an active court stays host-input-locked, cycles stable replicated participant focus, sees the next-gathering rule and automatically returns to Hearth/Round-2 play; it adds no new information lane |
-| 16 | Host-owned network visibility | Per-peer snapshots omit actors, projectiles, cues, names and audio outside legal LOS for limited-information modes; full-view Wellspring and observer focus remain explicit policies |
+| ---: | --- | --- |
+| 1 | Portable friend build and safe lifecycle | Implemented locally: official pinned desktop templates install by CRC-checked range, Windows/Linux archives have obvious launchers and checksums, and the Windows launcher passes packaged safe quit. Still required: in-world address entry/join card, packaged two-PC journey and physical Garuda/Sway runtime proof. |
+| 2 | Comfortable in-game controls | Wellspring lectern captures keyboard/mouse-button/wheel/controller input with conflict swap, unbind, reset and cancel; defaults become C slide, wheel-up jump, wheel-down slide/fast-fall, 1–5 spells, and free Ctrl/Alt; schema migration and 60/120 Hz persistence pass. |
+| 3 | Five-slot spell grammar | Stable `spell_1`…`spell_5` actions, data and protocol support five legal configurable spells; HUD/Loom show element, shape, Flux, cooldown and refusal; safe fixtures expose projectile, beam, spray, field and movement/defense representatives. |
+| 4 | Material-ready spell effects | Wood, brick, stone, metal, glass, vegetation and immutable worldbone expose validated stable material operations, reset ownership and route-safety tests before live mutations. |
+| 5 | In-world player codex | One translucent toggleable overlay derives champion, stats, kit, slots, movement, controls, elements/interactions, ancestry, roster, rules and network tables from canonical registries and remains readable at 720p/controller/reduced motion. |
+| 6 | Eight-way expression wheel | Hold Talk, aim, release or center-cancel eight semantic character intents; bounded replicated IDs produce short translucent bubbles without leaking hidden actors. |
+| 7 | Gameplay-scale visual overhaul | Replace schematic terrain/tiny bodies/debug HUD with an original modular pixel kit meeting the v3 Wellspring specimen across character, spell, map and GUI gates with aligned collision, cutaways, accessibility and frame evidence. |
+| 8 | Runtime/product cleanup | Remove obsolete vocabulary, assets, adapters and duplicate prose only after replacement tests; make README a concise player-first canonical overview. |
+| 9 | Host-owned network visibility | Per-peer snapshots omit every illegal actor/projectile/cue/name/audio lane while Wellspring full view and observer focus remain explicit tested policies. |

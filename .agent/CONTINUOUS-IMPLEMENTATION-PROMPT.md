@@ -1,89 +1,121 @@
 # FLUX 2 continuous implementation directive
 
-This directive is active whenever an implementation agent works in this
-repository. It supplements the product brief, specification, visual direction,
-overhaul plan, conventions, and append-only worklog; those sources remain
-authoritative when they are more specific.
+Use this prompt as the standing handoff for every implementation agent. Read it
+with `README.md`, `SPECIFICATION.md`, `docs/VISUAL-DIRECTION.md`,
+`docs/OVERHAUL-PLAN.md`, `.agent/memory.md`, `.agent/BACKLOG.md` and the newest
+entries in `.agent/WORKLOG.md`; when they disagree, preserve tested runtime truth
+and update stale prose in the same slice.
 
 ## Mission
 
-Continuously turn the newest unified FLUX 2 state into a charming, responsive,
-self-hostable top-down elemental action game. Always preserve a runnable Windows
-and Linux checkpoint. First deliver two complete basic champions, the complete
-non-ability movement grammar, correct and readable visibility, an inviting
-interactive Wellspring starting area, and host/join play that friends can use.
-After those outcomes pass, immediately select the next smallest complete game
-slice and continue.
+Continuously turn the newest unified FLUX 2 checkpoint into a charming,
+responsive, self-hostable top-down elemental action game. Always leave one
+published commit runnable on Windows and Linux. Work in complete player-visible
+slices, checkpoint each green result, and immediately start the next accepted
+slice. Do not stop at plans, scaffolds, catalogs, generated images or passing
+unit tests when the player-facing outcome is still absent.
 
-## Current verified frontier
+The current green frontier is protocol 21: two foundation champions, the planned
+non-ability movement grammar, full/cone POV with building cutaways, nine
+Wellspring stations, direct-IP host/join, shared interactions, Hearth readiness,
+one Proving Court round, reconnect, stewardship and late-join observation pass
+the maintained Windows source journeys. Preserve all of it. Export templates and
+physical Garuda Sway package proof remain honest external gaps.
 
-The working checkpoint has both foundation champions and the full planned
-non-ability movement grammar in the Wellspring, honest cone occlusion, readable
-Health/Flux/Stamina, nine walk-up Guide/Bell/Loom/Charter/Hearth/Farflow/stewardship stations, direct-IP ENet
-host/join, authoritative two-player movement/combat/targets, host-confirmed
-HELLO/Bell/Loom interactions, bounded movement-only guest prediction, and a
-15-second memory-only exact-identity return path with explicit host loss.
-Preserve those capabilities. Windows/Bash launch, test, package preflight and a
-self-cleaning source Farflow acceptance harness are now live. Actual package
-export is honestly blocked until matching 4.7.1 templates exist locally; keep
-that gate visible and continue with diegetic session settings and host
-administration without weakening the last green source checkpoint. Protocol 21
-seals one of three visible session Charters with host-owned 2/4/8 capacity,
-traveller damage teams and Practice Bell authority. The Session Hearth now
-replicates connected/returning presence, readiness and a host-owned shared-start
-countdown through compact snapshot schema 6. The first playable Proving Court
-round now owns two-to-eight authored spawns, combat teams, spawn wards, bounds,
-knockout scoring, respawns and score/time results. Up to eight champions return
-to validated positions around the real Hearth, where persistent countdown/rule
-presentation and reset readiness support a serial same-roster rematch through
-Round 2. Host-only Ledger selection, separate double-confirm release,
-double-confirm company close, readable reasons and non-reserved administrative
-departures are live. Late joiners now become host-input-locked observers, can
-cycle a stable replicated participant focus, receive a clear next-gathering HUD
-and automatically regain Hearth play for Round 2. Snapshot compression keeps
-the maximum fixture and live three-player journeys inside one ENet MTU. The next
-coherent slice is host-owned per-peer visibility filtering for
-limited-information network play.
+## Product target
 
-## Immediate product order
+FLUX starts directly in the Wellspring; there is no detached main menu. The
+Wellspring is the social lobby, settings room, spell laboratory, champion loom,
+movement conservatory, codex, host/join boundary and launch space. Overlays may
+open from stations or a single overview action, but closing one always returns
+to the living shared world.
 
-1. Make movement discoverable, smooth and expressive: WASD/stick movement,
-   Shift sprint, Ctrl/C slide, Space jump and chains, contextual vault/air turn,
-   slide-jump, wavedash, wall kick, air dodge, superglide, landing cut, input
-   buffering, variable jump and fast fall, with clear Stamina costs and cues.
-2. Make visibility honest: cone mode is bounded to 15–360 degrees, buildings
-   occlude everything behind them, full view remains the Sanctum default, and
-   presentation never leaks hidden actors, effects, shadows, names or audio.
-3. Make state understandable and charming: Health, Flux and Stamina have strong
-   distinct bars; movement/cast/cooldown state is readable without debug text;
-   prompts use concise old-world language and transparent thought/speech bubbles.
-4. Improve original compact pixel presentation: expressive silhouettes,
-   whole-pixel motion, separate jump shadow/body lift, warm readable materials,
-   restrained elemental aura and animation, inspired only by broad handheld-era
-   adventure readability and never copied assets, layouts or identities.
-5. Make the Wellspring a game, not a menu: spawn there every time; walk to
-   training, champion, settings, hosting and joining stations; interact, emote,
-   test movement/combat, change champion, configure sessions and travel together.
-6. Prove host/join early: authoritative ENet loopback first, then LAN/direct-IP
-   remote play, clear address/status/errors, two players moving and interacting,
-   bounded prediction/reconciliation, reconnect/leave safety and diagnostics;
-   current public lobby cap is eight.
-7. Complete two basic champions one at a time through data, stats, movement,
-   primary/active kit, presentation, selection, network, replay, dummy and tests.
-8. Continue into chemistry, objectives, rounds, bots, arenas, more champions,
-   enemies and modes only through the same complete-slice gates.
+Study only broad principles from the supplied references: compact pixel-era
+silhouette economy, landmark-dense overworlds, readable character-to-building
+scale and a moderately tilted top-down battlefield. Use the original FLUX
+palette, geometry, architecture, characters, symbols, UI and animation. Never
+copy reference pixels, maps, layouts, camera metrics, palettes, sprites, names,
+icons, text, mechanics or trade dress. The gameplay-scale target is
+`assets/concept/wellspring-gameplay-specimen-v3.png`; it is a visual specimen,
+not runtime art, collision geometry or permission to ship generated pixels.
 
-## Non-negotiable working-state gate
+## Ordered outcomes
 
-For every slice: inspect current state; state one observable outcome and its
-acceptance checks; change the smallest coherent set; run focused tests, the full
-headless gate, import, 60/120 Hz boot and an interactive smoke when relevant;
-inspect the diff; update public status and `.agent/WORKLOG.md`; make a focused
-reversible checkpoint only when green. Never claim a test that did not run,
-never replace stable IDs silently, never let rendering own simulation rules,
-never trust a client for outcomes, and never broaden content faster than the
-systems that make it playable.
+| Order | Player-visible outcome | Acceptance gate |
+| ---: | --- | --- |
+| 1 | One-step portable play | A friend downloads one archive, extracts it, runs one obvious launcher without admin rights, enters the Wellspring, hosts or joins through one short in-world flow, can copy/paste a join card, and every quit path flushes local state, sends a bounded reason when online and leaves no child process; identical commit/content IDs and checksum instructions cover Windows and Linux. |
+| 2 | Comfortable in-game controls | A Wellspring Controls lectern exposes keyboard, mouse buttons, mouse-wheel directions and controller bindings; selecting an action captures the next input, shows conflicts and supports swap/unbind/reset/cancel. Defaults are WASD, Shift sprint, C slide, Space jump, V technique, wheel-up jump, wheel-down slide/fast-fall and 1–5 spell slots; Ctrl and Alt are unassigned and legal spell alternatives. Bindings persist, migrate, fail closed and work at 60/120 Hz. |
+| 3 | Five-slot spell grammar | Stable `spell_1`…`spell_5` semantic actions and protocol lanes select/cast five loadout entries without trusting the renderer or client. The HUD shows input, element, shape, Flux, cooldown and refusal. The Wellspring Spell Loom edits legal slots and the Proving Grounds safely tests every enabled element through readable projectile, beam, spray, field or movement/defense representatives. |
+| 4 | Material-ready spell effects | Spell definitions declare shape, delivery, element, impact, residue and material operation through validated data. Wood, brick, stone, metal, glass, vegetation and immutable worldbone have stable IDs, budgets, hit/reaction hooks, reset ownership and debug fixtures before live destruction/reactions are enabled. Critical routes, spawns and objectives can never become invalid. |
+| 5 | In-world player codex | One toggleable, controller-navigable, translucent overview derives its tables from canonical content rather than copied README prose: current champion/stats/kit, five slots, all playable champions, ancestry, elements/effects/interactions, movement grammar, controls, session rules and network status. It never blocks urgent combat state and remains readable at 720p, reduced motion and common color-vision modes. |
+| 6 | Eight-way character expression | Hold the Talk action to open a transparent radial wheel, aim with mouse/stick, release to send and cancel by returning to center. Eight stable intents—greeting, taunt, scared, joke, follow me, retreat, thanks and “why are you running?”—map to original character-specific lines, bounded cooldowns and replicated semantic IDs; bubbles are mostly transparent, short, anchored and never reveal hidden actors. |
+| 7 | Gameplay-scale visual overhaul | Replace schematic terrain, tiny bodies and debug-strip HUD with an original modular pixel kit that meets the v3 specimen: moderately tilted facades over authoritative top-down floors, compact expressive champions, clean lane values, dense scenic edges, readable doors/water/cover, restrained auras, roof cutaways, translucent bubbles and compact brass/parchment HUD. Prove collision/art alignment, whole-pixel presentation, grayscale/color-vision readability, 720p/1080p clarity, reduced effects and stable frame budgets. |
+| 8 | Repository/product cleanup | Remove or quarantine obsolete Hex/Flow/operator/deployment vocabulary, superseded runtime graphics, dead adapters and duplicate documents only after replacement tests pass. Keep legacy history under its explicit archive, make the root README an honest player-first table overview, and keep scripts/docs short enough that a new contributor can locate launch, input, content, authority, rendering and verification boundaries quickly. |
+| 9 | Network visibility integrity | Limited-information modes use host-owned per-peer relevance envelopes that omit illegal actors, names, projectiles, effects, cues and audio. Full-view Wellspring and observer focus are explicit policies. Omission, re-entry, interpolation, bandwidth and modified-client tests precede any fog-of-war claim. |
+| 10 | Continue complete game slices | Finish one champion and one arena/mode vertically, then chemistry, bots, objectives, more champions, environments, enemies and modes one at a time through the same content/simulation/presentation/network/accessibility/platform gates. |
 
-If a slice fails, keep the last green checkpoint runnable, diagnose, repair and
-rerun. Pause only for an actual permission, product-choice or technical blocker;
-otherwise immediately begin the next acceptance-driven slice.
+Orders 1–8 are product priorities, not permission to scatter eight partial
+systems. If an earlier slice is externally blocked (for example a physical
+Garuda machine), record the exact missing evidence, complete every locally
+provable part and continue with the next coherent slice without claiming the
+blocked gate.
+
+## Default control language
+
+| Action | Keyboard/mouse default | Controller principle |
+| --- | --- | --- |
+| Move | WASD | left stick |
+| Aim | pointer | right stick |
+| Sprint | Shift | left shoulder |
+| Slide / fast-fall | C or wheel down | south face |
+| Jump | Space or wheel up | right shoulder |
+| Context technique | V | east face |
+| Spell slots | 1, 2, 3, 4, 5 | five configurable face/shoulder/trigger choices |
+| Interact | F | north face |
+| Talk wheel | hold T | hold D-pad up or configured action |
+| Overview | Tab outside observer mode | configurable menu/view action |
+
+Wheel directions are discrete movement-technique inputs, not continuous walking.
+All defaults are replaceable in-world. Mouse/controller events must survive a
+keyboard remap; no action may silently acquire two conflicting destructive uses.
+
+## Slice method
+
+At the start of every slice:
+
+1. Inspect branch/remote status, dirty files, latest history, authoritative docs,
+   exact launch/test/package commands and the current visual capture.
+2. Name one observable player outcome and list deterministic, interaction,
+   network, accessibility, visual and platform checks that actually prove it.
+3. Preserve stable IDs/formats or define a versioned migration and mismatch
+   refusal before editing them.
+
+During implementation:
+
+- keep input, simulation, content, rendering, feedback, persistence, transport
+  and platform launch boundaries explicit;
+- keep the host authoritative for position, resources, cooldowns, damage,
+  materials, visibility, score and outcomes;
+- derive overlays/docs from registries where practical so player information
+  cannot drift from the game;
+- keep defaults fun immediately, expose safe tuning, and make refusal/error
+  states readable and recoverable;
+- add no large dependency or privileged installer without a demonstrated need;
+- preserve the last pushed green commit and never touch unrelated user files.
+
+Before checkpointing:
+
+1. Run focused tests, full headless suites, import, independent 60/120 Hz boots,
+   the applicable multi-process journey and an actual visual/interactive smoke.
+2. Inspect stderr, packet/MTU budgets, generated files, diff scope, stale terms,
+   image provenance and cleanup behavior; a process exiting zero after a crash is
+   not a pass.
+3. Update README truth, focused contracts, `.agent/memory.md`, the concise
+   backlog and append-only worklog with exact commands/results/limitations.
+4. Commit and push one reversible green checkpoint, then immediately select the
+   next unmet acceptance row.
+
+Never claim packaged Windows/Linux, remote friends, physical controllers,
+visual acceptance, hidden-state security or fun/balance without the matching
+evidence. Pause only for a real permission, product-choice or external technical
+blocker; otherwise keep iterating.

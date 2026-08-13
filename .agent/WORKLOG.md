@@ -1,5 +1,63 @@
 # FLUX2 agent worklog
 
+## 2026-08-13 — portable friend builds, safe lifecycle and visual target
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Replaced the continuous handoff with an acceptance-ordered prompt covering
+  portable onboarding, in-world binding, five spell slots, materials, codex,
+  expression, visual replacement, cleanup and visibility without scattering
+  partially integrated systems.
+- Added the original gameplay-scale Wellspring v3 specimen and immutable
+  provenance. It sets champion scale, tilted-facade/top-down-floor composition,
+  lane clarity, material identity, translucent bubbles and compact HUD intent;
+  it is explicitly specification-only and not shippable runtime art.
+- Added bounded official-template installers that read the pinned Godot 4.7.1
+  TPZ central directory by HTTP range, fetch only Linux/Windows release entries,
+  validate each ZIP size/CRC and replace destination files atomically.
+- Export presets now exclude user dependencies, concepts, documentation and
+  tooling from runtime packages. PowerShell export uses quoted checked process
+  execution and centralized logs.
+- Added portable Windows/Linux bundle construction, obvious launchers,
+  first-read safety/host guidance, platform and archive SHA-256 manifests and a
+  deterministic Linux tar writer that preserves executable modes on Windows.
+- Disabled automatic window quit. The application now flushes preferences,
+  sends hosted guests a bounded semantic close reason, waits up to 500 ms,
+  closes ENet and then exits; `_exit_tree` remains the cleanup fallback.
+- Added exact safe-quit argument coverage and concise player-experience,
+  README, backlog and memory handoff tables.
+
+Validation:
+
+- Official selective template install: Linux 73,470,264 bytes and Windows
+  109,212,160 bytes, both CRC/size verified.
+- `scripts/package.ps1 -Target All`: passed; runtime-only portable Windows ZIP
+  (90,035,605 bytes) and Linux tar.gz (80,231,324 bytes) plus checksums emitted.
+- Windows packaged executable and `PLAY-FLUX.cmd -- --safe-quit-smoke`: real GPU
+  boot, Wellspring initialization, preference/network cleanup and exit code 0.
+- Linux payload: ELF magic, SHA-256 archive manifest and executable modes for
+  both binary and launcher verified; no physical Linux runtime was available.
+- Full Godot gate: 14,742 assertions, zero failures; import and 60/120 Hz boots
+  passed. Git-Bash syntax, Python bytecode compilation and `git diff --check`
+  passed.
+
+Known limitations and risks:
+
+- A packaged two-computer remote journey and physical Garuda/Sway package run
+  remain required; the local Docker WSL distribution cannot mount the workspace
+  and is not accepted as Linux gameplay evidence.
+- Host/join still relies on a configured address rather than an in-world text
+  field and copy/paste join card. Public direct-IP may require router/firewall
+  setup.
+- The v3 image is a visual target only; runtime remains schematic until the
+  character → spell → map → GUI visual gates are implemented and accepted.
+- The long-standing export-time `Image.load_from_file` warnings remain; they do
+  not fail source tests or the packaged boot but require a focused cleanup.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-12 — authority-safe late-join observer
 
 Branch: `codex/continuous-overhaul`

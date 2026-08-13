@@ -43,6 +43,25 @@ to runtime art requires an original modular tile kit, sprite budgets, authored
 collision/material layers, accessibility review, and in-engine performance
 validation.
 
+## `wellspring-gameplay-specimen-v3.png`
+
+- Purpose: bridge the district-scale concept into a concrete 16:9 play view
+  with readable champion scale, tilted facades, clean lanes, material identity,
+  translucent bubbles and a compact three-resource/five-slot HUD.
+- Generated: 2026-08-13 with the Codex built-in OpenAI image-generation tool;
+  the supplied images informed only broad readability, density and perspective
+  principles and were not copied into the repository.
+- Dimensions: 1672 x 941 PNG.
+- SHA-256:
+  `4d3017d9151ced969d0ed7f95d45a1d66e609202d4ada83ed461e03a58d4bdad`.
+- Authority: specification target only. It is not runtime art, collision,
+  camera metrics, a tile atlas, HUD assets or proof of visual acceptance.
+
+The adjacent provenance manifest records the originality boundary and review
+criteria. Runtime promotion still requires original modular assets, aligned
+authoritative geometry, whole-pixel import, accessibility checks, performance
+budgets and in-engine captures.
+
 ## `sanctum-modular-kit-generated-source-v2.png`
 
 - Purpose: original twelve-module G2 environment-kit candidate generated for

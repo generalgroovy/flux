@@ -86,6 +86,8 @@ func _test_capture_pointer_parser() -> void:
 	check(not BootstrapScript.has_steward_smoke_argument("--farflow-smoke-steward=true"), "diagnostic stewardship smoke switch fails closed on alternate syntax")
 	check(BootstrapScript.has_spectator_smoke_argument("--farflow-smoke-spectator"), "diagnostic spectator smoke switch parses exactly")
 	check(not BootstrapScript.has_spectator_smoke_argument("--farflow-smoke-spectator=true"), "diagnostic spectator smoke switch fails closed on alternate syntax")
+	check(BootstrapScript.has_safe_quit_smoke_argument("--safe-quit-smoke"), "diagnostic safe-quit smoke switch parses exactly")
+	check(not BootstrapScript.has_safe_quit_smoke_argument("--safe-quit-smoke=true"), "diagnostic safe-quit smoke switch fails closed on alternate syntax")
 	check(BootstrapScript.reconnect_smoke_prerequisites_met(false, false, false, false), "standalone reconnect smoke may begin after its first snapshot")
 	check(not BootstrapScript.reconnect_smoke_prerequisites_met(true, false, true, true), "combined smoke waits until the reliable social request is sent")
 	check(not BootstrapScript.reconnect_smoke_prerequisites_met(true, true, true, false), "combined smoke waits for authoritative movement confirmation")

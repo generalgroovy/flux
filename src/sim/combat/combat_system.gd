@@ -175,8 +175,9 @@ static func _release_cast(
 		state.pending_cast_ticks = 0
 		return null
 	state.cast_recovery_ticks = config.milliseconds_to_ticks(int(definition["recovery_ms"]))
-	if String(definition.get("shape", "")) == "beam":
-		_queue_beam(state, wire_id, events)
+	var shape := String(definition.get("shape", ""))
+	if shape in ["beam", "spray"]:
+		_queue_instant_cast(state, wire_id, shape, events)
 		return null
 	var speed := int(definition["speed"])
 	var radius := int(definition["radius"])
@@ -219,13 +220,14 @@ static func _release_cast(
 	return projectile
 
 
-static func _queue_beam(
+static func _queue_instant_cast(
 	state: PlayerState,
 	wire_id: int,
+	shape: String,
 	events: Array[Dictionary],
 ) -> void:
 	events.append({
-		"type": "beam_requested",
+		"type": "%s_requested" % shape,
 		"owner_id": state.entity_id,
 		"source_wire_id": wire_id,
 		"origin_x": state.position_x,
@@ -238,7 +240,7 @@ static func _queue_beam(
 	state.last_event = "cast_release_%d" % wire_id
 
 
-static func resolve_beams(
+static func resolve_instant_casts(
 	players: Array[PlayerState],
 	config: SimConfig,
 	world: CollisionWorld,
@@ -246,7 +248,8 @@ static func resolve_beams(
 ) -> void:
 	var resolved_events: Array[Dictionary] = []
 	for event: Dictionary in events:
-		if String(event.get("type", "")) != "beam_requested":
+		var request_type := String(event.get("type", ""))
+		if request_type not in ["beam_requested", "spray_requested"]:
 			resolved_events.append(event)
 			continue
 		var owner: PlayerState = null
@@ -259,7 +262,8 @@ static func resolve_beams(
 			continue
 		var wire_id := int(event.get("source_wire_id", 0))
 		var definition := CombatTuning.cast_definition(wire_id)
-		if String(definition.get("shape", "")) != "beam":
+		var shape := request_type.trim_suffix("_requested")
+		if String(definition.get("shape", "")) != shape:
 			continue
 		var origin := Vector2i(int(event.get("origin_x", 0)), int(event.get("origin_y", 0)))
 		var direction := Vector2i(int(event.get("aim_x", 1000)), int(event.get("aim_y", 0)))
@@ -275,6 +279,9 @@ static func resolve_beams(
 			owner.last_event = "cast_blocked_%d" % wire_id
 			continue
 
+		if shape == "spray":
+			_resolve_spray(owner, wire_id, definition, origin, direction, endpoint, players, config, world, resolved_events)
+			continue
 		var target: PlayerState = _first_beam_target(owner, origin, endpoint, int(definition["radius"]), players)
 		if target != null:
 			endpoint = Vector2i(target.position_x, target.position_y)
@@ -307,6 +314,79 @@ static func resolve_beams(
 			})
 	events.clear()
 	events.append_array(resolved_events)
+
+
+static func _resolve_spray(
+	owner: PlayerState,
+	wire_id: int,
+	definition: Dictionary,
+	origin: Vector2i,
+	direction: Vector2i,
+	endpoint: Vector2i,
+	players: Array[PlayerState],
+	config: SimConfig,
+	world: CollisionWorld,
+	resolved_events: Array[Dictionary],
+) -> void:
+	var hit_events: Array[Dictionary] = []
+	var hit_count: int = 0
+	var ordered_players: Array[PlayerState] = players.duplicate()
+	ordered_players.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
+	var maximum_range := int(definition["range"])
+	var maximum_range_squared := maximum_range * maximum_range
+	var cone_threshold := int(definition["cone_cosine_squared_per_million"])
+	for target: PlayerState in ordered_players:
+		if target.entity_id == owner.entity_id or target.team_id == owner.team_id or target.health <= 0 or target.spawn_protection_ticks > 0:
+			continue
+		var offset := Vector2i(target.position_x, target.position_y) - origin
+		var distance_squared := offset.length_squared()
+		if distance_squared <= 0 or distance_squared > maximum_range_squared:
+			continue
+		var projection := offset.x * direction.x + offset.y * direction.y
+		if projection <= 0 or projection * projection < distance_squared * cone_threshold:
+			continue
+		var distance := SimCommand._integer_square_root(distance_squared)
+		var target_direction := SimCommand._normalized_direction(offset.x, offset.y)
+		var clear_endpoint := _beam_clear_endpoint(origin, target_direction, distance, int(definition["radius"]), world)
+		var remaining := Vector2i(target.position_x, target.position_y) - clear_endpoint
+		var hit_radius: int = target.radius + int(definition["radius"])
+		if remaining.length_squared() > hit_radius * hit_radius:
+			continue
+		PlayerResourcesSystem.damage(target, int(definition["damage"]), config)
+		if target.health > 0 and int(definition["hit_control_duration_ms"]) > 0:
+			MovementSystem.apply_control_state(
+				target,
+				int(definition["hit_control_state"]),
+				int(definition["hit_control_duration_ms"]),
+				target_direction,
+				int(definition["hit_control_speed"]),
+				config,
+				int(definition["hit_control_slow_ratio"]),
+			)
+		hit_events.append({
+			"type": "spray_hit",
+			"owner_id": owner.entity_id,
+			"source_wire_id": wire_id,
+			"target_id": target.entity_id,
+			"damage": int(definition["damage"]),
+		})
+		hit_count += 1
+		if target.actor_kind == PlayerState.ActorKind.CHAMPION and target.health == 0:
+			hit_events.append({
+				"type": "champion_defeated",
+				"projectile_id": 0,
+				"owner_id": owner.entity_id,
+				"target_id": target.entity_id,
+			})
+	resolved_events.append({
+		"type": "spray_fired",
+		"owner_id": owner.entity_id,
+		"source_wire_id": wire_id,
+		"end_x": endpoint.x,
+		"end_y": endpoint.y,
+		"hit_count": hit_count,
+	})
+	resolved_events.append_array(hit_events)
 
 
 static func _beam_clear_endpoint(

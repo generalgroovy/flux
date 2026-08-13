@@ -68,6 +68,9 @@ runtime kits; unpromoted entries remain validated content rather than fake casts
 Pocket Eclipse is the first promoted non-projectile shape: a finite Light beam
 resolved after all actors move for the tick, stopped by cover, and applied once
 to the nearest legal target along its lane.
+Tideline is the first spray: a finite Water fan resolved at the same post-move
+boundary, with stable actor order, per-target cover, one hit/launch per legal
+actor and no projectile-only Edgeweave behavior.
 
 ## Current Spell Loom boundary
 
@@ -92,7 +95,7 @@ and no material operation is enabled by rearranging a slot.
 4. Vector Lance with startup, Flux spend, cooldown, recovery, and impact —
    complete foundation; full visual/audio counterplay acceptance remains.
 5. Oh Tipi Rillshot/Tideline plus resettable sparring effigy — complete basic
-   pair; defense, full kit, final art/audio and balance acceptance remain.
+   projectile/spray pair; defense, full kit, final art/audio and balance remain.
 6. S. Wayne Eclipse Disc/Pocket Eclipse — complete basic pair with a canonical
    single ricochet and a cover-stopped finite beam/slow; deeper dummy and
    accessibility reads remain.

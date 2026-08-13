@@ -206,7 +206,7 @@
       "id": "tideline",
       "wire_id": 141,
       "display_name": "Tideline",
-      "shape": "projectile",
+      "shape": "spray",
       "delivery": "aimed",
       "impact": "damage_launch",
       "residue": "none",
@@ -222,7 +222,7 @@
       "startup_ms": 170,
       "recovery_ms": 180,
       "roles": ["displacement", "lane_pressure"],
-      "counterplay": ["visible_startup", "sidestep", "cover"],
+      "counterplay": ["visible_startup", "leave_the_fan", "cover"],
       "authority": "simulation"
     },
     {

@@ -11,7 +11,7 @@ func run() -> int:
 
 
 func _test_snapshot_round_trip() -> void:
-	equal(SessionSnapshot.SCHEMA_VERSION, 8, "beam-capable host snapshot schema is explicit")
+	equal(SessionSnapshot.SCHEMA_VERSION, 9, "beam/spray-capable host snapshot schema is explicit")
 	var source := SimWorld.new(120, 7, CollisionWorld.new(3_000_000, 2_000_000))
 	var host: PlayerState = source.player()
 	host.champion_wire_id = 1
@@ -93,6 +93,8 @@ func _test_projectile_and_event_round_trip() -> void:
 		{"type": "social_emote", "event_id": 43, "entity_id": 1, "emote_id": 1},
 		{"type": "ready_changed", "event_id": 44, "entity_id": 1, "ready": true},
 		{"type": "beam_fired", "event_id": 45, "owner_id": 1, "source_wire_id": CombatTuning.POCKET_ECLIPSE_WIRE_ID, "target_id": 900, "end_x": 1_500_000, "end_y": 720_000},
+		{"type": "spray_fired", "event_id": 46, "owner_id": 1, "source_wire_id": CombatTuning.TIDELINE_WIRE_ID, "end_x": 1_520_000, "end_y": 720_000, "hit_count": 1},
+		{"type": "spray_hit", "event_id": 47, "owner_id": 1, "source_wire_id": CombatTuning.TIDELINE_WIRE_ID, "target_id": 900, "damage": CombatTuning.TIDELINE_DAMAGE},
 	]
 	var snapshot := SessionSnapshot.capture(source, {1: "Host"}, events)
 	check(SessionSnapshot.validate(snapshot), "projectile/event snapshot validates")
@@ -102,8 +104,8 @@ func _test_projectile_and_event_round_trip() -> void:
 	if not replica.projectiles.is_empty():
 		equal(replica.projectiles[0].source_wire_id, CombatTuning.RILLSHOT_WIRE_ID, "projectile spell identity round-trips")
 		equal(replica.projectiles[0].previous_x, 996_000, "projectile lane origin round-trips")
-	equal(replica.combat_events.size(), 5, "projectile, beam, social and Hearth events round-trip")
-	if replica.combat_events.size() == 5:
+	equal(replica.combat_events.size(), 7, "projectile, beam, spray, social and Hearth events round-trip")
+	if replica.combat_events.size() == 7:
 		equal(String(replica.combat_events[0].get("type", "")), "projectile_hit", "hit event decodes")
 		equal(int(replica.combat_events[1].get("stamina", 0)), 8_000, "edgeweave reward decodes")
 		equal(String(replica.combat_events[2].get("type", "")), "social_emote", "social emote decodes")
@@ -111,6 +113,10 @@ func _test_projectile_and_event_round_trip() -> void:
 		check(bool(replica.combat_events[3].get("ready", false)), "Hearth readiness event decodes")
 		equal(String(replica.combat_events[4].get("type", "")), "beam_fired", "beam cue decodes distinctly from a projectile")
 		equal(Vector2i(int(replica.combat_events[4].get("end_x", 0)), int(replica.combat_events[4].get("end_y", 0))), Vector2i(1_500_000, 720_000), "beam endpoint round-trips exactly")
+		equal(String(replica.combat_events[5].get("type", "")), "spray_fired", "spray fan cue decodes distinctly")
+		equal(int(replica.combat_events[5].get("hit_count", 0)), 1, "spray affected count round-trips")
+		equal(String(replica.combat_events[6].get("type", "")), "spray_hit", "spray target cue decodes distinctly")
+		equal(int(replica.combat_events[6].get("damage", 0)), CombatTuning.TIDELINE_DAMAGE, "spray hit damage round-trips")
 	equal(replica.player().last_event, "cast_release_140", "readable cast event round-trips")
 
 

@@ -6,13 +6,13 @@ each playable slice.
 ## Current green frontier — 2026-08-13
 
 - Branch: `codex/continuous-overhaul`.
-- Protocol 24, snapshot schema 8, player preference schema 6.
+- Protocol 25, snapshot schema 9, player preference schema 6.
 - Two basic champions, the non-ability movement foundation, cone occlusion,
   eleven walk-up Wellspring stations, direct-IP Farflow, Charters, Hearth,
   Proving Court, reconnect, stewardship and late-join observation are live.
 - Up to eight players have authored court spawns, teams, wards, bounds,
   knockout/respawn, results, Hearth return and same-roster Round 2.
-- Snapshot schema 8 uses a bounded FastLZ envelope; maximum fixtures and live
+- Snapshot schema 9 uses a bounded FastLZ envelope; maximum fixtures and live
   three-player journeys remain inside one 1,392-byte ENet MTU.
 - Five stable spell-slot command edges now fit the existing bounded command
   packet. Number keys 1–5 are migration-safe, conflict-editable inputs. The
@@ -26,8 +26,11 @@ each playable slice.
 - Pocket Eclipse is the first non-projectile runtime shape: a 520-unit Light
   beam resolved after actor movement, stopped by cover, limited to the first
   legal target, replicated by semantic endpoint and never stored as a projectile.
-- Latest verification is 14,928 assertions plus import/source 60/120 Hz boots,
-  a fresh 120 Hz three-process spectator-to-Hearth-to-Round-2/reconnect/
+- Tideline is the first spray: a 280-unit Water fan with stable multi-target
+  hits, per-target cover, exact launches, explicit affected cues and no
+  projectile state/material mutation.
+- Latest verification is 14,948 assertions plus import/source 60/120 Hz boots,
+  a fresh 60 Hz three-process spectator-to-Hearth-to-Round-2/reconnect/
   stewardship journey, both portable packages and packaged Windows safe quit.
 - Portable release tooling installs only the official Godot 4.7.1 Windows/Linux
   templates by bounded HTTP range with ZIP CRC/size validation, excludes
@@ -43,9 +46,9 @@ each playable slice.
 
 ## Next acceptance-driven slice
 
-Promote the next representative spell shape—spray—through deterministic
-simulation, Flux/cooldown/refusal, cues, snapshot representation and training
-read while remaining host-owned. Keep material
+Promote the next representative spell shape—field—through deterministic
+simulation, Flux/cooldown/refusal, cues, snapshot representation, lifetime and
+training read while remaining host-owned. Keep material
 operations sealed until reset ownership and route-safety fixtures exist. Preserve
 the packaged Windows green point; physical Garuda and real remote-friend proof
 remain explicit external acceptance gaps.

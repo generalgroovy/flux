@@ -769,7 +769,7 @@ func _draw_spell_loom_editor() -> void:
 func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 	for event: Dictionary in events:
 		var kind := String(event.get("type", ""))
-		if kind not in ["projectile_hit", "beam_fired", "edgeweave", "cast_refused", "cast_blocked", "projectile_bounced"]:
+		if kind not in ["projectile_hit", "beam_fired", "spray_fired", "spray_hit", "edgeweave", "cast_refused", "cast_blocked", "projectile_bounced"]:
 			continue
 		var anchor := _combat_event_anchor(event)
 		if anchor.is_empty():
@@ -784,6 +784,12 @@ func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 				var definition := CombatTuning.cast_definition(int(event.get("source_wire_id", 0)))
 				label = "-%d · SLOW" % (int(definition.get("damage", 0)) / 1000) if int(event.get("target_id", 0)) > 0 else "BEAM"
 				color = PARCHMENT_COLOR
+			"spray_fired":
+				label = "TIDELINE ×%d" % int(event.get("hit_count", 0))
+				color = WATER_HIGHLIGHT_COLOR
+			"spray_hit":
+				label = "-%d · LAUNCH" % (int(event.get("damage", 0)) / 1000)
+				color = WATER_HIGHLIGHT_COLOR
 			"edgeweave":
 				label = "EDGE +%d" % (int(event.get("stamina", 0)) / 1000)
 				color = ATTUNEMENT_COLOR
@@ -806,13 +812,18 @@ func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 			"position": anchor["position"],
 			"label": label,
 			"color": color,
-			"remaining": 0.20 if kind == "beam_fired" else 0.55,
-			"duration": 0.20 if kind == "beam_fired" else 0.55,
+			"remaining": 0.20 if kind in ["beam_fired", "spray_fired"] else 0.55,
+			"duration": 0.20 if kind in ["beam_fired", "spray_fired"] else 0.55,
 		}
 		if kind == "beam_fired":
 			var owner: PlayerState = world.player(int(event.get("owner_id", 0)))
 			cue["kind"] = "beam"
 			cue["start"] = Vector2(float(owner.position_x) / 1000.0, float(owner.position_y) / 1000.0) if owner != null else anchor["position"]
+			cue["end"] = anchor["position"]
+		elif kind == "spray_fired":
+			var spray_owner: PlayerState = world.player(int(event.get("owner_id", 0)))
+			cue["kind"] = "spray"
+			cue["start"] = Vector2(float(spray_owner.position_x) / 1000.0, float(spray_owner.position_y) / 1000.0) if spray_owner != null else anchor["position"]
 			cue["end"] = anchor["position"]
 		combat_cues.append(cue)
 	while combat_cues.size() > 24:
@@ -823,8 +834,10 @@ func _combat_event_anchor(event: Dictionary) -> Dictionary:
 	var kind := String(event.get("type", ""))
 	if kind == "beam_fired":
 		return {"position": Vector2(float(event.get("end_x", 0)) / 1000.0, float(event.get("end_y", 0)) / 1000.0)}
+	if kind == "spray_fired":
+		return {"position": Vector2(float(event.get("end_x", 0)) / 1000.0, float(event.get("end_y", 0)) / 1000.0)}
 	var entity_id: int = 0
-	if kind == "projectile_hit":
+	if kind in ["projectile_hit", "spray_hit"]:
 		entity_id = int(event.get("target_id", 0))
 	elif kind in ["edgeweave", "cast_refused", "cast_blocked"]:
 		entity_id = int(event.get("entity_id", 0))
@@ -869,6 +882,18 @@ func _draw_combat_cues(camera_origin: Vector2) -> void:
 			var beam_label := String(cue.get("label", ""))
 			var beam_width := ThemeDB.fallback_font.get_string_size(beam_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
 			draw_string(ThemeDB.fallback_font, endpoint + Vector2(-beam_width * 0.5, -22.0), beam_label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 11, Color(color, opacity))
+			continue
+		if String(cue.get("kind", "")) == "spray":
+			var start: Vector2 = cue.get("start", position)
+			var endpoint: Vector2 = cue.get("end", position)
+			var lane := endpoint - start
+			var perpendicular := Vector2(-lane.y, lane.x).normalized()
+			var fan_width := lane.length() * 0.46
+			var fan := PackedVector2Array([start, endpoint + perpendicular * fan_width, endpoint - perpendicular * fan_width])
+			draw_colored_polygon(fan, Color(color, opacity * 0.13))
+			for offset: float in [-1.0, -0.5, 0.0, 0.5, 1.0]:
+				draw_line(start, endpoint + perpendicular * fan_width * offset, Color(color, opacity * (0.34 if offset != 0.0 else 0.78)), 2.0 if offset != 0.0 else 4.0)
+			draw_arc(start, minf(90.0, lane.length() * 0.34), lane.angle() - 0.43, lane.angle() + 0.43, 18, Color(color, opacity * 0.8), 2.0)
 			continue
 		draw_arc(position, 10.0 + phase * 22.0, 0.0, TAU, 20, Color(color, opacity * 0.8), 2.0)
 		var label := String(cue.get("label", ""))

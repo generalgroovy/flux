@@ -46,9 +46,9 @@ func _step(world: SimWorld, command: SimCommand) -> bool:
 	return world.step([command])
 
 
-func _add_enemy(world: SimWorld, position: Vector2i) -> PlayerState:
-	var enemy := PlayerState.new(2)
-	enemy.team_id = 2
+func _add_enemy(world: SimWorld, position: Vector2i, entity_id: int = 2) -> PlayerState:
+	var enemy := PlayerState.new(entity_id)
+	enemy.team_id = entity_id
 	enemy.position_x = position.x
 	enemy.position_y = position.y
 	world.players.append(enemy)
@@ -150,20 +150,52 @@ func _test_oh_tipi_tideline(tick_rate: int) -> void:
 	var caster: PlayerState = world.player()
 	_apply_oh_tipi(caster)
 	var enemy: PlayerState = _add_enemy(world, Vector2i(420_000, 360_000))
+	var fan_enemy: PlayerState = _add_enemy(world, Vector2i(400_000, 400_000), 3)
+	var outside_enemy: PlayerState = _add_enemy(world, Vector2i(160_000, 100_000), 4)
 	check(_step(world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_ACTIVE_1, 1000)), "%d Hz Tideline starts" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.TIDELINE_WIRE_ID, "%d Hz Oh Tipi active is Tideline" % tick_rate)
 	equal(caster.flux, caster.flux_maximum - CombatTuning.TIDELINE_FLUX_COST, "%d Hz Tideline Flux spend is exact" % tick_rate)
-	var saw_hit: bool = false
+	var spray_event: Dictionary = {}
+	var hit_targets: Array[int] = []
 	for _index: int in range(tick_rate * 2):
-		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Tideline flight steps" % tick_rate)
-		saw_hit = saw_hit or world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "projectile_hit" and int(event.get("source_wire_id", 0)) == CombatTuning.TIDELINE_WIRE_ID)
-		if saw_hit:
+		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Tideline release steps" % tick_rate)
+		for event: Dictionary in world.combat_events:
+			if event.get("type") == "spray_fired" and int(event.get("source_wire_id", 0)) == CombatTuning.TIDELINE_WIRE_ID:
+				spray_event = event
+			if event.get("type") == "spray_hit":
+				hit_targets.append(int(event.get("target_id", 0)))
+		if not spray_event.is_empty():
 			break
-	check(saw_hit, "%d Hz Tideline hits authoritatively" % tick_rate)
+	check(not spray_event.is_empty(), "%d Hz Tideline resolves an authoritative spray fan" % tick_rate)
+	equal(int(spray_event.get("hit_count", 0)), 2, "%d Hz Tideline reports every legal fan target" % tick_rate)
+	equal(hit_targets, [2, 3], "%d Hz Tideline spray hits are stable entity order" % tick_rate)
+	equal(world.projectiles.size(), 0, "%d Hz spray never enters projectile storage" % tick_rate)
 	equal(enemy.health, enemy.health_maximum - CombatTuning.TIDELINE_DAMAGE, "%d Hz Tideline damage is exact" % tick_rate)
+	equal(fan_enemy.health, fan_enemy.health_maximum - CombatTuning.TIDELINE_DAMAGE, "%d Hz Tideline damages a second in-fan target once" % tick_rate)
+	equal(outside_enemy.health, outside_enemy.health_maximum, "%d Hz Tideline leaves targets outside the fan untouched" % tick_rate)
 	equal(enemy.control_state, PlayerState.ControlState.LAUNCHED, "%d Hz Tideline applies bounded launch control" % tick_rate)
 	equal(enemy.control_speed, CombatTuning.TIDELINE_LAUNCH_SPEED, "%d Hz Tideline launch speed is exact" % tick_rate)
 	equal(enemy.control_ticks, world.config.milliseconds_to_ticks(CombatTuning.TIDELINE_LAUNCH_DURATION_MS), "%d Hz Tideline launch duration is exact" % tick_rate)
+	equal(fan_enemy.control_state, PlayerState.ControlState.LAUNCHED, "%d Hz second fan target receives the same bounded launch" % tick_rate)
+
+	var covered_collision := CollisionWorld.new(800_000, 720_000)
+	covered_collision.add_obstacle(CollisionWorld.Obstacle.new(78, 300_000, 300_000, 340_000, 420_000))
+	var covered_world := SimWorld.new(tick_rate, 8, covered_collision)
+	var covered_caster: PlayerState = covered_world.player()
+	_apply_oh_tipi(covered_caster)
+	var covered_enemy: PlayerState = _add_enemy(covered_world, Vector2i(420_000, 360_000))
+	check(_step(covered_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_ACTIVE_1, 1000)), "%d Hz covered Tideline starts" % tick_rate)
+	var covered_spray: Dictionary = {}
+	for _index: int in range(tick_rate):
+		check(_step(covered_world, SimCommand.new(covered_world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz covered Tideline release steps" % tick_rate)
+		for event: Dictionary in covered_world.combat_events:
+			if event.get("type") == "spray_fired":
+				covered_spray = event
+		if not covered_spray.is_empty():
+			break
+	check(not covered_spray.is_empty(), "%d Hz cover-stopped spray still emits its fan" % tick_rate)
+	equal(int(covered_spray.get("hit_count", -1)), 0, "%d Hz authored cover rejects the hidden spray target" % tick_rate)
+	equal(covered_enemy.health, covered_enemy.health_maximum, "%d Hz spray cannot damage through cover" % tick_rate)
 
 
 func _test_s_wayne_eclipse_disc(tick_rate: int) -> void:

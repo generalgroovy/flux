@@ -2,7 +2,7 @@ class_name SessionSnapshot
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 8
+const SCHEMA_VERSION: int = 9
 const MAX_PLAYERS: int = 8
 const PLAYER_VALUE_COUNT: int = 49
 const PROJECTILE_VALUE_COUNT: int = 12
@@ -484,6 +484,10 @@ static func encode_event(event: Dictionary) -> PackedInt64Array:
 			return PackedInt64Array([_event_header(21, event_id), SessionCharter.HOST_ENTITY_ID, 0, 0, 0, 0])
 		"beam_fired":
 			return PackedInt64Array([_event_header(22, event_id), int(event.get("owner_id", 0)), int(event.get("source_wire_id", 0)), int(event.get("target_id", 0)), int(event.get("end_x", 0)), int(event.get("end_y", 0))])
+		"spray_fired":
+			return PackedInt64Array([_event_header(23, event_id), int(event.get("owner_id", 0)), int(event.get("source_wire_id", 0)), int(event.get("end_x", 0)), int(event.get("end_y", 0)), int(event.get("hit_count", 0))])
+		"spray_hit":
+			return PackedInt64Array([_event_header(24, event_id), int(event.get("owner_id", 0)), int(event.get("source_wire_id", 0)), int(event.get("target_id", 0)), int(event.get("damage", 0)), 0])
 		_:
 			return PackedInt64Array()
 
@@ -539,6 +543,10 @@ static func decode_event(values: PackedInt64Array) -> Dictionary:
 			result = {"type": "round_returning", "entity_id": values[1]}
 		22:
 			result = {"type": "beam_fired", "owner_id": values[1], "source_wire_id": values[2], "target_id": values[3], "end_x": values[4], "end_y": values[5]}
+		23:
+			result = {"type": "spray_fired", "owner_id": values[1], "source_wire_id": values[2], "end_x": values[3], "end_y": values[4], "hit_count": values[5]}
+		24:
+			result = {"type": "spray_hit", "owner_id": values[1], "source_wire_id": values[2], "target_id": values[3], "damage": values[4]}
 	if not result.is_empty() and event_id > 0:
 		result["event_id"] = event_id
 	return result
@@ -552,7 +560,7 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 	var event_id := header >> 8
 	if event_id < 0 or event_id > MAX_EVENT_ID:
 		return false
-	if kind < 1 or kind > 22:
+	if kind < 1 or kind > 24:
 		return false
 	if kind in [1, 2, 3]:
 		if values[1] < 1 or values[1] > MAX_PLAYERS or values[2] <= 0 or values[2] > 65_535:
@@ -583,6 +591,21 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 			and values[3] >= 0 and values[3] <= 0x7fffffff
 			and absi(values[4]) <= MAX_ABSOLUTE_POSITION
 			and absi(values[5]) <= MAX_ABSOLUTE_POSITION
+		)
+	if kind == 23:
+		return (
+			values[1] >= 1 and values[1] <= MAX_PLAYERS
+			and values[2] > 0 and values[2] <= 65_535
+			and absi(values[3]) <= MAX_ABSOLUTE_POSITION
+			and absi(values[4]) <= MAX_ABSOLUTE_POSITION
+			and values[5] >= 0 and values[5] < MAX_PLAYERS
+		)
+	if kind == 24:
+		return (
+			values[1] >= 1 and values[1] <= MAX_PLAYERS
+			and values[2] > 0 and values[2] <= 65_535
+			and values[3] >= 1 and values[3] <= 0x7fffffff
+			and values[4] > 0 and values[4] <= 1_000_000
 		)
 	if values[1] < 1 or values[1] > MAX_PLAYERS:
 		return false

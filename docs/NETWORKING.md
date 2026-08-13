@@ -2,7 +2,7 @@
 
 ## Current runnable boundary
 
-FLUX 2 protocol 24 / snapshot schema 8 exposes eleven walk-up Wellspring stations,
+FLUX 2 protocol 25 / snapshot schema 9 exposes eleven walk-up Wellspring stations,
 including the Farflow Charter, Session Hearth and host stewardship tools in
 the eastern Wellspring:
 
@@ -75,6 +75,11 @@ pretending to be a projectile. The host owns startup, Flux, cooldown, cover
 trace, first-target choice, damage and slow; peers receive only owner/spell,
 target identity and the exact legal endpoint needed to draw the short-lived
 lane. No client-authored endpoint or hit result enters simulation.
+
+Tideline similarly publishes one bounded `spray_fired` fan endpoint/count and
+one `spray_hit` event per affected actor. The host alone selects the cone set,
+tests per-target cover, applies damage/launch and emits defeat outcomes. At the
+eight-player cap this remains inside the existing bounded event lane.
 
 If a guest connection drops, the host keeps that exact actor safely idle for 15
 seconds. Selecting Join Farflow again within that window uses a memory-only,

@@ -43,10 +43,10 @@ const TIDELINE_FLUX_COST: int = 22_000
 const TIDELINE_COOLDOWN_MS: int = 1_600
 const TIDELINE_STARTUP_MS: int = 170
 const TIDELINE_RECOVERY_MS: int = 180
-const TIDELINE_SPEED: int = 780_000
-const TIDELINE_RADIUS: int = 11_000
+const TIDELINE_RANGE: int = 280_000
+const TIDELINE_RADIUS: int = 5_000
+const TIDELINE_CONE_COSINE_SQUARED_PER_MILLION: int = 750_000
 const TIDELINE_DAMAGE: int = 14_000
-const TIDELINE_LIFETIME_MS: int = 1_300
 const TIDELINE_LAUNCH_DURATION_MS: int = 180
 const TIDELINE_LAUNCH_SPEED: int = 420_000
 
@@ -98,7 +98,7 @@ static func cast_definition(wire_id: int) -> Dictionary:
 		RILLSHOT_WIRE_ID:
 			return _definition(RILLSHOT_ELEMENT_WIRE_ID, RILLSHOT_FLUX_COST, RILLSHOT_COOLDOWN_MS, RILLSHOT_STARTUP_MS, RILLSHOT_RECOVERY_MS, RILLSHOT_SPEED, RILLSHOT_RADIUS, RILLSHOT_DAMAGE, RILLSHOT_LIFETIME_MS)
 		TIDELINE_WIRE_ID:
-			var result := _definition(TIDELINE_ELEMENT_WIRE_ID, TIDELINE_FLUX_COST, TIDELINE_COOLDOWN_MS, TIDELINE_STARTUP_MS, TIDELINE_RECOVERY_MS, TIDELINE_SPEED, TIDELINE_RADIUS, TIDELINE_DAMAGE, TIDELINE_LIFETIME_MS)
+			var result := _spray_definition(TIDELINE_ELEMENT_WIRE_ID, TIDELINE_FLUX_COST, TIDELINE_COOLDOWN_MS, TIDELINE_STARTUP_MS, TIDELINE_RECOVERY_MS, TIDELINE_RANGE, TIDELINE_RADIUS, TIDELINE_DAMAGE)
 			result["hit_control_state"] = LAUNCHED_HIT_CONTROL_STATE
 			result["hit_control_duration_ms"] = TIDELINE_LAUNCH_DURATION_MS
 			result["hit_control_speed"] = TIDELINE_LAUNCH_SPEED
@@ -166,6 +166,34 @@ static func _beam_definition(
 		"range": maximum_range,
 		"radius": radius,
 		"damage": damage,
+		"hit_control_state": NO_HIT_CONTROL_STATE,
+		"hit_control_duration_ms": 0,
+		"hit_control_speed": 0,
+		"hit_control_slow_ratio": 1000,
+	}
+
+
+static func _spray_definition(
+	element_wire_id: int,
+	flux_cost: int,
+	cooldown_ms: int,
+	startup_ms: int,
+	recovery_ms: int,
+	maximum_range: int,
+	radius: int,
+	damage: int,
+) -> Dictionary:
+	return {
+		"shape": "spray",
+		"element_wire_id": element_wire_id,
+		"flux_cost": flux_cost,
+		"cooldown_ms": cooldown_ms,
+		"startup_ms": startup_ms,
+		"recovery_ms": recovery_ms,
+		"range": maximum_range,
+		"radius": radius,
+		"damage": damage,
+		"cone_cosine_squared_per_million": TIDELINE_CONE_COSINE_SQUARED_PER_MILLION,
 		"hit_control_state": NO_HIT_CONTROL_STATE,
 		"hit_control_duration_ms": 0,
 		"hit_control_speed": 0,

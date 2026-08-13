@@ -1875,7 +1875,7 @@ reopening Farflow. A dropped guest can use Join Farflow within 15 seconds to rec
 its exact in-memory actor. The host can safely review connected guests in the
 Ledger and must confirm release at the separate Bell; closing the whole company
 also requires a second Host Farflow press. Affected guests receive the reason,
-and administrative departures cannot reclaim their actor. Protocol 24 / snapshot schema 8 assign and validate
+and administrative departures cannot reclaim their actor. Protocol 25 / snapshot schema 9 assign and validate
 the sealed Charter and replicate authoritative court state; cross-platform
 package proof remains next. See the
 [networking contract](docs/NETWORKING.md).
@@ -1885,13 +1885,13 @@ the host neutralizes every movement and ability input, the client sends no
 prediction stream, and the HUD follows a replicated participant. Tab or
 controller D-pad right cycles the stable participant order. When the company
 returns, the observer is placed at the Hearth, readies through the ordinary
-request path, and can enter the next round. Snapshot schema 8 now travels in a
+request path, and can enter the next round. Snapshot schema 9 now travels in a
 bounded compressed wire envelope whose maximum eight-player fixture and live
-three-player journeys fit one ENet MTU; protocol 24 rejects older peers. This
+three-player journeys fit one ENet MTU; protocol 25 rejects older peers. This
 spectator view adds no new information channel, but competitive limited-view
 modes still require host-side per-peer visibility filtering.
 
-The current simulation uses protocol 24, snapshot schema 8 and preference schema 6: Space or wheel-up invokes the
+The current simulation uses protocol 25, snapshot schema 9 and preference schema 6: Space or wheel-up invokes the
 semantic jump action, Shift sprints, C or wheel-down directly slides/fast-falls,
 1–5 request the five ordered spell slots, Ctrl and Alt are free, and primary no longer aliases Space. At the Spell Loom,
 players can move the champion's two proven kit spells to any of those slots;
@@ -1910,6 +1910,11 @@ Light beam with a 190 ms readable startup. It stops at authored cover, hits only
 the first legal actor in its lane, applies one exact damage/slow result, creates
 no projectile state, and replicates a bounded semantic beam endpoint for remote
 presentation. Its material `reveal` operation remains deliberately sealed.
+
+Oh Tipi's Tideline is now a true short Water spray rather than another orb. Its
+fan can launch multiple legal actors once, ignores allies/protected actors,
+rejects targets outside the cone or behind cover, and replicates one bounded fan
+cue plus explicit affected-target cues. Its planned material push remains sealed.
 
 See [development setup](docs/DEVELOPMENT.md) and the
 [FLUX movement migration record](docs/MIGRATION-FLUX-MOVEMENT.md).

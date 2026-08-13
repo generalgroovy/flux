@@ -1,5 +1,51 @@
 # FLUX2 agent worklog
 
+## 2026-08-13 — first deterministic multi-target spray shape
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Reworked Oh Tipi's existing Tideline from another projectile into FLUX's first
+  true spray while retaining its Water identity, cost, startup, cooldown, exact
+  damage and launch control.
+- Added a fixed-point 280-unit fan. It evaluates actors after all movement in
+  stable entity order, affects every legal target inside the bounded cone once,
+  tests cover separately for each target and ignores allies, protected actors,
+  out-of-cone actors and projectile-only Edgeweave rules.
+- Advanced protocol 25 / snapshot schema 9. One bounded `spray_fired` event
+  carries the fan endpoint/count and one `spray_hit` event names each affected
+  actor; the host alone owns fan membership, cover, damage, launch and defeats.
+- Added an original translucent fan presentation with a center current, readable
+  edges and separate launch/damage feedback. The compact bar now truthfully
+  labels Tideline `WATER SPRAY`.
+
+Validation:
+
+- Full Godot gate: 14,948 assertions, zero failures; import and independent
+  source boots passed at 60 and 120 Hz.
+- Tests prove two in-fan targets receive one exact hit/launch in stable order,
+  an outside target remains untouched, cover prevents a hidden hit, no
+  projectile is stored, catalog/compiled shapes agree and fan/hit cues roundtrip.
+- A real 1280×720 AMD/OpenGL frame at
+  `.godot/spray-capture/frame00000012.png` was inspected; the fan, endpoint,
+  damage/launch cue and `WATER SPRAY` HUD label remain readable together.
+- A fresh three-process 60 Hz Farflow journey passed host/join, HELLO, movement
+  reconciliation, Hearth/Court, late observer handoff, exact-actor reconnect,
+  Round 2 and reason-bearing stewardship on UDP 24945.
+- Both portable archives rebuilt successfully. Packaged Windows safe quit passed
+  a real protocol-25 AMD/OpenGL boot, preference flush, peer close and code 0.
+
+Known limitations and risks:
+
+- Final spray animation/audio, reduced-effects tuning and balance playtesting
+  remain; the geometric foundation is intentionally restrained.
+- Field, defense and movement shapes remain unpromoted. Tideline's planned
+  material push is still sealed and changes no terrain.
+- Physical Garuda/Sway and remote two-machine friend proof remain external gaps.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-13 — first deterministic non-projectile spell shape
 
 Branch: `codex/continuous-overhaul`

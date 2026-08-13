@@ -44,6 +44,9 @@ func _test_catalog() -> void:
 	equal(int(first.ability("pocket-eclipse")["wire_id"]), CombatTuning.POCKET_ECLIPSE_WIRE_ID, "Pocket Eclipse wire matches compiled S. Wayne kit")
 	equal(int(first.ability("pocket-eclipse")["flux_cost"]) * 1000, CombatTuning.POCKET_ECLIPSE_FLUX_COST, "Pocket Eclipse Flux cost matches compiled behavior")
 	equal(int(first.ability("pocket-eclipse")["startup_ms"]), CombatTuning.POCKET_ECLIPSE_STARTUP_MS, "Pocket Eclipse startup matches compiled behavior")
+	equal(String(first.ability("pocket-eclipse")["shape"]), "beam", "Pocket Eclipse is the first promoted non-projectile shape")
+	equal(String(CombatTuning.cast_definition(CombatTuning.POCKET_ECLIPSE_WIRE_ID).get("shape")), "beam", "compiled Pocket Eclipse uses the beam resolver")
+	check(CombatTuning.projectile_definition(CombatTuning.POCKET_ECLIPSE_WIRE_ID).is_empty(), "Pocket Eclipse cannot silently re-enter projectile simulation")
 	for playable_id: String in first.playable_spell_ids():
 		var playable: Dictionary = first.ability(playable_id)
 		check(AbilityCatalog.SHAPES.has(String(playable.get("shape", ""))), "%s declares a legal spell shape" % playable_id)

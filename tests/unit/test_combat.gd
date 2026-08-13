@@ -220,17 +220,42 @@ func _test_s_wayne_pocket_eclipse(tick_rate: int) -> void:
 	check(_step(world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_ACTIVE_1, 1000)), "%d Hz Pocket Eclipse starts" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.POCKET_ECLIPSE_WIRE_ID, "%d Hz S. Wayne active is Pocket Eclipse" % tick_rate)
 	equal(caster.flux, caster.flux_maximum - CombatTuning.POCKET_ECLIPSE_FLUX_COST, "%d Hz Pocket Eclipse Flux spend is exact" % tick_rate)
-	var saw_hit: bool = false
+	var beam_event: Dictionary = {}
 	for _index: int in range(tick_rate * 2):
-		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Pocket Eclipse flight steps" % tick_rate)
-		saw_hit = saw_hit or world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "projectile_hit" and int(event.get("source_wire_id", 0)) == CombatTuning.POCKET_ECLIPSE_WIRE_ID)
-		if saw_hit:
+		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Pocket Eclipse release steps" % tick_rate)
+		for event: Dictionary in world.combat_events:
+			if event.get("type") == "beam_fired" and int(event.get("source_wire_id", 0)) == CombatTuning.POCKET_ECLIPSE_WIRE_ID:
+				beam_event = event
+		if not beam_event.is_empty():
 			break
-	check(saw_hit, "%d Hz Pocket Eclipse hits authoritatively" % tick_rate)
+	check(not beam_event.is_empty(), "%d Hz Pocket Eclipse resolves an authoritative beam" % tick_rate)
+	equal(int(beam_event.get("target_id", 0)), enemy.entity_id, "%d Hz Pocket Eclipse names its first legal target" % tick_rate)
+	equal(Vector2i(int(beam_event.get("end_x", 0)), int(beam_event.get("end_y", 0))), Vector2i(enemy.position_x, enemy.position_y), "%d Hz Pocket Eclipse terminates visibly at its hit" % tick_rate)
+	equal(world.projectiles.size(), 0, "%d Hz beam never enters projectile storage" % tick_rate)
 	equal(enemy.health, enemy.health_maximum - CombatTuning.POCKET_ECLIPSE_DAMAGE, "%d Hz Pocket Eclipse damage is exact" % tick_rate)
 	equal(enemy.control_state, PlayerState.ControlState.SLOWED, "%d Hz Pocket Eclipse applies bounded slow control" % tick_rate)
 	equal(enemy.slow_ratio, CombatTuning.POCKET_ECLIPSE_SLOW_RATIO, "%d Hz Pocket Eclipse slow ratio is exact" % tick_rate)
 	equal(enemy.control_ticks, world.config.milliseconds_to_ticks(CombatTuning.POCKET_ECLIPSE_SLOW_DURATION_MS), "%d Hz Pocket Eclipse slow duration is exact" % tick_rate)
+
+	var covered_collision := CollisionWorld.new(800_000, 720_000)
+	covered_collision.add_obstacle(CollisionWorld.Obstacle.new(77, 300_000, 300_000, 340_000, 420_000))
+	var covered_world := SimWorld.new(tick_rate, 9, covered_collision)
+	var covered_caster: PlayerState = covered_world.player()
+	_apply_s_wayne(covered_caster)
+	var covered_enemy: PlayerState = _add_enemy(covered_world, Vector2i(420_000, 360_000))
+	check(_step(covered_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_ACTIVE_1, 1000)), "%d Hz covered Pocket Eclipse starts" % tick_rate)
+	var covered_event: Dictionary = {}
+	for _index: int in range(tick_rate):
+		check(_step(covered_world, SimCommand.new(covered_world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz covered Pocket Eclipse release steps" % tick_rate)
+		for event: Dictionary in covered_world.combat_events:
+			if event.get("type") == "beam_fired":
+				covered_event = event
+		if not covered_event.is_empty():
+			break
+	check(not covered_event.is_empty(), "%d Hz cover-stopped beam still emits a readable lane" % tick_rate)
+	equal(int(covered_event.get("target_id", -1)), 0, "%d Hz authored cover prevents the hidden target hit" % tick_rate)
+	check(int(covered_event.get("end_x", 0)) < 300_000, "%d Hz beam endpoint stops before cover" % tick_rate)
+	equal(covered_enemy.health, covered_enemy.health_maximum, "%d Hz beam cannot damage through cover" % tick_rate)
 
 
 func _test_edgeweave(tick_rate: int) -> void:

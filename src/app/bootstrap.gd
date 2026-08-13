@@ -68,6 +68,8 @@ var show_debug_overlay: bool = false
 var capture_pointer_world := Vector2i(-1, -1)
 var capture_spawn_world := Vector2i(-1, -1)
 var capture_expanded_station_id: String = ""
+var requested_capture_active_cast: bool = false
+var capture_active_cast_sent: bool = false
 var focused_station_id: String = ""
 var expanded_station_id: String = ""
 var station_notice: String = ""
@@ -149,6 +151,7 @@ func _ready() -> void:
 	capture_pointer_world = _requested_capture_pointer()
 	capture_spawn_world = _requested_capture_spawn()
 	capture_expanded_station_id = _requested_capture_expanded_station()
+	requested_capture_active_cast = OS.get_cmdline_user_args().has("--capture-cast-active")
 	ability_catalog = AbilityCatalog.new()
 	if not ability_catalog.load_from_file(ABILITY_CATALOG_PATH):
 		push_error(ability_catalog.last_error)
@@ -445,6 +448,9 @@ func _process(delta: float) -> void:
 				current_position,
 				pointer_world_position,
 			)
+		if requested_capture_active_cast and not capture_active_cast_sent and not session_transport.is_connected_client():
+			command = SimCommand.new(world.tick, input_router.entity_id, 0, 0, 0, SimCommand.PRESSED_ACTIVE_1, command.aim_x, command.aim_y)
+			capture_active_cast_sent = true
 		if session_transport.is_connected_client() and requested_prediction_smoke and last_client_snapshot_tick >= 0 and prediction_smoke_inputs_sent < 18:
 			command = SimCommand.new(world.tick, input_router.entity_id, 1000, 0, 0, 0, 1000, 0)
 			prediction_smoke_inputs_sent += 1
@@ -763,7 +769,7 @@ func _draw_spell_loom_editor() -> void:
 func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 	for event: Dictionary in events:
 		var kind := String(event.get("type", ""))
-		if kind not in ["projectile_hit", "edgeweave", "cast_refused", "cast_blocked", "projectile_bounced"]:
+		if kind not in ["projectile_hit", "beam_fired", "edgeweave", "cast_refused", "cast_blocked", "projectile_bounced"]:
 			continue
 		var anchor := _combat_event_anchor(event)
 		if anchor.is_empty():
@@ -774,6 +780,10 @@ func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 			"projectile_hit":
 				label = "-%d" % (int(event.get("damage", 0)) / 1000)
 				color = FIRE_COLOR
+			"beam_fired":
+				var definition := CombatTuning.cast_definition(int(event.get("source_wire_id", 0)))
+				label = "-%d · SLOW" % (int(definition.get("damage", 0)) / 1000) if int(event.get("target_id", 0)) > 0 else "BEAM"
+				color = PARCHMENT_COLOR
 			"edgeweave":
 				label = "EDGE +%d" % (int(event.get("stamina", 0)) / 1000)
 				color = ATTUNEMENT_COLOR
@@ -792,19 +802,27 @@ func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 			"projectile_bounced":
 				label = "RICOCHET"
 				color = PARCHMENT_COLOR
-		combat_cues.append({
+		var cue: Dictionary = {
 			"position": anchor["position"],
 			"label": label,
 			"color": color,
-			"remaining": 0.55,
-			"duration": 0.55,
-		})
+			"remaining": 0.20 if kind == "beam_fired" else 0.55,
+			"duration": 0.20 if kind == "beam_fired" else 0.55,
+		}
+		if kind == "beam_fired":
+			var owner: PlayerState = world.player(int(event.get("owner_id", 0)))
+			cue["kind"] = "beam"
+			cue["start"] = Vector2(float(owner.position_x) / 1000.0, float(owner.position_y) / 1000.0) if owner != null else anchor["position"]
+			cue["end"] = anchor["position"]
+		combat_cues.append(cue)
 	while combat_cues.size() > 24:
 		combat_cues.pop_front()
 
 
 func _combat_event_anchor(event: Dictionary) -> Dictionary:
 	var kind := String(event.get("type", ""))
+	if kind == "beam_fired":
+		return {"position": Vector2(float(event.get("end_x", 0)) / 1000.0, float(event.get("end_y", 0)) / 1000.0)}
 	var entity_id: int = 0
 	if kind == "projectile_hit":
 		entity_id = int(event.get("target_id", 0))
@@ -840,6 +858,18 @@ func _draw_combat_cues(camera_origin: Vector2) -> void:
 		var position: Vector2 = cue.get("position", Vector2.ZERO)
 		var color: Color = cue.get("color", ATTUNEMENT_COLOR)
 		var opacity := 1.0 - phase
+		if String(cue.get("kind", "")) == "beam":
+			var start: Vector2 = cue.get("start", position)
+			var endpoint: Vector2 = cue.get("end", position)
+			draw_line(start, endpoint, Color(color, opacity * 0.18), 12.0)
+			draw_line(start, endpoint, Color(color, opacity * 0.78), 4.0)
+			draw_line(start, endpoint, Color(Color.WHITE, opacity * 0.72), 1.0)
+			draw_circle(endpoint, 13.0 + phase * 7.0, Color(color, opacity * 0.16))
+			draw_arc(endpoint, 9.0 + phase * 8.0, 0.0, TAU, 16, Color(color, opacity), 2.0)
+			var beam_label := String(cue.get("label", ""))
+			var beam_width := ThemeDB.fallback_font.get_string_size(beam_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
+			draw_string(ThemeDB.fallback_font, endpoint + Vector2(-beam_width * 0.5, -22.0), beam_label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 11, Color(color, opacity))
+			continue
 		draw_arc(position, 10.0 + phase * 22.0, 0.0, TAU, 20, Color(color, opacity * 0.8), 2.0)
 		var label := String(cue.get("label", ""))
 		var label_width := ThemeDB.fallback_font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x

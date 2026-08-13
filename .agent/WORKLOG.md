@@ -1,5 +1,53 @@
 # FLUX2 agent worklog
 
+## 2026-08-13 — first deterministic non-projectile spell shape
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Reworked S. Wayne's existing Pocket Eclipse from a projectile into FLUX's
+  first true beam while retaining its Light identity, 20 Flux cost, readable
+  startup, cooldown, exact damage and bounded slow.
+- Added a fixed-point 520-unit beam trace that stops at authored collision and
+  applies once to the nearest legal actor in its lane. Beam requests resolve
+  only after every actor moves for the tick, preventing entity-order-dependent
+  control duration or targeting; beams never enter projectile storage or earn
+  projectile-only Edgeweave rewards.
+- Advanced protocol 24 / snapshot schema 8 with a bounded `beam_fired` semantic
+  endpoint. The host owns trace, target, damage and slow; peers receive only the
+  identity/endpoint needed for a short translucent lane and impact cue.
+- Added the testing-only `--capture-cast-active` argument so already-implemented
+  spells can receive repeatable in-engine frame review without a fake menu or
+  player-facing shortcut.
+
+Validation:
+
+- Full Godot gate: 14,928 assertions, zero failures; import and independent
+  source boots passed at 60 and 120 Hz.
+- Focused tests prove exact beam cost/startup/damage/slow at both rates, no
+  projectile state, first-target choice, cover stopping, no damage through
+  cover, catalog/compiled shape agreement and semantic endpoint roundtrip.
+- A real 1280×720 AMD/OpenGL frame at
+  `.godot/beam-capture/frame00000013.png` was inspected: the compact HUD names
+  `LIGHT BEAM`, the lane ends at the effigy, and damage/slow remain readable.
+- A fresh three-process 120 Hz Farflow journey passed host/join, HELLO, movement
+  reconciliation, Hearth/Court, late observer handoff, exact-actor reconnect,
+  Round 2 and reason-bearing stewardship on UDP 24944.
+- `scripts/package.ps1 -Target All` rebuilt the checksummed Windows ZIP and
+  Linux tar.gz. Packaged Windows `PLAY-FLUX.cmd -- --safe-quit-smoke` completed
+  a protocol-24 AMD/OpenGL boot, preference flush, peer close and exit code 0.
+
+Known limitations and risks:
+
+- The beam has deterministic geometry and feedback, but final character/spell
+  animation, audio, reduced-effects polish and balance playtesting remain.
+- Spray, field, defense and movement shapes remain unpromoted. Every material
+  operation remains sealed; Pocket Eclipse does not reveal or mutate terrain.
+- Physical Garuda/Sway and remote two-machine friend proof remain external gaps.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-13 — host-authoritative five-row Spell Loom
 
 Branch: `codex/continuous-overhaul`

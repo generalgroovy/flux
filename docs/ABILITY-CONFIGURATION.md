@@ -65,6 +65,9 @@ This demonstrates discounts without granting elemental damage superiority.
 Its schema-v2 spell bar orders Arc Primary, Vector Lance, Prism Ward, Stone
 Channel, and Phase Step. Only the first two are promoted into current champion
 runtime kits; unpromoted entries remain validated content rather than fake casts.
+Pocket Eclipse is the first promoted non-projectile shape: a finite Light beam
+resolved after all actors move for the tick, stopped by cover, and applied once
+to the nearest legal target along its lane.
 
 ## Current Spell Loom boundary
 
@@ -91,7 +94,8 @@ and no material operation is enabled by rearranging a slot.
 5. Oh Tipi Rillshot/Tideline plus resettable sparring effigy — complete basic
    pair; defense, full kit, final art/audio and balance acceptance remain.
 6. S. Wayne Eclipse Disc/Pocket Eclipse — complete basic pair with a canonical
-   single ricochet and bounded slow; deeper dummy and accessibility reads remain.
+   single ricochet and a cover-stopped finite beam/slow; deeper dummy and
+   accessibility reads remain.
 7. Host-authoritative five-row Spell Loom for the two proven kit spells —
    complete foundation; persistence and additional promoted spells remain.
 8. One approved champion through bot, replay, network, reconnect, spectator,

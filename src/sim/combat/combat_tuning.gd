@@ -68,10 +68,9 @@ const POCKET_ECLIPSE_FLUX_COST: int = 20_000
 const POCKET_ECLIPSE_COOLDOWN_MS: int = 1_800
 const POCKET_ECLIPSE_STARTUP_MS: int = 190
 const POCKET_ECLIPSE_RECOVERY_MS: int = 200
-const POCKET_ECLIPSE_SPEED: int = 820_000
-const POCKET_ECLIPSE_RADIUS: int = 10_000
+const POCKET_ECLIPSE_RANGE: int = 520_000
+const POCKET_ECLIPSE_RADIUS: int = 8_000
 const POCKET_ECLIPSE_DAMAGE: int = 8_000
-const POCKET_ECLIPSE_LIFETIME_MS: int = 1_400
 const POCKET_ECLIPSE_SLOW_DURATION_MS: int = 600
 const POCKET_ECLIPSE_SLOW_RATIO: int = 550
 const NO_HIT_CONTROL_STATE: int = 0
@@ -86,6 +85,11 @@ const EDGEWEAVE_COOLDOWN_MS: int = 220
 
 
 static func projectile_definition(wire_id: int) -> Dictionary:
+	var result := cast_definition(wire_id)
+	return result if String(result.get("shape", "")) == "projectile" else {}
+
+
+static func cast_definition(wire_id: int) -> Dictionary:
 	match wire_id:
 		PRIMARY_WIRE_ID:
 			return _definition(PRIMARY_ELEMENT_WIRE_ID, PRIMARY_FLUX_COST, PRIMARY_COOLDOWN_MS, PRIMARY_STARTUP_MS, PRIMARY_RECOVERY_MS, PRIMARY_SPEED, PRIMARY_RADIUS, PRIMARY_DAMAGE, PRIMARY_LIFETIME_MS)
@@ -104,7 +108,7 @@ static func projectile_definition(wire_id: int) -> Dictionary:
 			result["remaining_bounces"] = ECLIPSE_DISC_BOUNCES
 			return result
 		POCKET_ECLIPSE_WIRE_ID:
-			var result := _definition(POCKET_ECLIPSE_ELEMENT_WIRE_ID, POCKET_ECLIPSE_FLUX_COST, POCKET_ECLIPSE_COOLDOWN_MS, POCKET_ECLIPSE_STARTUP_MS, POCKET_ECLIPSE_RECOVERY_MS, POCKET_ECLIPSE_SPEED, POCKET_ECLIPSE_RADIUS, POCKET_ECLIPSE_DAMAGE, POCKET_ECLIPSE_LIFETIME_MS)
+			var result := _beam_definition(POCKET_ECLIPSE_ELEMENT_WIRE_ID, POCKET_ECLIPSE_FLUX_COST, POCKET_ECLIPSE_COOLDOWN_MS, POCKET_ECLIPSE_STARTUP_MS, POCKET_ECLIPSE_RECOVERY_MS, POCKET_ECLIPSE_RANGE, POCKET_ECLIPSE_RADIUS, POCKET_ECLIPSE_DAMAGE)
 			result["hit_control_state"] = SLOWED_HIT_CONTROL_STATE
 			result["hit_control_duration_ms"] = POCKET_ECLIPSE_SLOW_DURATION_MS
 			result["hit_control_slow_ratio"] = POCKET_ECLIPSE_SLOW_RATIO
@@ -124,6 +128,7 @@ static func _definition(
 	lifetime_ms: int,
 ) -> Dictionary:
 	return {
+		"shape": "projectile",
 		"element_wire_id": element_wire_id,
 		"flux_cost": flux_cost,
 		"cooldown_ms": cooldown_ms,
@@ -138,4 +143,31 @@ static func _definition(
 		"hit_control_speed": 0,
 		"hit_control_slow_ratio": 1000,
 		"remaining_bounces": 0,
+	}
+
+
+static func _beam_definition(
+	element_wire_id: int,
+	flux_cost: int,
+	cooldown_ms: int,
+	startup_ms: int,
+	recovery_ms: int,
+	maximum_range: int,
+	radius: int,
+	damage: int,
+) -> Dictionary:
+	return {
+		"shape": "beam",
+		"element_wire_id": element_wire_id,
+		"flux_cost": flux_cost,
+		"cooldown_ms": cooldown_ms,
+		"startup_ms": startup_ms,
+		"recovery_ms": recovery_ms,
+		"range": maximum_range,
+		"radius": radius,
+		"damage": damage,
+		"hit_control_state": NO_HIT_CONTROL_STATE,
+		"hit_control_duration_ms": 0,
+		"hit_control_speed": 0,
+		"hit_control_slow_ratio": 1000,
 	}

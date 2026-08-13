@@ -252,7 +252,7 @@
       "id": "pocket-eclipse",
       "wire_id": 143,
       "display_name": "Pocket Eclipse",
-      "shape": "projectile",
+      "shape": "beam",
       "delivery": "aimed",
       "impact": "damage_slow",
       "residue": "none",
@@ -268,7 +268,7 @@
       "startup_ms": 190,
       "recovery_ms": 200,
       "roles": ["tempo_control", "pursuit_break"],
-      "counterplay": ["visible_startup", "sidestep", "wait_out_slow"],
+      "counterplay": ["visible_startup", "break_line_with_cover", "sidestep", "wait_out_slow"],
       "authority": "simulation"
     }
   ]

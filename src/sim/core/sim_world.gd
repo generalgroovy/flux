@@ -98,6 +98,7 @@ func step(commands: Array[SimCommand]) -> bool:
 			if spawned != null:
 				projectiles.append(spawned)
 				next_projectile_id += 1
+	CombatSystem.resolve_beams(players, config, collision, combat_events)
 	projectiles.sort_custom(func(left: ProjectileState, right: ProjectileState) -> bool: return left.entity_id < right.entity_id)
 	projectiles = CombatSystem.advance_projectiles(projectiles, players, config, collision, combat_events)
 	tick += 1

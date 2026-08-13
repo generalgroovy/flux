@@ -2,7 +2,7 @@
 
 ## Current runnable boundary
 
-FLUX 2 protocol 23 / snapshot schema 7 exposes eleven walk-up Wellspring stations,
+FLUX 2 protocol 24 / snapshot schema 8 exposes eleven walk-up Wellspring stations,
 including the Farflow Charter, Session Hearth and host stewardship tools in
 the eastern Wellspring:
 
@@ -69,6 +69,12 @@ unsafe corrections snap, and combat/resources remain authoritative.
 Semantic combat/social events carry stable IDs for four consecutive snapshots;
 the client keeps a bounded 64-ID inbox, so superseded unreliable packets do not
 silently erase feedback and redundant arrivals never replay the cue.
+
+Pocket Eclipse uses a distinct bounded `beam_fired` semantic event rather than
+pretending to be a projectile. The host owns startup, Flux, cooldown, cover
+trace, first-target choice, damage and slow; peers receive only owner/spell,
+target identity and the exact legal endpoint needed to draw the short-lived
+lane. No client-authored endpoint or hit result enters simulation.
 
 If a guest connection drops, the host keeps that exact actor safely idle for 15
 seconds. Selecting Join Farflow again within that window uses a memory-only,

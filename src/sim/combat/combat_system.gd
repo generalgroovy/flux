@@ -40,7 +40,7 @@ static func step_player(
 	if command.has_pressed(SimCommand.PRESSED_ACTIVE_1) or requested_spell_wire_id == state.active_1_wire_id:
 		if state.active_1_cooldown_ticks > 0:
 			return null
-		var active_definition := CombatTuning.projectile_definition(state.active_1_wire_id)
+		var active_definition := CombatTuning.cast_definition(state.active_1_wire_id)
 		if active_definition.is_empty():
 			events.append({"type": "cast_refused", "entity_id": state.entity_id, "wire_id": state.active_1_wire_id, "reason": "kit"})
 			return null
@@ -51,7 +51,7 @@ static func step_player(
 		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": state.active_1_wire_id})
 		return null
 	if (command.has_held(SimCommand.HELD_PRIMARY) or requested_spell_wire_id == state.primary_wire_id) and state.primary_cooldown_ticks == 0:
-		var primary_definition := CombatTuning.projectile_definition(state.primary_wire_id)
+		var primary_definition := CombatTuning.cast_definition(state.primary_wire_id)
 		if primary_definition.is_empty():
 			events.append({"type": "cast_refused", "entity_id": state.entity_id, "wire_id": state.primary_wire_id, "reason": "kit"})
 			return null
@@ -161,7 +161,7 @@ static func _release_cast(
 	events: Array[Dictionary],
 ) -> ProjectileState:
 	var wire_id: int = state.pending_cast_wire_id
-	var definition := CombatTuning.projectile_definition(wire_id)
+	var definition := CombatTuning.cast_definition(wire_id)
 	if definition.is_empty():
 		state.pending_cast_wire_id = 0
 		state.pending_cast_ticks = 0
@@ -175,6 +175,9 @@ static func _release_cast(
 		state.pending_cast_ticks = 0
 		return null
 	state.cast_recovery_ticks = config.milliseconds_to_ticks(int(definition["recovery_ms"]))
+	if String(definition.get("shape", "")) == "beam":
+		_queue_beam(state, wire_id, events)
+		return null
 	var speed := int(definition["speed"])
 	var radius := int(definition["radius"])
 
@@ -214,6 +217,156 @@ static func _release_cast(
 	events.append({"type": "projectile_spawned", "projectile_id": projectile_id, "owner_id": state.entity_id, "wire_id": wire_id})
 	state.last_event = "cast_release_%d" % wire_id
 	return projectile
+
+
+static func _queue_beam(
+	state: PlayerState,
+	wire_id: int,
+	events: Array[Dictionary],
+) -> void:
+	events.append({
+		"type": "beam_requested",
+		"owner_id": state.entity_id,
+		"source_wire_id": wire_id,
+		"origin_x": state.position_x,
+		"origin_y": state.position_y,
+		"aim_x": state.pending_cast_aim_x,
+		"aim_y": state.pending_cast_aim_y,
+	})
+	state.pending_cast_wire_id = 0
+	state.pending_cast_ticks = 0
+	state.last_event = "cast_release_%d" % wire_id
+
+
+static func resolve_beams(
+	players: Array[PlayerState],
+	config: SimConfig,
+	world: CollisionWorld,
+	events: Array[Dictionary],
+) -> void:
+	var resolved_events: Array[Dictionary] = []
+	for event: Dictionary in events:
+		if String(event.get("type", "")) != "beam_requested":
+			resolved_events.append(event)
+			continue
+		var owner: PlayerState = null
+		var owner_id := int(event.get("owner_id", 0))
+		for candidate: PlayerState in players:
+			if candidate.entity_id == owner_id:
+				owner = candidate
+				break
+		if owner == null:
+			continue
+		var wire_id := int(event.get("source_wire_id", 0))
+		var definition := CombatTuning.cast_definition(wire_id)
+		if String(definition.get("shape", "")) != "beam":
+			continue
+		var origin := Vector2i(int(event.get("origin_x", 0)), int(event.get("origin_y", 0)))
+		var direction := Vector2i(int(event.get("aim_x", 1000)), int(event.get("aim_y", 0)))
+		var endpoint := _beam_clear_endpoint(
+			origin,
+			direction,
+			int(definition["range"]),
+			int(definition["radius"]),
+			world,
+		)
+		if endpoint == origin:
+			resolved_events.append({"type": "cast_blocked", "entity_id": owner.entity_id, "wire_id": wire_id})
+			owner.last_event = "cast_blocked_%d" % wire_id
+			continue
+
+		var target: PlayerState = _first_beam_target(owner, origin, endpoint, int(definition["radius"]), players)
+		if target != null:
+			endpoint = Vector2i(target.position_x, target.position_y)
+			PlayerResourcesSystem.damage(target, int(definition["damage"]), config)
+			if target.health > 0 and int(definition["hit_control_duration_ms"]) > 0:
+				MovementSystem.apply_control_state(
+					target,
+					int(definition["hit_control_state"]),
+					int(definition["hit_control_duration_ms"]),
+					direction,
+					int(definition["hit_control_speed"]),
+					config,
+					int(definition["hit_control_slow_ratio"]),
+				)
+		resolved_events.append({
+			"type": "beam_fired",
+			"owner_id": owner.entity_id,
+			"source_wire_id": wire_id,
+			"target_id": target.entity_id if target != null else 0,
+			"end_x": endpoint.x,
+			"end_y": endpoint.y,
+			"damage": int(definition["damage"]) if target != null else 0,
+		})
+		if target != null and target.actor_kind == PlayerState.ActorKind.CHAMPION and target.health == 0:
+			resolved_events.append({
+				"type": "champion_defeated",
+				"projectile_id": 0,
+				"owner_id": owner.entity_id,
+				"target_id": target.entity_id,
+			})
+	events.clear()
+	events.append_array(resolved_events)
+
+
+static func _beam_clear_endpoint(
+	origin: Vector2i,
+	direction: Vector2i,
+	maximum_range: int,
+	radius: int,
+	world: CollisionWorld,
+) -> Vector2i:
+	const TRACE_STEP: int = 2_000
+	var endpoint := origin
+	var distance: int = TRACE_STEP
+	while distance <= maximum_range + TRACE_STEP:
+		var bounded_distance := mini(distance, maximum_range)
+		@warning_ignore("integer_division")
+		var candidate := Vector2i(
+			origin.x + direction.x * bounded_distance / SimConfig.FIXED_SCALE,
+			origin.y + direction.y * bounded_distance / SimConfig.FIXED_SCALE,
+		)
+		if not world.can_occupy(candidate, radius):
+			break
+		endpoint = candidate
+		if bounded_distance == maximum_range:
+			break
+		distance += TRACE_STEP
+	return endpoint
+
+
+static func _first_beam_target(
+	owner: PlayerState,
+	origin: Vector2i,
+	endpoint: Vector2i,
+	beam_radius: int,
+	players: Array[PlayerState],
+) -> PlayerState:
+	var delta := endpoint - origin
+	var length_squared: int = delta.length_squared()
+	var best: PlayerState = null
+	var best_projection: int = length_squared + 1
+	var ordered_players: Array[PlayerState] = players.duplicate()
+	ordered_players.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
+	for target: PlayerState in ordered_players:
+		if target.entity_id == owner.entity_id or target.team_id == owner.team_id or target.health <= 0 or target.spawn_protection_ticks > 0:
+			continue
+		var offset := Vector2i(target.position_x, target.position_y) - origin
+		var projection: int = offset.x * delta.x + offset.y * delta.y
+		if projection <= 0 or projection > length_squared or projection >= best_projection:
+			continue
+		@warning_ignore("integer_division")
+		var closest := Vector2i(
+			origin.x + delta.x * projection / length_squared,
+			origin.y + delta.y * projection / length_squared,
+		)
+		var separation := Vector2i(target.position_x, target.position_y) - closest
+		var hit_radius: int = target.radius + beam_radius
+		if separation.length_squared() > hit_radius * hit_radius:
+			continue
+		best = target
+		best_projection = projection
+	return best
 
 
 static func _reflect_projectile(projectile: ProjectileState, wall_normal: Vector2i) -> void:

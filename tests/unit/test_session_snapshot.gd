@@ -11,7 +11,7 @@ func run() -> int:
 
 
 func _test_snapshot_round_trip() -> void:
-	equal(SessionSnapshot.SCHEMA_VERSION, 6, "compact Hearth-and-round snapshot schema is explicit")
+	equal(SessionSnapshot.SCHEMA_VERSION, 7, "compact host-authored spell-slot snapshot schema is explicit")
 	var source := SimWorld.new(120, 7, CollisionWorld.new(3_000_000, 2_000_000))
 	var host: PlayerState = source.player()
 	host.champion_wire_id = 1
@@ -20,6 +20,8 @@ func _test_snapshot_round_trip() -> void:
 	host.health = 87_000
 	host.primary_wire_id = CombatTuning.RILLSHOT_WIRE_ID
 	host.active_1_wire_id = CombatTuning.TIDELINE_WIRE_ID
+	host.reset_spell_slots_to_kit()
+	check(host.place_kit_spell(4, host.primary_wire_id), "host rewoves primary before snapshot")
 	var guest := PlayerState.new(2)
 	guest.champion_wire_id = 2
 	guest.position_x = 1_352_000
@@ -35,6 +37,7 @@ func _test_snapshot_round_trip() -> void:
 	guest.spawn_protection_ticks = 77
 	guest.primary_wire_id = CombatTuning.ECLIPSE_DISC_WIRE_ID
 	guest.active_1_wire_id = CombatTuning.POCKET_ECLIPSE_WIRE_ID
+	guest.reset_spell_slots_to_kit()
 	source.players.append(guest)
 	var source_target := PlayerState.new(900)
 	source_target.actor_kind = PlayerState.ActorKind.TRAINING_TARGET
@@ -61,6 +64,7 @@ func _test_snapshot_round_trip() -> void:
 	equal(replica.player(2).position_x, source.player(2).position_x, "guest authoritative position round-trips")
 	equal(replica.player(2).movement_mode, PlayerState.MovementMode.SPRINT, "guest movement mode round-trips")
 	equal(replica.player(2).primary_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "guest kit identity round-trips")
+	equal(Array(replica.player().spell_wire_ids), Array(source.player().spell_wire_ids), "host ordered spell slots round-trip")
 	equal(replica.player(2).spawn_protection_ticks, source.player(2).spawn_protection_ticks, "guest spawn protection round-trips")
 	check(replica.player(900) != null, "authoritative practice actor is reconstructed")
 	equal(replica.player(900).health, 51_000, "practice actor health round-trips")

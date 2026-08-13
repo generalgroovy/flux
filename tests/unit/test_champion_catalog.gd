@@ -40,6 +40,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.champion_wire_id, 1, "Oh Tipi owns stable wire id 1")
 	equal(state.primary_wire_id, CombatTuning.RILLSHOT_WIRE_ID, "Oh Tipi equips Rillshot")
 	equal(state.active_1_wire_id, CombatTuning.TIDELINE_WIRE_ID, "Oh Tipi equips Tideline")
+	equal(Array(state.spell_wire_ids), [CombatTuning.RILLSHOT_WIRE_ID, CombatTuning.TIDELINE_WIRE_ID, 0, 0, 0], "Oh Tipi resets to a valid five-slot kit")
 	equal(state.health, 108_000, "Oh Tipi starts at authored maximum Health")
 	equal(state.stamina_maximum, 108_000, "Oh Tipi has the larger Stamina reserve")
 	state.health = 54_000
@@ -49,6 +50,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.champion_wire_id, 2, "S. Wayne owns stable wire id 2")
 	equal(state.primary_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "S. Wayne equips Eclipse Disc")
 	equal(state.active_1_wire_id, CombatTuning.POCKET_ECLIPSE_WIRE_ID, "S. Wayne equips Pocket Eclipse")
+	equal(Array(state.spell_wire_ids), [CombatTuning.ECLIPSE_DISC_WIRE_ID, CombatTuning.POCKET_ECLIPSE_WIRE_ID, 0, 0, 0], "champion switch resets incompatible slot weaving")
 	equal(state.health, 45_000, "Health ratio survives an in-world champion switch")
 	equal(state.flux, 56_000, "Flux ratio survives an in-world champion switch")
 	equal(state.stamina, 48_000, "Stamina ratio survives an in-world champion switch")

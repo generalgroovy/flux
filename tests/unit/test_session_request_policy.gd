@@ -15,10 +15,13 @@ func run() -> int:
 	state.position_x = 1_280_000
 	state.position_y = 900_000
 	equal(SessionRequestPolicy.validate(SessionTransport.REQUEST_CHAMPION_NEXT, state, layout.stations_by_id, 20, 0), SessionRequestPolicy.ACCEPTED, "Champion request is accepted at the Loom")
+	state.position_x = 1_480_000
+	equal(SessionRequestPolicy.validate(SessionTransport.REQUEST_SPELL_EQUIP, state, layout.stations_by_id, 20, 0), SessionRequestPolicy.ACCEPTED, "spell weave is accepted only at the Spell Loom")
 	state.position_x = 400_000
 	state.position_y = 400_000
 	equal(SessionRequestPolicy.validate(SessionTransport.REQUEST_TRAINING_RESET, state, layout.stations_by_id, 20, 0), SessionRequestPolicy.REFUSED_DISTANCE, "remote station request fails closed away from every station")
 	equal(SessionRequestPolicy.validate(SessionTransport.REQUEST_EMOTE, state, layout.stations_by_id, 20, 0), SessionRequestPolicy.ACCEPTED, "social emote works away from stations")
+	equal(SessionRequestPolicy.validate(SessionTransport.REQUEST_SPELL_EQUIP, state, layout.stations_by_id, 20, 0), SessionRequestPolicy.REFUSED_DISTANCE, "remote spell weave fails closed away from the Loom")
 	equal(SessionRequestPolicy.validate(SessionTransport.REQUEST_EMOTE, state, layout.stations_by_id, 20, 21), SessionRequestPolicy.REFUSED_COOLDOWN, "social emote cooldown is host-validated")
 	equal(SessionRequestPolicy.validate(99, state, layout.stations_by_id, 20, 0), SessionRequestPolicy.REFUSED_UNAVAILABLE, "unknown request fails closed")
 	state.position_x = 2_080_000

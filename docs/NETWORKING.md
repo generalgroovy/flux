@@ -2,7 +2,7 @@
 
 ## Current runnable boundary
 
-FLUX 2 protocol 22 / snapshot schema 6 exposes ten walk-up Wellspring stations,
+FLUX 2 protocol 23 / snapshot schema 7 exposes eleven walk-up Wellspring stations,
 including the Farflow Charter, Session Hearth and host stewardship tools in
 the eastern Wellspring:
 
@@ -14,6 +14,7 @@ the eastern Wellspring:
 | **Session Hearth** | Shows connected/returning travellers and readiness; all connected travellers ready here before the host begins a three-second synchronized Proving Court start |
 | **Company Ledger** | Lets only the host cycle connected guests in stable order; selection is visibly non-destructive and excludes returning reservations |
 | **Parting Bell** | Arms release of the Ledger selection, then requires a second matching press within three seconds; the guest receives a reason and no return reservation |
+| **Spell Loom** | Repositions a champion's two proven spells among five canonical slots; the host validates actor proximity and the next snapshot confirms the order |
 | **Proving Court** | Receives the intact connected roster at authored spawns, assigns combat teams and wards, scores knockouts, respawns defeated travellers, resolves score/time results and returns the company to the Hearth |
 
 After a result, the connected roster gathers at eight collision-cleared points
@@ -53,10 +54,11 @@ publishes compact snapshots at 60 Hz. Each client follows its assigned actor,
 renders the named remote traveller, and receives authoritative resources,
 movement, projectiles, training-target health and semantic feedback. `T` /
 controller D-pad up sends a shared HELLO bubble; the host also authorizes
-Practice Bell resets and per-actor Champion Loom attunement from authoritative
-station proximity. The render snapshot keeps the 8 KiB expansion cap at eight travellers,
+Practice Bell resets, per-actor Champion Loom attunement and five-row Spell Loom
+placement from authoritative station proximity. The render snapshot keeps the
+8 KiB expansion cap at eight travellers,
 26 projectile lanes, four targets and 12 events; overflow is explicit in the
-guest HUD. Snapshots are validated, FastLZ-packed into a bounded protocol-21
+guest HUD. Snapshots are validated, FastLZ-packed into a bounded protocol-23
 wire envelope, and validated again after bounded expansion. The maximum
 eight-player fixture and live three-player court stay within one 1,392-byte
 ENet MTU. Each participating guest also predicts
@@ -178,9 +180,12 @@ trusted sender ID, tick, position, damage, cooldown, resource, score or outcome.
 
 Reliable interaction requests have their own monotonic sequence and bounded
 queue. The host stamps the peer's trusted entity ID, checks action type,
-authoritative station distance and emote cooldown, performs the mutation, then
+typed bounded value, authoritative station distance and emote cooldown,
+performs the mutation, then
 publishes a semantic confirmation or refusal. Guests never reset the court or
-change a champion speculatively.
+change a champion or spell order speculatively. A spell-placement value can
+encode only one of five rows and one of the two proven roles; smuggled values,
+duplicates and out-of-range requests fail closed.
 
 ## Implementation order from here
 
@@ -190,7 +195,7 @@ change a champion speculatively.
 | Authoritative presence | Implemented: host registers/removes named peer actors and maps network peers to stable entities 2-8 |
 | Movement snapshots | Implemented: host stamps inputs to its tick, simulates all actors, bounds stale input and sends 60 Hz snapshots; guest interpolates presentation |
 | Shared projectiles | Implemented: compact projectile lanes and bounded cast/hit/graze events render on guests while outcomes remain host-owned |
-| Shared Wellspring interaction | Implemented: host authorizes HELLO, Practice Bell and Champion Loom requests; confirmations/refusals and target state replicate |
+| Shared Wellspring interaction | Implemented: host authorizes HELLO, Practice Bell, Champion Loom and bounded Spell Loom requests; confirmations/refusals, target state and canonical spell order replicate |
 | Prediction/reconciliation | Implemented: 48-input movement-only history, peer-scoped processed-sequence acknowledgement, deterministic replay, bounded correction and ACK/correction HUD without client outcome authority |
 | Return continuity | Implemented on Windows localhost: 15-second exact-actor reservation, random memory-only capability, name binding, rotation, expiry and explicit host loss |
 | Diegetic session charter | Implemented: three in-world profiles, 2/4/8 capacity, host-authoritative traveller damage teams, Bell-reset policy, handshake assignment and explicit full/incompatible refusal |

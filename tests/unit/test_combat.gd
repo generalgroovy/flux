@@ -35,6 +35,12 @@ func _test_semantic_spell_slots(tick_rate: int) -> void:
 	equal(empty.flux, initial_flux, "%d Hz empty slot spends no Flux" % tick_rate)
 	check(empty_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "empty_slot" and int(event.get("slot", 0)) == 4), "%d Hz empty slot refusal is explicit" % tick_rate)
 
+	var rewoven_world := SimWorld.new(tick_rate)
+	var rewoven: PlayerState = rewoven_world.player()
+	check(rewoven.place_kit_spell(4, rewoven.primary_wire_id), "%d Hz primary rewoves into slot 5" % tick_rate)
+	check(_step(rewoven_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_5, 1000, 0)), "%d Hz rewoven command steps" % tick_rate)
+	equal(rewoven.pending_cast_wire_id, rewoven.primary_wire_id, "%d Hz rewoven slot invokes its canonical spell wire" % tick_rate)
+
 
 func _step(world: SimWorld, command: SimCommand) -> bool:
 	return world.step([command])

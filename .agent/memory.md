@@ -6,23 +6,26 @@ each playable slice.
 ## Current green frontier — 2026-08-13
 
 - Branch: `codex/continuous-overhaul`.
-- Protocol 22, snapshot schema 6, player preference schema 6.
+- Protocol 23, snapshot schema 7, player preference schema 6.
 - Two basic champions, the non-ability movement foundation, cone occlusion,
-  ten walk-up Wellspring stations, direct-IP Farflow, Charters, Hearth,
+  eleven walk-up Wellspring stations, direct-IP Farflow, Charters, Hearth,
   Proving Court, reconnect, stewardship and late-join observation are live.
 - Up to eight players have authored court spawns, teams, wards, bounds,
   knockout/respawn, results, Hearth return and same-roster Round 2.
-- Snapshot schema 6 uses a bounded FastLZ envelope; maximum fixtures and live
+- Snapshot schema 7 uses a bounded FastLZ envelope; maximum fixtures and live
   three-player journeys remain inside one 1,392-byte ENet MTU.
 - Five stable spell-slot command edges now fit the existing bounded command
-  packet. Number keys 1–5 are migration-safe, conflict-editable inputs; slots
-  1/2 adapt to each champion's proven primary/active and slots 3–5 refuse
-  visibly without spending Flux. Schema-v2 loadouts validate five unique IDs.
+  packet. Number keys 1–5 are migration-safe, conflict-editable inputs. The
+  in-world Spell Loom repositions the current champion's primary/active among
+  five host-owned canonical slots; three honest empties refuse without spending
+  Flux, guest requests wait for snapshot confirmation, and champion changes
+  reset to the safe 1/2 layout. Schema-v2 loadouts validate five unique IDs.
 - Ability schema 2 validates shape, delivery, impact, residue, planned material
   operation and separate runtime gates. Only six proven spells enter the
   playable selector; every material mutation remains explicitly disabled.
-- Latest verification is 14,868 assertions plus Windows 60/120 Hz
-  three-process spectator-to-Hearth-to-Round-2 journeys with empty stderr.
+- Latest verification is 14,909 assertions plus source import/60/120 Hz boots;
+  prior Windows 60/120 Hz three-process spectator-to-Hearth-to-Round-2 journeys
+  remain green with empty stderr.
 - Portable release tooling installs only the official Godot 4.7.1 Windows/Linux
   templates by bounded HTTP range with ZIP CRC/size validation, excludes
   non-runtime workspace content, emits checksummed Windows ZIP/Linux tar.gz
@@ -37,10 +40,9 @@ each playable slice.
 
 ## Next acceptance-driven slice
 
-Build the host-authoritative Wellspring Spell Loom editor over the five-slot
-foundation: reposition only legal proven champion spells, replicate the ordered
-slots, keep legacy primary/active access explicit, and reject remote mutation
-outside the Loom. Then promote one representative spell shape at a time through
-deterministic simulation, cues and tests. Preserve the
-packaged Windows green point; physical Garuda and real remote-friend proof
+Promote one representative non-projectile spell shape at a time, beginning with
+a deterministic beam fixture whose simulation, Flux/cooldown/refusal, cues,
+snapshot representation and training read all remain host-owned. Keep material
+operations sealed until reset ownership and route-safety fixtures exist. Preserve
+the packaged Windows green point; physical Garuda and real remote-friend proof
 remain explicit external acceptance gaps.

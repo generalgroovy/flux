@@ -43,6 +43,8 @@ const REQUEST_TRAINING_RESET: int = 2
 const REQUEST_CHAMPION_NEXT: int = 3
 const REQUEST_READY_TOGGLE: int = 4
 const REQUEST_PRACTICE_START: int = 5
+const REQUEST_SPELL_EQUIP: int = 6
+const MAX_SPELL_EQUIP_VALUE: int = PlayerState.SPELL_SLOT_COUNT * 2
 
 var peer: ENetMultiplayerPeer
 var mode: int = Mode.OFFLINE
@@ -286,10 +288,10 @@ func send_input(sequence: int, command: SimCommand) -> bool:
 	return _send_to(SERVER_PEER_ID, payload)
 
 
-func send_request(sequence: int, action: int) -> bool:
+func send_request(sequence: int, action: int, value: int = 0) -> bool:
 	if not is_connected_client():
 		return false
-	var payload := {"kind": PACKET_REQUEST, "sequence": sequence, "action": action}
+	var payload := {"kind": PACKET_REQUEST, "sequence": sequence, "action": action, "value": value}
 	if not _valid_request_packet(payload):
 		return false
 	return _send_to(SERVER_PEER_ID, payload)
@@ -450,6 +452,7 @@ func _handle_packet(sender_id: int, packet_bytes: PackedByteArray) -> void:
 						"entity_id": int(entity_by_peer.get(sender_id, 0)),
 						"sequence": sequence,
 						"action": int(packet["action"]),
+						"value": int(packet["value"]),
 					})
 					last_request_sequence_by_peer[sender_id] = sequence
 		return
@@ -871,8 +874,13 @@ static func _valid_input_packet(packet: Dictionary) -> bool:
 
 
 static func _valid_request_packet(packet: Dictionary) -> bool:
-	if typeof(packet.get("sequence")) != TYPE_INT or typeof(packet.get("action")) != TYPE_INT:
+	if typeof(packet.get("sequence")) != TYPE_INT or typeof(packet.get("action")) != TYPE_INT or typeof(packet.get("value")) != TYPE_INT:
 		return false
 	var sequence := int(packet["sequence"])
 	var action := int(packet["action"])
-	return sequence >= 0 and sequence <= 0x7fffffff and action in [REQUEST_EMOTE, REQUEST_TRAINING_RESET, REQUEST_CHAMPION_NEXT, REQUEST_READY_TOGGLE, REQUEST_PRACTICE_START]
+	var value := int(packet["value"])
+	if sequence < 0 or sequence > 0x7fffffff:
+		return false
+	if action == REQUEST_SPELL_EQUIP:
+		return value >= 1 and value <= MAX_SPELL_EQUIP_VALUE
+	return value == 0 and action in [REQUEST_EMOTE, REQUEST_TRAINING_RESET, REQUEST_CHAMPION_NEXT, REQUEST_READY_TOGGLE, REQUEST_PRACTICE_START]

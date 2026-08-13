@@ -161,6 +161,7 @@ func apply_to_player(state: PlayerState, champion_id: String, preserve_resource_
 	var kit_wires: Dictionary = kit_wires_by_champion[champion_id]
 	state.primary_wire_id = int(kit_wires["primary"])
 	state.active_1_wire_id = int(kit_wires["active_1"])
+	state.reset_spell_slots_to_kit()
 	state.pending_cast_wire_id = 0
 	state.pending_cast_ticks = 0
 	state.cast_recovery_ticks = 0

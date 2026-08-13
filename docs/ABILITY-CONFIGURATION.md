@@ -66,6 +66,21 @@ Its schema-v2 spell bar orders Arc Primary, Vector Lance, Prism Ward, Stone
 Channel, and Phase Step. Only the first two are promoted into current champion
 runtime kits; unpromoted entries remain validated content rather than fake casts.
 
+## Current Spell Loom boundary
+
+The eleventh Wellspring station is a host-authoritative Spell Loom. It exposes
+five numbered rows but only the selected champion's two end-to-end kit spells:
+`PRIMARY` and `ACTIVE`. Placing one into a row swaps it with its previous row,
+so the canonical state always contains each proven spell exactly once and three
+zero-valued empty slots. The host accepts a bounded role/slot request only while
+the actor is inside the Loom radius; guests wait for the next validated snapshot
+instead of applying a speculative loadout.
+
+The arrangement is session-scoped and resets to slots 1/2 when a champion is
+attuned. Left/right click and the existing active key remain explicit legacy
+access paths during migration. Catalog-only abilities never appear in the Loom,
+and no material operation is enabled by rearranging a slot.
+
 ## Promotion sequence
 
 1. Canonical catalog/loadout validation and boot integration — complete.
@@ -77,7 +92,8 @@ runtime kits; unpromoted entries remain validated content rather than fake casts
    pair; defense, full kit, final art/audio and balance acceptance remain.
 6. S. Wayne Eclipse Disc/Pocket Eclipse — complete basic pair with a canonical
    single ricochet and bounded slow; deeper dummy and accessibility reads remain.
-7. Training configuration UI and authoritative host ready-check.
+7. Host-authoritative five-row Spell Loom for the two proven kit spells —
+   complete foundation; persistence and additional promoted spells remain.
 8. One approved champion through bot, replay, network, reconnect, spectator,
    accessibility, and platform gates.
 9. Compile optional Flux Formula variants from approved source-family,

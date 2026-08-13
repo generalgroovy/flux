@@ -93,11 +93,12 @@ The eastern Host/Join Farflow stations operate it without a detached menu; use
 `--join-address=IP`, `--session-port=24872` and `--player-name=Name` for direct-IP
 diagnostics. Its real loopback suite covers compatibility, bounded validated
 input, mismatch refusal and disconnect cleanup. Stable peer actors, host-side
-movement simulation and compact 60 Hz guest snapshots are live. Protocol 22 /
-snapshot schema 6 carries bounded projectile lanes, target state, compact
+movement simulation and compact 60 Hz guest snapshots are live. Protocol 23 /
+snapshot schema 7 carries bounded projectile lanes, target state, five canonical
+spell slots, compact
 Hearth presence/readiness, packed Proving Court state and semantic
 feedback without moving any outcome authority to clients. Reliable
-social/Bell/Loom requests are validated
+social/Bell/Champion-Loom/Spell-Loom requests are validated
 against host-owned station proximity and return shared confirmations; training
 target health also replicates. A separate peer-scoped channel acknowledges the
 last processed input and reconciles bounded movement-only guest prediction;
@@ -111,6 +112,7 @@ its team/reset rules are enforced by host simulation. Use
 `--session-charter=sparring_circle` only for repeatable diagnostics. Capture-only
 `--capture-spawn=X,Y` and `--capture-expanded-station=ID` support deterministic
 visual inspection without changing normal spawn or interaction behavior.
+Use `spell-loom` as the station ID to inspect the five-row session editor.
 
 The Session Hearth beside the Farflow gates is the diegetic lobby boundary. Its
 bubble lists connected/returning names and readiness; each connected traveller
@@ -143,12 +145,12 @@ filtering remains required before limited-information network modes.
 
 Both 60 and 120 Hz simulations publish shared state at 60 snapshots per second.
 Semantic events are retained for four snapshots and deduplicated by stable ID;
-do not clear an event after only one unreliable send. Protocol 22 validates and
-FastLZ-packs snapshot schema 6 into a bounded wire envelope; both the maximum
+do not clear an event after only one unreliable send. Protocol 23 validates and
+FastLZ-packs snapshot schema 7 into a bounded wire envelope; both the maximum
 eight-player fixture and live three-player journeys must remain within the
 1,392-byte ENet MTU before the unreliable-ordered send.
 
-Protocol 22 reserves a normally disconnected guest's exact actor for 15 seconds and
+Protocol 23 reserves a normally disconnected guest's exact actor for 15 seconds and
 binds return to a random in-memory capability plus the original name. A normal
 player uses Join Farflow again; `--farflow-smoke-reconnect` is test-only. Do not
 print, persist or add that capability to snapshots/diagnostics.

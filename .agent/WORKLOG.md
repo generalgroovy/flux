@@ -1,5 +1,50 @@
 # FLUX2 agent worklog
 
+## 2026-08-13 — host-authoritative five-row Spell Loom
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added the eleventh walk-up Wellspring station, the Spell Loom. Its modal
+  in-world editor shows five numbered rows, the selected champion's two proven
+  roles and canonical ability metadata while the shared world/network continue.
+- Advanced the network protocol to 23 and snapshot schema to 7. Every player
+  now owns five validated spell wire slots; the host accepts only a bounded
+  role/row request from authoritative Spell Loom proximity and snapshots the
+  resulting order to every peer.
+- Spell placement swaps the existing primary or active into the chosen row,
+  preserving exactly one of each and three explicit empties. Empty casts refuse
+  without cost, catalog-only spells never enter the selector, legacy click/key
+  access remains explicit, and champion changes restore the safe 1/2 layout.
+- Combat resolves semantic slot commands through canonical player state rather
+  than renderer/HUD position. Match restart defensively closes open binding and
+  spell editors before constructing the new simulation.
+
+Validation:
+
+- Full Godot gate: 14,909 assertions, zero failures; import and independent
+  60/120 Hz source boots passed on protocol 23.
+- New unit coverage proves editor navigation/encoding, safe swapping, canonical
+  slot invariants, reordered combat casts, snapshot roundtrip/fail-closed data,
+  typed transport values, smuggled-value refusal and host station proximity.
+- A real 1280×720 GPU frame at
+  `.godot/spell-loom-capture/frame00000001.png` was inspected: all five rows,
+  selected role, ability shape/element/cost and authority state remain readable.
+- `scripts/package.ps1 -Target All` rebuilt the checksummed Windows ZIP and
+  Linux tar.gz. Packaged Windows `PLAY-FLUX.cmd -- --safe-quit-smoke` completed
+  a real AMD/OpenGL 120 Hz boot, preference flush, peer close and exit code 0.
+
+Known limitations and risks:
+
+- Spell order is deliberately session-scoped and resets on champion change;
+  persistence needs a versioned profile decision rather than an implicit save.
+- Only the two proven projectile spells per champion are selectable. Beam,
+  spray, field, defense, movement and material effects remain honest next slices.
+- Physical Garuda/Sway and remote two-machine friend proof remain external gaps.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-13 — truthful spell shape and material-operation contract
 
 Branch: `codex/continuous-overhaul`

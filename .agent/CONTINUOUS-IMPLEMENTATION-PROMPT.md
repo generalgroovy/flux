@@ -15,9 +15,10 @@ slices, checkpoint each green result, and immediately start the next accepted
 slice. Do not stop at plans, scaffolds, catalogs, generated images or passing
 unit tests when the player-facing outcome is still absent.
 
-The current green frontier is protocol 22: two foundation champions, the planned
-non-ability movement grammar, full/cone POV with building cutaways, nine
-Wellspring stations, direct-IP host/join, shared interactions, Hearth readiness,
+The current green frontier is protocol 23: two foundation champions, the planned
+non-ability movement grammar, full/cone POV with building cutaways, eleven
+Wellspring stations including a host-authoritative five-row Spell Loom,
+direct-IP host/join, shared interactions, Hearth readiness,
 one Proving Court round, reconnect, stewardship and late-join observation pass
 the maintained Windows source journeys. Preserve all of it. Export templates and
 physical Garuda Sway package proof remain honest external gaps.

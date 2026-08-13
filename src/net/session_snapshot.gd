@@ -2,9 +2,9 @@ class_name SessionSnapshot
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 6
+const SCHEMA_VERSION: int = 7
 const MAX_PLAYERS: int = 8
-const PLAYER_VALUE_COUNT: int = 44
+const PLAYER_VALUE_COUNT: int = 49
 const PROJECTILE_VALUE_COUNT: int = 12
 const EVENT_VALUE_COUNT: int = 6
 const TARGET_VALUE_COUNT: int = 6
@@ -59,6 +59,8 @@ static func capture(
 				state.edgeweave_cooldown_ticks, int(state.primary_held),
 				state.pending_cast_aim_x, state.pending_cast_aim_y,
 				state.spawn_protection_ticks,
+				state.spell_wire_ids[0], state.spell_wire_ids[1], state.spell_wire_ids[2],
+				state.spell_wire_ids[3], state.spell_wire_ids[4],
 			]),
 		])
 	if hearth_values.is_empty():
@@ -332,6 +334,7 @@ static func _apply_values(state: PlayerState, values: PackedInt32Array) -> void:
 	state.pending_cast_aim_x = values[41]
 	state.pending_cast_aim_y = values[42]
 	state.spawn_protection_ticks = values[43]
+	state.spell_wire_ids = PackedInt32Array([values[44], values[45], values[46], values[47], values[48]])
 
 
 static func _valid_player_values(values: PackedInt32Array) -> bool:
@@ -372,7 +375,17 @@ static func _valid_player_values(values: PackedInt32Array) -> bool:
 	for index: int in [41, 42]:
 		if values[index] < -1000 or values[index] > 1000:
 			return false
-	return values[32] in [0, 1] and values[33] in [0, 1]
+	var spell_slots := PackedInt32Array([values[44], values[45], values[46], values[47], values[48]])
+	var primary_count: int = 0
+	var active_count: int = 0
+	for wire_id: int in spell_slots:
+		if wire_id == values[28]:
+			primary_count += 1
+		elif wire_id == values[29]:
+			active_count += 1
+		elif wire_id != 0:
+			return false
+	return values[32] in [0, 1] and values[33] in [0, 1] and primary_count == 1 and active_count == 1
 
 
 static func _projectile_from_values(values: PackedInt64Array) -> ProjectileState:
@@ -568,7 +581,7 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 	if kind == 12:
 		return values[2] > 0 and values[2] <= 4096
 	if kind == 13:
-		return values[2] in [SessionTransport.REQUEST_EMOTE, SessionTransport.REQUEST_TRAINING_RESET, SessionTransport.REQUEST_CHAMPION_NEXT, SessionTransport.REQUEST_READY_TOGGLE, SessionTransport.REQUEST_PRACTICE_START] and values[3] >= 1 and values[3] <= 3
+		return values[2] in [SessionTransport.REQUEST_EMOTE, SessionTransport.REQUEST_TRAINING_RESET, SessionTransport.REQUEST_CHAMPION_NEXT, SessionTransport.REQUEST_READY_TOGGLE, SessionTransport.REQUEST_PRACTICE_START, SessionTransport.REQUEST_SPELL_EQUIP] and values[3] >= 1 and values[3] <= 3
 	if kind == 14:
 		return values[2] in [0, 1]
 	if kind == 15:

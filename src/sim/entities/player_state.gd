@@ -2,6 +2,8 @@ class_name PlayerState
 extends RefCounted
 
 
+const SPELL_SLOT_COUNT: int = 5
+
 enum MovementMode {
 	IDLE,
 	WALK,
@@ -67,6 +69,7 @@ var active_1_cooldown_ticks: int = 0
 var edgeweave_cooldown_ticks: int = 0
 var primary_wire_id: int = CombatTuning.PRIMARY_WIRE_ID
 var active_1_wire_id: int = CombatTuning.ACTIVE_1_WIRE_ID
+var spell_wire_ids := PackedInt32Array([CombatTuning.PRIMARY_WIRE_ID, CombatTuning.ACTIVE_1_WIRE_ID, 0, 0, 0])
 
 var health_maximum: int = PlayerTuning.HEALTH_MAXIMUM
 var health_recovery_per_second: int = PlayerTuning.HEALTH_RECOVERY_PER_SECOND
@@ -154,6 +157,41 @@ func _init(requested_entity_id: int = 1) -> void:
 
 func is_airborne() -> bool:
 	return hop_ticks > 0 or air_dodge_ticks > 0 or superglide_ticks > 0
+
+
+func reset_spell_slots_to_kit() -> void:
+	spell_wire_ids = PackedInt32Array([primary_wire_id, active_1_wire_id, 0, 0, 0])
+
+
+func spell_wire_id(slot_number: int) -> int:
+	return int(spell_wire_ids[slot_number - 1]) if slot_number >= 1 and slot_number <= SPELL_SLOT_COUNT and spell_wire_ids.size() == SPELL_SLOT_COUNT else 0
+
+
+func place_kit_spell(slot_index: int, wire_id: int) -> bool:
+	if slot_index < 0 or slot_index >= SPELL_SLOT_COUNT or wire_id not in [primary_wire_id, active_1_wire_id] or not has_valid_spell_slots():
+		return false
+	var previous_index: int = spell_wire_ids.find(wire_id)
+	if previous_index < 0:
+		return false
+	var displaced_wire_id: int = spell_wire_ids[slot_index]
+	spell_wire_ids[slot_index] = wire_id
+	spell_wire_ids[previous_index] = displaced_wire_id
+	return has_valid_spell_slots()
+
+
+func has_valid_spell_slots() -> bool:
+	if spell_wire_ids.size() != SPELL_SLOT_COUNT or primary_wire_id <= 0 or active_1_wire_id <= 0 or primary_wire_id == active_1_wire_id:
+		return false
+	var primary_count: int = 0
+	var active_count: int = 0
+	for wire_id: int in spell_wire_ids:
+		if wire_id == primary_wire_id:
+			primary_count += 1
+		elif wire_id == active_1_wire_id:
+			active_count += 1
+		elif wire_id != 0:
+			return false
+	return primary_count == 1 and active_count == 1
 
 
 func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> void:
@@ -246,4 +284,5 @@ func canonical_values() -> PackedInt64Array:
 		wall_skim_surface_id, wall_skim_lockout_id, wall_skim_lockout_ticks,
 		landing_ticks, landing_intensity, int(sprinting),
 		control_state, control_ticks, control_x, control_y, control_speed, slow_ratio,
+		spell_wire_ids[0], spell_wire_ids[1], spell_wire_ids[2], spell_wire_ids[3], spell_wire_ids[4],
 	])

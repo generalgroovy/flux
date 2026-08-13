@@ -49,6 +49,7 @@ var material_grid: MaterialGrid
 var material_preview_texture: ImageTexture
 var player_preferences: PlayerPreferences
 var controls_editor: ControlBindingEditor
+var spell_loom_editor: SpellLoomEditor
 var player_sprite: WellspringCharacterSprite
 var session_transport: SessionTransport
 var session_steward: SessionSteward
@@ -132,6 +133,7 @@ func _ready() -> void:
 	if not preferences_existed and not player_preferences.save_to_file():
 		push_warning(player_preferences.last_error)
 	controls_editor = ControlBindingEditor.new()
+	spell_loom_editor = SpellLoomEditor.new()
 	_apply_preference_overrides()
 	hub_definition = HubDefinition.new()
 	if not hub_definition.load_from_file(HUB_DEFINITION_PATH):
@@ -206,6 +208,8 @@ func _ready() -> void:
 		station_notice_seconds = 0.0
 		if capture_expanded_station_id == "controls-lectern":
 			controls_editor.open_editor()
+		elif capture_expanded_station_id == "spell-loom":
+			spell_loom_editor.open_editor()
 	print(
 		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
@@ -235,6 +239,9 @@ func _notification(what: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if spell_loom_editor != null and spell_loom_editor.is_open:
+		_handle_spell_loom_input(event)
+		return
 	if controls_editor == null or not controls_editor.is_open:
 		return
 	var handled := false
@@ -309,6 +316,55 @@ func _unhandled_input(event: InputEvent) -> void:
 		queue_redraw()
 
 
+func _handle_spell_loom_input(event: InputEvent) -> void:
+	var handled := false
+	if event is InputEventKey and event.pressed and not event.echo:
+		var key_event := event as InputEventKey
+		match key_event.keycode:
+			KEY_ESCAPE:
+				_close_spell_loom_editor()
+			KEY_UP:
+				spell_loom_editor.move_selection(-1, 0)
+			KEY_DOWN:
+				spell_loom_editor.move_selection(1, 0)
+			KEY_LEFT:
+				spell_loom_editor.move_selection(0, -1)
+			KEY_RIGHT:
+				spell_loom_editor.move_selection(0, 1)
+			KEY_ENTER, KEY_KP_ENTER:
+				_submit_spell_loom_choice()
+		handled = true
+	elif event is InputEventMouseButton and event.pressed:
+		var mouse_event := event as InputEventMouseButton
+		if mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			spell_loom_editor.move_selection(-1, 0)
+		elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			spell_loom_editor.move_selection(1, 0)
+		elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
+			spell_loom_editor.select_at(mouse_event.position)
+		handled = true
+	elif event is InputEventJoypadButton and event.pressed:
+		var joy_event := event as InputEventJoypadButton
+		match joy_event.button_index:
+			JOY_BUTTON_DPAD_UP:
+				spell_loom_editor.move_selection(-1, 0)
+			JOY_BUTTON_DPAD_DOWN:
+				spell_loom_editor.move_selection(1, 0)
+			JOY_BUTTON_DPAD_LEFT:
+				spell_loom_editor.move_selection(0, -1)
+			JOY_BUTTON_DPAD_RIGHT:
+				spell_loom_editor.move_selection(0, 1)
+			JOY_BUTTON_A:
+				_submit_spell_loom_choice()
+			JOY_BUTTON_B:
+				_close_spell_loom_editor()
+		handled = true
+	if handled:
+		controls_input_guard_frames = 2
+		get_viewport().set_input_as_handled()
+		queue_redraw()
+
+
 func _exit_tree() -> void:
 	if player_preferences != null and not player_preferences.save_to_file():
 		push_warning(player_preferences.last_error)
@@ -330,7 +386,7 @@ func _process(delta: float) -> void:
 		_advance_safe_quit()
 		return
 	_update_reconnect_smoke(delta)
-	var controls_blocking: bool = controls_editor != null and controls_editor.is_open or controls_input_guard_frames > 0
+	var controls_blocking: bool = (controls_editor != null and controls_editor.is_open) or (spell_loom_editor != null and spell_loom_editor.is_open) or controls_input_guard_frames > 0
 	if controls_input_guard_frames > 0:
 		controls_input_guard_frames -= 1
 	if not controls_blocking:
@@ -381,7 +437,7 @@ func _process(delta: float) -> void:
 		previous_position = current_position
 		var pointer_world_position := Vector2(capture_pointer_world) if capture_pointer_world.x >= 0 else get_viewport().get_mouse_position() + _camera_origin(_camera_focus_position(current_position))
 		var command: SimCommand
-		if controls_editor.is_open or controls_blocking:
+		if controls_editor.is_open or spell_loom_editor.is_open or controls_blocking:
 			command = SimCommand.new(world.tick, input_router.entity_id, 0, 0, 0, 0, input_router.last_quantized_aim.x, input_router.last_quantized_aim.y)
 		else:
 			command = input_router.sample(
@@ -570,13 +626,15 @@ func _draw() -> void:
 		13,
 		ATTUNEMENT_COLOR,
 	)
-	_draw_spell_bar(observed_state, primary_ability, active_ability)
+	_draw_spell_bar(observed_state)
 	if show_debug_overlay and dropped_time_seconds > 0.0:
 		draw_string(ThemeDB.fallback_font, Vector2(32, 132), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
 	if show_debug_overlay:
 		_draw_material_yard_preview()
 	if controls_editor != null and controls_editor.is_open:
 		_draw_controls_editor()
+	elif spell_loom_editor != null and spell_loom_editor.is_open:
+		_draw_spell_loom_editor()
 
 
 func _draw_resource_bar(rectangle: Rect2, label: String, value: int, maximum: int, color: Color) -> void:
@@ -587,9 +645,13 @@ func _draw_resource_bar(rectangle: Rect2, label: String, value: int, maximum: in
 	draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(7, 15), "%s %d/%d" % [label, value / 1000, maximum / 1000], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 12.0, 12, Color.WHITE)
 
 
-func _draw_spell_bar(state: PlayerState, primary_ability: Dictionary, active_ability: Dictionary) -> void:
-	var abilities: Array[Dictionary] = [primary_ability, active_ability, {}, {}, {}]
-	var cooldown_ticks: Array[int] = [state.primary_cooldown_ticks, state.active_1_cooldown_ticks, 0, 0, 0]
+func _draw_spell_bar(state: PlayerState) -> void:
+	var abilities: Array[Dictionary] = []
+	var cooldown_ticks: Array[int] = []
+	for slot_number: int in range(1, PlayerState.SPELL_SLOT_COUNT + 1):
+		var wire_id: int = state.spell_wire_id(slot_number)
+		abilities.append(ability_catalog.ability_from_wire(wire_id))
+		cooldown_ticks.append(state.primary_cooldown_ticks if wire_id == state.primary_wire_id else (state.active_1_cooldown_ticks if wire_id == state.active_1_wire_id else 0))
 	var start := Vector2(68, 118)
 	var cell_size := Vector2(224, 44)
 	for slot_index: int in range(abilities.size()):
@@ -644,6 +706,58 @@ func _draw_controls_editor() -> void:
 	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 38, footer_y), controls_editor.status_message, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 76.0, 13, ATTUNEMENT_COLOR if controls_editor.capturing else PARCHMENT_COLOR)
 	var help := "PRESS THE CHOSEN INPUT · ESC / BACK CANCELS" if controls_editor.capturing else "ARROWS / DPAD SELECT · ENTER / A BIND · BACKSPACE / X UNBIND · R / Y RESET · ESC / B CLOSE"
 	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 38, footer_y + 27), help, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 76.0, 12, PALE_STONE_COLOR)
+
+
+func _draw_spell_loom_editor() -> void:
+	var panel := SpellLoomEditor.PANEL_RECT
+	draw_rect(Rect2(Vector2.ZERO, Vector2(1280, 720)), Color("060907a8"), true)
+	draw_rect(panel, Color(PANEL_COLOR, 0.98), true)
+	draw_rect(panel, Color(FLUX_COLOR, 0.74), false, 3.0)
+	var state: PlayerState = _local_player_state()
+	if state == null:
+		return
+	var champion_id := champion_catalog.champion_id_from_wire(state.champion_wire_id)
+	var champion: Dictionary = champion_catalog.champion(champion_id)
+	draw_string(ThemeDB.fallback_font, panel.position + Vector2(40, 42), "SPELL LOOM · %s" % String(champion.get("display_name", champion_id)).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 650.0, 24, PARCHMENT_COLOR)
+	draw_string(ThemeDB.fallback_font, panel.position + Vector2(40, 68), "Arrange the two proven kit spells. Locked catalog designs cannot be equipped.", HORIZONTAL_ALIGNMENT_LEFT, 720.0, 13, PALE_STONE_COLOR)
+	var role_wires: Array[int] = [state.primary_wire_id, state.active_1_wire_id]
+	for role: int in range(SpellLoomEditor.ROLE_COUNT):
+		var role_rect := Rect2(SpellLoomEditor.ROLE_X + float(role) * SpellLoomEditor.ROLE_WIDTH, SpellLoomEditor.FIRST_ROW_Y - 54.0, SpellLoomEditor.ROLE_WIDTH - 7.0, 40.0)
+		var selected_role: bool = role == spell_loom_editor.selected_role
+		draw_rect(role_rect, Color(FLUX_COLOR, 0.18 if selected_role else 0.06), true)
+		draw_rect(role_rect, FLUX_COLOR if selected_role else Color(BRASS_COLOR, 0.45), false, 2.0 if selected_role else 1.0)
+		draw_string(ThemeDB.fallback_font, role_rect.position + Vector2(9, 25), "PRIMARY" if role == SpellLoomEditor.ROLE_PRIMARY else "ACTIVE", HORIZONTAL_ALIGNMENT_LEFT, role_rect.size.x - 18.0, 12, PARCHMENT_COLOR if selected_role else PALE_STONE_COLOR)
+	for slot_index: int in range(PlayerState.SPELL_SLOT_COUNT):
+		var row := Rect2(SpellLoomEditor.SLOT_X, SpellLoomEditor.FIRST_ROW_Y + float(slot_index) * SpellLoomEditor.ROW_HEIGHT, SpellLoomEditor.SLOT_WIDTH, SpellLoomEditor.ROW_HEIGHT - 6.0)
+		var selected_slot: bool = slot_index == spell_loom_editor.selected_slot_index
+		draw_rect(row, Color(PARCHMENT_COLOR, 0.075 if selected_slot else (0.035 if slot_index % 2 == 0 else 0.018)), true)
+		draw_rect(row, ATTUNEMENT_COLOR if selected_slot else Color(BRASS_COLOR, 0.35), false, 2.0 if selected_slot else 1.0)
+		var wire_id: int = state.spell_wire_id(slot_index + 1)
+		var ability: Dictionary = ability_catalog.ability_from_wire(wire_id)
+		var ability_name := "EMPTY" if ability.is_empty() else String(ability.get("display_name", "SPELL")).to_upper()
+		var role_name := "OPEN"
+		if wire_id == state.primary_wire_id:
+			role_name = "PRIMARY"
+		elif wire_id == state.active_1_wire_id:
+			role_name = "ACTIVE"
+		draw_string(ThemeDB.fallback_font, row.position + Vector2(14, 28), "%d" % (slot_index + 1), HORIZONTAL_ALIGNMENT_LEFT, 34.0, 17, ATTUNEMENT_COLOR)
+		draw_string(ThemeDB.fallback_font, row.position + Vector2(54, 27), ability_name, HORIZONTAL_ALIGNMENT_LEFT, 320.0, 15, PARCHMENT_COLOR if not ability.is_empty() else PALE_STONE_COLOR)
+		draw_string(ThemeDB.fallback_font, row.position + Vector2(430, 27), role_name, HORIZONTAL_ALIGNMENT_RIGHT, 140.0, 12, FLUX_COLOR if role_name != "OPEN" else Color(PALE_STONE_COLOR, 0.65))
+	var selected_wire_id: int = role_wires[spell_loom_editor.selected_role]
+	var selected_ability: Dictionary = ability_catalog.ability_from_wire(selected_wire_id)
+	var detail_x: float = SpellLoomEditor.ROLE_X
+	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 276), String(selected_ability.get("display_name", "SPELL")).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 270.0, 18, PARCHMENT_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 302), "%s · %s · %s" % [String(selected_ability.get("element", "")).to_upper(), String(selected_ability.get("shape", "")).to_upper(), String(selected_ability.get("delivery", "")).to_upper()], HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, ATTUNEMENT_COLOR)
+	var flux_cost: int = int(selected_ability.get("flux_cost", 0))
+	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 328), "%s · %dms cooldown" % ["FREE" if flux_cost == 0 else "%d FLUX" % flux_cost, int(selected_ability.get("cooldown_ms", 0))], HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, PALE_STONE_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 354), "IMPACT · %s" % String(selected_ability.get("impact", "")).replace("_", " ").to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, PALE_STONE_COLOR)
+	var material_operation := String(selected_ability.get("material_operation", "none")).to_upper()
+	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 380), "MATERIAL · %s · SEALED" % material_operation, HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, Color(BRASS_COLOR, 0.85))
+	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 430), "HOST-SEALED IN FARFLOW" if session_transport.is_online() else "OFFLINE HOST AUTHORITY", HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, FLUX_COLOR)
+	var footer_y := panel.end.y - 58.0
+	draw_line(Vector2(panel.position.x + 28, footer_y - 20), Vector2(panel.end.x - 28, footer_y - 20), Color(FLUX_COLOR, 0.45), 1.0)
+	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 40, footer_y), spell_loom_editor.status_message, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 80.0, 13, PARCHMENT_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 40, footer_y + 27), "UP/DOWN OR WHEEL SLOT · LEFT/RIGHT SPELL · ENTER/A WEAVE · ESC/B CLOSE", HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 80.0, 12, PALE_STONE_COLOR)
 
 
 func _ingest_combat_cues(events: Array[Dictionary]) -> void:
@@ -1087,10 +1201,10 @@ func _update_reconnect_smoke(delta: float) -> void:
 		push_error("FLUX2 farflow reconnect smoke failed: %s" % session_transport.last_error)
 
 
-func _submit_session_request(action: int) -> void:
+func _submit_session_request(action: int, value: int = 0) -> void:
 	if session_transport.is_connected_client():
 		client_request_sequence += 1
-		if session_transport.send_request(client_request_sequence, action):
+		if session_transport.send_request(client_request_sequence, action, value):
 			station_notice = "Request sent through Farflow."
 		else:
 			station_notice = "Farflow could not carry that request."
@@ -1099,6 +1213,7 @@ func _submit_session_request(action: int) -> void:
 	_handle_session_requests([{
 		"entity_id": SessionTransport.SERVER_PEER_ID,
 		"action": action,
+		"value": value,
 	}])
 
 
@@ -1106,6 +1221,7 @@ func _handle_session_requests(requests: Array[Dictionary]) -> void:
 	for request: Dictionary in requests:
 		var entity_id := int(request.get("entity_id", 0))
 		var action := int(request.get("action", 0))
+		var request_value := int(request.get("value", 0))
 		var state: PlayerState = world.player(entity_id)
 		if state == null or state.actor_kind != PlayerState.ActorKind.CHAMPION:
 			continue
@@ -1143,6 +1259,17 @@ func _handle_session_requests(requests: Array[Dictionary]) -> void:
 					selected_champion_id = next_id
 					_load_player_sprite_candidate()
 				_publish_session_event({"type": "champion_attuned", "entity_id": entity_id, "champion_wire_id": state.champion_wire_id})
+			SessionTransport.REQUEST_SPELL_EQUIP:
+				var slot_index: int = SpellLoomEditor.decode_slot_index(request_value)
+				var role: int = SpellLoomEditor.decode_role(request_value)
+				var wire_id: int = state.primary_wire_id if role == SpellLoomEditor.ROLE_PRIMARY else (state.active_1_wire_id if role == SpellLoomEditor.ROLE_ACTIVE else 0)
+				if slot_index < 0 or wire_id == 0 or not state.place_kit_spell(slot_index, wire_id):
+					_publish_session_event({"type": "request_refused", "entity_id": entity_id, "action": action, "reason": SessionRequestPolicy.REFUSED_UNAVAILABLE})
+					continue
+				if entity_id == session_transport.local_entity_id and spell_loom_editor != null and spell_loom_editor.is_open:
+					spell_loom_editor.status_message = "Slot %d was sealed by the host." % (slot_index + 1)
+				station_notice = "%s rewove slot %d." % [String(session_names_by_entity.get(entity_id, "A traveller")), slot_index + 1]
+				station_notice_seconds = 1.5
 			SessionTransport.REQUEST_READY_TOGGLE:
 				if not authoritative_session.toggle_ready(entity_id):
 					_publish_session_event({"type": "request_refused", "entity_id": entity_id, "action": action, "reason": SessionRequestPolicy.REFUSED_UNAVAILABLE})
@@ -1208,6 +1335,8 @@ func _ingest_session_feedback(events: Array[Dictionary]) -> void:
 					var reason := int(event.get("reason", 0))
 					station_notice = "Wait a breath." if reason == 1 else ("Stand beside the station." if reason == 2 else "That request is unavailable.")
 					station_notice_seconds = 2.0
+					if int(event.get("action", 0)) == SessionTransport.REQUEST_SPELL_EQUIP and spell_loom_editor != null and spell_loom_editor.is_open:
+						spell_loom_editor.status_message = station_notice
 			"ready_changed":
 				station_notice = "%s is %s." % [String(session_names_by_entity.get(entity_id, "A traveller")), "ready" if bool(event.get("ready", false)) else "waiting"]
 				station_notice_seconds = 1.5
@@ -1323,6 +1452,9 @@ func _activate_focused_station() -> void:
 		"configure_controls":
 			controls_editor.open_editor()
 			expanded_station_id = focused_station_id
+		"configure_spells":
+			spell_loom_editor.open_editor()
+			expanded_station_id = focused_station_id
 		"training_reset":
 			_submit_session_request(SessionTransport.REQUEST_TRAINING_RESET)
 		"champion_switch":
@@ -1347,6 +1479,23 @@ func _close_controls_editor() -> void:
 	controls_editor.close_editor()
 	controls_input_guard_frames = 2
 	station_notice = "Bindings sealed."
+	station_notice_seconds = 1.5
+
+
+func _submit_spell_loom_choice() -> void:
+	if spell_loom_editor == null or not spell_loom_editor.is_open:
+		return
+	_submit_session_request(SessionTransport.REQUEST_SPELL_EQUIP, spell_loom_editor.request_value())
+	if session_transport.is_connected_client():
+		spell_loom_editor.status_message = "Weave sent to the host; the next seal confirms it."
+
+
+func _close_spell_loom_editor() -> void:
+	if spell_loom_editor == null:
+		return
+	spell_loom_editor.close_editor()
+	controls_input_guard_frames = 2
+	station_notice = "Spell weave closed."
 	station_notice_seconds = 1.5
 
 
@@ -1913,6 +2062,8 @@ func _arrange_hearth_roster() -> bool:
 
 
 func _start_match(requested_tick_rate: int) -> bool:
+	_close_controls_editor()
+	_close_spell_loom_editor()
 	focused_station_id = ""
 	expanded_station_id = ""
 	station_notice = ""

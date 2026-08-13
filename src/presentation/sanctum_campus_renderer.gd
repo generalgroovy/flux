@@ -259,7 +259,7 @@ func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int) -> void:
 	var position := Vector2(float(values[0]), float(values[1]))
 	var kind := String(station.get("kind", ""))
 	var pulse: float = 0.12 + 0.06 * sin(float(tick) * 0.08)
-	var accent: Color = CYAN if kind in ["guide", "controls", "farflow"] else (VIOLET if kind == "champion" else (BRASS if kind in ["charter", "ledger"] else FIRE))
+	var accent: Color = CYAN if kind in ["guide", "controls", "farflow"] else (VIOLET if kind in ["champion", "spell"] else (BRASS if kind in ["charter", "ledger"] else FIRE))
 	canvas.draw_circle(position + Vector2(2, 5), 19.0, Color(DEEP_FOREST, 0.72))
 	canvas.draw_circle(position, 17.0, CLIFF)
 	canvas.draw_arc(position, 14.0, 0.0, TAU, 16, BRASS, 3.0)
@@ -285,6 +285,11 @@ func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int) -> void:
 		])
 		canvas.draw_polyline(loom_points, PARCHMENT, 2.0)
 		canvas.draw_line(loom_points[-1], loom_points[0], PARCHMENT, 2.0)
+		canvas.draw_circle(position, 3.0, VIOLET)
+	elif kind == "spell":
+		for index: int in range(PlayerState.SPELL_SLOT_COUNT):
+			var angle: float = -PI * 0.5 + TAU * float(index) / float(PlayerState.SPELL_SLOT_COUNT)
+			canvas.draw_circle(position + Vector2(cos(angle), sin(angle)) * 8.0, 2.5, PARCHMENT if index < 2 else Color(PARCHMENT, 0.42))
 		canvas.draw_circle(position, 3.0, VIOLET)
 	elif kind == "farflow":
 		canvas.draw_arc(position, 8.0, -2.45, 0.7, 12, PARCHMENT, 2.0)

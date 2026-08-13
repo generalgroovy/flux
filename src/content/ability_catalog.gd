@@ -133,6 +133,14 @@ func ability(ability_id: String) -> Dictionary:
 	return abilities_by_id.get(ability_id, {})
 
 
+func ability_id_from_wire(wire_id: int) -> String:
+	return String(ability_ids_by_wire.get(wire_id, ""))
+
+
+func ability_from_wire(wire_id: int) -> Dictionary:
+	return ability(ability_id_from_wire(wire_id))
+
+
 func active_element_ids() -> Array[String]:
 	var result: Array[String] = []
 	for element_id: String in elements_by_id:

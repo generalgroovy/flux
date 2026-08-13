@@ -4,6 +4,7 @@ extends FluxTestSuite
 func run() -> int:
 	_test_repository_language()
 	_test_pixel_presentation()
+	_test_live_renderer_binding()
 	_test_fail_closed_contract()
 	return finish("visual-language")
 
@@ -37,6 +38,23 @@ func _test_pixel_presentation() -> void:
 		equal(screen, screen.round(), "%d%% world presentation lands on output pixels" % zoom_percent)
 		var snapped_world := PixelPresentation.snapped_world_anchor(Vector2(240.25, 180.75), camera, zoom_percent)
 		equal(PixelPresentation.world_to_screen(snapped_world, camera, zoom_percent), screen, "%d%% snapped world anchor preserves screen location" % zoom_percent)
+
+
+func _test_live_renderer_binding() -> void:
+	var language := VisualLanguage.new()
+	check(language.load_from_file(), "visual language loads before renderer binding")
+	var renderer := SanctumCampusRenderer.new()
+	check(not renderer.configure(null), "live renderer refuses an absent visual language")
+	check(renderer.configure(language), "live renderer binds the validated language")
+	equal(renderer.WATER, language.ramp_color("deep_water", 1), "live water derives from the shared ramp")
+	equal(renderer.STONE, language.ramp_color("warm_stone", 2), "live stone derives from the shared ramp")
+	equal(renderer.BRASS, language.ramp_color("aged_brass", 2), "live brass derives from the shared ramp")
+	equal(renderer.CYAN, language.ui_color("focus"), "live affordance focus derives from the shared UI token")
+	var footprint := Rect2(100.0, 100.0, 80.0, 64.0)
+	equal(renderer.cutaway_amount(footprint, Vector2(20.0, 20.0)), 0.0, "distant architecture stays intact")
+	equal(renderer.cutaway_amount(footprint, Vector2(140.0, 100.0)), 1.0, "near architecture cuts to its cardinal footprint")
+	check(renderer.cutaway_amount(footprint, Vector2(140.0, 58.0)) > 0.0, "cutaway eases predictably at its outer boundary")
+	equal(renderer.cutaway_amount(Rect2(), Vector2.ZERO), 0.0, "empty footprint cannot create a cutaway")
 
 
 func _test_fail_closed_contract() -> void:

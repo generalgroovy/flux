@@ -55,15 +55,16 @@ each playable slice.
 
 ## Next acceptance-driven slice
 
-Mechanics remain frozen. V0 is complete: six source baselines, a validated
-twelve-element/material/UI language, whole-output-pixel camera placement,
-gameplay-safe cardinal-floor perspective and compact cartoon-character
-contracts, a live `--visual-specimen`, two quarantined/provenanced exploration
-boards and 79 new adversarial assertions. Proceed with V1 by applying this
-language and layering to the actual Wellspring renderer, then continue V2–V6 until
-the actual Wellspring, two foundation champions, existing spells and compact
-four-cell/layered GUI meet the 720p/1080p readability, accessibility, alignment
-and charm rubric. Only after integrated visual acceptance may work continue in
+Mechanics remain frozen. V0 and V1 are complete: the validated visual language
+now fail-closed binds the actual Wellspring; shared material ramps, quiet
+cardinal floor cells, route seams, visible building footprints/thresholds,
+whole-output-pixel camera placement and deterministic near-actor cutaways are
+live at 60/120 Hz. 720p/1080p 75% captures and a fresh source Farflow journey
+pass, but the map remains schematic and the v2 character atlases remain crude.
+Proceed with V2 compact cartoon production candidates for Oh Tipi and S. Wayne,
+then continue V3–V6 until the environment, existing spells and compact
+four-cell/layered GUI meet the readability, accessibility, alignment and charm
+rubric. Only after integrated visual acceptance may work continue in
 the order crisp/slightly slower movement → universal chaining → positive-Flux
 offense and shorter cooldown economy → globally selectable four-role catalogs
 for all twelve elements. Preserve the published protocol-26 green point and the

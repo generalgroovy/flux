@@ -59,3 +59,25 @@ scripts/run.sh 60 --visual-specimen --pov-mode=full --camera-zoom=75
 The specimen freezes vocabulary; it does not open the visual gate. V1–V6 in
 `.agent/VISUAL-OVERHAUL.md` still require actual character, environment, spell,
 GUI and integrated live evidence.
+
+## V1 live renderer foundation
+
+The Wellspring renderer now refuses to boot without the validated visual
+language and derives its water, stone, timber, brass, roof, garden, focus and
+text colors from the shared ramps. Quiet floors expose square screen-cardinal
+cells, paths carry transverse seams rather than implied diagonal tiles, and
+building art preserves its complete authored footprint plus an external door
+threshold.
+
+Decorative roofs and facades never own collision. A deterministic
+presentation-only proximity mask replaces architecture with its cardinal
+footprint near the observed actor, easing across a bounded 26-unit band. Cone
+visibility continues to use the separate authoritative building bounds. The
+same renderer, camera transform and cutaway calculation run at 60 and 120 Hz;
+none of them write simulation state.
+
+V1 captures at 1280x720 and 1920x1080 confirm alignment at the default 75%
+overview. They remain internal evidence under `.godot/visual-gate-v1/`: the
+live map is still schematic and the v2 character atlases are still too small
+and crude. V2 therefore begins with compact cartoon production candidates for
+Oh Tipi and S. Wayne before further environment beautification.

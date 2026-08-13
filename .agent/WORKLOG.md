@@ -1,5 +1,44 @@
 # FLUX2 agent worklog
 
+## 2026-08-13 — visual Gate V1 live renderer foundation
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Bound the live Wellspring renderer fail-closed to the V0 language so water,
+  masonry, paths, gardens, timber, brass, roofs, text and affordances no longer
+  invent disconnected local palettes.
+- Added low-contrast screen-cardinal floor cells, sparse authored texture,
+  transverse path seams and shallower facades while preserving complete
+  collision footprints and external door thresholds.
+- Added a deterministic presentation-only near-actor cutaway. It exposes the
+  cardinal footprint through decorative architecture, eases across a bounded
+  band and never becomes collision or visibility authority.
+- Captured the actual renderer at 1280x720 and 1920x1080 at the default 75%
+  overview. This is a safe visual foundation, not charm acceptance: schematic
+  map geometry and crude v2 character atlases remain visible deficiencies.
+
+Validation:
+
+- Full Godot headless gate passed with zero failures; renderer binding and
+  cutaway boundary assertions were added to the visual-language suite.
+- Clean import and independent source boots at 60 and 120 Hz passed.
+- Fresh three-process 60 Hz Farflow journey on UDP 24968 passed host/join,
+  shared emote, movement prediction, Hearth, Round 1, exact-actor reconnect,
+  Round 2, late observation and stewardship release.
+- `git diff --check`: passed; only configured LF-to-CRLF notices were emitted.
+
+Known limitations and risks:
+
+- V1 does not accept the final environment. Building shapes, stations, labels
+  and scene density remain schematic and belong to V3 after foundation actors.
+- V2 must replace Oh Tipi and S. Wayne's existing tiny/crude atlases with
+  original compact cartoon candidates before any mechanics resume.
+- Existing export-time image-loader warnings predate this slice.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-13 — visual Gate V0 runtime language
 
 Branch: `codex/continuous-overhaul`

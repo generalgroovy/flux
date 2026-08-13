@@ -158,6 +158,10 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	campus_renderer = SanctumCampusRenderer.new()
+	if not campus_renderer.configure(visual_language):
+		push_error("Wellspring renderer could not bind the visual language")
+		get_tree().quit(1)
+		return
 	show_visual_specimen = OS.get_cmdline_user_args().has("--visual-specimen")
 	capture_pointer_world = _requested_capture_pointer()
 	capture_spawn_world = _requested_capture_spawn()
@@ -548,7 +552,7 @@ func _draw() -> void:
 	var camera_focus_position := _camera_focus_position(rendered_position)
 	var camera_origin: Vector2 = _camera_origin(camera_focus_position)
 	_set_world_transform(camera_origin)
-	campus_renderer.draw(self, campus_layout, world.tick)
+	campus_renderer.draw(self, campus_layout, world.tick, camera_focus_position)
 	_draw_practice_targets(camera_origin)
 	if show_debug_overlay:
 		for obstacle: CollisionWorld.Obstacle in world.collision.obstacles:

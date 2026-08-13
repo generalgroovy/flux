@@ -2,35 +2,74 @@ class_name SanctumCampusRenderer
 extends RefCounted
 
 
-const WATER := Color("102f3b")
-const WATER_LIGHT := Color("1f596a")
-const WATER_GLINT := Color("3a7d87")
-const DEEP_FOREST := Color("111d15")
-const CLIFF := Color("25272a")
-const CLIFF_LIGHT := Color("4f4a3f")
-const STONE := Color("a6956c")
-const STONE_LIGHT := Color("c8b883")
-const PATH := Color("80643f")
-const PATH_LIGHT := Color("a58555")
-const GRASS := Color("2c4725")
-const GRASS_LIGHT := Color("5f7d43")
-const MOSS := Color("718c4c")
-const TIMBER := Color("452d23")
-const TIMBER_LIGHT := Color("76503a")
-const ROOF_BLUE := Color("263b49")
-const ROOF_VIOLET := Color("3d3150")
-const ROOF_GREEN := Color("2d473a")
-const ROOF_RUST := Color("57372d")
-const BRASS := Color("b98336")
-const BRASS_LIGHT := Color("d9ad55")
-const PARCHMENT := Color("e4d8ae")
-const CYAN := Color("51d5dc")
-const VIOLET := Color("9461d4")
-const FIRE := Color("df8335")
-const PANEL := Color("11140ee8")
+var WATER := Color("102f3b")
+var WATER_LIGHT := Color("1f596a")
+var WATER_GLINT := Color("3a7d87")
+var DEEP_FOREST := Color("111d15")
+var CLIFF := Color("25272a")
+var CLIFF_LIGHT := Color("4f4a3f")
+var STONE := Color("a6956c")
+var STONE_LIGHT := Color("c8b883")
+var PATH := Color("80643f")
+var PATH_LIGHT := Color("a58555")
+var GRASS := Color("2c4725")
+var GRASS_LIGHT := Color("5f7d43")
+var MOSS := Color("718c4c")
+var TIMBER := Color("452d23")
+var TIMBER_LIGHT := Color("76503a")
+var ROOF_BLUE := Color("263b49")
+var ROOF_VIOLET := Color("3d3150")
+var ROOF_GREEN := Color("2d473a")
+var ROOF_RUST := Color("57372d")
+var BRASS := Color("b98336")
+var BRASS_LIGHT := Color("d9ad55")
+var PARCHMENT := Color("e4d8ae")
+var CYAN := Color("51d5dc")
+var VIOLET := Color("9461d4")
+var FIRE := Color("df8335")
+var PANEL := Color("11140ee8")
+var language: VisualLanguage
 
 
-func draw(canvas: CanvasItem, layout: SanctumCampusLayout, presentation_tick: int) -> void:
+func configure(visual_language: VisualLanguage) -> bool:
+	if visual_language == null or visual_language.ramps.is_empty():
+		return false
+	language = visual_language
+	WATER = language.ramp_color("deep_water", 1)
+	WATER_LIGHT = language.ramp_color("deep_water", 2)
+	WATER_GLINT = language.ramp_color("deep_water", 4)
+	DEEP_FOREST = language.ramp_color("garden", 0)
+	CLIFF = language.ramp_color("worldbone", 1)
+	CLIFF_LIGHT = language.ramp_color("worldbone", 3)
+	STONE = language.ramp_color("warm_stone", 2)
+	STONE_LIGHT = language.ramp_color("warm_stone", 4)
+	PATH = language.ramp_color("warm_stone", 1)
+	PATH_LIGHT = language.ramp_color("warm_stone", 3)
+	GRASS = language.ramp_color("garden", 2)
+	GRASS_LIGHT = language.ramp_color("garden", 3)
+	MOSS = language.ramp_color("garden", 4)
+	TIMBER = language.ramp_color("timber", 2)
+	TIMBER_LIGHT = language.ramp_color("timber", 3)
+	ROOF_BLUE = language.ramp_color("indigo_roof", 2)
+	ROOF_VIOLET = language.element_color("dark", "dark")
+	ROOF_GREEN = language.ramp_color("garden", 1)
+	ROOF_RUST = language.ramp_color("timber", 3)
+	BRASS = language.ramp_color("aged_brass", 2)
+	BRASS_LIGHT = language.ramp_color("aged_brass", 4)
+	PARCHMENT = language.ui_color("text_primary")
+	CYAN = language.ui_color("focus")
+	VIOLET = language.element_color("dark", "bright")
+	FIRE = language.element_color("fire", "base")
+	PANEL = language.ui_color("panel_fill")
+	return true
+
+
+func draw(
+	canvas: CanvasItem,
+	layout: SanctumCampusLayout,
+	presentation_tick: int,
+	focus_world_position: Vector2 = Vector2(-1000000.0, -1000000.0),
+) -> void:
 	_draw_water(canvas, layout.canvas_size, layout.reserved_ui_top, presentation_tick)
 	_draw_distant_context(canvas)
 	for connection_value: Variant in layout.data.get("connections", []):
@@ -43,7 +82,7 @@ func draw(canvas: CanvasItem, layout: SanctumCampusLayout, presentation_tick: in
 		_draw_route(canvas, route_value as Dictionary)
 	_draw_arena(canvas, layout.arena_definition)
 	for building_value: Variant in layout.data.get("buildings", []):
-		_draw_building(canvas, building_value as Dictionary)
+		_draw_building(canvas, building_value as Dictionary, focus_world_position)
 	for landmark_value: Variant in layout.data.get("landmarks", []):
 		_draw_landmark(canvas, landmark_value as Dictionary, presentation_tick)
 	for station_value: Variant in layout.data.get("stations", []):
@@ -77,12 +116,13 @@ func _draw_arena(canvas: CanvasItem, definition: Dictionary) -> void:
 
 func _draw_water(canvas: CanvasItem, size: Vector2i, top: int, tick: int) -> void:
 	canvas.draw_rect(Rect2(0, top, size.x, size.y - top), WATER, true)
-	var phase: int = (tick / 8) % 48
+	var phase: int = (tick / 8) % 64
 	for y: int in range(top + 14, size.y, 32):
-		for x: int in range(-32, size.x + 32, 64):
+		for x: int in range(-32, size.x + 32, 80):
 			var glint_x: int = x + phase + ((y / 32) % 2) * 20
-			canvas.draw_line(Vector2(glint_x, y), Vector2(glint_x + 14, y), Color(WATER_LIGHT, 0.58), 2.0)
-			canvas.draw_line(Vector2(glint_x + 5, y + 4), Vector2(glint_x + 24, y + 4), Color(WATER_GLINT, 0.22), 1.0)
+			canvas.draw_line(Vector2(glint_x, y), Vector2(glint_x + 12, y), Color(WATER_LIGHT, 0.64), 2.0)
+			canvas.draw_line(Vector2(glint_x + 4, y + 4), Vector2(glint_x + 22, y + 4), Color(WATER_GLINT, 0.24), 1.0)
+			canvas.draw_line(Vector2(glint_x + 12, y), Vector2(glint_x + 16, y - 2), Color(WATER_GLINT, 0.18), 1.0)
 
 
 func _draw_distant_context(canvas: CanvasItem) -> void:
@@ -127,16 +167,27 @@ func _draw_district(canvas: CanvasItem, district: Dictionary, index: int) -> voi
 	var style := String(district.get("style", "nexus"))
 	var ground_color := _district_ground_color(style)
 	canvas.draw_colored_polygon(_stepped_rect(ground_rect), ground_color)
-
-	# Small, regular pixel clusters make the ground feel authored without hiding lanes.
-	for y: int in range(ground_rect.position.y + 18, ground_rect.end.y - 10, 32):
-		for x: int in range(ground_rect.position.x + 20, ground_rect.end.x - 10, 40):
-			if ((x / 8) + (y / 8) + index) % 3 == 0:
-				canvas.draw_rect(Rect2(x, y, 3, 2), Color(MOSS, 0.32), true)
-			else:
-				canvas.draw_rect(Rect2(x, y, 2, 2), Color(STONE_LIGHT, 0.12), true)
+	_draw_cardinal_floor(canvas, ground_rect, style, index)
 
 	_draw_district_edge_garden(canvas, ground_rect, index)
+
+
+func _draw_cardinal_floor(canvas: CanvasItem, bounds: Rect2i, style: String, seed: int) -> void:
+	# Square screen-cardinal cells communicate navigation. Lines stay under the
+	# quiet-lane contrast budget and never become collision authority.
+	var cell_size := 32
+	var line_color := Color(STONE_LIGHT if style != "garden" else MOSS, 0.10)
+	for x: int in range(bounds.position.x + cell_size, bounds.end.x, cell_size):
+		canvas.draw_line(Vector2(x, bounds.position.y + 8), Vector2(x, bounds.end.y - 8), line_color, 1.0)
+	for y: int in range(bounds.position.y + cell_size, bounds.end.y, cell_size):
+		canvas.draw_line(Vector2(bounds.position.x + 8, y), Vector2(bounds.end.x - 8, y), line_color, 1.0)
+	for y: int in range(bounds.position.y + 16, bounds.end.y - 8, 32):
+		for x: int in range(bounds.position.x + 16, bounds.end.x - 8, 32):
+			var selector := (x / 32 + y / 32 + seed) % 5
+			if selector == 0:
+				canvas.draw_rect(Rect2(x + 5, y + 5, 3, 2), Color(STONE_LIGHT, 0.15), true)
+			elif selector == 3 and style == "garden":
+				canvas.draw_rect(Rect2(x + 7, y + 4, 2, 3), Color(MOSS, 0.19), true)
 
 
 func _draw_district_edge_garden(canvas: CanvasItem, bounds: Rect2i, index: int) -> void:
@@ -169,42 +220,107 @@ func _draw_route(canvas: CanvasItem, route: Dictionary) -> void:
 	canvas.draw_polyline(points, route_color, width, false)
 	if kind == "advanced":
 		canvas.draw_polyline(points, Color(BRASS_LIGHT, 0.7), 2.0, false)
+	_draw_route_seams(canvas, points, width, kind)
 
 
-func _draw_building(canvas: CanvasItem, building: Dictionary) -> void:
+func _draw_route_seams(canvas: CanvasItem, points: PackedVector2Array, width: float, kind: String) -> void:
+	if points.size() < 2:
+		return
+	for segment_index: int in range(points.size() - 1):
+		var start := points[segment_index]
+		var finish := points[segment_index + 1]
+		var delta := finish - start
+		var length := delta.length()
+		if length < 24.0:
+			continue
+		var direction := delta / length
+		var side := Vector2(-direction.y, direction.x)
+		var distance := 18.0
+		while distance < length - 8.0:
+			var center := start + direction * distance
+			canvas.draw_line(center - side * width * 0.34, center + side * width * 0.34, Color(STONE_LIGHT if kind != "advanced" else BRASS_LIGHT, 0.16), 1.0)
+			distance += 28.0
+
+
+func _draw_building(canvas: CanvasItem, building: Dictionary, focus_world_position: Vector2) -> void:
 	var bounds := SanctumCampusLayout._parse_bounds(building.get("bounds", []))
 	var style := String(building.get("style", "timber_hall"))
 	if style == "vault_rail":
 		_draw_vault_rail(canvas, bounds)
 		return
 	var roof_color := _roof_color(style)
-	canvas.draw_rect(Rect2(bounds.position + Vector2i(5, 8), bounds.size), Color(DEEP_FOREST, 0.82), true)
-	canvas.draw_rect(Rect2(bounds), TIMBER, true)
-	canvas.draw_rect(Rect2(bounds.grow(-4)), TIMBER_LIGHT, false, 2.0)
+	var footprint := Rect2(bounds)
+	canvas.draw_rect(Rect2(footprint.position + Vector2(6, 8), footprint.size), Color(DEEP_FOREST, 0.82), true)
+	# The full collision footprint remains visible below all decorative rise.
+	canvas.draw_rect(footprint, language.ramp_color("worldbone", 2) if language != null else TIMBER, true)
+	canvas.draw_rect(footprint, Color(STONE_LIGHT, 0.46), false, 2.0)
+	var facade_height := clampi(int(round(float(bounds.size.y) * 0.36)), 24, 48)
+	var facade := Rect2(bounds.position.x, bounds.end.y - facade_height, bounds.size.x, facade_height)
+	canvas.draw_rect(facade, language.ramp_color("warm_stone", 1) if language != null else TIMBER, true)
+	for x: int in range(bounds.position.x + 8, bounds.end.x - 4, 16):
+		canvas.draw_line(Vector2(x, facade.position.y + 3), Vector2(x, facade.end.y - 2), Color(STONE, 0.20), 1.0)
+	canvas.draw_line(facade.position + Vector2(0, 3), Vector2(facade.end.x, facade.position.y + 3), Color(STONE_LIGHT, 0.54), 2.0)
 	var roof := PackedVector2Array([
-		Vector2(bounds.position.x - 5, bounds.position.y + 18),
-		Vector2(bounds.position.x + 10, bounds.position.y - 6),
-		Vector2(bounds.end.x - 10, bounds.position.y - 6),
-		Vector2(bounds.end.x + 5, bounds.position.y + 18),
-		Vector2(bounds.end.x - 2, bounds.position.y + bounds.size.y * 0.56),
-		Vector2(bounds.position.x + 2, bounds.position.y + bounds.size.y * 0.56),
+		Vector2(bounds.position.x - 4, bounds.position.y + 14),
+		Vector2(bounds.position.x + 10, bounds.position.y - 5),
+		Vector2(bounds.end.x - 10, bounds.position.y - 5),
+		Vector2(bounds.end.x + 4, bounds.position.y + 14),
+		Vector2(bounds.end.x - 2, facade.position.y + 3),
+		Vector2(bounds.position.x + 2, facade.position.y + 3),
 	])
 	canvas.draw_colored_polygon(roof, Color(roof_color, 0.98))
 	canvas.draw_polyline(_closed(roof), BRASS.darkened(0.25), 2.0, false)
-	canvas.draw_line(Vector2(bounds.position.x + 8, bounds.position.y + 18), Vector2(bounds.end.x - 8, bounds.position.y + 18), Color(BRASS, 0.5), 2.0)
+	for roof_y: int in range(bounds.position.y + 10, int(facade.position.y), 8):
+		canvas.draw_line(Vector2(bounds.position.x + 5, roof_y), Vector2(bounds.end.x - 5, roof_y), Color(ROOF_BLUE.lightened(0.2), 0.22), 1.0)
+	canvas.draw_line(Vector2(bounds.position.x + 8, bounds.position.y + 16), Vector2(bounds.end.x - 8, bounds.position.y + 16), Color(BRASS, 0.58), 2.0)
 	var door_width: int = mini(22, bounds.size.x / 3)
-	var door := Rect2(bounds.position.x + (bounds.size.x - door_width) / 2, bounds.end.y - 25, door_width, 25)
+	var door := Rect2(bounds.position.x + (bounds.size.x - door_width) / 2, bounds.end.y - 27, door_width, 27)
 	canvas.draw_rect(door, Color("211d1b"), true)
 	canvas.draw_rect(door, BRASS, false, 2.0)
+	# Threshold is outside the art footprint so the entry direction is explicit.
+	canvas.draw_rect(Rect2(door.position.x - 3, bounds.end.y, door.size.x + 6, 5), language.ramp_color("warm_stone", 3) if language != null else STONE, true)
+	canvas.draw_line(Vector2(door.position.x - 3, bounds.end.y + 5), Vector2(door.end.x + 3, bounds.end.y + 5), Color(DEEP_FOREST, 0.7), 1.0)
 	for window_x: int in range(bounds.position.x + 14, bounds.end.x - 12, 30):
-		if Rect2(window_x, bounds.end.y - 42, 10, 12).intersects(door):
+		var window := Rect2(window_x, facade.position.y + 10, 10, 12)
+		if window.intersects(door):
 			continue
-		canvas.draw_rect(Rect2(window_x, bounds.end.y - 42, 10, 12), Color(CYAN, 0.42), true)
-		canvas.draw_rect(Rect2(window_x, bounds.end.y - 42, 10, 12), BRASS.darkened(0.25), false, 1.0)
+		canvas.draw_rect(window, Color(CYAN, 0.30), true)
+		canvas.draw_rect(window, BRASS.darkened(0.25), false, 1.0)
+		canvas.draw_line(window.position + Vector2(window.size.x * 0.5, 1), window.position + Vector2(window.size.x * 0.5, window.size.y - 1), Color(PARCHMENT, 0.28), 1.0)
 	if style in ["portal_rotunda", "archive_hall", "spire"]:
 		var crown := Vector2(bounds.get_center().x, bounds.position.y - 8)
 		canvas.draw_line(crown, crown + Vector2(0, -18), BRASS, 2.0)
 		canvas.draw_circle(crown + Vector2(0, -21), 4.0, CYAN if style != "portal_rotunda" else VIOLET)
+	_draw_building_cutaway(canvas, footprint, focus_world_position)
+
+
+func _draw_building_cutaway(canvas: CanvasItem, footprint: Rect2, focus_world_position: Vector2) -> void:
+	var amount := cutaway_amount(footprint, focus_world_position)
+	if amount <= 0.0:
+		return
+	# A cardinal footprint mask replaces decorative rise near the observed actor.
+	# Collision remains authored by SanctumCampusLayout; this only exposes it.
+	canvas.draw_rect(footprint.grow(-2.0), Color(language.ramp_color("worldbone", 1), 0.82 * amount), true)
+	canvas.draw_rect(footprint.grow(-2.0), Color(STONE_LIGHT, 0.78 * amount), false, 2.0)
+	var threshold := Rect2(footprint.get_center().x - 14.0, footprint.end.y, 28.0, 5.0)
+	canvas.draw_rect(threshold, Color(PATH_LIGHT, 0.90 * amount), true)
+	canvas.draw_line(threshold.position + Vector2(0.0, 5.0), threshold.end, Color(DEEP_FOREST, 0.72 * amount), 1.0)
+
+
+static func cutaway_amount(footprint: Rect2, focus_world_position: Vector2) -> float:
+	if footprint.size.x <= 0.0 or footprint.size.y <= 0.0:
+		return 0.0
+	var outer := footprint.grow(44.0)
+	if not outer.has_point(focus_world_position):
+		return 0.0
+	var inner := footprint.grow(18.0)
+	if inner.has_point(focus_world_position):
+		return 1.0
+	var nearest := Vector2(
+		clampf(focus_world_position.x, inner.position.x, inner.end.x),
+		clampf(focus_world_position.y, inner.position.y, inner.end.y),
+	)
+	return 1.0 - clampf(focus_world_position.distance_to(nearest) / 26.0, 0.0, 1.0)
 
 
 func _draw_vault_rail(canvas: CanvasItem, bounds: Rect2i) -> void:
@@ -375,7 +491,7 @@ static func _district_ground_color(style: String) -> Color:
 			return Color("3b552f")
 
 
-static func _roof_color(style: String) -> Color:
+func _roof_color(style: String) -> Color:
 	match style:
 		"archive_hall", "service_tower":
 			return ROOF_BLUE

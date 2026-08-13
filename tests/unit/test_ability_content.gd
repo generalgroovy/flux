@@ -57,6 +57,7 @@ func _test_loadout() -> void:
 	check(first.load_from_file(LOADOUT_PATH, catalog), "foundation loadout validates: %s" % first.last_error)
 	check(second.load_from_file(LOADOUT_PATH, catalog), "foundation loadout reload validates")
 	equal(first.active_points, 13, "affinity-adjusted actives fill the 13-point budget exactly")
+	equal(first.spell_slot_ids, ["arc-primary", "vector-lance", "prism-ward", "stone-channel", "phase-step"], "loadout exposes exactly five stable spell slots")
 	equal(first.content_hash.length(), 64, "loadout has a SHA-256 compatibility hash")
 	equal(first.content_hash, second.content_hash, "loadout hash is stable across reloads")
 
@@ -74,6 +75,18 @@ func _test_invalid_content_fails_closed() -> void:
 	invalid_budget.data["active_budget"] = 12
 	check(not invalid_budget.validate(catalog), "nonstandard budget fails closed")
 	check(invalid_budget.last_error.contains("13"), "budget failure is diagnosable")
+
+	var invalid_spell_count := LoadoutDefinition.new()
+	invalid_spell_count.data = JSON.parse_string(FileAccess.get_file_as_string(LOADOUT_PATH))
+	invalid_spell_count.data["spell_slots"] = ["arc-primary"]
+	check(not invalid_spell_count.validate(catalog), "non-five spell loadout fails closed")
+	check(invalid_spell_count.last_error.contains("five"), "spell count failure is diagnosable")
+
+	var invalid_duplicate_spell := LoadoutDefinition.new()
+	invalid_duplicate_spell.data = JSON.parse_string(FileAccess.get_file_as_string(LOADOUT_PATH))
+	invalid_duplicate_spell.data["spell_slots"][4] = "arc-primary"
+	check(not invalid_duplicate_spell.validate(catalog), "duplicate equipped spell fails closed")
+	check(invalid_duplicate_spell.last_error.contains("unique"), "duplicate spell failure is diagnosable")
 
 	var invalid_catalog := AbilityCatalog.new()
 	invalid_catalog.data = catalog.data.duplicate(true)

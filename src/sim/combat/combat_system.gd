@@ -24,7 +24,19 @@ static func step_player(
 	if state.cast_recovery_ticks > 0:
 		return null
 
-	if command.has_pressed(SimCommand.PRESSED_ACTIVE_1):
+	var requested_spell_slot: int = command.first_pressed_spell_slot()
+	if requested_spell_slot >= 3:
+		events.append({
+			"type": "cast_refused",
+			"entity_id": state.entity_id,
+			"wire_id": 0,
+			"reason": "empty_slot",
+			"slot": requested_spell_slot,
+		})
+		state.last_event = "cast_refused_slot_%d" % requested_spell_slot
+		return null
+
+	if command.has_pressed(SimCommand.PRESSED_ACTIVE_1) or requested_spell_slot == 2:
 		if state.active_1_cooldown_ticks > 0:
 			return null
 		var active_definition := CombatTuning.projectile_definition(state.active_1_wire_id)
@@ -37,7 +49,7 @@ static func step_player(
 		_begin_cast(state, state.active_1_wire_id, int(active_definition["startup_ms"]), config)
 		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": state.active_1_wire_id})
 		return null
-	if command.has_held(SimCommand.HELD_PRIMARY) and state.primary_cooldown_ticks == 0:
+	if (command.has_held(SimCommand.HELD_PRIMARY) or requested_spell_slot == 1) and state.primary_cooldown_ticks == 0:
 		var primary_definition := CombatTuning.projectile_definition(state.primary_wire_id)
 		if primary_definition.is_empty():
 			events.append({"type": "cast_refused", "entity_id": state.entity_id, "wire_id": state.primary_wire_id, "reason": "kit"})

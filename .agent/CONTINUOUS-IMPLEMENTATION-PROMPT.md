@@ -15,7 +15,7 @@ slices, checkpoint each green result, and immediately start the next accepted
 slice. Do not stop at plans, scaffolds, catalogs, generated images or passing
 unit tests when the player-facing outcome is still absent.
 
-The current green frontier is protocol 21: two foundation champions, the planned
+The current green frontier is protocol 22: two foundation champions, the planned
 non-ability movement grammar, full/cone POV with building cutaways, nine
 Wellspring stations, direct-IP host/join, shared interactions, Hearth readiness,
 one Proving Court round, reconnect, stewardship and late-join observation pass

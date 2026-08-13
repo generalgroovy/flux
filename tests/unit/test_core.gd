@@ -11,7 +11,7 @@ func run() -> int:
 
 
 func _test_supported_tick_rates() -> void:
-	equal(SimConfig.PROTOCOL_VERSION, 21, "current late-spectator friend-session protocol is explicit")
+	equal(SimConfig.PROTOCOL_VERSION, 22, "current five-slot friend-session protocol is explicit")
 	check(SimConfig.new(60).is_valid(), "60 Hz is supported")
 	check(SimConfig.new(120).is_valid(), "120 Hz is supported")
 	check(not SimConfig.new(90).is_valid(), "intermediate tick rates fail closed")
@@ -25,6 +25,10 @@ func _test_command_serialization() -> void:
 	equal(command.canonical_bytes(), copy.canonical_bytes(), "command bytes are stable across copies")
 	equal(command.canonical_bytes().size(), 64, "protocol-v2 command wire payload has fixed width")
 	equal(Vector2i(command.aim_x, command.aim_y), Vector2i(600, -800), "aim is deterministically quantized to scale 1000")
+	var spell_command := SimCommand.new(8, 3, 0, 0, 0, SimCommand.PRESSED_SPELL_4 | SimCommand.PRESSED_SPELL_2)
+	equal(spell_command.first_pressed_spell_slot(), 2, "lowest requested spell slot wins deterministically")
+	equal(spell_command.copy().first_pressed_spell_slot(), 2, "spell slot bits survive command copies")
+	equal(SimCommand.new(9, 3).first_pressed_spell_slot(), 0, "command with no spell slot reports none")
 
 
 func _test_independent_aim() -> void:

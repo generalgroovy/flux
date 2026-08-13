@@ -19,6 +19,11 @@ const ACTIONS: Array[StringName] = [
 	&"active_1",
 	&"interact",
 	&"emote",
+	&"spell_1",
+	&"spell_2",
+	&"spell_3",
+	&"spell_4",
+	&"spell_5",
 ]
 const ACTION_LABELS: Dictionary[StringName, String] = {
 	&"move_left": "MOVE LEFT",
@@ -33,8 +38,14 @@ const ACTION_LABELS: Dictionary[StringName, String] = {
 	&"active_1": "ACTIVE SPELL",
 	&"interact": "INTERACT",
 	&"emote": "TALK",
+	&"spell_1": "SPELL SLOT 1",
+	&"spell_2": "SPELL SLOT 2",
+	&"spell_3": "SPELL SLOT 3",
+	&"spell_4": "SPELL SLOT 4",
+	&"spell_5": "SPELL SLOT 5",
 }
 const DEVICE_LABELS: Array[String] = ["KEYBOARD", "MOUSE", "CONTROLLER"]
+const VISIBLE_ROWS: int = 12
 const PANEL_RECT := Rect2(116, 126, 1048, 548)
 const FIRST_ROW_Y: float = 222.0
 const ROW_HEIGHT: float = 31.0
@@ -47,6 +58,7 @@ var is_open: bool = false
 var capturing: bool = false
 var selected_action_index: int = 0
 var selected_device: int = DEVICE_KEYBOARD
+var first_visible_row: int = 0
 var status_message: String = "Choose a binding to change."
 
 
@@ -69,16 +81,17 @@ func selected_action() -> StringName:
 func move_selection(row_delta: int, device_delta: int) -> void:
 	selected_action_index = posmod(selected_action_index + row_delta, ACTIONS.size())
 	selected_device = posmod(selected_device + device_delta, DEVICE_COUNT)
+	_ensure_selection_visible()
 	capturing = false
 	status_message = "Choose a binding to change."
 
 
 func select_cell(position: Vector2) -> bool:
-	if position.y < FIRST_ROW_Y or position.y >= FIRST_ROW_Y + ROW_HEIGHT * ACTIONS.size():
+	if position.y < FIRST_ROW_Y or position.y >= FIRST_ROW_Y + ROW_HEIGHT * VISIBLE_ROWS:
 		return false
 	if position.x < DEVICE_X or position.x >= DEVICE_X + DEVICE_WIDTH * DEVICE_COUNT:
 		return false
-	selected_action_index = clampi(int((position.y - FIRST_ROW_Y) / ROW_HEIGHT), 0, ACTIONS.size() - 1)
+	selected_action_index = clampi(first_visible_row + int((position.y - FIRST_ROW_Y) / ROW_HEIGHT), 0, ACTIONS.size() - 1)
 	selected_device = clampi(int((position.x - DEVICE_X) / DEVICE_WIDTH), 0, DEVICE_COUNT - 1)
 	begin_capture()
 	return true
@@ -87,6 +100,13 @@ func select_cell(position: Vector2) -> bool:
 func begin_capture() -> void:
 	capturing = true
 	status_message = "Press a %s input · Esc cancels" % DEVICE_LABELS[selected_device].to_lower()
+
+
+func visible_action_indices() -> Array[int]:
+	var result: Array[int] = []
+	for index: int in range(first_visible_row, mini(ACTIONS.size(), first_visible_row + VISIBLE_ROWS)):
+		result.append(index)
+	return result
 
 
 func cancel_capture() -> void:
@@ -207,6 +227,14 @@ static func _binding_signature(value: Variant, device: int) -> String:
 	if kind == "none":
 		return ""
 	return "%s:%d:%d" % [kind, int(descriptor.get("index", -1)), int(descriptor.get("direction", 0))]
+
+
+func _ensure_selection_visible() -> void:
+	if selected_action_index < first_visible_row:
+		first_visible_row = selected_action_index
+	elif selected_action_index >= first_visible_row + VISIBLE_ROWS:
+		first_visible_row = selected_action_index - VISIBLE_ROWS + 1
+	first_visible_row = clampi(first_visible_row, 0, maxi(0, ACTIONS.size() - VISIBLE_ROWS))
 
 
 static func _mouse_label(button: int) -> String:

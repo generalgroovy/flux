@@ -11,6 +11,14 @@ const SLIDE_ACTION: StringName = &"slide"
 const INTERACT_ACTION: StringName = &"interact"
 const EMOTE_ACTION: StringName = &"emote"
 const SPECTATE_NEXT_ACTION: StringName = &"spectate_next"
+const SPELL_ACTIONS: Array[StringName] = [&"spell_1", &"spell_2", &"spell_3", &"spell_4", &"spell_5"]
+const SPELL_PRESSED_BITS: Array[int] = [
+	SimCommand.PRESSED_SPELL_1,
+	SimCommand.PRESSED_SPELL_2,
+	SimCommand.PRESSED_SPELL_3,
+	SimCommand.PRESSED_SPELL_4,
+	SimCommand.PRESSED_SPELL_5,
+]
 const AIM_DEADZONE: float = 0.25
 
 var entity_id: int
@@ -18,6 +26,7 @@ var jump_was_down: bool = false
 var technique_was_down: bool = false
 var active_1_was_down: bool = false
 var slide_was_down: bool = false
+var spell_was_down: Array[bool] = [false, false, false, false, false]
 var movement_reference: String = PlayerPreferences.MOVEMENT_WORLD_RELATIVE
 var last_quantized_aim := Vector2i(1000, 0)
 
@@ -128,6 +137,11 @@ func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> S
 		pressed |= SimCommand.PRESSED_ACTIVE_1
 	if slide_down and not slide_was_down:
 		pressed |= SimCommand.PRESSED_SLIDE
+	for slot_index: int in range(SPELL_ACTIONS.size()):
+		var spell_down: bool = Input.is_action_pressed(SPELL_ACTIONS[slot_index])
+		if spell_down and not spell_was_down[slot_index]:
+			pressed |= SPELL_PRESSED_BITS[slot_index]
+		spell_was_down[slot_index] = spell_down
 	jump_was_down = jump_down
 	technique_was_down = technique_down
 	active_1_was_down = active_1_down

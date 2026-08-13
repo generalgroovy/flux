@@ -3,7 +3,7 @@
 ## Scope
 
 This contract began as the validated canonical configuration checkpoint and now
-records the boundary consumed by protocol-12 combat. Arc Primary, Vector Lance,
+records the boundary consumed by deterministic runtime combat. Arc Primary, Vector Lance,
 Oh Tipi's Rillshot/Tideline and S. Wayne's Eclipse Disc/Pocket Eclipse cast end
 to end; the remaining catalog entries
 are configuration only. Network-visible identities, resource rules, loadout legality, affinity
@@ -45,6 +45,7 @@ A standard competitive loadout contains:
 | Catalog actives | 3 | Unique, positive build/Flux/cooldown/startup/recovery; total at most 13 points after affinity discounts |
 | Champion mobility | 1 | Flux-paid, collision-safe, bounded route |
 | Ultimate | 1 | Ultimate charge, readable startup, interruption/destruction and recovery rules |
+| Ordered spell bar | 5 | Unique primary, active, or mobility IDs; stable order maps to semantic actions `spell_1`…`spell_5` |
 
 Every ability also requires a stable string ID, positive wire ID, display name,
 slot kind, element (or explicit neutral value), roles, counterplay list, and
@@ -54,6 +55,9 @@ cast or hit.
 The foundation loadout uses two affinities and exactly fills 13 active points:
 Vector Lance 5→4 (Charge), Prism Ward 5→4 (Light), and Stone Channel 5 (Earth).
 This demonstrates discounts without granting elemental damage superiority.
+Its schema-v2 spell bar orders Arc Primary, Vector Lance, Prism Ward, Stone
+Channel, and Phase Step. Only the first two are promoted into current champion
+runtime kits; unpromoted entries remain validated content rather than fake casts.
 
 ## Promotion sequence
 

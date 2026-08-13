@@ -2,7 +2,7 @@ class_name PlayerPreferences
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 5
+const SCHEMA_VERSION: int = 6
 const DEFAULT_PATH: String = "user://player_preferences_v1.json"
 const MOVEMENT_WORLD_RELATIVE: String = "world_relative"
 const MOVEMENT_AIM_RELATIVE: String = "aim_relative"
@@ -82,6 +82,11 @@ const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"active_1": KEY_E,
 	&"interact": KEY_F,
 	&"emote": KEY_T,
+	&"spell_1": KEY_1,
+	&"spell_2": KEY_2,
+	&"spell_3": KEY_3,
+	&"spell_4": KEY_4,
+	&"spell_5": KEY_5,
 	&"reset_match": KEY_R,
 	&"toggle_debug_overlay": KEY_F1,
 	&"toggle_tick_rate": KEY_F6,
@@ -109,6 +114,11 @@ const DEFAULT_MOUSE_BINDINGS: Dictionary[StringName, int] = {
 	&"active_1": MOUSE_BUTTON_RIGHT,
 	&"interact": 0,
 	&"emote": 0,
+	&"spell_1": 0,
+	&"spell_2": 0,
+	&"spell_3": 0,
+	&"spell_4": 0,
+	&"spell_5": 0,
 }
 const DEFAULT_CONTROLLER_BINDINGS: Dictionary = {
 	&"move_left": {"kind": "axis", "index": JOY_AXIS_LEFT_X, "direction": -1},
@@ -123,6 +133,11 @@ const DEFAULT_CONTROLLER_BINDINGS: Dictionary = {
 	&"active_1": {"kind": "button", "index": JOY_BUTTON_X, "direction": 0},
 	&"interact": {"kind": "button", "index": JOY_BUTTON_Y, "direction": 0},
 	&"emote": {"kind": "button", "index": JOY_BUTTON_DPAD_UP, "direction": 0},
+	&"spell_1": {"kind": "none", "index": -1, "direction": 0},
+	&"spell_2": {"kind": "none", "index": -1, "direction": 0},
+	&"spell_3": {"kind": "none", "index": -1, "direction": 0},
+	&"spell_4": {"kind": "none", "index": -1, "direction": 0},
+	&"spell_5": {"kind": "none", "index": -1, "direction": 0},
 }
 
 var movement_reference: String = MOVEMENT_WORLD_RELATIVE
@@ -164,11 +179,11 @@ func apply_control_preset(preset_id: String) -> bool:
 func apply_dictionary(data: Dictionary) -> bool:
 	var raw_schema: Variant = data.get("schema_version", -1)
 	if not _is_whole_number(raw_schema):
-		last_error = "Player preferences require schema_version 1 through 5"
+		last_error = "Player preferences require schema_version 1 through 6"
 		return false
 	var requested_schema: int = int(raw_schema)
-	if requested_schema not in [1, 2, 3, 4, SCHEMA_VERSION]:
-		last_error = "Player preferences require schema_version 1 through 5"
+	if requested_schema not in [1, 2, 3, 4, 5, SCHEMA_VERSION]:
+		last_error = "Player preferences require schema_version 1 through 6"
 		return false
 	var requested_movement: String = str(data.get("movement_reference", ""))
 	var requested_pov_mode: String = str(data.get("pov_mode", ""))

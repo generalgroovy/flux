@@ -58,7 +58,7 @@ even when design documentation already exists.
     dense-edge/clear-lane composition, district landmarks, and pixel direction
   - [ ] Offline-complete stations plus privacy-safe friends/presence, host
     teams/rules/practice/travel tools, and Garuda Sway/Windows acceptance
-  - [x] Fixed-point walk-up focus plus nine diegetic stations: Movement Guide,
+  - [x] Fixed-point walk-up focus plus ten diegetic stations: Movement Guide,
     Practice Bell, Champion Loom, Charter, Hearth, Host/Join gates, Company Ledger
     and Parting Bell with transparent bubbles
   - [x] Direct-IP ENet host/join lifecycle, protocol/content handshake, eight-player
@@ -116,6 +116,9 @@ even when design documentation already exists.
     movement presets, and full/ranged-cone POV with 15–360° angle and adjustable
     range; production defaults are Shift sprint, C/wheel-down direct slide and
     Space/wheel-up jump; Ctrl and Alt remain free for spell binding
+  - [x] Configurable number-key spell actions 1–5 use stable protocol commands;
+    slots 1/2 invoke each champion's proven primary/active while empty slots
+    refuse visibly and spend nothing
   - [x] Cone presentation clamps to 15–360° and masks space behind authored
     `los_cutaway` buildings while low traversal rails remain visible
   - [x] Edgeweave swept hostile near-miss reward with speed, cooldown,
@@ -485,6 +488,7 @@ combos require an explicit short cap and escape rule.
 | Passive | One champion-defining behavior with a demonstrated trigger, visible state, and anti-farming lockout |
 | Primary | Reliable independent-aim pressure that remains useful at zero Flux |
 | Active slots | Three unique catalog abilities inside the mode budget; damage, defense, support, terrain, control, and mobility are roles rather than mandatory duplicates |
+| Spell bar | Five ordered, unique loadout spell IDs bound independently to 1–5; the current playable adapter equips primary/active in slots 1/2 and leaves 3–5 explicitly empty until Loom editing lands |
 | Champion mobility | One identity-bearing Flux-paid traversal/combat action, still bounded by collision and speed rules |
 | Ultimate | One high-impact commitment with startup, safe routes, ownership, interruption/destruction, expiry, and recovery rules |
 
@@ -1870,7 +1874,7 @@ reopening Farflow. A dropped guest can use Join Farflow within 15 seconds to rec
 its exact in-memory actor. The host can safely review connected guests in the
 Ledger and must confirm release at the separate Bell; closing the whole company
 also requires a second Host Farflow press. Affected guests receive the reason,
-and administrative departures cannot reclaim their actor. Protocol 21 / snapshot schema 6 assign and validate
+and administrative departures cannot reclaim their actor. Protocol 22 / snapshot schema 6 assign and validate
 the sealed Charter and replicate authoritative court state; cross-platform
 package proof remains next. See the
 [networking contract](docs/NETWORKING.md).
@@ -1882,13 +1886,13 @@ controller D-pad right cycles the stable participant order. When the company
 returns, the observer is placed at the Hearth, readies through the ordinary
 request path, and can enter the next round. Snapshot schema 6 now travels in a
 bounded compressed wire envelope whose maximum eight-player fixture and live
-three-player journeys fit one ENet MTU; protocol 21 rejects older peers. This
+three-player journeys fit one ENet MTU; protocol 22 rejects older peers. This
 spectator view adds no new information channel, but competitive limited-view
 modes still require host-side per-peer visibility filtering.
 
-The current simulation uses protocol 21, snapshot schema 6 and preference schema 5: Space or wheel-up invokes the
+The current simulation uses protocol 22, snapshot schema 6 and preference schema 6: Space or wheel-up invokes the
 semantic jump action, Shift sprints, C or wheel-down directly slides/fast-falls,
-Ctrl and Alt are free, and primary no longer aliases Space. Schema-v1/v2/v3/v4
+1–5 request the five ordered spell slots, Ctrl and Alt are free, and primary no longer aliases Space. Schema-v1/v2/v3/v4/v5
 defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision
 anchor grounded while the body rises and a separate receiving-surface shadow

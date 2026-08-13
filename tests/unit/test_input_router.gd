@@ -5,7 +5,7 @@ const BootstrapScript: Script = preload("res://src/app/bootstrap.gd")
 
 
 func run() -> int:
-	for action: StringName in [&"jump", &"primary", &"sprint", &"slide", &"interact", &"emote"]:
+	for action: StringName in [&"jump", &"primary", &"sprint", &"slide", &"interact", &"emote", &"spell_1", &"spell_2", &"spell_3", &"spell_4", &"spell_5"]:
 		if InputMap.has_action(action):
 			InputMap.erase_action(action)
 	InputRouter.ensure_input_map()
@@ -13,6 +13,7 @@ func run() -> int:
 		&"move_left", &"move_right", &"move_up", &"move_down",
 		&"aim_left", &"aim_right", &"aim_up", &"aim_down",
 		&"sprint", &"slide", &"jump", &"technique", &"interact", &"emote", &"spectate_next", &"primary", &"active_1",
+		&"spell_1", &"spell_2", &"spell_3", &"spell_4", &"spell_5",
 		&"reset_match", &"toggle_debug_overlay", &"toggle_tick_rate",
 		&"toggle_movement_reference", &"toggle_pov_mode",
 		&"adjust_pov_angle", &"adjust_pov_range",
@@ -27,6 +28,8 @@ func run() -> int:
 	equal(_keycodes(&"interact"), [KEY_F], "walk-up interaction defaults to F")
 	check(_has_joy_button(&"interact", JOY_BUTTON_Y), "walk-up interaction retains a controller face button")
 	equal(_keycodes(&"emote"), [KEY_T], "social speech defaults to T")
+	for slot_index: int in range(5):
+		equal(_keycodes(InputRouter.SPELL_ACTIONS[slot_index]), [KEY_1 + slot_index], "spell slot %d defaults to its number key" % (slot_index + 1))
 	check(_has_joy_button(&"emote", JOY_BUTTON_DPAD_UP), "social speech retains a controller d-pad shortcut")
 	check(not _keycodes(&"primary").has(KEY_SPACE), "primary has no Space keyboard alias")
 	check(_has_mouse_button(&"primary", MOUSE_BUTTON_LEFT), "primary retains left mouse")

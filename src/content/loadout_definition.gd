@@ -2,12 +2,13 @@ class_name LoadoutDefinition
 extends RefCounted
 
 
-const SUPPORTED_SCHEMA_VERSION: int = 1
+const SUPPORTED_SCHEMA_VERSION: int = 2
 
 var data: Dictionary = {}
 var last_error: String = ""
 var content_hash: String = ""
 var active_points: int = 0
+var spell_slot_ids: Array[String] = []
 
 
 func load_from_file(path: String, catalog: AbilityCatalog) -> bool:
@@ -28,6 +29,7 @@ func validate(catalog: AbilityCatalog) -> bool:
 	last_error = ""
 	content_hash = ""
 	active_points = 0
+	spell_slot_ids = []
 	if not catalog.last_error.is_empty() or catalog.content_hash.is_empty():
 		return _fail("loadout requires a valid ability catalog")
 	if int(data.get("schema_version", 0)) != SUPPORTED_SCHEMA_VERSION:
@@ -71,6 +73,22 @@ func validate(catalog: AbilityCatalog) -> bool:
 		return _fail("standard competitive active budget must be 13")
 	if active_points > budget:
 		return _fail("loadout exceeds active budget: %d/%d" % [active_points, budget])
+	var requested_spell_slots: Variant = data.get("spell_slots", [])
+	if not requested_spell_slots is Array or requested_spell_slots.size() != 5:
+		return _fail("loadout requires exactly five spell slots")
+	var equipped_spell_ids: Dictionary = {}
+	for raw_spell_id: Variant in requested_spell_slots:
+		var spell_id := String(raw_spell_id)
+		var spell: Dictionary = catalog.ability(spell_id)
+		if spell.is_empty():
+			return _fail("spell slot references unknown ability: %s" % spell_id)
+		var slot_kind := String(spell.get("slot_kind", ""))
+		if slot_kind not in ["primary", "active", "mobility"]:
+			return _fail("ability %s cannot occupy a spell slot" % spell_id)
+		if equipped_spell_ids.has(spell_id):
+			return _fail("spell slots must be unique: %s" % spell_id)
+		equipped_spell_ids[spell_id] = true
+		spell_slot_ids.append(spell_id)
 	content_hash = CanonicalContent.sha256({"catalog_hash": catalog.content_hash, "loadout": data})
 	if content_hash.length() != 64:
 		return _fail("loadout hash failed")

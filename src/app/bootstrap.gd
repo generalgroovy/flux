@@ -562,7 +562,7 @@ func _draw() -> void:
 		ThemeDB.fallback_font,
 		Vector2(32, 96),
 		("ROUND INPUT LOCKED · T HELLO · F8 VIEW %s" % view_description) if spectating else (
-			"LMB %s · RMB/E %s · F INTERACT · T HELLO · F8 VIEW %s"
+			"LMB %s · RMB/E %s · 1–5 SPELLS · F INTERACT · T HELLO · F8 VIEW %s"
 			% [primary_name.to_upper(), _active_hint(state, active_name, active_ability), view_description]
 		),
 		HORIZONTAL_ALIGNMENT_LEFT,
@@ -570,6 +570,7 @@ func _draw() -> void:
 		13,
 		ATTUNEMENT_COLOR,
 	)
+	_draw_spell_bar(observed_state, primary_ability, active_ability)
 	if show_debug_overlay and dropped_time_seconds > 0.0:
 		draw_string(ThemeDB.fallback_font, Vector2(32, 132), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
 	if show_debug_overlay:
@@ -586,6 +587,31 @@ func _draw_resource_bar(rectangle: Rect2, label: String, value: int, maximum: in
 	draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(7, 15), "%s %d/%d" % [label, value / 1000, maximum / 1000], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 12.0, 12, Color.WHITE)
 
 
+func _draw_spell_bar(state: PlayerState, primary_ability: Dictionary, active_ability: Dictionary) -> void:
+	var abilities: Array[Dictionary] = [primary_ability, active_ability, {}, {}, {}]
+	var cooldown_ticks: Array[int] = [state.primary_cooldown_ticks, state.active_1_cooldown_ticks, 0, 0, 0]
+	var start := Vector2(68, 118)
+	var cell_size := Vector2(224, 44)
+	for slot_index: int in range(abilities.size()):
+		var rectangle := Rect2(start + Vector2(float(slot_index) * 229.0, 0), cell_size)
+		var ability: Dictionary = abilities[slot_index]
+		var is_empty: bool = ability.is_empty()
+		draw_rect(rectangle, Color(PANEL_COLOR, 0.86), true)
+		draw_rect(rectangle, Color(BRASS_COLOR, 0.48 if is_empty else 0.82), false, 1.0)
+		var name := "EMPTY" if is_empty else String(ability.get("display_name", "SPELL")).to_upper()
+		var name_color := PALE_STONE_COLOR if is_empty else PARCHMENT_COLOR
+		draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(9, 17), "%d  %s" % [slot_index + 1, name], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 18.0, 12, name_color)
+		var detail := "ATTUNE AT LOOM" if is_empty else String(ability.get("element", "")).to_upper()
+		if not is_empty:
+			var flux_cost: int = int(ability.get("flux_cost", 0))
+			detail += " · FREE" if flux_cost == 0 else " · %d FLUX" % flux_cost
+			if cooldown_ticks[slot_index] > 0:
+				detail += " · %.1fs" % (float(cooldown_ticks[slot_index]) / float(world.config.tick_rate))
+			else:
+				detail += " · READY"
+		draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(9, 35), detail, HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 18.0, 10, ATTUNEMENT_COLOR if not is_empty else Color(PALE_STONE_COLOR, 0.68))
+
+
 func _draw_controls_editor() -> void:
 	var panel := ControlBindingEditor.PANEL_RECT
 	draw_rect(Rect2(Vector2.ZERO, Vector2(1280, 720)), Color("060907a8"), true)
@@ -593,12 +619,15 @@ func _draw_controls_editor() -> void:
 	draw_rect(panel, Color(BRASS_COLOR, 0.92), false, 3.0)
 	draw_string(ThemeDB.fallback_font, panel.position + Vector2(38, 42), "CONTROLS LECTERN", HORIZONTAL_ALIGNMENT_LEFT, 500.0, 25, PARCHMENT_COLOR)
 	draw_string(ThemeDB.fallback_font, panel.position + Vector2(38, 68), "Bindings stay on this device and are saved immediately.", HORIZONTAL_ALIGNMENT_LEFT, 800.0, 14, PALE_STONE_COLOR)
+	var visible_indices: Array[int] = controls_editor.visible_action_indices()
+	draw_string(ThemeDB.fallback_font, panel.position + Vector2(840, 68), "ACTIONS %d–%d / %d" % [visible_indices.front() + 1, visible_indices.back() + 1, ControlBindingEditor.ACTIONS.size()], HORIZONTAL_ALIGNMENT_RIGHT, 160.0, 12, ATTUNEMENT_COLOR)
 	for device: int in range(ControlBindingEditor.DEVICE_COUNT):
 		var column_x: float = ControlBindingEditor.DEVICE_X + float(device) * ControlBindingEditor.DEVICE_WIDTH
 		draw_string(ThemeDB.fallback_font, Vector2(column_x + 12, 205), ControlBindingEditor.DEVICE_LABELS[device], HORIZONTAL_ALIGNMENT_LEFT, ControlBindingEditor.DEVICE_WIDTH - 24.0, 13, ATTUNEMENT_COLOR)
-	for row: int in range(ControlBindingEditor.ACTIONS.size()):
+	for display_row: int in range(visible_indices.size()):
+		var row: int = visible_indices[display_row]
 		var action: StringName = ControlBindingEditor.ACTIONS[row]
-		var y: float = ControlBindingEditor.FIRST_ROW_Y + float(row) * ControlBindingEditor.ROW_HEIGHT
+		var y: float = ControlBindingEditor.FIRST_ROW_Y + float(display_row) * ControlBindingEditor.ROW_HEIGHT
 		if row % 2 == 0:
 			draw_rect(Rect2(142, y, 996, ControlBindingEditor.ROW_HEIGHT - 2.0), Color(PARCHMENT_COLOR, 0.035), true)
 		draw_string(ThemeDB.fallback_font, Vector2(ControlBindingEditor.ACTION_X, y + 21), ControlBindingEditor.ACTION_LABELS[action], HORIZONTAL_ALIGNMENT_LEFT, ControlBindingEditor.ACTION_WIDTH, 13, PARCHMENT_COLOR)
@@ -635,7 +664,13 @@ func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 				label = "EDGE +%d" % (int(event.get("stamina", 0)) / 1000)
 				color = ATTUNEMENT_COLOR
 			"cast_refused":
-				label = "NO FLUX" if String(event.get("reason", "")) == "flux" else "CAST REFUSED"
+				var refusal_reason := String(event.get("reason", ""))
+				if refusal_reason == "flux":
+					label = "NO FLUX"
+				elif refusal_reason == "empty_slot":
+					label = "SLOT %d EMPTY" % int(event.get("slot", 0))
+				else:
+					label = "CAST REFUSED"
 				color = FLUX_COLOR
 			"cast_blocked":
 				label = "BLOCKED"

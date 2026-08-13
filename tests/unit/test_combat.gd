@@ -3,6 +3,7 @@ extends FluxTestSuite
 
 func run() -> int:
 	for tick_rate: int in [60, 120]:
+		_test_semantic_spell_slots(tick_rate)
 		_test_resource_free_primary(tick_rate)
 		_test_vector_lance_flux_and_hit(tick_rate)
 		_test_oh_tipi_rillshot(tick_rate)
@@ -12,6 +13,27 @@ func run() -> int:
 		_test_s_wayne_pocket_eclipse(tick_rate)
 		_test_edgeweave(tick_rate)
 	return finish("combat")
+
+
+func _test_semantic_spell_slots(tick_rate: int) -> void:
+	var primary_world := SimWorld.new(tick_rate)
+	var primary: PlayerState = primary_world.player()
+	check(_step(primary_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_1, 1000, 0)), "%d Hz slot 1 command steps" % tick_rate)
+	equal(primary.pending_cast_wire_id, primary.primary_wire_id, "%d Hz slot 1 adapts to the proven primary" % tick_rate)
+
+	var active_world := SimWorld.new(tick_rate)
+	var active: PlayerState = active_world.player()
+	check(_step(active_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_2, 1000, 0)), "%d Hz slot 2 command steps" % tick_rate)
+	equal(active.pending_cast_wire_id, active.active_1_wire_id, "%d Hz slot 2 adapts to the proven active" % tick_rate)
+	check(active.flux < active.flux_maximum, "%d Hz slot 2 uses the existing Flux rule" % tick_rate)
+
+	var empty_world := SimWorld.new(tick_rate)
+	var empty: PlayerState = empty_world.player()
+	var initial_flux: int = empty.flux
+	check(_step(empty_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_4, 1000, 0)), "%d Hz empty slot command steps" % tick_rate)
+	equal(empty.pending_cast_wire_id, 0, "%d Hz empty slot starts no cast" % tick_rate)
+	equal(empty.flux, initial_flux, "%d Hz empty slot spends no Flux" % tick_rate)
+	check(empty_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "empty_slot" and int(event.get("slot", 0)) == 4), "%d Hz empty slot refusal is explicit" % tick_rate)
 
 
 func _step(world: SimWorld, command: SimCommand) -> bool:

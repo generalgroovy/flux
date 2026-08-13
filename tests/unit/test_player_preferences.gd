@@ -17,12 +17,14 @@ func _test_defaults_and_presets() -> void:
 	equal(preferences.pov_mode, PlayerPreferences.POV_FULL, "full view is the safe default")
 	equal(preferences.pov_angle_degrees, 120, "cone angle remains ready when cone view is selected")
 	equal(preferences.pov_range, 720, "cone range remains ready when cone view is selected")
-	equal(PlayerPreferences.SCHEMA_VERSION, 5, "player preferences save schema v5")
+	equal(PlayerPreferences.SCHEMA_VERSION, 6, "player preferences save schema v6")
 	equal(preferences.keyboard_bindings[&"sprint"], KEY_SHIFT, "Shift is the production-default sprint key")
 	equal(preferences.keyboard_bindings[&"slide"], KEY_C, "C is the persisted slide key")
 	equal(preferences.keyboard_bindings[&"jump"], KEY_SPACE, "Space is the production-default jump key")
 	equal(preferences.keyboard_bindings[&"primary"], 0, "primary has no default keyboard alias")
 	equal(preferences.keyboard_bindings[&"interact"], KEY_F, "interact participates in conflict-safe persistence")
+	for slot_index: int in range(5):
+		equal(preferences.keyboard_bindings[StringName("spell_%d" % (slot_index + 1))], KEY_1 + slot_index, "spell slot %d defaults to its number key" % (slot_index + 1))
 	equal(preferences.mouse_bindings[&"jump"], MOUSE_BUTTON_WHEEL_UP, "wheel up is the alternate jump input")
 	equal(preferences.mouse_bindings[&"slide"], MOUSE_BUTTON_WHEEL_DOWN, "wheel down is the alternate slide and fast-fall input")
 	equal(String((preferences.controller_bindings[&"jump"] as Dictionary).get("kind")), "button", "controller jump defaults to a button")
@@ -35,7 +37,7 @@ func _test_defaults_and_presets() -> void:
 
 func _test_validation() -> void:
 	var valid := {
-		"schema_version": 5,
+		"schema_version": 6,
 		"movement_reference": "aim_relative",
 		"pov_mode": "cone",
 		"pov_angle_degrees": 360,
@@ -47,7 +49,7 @@ func _test_validation() -> void:
 	equal(preferences.pov_angle_degrees, 360, "360-degree ranged view is legal")
 	equal(preferences.pov_range, 2048, "custom view length is legal")
 	for mutation: Dictionary in [
-		{"schema_version": 6},
+		{"schema_version": 7},
 		{"movement_reference": "camera_relative"},
 		{"pov_mode": "wallhack"},
 		{"pov_angle_degrees": 14},
@@ -110,6 +112,14 @@ func _test_schema_v1_migration_and_reduced_motion() -> void:
 	check(schema_four.apply_dictionary(schema_four_data), "schema-v4 mouse defaults migrate")
 	equal(schema_four.mouse_bindings[&"jump"], MOUSE_BUTTON_WHEEL_UP, "schema-v4 retains wheel-up jump")
 	equal(schema_four.controller_bindings, PlayerPreferences.DEFAULT_CONTROLLER_BINDINGS, "schema-v4 gains safe controller defaults")
+	var schema_five_data := _base_preferences(5, {
+		&"jump": KEY_SPACE,
+		&"slide": KEY_C,
+	})
+	var schema_five := PlayerPreferences.new()
+	check(schema_five.apply_dictionary(schema_five_data), "schema-v5 bindings migrate")
+	equal(schema_five.keyboard_bindings[&"spell_1"], KEY_1, "schema-v5 gains spell slot 1")
+	equal(schema_five.keyboard_bindings[&"spell_5"], KEY_5, "schema-v5 gains spell slot 5")
 
 	var explicit: Dictionary = legacy_defaults.duplicate()
 	explicit[&"jump"] = KEY_J
@@ -122,8 +132,8 @@ func _test_schema_v1_migration_and_reduced_motion() -> void:
 	var current: Dictionary = migrated.to_dictionary()
 	current["reduced_motion"] = true
 	var loaded := PlayerPreferences.new()
-	check(loaded.apply_dictionary(current), "schema-v5 preferences load")
-	check(loaded.reduced_motion, "schema-v5 reduced_motion loads")
+	check(loaded.apply_dictionary(current), "schema-v6 preferences load")
+	check(loaded.reduced_motion, "schema-v6 reduced_motion loads")
 	var before: Dictionary = loaded.to_dictionary().duplicate(true)
 	var malformed: Dictionary = current.duplicate(true)
 	malformed["reduced_motion"] = "false"

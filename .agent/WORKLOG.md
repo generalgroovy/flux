@@ -1,5 +1,48 @@
 # FLUX2 agent worklog
 
+## 2026-08-13 — five-slot spell command and HUD foundation
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Advanced the network protocol to 22 and player preferences to schema 6. Five
+  stable edge-triggered `spell_1`…`spell_5` actions default to number keys 1–5,
+  remain independently bindable across keyboard/mouse/controller, and migrate
+  schema-v1 through schema-v5 profiles without reclaiming Ctrl or Alt.
+- Advanced the foundation loadout to schema 2 with exactly five known, unique,
+  ordered primary/active/mobility IDs. Runtime slots 1/2 deliberately adapt to
+  each champion's existing proven primary/active; unimplemented slots 3–5 emit
+  a semantic `empty_slot` refusal and spend no Flux.
+- Added a compact five-cell combat HUD showing the real champion spell names,
+  elements, Flux costs, readiness/cooldown and honest empty states. Extended the
+  Controls Lectern to scroll all 17 actions inside its existing 720p panel.
+- Updated player controls, ability/loadout, network, README, backlog and handoff
+  records to distinguish the playable adapter from unpromoted catalog content.
+
+Validation:
+
+- Full Godot gate: 14,849 assertions, zero failures. New coverage includes
+  command bit/copy priority, 60/120 Hz slot 1/2 casts, empty-slot no-spend
+  refusal, schema-v5 migration, five-slot content validation and editor scroll.
+- Godot import and source 60/120 Hz boots passed on protocol 22.
+- A real 1280×720 GPU movie frame was inspected at
+  `.godot/spell-hud-capture/frame00000001.png`; ready, paid and empty states are
+  readable over ranged-cone play without depending on debug output.
+- `scripts/package.ps1 -Target All` rebuilt checksummed Windows ZIP/Linux tar.gz
+  friend bundles. Packaged Windows `PLAY-FLUX.cmd -- --safe-quit-smoke` completed
+  a real AMD/OpenGL boot, schema migration and bounded exit with code 0.
+- `git diff --check`: passed.
+
+Known limitations and risks:
+
+- Spell Loom editing, authored shape metadata and beam/spray/field/
+  movement-defense implementations remain next; the HUD never claims those
+  catalog entries are currently castable.
+- Physical Linux and real remote-friend acceptance gaps are unchanged.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-13 — in-world conflict-safe Controls Lectern
 
 Branch: `codex/continuous-overhaul`

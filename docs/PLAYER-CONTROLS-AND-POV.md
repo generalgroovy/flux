@@ -2,7 +2,7 @@
 
 ## Implemented checkpoint
 
-FLUX 2 now loads schema-v5 preferences from the stable offline profile
+FLUX 2 now loads schema-v6 preferences from the stable offline profile
 `user://player_preferences_v1.json`. The legacy filename is retained so existing
 schema-v1 installations are discovered and migrated in place. On Linux it
 normally resolves below
@@ -28,6 +28,8 @@ alternatives, including J jump or P primary, remain unchanged. New defaults bind
 Space only to semantic jump; Arc Primary keeps left mouse and controller trigger.
 Schema-v4 profiles gain the controller table and newly optional mouse movement
 lanes without altering established jump, slide, primary or active inputs.
+Schema-v5 profiles gain five independent spell actions on number keys 1–5;
+missing mouse/controller spell lanes migrate to explicit unbound descriptors.
 
 Unknown actions, unknown modes, conflicting non-zero keyboard keycodes,
 fractional values, unsupported schema versions, and values outside documented
@@ -120,6 +122,7 @@ cue, or diagnostic leak.
 | `F` | Activate the nearest walk-up Wellspring station; controller north-face is equivalent |
 | Left mouse | Arc Primary; no default Space alias |
 | `E` / right mouse | Vector Lance |
+| `1`–`5` | Request the corresponding ordered spell slot; slots 1/2 currently adapt to the champion primary/active and empty slots 3–5 refuse without spending Flux |
 | `F7` | Toggle world-relative / aim-relative movement and save |
 | `F8` | Toggle full / cone view and save |
 | `F9` / `Shift+F9` | Increase / decrease cone angle by 15 degrees and save |

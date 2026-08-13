@@ -2,7 +2,7 @@
 
 ## Current runnable boundary
 
-FLUX 2 protocol 21 / snapshot schema 6 exposes ten walk-up Wellspring stations,
+FLUX 2 protocol 22 / snapshot schema 6 exposes ten walk-up Wellspring stations,
 including the Farflow Charter, Session Hearth and host stewardship tools in
 the eastern Wellspring:
 

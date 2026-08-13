@@ -10,6 +10,18 @@ const PRESSED_JUMP: int = 1 << 0
 const PRESSED_TECHNIQUE: int = 1 << 1
 const PRESSED_ACTIVE_1: int = 1 << 2
 const PRESSED_SLIDE: int = 1 << 3
+const PRESSED_SPELL_1: int = 1 << 4
+const PRESSED_SPELL_2: int = 1 << 5
+const PRESSED_SPELL_3: int = 1 << 6
+const PRESSED_SPELL_4: int = 1 << 7
+const PRESSED_SPELL_5: int = 1 << 8
+const SPELL_PRESSED_BITS: Array[int] = [
+	PRESSED_SPELL_1,
+	PRESSED_SPELL_2,
+	PRESSED_SPELL_3,
+	PRESSED_SPELL_4,
+	PRESSED_SPELL_5,
+]
 
 var tick: int
 var entity_id: int
@@ -48,6 +60,13 @@ func has_held(action: int) -> bool:
 
 func has_pressed(action: int) -> bool:
 	return (pressed_actions & action) != 0
+
+
+func first_pressed_spell_slot() -> int:
+	for index: int in range(SPELL_PRESSED_BITS.size()):
+		if has_pressed(SPELL_PRESSED_BITS[index]):
+			return index + 1
+	return 0
 
 
 func canonical_bytes() -> PackedByteArray:

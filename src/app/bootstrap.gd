@@ -467,7 +467,7 @@ func _draw() -> void:
 	_draw_resource_bar(Rect2(700, 24, 168, 20), "HEALTH", observed_state.health, observed_state.health_maximum, Color("d9634f"))
 	_draw_resource_bar(Rect2(884, 24, 168, 20), "FLUX", observed_state.flux, observed_state.flux_maximum, FLUX_COLOR)
 	_draw_resource_bar(Rect2(1068, 24, 168, 20), "STAMINA", observed_state.stamina, observed_state.stamina_maximum, ATTUNEMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "TAB / D-PAD RIGHT FOLLOW NEXT · YOU JOIN AT THE HEARTH" if spectating else "WASD MOVE · SHIFT SPRINT · CTRL/C SLIDE · SPACE JUMP · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "TAB / D-PAD RIGHT FOLLOW NEXT · YOU JOIN AT THE HEARTH" if spectating else "WASD MOVE · SHIFT SPRINT · C/WHEEL↓ SLIDE · SPACE/WHEEL↑ JUMP · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
 	draw_string(ThemeDB.fallback_font, Vector2(700, 70), _session_label(), HORIZONTAL_ALIGNMENT_RIGHT, 536.0, 12, ATTUNEMENT_COLOR if session_transport.is_online() else PALE_STONE_COLOR)
 	var view_description := "FULL" if player_preferences.pov_mode == PlayerPreferences.POV_FULL else "CONE %d°/%d" % [player_preferences.pov_angle_degrees, player_preferences.pov_range]
 	draw_string(
@@ -1787,6 +1787,9 @@ func _start_match(requested_tick_rate: int) -> bool:
 		return false
 	if not input_router.configure_keyboard_bindings(player_preferences.keyboard_bindings):
 		push_error("Invalid keyboard bindings reached match startup")
+		return false
+	if not input_router.configure_mouse_bindings(player_preferences.mouse_bindings):
+		push_error("Invalid mouse bindings reached match startup")
 		return false
 	accumulator_seconds = 0.0
 	dropped_time_seconds = 0.0

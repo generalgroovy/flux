@@ -157,7 +157,7 @@ func _test_variable_jump_and_fast_fall(tick_rate: int) -> void:
 	_step(fall_world, 1000, 0, SimCommand.HELD_JUMP)
 	var before_fall: int = fall_state.hop_ticks
 	_step(fall_world, 1000, 0, SimCommand.HELD_FAST_FALL)
-	equal(fall_state.last_event, "fast_fall", "%d Hz airborne Ctrl/C starts fast fall" % tick_rate)
+	equal(fall_state.last_event, "fast_fall", "%d Hz airborne slide input starts fast fall" % tick_rate)
 	check(fall_state.fast_falling, "%d Hz fast fall is explicit canonical state" % tick_rate)
 	equal(fall_state.hop_ticks, before_fall - 1 - MovementTuning.FAST_FALL_EXTRA_TICKS, "%d Hz fast fall advances the arc by its bounded extra rate" % tick_rate)
 	equal(fall_state.movement_mode, PlayerState.MovementMode.FAST_FALL, "%d Hz fast fall has an explicit presentation mode" % tick_rate)

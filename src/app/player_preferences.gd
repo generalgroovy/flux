@@ -2,7 +2,7 @@ class_name PlayerPreferences
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 3
+const SCHEMA_VERSION: int = 4
 const DEFAULT_PATH: String = "user://player_preferences_v1.json"
 const MOVEMENT_WORLD_RELATIVE: String = "world_relative"
 const MOVEMENT_AIM_RELATIVE: String = "aim_relative"
@@ -50,7 +50,7 @@ const SCHEMA_V2_DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"adjust_pov_angle": KEY_F9,
 	&"adjust_pov_range": KEY_F10,
 }
-const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
+const SCHEMA_V3_DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"move_left": KEY_A,
 	&"move_right": KEY_D,
 	&"move_up": KEY_W,
@@ -69,12 +69,38 @@ const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"adjust_pov_angle": KEY_F9,
 	&"adjust_pov_range": KEY_F10,
 }
+const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
+	&"move_left": KEY_A,
+	&"move_right": KEY_D,
+	&"move_up": KEY_W,
+	&"move_down": KEY_S,
+	&"sprint": KEY_SHIFT,
+	&"slide": KEY_C,
+	&"jump": KEY_SPACE,
+	&"technique": KEY_V,
+	&"primary": 0,
+	&"active_1": KEY_E,
+	&"reset_match": KEY_R,
+	&"toggle_debug_overlay": KEY_F1,
+	&"toggle_tick_rate": KEY_F6,
+	&"toggle_movement_reference": KEY_F7,
+	&"toggle_pov_mode": KEY_F8,
+	&"adjust_pov_angle": KEY_F9,
+	&"adjust_pov_range": KEY_F10,
+}
+const DEFAULT_MOUSE_BINDINGS: Dictionary[StringName, int] = {
+	&"primary": MOUSE_BUTTON_LEFT,
+	&"active_1": MOUSE_BUTTON_RIGHT,
+	&"jump": MOUSE_BUTTON_WHEEL_UP,
+	&"slide": MOUSE_BUTTON_WHEEL_DOWN,
+}
 
 var movement_reference: String = MOVEMENT_WORLD_RELATIVE
 var pov_mode: String = POV_FULL
 var pov_angle_degrees: int = DEFAULT_POV_ANGLE_DEGREES
 var pov_range: int = DEFAULT_POV_RANGE
 var keyboard_bindings: Dictionary[StringName, int] = {}
+var mouse_bindings: Dictionary[StringName, int] = {}
 var reduced_motion: bool = false
 var last_error: String = ""
 
@@ -89,6 +115,7 @@ func reset_to_defaults() -> void:
 	pov_angle_degrees = DEFAULT_POV_ANGLE_DEGREES
 	pov_range = DEFAULT_POV_RANGE
 	keyboard_bindings = DEFAULT_KEYBOARD_BINDINGS.duplicate()
+	mouse_bindings = DEFAULT_MOUSE_BINDINGS.duplicate()
 	reduced_motion = false
 	last_error = ""
 
@@ -105,11 +132,11 @@ func apply_control_preset(preset_id: String) -> bool:
 func apply_dictionary(data: Dictionary) -> bool:
 	var raw_schema: Variant = data.get("schema_version", -1)
 	if not _is_whole_number(raw_schema):
-		last_error = "Player preferences require schema_version 1, 2 or 3"
+		last_error = "Player preferences require schema_version 1, 2, 3 or 4"
 		return false
 	var requested_schema: int = int(raw_schema)
-	if requested_schema != 1 and requested_schema != 2 and requested_schema != SCHEMA_VERSION:
-		last_error = "Player preferences require schema_version 1, 2 or 3"
+	if requested_schema not in [1, 2, 3, SCHEMA_VERSION]:
+		last_error = "Player preferences require schema_version 1, 2, 3 or 4"
 		return false
 	var requested_movement: String = str(data.get("movement_reference", ""))
 	var requested_pov_mode: String = str(data.get("pov_mode", ""))
@@ -145,6 +172,8 @@ func apply_dictionary(data: Dictionary) -> bool:
 		requested_bindings = LEGACY_DEFAULT_KEYBOARD_BINDINGS.duplicate()
 	elif requested_schema == 2:
 		requested_bindings = SCHEMA_V2_DEFAULT_KEYBOARD_BINDINGS.duplicate()
+	elif requested_schema == 3:
+		requested_bindings = SCHEMA_V3_DEFAULT_KEYBOARD_BINDINGS.duplicate()
 	else:
 		requested_bindings = DEFAULT_KEYBOARD_BINDINGS.duplicate()
 	var binding_data: Variant = data.get("keyboard_bindings", {})
@@ -173,15 +202,36 @@ func apply_dictionary(data: Dictionary) -> bool:
 		if requested_bindings[&"sprint"] == KEY_ALT:
 			requested_bindings[&"sprint"] = DEFAULT_KEYBOARD_BINDINGS[&"sprint"]
 		requested_bindings[&"slide"] = DEFAULT_KEYBOARD_BINDINGS[&"slide"]
+	elif requested_schema == 3 and requested_bindings[&"slide"] == SCHEMA_V3_DEFAULT_KEYBOARD_BINDINGS[&"slide"]:
+		requested_bindings[&"slide"] = DEFAULT_KEYBOARD_BINDINGS[&"slide"]
 	var binding_error: String = validate_keyboard_bindings(requested_bindings)
 	if not binding_error.is_empty():
 		last_error = binding_error
+		return false
+	var requested_mouse_bindings: Dictionary[StringName, int] = DEFAULT_MOUSE_BINDINGS.duplicate()
+	var mouse_binding_data: Variant = data.get("mouse_bindings", {})
+	if not mouse_binding_data is Dictionary:
+		last_error = "mouse_bindings must be an object"
+		return false
+	for raw_action: Variant in mouse_binding_data:
+		var action := StringName(str(raw_action))
+		if not DEFAULT_MOUSE_BINDINGS.has(action):
+			last_error = "Unknown mouse action: %s" % action
+			return false
+		if not _is_whole_number(mouse_binding_data[raw_action]):
+			last_error = "Mouse binding for %s must be an integer button" % action
+			return false
+		requested_mouse_bindings[action] = int(mouse_binding_data[raw_action])
+	var mouse_binding_error: String = validate_mouse_bindings(requested_mouse_bindings)
+	if not mouse_binding_error.is_empty():
+		last_error = mouse_binding_error
 		return false
 	movement_reference = requested_movement
 	pov_mode = requested_pov_mode
 	pov_angle_degrees = requested_angle
 	pov_range = requested_range
 	keyboard_bindings = requested_bindings
+	mouse_bindings = requested_mouse_bindings
 	reduced_motion = requested_reduced_motion
 	last_error = ""
 	return true
@@ -195,6 +245,7 @@ func to_dictionary() -> Dictionary:
 		"pov_angle_degrees": pov_angle_degrees,
 		"pov_range": pov_range,
 		"keyboard_bindings": keyboard_bindings,
+		"mouse_bindings": mouse_bindings,
 		"reduced_motion": reduced_motion,
 	}
 
@@ -262,6 +313,23 @@ static func validate_keyboard_bindings(requested_bindings: Dictionary) -> String
 		if used_keycodes.has(keycode):
 			return "Keyboard actions %s and %s conflict on keycode %d" % [used_keycodes[keycode], action, keycode]
 		used_keycodes[keycode] = action
+	return ""
+
+
+static func validate_mouse_bindings(requested_bindings: Dictionary) -> String:
+	var used_buttons: Dictionary[int, StringName] = {}
+	for raw_action: Variant in requested_bindings:
+		var action := StringName(str(raw_action))
+		if not DEFAULT_MOUSE_BINDINGS.has(action):
+			return "Unknown mouse action: %s" % action
+		var button: int = int(requested_bindings[raw_action])
+		if button < 0 or button > MOUSE_BUTTON_XBUTTON2:
+			return "Mouse binding for %s is outside the supported button range" % action
+		if button == 0:
+			continue
+		if used_buttons.has(button):
+			return "Mouse actions %s and %s conflict on button %d" % [used_buttons[button], action, button]
+		used_buttons[button] = action
 	return ""
 
 

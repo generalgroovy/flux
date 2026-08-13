@@ -2,7 +2,7 @@
 
 ## Implemented checkpoint
 
-FLUX 2 now loads schema-v3 preferences from the stable offline profile
+FLUX 2 now loads schema-v4 preferences from the stable offline profile
 `user://player_preferences_v1.json`. The legacy filename is retained so existing
 schema-v1 installations are discovered and migrated in place. On Linux it
 normally resolves below
@@ -13,14 +13,16 @@ first launch and requires no account, network, subscription, or cloud service.
 The profile owns five independent concerns:
 
 - physical-key bindings for every current keyboard action;
+- mouse-button and wheel-direction bindings for current combat/movement actions;
 - the movement reference preset;
 - full-screen versus ranged-cone presentation;
 - ranged-cone angle and length.
 - the reduced-motion accessibility preference used by G3 presentation.
 
 Schema-v1/v2 profiles migrate the former defaults: C jump becomes Space jump,
-Alt sprint becomes Shift sprint, Ctrl gains the dedicated slide action, and the
-former Space primary alias becomes unbound. Explicit saved
+Alt sprint becomes Shift sprint, and the former Space primary alias becomes
+unbound. Schema-v3's default Ctrl slide becomes C; Ctrl and Alt are left free
+for later spell binding. Explicit saved
 alternatives, including J jump or P primary, remain unchanged. New defaults bind
 Space only to semantic jump; Arc Primary keeps left mouse and controller trigger.
 
@@ -49,8 +51,8 @@ The buffer stores intent only: speed, aerial stage, cooldown, collision target,
 Stamina and control-lock requirements are rechecked every tick, and an expired
 or still-illegal action changes no state and spends no resource.
 
-Holding Space preserves the authored jump arc. Releasing it cuts remaining air
-time to a 90 ms minimum; holding Ctrl/C while airborne advances the fall by one
+Holding Space or wheel-up preserves the authored jump arc. Releasing it cuts
+remaining air time to a 90 ms minimum; holding C or wheel-down while airborne advances the fall by one
 additional simulation tick per tick. Fast fall costs no Stamina because the
 earlier landing is its commitment, and its explicit canonical/presentation state
 is replayed identically rather than inferred from animation.
@@ -99,8 +101,8 @@ cue, or diagnostic leak.
 | Input | Action |
 | --- | --- |
 | `Shift` | Sprint while held |
-| `Ctrl` / `C` | Dedicated grounded slide press |
-| `Space` | Semantic jump / movement-chain press |
+| `C` / wheel down | Dedicated grounded slide press; airborne input commits fast fall |
+| `Space` / wheel up | Semantic jump / movement-chain press |
 | `V` | Contextual vault, recent-contact wall skim, air redirect, or sprint-held air dodge |
 | `F` | Activate the nearest walk-up Wellspring station; controller north-face is equivalent |
 | Left mouse | Arc Primary; no default Space alias |

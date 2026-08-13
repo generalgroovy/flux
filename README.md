@@ -102,8 +102,9 @@ even when design documentation already exists.
     verification
   - [x] Semantic slide, jump-chain and technique presses buffer for 180 ms while
     every eventual transition still revalidates state, collision and Stamina
-  - [x] Holding Space preserves the full jump arc, release cuts to a bounded
-    minimum, and airborne Ctrl/C fast-falls through explicit canonical state
+  - [x] Holding Space or wheel-up preserves the full jump arc, release cuts to
+    a bounded minimum, and airborne C or wheel-down fast-falls through explicit
+    canonical state
   - [x] V converts recent authored-obstacle contact into a bounded wall skim;
     world edges are excluded and same-surface chaining is locked out
   - [x] Landing intensity is canonical and drives a restrained expanding rune
@@ -112,13 +113,13 @@ even when design documentation already exists.
     keyboard/mouse/controller action defaults
   - [x] Offline saved keyboard bindings, world-relative and aim-relative
     movement presets, and full/ranged-cone POV with 15–360° angle and adjustable
-    range; production defaults are Shift sprint, Ctrl/C direct slide and Space
-    jump
+    range; production defaults are Shift sprint, C/wheel-down direct slide and
+    Space/wheel-up jump; Ctrl and Alt remain free for spell binding
   - [x] Cone presentation clamps to 15–360° and masks space behind authored
     `los_cutaway` buildings while low traversal rails remain visible
   - [x] Edgeweave swept hostile near-miss reward with speed, cooldown,
     miss-vs-hit, full-Stamina, training, and per-projectile farming guards
-  - [x] Space-only default jump plus timer-normalized body lift and a separate
+  - [x] Space/wheel-up default jump plus timer-normalized body lift and a separate
     receiving-surface shadow for hop, wall kick, double jump, slide jump, air
     dodge, vault, and superglide; reduced-motion and 60/120 Hz presentation
     samples are covered without moving collision, camera, or POV authority
@@ -1839,8 +1840,8 @@ scripts/run.sh --tick-rate=120
 ```
 
 Current foundation controls: WASD moves, mouse aims, left click fires the
-selected champion primary, right click or E casts active one, Shift sprints, Ctrl or C slides,
-Space uses the jump/movement chain, V uses the contextual vault/wall-skim/air technique,
+selected champion primary, right click or E casts active one, Shift sprints, C or wheel-down slides,
+Space or wheel-up uses the jump/movement chain, V uses the contextual vault/wall-skim/air technique,
 F interacts with the nearest Wellspring station, T / controller D-pad up shares
 a HELLO bubble, R restarts the match, and F6 restarts at the
 other supported tick rate. F7 changes movement reference, F8 changes view, and
@@ -1885,9 +1886,10 @@ three-player journeys fit one ENet MTU; protocol 21 rejects older peers. This
 spectator view adds no new information channel, but competitive limited-view
 modes still require host-side per-peer visibility filtering.
 
-The current simulation uses protocol 21, snapshot schema 6 and preference schema 3: Space invokes the semantic jump
-action, Shift sprints, Ctrl/C directly slides, and primary no longer aliases
-Space. Schema-v1/v2 defaults migrate safely, explicit saved alternatives remain
+The current simulation uses protocol 21, snapshot schema 6 and preference schema 4: Space or wheel-up invokes the
+semantic jump action, Shift sprints, C or wheel-down directly slides/fast-falls,
+Ctrl and Alt are free, and primary no longer aliases Space. Schema-v1/v2/v3
+defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision
 anchor grounded while the body rises and a separate receiving-surface shadow
 grows broader/darker to the apex, then contracts through descent at equivalent

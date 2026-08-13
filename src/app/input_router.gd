@@ -3,6 +3,7 @@ extends RefCounted
 
 
 const KEY_ACTIONS: Dictionary[StringName, int] = PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS
+const MOUSE_ACTIONS: Dictionary[StringName, int] = PlayerPreferences.DEFAULT_MOUSE_BINDINGS
 const PRIMARY_ACTION: StringName = &"primary"
 const ACTIVE_1_ACTION: StringName = &"active_1"
 const SLIDE_ACTION: StringName = &"slide"
@@ -31,7 +32,6 @@ static func ensure_input_map() -> void:
 		var physical_keycode: int = KEY_ACTIONS[action]
 		if physical_keycode != 0:
 			_add_key(action, physical_keycode)
-	_add_key(SLIDE_ACTION, KEY_C)
 	_ensure_action(INTERACT_ACTION)
 	_add_key(INTERACT_ACTION, KEY_F)
 	_ensure_action(EMOTE_ACTION)
@@ -39,10 +39,13 @@ static func ensure_input_map() -> void:
 	_ensure_action(SPECTATE_NEXT_ACTION)
 	_add_key(SPECTATE_NEXT_ACTION, KEY_TAB)
 	_ensure_action(PRIMARY_ACTION)
-	_add_mouse_button(PRIMARY_ACTION, MOUSE_BUTTON_LEFT)
 	_ensure_action(ACTIVE_1_ACTION)
 	_add_key(ACTIVE_1_ACTION, KEY_E)
-	_add_mouse_button(ACTIVE_1_ACTION, MOUSE_BUTTON_RIGHT)
+	for action: StringName in MOUSE_ACTIONS:
+		_ensure_action(action)
+		var mouse_button: int = MOUSE_ACTIONS[action]
+		if mouse_button != 0:
+			_add_mouse_button(action, mouse_button)
 
 	_add_joy_axis(&"move_left", JOY_AXIS_LEFT_X, -1.0)
 	_add_joy_axis(&"move_right", JOY_AXIS_LEFT_X, 1.0)
@@ -186,8 +189,23 @@ func configure_keyboard_bindings(requested_bindings: Dictionary) -> bool:
 		var physical_keycode: int = int(requested_bindings.get(action, PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS[action]))
 		if physical_keycode != 0:
 			_add_key(action, physical_keycode)
-	if int(requested_bindings.get(SLIDE_ACTION, 0)) == PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS[SLIDE_ACTION]:
-		_add_key(SLIDE_ACTION, KEY_C)
+	return true
+
+
+func configure_mouse_bindings(requested_bindings: Dictionary) -> bool:
+	if not PlayerPreferences.validate_mouse_bindings(requested_bindings).is_empty():
+		return false
+	for action: StringName in PlayerPreferences.DEFAULT_MOUSE_BINDINGS:
+		var retained_events: Array[InputEvent] = []
+		for existing: InputEvent in InputMap.action_get_events(action):
+			if not existing is InputEventMouseButton:
+				retained_events.append(existing)
+		InputMap.action_erase_events(action)
+		for retained: InputEvent in retained_events:
+			InputMap.action_add_event(action, retained)
+		var mouse_button: int = int(requested_bindings.get(action, PlayerPreferences.DEFAULT_MOUSE_BINDINGS[action]))
+		if mouse_button != 0:
+			_add_mouse_button(action, mouse_button)
 	return true
 
 

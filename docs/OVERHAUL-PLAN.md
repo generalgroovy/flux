@@ -126,14 +126,14 @@ passes on Garuda Linux/Sway and Windows.
   reset/import/export, and controller command-equivalence acceptance.
 - [x] Implemented: add 180 ms semantic buffers for slide, jump-chain and
   technique transitions with deterministic expiry and resource-safe rechecks.
-- [x] Implemented: add held/released variable jump timing and explicit Ctrl/C
+- [x] Implemented: add held/released variable jump timing and explicit C/wheel-down
   fast-fall authority/presentation state at bounded rates.
 - [ ] Planned: add fuller landing/recovery presentation state,
   and authored elevation/low-cover queries.
-- [x] G3 input migration: schema-v1 C-jump/Space-primary defaults migrate to
-  schema-v3 Shift sprint/Ctrl slide/Space jump/no-key primary without replacing explicit saved
-  alternatives; malformed reduced-motion data fails closed and left mouse plus
-  controller primary inputs remain intact.
+- [x] G3 input migration: schema-v1 C-jump/Space-primary and schema-v3 Ctrl-slide
+  defaults migrate to schema-v4 Shift sprint/C slide/Space jump/no-key primary
+  without replacing explicit saved alternatives; wheel-up jump/wheel-down
+  slide, free Ctrl/Alt, mouse primary and controller inputs remain intact.
 - [x] G3 shared jump presentation: present every current aerial traversal as an
   original compact top-down body-lift arc. Keep the
   body ground anchor/collision stable while the rendered body rises; keep a

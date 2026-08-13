@@ -55,7 +55,8 @@ inside a running match. F6 restarts the local debug match at the other rate; it
 does not mutate a live simulation.
 
 Controls: WASD movement, mouse aim, left click Arc Primary, right click or E
-Vector Lance, Shift sprint, Ctrl/C direct slide, Space jump/movement-chain input, V technique, R reset,
+Vector Lance, Shift sprint, C or wheel-down direct slide/fast-fall, Space or
+wheel-up jump/movement-chain input, V technique, R reset,
 and F6 restart at 60/120 Hz. Controller defaults use left/right sticks, right
 trigger, shoulders, and west/east face buttons. Schema-v1 saved C-jump and
 Space-primary defaults migrate automatically; explicit saved alternatives remain.

@@ -1,5 +1,39 @@
 # FLUX2 agent worklog
 
+## 2026-08-13 — schema-4 mouse and keyboard movement defaults
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Advanced preferences to schema 4. New profiles use C for slide/fast-fall,
+  wheel-up for jump, wheel-down for slide/fast-fall and leave Ctrl/Alt free for
+  the five-slot spell grammar.
+- Added validated, conflict-free mouse-button/wheel persistence and generic
+  runtime routing without replacing keyboard or controller inputs.
+- Schema-v3's authored default Ctrl slide migrates to C while explicit player
+  alternatives remain unchanged; older profiles gain the safe mouse defaults.
+- Reconciled the runtime movement ribbon and player/developer documentation with
+  the actual schema-4 controls.
+
+Validation:
+
+- Full Godot gate: 14,756 assertions, zero failures; import and 60/120 Hz boots
+  passed.
+- Input-router and preference suites cover default mappings, migration,
+  conflict rejection, unbinding and keyboard/mouse coexistence.
+- `scripts/package.ps1 -Target All`: passed for the Windows ZIP and Linux
+  tar.gz; the rebuilt Windows `PLAY-FLUX.cmd -- --safe-quit-smoke` completed a
+  real GPU boot and bounded clean exit with code 0.
+
+Known limitations and risks:
+
+- The Wellspring Controls lectern and live capture UX remain the next slice;
+  this checkpoint provides its validated persistence/routing foundation.
+- Physical Linux and real remote-friend acceptance gaps are unchanged.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-13 — portable friend builds, safe lifecycle and visual target
 
 Branch: `codex/continuous-overhaul`

@@ -25,6 +25,7 @@ func _test_catalog() -> void:
 	equal(first.content_hash, second.content_hash, "catalog hash is stable across reloads")
 	equal(first.elements_by_id.size(), 12, "all twelve thematic element families are declared")
 	equal(first.active_element_ids(), ["charge", "dark", "earth", "fire", "ice", "light", "water", "wind"], "only the first eight families are runtime-enabled")
+	equal(first.playable_spell_ids(), ["arc-primary", "eclipse-disc", "pocket-eclipse", "rillshot", "tideline", "vector-lance"], "only end-to-end spells enter the playable selector")
 	for gated_id: String in ["spirit", "chaos", "gravity", "time"]:
 		check(not bool((first.elements_by_id[gated_id] as Dictionary)["runtime_enabled"]), "%s remains explicitly gated" % gated_id)
 	equal(int(first.ability("arc-primary")["flux_cost"]), 0, "reliable primary is resource-free")
@@ -43,6 +44,12 @@ func _test_catalog() -> void:
 	equal(int(first.ability("pocket-eclipse")["wire_id"]), CombatTuning.POCKET_ECLIPSE_WIRE_ID, "Pocket Eclipse wire matches compiled S. Wayne kit")
 	equal(int(first.ability("pocket-eclipse")["flux_cost"]) * 1000, CombatTuning.POCKET_ECLIPSE_FLUX_COST, "Pocket Eclipse Flux cost matches compiled behavior")
 	equal(int(first.ability("pocket-eclipse")["startup_ms"]), CombatTuning.POCKET_ECLIPSE_STARTUP_MS, "Pocket Eclipse startup matches compiled behavior")
+	for playable_id: String in first.playable_spell_ids():
+		var playable: Dictionary = first.ability(playable_id)
+		check(AbilityCatalog.SHAPES.has(String(playable.get("shape", ""))), "%s declares a legal spell shape" % playable_id)
+		check(not bool(playable.get("material_runtime_enabled", true)), "%s keeps material mutation truthfully gated" % playable_id)
+	equal(String(first.ability("prism-ward").get("shape")), "defense", "Prism Ward declares its future defense shape")
+	equal(String(first.ability("stone-channel").get("residue")), "construct", "Stone Channel declares intended persistent geometry")
 	for active_id: String in ["vector-lance", "prism-ward", "stone-channel", "tideline", "pocket-eclipse"]:
 		var active: Dictionary = first.ability(active_id)
 		check(int(active["points"]) > 0, "%s has positive build cost" % active_id)
@@ -95,3 +102,17 @@ func _test_invalid_content_fails_closed() -> void:
 			ability["flux_cost"] = 0
 	check(not invalid_catalog.validate(), "zero-cost catalog active fails closed")
 	check(invalid_catalog.last_error.contains("positive"), "active cost failure is diagnosable")
+
+	var invalid_shape := AbilityCatalog.new()
+	invalid_shape.data = catalog.data.duplicate(true)
+	(invalid_shape.data["abilities"][1] as Dictionary)["shape"] = "hitscan"
+	check(not invalid_shape.validate(), "unknown shape contract fails closed")
+	check(invalid_shape.last_error.contains("shape"), "shape failure is diagnosable")
+
+	var false_material_gate := AbilityCatalog.new()
+	false_material_gate.data = catalog.data.duplicate(true)
+	var arc: Dictionary = false_material_gate.data["abilities"][1]
+	arc["material_operation"] = "none"
+	arc["material_runtime_enabled"] = true
+	check(not false_material_gate.validate(), "enabled no-op material mutation fails closed")
+	check(false_material_gate.last_error.contains("cannot be none"), "material gate failure is diagnosable")

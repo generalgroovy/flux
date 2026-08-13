@@ -2,8 +2,14 @@ class_name AbilityCatalog
 extends RefCounted
 
 
-const SUPPORTED_SCHEMA_VERSION: int = 1
+const SUPPORTED_SCHEMA_VERSION: int = 2
 const SLOT_KINDS: Array[String] = ["passive", "primary", "active", "mobility", "ultimate"]
+const SHAPES: Array[String] = ["passive", "projectile", "beam", "spray", "field", "defense", "movement", "ultimate"]
+const DELIVERIES: Array[String] = ["self", "aimed", "placed"]
+const IMPACTS: Array[String] = ["empower", "damage", "damage_interrupt", "barrier", "terrain_cover", "reposition", "area_control", "damage_launch", "damage_ricochet", "damage_slow"]
+const RESIDUES: Array[String] = ["none", "trail", "field", "construct"]
+const MATERIAL_OPERATIONS: Array[String] = ["none", "heat", "cool", "wet", "charge", "discharge", "fracture", "push", "reveal", "decay"]
+const RUNTIME_STATUSES: Array[String] = ["playable", "catalog_only"]
 
 var data: Dictionary = {}
 var last_error: String = ""
@@ -64,12 +70,34 @@ func validate() -> bool:
 		var wire_id := int(ability.get("wire_id", 0))
 		var slot_kind := String(ability.get("slot_kind", ""))
 		var element_id := String(ability.get("element", ""))
+		var shape := String(ability.get("shape", ""))
+		var delivery := String(ability.get("delivery", ""))
+		var impact := String(ability.get("impact", ""))
+		var residue := String(ability.get("residue", ""))
+		var material_operation := String(ability.get("material_operation", ""))
+		var runtime_status := String(ability.get("runtime_status", ""))
 		if ability_id.is_empty() or abilities_by_id.has(ability_id):
 			return _fail("ability ids must be non-empty and unique: %s" % ability_id)
 		if wire_id <= 0 or ability_ids_by_wire.has(wire_id):
 			return _fail("ability wire ids must be positive and unique: %d" % wire_id)
 		if not SLOT_KINDS.has(slot_kind):
 			return _fail("ability has unknown slot kind: %s" % ability_id)
+		if not SHAPES.has(shape) or not DELIVERIES.has(delivery) or not IMPACTS.has(impact) or not RESIDUES.has(residue):
+			return _fail("ability has invalid shape contract: %s" % ability_id)
+		if not MATERIAL_OPERATIONS.has(material_operation):
+			return _fail("ability has invalid material operation: %s" % ability_id)
+		if not ability.get("material_runtime_enabled", false) is bool:
+			return _fail("ability material runtime gate must be boolean: %s" % ability_id)
+		if bool(ability.get("material_runtime_enabled", false)) and material_operation == "none":
+			return _fail("enabled material operation cannot be none: %s" % ability_id)
+		if not RUNTIME_STATUSES.has(runtime_status):
+			return _fail("ability has invalid runtime status: %s" % ability_id)
+		if slot_kind == "passive" and shape != "passive":
+			return _fail("passive ability requires passive shape: %s" % ability_id)
+		if slot_kind == "ultimate" and shape != "ultimate":
+			return _fail("ultimate ability requires ultimate shape: %s" % ability_id)
+		if slot_kind == "mobility" and shape != "movement":
+			return _fail("mobility ability requires movement shape: %s" % ability_id)
 		if not element_id.is_empty() and not elements_by_id.has(element_id):
 			return _fail("ability has unknown element: %s" % ability_id)
 		if not element_id.is_empty() and not bool((elements_by_id[element_id] as Dictionary).get("runtime_enabled", false)):
@@ -110,6 +138,16 @@ func active_element_ids() -> Array[String]:
 	for element_id: String in elements_by_id:
 		if bool((elements_by_id[element_id] as Dictionary).get("runtime_enabled", false)):
 			result.append(element_id)
+	result.sort()
+	return result
+
+
+func playable_spell_ids() -> Array[String]:
+	var result: Array[String] = []
+	for ability_id: String in abilities_by_id:
+		var entry: Dictionary = abilities_by_id[ability_id]
+		if String(entry.get("runtime_status", "")) == "playable" and String(entry.get("slot_kind", "")) in ["primary", "active", "mobility"]:
+			result.append(ability_id)
 	result.sort()
 	return result
 

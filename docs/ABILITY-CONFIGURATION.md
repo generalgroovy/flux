@@ -21,6 +21,13 @@ with recursively sorted object keys and hashed with SHA-256. Array order remains
 meaningful. Release tooling will later compile these authoring files into a
 wire-ID manifest; checked IDs may be deprecated but never silently reassigned.
 
+Schema 2 requires each ability to declare a bounded shape (`projectile`, `beam`,
+`spray`, `field`, `defense`, `movement`, plus passive/ultimate), delivery,
+impact, residue and planned material operation. `runtime_status` separates the
+six end-to-end spells from catalog-only designs, while
+`material_runtime_enabled` remains false until a deterministic grid operation,
+reset rule and route-safety proof actually exist.
+
 ## Element-family gate
 
 The catalog declares all twelve intended families so IDs can remain stable:

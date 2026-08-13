@@ -601,10 +601,10 @@ func _draw_spell_bar(state: PlayerState, primary_ability: Dictionary, active_abi
 		var name := "EMPTY" if is_empty else String(ability.get("display_name", "SPELL")).to_upper()
 		var name_color := PALE_STONE_COLOR if is_empty else PARCHMENT_COLOR
 		draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(9, 17), "%d  %s" % [slot_index + 1, name], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 18.0, 12, name_color)
-		var detail := "ATTUNE AT LOOM" if is_empty else String(ability.get("element", "")).to_upper()
+		var detail := "ATTUNE AT LOOM" if is_empty else "%s %s" % [String(ability.get("element", "")).to_upper(), String(ability.get("shape", "")).to_upper()]
 		if not is_empty:
 			var flux_cost: int = int(ability.get("flux_cost", 0))
-			detail += " · FREE" if flux_cost == 0 else " · %d FLUX" % flux_cost
+			detail += " · FREE" if flux_cost == 0 else " · %dF" % flux_cost
 			if cooldown_ticks[slot_index] > 0:
 				detail += " · %.1fs" % (float(cooldown_ticks[slot_index]) / float(world.config.tick_rate))
 			else:

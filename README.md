@@ -489,6 +489,7 @@ combos require an explicit short cap and escape rule.
 | Primary | Reliable independent-aim pressure that remains useful at zero Flux |
 | Active slots | Three unique catalog abilities inside the mode budget; damage, defense, support, terrain, control, and mobility are roles rather than mandatory duplicates |
 | Spell bar | Five ordered, unique loadout spell IDs bound independently to 1–5; the current playable adapter equips primary/active in slots 1/2 and leaves 3–5 explicitly empty until Loom editing lands |
+| Spell contract | Every catalog entry declares shape, delivery, impact, residue, planned material operation and an explicit playable/catalog-only runtime gate; planned chemistry never mutates the arena early |
 | Champion mobility | One identity-bearing Flux-paid traversal/combat action, still bounded by collision and speed rules |
 | Ultimate | One high-impact commitment with startup, safe routes, ownership, interruption/destruction, expiry, and recovery rules |
 

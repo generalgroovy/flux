@@ -1,5 +1,43 @@
 # FLUX2 agent worklog
 
+## 2026-08-13 — truthful spell shape and material-operation contract
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Advanced the ability catalog to schema 2. Every ability now declares one
+  validated shape, delivery, impact, residue, planned material operation,
+  material-runtime gate and playable/catalog-only status.
+- Added a sorted playable-spell query that exposes only the six abilities whose
+  simulation is already end to end. Prism Ward, Stone Channel, Phase Step and
+  Convergence remain useful validated designs without entering runtime choice.
+- Updated the five-slot HUD to show compact element + shape labels. Planned
+  wet/Charge/push/decay/reveal/fracture operations are authored but all remain
+  explicitly disabled until material mutation has authority and reset proof.
+
+Validation:
+
+- Full Godot gate: 14,868 assertions, zero failures; import and 60/120 Hz boots
+  passed with the new ability/champion compatibility hashes.
+- Negative tests reject unknown shapes and an enabled no-op material mutation.
+  Positive tests pin the six playable IDs and every current material gate.
+- A real 1280×720 GPU frame at
+  `.godot/spell-shape-hud-capture/frame00000001.png` was inspected; element,
+  projectile shape, Flux/free state, readiness and honest empties fit each cell.
+- `scripts/package.ps1 -Target All` rebuilt both checksummed friend archives;
+  packaged Windows safe quit completed a real AMD/OpenGL protocol-22 boot and
+  bounded clean exit with code 0.
+- `git diff --check`: passed.
+
+Known limitations and risks:
+
+- No beam, spray, field, defense or movement spell is promoted by this content
+  contract; the host-authoritative Loom and one-at-a-time runtime promotion are
+  next.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-13 — five-slot spell command and HUD foundation
 
 Branch: `codex/continuous-overhaul`

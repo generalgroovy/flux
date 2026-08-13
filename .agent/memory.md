@@ -35,7 +35,7 @@ each playable slice.
 - Camera presentation now defaults to a wider 75% scale and persists a bounded
   50/75/100% choice. Pointer aim, cone range and building occlusion transform
   with the same scale; F11 and `--camera-zoom=` expose it without changing rules.
-- Latest source verification is 15,613 assertions plus import/source 60/120 Hz
+- Latest source verification is 15,692 assertions plus import/source 60/120 Hz
   boots and a fresh 60 Hz three-process spectator-to-Hearth-to-Round-2,
   reconnect and stewardship journey. Diagnostic captures verify the compact
   active-layer HUD, wider 75% navigation view, Rimewake feedback and 3x4 Loom.
@@ -55,8 +55,12 @@ each playable slice.
 
 ## Next acceptance-driven slice
 
-Mechanics are frozen. Execute V0, the live visual baseline and token specimen,
-then proceed through the strict V1–V6 order in `.agent/VISUAL-OVERHAUL.md` until
+Mechanics remain frozen. V0 is complete: six source baselines, a validated
+twelve-element/material/UI language, whole-output-pixel camera placement,
+gameplay-safe cardinal-floor perspective and compact cartoon-character
+contracts, a live `--visual-specimen`, two quarantined/provenanced exploration
+boards and 79 new adversarial assertions. Proceed with V1 by applying this
+language and layering to the actual Wellspring renderer, then continue V2–V6 until
 the actual Wellspring, two foundation champions, existing spells and compact
 four-cell/layered GUI meet the 720p/1080p readability, accessibility, alignment
 and charm rubric. Only after integrated visual acceptance may work continue in

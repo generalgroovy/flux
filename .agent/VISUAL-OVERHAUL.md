@@ -30,8 +30,8 @@ projectiles, spell residues and interaction prompts instantly legible.
 | Camera | Preserve 50/75/100% options and default to the wider 75% overview; world-to-screen transforms, pointer aim, cutaways and collision overlays remain aligned. |
 | Pixel policy | One documented world-pixel scale, nearest-neighbor sampling, stable pivots and deliberate whole-pixel presentation without changing fixed-point authority. |
 | Play space | Dense detail belongs at scenic edges; navigable floors use quiet values, crisp silhouettes and obvious elevation/collision boundaries. |
-| Perspective | Tilted facades and raised props may add depth, but authoritative floors remain top-down and any occluding roof/canopy/wall cuts away predictably. |
-| Champions | Oh Tipi and S. Wayne receive original expressive gameplay-scale silhouettes, directional idle/walk/sprint/jump/cast/hit reads, distinct ancestry/equipment and restrained 2–3-element auras. |
+| Perspective | Gameplay floors remain square and screen-cardinal; tilted facades may rise no more than 0.85x their readable footprint, wall feet/door thresholds stay visible, and any occluding roof/canopy/wall cuts away predictably. Diamond-grid/isometric navigation is forbidden. |
+| Champions | Oh Tipi and S. Wayne use compact cartoon pixel proportions: head 40–45% of body height, short readable limbs, expressive face/pose, chunky equipment, 44–68px gameplay height, strong ancestry silhouettes, 1–2px outlines and restrained 2–3-element auras. Realistic/lanky or sexualized bodies fail review. |
 | Spells | Every currently playable projectile, beam, spray and field gets its own silhouette, cadence, travel/extent, impact and residue language; effects never erase actors or collision edges. |
 | HUD | Compact brass/timber/parchment framing, portrait plus readable Health/Flux/Stamina, active Plain/Ctrl/Alt layer and exactly four active spell cells; never display a fifth spell button. |
 | Prompts | Short translucent parchment bubbles and contextual interaction prompts anchor near their source, avoid combat state and disappear promptly. |

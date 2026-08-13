@@ -1,5 +1,51 @@
 # FLUX2 agent worklog
 
+## 2026-08-13 — visual Gate V0 runtime language
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Captured the live schematic baseline at 720p/1080p and 50/75/100% zoom, then
+  scored it 2.0/5 rather than mistaking functional readability for visual charm.
+- Added a fail-closed visual language covering eleven ordered material/UI ramps,
+  twelve shape/cadence-distinct elements, explicit renderer layers, density/HUD
+  budgets and a human-only 4-each/4.5-mean quality rubric.
+- Defined a user-friendly projection: square screen-cardinal floors, visible
+  collision footprints/thresholds, tilted facades bounded to 0.85x footprint,
+  mandatory cutaways and no diamond/isometric navigation.
+- Defined compact cartoon champions: 40–45% head ratio, short expressive bodies,
+  44–68px gameplay height, 1–2px outlines, 3–5-color material ramps, separate
+  shadow and bounded south/east/north/jump/cast/hit silhouette review.
+- Added reusable pixel panels, dividers, materials, resources, twelve unique
+  element glyphs, whole-output-pixel camera helpers and a live diagnostic
+  `--visual-specimen`; integrated the visual hash into source boot evidence.
+- Generated and preserved two original, immutable, provenanced exploration
+  boards as quarantined references. Their cartoon characters/material language
+  guide production; the second board's steep isometric court is explicitly
+  rejected as a runtime projection and neither image is a shippable atlas.
+
+Validation:
+
+- Full Godot headless gate: 15,692 assertions, zero failures, including 79 new
+  visual-language/perspective/pixel-placement adversarial assertions.
+- Clean import and independent source boots at 60 and 120 Hz passed.
+- Real 1280x720 AMD/OpenGL V0 specimen frame was inspected; material ramps,
+  resources, four cells, prompt language and all twelve shape-distinct element
+  glyphs render together.
+- `git diff --check`: passed; only configured LF-to-CRLF notices were emitted.
+
+Known limitations and risks:
+
+- V0 is an expandable production framework, not visual acceptance. The actual
+  Wellspring, champions, spells and combat GUI still use the schematic runtime.
+- The generated boards remain concept-only and may not be cropped/shipped or
+  used for collision without separate original-asset production and review.
+- Existing export-time image-loader warnings predate this slice and remain a
+  known visual-pipeline cleanup item.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-13 — visual-first continuation contract
 
 Branch: `codex/continuous-overhaul`

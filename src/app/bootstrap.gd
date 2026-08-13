@@ -16,6 +16,7 @@ const CHAMPION_CATALOG_PATH: String = "res://content/champions/foundation_champi
 const LOADOUT_PATH: String = "res://content/loadouts/foundation_practitioner_v1.json"
 const MATERIAL_CATALOG_PATH: String = "res://content/materials/foundation_materials_v1.json"
 const MATERIAL_YARD_PATH: String = "res://content/maps/sanctum_material_yard_v1.json"
+const VISUAL_LANGUAGE_PATH: String = "res://content/visual/visual_language_v1.json"
 const WATER_COLOR := Color("153c4a")
 const WATER_HIGHLIGHT_COLOR := Color("28677a")
 const FOREST_SHADOW_COLOR := Color("17261b")
@@ -40,6 +41,7 @@ var input_router: InputRouter
 var hub_definition: HubDefinition
 var campus_layout: SanctumCampusLayout
 var campus_renderer: SanctumCampusRenderer
+var visual_language: VisualLanguage
 var ability_catalog: AbilityCatalog
 var champion_catalog: ChampionCatalog
 var loadout: LoadoutDefinition
@@ -123,6 +125,7 @@ var safe_quit_smoke_seconds: float = 0.0
 var safe_quit_pending: bool = false
 var safe_quit_deadline_ms: int = 0
 var controls_input_guard_frames: int = 0
+var show_visual_specimen: bool = false
 
 
 func _ready() -> void:
@@ -149,7 +152,13 @@ func _ready() -> void:
 		push_error(campus_layout.last_error)
 		get_tree().quit(1)
 		return
+	visual_language = VisualLanguage.new()
+	if not visual_language.load_from_file(VISUAL_LANGUAGE_PATH):
+		push_error(visual_language.last_error)
+		get_tree().quit(1)
+		return
 	campus_renderer = SanctumCampusRenderer.new()
+	show_visual_specimen = OS.get_cmdline_user_args().has("--visual-specimen")
 	capture_pointer_world = _requested_capture_pointer()
 	capture_spawn_world = _requested_capture_spawn()
 	capture_expanded_station_id = _requested_capture_expanded_station()
@@ -217,7 +226,7 @@ func _ready() -> void:
 		elif capture_expanded_station_id == "spell-loom":
 			spell_loom_editor.open_editor(_local_player_state())
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, visual %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -226,6 +235,7 @@ func _ready() -> void:
 			player_preferences.pov_angle_degrees,
 			player_preferences.pov_range,
 			player_preferences.camera_zoom_percent,
+			visual_language.content_hash().left(12),
 			hub_definition.districts_by_id.size(),
 			hub_definition.travel_nodes_by_id.size(),
 			campus_layout.content_hash.left(12),
@@ -649,6 +659,8 @@ func _draw() -> void:
 		_draw_controls_editor()
 	elif spell_loom_editor != null and spell_loom_editor.is_open:
 		_draw_spell_loom_editor()
+	if show_visual_specimen:
+		VisualSpecimen.draw(self, visual_language, get_viewport_rect().size, world.tick)
 
 
 func _draw_resource_bar(rectangle: Rect2, label: String, value: int, maximum: int, color: Color) -> void:
@@ -2831,9 +2843,9 @@ func _camera_zoom_scale() -> float:
 
 func _set_world_transform(camera_origin: Vector2) -> void:
 	var zoom := _camera_zoom_scale()
-	draw_set_transform(-camera_origin * zoom, 0.0, Vector2(zoom, zoom))
+	draw_set_transform(PixelPresentation.snapped_canvas_origin(camera_origin, player_preferences.camera_zoom_percent), 0.0, Vector2(zoom, zoom))
 
 
 func _set_world_local_transform(world_position: Vector2, local_scale: Vector2, camera_origin: Vector2) -> void:
 	var zoom := _camera_zoom_scale()
-	draw_set_transform((world_position - camera_origin) * zoom, 0.0, local_scale * zoom)
+	draw_set_transform(PixelPresentation.world_to_screen(world_position, camera_origin, player_preferences.camera_zoom_percent), 0.0, local_scale * zoom)

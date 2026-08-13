@@ -1,5 +1,47 @@
 # FLUX2 agent worklog
 
+## 2026-08-13 — in-world conflict-safe Controls Lectern
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Advanced preferences to schema 5 with validated, persisted controller button
+  and signed-axis bindings plus optional mouse lanes for every current gameplay
+  action; schema-v4 profiles migrate without changing established inputs.
+- Added a tenth walk-up Wellspring station, the Controls Lectern west of the
+  Champion Loom, with an original parchment/brass/cyan table at 1280×720.
+- Keyboard, mouse, wheel and controller navigation/capture now support explicit
+  cancel, unbind, safe reset and disclosed conflict swaps. Each accepted change
+  updates the runtime map and offline profile immediately.
+- Opening the lectern suppresses local movement, combat and station input while
+  the fixed-tick world/network session keeps advancing; close/capture events are
+  guarded so they cannot leak into gameplay on the following frame.
+- Updated the Movement Guide, renderer glyph, controls/player-experience docs,
+  backlog and handoff memory to match playable truth.
+
+Validation:
+
+- Full Godot gate: 14,796 assertions, zero failures; import and 60/120 Hz boots
+  passed. New coverage includes capture device filtering, navigation wrapping,
+  conflict swap, unbind/reset, controller validation/migration and station data.
+- Deterministic `--capture-spawn=1080,900
+  --capture-expanded-station=controls-lectern` movie capture completed at 60 Hz;
+  the final 12-row 1280×720 frame was inspected for table fit, contrast and
+  live bindings, including interaction/talk conflict safety.
+- `scripts/package.ps1 -Target All`: passed; rebuilt runtime-only Windows/Linux
+  friend archives include the lectern, and packaged Windows safe quit completed
+  a real GPU boot, schema-v5 migration and bounded exit with code 0.
+- `git diff --check`: passed.
+
+Known limitations and risks:
+
+- Named controller profiles, sensitivity/dead-zone curves and per-category reset
+  remain later polish; spell-slot actions enter the same validated grammar next.
+- Physical Linux and real remote-friend acceptance gaps are unchanged.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-13 — schema-4 mouse and keyboard movement defaults
 
 Branch: `codex/continuous-overhaul`

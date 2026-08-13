@@ -6,15 +6,15 @@ each playable slice.
 ## Current green frontier — 2026-08-13
 
 - Branch: `codex/continuous-overhaul`.
-- Protocol 21, snapshot schema 6, player preference schema 4.
+- Protocol 21, snapshot schema 6, player preference schema 5.
 - Two basic champions, the non-ability movement foundation, cone occlusion,
-  nine walk-up Wellspring stations, direct-IP Farflow, Charters, Hearth,
+  ten walk-up Wellspring stations, direct-IP Farflow, Charters, Hearth,
   Proving Court, reconnect, stewardship and late-join observation are live.
 - Up to eight players have authored court spawns, teams, wards, bounds,
   knockout/respawn, results, Hearth return and same-roster Round 2.
 - Snapshot schema 6 uses a bounded FastLZ envelope; maximum fixtures and live
   three-player journeys remain inside one 1,392-byte ENet MTU.
-- Latest verification is 14,756 assertions plus Windows 60/120 Hz
+- Latest verification is 14,796 assertions plus Windows 60/120 Hz
   three-process spectator-to-Hearth-to-Round-2 journeys with empty stderr.
 - Portable release tooling installs only the official Godot 4.7.1 Windows/Linux
   templates by bounded HTTP range with ZIP CRC/size validation, excludes
@@ -30,7 +30,8 @@ each playable slice.
 
 ## Next acceptance-driven slice
 
-Expose the schema-4 controls through a Wellspring lectern with conflict-safe
-keyboard, mouse-button, wheel and controller capture plus swap/unbind/reset/
-cancel. Preserve the packaged Windows green point; physical Garuda and real
-remote-friend proof remain explicit external acceptance gaps.
+Introduce the five-slot spell grammar: stable `spell_1`…`spell_5` actions and
+loadout data, 1–5 defaults with Ctrl/Alt legal alternatives, protocol/replay
+coverage and a readable HUD/Loom configuration foundation. Preserve the
+packaged Windows green point; physical Garuda and real remote-friend proof remain
+explicit external acceptance gaps.

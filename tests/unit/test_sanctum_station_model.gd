@@ -14,11 +14,16 @@ func run() -> int:
 func _test_repository_stations() -> void:
 	var layout := SanctumCampusLayout.new()
 	check(layout.load_from_file(CAMPUS_PATH), "campus loads for station focus")
-	equal(layout.stations_by_id.size(), 9, "walk-up slice exposes play, Farflow and host-stewardship stations")
+	equal(layout.stations_by_id.size(), 10, "walk-up slice exposes play, controls, Farflow and host-stewardship stations")
 	equal(
 		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(1_180_000, 780_000)),
 		"movement-guide",
 		"movement guide focuses at its world anchor",
+	)
+	equal(
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(1_080_000, 900_000)),
+		"controls-lectern",
+		"Controls Lectern focuses at its world anchor",
 	)
 	equal(
 		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(1_380_000, 780_000)),

@@ -27,7 +27,7 @@ func _test_repository_layout() -> void:
 	equal(layout.buildings_by_id.size(), 10, "authored buildings and low cover are registered")
 	equal(layout.landmarks_by_id.size(), 6, "combined quarters retain multiple memorable landmarks")
 	equal(layout.reset_zones_by_id.size(), 2, "movement and proving reset zones are explicit")
-	equal(layout.stations_by_id.size(), 9, "play, Farflow and host-stewardship stations are explicit")
+	equal(layout.stations_by_id.size(), 10, "play, controls, Farflow and host-stewardship stations are explicit")
 	equal(layout.practice_targets_by_id.size(), 1, "the Nexus sparring effigy is explicit")
 	equal(String(layout.arena_definition.get("id", "")), "proving-court-v1", "the first bounded arena has a stable authored identity")
 	equal((layout.arena_definition.get("spawns", []) as Array).size(), 8, "arena reserves eight ordered spawn anchors")
@@ -68,6 +68,7 @@ func _test_collision_compilation() -> void:
 	check(collision.can_occupy(Vector2i(2_080_000, 620_000), MovementTuning.PLAYER_RADIUS), "Session Hearth has authored collision clearance")
 	check(collision.can_occupy(Vector2i(2_300_000, 620_000), MovementTuning.PLAYER_RADIUS), "Company Ledger has authored collision clearance")
 	check(collision.can_occupy(Vector2i(2_460_000, 620_000), MovementTuning.PLAYER_RADIUS), "Parting Bell has authored collision clearance")
+	check(collision.can_occupy(Vector2i(1_080_000, 900_000), MovementTuning.PLAYER_RADIUS), "Controls Lectern has authored collision clearance")
 	for gather_value: Variant in (layout.stations_by_id["session-hearth"] as Dictionary).get("gather_spawns", []):
 		var gather_values: Array = gather_value
 		check(collision.can_occupy(Vector2i(int(gather_values[0]), int(gather_values[1])) * SimConfig.FIXED_SCALE, MovementTuning.PLAYER_RADIUS), "Hearth gather spawn has authored collision clearance")

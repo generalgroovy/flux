@@ -4,6 +4,7 @@ extends RefCounted
 
 const KEY_ACTIONS: Dictionary[StringName, int] = PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS
 const MOUSE_ACTIONS: Dictionary[StringName, int] = PlayerPreferences.DEFAULT_MOUSE_BINDINGS
+const CONTROLLER_ACTIONS: Dictionary = PlayerPreferences.DEFAULT_CONTROLLER_BINDINGS
 const PRIMARY_ACTION: StringName = &"primary"
 const ACTIVE_1_ACTION: StringName = &"active_1"
 const SLIDE_ACTION: StringName = &"slide"
@@ -32,10 +33,6 @@ static func ensure_input_map() -> void:
 		var physical_keycode: int = KEY_ACTIONS[action]
 		if physical_keycode != 0:
 			_add_key(action, physical_keycode)
-	_ensure_action(INTERACT_ACTION)
-	_add_key(INTERACT_ACTION, KEY_F)
-	_ensure_action(EMOTE_ACTION)
-	_add_key(EMOTE_ACTION, KEY_T)
 	_ensure_action(SPECTATE_NEXT_ACTION)
 	_add_key(SPECTATE_NEXT_ACTION, KEY_TAB)
 	_ensure_action(PRIMARY_ACTION)
@@ -47,10 +44,9 @@ static func ensure_input_map() -> void:
 		if mouse_button != 0:
 			_add_mouse_button(action, mouse_button)
 
-	_add_joy_axis(&"move_left", JOY_AXIS_LEFT_X, -1.0)
-	_add_joy_axis(&"move_right", JOY_AXIS_LEFT_X, 1.0)
-	_add_joy_axis(&"move_up", JOY_AXIS_LEFT_Y, -1.0)
-	_add_joy_axis(&"move_down", JOY_AXIS_LEFT_Y, 1.0)
+	for action: StringName in CONTROLLER_ACTIONS:
+		_ensure_action(action)
+		_add_controller_binding(action, CONTROLLER_ACTIONS[action])
 	_ensure_action(&"aim_left")
 	_ensure_action(&"aim_right")
 	_ensure_action(&"aim_up")
@@ -59,14 +55,6 @@ static func ensure_input_map() -> void:
 	_add_joy_axis(&"aim_right", JOY_AXIS_RIGHT_X, 1.0)
 	_add_joy_axis(&"aim_up", JOY_AXIS_RIGHT_Y, -1.0)
 	_add_joy_axis(&"aim_down", JOY_AXIS_RIGHT_Y, 1.0)
-	_add_joy_axis(PRIMARY_ACTION, JOY_AXIS_TRIGGER_RIGHT, 1.0)
-	_add_joy_button(ACTIVE_1_ACTION, JOY_BUTTON_X)
-	_add_joy_button(&"sprint", JOY_BUTTON_LEFT_SHOULDER)
-	_add_joy_button(&"jump", JOY_BUTTON_RIGHT_SHOULDER)
-	_add_joy_button(&"technique", JOY_BUTTON_B)
-	_add_joy_button(SLIDE_ACTION, JOY_BUTTON_A)
-	_add_joy_button(INTERACT_ACTION, JOY_BUTTON_Y)
-	_add_joy_button(EMOTE_ACTION, JOY_BUTTON_DPAD_UP)
 	_add_joy_button(SPECTATE_NEXT_ACTION, JOY_BUTTON_DPAD_RIGHT)
 
 
@@ -98,6 +86,14 @@ static func _add_joy_button(action: StringName, button_index: int) -> void:
 	var event := InputEventJoypadButton.new()
 	event.button_index = button_index
 	_add_event_once(action, event)
+
+
+static func _add_controller_binding(action: StringName, descriptor: Dictionary) -> void:
+	var kind := String(descriptor.get("kind", "none"))
+	if kind == "button":
+		_add_joy_button(action, int(descriptor.get("index", -1)))
+	elif kind == "axis":
+		_add_joy_axis(action, int(descriptor.get("index", -1)), float(descriptor.get("direction", 0)))
 
 
 static func _add_event_once(action: StringName, event: InputEvent) -> void:
@@ -206,6 +202,22 @@ func configure_mouse_bindings(requested_bindings: Dictionary) -> bool:
 		var mouse_button: int = int(requested_bindings.get(action, PlayerPreferences.DEFAULT_MOUSE_BINDINGS[action]))
 		if mouse_button != 0:
 			_add_mouse_button(action, mouse_button)
+	return true
+
+
+func configure_controller_bindings(requested_bindings: Dictionary) -> bool:
+	if not PlayerPreferences.validate_controller_bindings(requested_bindings).is_empty():
+		return false
+	for action: StringName in PlayerPreferences.DEFAULT_CONTROLLER_BINDINGS:
+		var retained_events: Array[InputEvent] = []
+		for existing: InputEvent in InputMap.action_get_events(action):
+			if not existing is InputEventJoypadButton and not existing is InputEventJoypadMotion:
+				retained_events.append(existing)
+		InputMap.action_erase_events(action)
+		for retained: InputEvent in retained_events:
+			InputMap.action_add_event(action, retained)
+		var descriptor: Dictionary = requested_bindings.get(action, PlayerPreferences.DEFAULT_CONTROLLER_BINDINGS[action])
+		_add_controller_binding(action, descriptor)
 	return true
 
 

@@ -111,7 +111,8 @@ even when design documentation already exists.
     ring, shadow squash, semantic land strip, and reduced-motion equivalent
   - [x] Separate Health, Stamina, and spell Flux; independent quantized aim and
     keyboard/mouse/controller action defaults
-  - [x] Offline saved keyboard bindings, world-relative and aim-relative
+  - [x] In-world Controls Lectern with saved keyboard, mouse/wheel and controller
+    bindings, conflict swaps, unbind/reset/cancel, world-relative and aim-relative
     movement presets, and full/ranged-cone POV with 15–360° angle and adjustable
     range; production defaults are Shift sprint, C/wheel-down direct slide and
     Space/wheel-up jump; Ctrl and Alt remain free for spell binding
@@ -128,8 +129,7 @@ even when design documentation already exists.
     regions with nearest-neighbor rendering, composed with the shared jump lift
     and ground shadow before POV masking, and fails closed to the procedural body
   - [ ] Add bounded impact influence, timed ground recovery,
-    authored elevation, interactive binding UI,
-    controller profile persistence, accepted final per-champion animation art,
+    authored elevation, sensitivity/dead-zone profiles, accepted final per-champion animation art,
     remaining champion runtime integration, and interactive route acceptance
 - [ ] **Chapter 4 — [Aiming, combat, and abilities](#aiming-combat-and-ability-composition)**
   - [x] Independent move/aim and held-primary command protocol
@@ -1886,9 +1886,9 @@ three-player journeys fit one ENet MTU; protocol 21 rejects older peers. This
 spectator view adds no new information channel, but competitive limited-view
 modes still require host-side per-peer visibility filtering.
 
-The current simulation uses protocol 21, snapshot schema 6 and preference schema 4: Space or wheel-up invokes the
+The current simulation uses protocol 21, snapshot schema 6 and preference schema 5: Space or wheel-up invokes the
 semantic jump action, Shift sprints, C or wheel-down directly slides/fast-falls,
-Ctrl and Alt are free, and primary no longer aliases Space. Schema-v1/v2/v3
+Ctrl and Alt are free, and primary no longer aliases Space. Schema-v1/v2/v3/v4
 defaults migrate safely, explicit saved alternatives remain
 supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision
 anchor grounded while the body rises and a separate receiving-surface shadow

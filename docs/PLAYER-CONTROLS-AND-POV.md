@@ -2,7 +2,7 @@
 
 ## Implemented checkpoint
 
-FLUX 2 now loads schema-v4 preferences from the stable offline profile
+FLUX 2 now loads schema-v5 preferences from the stable offline profile
 `user://player_preferences_v1.json`. The legacy filename is retained so existing
 schema-v1 installations are discovered and migrated in place. On Linux it
 normally resolves below
@@ -12,8 +12,9 @@ first launch and requires no account, network, subscription, or cloud service.
 
 The profile owns five independent concerns:
 
-- physical-key bindings for every current keyboard action;
+- physical-key bindings for every current gameplay keyboard action;
 - mouse-button and wheel-direction bindings for current combat/movement actions;
+- controller button and signed-axis bindings for current combat/movement actions;
 - the movement reference preset;
 - full-screen versus ranged-cone presentation;
 - ranged-cone angle and length.
@@ -25,6 +26,8 @@ unbound. Schema-v3's default Ctrl slide becomes C; Ctrl and Alt are left free
 for later spell binding. Explicit saved
 alternatives, including J jump or P primary, remain unchanged. New defaults bind
 Space only to semantic jump; Arc Primary keeps left mouse and controller trigger.
+Schema-v4 profiles gain the controller table and newly optional mouse movement
+lanes without altering established jump, slide, primary or active inputs.
 
 Unknown actions, unknown modes, conflicting non-zero keyboard keycodes,
 fractional values, unsupported schema versions, and values outside documented
@@ -32,6 +35,16 @@ bounds fail closed. A keycode of zero intentionally removes that action's
 keyboard binding without deleting its mouse or controller binding. Corrupt
 preferences fall back to safe defaults with a warning instead of preventing an
 offline game from starting.
+
+Walk to the **Controls Lectern** west of the Champion Loom and press F/controller
+north-face to open the in-world table. Arrow keys or D-pad select an action and
+device; Enter/controller south-face captures the next matching input,
+Backspace/controller west-face unbinds, R/controller north-face restores safe
+defaults, and Escape/controller east-face closes. Clicking a table cell begins
+capture and the mouse wheel can navigate rows. Reusing an occupied input swaps
+the two actions visibly instead of silently erasing one. Each accepted change
+updates the runtime map and profile immediately; movement and casts are suppressed
+locally while the lectern is open, but an online host keeps the session ticking.
 
 ## Movement reference presets
 
@@ -120,11 +133,10 @@ scripts/run.sh --movement-reference=aim_relative --pov-mode=cone \
 ```
 
 Command-line values clamp to the supported numeric bounds and do not require
-editing project data. Exact persistent values and physical-key codes can be
-changed in the generated JSON file while the game is stopped. A controller-
-friendly Settings station, interactive event capture, sensitivity/dead-zone
-curves, per-device profiles, conflict explanation, reset-by-category, and
-import/export are the next presentation layer over this same schema.
+editing project data. Exact persistent values and physical-key codes can also
+be changed in the generated JSON file while the game is stopped.
+Sensitivity/dead-zone curves, named per-device profiles, reset-by-category and
+profile import/export remain later presentation layers over this same schema.
 
 The schema persists `reduced_motion` strictly as a boolean. It defaults to false,
 fails closed on malformed values, and does not alter canonical simulation. The

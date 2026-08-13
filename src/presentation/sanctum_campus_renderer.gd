@@ -259,7 +259,7 @@ func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int) -> void:
 	var position := Vector2(float(values[0]), float(values[1]))
 	var kind := String(station.get("kind", ""))
 	var pulse: float = 0.12 + 0.06 * sin(float(tick) * 0.08)
-	var accent: Color = CYAN if kind in ["guide", "farflow"] else (VIOLET if kind == "champion" else (BRASS if kind in ["charter", "ledger"] else FIRE))
+	var accent: Color = CYAN if kind in ["guide", "controls", "farflow"] else (VIOLET if kind == "champion" else (BRASS if kind in ["charter", "ledger"] else FIRE))
 	canvas.draw_circle(position + Vector2(2, 5), 19.0, Color(DEEP_FOREST, 0.72))
 	canvas.draw_circle(position, 17.0, CLIFF)
 	canvas.draw_arc(position, 14.0, 0.0, TAU, 16, BRASS, 3.0)
@@ -271,6 +271,11 @@ func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int) -> void:
 		canvas.draw_line(position + Vector2(8, -5), position + Vector2(8, 6), PARCHMENT, 2.0)
 		canvas.draw_line(position + Vector2(-8, 6), position + Vector2(0, 8), PARCHMENT, 2.0)
 		canvas.draw_line(position + Vector2(8, 6), position + Vector2(0, 8), PARCHMENT, 2.0)
+	elif kind == "controls":
+		canvas.draw_rect(Rect2(position + Vector2(-8, -7), Vector2(16, 12)), Color(PARCHMENT, 0.18), true)
+		for key_position: Vector2 in [Vector2(-5, -4), Vector2(0, -4), Vector2(5, -4), Vector2(-5, 1), Vector2(0, 1), Vector2(5, 1)]:
+			canvas.draw_rect(Rect2(position + key_position, Vector2(3, 3)), PARCHMENT, true)
+		canvas.draw_line(position + Vector2(-10, 8), position + Vector2(10, 8), BRASS_LIGHT, 2.0)
 	elif kind == "champion":
 		var loom_points := PackedVector2Array([
 			position + Vector2(0, -9),

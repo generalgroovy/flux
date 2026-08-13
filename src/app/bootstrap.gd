@@ -48,6 +48,7 @@ var material_yard: MaterialYardDefinition
 var material_grid: MaterialGrid
 var material_preview_texture: ImageTexture
 var player_preferences: PlayerPreferences
+var controls_editor: ControlBindingEditor
 var player_sprite: WellspringCharacterSprite
 var session_transport: SessionTransport
 var session_steward: SessionSteward
@@ -117,6 +118,7 @@ var requested_safe_quit_smoke: bool = false
 var safe_quit_smoke_seconds: float = 0.0
 var safe_quit_pending: bool = false
 var safe_quit_deadline_ms: int = 0
+var controls_input_guard_frames: int = 0
 
 
 func _ready() -> void:
@@ -129,6 +131,7 @@ func _ready() -> void:
 		player_preferences.reset_to_defaults()
 	if not preferences_existed and not player_preferences.save_to_file():
 		push_warning(player_preferences.last_error)
+	controls_editor = ControlBindingEditor.new()
 	_apply_preference_overrides()
 	hub_definition = HubDefinition.new()
 	if not hub_definition.load_from_file(HUB_DEFINITION_PATH):
@@ -201,6 +204,8 @@ func _ready() -> void:
 		expanded_station_id = capture_expanded_station_id
 		station_notice = ""
 		station_notice_seconds = 0.0
+		if capture_expanded_station_id == "controls-lectern":
+			controls_editor.open_editor()
 	print(
 		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
@@ -229,6 +234,81 @@ func _notification(what: int) -> void:
 		_request_safe_quit("window")
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if controls_editor == null or not controls_editor.is_open:
+		return
+	var handled := false
+	var bindings_changed := false
+	if controls_editor.capturing:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+			controls_editor.cancel_capture()
+			handled = true
+		elif event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_BACK:
+			controls_editor.cancel_capture()
+			handled = true
+		else:
+			bindings_changed = controls_editor.capture_event(event, player_preferences)
+			handled = bindings_changed or event is InputEventKey or event is InputEventMouseButton or event is InputEventJoypadButton or event is InputEventJoypadMotion
+	else:
+		if event is InputEventKey and event.pressed and not event.echo:
+			var key_event := event as InputEventKey
+			match key_event.keycode:
+				KEY_ESCAPE:
+					_close_controls_editor()
+				KEY_UP:
+					controls_editor.move_selection(-1, 0)
+				KEY_DOWN:
+					controls_editor.move_selection(1, 0)
+				KEY_LEFT:
+					controls_editor.move_selection(0, -1)
+				KEY_RIGHT:
+					controls_editor.move_selection(0, 1)
+				KEY_ENTER, KEY_KP_ENTER:
+					controls_editor.begin_capture()
+				KEY_BACKSPACE, KEY_DELETE:
+					bindings_changed = controls_editor.unbind_selected(player_preferences)
+				KEY_R:
+					controls_editor.reset_bindings(player_preferences)
+					bindings_changed = true
+			handled = true
+		elif event is InputEventMouseButton and event.pressed:
+			var mouse_event := event as InputEventMouseButton
+			if mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
+				controls_editor.move_selection(-1, 0)
+			elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+				controls_editor.move_selection(1, 0)
+			elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
+				controls_editor.select_cell(mouse_event.position)
+			handled = true
+		elif event is InputEventJoypadButton and event.pressed:
+			var joy_event := event as InputEventJoypadButton
+			match joy_event.button_index:
+				JOY_BUTTON_DPAD_UP:
+					controls_editor.move_selection(-1, 0)
+				JOY_BUTTON_DPAD_DOWN:
+					controls_editor.move_selection(1, 0)
+				JOY_BUTTON_DPAD_LEFT:
+					controls_editor.move_selection(0, -1)
+				JOY_BUTTON_DPAD_RIGHT:
+					controls_editor.move_selection(0, 1)
+				JOY_BUTTON_A:
+					controls_editor.begin_capture()
+				JOY_BUTTON_B:
+					_close_controls_editor()
+				JOY_BUTTON_X:
+					bindings_changed = controls_editor.unbind_selected(player_preferences)
+				JOY_BUTTON_Y:
+					controls_editor.reset_bindings(player_preferences)
+					bindings_changed = true
+			handled = true
+	if bindings_changed:
+		_commit_control_bindings()
+	if handled:
+		controls_input_guard_frames = 2
+		get_viewport().set_input_as_handled()
+		queue_redraw()
+
+
 func _exit_tree() -> void:
 	if player_preferences != null and not player_preferences.save_to_file():
 		push_warning(player_preferences.last_error)
@@ -250,10 +330,14 @@ func _process(delta: float) -> void:
 		_advance_safe_quit()
 		return
 	_update_reconnect_smoke(delta)
-	_handle_preference_actions()
-	if Input.is_action_just_pressed(&"toggle_debug_overlay"):
+	var controls_blocking: bool = controls_editor != null and controls_editor.is_open or controls_input_guard_frames > 0
+	if controls_input_guard_frames > 0:
+		controls_input_guard_frames -= 1
+	if not controls_blocking:
+		_handle_preference_actions()
+	if not controls_blocking and Input.is_action_just_pressed(&"toggle_debug_overlay"):
 		show_debug_overlay = not show_debug_overlay
-	if Input.is_action_just_pressed(&"reset_match"):
+	if not controls_blocking and Input.is_action_just_pressed(&"reset_match"):
 		if session_transport.is_connected_client():
 			station_notice = "Only the Farflow host can restore the shared court."
 			station_notice_seconds = 2.5
@@ -263,7 +347,7 @@ func _process(delta: float) -> void:
 		elif not _restart_shared_seed(tick_rate):
 			set_process(false)
 			return
-	if Input.is_action_just_pressed(&"toggle_tick_rate"):
+	if not controls_blocking and Input.is_action_just_pressed(&"toggle_tick_rate"):
 		if session_transport.is_online():
 			station_notice = "Close Farflow before changing the simulation cadence."
 			station_notice_seconds = 2.5
@@ -280,14 +364,14 @@ func _process(delta: float) -> void:
 		client_prediction.advance_visual(delta)
 		if session_transport.is_connected_client() and client_prediction.is_ready():
 			current_position = client_prediction.presented_position_pixels()
-	if Input.is_action_just_pressed(InputRouter.SPECTATE_NEXT_ACTION) and _is_spectating():
+	if not controls_blocking and Input.is_action_just_pressed(InputRouter.SPECTATE_NEXT_ACTION) and _is_spectating():
 		var next_focus_id := spectator_focus.cycle_next()
 		if next_focus_id > 0:
 			station_notice = "Following %s." % _spectator_name(next_focus_id)
 			station_notice_seconds = 1.5
-	if Input.is_action_just_pressed(InputRouter.INTERACT_ACTION) and not _is_spectating():
+	if not controls_blocking and Input.is_action_just_pressed(InputRouter.INTERACT_ACTION) and not _is_spectating():
 		_activate_focused_station()
-	if Input.is_action_just_pressed(InputRouter.EMOTE_ACTION):
+	if not controls_blocking and Input.is_action_just_pressed(InputRouter.EMOTE_ACTION):
 		_submit_session_request(SessionTransport.REQUEST_EMOTE)
 
 	var fixed_delta: float = 1.0 / float(tick_rate)
@@ -296,11 +380,15 @@ func _process(delta: float) -> void:
 	while accumulator_seconds >= fixed_delta and steps < MAX_CATCH_UP_STEPS:
 		previous_position = current_position
 		var pointer_world_position := Vector2(capture_pointer_world) if capture_pointer_world.x >= 0 else get_viewport().get_mouse_position() + _camera_origin(_camera_focus_position(current_position))
-		var command: SimCommand = input_router.sample(
-			world.tick,
-			current_position,
-			pointer_world_position,
-		)
+		var command: SimCommand
+		if controls_editor.is_open or controls_blocking:
+			command = SimCommand.new(world.tick, input_router.entity_id, 0, 0, 0, 0, input_router.last_quantized_aim.x, input_router.last_quantized_aim.y)
+		else:
+			command = input_router.sample(
+				world.tick,
+				current_position,
+				pointer_world_position,
+			)
 		if session_transport.is_connected_client() and requested_prediction_smoke and last_client_snapshot_tick >= 0 and prediction_smoke_inputs_sent < 18:
 			command = SimCommand.new(world.tick, input_router.entity_id, 1000, 0, 0, 0, 1000, 0)
 			prediction_smoke_inputs_sent += 1
@@ -486,6 +574,8 @@ func _draw() -> void:
 		draw_string(ThemeDB.fallback_font, Vector2(32, 132), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
 	if show_debug_overlay:
 		_draw_material_yard_preview()
+	if controls_editor != null and controls_editor.is_open:
+		_draw_controls_editor()
 
 
 func _draw_resource_bar(rectangle: Rect2, label: String, value: int, maximum: int, color: Color) -> void:
@@ -494,6 +584,37 @@ func _draw_resource_bar(rectangle: Rect2, label: String, value: int, maximum: in
 	draw_rect(Rect2(rectangle.position + Vector2(2, 2), Vector2((rectangle.size.x - 4.0) * ratio, rectangle.size.y - 4.0)), color, true)
 	draw_rect(rectangle, Color(PARCHMENT_COLOR, 0.65), false, 1.0)
 	draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(7, 15), "%s %d/%d" % [label, value / 1000, maximum / 1000], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 12.0, 12, Color.WHITE)
+
+
+func _draw_controls_editor() -> void:
+	var panel := ControlBindingEditor.PANEL_RECT
+	draw_rect(Rect2(Vector2.ZERO, Vector2(1280, 720)), Color("060907a8"), true)
+	draw_rect(panel, Color(PANEL_COLOR, 0.97), true)
+	draw_rect(panel, Color(BRASS_COLOR, 0.92), false, 3.0)
+	draw_string(ThemeDB.fallback_font, panel.position + Vector2(38, 42), "CONTROLS LECTERN", HORIZONTAL_ALIGNMENT_LEFT, 500.0, 25, PARCHMENT_COLOR)
+	draw_string(ThemeDB.fallback_font, panel.position + Vector2(38, 68), "Bindings stay on this device and are saved immediately.", HORIZONTAL_ALIGNMENT_LEFT, 800.0, 14, PALE_STONE_COLOR)
+	for device: int in range(ControlBindingEditor.DEVICE_COUNT):
+		var column_x: float = ControlBindingEditor.DEVICE_X + float(device) * ControlBindingEditor.DEVICE_WIDTH
+		draw_string(ThemeDB.fallback_font, Vector2(column_x + 12, 205), ControlBindingEditor.DEVICE_LABELS[device], HORIZONTAL_ALIGNMENT_LEFT, ControlBindingEditor.DEVICE_WIDTH - 24.0, 13, ATTUNEMENT_COLOR)
+	for row: int in range(ControlBindingEditor.ACTIONS.size()):
+		var action: StringName = ControlBindingEditor.ACTIONS[row]
+		var y: float = ControlBindingEditor.FIRST_ROW_Y + float(row) * ControlBindingEditor.ROW_HEIGHT
+		if row % 2 == 0:
+			draw_rect(Rect2(142, y, 996, ControlBindingEditor.ROW_HEIGHT - 2.0), Color(PARCHMENT_COLOR, 0.035), true)
+		draw_string(ThemeDB.fallback_font, Vector2(ControlBindingEditor.ACTION_X, y + 21), ControlBindingEditor.ACTION_LABELS[action], HORIZONTAL_ALIGNMENT_LEFT, ControlBindingEditor.ACTION_WIDTH, 13, PARCHMENT_COLOR)
+		for device: int in range(ControlBindingEditor.DEVICE_COUNT):
+			var cell := Rect2(ControlBindingEditor.DEVICE_X + float(device) * ControlBindingEditor.DEVICE_WIDTH, y, ControlBindingEditor.DEVICE_WIDTH - 8.0, ControlBindingEditor.ROW_HEIGHT - 3.0)
+			var selected: bool = row == controls_editor.selected_action_index and device == controls_editor.selected_device
+			if selected:
+				draw_rect(cell, Color(ATTUNEMENT_COLOR, 0.16 if not controls_editor.capturing else 0.27), true)
+				draw_rect(cell, ATTUNEMENT_COLOR, false, 2.0)
+			var binding := controls_editor.binding_label(action, device, player_preferences)
+			draw_string(ThemeDB.fallback_font, cell.position + Vector2(10, 20), binding, HORIZONTAL_ALIGNMENT_LEFT, cell.size.x - 20.0, 12, Color.WHITE if selected else PALE_STONE_COLOR)
+	var footer_y := panel.end.y - 64.0
+	draw_line(Vector2(panel.position.x + 28, footer_y - 18), Vector2(panel.end.x - 28, footer_y - 18), Color(BRASS_COLOR, 0.5), 1.0)
+	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 38, footer_y), controls_editor.status_message, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 76.0, 13, ATTUNEMENT_COLOR if controls_editor.capturing else PARCHMENT_COLOR)
+	var help := "PRESS THE CHOSEN INPUT · ESC / BACK CANCELS" if controls_editor.capturing else "ARROWS / DPAD SELECT · ENTER / A BIND · BACKSPACE / X UNBIND · R / Y RESET · ESC / B CLOSE"
+	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 38, footer_y + 27), help, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 76.0, 12, PALE_STONE_COLOR)
 
 
 func _ingest_combat_cues(events: Array[Dictionary]) -> void:
@@ -1164,6 +1285,9 @@ func _activate_focused_station() -> void:
 	match String(station.get("command", "")):
 		"movement_guide":
 			expanded_station_id = "" if expanded_station_id == focused_station_id else focused_station_id
+		"configure_controls":
+			controls_editor.open_editor()
+			expanded_station_id = focused_station_id
 		"training_reset":
 			_submit_session_request(SessionTransport.REQUEST_TRAINING_RESET)
 		"champion_switch":
@@ -1180,6 +1304,29 @@ func _activate_focused_station() -> void:
 			_activate_session_ledger()
 		"session_parting":
 			_activate_session_parting()
+
+
+func _close_controls_editor() -> void:
+	if controls_editor == null:
+		return
+	controls_editor.close_editor()
+	controls_input_guard_frames = 2
+	station_notice = "Bindings sealed."
+	station_notice_seconds = 1.5
+
+
+func _commit_control_bindings() -> void:
+	var applied := (
+		input_router.configure_keyboard_bindings(player_preferences.keyboard_bindings)
+		and input_router.configure_mouse_bindings(player_preferences.mouse_bindings)
+		and input_router.configure_controller_bindings(player_preferences.controller_bindings)
+	)
+	if not applied:
+		controls_editor.status_message = "Binding rejected; safe runtime map retained."
+		return
+	if not player_preferences.save_to_file():
+		controls_editor.status_message = "Binding works now but could not be saved."
+		push_warning(player_preferences.last_error)
 
 
 func _cycle_session_charter() -> void:
@@ -1790,6 +1937,9 @@ func _start_match(requested_tick_rate: int) -> bool:
 		return false
 	if not input_router.configure_mouse_bindings(player_preferences.mouse_bindings):
 		push_error("Invalid mouse bindings reached match startup")
+		return false
+	if not input_router.configure_controller_bindings(player_preferences.controller_bindings):
+		push_error("Invalid controller bindings reached match startup")
 		return false
 	accumulator_seconds = 0.0
 	dropped_time_seconds = 0.0

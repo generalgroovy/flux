@@ -17,13 +17,15 @@ func _test_defaults_and_presets() -> void:
 	equal(preferences.pov_mode, PlayerPreferences.POV_FULL, "full view is the safe default")
 	equal(preferences.pov_angle_degrees, 120, "cone angle remains ready when cone view is selected")
 	equal(preferences.pov_range, 720, "cone range remains ready when cone view is selected")
-	equal(PlayerPreferences.SCHEMA_VERSION, 4, "player preferences save schema v4")
+	equal(PlayerPreferences.SCHEMA_VERSION, 5, "player preferences save schema v5")
 	equal(preferences.keyboard_bindings[&"sprint"], KEY_SHIFT, "Shift is the production-default sprint key")
 	equal(preferences.keyboard_bindings[&"slide"], KEY_C, "C is the persisted slide key")
 	equal(preferences.keyboard_bindings[&"jump"], KEY_SPACE, "Space is the production-default jump key")
 	equal(preferences.keyboard_bindings[&"primary"], 0, "primary has no default keyboard alias")
+	equal(preferences.keyboard_bindings[&"interact"], KEY_F, "interact participates in conflict-safe persistence")
 	equal(preferences.mouse_bindings[&"jump"], MOUSE_BUTTON_WHEEL_UP, "wheel up is the alternate jump input")
 	equal(preferences.mouse_bindings[&"slide"], MOUSE_BUTTON_WHEEL_DOWN, "wheel down is the alternate slide and fast-fall input")
+	equal(String((preferences.controller_bindings[&"jump"] as Dictionary).get("kind")), "button", "controller jump defaults to a button")
 	check(not preferences.reduced_motion, "reduced motion defaults off")
 	check(preferences.apply_control_preset(PlayerPreferences.MOVEMENT_AIM_RELATIVE), "aim-relative preset is accepted")
 	equal(preferences.movement_reference, PlayerPreferences.MOVEMENT_AIM_RELATIVE, "aim-relative preset applies")
@@ -33,7 +35,7 @@ func _test_defaults_and_presets() -> void:
 
 func _test_validation() -> void:
 	var valid := {
-		"schema_version": 4,
+		"schema_version": 5,
 		"movement_reference": "aim_relative",
 		"pov_mode": "cone",
 		"pov_angle_degrees": 360,
@@ -45,7 +47,7 @@ func _test_validation() -> void:
 	equal(preferences.pov_angle_degrees, 360, "360-degree ranged view is legal")
 	equal(preferences.pov_range, 2048, "custom view length is legal")
 	for mutation: Dictionary in [
-		{"schema_version": 5},
+		{"schema_version": 6},
 		{"movement_reference": "camera_relative"},
 		{"pov_mode": "wallhack"},
 		{"pov_angle_degrees": 14},
@@ -92,6 +94,7 @@ func _test_schema_v1_migration_and_reduced_motion() -> void:
 	equal(migrated.keyboard_bindings[&"primary"], 0, "schema-v1 default Space primary alias is removed")
 	equal(migrated.keyboard_bindings[&"sprint"], KEY_SHIFT, "schema-v1 Alt sprint migrates to Shift")
 	equal(migrated.keyboard_bindings[&"slide"], KEY_C, "schema-v1 gains the C slide action")
+	equal(migrated.keyboard_bindings[&"interact"], KEY_F, "schema-v1 gains conflict-safe interact binding")
 	check(not migrated.reduced_motion, "schema-v1 reduced_motion defaults false")
 	var schema_two := PlayerPreferences.new()
 	check(schema_two.apply_dictionary(_base_preferences(2, PlayerPreferences.SCHEMA_V2_DEFAULT_KEYBOARD_BINDINGS)), "schema-v2 defaults migrate")
@@ -101,6 +104,12 @@ func _test_schema_v1_migration_and_reduced_motion() -> void:
 	check(schema_three.apply_dictionary(_base_preferences(3, PlayerPreferences.SCHEMA_V3_DEFAULT_KEYBOARD_BINDINGS)), "schema-v3 defaults migrate")
 	equal(schema_three.keyboard_bindings[&"slide"], KEY_C, "schema-v3 Ctrl slide migrates to C")
 	equal(schema_three.mouse_bindings, PlayerPreferences.DEFAULT_MOUSE_BINDINGS, "schema-v3 gains safe mouse and wheel defaults")
+	var schema_four_data := _base_preferences(4, PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS)
+	schema_four_data["mouse_bindings"] = PlayerPreferences.SCHEMA_V4_DEFAULT_MOUSE_BINDINGS
+	var schema_four := PlayerPreferences.new()
+	check(schema_four.apply_dictionary(schema_four_data), "schema-v4 mouse defaults migrate")
+	equal(schema_four.mouse_bindings[&"jump"], MOUSE_BUTTON_WHEEL_UP, "schema-v4 retains wheel-up jump")
+	equal(schema_four.controller_bindings, PlayerPreferences.DEFAULT_CONTROLLER_BINDINGS, "schema-v4 gains safe controller defaults")
 
 	var explicit: Dictionary = legacy_defaults.duplicate()
 	explicit[&"jump"] = KEY_J
@@ -113,8 +122,8 @@ func _test_schema_v1_migration_and_reduced_motion() -> void:
 	var current: Dictionary = migrated.to_dictionary()
 	current["reduced_motion"] = true
 	var loaded := PlayerPreferences.new()
-	check(loaded.apply_dictionary(current), "schema-v4 preferences load")
-	check(loaded.reduced_motion, "schema-v4 reduced_motion loads")
+	check(loaded.apply_dictionary(current), "schema-v5 preferences load")
+	check(loaded.reduced_motion, "schema-v5 reduced_motion loads")
 	var before: Dictionary = loaded.to_dictionary().duplicate(true)
 	var malformed: Dictionary = current.duplicate(true)
 	malformed["reduced_motion"] = "false"
@@ -172,12 +181,33 @@ func _test_keyboard_bindings() -> void:
 	remapped_mouse[&"jump"] = 0
 	equal(PlayerPreferences.validate_mouse_bindings(remapped_mouse), "", "zero explicitly unbinds one mouse action")
 	check(router.configure_mouse_bindings(PlayerPreferences.DEFAULT_MOUSE_BINDINGS), "test restores mouse defaults")
+	var remapped_controller: Dictionary = PlayerPreferences.DEFAULT_CONTROLLER_BINDINGS.duplicate(true)
+	remapped_controller[&"jump"] = {"kind": "button", "index": JOY_BUTTON_START, "direction": 0}
+	check(router.configure_controller_bindings(remapped_controller), "router applies a valid controller remap")
+	check(_controller_buttons(&"jump").has(JOY_BUTTON_START), "jump controller binding is replaced without removing keyboard or mouse")
+	var conflicting_controller: Dictionary = remapped_controller.duplicate(true)
+	conflicting_controller[&"slide"] = remapped_controller[&"jump"]
+	check(not PlayerPreferences.validate_controller_bindings(conflicting_controller).is_empty(), "conflicting controller bindings fail closed")
+	var malformed_controller: Dictionary = remapped_controller.duplicate(true)
+	malformed_controller[&"jump"] = {"kind": "axis", "index": 99, "direction": 1}
+	check(not PlayerPreferences.validate_controller_bindings(malformed_controller).is_empty(), "out-of-range controller axis fails closed")
+	remapped_controller[&"jump"] = PlayerPreferences.unbound_controller_binding()
+	equal(PlayerPreferences.validate_controller_bindings(remapped_controller), "", "controller action can be explicitly unbound")
+	check(router.configure_controller_bindings(PlayerPreferences.DEFAULT_CONTROLLER_BINDINGS), "test restores controller defaults")
 
 
 func _mouse_buttons(action: StringName) -> Array[int]:
 	var buttons: Array[int] = []
 	for event: InputEvent in InputMap.action_get_events(action):
 		if event is InputEventMouseButton:
+			buttons.append(event.button_index)
+	return buttons
+
+
+func _controller_buttons(action: StringName) -> Array[int]:
+	var buttons: Array[int] = []
+	for event: InputEvent in InputMap.action_get_events(action):
+		if event is InputEventJoypadButton:
 			buttons.append(event.button_index)
 	return buttons
 

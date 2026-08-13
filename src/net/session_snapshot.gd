@@ -2,13 +2,17 @@ class_name SessionSnapshot
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 9
+const SCHEMA_VERSION: int = 10
 const MAX_PLAYERS: int = 8
 const PLAYER_VALUE_COUNT: int = 49
 const PROJECTILE_VALUE_COUNT: int = 12
+const FIELD_VALUE_COUNT: int = 7
 const EVENT_VALUE_COUNT: int = 6
 const TARGET_VALUE_COUNT: int = 6
-const MAX_PROJECTILES: int = 26
+# Persistent fields share the one-MTU presentation envelope with projectiles.
+# Simulation authority remains uncapped; overflow is reported explicitly.
+const MAX_PROJECTILES: int = 18
+const MAX_FIELDS: int = 8
 const MAX_EVENTS: int = 12
 const MAX_TARGETS: int = 4
 const MAX_ABSOLUTE_POSITION: int = 100_000_000
@@ -59,8 +63,10 @@ static func capture(
 				state.edgeweave_cooldown_ticks, int(state.primary_held),
 				state.pending_cast_aim_x, state.pending_cast_aim_y,
 				state.spawn_protection_ticks,
-				state.spell_wire_ids[0], state.spell_wire_ids[1], state.spell_wire_ids[2],
-				state.spell_wire_ids[3], state.spell_wire_ids[4],
+				state.spell_slot_index_for_wire(state.primary_wire_id),
+				state.spell_slot_index_for_wire(state.active_1_wire_id),
+				state.spell_slot_index_for_wire(state.active_2_wire_id),
+				state.active_2_wire_id, state.active_2_cooldown_ticks,
 			]),
 		])
 	if hearth_values.is_empty():
@@ -76,16 +82,29 @@ static func capture(
 		round_values = fallback_round.capture(world)
 	var ordered_projectiles: Array[ProjectileState] = world.projectiles.duplicate()
 	ordered_projectiles.sort_custom(func(left: ProjectileState, right: ProjectileState) -> bool: return left.entity_id < right.entity_id)
-	var projectiles: Array[PackedInt64Array] = []
+	var projectiles := PackedInt64Array()
 	for index: int in range(mini(ordered_projectiles.size(), MAX_PROJECTILES)):
 		var projectile: ProjectileState = ordered_projectiles[index]
-		projectiles.append(PackedInt64Array([
+		projectiles.append_array(PackedInt64Array([
 			projectile.entity_id, projectile.owner_id,
 			projectile.source_wire_id, projectile.element_wire_id,
 			projectile.position_x, projectile.position_y,
 			projectile.previous_x, projectile.previous_y,
 			projectile.velocity_x, projectile.velocity_y,
 			projectile.radius, projectile.lifetime_ticks,
+		]))
+	var ordered_fields: Array[FieldState] = world.fields.duplicate()
+	ordered_fields.sort_custom(func(left: FieldState, right: FieldState) -> bool: return left.entity_id < right.entity_id)
+	var fields := PackedInt32Array()
+	for index: int in range(mini(ordered_fields.size(), MAX_FIELDS)):
+		var field: FieldState = ordered_fields[index]
+		var affected_mask: int = 0
+		for affected_entity_id: int in field.affected_entity_ids:
+			if affected_entity_id >= 1 and affected_entity_id <= MAX_PLAYERS:
+				affected_mask |= 1 << (affected_entity_id - 1)
+		fields.append_array(PackedInt32Array([
+			field.entity_id, field.owner_id, field.source_wire_id,
+			field.position_x, field.position_y, field.lifetime_ticks, affected_mask,
 		]))
 	var events: Array[PackedInt64Array] = []
 	var first_event_index := maxi(0, combat_events.size() - MAX_EVENTS)
@@ -113,12 +132,14 @@ static func capture(
 		"state_hash": world.state_hash().hex_decode(),
 		"players": players,
 		"projectiles": projectiles,
+		"fields": fields,
 		"events": events,
 		"targets": targets,
 		"hearth": hearth_values,
 		"round": round_values,
 		"overflow": PackedInt32Array([
 			maxi(0, ordered_projectiles.size() - MAX_PROJECTILES),
+			maxi(0, ordered_fields.size() - MAX_FIELDS),
 			maxi(0, combat_events.size() - MAX_EVENTS),
 			maxi(0, ordered_targets.size() - MAX_TARGETS),
 		]),
@@ -163,18 +184,33 @@ static func validate(snapshot: Dictionary) -> bool:
 		if values.size() != PLAYER_VALUE_COUNT or not _valid_player_values(values):
 			return false
 	var projectiles_value: Variant = snapshot.get("projectiles")
-	if not projectiles_value is Array or projectiles_value.size() > MAX_PROJECTILES:
+	if typeof(projectiles_value) != TYPE_PACKED_INT64_ARRAY:
+		return false
+	var projectiles: PackedInt64Array = projectiles_value
+	if projectiles.size() % PROJECTILE_VALUE_COUNT != 0 or projectiles.size() > MAX_PROJECTILES * PROJECTILE_VALUE_COUNT:
 		return false
 	var previous_projectile_id: int = 0
-	for values_value: Variant in projectiles_value:
-		if typeof(values_value) != TYPE_PACKED_INT64_ARRAY:
-			return false
-		var values: PackedInt64Array = values_value
-		if values.size() != PROJECTILE_VALUE_COUNT or not _valid_projectile_values(values):
+	for offset: int in range(0, projectiles.size(), PROJECTILE_VALUE_COUNT):
+		var values: PackedInt64Array = projectiles.slice(offset, offset + PROJECTILE_VALUE_COUNT)
+		if not _valid_projectile_values(values):
 			return false
 		if values[0] <= previous_projectile_id:
 			return false
 		previous_projectile_id = values[0]
+	var fields_value: Variant = snapshot.get("fields")
+	if typeof(fields_value) != TYPE_PACKED_INT32_ARRAY:
+		return false
+	var fields: PackedInt32Array = fields_value
+	if fields.size() % FIELD_VALUE_COUNT != 0 or fields.size() > MAX_FIELDS * FIELD_VALUE_COUNT:
+		return false
+	var previous_field_id: int = 0
+	for offset: int in range(0, fields.size(), FIELD_VALUE_COUNT):
+		var values: PackedInt32Array = fields.slice(offset, offset + FIELD_VALUE_COUNT)
+		if not _valid_field_values(values):
+			return false
+		if values[0] <= previous_field_id:
+			return false
+		previous_field_id = values[0]
 	var events_value: Variant = snapshot.get("events")
 	if not events_value is Array or events_value.size() > MAX_EVENTS:
 		return false
@@ -196,7 +232,7 @@ static func validate(snapshot: Dictionary) -> bool:
 			return false
 		previous_target_id = values[0]
 	var overflow_value: Variant = snapshot.get("overflow")
-	if typeof(overflow_value) != TYPE_PACKED_INT32_ARRAY or (overflow_value as PackedInt32Array).size() != 3:
+	if typeof(overflow_value) != TYPE_PACKED_INT32_ARRAY or (overflow_value as PackedInt32Array).size() != 4:
 		return false
 	for overflow_count: int in overflow_value:
 		if overflow_count < 0:
@@ -255,8 +291,13 @@ static func apply_to_world(snapshot: Dictionary, world: SimWorld) -> bool:
 	world.players.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
 	world.tick = int(snapshot["tick"])
 	world.projectiles = []
-	for values_value: Variant in snapshot["projectiles"]:
-		world.projectiles.append(_projectile_from_values(values_value))
+	var projectile_values: PackedInt64Array = snapshot["projectiles"]
+	for offset: int in range(0, projectile_values.size(), PROJECTILE_VALUE_COUNT):
+		world.projectiles.append(_projectile_from_values(projectile_values.slice(offset, offset + PROJECTILE_VALUE_COUNT)))
+	world.fields = []
+	var field_values: PackedInt32Array = snapshot["fields"]
+	for offset: int in range(0, field_values.size(), FIELD_VALUE_COUNT):
+		world.fields.append(_field_from_values(field_values.slice(offset, offset + FIELD_VALUE_COUNT), world))
 	world.combat_events = []
 	for values_value: Variant in snapshot["events"]:
 		world.combat_events.append(decode_event(values_value))
@@ -334,7 +375,15 @@ static func _apply_values(state: PlayerState, values: PackedInt32Array) -> void:
 	state.pending_cast_aim_x = values[41]
 	state.pending_cast_aim_y = values[42]
 	state.spawn_protection_ticks = values[43]
-	state.spell_wire_ids = PackedInt32Array([values[44], values[45], values[46], values[47], values[48]])
+	state.active_2_wire_id = values[47]
+	state.active_2_cooldown_ticks = values[48]
+	state.spell_wire_ids = PackedInt32Array()
+	state.spell_wire_ids.resize(PlayerState.SPELL_SLOT_COUNT)
+	state.spell_wire_ids.fill(0)
+	state.spell_wire_ids[values[44]] = state.primary_wire_id
+	state.spell_wire_ids[values[45]] = state.active_1_wire_id
+	if state.active_2_wire_id > 0:
+		state.spell_wire_ids[values[46]] = state.active_2_wire_id
 
 
 static func _valid_player_values(values: PackedInt32Array) -> bool:
@@ -356,7 +405,7 @@ static func _valid_player_values(values: PackedInt32Array) -> bool:
 	for pair: Vector2i in [Vector2i(11, 12), Vector2i(13, 14), Vector2i(15, 16)]:
 		if values[pair.x] < 0 or values[pair.x] > 1_000_000 or values[pair.y] < 0 or values[pair.y] > values[pair.x]:
 			return false
-	for index: int in [17, 19, 20, 21, 22, 23, 24, 27, 34, 36, 37, 38, 39, 43]:
+	for index: int in [17, 19, 20, 21, 22, 23, 24, 27, 34, 36, 37, 38, 39, 43, 48]:
 		if values[index] < 0 or values[index] > MAX_TIMER_TICKS:
 			return false
 	if values[18] < 0 or values[18] >= PlayerState.MovementMode.size():
@@ -375,17 +424,21 @@ static func _valid_player_values(values: PackedInt32Array) -> bool:
 	for index: int in [41, 42]:
 		if values[index] < -1000 or values[index] > 1000:
 			return false
-	var spell_slots := PackedInt32Array([values[44], values[45], values[46], values[47], values[48]])
-	var primary_count: int = 0
-	var active_count: int = 0
-	for wire_id: int in spell_slots:
-		if wire_id == values[28]:
-			primary_count += 1
-		elif wire_id == values[29]:
-			active_count += 1
-		elif wire_id != 0:
+	var primary_slot: int = values[44]
+	var active_slot: int = values[45]
+	var active_2_slot: int = values[46]
+	if primary_slot < 0 or primary_slot >= PlayerState.SPELL_SLOT_COUNT:
+		return false
+	if active_slot < 0 or active_slot >= PlayerState.SPELL_SLOT_COUNT or active_slot == primary_slot:
+		return false
+	if values[47] < 0 or values[47] > 65_535 or (values[47] > 0 and values[47] in [values[28], values[29]]):
+		return false
+	if values[47] == 0:
+		if active_2_slot != -1:
 			return false
-	return values[32] in [0, 1] and values[33] in [0, 1] and primary_count == 1 and active_count == 1
+	elif active_2_slot < 0 or active_2_slot >= PlayerState.SPELL_SLOT_COUNT or active_2_slot in [primary_slot, active_slot]:
+		return false
+	return values[32] in [0, 1] and values[33] in [0, 1]
 
 
 static func _projectile_from_values(values: PackedInt64Array) -> ProjectileState:
@@ -421,6 +474,36 @@ static func _valid_projectile_values(values: PackedInt64Array) -> bool:
 		if absi(values[index]) > 10_000_000:
 			return false
 	return values[10] > 0 and values[10] <= 100_000 and values[11] >= 0 and values[11] <= MAX_TIMER_TICKS
+
+
+static func _field_from_values(values: PackedInt32Array, world: SimWorld) -> FieldState:
+	var owner: PlayerState = world.player(values[1])
+	var definition := CombatTuning.cast_definition(values[2])
+	var field := FieldState.new(
+		values[0], values[1], owner.team_id if owner != null else values[1],
+		values[2], int(definition.get("element_wire_id", 0)), Vector2i(values[3], values[4]),
+		int(definition.get("radius", 0)), values[5],
+		int(definition.get("hit_control_state", PlayerState.ControlState.SLOWED)),
+		int(definition.get("hit_control_duration_ms", 0)),
+		int(definition.get("hit_control_slow_ratio", 1000)),
+	)
+	for entity_id: int in range(1, MAX_PLAYERS + 1):
+		if (values[6] & (1 << (entity_id - 1))) != 0:
+			field.record_affected(entity_id)
+	return field
+
+
+static func _valid_field_values(values: PackedInt32Array) -> bool:
+	if values[0] <= 0 or values[0] > 0x7fffffff:
+		return false
+	if values[1] < 1 or values[1] > MAX_PLAYERS:
+		return false
+	if values[2] <= 0 or values[2] > 65_535 or String(CombatTuning.cast_definition(values[2]).get("shape", "")) != "field":
+		return false
+	for index: int in [3, 4]:
+		if absi(values[index]) > MAX_ABSOLUTE_POSITION:
+			return false
+	return values[5] > 0 and values[5] <= MAX_TIMER_TICKS and values[6] >= 0 and values[6] < (1 << MAX_PLAYERS)
 
 
 static func _valid_target_values(values: PackedInt64Array) -> bool:
@@ -488,6 +571,8 @@ static func encode_event(event: Dictionary) -> PackedInt64Array:
 			return PackedInt64Array([_event_header(23, event_id), int(event.get("owner_id", 0)), int(event.get("source_wire_id", 0)), int(event.get("end_x", 0)), int(event.get("end_y", 0)), int(event.get("hit_count", 0))])
 		"spray_hit":
 			return PackedInt64Array([_event_header(24, event_id), int(event.get("owner_id", 0)), int(event.get("source_wire_id", 0)), int(event.get("target_id", 0)), int(event.get("damage", 0)), 0])
+		"field_triggered":
+			return PackedInt64Array([_event_header(25, event_id), int(event.get("owner_id", 0)), int(event.get("source_wire_id", 0)), int(event.get("target_id", 0)), int(event.get("field_id", 0)), 0])
 		_:
 			return PackedInt64Array()
 
@@ -547,6 +632,8 @@ static func decode_event(values: PackedInt64Array) -> Dictionary:
 			result = {"type": "spray_fired", "owner_id": values[1], "source_wire_id": values[2], "end_x": values[3], "end_y": values[4], "hit_count": values[5]}
 		24:
 			result = {"type": "spray_hit", "owner_id": values[1], "source_wire_id": values[2], "target_id": values[3], "damage": values[4]}
+		25:
+			result = {"type": "field_triggered", "owner_id": values[1], "source_wire_id": values[2], "target_id": values[3], "field_id": values[4]}
 	if not result.is_empty() and event_id > 0:
 		result["event_id"] = event_id
 	return result
@@ -560,7 +647,7 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 	var event_id := header >> 8
 	if event_id < 0 or event_id > MAX_EVENT_ID:
 		return false
-	if kind < 1 or kind > 24:
+	if kind < 1 or kind > 25:
 		return false
 	if kind in [1, 2, 3]:
 		if values[1] < 1 or values[1] > MAX_PLAYERS or values[2] <= 0 or values[2] > 65_535:
@@ -606,6 +693,13 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 			and values[2] > 0 and values[2] <= 65_535
 			and values[3] >= 1 and values[3] <= 0x7fffffff
 			and values[4] > 0 and values[4] <= 1_000_000
+		)
+	if kind == 25:
+		return (
+			values[1] >= 1 and values[1] <= MAX_PLAYERS
+			and values[2] > 0 and values[2] <= 65_535
+			and values[3] >= 1 and values[3] <= 0x7fffffff
+			and values[4] > 0 and values[4] <= 0x7fffffff
 		)
 	if values[1] < 1 or values[1] > MAX_PLAYERS:
 		return false

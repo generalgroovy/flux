@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "id": "foundation-practitioner-loadout-v1",
   "champion_id": "foundation-practitioner",
   "affinities": ["charge", "light"],
@@ -9,7 +9,14 @@
     "vector-lance",
     "prism-ward",
     "stone-channel",
-    "phase-step"
+    "phase-step",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
   ],
   "slots": {
     "passive": "foundation-focus",

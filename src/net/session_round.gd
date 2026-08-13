@@ -93,6 +93,7 @@ func begin(world: SimWorld, participant_ids: Array[int], definition: Dictionary)
 	respawn_ticks = world.config.milliseconds_to_ticks(int(parsed["respawn_ms"]))
 	protection_ticks = world.config.milliseconds_to_ticks(int(parsed["protection_ms"]))
 	world.projectiles = []
+	world.fields = []
 	for index: int in range(ordered.size()):
 		var entity_id := ordered[index]
 		var spawn_position: Vector2i = spawn_points[index]
@@ -272,6 +273,7 @@ static func decoded(values: PackedInt32Array) -> Dictionary:
 func _finish(world: SimWorld, winner_id: int) -> void:
 	_finish_tick(world.tick, winner_id)
 	world.projectiles = []
+	world.fields = []
 	_freeze_participants(world)
 
 

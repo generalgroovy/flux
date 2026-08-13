@@ -23,7 +23,8 @@ const ACTIONS: Array[StringName] = [
 	&"spell_2",
 	&"spell_3",
 	&"spell_4",
-	&"spell_5",
+	&"spell_layer_ctrl",
+	&"spell_layer_alt",
 ]
 const ACTION_LABELS: Dictionary[StringName, String] = {
 	&"move_left": "MOVE LEFT",
@@ -38,11 +39,12 @@ const ACTION_LABELS: Dictionary[StringName, String] = {
 	&"active_1": "ACTIVE SPELL",
 	&"interact": "INTERACT",
 	&"emote": "TALK",
-	&"spell_1": "SPELL SLOT 1",
-	&"spell_2": "SPELL SLOT 2",
-	&"spell_3": "SPELL SLOT 3",
-	&"spell_4": "SPELL SLOT 4",
-	&"spell_5": "SPELL SLOT 5",
+	&"spell_1": "SPELL BUTTON 1",
+	&"spell_2": "SPELL BUTTON 2",
+	&"spell_3": "SPELL BUTTON 3",
+	&"spell_4": "SPELL BUTTON 4",
+	&"spell_layer_ctrl": "SPELL CTRL LAYER",
+	&"spell_layer_alt": "SPELL ALT LAYER",
 }
 const DEVICE_LABELS: Array[String] = ["KEYBOARD", "MOUSE", "CONTROLLER"]
 const VISIBLE_ROWS: int = 12

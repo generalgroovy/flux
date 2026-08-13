@@ -69,6 +69,7 @@ var capture_pointer_world := Vector2i(-1, -1)
 var capture_spawn_world := Vector2i(-1, -1)
 var capture_expanded_station_id: String = ""
 var requested_capture_active_cast: bool = false
+var requested_capture_spell_slot: int = 0
 var capture_active_cast_sent: bool = false
 var focused_station_id: String = ""
 var expanded_station_id: String = ""
@@ -129,10 +130,11 @@ func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	player_preferences = PlayerPreferences.new()
 	var preferences_existed: bool = FileAccess.file_exists(PlayerPreferences.DEFAULT_PATH)
-	if not player_preferences.load_from_file():
+	var preferences_loaded: bool = player_preferences.load_from_file()
+	if not preferences_loaded:
 		push_warning("%s; using safe defaults" % player_preferences.last_error)
 		player_preferences.reset_to_defaults()
-	if not preferences_existed and not player_preferences.save_to_file():
+	if (preferences_loaded or not preferences_existed) and not player_preferences.save_to_file():
 		push_warning(player_preferences.last_error)
 	controls_editor = ControlBindingEditor.new()
 	spell_loom_editor = SpellLoomEditor.new()
@@ -152,6 +154,7 @@ func _ready() -> void:
 	capture_spawn_world = _requested_capture_spawn()
 	capture_expanded_station_id = _requested_capture_expanded_station()
 	requested_capture_active_cast = OS.get_cmdline_user_args().has("--capture-cast-active")
+	requested_capture_spell_slot = _requested_capture_spell_slot()
 	ability_catalog = AbilityCatalog.new()
 	if not ability_catalog.load_from_file(ABILITY_CATALOG_PATH):
 		push_error(ability_catalog.last_error)
@@ -212,9 +215,9 @@ func _ready() -> void:
 		if capture_expanded_station_id == "controls-lectern":
 			controls_editor.open_editor()
 		elif capture_expanded_station_id == "spell-loom":
-			spell_loom_editor.open_editor()
+			spell_loom_editor.open_editor(_local_player_state())
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -222,6 +225,7 @@ func _ready() -> void:
 			player_preferences.pov_mode,
 			player_preferences.pov_angle_degrees,
 			player_preferences.pov_range,
+			player_preferences.camera_zoom_percent,
 			hub_definition.districts_by_id.size(),
 			hub_definition.travel_nodes_by_id.size(),
 			campus_layout.content_hash.left(12),
@@ -438,7 +442,8 @@ func _process(delta: float) -> void:
 	var steps: int = 0
 	while accumulator_seconds >= fixed_delta and steps < MAX_CATCH_UP_STEPS:
 		previous_position = current_position
-		var pointer_world_position := Vector2(capture_pointer_world) if capture_pointer_world.x >= 0 else get_viewport().get_mouse_position() + _camera_origin(_camera_focus_position(current_position))
+		var camera_origin := _camera_origin(_camera_focus_position(current_position))
+		var pointer_world_position := Vector2(capture_pointer_world) if capture_pointer_world.x >= 0 else camera_origin + get_viewport().get_mouse_position() / _camera_zoom_scale()
 		var command: SimCommand
 		if controls_editor.is_open or spell_loom_editor.is_open or controls_blocking:
 			command = SimCommand.new(world.tick, input_router.entity_id, 0, 0, 0, 0, input_router.last_quantized_aim.x, input_router.last_quantized_aim.y)
@@ -448,8 +453,9 @@ func _process(delta: float) -> void:
 				current_position,
 				pointer_world_position,
 			)
-		if requested_capture_active_cast and not capture_active_cast_sent and not session_transport.is_connected_client():
-			command = SimCommand.new(world.tick, input_router.entity_id, 0, 0, 0, SimCommand.PRESSED_ACTIVE_1, command.aim_x, command.aim_y)
+		if (requested_capture_active_cast or requested_capture_spell_slot > 0) and not capture_active_cast_sent and not session_transport.is_connected_client():
+			var capture_pressed := SimCommand.PRESSED_ACTIVE_1 if requested_capture_spell_slot == 0 else SimCommand.SPELL_PRESSED_BITS[requested_capture_spell_slot - 1]
+			command = SimCommand.new(world.tick, input_router.entity_id, 0, 0, 0, capture_pressed, command.aim_x, command.aim_y)
 			capture_active_cast_sent = true
 		if session_transport.is_connected_client() and requested_prediction_smoke and last_client_snapshot_tick >= 0 and prediction_smoke_inputs_sent < 18:
 			command = SimCommand.new(world.tick, input_router.entity_id, 1000, 0, 0, 0, 1000, 0)
@@ -531,7 +537,7 @@ func _draw() -> void:
 	var rendered_position: Vector2 = previous_position.lerp(current_position, alpha)
 	var camera_focus_position := _camera_focus_position(rendered_position)
 	var camera_origin: Vector2 = _camera_origin(camera_focus_position)
-	draw_set_transform(-camera_origin)
+	_set_world_transform(camera_origin)
 	campus_renderer.draw(self, campus_layout, world.tick)
 	_draw_practice_targets(camera_origin)
 	if show_debug_overlay:
@@ -542,6 +548,8 @@ func _draw() -> void:
 			)
 			draw_rect(rectangle, Color(BRASS_COLOR if obstacle.vaultable else ATTUNEMENT_COLOR, 0.18), true)
 			draw_rect(rectangle, BRASS_COLOR if obstacle.vaultable else ATTUNEMENT_COLOR, false, 2.0)
+	for field: FieldState in world.fields:
+		_draw_field(field)
 	for projectile: ProjectileState in world.projectiles:
 		var projectile_position := Vector2(float(projectile.position_x) / 1000.0, float(projectile.position_y) / 1000.0)
 		var projectile_color: Color = _projectile_color(projectile.element_wire_id)
@@ -561,13 +569,13 @@ func _draw() -> void:
 	var player_radius: float = float(presentation_state.radius) / 1000.0
 	var shadow_center := rendered_position + Vector2(0.0, player_radius * 0.58)
 	var shadow_scale: Vector2 = landing.shadow_scale if landing.active else presentation.shadow_scale
-	draw_set_transform(
-		shadow_center - camera_origin,
-		0.0,
+	_set_world_local_transform(
+		shadow_center,
 		Vector2(player_radius * shadow_scale.x, player_radius * shadow_scale.y),
+		camera_origin,
 	)
 	draw_circle(Vector2.ZERO, 1.0, Color(FOREST_SHADOW_COLOR, presentation.shadow_opacity))
-	draw_set_transform(-camera_origin)
+	_set_world_transform(camera_origin)
 	if landing.active:
 		_draw_landing_cue(shadow_center, landing)
 	var body_position := rendered_position + Vector2(0.0, -float(presentation.body_lift_pixels))
@@ -597,7 +605,7 @@ func _draw() -> void:
 	draw_set_transform(Vector2.ZERO)
 	var observed_position := Vector2(float(observed_state.position_x) / SimConfig.FIXED_SCALE, float(observed_state.position_y) / SimConfig.FIXED_SCALE)
 	var pov_position := observed_position if spectating else rendered_position
-	_draw_pov_mask(pov_position - camera_origin, Vector2(observed_state.aim_x, observed_state.aim_y), camera_origin)
+	_draw_pov_mask((pov_position - camera_origin) * _camera_zoom_scale(), Vector2(observed_state.aim_x, observed_state.aim_y), camera_origin)
 	draw_rect(Rect2(16, 14, 1248, 96), PANEL_COLOR, true)
 	draw_rect(Rect2(16, 14, 1248, 96), BRASS_COLOR.darkened(0.3), false, 2.0)
 	var observed_champion_id := champion_catalog.champion_id_from_wire(observed_state.champion_wire_id)
@@ -619,12 +627,12 @@ func _draw() -> void:
 	_draw_resource_bar(Rect2(1068, 24, 168, 20), "STAMINA", observed_state.stamina, observed_state.stamina_maximum, ATTUNEMENT_COLOR)
 	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "TAB / D-PAD RIGHT FOLLOW NEXT · YOU JOIN AT THE HEARTH" if spectating else "WASD MOVE · SHIFT SPRINT · C/WHEEL↓ SLIDE · SPACE/WHEEL↑ JUMP · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
 	draw_string(ThemeDB.fallback_font, Vector2(700, 70), _session_label(), HORIZONTAL_ALIGNMENT_RIGHT, 536.0, 12, ATTUNEMENT_COLOR if session_transport.is_online() else PALE_STONE_COLOR)
-	var view_description := "FULL" if player_preferences.pov_mode == PlayerPreferences.POV_FULL else "CONE %d°/%d" % [player_preferences.pov_angle_degrees, player_preferences.pov_range]
+	var view_description := ("FULL" if player_preferences.pov_mode == PlayerPreferences.POV_FULL else "CONE %d°/%d" % [player_preferences.pov_angle_degrees, player_preferences.pov_range]) + " · ZOOM %d%%" % player_preferences.camera_zoom_percent
 	draw_string(
 		ThemeDB.fallback_font,
 		Vector2(32, 96),
 		("ROUND INPUT LOCKED · T HELLO · F8 VIEW %s" % view_description) if spectating else (
-			"LMB %s · RMB/E %s · 1–5 SPELLS · F INTERACT · T HELLO · F8 VIEW %s"
+			"LMB %s · RMB/E %s · 1–4 + CTRL/ALT SPELLS · F INTERACT · T HELLO · F8 VIEW %s · F11 ZOOM"
 			% [primary_name.to_upper(), _active_hint(state, active_name, active_ability), view_description]
 		),
 		HORIZONTAL_ALIGNMENT_LEFT,
@@ -652,32 +660,39 @@ func _draw_resource_bar(rectangle: Rect2, label: String, value: int, maximum: in
 
 
 func _draw_spell_bar(state: PlayerState) -> void:
+	var active_layer: int = 2 if Input.is_action_pressed(InputRouter.SPELL_ALT_LAYER_ACTION) else (1 if Input.is_action_pressed(InputRouter.SPELL_CTRL_LAYER_ACTION) else 0)
 	var abilities: Array[Dictionary] = []
 	var cooldown_ticks: Array[int] = []
-	for slot_number: int in range(1, PlayerState.SPELL_SLOT_COUNT + 1):
+	for button_index: int in range(PlayerState.SPELL_BUTTON_COUNT):
+		var slot_number := active_layer * PlayerState.SPELL_BUTTON_COUNT + button_index + 1
 		var wire_id: int = state.spell_wire_id(slot_number)
 		abilities.append(ability_catalog.ability_from_wire(wire_id))
-		cooldown_ticks.append(state.primary_cooldown_ticks if wire_id == state.primary_wire_id else (state.active_1_cooldown_ticks if wire_id == state.active_1_wire_id else 0))
+		cooldown_ticks.append(
+			state.primary_cooldown_ticks if wire_id == state.primary_wire_id
+			else (state.active_1_cooldown_ticks if wire_id == state.active_1_wire_id
+			else (state.active_2_cooldown_ticks if wire_id == state.active_2_wire_id else 0))
+		)
 	var start := Vector2(68, 118)
-	var cell_size := Vector2(224, 44)
-	for slot_index: int in range(abilities.size()):
-		var rectangle := Rect2(start + Vector2(float(slot_index) * 229.0, 0), cell_size)
-		var ability: Dictionary = abilities[slot_index]
+	var cell_size := Vector2(276, 44)
+	for button_index: int in range(abilities.size()):
+		var slot_index := active_layer * PlayerState.SPELL_BUTTON_COUNT + button_index
+		var rectangle := Rect2(start + Vector2(float(button_index) * 281.0, 0), cell_size)
+		var ability: Dictionary = abilities[button_index]
 		var is_empty: bool = ability.is_empty()
-		draw_rect(rectangle, Color(PANEL_COLOR, 0.86), true)
-		draw_rect(rectangle, Color(BRASS_COLOR, 0.48 if is_empty else 0.82), false, 1.0)
+		draw_rect(rectangle, Color(PANEL_COLOR, 0.92), true)
+		draw_rect(rectangle, ATTUNEMENT_COLOR, false, 2.0)
 		var name := "EMPTY" if is_empty else String(ability.get("display_name", "SPELL")).to_upper()
 		var name_color := PALE_STONE_COLOR if is_empty else PARCHMENT_COLOR
-		draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(9, 17), "%d  %s" % [slot_index + 1, name], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 18.0, 12, name_color)
-		var detail := "ATTUNE AT LOOM" if is_empty else "%s %s" % [String(ability.get("element", "")).to_upper(), String(ability.get("shape", "")).to_upper()]
+		draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(8, 17), "%s  %s" % [PlayerState.spell_slot_label(slot_index), name], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 16.0, 12, name_color)
+		var detail := "LOOM" if is_empty else "%s %s" % [String(ability.get("element", "")).to_upper(), String(ability.get("shape", "")).to_upper()]
 		if not is_empty:
 			var flux_cost: int = int(ability.get("flux_cost", 0))
 			detail += " · FREE" if flux_cost == 0 else " · %dF" % flux_cost
-			if cooldown_ticks[slot_index] > 0:
-				detail += " · %.1fs" % (float(cooldown_ticks[slot_index]) / float(world.config.tick_rate))
+			if cooldown_ticks[button_index] > 0:
+				detail += " · %.1fs" % (float(cooldown_ticks[button_index]) / float(world.config.tick_rate))
 			else:
 				detail += " · READY"
-		draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(9, 35), detail, HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 18.0, 10, ATTUNEMENT_COLOR if not is_empty else Color(PALE_STONE_COLOR, 0.68))
+		draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(8, 36), detail, HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 16.0, 10, ATTUNEMENT_COLOR if not is_empty else Color(PALE_STONE_COLOR, 0.68))
 
 
 func _draw_controls_editor() -> void:
@@ -725,16 +740,24 @@ func _draw_spell_loom_editor() -> void:
 	var champion_id := champion_catalog.champion_id_from_wire(state.champion_wire_id)
 	var champion: Dictionary = champion_catalog.champion(champion_id)
 	draw_string(ThemeDB.fallback_font, panel.position + Vector2(40, 42), "SPELL LOOM · %s" % String(champion.get("display_name", champion_id)).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 650.0, 24, PARCHMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, panel.position + Vector2(40, 68), "Arrange the two proven kit spells. Locked catalog designs cannot be equipped.", HORIZONTAL_ALIGNMENT_LEFT, 720.0, 13, PALE_STONE_COLOR)
-	var role_wires: Array[int] = [state.primary_wire_id, state.active_1_wire_id]
-	for role: int in range(SpellLoomEditor.ROLE_COUNT):
-		var role_rect := Rect2(SpellLoomEditor.ROLE_X + float(role) * SpellLoomEditor.ROLE_WIDTH, SpellLoomEditor.FIRST_ROW_Y - 54.0, SpellLoomEditor.ROLE_WIDTH - 7.0, 40.0)
+	spell_loom_editor.configure_for_state(state)
+	draw_string(ThemeDB.fallback_font, panel.position + Vector2(40, 68), "Arrange proven spells across Plain, Ctrl and Alt layers; each layer uses buttons 1–4.", HORIZONTAL_ALIGNMENT_LEFT, 720.0, 13, PALE_STONE_COLOR)
+	for role: int in range(spell_loom_editor.available_role_count):
+		var role_rect := Rect2(SpellLoomEditor.ROLE_X + float(role) * SpellLoomEditor.ROLE_WIDTH, SpellLoomEditor.GRID_Y - 54.0, SpellLoomEditor.ROLE_WIDTH - 7.0, 40.0)
 		var selected_role: bool = role == spell_loom_editor.selected_role
 		draw_rect(role_rect, Color(FLUX_COLOR, 0.18 if selected_role else 0.06), true)
 		draw_rect(role_rect, FLUX_COLOR if selected_role else Color(BRASS_COLOR, 0.45), false, 2.0 if selected_role else 1.0)
-		draw_string(ThemeDB.fallback_font, role_rect.position + Vector2(9, 25), "PRIMARY" if role == SpellLoomEditor.ROLE_PRIMARY else "ACTIVE", HORIZONTAL_ALIGNMENT_LEFT, role_rect.size.x - 18.0, 12, PARCHMENT_COLOR if selected_role else PALE_STONE_COLOR)
+		var role_label := "PRIMARY" if role == SpellLoomEditor.ROLE_PRIMARY else ("ACTIVE I" if role == SpellLoomEditor.ROLE_ACTIVE_1 else "ACTIVE II")
+		draw_string(ThemeDB.fallback_font, role_rect.position + Vector2(7, 25), role_label, HORIZONTAL_ALIGNMENT_LEFT, role_rect.size.x - 12.0, 11, PARCHMENT_COLOR if selected_role else PALE_STONE_COLOR)
 	for slot_index: int in range(PlayerState.SPELL_SLOT_COUNT):
-		var row := Rect2(SpellLoomEditor.SLOT_X, SpellLoomEditor.FIRST_ROW_Y + float(slot_index) * SpellLoomEditor.ROW_HEIGHT, SpellLoomEditor.SLOT_WIDTH, SpellLoomEditor.ROW_HEIGHT - 6.0)
+		var layer_index: int = slot_index / PlayerState.SPELL_BUTTON_COUNT
+		var button_index: int = slot_index % PlayerState.SPELL_BUTTON_COUNT
+		var row := Rect2(
+			SpellLoomEditor.GRID_X + float(button_index) * SpellLoomEditor.GRID_CELL_WIDTH,
+			SpellLoomEditor.GRID_Y + float(layer_index) * SpellLoomEditor.GRID_CELL_HEIGHT,
+			SpellLoomEditor.GRID_CELL_WIDTH - 7.0,
+			SpellLoomEditor.GRID_CELL_HEIGHT - 7.0,
+		)
 		var selected_slot: bool = slot_index == spell_loom_editor.selected_slot_index
 		draw_rect(row, Color(PARCHMENT_COLOR, 0.075 if selected_slot else (0.035 if slot_index % 2 == 0 else 0.018)), true)
 		draw_rect(row, ATTUNEMENT_COLOR if selected_slot else Color(BRASS_COLOR, 0.35), false, 2.0 if selected_slot else 1.0)
@@ -745,11 +768,13 @@ func _draw_spell_loom_editor() -> void:
 		if wire_id == state.primary_wire_id:
 			role_name = "PRIMARY"
 		elif wire_id == state.active_1_wire_id:
-			role_name = "ACTIVE"
-		draw_string(ThemeDB.fallback_font, row.position + Vector2(14, 28), "%d" % (slot_index + 1), HORIZONTAL_ALIGNMENT_LEFT, 34.0, 17, ATTUNEMENT_COLOR)
-		draw_string(ThemeDB.fallback_font, row.position + Vector2(54, 27), ability_name, HORIZONTAL_ALIGNMENT_LEFT, 320.0, 15, PARCHMENT_COLOR if not ability.is_empty() else PALE_STONE_COLOR)
-		draw_string(ThemeDB.fallback_font, row.position + Vector2(430, 27), role_name, HORIZONTAL_ALIGNMENT_RIGHT, 140.0, 12, FLUX_COLOR if role_name != "OPEN" else Color(PALE_STONE_COLOR, 0.65))
-	var selected_wire_id: int = role_wires[spell_loom_editor.selected_role]
+			role_name = "ACTIVE I"
+		elif wire_id == state.active_2_wire_id and state.active_2_wire_id > 0:
+			role_name = "ACTIVE II"
+		draw_string(ThemeDB.fallback_font, row.position + Vector2(9, 18), PlayerState.spell_slot_label(slot_index), HORIZONTAL_ALIGNMENT_LEFT, row.size.x - 18.0, 12, ATTUNEMENT_COLOR)
+		draw_string(ThemeDB.fallback_font, row.position + Vector2(9, 40), ability_name, HORIZONTAL_ALIGNMENT_LEFT, row.size.x - 18.0, 11, PARCHMENT_COLOR if not ability.is_empty() else PALE_STONE_COLOR)
+		draw_string(ThemeDB.fallback_font, row.position + Vector2(9, 56), role_name, HORIZONTAL_ALIGNMENT_LEFT, row.size.x - 18.0, 9, FLUX_COLOR if role_name != "OPEN" else Color(PALE_STONE_COLOR, 0.65))
+	var selected_wire_id: int = spell_loom_editor.selected_wire_id(state)
 	var selected_ability: Dictionary = ability_catalog.ability_from_wire(selected_wire_id)
 	var detail_x: float = SpellLoomEditor.ROLE_X
 	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 276), String(selected_ability.get("display_name", "SPELL")).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 270.0, 18, PARCHMENT_COLOR)
@@ -763,13 +788,13 @@ func _draw_spell_loom_editor() -> void:
 	var footer_y := panel.end.y - 58.0
 	draw_line(Vector2(panel.position.x + 28, footer_y - 20), Vector2(panel.end.x - 28, footer_y - 20), Color(FLUX_COLOR, 0.45), 1.0)
 	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 40, footer_y), spell_loom_editor.status_message, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 80.0, 13, PARCHMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 40, footer_y + 27), "UP/DOWN OR WHEEL SLOT · LEFT/RIGHT SPELL · ENTER/A WEAVE · ESC/B CLOSE", HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 80.0, 12, PALE_STONE_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 40, footer_y + 27), "UP/DOWN OR WHEEL POSITION · LEFT/RIGHT SPELL · ENTER/A WEAVE · ESC/B CLOSE", HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 80.0, 12, PALE_STONE_COLOR)
 
 
 func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 	for event: Dictionary in events:
 		var kind := String(event.get("type", ""))
-		if kind not in ["projectile_hit", "beam_fired", "spray_fired", "spray_hit", "edgeweave", "cast_refused", "cast_blocked", "projectile_bounced"]:
+		if kind not in ["projectile_hit", "beam_fired", "spray_fired", "spray_hit", "field_triggered", "edgeweave", "cast_refused", "cast_blocked", "projectile_bounced"]:
 			continue
 		var anchor := _combat_event_anchor(event)
 		if anchor.is_empty():
@@ -790,6 +815,9 @@ func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 			"spray_hit":
 				label = "-%d · LAUNCH" % (int(event.get("damage", 0)) / 1000)
 				color = WATER_HIGHLIGHT_COLOR
+			"field_triggered":
+				label = "RIME · SLOWED"
+				color = WATER_HIGHLIGHT_COLOR.lightened(0.35)
 			"edgeweave":
 				label = "EDGE +%d" % (int(event.get("stamina", 0)) / 1000)
 				color = ATTUNEMENT_COLOR
@@ -837,7 +865,7 @@ func _combat_event_anchor(event: Dictionary) -> Dictionary:
 	if kind == "spray_fired":
 		return {"position": Vector2(float(event.get("end_x", 0)) / 1000.0, float(event.get("end_y", 0)) / 1000.0)}
 	var entity_id: int = 0
-	if kind in ["projectile_hit", "spray_hit"]:
+	if kind in ["projectile_hit", "spray_hit", "field_triggered"]:
 		entity_id = int(event.get("target_id", 0))
 	elif kind in ["edgeweave", "cast_refused", "cast_blocked"]:
 		entity_id = int(event.get("entity_id", 0))
@@ -863,7 +891,7 @@ func _update_combat_cues(delta: float) -> void:
 
 
 func _draw_combat_cues(camera_origin: Vector2) -> void:
-	draw_set_transform(-camera_origin)
+	_set_world_transform(camera_origin)
 	for cue: Dictionary in combat_cues:
 		var remaining := float(cue.get("remaining", 0.0))
 		var duration := maxf(0.001, float(cue.get("duration", 0.55)))
@@ -911,9 +939,9 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int) -> vo
 		var radius := float(remote_state.radius) / 1000.0
 		var shadow_center := position + Vector2(0.0, radius * 0.58)
 		var shadow_scale: Vector2 = landing.shadow_scale if landing.active else presentation.shadow_scale
-		draw_set_transform(shadow_center - camera_origin, 0.0, Vector2(radius * shadow_scale.x, radius * shadow_scale.y))
+		_set_world_local_transform(shadow_center, Vector2(radius * shadow_scale.x, radius * shadow_scale.y), camera_origin)
 		draw_circle(Vector2.ZERO, 1.0, Color(FOREST_SHADOW_COLOR, presentation.shadow_opacity))
-		draw_set_transform(-camera_origin)
+		_set_world_transform(camera_origin)
 		if landing.active:
 			_draw_landing_cue(shadow_center, landing)
 		var body_position := position + Vector2(0.0, -float(presentation.body_lift_pixels))
@@ -940,7 +968,7 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int) -> vo
 		draw_rect(health_bar, Color(FOREST_SHADOW_COLOR, 0.9), true)
 		var health_ratio := clampf(float(remote_state.health) / float(maxi(1, remote_state.health_maximum)), 0.0, 1.0)
 		draw_rect(Rect2(health_bar.position + Vector2.ONE, Vector2((health_bar.size.x - 2.0) * health_ratio, 2.0)), Color("d9634f"), true)
-	draw_set_transform(-camera_origin)
+	_set_world_transform(camera_origin)
 
 
 func _remote_player_sprite(state: PlayerState) -> WellspringCharacterSprite:
@@ -1317,13 +1345,13 @@ func _handle_session_requests(requests: Array[Dictionary]) -> void:
 			SessionTransport.REQUEST_SPELL_EQUIP:
 				var slot_index: int = SpellLoomEditor.decode_slot_index(request_value)
 				var role: int = SpellLoomEditor.decode_role(request_value)
-				var wire_id: int = state.primary_wire_id if role == SpellLoomEditor.ROLE_PRIMARY else (state.active_1_wire_id if role == SpellLoomEditor.ROLE_ACTIVE else 0)
+				var wire_id: int = state.primary_wire_id if role == SpellLoomEditor.ROLE_PRIMARY else (state.active_1_wire_id if role == SpellLoomEditor.ROLE_ACTIVE_1 else (state.active_2_wire_id if role == SpellLoomEditor.ROLE_ACTIVE_2 else 0))
 				if slot_index < 0 or wire_id == 0 or not state.place_kit_spell(slot_index, wire_id):
 					_publish_session_event({"type": "request_refused", "entity_id": entity_id, "action": action, "reason": SessionRequestPolicy.REFUSED_UNAVAILABLE})
 					continue
 				if entity_id == session_transport.local_entity_id and spell_loom_editor != null and spell_loom_editor.is_open:
-					spell_loom_editor.status_message = "Slot %d was sealed by the host." % (slot_index + 1)
-				station_notice = "%s rewove slot %d." % [String(session_names_by_entity.get(entity_id, "A traveller")), slot_index + 1]
+					spell_loom_editor.status_message = "%s was sealed by the host." % PlayerState.spell_slot_label(slot_index)
+				station_notice = "%s rewove %s." % [String(session_names_by_entity.get(entity_id, "A traveller")), PlayerState.spell_slot_label(slot_index)]
 				station_notice_seconds = 1.5
 			SessionTransport.REQUEST_READY_TOGGLE:
 				if not authoritative_session.toggle_ready(entity_id):
@@ -1452,7 +1480,7 @@ func _update_social_bubbles(delta: float) -> void:
 
 
 func _draw_social_bubbles(camera_origin: Vector2) -> void:
-	draw_set_transform(-camera_origin)
+	_set_world_transform(camera_origin)
 	for bubble: Dictionary in social_bubbles:
 		var state: PlayerState = world.player(int(bubble.get("entity_id", 0)))
 		if state == null:
@@ -1508,7 +1536,7 @@ func _activate_focused_station() -> void:
 			controls_editor.open_editor()
 			expanded_station_id = focused_station_id
 		"configure_spells":
-			spell_loom_editor.open_editor()
+			spell_loom_editor.open_editor(_local_player_state())
 			expanded_station_id = focused_station_id
 		"training_reset":
 			_submit_session_request(SessionTransport.REQUEST_TRAINING_RESET)
@@ -1943,7 +1971,8 @@ func _start_requested_farflow() -> void:
 func _draw_pov_mask(origin: Vector2, aim: Vector2, camera_origin: Vector2) -> void:
 	if player_preferences.pov_mode != PlayerPreferences.POV_CONE:
 		return
-	var sight_range: float = float(player_preferences.pov_range)
+	var zoom := _camera_zoom_scale()
+	var sight_range: float = float(player_preferences.pov_range) * zoom
 	var viewport_size: Vector2 = get_viewport_rect().size
 	var outer_radius: float = maxf(viewport_size.x, viewport_size.y) * 2.25
 	var segment_count: int = 96
@@ -1959,7 +1988,7 @@ func _draw_pov_mask(origin: Vector2, aim: Vector2, camera_origin: Vector2) -> vo
 		var hidden_span: float = TAU - visible_radians
 		var hidden_segments: int = maxi(1, ceili(float(segment_count) * hidden_span / TAU))
 		var hidden_start: float = aim_angle + half_visible
-		var player_safe_radius: float = 30.0
+		var player_safe_radius: float = 30.0 * zoom
 		for segment: int in range(hidden_segments):
 			var angle_a: float = hidden_start + hidden_span * float(segment) / float(hidden_segments)
 			var angle_b: float = hidden_start + hidden_span * float(segment + 1) / float(hidden_segments)
@@ -1976,7 +2005,8 @@ func _draw_building_occlusion_shadows(origin: Vector2, camera_origin: Vector2, o
 		if String(building.get("occlusion_policy", "")) != "los_cutaway":
 			continue
 		var world_bounds := SanctumCampusLayout._parse_bounds(building.get("bounds", []))
-		var screen_bounds := Rect2(Vector2(world_bounds.position) - camera_origin, Vector2(world_bounds.size))
+		var zoom := _camera_zoom_scale()
+		var screen_bounds := Rect2((Vector2(world_bounds.position) - camera_origin) * zoom, Vector2(world_bounds.size) * zoom)
 		var shadow := SightOcclusion.shadow_polygon(origin, screen_bounds, outer_distance)
 		if shadow.size() != 4:
 			continue
@@ -2226,9 +2256,9 @@ func _draw_practice_targets(camera_origin: Vector2) -> void:
 			continue
 		var position := Vector2(float(state.position_x) / 1000.0, float(state.position_y) / 1000.0)
 		var alive: bool = state.health > 0
-		draw_set_transform(position - camera_origin + Vector2(2, 9), 0.0, Vector2(20.0, 7.0))
+		_set_world_local_transform(position + Vector2(2, 9), Vector2(20.0, 7.0), camera_origin)
 		draw_circle(Vector2.ZERO, 1.0, Color(FOREST_SHADOW_COLOR, 0.62))
-		draw_set_transform(-camera_origin)
+		_set_world_transform(camera_origin)
 		var body_color := TIMBER_COLOR if alive else Color("4f463e")
 		draw_rect(Rect2(position.x - 4, position.y - 19, 8, 27), body_color, true)
 		draw_line(position + Vector2(-13, -7), position + Vector2(13, -7), body_color, 5.0)
@@ -2248,7 +2278,7 @@ func _draw_practice_targets(camera_origin: Vector2) -> void:
 		var label := String(definition.get("label", "TARGET"))
 		var label_width: float = ThemeDB.fallback_font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x
 		draw_string(ThemeDB.fallback_font, Vector2(position.x - label_width * 0.5, position.y + 22), label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 9, PARCHMENT_COLOR if alive else Color("9b8a73"))
-	draw_set_transform(-camera_origin)
+	_set_world_transform(camera_origin)
 
 
 func _refresh_material_preview() -> void:
@@ -2310,10 +2340,33 @@ func _material_color(material_id: String) -> Color:
 			return Color("151711")
 
 
+func _draw_field(field: FieldState) -> void:
+	var center := Vector2(float(field.position_x) / SimConfig.FIXED_SCALE, float(field.position_y) / SimConfig.FIXED_SCALE)
+	var radius := float(field.radius) / SimConfig.FIXED_SCALE
+	var full_lifetime := maxi(1, world.config.milliseconds_to_ticks(CombatTuning.RIMEWAKE_LIFETIME_MS))
+	var life_ratio := clampf(float(field.lifetime_ticks) / float(full_lifetime), 0.0, 1.0)
+	var ice_color := WATER_HIGHLIGHT_COLOR.lightened(0.36)
+	draw_circle(center, radius, Color(ice_color, 0.11 + life_ratio * 0.05))
+	draw_arc(center, radius, 0.0, TAU, 48, Color(ice_color, 0.64), 2.0)
+	draw_arc(center, radius * 0.72, 0.0, TAU, 36, Color(PARCHMENT_COLOR, 0.24), 1.0)
+	for index: int in range(8):
+		var angle := float(index) * TAU / 8.0 + float((world.tick + field.entity_id) % 120) * 0.0025
+		var direction := Vector2.from_angle(angle)
+		var tangent := direction.orthogonal()
+		var point := center + direction * radius * 0.82
+		draw_colored_polygon(PackedVector2Array([
+			point + direction * 6.0,
+			point - direction * 4.0 + tangent * 3.0,
+			point - direction * 4.0 - tangent * 3.0,
+		]), Color(ice_color, 0.72))
+
+
 func _projectile_color(element_wire_id: int) -> Color:
 	match element_wire_id:
 		3:
 			return WATER_HIGHLIGHT_COLOR.lightened(0.28)
+		5:
+			return WATER_HIGHLIGHT_COLOR.lightened(0.42)
 		6:
 			return ATTUNEMENT_COLOR
 		7:
@@ -2410,6 +2463,13 @@ func _requested_capture_expanded_station() -> String:
 	return ""
 
 
+func _requested_capture_spell_slot() -> int:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--capture-cast-slot="):
+			return parse_capture_spell_slot(argument)
+	return 0
+
+
 static func parse_session_charter(argument: String) -> String:
 	if not argument.begins_with("--session-charter="):
 		return ""
@@ -2428,6 +2488,16 @@ static func parse_capture_expanded_station(argument: String, stations_by_id: Dic
 		return ""
 	var station_id := argument.trim_prefix("--capture-expanded-station=").strip_edges()
 	return station_id if stations_by_id.has(station_id) else ""
+
+
+static func parse_capture_spell_slot(argument: String) -> int:
+	if not argument.begins_with("--capture-cast-slot="):
+		return 0
+	var value := argument.trim_prefix("--capture-cast-slot=")
+	if not value.is_valid_int():
+		return 0
+	var slot_number := value.to_int()
+	return slot_number if slot_number >= 1 and slot_number <= PlayerState.SPELL_SLOT_COUNT else 0
 
 
 func _requested_farflow_mode() -> String:
@@ -2622,6 +2692,12 @@ func _apply_preference_overrides() -> void:
 				player_preferences.set_pov_range(range_text.to_int())
 			else:
 				push_warning("Invalid --pov-range value: %s" % range_text)
+		elif argument.begins_with("--camera-zoom="):
+			var zoom_text: String = argument.trim_prefix("--camera-zoom=")
+			if zoom_text.is_valid_int():
+				player_preferences.set_camera_zoom_percent(zoom_text.to_int())
+			else:
+				push_warning("Invalid --camera-zoom value: %s" % zoom_text)
 
 
 func _handle_preference_actions() -> void:
@@ -2641,6 +2717,15 @@ func _handle_preference_actions() -> void:
 	if Input.is_action_just_pressed(&"adjust_pov_range"):
 		var range_delta: int = -80 if Input.is_key_pressed(KEY_SHIFT) else 80
 		player_preferences.set_pov_range(player_preferences.pov_range + range_delta)
+		changed = true
+	if Input.is_action_just_pressed(&"adjust_camera_zoom"):
+		var zoom_delta: int = -25 if Input.is_key_pressed(KEY_SHIFT) else 25
+		var requested_zoom := player_preferences.camera_zoom_percent + zoom_delta
+		if requested_zoom > PlayerPreferences.MAX_CAMERA_ZOOM_PERCENT:
+			requested_zoom = PlayerPreferences.MIN_CAMERA_ZOOM_PERCENT
+		elif requested_zoom < PlayerPreferences.MIN_CAMERA_ZOOM_PERCENT:
+			requested_zoom = PlayerPreferences.MAX_CAMERA_ZOOM_PERCENT
+		player_preferences.set_camera_zoom_percent(requested_zoom)
 		changed = true
 	if changed and not player_preferences.save_to_file():
 		push_warning(player_preferences.last_error)
@@ -2719,10 +2804,36 @@ func _local_player_state() -> PlayerState:
 func _camera_origin(focus_position: Vector2) -> Vector2:
 	if campus_layout == null:
 		return Vector2.ZERO
-	var viewport_size := Vector2(campus_layout.viewport_size)
-	var focus_screen := Vector2(viewport_size.x * 0.5, (float(campus_layout.reserved_ui_top) + viewport_size.y) * 0.5)
-	var maximum_origin := Vector2(campus_layout.canvas_size - campus_layout.viewport_size)
+	return camera_origin_for(
+		focus_position,
+		campus_layout.viewport_size,
+		campus_layout.canvas_size,
+		campus_layout.reserved_ui_top,
+		player_preferences.camera_zoom_percent,
+	)
+
+
+static func camera_origin_for(focus_position: Vector2, viewport: Vector2i, canvas: Vector2i, reserved_ui_top: int, zoom_percent: int) -> Vector2:
+	var zoom := float(clampi(zoom_percent, PlayerPreferences.MIN_CAMERA_ZOOM_PERCENT, PlayerPreferences.MAX_CAMERA_ZOOM_PERCENT)) / 100.0
+	var viewport_size := Vector2(viewport)
+	var visible_world_size := viewport_size / zoom
+	var focus_screen := Vector2(viewport_size.x * 0.5, (float(reserved_ui_top) + viewport_size.y) * 0.5) / zoom
+	var maximum_origin := (Vector2(canvas) - visible_world_size).max(Vector2.ZERO)
 	return Vector2(
 		clampf(focus_position.x - focus_screen.x, 0.0, maximum_origin.x),
 		clampf(focus_position.y - focus_screen.y, 0.0, maximum_origin.y),
 	)
+
+
+func _camera_zoom_scale() -> float:
+	return float(player_preferences.camera_zoom_percent) / 100.0 if player_preferences != null else 1.0
+
+
+func _set_world_transform(camera_origin: Vector2) -> void:
+	var zoom := _camera_zoom_scale()
+	draw_set_transform(-camera_origin * zoom, 0.0, Vector2(zoom, zoom))
+
+
+func _set_world_local_transform(world_position: Vector2, local_scale: Vector2, camera_origin: Vector2) -> void:
+	var zoom := _camera_zoom_scale()
+	draw_set_transform((world_position - camera_origin) * zoom, 0.0, local_scale * zoom)

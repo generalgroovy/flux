@@ -2,7 +2,7 @@
 
 ## Implemented checkpoint
 
-FLUX 2 now loads schema-v6 preferences from the stable offline profile
+FLUX 2 now loads schema-v7 preferences from the stable offline profile
 `user://player_preferences_v1.json`. The legacy filename is retained so existing
 schema-v1 installations are discovered and migrated in place. On Linux it
 normally resolves below
@@ -10,26 +10,29 @@ normally resolves below
 data location on other platforms. The file is created with safe defaults on the
 first launch and requires no account, network, subscription, or cloud service.
 
-The profile owns five independent concerns:
+The profile owns these independent concerns:
 
 - physical-key bindings for every current gameplay keyboard action;
 - mouse-button and wheel-direction bindings for current combat/movement actions;
 - controller button and signed-axis bindings for current combat/movement actions;
 - the movement reference preset;
 - full-screen versus ranged-cone presentation;
-- ranged-cone angle and length.
+- ranged-cone angle and length;
+- a bounded 50/75/100% camera scale that defaults to the wider 75% view;
 - the reduced-motion accessibility preference used by G3 presentation.
 
 Schema-v1/v2 profiles migrate the former defaults: C jump becomes Space jump,
 Alt sprint becomes Shift sprint, and the former Space primary alias becomes
-unbound. Schema-v3's default Ctrl slide becomes C; Ctrl and Alt are left free
-for later spell binding. Explicit saved
+unbound. Schema-v3's default Ctrl slide becomes C. Explicit saved
 alternatives, including J jump or P primary, remain unchanged. New defaults bind
 Space only to semantic jump; Arc Primary keeps left mouse and controller trigger.
 Schema-v4 profiles gain the controller table and newly optional mouse movement
 lanes without altering established jump, slide, primary or active inputs.
-Schema-v5 profiles gain five independent spell actions on number keys 1–5;
-missing mouse/controller spell lanes migrate to explicit unbound descriptors.
+Schema-v5/v6 profiles migrate to four number-button actions plus configurable
+Ctrl and Alt layer actions. A retired `spell_5` entry is ignored; if a legacy
+action already owns Ctrl or Alt, that new layer remains unbound rather than
+creating a conflict. Missing mouse/controller lanes migrate to explicit unbound
+descriptors, and old profiles gain the 75% camera default.
 
 Unknown actions, unknown modes, conflicting non-zero keyboard keycodes,
 fractional values, unsupported schema versions, and values outside documented
@@ -122,17 +125,20 @@ cue, or diagnostic leak.
 | `F` | Activate the nearest walk-up Wellspring station; controller north-face is equivalent |
 | Left mouse | Arc Primary; no default Space alias |
 | `E` / right mouse | Vector Lance |
-| `1`–`5` | Request the corresponding canonical spell slot; the Spell Loom can place either proven champion spell in any slot and every empty slot refuses without spending Flux |
+| `1`–`4` | Request the corresponding position in the active spell layer |
+| `Ctrl` + `1`–`4` | Request one of four configurable Ctrl-layer positions |
+| `Alt` + `1`–`4` | Request one of four configurable Alt-layer positions; Alt wins if both layer actions are held |
 | `F7` | Toggle world-relative / aim-relative movement and save |
 | `F8` | Toggle full / cone view and save |
 | `F9` / `Shift+F9` | Increase / decrease cone angle by 15 degrees and save |
 | `F10` / `Shift+F10` | Increase / decrease cone range by 80 units and save |
+| `F11` / `Shift+F11` | Cycle camera scale through 50/75/100% forward or backward and save |
 
 Exact session overrides are also available from the normal launcher:
 
 ```bash
 scripts/run.sh --movement-reference=aim_relative --pov-mode=cone \
-  --pov-angle=135 --pov-range=960
+  --pov-angle=135 --pov-range=960 --camera-zoom=75
 ```
 
 Command-line values clamp to the supported numeric bounds and do not require

@@ -6,20 +6,20 @@ each playable slice.
 ## Current green frontier — 2026-08-13
 
 - Branch: `codex/continuous-overhaul`.
-- Protocol 25, snapshot schema 9, player preference schema 6.
+- Protocol 26, snapshot schema 10, player preference schema 7.
 - Two basic champions, the non-ability movement foundation, cone occlusion,
   eleven walk-up Wellspring stations, direct-IP Farflow, Charters, Hearth,
   Proving Court, reconnect, stewardship and late-join observation are live.
 - Up to eight players have authored court spawns, teams, wards, bounds,
   knockout/respawn, results, Hearth return and same-roster Round 2.
-- Snapshot schema 9 uses a bounded FastLZ envelope; maximum fixtures and live
+- Snapshot schema 10 uses a bounded FastLZ envelope; maximum fixtures and live
   three-player journeys remain inside one 1,392-byte ENet MTU.
-- Five stable spell-slot command edges now fit the existing bounded command
-  packet. Number keys 1–5 are migration-safe, conflict-editable inputs. The
-  in-world Spell Loom repositions the current champion's primary/active among
-  five host-owned canonical slots; three honest empties refuse without spending
-  Flux, guest requests wait for snapshot confirmation, and champion changes
-  reset to the safe 1/2 layout. Schema-v2 loadouts validate five unique IDs.
+- Twelve stable spell-position command edges fit the existing bounded command
+  packet. Plain, Ctrl and Alt layers combine with four remappable spell buttons;
+  Alt wins a dual-modifier chord deterministically. The in-world 3×4 Spell Loom
+  repositions every proven kit spell, honest empties refuse without spending
+  Flux, guests wait for snapshot confirmation, and champion changes reset to
+  the safe Plain 1/2/3 layout. Schema-v3 loadouts validate twelve positions.
 - Ability schema 2 validates shape, delivery, impact, residue, planned material
   operation and separate runtime gates. Only six proven spells enter the
   playable selector; every material mutation remains explicitly disabled.
@@ -29,9 +29,18 @@ each playable slice.
 - Tideline is the first spray: a 280-unit Water fan with stable multi-target
   hits, per-target cover, exact launches, explicit affected cues and no
   projectile state/material mutation.
-- Latest verification is 14,948 assertions plus import/source 60/120 Hz boots,
-  a fresh 60 Hz three-process spectator-to-Hearth-to-Round-2/reconnect/
-  stewardship journey, both portable packages and packaged Windows safe quit.
+- Rimewake is the first persistent field: collision-safe aimed placement, 2.2 s
+  lifetime, stable hostile order, one slow per actor, compact snapshot state and
+  trigger cues; its planned material cooling remains sealed.
+- Camera presentation now defaults to a wider 75% scale and persists a bounded
+  50/75/100% choice. Pointer aim, cone range and building occlusion transform
+  with the same scale; F11 and `--camera-zoom=` expose it without changing rules.
+- Latest source verification is 15,613 assertions plus import/source 60/120 Hz
+  boots and a fresh 60 Hz three-process spectator-to-Hearth-to-Round-2,
+  reconnect and stewardship journey. Diagnostic captures verify the compact
+  active-layer HUD, wider 75% navigation view, Rimewake feedback and 3x4 Loom.
+- Both portable packages and packaged Windows safe quit passed at the preceding
+  green checkpoint; this slice did not overwrite the user-owned build folders.
 - Portable release tooling installs only the official Godot 4.7.1 Windows/Linux
   templates by bounded HTTP range with ZIP CRC/size validation, excludes
   non-runtime workspace content, emits checksummed Windows ZIP/Linux tar.gz
@@ -46,9 +55,8 @@ each playable slice.
 
 ## Next acceptance-driven slice
 
-Promote the next representative spell shape—field—through deterministic
-simulation, Flux/cooldown/refusal, cues, snapshot representation, lifetime and
-training read while remaining host-owned. Keep material
-operations sealed until reset ownership and route-safety fixtures exist. Preserve
-the packaged Windows green point; physical Garuda and real remote-friend proof
-remain explicit external acceptance gaps.
+Promote the first bounded defense spell through deterministic simulation,
+Flux/cooldown/refusal, damage/control counterplay, cues and snapshot state while
+keeping material operations sealed. Preserve the wider navigation read and
+3×4 spell weave; physical Garuda and real remote-friend proof remain explicit
+external acceptance gaps.

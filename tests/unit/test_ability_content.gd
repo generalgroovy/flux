@@ -25,7 +25,7 @@ func _test_catalog() -> void:
 	equal(first.content_hash, second.content_hash, "catalog hash is stable across reloads")
 	equal(first.elements_by_id.size(), 12, "all twelve thematic element families are declared")
 	equal(first.active_element_ids(), ["charge", "dark", "earth", "fire", "ice", "light", "water", "wind"], "only the first eight families are runtime-enabled")
-	equal(first.playable_spell_ids(), ["arc-primary", "eclipse-disc", "pocket-eclipse", "rillshot", "tideline", "vector-lance"], "only end-to-end spells enter the playable selector")
+	equal(first.playable_spell_ids(), ["arc-primary", "eclipse-disc", "pocket-eclipse", "rillshot", "rimewake", "tideline", "vector-lance"], "only end-to-end spells enter the playable selector")
 	for gated_id: String in ["spirit", "chaos", "gravity", "time"]:
 		check(not bool((first.elements_by_id[gated_id] as Dictionary)["runtime_enabled"]), "%s remains explicitly gated" % gated_id)
 	equal(int(first.ability("arc-primary")["flux_cost"]), 0, "reliable primary is resource-free")
@@ -42,6 +42,13 @@ func _test_catalog() -> void:
 	equal(String(first.ability("tideline")["shape"]), "spray", "Tideline is the first promoted spray shape")
 	equal(String(CombatTuning.cast_definition(CombatTuning.TIDELINE_WIRE_ID).get("shape")), "spray", "compiled Tideline uses the spray resolver")
 	check(CombatTuning.projectile_definition(CombatTuning.TIDELINE_WIRE_ID).is_empty(), "Tideline cannot silently re-enter projectile simulation")
+	equal(int(first.ability("rimewake")["wire_id"]), CombatTuning.RIMEWAKE_WIRE_ID, "Rimewake wire matches compiled Oh Tipi kit")
+	equal(int(first.ability("rimewake")["flux_cost"]) * 1000, CombatTuning.RIMEWAKE_FLUX_COST, "Rimewake Flux cost matches compiled behavior")
+	equal(int(first.ability("rimewake")["startup_ms"]), CombatTuning.RIMEWAKE_STARTUP_MS, "Rimewake startup matches compiled behavior")
+	equal(String(first.ability("rimewake")["shape"]), "field", "Rimewake is the first promoted field shape")
+	equal(String(CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID).get("shape")), "field", "compiled Rimewake uses the field resolver")
+	check(CombatTuning.projectile_definition(CombatTuning.RIMEWAKE_WIRE_ID).is_empty(), "Rimewake cannot silently re-enter projectile simulation")
+	check(not bool(first.ability("rimewake")["material_runtime_enabled"]), "Rimewake keeps its planned cooling mutation sealed")
 	equal(int(first.ability("eclipse-disc")["wire_id"]), CombatTuning.ECLIPSE_DISC_WIRE_ID, "Eclipse Disc wire matches compiled S. Wayne kit")
 	equal(int(first.ability("eclipse-disc")["flux_cost"]), 0, "S. Wayne primary remains resource-free")
 	equal(int(first.ability("pocket-eclipse")["wire_id"]), CombatTuning.POCKET_ECLIPSE_WIRE_ID, "Pocket Eclipse wire matches compiled S. Wayne kit")
@@ -56,7 +63,7 @@ func _test_catalog() -> void:
 		check(not bool(playable.get("material_runtime_enabled", true)), "%s keeps material mutation truthfully gated" % playable_id)
 	equal(String(first.ability("prism-ward").get("shape")), "defense", "Prism Ward declares its future defense shape")
 	equal(String(first.ability("stone-channel").get("residue")), "construct", "Stone Channel declares intended persistent geometry")
-	for active_id: String in ["vector-lance", "prism-ward", "stone-channel", "tideline", "pocket-eclipse"]:
+	for active_id: String in ["vector-lance", "prism-ward", "stone-channel", "tideline", "rimewake", "pocket-eclipse"]:
 		var active: Dictionary = first.ability(active_id)
 		check(int(active["points"]) > 0, "%s has positive build cost" % active_id)
 		check(int(active["flux_cost"]) > 0, "%s has positive Flux cost" % active_id)
@@ -70,7 +77,7 @@ func _test_loadout() -> void:
 	check(first.load_from_file(LOADOUT_PATH, catalog), "foundation loadout validates: %s" % first.last_error)
 	check(second.load_from_file(LOADOUT_PATH, catalog), "foundation loadout reload validates")
 	equal(first.active_points, 13, "affinity-adjusted actives fill the 13-point budget exactly")
-	equal(first.spell_slot_ids, ["arc-primary", "vector-lance", "prism-ward", "stone-channel", "phase-step"], "loadout exposes exactly five stable spell slots")
+	equal(first.spell_slot_ids, ["arc-primary", "vector-lance", "prism-ward", "stone-channel", "phase-step", "", "", "", "", "", "", ""], "loadout exposes the stable 3x4 spell weave")
 	equal(first.content_hash.length(), 64, "loadout has a SHA-256 compatibility hash")
 	equal(first.content_hash, second.content_hash, "loadout hash is stable across reloads")
 
@@ -92,8 +99,8 @@ func _test_invalid_content_fails_closed() -> void:
 	var invalid_spell_count := LoadoutDefinition.new()
 	invalid_spell_count.data = JSON.parse_string(FileAccess.get_file_as_string(LOADOUT_PATH))
 	invalid_spell_count.data["spell_slots"] = ["arc-primary"]
-	check(not invalid_spell_count.validate(catalog), "non-five spell loadout fails closed")
-	check(invalid_spell_count.last_error.contains("five"), "spell count failure is diagnosable")
+	check(not invalid_spell_count.validate(catalog), "non-twelve-position spell loadout fails closed")
+	check(invalid_spell_count.last_error.contains("twelve"), "spell count failure is diagnosable")
 
 	var invalid_duplicate_spell := LoadoutDefinition.new()
 	invalid_duplicate_spell.data = JSON.parse_string(FileAccess.get_file_as_string(LOADOUT_PATH))

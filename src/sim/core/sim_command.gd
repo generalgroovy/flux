@@ -15,12 +15,26 @@ const PRESSED_SPELL_2: int = 1 << 5
 const PRESSED_SPELL_3: int = 1 << 6
 const PRESSED_SPELL_4: int = 1 << 7
 const PRESSED_SPELL_5: int = 1 << 8
+const PRESSED_SPELL_6: int = 1 << 9
+const PRESSED_SPELL_7: int = 1 << 10
+const PRESSED_SPELL_8: int = 1 << 11
+const PRESSED_SPELL_9: int = 1 << 12
+const PRESSED_SPELL_10: int = 1 << 13
+const PRESSED_SPELL_11: int = 1 << 14
+const PRESSED_SPELL_12: int = 1 << 15
 const SPELL_PRESSED_BITS: Array[int] = [
 	PRESSED_SPELL_1,
 	PRESSED_SPELL_2,
 	PRESSED_SPELL_3,
 	PRESSED_SPELL_4,
 	PRESSED_SPELL_5,
+	PRESSED_SPELL_6,
+	PRESSED_SPELL_7,
+	PRESSED_SPELL_8,
+	PRESSED_SPELL_9,
+	PRESSED_SPELL_10,
+	PRESSED_SPELL_11,
+	PRESSED_SPELL_12,
 ]
 
 var tick: int

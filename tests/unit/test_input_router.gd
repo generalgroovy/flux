@@ -5,7 +5,7 @@ const BootstrapScript: Script = preload("res://src/app/bootstrap.gd")
 
 
 func run() -> int:
-	for action: StringName in [&"jump", &"primary", &"sprint", &"slide", &"interact", &"emote", &"spell_1", &"spell_2", &"spell_3", &"spell_4", &"spell_5"]:
+	for action: StringName in [&"jump", &"primary", &"sprint", &"slide", &"interact", &"emote", &"spell_1", &"spell_2", &"spell_3", &"spell_4", &"spell_layer_ctrl", &"spell_layer_alt", &"adjust_camera_zoom"]:
 		if InputMap.has_action(action):
 			InputMap.erase_action(action)
 	InputRouter.ensure_input_map()
@@ -13,23 +13,30 @@ func run() -> int:
 		&"move_left", &"move_right", &"move_up", &"move_down",
 		&"aim_left", &"aim_right", &"aim_up", &"aim_down",
 		&"sprint", &"slide", &"jump", &"technique", &"interact", &"emote", &"spectate_next", &"primary", &"active_1",
-		&"spell_1", &"spell_2", &"spell_3", &"spell_4", &"spell_5",
+		&"spell_1", &"spell_2", &"spell_3", &"spell_4", &"spell_layer_ctrl", &"spell_layer_alt",
 		&"reset_match", &"toggle_debug_overlay", &"toggle_tick_rate",
 		&"toggle_movement_reference", &"toggle_pov_mode",
-		&"adjust_pov_angle", &"adjust_pov_range",
+		&"adjust_pov_angle", &"adjust_pov_range", &"adjust_camera_zoom",
 	]:
 		check(InputMap.has_action(action), "input action exists: %s" % action)
 		check(not InputMap.action_get_events(action).is_empty(), "input action has a default: %s" % action)
 	equal(_keycodes(&"jump"), [KEY_SPACE], "jump defaults to Space exactly once")
 	equal(_keycodes(&"sprint"), [KEY_SHIFT], "sprint defaults to Shift")
-	equal(_keycodes(&"slide"), [KEY_C], "slide defaults to C with Ctrl and Alt free")
+	equal(_keycodes(&"slide"), [KEY_C], "slide defaults to C")
 	check(_has_mouse_button(&"jump", MOUSE_BUTTON_WHEEL_UP), "wheel up triggers semantic jump")
 	check(_has_mouse_button(&"slide", MOUSE_BUTTON_WHEEL_DOWN), "wheel down triggers slide or airborne fast fall")
 	equal(_keycodes(&"interact"), [KEY_F], "walk-up interaction defaults to F")
 	check(_has_joy_button(&"interact", JOY_BUTTON_Y), "walk-up interaction retains a controller face button")
 	equal(_keycodes(&"emote"), [KEY_T], "social speech defaults to T")
-	for slot_index: int in range(5):
-		equal(_keycodes(InputRouter.SPELL_ACTIONS[slot_index]), [KEY_1 + slot_index], "spell slot %d defaults to its number key" % (slot_index + 1))
+	for button_index: int in range(PlayerState.SPELL_BUTTON_COUNT):
+		equal(_keycodes(InputRouter.SPELL_ACTIONS[button_index]), [KEY_1 + button_index], "spell button %d defaults to its number key" % (button_index + 1))
+	equal(_keycodes(InputRouter.SPELL_CTRL_LAYER_ACTION), [KEY_CTRL], "Ctrl selects the middle spell layer")
+	equal(_keycodes(InputRouter.SPELL_ALT_LAYER_ACTION), [KEY_ALT], "Alt selects the final spell layer")
+	equal(_keycodes(&"adjust_camera_zoom"), [KEY_F11], "F11 cycles the persisted camera zoom")
+	equal(InputRouter.selected_spell_slot_index(0, false, false), 0, "plain button 1 selects position 1")
+	equal(InputRouter.selected_spell_slot_index(3, true, false), 7, "Ctrl+4 selects position 8")
+	equal(InputRouter.selected_spell_slot_index(3, false, true), 11, "Alt+4 selects position 12")
+	equal(InputRouter.selected_spell_slot_index(1, true, true), 9, "Alt deterministically wins a dual-modifier chord")
 	check(_has_joy_button(&"emote", JOY_BUTTON_DPAD_UP), "social speech retains a controller d-pad shortcut")
 	check(not _keycodes(&"primary").has(KEY_SPACE), "primary has no Space keyboard alias")
 	check(_has_mouse_button(&"primary", MOUSE_BUTTON_LEFT), "primary retains left mouse")
@@ -69,6 +76,8 @@ func _test_capture_pointer_parser() -> void:
 	equal(BootstrapScript.parse_capture_pointer("--capture-pointer=bad,720", canvas), Vector2i(-1, -1), "capture pointer rejects malformed coordinates")
 	equal(BootstrapScript.parse_capture_pointer("--capture-pointer=-1,720", canvas), Vector2i(-1, -1), "capture pointer rejects negative coordinates")
 	equal(BootstrapScript.parse_capture_pointer("--capture-pointer=2560,720", canvas), Vector2i(-1, -1), "capture pointer rejects the exclusive canvas boundary")
+	equal(BootstrapScript.camera_origin_for(Vector2(1280, 720), Vector2i(1280, 720), canvas, 110, 100), Vector2(640, 305), "100 percent camera preserves the original focus geometry")
+	equal(BootstrapScript.camera_origin_for(Vector2(1280, 720), Vector2i(1280, 720), canvas, 110, 50), Vector2(0, 0), "wide camera clamps safely against the campus edge")
 	equal(BootstrapScript.parse_farflow_mode("--farflow=host"), "host", "diagnostic Farflow host mode parses")
 	equal(BootstrapScript.parse_farflow_mode("--farflow=JOIN"), "join", "diagnostic Farflow join mode is case-insensitive")
 	equal(BootstrapScript.parse_farflow_mode("--farflow=relay"), "", "unknown Farflow mode fails closed")
@@ -105,6 +114,9 @@ func _test_capture_pointer_parser() -> void:
 	equal(BootstrapScript.parse_capture_spawn("--capture-spawn=2380,800", canvas), Vector2i(2380, 800), "capture-only spawn accepts an in-campus station point")
 	equal(BootstrapScript.parse_capture_spawn("--capture-spawn=2560,800", canvas), Vector2i(-1, -1), "capture-only spawn rejects the canvas boundary")
 	equal(BootstrapScript.parse_capture_spawn("--other=2380,800", canvas), Vector2i(-1, -1), "unrelated argument cannot change capture spawn")
+	equal(BootstrapScript.parse_capture_spell_slot("--capture-cast-slot=12"), 12, "diagnostic cast accepts Alt+4")
+	equal(BootstrapScript.parse_capture_spell_slot("--capture-cast-slot=13"), 0, "diagnostic cast rejects positions beyond the weave")
+	equal(BootstrapScript.parse_capture_spell_slot("--capture-cast-slot=bad"), 0, "diagnostic cast rejects malformed positions")
 	var capture_stations := {"farflow-charter": {}}
 	equal(BootstrapScript.parse_capture_expanded_station("--capture-expanded-station=farflow-charter", capture_stations), "farflow-charter", "capture-only station expansion accepts an authored station")
 	equal(BootstrapScript.parse_capture_expanded_station("--capture-expanded-station=missing", capture_stations), "", "capture-only station expansion rejects unknown stations")

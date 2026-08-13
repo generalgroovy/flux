@@ -4,6 +4,7 @@ extends FluxTestSuite
 func run() -> int:
 	_test_snapshot_round_trip()
 	_test_projectile_and_event_round_trip()
+	_test_field_round_trip()
 	_test_event_inbox_deduplicates_redundancy()
 	_test_maximum_envelope_fits_transport()
 	_test_snapshot_validation_fails_closed()
@@ -11,7 +12,7 @@ func run() -> int:
 
 
 func _test_snapshot_round_trip() -> void:
-	equal(SessionSnapshot.SCHEMA_VERSION, 9, "beam/spray-capable host snapshot schema is explicit")
+	equal(SessionSnapshot.SCHEMA_VERSION, 10, "persistent-field-capable host snapshot schema is explicit")
 	var source := SimWorld.new(120, 7, CollisionWorld.new(3_000_000, 2_000_000))
 	var host: PlayerState = source.player()
 	host.champion_wire_id = 1
@@ -20,8 +21,9 @@ func _test_snapshot_round_trip() -> void:
 	host.health = 87_000
 	host.primary_wire_id = CombatTuning.RILLSHOT_WIRE_ID
 	host.active_1_wire_id = CombatTuning.TIDELINE_WIRE_ID
+	host.active_2_wire_id = CombatTuning.RIMEWAKE_WIRE_ID
 	host.reset_spell_slots_to_kit()
-	check(host.place_kit_spell(4, host.primary_wire_id), "host rewoves primary before snapshot")
+	check(host.place_kit_spell(11, host.primary_wire_id), "host rewoves primary to Alt+4 before snapshot")
 	var guest := PlayerState.new(2)
 	guest.champion_wire_id = 2
 	guest.position_x = 1_352_000
@@ -65,6 +67,7 @@ func _test_snapshot_round_trip() -> void:
 	equal(replica.player(2).movement_mode, PlayerState.MovementMode.SPRINT, "guest movement mode round-trips")
 	equal(replica.player(2).primary_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "guest kit identity round-trips")
 	equal(Array(replica.player().spell_wire_ids), Array(source.player().spell_wire_ids), "host ordered spell slots round-trip")
+	equal(replica.player().active_2_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "host third proven spell identity round-trips")
 	equal(replica.player(2).spawn_protection_ticks, source.player(2).spawn_protection_ticks, "guest spawn protection round-trips")
 	check(replica.player(900) != null, "authoritative practice actor is reconstructed")
 	equal(replica.player(900).health, 51_000, "practice actor health round-trips")
@@ -134,6 +137,38 @@ func _test_event_inbox_deduplicates_redundancy() -> void:
 	equal(inbox.seen_event_ids.size(), 0, "event deduplication resets at session boundary")
 
 
+func _test_field_round_trip() -> void:
+	var source := SimWorld.new(120, 4, CollisionWorld.new(3_000_000, 2_000_000))
+	source.player().champion_wire_id = 1
+	var guest := PlayerState.new(2)
+	guest.champion_wire_id = 2
+	source.players.append(guest)
+	var field := FieldState.new(
+		2000, 1, 1, CombatTuning.RIMEWAKE_WIRE_ID, CombatTuning.RIMEWAKE_ELEMENT_WIRE_ID,
+		Vector2i(1_400_000, 720_000), CombatTuning.RIMEWAKE_RADIUS, 180,
+		PlayerState.ControlState.SLOWED, CombatTuning.RIMEWAKE_SLOW_DURATION_MS, CombatTuning.RIMEWAKE_SLOW_RATIO,
+	)
+	field.record_affected(2)
+	source.fields.append(field)
+	var events: Array[Dictionary] = [{
+		"type": "field_triggered", "event_id": 48, "field_id": 2000,
+		"owner_id": 1, "source_wire_id": CombatTuning.RIMEWAKE_WIRE_ID, "target_id": 2,
+	}]
+	var snapshot := SessionSnapshot.capture(source, {1: "Host", 2: "Guest"}, events)
+	check(SessionSnapshot.validate(snapshot), "persistent field snapshot validates")
+	var replica := SimWorld.new(120, 4, CollisionWorld.new(3_000_000, 2_000_000))
+	check(SessionSnapshot.apply_to_world(snapshot, replica), "persistent field snapshot applies")
+	equal(replica.fields.size(), 1, "one authoritative field reconstructs for presentation")
+	if not replica.fields.is_empty():
+		equal(replica.fields[0].source_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "field spell identity round-trips")
+		equal(Vector2i(replica.fields[0].position_x, replica.fields[0].position_y), Vector2i(1_400_000, 720_000), "field placement round-trips exactly")
+		check(replica.fields[0].has_affected(2), "bounded champion trigger history round-trips")
+	equal(replica.combat_events.size(), 1, "field trigger semantic event round-trips")
+	if not replica.combat_events.is_empty():
+		equal(String(replica.combat_events[0].get("type", "")), "field_triggered", "field trigger decodes distinctly")
+		equal(int(replica.combat_events[0].get("field_id", 0)), 2000, "field event identity round-trips")
+
+
 func _test_maximum_envelope_fits_transport() -> void:
 	var world := SimWorld.new(120, 5, CollisionWorld.new(20_000_000, 20_000_000))
 	world.player().champion_wire_id = 1
@@ -158,6 +193,22 @@ func _test_maximum_envelope_fits_transport() -> void:
 			9_000,
 			90,
 		))
+	for index: int in range(SessionSnapshot.MAX_FIELDS):
+		var field := FieldState.new(
+			2000 + index,
+			1 + index % SessionSnapshot.MAX_PLAYERS,
+			1 + index % SessionSnapshot.MAX_PLAYERS,
+			CombatTuning.RIMEWAKE_WIRE_ID,
+			CombatTuning.RIMEWAKE_ELEMENT_WIRE_ID,
+			Vector2i(600_000 + index * 20_000, 650_000),
+			CombatTuning.RIMEWAKE_RADIUS,
+			180,
+			PlayerState.ControlState.SLOWED,
+			CombatTuning.RIMEWAKE_SLOW_DURATION_MS,
+			CombatTuning.RIMEWAKE_SLOW_RATIO,
+		)
+		field.record_affected(1 + (index + 1) % SessionSnapshot.MAX_PLAYERS)
+		world.fields.append(field)
 	var events: Array[Dictionary] = []
 	for index: int in range(SessionSnapshot.MAX_EVENTS):
 		events.append({"type": "projectile_hit", "projectile_id": 1000 + index, "source_wire_id": CombatTuning.RILLSHOT_WIRE_ID, "owner_id": 1, "target_id": 2, "damage": 9_000})
@@ -172,10 +223,16 @@ func _test_maximum_envelope_fits_transport() -> void:
 		world.players.append(target)
 	var snapshot := SessionSnapshot.capture(world, names_by_entity, events)
 	check(SessionSnapshot.validate(snapshot), "maximum public snapshot envelope validates")
+	var raw_snapshot := var_to_bytes(snapshot)
+	var unconstrained_packet := {
+		"kind": SessionTransport.PACKET_SNAPSHOT,
+		"raw_size": raw_snapshot.size(),
+		"payload": raw_snapshot.compress(FileAccess.COMPRESSION_FASTLZ),
+	}
+	var unconstrained_packet_size := var_to_bytes(unconstrained_packet).size()
 	var wire_packet := SessionTransport._snapshot_wire_packet(snapshot)
-	var packet_size := var_to_bytes(wire_packet).size()
-	check(not wire_packet.is_empty(), "maximum public snapshot packs into a guarded wire envelope")
-	check(packet_size <= SessionTransport.ENET_MTU_BYTES, "maximum snapshot fits one ENet MTU (%d/%d bytes)" % [packet_size, SessionTransport.ENET_MTU_BYTES])
+	check(not wire_packet.is_empty(), "maximum public snapshot packs into a guarded wire envelope (%d/%d bytes)" % [unconstrained_packet_size, SessionTransport.ENET_MTU_BYTES])
+	check(unconstrained_packet_size <= SessionTransport.ENET_MTU_BYTES, "maximum snapshot fits one ENet MTU (%d/%d bytes)" % [unconstrained_packet_size, SessionTransport.ENET_MTU_BYTES])
 	check(SessionTransport._snapshot_from_wire_packet(wire_packet) == snapshot, "maximum compressed snapshot round-trips exactly")
 
 
@@ -192,7 +249,8 @@ func _test_snapshot_validation_fails_closed() -> void:
 		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Array)[1] = "",
 		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Array)[2] = "BAD EVENT",
 		func(value: Dictionary) -> void: ((value["players"] as Array)[0] as Array)[3] = PackedInt32Array([1]),
-		func(value: Dictionary) -> void: value["overflow"] = PackedInt32Array([-1, 0, 0]),
+		func(value: Dictionary) -> void: value["overflow"] = PackedInt32Array([-1, 0, 0, 0]),
+		func(value: Dictionary) -> void: value["fields"] = PackedInt32Array([2000, 1, CombatTuning.RIMEWAKE_WIRE_ID, 0, 0, 0, 0]),
 		func(value: Dictionary) -> void: value["events"] = [PackedInt64Array([99, 0, 0, 0, 0, 0])],
 		func(value: Dictionary) -> void: value["hearth"] = PackedInt32Array([1, 8, 0, 8]),
 		func(value: Dictionary) -> void: value["round"] = PackedInt32Array([1, 9, 0, 0, 0, 3, 0]),

@@ -11,7 +11,7 @@ func run() -> int:
 
 
 func _test_supported_tick_rates() -> void:
-	equal(SimConfig.PROTOCOL_VERSION, 25, "current host-authoritative instant-shape protocol is explicit")
+	equal(SimConfig.PROTOCOL_VERSION, 26, "current host-authoritative persistent-field protocol is explicit")
 	check(SimConfig.new(60).is_valid(), "60 Hz is supported")
 	check(SimConfig.new(120).is_valid(), "120 Hz is supported")
 	check(not SimConfig.new(90).is_valid(), "intermediate tick rates fail closed")
@@ -29,6 +29,7 @@ func _test_command_serialization() -> void:
 	equal(spell_command.first_pressed_spell_slot(), 2, "lowest requested spell slot wins deterministically")
 	equal(spell_command.copy().first_pressed_spell_slot(), 2, "spell slot bits survive command copies")
 	equal(SimCommand.new(9, 3).first_pressed_spell_slot(), 0, "command with no spell slot reports none")
+	equal(SimCommand.new(10, 3, 0, 0, 0, SimCommand.PRESSED_SPELL_12).first_pressed_spell_slot(), 12, "Alt+4 occupies the bounded final command bit")
 
 
 func _test_independent_aim() -> void:

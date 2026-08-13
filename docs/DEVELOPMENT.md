@@ -93,11 +93,11 @@ The eastern Host/Join Farflow stations operate it without a detached menu; use
 `--join-address=IP`, `--session-port=24872` and `--player-name=Name` for direct-IP
 diagnostics. Its real loopback suite covers compatibility, bounded validated
 input, mismatch refusal and disconnect cleanup. Stable peer actors, host-side
-movement simulation and compact 60 Hz guest snapshots are live. Protocol 25 /
-snapshot schema 9 carries bounded projectile/beam/spray lanes, target state, five canonical
-spell slots, compact
-Hearth presence/readiness, packed Proving Court state and semantic
-feedback without moving any outcome authority to clients. Reliable
+movement simulation and compact 60 Hz guest snapshots are live. Protocol 26 /
+snapshot schema 10 carries bounded projectile/beam/spray lanes, persistent
+fields, target state, three occupied positions inside each twelve-position
+spell weave, compact Hearth presence/readiness, packed Proving Court state and
+semantic cues without moving any outcome authority to clients. Reliable
 social/Bell/Champion-Loom/Spell-Loom requests are validated
 against host-owned station proximity and return shared confirmations; training
 target health also replicates. A separate peer-scoped channel acknowledges the
@@ -112,9 +112,11 @@ its team/reset rules are enforced by host simulation. Use
 `--session-charter=sparring_circle` only for repeatable diagnostics. Capture-only
 `--capture-spawn=X,Y` and `--capture-expanded-station=ID` support deterministic
 visual inspection without changing normal spawn or interaction behavior.
-Use `spell-loom` as the station ID to inspect the five-row session editor.
-`--capture-cast-active` sends one offline active-spell edge after boot; combine
-it with `--champion=`, `--capture-spawn=` and `--capture-pointer=` only for
+Use `spell-loom` as the station ID to inspect the 3×4 session editor.
+`--capture-cast-active` sends one offline active-spell edge after boot;
+`--capture-cast-slot=1..12` instead sends one semantic layered spell edge, and
+`--camera-zoom=50|75|100` selects a bounded visual-test scale. Combine these
+with `--champion=`, `--capture-spawn=` and `--capture-pointer=` only for
 repeatable movie-frame review of an already implemented spell.
 
 The Session Hearth beside the Farflow gates is the diegetic lobby boundary. Its
@@ -148,12 +150,12 @@ filtering remains required before limited-information network modes.
 
 Both 60 and 120 Hz simulations publish shared state at 60 snapshots per second.
 Semantic events are retained for four snapshots and deduplicated by stable ID;
-do not clear an event after only one unreliable send. Protocol 25 validates and
-FastLZ-packs snapshot schema 9 into a bounded wire envelope; both the maximum
+do not clear an event after only one unreliable send. Protocol 26 validates and
+FastLZ-packs snapshot schema 10 into a bounded wire envelope; both the maximum
 eight-player fixture and live three-player journeys must remain within the
 1,392-byte ENet MTU before the unreliable-ordered send.
 
-Protocol 25 reserves a normally disconnected guest's exact actor for 15 seconds and
+Protocol 26 reserves a normally disconnected guest's exact actor for 15 seconds and
 binds return to a random in-memory capability plus the original name. A normal
 player uses Join Farflow again; `--farflow-smoke-reconnect` is test-only. Do not
 print, persist or add that capability to snapshots/diagnostics.

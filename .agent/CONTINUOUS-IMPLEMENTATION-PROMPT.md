@@ -15,13 +15,15 @@ slices, checkpoint each green result, and immediately start the next accepted
 slice. Do not stop at plans, scaffolds, catalogs, generated images or passing
 unit tests when the player-facing outcome is still absent.
 
-The current green frontier is protocol 25: two foundation champions, the planned
+The current green frontier is protocol 26: two foundation champions, the planned
 non-ability movement grammar, full/cone POV with building cutaways, eleven
-Wellspring stations including a host-authoritative five-row Spell Loom,
+Wellspring stations including a host-authoritative 3×4 Spell Loom,
 direct-IP host/join, shared interactions, Hearth readiness,
 one Proving Court round, reconnect, stewardship and late-join observation pass
 the maintained Windows source journeys; Pocket Eclipse is a cover-stopped Light
-beam and Tideline a cover-aware multi-target Water spray. Preserve all of it. Export templates and
+beam, Tideline a cover-aware multi-target Water spray and Rimewake a persistent
+single-trigger Ice field. A persisted 50/75/100% world zoom defaults to the wider
+75% view. Preserve all of it. Export templates and
 physical Garuda Sway package proof remain honest external gaps.
 
 ## Product target
@@ -46,10 +48,10 @@ not runtime art, collision geometry or permission to ship generated pixels.
 | Order | Player-visible outcome | Acceptance gate |
 | ---: | --- | --- |
 | 1 | One-step portable play | A friend downloads one archive, extracts it, runs one obvious launcher without admin rights, enters the Wellspring, hosts or joins through one short in-world flow, can copy/paste a join card, and every quit path flushes local state, sends a bounded reason when online and leaves no child process; identical commit/content IDs and checksum instructions cover Windows and Linux. |
-| 2 | Comfortable in-game controls | A Wellspring Controls lectern exposes keyboard, mouse buttons, mouse-wheel directions and controller bindings; selecting an action captures the next input, shows conflicts and supports swap/unbind/reset/cancel. Defaults are WASD, Shift sprint, C slide, Space jump, V technique, wheel-up jump, wheel-down slide/fast-fall and 1–5 spell slots; Ctrl and Alt are unassigned and legal spell alternatives. Bindings persist, migrate, fail closed and work at 60/120 Hz. |
-| 3 | Five-slot spell grammar | Stable `spell_1`…`spell_5` semantic actions and protocol lanes select/cast five loadout entries without trusting the renderer or client. The HUD shows input, element, shape, Flux, cooldown and refusal. The Wellspring Spell Loom edits legal slots and the Proving Grounds safely tests every enabled element through readable projectile, beam, spray, field or movement/defense representatives. |
+| 2 | Comfortable in-game controls | A Wellspring Controls lectern exposes keyboard, mouse buttons, mouse-wheel directions and controller bindings; selecting an action captures the next input, shows conflicts and supports swap/unbind/reset/cancel. Defaults are WASD, Shift sprint, C slide, Space jump, V technique, wheel-up jump, wheel-down slide/fast-fall, buttons 1–4 and Ctrl/Alt layer actions. Bindings and 50/75/100% zoom persist, migrate, fail closed and work at 60/120 Hz. |
+| 3 | Twelve-position spell grammar | Stable semantic command bits select a 3×4 Plain/Ctrl/Alt weave without trusting the renderer or client. The HUD shows the active layer, input, element, shape, Flux, cooldown and refusal. The Wellspring Spell Loom edits all twelve legal positions and the Proving Grounds safely tests every enabled element through readable projectile, beam, spray, field or movement/defense representatives. |
 | 4 | Material-ready spell effects | Spell definitions declare shape, delivery, element, impact, residue and material operation through validated data. Wood, brick, stone, metal, glass, vegetation and immutable worldbone have stable IDs, budgets, hit/reaction hooks, reset ownership and debug fixtures before live destruction/reactions are enabled. Critical routes, spawns and objectives can never become invalid. |
-| 5 | In-world player codex | One toggleable, controller-navigable, translucent overview derives its tables from canonical content rather than copied README prose: current champion/stats/kit, five slots, all playable champions, ancestry, elements/effects/interactions, movement grammar, controls, session rules and network status. It never blocks urgent combat state and remains readable at 720p, reduced motion and common color-vision modes. |
+| 5 | In-world player codex | One toggleable, controller-navigable, translucent overview derives its tables from canonical content rather than copied README prose: current champion/stats/kit, twelve-position weave, all playable champions, ancestry, elements/effects/interactions, movement grammar, controls, session rules and network status. It never blocks urgent combat state and remains readable at 720p, reduced motion and common color-vision modes. |
 | 6 | Eight-way character expression | Hold the Talk action to open a transparent radial wheel, aim with mouse/stick, release to send and cancel by returning to center. Eight stable intents—greeting, taunt, scared, joke, follow me, retreat, thanks and “why are you running?”—map to original character-specific lines, bounded cooldowns and replicated semantic IDs; bubbles are mostly transparent, short, anchored and never reveal hidden actors. |
 | 7 | Gameplay-scale visual overhaul | Replace schematic terrain, tiny bodies and debug-strip HUD with an original modular pixel kit that meets the v3 specimen: moderately tilted facades over authoritative top-down floors, compact expressive champions, clean lane values, dense scenic edges, readable doors/water/cover, restrained auras, roof cutaways, translucent bubbles and compact brass/parchment HUD. Prove collision/art alignment, whole-pixel presentation, grayscale/color-vision readability, 720p/1080p clarity, reduced effects and stable frame budgets. |
 | 8 | Repository/product cleanup | Remove or quarantine obsolete Hex/Flow/operator/deployment vocabulary, superseded runtime graphics, dead adapters and duplicate documents only after replacement tests pass. Keep legacy history under its explicit archive, make the root README an honest player-first table overview, and keep scripts/docs short enough that a new contributor can locate launch, input, content, authority, rendering and verification boundaries quickly. |
@@ -72,7 +74,8 @@ blocked gate.
 | Slide / fast-fall | C or wheel down | south face |
 | Jump | Space or wheel up | right shoulder |
 | Context technique | V | east face |
-| Spell slots | 1, 2, 3, 4, 5 | five configurable face/shoulder/trigger choices |
+| Spell buttons | 1, 2, 3, 4 | four configurable face/shoulder/trigger choices |
+| Spell layers | Plain, Ctrl, Alt | two configurable modifier actions plus the plain layer; 12 positions total |
 | Interact | F | north face |
 | Talk wheel | hold T | hold D-pad up or configured action |
 | Overview | Tab outside observer mode | configurable menu/view action |

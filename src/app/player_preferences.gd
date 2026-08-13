@@ -2,7 +2,7 @@ class_name PlayerPreferences
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 6
+const SCHEMA_VERSION: int = 7
 const DEFAULT_PATH: String = "user://player_preferences_v1.json"
 const MOVEMENT_WORLD_RELATIVE: String = "world_relative"
 const MOVEMENT_AIM_RELATIVE: String = "aim_relative"
@@ -14,6 +14,9 @@ const MIN_POV_RANGE: int = 160
 const MAX_POV_RANGE: int = 4096
 const DEFAULT_POV_ANGLE_DEGREES: int = 120
 const DEFAULT_POV_RANGE: int = 720
+const MIN_CAMERA_ZOOM_PERCENT: int = 50
+const MAX_CAMERA_ZOOM_PERCENT: int = 100
+const DEFAULT_CAMERA_ZOOM_PERCENT: int = 75
 const LEGACY_DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"move_left": KEY_A,
 	&"move_right": KEY_D,
@@ -86,7 +89,8 @@ const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"spell_2": KEY_2,
 	&"spell_3": KEY_3,
 	&"spell_4": KEY_4,
-	&"spell_5": KEY_5,
+	&"spell_layer_ctrl": KEY_CTRL,
+	&"spell_layer_alt": KEY_ALT,
 	&"reset_match": KEY_R,
 	&"toggle_debug_overlay": KEY_F1,
 	&"toggle_tick_rate": KEY_F6,
@@ -94,6 +98,7 @@ const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"toggle_pov_mode": KEY_F8,
 	&"adjust_pov_angle": KEY_F9,
 	&"adjust_pov_range": KEY_F10,
+	&"adjust_camera_zoom": KEY_F11,
 }
 const SCHEMA_V4_DEFAULT_MOUSE_BINDINGS: Dictionary[StringName, int] = {
 	&"primary": MOUSE_BUTTON_LEFT,
@@ -118,7 +123,8 @@ const DEFAULT_MOUSE_BINDINGS: Dictionary[StringName, int] = {
 	&"spell_2": 0,
 	&"spell_3": 0,
 	&"spell_4": 0,
-	&"spell_5": 0,
+	&"spell_layer_ctrl": 0,
+	&"spell_layer_alt": 0,
 }
 const DEFAULT_CONTROLLER_BINDINGS: Dictionary = {
 	&"move_left": {"kind": "axis", "index": JOY_AXIS_LEFT_X, "direction": -1},
@@ -137,13 +143,15 @@ const DEFAULT_CONTROLLER_BINDINGS: Dictionary = {
 	&"spell_2": {"kind": "none", "index": -1, "direction": 0},
 	&"spell_3": {"kind": "none", "index": -1, "direction": 0},
 	&"spell_4": {"kind": "none", "index": -1, "direction": 0},
-	&"spell_5": {"kind": "none", "index": -1, "direction": 0},
+	&"spell_layer_ctrl": {"kind": "none", "index": -1, "direction": 0},
+	&"spell_layer_alt": {"kind": "none", "index": -1, "direction": 0},
 }
 
 var movement_reference: String = MOVEMENT_WORLD_RELATIVE
 var pov_mode: String = POV_FULL
 var pov_angle_degrees: int = DEFAULT_POV_ANGLE_DEGREES
 var pov_range: int = DEFAULT_POV_RANGE
+var camera_zoom_percent: int = DEFAULT_CAMERA_ZOOM_PERCENT
 var keyboard_bindings: Dictionary[StringName, int] = {}
 var mouse_bindings: Dictionary[StringName, int] = {}
 var controller_bindings: Dictionary = {}
@@ -160,6 +168,7 @@ func reset_to_defaults() -> void:
 	pov_mode = POV_FULL
 	pov_angle_degrees = DEFAULT_POV_ANGLE_DEGREES
 	pov_range = DEFAULT_POV_RANGE
+	camera_zoom_percent = DEFAULT_CAMERA_ZOOM_PERCENT
 	keyboard_bindings = DEFAULT_KEYBOARD_BINDINGS.duplicate()
 	mouse_bindings = DEFAULT_MOUSE_BINDINGS.duplicate()
 	controller_bindings = DEFAULT_CONTROLLER_BINDINGS.duplicate(true)
@@ -179,11 +188,11 @@ func apply_control_preset(preset_id: String) -> bool:
 func apply_dictionary(data: Dictionary) -> bool:
 	var raw_schema: Variant = data.get("schema_version", -1)
 	if not _is_whole_number(raw_schema):
-		last_error = "Player preferences require schema_version 1 through 6"
+		last_error = "Player preferences require schema_version 1 through 7"
 		return false
 	var requested_schema: int = int(raw_schema)
-	if requested_schema not in [1, 2, 3, 4, 5, SCHEMA_VERSION]:
-		last_error = "Player preferences require schema_version 1 through 6"
+	if requested_schema < 1 or requested_schema > SCHEMA_VERSION:
+		last_error = "Player preferences require schema_version 1 through 7"
 		return false
 	var requested_movement: String = str(data.get("movement_reference", ""))
 	var requested_pov_mode: String = str(data.get("pov_mode", ""))
@@ -208,11 +217,20 @@ func apply_dictionary(data: Dictionary) -> bool:
 		return false
 	var requested_angle: int = int(data["pov_angle_degrees"])
 	var requested_range: int = int(data["pov_range"])
+	var requested_camera_zoom: int = DEFAULT_CAMERA_ZOOM_PERCENT
+	if requested_schema >= 7:
+		if not _is_whole_number(data.get("camera_zoom_percent")):
+			last_error = "camera_zoom_percent must be an integer"
+			return false
+		requested_camera_zoom = int(data["camera_zoom_percent"])
 	if requested_angle < MIN_POV_ANGLE_DEGREES or requested_angle > MAX_POV_ANGLE_DEGREES:
 		last_error = "pov_angle_degrees must be between %d and %d" % [MIN_POV_ANGLE_DEGREES, MAX_POV_ANGLE_DEGREES]
 		return false
 	if requested_range < MIN_POV_RANGE or requested_range > MAX_POV_RANGE:
 		last_error = "pov_range must be between %d and %d" % [MIN_POV_RANGE, MAX_POV_RANGE]
+		return false
+	if requested_camera_zoom < MIN_CAMERA_ZOOM_PERCENT or requested_camera_zoom > MAX_CAMERA_ZOOM_PERCENT:
+		last_error = "camera_zoom_percent must be between %d and %d" % [MIN_CAMERA_ZOOM_PERCENT, MAX_CAMERA_ZOOM_PERCENT]
 		return false
 	var requested_bindings: Dictionary[StringName, int]
 	if requested_schema == 1:
@@ -229,6 +247,8 @@ func apply_dictionary(data: Dictionary) -> bool:
 		return false
 	for raw_action: Variant in binding_data:
 		var action := StringName(str(raw_action))
+		if requested_schema <= 6 and action == &"spell_5":
+			continue
 		if not DEFAULT_KEYBOARD_BINDINGS.has(action):
 			last_error = "Unknown keyboard action: %s" % action
 			return false
@@ -254,6 +274,9 @@ func apply_dictionary(data: Dictionary) -> bool:
 		requested_bindings[&"slide"] = DEFAULT_KEYBOARD_BINDINGS[&"slide"]
 	elif requested_schema == 3 and requested_bindings[&"slide"] == SCHEMA_V3_DEFAULT_KEYBOARD_BINDINGS[&"slide"]:
 		requested_bindings[&"slide"] = DEFAULT_KEYBOARD_BINDINGS[&"slide"]
+	if requested_schema <= 6:
+		_preserve_legacy_modifier_binding(requested_bindings, &"spell_layer_ctrl", KEY_CTRL)
+		_preserve_legacy_modifier_binding(requested_bindings, &"spell_layer_alt", KEY_ALT)
 	var binding_error: String = validate_keyboard_bindings(requested_bindings)
 	if not binding_error.is_empty():
 		last_error = binding_error
@@ -265,6 +288,8 @@ func apply_dictionary(data: Dictionary) -> bool:
 		return false
 	for raw_action: Variant in mouse_binding_data:
 		var action := StringName(str(raw_action))
+		if requested_schema <= 6 and action == &"spell_5":
+			continue
 		if not DEFAULT_MOUSE_BINDINGS.has(action):
 			last_error = "Unknown mouse action: %s" % action
 			return false
@@ -283,6 +308,8 @@ func apply_dictionary(data: Dictionary) -> bool:
 		return false
 	for raw_action: Variant in controller_binding_data:
 		var action := StringName(str(raw_action))
+		if requested_schema <= 6 and action == &"spell_5":
+			continue
 		if not DEFAULT_CONTROLLER_BINDINGS.has(action):
 			last_error = "Unknown controller action: %s" % action
 			return false
@@ -306,6 +333,7 @@ func apply_dictionary(data: Dictionary) -> bool:
 	pov_mode = requested_pov_mode
 	pov_angle_degrees = requested_angle
 	pov_range = requested_range
+	camera_zoom_percent = requested_camera_zoom
 	keyboard_bindings = requested_bindings
 	mouse_bindings = requested_mouse_bindings
 	controller_bindings = requested_controller_bindings
@@ -321,6 +349,7 @@ func to_dictionary() -> Dictionary:
 		"pov_mode": pov_mode,
 		"pov_angle_degrees": pov_angle_degrees,
 		"pov_range": pov_range,
+		"camera_zoom_percent": camera_zoom_percent,
 		"keyboard_bindings": keyboard_bindings,
 		"mouse_bindings": mouse_bindings,
 		"controller_bindings": controller_bindings,
@@ -369,6 +398,10 @@ func set_pov_angle_degrees(requested_angle: int) -> void:
 
 func set_pov_range(requested_range: int) -> void:
 	pov_range = clampi(requested_range, MIN_POV_RANGE, MAX_POV_RANGE)
+
+
+func set_camera_zoom_percent(requested_zoom_percent: int) -> void:
+	camera_zoom_percent = clampi(requested_zoom_percent, MIN_CAMERA_ZOOM_PERCENT, MAX_CAMERA_ZOOM_PERCENT)
 
 
 static func is_valid_movement_reference(requested_reference: String) -> bool:
@@ -445,6 +478,14 @@ static func validate_controller_bindings(requested_bindings: Dictionary) -> Stri
 
 static func unbound_controller_binding() -> Dictionary:
 	return {"kind": "none", "index": -1, "direction": 0}
+
+
+static func _preserve_legacy_modifier_binding(bindings: Dictionary, modifier_action: StringName, keycode: int) -> void:
+	for raw_action: Variant in bindings:
+		var action := StringName(str(raw_action))
+		if action != modifier_action and int(bindings[raw_action]) == keycode:
+			bindings[modifier_action] = 0
+			return
 
 
 static func _is_whole_number(value: Variant) -> bool:

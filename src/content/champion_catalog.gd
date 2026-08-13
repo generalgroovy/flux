@@ -104,6 +104,15 @@ func validate(abilities: AbilityCatalog) -> bool:
 			if ability.is_empty() or String(ability.get("slot_kind", "")) != expected_kind:
 				return _fail("champion kit slot is invalid: %s/%s" % [champion_id, slot_name])
 			kit_wires[slot_name] = int(ability.get("wire_id", 0))
+		kit_wires["active_2"] = 0
+		var active_2_id := String(kit.get("active_2", ""))
+		if not active_2_id.is_empty():
+			var active_2: Dictionary = abilities.ability(active_2_id)
+			if active_2.is_empty() or String(active_2.get("slot_kind", "")) != "active":
+				return _fail("champion kit slot is invalid: %s/active_2" % champion_id)
+			kit_wires["active_2"] = int(active_2.get("wire_id", 0))
+			if kit_wires["active_2"] in [kit_wires["primary"], kit_wires["active_1"]]:
+				return _fail("champion kit spells must be unique: %s" % champion_id)
 		champions_by_id[champion_id] = champion
 		champion_ids_by_wire[wire_id] = champion_id
 		kit_wires_by_champion[champion_id] = kit_wires
@@ -161,12 +170,14 @@ func apply_to_player(state: PlayerState, champion_id: String, preserve_resource_
 	var kit_wires: Dictionary = kit_wires_by_champion[champion_id]
 	state.primary_wire_id = int(kit_wires["primary"])
 	state.active_1_wire_id = int(kit_wires["active_1"])
+	state.active_2_wire_id = int(kit_wires["active_2"])
 	state.reset_spell_slots_to_kit()
 	state.pending_cast_wire_id = 0
 	state.pending_cast_ticks = 0
 	state.cast_recovery_ticks = 0
 	state.primary_cooldown_ticks = 0
 	state.active_1_cooldown_ticks = 0
+	state.active_2_cooldown_ticks = 0
 	if preserve_resource_ratios:
 		state.health = clampi(old_health * state.health_maximum / old_health_maximum, 0, state.health_maximum)
 		state.flux = clampi(old_flux * state.flux_maximum / old_flux_maximum, 0, state.flux_maximum)

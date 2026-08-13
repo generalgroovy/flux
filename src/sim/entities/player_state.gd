@@ -2,7 +2,9 @@ class_name PlayerState
 extends RefCounted
 
 
-const SPELL_SLOT_COUNT: int = 5
+const SPELL_BUTTON_COUNT: int = 4
+const SPELL_LAYER_COUNT: int = 3
+const SPELL_SLOT_COUNT: int = SPELL_BUTTON_COUNT * SPELL_LAYER_COUNT
 
 enum MovementMode {
 	IDLE,
@@ -66,10 +68,16 @@ var pending_cast_aim_y: int = 0
 var cast_recovery_ticks: int = 0
 var primary_cooldown_ticks: int = 0
 var active_1_cooldown_ticks: int = 0
+var active_2_cooldown_ticks: int = 0
 var edgeweave_cooldown_ticks: int = 0
 var primary_wire_id: int = CombatTuning.PRIMARY_WIRE_ID
 var active_1_wire_id: int = CombatTuning.ACTIVE_1_WIRE_ID
-var spell_wire_ids := PackedInt32Array([CombatTuning.PRIMARY_WIRE_ID, CombatTuning.ACTIVE_1_WIRE_ID, 0, 0, 0])
+var active_2_wire_id: int = 0
+var spell_wire_ids := PackedInt32Array([
+	CombatTuning.PRIMARY_WIRE_ID, CombatTuning.ACTIVE_1_WIRE_ID, 0, 0,
+	0, 0, 0, 0,
+	0, 0, 0, 0,
+])
 
 var health_maximum: int = PlayerTuning.HEALTH_MAXIMUM
 var health_recovery_per_second: int = PlayerTuning.HEALTH_RECOVERY_PER_SECOND
@@ -160,15 +168,42 @@ func is_airborne() -> bool:
 
 
 func reset_spell_slots_to_kit() -> void:
-	spell_wire_ids = PackedInt32Array([primary_wire_id, active_1_wire_id, 0, 0, 0])
+	spell_wire_ids = PackedInt32Array([
+		primary_wire_id, active_1_wire_id, active_2_wire_id, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0,
+	])
+
+
+func kit_spell_wire_ids() -> PackedInt32Array:
+	var result := PackedInt32Array([primary_wire_id, active_1_wire_id])
+	if active_2_wire_id > 0:
+		result.append(active_2_wire_id)
+	return result
 
 
 func spell_wire_id(slot_number: int) -> int:
 	return int(spell_wire_ids[slot_number - 1]) if slot_number >= 1 and slot_number <= SPELL_SLOT_COUNT and spell_wire_ids.size() == SPELL_SLOT_COUNT else 0
 
 
+func spell_slot_index_for_wire(wire_id: int) -> int:
+	return spell_wire_ids.find(wire_id) if wire_id > 0 and spell_wire_ids.size() == SPELL_SLOT_COUNT else -1
+
+
+static func spell_slot_label(slot_index: int) -> String:
+	if slot_index < 0 or slot_index >= SPELL_SLOT_COUNT:
+		return "?"
+	var button_number: int = slot_index % SPELL_BUTTON_COUNT + 1
+	match slot_index / SPELL_BUTTON_COUNT:
+		1:
+			return "CTRL+%d" % button_number
+		2:
+			return "ALT+%d" % button_number
+	return "%d" % button_number
+
+
 func place_kit_spell(slot_index: int, wire_id: int) -> bool:
-	if slot_index < 0 or slot_index >= SPELL_SLOT_COUNT or wire_id not in [primary_wire_id, active_1_wire_id] or not has_valid_spell_slots():
+	if slot_index < 0 or slot_index >= SPELL_SLOT_COUNT or not kit_spell_wire_ids().has(wire_id) or not has_valid_spell_slots():
 		return false
 	var previous_index: int = spell_wire_ids.find(wire_id)
 	if previous_index < 0:
@@ -182,16 +217,21 @@ func place_kit_spell(slot_index: int, wire_id: int) -> bool:
 func has_valid_spell_slots() -> bool:
 	if spell_wire_ids.size() != SPELL_SLOT_COUNT or primary_wire_id <= 0 or active_1_wire_id <= 0 or primary_wire_id == active_1_wire_id:
 		return false
-	var primary_count: int = 0
-	var active_count: int = 0
+	if active_2_wire_id < 0 or (active_2_wire_id > 0 and active_2_wire_id in [primary_wire_id, active_1_wire_id]):
+		return false
+	var expected_wires := kit_spell_wire_ids()
+	var counts: Dictionary[int, int] = {}
+	for wire_id: int in expected_wires:
+		counts[wire_id] = 0
 	for wire_id: int in spell_wire_ids:
-		if wire_id == primary_wire_id:
-			primary_count += 1
-		elif wire_id == active_1_wire_id:
-			active_count += 1
+		if counts.has(wire_id):
+			counts[wire_id] = counts[wire_id] + 1
 		elif wire_id != 0:
 			return false
-	return primary_count == 1 and active_count == 1
+	for wire_id: int in expected_wires:
+		if counts[wire_id] != 1:
+			return false
+	return true
 
 
 func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> void:
@@ -207,6 +247,7 @@ func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> voi
 	cast_recovery_ticks = 0
 	primary_cooldown_ticks = 0
 	active_1_cooldown_ticks = 0
+	active_2_cooldown_ticks = 0
 	edgeweave_cooldown_ticks = 0
 	jump_buffer_ticks = 0
 	technique_buffer_ticks = 0
@@ -256,14 +297,14 @@ func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> voi
 
 
 func canonical_values() -> PackedInt64Array:
-	return PackedInt64Array([
+	var values := PackedInt64Array([
 		entity_id, team_id, actor_kind, champion_wire_id,
 		position_x, position_y, position_remainder_x, position_remainder_y,
 		velocity_x, velocity_y, facing_x, facing_y, aim_x, aim_y, radius, movement_mode,
 		int(primary_held),
 		pending_cast_wire_id, pending_cast_ticks, pending_cast_aim_x, pending_cast_aim_y,
-		cast_recovery_ticks, primary_cooldown_ticks, active_1_cooldown_ticks,
-		edgeweave_cooldown_ticks, primary_wire_id, active_1_wire_id,
+		cast_recovery_ticks, primary_cooldown_ticks, active_1_cooldown_ticks, active_2_cooldown_ticks,
+		edgeweave_cooldown_ticks, primary_wire_id, active_1_wire_id, active_2_wire_id,
 		health_maximum, health_recovery_per_second,
 		health, health_recovery_remainder, health_recovery_delay_ticks, spawn_protection_ticks,
 		flux_maximum, flux_recovery_per_second,
@@ -284,5 +325,7 @@ func canonical_values() -> PackedInt64Array:
 		wall_skim_surface_id, wall_skim_lockout_id, wall_skim_lockout_ticks,
 		landing_ticks, landing_intensity, int(sprinting),
 		control_state, control_ticks, control_x, control_y, control_speed, slow_ratio,
-		spell_wire_ids[0], spell_wire_ids[1], spell_wire_ids[2], spell_wire_ids[3], spell_wire_ids[4],
 	])
+	for wire_id: int in spell_wire_ids:
+		values.append(wire_id)
+	return values

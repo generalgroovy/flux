@@ -114,11 +114,11 @@ even when design documentation already exists.
   - [x] In-world Controls Lectern with saved keyboard, mouse/wheel and controller
     bindings, conflict swaps, unbind/reset/cancel, world-relative and aim-relative
     movement presets, and full/ranged-cone POV with 15–360° angle and adjustable
-    range; production defaults are Shift sprint, C/wheel-down direct slide and
-    Space/wheel-up jump; Ctrl and Alt remain free for spell binding
-  - [x] Configurable number-key spell actions 1–5 use stable protocol commands;
-    the in-world Spell Loom repositions each champion's two proven spells among
-    five canonical slots while honest empty slots refuse and spend nothing
+    range plus a persisted 50/75/100% camera zoom; production defaults are Shift
+    sprint, C/wheel-down direct slide and Space/wheel-up jump
+  - [x] A configurable 3×4 spell weave maps Plain, Ctrl and Alt layers across
+    buttons 1–4; the in-world Spell Loom repositions every proven champion spell
+    among twelve host-owned positions while honest empties refuse and spend nothing
   - [x] Cone presentation clamps to 15–360° and masks space behind authored
     `los_cutaway` buildings while low traversal rails remain visible
   - [x] Edgeweave swept hostile near-miss reward with speed, cooldown,
@@ -488,7 +488,7 @@ combos require an explicit short cap and escape rule.
 | Passive | One champion-defining behavior with a demonstrated trigger, visible state, and anti-farming lockout |
 | Primary | Reliable independent-aim pressure that remains useful at zero Flux |
 | Active slots | Three unique catalog abilities inside the mode budget; damage, defense, support, terrain, control, and mobility are roles rather than mandatory duplicates |
-| Spell bar | Five ordered slots bound independently to 1–5; the host-authoritative Spell Loom can reposition the current champion's two proven spells, while the three honest empty slots refuse without cost |
+| Spell weave | Twelve ordered positions: Plain 1–4, Ctrl+1–4 and Alt+1–4; the host-authoritative Spell Loom can reposition every proven champion spell while honest empty positions refuse without cost |
 | Spell contract | Every catalog entry declares shape, delivery, impact, residue, planned material operation and an explicit playable/catalog-only runtime gate; planned chemistry never mutates the arena early |
 | Champion mobility | One identity-bearing Flux-paid traversal/combat action, still bounded by collision and speed rules |
 | Ultimate | One high-impact commitment with startup, safe routes, ownership, interruption/destruction, expiry, and recovery rules |
@@ -1875,7 +1875,7 @@ reopening Farflow. A dropped guest can use Join Farflow within 15 seconds to rec
 its exact in-memory actor. The host can safely review connected guests in the
 Ledger and must confirm release at the separate Bell; closing the whole company
 also requires a second Host Farflow press. Affected guests receive the reason,
-and administrative departures cannot reclaim their actor. Protocol 25 / snapshot schema 9 assign and validate
+and administrative departures cannot reclaim their actor. Protocol 26 / snapshot schema 10 assign and validate
 the sealed Charter and replicate authoritative court state; cross-platform
 package proof remains next. See the
 [networking contract](docs/NETWORKING.md).
@@ -1885,22 +1885,26 @@ the host neutralizes every movement and ability input, the client sends no
 prediction stream, and the HUD follows a replicated participant. Tab or
 controller D-pad right cycles the stable participant order. When the company
 returns, the observer is placed at the Hearth, readies through the ordinary
-request path, and can enter the next round. Snapshot schema 9 now travels in a
+request path, and can enter the next round. Snapshot schema 10 now travels in a
 bounded compressed wire envelope whose maximum eight-player fixture and live
-three-player journeys fit one ENet MTU; protocol 25 rejects older peers. This
+three-player journeys fit one ENet MTU; protocol 26 rejects older peers. This
 spectator view adds no new information channel, but competitive limited-view
 modes still require host-side per-peer visibility filtering.
 
-The current simulation uses protocol 25, snapshot schema 9 and preference schema 6: Space or wheel-up invokes the
-semantic jump action, Shift sprints, C or wheel-down directly slides/fast-falls,
-1–5 request the five ordered spell slots, Ctrl and Alt are free, and primary no longer aliases Space. At the Spell Loom,
-players can move the champion's two proven kit spells to any of those slots;
-the host validates proximity and publishes the canonical order, while the
-three remaining slots stay empty until later spells are promoted. Legacy
+The current simulation uses protocol 26, snapshot schema 10 and preference
+schema 7: Space or wheel-up invokes semantic jump, Shift sprints, C or
+wheel-down directly slides/fast-falls, and Plain/Ctrl/Alt layers combine with
+buttons 1–4 into twelve independently configurable spell positions. Alt wins
+deterministically if both modifier actions are held. At the Spell Loom, players
+can move every proven kit spell to any position; the host validates proximity
+and publishes the canonical order while unfilled positions stay honest. Legacy
 left/right-click access remains available and the session-scoped layout resets
-when changing champion. Schema-v1/v2/v3/v4/v5
+when changing champion. Schema-v1 through v6
 defaults migrate safely, explicit saved alternatives remain
-supported, and malformed reduced-motion data fails closed. The jump presentation keeps the collision
+supported, retired `spell_5` data is removed, modifier conflicts are preserved
+by leaving the new layer unbound, and malformed zoom/reduced-motion data fails
+closed. The default 75% world scale shows more connected routes; F11 cycles
+50/75/100% and `--camera-zoom=` provides a bounded diagnostic override. The jump presentation keeps the collision
 anchor grounded while the body rises and a separate receiving-surface shadow
 grows broader/darker to the apex, then contracts through descent at equivalent
 60/120 Hz phase.
@@ -1915,6 +1919,12 @@ Oh Tipi's Tideline is now a true short Water spray rather than another orb. Its
 fan can launch multiple legal actors once, ignores allies/protected actors,
 rejects targets outside the cone or behind cover, and replicates one bounded fan
 cue plus explicit affected-target cues. Its planned material push remains sealed.
+
+Oh Tipi's Rimewake is the first persistent field: a collision-safe Ice sigil
+placed along aim, lasting 2.2 seconds and slowing each legal hostile once. The
+host owns placement, lifetime, affected history and control; snapshots carry a
+compact field lane and explicit trigger cue. Its planned material cooling
+operation remains sealed.
 
 See [development setup](docs/DEVELOPMENT.md) and the
 [FLUX movement migration record](docs/MIGRATION-FLUX-MOVEMENT.md).

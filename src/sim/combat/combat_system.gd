@@ -7,19 +7,20 @@ static func step_player(
 	command: SimCommand,
 	config: SimConfig,
 	projectile_id: int,
+	field_id: int,
 	world: CollisionWorld,
 	events: Array[Dictionary],
-) -> ProjectileState:
+) -> RefCounted:
 	for property_name: StringName in [
 		&"cast_recovery_ticks", &"primary_cooldown_ticks",
-		&"active_1_cooldown_ticks", &"edgeweave_cooldown_ticks",
+		&"active_1_cooldown_ticks", &"active_2_cooldown_ticks", &"edgeweave_cooldown_ticks",
 	]:
 		state.set(property_name, maxi(0, int(state.get(property_name)) - 1))
 
 	if state.pending_cast_wire_id != 0:
 		state.pending_cast_ticks = maxi(0, state.pending_cast_ticks - 1)
 		if state.pending_cast_ticks == 0:
-			return _release_cast(state, config, projectile_id, world, events)
+			return _release_cast(state, config, projectile_id, field_id, world, events)
 		return null
 	if state.cast_recovery_ticks > 0:
 		return null
@@ -49,6 +50,19 @@ static func step_player(
 			return null
 		_begin_cast(state, state.active_1_wire_id, int(active_definition["startup_ms"]), config)
 		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": state.active_1_wire_id})
+		return null
+	if state.active_2_wire_id > 0 and requested_spell_wire_id == state.active_2_wire_id:
+		if state.active_2_cooldown_ticks > 0:
+			return null
+		var active_2_definition := CombatTuning.cast_definition(state.active_2_wire_id)
+		if active_2_definition.is_empty():
+			events.append({"type": "cast_refused", "entity_id": state.entity_id, "wire_id": state.active_2_wire_id, "reason": "kit"})
+			return null
+		if not PlayerResourcesSystem.spend_flux(state, int(active_2_definition["flux_cost"]), config):
+			events.append({"type": "cast_refused", "entity_id": state.entity_id, "wire_id": state.active_2_wire_id, "reason": "flux"})
+			return null
+		_begin_cast(state, state.active_2_wire_id, int(active_2_definition["startup_ms"]), config)
+		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": state.active_2_wire_id})
 		return null
 	if (command.has_held(SimCommand.HELD_PRIMARY) or requested_spell_wire_id == state.primary_wire_id) and state.primary_cooldown_ticks == 0:
 		var primary_definition := CombatTuning.cast_definition(state.primary_wire_id)
@@ -157,9 +171,10 @@ static func _release_cast(
 	state: PlayerState,
 	config: SimConfig,
 	projectile_id: int,
+	field_id: int,
 	world: CollisionWorld,
 	events: Array[Dictionary],
-) -> ProjectileState:
+) -> RefCounted:
 	var wire_id: int = state.pending_cast_wire_id
 	var definition := CombatTuning.cast_definition(wire_id)
 	if definition.is_empty():
@@ -170,6 +185,8 @@ static func _release_cast(
 		state.primary_cooldown_ticks = config.milliseconds_to_ticks(int(definition["cooldown_ms"]))
 	elif wire_id == state.active_1_wire_id:
 		state.active_1_cooldown_ticks = config.milliseconds_to_ticks(int(definition["cooldown_ms"]))
+	elif wire_id == state.active_2_wire_id and state.active_2_wire_id > 0:
+		state.active_2_cooldown_ticks = config.milliseconds_to_ticks(int(definition["cooldown_ms"]))
 	else:
 		state.pending_cast_wire_id = 0
 		state.pending_cast_ticks = 0
@@ -179,6 +196,8 @@ static func _release_cast(
 	if shape in ["beam", "spray"]:
 		_queue_instant_cast(state, wire_id, shape, events)
 		return null
+	if shape == "field":
+		return _release_field(state, wire_id, field_id, definition, config, world, events)
 	var speed := int(definition["speed"])
 	var radius := int(definition["radius"])
 
@@ -218,6 +237,115 @@ static func _release_cast(
 	events.append({"type": "projectile_spawned", "projectile_id": projectile_id, "owner_id": state.entity_id, "wire_id": wire_id})
 	state.last_event = "cast_release_%d" % wire_id
 	return projectile
+
+
+static func _release_field(
+	state: PlayerState,
+	wire_id: int,
+	field_id: int,
+	definition: Dictionary,
+	config: SimConfig,
+	world: CollisionWorld,
+	events: Array[Dictionary],
+) -> FieldState:
+	var direction := Vector2i(state.pending_cast_aim_x, state.pending_cast_aim_y)
+	var maximum_range := int(definition["range"])
+	var field_radius := int(definition["radius"])
+	var placement := _field_placement(state, direction, maximum_range, field_radius, world)
+	state.pending_cast_wire_id = 0
+	state.pending_cast_ticks = 0
+	if placement == Vector2i.ZERO:
+		events.append({"type": "cast_blocked", "entity_id": state.entity_id, "wire_id": wire_id})
+		state.last_event = "cast_blocked_%d" % wire_id
+		return null
+	var field := FieldState.new(
+		field_id,
+		state.entity_id,
+		state.team_id,
+		wire_id,
+		int(definition["element_wire_id"]),
+		placement,
+		field_radius,
+		config.milliseconds_to_ticks(int(definition["lifetime_ms"])),
+		int(definition["hit_control_state"]),
+		int(definition["hit_control_duration_ms"]),
+		int(definition["hit_control_slow_ratio"]),
+	)
+	events.append({
+		"type": "field_spawned",
+		"field_id": field_id,
+		"owner_id": state.entity_id,
+		"source_wire_id": wire_id,
+		"position_x": placement.x,
+		"position_y": placement.y,
+		"radius": field.radius,
+	})
+	state.last_event = "cast_release_%d" % wire_id
+	return field
+
+
+static func _field_placement(state: PlayerState, direction: Vector2i, maximum_range: int, field_radius: int, world: CollisionWorld) -> Vector2i:
+	const TRACE_STEP: int = 8_000
+	var minimum_range := state.radius + field_radius
+	var distance := maximum_range
+	while distance >= minimum_range:
+		@warning_ignore("integer_division")
+		var candidate := Vector2i(
+			state.position_x + direction.x * distance / SimConfig.FIXED_SCALE,
+			state.position_y + direction.y * distance / SimConfig.FIXED_SCALE,
+		)
+		if world.can_occupy(candidate, field_radius):
+			return candidate
+		distance -= TRACE_STEP
+	return Vector2i.ZERO
+
+
+static func advance_fields(
+	fields: Array[FieldState],
+	players: Array[PlayerState],
+	config: SimConfig,
+	events: Array[Dictionary],
+) -> Array[FieldState]:
+	var survivors: Array[FieldState] = []
+	var ordered_players: Array[PlayerState] = players.duplicate()
+	ordered_players.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
+	for field: FieldState in fields:
+		for target: PlayerState in ordered_players:
+			if (
+				target.entity_id == field.owner_id
+				or target.team_id == field.team_id
+				or target.health <= 0
+				or target.spawn_protection_ticks > 0
+				or field.has_affected(target.entity_id)
+			):
+				continue
+			var offset := Vector2i(target.position_x - field.position_x, target.position_y - field.position_y)
+			var contact_radius := target.radius + field.radius
+			if offset.length_squared() > contact_radius * contact_radius:
+				continue
+			MovementSystem.apply_control_state(
+				target,
+				field.hit_control_state,
+				field.hit_control_duration_ms,
+				Vector2i.ZERO,
+				0,
+				config,
+				field.hit_control_slow_ratio,
+			)
+			field.record_affected(target.entity_id)
+			events.append({
+				"type": "field_triggered",
+				"field_id": field.entity_id,
+				"owner_id": field.owner_id,
+				"source_wire_id": field.source_wire_id,
+				"target_id": target.entity_id,
+			})
+		field.lifetime_ticks = maxi(0, field.lifetime_ticks - 1)
+		if field.lifetime_ticks == 0:
+			events.append({"type": "field_expired", "field_id": field.entity_id})
+			continue
+		survivors.append(field)
+	return survivors
 
 
 static func _queue_instant_cast(

@@ -8,6 +8,7 @@ func run() -> int:
 		_test_vector_lance_flux_and_hit(tick_rate)
 		_test_oh_tipi_rillshot(tick_rate)
 		_test_oh_tipi_tideline(tick_rate)
+		_test_oh_tipi_rimewake(tick_rate)
 		_test_s_wayne_eclipse_disc(tick_rate)
 		_test_s_wayne_disc_ricochet(tick_rate)
 		_test_s_wayne_pocket_eclipse(tick_rate)
@@ -37,8 +38,8 @@ func _test_semantic_spell_slots(tick_rate: int) -> void:
 
 	var rewoven_world := SimWorld.new(tick_rate)
 	var rewoven: PlayerState = rewoven_world.player()
-	check(rewoven.place_kit_spell(4, rewoven.primary_wire_id), "%d Hz primary rewoves into slot 5" % tick_rate)
-	check(_step(rewoven_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_5, 1000, 0)), "%d Hz rewoven command steps" % tick_rate)
+	check(rewoven.place_kit_spell(11, rewoven.primary_wire_id), "%d Hz primary rewoves into Alt+4" % tick_rate)
+	check(_step(rewoven_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_12, 1000, 0)), "%d Hz rewoven command steps" % tick_rate)
 	equal(rewoven.pending_cast_wire_id, rewoven.primary_wire_id, "%d Hz rewoven slot invokes its canonical spell wire" % tick_rate)
 
 
@@ -196,6 +197,95 @@ func _test_oh_tipi_tideline(tick_rate: int) -> void:
 	check(not covered_spray.is_empty(), "%d Hz cover-stopped spray still emits its fan" % tick_rate)
 	equal(int(covered_spray.get("hit_count", -1)), 0, "%d Hz authored cover rejects the hidden spray target" % tick_rate)
 	equal(covered_enemy.health, covered_enemy.health_maximum, "%d Hz spray cannot damage through cover" % tick_rate)
+
+
+func _test_oh_tipi_rimewake(tick_rate: int) -> void:
+	var roomy_collision := CollisionWorld.new(1_200_000, 720_000)
+	var world := SimWorld.new(tick_rate, 11, roomy_collision)
+	var caster: PlayerState = world.player()
+	_apply_oh_tipi(caster)
+	var enemy: PlayerState = _add_enemy(world, Vector2i(400_000, 360_000))
+	var ally: PlayerState = _add_enemy(world, Vector2i(400_000, 360_000), 3)
+	ally.team_id = caster.team_id
+	var protected_enemy: PlayerState = _add_enemy(world, Vector2i(400_000, 360_000), 4)
+	protected_enemy.spawn_protection_ticks = tick_rate * 10
+	var defeated_enemy: PlayerState = _add_enemy(world, Vector2i(400_000, 360_000), 5)
+	defeated_enemy.health = 0
+	var before_hash := world.state_hash()
+	check(_step(world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_3, 1000, 0)), "%d Hz Rimewake slot starts" % tick_rate)
+	equal(caster.pending_cast_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "%d Hz slot 3 adapts to Rimewake" % tick_rate)
+	equal(caster.flux, caster.flux_maximum - CombatTuning.RIMEWAKE_FLUX_COST, "%d Hz Rimewake Flux spend is exact" % tick_rate)
+	var spawn_event: Dictionary = {}
+	var trigger_targets: Array[int] = []
+	for _index: int in range(tick_rate):
+		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000, 0)), "%d Hz Rimewake release steps" % tick_rate)
+		for event: Dictionary in world.combat_events:
+			if event.get("type") == "field_spawned":
+				spawn_event = event
+			elif event.get("type") == "field_triggered":
+				trigger_targets.append(int(event.get("target_id", 0)))
+		if not spawn_event.is_empty():
+			break
+	check(not spawn_event.is_empty(), "%d Hz Rimewake creates an authoritative persistent field" % tick_rate)
+	equal(world.fields.size(), 1, "%d Hz exactly one Rimewake field persists after release" % tick_rate)
+	equal(world.projectiles.size(), 0, "%d Hz Rimewake never enters projectile storage" % tick_rate)
+	equal(trigger_targets, [enemy.entity_id], "%d Hz Rimewake first entry resolves in stable order and ignores ally/protected/defeated actors" % tick_rate)
+	equal(enemy.control_state, PlayerState.ControlState.SLOWED, "%d Hz Rimewake applies bounded slow control" % tick_rate)
+	equal(enemy.slow_ratio, CombatTuning.RIMEWAKE_SLOW_RATIO, "%d Hz Rimewake slow ratio is exact" % tick_rate)
+	equal(enemy.control_ticks, world.config.milliseconds_to_ticks(CombatTuning.RIMEWAKE_SLOW_DURATION_MS), "%d Hz Rimewake slow duration is exact" % tick_rate)
+	equal(ally.control_state, PlayerState.ControlState.FREE, "%d Hz allied actor is unaffected by Rimewake" % tick_rate)
+	equal(protected_enemy.control_state, PlayerState.ControlState.FREE, "%d Hz protected actor is unaffected by Rimewake" % tick_rate)
+	equal(defeated_enemy.control_state, PlayerState.ControlState.FREE, "%d Hz defeated actor is unaffected by Rimewake" % tick_rate)
+	equal(caster.active_2_cooldown_ticks, world.config.milliseconds_to_ticks(CombatTuning.RIMEWAKE_COOLDOWN_MS), "%d Hz Rimewake owns an independent exact cooldown" % tick_rate)
+	check(world.state_hash() != before_hash, "%d Hz persistent field contributes to canonical state" % tick_rate)
+
+	MovementSystem.apply_control_state(enemy, PlayerState.ControlState.FREE, 0, Vector2i.ZERO, 0, world.config)
+	check(_step(world, SimCommand.new(world.tick, 1)), "%d Hz occupied Rimewake field advances" % tick_rate)
+	equal(enemy.control_state, PlayerState.ControlState.FREE, "%d Hz one field cannot retrigger the same actor" % tick_rate)
+	check(not world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "field_triggered" and int(event.get("target_id", 0)) == enemy.entity_id), "%d Hz repeat field contact emits no duplicate trigger" % tick_rate)
+
+	var late_enemy: PlayerState = _add_enemy(world, Vector2i(400_000, 360_000), 6)
+	check(_step(world, SimCommand.new(world.tick, 1)), "%d Hz late field entry advances" % tick_rate)
+	equal(late_enemy.control_state, PlayerState.ControlState.SLOWED, "%d Hz a later hostile entrant can trigger the surviving field" % tick_rate)
+	check(world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "field_triggered" and int(event.get("target_id", 0)) == late_enemy.entity_id), "%d Hz late entry has a semantic cue" % tick_rate)
+
+	var remaining_ticks: int = world.fields[0].lifetime_ticks
+	for _index: int in range(maxi(0, remaining_ticks - 1)):
+		check(_step(world, SimCommand.new(world.tick, 1)), "%d Hz Rimewake lifetime advances" % tick_rate)
+	equal(world.fields.size(), 1, "%d Hz Rimewake survives through its penultimate lifetime tick" % tick_rate)
+	check(_step(world, SimCommand.new(world.tick, 1)), "%d Hz Rimewake expiration advances" % tick_rate)
+	equal(world.fields.size(), 0, "%d Hz Rimewake expires on its exact normalized lifetime" % tick_rate)
+	check(world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "field_expired"), "%d Hz Rimewake expiration is semantically observable" % tick_rate)
+
+	var blocked_collision := CollisionWorld.new(1_200_000, 720_000)
+	blocked_collision.add_obstacle(CollisionWorld.Obstacle.new(81, 330_000, 290_000, 470_000, 430_000))
+	var blocked_world := SimWorld.new(tick_rate, 12, blocked_collision)
+	var blocked_caster: PlayerState = blocked_world.player()
+	_apply_oh_tipi(blocked_caster)
+	check(_step(blocked_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_3, 1000, 0)), "%d Hz obstructed Rimewake starts" % tick_rate)
+	for _index: int in range(tick_rate):
+		check(_step(blocked_world, SimCommand.new(blocked_world.tick, 1, 0, 0, 0, 0, 1000, 0)), "%d Hz obstructed Rimewake release advances" % tick_rate)
+		if not blocked_world.fields.is_empty():
+			break
+	equal(blocked_world.fields.size(), 1, "%d Hz Rimewake traces back to safe ground when maximum range is obstructed" % tick_rate)
+	if not blocked_world.fields.is_empty():
+		check(blocked_world.fields[0].position_x < 258_000, "%d Hz fallback placement remains clear of the authored obstacle" % tick_rate)
+
+	var sealed_collision := CollisionWorld.new(1_200_000, 720_000)
+	sealed_collision.add_obstacle(CollisionWorld.Obstacle.new(82, 220_000, 270_000, 470_000, 450_000))
+	var sealed_world := SimWorld.new(tick_rate, 13, sealed_collision)
+	var sealed_caster: PlayerState = sealed_world.player()
+	_apply_oh_tipi(sealed_caster)
+	check(_step(sealed_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_3, 1000, 0)), "%d Hz fully blocked Rimewake starts" % tick_rate)
+	var saw_blocked: bool = false
+	for _index: int in range(tick_rate):
+		check(_step(sealed_world, SimCommand.new(sealed_world.tick, 1, 0, 0, 0, 0, 1000, 0)), "%d Hz fully blocked Rimewake release advances" % tick_rate)
+		saw_blocked = saw_blocked or sealed_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_blocked" and int(event.get("wire_id", 0)) == CombatTuning.RIMEWAKE_WIRE_ID)
+		if saw_blocked:
+			break
+	check(saw_blocked, "%d Hz unsafe Rimewake placement refuses visibly" % tick_rate)
+	equal(sealed_world.fields.size(), 0, "%d Hz fully blocked placement creates no field state" % tick_rate)
+	check(sealed_caster.active_2_cooldown_ticks > 0, "%d Hz blocked release retains its committed cooldown" % tick_rate)
 
 
 func _test_s_wayne_eclipse_disc(tick_rate: int) -> void:

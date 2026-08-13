@@ -17,14 +17,17 @@ func _test_defaults_and_presets() -> void:
 	equal(preferences.pov_mode, PlayerPreferences.POV_FULL, "full view is the safe default")
 	equal(preferences.pov_angle_degrees, 120, "cone angle remains ready when cone view is selected")
 	equal(preferences.pov_range, 720, "cone range remains ready when cone view is selected")
-	equal(PlayerPreferences.SCHEMA_VERSION, 6, "player preferences save schema v6")
+	equal(preferences.camera_zoom_percent, 75, "the default camera exposes more connected movement space")
+	equal(PlayerPreferences.SCHEMA_VERSION, 7, "player preferences save schema v7")
 	equal(preferences.keyboard_bindings[&"sprint"], KEY_SHIFT, "Shift is the production-default sprint key")
 	equal(preferences.keyboard_bindings[&"slide"], KEY_C, "C is the persisted slide key")
 	equal(preferences.keyboard_bindings[&"jump"], KEY_SPACE, "Space is the production-default jump key")
 	equal(preferences.keyboard_bindings[&"primary"], 0, "primary has no default keyboard alias")
 	equal(preferences.keyboard_bindings[&"interact"], KEY_F, "interact participates in conflict-safe persistence")
-	for slot_index: int in range(5):
-		equal(preferences.keyboard_bindings[StringName("spell_%d" % (slot_index + 1))], KEY_1 + slot_index, "spell slot %d defaults to its number key" % (slot_index + 1))
+	for button_index: int in range(PlayerState.SPELL_BUTTON_COUNT):
+		equal(preferences.keyboard_bindings[StringName("spell_%d" % (button_index + 1))], KEY_1 + button_index, "spell button %d defaults to its number key" % (button_index + 1))
+	equal(preferences.keyboard_bindings[&"spell_layer_ctrl"], KEY_CTRL, "Ctrl defaults to the middle four-position layer")
+	equal(preferences.keyboard_bindings[&"spell_layer_alt"], KEY_ALT, "Alt defaults to the final four-position layer")
 	equal(preferences.mouse_bindings[&"jump"], MOUSE_BUTTON_WHEEL_UP, "wheel up is the alternate jump input")
 	equal(preferences.mouse_bindings[&"slide"], MOUSE_BUTTON_WHEEL_DOWN, "wheel down is the alternate slide and fast-fall input")
 	equal(String((preferences.controller_bindings[&"jump"] as Dictionary).get("kind")), "button", "controller jump defaults to a button")
@@ -37,11 +40,12 @@ func _test_defaults_and_presets() -> void:
 
 func _test_validation() -> void:
 	var valid := {
-		"schema_version": 6,
+		"schema_version": 7,
 		"movement_reference": "aim_relative",
 		"pov_mode": "cone",
 		"pov_angle_degrees": 360,
 		"pov_range": 2048,
+		"camera_zoom_percent": 50,
 		"reduced_motion": false,
 	}
 	var preferences := PlayerPreferences.new()
@@ -49,7 +53,7 @@ func _test_validation() -> void:
 	equal(preferences.pov_angle_degrees, 360, "360-degree ranged view is legal")
 	equal(preferences.pov_range, 2048, "custom view length is legal")
 	for mutation: Dictionary in [
-		{"schema_version": 7},
+		{"schema_version": 8},
 		{"movement_reference": "camera_relative"},
 		{"pov_mode": "wallhack"},
 		{"pov_angle_degrees": 14},
@@ -57,6 +61,9 @@ func _test_validation() -> void:
 		{"pov_angle_degrees": 90.5},
 		{"pov_range": 159},
 		{"pov_range": 4097},
+		{"camera_zoom_percent": 49},
+		{"camera_zoom_percent": 101},
+		{"camera_zoom_percent": 75.5},
 		{"reduced_motion": "false"},
 	]:
 		var candidate: Dictionary = valid.duplicate(true)
@@ -75,10 +82,14 @@ func _test_validation() -> void:
 	equal(preferences.pov_range, PlayerPreferences.MIN_POV_RANGE, "runtime range clamps to minimum")
 	preferences.set_pov_range(99999)
 	equal(preferences.pov_range, PlayerPreferences.MAX_POV_RANGE, "runtime range clamps to maximum")
+	preferences.set_camera_zoom_percent(1)
+	equal(preferences.camera_zoom_percent, PlayerPreferences.MIN_CAMERA_ZOOM_PERCENT, "runtime camera zoom clamps to its widest view")
+	preferences.set_camera_zoom_percent(999)
+	equal(preferences.camera_zoom_percent, PlayerPreferences.MAX_CAMERA_ZOOM_PERCENT, "runtime camera zoom clamps to its closest view")
 
 
 func _base_preferences(schema_version: int, bindings: Dictionary) -> Dictionary:
-	return {
+	var result := {
 		"schema_version": schema_version,
 		"movement_reference": PlayerPreferences.MOVEMENT_WORLD_RELATIVE,
 		"pov_mode": PlayerPreferences.POV_FULL,
@@ -86,6 +97,9 @@ func _base_preferences(schema_version: int, bindings: Dictionary) -> Dictionary:
 		"pov_range": PlayerPreferences.DEFAULT_POV_RANGE,
 		"keyboard_bindings": bindings,
 	}
+	if schema_version >= 7:
+		result["camera_zoom_percent"] = PlayerPreferences.DEFAULT_CAMERA_ZOOM_PERCENT
+	return result
 
 
 func _test_schema_v1_migration_and_reduced_motion() -> void:
@@ -118,8 +132,14 @@ func _test_schema_v1_migration_and_reduced_motion() -> void:
 	})
 	var schema_five := PlayerPreferences.new()
 	check(schema_five.apply_dictionary(schema_five_data), "schema-v5 bindings migrate")
-	equal(schema_five.keyboard_bindings[&"spell_1"], KEY_1, "schema-v5 gains spell slot 1")
-	equal(schema_five.keyboard_bindings[&"spell_5"], KEY_5, "schema-v5 gains spell slot 5")
+	equal(schema_five.keyboard_bindings[&"spell_1"], KEY_1, "schema-v5 gains spell button 1")
+	equal(schema_five.keyboard_bindings[&"spell_layer_ctrl"], KEY_CTRL, "schema-v5 gains the Ctrl weave layer")
+	equal(schema_five.camera_zoom_percent, PlayerPreferences.DEFAULT_CAMERA_ZOOM_PERCENT, "schema-v5 gains the wider camera default")
+	var schema_six := PlayerPreferences.new()
+	check(schema_six.apply_dictionary(_base_preferences(6, {&"spell_1": KEY_CTRL, &"spell_5": KEY_5})), "schema-v6 spell bindings migrate")
+	equal(schema_six.keyboard_bindings[&"spell_1"], KEY_CTRL, "schema-v6 custom Ctrl binding is preserved")
+	equal(schema_six.keyboard_bindings[&"spell_layer_ctrl"], 0, "new Ctrl layer stays unbound when a legacy action already owns Ctrl")
+	check(not schema_six.keyboard_bindings.has(&"spell_5"), "retired fifth physical button is removed during migration")
 
 	var explicit: Dictionary = legacy_defaults.duplicate()
 	explicit[&"jump"] = KEY_J
@@ -132,8 +152,8 @@ func _test_schema_v1_migration_and_reduced_motion() -> void:
 	var current: Dictionary = migrated.to_dictionary()
 	current["reduced_motion"] = true
 	var loaded := PlayerPreferences.new()
-	check(loaded.apply_dictionary(current), "schema-v6 preferences load")
-	check(loaded.reduced_motion, "schema-v6 reduced_motion loads")
+	check(loaded.apply_dictionary(current), "schema-v7 preferences load")
+	check(loaded.reduced_motion, "schema-v7 reduced_motion loads")
 	var before: Dictionary = loaded.to_dictionary().duplicate(true)
 	var malformed: Dictionary = current.duplicate(true)
 	malformed["reduced_motion"] = "false"
@@ -148,6 +168,7 @@ func _test_persistence_round_trip() -> void:
 	check(saved.set_pov_mode(PlayerPreferences.POV_CONE), "round-trip POV mode applies")
 	saved.set_pov_angle_degrees(225)
 	saved.set_pov_range(1360)
+	saved.set_camera_zoom_percent(50)
 	saved.reduced_motion = true
 	check(saved.save_to_file(path), "preferences save offline")
 	var loaded := PlayerPreferences.new()

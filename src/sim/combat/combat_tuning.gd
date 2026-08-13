@@ -50,6 +50,18 @@ const TIDELINE_DAMAGE: int = 14_000
 const TIDELINE_LAUNCH_DURATION_MS: int = 180
 const TIDELINE_LAUNCH_SPEED: int = 420_000
 
+const RIMEWAKE_WIRE_ID: int = 144
+const RIMEWAKE_ELEMENT_WIRE_ID: int = 5
+const RIMEWAKE_FLUX_COST: int = 26_000
+const RIMEWAKE_COOLDOWN_MS: int = 3_200
+const RIMEWAKE_STARTUP_MS: int = 240
+const RIMEWAKE_RECOVERY_MS: int = 220
+const RIMEWAKE_RANGE: int = 240_000
+const RIMEWAKE_RADIUS: int = 72_000
+const RIMEWAKE_LIFETIME_MS: int = 2_200
+const RIMEWAKE_SLOW_DURATION_MS: int = 700
+const RIMEWAKE_SLOW_RATIO: int = 650
+
 const ECLIPSE_DISC_WIRE_ID: int = 142
 const ECLIPSE_DISC_ELEMENT_WIRE_ID: int = 8
 const ECLIPSE_DISC_FLUX_COST: int = 0
@@ -103,6 +115,19 @@ static func cast_definition(wire_id: int) -> Dictionary:
 			result["hit_control_duration_ms"] = TIDELINE_LAUNCH_DURATION_MS
 			result["hit_control_speed"] = TIDELINE_LAUNCH_SPEED
 			return result
+		RIMEWAKE_WIRE_ID:
+			return _field_definition(
+				RIMEWAKE_ELEMENT_WIRE_ID,
+				RIMEWAKE_FLUX_COST,
+				RIMEWAKE_COOLDOWN_MS,
+				RIMEWAKE_STARTUP_MS,
+				RIMEWAKE_RECOVERY_MS,
+				RIMEWAKE_RANGE,
+				RIMEWAKE_RADIUS,
+				RIMEWAKE_LIFETIME_MS,
+				RIMEWAKE_SLOW_DURATION_MS,
+				RIMEWAKE_SLOW_RATIO,
+			)
 		ECLIPSE_DISC_WIRE_ID:
 			var result := _definition(ECLIPSE_DISC_ELEMENT_WIRE_ID, ECLIPSE_DISC_FLUX_COST, ECLIPSE_DISC_COOLDOWN_MS, ECLIPSE_DISC_STARTUP_MS, ECLIPSE_DISC_RECOVERY_MS, ECLIPSE_DISC_SPEED, ECLIPSE_DISC_RADIUS, ECLIPSE_DISC_DAMAGE, ECLIPSE_DISC_LIFETIME_MS)
 			result["remaining_bounces"] = ECLIPSE_DISC_BOUNCES
@@ -198,4 +223,33 @@ static func _spray_definition(
 		"hit_control_duration_ms": 0,
 		"hit_control_speed": 0,
 		"hit_control_slow_ratio": 1000,
+	}
+
+
+static func _field_definition(
+	element_wire_id: int,
+	flux_cost: int,
+	cooldown_ms: int,
+	startup_ms: int,
+	recovery_ms: int,
+	maximum_range: int,
+	radius: int,
+	lifetime_ms: int,
+	hit_control_duration_ms: int,
+	hit_control_slow_ratio: int,
+) -> Dictionary:
+	return {
+		"shape": "field",
+		"element_wire_id": element_wire_id,
+		"flux_cost": flux_cost,
+		"cooldown_ms": cooldown_ms,
+		"startup_ms": startup_ms,
+		"recovery_ms": recovery_ms,
+		"range": maximum_range,
+		"radius": radius,
+		"lifetime_ms": lifetime_ms,
+		"hit_control_state": SLOWED_HIT_CONTROL_STATE,
+		"hit_control_duration_ms": hit_control_duration_ms,
+		"hit_control_speed": 0,
+		"hit_control_slow_ratio": hit_control_slow_ratio,
 	}

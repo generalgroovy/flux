@@ -46,6 +46,7 @@ func _test_knockout_respawn_result_and_packet() -> void:
 		world.player(2).health = 0
 		if expected_score == 3:
 			world.projectiles.append(ProjectileState.new(5000, 1, 1, CombatTuning.RILLSHOT_WIRE_ID, 2, Vector2i(700_000, 500_000), Vector2i(1, 0), 5_000, 1_000, 30))
+			world.fields.append(FieldState.new(6000, 1, 1, CombatTuning.RIMEWAKE_WIRE_ID, 5, Vector2i(700_000, 500_000), 72_000, 30, PlayerState.ControlState.SLOWED, 700, 650))
 		var emitted := round.advance(world, [{"type": "champion_defeated", "owner_id": 1, "target_id": 2, "projectile_id": 1000 + expected_score}])
 		check(emitted.any(func(event: Dictionary) -> bool: return String(event.get("type", "")) == "round_knockout"), "knockout %d emits semantic round feedback" % expected_score)
 		equal(int(round.scores_by_entity.get(1, 0)), expected_score, "knockout %d increments only the owner score" % expected_score)
@@ -59,6 +60,7 @@ func _test_knockout_respawn_result_and_packet() -> void:
 	equal(round.winner_entity_id, 1, "score-limit winner is authoritative")
 	equal(world.player().velocity_x, 0, "result freezes participant movement")
 	equal(world.projectiles.size(), 0, "result clears unresolved projectiles")
+	equal(world.fields.size(), 0, "result clears unresolved persistent fields")
 	var packet := round.capture(world)
 	check(SessionRound.validate_packet(packet), "result captures to a bounded packed packet")
 	var decoded := SessionRound.decoded(packet)

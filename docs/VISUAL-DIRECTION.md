@@ -16,7 +16,7 @@ The generated [gameplay-scale v3 specimen](../assets/concept/wellspring-gameplay
 narrows that atmosphere into an actual play view: larger expressive champions,
 moderately tilted facades over unambiguous top-down floors, dense scenic edges,
 clean movement lanes, readable material families, translucent bubbles and a
-compact three-resource/five-slot HUD. Its immutable provenance is stored beside
+compact three-resource/layered-spell HUD. Its immutable provenance is stored beside
 it. It remains a specification target—not a shippable sprite sheet, tile set,
 HUD atlas, collision source or acceptance proof.
 

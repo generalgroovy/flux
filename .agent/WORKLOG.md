@@ -1,5 +1,50 @@
 # FLUX2 agent worklog
 
+## 2026-08-13 — twelve-position spell weave, Rimewake and wider camera
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Replaced the five-button spell row with twelve stable, independently
+  configurable positions: Plain 1–4, Ctrl+1–4 and Alt+1–4. The active layer
+  remains a compact four-cell play HUD while the in-world Spell Loom exposes the
+  complete 3x4 arrangement.
+- Migrated preferences to schema 7 and loadouts to schema 3, preserving older
+  bindings safely, removing retired spell-5 data and refusing to steal Ctrl or
+  Alt when a legacy custom binding already owns it.
+- Added a persisted 50/75/100% camera scale, defaulting to the wider 75% view,
+  with matching pointer aim, sight cone, building occlusion and diagnostic CLI
+  transforms.
+- Promoted Oh Tipi's Rimewake as the first host-authoritative persistent field:
+  safe far-to-near placement, bounded lifetime, stable hostile processing,
+  one slow per actor, cues, compact snapshot state and sealed material cooling.
+- Advanced the wire contract to protocol 26 / snapshot schema 10. Spell layouts
+  use occupied indices and the public projectile presentation cap is bounded so
+  the maximum snapshot remains inside one 1,392-byte ENet MTU.
+
+Validation:
+
+- Full Godot headless gate: 15,613 assertions, zero failures.
+- Clean import and source boots at 60 and 120 Hz: passed as part of the full gate.
+- Source Farflow smoke at 60 Hz on UDP 24967: host/join, shared HELLO, movement
+  reconciliation, Hearth-to-Court round, late-join observation and handoff,
+  exact-actor reconnect, rematch and reason-bearing stewardship passed.
+- Diagnostic movie captures at 75% verify a readable active four-position HUD,
+  successful Rimewake placement/feedback and the complete 3x4 Spell Loom.
+- `git diff --check`: passed; only configured LF-to-CRLF notices were emitted.
+
+Known limitations and risks:
+
+- This slice validates source play on Windows; portable archives last passed at
+  the preceding checkpoint and were not regenerated into user-owned output.
+- Physical Garuda/Sway and real two-machine friend-network proof remain external
+  acceptance gaps.
+- Rimewake's material operation remains deliberately sealed until environment
+  reset ownership and route-safety fixtures exist.
+
+Commit: pending at pre-commit record time. Push: pending.
+
 ## 2026-08-13 — first deterministic multi-target spray shape
 
 Branch: `codex/continuous-overhaul`

@@ -2,7 +2,7 @@ class_name LoadoutDefinition
 extends RefCounted
 
 
-const SUPPORTED_SCHEMA_VERSION: int = 2
+const SUPPORTED_SCHEMA_VERSION: int = 3
 
 var data: Dictionary = {}
 var last_error: String = ""
@@ -74,11 +74,14 @@ func validate(catalog: AbilityCatalog) -> bool:
 	if active_points > budget:
 		return _fail("loadout exceeds active budget: %d/%d" % [active_points, budget])
 	var requested_spell_slots: Variant = data.get("spell_slots", [])
-	if not requested_spell_slots is Array or requested_spell_slots.size() != 5:
-		return _fail("loadout requires exactly five spell slots")
+	if not requested_spell_slots is Array or requested_spell_slots.size() != PlayerState.SPELL_SLOT_COUNT:
+		return _fail("loadout requires exactly twelve spell positions")
 	var equipped_spell_ids: Dictionary = {}
 	for raw_spell_id: Variant in requested_spell_slots:
 		var spell_id := String(raw_spell_id)
+		if spell_id.is_empty():
+			spell_slot_ids.append("")
+			continue
 		var spell: Dictionary = catalog.ability(spell_id)
 		if spell.is_empty():
 			return _fail("spell slot references unknown ability: %s" % spell_id)

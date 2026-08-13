@@ -13,7 +13,9 @@ var map_id: String = MAP_ID
 var map_hash: String = MAP_HASH
 var players: Array[PlayerState] = []
 var projectiles: Array[ProjectileState] = []
+var fields: Array[FieldState] = []
 var next_projectile_id: int = 1000
+var next_field_id: int = 2000
 var combat_events: Array[Dictionary] = []
 var last_error: String = ""
 
@@ -77,12 +79,15 @@ func step(commands: Array[SimCommand]) -> bool:
 		state.primary_held = command.has_held(SimCommand.HELD_PRIMARY)
 		PlayerResourcesSystem.step(state, config)
 		MovementSystem.step(state, command, config, collision)
-		var spawned: ProjectileState = CombatSystem.step_player(
-			state, command, config, next_projectile_id, collision, combat_events
+		var spawned: RefCounted = CombatSystem.step_player(
+			state, command, config, next_projectile_id, next_field_id, collision, combat_events
 		)
-		if spawned != null:
+		if spawned is ProjectileState:
 			projectiles.append(spawned)
 			next_projectile_id += 1
+		elif spawned is FieldState:
+			fields.append(spawned)
+			next_field_id += 1
 	for state: PlayerState in players:
 		if not seen.has(state.entity_id):
 			if state.health <= 0:
@@ -92,13 +97,18 @@ func step(commands: Array[SimCommand]) -> bool:
 			PlayerResourcesSystem.step(state, config)
 			var idle_command := SimCommand.new(tick, state.entity_id, 0, 0, 0, 0, state.aim_x, state.aim_y)
 			MovementSystem.step(state, idle_command, config, collision)
-			var spawned: ProjectileState = CombatSystem.step_player(
-				state, idle_command, config, next_projectile_id, collision, combat_events
+			var spawned: RefCounted = CombatSystem.step_player(
+				state, idle_command, config, next_projectile_id, next_field_id, collision, combat_events
 			)
-			if spawned != null:
+			if spawned is ProjectileState:
 				projectiles.append(spawned)
 				next_projectile_id += 1
+			elif spawned is FieldState:
+				fields.append(spawned)
+				next_field_id += 1
 	CombatSystem.resolve_instant_casts(players, config, collision, combat_events)
+	fields.sort_custom(func(left: FieldState, right: FieldState) -> bool: return left.entity_id < right.entity_id)
+	fields = CombatSystem.advance_fields(fields, players, config, combat_events)
 	projectiles.sort_custom(func(left: ProjectileState, right: ProjectileState) -> bool: return left.entity_id < right.entity_id)
 	projectiles = CombatSystem.advance_projectiles(projectiles, players, config, collision, combat_events)
 	tick += 1
@@ -117,7 +127,7 @@ static func _idle_defeated(state: PlayerState) -> void:
 
 func state_hash() -> String:
 	var payload := PackedByteArray()
-	for value: int in [SimConfig.PROTOCOL_VERSION, config.tick_rate, tick, seed, next_projectile_id]:
+	for value: int in [SimConfig.PROTOCOL_VERSION, config.tick_rate, tick, seed, next_projectile_id, next_field_id]:
 		CanonicalBytes.append_i64(payload, value)
 	CanonicalBytes.append_string(payload, map_id)
 	CanonicalBytes.append_string(payload, map_hash)
@@ -130,5 +140,9 @@ func state_hash() -> String:
 	CanonicalBytes.append_i64(payload, projectiles.size())
 	for projectile: ProjectileState in projectiles:
 		for value: int in projectile.canonical_values():
+			CanonicalBytes.append_i64(payload, value)
+	CanonicalBytes.append_i64(payload, fields.size())
+	for field: FieldState in fields:
+		for value: int in field.canonical_values():
 			CanonicalBytes.append_i64(payload, value)
 	return CanonicalBytes.sha256_hex(payload)

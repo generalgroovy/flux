@@ -1,8 +1,8 @@
 # FLUX immediate implementation order
 
-The prior published rollback point is commit `eee891e`, protocol 26, snapshot
-schema 10 and preference schema 8. V0–V6 now pass the integrated engineering
-visual gate on the current branch; preserve both green points and work only in
+The current green frontier uses protocol 27, snapshot schema 11 and preference
+schema 8; commit `eee891e` remains the earlier action-transition rollback point.
+V0–V6 pass the integrated engineering visual gate on the current branch; preserve green points and work only in
 complete playable slices with a checkpoint after each accepted stage.
 
 | Order | Outcome | Scope | Exit condition |

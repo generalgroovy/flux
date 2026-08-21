@@ -2,9 +2,9 @@ class_name SessionSnapshot
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 10
+const SCHEMA_VERSION: int = 11
 const MAX_PLAYERS: int = 8
-const PLAYER_VALUE_COUNT: int = 49
+const PLAYER_VALUE_COUNT: int = 73
 const PROJECTILE_VALUE_COUNT: int = 12
 const FIELD_VALUE_COUNT: int = 7
 const EVENT_VALUE_COUNT: int = 6
@@ -35,39 +35,42 @@ static func capture(
 	ordered.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
 	var players: Array[Array] = []
 	for state: PlayerState in ordered:
+		var player_values := PackedInt32Array([
+			state.champion_wire_id,
+			state.position_x, state.position_y,
+			state.velocity_x, state.velocity_y,
+			state.facing_x, state.facing_y,
+			state.aim_x, state.aim_y,
+			state.radius, state.movement_mode,
+			state.health_maximum, state.health,
+			state.flux_maximum, state.flux,
+			state.stamina_maximum, state.stamina,
+			state.hop_ticks, state.hop_mode,
+			state.air_dodge_ticks, state.superglide_ticks,
+			state.vault_ticks, state.wave_dash_ticks, state.slide_ticks,
+			state.landing_ticks, state.landing_intensity,
+			state.control_state, state.control_ticks,
+			state.primary_wire_id, state.active_1_wire_id,
+			state.slow_ratio, state.team_id,
+			int(state.sprinting), int(state.fast_falling),
+			state.cast_recovery_ticks,
+			state.pending_cast_wire_id, state.pending_cast_ticks,
+			state.primary_cooldown_ticks, state.active_1_cooldown_ticks,
+			state.edgeweave_cooldown_ticks, int(state.primary_held),
+			state.pending_cast_aim_x, state.pending_cast_aim_y,
+			state.spawn_protection_ticks,
+			state.spell_slot_index_for_wire(state.primary_wire_id),
+			state.spell_slot_index_for_wire(state.active_1_wire_id),
+			state.spell_slot_index_for_wire(state.active_2_wire_id),
+			state.active_2_wire_id, state.active_2_cooldown_ticks,
+		])
+		player_values.append_array(state.spell_wire_ids)
+		player_values.append_array(state.spell_cooldown_ticks)
 		players.append([
 			state.entity_id,
 			_safe_name(String(names_by_entity.get(state.entity_id, "Traveller %d" % state.entity_id))),
 			_safe_event_name(state.last_event),
-			PackedInt32Array([
-				state.champion_wire_id,
-				state.position_x, state.position_y,
-				state.velocity_x, state.velocity_y,
-				state.facing_x, state.facing_y,
-				state.aim_x, state.aim_y,
-				state.radius, state.movement_mode,
-				state.health_maximum, state.health,
-				state.flux_maximum, state.flux,
-				state.stamina_maximum, state.stamina,
-				state.hop_ticks, state.hop_mode,
-				state.air_dodge_ticks, state.superglide_ticks,
-				state.vault_ticks, state.wave_dash_ticks, state.slide_ticks,
-				state.landing_ticks, state.landing_intensity,
-				state.control_state, state.control_ticks,
-				state.primary_wire_id, state.active_1_wire_id,
-				state.slow_ratio, state.team_id,
-				int(state.sprinting), int(state.fast_falling),
-				state.cast_recovery_ticks,
-				state.pending_cast_wire_id, state.pending_cast_ticks,
-				state.primary_cooldown_ticks, state.active_1_cooldown_ticks,
-				state.edgeweave_cooldown_ticks, int(state.primary_held),
-				state.pending_cast_aim_x, state.pending_cast_aim_y,
-				state.spawn_protection_ticks,
-				state.spell_slot_index_for_wire(state.primary_wire_id),
-				state.spell_slot_index_for_wire(state.active_1_wire_id),
-				state.spell_slot_index_for_wire(state.active_2_wire_id),
-				state.active_2_wire_id, state.active_2_cooldown_ticks,
-			]),
+			player_values,
 		])
 	if hearth_values.is_empty():
 		var fallback_hearth := SessionHearth.new()
@@ -377,13 +380,9 @@ static func _apply_values(state: PlayerState, values: PackedInt32Array) -> void:
 	state.spawn_protection_ticks = values[43]
 	state.active_2_wire_id = values[47]
 	state.active_2_cooldown_ticks = values[48]
-	state.spell_wire_ids = PackedInt32Array()
-	state.spell_wire_ids.resize(PlayerState.SPELL_SLOT_COUNT)
-	state.spell_wire_ids.fill(0)
-	state.spell_wire_ids[values[44]] = state.primary_wire_id
-	state.spell_wire_ids[values[45]] = state.active_1_wire_id
-	if state.active_2_wire_id > 0:
-		state.spell_wire_ids[values[46]] = state.active_2_wire_id
+	state.spell_wire_ids = values.slice(49, 49 + PlayerState.SPELL_SLOT_COUNT)
+	state.spell_cooldown_ticks = values.slice(49 + PlayerState.SPELL_SLOT_COUNT, PLAYER_VALUE_COUNT)
+	state._sync_legacy_spell_cooldowns()
 
 
 static func _valid_player_values(values: PackedInt32Array) -> bool:
@@ -427,16 +426,38 @@ static func _valid_player_values(values: PackedInt32Array) -> bool:
 	var primary_slot: int = values[44]
 	var active_slot: int = values[45]
 	var active_2_slot: int = values[46]
-	if primary_slot < 0 or primary_slot >= PlayerState.SPELL_SLOT_COUNT:
+	if primary_slot < -1 or primary_slot >= PlayerState.SPELL_SLOT_COUNT:
 		return false
-	if active_slot < 0 or active_slot >= PlayerState.SPELL_SLOT_COUNT or active_slot == primary_slot:
+	if active_slot < -1 or active_slot >= PlayerState.SPELL_SLOT_COUNT or (active_slot >= 0 and active_slot == primary_slot):
 		return false
 	if values[47] < 0 or values[47] > 65_535 or (values[47] > 0 and values[47] in [values[28], values[29]]):
 		return false
-	if values[47] == 0:
-		if active_2_slot != -1:
+	if values[47] == 0 and active_2_slot != -1:
+		return false
+	if values[47] > 0 and (active_2_slot < -1 or active_2_slot >= PlayerState.SPELL_SLOT_COUNT or (active_2_slot >= 0 and active_2_slot in [primary_slot, active_slot])):
+		return false
+	var spell_wires: PackedInt32Array = values.slice(49, 49 + PlayerState.SPELL_SLOT_COUNT)
+	var spell_cooldowns: PackedInt32Array = values.slice(49 + PlayerState.SPELL_SLOT_COUNT, PLAYER_VALUE_COUNT)
+	var seen_spell_wires: Dictionary[int, bool] = {}
+	for slot_index: int in range(PlayerState.SPELL_SLOT_COUNT):
+		var wire_id: int = spell_wires[slot_index]
+		if wire_id < 0 or wire_id > 65_535 or (wire_id > 0 and not CombatTuning.is_runtime_wire_id(wire_id)):
 			return false
-	elif active_2_slot < 0 or active_2_slot >= PlayerState.SPELL_SLOT_COUNT or active_2_slot in [primary_slot, active_slot]:
+		if wire_id > 0:
+			if seen_spell_wires.has(wire_id):
+				return false
+			seen_spell_wires[wire_id] = true
+		if spell_cooldowns[slot_index] < 0 or spell_cooldowns[slot_index] > MAX_TIMER_TICKS:
+			return false
+	if spell_wires.find(values[28]) != primary_slot or spell_wires.find(values[29]) != active_slot:
+		return false
+	if spell_wires.find(values[47]) != active_2_slot and values[47] > 0:
+		return false
+	if (values[37] != 0 if primary_slot < 0 else spell_cooldowns[primary_slot] != values[37]):
+		return false
+	if (values[38] != 0 if active_slot < 0 else spell_cooldowns[active_slot] != values[38]):
+		return false
+	if values[47] > 0 and (values[48] != 0 if active_2_slot < 0 else spell_cooldowns[active_2_slot] != values[48]):
 		return false
 	return values[32] in [0, 1] and values[33] in [0, 1]
 

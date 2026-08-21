@@ -78,6 +78,11 @@ var spell_wire_ids := PackedInt32Array([
 	0, 0, 0, 0,
 	0, 0, 0, 0,
 ])
+var spell_cooldown_ticks := PackedInt32Array([
+	0, 0, 0, 0,
+	0, 0, 0, 0,
+	0, 0, 0, 0,
+])
 
 var health_maximum: int = PlayerTuning.HEALTH_MAXIMUM
 var health_recovery_per_second: int = PlayerTuning.HEALTH_RECOVERY_PER_SECOND
@@ -161,6 +166,7 @@ var last_event: String = "spawn"
 
 func _init(requested_entity_id: int = 1) -> void:
 	entity_id = requested_entity_id
+	reset_spell_slots_to_kit()
 
 
 func is_airborne() -> bool:
@@ -168,11 +174,20 @@ func is_airborne() -> bool:
 
 
 func reset_spell_slots_to_kit() -> void:
-	spell_wire_ids = PackedInt32Array([
-		primary_wire_id, active_1_wire_id, active_2_wire_id, 0,
-		0, 0, 0, 0,
-		0, 0, 0, 0,
-	])
+	spell_wire_ids = PackedInt32Array()
+	for wire_id: int in kit_spell_wire_ids():
+		if wire_id > 0 and not spell_wire_ids.has(wire_id):
+			spell_wire_ids.append(wire_id)
+	for wire_id: int in CombatTuning.RUNTIME_WIRE_IDS:
+		if spell_wire_ids.size() >= SPELL_SLOT_COUNT:
+			break
+		if not spell_wire_ids.has(wire_id):
+			spell_wire_ids.append(wire_id)
+	spell_wire_ids.resize(SPELL_SLOT_COUNT)
+	spell_cooldown_ticks = PackedInt32Array()
+	spell_cooldown_ticks.resize(SPELL_SLOT_COUNT)
+	spell_cooldown_ticks.fill(0)
+	_sync_legacy_spell_cooldowns()
 
 
 func kit_spell_wire_ids() -> PackedInt32Array:
@@ -182,12 +197,50 @@ func kit_spell_wire_ids() -> PackedInt32Array:
 	return result
 
 
+func proven_spell_wire_ids() -> PackedInt32Array:
+	return PackedInt32Array(CombatTuning.RUNTIME_WIRE_IDS)
+
+
 func spell_wire_id(slot_number: int) -> int:
 	return int(spell_wire_ids[slot_number - 1]) if slot_number >= 1 and slot_number <= SPELL_SLOT_COUNT and spell_wire_ids.size() == SPELL_SLOT_COUNT else 0
 
 
 func spell_slot_index_for_wire(wire_id: int) -> int:
 	return spell_wire_ids.find(wire_id) if wire_id > 0 and spell_wire_ids.size() == SPELL_SLOT_COUNT else -1
+
+
+func spell_cooldown_for_wire(wire_id: int) -> int:
+	var slot_index := spell_slot_index_for_wire(wire_id)
+	if slot_index < 0 or spell_cooldown_ticks.size() != SPELL_SLOT_COUNT:
+		return 0
+	var cooldown := int(spell_cooldown_ticks[slot_index])
+	if wire_id == primary_wire_id:
+		cooldown = maxi(cooldown, primary_cooldown_ticks)
+	elif wire_id == active_1_wire_id:
+		cooldown = maxi(cooldown, active_1_cooldown_ticks)
+	elif wire_id == active_2_wire_id and active_2_wire_id > 0:
+		cooldown = maxi(cooldown, active_2_cooldown_ticks)
+	return cooldown
+
+
+func set_spell_cooldown(wire_id: int, ticks: int) -> bool:
+	var slot_index := spell_slot_index_for_wire(wire_id)
+	if slot_index < 0 or spell_cooldown_ticks.size() != SPELL_SLOT_COUNT:
+		return false
+	spell_cooldown_ticks[slot_index] = maxi(0, ticks)
+	_sync_legacy_spell_cooldowns()
+	return true
+
+
+func advance_spell_cooldowns() -> void:
+	if spell_cooldown_ticks.size() != SPELL_SLOT_COUNT:
+		spell_cooldown_ticks = PackedInt32Array()
+		spell_cooldown_ticks.resize(SPELL_SLOT_COUNT)
+		spell_cooldown_ticks.fill(0)
+	_import_legacy_spell_cooldowns()
+	for slot_index: int in range(SPELL_SLOT_COUNT):
+		spell_cooldown_ticks[slot_index] = maxi(0, int(spell_cooldown_ticks[slot_index]) - 1)
+	_sync_legacy_spell_cooldowns()
 
 
 static func spell_slot_label(slot_index: int) -> String:
@@ -202,36 +255,69 @@ static func spell_slot_label(slot_index: int) -> String:
 	return "%d" % button_number
 
 
-func place_kit_spell(slot_index: int, wire_id: int) -> bool:
-	if slot_index < 0 or slot_index >= SPELL_SLOT_COUNT or not kit_spell_wire_ids().has(wire_id) or not has_valid_spell_slots():
+func place_proven_spell(slot_index: int, wire_id: int) -> bool:
+	if slot_index < 0 or slot_index >= SPELL_SLOT_COUNT or not proven_spell_wire_ids().has(wire_id) or not has_valid_spell_slots():
 		return false
 	var previous_index: int = spell_wire_ids.find(wire_id)
-	if previous_index < 0:
-		return false
 	var displaced_wire_id: int = spell_wire_ids[slot_index]
+	var displaced_cooldown: int = spell_cooldown_ticks[slot_index]
 	spell_wire_ids[slot_index] = wire_id
-	spell_wire_ids[previous_index] = displaced_wire_id
+	if previous_index >= 0:
+		spell_cooldown_ticks[slot_index] = spell_cooldown_ticks[previous_index]
+		spell_wire_ids[previous_index] = displaced_wire_id
+		spell_cooldown_ticks[previous_index] = displaced_cooldown
+	else:
+		# A spell outside the current twelve-position weave replaces the target.
+		# Loom access is host-gated to the Wellspring, so newly equipped spells
+		# begin ready rather than inheriting the displaced spell's cooldown.
+		spell_cooldown_ticks[slot_index] = 0
+	_sync_legacy_spell_cooldowns()
 	return has_valid_spell_slots()
 
 
+# Compatibility adapter for callers written while Loom access was kit-local.
+func place_kit_spell(slot_index: int, wire_id: int) -> bool:
+	return place_proven_spell(slot_index, wire_id)
+
+
 func has_valid_spell_slots() -> bool:
-	if spell_wire_ids.size() != SPELL_SLOT_COUNT or primary_wire_id <= 0 or active_1_wire_id <= 0 or primary_wire_id == active_1_wire_id:
+	if spell_wire_ids.size() != SPELL_SLOT_COUNT or spell_cooldown_ticks.size() != SPELL_SLOT_COUNT or primary_wire_id <= 0 or active_1_wire_id <= 0 or primary_wire_id == active_1_wire_id:
 		return false
 	if active_2_wire_id < 0 or (active_2_wire_id > 0 and active_2_wire_id in [primary_wire_id, active_1_wire_id]):
 		return false
-	var expected_wires := kit_spell_wire_ids()
-	var counts: Dictionary[int, int] = {}
-	for wire_id: int in expected_wires:
-		counts[wire_id] = 0
-	for wire_id: int in spell_wire_ids:
-		if counts.has(wire_id):
-			counts[wire_id] = counts[wire_id] + 1
-		elif wire_id != 0:
+	var seen_wires: Dictionary[int, bool] = {}
+	for slot_index: int in range(SPELL_SLOT_COUNT):
+		var wire_id: int = spell_wire_ids[slot_index]
+		if spell_cooldown_ticks[slot_index] < 0:
 			return false
-	for wire_id: int in expected_wires:
-		if counts[wire_id] != 1:
+		if wire_id == 0:
+			continue
+		if not CombatTuning.is_runtime_wire_id(wire_id) or seen_wires.has(wire_id):
 			return false
+		seen_wires[wire_id] = true
 	return true
+
+
+func _import_legacy_spell_cooldowns() -> void:
+	for pair: Vector2i in [
+		Vector2i(primary_wire_id, primary_cooldown_ticks),
+		Vector2i(active_1_wire_id, active_1_cooldown_ticks),
+		Vector2i(active_2_wire_id, active_2_cooldown_ticks),
+	]:
+		var slot_index := spell_slot_index_for_wire(pair.x)
+		if pair.x > 0 and slot_index >= 0:
+			spell_cooldown_ticks[slot_index] = maxi(int(spell_cooldown_ticks[slot_index]), pair.y)
+
+
+func _sync_legacy_spell_cooldowns() -> void:
+	primary_cooldown_ticks = _stored_spell_cooldown(primary_wire_id)
+	active_1_cooldown_ticks = _stored_spell_cooldown(active_1_wire_id)
+	active_2_cooldown_ticks = _stored_spell_cooldown(active_2_wire_id)
+
+
+func _stored_spell_cooldown(wire_id: int) -> int:
+	var slot_index := spell_slot_index_for_wire(wire_id)
+	return int(spell_cooldown_ticks[slot_index]) if slot_index >= 0 and spell_cooldown_ticks.size() == SPELL_SLOT_COUNT else 0
 
 
 func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> void:
@@ -248,6 +334,7 @@ func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> voi
 	primary_cooldown_ticks = 0
 	active_1_cooldown_ticks = 0
 	active_2_cooldown_ticks = 0
+	spell_cooldown_ticks.fill(0)
 	edgeweave_cooldown_ticks = 0
 	jump_buffer_ticks = 0
 	technique_buffer_ticks = 0
@@ -328,4 +415,6 @@ func canonical_values() -> PackedInt64Array:
 	])
 	for wire_id: int in spell_wire_ids:
 		values.append(wire_id)
+	for cooldown_ticks: int in spell_cooldown_ticks:
+		values.append(cooldown_ticks)
 	return values

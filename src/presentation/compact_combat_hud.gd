@@ -182,13 +182,7 @@ static func spell_is_affordable(state: PlayerState, ability: Dictionary) -> bool
 
 
 static func _cooldown_for_wire(state: PlayerState, wire_id: int) -> int:
-	if wire_id == state.primary_wire_id:
-		return state.primary_cooldown_ticks
-	if wire_id == state.active_1_wire_id:
-		return state.active_1_cooldown_ticks
-	if wire_id == state.active_2_wire_id:
-		return state.active_2_cooldown_ticks
-	return 0
+	return state.spell_cooldown_for_wire(wire_id)
 
 
 func _draw_panel(canvas: CanvasItem, rectangle: Rect2, opacity: float) -> void:

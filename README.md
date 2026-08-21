@@ -117,8 +117,9 @@ even when design documentation already exists.
     range plus a persisted 50/75/100% camera zoom; production defaults are Shift
     sprint, C/wheel-down direct slide and Space/wheel-up jump
   - [x] A configurable 3×4 spell weave maps Plain, Ctrl and Alt layers across
-    buttons 1–4; the in-world Spell Loom repositions every proven champion spell
-    among twelve host-owned positions while honest empties refuse and spend nothing
+    buttons 1–4; the in-world Spell Loom lets every champion reposition all seven
+    runtime-proven global spells among twelve host-owned positions, with independent
+    cooldowns that follow spell identity and honest empties that spend nothing
   - [x] Cone presentation clamps to 15–360° and masks space behind authored
     `los_cutaway` buildings while low traversal rails remain visible
   - [x] Edgeweave swept hostile near-miss reward with speed, cooldown,
@@ -136,7 +137,7 @@ even when design documentation already exists.
     remaining champion runtime integration, and interactive route acceptance
 - [ ] **Chapter 4 — [Aiming, combat, and abilities](#aiming-combat-and-ability-composition)**
   - [x] Independent move/aim and held-primary command protocol
-  - [x] Resource-free Arc Primary and Flux-paid Vector Lance through startup,
+  - [x] Positive-Flux Arc Primary and Vector Lance through startup,
     deterministic projectile, swept hit, damage, cooldown, and replay
   - [x] Stable ability/wire IDs, canonical hashes, affinity discounts, gated
     elements, slot validation, and an exact 13-point foundation loadout
@@ -501,9 +502,9 @@ combos require an explicit short cap and escape rule.
 | Flux | Spell/champion resource; casting delays recovery and insufficient Flux refuses the cast before outcome creation |
 | Ultimate charge | Earned through active combat/objective contribution; never passive waiting, self-damage, or target-dummy farming |
 | Passive | One champion-defining behavior with a demonstrated trigger, visible state, and anti-farming lockout |
-| Primary | Reliable independent-aim pressure that remains useful at zero Flux |
+| Primary | Reliable independent-aim pressure with a positive Flux cost and pressure-tier cadence |
 | Active slots | Three unique catalog abilities inside the mode budget; damage, defense, support, terrain, control, and mobility are roles rather than mandatory duplicates |
-| Spell weave | Twelve ordered positions: Plain 1–4, Ctrl+1–4 and Alt+1–4; the host-authoritative Spell Loom can reposition every proven champion spell while honest empty positions refuse without cost |
+| Spell weave | Twelve ordered positions: Plain 1–4, Ctrl+1–4 and Alt+1–4; the host-authoritative Spell Loom can reposition every globally proven runtime spell while honest empty positions refuse without cost |
 | Spell contract | Every catalog entry declares shape, delivery, impact, residue, planned material operation and an explicit playable/catalog-only runtime gate; planned chemistry never mutates the arena early |
 | Champion mobility | One identity-bearing Flux-paid traversal/combat action, still bounded by collision and speed rules |
 | Ultimate | One high-impact commitment with startup, safe routes, ownership, interruption/destruction, expiry, and recovery rules |
@@ -1891,7 +1892,7 @@ reopening Farflow. A dropped guest can use Join Farflow within 15 seconds to rec
 its exact in-memory actor. The host can safely review connected guests in the
 Ledger and must confirm release at the separate Bell; closing the whole company
 also requires a second Host Farflow press. Affected guests receive the reason,
-and administrative departures cannot reclaim their actor. Protocol 26 / snapshot schema 10 assign and validate
+and administrative departures cannot reclaim their actor. Protocol 27 / snapshot schema 11 assign and validate
 the sealed Charter and replicate authoritative court state; cross-platform
 package proof remains next. See the
 [networking contract](docs/NETWORKING.md).
@@ -1901,21 +1902,22 @@ the host neutralizes every movement and ability input, the client sends no
 prediction stream, and the HUD follows a replicated participant. Tab or
 controller D-pad right cycles the stable participant order. When the company
 returns, the observer is placed at the Hearth, readies through the ordinary
-request path, and can enter the next round. Snapshot schema 10 now travels in a
+request path, and can enter the next round. Snapshot schema 11 now travels in a
 bounded compressed wire envelope whose maximum eight-player fixture and live
-three-player journeys fit one ENet MTU; protocol 26 rejects older peers. This
+three-player journeys fit one ENet MTU; protocol 27 rejects older peers. This
 spectator view adds no new information channel, but competitive limited-view
 modes still require host-side per-peer visibility filtering.
 
-The current simulation uses protocol 26, snapshot schema 10 and preference
+The current simulation uses protocol 27, snapshot schema 11 and preference
 schema 8: Space or wheel-up invokes semantic jump, Shift sprints, C or
 wheel-down directly slides/fast-falls, and Plain/Ctrl/Alt layers combine with
 buttons 1–4 into twelve independently configurable spell positions. Alt wins
-deterministically if both modifier actions are held. At the Spell Loom, players
-can move every proven kit spell to any position; the host validates proximity
-and publishes the canonical order while unfilled positions stay honest. Legacy
-left/right-click access remains available and the session-scoped layout resets
-when changing champion. Schema-v1 through v6
+deterministically if both modifier actions are held. At the Spell Loom, every
+champion can move any of the seven currently runtime-proven global spells to any
+position; the host validates proximity and publishes the canonical order and
+independent per-spell cooldowns while five unfilled positions stay honest. Legacy
+left/right-click access remains available and champion changes reorder that
+champion's kit to the front without hiding the global library. Schema-v1 through v6
 defaults migrate safely, explicit saved alternatives remain
 supported, retired `spell_5` data is removed, modifier conflicts are preserved
 by leaving the new layer unbound, and malformed zoom/reduced-motion/contrast data fails

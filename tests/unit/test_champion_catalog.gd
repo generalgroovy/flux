@@ -41,7 +41,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.primary_wire_id, CombatTuning.RILLSHOT_WIRE_ID, "Oh Tipi equips Rillshot")
 	equal(state.active_1_wire_id, CombatTuning.TIDELINE_WIRE_ID, "Oh Tipi equips Tideline")
 	equal(state.active_2_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "Oh Tipi equips Rimewake as the third proven spell")
-	equal(Array(state.spell_wire_ids), [CombatTuning.RILLSHOT_WIRE_ID, CombatTuning.TIDELINE_WIRE_ID, CombatTuning.RIMEWAKE_WIRE_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0], "Oh Tipi resets to the twelve-position weave")
+	equal(Array(state.spell_wire_ids), [140, 141, 144, 101, 110, 142, 143, 0, 0, 0, 0, 0], "Oh Tipi leads the global weave with champion spells")
 	equal(state.health, 108_000, "Oh Tipi starts at authored maximum Health")
 	equal(state.stamina_maximum, 108_000, "Oh Tipi has the larger Stamina reserve")
 	state.health = 54_000
@@ -52,7 +52,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.primary_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "S. Wayne equips Eclipse Disc")
 	equal(state.active_1_wire_id, CombatTuning.POCKET_ECLIPSE_WIRE_ID, "S. Wayne equips Pocket Eclipse")
 	equal(state.active_2_wire_id, 0, "S. Wayne does not expose an unfinished third spell")
-	equal(Array(state.spell_wire_ids), [CombatTuning.ECLIPSE_DISC_WIRE_ID, CombatTuning.POCKET_ECLIPSE_WIRE_ID, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "champion switch resets incompatible slot weaving")
+	equal(Array(state.spell_wire_ids), [142, 143, 101, 110, 140, 141, 144, 0, 0, 0, 0, 0], "champion switch keeps the global library and leads with the new champion kit")
 	equal(state.health, 45_000, "Health ratio survives an in-world champion switch")
 	equal(state.flux, 56_000, "Flux ratio survives an in-world champion switch")
 	equal(state.stamina, 48_000, "Stamina ratio survives an in-world champion switch")

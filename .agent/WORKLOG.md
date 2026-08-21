@@ -1,5 +1,53 @@
 # FLUX2 agent worklog
 
+## 2026-08-21 — global Spell Loom and cooldown authority
+
+Playable outcome:
+
+- Replaced champion-local Spell Loom roles with a stable global runtime library.
+  Both current champions can weave Arc Primary, Vector Lance, Rillshot, Tideline,
+  Rimewake, Eclipse Disc and Pocket Eclipse into any Plain/Ctrl/Alt 1–4 position;
+  the five remaining positions stay explicitly empty and resource-safe.
+- Added twelve canonical per-position cooldown values. Cooldown state follows
+  spell identity through swaps, all globally woven spells cast through the same
+  authoritative startup/Flux/cooldown path, and the three legacy kit cooldown
+  properties remain migration adapters rather than the source of new rules.
+- Advanced the wire boundary to protocol 27 / snapshot schema 11. Every snapshot
+  validates and replicates all twelve wire IDs plus twelve cooldowns, requires
+  a unique runtime-proven subset, and rejects duplicates, unknown wires, malformed
+  timers and obsolete peers before they can share play. A spell outside the
+  selected twelve can replace a position, so the architecture remains valid when
+  the global library grows beyond twelve entries.
+- Replaced the three-role request encoding with a bounded twelve-by-48 catalog
+  lane. Clients send only a position/library intent; the host resolves canonical
+  wire order at authoritative Spell Loom proximity. Catalog-only and out-of-range
+  requests still fail closed.
+- Updated the Loom sheet to show a compact three-spell scrolling picker, mark
+  champion-origin versus global spells, and present selected cost, cooldown,
+  shape, delivery and sealed material intent without expanding the live HUD.
+
+Verification:
+
+- `scripts\\test.cmd`: passed 52 suites / 18,160 assertions, import validation
+  and clean 60/120 Hz source boots. Tests cover global ordering, champion switch,
+  honest empties, cooldown identity through swaps, schema-11 round-trip, request
+  bounds and the maximum one-MTU snapshot fixture.
+- `scripts\\smoke-farflow.cmd -TickRate 120 -Port 24935 -Charter open_commons
+  -TimeoutSeconds 40`: passed host/join, reconciliation, Hearth/Court, late-join
+  observation, exact-actor reconnect, Round 2 and reason-bearing stewardship.
+- `scripts\\capture-visual.cmd -Name global-spell-loom-v1p2-720 -Resolution
+  1280x720 -Frames 4 --capture-expanded-station=spell-loom --camera-zoom=75`:
+  passed; reviewed frame clearly shows all seven occupied global slots, five
+  honest empties, the three-item picker and selected spell detail.
+
+Known limitation and next slice:
+
+- This completes global configuration authority, not the planned 48-spell
+  library. Seven spells across Charge, Water, Ice, Dark and Light are live.
+  Water is the next complete slice: Rillshot and Tideline remain its pressure
+  and control anchors; one movement/utility and one high-commitment spell must be
+  promoted through simulation, presentation, Loom, network and acceptance gates.
+
 ## 2026-08-21 — positive-Flux fast combat economy
 
 Playable outcome:

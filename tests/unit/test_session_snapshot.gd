@@ -12,7 +12,7 @@ func run() -> int:
 
 
 func _test_snapshot_round_trip() -> void:
-	equal(SessionSnapshot.SCHEMA_VERSION, 10, "persistent-field-capable host snapshot schema is explicit")
+	equal(SessionSnapshot.SCHEMA_VERSION, 11, "global-weave host snapshot schema is explicit")
 	var source := SimWorld.new(120, 7, CollisionWorld.new(3_000_000, 2_000_000))
 	var host: PlayerState = source.player()
 	host.champion_wire_id = 1
@@ -23,7 +23,8 @@ func _test_snapshot_round_trip() -> void:
 	host.active_1_wire_id = CombatTuning.TIDELINE_WIRE_ID
 	host.active_2_wire_id = CombatTuning.RIMEWAKE_WIRE_ID
 	host.reset_spell_slots_to_kit()
-	check(host.place_kit_spell(11, host.primary_wire_id), "host rewoves primary to Alt+4 before snapshot")
+	check(host.place_proven_spell(11, host.primary_wire_id), "host rewoves primary to Alt+4 before snapshot")
+	check(host.set_spell_cooldown(CombatTuning.ECLIPSE_DISC_WIRE_ID, 17), "host owns a cooldown for a non-champion global spell")
 	var guest := PlayerState.new(2)
 	guest.champion_wire_id = 2
 	guest.position_x = 1_352_000
@@ -67,6 +68,8 @@ func _test_snapshot_round_trip() -> void:
 	equal(replica.player(2).movement_mode, PlayerState.MovementMode.SPRINT, "guest movement mode round-trips")
 	equal(replica.player(2).primary_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "guest kit identity round-trips")
 	equal(Array(replica.player().spell_wire_ids), Array(source.player().spell_wire_ids), "host ordered spell slots round-trip")
+	equal(Array(replica.player().spell_cooldown_ticks), Array(source.player().spell_cooldown_ticks), "all independent spell cooldowns round-trip")
+	equal(replica.player().spell_cooldown_for_wire(CombatTuning.ECLIPSE_DISC_WIRE_ID), 16, "non-champion global cooldown survives one source tick and replication")
 	equal(replica.player().active_2_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "host third proven spell identity round-trips")
 	equal(replica.player(2).spawn_protection_ticks, source.player(2).spawn_protection_ticks, "guest spawn protection round-trips")
 	check(replica.player(900) != null, "authoritative practice actor is reconstructed")

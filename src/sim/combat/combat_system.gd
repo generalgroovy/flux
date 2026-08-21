@@ -13,15 +13,20 @@ static func step_player(
 	transition_policy: ActionTransitionPolicy,
 ) -> RefCounted:
 	for property_name: StringName in [
-		&"cast_recovery_ticks", &"primary_cooldown_ticks",
-		&"active_1_cooldown_ticks", &"active_2_cooldown_ticks", &"edgeweave_cooldown_ticks",
+		&"cast_recovery_ticks", &"edgeweave_cooldown_ticks",
 	]:
 		state.set(property_name, maxi(0, int(state.get(property_name)) - 1))
+	state.advance_spell_cooldowns()
 
 	var requested_spell_slot: int = command.first_pressed_spell_slot()
 	var requested_spell_wire_id: int = state.spell_wire_id(requested_spell_slot)
 	var pressed_cast_intent := requested_spell_slot > 0 or command.has_pressed(SimCommand.PRESSED_ACTIVE_1)
-	var requested_wire_id := requested_spell_wire_id if requested_spell_slot > 0 else state.active_1_wire_id
+	var requested_wire_id := requested_spell_wire_id
+	if requested_spell_slot == 0 and command.has_pressed(SimCommand.PRESSED_ACTIVE_1):
+		requested_wire_id = state.active_1_wire_id
+	var held_primary_intent := not pressed_cast_intent and command.has_held(SimCommand.HELD_PRIMARY)
+	if held_primary_intent:
+		requested_wire_id = state.primary_wire_id
 
 	if state.pending_cast_wire_id != 0:
 		if pressed_cast_intent:
@@ -31,7 +36,7 @@ static func step_player(
 			return _release_cast(state, config, projectile_id, field_id, world, events)
 		return null
 	var gate_reason := transition_policy.cast_gate_reason(state)
-	if not gate_reason.is_empty() and (pressed_cast_intent or command.has_held(SimCommand.HELD_PRIMARY)):
+	if not gate_reason.is_empty() and (pressed_cast_intent or held_primary_intent):
 		if pressed_cast_intent:
 			_refuse_cast(state, requested_wire_id, requested_spell_slot, gate_reason, events)
 		return null
@@ -39,50 +44,25 @@ static func step_player(
 	if requested_spell_slot > 0 and requested_spell_wire_id == 0:
 		_refuse_cast(state, 0, requested_spell_slot, "empty_slot", events)
 		return null
-
-	if command.has_pressed(SimCommand.PRESSED_ACTIVE_1) or requested_spell_wire_id == state.active_1_wire_id:
-		if state.active_1_cooldown_ticks > 0:
-			_refuse_cast(state, state.active_1_wire_id, requested_spell_slot, "cooldown", events)
-			return null
-		var active_definition := CombatTuning.cast_definition(state.active_1_wire_id)
-		if active_definition.is_empty():
-			_refuse_cast(state, state.active_1_wire_id, requested_spell_slot, "kit", events)
-			return null
-		if not PlayerResourcesSystem.spend_flux(state, int(active_definition["flux_cost"]), config):
-			_refuse_cast(state, state.active_1_wire_id, requested_spell_slot, "flux", events)
-			return null
-		_begin_cast(state, state.active_1_wire_id, int(active_definition["startup_ms"]), config)
-		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": state.active_1_wire_id})
+	if not pressed_cast_intent and not held_primary_intent:
 		return null
-	if state.active_2_wire_id > 0 and requested_spell_wire_id == state.active_2_wire_id:
-		if state.active_2_cooldown_ticks > 0:
-			_refuse_cast(state, state.active_2_wire_id, requested_spell_slot, "cooldown", events)
-			return null
-		var active_2_definition := CombatTuning.cast_definition(state.active_2_wire_id)
-		if active_2_definition.is_empty():
-			_refuse_cast(state, state.active_2_wire_id, requested_spell_slot, "kit", events)
-			return null
-		if not PlayerResourcesSystem.spend_flux(state, int(active_2_definition["flux_cost"]), config):
-			_refuse_cast(state, state.active_2_wire_id, requested_spell_slot, "flux", events)
-			return null
-		_begin_cast(state, state.active_2_wire_id, int(active_2_definition["startup_ms"]), config)
-		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": state.active_2_wire_id})
+	if not CombatTuning.is_runtime_wire_id(requested_wire_id) or state.spell_slot_index_for_wire(requested_wire_id) < 0:
+		_refuse_cast(state, requested_wire_id, requested_spell_slot, "kit", events)
 		return null
-	if command.has_held(SimCommand.HELD_PRIMARY) or requested_spell_wire_id == state.primary_wire_id:
-		if state.primary_cooldown_ticks > 0:
-			if requested_spell_slot > 0:
-				_refuse_cast(state, state.primary_wire_id, requested_spell_slot, "cooldown", events)
-			return null
-		var primary_definition := CombatTuning.cast_definition(state.primary_wire_id)
-		if primary_definition.is_empty():
-			_refuse_cast(state, state.primary_wire_id, requested_spell_slot, "kit", events)
-			return null
-		if not PlayerResourcesSystem.spend_flux(state, int(primary_definition["flux_cost"]), config):
-			if requested_spell_slot > 0:
-				_refuse_cast(state, state.primary_wire_id, requested_spell_slot, "flux", events)
-			return null
-		_begin_cast(state, state.primary_wire_id, int(primary_definition["startup_ms"]), config)
-		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": state.primary_wire_id})
+	if state.spell_cooldown_for_wire(requested_wire_id) > 0:
+		if pressed_cast_intent:
+			_refuse_cast(state, requested_wire_id, requested_spell_slot, "cooldown", events)
+		return null
+	var definition := CombatTuning.cast_definition(requested_wire_id)
+	if definition.is_empty():
+		_refuse_cast(state, requested_wire_id, requested_spell_slot, "kit", events)
+		return null
+	if not PlayerResourcesSystem.spend_flux(state, int(definition["flux_cost"]), config):
+		if pressed_cast_intent:
+			_refuse_cast(state, requested_wire_id, requested_spell_slot, "flux", events)
+		return null
+	_begin_cast(state, requested_wire_id, int(definition["startup_ms"]), config)
+	events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": requested_wire_id})
 	return null
 
 
@@ -210,13 +190,7 @@ static func _release_cast(
 		state.pending_cast_wire_id = 0
 		state.pending_cast_ticks = 0
 		return null
-	if wire_id == state.primary_wire_id:
-		state.primary_cooldown_ticks = config.milliseconds_to_ticks(int(definition["cooldown_ms"]))
-	elif wire_id == state.active_1_wire_id:
-		state.active_1_cooldown_ticks = config.milliseconds_to_ticks(int(definition["cooldown_ms"]))
-	elif wire_id == state.active_2_wire_id and state.active_2_wire_id > 0:
-		state.active_2_cooldown_ticks = config.milliseconds_to_ticks(int(definition["cooldown_ms"]))
-	else:
+	if not state.set_spell_cooldown(wire_id, config.milliseconds_to_ticks(int(definition["cooldown_ms"]))):
 		state.pending_cast_wire_id = 0
 		state.pending_cast_ticks = 0
 		return null

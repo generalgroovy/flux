@@ -57,7 +57,7 @@ A standard competitive loadout contains:
 | Catalog actives | 3 | Unique, positive build/Flux/cooldown/startup/recovery; total at most 13 points after affinity discounts |
 | Champion mobility | 1 | Flux-paid, collision-safe, bounded route |
 | Ultimate | 1 | Ultimate charge, readable startup, interruption/destruction and recovery rules |
-| Ordered spell weave | 12 | Plain, Ctrl and Alt layers each expose four buttons; unique proven primary/active/mobility IDs occupy positions while the remainder stay explicitly empty |
+| Ordered spell weave | 12 | Plain, Ctrl and Alt layers each expose four buttons; up to twelve globally proven runtime spells are selected without duplicates and the remainder stay explicitly empty |
 
 Every ability also requires a stable string ID, positive wire ID, display name,
 slot kind, element (or explicit neutral value), roles, counterplay list, and
@@ -83,17 +83,24 @@ actors and dead actors remain unaffected, and planned material cooling is sealed
 ## Current Spell Loom boundary
 
 The eleventh Wellspring station is a host-authoritative Spell Loom. It exposes
-a 3×4 Plain/Ctrl/Alt grid and only the selected champion's end-to-end kit spells.
+a 3×4 Plain/Ctrl/Alt grid and all end-to-end runtime-proven spells regardless of
+the selected champion.
 Placing one into a position swaps it with its previous position, so canonical
-state always contains every proven spell exactly once and explicit zero-valued
-empties. The host accepts a bounded role/position request only while
+state keeps selected wires unique, carries an independent cooldown with a spell
+through swaps, and retains explicit zero-valued empties. A proven spell outside
+the current weave replaces the target position, which lets the fixed 12-position
+control surface select from the planned 48-spell library.
+The host accepts a bounded catalog-index/position request only while
 the actor is inside the Loom radius; guests wait for the next validated snapshot
 instead of applying a speculative loadout.
 
-The arrangement is session-scoped and resets to Plain 1/2/3 when a champion is
-attuned. Left/right click and the existing active key remain explicit legacy
-access paths during migration. Catalog-only abilities never appear in the Loom,
-and no material operation is enabled by rearranging a slot.
+The arrangement is session-scoped. Champion attunement reorders that champion's
+kit to the front, then appends every other globally proven spell in stable wire
+order; it never hides another champion's runtime-proven spell. Left/right click
+and the existing active key remain explicit legacy access paths during migration.
+Catalog-only abilities never appear in the Loom, and no material operation is
+enabled by rearranging a slot. The bounded request lane reserves 48 future global
+library entries, while only the seven currently proven spells resolve to wires.
 
 ## Promotion sequence
 
@@ -107,8 +114,9 @@ and no material operation is enabled by rearranging a slot.
 6. S. Wayne Eclipse Disc/Pocket Eclipse — complete basic pair with a canonical
    single ricochet and a cover-stopped finite beam/slow; deeper dummy and
    accessibility reads remain.
-7. Host-authoritative 3×4 Spell Loom for proven kit spells —
-   complete foundation; persistence and additional promoted spells remain.
+7. Host-authoritative 3×4 Spell Loom for globally proven spells — complete
+   foundation with independent cooldown replication; persistence and the first
+   element-complete expansion remain.
 8. One approved champion through bot, replay, network, reconnect, spectator,
    accessibility, and platform gates.
 9. Compile optional Flux Formula variants from approved source-family,

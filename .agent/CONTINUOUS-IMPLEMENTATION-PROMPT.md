@@ -12,8 +12,8 @@ disagree, preserve tested runtime truth and update stale prose in the same slice
 The visual overhaul is Gate 0 and freezes every new mechanic. Do not select
 movement tuning, action chaining, spell economy/catalog, roster, material,
 networking or cleanup work until V0–V6 in `.agent/VISUAL-OVERHAUL.md` pass in the
-live game. Concepts, manifests and detached mockups are not acceptance. Preserve
-protocol 26 and all current gameplay while replacing the schematic runtime with
+live game. Concepts, manifests and detached mockups are not acceptance. V0–V6
+now pass; preserve protocol 27 and all accepted gameplay while replacing any remaining schematic runtime with
 an original charming Wellspring, two readable champions, current spell effects
 and compact four-cell/layered GUI. After visual acceptance, execute the strict
 movement → chaining → economy → global element-catalog order in
@@ -28,14 +28,16 @@ slices, checkpoint each green result, and immediately start the next accepted
 slice. Do not stop at plans, scaffolds, catalogs, generated images or passing
 unit tests when the player-facing outcome is still absent.
 
-The current green frontier is protocol 26: two foundation champions, the planned
+The current green frontier is protocol 27 / snapshot schema 11: two foundation champions, the planned
 non-ability movement grammar, full/cone POV with building cutaways, eleven
 Wellspring stations including a host-authoritative 3×4 Spell Loom,
 direct-IP host/join, shared interactions, Hearth readiness,
 one Proving Court round, reconnect, stewardship and late-join observation pass
 the maintained Windows source journeys; Pocket Eclipse is a cover-stopped Light
 beam, Tideline a cover-aware multi-target Water spray and Rimewake a persistent
-single-trigger Ice field. A persisted 50/75/100% world zoom defaults to the wider
+single-trigger Ice field. All seven runtime-proven spells are globally weaveable
+for either champion with identity-owned replicated cooldowns and five honest
+empty positions. A persisted 50/75/100% world zoom defaults to the wider
 75% view. Preserve all of it. Export templates and
 physical Garuda Sway package proof remain honest external gaps.
 

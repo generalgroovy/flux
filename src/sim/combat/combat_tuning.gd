@@ -95,6 +95,22 @@ const EDGEWEAVE_MINIMUM_SPEED: int = 260_000
 const EDGEWEAVE_REWARD: int = 9_000
 const EDGEWEAVE_COOLDOWN_MS: int = 220
 
+# Stable runtime library order. Champion kit wires are moved to the front of a
+# player's default weave, but every proven spell remains globally available.
+const RUNTIME_WIRE_IDS: Array[int] = [
+	PRIMARY_WIRE_ID,
+	ACTIVE_1_WIRE_ID,
+	RILLSHOT_WIRE_ID,
+	TIDELINE_WIRE_ID,
+	RIMEWAKE_WIRE_ID,
+	ECLIPSE_DISC_WIRE_ID,
+	POCKET_ECLIPSE_WIRE_ID,
+]
+
+
+static func is_runtime_wire_id(wire_id: int) -> bool:
+	return RUNTIME_WIRE_IDS.has(wire_id)
+
 
 static func projectile_definition(wire_id: int) -> Dictionary:
 	var result := cast_definition(wire_id)

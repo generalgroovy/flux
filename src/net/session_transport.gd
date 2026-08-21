@@ -44,8 +44,10 @@ const REQUEST_CHAMPION_NEXT: int = 3
 const REQUEST_READY_TOGGLE: int = 4
 const REQUEST_PRACTICE_START: int = 5
 const REQUEST_SPELL_EQUIP: int = 6
-# Twelve weave positions x the stable primary/active-one/active-two role lanes.
-const MAX_SPELL_EQUIP_VALUE: int = PlayerState.SPELL_SLOT_COUNT * 3
+# Twelve weave positions x a bounded catalog lane. The request carries only a
+# library index; the host resolves it against the canonical runtime wire order.
+const MAX_SPELL_LIBRARY_SIZE: int = 48
+const MAX_SPELL_EQUIP_VALUE: int = PlayerState.SPELL_SLOT_COUNT * MAX_SPELL_LIBRARY_SIZE
 
 var peer: ENetMultiplayerPeer
 var mode: int = Mode.OFFLINE

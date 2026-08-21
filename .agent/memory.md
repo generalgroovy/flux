@@ -6,20 +6,22 @@ each playable slice.
 ## Current green frontier — 2026-08-21
 
 - Branch: `codex/continuous-overhaul`.
-- Protocol 26, snapshot schema 10, player preference schema 8.
+- Protocol 27, snapshot schema 11, player preference schema 8.
 - Two basic champions, the non-ability movement foundation, cone occlusion,
   eleven walk-up Wellspring stations, direct-IP Farflow, Charters, Hearth,
   Proving Court, reconnect, stewardship and late-join observation are live.
 - Up to eight players have authored court spawns, teams, wards, bounds,
   knockout/respawn, results, Hearth return and same-roster Round 2.
-- Snapshot schema 10 uses a bounded FastLZ envelope; maximum fixtures and live
+- Snapshot schema 11 uses a bounded FastLZ envelope; maximum fixtures and live
   three-player journeys remain inside one 1,392-byte ENet MTU.
 - Twelve stable spell-position command edges fit the existing bounded command
   packet. Plain, Ctrl and Alt layers combine with four remappable spell buttons;
   Alt wins a dual-modifier chord deterministically. The in-world 3×4 Spell Loom
-  repositions every proven kit spell, honest empties refuse without spending
-  Flux, guests wait for snapshot confirmation, and champion changes reset to
-  the safe Plain 1/2/3 layout. Schema-v3 loadouts validate twelve positions.
+  repositions all seven globally runtime-proven spells for every champion; five
+  honest empties refuse without spending Flux, each spell owns its cooldown
+  through swaps, guests wait for schema-11 snapshot confirmation, and champion
+  changes lead with that kit before the stable global remainder. Its host request
+  lane reserves 48 bounded library entries. Schema-v3 loadouts validate twelve positions.
 - Ability schema 3 validates shape, delivery, impact, residue, planned material
   operation, runtime gates and a canonical Flux economy. Seven proven spells
   enter the playable selector; every material mutation remains disabled.
@@ -51,7 +53,7 @@ each playable slice.
   channel, physical control, own cooldown, Flux, kit and empty-slot refusals are
   visible and resource-safe. Hash `7e09aa303455` is part of state and Farflow
   compatibility.
-- Latest source verification is 18,143 assertions across 52 suites plus
+- Latest source verification is 18,160 assertions across 52 suites plus
   import/source 60/120 Hz boots and a fresh 120 Hz three-process
   spectator-to-Hearth-to-Round-2, reconnect and stewardship journey.
 - Fresh Windows and Linux friend packages plus packaged Windows safe quit pass
@@ -93,12 +95,12 @@ each playable slice.
 
 ## Next acceptance-driven slice
 
-V0–V6, crisp ordinary movement, universal action transitions and the positive-
-Flux cadence candidate are engineering-complete. The next legal slice begins
-the global library one complete element at a time: choose the element whose
-existing runtime shapes provide the safest foundation, promote quick pressure,
-control/defense, movement/utility and high commitment end to end, and expose
-only proven spells globally through the Loom.
+V0–V6, crisp ordinary movement, universal action transitions, the positive-Flux
+cadence candidate and the global Loom/cooldown authority foundation are
+engineering-complete. The next legal slice completes Water first: retain
+Rillshot as quick pressure and Tideline as control, then promote one
+collision-safe movement/utility spell and one readable high-commitment spell
+end to end before beginning another element.
 
 <!-- Historical V1 handoff below is retained only as prior evidence. -->
 Mechanics remain frozen. V0 and V1 are complete: the validated visual language

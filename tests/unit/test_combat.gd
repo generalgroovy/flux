@@ -30,17 +30,23 @@ func _test_semantic_spell_slots(tick_rate: int) -> void:
 	equal(active.pending_cast_wire_id, active.active_1_wire_id, "%d Hz slot 2 adapts to the proven active" % tick_rate)
 	check(active.flux < active.flux_maximum, "%d Hz slot 2 uses the existing Flux rule" % tick_rate)
 
+	var global_world := SimWorld.new(tick_rate)
+	var global_spell: PlayerState = global_world.player()
+	check(_step(global_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_4, 1000, 0)), "%d Hz global non-kit spell command steps" % tick_rate)
+	equal(global_spell.pending_cast_wire_id, CombatTuning.TIDELINE_WIRE_ID, "%d Hz globally woven Tideline starts for the default Arc kit" % tick_rate)
+	equal(global_spell.flux, global_spell.flux_maximum - CombatTuning.TIDELINE_FLUX_COST, "%d Hz globally woven spell pays its canonical Flux cost" % tick_rate)
+
 	var empty_world := SimWorld.new(tick_rate)
 	var empty: PlayerState = empty_world.player()
 	var initial_flux: int = empty.flux
-	check(_step(empty_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_4, 1000, 0)), "%d Hz empty slot command steps" % tick_rate)
+	check(_step(empty_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_8, 1000, 0)), "%d Hz empty slot command steps" % tick_rate)
 	equal(empty.pending_cast_wire_id, 0, "%d Hz empty slot starts no cast" % tick_rate)
 	equal(empty.flux, initial_flux, "%d Hz empty slot spends no Flux" % tick_rate)
-	check(empty_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "empty_slot" and int(event.get("slot", 0)) == 4), "%d Hz empty slot refusal is explicit" % tick_rate)
+	check(empty_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "empty_slot" and int(event.get("slot", 0)) == 8), "%d Hz empty slot refusal is explicit" % tick_rate)
 
 	var rewoven_world := SimWorld.new(tick_rate)
 	var rewoven: PlayerState = rewoven_world.player()
-	check(rewoven.place_kit_spell(11, rewoven.primary_wire_id), "%d Hz primary rewoves into Alt+4" % tick_rate)
+	check(rewoven.place_proven_spell(11, rewoven.primary_wire_id), "%d Hz primary rewoves into Alt+4" % tick_rate)
 	check(_step(rewoven_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_12, 1000, 0)), "%d Hz rewoven command steps" % tick_rate)
 	equal(rewoven.pending_cast_wire_id, rewoven.primary_wire_id, "%d Hz rewoven slot invokes its canonical spell wire" % tick_rate)
 

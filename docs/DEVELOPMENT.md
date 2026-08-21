@@ -99,10 +99,10 @@ The eastern Host/Join Farflow stations operate it without a detached menu; use
 `--join-address=IP`, `--session-port=24872` and `--player-name=Name` for direct-IP
 diagnostics. Its real loopback suite covers compatibility, bounded validated
 input, mismatch refusal and disconnect cleanup. Stable peer actors, host-side
-movement simulation and compact 60 Hz guest snapshots are live. Protocol 26 /
-snapshot schema 10 carries bounded projectile/beam/spray lanes, persistent
-fields, target state, three occupied positions inside each twelve-position
-spell weave, compact Hearth presence/readiness, packed Proving Court state and
+movement simulation and compact 60 Hz guest snapshots are live. Protocol 27 /
+snapshot schema 11 carries bounded projectile/beam/spray lanes, persistent
+fields, target state, all twelve global-weave positions plus independent
+per-spell cooldowns, compact Hearth presence/readiness, packed Proving Court state and
 semantic cues without moving any outcome authority to clients. Reliable
 social/Bell/Champion-Loom/Spell-Loom requests are validated
 against host-owned station proximity and return shared confirmations; training
@@ -174,12 +174,12 @@ filtering remains required before limited-information network modes.
 
 Both 60 and 120 Hz simulations publish shared state at 60 snapshots per second.
 Semantic events are retained for four snapshots and deduplicated by stable ID;
-do not clear an event after only one unreliable send. Protocol 26 validates and
-FastLZ-packs snapshot schema 10 into a bounded wire envelope; both the maximum
+do not clear an event after only one unreliable send. Protocol 27 validates and
+FastLZ-packs snapshot schema 11 into a bounded wire envelope; both the maximum
 eight-player fixture and live three-player journeys must remain within the
 1,392-byte ENet MTU before the unreliable-ordered send.
 
-Protocol 26 reserves a normally disconnected guest's exact actor for 15 seconds and
+Protocol 27 reserves a normally disconnected guest's exact actor for 15 seconds and
 binds return to a random in-memory capability plus the original name. A normal
 player uses Join Farflow again; `--farflow-smoke-reconnect` is test-only. Do not
 print, persist or add that capability to snapshots/diagnostics.

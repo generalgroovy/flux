@@ -2,7 +2,7 @@
 
 ## Current runnable boundary
 
-FLUX 2 protocol 26 / snapshot schema 10 exposes eleven walk-up Wellspring stations,
+FLUX 2 protocol 27 / snapshot schema 11 exposes eleven walk-up Wellspring stations,
 including the Farflow Charter, Session Hearth and host stewardship tools in
 the eastern Wellspring:
 
@@ -14,7 +14,7 @@ the eastern Wellspring:
 | **Session Hearth** | Shows connected/returning travellers and readiness; all connected travellers ready here before the host begins a three-second synchronized Proving Court start |
 | **Company Ledger** | Lets only the host cycle connected guests in stable order; selection is visibly non-destructive and excludes returning reservations |
 | **Parting Bell** | Arms release of the Ledger selection, then requires a second matching press within three seconds; the guest receives a reason and no return reservation |
-| **Spell Loom** | Repositions every proven champion spell in a Plain/Ctrl/Alt 3×4 weave; the host validates actor proximity and the next snapshot confirms occupied positions |
+| **Spell Loom** | Repositions every globally proven runtime spell in a Plain/Ctrl/Alt 3×4 weave; the host validates actor proximity and the next snapshot confirms all positions and per-spell cooldowns |
 | **Proving Court** | Receives the intact connected roster at authored spawns, assigns combat teams and wards, scores knockouts, respawns defeated travellers, resolves score/time results and returns the company to the Hearth |
 
 After a result, the connected roster gathers at eight collision-cleared points
@@ -57,8 +57,8 @@ controller D-pad up sends a shared HELLO bubble; the host also authorizes
 Practice Bell resets, per-actor Champion Loom attunement and 3×4 Spell Loom
 placement from authoritative station proximity. The render snapshot keeps the
 8 KiB expansion cap at eight travellers,
-26 projectile lanes, four targets and 12 events; overflow is explicit in the
-guest HUD. Snapshots are validated, FastLZ-packed into a bounded protocol-26
+18 projectile lanes, eight fields, four targets and 12 events; overflow is explicit in the
+guest HUD. Snapshots are validated, FastLZ-packed into a bounded protocol-27
 wire envelope, and validated again after bounded expansion. The maximum
 eight-player fixture and live three-player court stay within one 1,392-byte
 ENet MTU. Each participating guest also predicts

@@ -283,7 +283,7 @@ func _ready() -> void:
 		if capture_expanded_station_id == "controls-lectern":
 			controls_editor.open_editor()
 		elif capture_expanded_station_id == "spell-loom":
-			spell_loom_editor.open_editor(_local_player_state())
+			spell_loom_editor.open_editor(_local_player_state(), ability_catalog)
 	print(
 		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
@@ -831,15 +831,19 @@ func _draw_spell_loom_editor() -> void:
 	var champion_id := champion_catalog.champion_id_from_wire(state.champion_wire_id)
 	var champion: Dictionary = champion_catalog.champion(champion_id)
 	draw_string(ThemeDB.fallback_font, panel.position + Vector2(40, 42), "SPELL LOOM · %s" % String(champion.get("display_name", champion_id)).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 650.0, 24, PARCHMENT_COLOR)
-	spell_loom_editor.configure_for_state(state)
-	draw_string(ThemeDB.fallback_font, panel.position + Vector2(40, 68), "Arrange proven spells across Plain, Ctrl and Alt layers; each layer uses buttons 1–4.", HORIZONTAL_ALIGNMENT_LEFT, 720.0, 13, PALE_STONE_COLOR)
-	for role: int in range(spell_loom_editor.available_role_count):
-		var role_rect := Rect2(SpellLoomEditor.ROLE_X + float(role) * SpellLoomEditor.ROLE_WIDTH, SpellLoomEditor.GRID_Y - 54.0, SpellLoomEditor.ROLE_WIDTH - 7.0, 40.0)
-		var selected_role: bool = role == spell_loom_editor.selected_role
-		draw_rect(role_rect, Color(FLUX_COLOR, 0.18 if selected_role else 0.06), true)
-		draw_rect(role_rect, FLUX_COLOR if selected_role else Color(BRASS_COLOR, 0.45), false, 2.0 if selected_role else 1.0)
-		var role_label := "PRIMARY" if role == SpellLoomEditor.ROLE_PRIMARY else ("ACTIVE I" if role == SpellLoomEditor.ROLE_ACTIVE_1 else "ACTIVE II")
-		draw_string(ThemeDB.fallback_font, role_rect.position + Vector2(7, 25), role_label, HORIZONTAL_ALIGNMENT_LEFT, role_rect.size.x - 12.0, 11, PARCHMENT_COLOR if selected_role else PALE_STONE_COLOR)
+	spell_loom_editor.configure_for_catalog(ability_catalog)
+	draw_string(ThemeDB.fallback_font, panel.position + Vector2(40, 68), "Weave any proven spell across Plain, Ctrl and Alt layers; each layer uses buttons 1–4.", HORIZONTAL_ALIGNMENT_LEFT, 720.0, 13, PALE_STONE_COLOR)
+	for library_index: int in spell_loom_editor.visible_spell_indices():
+		var visible_indices := spell_loom_editor.visible_spell_indices()
+		var visible_position: int = visible_indices.find(library_index)
+		var spell_rect := Rect2(SpellLoomEditor.SPELL_PICKER_X + float(visible_position) * SpellLoomEditor.SPELL_PICKER_WIDTH, SpellLoomEditor.GRID_Y - 54.0, SpellLoomEditor.SPELL_PICKER_WIDTH - 7.0, 40.0)
+		var selected_spell: bool = library_index == spell_loom_editor.selected_spell_index
+		var picker_wire_id: int = spell_loom_editor.available_wire_ids[library_index]
+		var picker_ability: Dictionary = ability_catalog.ability_from_wire(picker_wire_id)
+		var picker_name := String(picker_ability.get("display_name", "SPELL")).to_upper()
+		draw_rect(spell_rect, Color(FLUX_COLOR, 0.18 if selected_spell else 0.06), true)
+		draw_rect(spell_rect, FLUX_COLOR if selected_spell else Color(BRASS_COLOR, 0.45), false, 2.0 if selected_spell else 1.0)
+		draw_string(ThemeDB.fallback_font, spell_rect.position + Vector2(6, 24), picker_name, HORIZONTAL_ALIGNMENT_LEFT, spell_rect.size.x - 12.0, 9, PARCHMENT_COLOR if selected_spell else PALE_STONE_COLOR)
 	for slot_index: int in range(PlayerState.SPELL_SLOT_COUNT):
 		var layer_index: int = slot_index / PlayerState.SPELL_BUTTON_COUNT
 		var button_index: int = slot_index % PlayerState.SPELL_BUTTON_COUNT
@@ -855,19 +859,13 @@ func _draw_spell_loom_editor() -> void:
 		var wire_id: int = state.spell_wire_id(slot_index + 1)
 		var ability: Dictionary = ability_catalog.ability_from_wire(wire_id)
 		var ability_name := "EMPTY" if ability.is_empty() else String(ability.get("display_name", "SPELL")).to_upper()
-		var role_name := "OPEN"
-		if wire_id == state.primary_wire_id:
-			role_name = "PRIMARY"
-		elif wire_id == state.active_1_wire_id:
-			role_name = "ACTIVE I"
-		elif wire_id == state.active_2_wire_id and state.active_2_wire_id > 0:
-			role_name = "ACTIVE II"
+		var role_name := "OPEN" if wire_id == 0 else ("CHAMPION" if state.kit_spell_wire_ids().has(wire_id) else "GLOBAL")
 		draw_string(ThemeDB.fallback_font, row.position + Vector2(9, 18), PlayerState.spell_slot_label(slot_index), HORIZONTAL_ALIGNMENT_LEFT, row.size.x - 18.0, 12, ATTUNEMENT_COLOR)
 		draw_string(ThemeDB.fallback_font, row.position + Vector2(9, 40), ability_name, HORIZONTAL_ALIGNMENT_LEFT, row.size.x - 18.0, 11, PARCHMENT_COLOR if not ability.is_empty() else PALE_STONE_COLOR)
 		draw_string(ThemeDB.fallback_font, row.position + Vector2(9, 56), role_name, HORIZONTAL_ALIGNMENT_LEFT, row.size.x - 18.0, 9, FLUX_COLOR if role_name != "OPEN" else Color(PALE_STONE_COLOR, 0.65))
-	var selected_wire_id: int = spell_loom_editor.selected_wire_id(state)
+	var selected_wire_id: int = spell_loom_editor.selected_wire_id()
 	var selected_ability: Dictionary = ability_catalog.ability_from_wire(selected_wire_id)
-	var detail_x: float = SpellLoomEditor.ROLE_X
+	var detail_x: float = SpellLoomEditor.SPELL_PICKER_X
 	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 276), String(selected_ability.get("display_name", "SPELL")).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 270.0, 18, PARCHMENT_COLOR)
 	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 302), "%s · %s · %s" % [String(selected_ability.get("element", "")).to_upper(), String(selected_ability.get("shape", "")).to_upper(), String(selected_ability.get("delivery", "")).to_upper()], HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, ATTUNEMENT_COLOR)
 	var flux_cost: int = int(selected_ability.get("flux_cost", 0))
@@ -1517,9 +1515,9 @@ func _handle_session_requests(requests: Array[Dictionary]) -> void:
 				_publish_session_event({"type": "champion_attuned", "entity_id": entity_id, "champion_wire_id": state.champion_wire_id})
 			SessionTransport.REQUEST_SPELL_EQUIP:
 				var slot_index: int = SpellLoomEditor.decode_slot_index(request_value)
-				var role: int = SpellLoomEditor.decode_role(request_value)
-				var wire_id: int = state.primary_wire_id if role == SpellLoomEditor.ROLE_PRIMARY else (state.active_1_wire_id if role == SpellLoomEditor.ROLE_ACTIVE_1 else (state.active_2_wire_id if role == SpellLoomEditor.ROLE_ACTIVE_2 else 0))
-				if slot_index < 0 or wire_id == 0 or not state.place_kit_spell(slot_index, wire_id):
+				var library_index: int = SpellLoomEditor.decode_library_index(request_value)
+				var wire_id: int = SpellLoomEditor.wire_id_for_library_index(library_index)
+				if slot_index < 0 or wire_id == 0 or not state.place_proven_spell(slot_index, wire_id):
 					_publish_session_event({"type": "request_refused", "entity_id": entity_id, "action": action, "reason": SessionRequestPolicy.REFUSED_UNAVAILABLE})
 					continue
 				if entity_id == session_transport.local_entity_id and spell_loom_editor != null and spell_loom_editor.is_open:
@@ -1698,7 +1696,7 @@ func _activate_focused_station() -> void:
 			controls_editor.open_editor()
 			expanded_station_id = focused_station_id
 		"configure_spells":
-			spell_loom_editor.open_editor(_local_player_state())
+			spell_loom_editor.open_editor(_local_player_state(), ability_catalog)
 			expanded_station_id = focused_station_id
 		"training_reset":
 			_submit_session_request(SessionTransport.REQUEST_TRAINING_RESET)

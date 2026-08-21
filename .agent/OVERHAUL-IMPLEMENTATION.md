@@ -240,5 +240,7 @@ Desktop specimen review and a real Windows Living Sanctum run both passed with
 no console errors after fixing the local authority's missing overhaul module
 routes. Nico now starts in Sanctum with visible Health, recovery, Flux,
 focus, speed, and Endurance statistics. P0-P2 foundation, Sanctum, and Nico
-sprite slices are accepted; P3 Nico spell readability is active and Steezo resumes after
-P0-P5 and M0-M5 acceptance.
+sprite slices are accepted. P3 now has complete live rendering and a reviewed
+four-spell phase board with all checks green; a hands-on held-input gameplay
+capture remains before P3 acceptance. Steezo resumes after P0-P5 and M0-M5
+acceptance.

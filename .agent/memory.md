@@ -2320,3 +2320,31 @@
   their renderer and the projectile simulation object is unchanged.
 - Focused visual and DOM checks pass. P3 remains active and incomplete: Arc
   Chain, Prism Ground, Coil Hop, and Nico-specific impact/expiry reads are next.
+
+# 2026-08-21 — P3 implementation complete; held-input acceptance pending
+
+- **Complete live language:** Extended `src/pixel-spell-renderer.mjs` from Coil
+  Dart travel to all four `volt` abilities. Coil Dart owns paired-contact,
+  forked travel, split impact, and short-tail expiry; Arc Chain owns open prongs,
+  a progressively revealed stepped line, an interrupt bracket, and deterministic
+  broken-segment expiry; Prism Ground owns fixed Light corners and an inward
+  impact diamond; Coil Hop owns coil compression, a segmented trail, feet
+  calibration, and a device-spark impact.
+- **Presentation-only integration:** `src/game.mjs` consumes bounded existing
+  event cues plus existing defense/mobility/projectile state; `src/match.mjs`
+  and all authoritative data remain byte-for-byte unchanged. Timing, ranges,
+  damage, costs, cooldowns, reactions, commands, simulation state, networking,
+  and authority are unchanged.
+- **Review surface:** Expanded the excluded Nico specimen with one responsive
+  four-panel phase board. The desktop browser showed all four temporal reads in
+  one viewport with pixel snapping, independent team marks, and no warnings or
+  errors. A normal Living Sanctum boot also passed with the new renderer loaded.
+- **Verification:** `node --test tests/visual-system.test.mjs` passed 5/5;
+  `npm.cmd test` passed 145 standard checks plus network and server-cleanup
+  checks (147 total); recursive `node --check` over desktop/scripts/src/tests/
+  tools and `git diff --check` passed.
+- **Acceptance boundary:** Browser automation emits taps while the live loop
+  samples held action state, so it could not capture the transient live casts.
+  Do not mark P3 accepted or start P4 until a hands-on Nico pass captures Coil
+  Dart, Arc Chain, Prism Ground, and Coil Hop in play and confirms desktop,
+  narrow, high-contrast, reduced-motion, and dense-fight readability.

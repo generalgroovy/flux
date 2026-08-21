@@ -27,7 +27,12 @@ import {
   drawPixelSanctumObstacle,
   drawPixelSanctumStation,
 } from "./pixel-sanctum-renderer.mjs";
-import { drawNicoCoilDart } from "./pixel-spell-renderer.mjs";
+import {
+  createNicoSpellCue,
+  drawNicoCoilDart,
+  drawNicoSpellCue,
+  drawNicoSpellState,
+} from "./pixel-spell-renderer.mjs";
 import {
   createMatch,
   refillSanctumPractice,
@@ -163,6 +168,7 @@ const mouseButtons = new Set();
 const requestResolvers = new Map();
 const particles = [];
 const rings = [];
+const nicoSpellCues = [];
 const trails = new Map();
 const menuGamepadHeld = new Set();
 const sanctumGamepadHeld = new Set();
@@ -1731,6 +1737,7 @@ function processEvents(events, tick) {
   if (tick <= lastProcessedTick) return;
   lastProcessedTick = tick;
   for (const event of events) {
+    queueNicoSpellCue(event);
     if (["hit", "mineBlast", "dashImpact"].includes(event.type)) {
       burst(
         event.x,
@@ -1945,6 +1952,21 @@ function processEvents(events, tick) {
   }
 }
 
+function queueNicoSpellCue(event) {
+  const actorId = event.type === "hit"
+    ? event.attackerId
+    : event.entityId;
+  const actor = matchState.entities.find((entity) => entity.id === actorId);
+  const visual = createNicoSpellCue(event, actor, spellTeamColor(actor?.team));
+  if (!visual) return;
+  nicoSpellCues.push(visual);
+  if (nicoSpellCues.length > 64) nicoSpellCues.splice(0, nicoSpellCues.length - 64);
+}
+
+function spellTeamColor(team) {
+  return team === "alpha" ? "#77f7ce" : team === "beta" ? "#ff5d73" : "#ffca4f";
+}
+
 function updateEffects(delta) {
   const drag = Math.pow(0.02, delta);
   for (const particle of particles) {
@@ -1958,18 +1980,25 @@ function updateEffects(delta) {
     ring.radius += delta * 230;
     ring.life -= delta;
   }
+  for (const visual of nicoSpellCues) visual.life -= delta;
   particles.splice(
     0,
     particles.length,
     ...particles.filter((particle) => particle.life > 0),
   );
   rings.splice(0, rings.length, ...rings.filter((ring) => ring.life > 0));
+  nicoSpellCues.splice(
+    0,
+    nicoSpellCues.length,
+    ...nicoSpellCues.filter((visual) => visual.life > 0),
+  );
   screenShake = Math.max(0, screenShake - delta * 42);
 }
 
 function clearEffects() {
   particles.length = 0;
   rings.length = 0;
+  nicoSpellCues.length = 0;
   trails.clear();
   screenShake = 0;
 }
@@ -2565,8 +2594,15 @@ function drawProjectiles() {
       const owner = matchState.entities.find((entity) => entity.id === projectile.ownerId);
       if (drawNicoCoilDart(
         context,
-        { ...projectile, ownerCharacterId: owner?.characterId ?? null },
+        {
+          ...projectile,
+          ownerCharacterId: owner?.characterId ?? null,
+          maximumLifetime: owner?.characterId === "volt"
+            ? getCharacter("volt").primary.lifetime
+            : projectile.lifetime,
+        },
         color,
+        { highContrast: settings.highContrast },
       )) continue;
       context.fillStyle = color;
       context.shadowColor = color;
@@ -2674,6 +2710,15 @@ function drawEntities(time) {
           context.stroke();
         }
         continue;
+      }
+      if (pixelVisual) {
+        drawNicoSpellState(context, entity, teamColor, {
+          defenseDuration: agent.defense.duration,
+          defenseRadius: agent.defense.radius,
+          mobilityDuration: agent.mobility.duration,
+          highContrast: settings.highContrast,
+          reducedMotion: settings.reducedMotion,
+        });
       }
       if (agent.ultimate && entity.ultimateCharge >= agent.ultimate.chargeRequired) {
         context.save();
@@ -3182,6 +3227,13 @@ function tracePolygon(points) {
 }
 
 function drawEffects() {
+  for (const visual of nicoSpellCues) {
+    drawNicoSpellCue(context, visual, {
+      actor: matchState.entities.find((entity) => entity.id === visual.entityId),
+      highContrast: settings.highContrast,
+      reducedMotion: settings.reducedMotion,
+    });
+  }
   for (const ring of rings) {
     context.save();
     try {

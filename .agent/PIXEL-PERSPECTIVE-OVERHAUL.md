@@ -67,8 +67,8 @@ repository-authored, and mechanically honest.
 | P0 | Accepted 2026-07-29 | `src/pixel-perspective.mjs` centralizes the 384x216 virtual canvas, feet anchor, projection/layer order, seven-value ladder, and four-value material/Charge/Light ramps; the non-shipping specimen passed desktop, 480px narrow, grayscale, high-contrast, and reduced-motion browser review with no console warnings or errors, and its focused tests pass |
 | P1 | Accepted 2026-07-29 | The live Sanctum now uses the accepted materials and stepped layers for water boundary, grass, routes, courts, mirror ward, collision rails, station plinths, and a distinct Rite Gate; desktop and reloaded 480px browser review passed without warnings/errors while map data and rules remained unchanged |
 | P2 | Accepted 2026-07-29 | Nico's live `volt` presentation now uses four cardinal pixel reads, all six states, persistent feet/shadow separation, jump-lift shadow scaling, team marks, health wear, coil/device breakage, and sparse Charge/Light pixels; live Sanctum plus desktop/narrow specimen review passed with no rule changes |
-| P3 | Active | Convert Nico's live Charge/Light spell anticipation, travel, impact, ownership, and expiry presentation without changing any timing, range, damage, cost, cooldown, reaction, or authority |
-| P4-P5 | Pending | Begin only after the preceding slice is implemented, visually reviewed, tested, and recorded |
+| P3 | Implementation complete; live acceptance pending | Coil Dart, Arc Chain, Prism Ground, and Coil Hop now use bounded Charge forks, Light diamonds, explicit team marks, distinct anticipation/travel/impact/expiry reads, and a one-screen non-shipping phase board; all 147 checks, recursive syntax, live Sanctum boot, and browser diagnostics pass without rule changes, but a hands-on held-input gameplay capture is still required before acceptance |
+| P4-P5 | Pending | Begin only after P3's held-input gameplay review is captured and accepted |
 
 Do not start Steezo or another champion until P0-P5 are accepted. A complete
 foundation prevents every later character/map/spell from being rebuilt twice.

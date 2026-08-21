@@ -18,7 +18,14 @@ import {
   drawPixelSanctumStation,
   validateSanctumPixelStyle,
 } from "../src/pixel-sanctum-renderer.mjs";
-import { NICO_SPELL_VISUALS, drawNicoCoilDart, validateNicoSpellVisuals } from "../src/pixel-spell-renderer.mjs";
+import {
+  NICO_SPELL_VISUALS,
+  createNicoSpellCue,
+  drawNicoCoilDart,
+  drawNicoSpellCue,
+  drawNicoSpellState,
+  validateNicoSpellVisuals,
+} from "../src/pixel-spell-renderer.mjs";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -203,19 +210,61 @@ test("P1 Living Sanctum renderer changes presentation without owning game rules"
   assert.match(server, /"\/src\/pixel-sanctum-renderer\.mjs"/);
 });
 
-test("P3 Nico spell contract begins with an owner-shaped Coil Dart", () => {
+test("P3 Nico spell contract covers every shape-first Charge and Light phase", async () => {
   assert.deepEqual(validateNicoSpellVisuals(), []);
   assert.deepEqual(Object.keys(NICO_SPELL_VISUALS), ["coilDart", "arcChain", "prismGround", "coilHop"]);
   const operations = [];
   const context = {
     save() {}, restore() {},
-    fillRect(...values) { operations.push(values); },
-    set fillStyle(value) {}, set imageSmoothingEnabled(value) {},
+    translate(...values) { operations.push(["translate", ...values]); },
+    fillRect(...values) { operations.push(["fill", ...values]); },
+    set fillStyle(value) {}, set imageSmoothingEnabled(value) {}, set globalAlpha(value) {},
   };
   assert.equal(drawNicoCoilDart(context, { ownerCharacterId: "cinder" }, "#fff"), false);
-  assert.equal(drawNicoCoilDart(context, { ownerCharacterId: "volt", vx: 1240, vy: 0, heavy: false }, "#77f7ce"), true);
-  assert.ok(operations.length >= 7);
-  assert.ok(operations.flat().every(Number.isFinite));
+  assert.equal(drawNicoCoilDart(context, {
+    ownerCharacterId: "volt", vx: 1240, vy: 0, heavy: false,
+    lifetime: 0.08, maximumLifetime: 0.92,
+  }, "#77f7ce", { highContrast: true }), true);
+
+  const actor = {
+    id: "nico", characterId: "volt", team: "alpha", x: 100, y: 80,
+    facingX: 1, facingY: 0, defenseRemaining: 0.2, mobilityRemaining: 0.1,
+    mobilityX: 1, mobilityY: 0,
+  };
+  const events = [
+    { type: "shot", source: "primary", x: 100, y: 80 },
+    { type: "rail", x: 100, y: 80, endX: 420, endY: 80 },
+    { type: "defense", kind: "absorb", x: 100, y: 80 },
+    { type: "mobility", kind: "dash", x: 100, y: 80 },
+    { type: "hit", source: "primary", x: 140, y: 80 },
+    { type: "hit", source: "rail", x: 420, y: 80 },
+    { type: "absorb", x: 100, y: 80 },
+    { type: "dashImpact", x: 150, y: 80 },
+  ];
+  const visuals = events.map((event) => createNicoSpellCue(event, actor, "#77f7ce"));
+  assert.ok(visuals.every(Boolean));
+  assert.equal(createNicoSpellCue(events[0], { ...actor, characterId: "cinder" }, "#fff"), null);
+  for (const visual of visuals) {
+    visual.life *= 0.55;
+    assert.equal(drawNicoSpellCue(context, visual, {
+      actor, highContrast: true, reducedMotion: true,
+    }), true);
+  }
+  assert.equal(drawNicoSpellState(context, actor, "#77f7ce", {
+    defenseDuration: 0.3, defenseRadius: 38, mobilityDuration: 0.15,
+    highContrast: true, reducedMotion: true,
+  }), true);
+  assert.ok(operations.length > 90, "all four spells draw layered pixel reads");
+  assert.ok(operations.flat().slice(1).every((value) => typeof value !== "number" || Number.isFinite(value)));
+
+  const [renderer, game] = await Promise.all([
+    read("src/pixel-spell-renderer.mjs"),
+    read("src/game.mjs"),
+  ]);
+  assert.doesNotMatch(renderer, /from "\.\/content|from "\.\/match|Math\.random/);
+  assert.match(game, /createNicoSpellCue/);
+  assert.match(game, /drawNicoSpellState/);
+  assert.match(game, /drawNicoSpellCue/);
 });
 
 test("V1 character specimens share one responsive non-shipping harness", async () => {
@@ -255,6 +304,10 @@ test("V1 character specimens share one responsive non-shipping harness", async (
     assert.match(html, /NON-SHIPPING REFERENCE/, name);
   }
   assert.equal((nico.match(/data-facing=/g) ?? []).length, 6);
+  assert.equal((nico.match(/data-spell=/g) ?? []).length, 4);
+  for (const spell of ["coilDart", "arcChain", "prismGround", "coilHop"]) {
+    assert.match(nico, new RegExp(`data-spell="${spell}"`));
+  }
   for (const facing of ["up", "down", "left", "right"]) {
     assert.match(nico, new RegExp(`data-facing="${facing}"`));
   }

@@ -80,6 +80,17 @@ dd {
   gap: 0.75rem;
 }
 
+.spell-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.spell-grid canvas {
+  aspect-ratio: 3 / 1;
+}
+
 figure {
   overflow: hidden;
   margin: 0;
@@ -142,6 +153,10 @@ footer {
   .state-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .spell-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 30rem) {
@@ -150,7 +165,8 @@ footer {
   }
 
   dl,
-  .state-grid {
+  .state-grid,
+  .spell-grid {
     grid-template-columns: 1fr;
   }
 

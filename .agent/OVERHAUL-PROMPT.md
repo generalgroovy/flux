@@ -49,8 +49,10 @@ The latest reference request overrides the previous next slice. Follow:
 
 V0 is accepted. V1 is paused. Spai Si, Urzh, and S. Wayne have reviewed
 source-only specimens. Nico Lai passed desktop specimen and live Windows
-Sanctum review and is the first promoted replacement. P0-P2 are accepted and P3 is active; Steezo
-resumes only after P0-P5 and M0-M5. Do not
+Sanctum review and is the first promoted replacement. P0-P2 are accepted. P3's
+implementation and deterministic phase review are complete, but its hands-on
+held-input gameplay capture is pending; Steezo resumes only after P0-P5 and
+M0-M5. Do not
 resume Haara mechanics, migrate live races, or expose other preview characters
 until the ordered visual acceptance permits it.
 
@@ -107,10 +109,11 @@ gate, or required user visual acceptance.
 
 ## Immediate task
 
-Implement only P3 from `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md`: convert Nico
-Lai's live Charge/Light kit presentation to discrete shape-first pixel reads for
-anticipation, travel/area, impact, ownership, and expiry. Cover Coil Dart, Arc
-Chain, Prism Ground, and Coil Hop without changing runtime ID `volt`, hitbox,
-stats, ability timing, range, damage, cost, cooldown, reactions, commands,
-simulation, or networking. Do not convert GUI, change movement/bindings, add
-tap strafe, or begin Steezo.
+Finish P3 acceptance from `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md`: run Nico's
+live Coil Dart, Arc Chain, Prism Ground, and Coil Hop through hands-on held-input
+gameplay, capture their anticipation, travel/area, impact, ownership, and expiry
+reads, and confirm desktop, narrow, high-contrast, reduced-motion, and dense-play
+clarity. Fix only presentation regressions without changing runtime ID `volt`,
+hitbox, stats, ability timing, range, damage, cost, cooldown, reactions,
+commands, simulation, or networking. Do not start P4, movement/bindings, tap
+strafe, or Steezo until that evidence is accepted.

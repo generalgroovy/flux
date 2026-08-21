@@ -257,4 +257,7 @@ is given.
   unchanged.
 - Desktop live Sanctum plus desktop/narrow specimen review completed without
   browser diagnostics, and the full 146-check verification remained green.
-- P3 Charge/Light spell presentation is active; ability rules are frozen.
+- P3 Charge/Light presentation is implementation-complete: all four live Nico
+  spells and their phase board pass 147 checks, recursive syntax, normal
+  Sanctum browser smoke, and clean browser diagnostics without rule changes.
+  Hands-on held-input cast capture remains before P3 is accepted; P4 is frozen.

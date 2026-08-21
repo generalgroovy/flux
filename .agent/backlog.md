@@ -5,18 +5,22 @@
 The latest reference request overrides the previous next slice. Complete
 `.agent/PIXEL-PERSPECTIVE-OVERHAUL.md` P0-P5 first, then the explicitly
 authorized `.agent/MOVEMENT-INPUT-OVERHAUL.md` M0-M5, then resume the normal V1
-character gate with Steezo. P0-P2 are accepted and P3 is active; movement/bindings and Steezo are
-currently frozen.
+character gate with Steezo. P0-P2 are accepted. P3 implementation is complete
+with held-input live gameplay acceptance pending; movement/bindings, P4, and
+Steezo are currently frozen.
 
 P0-P2 establish the shared pixel grammar, live Sanctum, and Nico cardinal
-runtime sprite without changing rules. P3 is the single active slice: convert
-Nico's Charge/Light spell anticipation, travel, impact, ownership, and expiry
-reads to discrete shape-first pixels while preserving every stable `volt`
-mechanic. P4-P5 then convert text/HUD and integrated acceptance.
+runtime sprite without changing rules. P3 now owns discrete shape-first
+anticipation, travel, impact, ownership, and expiry reads for Nico's complete
+Charge/Light kit while preserving every stable `volt` mechanic. Capture and
+accept the four spells in hands-on held-input gameplay before P4 converts
+text/HUD and P5 performs integrated acceptance.
 
-P3 implementation is underway: Coil Dart travel/ownership now uses the shared
-pixel spell contract. Arc Chain, Prism Ground, Coil Hop, impact, and expiry
-reads remain in the active slice and must be completed before advancing to P4.
+P3 candidate evidence: the live renderer covers Coil Dart, Arc Chain, Prism
+Ground, and Coil Hop; a responsive one-screen phase board exposes every read;
+all 147 tests, recursive syntax, normal Sanctum browser smoke, and browser
+diagnostics pass. Automated browser taps cannot exercise FLUX's held-input
+sampling, so hands-on live cast capture remains the only P3 acceptance item.
 
 M0-M5 begins only after P5. It updates semantic/remappable keyboard-controller
 defaults, adds deterministic body-lift plus the requested enlarging jump shadow,
@@ -31,16 +35,15 @@ S. Wayne also established modular champion files, shared drawing primitives,
 and one shared specimen harness so the remaining roster does not grow a
 monolithic renderer or copied pages. Nico Lai's Gnome/Charge/Light slice passed
 desktop specimen and live Windows Sanctum review and is promoted through the
- stable `volt` runtime ID with centralized readable champion statistics. Resume
- Steezo after P0-P5 and M0-M5 as the simplest Goblin/Charge/Fire/Light visual slice, preserving
-the same review and promotion gates. Use the validated twenty-entry
-ancestry registry and its one-screen
+stable `volt` runtime ID with centralized readable champion statistics. Resume
+Steezo after P0-P5 and M0-M5 as the simplest Goblin/Charge/Fire/Light visual
+slice, preserving the same review and promotion gates. Use the validated
+twenty-entry ancestry registry and its one-screen
 `tools/ancestry-template-specimen.html` review board; add champion
 posture/prop/affinity layers by composition instead of copying ancestry drawing
-code. Keep the ten
-remaining shipped champions as compatibility-only runtime scaffolding until their mapped
-successors pass complete visual and later mechanical promotion checks; never
-present them as overhaul-roster additions.
+code. Keep the ten remaining shipped champions as compatibility-only runtime
+scaffolding until their mapped successors pass complete visual and later
+mechanical promotion checks; never present them as overhaul-roster additions.
 
 The user's direct Sanctum request authorized one integrated V4/playability slice
 ahead of the normal order: obsolete HEX/operations presentation and the
@@ -68,8 +71,8 @@ clarity using only broad lessons from Enter the Gungeon—not copied content.
 Local-agent handoff is configured for Garuda Sway with Ollama,
 Qwen2.5-Coder 3B/7B, Aider, and optional Odysseus through the canonical
 `scripts/linux-agent-handoff.sh` dispatcher. Its tracked task now routes both
-agents to the P3 Nico Charge/Light spell-readability pass; movement and Steezo
-remain blocked by the new order. Target-machine
+agents to P3's held-input Nico Charge/Light acceptance pass; P4, movement, and
+Steezo remain blocked by the new order. Target-machine
 acceptance must run the read-only doctor, one autonomous local-commit pass, one
 interactive follow-up, the actual suite, and a game smoke while observing zero
 remote runtime requests; inspect the session manifest, timestamped events,

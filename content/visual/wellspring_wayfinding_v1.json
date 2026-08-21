@@ -5,6 +5,7 @@
   "budgets": {
     "maximum_visible_labels": 4,
     "label_distance": 720,
+    "label_exclusion_radius": 64,
     "marker_radius": 18
   },
   "points": [

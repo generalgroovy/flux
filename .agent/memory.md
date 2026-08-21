@@ -35,7 +35,7 @@ each playable slice.
 - Camera presentation now defaults to a wider 75% scale and persists a bounded
   50/75/100% choice. Pointer aim, cone range and building occlusion transform
   with the same scale; F11 and `--camera-zoom=` expose it without changing rules.
-- Latest source verification is 15,909 assertions plus import/source 60/120 Hz
+- Latest source verification is 15,911 assertions plus import/source 60/120 Hz
   boots and a fresh 120 Hz three-process spectator-to-Hearth-to-Round-2,
   reconnect and stewardship journey. Diagnostic captures verify the compact
   active-layer HUD, wider 75% navigation view, Rimewake feedback and 3x4 Loom.
@@ -75,10 +75,11 @@ active layer and four spell cells on screen; existing stations retain detailed
 guidance. An equally data-driven eight-point wayfinding kit gives the wide
 campus distinct movement, recovery, archive, loom, settings, Farflow, duel and
 elemental trial destinations without changing authority. The modular architecture
-candidate now covers the source court, every live building style, all station
-furniture and every landmark frame. Next: finish V3 three-district, cutaway and
-50/75/100% capture review, fix failed readability/charm checks, then begin V4's
-existing spell visuals; mechanics remain frozen through V6.
+candidate covers the source court, every live building style, all station
+furniture and every landmark frame. Final V3 captures cover all three districts,
+50/75/100% and deterministic cutaway behavior; scenic-edge props survive
+overview zoom and near waypoint labels yield the actor lane. V4's existing spell
+visuals are next; mechanics remain frozen through V6.
 
 <!-- Historical V1 handoff below is retained only as prior evidence. -->
 Mechanics remain frozen. V0 and V1 are complete: the validated visual language

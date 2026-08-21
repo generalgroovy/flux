@@ -16,6 +16,7 @@ func _test_repository_wayfinding() -> void:
 	check(wayfinding.configure(language, layout), "wayfinding validates: %s" % wayfinding.last_error)
 	equal(wayfinding.points.size(), 8, "campus exposes eight purposeful points of interest")
 	check(wayfinding.content_hash.length() == 64, "wayfinding has a stable content hash")
+	check(int((wayfinding.data["budgets"] as Dictionary).get("label_exclusion_radius", 0)) >= 48, "nearby wayfinding labels yield the actor-readable lane")
 	var kinds: Dictionary[String, bool] = {}
 	for point: Dictionary in wayfinding.points:
 		kinds[String(point.get("kind", ""))] = true

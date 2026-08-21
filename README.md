@@ -1937,15 +1937,16 @@ See [development setup](docs/DEVELOPMENT.md) and the
 
 ## Production roadmap
 
-Current visual frontier: V0–V2 are complete. Oh Tipi and S. Wayne use pinned
+Current visual frontier: V0–V3 engineering slices are complete. Oh Tipi and S. Wayne use pinned
 compact-cartoon runtime art and editable, rate-independent minimal motion across
-the full movement grammar. V3 is active: the editable seeded NaturalMapKit now
+the full movement grammar. The editable seeded NaturalMapKit now
 provides curved visual routes, natural edge growth, quiet ground variation and
 surface-aware contact while authored collision/topology remain unchanged. A
 fail-closed modular architecture kit adds the warm Nexus source court, seven
 building styles, ten station-furniture profiles and five landmark frames using
-the approved runtime pixel modules; three-district/cutaway/zoom review remains
-before V3 acceptance.
+the approved runtime pixel modules. Same-state captures cover all three
+districts, cutaway behavior and 50/75/100% zoom; V4 existing-spell visuals are
+next while final subjective cohesion remains part of V6.
 
 Production advances through small vertical slices. Each checkpoint must leave a
 launchable game, focused history, truthful status index, known rollback commit,

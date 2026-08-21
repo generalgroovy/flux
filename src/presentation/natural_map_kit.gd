@@ -93,7 +93,8 @@ func draw_district_details(canvas: CanvasItem, district: Dictionary, district_in
 			var edge_props: Array = profile.get("edge_props", [])
 			var use_edge_prop := edge_distance < step * 1.5 and not edge_props.is_empty() and cell_seed % 3 != 0
 			var feature := String(edge_props[cell_seed % edge_props.size()]) if use_edge_prop else String(features[cell_seed % features.size()])
-			_draw_feature(canvas, Vector2(x, y) + jitter, feature, style, tick, cell_seed, reduced_effects)
+			var feature_scale := float(profile.get("edge_scale", 1.0)) if use_edge_prop else 1.0
+			_draw_feature(canvas, Vector2(x, y) + jitter, feature, style, tick, cell_seed, reduced_effects, feature_scale)
 			count += 1
 
 
@@ -176,7 +177,7 @@ static func smoothed_path(points: PackedVector2Array, passes: int = 1) -> Packed
 	return current
 
 
-func _draw_feature(canvas: CanvasItem, position: Vector2, feature: String, style: String, tick: int, seed: int, reduced: bool) -> void:
+func _draw_feature(canvas: CanvasItem, position: Vector2, feature: String, style: String, tick: int, seed: int, reduced: bool, feature_scale: float = 1.0) -> void:
 	var breeze := 0.0 if reduced else sin(float(tick + seed % 61) * 0.035) * 1.25
 	match feature:
 		"grass_tuft":
@@ -201,7 +202,7 @@ func _draw_feature(canvas: CanvasItem, position: Vector2, feature: String, style
 			for dx: float in [-2.0, 1.0, 3.0]:
 				canvas.draw_line(position + Vector2(dx, 3), position + Vector2(dx + breeze * 0.4, -3), Color(language.ramp_color("timber", 4), 0.55), 1.0)
 		"tree":
-			var scale := 0.76 + float(seed % 21) / 100.0
+			var scale := (0.76 + float(seed % 21) / 100.0) * feature_scale
 			canvas.draw_colored_polygon(_ellipse_points(position + Vector2(3, 8) * scale, Vector2(15, 7) * scale), Color(language.ramp_color("garden", 0), 0.48))
 			canvas.draw_rect(Rect2(position + Vector2(-3, -1) * scale, Vector2(6, 17) * scale), language.ramp_color("timber", 2), true)
 			canvas.draw_circle(position + Vector2(-7 + breeze, -6) * scale, 11.0 * scale, language.ramp_color("garden", 2))
@@ -209,7 +210,7 @@ func _draw_feature(canvas: CanvasItem, position: Vector2, feature: String, style
 			canvas.draw_circle(position + Vector2(breeze, -15) * scale, 12.0 * scale, language.ramp_color("garden", 4))
 		"bush", "dry_bush":
 			var ramp := "timber" if feature == "dry_bush" else "garden"
-			var bush_scale := 0.74 + float(seed % 17) / 100.0
+			var bush_scale := (0.74 + float(seed % 17) / 100.0) * feature_scale
 			canvas.draw_circle(position + Vector2(3, 4) * bush_scale, 8.0 * bush_scale, Color(language.ramp_color("garden", 0), 0.42))
 			canvas.draw_circle(position + Vector2(-5 + breeze * 0.4, 0) * bush_scale, 7.0 * bush_scale, language.ramp_color(ramp, 2))
 			canvas.draw_circle(position + Vector2(5 + breeze * 0.4, -1) * bush_scale, 8.0 * bush_scale, language.ramp_color(ramp, 3))
@@ -227,6 +228,9 @@ func _validate_district_profile(style: String, value: Variant) -> bool:
 		var density := float(profile.get(density_key, -1.0))
 		if density < 0.0 or density > 0.85:
 			return _fail("Natural district density is invalid: %s/%s" % [style, density_key])
+	var edge_scale := float(profile.get("edge_scale", 0.0))
+	if edge_scale < 0.90 or edge_scale > 1.50:
+		return _fail("Natural district edge scale is invalid: %s" % style)
 	var features: Array = profile.get("features", [])
 	if features.size() < 3 or features.size() > 6:
 		return _fail("Natural district requires a bounded feature vocabulary: %s" % style)

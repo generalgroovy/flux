@@ -130,10 +130,12 @@ runtime path.
 The architecture kit remains presentation-only. Authored campus data still owns
 topology, collision, route endpoints, elevation, station commands and interaction
 radii; the existing deterministic cutaway still uses the canonical footprint.
-The 1280×720 default-overview candidate at
-`.godot/architecture-capture-720-v4/frame00000002.png` is live evidence, not
-final charm acceptance. V3 still requires three-district, cutaway and
-50/75/100% review before V4 opens.
+Final engineering captures under `.godot/v3-acceptance-*` cover the garden,
+Nexus and proving quarter; Nexus at 50/75/100%; and a deterministic partial
+building cutaway. Scenic-edge props remain legible at overview zoom, nearby
+waypoint labels yield the actor-readable lane, paths remain above decoration and
+the compact HUD preserves its play-space budget. This completes V3's engineering
+slice and opens V4; subjective final cohesion is still scored at integrated V6.
 
 ## Compact HUD and purposeful campus slice
 

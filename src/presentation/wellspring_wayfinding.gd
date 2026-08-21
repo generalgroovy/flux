@@ -49,6 +49,7 @@ func validate(layout: SanctumCampusLayout) -> bool:
 	var budgets: Dictionary = data.get("budgets", {})
 	if int(budgets.get("maximum_visible_labels", 0)) < 1 or int(budgets.get("maximum_visible_labels", 0)) > 6 \
 		or int(budgets.get("label_distance", 0)) < 240 or int(budgets.get("label_distance", 0)) > 960 \
+		or int(budgets.get("label_exclusion_radius", 0)) < 32 or int(budgets.get("label_exclusion_radius", 0)) > 96 \
 		or int(budgets.get("marker_radius", 0)) < 8 or int(budgets.get("marker_radius", 0)) > 32:
 		return _fail("Wellspring wayfinding budgets are unsafe")
 	var values: Variant = data.get("points", [])
@@ -84,6 +85,7 @@ func draw(canvas: CanvasItem, focus_world_position: Vector2, tick: int, reduced_
 	var budgets: Dictionary = data.get("budgets", {})
 	var maximum := int(budgets.get("maximum_visible_labels", 4))
 	var label_distance := float(budgets.get("label_distance", 720))
+	var label_exclusion_radius := float(budgets.get("label_exclusion_radius", 64))
 	var marker_radius := float(budgets.get("marker_radius", 18))
 	var ordered: Array[Dictionary] = points.duplicate()
 	ordered.sort_custom(func(left: Dictionary, right: Dictionary) -> bool:
@@ -94,7 +96,8 @@ func draw(canvas: CanvasItem, focus_world_position: Vector2, tick: int, reduced_
 		var position := _position(point)
 		var accent := _accent_for_kind(String(point.get("kind", "")))
 		_draw_marker(canvas, position, marker_radius, accent, tick, reduced_effects)
-		if labels_drawn >= maximum or position.distance_to(focus_world_position) > label_distance:
+		var focus_distance := position.distance_to(focus_world_position)
+		if labels_drawn >= maximum or focus_distance > label_distance or focus_distance < label_exclusion_radius:
 			continue
 		_draw_label(canvas, position, String(point.get("title", "")), String(point.get("subtitle", "")), accent)
 		labels_drawn += 1

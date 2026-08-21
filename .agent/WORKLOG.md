@@ -1,5 +1,36 @@
 # FLUX2 agent worklog
 
+## 2026-08-21 — V3 three-district and zoom acceptance pass
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Reviewed live garden, Nexus and proving-quarter captures plus 50/75/100%
+  Nexus frames and a near-building cutaway frame on the modular V3 renderer.
+- Increased only scenic-edge tree/bush scale through each validated natural-map
+  profile so vegetation survives overview zoom while routes still draw above it
+  and gameplay actors remain topmost.
+- Added a bounded waypoint-label exclusion radius. A player standing on a
+  purpose marker now keeps a clear silhouette while the marker remains visible
+  and the next useful nearby labels can still render.
+
+Validation:
+
+- Full headless suite passed with 15,911 assertions across 47 suites and zero
+  failures; Windows import and independent 60/120 Hz source boots passed.
+- Final same-state captures are under `.godot/v3-acceptance-*`; they cover every
+  district, all supported zoom levels and the deterministic partial cutaway.
+- The V3 engineering deliverable now covers the source court, paths, water,
+  academy facades, target, spell station and near scenic edges. Subjective final
+  cohesion remains part of integrated V6 review rather than hidden as a pass.
+
+Known limitations and risks:
+
+- V4 existing-spell presentation is now the next legal slice; movement,
+  networking, economy and roster work remain frozen through V6.
+- Existing bulk-catalog image-loader warnings predate this slice.
+
 ## 2026-08-21 — modular Wellspring architecture and source-court slice
 
 Branch: `codex/continuous-overhaul`

@@ -15,6 +15,7 @@ func _test_repository_kit() -> void:
 	check(kit.configure(language), "natural map kit validates: %s" % kit.last_error)
 	check(kit.content_hash.length() == 64, "natural map kit has a stable content hash")
 	equal(kit.profiles.size(), 3, "all live district styles own reusable natural recipes")
+	check(float((kit.profiles["garden"] as Dictionary).get("edge_scale", 0.0)) > 1.0, "Conservatory scenic-edge props remain readable at overview zoom")
 	for motion_id: String in ["walk", "sprint", "low", "air"]:
 		check(kit.contact_profiles.has(motion_id), "%s has a surface-contact recipe" % motion_id)
 

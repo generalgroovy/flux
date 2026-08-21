@@ -14,6 +14,7 @@
       "contact_ramp": "garden",
       "edge_density": 0.78,
       "interior_density": 0.24,
+      "edge_scale": 1.38,
       "edge_props": ["tree", "bush", "bush"],
       "features": ["grass_tuft", "leaf_pair", "blossom", "small_stone"]
     },
@@ -22,6 +23,7 @@
       "contact_ramp": "warm_stone",
       "edge_density": 0.52,
       "interior_density": 0.12,
+      "edge_scale": 1.16,
       "edge_props": ["bush", "tree", "bush"],
       "features": ["moss_seam", "small_stone", "brass_leaf", "blossom"]
     },
@@ -30,6 +32,7 @@
       "contact_ramp": "timber",
       "edge_density": 0.42,
       "interior_density": 0.10,
+      "edge_scale": 1.20,
       "edge_props": ["dry_bush", "bush", "dry_bush"],
       "features": ["small_stone", "dry_tuft", "brass_leaf", "moss_seam"]
     }

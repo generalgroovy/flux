@@ -1,5 +1,46 @@
 # FLUX2 agent worklog
 
+## 2026-08-21 — positive-Flux fast combat economy
+
+Playable outcome:
+
+- Promoted ability schema 3 with a canonical economy contract: Flux is the only
+  spell resource, every runtime spell costs at least one Flux, recovery waits
+  700 ms after spend, and pressure/tempo/control cadence tiers fail closed.
+- Removed free offense. Arc Primary costs 7 Flux, Rillshot 6 and Eclipse Disc
+  8; semantic insufficient-Flux presses refuse visibly and held-primary polling
+  stays quiet. Every cast—including a basic attack—pays before startup.
+- Retuned action-specific cooldowns without adding a global lock: Arc 200 ms,
+  Rillshot 180 ms, Eclipse Disc 230 ms, Vector Lance/Tideline 900 ms, Pocket
+  Eclipse 1,000 ms and Rimewake 1,800 ms. Active costs are 24/20/18/24 Flux.
+- The compact HUD now shows each spell's positive cost and distinguishes
+  `FLUX WAIT 0.7s` from `FLUX RISING`. Oh Tipi and S. Wayne deterministic
+  pressure fixtures exhaust exact full reserves inside five seconds, allow no
+  free cast, then regain and repay one cast after deliberate recovery.
+- Ability/champion compatibility hashes changed through canonical content; the
+  existing handshake refuses old economy builds without a protocol/schema
+  packet change.
+
+Verification:
+
+- `scripts\\test.cmd`: passed 52 suites / 18,143 assertions plus source/import
+  validation and clean 60/120 Hz boots; ability hash `52bbbdc1f5c8` and
+  champion hash `3ee4c0016c4e`.
+- `scripts\\smoke-farflow.cmd -TickRate 120 -Port 24932 -Charter open_commons
+  -TimeoutSeconds 60`: passed the full host/join through stewardship journey.
+- `scripts\\capture-visual.cmd -Name economy-v1-oh-tipi-720 -Resolution
+  1280x720 -Frames 30 --capture-spawn=640,720 --capture-pointer=1000,720
+  --capture-cast-slot=1 --champion=oh_tipi --pov-mode=full --camera-zoom=75`:
+  passed; reviewed frame shows `RILLSHOT · 6 F`, 98/104 Flux and `WAIT 0.5s`.
+- HUD affordability is boundary-tested in simulation milli-units: a 6-Flux
+  spell is unavailable at 5,999 and available at exactly 6,000.
+
+Known limitation and next slice:
+
+- These values are a deterministic first balance candidate, not a claim of
+  hands-on competitive balance. The next slice begins the global library with
+  one complete four-role element rather than scattering catalog-only spells.
+
 ## 2026-08-21 — explicit universal movement/spell transitions
 
 Playable outcome:

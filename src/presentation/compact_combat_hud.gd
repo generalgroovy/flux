@@ -103,7 +103,7 @@ func draw(
 	var resource_width := float(layout.get("resource_width", 270))
 	var resource_height := float(layout.get("resource_height", 118))
 	var resources := Rect2(margin, viewport_size.y - margin - resource_height, resource_width, resource_height)
-	_draw_resources(canvas, resources, state, champion_id, champion_name, layout)
+	_draw_resources(canvas, resources, state, champion_id, champion_name, layout, tick_rate)
 
 	var cell_width := float(layout.get("spell_cell_width", 142))
 	var cell_height := float(layout.get("spell_cell_height", 70))
@@ -121,7 +121,7 @@ func draw(
 		_draw_spell_cell(canvas, rectangle, state, ability_catalog, slot_index, button_index, tick_rate, copy)
 
 
-func _draw_resources(canvas: CanvasItem, rectangle: Rect2, state: PlayerState, champion_id: String, champion_name: String, layout: Dictionary) -> void:
+func _draw_resources(canvas: CanvasItem, rectangle: Rect2, state: PlayerState, champion_id: String, champion_name: String, layout: Dictionary, tick_rate: int) -> void:
 	_draw_panel(canvas, rectangle, 0.94)
 	var medallion := rectangle.position + Vector2(28, 34)
 	canvas.draw_circle(medallion + Vector2(2, 3), 19.0, Color(language.ramp_color("worldbone", 0), 0.7))
@@ -132,8 +132,16 @@ func _draw_resources(canvas: CanvasItem, rectangle: Rect2, state: PlayerState, c
 	var bar_width := rectangle.size.x - 66.0
 	var bar_height := float(layout.get("resource_bar_height", 20))
 	_draw_resource_bar(canvas, Rect2(bar_x, rectangle.position.y + 29, bar_width, bar_height), "HEALTH", state.health, state.health_maximum, language.ramp_color("health", 3))
-	_draw_resource_bar(canvas, Rect2(bar_x, rectangle.position.y + 56, bar_width, bar_height), "FLUX", state.flux, state.flux_maximum, language.ramp_color("flux", 3))
+	_draw_resource_bar(canvas, Rect2(bar_x, rectangle.position.y + 56, bar_width, bar_height), flux_status_label(state, tick_rate), state.flux, state.flux_maximum, language.ramp_color("flux", 3))
 	_draw_resource_bar(canvas, Rect2(bar_x, rectangle.position.y + 83, bar_width, bar_height), "STAMINA", state.stamina, state.stamina_maximum, language.ramp_color("stamina", 3))
+
+
+static func flux_status_label(state: PlayerState, tick_rate: int) -> String:
+	if state == null or state.flux >= state.flux_maximum:
+		return "FLUX"
+	if state.flux_recovery_delay_ticks > 0:
+		return "FLUX WAIT %.1fs" % (float(state.flux_recovery_delay_ticks) / float(maxi(1, tick_rate)))
+	return "FLUX RISING"
 
 
 func _draw_resource_bar(canvas: CanvasItem, rectangle: Rect2, label: String, value: int, maximum: int, color: Color) -> void:
@@ -161,12 +169,16 @@ func _draw_spell_cell(canvas: CanvasItem, rectangle: Rect2, state: PlayerState, 
 		canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(10, 35), String(copy.get("loom", "WEAVE AT LOOM")), HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 20.0, 9, language.ui_color("text_muted"))
 		return
 	var cooldown_ticks := _cooldown_for_wire(state, wire_id)
-	var flux_cost := int(ability.get("flux_cost", 0))
-	var affordable := state.flux >= flux_cost
-	var status := (String(copy.get("ready", "READY")) if affordable else "NEED %d F" % flux_cost) if cooldown_ticks <= 0 else "%.1fs" % (float(cooldown_ticks) / float(maxi(tick_rate, 1)))
-	var affordability := "FREE" if flux_cost == 0 else "%d F" % flux_cost
+	var flux_cost_units := int(ability.get("flux_cost", 0))
+	var affordable := spell_is_affordable(state, ability)
+	var status := (String(copy.get("ready", "READY")) if affordable else "NEED %d F" % flux_cost_units) if cooldown_ticks <= 0 else "%.1fs" % (float(cooldown_ticks) / float(maxi(tick_rate, 1)))
+	var affordability := "FREE" if flux_cost_units == 0 else "%d F" % flux_cost_units
 	canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(10, 35), "%s · %s" % [String(ability.get("shape", "spell")).to_upper(), affordability], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 20.0, 9, language.ui_color("text_secondary"))
 	canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(10, 55), status, HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 20.0, 10, (accent if affordable else language.ui_color("danger")) if cooldown_ticks <= 0 else language.ui_color("pending"))
+
+
+static func spell_is_affordable(state: PlayerState, ability: Dictionary) -> bool:
+	return state != null and state.flux >= maxi(0, int(ability.get("flux_cost", 0))) * 1000
 
 
 static func _cooldown_for_wire(state: PlayerState, wire_id: int) -> int:

@@ -150,8 +150,9 @@ even when design documentation already exists.
     spell startup/recovery, unrelated spells chain during recovery, and startup,
     physical state, own cooldown, Flux, kit and empty-slot refusals are explicit
     without client-owned authority
-  - [ ] Positive-Flux offense and shorter action-specific cooldown economy;
-    the current zero-cost primaries are foundation values awaiting this pass
+  - [x] Positive-Flux offense and shorter action-specific cooldown economy:
+    every runtime spell pays Flux, recovery waits 700 ms, and pressure/tempo/
+    control cadence tiers fail closed while the HUD names wait/recovery state
   - [ ] Complete targeting families, defense/clash/launch/status rules, passive,
     three actives, mobility, ultimate, formula variants, and configuration UI
   - [ ] First complete champion vertical slice
@@ -682,8 +683,8 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Repository fact | Current meaning |
 | --- | --- |
 | Executable shared combat foundation | Arc Primary and Vector Lance remain the fallback pair while later champions receive distinct kits |
-| First champion combat pair | Oh Tipi's resource-free Water **Rillshot** and Flux-paid **Tideline** are authoritative; Tideline trades burst for bounded launch |
-| Second champion combat pair | S. Wayne's free Dark **Eclipse Disc** owns one readable ricochet; paid Light **Pocket Eclipse** trades damage for a bounded slow |
+| First champion combat pair | Oh Tipi's 6-Flux Water **Rillshot** and 20-Flux **Tideline** are authoritative; Tideline trades burst for bounded launch |
+| Second champion combat pair | S. Wayne's 8-Flux Dark **Eclipse Disc** owns one readable ricochet; 18-Flux Light **Pocket Eclipse** trades damage for a bounded slow |
 | Preserved named kits | The Red Baron, Steezo, Treevor the Mason, Oll' I and Fluup retain approved ability names; mechanics remain unimplemented |
 | Remaining named champions | Identity, ancestry, elements, role and sprite package exist; character-specific ability names remain pending |
 | Void terminology | The Red Baron and Grimm Bow still carry legacy Void design data while visual generation currently uses Dark; this must be reconciled explicitly |
@@ -752,8 +753,8 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Ability slot | Preserved design name | Implementation state |
 | --- | --- | --- |
 | Passive | **Living Current** | Named design input; simulation and balance not implemented |
-| Champion primary | **Rillshot** | Implemented: resource-free Water projectile; 55 ms startup, 190 ms cooldown, 9 damage |
-| Active I | **Tideline** | Implemented: 22 Flux Water crest; 170 ms startup, 14 damage and bounded 180 ms launch |
+| Champion primary | **Rillshot** | Implemented: 6 Flux Water projectile; 55 ms startup, 180 ms cooldown, 9 damage |
+| Active I | **Tideline** | Implemented: 20 Flux Water spray; 170 ms startup, 900 ms cooldown, 14 damage and bounded 180 ms launch |
 | Active II | **Flash Freeze** | Named design input; simulation and balance not implemented |
 | Mobility | **Eel Step** | Named design input; must obey global collision and speed limits |
 | Ultimate | **Stormtide Basin** | Named design input; charge, startup, interruption and recovery rules pending |
@@ -792,8 +793,8 @@ matches or exceeds the baseline and passes the ordered visual-quality gate.
 | Ability slot | Preserved design name | Implementation state |
 | --- | --- | --- |
 | Passive | **Small Target, Big Exit** | Named design input; simulation and balance not implemented |
-| Champion primary | **Eclipse Disc** | Implemented: free Dark disc; 70 ms startup, 260 ms cooldown, 10 damage and exactly one world ricochet |
-| Active I | **Pocket Eclipse** | Implemented: 20 Flux Light shot; 190 ms startup, 8 damage and a bounded 600 ms 55% slow |
+| Champion primary | **Eclipse Disc** | Implemented: 8 Flux Dark disc; 70 ms startup, 230 ms cooldown, 10 damage and exactly one world ricochet |
+| Active I | **Pocket Eclipse** | Implemented: 18 Flux Light beam; 190 ms startup, 1,000 ms cooldown, 8 damage and a bounded 600 ms 55% slow |
 | Active II | **Burrowed Shadow** | Named design input; simulation and balance not implemented |
 | Mobility | **Campfire Feint** | Named design input; must obey global collision and speed limits |
 | Ultimate | **There and Back Again** | Named design input; charge, startup, interruption and recovery rules pending |
@@ -1825,8 +1826,8 @@ The repository currently contains a small executable slice, not a finished
 game: an in-progress scrolling G2 Sanctum campus over a deterministic movement
 arena, separate Health/Stamina/Flux state, independent quantized aim,
 persisted keyboard bindings, world/aim-relative movement presets, full/ranged-
-cone POV, keyboard/mouse/controller defaults, custom ordered collision, resource-free Arc
-Primary, Flux-paid Vector Lance, authoritative projectiles/damage, Edgeweave,
+cone POV, keyboard/mouse/controller defaults, custom ordered collision, paid Arc
+Primary and Vector Lance, authoritative projectiles/damage, Edgeweave,
 60/120 Hz match startup, stable state hashes, replay recording, and headless
 verification. It proves the runtime boundary and migrates the first movement and
 combat contracts from the browser FLUX prototype. A canonical ability catalog
@@ -1836,8 +1837,9 @@ Health/Flux/Stamina recovery and capacity profiles, bounded ground-speed ratios,
 and in-world sprite switching while retaining the universal movement grammar.
 A canonical 80-Health sparring effigy beside spawn receives real projectile
 damage, Tideline launch and Pocket Eclipse slow; the Practice Bell restores its
-seeded state. Oh Tipi and S. Wayne now each own a distinct resource-free primary
-and paid active with different timing, geometry and control decisions.
+seeded state. Oh Tipi and S. Wayne now each own a distinct paid primary and
+actives with different timing, geometry and control decisions; all seven live
+spells use the canonical positive-Flux cadence contract.
 A canonical material registry and
 packed 128 x 128 Sanctum Material Yard seed also validate, hash, reset, and
 render as a read-only debug preview; reactions do not step yet. The full hub art,

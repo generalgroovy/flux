@@ -17,6 +17,17 @@ func _test_repository_hud() -> void:
 	equal(int(layout.get("spell_cell_width", 0)) * PlayerState.SPELL_BUTTON_COUNT + int(layout.get("spell_cell_gap", 0)) * 3, 586, "HUD declares exactly four compact spell cells")
 	equal(int(layout.get("panel_corner_step", 0)), language.ui_metric("corner_step"), "HUD framing follows the shared stepped-corner token")
 	check(int(hud.data.get("maximum_view_coverage_percent", 0)) <= int((language.data.get("budgets", {}) as Dictionary).get("maximum_combat_hud_coverage_percent", 0)), "HUD coverage stays inside the visual budget")
+	var state := PlayerState.new()
+	equal(CompactCombatHud.flux_status_label(state, 60), "FLUX", "full Flux keeps the quiet canonical label")
+	state.flux -= 10_000
+	state.flux_recovery_delay_ticks = 42
+	equal(CompactCombatHud.flux_status_label(state, 60), "FLUX WAIT 0.7s", "combat delay is visible in the compact HUD")
+	state.flux_recovery_delay_ticks = 0
+	equal(CompactCombatHud.flux_status_label(state, 60), "FLUX RISING", "active Flux recovery is visible in the compact HUD")
+	state.flux = 5_999
+	check(not CompactCombatHud.spell_is_affordable(state, {"flux_cost": 6}), "HUD compares authored whole-Flux cost against milli-unit state")
+	state.flux = 6_000
+	check(CompactCombatHud.spell_is_affordable(state, {"flux_cost": 6}), "HUD affordability becomes ready at the exact milli-unit boundary")
 
 
 func _test_fail_closed_contract() -> void:

@@ -77,6 +77,10 @@ static func step_player(
 		if primary_definition.is_empty():
 			_refuse_cast(state, state.primary_wire_id, requested_spell_slot, "kit", events)
 			return null
+		if not PlayerResourcesSystem.spend_flux(state, int(primary_definition["flux_cost"]), config):
+			if requested_spell_slot > 0:
+				_refuse_cast(state, state.primary_wire_id, requested_spell_slot, "flux", events)
+			return null
 		_begin_cast(state, state.primary_wire_id, int(primary_definition["startup_ms"]), config)
 		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": state.primary_wire_id})
 	return null

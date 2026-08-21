@@ -21,12 +21,17 @@ with recursively sorted object keys and hashed with SHA-256. Array order remains
 meaningful. Release tooling will later compile these authoring files into a
 wire-ID manifest; checked IDs may be deprecated but never silently reassigned.
 
-Schema 2 requires each ability to declare a bounded shape (`projectile`, `beam`,
+Schema 3 requires each ability to declare a bounded shape (`projectile`, `beam`,
 `spray`, `field`, `defense`, `movement`, plus passive/ultimate), delivery,
 impact, residue and planned material operation. `runtime_status` separates the
-six end-to-end spells from catalog-only designs, while
+seven end-to-end spells from catalog-only designs, while
 `material_runtime_enabled` remains false until a deterministic grid operation,
 reset rule and route-safety proof actually exist.
+
+The schema also owns the runtime economy: all playable spells pay positive
+Flux, recovery waits 700 ms after a spend, and each spell must fit a declared
+pressure, tempo or control cooldown range. Costs, cooldowns and the recovery
+delay are compiled into integer simulation values and checked against content.
 
 ## Element-family gate
 
@@ -48,7 +53,7 @@ A standard competitive loadout contains:
 | Slot | Count | Resource/budget rule |
 | --- | ---: | --- |
 | Passive | 1 | Champion-defining behavior; no duplicate hidden passive stack |
-| Primary | 1 | Reliable aimed pressure; zero Flux cost |
+| Primary | 1 | Reliable aimed pressure; positive Flux cost and pressure-tier cadence |
 | Catalog actives | 3 | Unique, positive build/Flux/cooldown/startup/recovery; total at most 13 points after affinity discounts |
 | Champion mobility | 1 | Flux-paid, collision-safe, bounded route |
 | Ultimate | 1 | Ultimate charge, readable startup, interruption/destruction and recovery rules |
@@ -94,7 +99,7 @@ and no material operation is enabled by rearranging a slot.
 
 1. Canonical catalog/loadout validation and boot integration — complete.
 2. Match compatibility metadata and save migration for selected loadouts.
-3. Deterministic resource-free Arc Primary projectile — complete foundation.
+3. Deterministic positive-Flux Arc Primary projectile — complete foundation.
 4. Vector Lance with startup, Flux spend, cooldown, recovery, and impact —
    complete foundation; full visual/audio counterplay acceptance remains.
 5. Oh Tipi Rillshot/Tideline plus resettable sparring effigy — complete basic

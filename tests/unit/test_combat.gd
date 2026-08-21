@@ -4,7 +4,7 @@ extends FluxTestSuite
 func run() -> int:
 	for tick_rate: int in [60, 120]:
 		_test_semantic_spell_slots(tick_rate)
-		_test_resource_free_primary(tick_rate)
+		_test_positive_flux_primary(tick_rate)
 		_test_vector_lance_flux_and_hit(tick_rate)
 		_test_oh_tipi_rillshot(tick_rate)
 		_test_oh_tipi_tideline(tick_rate)
@@ -13,6 +13,7 @@ func run() -> int:
 		_test_s_wayne_disc_ricochet(tick_rate)
 		_test_s_wayne_pocket_eclipse(tick_rate)
 		_test_movement_spell_chains(tick_rate)
+		_test_pressure_exhaustion_and_recovery(tick_rate)
 		_test_edgeweave(tick_rate)
 	return finish("combat")
 
@@ -73,14 +74,14 @@ func _apply_s_wayne(state: PlayerState) -> void:
 	check(champions.apply_to_player(state, "s_wayne"), "S. Wayne combat profile applies")
 
 
-func _test_resource_free_primary(tick_rate: int) -> void:
+func _test_positive_flux_primary(tick_rate: int) -> void:
 	var world := SimWorld.new(tick_rate)
 	var caster: PlayerState = world.player()
 	var enemy: PlayerState = _add_enemy(world, Vector2i(360_000, 360_000))
 	var initial_flux: int = caster.flux
 	check(_step(world, SimCommand.new(0, 1, 0, 0, SimCommand.HELD_PRIMARY, 0, 1000, 0)), "%d Hz primary start steps" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.PRIMARY_WIRE_ID, "%d Hz primary enters authored startup" % tick_rate)
-	equal(caster.flux, initial_flux, "%d Hz primary spends no Flux" % tick_rate)
+	equal(caster.flux, initial_flux - CombatTuning.PRIMARY_FLUX_COST, "%d Hz primary spends exact positive Flux" % tick_rate)
 	var saw_spawn: bool = false
 	var saw_hit: bool = false
 	for _index: int in range(tick_rate):
@@ -93,8 +94,17 @@ func _test_resource_free_primary(tick_rate: int) -> void:
 	check(saw_spawn, "%d Hz primary releases after startup" % tick_rate)
 	check(saw_hit, "%d Hz primary resolves an authoritative hit" % tick_rate)
 	equal(enemy.health, PlayerTuning.HEALTH_MAXIMUM - CombatTuning.PRIMARY_DAMAGE, "%d Hz primary damage is exact" % tick_rate)
-	equal(caster.flux, initial_flux, "%d Hz primary remains Flux-free through impact" % tick_rate)
+	equal(caster.flux, initial_flux - CombatTuning.PRIMARY_FLUX_COST, "%d Hz primary cannot recover before its combat delay" % tick_rate)
 	check(caster.primary_cooldown_ticks > 0, "%d Hz primary cooldown is active" % tick_rate)
+
+	var refused_world := SimWorld.new(tick_rate)
+	var refused: PlayerState = refused_world.player()
+	refused.flux = CombatTuning.PRIMARY_FLUX_COST - 1
+	refused.flux_recovery_delay_ticks = tick_rate
+	check(_step(refused_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_1)), "%d Hz unaffordable primary command steps" % tick_rate)
+	equal(refused.pending_cast_wire_id, 0, "%d Hz unaffordable primary cannot enter startup" % tick_rate)
+	equal(refused.flux, CombatTuning.PRIMARY_FLUX_COST - 1, "%d Hz refused primary spends nothing" % tick_rate)
+	check(refused_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "flux"), "%d Hz semantic primary reports insufficient Flux" % tick_rate)
 
 
 func _test_vector_lance_flux_and_hit(tick_rate: int) -> void:
@@ -136,7 +146,7 @@ func _test_oh_tipi_rillshot(tick_rate: int) -> void:
 	var initial_flux: int = caster.flux
 	check(_step(world, SimCommand.new(0, 1, 0, 0, SimCommand.HELD_PRIMARY, 0, 1000)), "%d Hz Rillshot starts" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.RILLSHOT_WIRE_ID, "%d Hz Oh Tipi primary is Rillshot" % tick_rate)
-	equal(caster.flux, initial_flux, "%d Hz Rillshot is resource-free" % tick_rate)
+	equal(caster.flux, initial_flux - CombatTuning.RILLSHOT_FLUX_COST, "%d Hz Rillshot spends exact positive Flux" % tick_rate)
 	var saw_hit: bool = false
 	for _index: int in range(tick_rate):
 		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Rillshot flight steps" % tick_rate)
@@ -297,7 +307,7 @@ func _test_s_wayne_eclipse_disc(tick_rate: int) -> void:
 	var initial_flux: int = caster.flux
 	check(_step(world, SimCommand.new(0, 1, 0, 0, SimCommand.HELD_PRIMARY, 0, 1000)), "%d Hz Eclipse Disc starts" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "%d Hz S. Wayne primary is Eclipse Disc" % tick_rate)
-	equal(caster.flux, initial_flux, "%d Hz Eclipse Disc is resource-free" % tick_rate)
+	equal(caster.flux, initial_flux - CombatTuning.ECLIPSE_DISC_FLUX_COST, "%d Hz Eclipse Disc spends exact positive Flux" % tick_rate)
 	var saw_hit: bool = false
 	for _index: int in range(tick_rate):
 		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Eclipse Disc flight steps" % tick_rate)
@@ -424,6 +434,42 @@ func _test_movement_spell_chains(tick_rate: int) -> void:
 	cooling.primary_cooldown_ticks = 10
 	check(_step(cooldown_world, SimCommand.new(cooldown_world.tick, cooling.entity_id, 0, 0, 0, SimCommand.PRESSED_SPELL_1)), "%d Hz cooling spell command steps" % tick_rate)
 	check(cooldown_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("reason") == "cooldown" and int(event.get("wire_id", 0)) == CombatTuning.RILLSHOT_WIRE_ID), "%d Hz own cooldown refusal is visible" % tick_rate)
+
+
+func _test_pressure_exhaustion_and_recovery(tick_rate: int) -> void:
+	for champion_id: String in ["oh_tipi", "s_wayne"]:
+		var world := SimWorld.new(tick_rate)
+		var caster: PlayerState = world.player()
+		if champion_id == "oh_tipi":
+			_apply_oh_tipi(caster)
+		else:
+			_apply_s_wayne(caster)
+		var definition := CombatTuning.cast_definition(caster.primary_wire_id)
+		var primary_cost := int(definition["flux_cost"])
+		@warning_ignore("integer_division")
+		var expected_casts: int = caster.flux_maximum / primary_cost
+		var cast_count := 0
+		var exhausted_tick := -1
+		for _index: int in range(tick_rate * 5):
+			check(_step(world, SimCommand.new(world.tick, caster.entity_id, 0, 0, SimCommand.HELD_PRIMARY, 0, 1000, 0)), "%d Hz %s sustained-pressure tick steps" % [tick_rate, champion_id])
+			for event: Dictionary in world.combat_events:
+				if event.get("type") == "cast_started" and int(event.get("wire_id", 0)) == caster.primary_wire_id:
+					cast_count += 1
+			if caster.pending_cast_wire_id == 0 and caster.primary_cooldown_ticks == 0 and caster.flux < primary_cost:
+				exhausted_tick = world.tick
+				break
+		check(exhausted_tick > 0 and exhausted_tick <= tick_rate * 5, "%d Hz %s sustained pressure exhausts inside five seconds" % [tick_rate, champion_id])
+		equal(cast_count, expected_casts, "%d Hz %s receives no free pressure casts" % [tick_rate, champion_id])
+		check(caster.flux < primary_cost, "%d Hz %s exhaustion is visible in canonical Flux" % [tick_rate, champion_id])
+
+		var pause_ticks := world.config.milliseconds_to_ticks(PlayerTuning.FLUX_RECOVERY_DELAY_MS + 500)
+		for _index: int in range(pause_ticks):
+			check(_step(world, SimCommand.new(world.tick, caster.entity_id)), "%d Hz %s deliberate recovery tick steps" % [tick_rate, champion_id])
+		check(caster.flux >= primary_cost, "%d Hz %s deliberate pause restores a cast" % [tick_rate, champion_id])
+		var recovered_flux := caster.flux
+		check(_step(world, SimCommand.new(world.tick, caster.entity_id, 0, 0, 0, SimCommand.PRESSED_SPELL_1, 1000, 0)), "%d Hz %s recovered primary command steps" % [tick_rate, champion_id])
+		equal(caster.pending_cast_wire_id, caster.primary_wire_id, "%d Hz %s recovered pressure starts" % [tick_rate, champion_id])
+		check(caster.flux < recovered_flux, "%d Hz %s recovered cast pays Flux again" % [tick_rate, champion_id])
 
 
 func _test_edgeweave(tick_rate: int) -> void:

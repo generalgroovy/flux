@@ -1,6 +1,6 @@
 # FLUX immediate implementation order
 
-The prior published rollback point is commit `b5b958e`, protocol 26, snapshot
+The prior published rollback point is commit `eee891e`, protocol 26, snapshot
 schema 10 and preference schema 8. V0–V6 now pass the integrated engineering
 visual gate on the current branch; preserve both green points and work only in
 complete playable slices with a checkpoint after each accepted stage.
@@ -10,8 +10,8 @@ complete playable slices with a checkpoint after each accepted stage.
 | 0 | Visual overhaul — complete | V0–V6 in `.agent/VISUAL-OVERHAUL.md` are integrated; visual polish continues inside later slices without presentation owning rules. | Passed: reviewed live 720p/1080p standard/accessibility/reduced/pair frames, 4.57/5 mean with minimum 4.0, 50 suites/15,991 assertions and final 120 Hz Farflow journey. |
 | 1 | Crisp readable movement — engineering-complete | The measured 324 px/s candidate tightens acceleration/deceleration/reversal, preserves expressive advanced momentum and adds velocity-scaled animation response. | Passed deterministic distance/stop/reversal fixtures, all 60/120 movement routes, 50/75/100% captures and Farflow; hands-on A/B remains final tuning authority. |
 | 2 | Universal action chaining — engineering-complete | The canonical matrix covers all live movement/control states and spell shapes; recovery never silently blocks unrelated casts and startup is one visible execution commitment. | Passed simultaneous movement/cast, moving startup, recovery chain, startup refusal, physical refusal and own-cooldown fixtures at 60/120 Hz plus Farflow. |
-| 3 | Fast resource/cooldown economy — active | Every offensive cast, including primaries, costs positive Flux; movement spends Stamina; lower cooldowns toward fast decisions without making repetition free. | Sustained pressure exhausts Flux, deliberate pauses/repositioning recover it, mixed chains beat single-button holding, and no affinity creates free offense. |
-| 4 | Global element spell library | Promote complete, distinct catalogs for all twelve elements and expose all proven spells at the Wellspring regardless of champion. | Every element has the minimum catalog below, all entries pass shape/authority/counterplay tests, and any champion can configure any proven spell into the 3x4 weave. |
+| 3 | Fast resource/cooldown economy — engineering-complete candidate | All runtime spells pay positive Flux, recovery delay and three cadence tiers are canonical, and action-specific cooldowns replace idle lockouts. | Passed exact exhaustion/no-free-cast/deliberate-recovery fixtures for both champions at 60/120 Hz, live HUD capture and 120 Hz Farflow; hands-on balance remains tuning authority. |
+| 4 | Global element spell library — active | Promote complete, distinct catalogs for all twelve elements and expose all proven spells at the Wellspring regardless of champion. | Every element has the minimum catalog below, all entries pass shape/authority/counterplay tests, and any champion can configure any proven spell into the 3x4 weave. |
 
 ## Movement tuning contract
 

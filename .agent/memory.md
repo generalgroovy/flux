@@ -20,9 +20,12 @@ each playable slice.
   repositions every proven kit spell, honest empties refuse without spending
   Flux, guests wait for snapshot confirmation, and champion changes reset to
   the safe Plain 1/2/3 layout. Schema-v3 loadouts validate twelve positions.
-- Ability schema 2 validates shape, delivery, impact, residue, planned material
-  operation and separate runtime gates. Only six proven spells enter the
-  playable selector; every material mutation remains explicitly disabled.
+- Ability schema 3 validates shape, delivery, impact, residue, planned material
+  operation, runtime gates and a canonical Flux economy. Seven proven spells
+  enter the playable selector; every material mutation remains disabled.
+- Every runtime spell has positive cost and a bounded pressure/tempo/control
+  cadence. Arc/Rillshot/Eclipse cost 7/6/8 Flux; active costs are 24/20/24/18,
+  recovery waits 700 ms, and the HUD visibly separates WAIT from RISING.
 - Pocket Eclipse is the first non-projectile runtime shape: a 520-unit Light
   beam resolved after actor movement, stopped by cover, limited to the first
   legal target, replicated by semantic endpoint and never stored as a projectile.
@@ -48,7 +51,7 @@ each playable slice.
   channel, physical control, own cooldown, Flux, kit and empty-slot refusals are
   visible and resource-safe. Hash `7e09aa303455` is part of state and Farflow
   compatibility.
-- Latest source verification is 16,104 assertions across 52 suites plus
+- Latest source verification is 18,143 assertions across 52 suites plus
   import/source 60/120 Hz boots and a fresh 120 Hz three-process
   spectator-to-Hearth-to-Round-2, reconnect and stewardship journey.
 - Fresh Windows and Linux friend packages plus packaged Windows safe quit pass
@@ -90,12 +93,12 @@ each playable slice.
 
 ## Next acceptance-driven slice
 
-V0–V6, crisp ordinary movement and the universal movement/spell transition
-contract are engineering-complete. The next legal slice is fast resource and
-cooldown economy: make every damaging/pressure cast cost positive Flux,
-centralize regeneration/combat delay, shorten action-specific cadence where
-tests support it, and prove that pressure exhausts while mixed chains and
-deliberate recovery remain useful at 60/120 Hz and over Farflow.
+V0–V6, crisp ordinary movement, universal action transitions and the positive-
+Flux cadence candidate are engineering-complete. The next legal slice begins
+the global library one complete element at a time: choose the element whose
+existing runtime shapes provide the safest foundation, promote quick pressure,
+control/defense, movement/utility and high commitment end to end, and expose
+only proven spells globally through the Loom.
 
 <!-- Historical V1 handoff below is retained only as prior evidence. -->
 Mechanics remain frozen. V0 and V1 are complete: the validated visual language

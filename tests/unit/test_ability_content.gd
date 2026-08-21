@@ -28,14 +28,16 @@ func _test_catalog() -> void:
 	equal(first.playable_spell_ids(), ["arc-primary", "eclipse-disc", "pocket-eclipse", "rillshot", "rimewake", "tideline", "vector-lance"], "only end-to-end spells enter the playable selector")
 	for gated_id: String in ["spirit", "chaos", "gravity", "time"]:
 		check(not bool((first.elements_by_id[gated_id] as Dictionary)["runtime_enabled"]), "%s remains explicitly gated" % gated_id)
-	equal(int(first.ability("arc-primary")["flux_cost"]), 0, "reliable primary is resource-free")
+	equal(int(first.economy["recovery_delay_ms"]), PlayerTuning.FLUX_RECOVERY_DELAY_MS, "catalog owns the compiled Flux recovery delay")
+	equal((first.economy["cadence_tiers_ms"] as Dictionary).keys().size(), 3, "economy declares exactly three cadence tiers")
+	equal(int(first.ability("arc-primary")["flux_cost"]) * 1000, CombatTuning.PRIMARY_FLUX_COST, "foundation primary has exact positive Flux cost")
 	equal(int(first.ability("arc-primary")["wire_id"]), CombatTuning.PRIMARY_WIRE_ID, "compiled primary wire matches catalog")
 	equal(int(first.ability("arc-primary")["cooldown_ms"]), CombatTuning.PRIMARY_COOLDOWN_MS, "compiled primary cooldown matches catalog")
 	equal(int(first.ability("vector-lance")["wire_id"]), CombatTuning.ACTIVE_1_WIRE_ID, "compiled active wire matches catalog")
 	equal(int(first.ability("vector-lance")["flux_cost"]) * 1000, CombatTuning.ACTIVE_1_FLUX_COST, "compiled active Flux cost matches catalog")
 	equal(int(first.ability("vector-lance")["startup_ms"]), CombatTuning.ACTIVE_1_STARTUP_MS, "compiled active startup matches catalog")
 	equal(int(first.ability("rillshot")["wire_id"]), CombatTuning.RILLSHOT_WIRE_ID, "Rillshot wire matches compiled Oh Tipi kit")
-	equal(int(first.ability("rillshot")["flux_cost"]), 0, "Oh Tipi primary remains resource-free")
+	equal(int(first.ability("rillshot")["flux_cost"]) * 1000, CombatTuning.RILLSHOT_FLUX_COST, "Oh Tipi primary has exact positive Flux cost")
 	equal(int(first.ability("tideline")["wire_id"]), CombatTuning.TIDELINE_WIRE_ID, "Tideline wire matches compiled Oh Tipi kit")
 	equal(int(first.ability("tideline")["flux_cost"]) * 1000, CombatTuning.TIDELINE_FLUX_COST, "Tideline Flux cost matches compiled behavior")
 	equal(int(first.ability("tideline")["startup_ms"]), CombatTuning.TIDELINE_STARTUP_MS, "Tideline startup matches compiled behavior")
@@ -50,7 +52,7 @@ func _test_catalog() -> void:
 	check(CombatTuning.projectile_definition(CombatTuning.RIMEWAKE_WIRE_ID).is_empty(), "Rimewake cannot silently re-enter projectile simulation")
 	check(not bool(first.ability("rimewake")["material_runtime_enabled"]), "Rimewake keeps its planned cooling mutation sealed")
 	equal(int(first.ability("eclipse-disc")["wire_id"]), CombatTuning.ECLIPSE_DISC_WIRE_ID, "Eclipse Disc wire matches compiled S. Wayne kit")
-	equal(int(first.ability("eclipse-disc")["flux_cost"]), 0, "S. Wayne primary remains resource-free")
+	equal(int(first.ability("eclipse-disc")["flux_cost"]) * 1000, CombatTuning.ECLIPSE_DISC_FLUX_COST, "S. Wayne primary has exact positive Flux cost")
 	equal(int(first.ability("pocket-eclipse")["wire_id"]), CombatTuning.POCKET_ECLIPSE_WIRE_ID, "Pocket Eclipse wire matches compiled S. Wayne kit")
 	equal(int(first.ability("pocket-eclipse")["flux_cost"]) * 1000, CombatTuning.POCKET_ECLIPSE_FLUX_COST, "Pocket Eclipse Flux cost matches compiled behavior")
 	equal(int(first.ability("pocket-eclipse")["startup_ms"]), CombatTuning.POCKET_ECLIPSE_STARTUP_MS, "Pocket Eclipse startup matches compiled behavior")
@@ -61,6 +63,8 @@ func _test_catalog() -> void:
 		var playable: Dictionary = first.ability(playable_id)
 		check(AbilityCatalog.SHAPES.has(String(playable.get("shape", ""))), "%s declares a legal spell shape" % playable_id)
 		check(not bool(playable.get("material_runtime_enabled", true)), "%s keeps material mutation truthfully gated" % playable_id)
+		check(int(playable.get("flux_cost", 0)) > 0, "%s cannot create free runtime pressure" % playable_id)
+		check(AbilityCatalog.CADENCE_TIER_IDS.has(String(playable.get("cadence_tier", ""))), "%s declares a bounded cadence tier" % playable_id)
 	equal(String(first.ability("prism-ward").get("shape")), "defense", "Prism Ward declares its future defense shape")
 	equal(String(first.ability("stone-channel").get("residue")), "construct", "Stone Channel declares intended persistent geometry")
 	for active_id: String in ["vector-lance", "prism-ward", "stone-channel", "tideline", "rimewake", "pocket-eclipse"]:
@@ -115,6 +119,14 @@ func _test_invalid_content_fails_closed() -> void:
 			ability["flux_cost"] = 0
 	check(not invalid_catalog.validate(), "zero-cost catalog active fails closed")
 	check(invalid_catalog.last_error.contains("positive"), "active cost failure is diagnosable")
+
+	var free_primary := AbilityCatalog.new()
+	free_primary.data = catalog.data.duplicate(true)
+	for ability: Dictionary in free_primary.data["abilities"]:
+		if ability["id"] == "rillshot":
+			ability["flux_cost"] = 0
+	check(not free_primary.validate(), "zero-cost runtime primary fails closed")
+	check(free_primary.last_error.contains("positive"), "primary cost failure is diagnosable")
 
 	var invalid_shape := AbilityCatalog.new()
 	invalid_shape.data = catalog.data.duplicate(true)

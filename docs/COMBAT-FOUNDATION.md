@@ -7,8 +7,8 @@ The protocol-26 foundation extends the first complete command-to-impact path:
 - independent scale-1000 aim and held primary input;
 - pressed active-one input;
 - startup, recovery, and cooldown state compiled independently at 60/120 Hz;
-- resource-free Arc Primary/Rillshot/Eclipse Disc and Flux-paid Vector
-  Lance/Tideline/Pocket Eclipse;
+- positive-Flux Arc Primary/Rillshot/Eclipse Disc and paid Vector Lance,
+  Tideline, Rimewake and Pocket Eclipse;
 - stable projectile/entity/owner/team/source/element IDs plus canonical bounce
   count and on-hit slow strength;
 - integer movement/remainders, ordered world collision, swept player hits,
@@ -59,16 +59,18 @@ per-tick message spam, while semantic 1–12 presses report the cooldown.
 
 | Ability | Wire | Cost | Startup | Cooldown | Current result |
 | --- | ---: | ---: | ---: | ---: | --- |
-| Arc Primary | 101 | 0 Flux | 60 ms | 220 ms | 10 Health projectile, speed 1120, 1200 ms lifetime |
-| Vector Lance | 110 | 24 Flux | 180 ms | 1400 ms | 25 Health projectile, speed 980, 1500 ms lifetime |
-| Rillshot (Oh Tipi) | 140 | 0 Flux | 55 ms | 190 ms | 9 Health Water projectile, speed 1060, 1150 ms lifetime |
-| Tideline (Oh Tipi) | 141 | 22 Flux | 170 ms | 1600 ms | 14 Health Water crest, speed 780, 180 ms launch at speed 420 |
-| Eclipse Disc (S. Wayne) | 142 | 0 Flux | 70 ms | 260 ms | 10 Health Dark disc, speed 900, exactly one world ricochet |
-| Pocket Eclipse (S. Wayne) | 143 | 20 Flux | 190 ms | 1800 ms | 8 Health Light shot, speed 820, 600 ms slow to 55% movement |
+| Arc Primary | 101 | 7 Flux | 60 ms | 200 ms | 10 Health Charge projectile, speed 1120, 1200 ms lifetime |
+| Vector Lance | 110 | 24 Flux | 180 ms | 900 ms | 25 Health Charge projectile, speed 980, 1500 ms lifetime |
+| Rillshot (Oh Tipi) | 140 | 6 Flux | 55 ms | 180 ms | 9 Health Water projectile, speed 1060, 1150 ms lifetime |
+| Tideline (Oh Tipi) | 141 | 20 Flux | 170 ms | 900 ms | 14 Health Water spray, 280 range, 180 ms launch at speed 420 |
+| Rimewake (Oh Tipi) | 144 | 24 Flux | 240 ms | 1800 ms | Ice field, 72 radius/2200 ms lifetime, one 700 ms slow per target |
+| Eclipse Disc (S. Wayne) | 142 | 8 Flux | 70 ms | 230 ms | 10 Health Dark disc, speed 900, exactly one world ricochet |
+| Pocket Eclipse (S. Wayne) | 143 | 18 Flux | 190 ms | 1000 ms | 8 Health Light beam, 520 range, 600 ms slow to 55% movement |
 
 Values are integer milli-units in simulation. The ability-content suite prevents
 compiled wire, Flux, startup, and cooldown values from drifting away from the
-canonical catalog.
+canonical catalog. Spending any runtime spell delays Flux recovery by 700 ms;
+the HUD names the delay and the following recovery phase.
 
 ## Edgeweave invariants
 

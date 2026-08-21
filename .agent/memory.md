@@ -35,7 +35,7 @@ each playable slice.
 - Camera presentation now defaults to a wider 75% scale and persists a bounded
   50/75/100% choice. Pointer aim, cone range and building occlusion transform
   with the same scale; F11 and `--camera-zoom=` expose it without changing rules.
-- Latest source verification is 15,911 assertions plus import/source 60/120 Hz
+- Latest source verification is 15,934 assertions across 48 suites plus import/source 60/120 Hz
   boots and a fresh 120 Hz three-process spectator-to-Hearth-to-Round-2,
   reconnect and stewardship journey. Diagnostic captures verify the compact
   active-layer HUD, wider 75% navigation view, Rimewake feedback and 3x4 Loom.
@@ -56,30 +56,27 @@ each playable slice.
   faceted/textured roofs, modular facades, station furniture and landmark frames
   reuse the approved runtime pixel kit while leaving collision, routes, elevation,
   commands, interaction radii and cutaway authority unchanged.
+- A fail-closed foundation spell presenter now validates and renders all five
+  live spells from authoritative state: distinct startup silhouettes, projectile/
+  beam/spray/field action language, actor impacts, Rimewake residue and
+  source-specific refusal feedback. Default-75% 720p captures cover all five;
+  the authored viewport still blocks truthful 1080p evidence until V6.
+- Latest verification is 15,934 assertions across 48 suites, independent source
+  boots and explicit live casts at 60/120 Hz, plus a fresh full 120 Hz Farflow
+  spectator/Hearth/round/reconnect/rematch/stewardship journey.
 - Untracked `dist/`, `node_modules/` and `scripts/firewall.ps1` are user-owned
   and must remain untouched.
 
 ## Next acceptance-driven slice
 
-Mechanics remain frozen. V0–V2 are complete. Oh Tipi and S. Wayne use a pinned,
-quantized compact-cartoon atlas with all critical directional/action states;
-their editable minimal-motion profiles cover the complete movement grammar,
-add bounded advanced-technique accents, normalize presentation at 60/120 Hz
-and damp under reduced motion. V3 is active: an editable fail-closed
-NaturalMapKit now seeds quiet ground variation, natural edge props, curved
-visual routes and surface-aware movement contact without changing topology or
-collision. Open-Conservatory captures cover walk, sprint, slide, jump, air
-dodge and contextual technique. The new data-driven compact HUD keeps only
-moment-to-moment champion/location, session state, Health, Flux, Stamina,
-active layer and four spell cells on screen; existing stations retain detailed
-guidance. An equally data-driven eight-point wayfinding kit gives the wide
-campus distinct movement, recovery, archive, loom, settings, Farflow, duel and
-elemental trial destinations without changing authority. The modular architecture
-candidate covers the source court, every live building style, all station
-furniture and every landmark frame. Final V3 captures cover all three districts,
-50/75/100% and deterministic cutaway behavior; scenic-edge props survive
-overview zoom and near waypoint labels yield the actor lane. V4's existing spell
-visuals are next; mechanics remain frozen through V6.
+Mechanics remain frozen. V0–V4 are engineering-complete: the visual language,
+compact-cartoon champions, natural modular Wellspring and five distinct live
+spell presentations all have deterministic runtime implementations and reviewed
+1280x720 evidence. V5 is the only legal next slice: audit and unify walk-up
+stations, contextual prompts, speech/thought bubbles and compact HUD hierarchy
+without changing commands, radii, authority or simulation. Then complete V6 with
+true 1080p, reduced-motion/high-contrast/readability review and a two-player
+Farflow acceptance journey before opening any mechanical work.
 
 <!-- Historical V1 handoff below is retained only as prior evidence. -->
 Mechanics remain frozen. V0 and V1 are complete: the validated visual language

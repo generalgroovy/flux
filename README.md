@@ -144,6 +144,8 @@ even when design documentation already exists.
     Flux cost, readable projectile, bounded launch, sparring effigy and reset
   - [x] S. Wayne's Dark Eclipse Disc and Light Pocket Eclipse: one readable
     ricochet, bounded slow, exact resource/timing rules and distinct spell shapes
+  - [x] Five-spell visual presenter with distinct startup/action/impact/residue
+    language for Rillshot, Tideline, Rimewake, Eclipse Disc and Pocket Eclipse
   - [ ] Complete targeting families, defense/clash/launch/status rules, passive,
     three actives, mobility, ultimate, formula variants, and configuration UI
   - [ ] First complete champion vertical slice
@@ -1937,7 +1939,7 @@ See [development setup](docs/DEVELOPMENT.md) and the
 
 ## Production roadmap
 
-Current visual frontier: V0–V3 engineering slices are complete. Oh Tipi and S. Wayne use pinned
+Current visual frontier: V0–V4 engineering slices are complete. Oh Tipi and S. Wayne use pinned
 compact-cartoon runtime art and editable, rate-independent minimal motion across
 the full movement grammar. The editable seeded NaturalMapKit now
 provides curved visual routes, natural edge growth, quiet ground variation and
@@ -1945,8 +1947,10 @@ surface-aware contact while authored collision/topology remain unchanged. A
 fail-closed modular architecture kit adds the warm Nexus source court, seven
 building styles, ten station-furniture profiles and five landmark frames using
 the approved runtime pixel modules. Same-state captures cover all three
-districts, cutaway behavior and 50/75/100% zoom; V4 existing-spell visuals are
-next while final subjective cohesion remains part of V6.
+districts, cutaway behavior and 50/75/100% zoom. All five playable foundation
+spells now own validated, distinct startup/action/impact/residue language at the
+default 75% overview; finish V5 interaction-language review next while final
+subjective/accessibility cohesion remains part of V6.
 
 Production advances through small vertical slices. Each checkpoint must leave a
 launchable game, focused history, truthful status index, known rollback commit,

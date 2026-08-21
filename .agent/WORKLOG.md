@@ -1,5 +1,50 @@
 # FLUX2 agent worklog
 
+## 2026-08-21 — V4 five-spell runtime presentation
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added one fail-closed, presentation-only visual catalog and presenter for all
+  five playable foundation spells. It validates exact ability wire, shape,
+  element and residue alignment and refuses duplicate startup silhouettes.
+- Rillshot now gathers and travels as a split-wake Water drop with a layered
+  splash; Tideline rises and releases as a seven-lane curling fan with a breaker
+  impact; Rimewake grows a frost sigil into a persistent crystal field and star
+  trigger; Eclipse Disc gathers orbiting crescents and travels as a Dark/Light
+  disc; Pocket Eclipse focuses paired rails into a cover-bounded dual beam and
+  endpoint diamond.
+- Derived startup progress from authoritative pending-cast ticks and action
+  geometry from existing projectile, field and semantic endpoint state. The
+  presenter cannot mutate simulation, collision, timing, costs or outcomes.
+- Preserved readable cooldown/Flux state in the four-cell HUD, routed refusal
+  events through their actual wire ID, layered impacts above the training target
+  and removed the unreachable legacy Pocket Eclipse projectile art branch.
+- Added explicit capture-only cast diagnostics. They report pending wire/ticks,
+  live projectile/field counts and semantic events only when the existing
+  `--capture-cast-*` harness is requested.
+
+Validation:
+
+- Full headless suite passed with 15,934 assertions across 48 suites and zero
+  failures; Windows import and independent 60/120 Hz source boots passed.
+- Explicit 60/120 Hz Rimewake and Pocket Eclipse cast boots passed with matched
+  authoritative release positions/endpoints and no script/runtime errors.
+- Live 1280×720 default-75% captures under `.godot/v4-acceptance-720-*` cover
+  every spell; separate target captures prove projectile travel and actor-hit
+  layering. The attempted 1920×1080 movie override still emits the authored
+  1280×720 viewport and is not claimed as 1080p evidence.
+- The full 120 Hz three-process Farflow spectator, Hearth, round, reconnect,
+  rematch and stewardship journey passed on UDP 24914.
+
+Known limitations and risks:
+
+- V4 is engineering-complete but remains subject to the integrated V6 charm and
+  accessibility score, including a real 1080p harness; V5 station/prompt/bubble
+  review is the next legal slice.
+- Existing bulk-catalog image-loader warnings predate this slice.
+
 ## 2026-08-21 — V3 three-district and zoom acceptance pass
 
 Branch: `codex/continuous-overhaul`

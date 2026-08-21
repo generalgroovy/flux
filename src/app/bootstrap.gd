@@ -45,6 +45,7 @@ var campus_renderer: SanctumCampusRenderer
 var visual_language: VisualLanguage
 var compact_hud: CompactCombatHud
 var cartoon_champion_presenter: CartoonChampionPresenter
+var foundation_spell_presenter: FoundationSpellPresenter
 var ability_catalog: AbilityCatalog
 var champion_catalog: ChampionCatalog
 var loadout: LoadoutDefinition
@@ -193,6 +194,11 @@ func _ready() -> void:
 		push_error(ability_catalog.last_error)
 		get_tree().quit(1)
 		return
+	foundation_spell_presenter = FoundationSpellPresenter.new()
+	if not foundation_spell_presenter.configure(visual_language, ability_catalog):
+		push_error(foundation_spell_presenter.last_error)
+		get_tree().quit(1)
+		return
 	champion_catalog = ChampionCatalog.new()
 	if not champion_catalog.load_from_file(CHAMPION_CATALOG_PATH, ability_catalog):
 		push_error(champion_catalog.last_error)
@@ -250,7 +256,7 @@ func _ready() -> void:
 		elif capture_expanded_station_id == "spell-loom":
 			spell_loom_editor.open_editor(_local_player_state())
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, visual %s, HUD %s, architecture %s, wayfinding %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, visual %s, HUD %s, architecture %s, wayfinding %s, spells %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -263,6 +269,7 @@ func _ready() -> void:
 			compact_hud.content_hash.left(12),
 			campus_renderer.architecture_kit.content_hash.left(12),
 			campus_renderer.wayfinding.content_hash.left(12),
+			foundation_spell_presenter.content_hash.left(12),
 			cartoon_champion_presenter.content_hash.left(12),
 			cartoon_champion_presenter.atlas_hash.left(12),
 			hub_definition.districts_by_id.size(),
@@ -545,6 +552,18 @@ func _process(delta: float) -> void:
 					set_process(false)
 					return
 			_ingest_combat_cues(world.combat_events)
+			if (requested_capture_active_cast or requested_capture_spell_slot > 0) and not world.combat_events.is_empty():
+				print(
+					"FLUX2 spell capture: tick %d pending %d/%d projectiles %d fields %d events %s"
+					% [
+						world.tick,
+						_local_player_state().pending_cast_wire_id,
+						_local_player_state().pending_cast_ticks,
+						world.projectiles.size(),
+						world.fields.size(),
+						JSON.stringify(world.combat_events),
+					]
+				)
 			if session_transport.is_host() and world.tick % snapshot_tick_interval(tick_rate) == 0:
 				authoritative_session.record_combat_events(world.combat_events)
 				var snapshot_sent := session_transport.broadcast_snapshot(authoritative_session.capture_snapshot())
@@ -595,8 +614,8 @@ func _draw() -> void:
 		var projectile_position := Vector2(float(projectile.position_x) / 1000.0, float(projectile.position_y) / 1000.0)
 		var projectile_color: Color = _projectile_color(projectile.element_wire_id)
 		_draw_projectile(projectile, projectile_position, projectile_color)
-	_draw_combat_cues(camera_origin)
 	_draw_practice_targets(camera_origin)
+	_draw_combat_cues(camera_origin)
 	var state: PlayerState = _local_player_state()
 	if state == null:
 		return
@@ -653,6 +672,7 @@ func _draw() -> void:
 		draw_arc(body_position, player_radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
 	if show_debug_overlay:
 		_draw_actor_hitbox_diagnostic(body_position, player_radius, presentation_champion_id)
+	_draw_spell_startup(presentation_state, body_position, roundi(visual_tick))
 	if state.spawn_protection_ticks > 0:
 		var protection_ratio := clampf(float(state.spawn_protection_ticks) / float(maxi(1, world.config.milliseconds_to_ticks(1200))), 0.0, 1.0)
 		draw_arc(body_position, player_radius + 9.0, 0.0, TAU, 28, Color(ATTUNEMENT_COLOR, 0.32 + protection_ratio * 0.42), 2.0)
@@ -882,6 +902,8 @@ func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 			"position": anchor["position"],
 			"label": label,
 			"color": color,
+			"event_type": kind,
+			"source_wire_id": int(event.get("source_wire_id", event.get("wire_id", 0))),
 			"remaining": 0.20 if kind in ["beam_fired", "spray_fired"] else 0.55,
 			"duration": 0.20 if kind in ["beam_fired", "spray_fired"] else 0.55,
 		}
@@ -941,6 +963,13 @@ func _draw_combat_cues(camera_origin: Vector2) -> void:
 		var position: Vector2 = cue.get("position", Vector2.ZERO)
 		var color: Color = cue.get("color", ATTUNEMENT_COLOR)
 		var opacity := 1.0 - phase
+		if foundation_spell_presenter != null and foundation_spell_presenter.draw_cue(self, cue, phase, player_preferences.reduced_motion):
+			var spell_label := String(cue.get("label", ""))
+			if not spell_label.is_empty():
+				var spell_label_width := ThemeDB.fallback_font.get_string_size(spell_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
+				var label_lift := 48.0 if String(cue.get("event_type", "")) in ["projectile_hit", "spray_hit", "field_triggered"] else 24.0
+				draw_string(ThemeDB.fallback_font, position + Vector2(-spell_label_width * 0.5, -label_lift - phase * 16.0), spell_label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 11, Color(color, opacity))
+			continue
 		if String(cue.get("kind", "")) == "beam":
 			var start: Vector2 = cue.get("start", position)
 			var endpoint: Vector2 = cue.get("end", position)
@@ -1013,6 +1042,7 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visua
 			draw_arc(body_position, radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
 		if show_debug_overlay:
 			_draw_actor_hitbox_diagnostic(body_position, radius, champion_id)
+		_draw_spell_startup(remote_state, body_position, visual_tick)
 		if remote_state.spawn_protection_ticks > 0:
 			var protection_ratio := clampf(float(remote_state.spawn_protection_ticks) / float(maxi(1, world.config.milliseconds_to_ticks(1200))), 0.0, 1.0)
 			draw_arc(body_position, radius + 9.0, 0.0, TAU, 28, Color(ATTUNEMENT_COLOR, 0.32 + protection_ratio * 0.42), 2.0)
@@ -1026,6 +1056,25 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visua
 		var health_ratio := clampf(float(remote_state.health) / float(maxi(1, remote_state.health_maximum)), 0.0, 1.0)
 		draw_rect(Rect2(health_bar.position + Vector2.ONE, Vector2((health_bar.size.x - 2.0) * health_ratio, 2.0)), Color("d9634f"), true)
 	_set_world_transform(camera_origin)
+
+
+func _draw_spell_startup(state: PlayerState, position: Vector2, visual_tick: int) -> void:
+	if foundation_spell_presenter == null or state == null or state.pending_cast_wire_id <= 0 or state.pending_cast_ticks <= 0:
+		return
+	var ability := ability_catalog.ability_from_wire(state.pending_cast_wire_id)
+	if ability.is_empty():
+		return
+	var full_ticks := maxi(1, world.config.milliseconds_to_ticks(int(ability.get("startup_ms", 0))))
+	var phase := clampf(1.0 - float(state.pending_cast_ticks) / float(full_ticks), 0.0, 1.0)
+	foundation_spell_presenter.draw_startup(
+		self,
+		state.pending_cast_wire_id,
+		position,
+		Vector2(state.aim_x, state.aim_y),
+		phase,
+		visual_tick,
+		player_preferences.reduced_motion,
+	)
 
 
 func _draw_actor_hitbox_diagnostic(center: Vector2, radius: float, champion_id: String) -> void:
@@ -2412,6 +2461,8 @@ func _draw_field(field: FieldState) -> void:
 	var radius := float(field.radius) / SimConfig.FIXED_SCALE
 	var full_lifetime := maxi(1, world.config.milliseconds_to_ticks(CombatTuning.RIMEWAKE_LIFETIME_MS))
 	var life_ratio := clampf(float(field.lifetime_ticks) / float(full_lifetime), 0.0, 1.0)
+	if foundation_spell_presenter != null and foundation_spell_presenter.draw_field(self, field, life_ratio, world.tick, player_preferences.reduced_motion):
+		return
 	var ice_color := WATER_HIGHLIGHT_COLOR.lightened(0.36)
 	draw_circle(center, radius, Color(ice_color, 0.11 + life_ratio * 0.05))
 	draw_arc(center, radius, 0.0, TAU, 48, Color(ice_color, 0.64), 2.0)
@@ -2445,24 +2496,13 @@ func _projectile_color(element_wire_id: int) -> Color:
 
 
 func _draw_projectile(projectile: ProjectileState, position: Vector2, color: Color) -> void:
+	if foundation_spell_presenter != null and foundation_spell_presenter.draw_projectile(self, projectile, world.tick, player_preferences.reduced_motion):
+		return
 	var radius: float = float(projectile.radius) / 1000.0
 	var previous := Vector2(float(projectile.previous_x) / 1000.0, float(projectile.previous_y) / 1000.0)
 	draw_line(previous, position, Color(color, 0.42), maxf(2.0, radius * 0.65))
-	match projectile.source_wire_id:
-		CombatTuning.ECLIPSE_DISC_WIRE_ID:
-			draw_circle(position, radius + 8.0, Color(color, 0.16))
-			draw_circle(position, radius, Color("241d2e"))
-			draw_arc(position, radius, -2.35, 0.78, 16, color.lightened(0.2), 3.0)
-			draw_arc(position, radius - 3.0, 0.78, 3.93, 16, PARCHMENT_COLOR.darkened(0.25), 2.0)
-		CombatTuning.POCKET_ECLIPSE_WIRE_ID:
-			draw_circle(position, radius + 10.0, Color(color, 0.14))
-			draw_circle(position, radius, color)
-			draw_circle(position + Vector2(radius * 0.45, 0.0), radius * 0.82, Color("30243d"))
-			for ray: Vector2 in [Vector2.UP, Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT]:
-				draw_line(position + ray * (radius + 2.0), position + ray * (radius + 6.0), Color(color, 0.8), 2.0)
-		_:
-			draw_circle(position, radius + 7.0, Color(color, 0.18))
-			draw_circle(position, radius, color)
+	draw_circle(position, radius + 7.0, Color(color, 0.18))
+	draw_circle(position, radius, color)
 
 
 func _requested_tick_rate() -> int:

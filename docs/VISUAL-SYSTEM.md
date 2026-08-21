@@ -137,6 +137,40 @@ waypoint labels yield the actor-readable lane, paths remain above decoration and
 the compact HUD preserves its play-space budget. This completes V3's engineering
 slice and opens V4; subjective final cohesion is still scored at integrated V6.
 
+## V4 foundation-spell presentation
+
+`content/visual/foundation_spell_visuals_v1.json` is the exact five-spell visual
+contract. It is validated against the ability catalog at boot: stable wire ID,
+shape, element and residue must match, every spell must own one distinct startup
+silhouette, and the effect/lane/curve budgets remain bounded. A catalog mismatch
+stops startup rather than silently rendering a misleading spell.
+
+`FoundationSpellPresenter` reads only authoritative presentation state. Pending
+cast ticks drive startup progress; projectile and field entities drive their
+existing geometry/lifetime; semantic beam, spray, hit, trigger and refusal events
+drive short feedback. It cannot change a cast's range, radius, collision, cost,
+cooldown, damage, control, material result or outcome.
+
+| Spell | Startup | Action/trail | Impact/residue |
+| --- | --- | --- | --- |
+| Rillshot | Gathered Water drop | Faceted drop with split rill wake | Expanding splash ring; no residue |
+| Tideline | Rising three-crest fan | Seven curling lanes and bounded fan | Breaker arc; no residue |
+| Rimewake | Six-ray frost sigil | Persistent crystal/snowflake field | Freeze star; field is the residue |
+| Eclipse Disc | Paired orbiting crescents | Dark/Light disc with orbit echo and bounce pips | Split crescent break; no residue |
+| Pocket Eclipse | Converging Light/Dark focus rails | Paired cover-bounded beam | Revealed endpoint diamond; no residue |
+
+Cooldown and Flux remain honest in the compact authoritative HUD; failed casts
+retain their text reason and gain a closed-sigil cue without faking an action.
+Target impacts render above the practice effigy, while fields remain below actors
+and all alpha/effect budgets preserve collision and silhouette reads.
+
+Default-75% 720p evidence for all five spells is under
+`.godot/v4-acceptance-720-*`. These captures are ignored test artifacts, not
+runtime assets. A 1920×1080 command currently retains the authored 1280×720
+viewport, so it is not 1080p evidence; a true scalable capture harness remains
+part of integrated V6. V4 is engineering-complete, while integrated
+charm/accessibility scoring remains mandatory at V6.
+
 ## Compact HUD and purposeful campus slice
 
 `content/visual/compact_hud_v1.json` now owns the bounded combat-HUD geometry.

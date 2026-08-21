@@ -1,5 +1,51 @@
 # FLUX2 agent worklog
 
+## 2026-08-21 — V5 Wellspring interaction and compact-HUD language
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added a fail-closed, presentation-only interaction language for every live
+  Wellspring station kind. Compact prompts, expanded station sheets, social
+  bubbles and notices now share bounded parchment geometry, source tethers,
+  station crests and the existing visual ramps without changing commands,
+  proximity, authority or simulation.
+- Localized the interaction-key capsule from the saved keyboard binding instead
+  of leaving a hard-coded `F`, kept prompts below the top HUD and above the
+  bottom HUD, and made the presentation stable at 50/75/100% camera zoom.
+- Refined the four-cell combat HUD with compact Oh Tipi/S. Wayne portrait
+  medallions, stepped old-world frames, element-shape glyphs, resource tick
+  marks and explicit low-Flux/cooldown states. Health, Flux, Stamina, active
+  Plain/Ctrl/Alt layer and four spells remain its only permanent combat data.
+- Removed the decorative gray strip above the Wellspring while preserving the
+  same non-playable/collision boundary.
+- Added a sandboxed Windows visual-capture wrapper. It validates the requested
+  name/resolution/frame count, copies only bounded source/import caches to a
+  temporary project, changes only that copy's viewport, verifies every PNG's
+  real dimensions and removes only its verified temporary directory.
+
+Validation:
+
+- Full headless suite passed with 15,965 assertions across 49 suites and zero
+  failures; Windows import and independent 60/120 Hz source boots passed.
+- Truthful four-frame captures passed at 1280×720 and 1920×1080. Reviewed
+  evidence is under `.godot/visual-captures/v5-acceptance-720-social-final`,
+  `v5-acceptance-1080-expanded-final` and
+  `v5-acceptance-1080-social-final`; these are ignored diagnostic artifacts.
+- The complete 120 Hz three-process Farflow journey passed on UDP 24916 with
+  host/join, shared HELLO, movement reconciliation, Hearth-to-Court travel,
+  late-join spectating/Hearth handoff, exact-actor reconnect, rematch and
+  reason-bearing stewardship. The supported 60-second allowance was required;
+  the first 20-second run exhausted one shared script deadline during late join.
+
+Known limitations and risks:
+
+- V5 is engineering-complete, not final visual acceptance. V6 must still score
+  live grayscale/color-vision readability, high-contrast and reduced-effects
+  parity, integrated spell/combat hierarchy and a two-player frame journey.
+- Existing bulk-catalog image-loader warnings predate this slice.
+
 ## 2026-08-21 — V4 five-spell runtime presentation
 
 Branch: `codex/continuous-overhaul`

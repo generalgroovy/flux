@@ -127,3 +127,6 @@ func _test_capture_pointer_parser() -> void:
 	equal(BootstrapScript.parse_capture_expanded_station("--capture-expanded-station=farflow-charter", capture_stations), "farflow-charter", "capture-only station expansion accepts an authored station")
 	equal(BootstrapScript.parse_capture_expanded_station("--capture-expanded-station=missing", capture_stations), "", "capture-only station expansion rejects unknown stations")
 	equal(BootstrapScript.parse_capture_expanded_station("--other=farflow-charter", capture_stations), "", "unrelated argument cannot expand a station")
+	equal(BootstrapScript.ui_scale_for(Vector2(1280, 720)), 1.0, "authored 720p uses the one-to-one UI design grid")
+	equal(BootstrapScript.ui_scale_for(Vector2(1920, 1080)), 1.5, "1080p scales the UI design grid for equivalent readability")
+	equal(BootstrapScript.ui_scale_for(Vector2(2560, 1080)), 1.5, "wide output derives UI scale from its limiting height")

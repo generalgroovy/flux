@@ -5,7 +5,7 @@ the full order remains in `docs/OVERHAUL-PLAN.md` and the continuous prompt.
 
 | Order | Playable outcome | Acceptance |
 | ---: | --- | --- |
-| 0 | **Mandatory live visual overhaul** | V0–V4 engineering slices are complete: the natural modular Wellspring is captured across districts/zooms/cutaway, and all five live foundation spells now have validated distinct startup, action, impact and residue/no-residue language. V5's compact HUD candidate already exposes only Health/Flux/Stamina, active layer and four spell cells; next finish its station/prompt/bubble review, then perform integrated V6 accessibility/Farflow acceptance. No mechanic may start first. |
+| 0 | **Mandatory live visual overhaul** | V0–V5 engineering slices are complete: the natural modular Wellspring, compact champions, five foundation spells, four-cell HUD and source-anchored station/social language are live and truthfully captured at 720p/1080p. Complete integrated V6 grayscale, high-contrast, reduced-effects and two-player visual scoring next. No mechanic may start first. |
 | 1 | Crisp readable movement | After visual acceptance only: test an 8–12% ordinary-speed reduction, tighten stop/reversal/corner response and preserve every deterministic traversal option at 60/120 Hz. |
 | 2 | Universal movement/spell chaining | Replace global/implicit lockouts with a tested transition matrix; only physical state, own cooldown, Stamina/Flux or visible execution commitment may refuse a legal transition. |
 | 3 | Fast resource/cooldown economy | Give every offensive cast positive Flux cost, retain Stamina for movement and retune toward short action-specific cooldowns with readable exhaustion/recovery tradeoffs. |

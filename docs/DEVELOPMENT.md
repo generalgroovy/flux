@@ -112,6 +112,11 @@ its team/reset rules are enforced by host simulation. Use
 `--session-charter=sparring_circle` only for repeatable diagnostics. Capture-only
 `--capture-spawn=X,Y` and `--capture-expanded-station=ID` support deterministic
 visual inspection without changing normal spawn or interaction behavior.
+`--capture-social-bubble` pins the existing greeting bubble for deterministic
+presentation review; it sends no social request and changes no normal session.
+Use `scripts/capture-visual.ps1` for truthful 1280×720 or 1920×1080 movie
+evidence; it captures from an isolated temporary project and never rewrites the
+authoritative project's viewport settings.
 Use `spell-loom` as the station ID to inspect the 3×4 session editor.
 `--capture-cast-active` sends one offline active-spell edge after boot;
 `--capture-cast-slot=1..12` instead sends one semantic layered spell edge, and

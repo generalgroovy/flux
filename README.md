@@ -1939,7 +1939,7 @@ See [development setup](docs/DEVELOPMENT.md) and the
 
 ## Production roadmap
 
-Current visual frontier: V0–V4 engineering slices are complete. Oh Tipi and S. Wayne use pinned
+Current visual frontier: V0–V5 engineering slices are complete. Oh Tipi and S. Wayne use pinned
 compact-cartoon runtime art and editable, rate-independent minimal motion across
 the full movement grammar. The editable seeded NaturalMapKit now
 provides curved visual routes, natural edge growth, quiet ground variation and
@@ -1949,8 +1949,12 @@ building styles, ten station-furniture profiles and five landmark frames using
 the approved runtime pixel modules. Same-state captures cover all three
 districts, cutaway behavior and 50/75/100% zoom. All five playable foundation
 spells now own validated, distinct startup/action/impact/residue language at the
-default 75% overview; finish V5 interaction-language review next while final
-subjective/accessibility cohesion remains part of V6.
+default 75% overview. All live station kinds, binding-aware prompts, expanded
+sheets, social bubbles and notices now share one source-anchored interaction
+language; the compact HUD retains only Health, Flux, Stamina, active layer and
+four spell cells. Truthful 720p/1080p captures pass through the sandboxed visual
+harness. V6 integrated accessibility and two-player visual acceptance is the
+only legal next slice.
 
 Production advances through small vertical slices. Each checkpoint must leave a
 launchable game, focused history, truthful status index, known rollback commit,

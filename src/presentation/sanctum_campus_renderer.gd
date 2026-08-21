@@ -143,10 +143,12 @@ func _draw_arena(canvas: CanvasItem, definition: Dictionary) -> void:
 		canvas.draw_line(point + Vector2(0, -5), point + Vector2(0, 5), Color(PARCHMENT, 0.48), 1.0)
 
 
-func _draw_water(canvas: CanvasItem, size: Vector2i, top: int, tick: int) -> void:
-	canvas.draw_rect(Rect2(0, top, size.x, size.y - top), WATER, true)
+func _draw_water(canvas: CanvasItem, size: Vector2i, _reserved_top: int, tick: int) -> void:
+	# The reserved top band remains non-playable, but belongs visually to the
+	# Wellspring now that the legacy full-width HUD has been removed.
+	canvas.draw_rect(Rect2(0, 0, size.x, size.y), WATER, true)
 	var phase: int = (tick / 8) % 64
-	for y: int in range(top + 14, size.y, 32):
+	for y: int in range(14, size.y, 32):
 		for x: int in range(-32, size.x + 32, 80):
 			var glint_x: int = x + phase + ((y / 32) % 2) * 20
 			canvas.draw_line(Vector2(glint_x, y), Vector2(glint_x + 12, y), Color(WATER_LIGHT, 0.64), 2.0)

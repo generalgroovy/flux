@@ -166,12 +166,11 @@ and all alpha/effect budgets preserve collision and silhouette reads.
 
 Default-75% 720p evidence for all five spells is under
 `.godot/v4-acceptance-720-*`. These captures are ignored test artifacts, not
-runtime assets. A 1920×1080 command currently retains the authored 1280×720
-viewport, so it is not 1080p evidence; a true scalable capture harness remains
-part of integrated V6. V4 is engineering-complete, while integrated
-charm/accessibility scoring remains mandatory at V6.
+runtime assets. V4 is engineering-complete, while integrated
+charm/accessibility scoring remains mandatory at V6. The V5 sandbox capture
+harness now supplies truthful 1080p evidence without rewriting the live project.
 
-## Compact HUD and purposeful campus slice
+## V5 compact HUD and Wellspring interaction language
 
 `content/visual/compact_hud_v1.json` now owns the bounded combat-HUD geometry.
 The live frame keeps only champion/location, session state, Health, Flux,
@@ -180,6 +179,29 @@ Detailed controls, mechanics and configuration remain at the existing
 translucent Wellspring stations instead of permanently consuming navigation
 space. The HUD remains under the shared 19% screen-coverage budget and does
 not introduce a fifth spell button.
+
+`content/visual/wellspring_interaction_language_v1.json` owns the presentation
+profiles for the exact ten live station kinds plus bounded compact, expanded,
+social and notice layouts. `WellspringInteractionPresenter` validates that
+coverage against the authored campus and fails closed on missing or duplicate
+styles. It draws only screen-space information: a localized current-key
+capsule, source tether, station crest, named social bubble and top-center
+notice. Commands, activation radii, simulation state and network authority stay
+in their existing owners.
+
+The HUD uses stepped old-world frames, miniature champion portraits,
+element-shape glyphs and resource tick marks so shape and position carry state
+alongside color. Its logical 1280×720 design space scales to 1920×1080 while
+camera zoom remains a world-view choice; station prompts and social bubbles
+therefore keep the same readable screen relationship at 50/75/100% zoom.
+
+Run `scripts/capture-visual.ps1` on Windows for truthful 1280×720 or 1920×1080
+evidence. The wrapper makes a unique system-temporary sandbox, imports there,
+changes only that copy's viewport, checks every frame's count and dimensions,
+and cleans only the verified sandbox. Reviewed V5 evidence is under ignored
+`.godot/visual-captures/v5-acceptance-*-final` directories. V6 still owns
+subjective grayscale/color-vision, high-contrast, reduced-effects and
+two-player integrated acceptance.
 
 `content/visual/wellspring_wayfinding_v1.json` makes the 2560×1440 campus read
 as a group of destinations: Movement Conservatory, Recovery Grove, Living

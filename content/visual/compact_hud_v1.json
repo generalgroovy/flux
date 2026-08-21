@@ -13,7 +13,8 @@
     "spell_cell_width": 142,
     "spell_cell_height": 70,
     "spell_cell_gap": 6,
-    "spell_footer_height": 18
+    "spell_footer_height": 18,
+    "panel_corner_step": 6
   },
   "copy": {
     "plain": "PLAIN SPELLS",

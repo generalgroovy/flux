@@ -44,6 +44,7 @@ var campus_layout: SanctumCampusLayout
 var campus_renderer: SanctumCampusRenderer
 var visual_language: VisualLanguage
 var compact_hud: CompactCombatHud
+var interaction_presenter: WellspringInteractionPresenter
 var cartoon_champion_presenter: CartoonChampionPresenter
 var foundation_spell_presenter: FoundationSpellPresenter
 var ability_catalog: AbilityCatalog
@@ -77,6 +78,7 @@ var capture_expanded_station_id: String = ""
 var requested_capture_active_cast: bool = false
 var requested_capture_spell_slot: int = 0
 var requested_capture_movement: String = ""
+var requested_capture_social_bubble: bool = false
 var capture_active_cast_sent: bool = false
 var focused_station_id: String = ""
 var expanded_station_id: String = ""
@@ -171,6 +173,11 @@ func _ready() -> void:
 		push_error("Wellspring renderer could not bind its architecture and purpose-wayfinding kits")
 		get_tree().quit(1)
 		return
+	interaction_presenter = WellspringInteractionPresenter.new()
+	if not interaction_presenter.configure(visual_language, campus_layout):
+		push_error(interaction_presenter.last_error)
+		get_tree().quit(1)
+		return
 	compact_hud = CompactCombatHud.new()
 	if not compact_hud.configure(visual_language, COMPACT_HUD_PATH):
 		push_error(compact_hud.last_error)
@@ -189,6 +196,7 @@ func _ready() -> void:
 	requested_capture_active_cast = OS.get_cmdline_user_args().has("--capture-cast-active")
 	requested_capture_spell_slot = _requested_capture_spell_slot()
 	requested_capture_movement = _requested_capture_movement()
+	requested_capture_social_bubble = OS.get_cmdline_user_args().has("--capture-social-bubble")
 	ability_catalog = AbilityCatalog.new()
 	if not ability_catalog.load_from_file(ABILITY_CATALOG_PATH):
 		push_error(ability_catalog.last_error)
@@ -245,6 +253,8 @@ func _ready() -> void:
 	if not _start_match(tick_rate):
 		get_tree().quit(1)
 		return
+	if requested_capture_social_bubble:
+		social_bubbles.append({"entity_id": SessionTransport.SERVER_PEER_ID, "text": "HELLO!", "remaining": 120.0, "duration": 120.0})
 	_start_requested_farflow()
 	if not capture_expanded_station_id.is_empty():
 		focused_station_id = capture_expanded_station_id
@@ -256,7 +266,7 @@ func _ready() -> void:
 		elif capture_expanded_station_id == "spell-loom":
 			spell_loom_editor.open_editor(_local_player_state())
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, visual %s, HUD %s, architecture %s, wayfinding %s, spells %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, visual %s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -267,6 +277,7 @@ func _ready() -> void:
 			player_preferences.camera_zoom_percent,
 			visual_language.content_hash().left(12),
 			compact_hud.content_hash.left(12),
+			interaction_presenter.content_hash.left(12),
 			campus_renderer.architecture_kit.content_hash.left(12),
 			campus_renderer.wayfinding.content_hash.left(12),
 			foundation_spell_presenter.content_hash.left(12),
@@ -678,7 +689,7 @@ func _draw() -> void:
 		draw_arc(body_position, player_radius + 9.0, 0.0, TAU, 28, Color(ATTUNEMENT_COLOR, 0.32 + protection_ratio * 0.42), 2.0)
 	draw_line(body_position, body_position + Vector2(presentation_state.aim_x, presentation_state.aim_y) * 0.032, Color.WHITE, 3.0)
 	_draw_social_bubbles(camera_origin)
-	_draw_station_bubble(rendered_position)
+	_draw_station_bubble(camera_origin)
 	draw_set_transform(Vector2.ZERO)
 	var observed_position := Vector2(float(observed_state.position_x) / SimConfig.FIXED_SCALE, float(observed_state.position_y) / SimConfig.FIXED_SCALE)
 	var pov_position := observed_position if spectating else rendered_position
@@ -687,13 +698,17 @@ func _draw() -> void:
 	var champion_data: Dictionary = champion_catalog.champion(observed_champion_id)
 	var champion_name := String(champion_data.get("display_name", observed_champion_id))
 	var location_name := "PROVING COURT" if int(_current_round_state().get("phase", SessionRound.Phase.HEARTH)) != SessionRound.Phase.HEARTH else "THE WELLSPRING"
+	_draw_station_notice(location_name)
 	var active_layer: int = 2 if Input.is_action_pressed(InputRouter.SPELL_ALT_LAYER_ACTION) else (1 if Input.is_action_pressed(InputRouter.SPELL_CTRL_LAYER_ACTION) else 0)
 	if compact_hud != null:
+		var ui_scale := _ui_scale()
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * ui_scale)
 		compact_hud.draw(
 			self,
-			get_viewport_rect().size,
+			get_viewport_rect().size / ui_scale,
 			observed_state,
 			ability_catalog,
+			observed_champion_id,
 			champion_name,
 			location_name,
 			_session_label(),
@@ -701,60 +716,23 @@ func _draw() -> void:
 			world.config.tick_rate,
 			spectating,
 		)
+		draw_set_transform(Vector2.ZERO)
 	if show_debug_overlay and dropped_time_seconds > 0.0:
 		draw_string(ThemeDB.fallback_font, Vector2(32, 132), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
 	if show_debug_overlay:
 		_draw_material_yard_preview()
 	if controls_editor != null and controls_editor.is_open:
+		var controls_ui_scale := _ui_scale()
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * controls_ui_scale)
 		_draw_controls_editor()
+		draw_set_transform(Vector2.ZERO)
 	elif spell_loom_editor != null and spell_loom_editor.is_open:
+		var loom_ui_scale := _ui_scale()
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * loom_ui_scale)
 		_draw_spell_loom_editor()
+		draw_set_transform(Vector2.ZERO)
 	if show_visual_specimen:
 		VisualSpecimen.draw(self, visual_language, get_viewport_rect().size, world.tick)
-
-
-func _draw_resource_bar(rectangle: Rect2, label: String, value: int, maximum: int, color: Color) -> void:
-	var ratio: float = clampf(float(value) / float(maximum), 0.0, 1.0)
-	draw_rect(rectangle, Color(FOREST_SHADOW_COLOR, 0.92), true)
-	draw_rect(Rect2(rectangle.position + Vector2(2, 2), Vector2((rectangle.size.x - 4.0) * ratio, rectangle.size.y - 4.0)), color, true)
-	draw_rect(rectangle, Color(PARCHMENT_COLOR, 0.65), false, 1.0)
-	draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(7, 15), "%s %d/%d" % [label, value / 1000, maximum / 1000], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 12.0, 12, Color.WHITE)
-
-
-func _draw_spell_bar(state: PlayerState) -> void:
-	var active_layer: int = 2 if Input.is_action_pressed(InputRouter.SPELL_ALT_LAYER_ACTION) else (1 if Input.is_action_pressed(InputRouter.SPELL_CTRL_LAYER_ACTION) else 0)
-	var abilities: Array[Dictionary] = []
-	var cooldown_ticks: Array[int] = []
-	for button_index: int in range(PlayerState.SPELL_BUTTON_COUNT):
-		var slot_number := active_layer * PlayerState.SPELL_BUTTON_COUNT + button_index + 1
-		var wire_id: int = state.spell_wire_id(slot_number)
-		abilities.append(ability_catalog.ability_from_wire(wire_id))
-		cooldown_ticks.append(
-			state.primary_cooldown_ticks if wire_id == state.primary_wire_id
-			else (state.active_1_cooldown_ticks if wire_id == state.active_1_wire_id
-			else (state.active_2_cooldown_ticks if wire_id == state.active_2_wire_id else 0))
-		)
-	var start := Vector2(68, 118)
-	var cell_size := Vector2(276, 44)
-	for button_index: int in range(abilities.size()):
-		var slot_index := active_layer * PlayerState.SPELL_BUTTON_COUNT + button_index
-		var rectangle := Rect2(start + Vector2(float(button_index) * 281.0, 0), cell_size)
-		var ability: Dictionary = abilities[button_index]
-		var is_empty: bool = ability.is_empty()
-		draw_rect(rectangle, Color(PANEL_COLOR, 0.92), true)
-		draw_rect(rectangle, ATTUNEMENT_COLOR, false, 2.0)
-		var name := "EMPTY" if is_empty else String(ability.get("display_name", "SPELL")).to_upper()
-		var name_color := PALE_STONE_COLOR if is_empty else PARCHMENT_COLOR
-		draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(8, 17), "%s  %s" % [PlayerState.spell_slot_label(slot_index), name], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 16.0, 12, name_color)
-		var detail := "LOOM" if is_empty else "%s %s" % [String(ability.get("element", "")).to_upper(), String(ability.get("shape", "")).to_upper()]
-		if not is_empty:
-			var flux_cost: int = int(ability.get("flux_cost", 0))
-			detail += " · FREE" if flux_cost == 0 else " · %dF" % flux_cost
-			if cooldown_ticks[button_index] > 0:
-				detail += " · %.1fs" % (float(cooldown_ticks[button_index]) / float(world.config.tick_rate))
-			else:
-				detail += " · READY"
-		draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(8, 36), detail, HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 16.0, 10, ATTUNEMENT_COLOR if not is_empty else Color(PALE_STONE_COLOR, 0.68))
 
 
 func _draw_controls_editor() -> void:
@@ -1159,18 +1137,42 @@ func _draw_landing_cue(center: Vector2, landing: LandingPresentation.Sample) -> 
 		draw_line(inner, outer, color, landing.ring_width)
 
 
-func _draw_station_bubble(player_position: Vector2) -> void:
-	if station_notice_seconds > 0.0 and not station_notice.is_empty():
-		_draw_transparent_bubble(player_position + Vector2(0, -76), "WELLSPRING", [station_notice], true)
+func _draw_station_bubble(camera_origin: Vector2) -> void:
+	if interaction_presenter == null or station_notice_seconds > 0.0:
 		return
 	if focused_station_id.is_empty() or not campus_layout.stations_by_id.has(focused_station_id):
+		return
+	if int(_current_round_state().get("phase", SessionRound.Phase.HEARTH)) != SessionRound.Phase.HEARTH:
 		return
 	var station: Dictionary = campus_layout.stations_by_id[focused_station_id]
 	var values: Array = station.get("position", [])
 	var station_position := Vector2(float(values[0]), float(values[1]))
 	var expanded: bool = expanded_station_id == focused_station_id
 	var lines: Array = _station_lines(station) if expanded else [String(station.get("prompt", "F  INTERACT"))]
-	_draw_transparent_bubble(station_position + Vector2(0, -54), String(station.get("title", "STATION")), lines, expanded)
+	var ui_scale := _ui_scale()
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * ui_scale)
+	interaction_presenter.draw_station(
+		self,
+		get_viewport_rect().size / ui_scale,
+		PixelPresentation.world_to_screen(station_position, camera_origin, player_preferences.camera_zoom_percent) / ui_scale,
+		station,
+		lines,
+		expanded,
+		controls_editor.binding_label(&"interact", ControlBindingEditor.DEVICE_KEYBOARD, player_preferences),
+	)
+
+
+func _draw_station_notice(location_name: String) -> void:
+	if interaction_presenter == null or station_notice_seconds <= 0.0 or station_notice.is_empty():
+		return
+	var ui_scale := _ui_scale()
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * ui_scale)
+	interaction_presenter.draw_notice(
+		self,
+		get_viewport_rect().size / ui_scale,
+		"COURT" if location_name == "PROVING COURT" else String((interaction_presenter.data.get("copy", {}) as Dictionary).get("notice_title", "WELLSPRING")),
+		station_notice,
+	)
 
 
 func _station_lines(station: Dictionary) -> Array:
@@ -1516,7 +1518,7 @@ func _ingest_session_feedback(events: Array[Dictionary]) -> void:
 				for index: int in range(social_bubbles.size() - 1, -1, -1):
 					if int(social_bubbles[index].get("entity_id", 0)) == entity_id:
 						social_bubbles.remove_at(index)
-				social_bubbles.append({"entity_id": entity_id, "text": "HELLO!", "remaining": 2.0})
+				social_bubbles.append({"entity_id": entity_id, "text": "HELLO!", "remaining": 2.0, "duration": 2.0})
 				print("FLUX2 farflow social: shared emote entity %d" % entity_id)
 			"station_confirmed":
 				station_notice = "%s restored the practice court." % String(session_names_by_entity.get(entity_id, "A traveller"))
@@ -1594,35 +1596,24 @@ func _update_social_bubbles(delta: float) -> void:
 
 
 func _draw_social_bubbles(camera_origin: Vector2) -> void:
-	_set_world_transform(camera_origin)
+	if interaction_presenter == null:
+		return
+	var ui_scale := _ui_scale()
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * ui_scale)
 	for bubble: Dictionary in social_bubbles:
 		var state: PlayerState = world.player(int(bubble.get("entity_id", 0)))
 		if state == null:
 			continue
-		var position := Vector2(float(state.position_x) / 1000.0, float(state.position_y) / 1000.0) + Vector2(0, -62)
-		var text_value := String(bubble.get("text", "HELLO!"))
-		var rectangle := Rect2(position + Vector2(-42, -28), Vector2(84, 28))
-		draw_rect(rectangle, Color(PANEL_COLOR, 0.72), true)
-		draw_rect(rectangle, Color(PARCHMENT_COLOR, 0.78), false, 1.5)
-		draw_colored_polygon(PackedVector2Array([position + Vector2(-6, 0), position + Vector2(6, 0), position + Vector2(0, 8)]), Color(PANEL_COLOR, 0.72))
-		draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(8, 19), text_value, HORIZONTAL_ALIGNMENT_CENTER, rectangle.size.x - 16.0, 12, PARCHMENT_COLOR)
-
-
-func _draw_transparent_bubble(anchor: Vector2, title: String, lines: Array, expanded: bool) -> void:
-	var width: float = 264.0 if expanded else 216.0
-	var height: float = 38.0 + float(lines.size()) * 17.0
-	var rectangle := Rect2(anchor.x - width * 0.5, anchor.y - height, width, height)
-	draw_rect(rectangle, Color(PANEL_COLOR, 0.82), true)
-	draw_rect(rectangle, Color(BRASS_COLOR, 0.78), false, 2.0)
-	var tail := PackedVector2Array([
-		Vector2(anchor.x - 8.0, anchor.y),
-		Vector2(anchor.x + 8.0, anchor.y),
-		Vector2(anchor.x, anchor.y + 10.0),
-	])
-	draw_colored_polygon(tail, Color(PANEL_COLOR, 0.82))
-	draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(12, 18), title, HORIZONTAL_ALIGNMENT_LEFT, width - 24.0, 12, PARCHMENT_COLOR)
-	for index: int in range(lines.size()):
-		draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(12, 37 + index * 17), String(lines[index]), HORIZONTAL_ALIGNMENT_LEFT, width - 24.0, 11, PALE_STONE_COLOR)
+		var world_position := Vector2(float(state.position_x), float(state.position_y)) / SimConfig.FIXED_SCALE
+		var entity_id := int(bubble.get("entity_id", 0))
+		interaction_presenter.draw_social(
+			self,
+			get_viewport_rect().size / ui_scale,
+			PixelPresentation.world_to_screen(world_position, camera_origin, player_preferences.camera_zoom_percent) / ui_scale,
+			String(session_names_by_entity.get(entity_id, "TRAVELLER")),
+			String(bubble.get("text", "HELLO!")),
+			clampf(float(bubble.get("remaining", 0.0)) / maxf(float(bubble.get("duration", 2.0)), 0.01), 0.0, 1.0),
+		)
 
 
 func _update_station_focus() -> void:
@@ -2811,8 +2802,6 @@ static func parse_capture_pointer(argument: String, canvas_size: Vector2i) -> Ve
 	if point.x < 0 or point.y < 0 or point.x >= canvas_size.x or point.y >= canvas_size.y:
 		return Vector2i(-1, -1)
 	return point
-
-
 func _apply_preference_overrides() -> void:
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--movement-reference="):
@@ -2949,7 +2938,7 @@ func _camera_origin(focus_position: Vector2) -> Vector2:
 		return Vector2.ZERO
 	return camera_origin_for(
 		focus_position,
-		campus_layout.viewport_size,
+		Vector2i(get_viewport_rect().size),
 		campus_layout.canvas_size,
 		campus_layout.reserved_ui_top,
 		player_preferences.camera_zoom_percent,
@@ -2970,6 +2959,14 @@ static func camera_origin_for(focus_position: Vector2, viewport: Vector2i, canva
 
 func _camera_zoom_scale() -> float:
 	return float(player_preferences.camera_zoom_percent) / 100.0 if player_preferences != null else 1.0
+
+
+func _ui_scale() -> float:
+	return ui_scale_for(get_viewport_rect().size)
+
+
+static func ui_scale_for(viewport_size: Vector2) -> float:
+	return clampf(minf(viewport_size.x / 1280.0, viewport_size.y / 720.0), 1.0, 1.5)
 
 
 func _set_world_transform(camera_origin: Vector2) -> void:

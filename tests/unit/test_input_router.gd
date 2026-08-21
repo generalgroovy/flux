@@ -120,6 +120,8 @@ func _test_capture_pointer_parser() -> void:
 	equal(BootstrapScript.parse_capture_movement("--capture-movement=SLIDE"), "slide", "diagnostic movement capture is case-insensitive")
 	equal(BootstrapScript.parse_capture_movement("--capture-movement=reverse"), "reverse", "diagnostic reversal capture is explicit")
 	equal(BootstrapScript.parse_capture_movement("--capture-movement=teleport"), "", "unknown movement capture fails closed")
+	equal(BootstrapScript.parse_capture_chain_spell_slot("--capture-chain-slot=12"), 12, "diagnostic occupied-channel capture accepts the final layered slot")
+	equal(BootstrapScript.parse_capture_chain_spell_slot("--capture-chain-slot=13"), 0, "diagnostic occupied-channel capture rejects overflow")
 	var slide_capture: SimCommand = BootstrapScript.capture_movement_command("slide", 6, 1)
 	check(slide_capture.has_held(SimCommand.HELD_SPRINT) and slide_capture.has_pressed(SimCommand.PRESSED_SLIDE), "slide capture uses the ordinary semantic sprint-slide command")
 	var air_capture: SimCommand = BootstrapScript.capture_movement_command("air_dodge", 12, 1)

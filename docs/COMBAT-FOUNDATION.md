@@ -2,7 +2,7 @@
 
 ## Implemented slice
 
-The protocol-12 slice extends the first complete command-to-impact path:
+The protocol-26 foundation extends the first complete command-to-impact path:
 
 - independent scale-1000 aim and held primary input;
 - pressed active-one input;
@@ -14,7 +14,9 @@ The protocol-12 slice extends the first complete command-to-impact path:
 - integer movement/remainders, ordered world collision, swept player hits,
   authoritative damage, lifetime, semantic events, and state hashing;
 - replay verification with active primary command streams;
-- Edgeweave rewards for deliberate hostile swept near-misses.
+- Edgeweave rewards for deliberate hostile swept near-misses;
+- a canonical action-transition policy covering all live movement/control modes
+  and projectile, beam, spray and field spell shapes.
 
 Combat state lives in `src/sim/combat/` and `PlayerState`. Presentation reads
 projectiles and events but never creates damage, spends Flux, finishes startup,
@@ -34,8 +36,24 @@ For each authoritative tick:
 7. hash player and projectile state.
 
 The current order intentionally lets resource recovery complete before a cast
-affordability check on the same tick. Tests lock recovery when proving a refused
-cast.
+affordability check on the same tick. Generic cast recovery is presentational
+state and does not block an unrelated spell. A pending startup occupies the one
+execution channel, while physical control state, own cooldown, Flux, kit and
+empty-slot gates emit bounded `cast_refused` reasons and spend nothing.
+
+## Action transition contract
+
+`content/gameplay/action_transition_matrix_v1.json` is loaded fail-closed by the
+authoritative simulation. Movement can continue through spell startup and
+recovery; a new legal spell can start during recovery; a second spell pressed
+during startup reports `startup_commitment`. Launched, grappled, charging,
+stunned and rooted actors cannot start a cast and receive a state-specific
+refusal. Its canonical hash participates in state and Farflow compatibility.
+
+The policy deliberately separates execution commitment from cooldown. A spell's
+own cooldown and positive Flux cost remain legitimate pacing tools; there is no
+hidden global post-cast lock. Held-primary cooldown checks remain quiet to avoid
+per-tick message spam, while semantic 1–12 presses report the cooldown.
 
 ## Foundation abilities
 

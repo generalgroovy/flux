@@ -10,6 +10,7 @@ static func step_player(
 	field_id: int,
 	world: CollisionWorld,
 	events: Array[Dictionary],
+	transition_policy: ActionTransitionPolicy,
 ) -> RefCounted:
 	for property_name: StringName in [
 		&"cast_recovery_ticks", &"primary_cooldown_ticks",
@@ -17,61 +18,85 @@ static func step_player(
 	]:
 		state.set(property_name, maxi(0, int(state.get(property_name)) - 1))
 
+	var requested_spell_slot: int = command.first_pressed_spell_slot()
+	var requested_spell_wire_id: int = state.spell_wire_id(requested_spell_slot)
+	var pressed_cast_intent := requested_spell_slot > 0 or command.has_pressed(SimCommand.PRESSED_ACTIVE_1)
+	var requested_wire_id := requested_spell_wire_id if requested_spell_slot > 0 else state.active_1_wire_id
+
 	if state.pending_cast_wire_id != 0:
+		if pressed_cast_intent:
+			_refuse_cast(state, requested_wire_id, requested_spell_slot, transition_policy.cast_gate_reason(state), events)
 		state.pending_cast_ticks = maxi(0, state.pending_cast_ticks - 1)
 		if state.pending_cast_ticks == 0:
 			return _release_cast(state, config, projectile_id, field_id, world, events)
 		return null
-	if state.cast_recovery_ticks > 0:
+	var gate_reason := transition_policy.cast_gate_reason(state)
+	if not gate_reason.is_empty() and (pressed_cast_intent or command.has_held(SimCommand.HELD_PRIMARY)):
+		if pressed_cast_intent:
+			_refuse_cast(state, requested_wire_id, requested_spell_slot, gate_reason, events)
 		return null
 
-	var requested_spell_slot: int = command.first_pressed_spell_slot()
-	var requested_spell_wire_id: int = state.spell_wire_id(requested_spell_slot)
 	if requested_spell_slot > 0 and requested_spell_wire_id == 0:
-		events.append({
-			"type": "cast_refused",
-			"entity_id": state.entity_id,
-			"wire_id": 0,
-			"reason": "empty_slot",
-			"slot": requested_spell_slot,
-		})
-		state.last_event = "cast_refused_slot_%d" % requested_spell_slot
+		_refuse_cast(state, 0, requested_spell_slot, "empty_slot", events)
 		return null
 
 	if command.has_pressed(SimCommand.PRESSED_ACTIVE_1) or requested_spell_wire_id == state.active_1_wire_id:
 		if state.active_1_cooldown_ticks > 0:
+			_refuse_cast(state, state.active_1_wire_id, requested_spell_slot, "cooldown", events)
 			return null
 		var active_definition := CombatTuning.cast_definition(state.active_1_wire_id)
 		if active_definition.is_empty():
-			events.append({"type": "cast_refused", "entity_id": state.entity_id, "wire_id": state.active_1_wire_id, "reason": "kit"})
+			_refuse_cast(state, state.active_1_wire_id, requested_spell_slot, "kit", events)
 			return null
 		if not PlayerResourcesSystem.spend_flux(state, int(active_definition["flux_cost"]), config):
-			events.append({"type": "cast_refused", "entity_id": state.entity_id, "wire_id": state.active_1_wire_id, "reason": "flux"})
+			_refuse_cast(state, state.active_1_wire_id, requested_spell_slot, "flux", events)
 			return null
 		_begin_cast(state, state.active_1_wire_id, int(active_definition["startup_ms"]), config)
 		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": state.active_1_wire_id})
 		return null
 	if state.active_2_wire_id > 0 and requested_spell_wire_id == state.active_2_wire_id:
 		if state.active_2_cooldown_ticks > 0:
+			_refuse_cast(state, state.active_2_wire_id, requested_spell_slot, "cooldown", events)
 			return null
 		var active_2_definition := CombatTuning.cast_definition(state.active_2_wire_id)
 		if active_2_definition.is_empty():
-			events.append({"type": "cast_refused", "entity_id": state.entity_id, "wire_id": state.active_2_wire_id, "reason": "kit"})
+			_refuse_cast(state, state.active_2_wire_id, requested_spell_slot, "kit", events)
 			return null
 		if not PlayerResourcesSystem.spend_flux(state, int(active_2_definition["flux_cost"]), config):
-			events.append({"type": "cast_refused", "entity_id": state.entity_id, "wire_id": state.active_2_wire_id, "reason": "flux"})
+			_refuse_cast(state, state.active_2_wire_id, requested_spell_slot, "flux", events)
 			return null
 		_begin_cast(state, state.active_2_wire_id, int(active_2_definition["startup_ms"]), config)
 		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": state.active_2_wire_id})
 		return null
-	if (command.has_held(SimCommand.HELD_PRIMARY) or requested_spell_wire_id == state.primary_wire_id) and state.primary_cooldown_ticks == 0:
+	if command.has_held(SimCommand.HELD_PRIMARY) or requested_spell_wire_id == state.primary_wire_id:
+		if state.primary_cooldown_ticks > 0:
+			if requested_spell_slot > 0:
+				_refuse_cast(state, state.primary_wire_id, requested_spell_slot, "cooldown", events)
+			return null
 		var primary_definition := CombatTuning.cast_definition(state.primary_wire_id)
 		if primary_definition.is_empty():
-			events.append({"type": "cast_refused", "entity_id": state.entity_id, "wire_id": state.primary_wire_id, "reason": "kit"})
+			_refuse_cast(state, state.primary_wire_id, requested_spell_slot, "kit", events)
 			return null
 		_begin_cast(state, state.primary_wire_id, int(primary_definition["startup_ms"]), config)
 		events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": state.primary_wire_id})
 	return null
+
+
+static func _refuse_cast(
+	state: PlayerState,
+	wire_id: int,
+	slot: int,
+	reason: String,
+	events: Array[Dictionary],
+) -> void:
+	events.append({
+		"type": "cast_refused",
+		"entity_id": state.entity_id,
+		"wire_id": wire_id,
+		"reason": reason,
+		"slot": slot,
+	})
+	state.last_event = "cast_refused_%s_%d" % [reason, wire_id]
 
 
 static func advance_projectiles(

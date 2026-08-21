@@ -131,6 +131,9 @@ capture-only review switches.
 Use `spell-loom` as the station ID to inspect the 3×4 session editor.
 `--capture-cast-active` sends one offline active-spell edge after boot;
 `--capture-cast-slot=1..12` instead sends one semantic layered spell edge, and
+`--capture-chain-slot=1..12` sends a second edge during the first spell's
+startup for deterministic transition/refusal review; it requires an initial
+capture cast and remains an offline diagnostic.
 `--camera-zoom=50|75|100` selects a bounded visual-test scale. Combine these
 with `--champion=`, `--capture-spawn=` and `--capture-pointer=` only for
 repeatable movie-frame review of an already implemented spell.

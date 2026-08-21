@@ -7,6 +7,7 @@ const MAP_HASH: String = "worldbone:none;bounds:1280x720;rails:v1"
 
 var config: SimConfig
 var collision: CollisionWorld
+var transition_policy: ActionTransitionPolicy
 var tick: int = 0
 var seed: int = 1
 var map_id: String = MAP_ID
@@ -33,6 +34,10 @@ func _init(
 	map_hash = requested_map_hash
 	collision = requested_collision if requested_collision != null else CollisionWorld.new()
 	if config.is_valid():
+		transition_policy = ActionTransitionPolicy.new()
+		if not transition_policy.load_from_file():
+			last_error = transition_policy.last_error
+			return
 		if requested_collision == null:
 			collision.add_obstacle(CollisionWorld.Obstacle.new(1, 560_000, 250_000, 620_000, 470_000, false))
 			collision.add_obstacle(CollisionWorld.Obstacle.new(2, 820_000, 300_000, 900_000, 380_000, true))
@@ -42,7 +47,7 @@ func _init(
 
 
 func is_valid() -> bool:
-	return config.is_valid() and last_error.is_empty()
+	return config.is_valid() and transition_policy != null and transition_policy.content_hash.length() == 64 and last_error.is_empty()
 
 
 func player(entity_id: int = 1) -> PlayerState:
@@ -80,7 +85,7 @@ func step(commands: Array[SimCommand]) -> bool:
 		PlayerResourcesSystem.step(state, config)
 		MovementSystem.step(state, command, config, collision)
 		var spawned: RefCounted = CombatSystem.step_player(
-			state, command, config, next_projectile_id, next_field_id, collision, combat_events
+			state, command, config, next_projectile_id, next_field_id, collision, combat_events, transition_policy
 		)
 		if spawned is ProjectileState:
 			projectiles.append(spawned)
@@ -98,7 +103,7 @@ func step(commands: Array[SimCommand]) -> bool:
 			var idle_command := SimCommand.new(tick, state.entity_id, 0, 0, 0, 0, state.aim_x, state.aim_y)
 			MovementSystem.step(state, idle_command, config, collision)
 			var spawned: RefCounted = CombatSystem.step_player(
-				state, idle_command, config, next_projectile_id, next_field_id, collision, combat_events
+				state, idle_command, config, next_projectile_id, next_field_id, collision, combat_events, transition_policy
 			)
 			if spawned is ProjectileState:
 				projectiles.append(spawned)
@@ -131,6 +136,7 @@ func state_hash() -> String:
 		CanonicalBytes.append_i64(payload, value)
 	CanonicalBytes.append_string(payload, map_id)
 	CanonicalBytes.append_string(payload, map_hash)
+	CanonicalBytes.append_string(payload, transition_policy.content_hash)
 	var ordered: Array[PlayerState] = players.duplicate()
 	ordered.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
 	CanonicalBytes.append_i64(payload, ordered.size())

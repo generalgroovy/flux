@@ -96,6 +96,7 @@ static func compatibility_signature(
 		"protocol_version": protocol_version,
 		"tick_rate": tick_rate,
 		"movement_hash": MovementTuning.compatibility_hash(),
+		"transition_hash": ActionTransitionPolicy.repository_hash(),
 		"map_hash": map_hash,
 		"ability_hash": ability_hash,
 		"champion_hash": champion_hash,

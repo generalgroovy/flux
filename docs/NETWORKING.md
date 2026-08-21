@@ -178,6 +178,7 @@ containing a display name and SHA-256 compatibility identity derived from:
 - simulation protocol version;
 - fixed tick rate;
 - complete movement-tuning hash;
+- canonical action-transition policy hash;
 - campus/map content hash;
 - ability catalog hash;
 - champion catalog hash;

@@ -1,5 +1,48 @@
 # FLUX2 agent worklog
 
+## 2026-08-21 — explicit universal movement/spell transitions
+
+Playable outcome:
+
+- Added `action-transition-matrix-v1`, a fail-closed, canonical policy covering
+  all twenty live movement/control modes and all four live spell shapes. The
+  simulation owns the policy; presentation only translates its bounded refusal
+  vocabulary.
+- Removed the implicit global post-cast recovery lock. A different spell may
+  begin during presentation recovery when its own cooldown, Flux and physical
+  control state permit it, while walking, jumping and advanced movement remain
+  live throughout startup and recovery.
+- Preserved one visible startup execution channel. A second pressed spell is
+  refused as `startup_commitment`; launched, grappled, charging, stunned and
+  rooted states name their exact physical refusal; empty, kit, Flux and own-
+  cooldown failures are equally explicit and never spend resources.
+- Included the canonical transition hash in state hashing, Farflow
+  compatibility and boot diagnostics so different action contracts cannot join
+  silently. Added deterministic simultaneous jump/cast, moving startup,
+  recovery chain, occupied-startup, rooted and cooldown fixtures at 60/120 Hz.
+- Added `--capture-chain-slot=1..12` for repeatable two-press presentation
+  evidence. The reviewed 1280×720, 75% frame visibly reports `FINISH WEAVE`
+  while retaining movement and the four-cell HUD.
+
+Verification:
+
+- `scripts\\test.cmd`: passed 52 suites / 16,104 assertions, source/import
+  validation and clean 60/120 Hz boots; transition hash `7e09aa303455`.
+- `scripts\\smoke-farflow.cmd -TickRate 120 -Port 24931 -Charter open_commons
+  -TimeoutSeconds 60`: passed host/join, reconciliation, round, late join,
+  rematch, reconnect and stewardship.
+- `scripts\\capture-visual.cmd -Name transition-v1-startup-refusal-720
+  -Resolution 1280x720 -Frames 24 --capture-spawn=640,720
+  --capture-pointer=1000,720 --capture-cast-slot=1 --capture-chain-slot=3
+  --champion=oh_tipi --pov-mode=full --camera-zoom=75`: passed and inspected.
+
+Known limitation and next slice:
+
+- Startup remains a deliberate single-channel commitment and held-primary
+  cooldown polling stays quiet to prevent feedback spam. With hidden global
+  recovery removed, the next slice gives every offensive cast positive Flux
+  cost and retunes action-specific cadence/recovery around fast decisions.
+
 ## 2026-08-21 — crisp ordinary movement response
 
 Branch: `codex/continuous-overhaul`

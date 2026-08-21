@@ -78,11 +78,13 @@ var capture_spawn_world := Vector2i(-1, -1)
 var capture_expanded_station_id: String = ""
 var requested_capture_active_cast: bool = false
 var requested_capture_spell_slot: int = 0
+var requested_capture_chain_spell_slot: int = 0
 var requested_capture_movement: String = ""
 var requested_capture_social_bubble: bool = false
 var requested_capture_visual_profile: String = ""
 var requested_capture_reduced_effects: bool = false
 var capture_active_cast_sent: bool = false
+var capture_chain_cast_sent: bool = false
 var focused_station_id: String = ""
 var expanded_station_id: String = ""
 var station_notice: String = ""
@@ -211,6 +213,7 @@ func _ready() -> void:
 	capture_expanded_station_id = _requested_capture_expanded_station()
 	requested_capture_active_cast = OS.get_cmdline_user_args().has("--capture-cast-active")
 	requested_capture_spell_slot = _requested_capture_spell_slot()
+	requested_capture_chain_spell_slot = _requested_capture_chain_spell_slot()
 	requested_capture_movement = _requested_capture_movement()
 	requested_capture_social_bubble = OS.get_cmdline_user_args().has("--capture-social-bubble")
 	ability_catalog = AbilityCatalog.new()
@@ -282,11 +285,12 @@ func _ready() -> void:
 		elif capture_expanded_station_id == "spell-loom":
 			spell_loom_editor.open_editor(_local_player_state())
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
 			MovementTuning.compatibility_hash().left(12),
+			world.transition_policy.content_hash.left(12),
 			player_preferences.movement_reference,
 			player_preferences.pov_mode,
 			player_preferences.pov_angle_degrees,
@@ -544,6 +548,16 @@ func _process(delta: float) -> void:
 			var capture_pressed := SimCommand.PRESSED_ACTIVE_1 if requested_capture_spell_slot == 0 else SimCommand.SPELL_PRESSED_BITS[requested_capture_spell_slot - 1]
 			command = SimCommand.new(world.tick, input_router.entity_id, 0, 0, 0, capture_pressed, command.aim_x, command.aim_y)
 			capture_active_cast_sent = true
+		if (
+			requested_capture_chain_spell_slot > 0
+			and capture_active_cast_sent
+			and not capture_chain_cast_sent
+			and not session_transport.is_connected_client()
+			and _local_player_state().pending_cast_wire_id != 0
+		):
+			var chain_pressed := SimCommand.SPELL_PRESSED_BITS[requested_capture_chain_spell_slot - 1]
+			command = SimCommand.new(world.tick, input_router.entity_id, command.move_x, command.move_y, command.held_actions, chain_pressed, command.aim_x, command.aim_y)
+			capture_chain_cast_sent = true
 		if session_transport.is_connected_client() and requested_prediction_smoke and last_client_snapshot_tick >= 0 and prediction_smoke_inputs_sent < 18:
 			command = SimCommand.new(world.tick, input_router.entity_id, 1000, 0, 0, 0, 1000, 0)
 			prediction_smoke_inputs_sent += 1
@@ -904,6 +918,12 @@ func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 					label = "NO FLUX"
 				elif refusal_reason == "empty_slot":
 					label = "SLOT %d EMPTY" % int(event.get("slot", 0))
+				elif refusal_reason == "cooldown":
+					label = "COOLDOWN"
+				elif refusal_reason == "startup_commitment":
+					label = "FINISH WEAVE"
+				elif refusal_reason.begins_with("control_"):
+					label = "NO CAST · %s" % refusal_reason.trim_prefix("control_").to_upper()
 				else:
 					label = "CAST REFUSED"
 				color = FLUX_COLOR
@@ -2626,6 +2646,13 @@ func _requested_capture_spell_slot() -> int:
 	return 0
 
 
+func _requested_capture_chain_spell_slot() -> int:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--capture-chain-slot="):
+			return parse_capture_chain_spell_slot(argument)
+	return 0
+
+
 func _requested_capture_movement() -> String:
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--capture-movement="):
@@ -2677,6 +2704,16 @@ static func parse_capture_spell_slot(argument: String) -> int:
 	if not argument.begins_with("--capture-cast-slot="):
 		return 0
 	var value := argument.trim_prefix("--capture-cast-slot=")
+	if not value.is_valid_int():
+		return 0
+	var slot_number := value.to_int()
+	return slot_number if slot_number >= 1 and slot_number <= PlayerState.SPELL_SLOT_COUNT else 0
+
+
+static func parse_capture_chain_spell_slot(argument: String) -> int:
+	if not argument.begins_with("--capture-chain-slot="):
+		return 0
+	var value := argument.trim_prefix("--capture-chain-slot=")
 	if not value.is_valid_int():
 		return 0
 	var slot_number := value.to_int()

@@ -42,7 +42,13 @@ each playable slice.
 - Movement animation follows residual velocity through braking, scales its body
   response with speed and owns an editable reduced-effects heel-plant accent.
   The complete movement tuning hash is part of Farflow compatibility.
-- Latest source verification is 16,015 assertions across 51 suites plus
+- A fail-closed action transition policy covers all twenty live movement/control
+  modes and projectile/beam/spray/field spells. Movement remains live through
+  startup/recovery; unrelated spells may start during recovery; one startup
+  channel, physical control, own cooldown, Flux, kit and empty-slot refusals are
+  visible and resource-safe. Hash `7e09aa303455` is part of state and Farflow
+  compatibility.
+- Latest source verification is 16,104 assertions across 52 suites plus
   import/source 60/120 Hz boots and a fresh 120 Hz three-process
   spectator-to-Hearth-to-Round-2, reconnect and stewardship journey.
 - Fresh Windows and Linux friend packages plus packaged Windows safe quit pass
@@ -84,13 +90,12 @@ each playable slice.
 
 ## Next acceptance-driven slice
 
-V0–V6 and the crisp ordinary-movement candidate are engineering-complete.
-Hands-on A/B remains the final authority for the 324 px/s tune, but deterministic
-60/120 Hz metrics, the full advanced route, 50/75/100% frame review and Farflow
-all pass. The next legal slice is the universal movement/spell transition
-matrix: inventory current refusals, distinguish physical/own-cooldown/resource/
-visible-commitment gates from implicit global locks, then promote one complete
-chain family without weakening authority, costs or counterplay.
+V0–V6, crisp ordinary movement and the universal movement/spell transition
+contract are engineering-complete. The next legal slice is fast resource and
+cooldown economy: make every damaging/pressure cast cost positive Flux,
+centralize regeneration/combat delay, shorten action-specific cadence where
+tests support it, and prove that pressure exhausts while mixed chains and
+deliberate recovery remain useful at 60/120 Hz and over Farflow.
 
 <!-- Historical V1 handoff below is retained only as prior evidence. -->
 Mechanics remain frozen. V0 and V1 are complete: the validated visual language

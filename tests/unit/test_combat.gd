@@ -12,6 +12,7 @@ func run() -> int:
 		_test_s_wayne_eclipse_disc(tick_rate)
 		_test_s_wayne_disc_ricochet(tick_rate)
 		_test_s_wayne_pocket_eclipse(tick_rate)
+		_test_movement_spell_chains(tick_rate)
 		_test_edgeweave(tick_rate)
 	return finish("combat")
 
@@ -378,6 +379,51 @@ func _test_s_wayne_pocket_eclipse(tick_rate: int) -> void:
 	equal(int(covered_event.get("target_id", -1)), 0, "%d Hz authored cover prevents the hidden target hit" % tick_rate)
 	check(int(covered_event.get("end_x", 0)) < 300_000, "%d Hz beam endpoint stops before cover" % tick_rate)
 	equal(covered_enemy.health, covered_enemy.health_maximum, "%d Hz beam cannot damage through cover" % tick_rate)
+
+
+func _test_movement_spell_chains(tick_rate: int) -> void:
+	var world := SimWorld.new(tick_rate)
+	var caster: PlayerState = world.player()
+	_apply_oh_tipi(caster)
+	var jump_and_cast := SimCommand.new(
+		world.tick,
+		caster.entity_id,
+		1000,
+		0,
+		SimCommand.HELD_JUMP,
+		SimCommand.PRESSED_JUMP | SimCommand.PRESSED_SPELL_1,
+		1000,
+		0,
+	)
+	check(_step(world, jump_and_cast), "%d Hz simultaneous jump and Rillshot steps" % tick_rate)
+	check(caster.hop_ticks > 0, "%d Hz spell startup does not suppress a legal movement action" % tick_rate)
+	equal(caster.pending_cast_wire_id, CombatTuning.RILLSHOT_WIRE_ID, "%d Hz movement does not suppress spell startup" % tick_rate)
+	while caster.pending_cast_wire_id != 0:
+		check(_step(world, SimCommand.new(world.tick, caster.entity_id, 1000, 0, SimCommand.HELD_JUMP)), "%d Hz moving Rillshot startup advances" % tick_rate)
+	check(caster.cast_recovery_ticks > 0, "%d Hz released Rillshot exposes its presentation recovery" % tick_rate)
+	var flux_before_chain := caster.flux
+	check(_step(world, SimCommand.new(world.tick, caster.entity_id, 1000, 0, 0, SimCommand.PRESSED_SPELL_2)), "%d Hz recovery-chain Tideline command steps" % tick_rate)
+	equal(caster.pending_cast_wire_id, CombatTuning.TIDELINE_WIRE_ID, "%d Hz a different spell starts during generic recovery" % tick_rate)
+	equal(caster.flux, flux_before_chain - CombatTuning.TIDELINE_FLUX_COST, "%d Hz recovery chain retains exact spell cost" % tick_rate)
+	check(_step(world, SimCommand.new(world.tick, caster.entity_id, 1000, 0, 0, SimCommand.PRESSED_SPELL_3)), "%d Hz occupied-channel command steps" % tick_rate)
+	check(world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "startup_commitment" and int(event.get("wire_id", 0)) == CombatTuning.RIMEWAKE_WIRE_ID), "%d Hz occupied startup refuses the next spell visibly" % tick_rate)
+
+	var rooted_world := SimWorld.new(tick_rate)
+	var rooted: PlayerState = rooted_world.player()
+	_apply_oh_tipi(rooted)
+	check(MovementSystem.apply_control_state(rooted, PlayerState.ControlState.ROOTED, 300, Vector2i.RIGHT, 0, rooted_world.config), "%d Hz rooted chain fixture applies" % tick_rate)
+	var rooted_flux := rooted.flux
+	check(_step(rooted_world, SimCommand.new(rooted_world.tick, rooted.entity_id, 0, 0, 0, SimCommand.PRESSED_SPELL_2)), "%d Hz rooted spell command steps" % tick_rate)
+	equal(rooted.pending_cast_wire_id, 0, "%d Hz rooted physical state cannot begin a spell" % tick_rate)
+	equal(rooted.flux, rooted_flux, "%d Hz rooted refusal spends no Flux" % tick_rate)
+	check(rooted_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("reason") == "control_rooted"), "%d Hz rooted refusal names its physical reason" % tick_rate)
+
+	var cooldown_world := SimWorld.new(tick_rate)
+	var cooling: PlayerState = cooldown_world.player()
+	_apply_oh_tipi(cooling)
+	cooling.primary_cooldown_ticks = 10
+	check(_step(cooldown_world, SimCommand.new(cooldown_world.tick, cooling.entity_id, 0, 0, 0, SimCommand.PRESSED_SPELL_1)), "%d Hz cooling spell command steps" % tick_rate)
+	check(cooldown_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("reason") == "cooldown" and int(event.get("wire_id", 0)) == CombatTuning.RILLSHOT_WIRE_ID), "%d Hz own cooldown refusal is visible" % tick_rate)
 
 
 func _test_edgeweave(tick_rate: int) -> void:

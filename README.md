@@ -146,6 +146,12 @@ even when design documentation already exists.
     ricochet, bounded slow, exact resource/timing rules and distinct spell shapes
   - [x] Five-spell visual presenter with distinct startup/action/impact/residue
     language for Rillshot, Tideline, Rimewake, Eclipse Disc and Pocket Eclipse
+  - [x] Canonical movement/spell transition matrix: movement remains live during
+    spell startup/recovery, unrelated spells chain during recovery, and startup,
+    physical state, own cooldown, Flux, kit and empty-slot refusals are explicit
+    without client-owned authority
+  - [ ] Positive-Flux offense and shorter action-specific cooldown economy;
+    the current zero-cost primaries are foundation values awaiting this pass
   - [ ] Complete targeting families, defense/clash/launch/status rules, passive,
     three actives, mobility, ultimate, formula variants, and configuration UI
   - [ ] First complete champion vertical slice

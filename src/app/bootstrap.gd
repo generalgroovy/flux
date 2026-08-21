@@ -43,6 +43,7 @@ var hub_definition: HubDefinition
 var campus_layout: SanctumCampusLayout
 var campus_renderer: SanctumCampusRenderer
 var visual_language: VisualLanguage
+var visual_accessibility_filter: VisualAccessibilityFilter
 var compact_hud: CompactCombatHud
 var interaction_presenter: WellspringInteractionPresenter
 var cartoon_champion_presenter: CartoonChampionPresenter
@@ -79,6 +80,8 @@ var requested_capture_active_cast: bool = false
 var requested_capture_spell_slot: int = 0
 var requested_capture_movement: String = ""
 var requested_capture_social_bubble: bool = false
+var requested_capture_visual_profile: String = ""
+var requested_capture_reduced_effects: bool = false
 var capture_active_cast_sent: bool = false
 var focused_station_id: String = ""
 var expanded_station_id: String = ""
@@ -133,6 +136,7 @@ var safe_quit_pending: bool = false
 var safe_quit_deadline_ms: int = 0
 var controls_input_guard_frames: int = 0
 var show_visual_specimen: bool = false
+var preference_overrides_are_transient: bool = false
 
 
 func _ready() -> void:
@@ -162,6 +166,18 @@ func _ready() -> void:
 	visual_language = VisualLanguage.new()
 	if not visual_language.load_from_file(VISUAL_LANGUAGE_PATH):
 		push_error(visual_language.last_error)
+		get_tree().quit(1)
+		return
+	visual_accessibility_filter = VisualAccessibilityFilter.new()
+	if not visual_accessibility_filter.configure():
+		push_error(visual_accessibility_filter.last_error)
+		get_tree().quit(1)
+		return
+	add_child(visual_accessibility_filter)
+	requested_capture_visual_profile = _requested_capture_visual_profile()
+	requested_capture_reduced_effects = _requested_capture_reduced_effects()
+	if not _apply_visual_accessibility_profile():
+		push_error(visual_accessibility_filter.last_error)
 		get_tree().quit(1)
 		return
 	campus_renderer = SanctumCampusRenderer.new()
@@ -266,7 +282,7 @@ func _ready() -> void:
 		elif capture_expanded_station_id == "spell-loom":
 			spell_loom_editor.open_editor(_local_player_state())
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, visual %s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -276,6 +292,9 @@ func _ready() -> void:
 			player_preferences.pov_range,
 			player_preferences.camera_zoom_percent,
 			visual_language.content_hash().left(12),
+			visual_accessibility_filter.content_hash.left(12),
+			visual_accessibility_filter.current_profile_id,
+			"reduced" if _reduced_effects_enabled() else "full",
 			compact_hud.content_hash.left(12),
 			interaction_presenter.content_hash.left(12),
 			campus_renderer.architecture_kit.content_hash.left(12),
@@ -341,6 +360,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				KEY_R:
 					controls_editor.reset_bindings(player_preferences)
 					bindings_changed = true
+				KEY_M:
+					_toggle_reduced_effects_preference()
+				KEY_H:
+					_toggle_high_contrast_preference()
 			handled = true
 		elif event is InputEventMouseButton and event.pressed:
 			var mouse_event := event as InputEventMouseButton
@@ -371,6 +394,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				JOY_BUTTON_Y:
 					controls_editor.reset_bindings(player_preferences)
 					bindings_changed = true
+				JOY_BUTTON_LEFT_STICK:
+					_toggle_reduced_effects_preference()
+				JOY_BUTTON_RIGHT_STICK:
+					_toggle_high_contrast_preference()
 			handled = true
 	if bindings_changed:
 		_commit_control_bindings()
@@ -430,7 +457,7 @@ func _handle_spell_loom_input(event: InputEvent) -> void:
 
 
 func _exit_tree() -> void:
-	if player_preferences != null and not player_preferences.save_to_file():
+	if player_preferences != null and not preference_overrides_are_transient and not player_preferences.save_to_file():
 		push_warning(player_preferences.last_error)
 	if session_transport != null:
 		session_transport.stop()
@@ -610,7 +637,7 @@ func _draw() -> void:
 	var camera_origin: Vector2 = _camera_origin(camera_focus_position)
 	var visual_tick := MinimalChampionMotion.tick_at_visual_rate(world.tick, tick_rate, alpha)
 	_set_world_transform(camera_origin)
-	campus_renderer.draw(self, campus_layout, roundi(visual_tick), camera_focus_position, player_preferences.reduced_motion)
+	campus_renderer.draw(self, campus_layout, roundi(visual_tick), camera_focus_position, _reduced_effects_enabled())
 	if show_debug_overlay:
 		for obstacle: CollisionWorld.Obstacle in world.collision.obstacles:
 			var rectangle := Rect2(
@@ -636,12 +663,12 @@ func _draw() -> void:
 		observed_state = state
 	_draw_remote_travellers(camera_origin, state.entity_id, roundi(visual_tick))
 	var presentation_state: PlayerState = client_prediction.predicted_state if session_transport.is_connected_client() and client_prediction.is_ready() else state
-	var presentation := JumpPresentation.sample(presentation_state, world.config, alpha, player_preferences.reduced_motion)
-	var landing := LandingPresentation.sample(presentation_state, world.config, alpha, player_preferences.reduced_motion)
+	var presentation := JumpPresentation.sample(presentation_state, world.config, alpha, _reduced_effects_enabled())
+	var landing := LandingPresentation.sample(presentation_state, world.config, alpha, _reduced_effects_enabled())
 	var player_radius: float = float(presentation_state.radius) / 1000.0
 	var shadow_center := rendered_position + Vector2(0.0, player_radius * 0.58)
 	if campus_renderer.natural_kit != null:
-		campus_renderer.natural_kit.draw_actor_contact(self, campus_layout, presentation_state, shadow_center, roundi(visual_tick), player_preferences.reduced_motion)
+		campus_renderer.natural_kit.draw_actor_contact(self, campus_layout, presentation_state, shadow_center, roundi(visual_tick), _reduced_effects_enabled())
 	var shadow_scale: Vector2 = landing.shadow_scale if landing.active else presentation.shadow_scale
 	_set_world_local_transform(
 		shadow_center,
@@ -664,7 +691,7 @@ func _draw() -> void:
 			sprite_anchor,
 			roundi(visual_tick),
 			world.config,
-			player_preferences.reduced_motion,
+			_reduced_effects_enabled(),
 		)
 	if not sprite_drawn and player_sprite != null:
 		if player_sprite.sync_from_player(presentation_state, world.config, world.tick, alpha):
@@ -742,6 +769,15 @@ func _draw_controls_editor() -> void:
 	draw_rect(panel, Color(BRASS_COLOR, 0.92), false, 3.0)
 	draw_string(ThemeDB.fallback_font, panel.position + Vector2(38, 42), "CONTROLS LECTERN", HORIZONTAL_ALIGNMENT_LEFT, 500.0, 25, PARCHMENT_COLOR)
 	draw_string(ThemeDB.fallback_font, panel.position + Vector2(38, 68), "Bindings stay on this device and are saved immediately.", HORIZONTAL_ALIGNMENT_LEFT, 800.0, 14, PALE_STONE_COLOR)
+	draw_string(
+		ThemeDB.fallback_font,
+		panel.position + Vector2(500, 68),
+		"FX %s · CONTRAST %s" % ["REDUCED" if _reduced_effects_enabled() else "FULL", "HIGH" if visual_accessibility_filter.current_profile_id == "high_contrast" else "STANDARD"],
+		HORIZONTAL_ALIGNMENT_RIGHT,
+		280.0,
+		12,
+		ATTUNEMENT_COLOR,
+	)
 	var visible_indices: Array[int] = controls_editor.visible_action_indices()
 	draw_string(ThemeDB.fallback_font, panel.position + Vector2(840, 68), "ACTIONS %d–%d / %d" % [visible_indices.front() + 1, visible_indices.back() + 1, ControlBindingEditor.ACTIONS.size()], HORIZONTAL_ALIGNMENT_RIGHT, 160.0, 12, ATTUNEMENT_COLOR)
 	for device: int in range(ControlBindingEditor.DEVICE_COUNT):
@@ -765,7 +801,7 @@ func _draw_controls_editor() -> void:
 	var footer_y := panel.end.y - 64.0
 	draw_line(Vector2(panel.position.x + 28, footer_y - 18), Vector2(panel.end.x - 28, footer_y - 18), Color(BRASS_COLOR, 0.5), 1.0)
 	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 38, footer_y), controls_editor.status_message, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 76.0, 13, ATTUNEMENT_COLOR if controls_editor.capturing else PARCHMENT_COLOR)
-	var help := "PRESS THE CHOSEN INPUT · ESC / BACK CANCELS" if controls_editor.capturing else "ARROWS / DPAD SELECT · ENTER / A BIND · BACKSPACE / X UNBIND · R / Y RESET · ESC / B CLOSE"
+	var help := "PRESS THE CHOSEN INPUT · ESC / BACK CANCELS" if controls_editor.capturing else "ARROWS / DPAD SELECT · ENTER / A BIND · M / L3 EFFECTS · H / R3 CONTRAST · ESC / B CLOSE"
 	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 38, footer_y + 27), help, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 76.0, 12, PALE_STONE_COLOR)
 
 
@@ -941,7 +977,7 @@ func _draw_combat_cues(camera_origin: Vector2) -> void:
 		var position: Vector2 = cue.get("position", Vector2.ZERO)
 		var color: Color = cue.get("color", ATTUNEMENT_COLOR)
 		var opacity := 1.0 - phase
-		if foundation_spell_presenter != null and foundation_spell_presenter.draw_cue(self, cue, phase, player_preferences.reduced_motion):
+		if foundation_spell_presenter != null and foundation_spell_presenter.draw_cue(self, cue, phase, _reduced_effects_enabled()):
 			var spell_label := String(cue.get("label", ""))
 			if not spell_label.is_empty():
 				var spell_label_width := ThemeDB.fallback_font.get_string_size(spell_label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
@@ -983,12 +1019,12 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visua
 		if remote_state.actor_kind != PlayerState.ActorKind.CHAMPION or remote_state.entity_id == local_entity_id:
 			continue
 		var position := Vector2(float(remote_state.position_x) / 1000.0, float(remote_state.position_y) / 1000.0)
-		var presentation := JumpPresentation.sample(remote_state, world.config, 0.0, player_preferences.reduced_motion)
-		var landing := LandingPresentation.sample(remote_state, world.config, 0.0, player_preferences.reduced_motion)
+		var presentation := JumpPresentation.sample(remote_state, world.config, 0.0, _reduced_effects_enabled())
+		var landing := LandingPresentation.sample(remote_state, world.config, 0.0, _reduced_effects_enabled())
 		var radius := float(remote_state.radius) / 1000.0
 		var shadow_center := position + Vector2(0.0, radius * 0.58)
 		if campus_renderer.natural_kit != null:
-			campus_renderer.natural_kit.draw_actor_contact(self, campus_layout, remote_state, shadow_center, visual_tick, player_preferences.reduced_motion)
+			campus_renderer.natural_kit.draw_actor_contact(self, campus_layout, remote_state, shadow_center, visual_tick, _reduced_effects_enabled())
 		var shadow_scale: Vector2 = landing.shadow_scale if landing.active else presentation.shadow_scale
 		_set_world_local_transform(shadow_center, Vector2(radius * shadow_scale.x, radius * shadow_scale.y), camera_origin)
 		draw_circle(Vector2.ZERO, 1.0, Color(FOREST_SHADOW_COLOR, presentation.shadow_opacity))
@@ -1007,7 +1043,7 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visua
 				sprite_anchor,
 				visual_tick,
 				world.config,
-				player_preferences.reduced_motion,
+				_reduced_effects_enabled(),
 			)
 		var sprite := _remote_player_sprite(remote_state) if not sprite_drawn else null
 		if not sprite_drawn and sprite != null and sprite.sync_from_player(remote_state, world.config, world.tick, 0.0):
@@ -1051,7 +1087,7 @@ func _draw_spell_startup(state: PlayerState, position: Vector2, visual_tick: int
 		Vector2(state.aim_x, state.aim_y),
 		phase,
 		visual_tick,
-		player_preferences.reduced_motion,
+		_reduced_effects_enabled(),
 	)
 
 
@@ -1339,7 +1375,7 @@ func _sync_session_transport() -> void:
 		if not reconciliations.is_empty() and not _is_spectating():
 			var local_authority := _local_player_state()
 			var authority_event := local_authority.last_event if local_authority != null else "network_snapshot"
-			if client_prediction.reconcile(reconciliations.back(), authority_event, player_preferences.reduced_motion):
+			if client_prediction.reconcile(reconciliations.back(), authority_event, _reduced_effects_enabled()):
 				previous_position = current_position
 				current_position = client_prediction.presented_position_pixels()
 				if requested_prediction_smoke and not prediction_smoke_started:
@@ -1696,8 +1732,29 @@ func _commit_control_bindings() -> void:
 	if not applied:
 		controls_editor.status_message = "Binding rejected; safe runtime map retained."
 		return
-	if not player_preferences.save_to_file():
+	if not _save_player_preferences_if_persistent():
 		controls_editor.status_message = "Binding works now but could not be saved."
+		push_warning(player_preferences.last_error)
+
+
+func _toggle_reduced_effects_preference() -> void:
+	player_preferences.reduced_motion = not player_preferences.reduced_motion
+	controls_editor.status_message = "Reduced effects %s; spell shape and timing stay complete." % ("on" if player_preferences.reduced_motion else "off")
+	_commit_accessibility_preferences()
+
+
+func _toggle_high_contrast_preference() -> void:
+	player_preferences.high_contrast = not player_preferences.high_contrast
+	controls_editor.status_message = "High contrast %s." % ("on" if player_preferences.high_contrast else "off")
+	_commit_accessibility_preferences()
+
+
+func _commit_accessibility_preferences() -> void:
+	if not _apply_visual_accessibility_profile():
+		controls_editor.status_message = visual_accessibility_filter.last_error
+		return
+	if not _save_player_preferences_if_persistent():
+		controls_editor.status_message = "Accessibility works now but could not be saved."
 		push_warning(player_preferences.last_error)
 
 
@@ -1850,7 +1907,7 @@ func _request_safe_quit(source: String) -> void:
 		return
 	safe_quit_pending = true
 	safe_quit_deadline_ms = Time.get_ticks_msec() + SAFE_QUIT_GRACE_MS
-	if player_preferences != null and not player_preferences.save_to_file():
+	if player_preferences != null and not _save_player_preferences_if_persistent():
 		push_warning(player_preferences.last_error)
 	var notified_guests: int = 0
 	if session_transport != null and session_transport.is_host():
@@ -2452,7 +2509,7 @@ func _draw_field(field: FieldState) -> void:
 	var radius := float(field.radius) / SimConfig.FIXED_SCALE
 	var full_lifetime := maxi(1, world.config.milliseconds_to_ticks(CombatTuning.RIMEWAKE_LIFETIME_MS))
 	var life_ratio := clampf(float(field.lifetime_ticks) / float(full_lifetime), 0.0, 1.0)
-	if foundation_spell_presenter != null and foundation_spell_presenter.draw_field(self, field, life_ratio, world.tick, player_preferences.reduced_motion):
+	if foundation_spell_presenter != null and foundation_spell_presenter.draw_field(self, field, life_ratio, world.tick, _reduced_effects_enabled()):
 		return
 	var ice_color := WATER_HIGHLIGHT_COLOR.lightened(0.36)
 	draw_circle(center, radius, Color(ice_color, 0.11 + life_ratio * 0.05))
@@ -2487,7 +2544,7 @@ func _projectile_color(element_wire_id: int) -> Color:
 
 
 func _draw_projectile(projectile: ProjectileState, position: Vector2, color: Color) -> void:
-	if foundation_spell_presenter != null and foundation_spell_presenter.draw_projectile(self, projectile, world.tick, player_preferences.reduced_motion):
+	if foundation_spell_presenter != null and foundation_spell_presenter.draw_projectile(self, projectile, world.tick, _reduced_effects_enabled()):
 		return
 	var radius: float = float(projectile.radius) / 1000.0
 	var previous := Vector2(float(projectile.previous_x) / 1000.0, float(projectile.previous_y) / 1000.0)
@@ -2576,6 +2633,23 @@ func _requested_capture_movement() -> String:
 				push_warning("Invalid movement capture; expected walk, sprint, slide, jump, air_dodge, or technique")
 			return requested
 	return ""
+
+
+func _requested_capture_visual_profile() -> String:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--capture-visual-profile="):
+			var profile_id := VisualAccessibilityFilter.parse_capture_profile(argument)
+			if profile_id.is_empty():
+				push_warning("Invalid visual review profile; expected standard, high_contrast, grayscale, protanopia, deuteranopia, or tritanopia")
+			return profile_id
+	return ""
+
+
+func _requested_capture_reduced_effects() -> bool:
+	for argument: String in OS.get_cmdline_user_args():
+		if VisualAccessibilityFilter.has_reduced_effects_capture_argument(argument):
+			return true
+	return false
 
 
 static func parse_session_charter(argument: String) -> String:
@@ -2802,8 +2876,12 @@ static func parse_capture_pointer(argument: String, canvas_size: Vector2i) -> Ve
 	if point.x < 0 or point.y < 0 or point.x >= canvas_size.x or point.y >= canvas_size.y:
 		return Vector2i(-1, -1)
 	return point
+
+
 func _apply_preference_overrides() -> void:
 	for argument: String in OS.get_cmdline_user_args():
+		if is_transient_preference_argument(argument):
+			preference_overrides_are_transient = true
 		if argument.begins_with("--movement-reference="):
 			var requested_reference: String = argument.trim_prefix("--movement-reference=")
 			if not player_preferences.apply_control_preset(requested_reference):
@@ -2830,6 +2908,13 @@ func _apply_preference_overrides() -> void:
 				player_preferences.set_camera_zoom_percent(zoom_text.to_int())
 			else:
 				push_warning("Invalid --camera-zoom value: %s" % zoom_text)
+
+
+static func is_transient_preference_argument(argument: String) -> bool:
+	for prefix: String in ["--movement-reference=", "--pov-mode=", "--pov-angle=", "--pov-range=", "--camera-zoom="]:
+		if argument.begins_with(prefix):
+			return true
+	return false
 
 
 func _handle_preference_actions() -> void:
@@ -2859,8 +2944,27 @@ func _handle_preference_actions() -> void:
 			requested_zoom = PlayerPreferences.MAX_CAMERA_ZOOM_PERCENT
 		player_preferences.set_camera_zoom_percent(requested_zoom)
 		changed = true
-	if changed and not player_preferences.save_to_file():
+	if changed and not _save_player_preferences_if_persistent():
 		push_warning(player_preferences.last_error)
+
+
+func _save_player_preferences_if_persistent() -> bool:
+	if preference_overrides_are_transient:
+		return true
+	return player_preferences.save_to_file()
+
+
+func _apply_visual_accessibility_profile() -> bool:
+	if visual_accessibility_filter == null:
+		return false
+	var profile_id := requested_capture_visual_profile
+	if profile_id.is_empty():
+		profile_id = VisualAccessibilityFilter.player_profile_for(player_preferences.high_contrast)
+	return visual_accessibility_filter.set_profile(profile_id)
+
+
+func _reduced_effects_enabled() -> bool:
+	return requested_capture_reduced_effects or (player_preferences != null and player_preferences.reduced_motion)
 
 
 func _player_position() -> Vector2:

@@ -9,16 +9,16 @@ acceptance status remain in `README.md`, `.agent/memory.md` and the worklog.
 | Get the game | Local release scripts emit checksummed Windows/Linux archives | A tagged reviewed build exposes exactly those archives and a friend follows one obvious extract-and-run path without admin rights |
 | Start/close | Game starts in the Wellspring; explicit close flushes preferences and network | Every UI/OS/host-loss exit path uses the same tested lifecycle and leaves no helper process |
 | Host/join | Walk-up Host/Join Farflow supports direct-IP ENet and eight players | In-world address entry, copy/paste join card, clear compatibility/port status and two-machine package proof |
-| Controls | The in-world lectern captures keyboard, mouse button/wheel and controller input with visible swap/unbind/reset/cancel and immediate persistence; camera zoom persists at 50/75/100% | Add sensitivity/dead-zone and named-profile layers after the 3×4 spell weave stabilizes |
+| Controls | The in-world lectern captures keyboard, mouse button/wheel and controller input with visible swap/unbind/reset/cancel, reduced-effects/high-contrast toggles and immediate persistence; camera zoom persists at 50/75/100% | Add sensitivity/dead-zone and named-profile layers after the 3×4 spell weave stabilizes |
 | Spells | Protocol 26 carries twelve Plain/Ctrl/Alt positions over buttons 1–4; the Loom repositions proven spells, Pocket Eclipse is a beam, Tideline a spray and Rimewake a field while honest empties refuse | Persist chosen arrangements deliberately, then promote defense/movement shapes one at a time |
 | Information | HUD/station bubbles expose immediate state; README holds full tables | One derived translucent codex exposes only canonical playable content and never obscures urgent combat state |
 | Expression | One replicated semantic emote exists | Eight-way hold/aim/release radial intent with original lines per champion and visibility-safe translucent bubbles |
-| Visuals | Runtime remains schematic; original district/champion concepts set direction | Original compact champions, tilted facades, clean floors, material reads, restrained auras and compact HUD meet the v3 specimen in-engine |
+| Visuals | V0–V6 provide original compact champions, tilted facades, clean floors, material reads, restrained auras, compact HUD and reviewed standard/accessibility/Farflow frames | Keep animation response and charm improving inside each playable slice without giving presentation rule authority |
 
 | Order | Complete slice | Minimum proof before checkpoint |
 | ---: | --- | --- |
 | 1 | Portable archive + safe lifecycle | Template identity, runtime-only export, checksums, archive modes, packaged boot/close, no stray process |
-| 2 | Preference schema 7 + defaults — complete | Migration, conflict validation, wheel edges, four buttons/two modifier layers, zoom, controller persistence, save/reload, 60/120 Hz |
+| 2 | Preference schema 8 + defaults — complete | Migration, conflict validation, wheel edges, four buttons/two modifier layers, zoom, reduced-effects/high-contrast choices, controller persistence, save/reload, 60/120 Hz |
 | 3 | Wellspring Controls lectern — complete | Input capture/cancel/swap/unbind/reset, inspected 1280×720 capture, offline/full-suite proof; package smoke remains a release-gate recheck |
 | 4 | Twelve semantic spell positions — complete foundation | Content validation, deterministic commands/replay, mismatch refusal, layered HUD, host-authoritative Loom configuration and inspected 720p state |
 | 5 | Spell/material fixtures | One readable example per enabled element, authority, bounded work/reset and material safety tests |

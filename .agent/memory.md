@@ -6,7 +6,7 @@ each playable slice.
 ## Current green frontier — 2026-08-21
 
 - Branch: `codex/continuous-overhaul`.
-- Protocol 26, snapshot schema 10, player preference schema 7.
+- Protocol 26, snapshot schema 10, player preference schema 8.
 - Two basic champions, the non-ability movement foundation, cone occlusion,
   eleven walk-up Wellspring stations, direct-IP Farflow, Charters, Hearth,
   Proving Court, reconnect, stewardship and late-join observation are live.
@@ -35,7 +35,7 @@ each playable slice.
 - Camera presentation now defaults to a wider 75% scale and persists a bounded
   50/75/100% choice. Pointer aim, cone range and building occlusion transform
   with the same scale; F11 and `--camera-zoom=` expose it without changing rules.
-- Latest source verification is 15,965 assertions across 49 suites plus
+- Latest source verification is 15,991 assertions across 50 suites plus
   import/source 60/120 Hz boots and a fresh 120 Hz three-process
   spectator-to-Hearth-to-Round-2, reconnect and stewardship journey.
 - Fresh Windows and Linux friend packages plus packaged Windows safe quit pass
@@ -66,18 +66,26 @@ each playable slice.
 - `scripts/capture-visual.ps1` creates a bounded temporary project and verifies
   every captured PNG, enabling truthful reviewed 1280×720 and 1920×1080 V5
   evidence without mutating the authored project viewport.
+- V6 adds a fail-closed standard/high-contrast/review-simulation visual filter,
+  schema-8 high-contrast persistence, reduced-effects parity and in-world
+  Controls Lectern toggles. Standard play skips the full-screen pass.
+- Capture-only preference overrides are transient and cannot rewrite the normal
+  profile. The harness also supports a truthful visual-host Farflow pair and
+  requires real join/shared-emote evidence before accepting its frames.
 - Untracked `dist/`, `node_modules/` and `scripts/firewall.ps1` are user-owned
   and must remain untouched.
 
 ## Next acceptance-driven slice
 
-Mechanics remain frozen. V0–V5 are engineering-complete: the visual language,
-compact-cartoon champions, natural modular Wellspring and five distinct live
-spell presentations, interaction language and compact HUD have deterministic
-runtime implementations and reviewed 1280×720/1920×1080 evidence. V6 is the
-only legal next slice: score grayscale/color-vision readability, high-contrast
-and reduced-effects parity, integrated spell/combat hierarchy and a two-player
-Farflow frame journey before opening any mechanical work.
+V0–V6 are engineering-complete. The final 720p/1080p review covers standard,
+grayscale/common color-vision simulations, high contrast, reduced effects,
+geometry/POV alignment and a real two-process Farflow greeting. The integrated
+rubric passed at 4.57/5 with no category below 4.0, so the mechanic freeze is
+lifted. The only legal next slice is measured crisp movement: record current
+distance, stop and reversal baselines, test an 8–12% ordinary-speed reduction,
+tighten control without adding interpolation, and preserve all traversal
+techniques at 60/120 Hz and 50/75/100% zoom. Animation response remains the
+lowest visual score and must improve alongside that slice.
 
 <!-- Historical V1 handoff below is retained only as prior evidence. -->
 Mechanics remain frozen. V0 and V1 are complete: the validated visual language

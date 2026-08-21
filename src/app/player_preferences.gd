@@ -2,7 +2,7 @@ class_name PlayerPreferences
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 7
+const SCHEMA_VERSION: int = 8
 const DEFAULT_PATH: String = "user://player_preferences_v1.json"
 const MOVEMENT_WORLD_RELATIVE: String = "world_relative"
 const MOVEMENT_AIM_RELATIVE: String = "aim_relative"
@@ -156,6 +156,7 @@ var keyboard_bindings: Dictionary[StringName, int] = {}
 var mouse_bindings: Dictionary[StringName, int] = {}
 var controller_bindings: Dictionary = {}
 var reduced_motion: bool = false
+var high_contrast: bool = false
 var last_error: String = ""
 
 
@@ -173,6 +174,7 @@ func reset_to_defaults() -> void:
 	mouse_bindings = DEFAULT_MOUSE_BINDINGS.duplicate()
 	controller_bindings = DEFAULT_CONTROLLER_BINDINGS.duplicate(true)
 	reduced_motion = false
+	high_contrast = false
 	last_error = ""
 
 
@@ -188,11 +190,11 @@ func apply_control_preset(preset_id: String) -> bool:
 func apply_dictionary(data: Dictionary) -> bool:
 	var raw_schema: Variant = data.get("schema_version", -1)
 	if not _is_whole_number(raw_schema):
-		last_error = "Player preferences require schema_version 1 through 7"
+		last_error = "Player preferences require schema_version 1 through 8"
 		return false
 	var requested_schema: int = int(raw_schema)
 	if requested_schema < 1 or requested_schema > SCHEMA_VERSION:
-		last_error = "Player preferences require schema_version 1 through 7"
+		last_error = "Player preferences require schema_version 1 through 8"
 		return false
 	var requested_movement: String = str(data.get("movement_reference", ""))
 	var requested_pov_mode: String = str(data.get("pov_mode", ""))
@@ -203,6 +205,13 @@ func apply_dictionary(data: Dictionary) -> bool:
 			last_error = "reduced_motion must be a boolean"
 			return false
 		requested_reduced_motion = raw_reduced_motion
+	var requested_high_contrast: bool = false
+	if requested_schema >= 8:
+		var raw_high_contrast: Variant = data.get("high_contrast", false)
+		if not raw_high_contrast is bool:
+			last_error = "high_contrast must be a boolean"
+			return false
+		requested_high_contrast = raw_high_contrast
 	if not is_valid_movement_reference(requested_movement):
 		last_error = "Invalid movement_reference: %s" % requested_movement
 		return false
@@ -338,6 +347,7 @@ func apply_dictionary(data: Dictionary) -> bool:
 	mouse_bindings = requested_mouse_bindings
 	controller_bindings = requested_controller_bindings
 	reduced_motion = requested_reduced_motion
+	high_contrast = requested_high_contrast
 	last_error = ""
 	return true
 
@@ -354,6 +364,7 @@ func to_dictionary() -> Dictionary:
 		"mouse_bindings": mouse_bindings,
 		"controller_bindings": controller_bindings,
 		"reduced_motion": reduced_motion,
+		"high_contrast": high_contrast,
 	}
 
 

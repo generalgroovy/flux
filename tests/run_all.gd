@@ -14,6 +14,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/unit/test_visual_candidate_manifest.gd"),
 	preload("res://tests/unit/test_visual_production_contract.gd"),
 	preload("res://tests/unit/test_visual_language.gd"),
+	preload("res://tests/unit/test_visual_accessibility_filter.gd"),
 	preload("res://tests/unit/test_compact_combat_hud.gd"),
 	preload("res://tests/unit/test_wellspring_interaction_presenter.gd"),
 	preload("res://tests/unit/test_cartoon_champion_presenter.gd"),

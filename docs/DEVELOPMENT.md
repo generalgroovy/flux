@@ -116,13 +116,23 @@ visual inspection without changing normal spawn or interaction behavior.
 presentation review; it sends no social request and changes no normal session.
 Use `scripts/capture-visual.ps1` for truthful 1280×720 or 1920×1080 movie
 evidence; it captures from an isolated temporary project and never rewrites the
-authoritative project's viewport settings.
+authoritative project's viewport settings or saved player preferences. Add
+`-FarflowPair -Port 24927` to capture a visual host plus a hidden real guest;
+acceptance requires the host's join/shared-emote records as well as exact frame
+count and dimensions. `--capture-visual-profile=grayscale|protanopia|
+deuteranopia|tritanopia|high_contrast` and `--capture-reduced-effects` are
+capture-only review switches.
 Use `spell-loom` as the station ID to inspect the 3×4 session editor.
 `--capture-cast-active` sends one offline active-spell edge after boot;
 `--capture-cast-slot=1..12` instead sends one semantic layered spell edge, and
 `--camera-zoom=50|75|100` selects a bounded visual-test scale. Combine these
 with `--champion=`, `--capture-spawn=` and `--capture-pointer=` only for
 repeatable movie-frame review of an already implemented spell.
+
+While the Controls Lectern is open, M/controller L3 toggles reduced effects and
+H/controller R3 toggles high contrast. The header shows both states and ordinary
+player changes persist immediately. Exact command-line movement/POV/angle/range/
+camera values are transient diagnostic overrides and are never saved on exit.
 
 The Session Hearth beside the Farflow gates is the diegetic lobby boundary. Its
 bubble lists connected/returning names and readiness; each connected traveller

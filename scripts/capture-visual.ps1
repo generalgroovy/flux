@@ -3,6 +3,8 @@ param(
     [ValidateSet('1280x720', '1920x1080')][string]$Resolution = '1280x720',
     [ValidateSet(60, 120)][int]$TickRate = 60,
     [ValidateRange(2, 120)][int]$Frames = 4,
+    [switch]$FarflowPair,
+    [ValidateRange(1024, 65535)][int]$Port = 24920,
     [Parameter(ValueFromRemainingArguments = $true)][string[]]$GameArguments
 )
 
@@ -28,6 +30,17 @@ $temporaryRoot = [System.IO.Path]::GetFullPath((Join-Path ([System.IO.Path]::Get
 $systemTemporaryRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
 if (-not $temporaryRoot.StartsWith($systemTemporaryRoot, [System.StringComparison]::OrdinalIgnoreCase) -or -not ([System.IO.Path]::GetFileName($temporaryRoot)).StartsWith('flux2-visual-capture-')) {
     throw 'Temporary capture project did not resolve below the system temporary directory.'
+}
+$farflowPeerProcess = $null
+$movieProcess = $null
+
+if ($FarflowPair) {
+    if ($Frames -lt 60) { throw 'A paired Farflow capture requires at least 60 frames so the real join and shared greeting can settle.' }
+    foreach ($argument in $GameArguments) {
+        if ($argument -like '--farflow=*' -or $argument -like '--session-port=*' -or $argument -like '--player-name=*') {
+            throw 'Paired Farflow capture owns farflow mode, port and diagnostic player names.'
+        }
+    }
 }
 
 try {
@@ -60,6 +73,14 @@ try {
     $importLogPath = Join-Path $outputRoot 'import.log'
     Invoke-FluxGodotChecked $godotBin @('--headless', '--editor', '--path', $temporaryRoot, '--quit') $importLogPath | Out-Null
 
+    $effectiveGameArguments = @($GameArguments)
+    if ($FarflowPair) {
+        $effectiveGameArguments += @(
+            '--farflow=host', "--session-port=$Port", '--session-charter=open_commons',
+            '--player-name=Lantern Host', '--capture-spawn=300,720'
+        )
+    }
+
     $moviePath = Join-Path $outputRoot 'frame.png'
     $logPath = Join-Path $outputRoot 'capture.log'
     $arguments = @(
@@ -68,8 +89,59 @@ try {
         '--write-movie', $moviePath,
         '--quit-after', "$Frames", '--fixed-fps', "$TickRate",
         '--', "--tick-rate=$TickRate"
-    ) + $GameArguments
-    Invoke-FluxGodotChecked $godotBin $arguments $logPath | Out-Null
+    ) + $effectiveGameArguments
+    if ($FarflowPair) {
+        $movieErrorPath = "$logPath.err"
+        $quotedMovieArguments = $arguments | ForEach-Object { '"' + $_.Replace('"', '\"') + '"' }
+        $movieProcess = Start-Process -FilePath $godotBin -ArgumentList $quotedMovieArguments -RedirectStandardOutput $logPath -RedirectStandardError $movieErrorPath -WindowStyle Hidden -PassThru
+        $hostDeadline = [datetime]::UtcNow.AddSeconds(20)
+        $hostReady = $false
+        while ([datetime]::UtcNow -lt $hostDeadline) {
+            if (Test-Path -LiteralPath $logPath) {
+                $hostText = Get-Content -LiteralPath $logPath -Raw
+                if ($hostText -match [regex]::Escape("FLUX2 farflow host: listening on UDP $Port")) {
+                    $hostReady = $true
+                    break
+                }
+            }
+            if ($movieProcess.HasExited) { break }
+            Start-Sleep -Milliseconds 100
+        }
+        if (-not $hostReady) { throw "Visual Farflow host did not become ready on UDP $Port; see $logPath" }
+
+        $peerLogPath = Join-Path $outputRoot 'farflow-guest.log'
+        $peerErrorPath = Join-Path $outputRoot 'farflow-guest.err.log'
+        $peerArguments = @(
+            '--headless', '--path', $temporaryRoot, '--fixed-fps', "$TickRate", '--',
+            "--tick-rate=$TickRate", '--farflow=join', '--join-address=127.0.0.1',
+            "--session-port=$Port", '--player-name=River Guest', '--farflow-smoke-emote'
+        )
+        $quotedPeerArguments = $peerArguments | ForEach-Object { '"' + $_.Replace('"', '\"') + '"' }
+        $farflowPeerProcess = Start-Process -FilePath $godotBin -ArgumentList $quotedPeerArguments -RedirectStandardOutput $peerLogPath -RedirectStandardError $peerErrorPath -WindowStyle Hidden -PassThru
+        if (-not $movieProcess.WaitForExit(120000)) { throw 'Visual Farflow host did not complete its bounded movie capture.' }
+        $movieProcess.WaitForExit()
+        $movieProcess.Refresh()
+        $movieExitCode = $movieProcess.ExitCode
+        if ($null -ne $movieExitCode -and [int]$movieExitCode -ne 0) { throw "Visual Farflow host exited with code $movieExitCode." }
+        $combinedMovieLog = @()
+        if (Test-Path -LiteralPath $logPath) { $combinedMovieLog += Get-Content -LiteralPath $logPath }
+        if (Test-Path -LiteralPath $movieErrorPath) { $combinedMovieLog += Get-Content -LiteralPath $movieErrorPath }
+        if ($combinedMovieLog | Select-String -Pattern 'SCRIPT ERROR|Parse Error|Compile Error|Failed to load script|Invalid call') {
+            throw 'Visual Farflow host emitted a script/import/runtime error.'
+        }
+        $movieText = $combinedMovieLog -join "`n"
+        if ($movieText -notmatch [regex]::Escape('Done recording movie at path:')) {
+            throw 'Visual Farflow host exited without completing its movie capture.'
+        }
+        foreach ($requiredPattern in @('FLUX2 farflow host: joined entity 2 (River Guest)', 'FLUX2 farflow social: shared emote entity 2')) {
+            if ($movieText -notmatch [regex]::Escape($requiredPattern)) {
+                throw "Paired Farflow capture missed '$requiredPattern'."
+            }
+        }
+    }
+    else {
+        Invoke-FluxGodotChecked $godotBin $arguments $logPath | Out-Null
+    }
 
     $frameFiles = @(Get-ChildItem -LiteralPath $outputRoot -Filter 'frame*.png' -File)
     if ($frameFiles.Count -ne $Frames) { throw "Expected $Frames movie frames, found $($frameFiles.Count)." }
@@ -83,9 +155,16 @@ try {
         }
         finally { $image.Dispose() }
     }
-    Write-Output "PASS: $($frameFiles.Count) truthful $Resolution frames at $outputRoot"
+    $pairLabel = if ($FarflowPair) { ' with a real two-process Farflow pair' } else { '' }
+    Write-Output "PASS: $($frameFiles.Count) truthful $Resolution frames$pairLabel at $outputRoot"
 }
 finally {
+    foreach ($process in @($farflowPeerProcess, $movieProcess)) {
+        if ($null -ne $process -and -not $process.HasExited) {
+            Stop-Process -Id $process.Id -Force
+            $process.WaitForExit()
+        }
+    }
     if (Test-Path -LiteralPath $temporaryRoot) {
         $resolvedTemporaryRoot = [System.IO.Path]::GetFullPath($temporaryRoot)
         if ($resolvedTemporaryRoot.StartsWith($systemTemporaryRoot, [System.StringComparison]::OrdinalIgnoreCase) -and ([System.IO.Path]::GetFileName($resolvedTemporaryRoot)).StartsWith('flux2-visual-capture-')) {

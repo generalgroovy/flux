@@ -18,7 +18,7 @@ func _test_defaults_and_presets() -> void:
 	equal(preferences.pov_angle_degrees, 120, "cone angle remains ready when cone view is selected")
 	equal(preferences.pov_range, 720, "cone range remains ready when cone view is selected")
 	equal(preferences.camera_zoom_percent, 75, "the default camera exposes more connected movement space")
-	equal(PlayerPreferences.SCHEMA_VERSION, 7, "player preferences save schema v7")
+	equal(PlayerPreferences.SCHEMA_VERSION, 8, "player preferences save schema v8")
 	equal(preferences.keyboard_bindings[&"sprint"], KEY_SHIFT, "Shift is the production-default sprint key")
 	equal(preferences.keyboard_bindings[&"slide"], KEY_C, "C is the persisted slide key")
 	equal(preferences.keyboard_bindings[&"jump"], KEY_SPACE, "Space is the production-default jump key")
@@ -32,6 +32,7 @@ func _test_defaults_and_presets() -> void:
 	equal(preferences.mouse_bindings[&"slide"], MOUSE_BUTTON_WHEEL_DOWN, "wheel down is the alternate slide and fast-fall input")
 	equal(String((preferences.controller_bindings[&"jump"] as Dictionary).get("kind")), "button", "controller jump defaults to a button")
 	check(not preferences.reduced_motion, "reduced motion defaults off")
+	check(not preferences.high_contrast, "high contrast defaults off")
 	check(preferences.apply_control_preset(PlayerPreferences.MOVEMENT_AIM_RELATIVE), "aim-relative preset is accepted")
 	equal(preferences.movement_reference, PlayerPreferences.MOVEMENT_AIM_RELATIVE, "aim-relative preset applies")
 	check(preferences.apply_control_preset(PlayerPreferences.MOVEMENT_WORLD_RELATIVE), "world-relative preset is accepted")
@@ -40,20 +41,21 @@ func _test_defaults_and_presets() -> void:
 
 func _test_validation() -> void:
 	var valid := {
-		"schema_version": 7,
+		"schema_version": 8,
 		"movement_reference": "aim_relative",
 		"pov_mode": "cone",
 		"pov_angle_degrees": 360,
 		"pov_range": 2048,
 		"camera_zoom_percent": 50,
 		"reduced_motion": false,
+		"high_contrast": false,
 	}
 	var preferences := PlayerPreferences.new()
 	check(preferences.apply_dictionary(valid), "valid exact settings load")
 	equal(preferences.pov_angle_degrees, 360, "360-degree ranged view is legal")
 	equal(preferences.pov_range, 2048, "custom view length is legal")
 	for mutation: Dictionary in [
-		{"schema_version": 8},
+		{"schema_version": 9},
 		{"movement_reference": "camera_relative"},
 		{"pov_mode": "wallhack"},
 		{"pov_angle_degrees": 14},
@@ -65,6 +67,7 @@ func _test_validation() -> void:
 		{"camera_zoom_percent": 101},
 		{"camera_zoom_percent": 75.5},
 		{"reduced_motion": "false"},
+		{"high_contrast": "false"},
 	]:
 		var candidate: Dictionary = valid.duplicate(true)
 		for key: Variant in mutation:
@@ -99,6 +102,8 @@ func _base_preferences(schema_version: int, bindings: Dictionary) -> Dictionary:
 	}
 	if schema_version >= 7:
 		result["camera_zoom_percent"] = PlayerPreferences.DEFAULT_CAMERA_ZOOM_PERCENT
+	if schema_version >= 8:
+		result["high_contrast"] = false
 	return result
 
 
@@ -152,13 +157,24 @@ func _test_schema_v1_migration_and_reduced_motion() -> void:
 	var current: Dictionary = migrated.to_dictionary()
 	current["reduced_motion"] = true
 	var loaded := PlayerPreferences.new()
-	check(loaded.apply_dictionary(current), "schema-v7 preferences load")
-	check(loaded.reduced_motion, "schema-v7 reduced_motion loads")
+	check(loaded.apply_dictionary(current), "schema-v8 preferences load")
+	check(loaded.reduced_motion, "schema-v8 reduced_motion loads")
+	check(not loaded.high_contrast, "schema-v8 high contrast defaults off")
+	current["high_contrast"] = true
+	check(loaded.apply_dictionary(current), "schema-v8 high contrast loads")
+	check(loaded.high_contrast, "schema-v8 high contrast is retained")
 	var before: Dictionary = loaded.to_dictionary().duplicate(true)
 	var malformed: Dictionary = current.duplicate(true)
 	malformed["reduced_motion"] = "false"
 	check(not loaded.apply_dictionary(malformed), "non-boolean reduced_motion fails closed")
 	equal(loaded.to_dictionary(), before, "invalid reduced_motion never partially mutates preferences")
+	malformed = current.duplicate(true)
+	malformed["high_contrast"] = "true"
+	check(not loaded.apply_dictionary(malformed), "non-boolean high_contrast fails closed")
+	equal(loaded.to_dictionary(), before, "invalid high_contrast never partially mutates preferences")
+	var schema_seven := PlayerPreferences.new()
+	check(schema_seven.apply_dictionary(_base_preferences(7, PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS)), "schema-v7 preferences migrate")
+	check(not schema_seven.high_contrast, "schema-v7 migration gains safe standard contrast")
 
 
 func _test_persistence_round_trip() -> void:
@@ -170,6 +186,7 @@ func _test_persistence_round_trip() -> void:
 	saved.set_pov_range(1360)
 	saved.set_camera_zoom_percent(50)
 	saved.reduced_motion = true
+	saved.high_contrast = true
 	check(saved.save_to_file(path), "preferences save offline")
 	var loaded := PlayerPreferences.new()
 	check(loaded.load_from_file(path), "preferences load offline")

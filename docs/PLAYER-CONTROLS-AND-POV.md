@@ -2,7 +2,7 @@
 
 ## Implemented checkpoint
 
-FLUX 2 now loads schema-v7 preferences from the stable offline profile
+FLUX 2 now loads schema-v8 preferences from the stable offline profile
 `user://player_preferences_v1.json`. The legacy filename is retained so existing
 schema-v1 installations are discovered and migrated in place. On Linux it
 normally resolves below
@@ -19,7 +19,8 @@ The profile owns these independent concerns:
 - full-screen versus ranged-cone presentation;
 - ranged-cone angle and length;
 - a bounded 50/75/100% camera scale that defaults to the wider 75% view;
-- the reduced-motion accessibility preference used by G3 presentation.
+- the reduced-motion accessibility preference used by G3 presentation;
+- the high-contrast presentation preference used by the V6 screen filter.
 
 Schema-v1/v2 profiles migrate the former defaults: C jump becomes Space jump,
 Alt sprint becomes Shift sprint, and the former Space primary alias becomes
@@ -32,7 +33,9 @@ Schema-v5/v6 profiles migrate to four number-button actions plus configurable
 Ctrl and Alt layer actions. A retired `spell_5` entry is ignored; if a legacy
 action already owns Ctrl or Alt, that new layer remains unbound rather than
 creating a conflict. Missing mouse/controller lanes migrate to explicit unbound
-descriptors, and old profiles gain the 75% camera default.
+descriptors, and old profiles gain the 75% camera default. Schema-v7 profiles
+gain standard contrast without altering any existing binding or presentation
+choice.
 
 Unknown actions, unknown modes, conflicting non-zero keyboard keycodes,
 fractional values, unsupported schema versions, and values outside documented
@@ -147,11 +150,19 @@ be changed in the generated JSON file while the game is stopped.
 Sensitivity/dead-zone curves, named per-device profiles, reset-by-category and
 profile import/export remain later presentation layers over this same schema.
 
-The schema persists `reduced_motion` strictly as a boolean. It defaults to false,
-fails closed on malformed values, and does not alter canonical simulation. The
-G3 presentation sampler consumes it with a seven-pixel maximum whole-pixel body
+The schema persists `reduced_motion` and `high_contrast` strictly as booleans.
+Both default to false, fail closed on malformed values, and do not alter
+canonical simulation. While the Controls Lectern is open, M/controller L3
+toggles reduced effects and H/controller R3 toggles high contrast; the header
+shows both states and normal player changes save immediately. When reduced
+effects are enabled, the G3 presentation sampler uses a seven-pixel maximum
+whole-pixel body
 lift and a lower-scale but still broader/darker shadow cue, instead of the
 normal 28-pixel apex lift. Timing and authoritative movement remain identical.
+
+Exact command-line movement, POV, angle, range and camera overrides are
+transient diagnostics. They affect that process only and are not written to the
+player profile on exit.
 
 ## Acceptance and authority
 

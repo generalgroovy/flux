@@ -130,3 +130,6 @@ func _test_capture_pointer_parser() -> void:
 	equal(BootstrapScript.ui_scale_for(Vector2(1280, 720)), 1.0, "authored 720p uses the one-to-one UI design grid")
 	equal(BootstrapScript.ui_scale_for(Vector2(1920, 1080)), 1.5, "1080p scales the UI design grid for equivalent readability")
 	equal(BootstrapScript.ui_scale_for(Vector2(2560, 1080)), 1.5, "wide output derives UI scale from its limiting height")
+	check(BootstrapScript.is_transient_preference_argument("--pov-mode=cone"), "capture POV override is explicitly transient")
+	check(BootstrapScript.is_transient_preference_argument("--camera-zoom=50"), "capture camera override is explicitly transient")
+	check(not BootstrapScript.is_transient_preference_argument("--session-port=24922"), "ordinary session arguments do not suppress preference persistence")

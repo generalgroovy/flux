@@ -1900,7 +1900,7 @@ spectator view adds no new information channel, but competitive limited-view
 modes still require host-side per-peer visibility filtering.
 
 The current simulation uses protocol 26, snapshot schema 10 and preference
-schema 7: Space or wheel-up invokes semantic jump, Shift sprints, C or
+schema 8: Space or wheel-up invokes semantic jump, Shift sprints, C or
 wheel-down directly slides/fast-falls, and Plain/Ctrl/Alt layers combine with
 buttons 1–4 into twelve independently configurable spell positions. Alt wins
 deterministically if both modifier actions are held. At the Spell Loom, players
@@ -1910,7 +1910,7 @@ left/right-click access remains available and the session-scoped layout resets
 when changing champion. Schema-v1 through v6
 defaults migrate safely, explicit saved alternatives remain
 supported, retired `spell_5` data is removed, modifier conflicts are preserved
-by leaving the new layer unbound, and malformed zoom/reduced-motion data fails
+by leaving the new layer unbound, and malformed zoom/reduced-motion/contrast data fails
 closed. The default 75% world scale shows more connected routes; F11 cycles
 50/75/100% and `--camera-zoom=` provides a bounded diagnostic override. The jump presentation keeps the collision
 anchor grounded while the body rises and a separate receiving-surface shadow
@@ -1939,7 +1939,7 @@ See [development setup](docs/DEVELOPMENT.md) and the
 
 ## Production roadmap
 
-Current visual frontier: V0–V5 engineering slices are complete. Oh Tipi and S. Wayne use pinned
+Current visual frontier: V0–V6 engineering slices are complete. Oh Tipi and S. Wayne use pinned
 compact-cartoon runtime art and editable, rate-independent minimal motion across
 the full movement grammar. The editable seeded NaturalMapKit now
 provides curved visual routes, natural edge growth, quiet ground variation and
@@ -1953,8 +1953,11 @@ default 75% overview. All live station kinds, binding-aware prompts, expanded
 sheets, social bubbles and notices now share one source-anchored interaction
 language; the compact HUD retains only Health, Flux, Stamina, active layer and
 four spell cells. Truthful 720p/1080p captures pass through the sandboxed visual
-harness. V6 integrated accessibility and two-player visual acceptance is the
-only legal next slice.
+harness. Standard, grayscale/common color-vision simulations, high contrast,
+reduced effects, geometry alignment and a real two-process Farflow greeting are
+reviewed. The integrated visual rubric passed at 4.57/5 with no category below
+4.0; measured crisp/slightly slower movement is now the active slice, with
+animation response retained as its first visual-polish constraint.
 
 Production advances through small vertical slices. Each checkpoint must leave a
 launchable game, focused history, truthful status index, known rollback commit,

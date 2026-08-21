@@ -199,9 +199,38 @@ Run `scripts/capture-visual.ps1` on Windows for truthful 1280×720 or 1920×1080
 evidence. The wrapper makes a unique system-temporary sandbox, imports there,
 changes only that copy's viewport, checks every frame's count and dimensions,
 and cleans only the verified sandbox. Reviewed V5 evidence is under ignored
-`.godot/visual-captures/v5-acceptance-*-final` directories. V6 still owns
-subjective grayscale/color-vision, high-contrast, reduced-effects and
-two-player integrated acceptance.
+`.godot/visual-captures/v5-acceptance-*-final` directories.
+
+## V6 integrated accessibility and Farflow acceptance
+
+`content/visual/accessibility_profiles_v1.json` owns the exact visual profiles,
+their labels, provenance and one-pass budget. `VisualAccessibilityFilter`
+validates that contract and the shader before use. Standard play hides the
+overlay entirely; high contrast is player-facing, while grayscale,
+protanopia, deuteranopia and tritanopia are review simulations for detecting
+hue-only information. They are not medical correction profiles.
+
+The Controls Lectern exposes reduced effects with M/controller L3 and high
+contrast with H/controller R3 while open. Reduced effects damp champion,
+environment, spell, field, projectile, cue and reconciliation presentation but
+retain authoritative duration, radius, lane, target, cooldown and resource
+truth. High contrast uses the same bounded one-pass filter and never changes
+visibility or simulation.
+
+Capture-only flags are exact: `--capture-visual-profile=grayscale|protanopia|
+deuteranopia|tritanopia|high_contrast` and `--capture-reduced-effects`. Normal
+CLI movement, POV, angle, range and camera overrides are also transient: capture
+or diagnostic exit never persists them over the player's saved profile.
+
+Reviewed evidence lives under ignored `.godot/visual-captures/v6-acceptance-*`:
+standard and grayscale at 1280×720; common color-vision simulations; high
+contrast; reduced-effects Rimewake; geometry/POV alignment; and a 1920×1080
+visual-host Farflow pair with two real processes, two visible champions, host
+`2/8` state and a network-verified guest greeting. The integrated engineering
+scores are cohesion 4.5, silhouette 4.5, material identity 4.5, world overview
+5.0, HUD clarity 5.0, animation response 4.0 and spell readability 4.5 (mean
+4.57). That clears V6 while identifying animation response as the first
+continuing visual-polish target.
 
 `content/visual/wellspring_wayfinding_v1.json` makes the 2560×1440 campus read
 as a group of destinations: Movement Conservatory, Recovery Grove, Living

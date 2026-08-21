@@ -1,5 +1,59 @@
 # FLUX2 agent worklog
 
+## 2026-08-21 — V6 integrated visual and accessibility acceptance
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added a fail-closed accessibility catalog and one-pass screen filter. Standard
+  play pays no filter pass; high contrast is player-facing, while grayscale,
+  protanopia, deuteranopia and tritanopia are explicitly review simulations,
+  not medical correction claims.
+- Migrated preferences to schema 8 with a strictly validated high-contrast
+  choice. The in-world Controls Lectern now exposes reduced effects and high
+  contrast through M/H or controller L3/R3, saves normal player choices, and
+  keeps their current state visible without adding a detached menu.
+- Routed champion, environment, spell, field, projectile, cue and reconciliation
+  presentation through one reduced-effects query. Effect damping preserves
+  authoritative timing, geometry, target response and refusal information.
+- Made command-line presentation overrides transient. Visual captures no longer
+  rewrite the normal player profile on exit; the user profile accidentally
+  changed by an earlier cone-POV diagnostic was restored to its prior full-view
+  value before final verification.
+- Extended the bounded Windows capture harness with a real two-process Farflow
+  mode. The movie process is the visual host, a hidden guest joins and sends the
+  ordinary shared greeting, and the harness requires host-side join/emote logs,
+  truthful frames, exact dimensions and clean process ownership.
+
+Validation and reviewed evidence:
+
+- Full headless/source validation passed with 15,991 assertions across 50
+  suites and zero failures; independent 60/120 Hz source boots passed.
+- The complete 120 Hz Farflow journey passed on UDP 24929: host/join, shared
+  HELLO, movement reconciliation, Hearth-to-Court round, late-join observation,
+  Hearth handoff, exact-actor return, rematch and reason-bearing stewardship.
+- Reviewed standard and grayscale 1280×720 frames are under
+  `.godot/visual-captures/v6-acceptance-720-*-final`. Common color-vision
+  simulations, high contrast, reduced Rimewake, geometry/POV alignment and the
+  1920×1080 two-process host view are recorded in the corresponding
+  `v6-acceptance-*` directories. These remain ignored diagnostic artifacts.
+- The 1080p paired frame visibly contains both champions, `2/8` host state and
+  the guest's source-anchored `HELLO!`; the harness also verified the real
+  network events rather than accepting a capture-only bubble.
+
+Integrated engineering rubric (1–5):
+
+| Cohesion | Silhouette | Material identity | World overview | HUD clarity | Animation response | Spell readability | Mean |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 4.5 | 4.5 | 4.5 | 5.0 | 5.0 | 4.0 | 4.5 | 4.57 |
+
+This clears the V6 engineering threshold (no category below 4.0, mean at least
+4.5) and opens measured movement work. It does not declare the art final:
+animation response is the weakest scored category and remains a continuing
+polish constraint for every subsequent playable slice. Existing bulk-catalog
+image-loader warnings predate this slice.
+
 ## 2026-08-21 — V5 Wellspring interaction and compact-HUD language
 
 Branch: `codex/continuous-overhaul`

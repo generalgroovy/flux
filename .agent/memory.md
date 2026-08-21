@@ -35,7 +35,7 @@ each playable slice.
 - Camera presentation now defaults to a wider 75% scale and persists a bounded
   50/75/100% choice. Pointer aim, cone range and building occlusion transform
   with the same scale; F11 and `--camera-zoom=` expose it without changing rules.
-- Latest source verification is 15,832 assertions plus import/source 60/120 Hz
+- Latest source verification is 15,859 assertions plus import/source 60/120 Hz
   boots and a fresh 120 Hz three-process spectator-to-Hearth-to-Round-2,
   reconnect and stewardship journey. Diagnostic captures verify the compact
   active-layer HUD, wider 75% navigation view, Rimewake feedback and 3x4 Loom.
@@ -64,8 +64,13 @@ and damp under reduced motion. V3 is active: an editable fail-closed
 NaturalMapKit now seeds quiet ground variation, natural edge props, curved
 visual routes and surface-aware movement contact without changing topology or
 collision. Open-Conservatory captures cover walk, sprint, slide, jump, air
-dodge and contextual technique. Buildings, landmarks and stations remain the
-next modular environment-art gap, followed by V4–V6.
+dodge and contextual technique. The new data-driven compact HUD keeps only
+moment-to-moment champion/location, session state, Health, Flux, Stamina,
+active layer and four spell cells on screen; existing stations retain detailed
+guidance. An equally data-driven eight-point wayfinding kit gives the wide
+campus distinct movement, recovery, archive, loom, settings, Farflow, duel and
+elemental trial destinations without changing authority. Buildings, landmarks
+and stations remain the next modular environment-art gap, followed by V4–V6.
 
 <!-- Historical V1 handoff below is retained only as prior evidence. -->
 Mechanics remain frozen. V0 and V1 are complete: the validated visual language

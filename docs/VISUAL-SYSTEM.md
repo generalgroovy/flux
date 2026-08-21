@@ -122,3 +122,22 @@ scripts/run.cmd 60 --capture-spawn=300,720 --capture-pointer=900,720 --capture-m
 This slice establishes animation/contact quality and reusable map resources; it
 does not claim final V3 environment charm. Central architecture, landmark and
 station art still require the next modular environment pass.
+
+## Compact HUD and purposeful campus slice
+
+`content/visual/compact_hud_v1.json` now owns the bounded combat-HUD geometry.
+The live frame keeps only champion/location, session state, Health, Flux,
+Stamina, the active Plain/Ctrl/Alt layer and exactly four active spell cells.
+Detailed controls, mechanics and configuration remain at the existing
+translucent Wellspring stations instead of permanently consuming navigation
+space. The HUD remains under the shared 19% screen-coverage budget and does
+not introduce a fifth spell button.
+
+`content/visual/wellspring_wayfinding_v1.json` makes the 2560×1440 campus read
+as a group of destinations: Movement Conservatory, Recovery Grove, Living
+Archive, Wellspring Looms, Settings House, Farflow Gates, Dueling Court and
+Elemental Crucible. `WellspringWayfinding` validates each point against its
+authored district, shows at most four nearby labels and only draws
+presentation-only brass/element markers. The renderer also gives each large
+quarter a quiet identity motif—garden terraces, Nexus plaza rings or proving
+targets—without changing collision, routes, elevation, visibility or authority.

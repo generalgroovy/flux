@@ -181,10 +181,16 @@ even when design documentation already exists.
 - [x] Focused reversible checkpoints A–E remain playable and published
   - [x] Checkpoint F1 establishes chemistry storage/worldbone/reset safety
   - [x] Checkpoint G1 adds persisted controls and configurable POV
-  - [ ] G2/G3 continue the Living Wellspring V1 track: authored world, complete
+- [ ] G2/G3 continue the Living Wellspring V1 track: authored world, complete
     champion body/animation integration,
     reactions/interactions, first ancestry/champion/spells, friends/host tools,
     then Garuda Sway/Windows acceptance before other modes
+  - [x] Compact live HUD now reserves the main frame for play: champion/location,
+    session state, Health, Flux, Stamina and exactly four active spell cells;
+    detailed guidance remains at Wellspring stations
+  - [x] Presentation-only campus wayfinding now identifies the Movement
+    Conservatory, Recovery Grove, Living Archive, Wellspring Looms, Settings
+    House, Farflow Gates, Dueling Court and Elemental Crucible
 
 The complete gate order, slice boundaries, current status, and definition of a
 working checkpoint live in the [FLUX 2 overhaul implementation plan](docs/OVERHAUL-PLAN.md).

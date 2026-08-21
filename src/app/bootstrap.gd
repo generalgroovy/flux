@@ -17,6 +17,7 @@ const LOADOUT_PATH: String = "res://content/loadouts/foundation_practitioner_v1.
 const MATERIAL_CATALOG_PATH: String = "res://content/materials/foundation_materials_v1.json"
 const MATERIAL_YARD_PATH: String = "res://content/maps/sanctum_material_yard_v1.json"
 const VISUAL_LANGUAGE_PATH: String = "res://content/visual/visual_language_v1.json"
+const COMPACT_HUD_PATH: String = "res://content/visual/compact_hud_v1.json"
 const WATER_COLOR := Color("153c4a")
 const WATER_HIGHLIGHT_COLOR := Color("28677a")
 const FOREST_SHADOW_COLOR := Color("17261b")
@@ -42,6 +43,7 @@ var hub_definition: HubDefinition
 var campus_layout: SanctumCampusLayout
 var campus_renderer: SanctumCampusRenderer
 var visual_language: VisualLanguage
+var compact_hud: CompactCombatHud
 var cartoon_champion_presenter: CartoonChampionPresenter
 var ability_catalog: AbilityCatalog
 var champion_catalog: ChampionCatalog
@@ -164,6 +166,15 @@ func _ready() -> void:
 		push_error("Wellspring renderer could not bind the visual language")
 		get_tree().quit(1)
 		return
+	if not campus_renderer.configure_wayfinding(campus_layout):
+		push_error("Wellspring renderer could not bind the purpose-wayfinding kit")
+		get_tree().quit(1)
+		return
+	compact_hud = CompactCombatHud.new()
+	if not compact_hud.configure(visual_language, COMPACT_HUD_PATH):
+		push_error(compact_hud.last_error)
+		get_tree().quit(1)
+		return
 	cartoon_champion_presenter = CartoonChampionPresenter.new()
 	if not cartoon_champion_presenter.configure(visual_language):
 		push_error(cartoon_champion_presenter.last_error)
@@ -239,7 +250,7 @@ func _ready() -> void:
 		elif capture_expanded_station_id == "spell-loom":
 			spell_loom_editor.open_editor(_local_player_state())
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, visual %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, visual %s, HUD %s, wayfinding %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -249,6 +260,8 @@ func _ready() -> void:
 			player_preferences.pov_range,
 			player_preferences.camera_zoom_percent,
 			visual_language.content_hash().left(12),
+			compact_hud.content_hash.left(12),
+			campus_renderer.wayfinding.content_hash.left(12),
 			cartoon_champion_presenter.content_hash.left(12),
 			cartoon_champion_presenter.atlas_hash.left(12),
 			hub_definition.districts_by_id.size(),
@@ -649,41 +662,24 @@ func _draw() -> void:
 	var observed_position := Vector2(float(observed_state.position_x) / SimConfig.FIXED_SCALE, float(observed_state.position_y) / SimConfig.FIXED_SCALE)
 	var pov_position := observed_position if spectating else rendered_position
 	_draw_pov_mask((pov_position - camera_origin) * _camera_zoom_scale(), Vector2(observed_state.aim_x, observed_state.aim_y), camera_origin)
-	draw_rect(Rect2(16, 14, 1248, 96), PANEL_COLOR, true)
-	draw_rect(Rect2(16, 14, 1248, 96), BRASS_COLOR.darkened(0.3), false, 2.0)
 	var observed_champion_id := champion_catalog.champion_id_from_wire(observed_state.champion_wire_id)
 	var champion_data: Dictionary = champion_catalog.champion(observed_champion_id)
 	var champion_name := String(champion_data.get("display_name", observed_champion_id))
-	var champion_kit: Dictionary = champion_data.get("foundation_kit", {})
-	var primary_ability: Dictionary = ability_catalog.ability(String(champion_kit.get("primary", "")))
-	var active_ability: Dictionary = ability_catalog.ability(String(champion_kit.get("active_1", "")))
-	var primary_name := String(primary_ability.get("display_name", "PRIMARY"))
-	var active_name := String(active_ability.get("display_name", "ACTIVE"))
 	var location_name := "PROVING COURT" if int(_current_round_state().get("phase", SessionRound.Phase.HEARTH)) != SessionRound.Phase.HEARTH else "THE WELLSPRING"
-	var observed_name := _spectator_name(observed_state.entity_id).to_upper() if spectating else champion_name.to_upper()
-	draw_string(ThemeDB.fallback_font, Vector2(32, 42), "%s · %s" % ["WATCHING %s" % observed_name if spectating else observed_name, location_name], HORIZONTAL_ALIGNMENT_LEFT, -1.0, 22, PARCHMENT_COLOR)
-	var movement_name: String = String(PlayerState.MovementMode.keys()[observed_state.movement_mode]).replace("_", " ")
-	var state_line := "NEXT GATHERING · %s" % champion_name.to_upper() if spectating else "%s · %s" % [movement_name, _readable_event(presentation_state)]
-	draw_string(ThemeDB.fallback_font, Vector2(400, 40), state_line, HORIZONTAL_ALIGNMENT_RIGHT, 280.0, 13, ATTUNEMENT_COLOR)
-	_draw_resource_bar(Rect2(700, 24, 168, 20), "HEALTH", observed_state.health, observed_state.health_maximum, Color("d9634f"))
-	_draw_resource_bar(Rect2(884, 24, 168, 20), "FLUX", observed_state.flux, observed_state.flux_maximum, FLUX_COLOR)
-	_draw_resource_bar(Rect2(1068, 24, 168, 20), "STAMINA", observed_state.stamina, observed_state.stamina_maximum, ATTUNEMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(32, 70), "TAB / D-PAD RIGHT FOLLOW NEXT · YOU JOIN AT THE HEARTH" if spectating else "WASD MOVE · SHIFT SPRINT · C/WHEEL↓ SLIDE · SPACE/WHEEL↑ JUMP · V TECHNIQUE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, PALE_STONE_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(700, 70), _session_label(), HORIZONTAL_ALIGNMENT_RIGHT, 536.0, 12, ATTUNEMENT_COLOR if session_transport.is_online() else PALE_STONE_COLOR)
-	var view_description := ("FULL" if player_preferences.pov_mode == PlayerPreferences.POV_FULL else "CONE %d°/%d" % [player_preferences.pov_angle_degrees, player_preferences.pov_range]) + " · ZOOM %d%%" % player_preferences.camera_zoom_percent
-	draw_string(
-		ThemeDB.fallback_font,
-		Vector2(32, 96),
-		("ROUND INPUT LOCKED · T HELLO · F8 VIEW %s" % view_description) if spectating else (
-			"LMB %s · RMB/E %s · 1–4 + CTRL/ALT SPELLS · F INTERACT · T HELLO · F8 VIEW %s · F11 ZOOM"
-			% [primary_name.to_upper(), _active_hint(state, active_name, active_ability), view_description]
-		),
-		HORIZONTAL_ALIGNMENT_LEFT,
-		-1.0,
-		13,
-		ATTUNEMENT_COLOR,
-	)
-	_draw_spell_bar(observed_state)
+	var active_layer: int = 2 if Input.is_action_pressed(InputRouter.SPELL_ALT_LAYER_ACTION) else (1 if Input.is_action_pressed(InputRouter.SPELL_CTRL_LAYER_ACTION) else 0)
+	if compact_hud != null:
+		compact_hud.draw(
+			self,
+			get_viewport_rect().size,
+			observed_state,
+			ability_catalog,
+			champion_name,
+			location_name,
+			_session_label(),
+			active_layer,
+			world.config.tick_rate,
+			spectating,
+		)
 	if show_debug_overlay and dropped_time_seconds > 0.0:
 		draw_string(ThemeDB.fallback_font, Vector2(32, 132), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
 	if show_debug_overlay:

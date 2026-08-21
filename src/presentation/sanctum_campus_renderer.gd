@@ -30,6 +30,7 @@ var FIRE := Color("df8335")
 var PANEL := Color("11140ee8")
 var language: VisualLanguage
 var natural_kit: NaturalMapKit
+var wayfinding: WellspringWayfinding
 
 
 func configure(visual_language: VisualLanguage) -> bool:
@@ -65,7 +66,14 @@ func configure(visual_language: VisualLanguage) -> bool:
 	natural_kit = NaturalMapKit.new()
 	if not natural_kit.configure(language):
 		return false
+	wayfinding = WellspringWayfinding.new()
 	return true
+
+
+func configure_wayfinding(layout: SanctumCampusLayout) -> bool:
+	if wayfinding == null:
+		return false
+	return wayfinding.configure(language, layout)
 
 
 func draw(
@@ -84,6 +92,7 @@ func draw(
 		var district: Dictionary = district_value
 		_draw_district(canvas, district, district_index)
 		natural_kit.draw_district_details(canvas, district, district_index, presentation_tick, reduced_effects)
+		_draw_district_identity(canvas, district, presentation_tick, reduced_effects)
 		district_index += 1
 	for route_value: Variant in layout.data.get("routes", []):
 		_draw_route(canvas, route_value as Dictionary)
@@ -92,6 +101,8 @@ func draw(
 		_draw_building(canvas, building_value as Dictionary, focus_world_position)
 	for landmark_value: Variant in layout.data.get("landmarks", []):
 		_draw_landmark(canvas, landmark_value as Dictionary, presentation_tick)
+	if wayfinding != null:
+		wayfinding.draw(canvas, focus_world_position, presentation_tick, reduced_effects)
 	for station_value: Variant in layout.data.get("stations", []):
 		_draw_station(canvas, station_value as Dictionary, presentation_tick)
 	for district_value: Variant in layout.data.get("districts", []):
@@ -208,6 +219,41 @@ func _draw_district_edge_garden(canvas: CanvasItem, bounds: Rect2i, index: int) 
 			_draw_tree(canvas, Vector2(bounds.position.x + 11, y), 0.62)
 		else:
 			_draw_tree(canvas, Vector2(bounds.end.x - 12, y), 0.62)
+
+
+func _draw_district_identity(canvas: CanvasItem, district: Dictionary, tick: int, reduced_effects: bool) -> void:
+	# These are low-contrast civic motifs, not tiles or collision. They let the
+	# wide campus read as several intentional destinations before labels resolve.
+	var bounds := SanctumCampusLayout._parse_bounds(district.get("bounds", []))
+	var style := String(district.get("style", "nexus"))
+	var anchor_values: Array = district.get("label_anchor", [])
+	var anchor := Vector2(float(anchor_values[0]), float(anchor_values[1]))
+	var shimmer := 0.0 if reduced_effects else sin(float(tick) * 0.035) * 0.04
+	match style:
+		"garden":
+			var terrace := Rect2(bounds.position.x + 88, bounds.end.y - 194, 188, 54)
+			canvas.draw_rect(terrace, Color(language.ramp_color("garden", 1), 0.33), true)
+			canvas.draw_rect(terrace, Color(language.ramp_color("garden", 4), 0.34), false, 2.0)
+			for index: int in range(5):
+				var plot_center := terrace.position + Vector2(24 + index * 36, 27)
+				canvas.draw_circle(plot_center, 10.0, Color(language.ramp_color("garden", 3), 0.44))
+				canvas.draw_circle(plot_center + Vector2(0, -3), 4.0, Color(language.element_color("light", "bright"), 0.34 + shimmer))
+			canvas.draw_line(Vector2(bounds.position.x + 170, bounds.position.y + 116), Vector2(bounds.position.x + 540, bounds.position.y + 116), Color(language.ramp_color("deep_water", 4), 0.20), 3.0)
+		"nexus":
+			var plaza_center := Vector2(bounds.get_center().x, bounds.get_center().y + 150)
+			for radius: float in [92.0, 64.0, 34.0]:
+				canvas.draw_arc(plaza_center, radius, 0.0, TAU, 32, Color(language.ramp_color("aged_brass", 3), 0.18 + shimmer), 2.0)
+			for index: int in range(8):
+				var direction := Vector2.from_angle(TAU * float(index) / 8.0)
+				canvas.draw_line(plaza_center + direction * 38.0, plaza_center + direction * 88.0, Color(language.ramp_color("warm_stone", 4), 0.16), 2.0)
+			canvas.draw_circle(anchor + Vector2(430, 720), 14.0, Color(language.ui_color("focus"), 0.12 + shimmer))
+		"proving":
+			var lane_start := Vector2(bounds.position.x + 112, bounds.position.y + 592)
+			for index: int in range(4):
+				var target_position := lane_start + Vector2(index * 104, 0)
+				canvas.draw_circle(target_position, 16.0, Color(language.ramp_color("worldbone", 0), 0.42))
+				canvas.draw_arc(target_position, 12.0, 0.0, TAU, 16, Color(language.element_color("fire", "bright"), 0.34 + shimmer), 2.0)
+				canvas.draw_circle(target_position, 4.0, Color(language.element_color("charge", "bright"), 0.38))
 
 
 func _draw_route(canvas: CanvasItem, route: Dictionary) -> void:

@@ -1,5 +1,43 @@
 # FLUX2 agent worklog
 
+## 2026-08-21 — compact HUD and purposeful campus slice
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added a fail-closed, editable compact combat HUD. It replaces the permanent
+  three-row controls/debug strip with a small header, session chip, champion
+  resource card and exactly four active spell cells; detailed guidance remains
+  available through the existing Wellspring stations.
+- Added fail-closed campus wayfinding data for eight distinct destinations:
+  Movement Conservatory, Recovery Grove, Living Archive, Wellspring Looms,
+  Settings House, Farflow Gates, Dueling Court and Elemental Crucible. Only the
+  nearest four labels render, so the wider overview remains useful for play.
+- Added quiet presentation-only civic motifs for the garden, Nexus and proving
+  quarters. They improve long-range campus identity without modifying collision,
+  routes, elevation, visibility or simulation authority.
+- Added this slice's concise continuation prompt at
+  `.agent/GUI-MAP-UPDATE-PROMPT.md` and deterministic validation for both new
+  data contracts.
+
+Validation:
+
+- Windows import plus independent source boots passed at 60 and 120 Hz.
+- Full headless suite passed with 15,859 assertions and zero failures.
+- Fixed-pointer 1280×720 capture was generated and inspected under
+  `.godot/gui-map-capture-720/`; it confirms the open top navigation frame,
+  lower-left three-resource card, lower-right four-spell bar and nearby purpose
+  markers. The attempted 1920×1080 movie invocation remains constrained to the
+  project's 1280×720 authored viewport, so it is not claimed as separate 1080p
+  evidence.
+
+Known limitations and risks:
+
+- V3 is still a presentation candidate: most buildings and stations remain
+  procedural geometry rather than finished modular art, and V4–V6 are not open.
+- Existing bulk-catalog image loader warnings predate this slice.
+
 ## 2026-08-13 â€” visual Gate V2 and natural-motion V3 foundation
 
 Branch: `codex/continuous-overhaul`

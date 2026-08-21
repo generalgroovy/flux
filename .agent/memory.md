@@ -35,7 +35,14 @@ each playable slice.
 - Camera presentation now defaults to a wider 75% scale and persists a bounded
   50/75/100% choice. Pointer aim, cone range and building occlusion transform
   with the same scale; F11 and `--camera-zoom=` expose it without changing rules.
-- Latest source verification is 15,991 assertions across 50 suites plus
+- Ordinary movement now uses the `movement-tuning-v2-crisp-response` profile:
+  324 px/s top speed, 1,980 px/s² acceleration, 3,000 px/s² braking and 1.9×
+  counter-strafe response. One-second travel is 300.15/298.825 px, release drift
+  14.9/16.15 px and reversal drift 11.33/12.63 px at 60/120 Hz.
+- Movement animation follows residual velocity through braking, scales its body
+  response with speed and owns an editable reduced-effects heel-plant accent.
+  The complete movement tuning hash is part of Farflow compatibility.
+- Latest source verification is 16,015 assertions across 51 suites plus
   import/source 60/120 Hz boots and a fresh 120 Hz three-process
   spectator-to-Hearth-to-Round-2, reconnect and stewardship journey.
 - Fresh Windows and Linux friend packages plus packaged Windows safe quit pass
@@ -77,15 +84,13 @@ each playable slice.
 
 ## Next acceptance-driven slice
 
-V0–V6 are engineering-complete. The final 720p/1080p review covers standard,
-grayscale/common color-vision simulations, high contrast, reduced effects,
-geometry/POV alignment and a real two-process Farflow greeting. The integrated
-rubric passed at 4.57/5 with no category below 4.0, so the mechanic freeze is
-lifted. The only legal next slice is measured crisp movement: record current
-distance, stop and reversal baselines, test an 8–12% ordinary-speed reduction,
-tighten control without adding interpolation, and preserve all traversal
-techniques at 60/120 Hz and 50/75/100% zoom. Animation response remains the
-lowest visual score and must improve alongside that slice.
+V0–V6 and the crisp ordinary-movement candidate are engineering-complete.
+Hands-on A/B remains the final authority for the 324 px/s tune, but deterministic
+60/120 Hz metrics, the full advanced route, 50/75/100% frame review and Farflow
+all pass. The next legal slice is the universal movement/spell transition
+matrix: inventory current refusals, distinguish physical/own-cooldown/resource/
+visible-commitment gates from implicit global locks, then promote one complete
+chain family without weakening authority, costs or counterplay.
 
 <!-- Historical V1 handoff below is retained only as prior evidence. -->
 Mechanics remain frozen. V0 and V1 are complete: the validated visual language

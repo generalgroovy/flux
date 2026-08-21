@@ -44,6 +44,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/unit/test_session_request_policy.gd"),
 	preload("res://tests/unit/test_sanctum_runtime_kit.gd"),
 	preload("res://tests/unit/test_sight_occlusion.gd"),
+	preload("res://tests/unit/test_movement_response.gd"),
 	preload("res://tests/unit/test_movement.gd"),
 	preload("res://tests/unit/test_player_resources.gd"),
 	preload("res://tests/unit/test_skeleton_animation_library.gd"),

@@ -55,3 +55,10 @@ func _test_semantic_states() -> void:
 	equal(CartoonChampionPresenter.cardinal_direction(-1000, 10), "west", "negative horizontal facing stays horizontal")
 	equal(CartoonChampionPresenter.cardinal_direction(0, -1000), "north", "negative vertical facing reads north")
 	equal(CartoonChampionPresenter.cardinal_direction(0, 1000), "south", "positive vertical facing reads south")
+	state.movement_mode = PlayerState.MovementMode.WALK
+	state.movement_speed_ratio = 1000
+	state.velocity_x = MovementTuning.BASE_SPEED / 10
+	var starting_response := CartoonChampionPresenter.movement_response_scale(state)
+	check(starting_response > 0.0 and starting_response < 0.1, "early acceleration uses a restrained body response")
+	state.velocity_x = MovementTuning.BASE_SPEED
+	equal(CartoonChampionPresenter.movement_response_scale(state), 1.0, "full ordinary speed reaches the complete walk response")

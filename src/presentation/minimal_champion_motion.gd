@@ -6,8 +6,8 @@ const DEFAULT_PATH := "res://content/visual/minimal_champion_motion_v1.json"
 const EXPECTED_ID := "minimal-champion-motion-v1"
 const EXPECTED_AUTHORITY := "presentation only; motion samples never change simulation position, collision, timing or outcomes"
 const REQUIRED_MOTIONS := ["idle", "walk", "sprint", "low", "air", "cast", "hit"]
-const REQUIRED_ACCENTS := ["double_jump", "slide", "slide_jump", "air_dodge", "wave_dash", "wall_kick", "vault", "superglide", "fast_fall", "wall_skim"]
-const ALLOWED_ACCENT_KINDS := ["lift_ring", "ground_wake", "speed_fins", "ground_chevron", "kick_burst", "crest_arc", "fall_lines", "wall_sparks"]
+const REQUIRED_ACCENTS := ["counter_strafe", "double_jump", "slide", "slide_jump", "air_dodge", "wave_dash", "wall_kick", "vault", "superglide", "fast_fall", "wall_skim"]
+const ALLOWED_ACCENT_KINDS := ["brake_ticks", "lift_ring", "ground_wake", "speed_fins", "ground_chevron", "kick_burst", "crest_arc", "fall_lines", "wall_sparks"]
 
 
 class Sample:
@@ -68,6 +68,10 @@ func accent(state: PlayerState) -> Dictionary:
 	if state == null:
 		return {}
 	var accent_id := String(PlayerState.MovementMode.keys()[state.movement_mode]).to_lower()
+	return (movement_accents.get(accent_id, {}) as Dictionary).duplicate(true)
+
+
+func accent_by_id(accent_id: String) -> Dictionary:
 	return (movement_accents.get(accent_id, {}) as Dictionary).duplicate(true)
 
 

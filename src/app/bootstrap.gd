@@ -282,10 +282,11 @@ func _ready() -> void:
 		elif capture_expanded_station_id == "spell-loom":
 			spell_loom_editor.open_editor(_local_player_state())
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
+			MovementTuning.compatibility_hash().left(12),
 			player_preferences.movement_reference,
 			player_preferences.pov_mode,
 			player_preferences.pov_angle_degrees,
@@ -2630,7 +2631,7 @@ func _requested_capture_movement() -> String:
 		if argument.begins_with("--capture-movement="):
 			var requested := parse_capture_movement(argument)
 			if requested.is_empty():
-				push_warning("Invalid movement capture; expected walk, sprint, slide, jump, air_dodge, or technique")
+				push_warning("Invalid movement capture; expected walk, brake, reverse, sprint, slide, jump, air_dodge, or technique")
 			return requested
 	return ""
 
@@ -2686,13 +2687,17 @@ static func parse_capture_movement(argument: String) -> String:
 	if not argument.begins_with("--capture-movement="):
 		return ""
 	var requested := argument.trim_prefix("--capture-movement=").strip_edges().to_lower()
-	return requested if requested in ["walk", "sprint", "slide", "jump", "air_dodge", "technique"] else ""
+	return requested if requested in ["walk", "brake", "reverse", "sprint", "slide", "jump", "air_dodge", "technique"] else ""
 
 
 static func capture_movement_command(mode: String, tick: int, entity_id: int) -> SimCommand:
 	var held := 0
 	var pressed := 0
 	var move_x := 1000
+	if mode == "brake" and tick >= 30:
+		move_x = 0
+	elif mode == "reverse" and tick >= 30:
+		move_x = -1000
 	if mode == "sprint" or mode == "slide":
 		held |= SimCommand.HELD_SPRINT
 	if mode in ["jump", "air_dodge"] and tick >= 4 and tick < 30:

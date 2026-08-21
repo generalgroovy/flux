@@ -433,7 +433,11 @@ static func _apply_ground_velocity(state: PlayerState, command: SimCommand, dire
 		speed = speed * MovementTuning.SPRINT_MULTIPLIER / 1000
 	var desired_x: int = direction.x * speed / 1000 if moving else 0
 	var desired_y: int = direction.y * speed / 1000 if moving else 0
-	var opposing: bool = moving and state.velocity_x * direction.x + state.velocity_y * direction.y < -198_000_000
+	var opposing: bool = (
+		moving
+		and state.velocity_x * direction.x + state.velocity_y * direction.y
+		< MovementTuning.COUNTER_STRAFE_DOT_THRESHOLD
+	)
 	var rate: int = MovementTuning.ACCELERATION if moving else MovementTuning.DECELERATION
 	if opposing:
 		@warning_ignore("integer_division")
@@ -505,7 +509,11 @@ static func _update_mode(state: PlayerState, command: SimCommand) -> void:
 		state.movement_mode = PlayerState.MovementMode.WALL_SKIM
 	elif state.sprinting:
 		state.movement_mode = PlayerState.MovementMode.SPRINT
-	elif command.move_x != 0 or command.move_y != 0:
+	elif (
+		command.move_x != 0 or command.move_y != 0
+		or _speed_squared(state.velocity_x, state.velocity_y)
+		>= MovementTuning.MOVING_MODE_MINIMUM_SPEED * MovementTuning.MOVING_MODE_MINIMUM_SPEED
+	):
 		state.movement_mode = PlayerState.MovementMode.WALK
 	else:
 		state.movement_mode = PlayerState.MovementMode.IDLE

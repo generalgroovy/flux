@@ -4,6 +4,7 @@
   "authority": "presentation only; motion samples never change simulation position, collision, timing or outcomes",
   "base_hz": 60,
   "movement_accents": {
+    "counter_strafe": {"kind": "brake_ticks", "ramp": "warm_stone", "index": 4, "opacity": 0.46},
     "double_jump": {"kind": "lift_ring", "ramp": "aged_brass", "index": 4, "opacity": 0.56},
     "slide": {"kind": "ground_wake", "ramp": "warm_stone", "index": 4, "opacity": 0.42},
     "slide_jump": {"kind": "lift_ring", "ramp": "aged_brass", "index": 3, "opacity": 0.48},

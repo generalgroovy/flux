@@ -1,5 +1,56 @@
 # FLUX2 agent worklog
 
+## 2026-08-21 — crisp ordinary movement response
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Replaced the legacy 360 px/s ordinary profile with a measured 324 px/s
+  candidate (10% lower steady speed), raised acceleration from 1,800 to 1,980
+  px/s², braking from 2,400 to 3,000 px/s² and counter-strafe response from
+  1.7× to 1.9×. Advanced movement speeds, costs, windows and ceilings are
+  unchanged.
+- Replaced the old high fixed opposing-dot threshold with an explicit low-speed
+  threshold, so a genuine opposing input receives counter-strafe response even
+  during early acceleration or late braking.
+- Kept canonical WALK state active while residual physical speed remains above
+  20 px/s, then returns to IDLE at rest. The compact body motion scales from
+  actual velocity, removing full-stride skating during acceleration/braking.
+- Added one editable `counter_strafe` heel-plant accent to the existing minimal
+  motion catalog. It appears only while facing opposes residual velocity,
+  respects reduced effects and owns no displacement or legality.
+- Added deterministic `brake` and `reverse` visual-capture modes and a dedicated
+  open-space response fixture. The full movement tuning profile now contributes
+  a stable hash to Farflow compatibility and the boot diagnostic, so builds with
+  different movement rules cannot silently share a session.
+
+Measured response:
+
+| Metric | Legacy 60/120 Hz | Candidate 60/120 Hz |
+| --- | ---: | ---: |
+| One-second walk | 327 / 325.5 px | 300.15 / 298.825 px |
+| Release drift | 24 / 25.5 px | 14.9 / 16.15 px |
+| Reversal drift before crossing zero | 18.2 / 19.69 px | 11.33 / 12.63 px |
+| Reversal time | 133 / 125 ms | 100 / 91 ms |
+
+Validation:
+
+- Full validation passed with 16,015 assertions across 51 suites and zero
+  failures; independent 60/120 Hz source boots published the same movement hash
+  `5ee38bfb07f2`.
+- The existing advanced Conservatory route, all movement techniques, replay,
+  prediction/reconciliation and combat suites remain green at both tick rates.
+- Truthful 1280×720 captures were reviewed at 50%, 75% and 100% camera scales:
+  `.godot/visual-captures/movement-v1-brake-50-final`,
+  `movement-v1-reverse-720-final` and `movement-v1-reverse-100-final`.
+- The complete 120 Hz Farflow journey passed on UDP 24930 with the movement hash
+  in the compatibility identity.
+
+Known limitation: deterministic metrics and frame review establish a safe
+candidate, but the user's hands-on A/B feel check remains the final tuning
+authority. Universal movement/spell transition work is the next slice.
+
 ## 2026-08-21 — V6 integrated visual and accessibility acceptance
 
 Branch: `codex/continuous-overhaul`

@@ -61,6 +61,12 @@ and F6 restart at 60/120 Hz. Controller defaults use left/right sticks, right
 trigger, shoulders, and west/east face buttons. Schema-v1 saved C-jump and
 Space-primary defaults migrate automatically; explicit saved alternatives remain.
 
+For deterministic ordinary-response review, `--capture-movement=walk|brake|
+reverse|sprint|slide|jump|air_dodge|technique` produces the corresponding
+authoritative input stream. `brake` releases movement at tick 30 and `reverse`
+counter-strafes at tick 30, making stop/reversal frames comparable at
+50/75/100% camera scale. These are diagnostics, not alternate gameplay rules.
+
 `src/presentation/jump_presentation.gd` derives a draw-only body lift and
 receiving-surface shadow from the existing movement timers. The bootstrap keeps
 the canonical position as the collision, camera, and POV anchor and offsets only

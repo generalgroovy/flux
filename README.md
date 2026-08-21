@@ -1917,6 +1917,15 @@ anchor grounded while the body rises and a separate receiving-surface shadow
 grows broader/darker to the apex, then contracts through descent at equivalent
 60/120 Hz phase.
 
+The current ordinary-response candidate is deliberately slower but more direct:
+324 px/s steady speed, 1,980 px/s² acceleration, 3,000 px/s² braking and a 1.9×
+counter-strafe response. At 60/120 Hz, one-second travel measures
+300.15/298.825 px, release drift 14.9/16.15 px and reversal drift
+11.33/12.63 px. Advanced movement speeds and windows remain unchanged. Body
+motion scales from real residual velocity and a small editable heel-plant cue
+explains the few frames where facing opposes momentum. The complete movement
+tuning profile contributes to the Farflow compatibility signature.
+
 S. Wayne's Pocket Eclipse is the first true non-projectile spell: a 520-unit
 Light beam with a 190 ms readable startup. It stops at authored cover, hits only
 the first legal actor in its lane, applies one exact damage/slow result, creates
@@ -1956,8 +1965,10 @@ four spell cells. Truthful 720p/1080p captures pass through the sandboxed visual
 harness. Standard, grayscale/common color-vision simulations, high contrast,
 reduced effects, geometry alignment and a real two-process Farflow greeting are
 reviewed. The integrated visual rubric passed at 4.57/5 with no category below
-4.0; measured crisp/slightly slower movement is now the active slice, with
-animation response retained as its first visual-polish constraint.
+4.0. The measured crisp/slightly slower ordinary-movement candidate is also
+engineering-complete across 60/120 Hz, 50/75/100% zoom and Farflow; hands-on A/B
+remains final tuning authority. The explicit movement/spell transition matrix is
+now the active slice.
 
 Production advances through small vertical slices. Each checkpoint must leave a
 launchable game, focused history, truthful status index, known rollback commit,

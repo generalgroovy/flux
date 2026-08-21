@@ -134,7 +134,13 @@ func draw(
 	var motion_id := MinimalChampionMotion.motion_id(state)
 	var motion_elapsed := MinimalChampionMotion.elapsed_for_state(state, motion_id, float(presentation_tick), config)
 	var motion_sample := motion.sample(String(definition.get("motion_profile", "")), motion_id, motion_elapsed, reduced_effects)
+	if motion_id in ["walk", "sprint"]:
+		var response := movement_response_scale(state)
+		motion_sample.offset *= response
+		motion_sample.scale = Vector2.ONE.lerp(motion_sample.scale, response)
+		motion_sample.aura_scale = lerpf(1.0, motion_sample.aura_scale, response)
 	var anchor := body_anchor + motion_sample.offset + _directional_lean(state, motion_id, reduced_effects)
+	_draw_counter_strafe_accent(canvas, state, body_anchor, reduced_effects)
 	_draw_movement_accent(canvas, state, body_anchor, presentation_tick, reduced_effects)
 	_draw_aura(canvas, definition, anchor, presentation_tick, reduced_effects, motion_sample.aura_scale)
 	if atlas != null:
@@ -190,9 +196,45 @@ static func _directional_lean(state: PlayerState, motion_id: String, reduced: bo
 	if velocity.length_squared() < 1.0:
 		return Vector2.ZERO
 	var amount := 1.0 if motion_id == "walk" else (2.0 if motion_id in ["sprint", "air"] else 2.5)
+	if motion_id in ["walk", "sprint"]:
+		amount *= movement_response_scale(state)
 	if reduced:
 		amount *= 0.35
 	return velocity.normalized() * amount
+
+
+static func movement_response_scale(state: PlayerState) -> float:
+	if state == null:
+		return 0.0
+	var reference_speed := float(MovementTuning.BASE_SPEED * state.movement_speed_ratio) / 1000.0
+	if state.movement_mode == PlayerState.MovementMode.SPRINT:
+		reference_speed *= float(MovementTuning.SPRINT_MULTIPLIER) / 1000.0
+	if reference_speed <= 0.0:
+		return 0.0
+	var speed := Vector2(float(state.velocity_x), float(state.velocity_y)).length()
+	return smoothstep(0.0, 1.0, clampf(speed / reference_speed, 0.0, 1.0))
+
+
+func _draw_counter_strafe_accent(canvas: CanvasItem, state: PlayerState, ground_anchor: Vector2, reduced: bool) -> void:
+	if state.is_airborne() or state.movement_mode not in [PlayerState.MovementMode.WALK, PlayerState.MovementMode.SPRINT]:
+		return
+	var velocity := Vector2(float(state.velocity_x), float(state.velocity_y))
+	var facing := Vector2(float(state.facing_x), float(state.facing_y))
+	if velocity.dot(facing) >= float(MovementTuning.COUNTER_STRAFE_DOT_THRESHOLD):
+		return
+	var definition := motion.accent_by_id("counter_strafe")
+	if definition.is_empty():
+		return
+	var color := language.ramp_color(String(definition.get("ramp", "warm_stone")), int(definition.get("index", 4)))
+	var opacity := float(definition.get("opacity", 0.46)) * (0.5 if reduced else 1.0)
+	var travel := velocity.normalized()
+	var side := Vector2(-travel.y, travel.x)
+	var mark_count := 1 if reduced else 2
+	for index: int in range(mark_count):
+		var sign_value := -1.0 if index == 0 else 1.0
+		var heel := ground_anchor - travel * 5.0 + side * 7.0 * sign_value
+		canvas.draw_line(heel, heel - travel * 9.0, Color(color, opacity), 2.0)
+		canvas.draw_rect(Rect2(heel - travel * 11.0 - Vector2.ONE, Vector2(2.0, 2.0)), Color(color, opacity * 0.75), true)
 
 
 func _draw_movement_accent(canvas: CanvasItem, state: PlayerState, ground_anchor: Vector2, tick: int, reduced: bool) -> void:

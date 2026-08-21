@@ -9,7 +9,7 @@ Target baseline: Godot 4.7.1, protocol version 3.
 | --- | --- | --- |
 | 120 Hz fixed match loop | Reinterpret | Match-selectable 60 or 120 Hz; frozen and hashed |
 | Floating-point entity state | Replace | Scale-1000 integer position, velocity, direction, resources, and tick timers |
-| Sprint and counter-strafe | Preserve | 1.28 sprint and 1.7 reversal acceleration, fixed-point |
+| Sprint and counter-strafe | Retune after preservation | 1.28 sprint and measured 1.9 reversal acceleration, fixed-point |
 | Hop and wall kick | Preserve | Paid edge-trigger, wall memory, explicit 650/780 speeds |
 | Double jump and air redirect | Preserve | One paid second jump and one paid bounded redirect |
 | Air dodge and wavedash | Preserve | Fixed lane, late angled queue, bounded committed steering |
@@ -33,6 +33,19 @@ universal-movement ceiling of 900.
 Durations are authored in integer milliseconds, then rounded upward to ticks
 for the selected rate. Position integration carries integer remainders so
 per-second velocities do not accumulate truncation drift.
+
+## Post-visual ordinary-response retune
+
+After V0–V6 cleared the visual engineering gate, the first measured feel slice
+reduced ordinary steady speed from 360 to 324 px/s while raising acceleration
+from 1,800 to 1,980 px/s², braking from 2,400 to 3,000 px/s² and the
+counter-strafe multiplier from 1.7 to 1.9. The result preserves advanced speeds
+and timing while reducing first-second travel by 8–9%, release drift by roughly
+35% and reversal drift by roughly 36–42% at both supported tick rates.
+
+`MovementTuning.compatibility_hash()` now covers the complete authoritative
+movement profile and contributes to the Farflow signature. The velocity-scaled
+body response and editable heel-plant cue are presentation-only.
 
 ## Second movement checkpoint
 

@@ -58,7 +58,7 @@ Practice Bell resets, per-actor Champion Loom attunement and 3×4 Spell Loom
 placement from authoritative station proximity. The render snapshot keeps the
 8 KiB expansion cap at eight travellers,
 26 projectile lanes, four targets and 12 events; overflow is explicit in the
-guest HUD. Snapshots are validated, FastLZ-packed into a bounded protocol-23
+guest HUD. Snapshots are validated, FastLZ-packed into a bounded protocol-26
 wire envelope, and validated again after bounded expansion. The maximum
 eight-player fixture and live three-player court stay within one 1,392-byte
 ENet MTU. Each participating guest also predicts
@@ -177,9 +177,10 @@ containing a display name and SHA-256 compatibility identity derived from:
 
 - simulation protocol version;
 - fixed tick rate;
+- complete movement-tuning hash;
 - campus/map content hash;
 - ability catalog hash;
-- champion catalog hash.
+- champion catalog hash;
 - Farflow Charter catalog hash.
 
 Mismatches fail before the peer enters the session roster. Incoming variants

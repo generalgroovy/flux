@@ -5,7 +5,7 @@ the full order remains in `docs/OVERHAUL-PLAN.md` and the continuous prompt.
 
 | Order | Playable outcome | Acceptance |
 | ---: | --- | --- |
-| 0 | **Mandatory live visual overhaul** | V0–V2 complete. V3 now includes reusable seeded natural terrain, movement contact, purposeful campus wayfinding and quarter identity motifs; V5's compact HUD candidate exposes only Health/Flux/Stamina, active layer and four spell cells. Next: replace remaining schematic architecture/stations with a modular environment kit, then spell visuals and integrated V4–V6 acceptance. No mechanic may start first. |
+| 0 | **Mandatory live visual overhaul** | V0–V2 complete. V3 now has seeded natural terrain/contact, purpose wayfinding, a warm source court, seven modular building styles, ten station-furniture profiles and five landmark frames; V5's compact HUD candidate exposes only Health/Flux/Stamina, active layer and four spell cells. Next: finish V3 three-district/cutaway/50–100% capture review and fix its failed readability/charm checks, then implement existing spell visuals and integrated V4–V6 acceptance. No mechanic may start first. |
 | 1 | Crisp readable movement | After visual acceptance only: test an 8–12% ordinary-speed reduction, tighten stop/reversal/corner response and preserve every deterministic traversal option at 60/120 Hz. |
 | 2 | Universal movement/spell chaining | Replace global/implicit lockouts with a tested transition matrix; only physical state, own cooldown, Stamina/Flux or visible execution commitment may refuse a legal transition. |
 | 3 | Fast resource/cooldown economy | Give every offensive cast positive Flux cost, retain Stamina for movement and retune toward short action-specific cooldowns with readable exhaustion/recovery tradeoffs. |

@@ -101,7 +101,7 @@ presenter derives pose selection only from authoritative state and samples one
 pixels, squash/stretch within 6%, reduced motion damps all three channels, and
 the `--debug-overlay` diagnostic proves the sprite never owns its hitbox.
 
-## V3 natural-map foundation in progress
+## V3 natural-map and modular-campus candidate
 
 `content/visual/natural_map_kit_v1.json` is the editable environment recipe.
 It declares bounded district vocabularies, density, material ramps, seeded
@@ -119,9 +119,21 @@ mode through `walk`, `sprint`, `slide`, `jump`, `air_dodge` and `technique`:
 scripts/run.cmd 60 --capture-spawn=300,720 --capture-pointer=900,720 --capture-movement=slide --champion=oh_tipi
 ```
 
-This slice establishes animation/contact quality and reusable map resources; it
-does not claim final V3 environment charm. Central architecture, landmark and
-station art still require the next modular environment pass.
+`content/visual/wellspring_architecture_kit_v1.json` adds the next reusable
+environment boundary. Seven building profiles, ten station-furniture profiles,
+five landmark frames and one source-court profile validate against the live
+campus before rendering. Material-textured facades, roof facets/dormers/domes,
+visible doors, planted pavers, shallow water channels and landmark furniture
+reuse the approved `SanctumRuntimeKit`; reference/concept pixels never enter the
+runtime path.
+
+The architecture kit remains presentation-only. Authored campus data still owns
+topology, collision, route endpoints, elevation, station commands and interaction
+radii; the existing deterministic cutaway still uses the canonical footprint.
+The 1280×720 default-overview candidate at
+`.godot/architecture-capture-720-v4/frame00000002.png` is live evidence, not
+final charm acceptance. V3 still requires three-district, cutaway and
+50/75/100% review before V4 opens.
 
 ## Compact HUD and purposeful campus slice
 

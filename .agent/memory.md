@@ -3,7 +3,7 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
-## Current green frontier — 2026-08-13
+## Current green frontier — 2026-08-21
 
 - Branch: `codex/continuous-overhaul`.
 - Protocol 26, snapshot schema 10, player preference schema 7.
@@ -35,7 +35,7 @@ each playable slice.
 - Camera presentation now defaults to a wider 75% scale and persists a bounded
   50/75/100% choice. Pointer aim, cone range and building occlusion transform
   with the same scale; F11 and `--camera-zoom=` expose it without changing rules.
-- Latest source verification is 15,859 assertions plus import/source 60/120 Hz
+- Latest source verification is 15,909 assertions plus import/source 60/120 Hz
   boots and a fresh 120 Hz three-process spectator-to-Hearth-to-Round-2,
   reconnect and stewardship journey. Diagnostic captures verify the compact
   active-layer HUD, wider 75% navigation view, Rimewake feedback and 3x4 Loom.
@@ -51,6 +51,11 @@ each playable slice.
   and real packaged Windows `PLAY-FLUX.cmd` safe-quit smokes pass.
 - The original v3 gameplay-scale Wellspring specimen is documented as a visual
   target only; runtime art/collision and visual acceptance remain separate.
+- A fail-closed Wellspring architecture kit now gives every live building style,
+  station kind and landmark kind a reusable profile. The warm-stone source court,
+  faceted/textured roofs, modular facades, station furniture and landmark frames
+  reuse the approved runtime pixel kit while leaving collision, routes, elevation,
+  commands, interaction radii and cutaway authority unchanged.
 - Untracked `dist/`, `node_modules/` and `scripts/firewall.ps1` are user-owned
   and must remain untouched.
 
@@ -69,8 +74,11 @@ moment-to-moment champion/location, session state, Health, Flux, Stamina,
 active layer and four spell cells on screen; existing stations retain detailed
 guidance. An equally data-driven eight-point wayfinding kit gives the wide
 campus distinct movement, recovery, archive, loom, settings, Farflow, duel and
-elemental trial destinations without changing authority. Buildings, landmarks
-and stations remain the next modular environment-art gap, followed by V4–V6.
+elemental trial destinations without changing authority. The modular architecture
+candidate now covers the source court, every live building style, all station
+furniture and every landmark frame. Next: finish V3 three-district, cutaway and
+50/75/100% capture review, fix failed readability/charm checks, then begin V4's
+existing spell visuals; mechanics remain frozen through V6.
 
 <!-- Historical V1 handoff below is retained only as prior evidence. -->
 Mechanics remain frozen. V0 and V1 are complete: the validated visual language

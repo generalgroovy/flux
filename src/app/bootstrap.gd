@@ -166,8 +166,8 @@ func _ready() -> void:
 		push_error("Wellspring renderer could not bind the visual language")
 		get_tree().quit(1)
 		return
-	if not campus_renderer.configure_wayfinding(campus_layout):
-		push_error("Wellspring renderer could not bind the purpose-wayfinding kit")
+	if not campus_renderer.configure_campus(campus_layout):
+		push_error("Wellspring renderer could not bind its architecture and purpose-wayfinding kits")
 		get_tree().quit(1)
 		return
 	compact_hud = CompactCombatHud.new()
@@ -250,7 +250,7 @@ func _ready() -> void:
 		elif capture_expanded_station_id == "spell-loom":
 			spell_loom_editor.open_editor(_local_player_state())
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, visual %s, HUD %s, wayfinding %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, controls %s, POV %s/%d/%d, camera %d%%, visual %s, HUD %s, architecture %s, wayfinding %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -261,6 +261,7 @@ func _ready() -> void:
 			player_preferences.camera_zoom_percent,
 			visual_language.content_hash().left(12),
 			compact_hud.content_hash.left(12),
+			campus_renderer.architecture_kit.content_hash.left(12),
 			campus_renderer.wayfinding.content_hash.left(12),
 			cartoon_champion_presenter.content_hash.left(12),
 			cartoon_champion_presenter.atlas_hash.left(12),

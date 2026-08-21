@@ -1,5 +1,46 @@
 # FLUX2 agent worklog
 
+## 2026-08-21 — modular Wellspring architecture and source-court slice
+
+Branch: `codex/continuous-overhaul`
+
+What changed and why:
+
+- Added a fail-closed, presentation-only Wellspring architecture kit with seven
+  reusable building profiles, ten station-furniture profiles and five landmark
+  frames. It covers every style/kind in the live campus and rejects missing,
+  duplicate, unknown or over-budget definitions.
+- Replaced the remaining generic building pass with material-textured facades,
+  faceted roofs, dormers, dome ribs, spires, foundry sawteeth, visible doors and
+  external thresholds while retaining the exact authored collision footprint
+  and deterministic near-actor cutaway.
+- Added a reusable warm-stone Nexus source court with pavers, planted corners,
+  shallow water channels and a restrained brass medallion. It is drawn beneath
+  the existing authored routes, actors and interactions and owns no topology.
+- Reused the eight already runtime-approved, provenance-validated pixel modules
+  through `SanctumRuntimeKit`; no concept/reference image entered runtime.
+- Bound architecture and wayfinding together at startup and exposed the
+  architecture content hash in the boot diagnostic for reproducible captures.
+
+Validation:
+
+- Full headless suite passed with 15,909 assertions across 47 suites and zero
+  failures, including 50 new architecture/content/binding assertions.
+- Windows import and independent source boots passed at 60 and 120 Hz.
+- Fixed-pointer 1280×720 captures were generated and inspected through four
+  iterations; `.godot/architecture-capture-720-v4/frame00000002.png` confirms
+  the warm source court, layered roofs/facades, station frames and landmarks in
+  the live renderer at the default 75% overview.
+- `git diff --check` reported no whitespace errors; configured LF-to-CRLF
+  notices remain informational.
+
+Known limitations and risks:
+
+- V3 is a live candidate, not subjective acceptance. Remaining V3 review must
+  cover the three districts, cutaway alignment and 50/75/100% readability before
+  V4 spell presentation begins.
+- Existing bulk-catalog image-loader warnings predate this slice.
+
 ## 2026-08-21 — compact HUD and purposeful campus slice
 
 Branch: `codex/continuous-overhaul`

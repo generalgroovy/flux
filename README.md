@@ -53,7 +53,7 @@ even when design documentation already exists.
   complete; authored multi-layer runtime map in progress
   - [x] Nine combined districts and three-layer layout contract
   - [x] Validated attunement-node and fail-closed fast-travel rules
-  - [x] Playable schematic mechanics court (not accepted Wellspring art/topology)
+  - [x] Playable modular source-court presentation candidate (not accepted final Wellspring art/topology)
   - [ ] Authored Nexus-to-Conservatory world slice matching the approved scale,
     dense-edge/clear-lane composition, district landmarks, and pixel direction
   - [ ] Offline-complete stations plus privacy-safe friends/presence, host
@@ -1941,8 +1941,11 @@ Current visual frontier: V0–V2 are complete. Oh Tipi and S. Wayne use pinned
 compact-cartoon runtime art and editable, rate-independent minimal motion across
 the full movement grammar. V3 is active: the editable seeded NaturalMapKit now
 provides curved visual routes, natural edge growth, quiet ground variation and
-surface-aware contact while authored collision/topology remain unchanged;
-modular building, landmark and station art is next.
+surface-aware contact while authored collision/topology remain unchanged. A
+fail-closed modular architecture kit adds the warm Nexus source court, seven
+building styles, ten station-furniture profiles and five landmark frames using
+the approved runtime pixel modules; three-district/cutaway/zoom review remains
+before V3 acceptance.
 
 Production advances through small vertical slices. Each checkpoint must leave a
 launchable game, focused history, truthful status index, known rollback commit,
@@ -1959,7 +1962,7 @@ tools, accessibility, and compatibility agree.
 | E — first combat path | Arc Primary, Vector Lance, projectiles, swept hit/damage, replay and full Edgeweave invariants | Complete |
 | F1 — chemistry storage/safety | Validated material registry, 128 x 128 packed columns, seeded materials/Charge/elevation, immutable worldbone, canonical queue/budgets/hashes, exact reset, read-only preview | Complete |
 | G1 — player configuration | Persisted keyboard remapping, world/aim-relative movement, full/cone POV, exact angle/range, CLI/hotkey controls, deterministic transforms | Complete |
-| G2 — authored Sanctum | Replace the schematic court with the first vast Nexus-to-Conservatory multi-area topology/visual slice, clear routes, landmarks, elevations, responsive ambience, fast-travel context, and original pixel kit | In progress: canonical campus topology, routes, worldbone, elevation/reset/station metadata, camera and procedural presentation validate; a generated 12-module source/alpha candidate remains unapproved pending visual/import gates |
+| G2 — authored Sanctum | Replace the schematic court with the first vast Nexus-to-Conservatory multi-area topology/visual slice, clear routes, landmarks, elevations, responsive ambience, fast-travel context, and original pixel kit | In progress: canonical campus topology/routes/worldbone/elevation/reset/station metadata validate; the live modular source-court, architecture, station and landmark candidate uses the approved runtime kit, but three-district/cutaway/zoom review and final visual acceptance remain |
 | G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: Oh Tipi/S. Wayne candidate bodies, shared lift/shadow, landing cue, eleven walk-up stations, three Farflow Charters and sparring effigy are live; accepted champion art and fallback taunt remain |
 | F2/G4 — systemic Sanctum | Structural/thermal reactions, authored traversal devices, input/controller UI, physics/chemistry practice and reset | Planned |
 | H1 — first ancestry/champion/spells | One approved body plan and character through loadout, unique taunt, dummy/bot, cues, replay, accessibility and platform source gates | Planned |

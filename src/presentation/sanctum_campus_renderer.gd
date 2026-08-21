@@ -31,6 +31,7 @@ var PANEL := Color("11140ee8")
 var language: VisualLanguage
 var natural_kit: NaturalMapKit
 var wayfinding: WellspringWayfinding
+var architecture_kit: WellspringArchitectureKit
 
 
 func configure(visual_language: VisualLanguage) -> bool:
@@ -67,13 +68,21 @@ func configure(visual_language: VisualLanguage) -> bool:
 	if not natural_kit.configure(language):
 		return false
 	wayfinding = WellspringWayfinding.new()
+	architecture_kit = WellspringArchitectureKit.new()
 	return true
 
 
-func configure_wayfinding(layout: SanctumCampusLayout) -> bool:
-	if wayfinding == null:
+func configure_campus(layout: SanctumCampusLayout) -> bool:
+	if wayfinding == null or architecture_kit == null:
+		return false
+	if not architecture_kit.configure(language, layout):
 		return false
 	return wayfinding.configure(language, layout)
+
+
+func configure_wayfinding(layout: SanctumCampusLayout) -> bool:
+	# Compatibility entry point for capture tools that predate the architecture kit.
+	return configure_campus(layout)
 
 
 func draw(
@@ -93,6 +102,8 @@ func draw(
 		_draw_district(canvas, district, district_index)
 		natural_kit.draw_district_details(canvas, district, district_index, presentation_tick, reduced_effects)
 		_draw_district_identity(canvas, district, presentation_tick, reduced_effects)
+		if architecture_kit != null:
+			architecture_kit.draw_district_court(canvas, district, reduced_effects)
 		district_index += 1
 	for route_value: Variant in layout.data.get("routes", []):
 		_draw_route(canvas, route_value as Dictionary)
@@ -100,11 +111,11 @@ func draw(
 	for building_value: Variant in layout.data.get("buildings", []):
 		_draw_building(canvas, building_value as Dictionary, focus_world_position)
 	for landmark_value: Variant in layout.data.get("landmarks", []):
-		_draw_landmark(canvas, landmark_value as Dictionary, presentation_tick)
+		_draw_landmark(canvas, landmark_value as Dictionary, presentation_tick, reduced_effects)
 	if wayfinding != null:
 		wayfinding.draw(canvas, focus_world_position, presentation_tick, reduced_effects)
 	for station_value: Variant in layout.data.get("stations", []):
-		_draw_station(canvas, station_value as Dictionary, presentation_tick)
+		_draw_station(canvas, station_value as Dictionary, presentation_tick, reduced_effects)
 	for district_value: Variant in layout.data.get("districts", []):
 		_draw_district_label(canvas, district_value as Dictionary)
 
@@ -302,8 +313,12 @@ func _draw_building(canvas: CanvasItem, building: Dictionary, focus_world_positi
 	if style == "vault_rail":
 		_draw_vault_rail(canvas, bounds)
 		return
-	var roof_color := _roof_color(style)
 	var footprint := Rect2(bounds)
+	if architecture_kit != null and architecture_kit.draw_building(canvas, building):
+		_draw_building_cutaway(canvas, footprint, focus_world_position)
+		return
+	# Fail-soft fallback used only when a development capture bypasses campus setup.
+	var roof_color := _roof_color(style)
 	canvas.draw_rect(Rect2(footprint.position + Vector2(6, 8), footprint.size), Color(DEEP_FOREST, 0.82), true)
 	# The full collision footprint remains visible below all decorative rise.
 	canvas.draw_rect(footprint, language.ramp_color("worldbone", 2) if language != null else TIMBER, true)
@@ -386,7 +401,9 @@ func _draw_vault_rail(canvas: CanvasItem, bounds: Rect2i) -> void:
 	canvas.draw_string(ThemeDB.fallback_font, Vector2(bounds.position.x + 7, bounds.get_center().y + 4), "VAULT", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 10, PARCHMENT)
 
 
-func _draw_landmark(canvas: CanvasItem, landmark: Dictionary, tick: int) -> void:
+func _draw_landmark(canvas: CanvasItem, landmark: Dictionary, tick: int, reduced_effects: bool) -> void:
+	if architecture_kit != null:
+		architecture_kit.draw_landmark_frame(canvas, landmark, tick, reduced_effects)
 	var values: Array = landmark.get("position", [])
 	var position := Vector2(float(values[0]), float(values[1]))
 	var kind := String(landmark.get("kind", ""))
@@ -424,7 +441,9 @@ func _draw_landmark(canvas: CanvasItem, landmark: Dictionary, tick: int) -> void
 		canvas.draw_circle(position, glow_radius + 8.0, Color(CYAN, 0.12))
 
 
-func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int) -> void:
+func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int, reduced_effects: bool) -> void:
+	if architecture_kit != null:
+		architecture_kit.draw_station_frame(canvas, station, tick, reduced_effects)
 	var values: Array = station.get("position", [])
 	var position := Vector2(float(values[0]), float(values[1]))
 	var kind := String(station.get("kind", ""))

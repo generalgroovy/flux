@@ -727,11 +727,11 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 	if kind == 10:
 		return values[2] == 1
 	if kind == 11:
-		return values[2] == SessionTransport.REQUEST_TRAINING_RESET
+		return values[2] in [SessionTransport.REQUEST_TRAINING_RESET, SessionTransport.REQUEST_IMPACT_PRACTICE]
 	if kind == 12:
 		return values[2] > 0 and values[2] <= 4096
 	if kind == 13:
-		return values[2] in [SessionTransport.REQUEST_EMOTE, SessionTransport.REQUEST_TRAINING_RESET, SessionTransport.REQUEST_CHAMPION_NEXT, SessionTransport.REQUEST_READY_TOGGLE, SessionTransport.REQUEST_PRACTICE_START, SessionTransport.REQUEST_SPELL_EQUIP] and values[3] >= 1 and values[3] <= 3
+		return values[2] in [SessionTransport.REQUEST_EMOTE, SessionTransport.REQUEST_TRAINING_RESET, SessionTransport.REQUEST_CHAMPION_NEXT, SessionTransport.REQUEST_READY_TOGGLE, SessionTransport.REQUEST_PRACTICE_START, SessionTransport.REQUEST_SPELL_EQUIP, SessionTransport.REQUEST_IMPACT_PRACTICE] and values[3] >= 1 and values[3] <= 3
 	if kind == 14:
 		return values[2] in [0, 1]
 	if kind == 15:

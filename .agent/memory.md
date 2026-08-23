@@ -3,12 +3,12 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
-## Current green frontier — 2026-08-21
+## Current green frontier — 2026-08-23
 
 - Branch: `codex/continuous-overhaul`.
-- Protocol 27, snapshot schema 11, player preference schema 8.
+- Protocol 28, snapshot schema 11, player preference schema 8.
 - Two basic champions, the non-ability movement foundation, cone occlusion,
-  eleven walk-up Wellspring stations, direct-IP Farflow, Charters, Hearth,
+  twelve walk-up Wellspring stations, direct-IP Farflow, Charters, Hearth,
   Proving Court, reconnect, stewardship and late-join observation are live.
 - Up to eight players have authored court spawns, teams, wards, bounds,
   knockout/respawn, results, Hearth return and same-roster Round 2.
@@ -40,20 +40,26 @@ each playable slice.
 - Camera presentation now defaults to a wider 75% scale and persists a bounded
   50/75/100% choice. Pointer aim, cone range and building occlusion transform
   with the same scale; F11 and `--camera-zoom=` expose it without changing rules.
-- Ordinary movement now uses the `movement-tuning-v2-crisp-response` profile:
+- Ordinary movement now uses the `movement-tuning-v3-impact-agency` profile:
   324 px/s top speed, 1,980 px/s² acceleration, 3,000 px/s² braking and 1.9×
   counter-strafe response. One-second travel is 300.15/298.825 px, release drift
   14.9/16.15 px and reversal drift 11.33/12.63 px at 60/120 Hz.
 - Movement animation follows residual velocity through braking, scales its body
   response with speed and owns an editable reduced-effects heel-plant accent.
   The complete movement tuning hash is part of Farflow compatibility.
-- A fail-closed action transition policy covers all twenty live movement/control
+- A fail-closed action transition policy covers all twenty-one live movement/control
   modes and projectile/beam/spray/field spells. Movement remains live through
   startup/recovery; unrelated spells may start during recovery; one startup
   channel, physical control, own cooldown, Flux, kit and empty-slot refusals are
-  visible and resource-safe. Hash `7e09aa303455` is part of state and Farflow
+  visible and resource-safe. Hash `29cd46fd167e` is part of state and Farflow
   compatibility.
-- Latest source verification is 18,160 assertions across 52 suites plus
+- Authored launches now accept bounded directional influence. Natural expiry or
+  cover impact enters a 220 ms recovery brace at 42% retained speed; buffered V
+  plus direction spends exactly 18 Stamina to tech at 360 px/s, while ordinary
+  movement cannot erase the decision. The host-authoritative Momentum Chime
+  teaches that loop, refuses repeat requests during launch/recovery and uses a
+  reusable reduced-effects-aware brace accent as the next visual slice seed.
+- Latest source verification is 18,428 assertions across 52 suites plus
   import/source 60/120 Hz boots and a fresh 120 Hz three-process
   spectator-to-Hearth-to-Round-2, reconnect and stewardship journey.
 - Fresh Windows and Linux friend packages plus packaged Windows safe quit pass
@@ -96,11 +102,12 @@ each playable slice.
 ## Next acceptance-driven slice
 
 V0–V6, crisp ordinary movement, universal action transitions, the positive-Flux
-cadence candidate and the global Loom/cooldown authority foundation are
-engineering-complete. The next legal slice completes Water first: retain
-Rillshot as quick pressure and Tideline as control, then promote one
-collision-safe movement/utility spell and one readable high-commitment spell
-end to end before beginning another element.
+cadence candidate and global Loom/cooldown authority are engineering-complete.
+Impact agency/recovery is live and the animation overlap seed has begun. Finish
+hands-on authored Conservatory route acceptance plus controller sensitivity and
+deadzone tuning first; then complete natural action phases/environmental routes,
+promote one bounded live chemistry reaction, and only afterward expand Water's
+spell roles through that chemistry.
 
 <!-- Historical V1 handoff below is retained only as prior evidence. -->
 Mechanics remain frozen. V0 and V1 are complete: the validated visual language

@@ -10,6 +10,7 @@ const REQUIRED_MOVEMENT_MODES: Array[String] = [
 	"idle", "walk", "sprint", "hop", "double_jump", "slide", "slide_jump",
 	"air_dodge", "wave_dash", "wall_kick", "vault", "superglide", "launched",
 	"grappled", "charging", "stunned", "rooted", "slowed", "fast_fall", "wall_skim",
+	"impact_recovery",
 ]
 const REQUIRED_SPELL_SHAPES: Array[String] = ["projectile", "beam", "spray", "field"]
 const REQUIRED_RULES: Array[Dictionary] = [

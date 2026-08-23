@@ -119,6 +119,7 @@ func _test_capture_pointer_parser() -> void:
 	equal(BootstrapScript.parse_capture_spell_slot("--capture-cast-slot=bad"), 0, "diagnostic cast rejects malformed positions")
 	equal(BootstrapScript.parse_capture_movement("--capture-movement=SLIDE"), "slide", "diagnostic movement capture is case-insensitive")
 	equal(BootstrapScript.parse_capture_movement("--capture-movement=reverse"), "reverse", "diagnostic reversal capture is explicit")
+	equal(BootstrapScript.parse_capture_movement("--capture-movement=impact_recovery"), "impact_recovery", "diagnostic recovery capture is explicit")
 	equal(BootstrapScript.parse_capture_movement("--capture-movement=teleport"), "", "unknown movement capture fails closed")
 	equal(BootstrapScript.parse_capture_chain_spell_slot("--capture-chain-slot=12"), 12, "diagnostic occupied-channel capture accepts the final layered slot")
 	equal(BootstrapScript.parse_capture_chain_spell_slot("--capture-chain-slot=13"), 0, "diagnostic occupied-channel capture rejects overflow")
@@ -130,6 +131,8 @@ func _test_capture_pointer_parser() -> void:
 	equal(brake_capture.move_x, 0, "brake capture releases ordinary movement at its exact review tick")
 	var reverse_capture: SimCommand = BootstrapScript.capture_movement_command("reverse", 30, 1)
 	equal(reverse_capture.move_x, -1000, "reversal capture counter-strafes at its exact review tick")
+	var recovery_capture: SimCommand = BootstrapScript.capture_movement_command("impact_recovery", 8, 1)
+	equal(Vector2i(recovery_capture.move_x, recovery_capture.move_y), Vector2i(0, -1000), "recovery capture supplies bounded launch influence without a fake player action")
 	var capture_stations := {"farflow-charter": {}}
 	equal(BootstrapScript.parse_capture_expanded_station("--capture-expanded-station=farflow-charter", capture_stations), "farflow-charter", "capture-only station expansion accepts an authored station")
 	equal(BootstrapScript.parse_capture_expanded_station("--capture-expanded-station=missing", capture_stations), "", "capture-only station expansion rejects unknown stations")

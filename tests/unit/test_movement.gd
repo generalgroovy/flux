@@ -14,6 +14,8 @@ func run() -> int:
 		_test_wall_skim(tick_rate)
 		_test_vault_and_superglide(tick_rate)
 		_test_control_states(tick_rate)
+		_test_impact_influence_and_recovery(tick_rate)
+	_test_impact_tick_rate_parity()
 	return finish("movement")
 
 
@@ -281,3 +283,87 @@ func _test_control_states(tick_rate: int) -> void:
 	check(slowed.velocity_x > 0 and slowed.velocity_x < slow_world.config.per_tick(MovementTuning.ACCELERATION), "%d Hz slow scales ordinary acceleration" % tick_rate)
 	equal(slowed.movement_mode, PlayerState.MovementMode.SLOWED, "%d Hz slow is explicit presentation state" % tick_rate)
 	check(not MovementSystem.apply_control_state(slowed, 99, 200, Vector2i.RIGHT, 0, slow_world.config), "%d Hz unknown control state fails closed" % tick_rate)
+
+
+func _test_impact_influence_and_recovery(tick_rate: int) -> void:
+	var neutral_world := SimWorld.new(tick_rate)
+	var neutral: PlayerState = neutral_world.player()
+	check(
+		MovementSystem.apply_control_state(neutral, PlayerState.ControlState.LAUNCHED, 200, Vector2i.RIGHT, 720_000, neutral_world.config),
+		"%d Hz neutral launch applies" % tick_rate,
+	)
+	while neutral.control_state == PlayerState.ControlState.LAUNCHED:
+		_step(neutral_world)
+	var neutral_y: int = neutral.position_y
+
+	var influence_world := SimWorld.new(tick_rate)
+	var influenced: PlayerState = influence_world.player()
+	check(
+		MovementSystem.apply_control_state(influenced, PlayerState.ControlState.LAUNCHED, 200, Vector2i.RIGHT, 720_000, influence_world.config),
+		"%d Hz influenced launch applies" % tick_rate,
+	)
+	while influenced.control_state == PlayerState.ControlState.LAUNCHED:
+		_step(influence_world, 0, -1000)
+	check(influenced.position_y < neutral_y, "%d Hz held direction bends launch trajectory" % tick_rate)
+	check(influenced.control_y < 0, "%d Hz launch influence changes canonical direction" % tick_rate)
+	equal(influenced.last_event, "impact_recovery", "%d Hz launch ends in explicit recovery" % tick_rate)
+	check(influenced.impact_recovery_ticks > 0, "%d Hz recovery has a bounded timer" % tick_rate)
+	equal(influenced.movement_mode, PlayerState.MovementMode.IMPACT_RECOVERY, "%d Hz recovery owns a readable movement mode" % tick_rate)
+	var recovery_velocity := Vector2i(influenced.velocity_x, influenced.velocity_y)
+	_step(influence_world, -1000, 0, SimCommand.HELD_SPRINT, SimCommand.PRESSED_JUMP)
+	check(influenced.impact_recovery_ticks > 0, "%d Hz ordinary movement cannot silently cancel impact recovery" % tick_rate)
+	check(
+		Vector2i(influenced.velocity_x, influenced.velocity_y).length_squared() < recovery_velocity.length_squared(),
+		"%d Hz unteched recovery brakes retained momentum" % tick_rate,
+	)
+	while influenced.impact_recovery_ticks > 0:
+		_step(influence_world)
+	equal(influenced.last_event, "impact_recovery_end", "%d Hz recovery ends explicitly" % tick_rate)
+
+	var tech_world := SimWorld.new(tick_rate)
+	var teched: PlayerState = tech_world.player()
+	check(
+		MovementSystem.apply_control_state(teched, PlayerState.ControlState.LAUNCHED, 200, Vector2i.RIGHT, 720_000, tech_world.config),
+		"%d Hz tech launch applies" % tick_rate,
+	)
+	var tech_buffer_window: int = tech_world.config.milliseconds_to_ticks(MovementTuning.INPUT_BUFFER_MS) - 1
+	while teched.control_ticks > tech_buffer_window:
+		_step(tech_world, 0, 1000)
+	_step(tech_world, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE)
+	var stamina_before_tech: int = teched.stamina
+	while teched.control_state == PlayerState.ControlState.LAUNCHED:
+		_step(tech_world, 0, 1000)
+	equal(teched.last_event, "impact_tech", "%d Hz buffered context technique cuts recovery" % tick_rate)
+	equal(teched.impact_recovery_ticks, 0, "%d Hz successful impact tech restores control immediately" % tick_rate)
+	equal(teched.stamina, stamina_before_tech - MovementTuning.IMPACT_RECOVERY_TECH_COST, "%d Hz impact tech pays exact Stamina" % tick_rate)
+	check(teched.velocity_y > 0, "%d Hz impact tech exits along held direction" % tick_rate)
+	check(teched.velocity_y <= MovementTuning.MAX_AUTHORED_SPEED, "%d Hz impact tech respects authored speed ceiling" % tick_rate)
+
+	var collision_world := SimWorld.new(tick_rate)
+	var collided: PlayerState = collision_world.player()
+	collided.position_x = 540_000
+	collided.position_y = 340_000
+	check(
+		MovementSystem.apply_control_state(collided, PlayerState.ControlState.LAUNCHED, 400, Vector2i.RIGHT, 720_000, collision_world.config),
+		"%d Hz collision launch applies" % tick_rate,
+	)
+	_step(collision_world)
+	equal(collided.last_event, "launch_impact", "%d Hz authored cover converts launch into recovery immediately" % tick_rate)
+	equal(collided.control_state, PlayerState.ControlState.FREE, "%d Hz cover impact ends forced travel" % tick_rate)
+	check(collided.impact_recovery_ticks > 0, "%d Hz cover impact begins bounded recovery" % tick_rate)
+
+
+func _test_impact_tick_rate_parity() -> void:
+	var samples: Dictionary = {}
+	for tick_rate: int in [60, 120]:
+		var world := SimWorld.new(tick_rate)
+		var state: PlayerState = world.player()
+		check(MovementSystem.apply_control_state(state, PlayerState.ControlState.LAUNCHED, 200, Vector2i.RIGHT, 720_000, world.config), "%d Hz parity launch applies" % tick_rate)
+		while state.control_state == PlayerState.ControlState.LAUNCHED:
+			_step(world, 0, -1000)
+		samples[tick_rate] = Vector4i(state.position_x, state.position_y, state.control_x, state.control_y)
+	var sixty: Vector4i = samples[60]
+	var one_twenty: Vector4i = samples[120]
+	check(absi(sixty.x - one_twenty.x) <= 8000, "impact travel remains within the measured 60/120 position tolerance")
+	check(absi(sixty.y - one_twenty.y) <= 8000, "impact influence remains within the measured 60/120 lateral tolerance")
+	check(absi(sixty.z - one_twenty.z) <= 20 and absi(sixty.w - one_twenty.w) <= 20, "impact influence direction is equivalent at 60/120 Hz")

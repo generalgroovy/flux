@@ -1,7 +1,7 @@
 # FLUX immediate implementation order
 
-The current green frontier uses protocol 27, snapshot schema 11 and preference
-schema 8; commit `eee891e` remains the earlier action-transition rollback point.
+The current frontier uses protocol 28, snapshot schema 11 and preference
+schema 8; commit `5baa530` remains the published pre-movement rollback point.
 V0–V6 pass the integrated engineering visual gate on the current branch; preserve green points and work only in
 complete playable slices with a checkpoint after each accepted stage.
 
@@ -11,7 +11,10 @@ complete playable slices with a checkpoint after each accepted stage.
 | 1 | Crisp readable movement — engineering-complete | The measured 324 px/s candidate tightens acceleration/deceleration/reversal, preserves expressive advanced momentum and adds velocity-scaled animation response. | Passed deterministic distance/stop/reversal fixtures, all 60/120 movement routes, 50/75/100% captures and Farflow; hands-on A/B remains final tuning authority. |
 | 2 | Universal action chaining — engineering-complete | The canonical matrix covers all live movement/control states and spell shapes; recovery never silently blocks unrelated casts and startup is one visible execution commitment. | Passed simultaneous movement/cast, moving startup, recovery chain, startup refusal, physical refusal and own-cooldown fixtures at 60/120 Hz plus Farflow. |
 | 3 | Fast resource/cooldown economy — engineering-complete candidate | All runtime spells pay positive Flux, recovery delay and three cadence tiers are canonical, and action-specific cooldowns replace idle lockouts. | Passed exact exhaustion/no-free-cast/deliberate-recovery fixtures for both champions at 60/120 Hz, live HUD capture and 120 Hz Farflow; hands-on balance remains tuning authority. |
-| 4 | Global element spell library — active | Promote complete, distinct catalogs for all twelve elements and expose all proven spells at the Wellspring regardless of champion. | Every element has the minimum catalog below, all entries pass shape/authority/counterplay tests, and any champion can configure any proven spell into the 3x4 weave. |
+| 4 | Gameplay/movement completion — active | Bounded launch agency, timed impact recovery and an exact-cost tech are live at the Momentum Chime; complete authored Conservatory routes and tune through direct play while preserving the proven movement/chaining/economy base. | Every movement/recovery choice has deterministic 60/120 evidence, readable live feedback, explicit costs/counterplay and host/client parity. |
+| 5 | Natural animation and environment — seeded | The data-driven recovery brace is the required overlap seed; next give every accepted action reusable state-driven motion and author movement-rich spaces that teach ordinary, advanced and recovery play. | Live routes feel natural and readable at every zoom/reduced-effects mode without presentation owning displacement or legality. |
+| 6 | Element chemistry | Promote deterministic bounded material reactions through worldbone safety, reset, replay, replication and readable environmental cues. | Players can deliberately create, read, exploit and counter a live reaction without invalidating critical topology or work budgets. |
+| 7 | Spell expansion with chemistry | Promote complete, distinct catalogs one element at a time and expose every proven spell at the Wellspring regardless of champion. | Each promoted element has four role-distinct runtime spells integrated with live chemistry where declared, and any champion can configure them into the 3x4 weave. |
 
 ## Movement tuning contract
 
@@ -89,6 +92,8 @@ For every slice: capture the previous visual/runtime baseline; define observable
 acceptance; implement the smallest complete live result; run focused and full
 deterministic tests, import and 60/120 boots, relevant multi-process Farflow,
 visual/accessibility captures and an interactive smoke; inspect diff and packet
-budgets; update README, memory, backlog and worklog; then commit and push one
-reversible green checkpoint. Never claim charm, crispness, balance, remote play
-or platform parity without direct evidence.
+budgets; update README, memory, backlog and worklog; then begin the smallest safe
+piece of the next ordered slice before committing. Re-run affected checks and
+push one reversible green checkpoint containing accepted behavior plus an
+honestly labelled successor seed. Never claim charm, crispness, fun, balance,
+remote play or platform parity without direct evidence.

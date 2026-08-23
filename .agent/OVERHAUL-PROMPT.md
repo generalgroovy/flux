@@ -48,26 +48,17 @@ collision/cutaway diagnostics. Require at least 4/5 in every visual rubric
 category and a 4.5/5 mean. Preserve fixed-tick authority and the last pushed
 green rollback point throughout.
 
-## After—and only after—visual acceptance
+## After visual acceptance
 
-1. Make movement slightly slower but markedly crisper: measure an initial 8–12%
-   ordinary-speed reduction, tighten stops/reversals and keep the full movement
-   grammar expressive, deterministic and equivalent at 60/120 Hz.
-2. Make all physically legal movement and spell transitions chainable. Remove
-   hidden global recovery/animation locks; a refusal may come only from an
-   explicit surface/air/ground condition, the selected action's cooldown,
-   insufficient Stamina/Flux or a visible interruptible execution commitment.
-   Build and exhaustively test the transition matrix.
-3. Retune for fast resource decisions. Every offensive action—including every
-   primary—costs positive Flux; movement costs Stamina. Prefer lower
-   action-specific cooldowns and deliberate costs/regeneration tradeoffs over
-   long inactivity. No affinity makes offense free or grants automatic damage.
-4. Build the global spell library for Earth, Fire, Water, Wind, Ice, Charge,
-   Light, Dark, Spirit, Chaos, Gravity and Time. Each element requires at least
-   four proven choices: quick pressure, control/defense, movement/utility and a
-   high-commitment signature. Promote one complete element at a time. Any
-   champion may configure any runtime-proven spell at the Wellspring; affinities
-   modify bounded efficiency/identity but never availability.
+V0–V6 are accepted. The slower/crisper ordinary profile, explicit transition
+matrix and positive-Flux cadence foundation are also engineering-complete.
+Continue in the authoritative order from
+`.agent/CONTINUOUS-IMPLEMENTATION-PROMPT.md`: finish gameplay and non-ability
+movement first; then natural reusable animation and movement-rich environment;
+then promote live bounded element chemistry; only then expand one complete
+element's spell catalog at a time with declared chemistry behavior. Do not use
+the already-complete earlier gates as permission to jump directly to catalog
+work.
 
 ## Operating discipline
 

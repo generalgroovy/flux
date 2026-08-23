@@ -7,7 +7,7 @@
       "idle", "walk", "sprint", "hop", "double_jump", "slide",
       "slide_jump", "air_dodge", "wave_dash", "wall_kick", "vault",
       "superglide", "launched", "grappled", "charging", "stunned",
-      "rooted", "slowed", "fast_fall", "wall_skim"
+      "rooted", "slowed", "fast_fall", "wall_skim", "impact_recovery"
     ],
     "spell_shapes": ["projectile", "beam", "spray", "field"]
   },

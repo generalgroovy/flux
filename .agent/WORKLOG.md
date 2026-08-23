@@ -1,5 +1,58 @@
 # FLUX2 agent worklog
 
+## 2026-08-23 — impact agency, recovery choice and Momentum Chime
+
+Playable outcome:
+
+- Reordered the standing continuous directive to gameplay/movement → reusable
+  animation/environment → live element chemistry → chemistry-integrated spell
+  expansion, and made the overlap rule explicit: begin the next safe slice seed
+  after acceptance but before committing the current checkpoint.
+- Replaced dead authored-launch input with bounded fixed-point directional
+  influence. Natural expiry or cover collision enters a 220 ms impact brace at
+  42% retained speed; ordinary movement cannot erase it, while buffered V plus
+  direction spends exactly 18 Stamina to tech out at 360 px/s.
+- Added explicit `IMPACT_RECOVERY` simulation, prediction, canonical state,
+  transition and presentation coverage. Movement tuning v3 and transition
+  hashes are `ae4a36ec23e4` and `29cd46fd167e`.
+- Added the twelfth Wellspring station, **Momentum Chime**, in the Conservatory.
+  Its protocol-28 request is proximity- and host-validated, launches only a free
+  champion, refuses repeat triggers during launch/recovery, and replicates a
+  readable confirmation/refusal without giving the client outcome authority.
+- Began the ordered animation/environment successor before checkpointing: a
+  data-driven `recovery_brace` accent draws restrained inward arcs and a ground
+  mark, scales through Stamina intensity and remains legible in reduced effects.
+
+Verification:
+
+- `scripts\\test.cmd`: passed 52 suites / 18,428 assertions, import validation
+  and independent 60/120 Hz source boots at protocol 28. Movement owns 951
+  assertions; the 26-assertion Conservatory route now proves the exact Chime
+  launch, steering, recovery and tech against authored campus collision at both
+  tick rates, and request policy covers launch/recovery retrigger refusal.
+  Existing editor-time image-loading warnings remain visible and do not conceal
+  a suite or boot failure.
+- `scripts\\smoke-farflow.cmd -TickRate 120 -Port 24936 -Charter open_commons
+  -TimeoutSeconds 60`: passed host/join, shared HELLO, reconciliation,
+  Hearth-to-Court, late-join observation/Hearth handoff, exact-actor return,
+  Round 2 and reason-bearing stewardship. An earlier 20-second run expired late
+  under local load without a Godot error; the bounded 60-second rerun completed.
+- `scripts\\capture-visual.cmd -Name momentum-chime-v1-720 -Resolution 1280x720
+  -Frames 4 --capture-spawn=720,720 --capture-expanded-station=momentum-chime
+  --camera-zoom=75`: passed and was inspected; the station, binding, three-step
+  drill explanation, champion, route context and compact HUD remain readable.
+- Capture-only `--capture-movement=impact_recovery` produced and was inspected
+  at 75% and 100% zoom; the cyan brace arcs remain distinct against buildings
+  and terrain without changing movement authority.
+
+Known limitation and next slice:
+
+- These values are deterministic first-feel candidates, not a hands-on balance
+  claim. Physical controller/sensitivity/deadzone review and complete authored
+  Conservatory route acceptance remain the movement exit evidence. Continue
+  there, deepen natural action phases and route affordances, then promote one
+  bounded live chemistry reaction before adding chemistry-aware Water spells.
+
 ## 2026-08-21 — global Spell Loom and cooldown authority
 
 Playable outcome:

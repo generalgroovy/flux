@@ -124,7 +124,7 @@ cue, or diagnostic leak.
 | `Shift` | Sprint while held |
 | `C` / wheel down | Dedicated grounded slide press; airborne input commits fast fall |
 | `Space` / wheel up | Semantic jump / movement-chain press |
-| `V` | Contextual vault, recent-contact wall skim, air redirect, or sprint-held air dodge |
+| `V` | Contextual vault, recent-contact wall skim, air redirect, sprint-held air dodge, or buffered 18-Stamina impact tech |
 | `F` | Activate the nearest walk-up Wellspring station; controller north-face is equivalent |
 | Left mouse | Arc Primary; no default Space alias |
 | `E` / right mouse | Vector Lance |

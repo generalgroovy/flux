@@ -183,6 +183,8 @@ static func animation_id_for_player(state: PlayerState) -> String:
 			return "fall"
 		PlayerState.MovementMode.LAUNCHED:
 			return "hit"
+		PlayerState.MovementMode.IMPACT_RECOVERY:
+			return "hit"
 		PlayerState.MovementMode.GRAPPLED:
 			return "fall"
 		PlayerState.MovementMode.STUNNED:

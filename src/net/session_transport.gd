@@ -44,6 +44,7 @@ const REQUEST_CHAMPION_NEXT: int = 3
 const REQUEST_READY_TOGGLE: int = 4
 const REQUEST_PRACTICE_START: int = 5
 const REQUEST_SPELL_EQUIP: int = 6
+const REQUEST_IMPACT_PRACTICE: int = 7
 # Twelve weave positions x a bounded catalog lane. The request carries only a
 # library index; the host resolves it against the canonical runtime wire order.
 const MAX_SPELL_LIBRARY_SIZE: int = 48
@@ -888,4 +889,4 @@ static func _valid_request_packet(packet: Dictionary) -> bool:
 		return false
 	if action == REQUEST_SPELL_EQUIP:
 		return value >= 1 and value <= MAX_SPELL_EQUIP_VALUE
-	return value == 0 and action in [REQUEST_EMOTE, REQUEST_TRAINING_RESET, REQUEST_CHAMPION_NEXT, REQUEST_READY_TOGGLE, REQUEST_PRACTICE_START]
+	return value == 0 and action in [REQUEST_EMOTE, REQUEST_TRAINING_RESET, REQUEST_CHAMPION_NEXT, REQUEST_READY_TOGGLE, REQUEST_PRACTICE_START, REQUEST_IMPACT_PRACTICE]

@@ -7,17 +7,31 @@ with `README.md`, `SPECIFICATION.md`, `.agent/VISUAL-OVERHAUL.md`,
 `.agent/BACKLOG.md` and the newest entries in `.agent/WORKLOG.md`; when they
 disagree, preserve tested runtime truth and update stale prose in the same slice.
 
-## Immediate hard gate
+## Current frontier and hard order
 
-The visual overhaul is Gate 0 and freezes every new mechanic. Do not select
-movement tuning, action chaining, spell economy/catalog, roster, material,
-networking or cleanup work until V0–V6 in `.agent/VISUAL-OVERHAUL.md` pass in the
-live game. Concepts, manifests and detached mockups are not acceptance. V0–V6
-now pass; preserve protocol 27 and all accepted gameplay while replacing any remaining schematic runtime with
-an original charming Wellspring, two readable champions, current spell effects
-and compact four-cell/layered GUI. After visual acceptance, execute the strict
-movement → chaining → economy → global element-catalog order in
-`.agent/OVERHAUL-IMPLEMENTATION.md`.
+V0–V6 pass in the live game. Preserve protocol 28, snapshot schema 11, the
+published green checkpoint and all accepted visual/gameplay behavior. Continue
+in this strict player-facing order; do not skip ahead because a later catalog is
+easier to enumerate:
+
+1. **Gameplay and movement mechanics.** Finish impact agency/recovery, route
+   execution, input comfort and movement-versus-combat decisions. Judge every
+   change by intent response, fluidity, useful mastery, counterplay, spatial
+   readability and 60/120 Hz equivalence, not by feature count.
+2. **Animation and environment.** Make every accepted movement/action read
+   naturally through reusable presentation data, then author movement-rich
+   spaces and environmental affordances that teach those actions without text
+   walls. Presentation follows authority and never owns legality or distance.
+3. **Element chemistry.** Promote the first deterministic, bounded,
+   worldbone-safe material reactions end to end through simulation, cues,
+   reset, replay, network and route-safety evidence.
+4. **Spell expansion with chemistry.** Expand one complete element at a time
+   only after its environmental rules are live; each spell must create a
+   distinct aim/spacing/resource decision and declare its material operation.
+
+Mechanics outside the active row are frozen except for the smallest adapter or
+harness required to prove the active slice. Concepts, manifests, detached
+mockups and catalogs are never completion.
 
 ## Mission
 
@@ -28,8 +42,8 @@ slices, checkpoint each green result, and immediately start the next accepted
 slice. Do not stop at plans, scaffolds, catalogs, generated images or passing
 unit tests when the player-facing outcome is still absent.
 
-The current green frontier is protocol 27 / snapshot schema 11: two foundation champions, the planned
-non-ability movement grammar, full/cone POV with building cutaways, eleven
+The current green frontier is protocol 28 / snapshot schema 11: two foundation champions, the planned
+non-ability movement grammar, bounded launch steering plus a timed impact-recovery/tech decision, full/cone POV with building cutaways, twelve
 Wellspring stations including a host-authoritative 3×4 Spell Loom,
 direct-IP host/join, shared interactions, Hearth readiness,
 one Proving Court round, reconnect, stewardship and late-join observation pass
@@ -63,16 +77,15 @@ not runtime art, collision geometry or permission to ship generated pixels.
 | Order | Player-visible outcome | Acceptance gate |
 | ---: | --- | --- |
 | 0 | Gameplay-scale visual overhaul | Complete V0–V6 in `.agent/VISUAL-OVERHAUL.md`; no new mechanics until live integrated visual acceptance. |
-| 1 | Crisp readable movement | Slightly lower ordinary speed while tightening stop/reversal/control and preserving the full deterministic movement grammar. |
-| 2 | Universal action chaining | Every physically legal movement/spell transition works; no hidden global recovery or animation lock. |
-| 3 | Fast Flux/Stamina economy | Every offensive cast costs positive Flux, movement spends Stamina, and shorter action-specific cooldowns create rapid tradeoffs rather than idle time. |
-| 4 | Global element spell library | Each of twelve elements receives four runtime-proven role-distinct spells; every champion may configure every proven spell in the Wellspring 3×4 weave. |
+| 1 | Gameplay/movement completion | Preserve the crisp base and chaining/economy foundations while adding bounded impact agency, explicit recovery, authored route acceptance and hands-on tuning evidence. |
+| 2 | Natural reusable animation and environment | Every accepted action has concise state-driven motion/feedback, and the Conservatory/environment offers readable ordinary, advanced and recovery routes. |
+| 3 | Live element chemistry | Promote reactions in bounded worldbone-safe vertical slices with deterministic work budgets, reset, replay, replication and shape-first cues. |
+| 4 | Chemistry-integrated spell expansion | Complete one element's four roles at a time; every spell is runtime-proven, globally weaveable and connected to live material rules where declared. |
 | 5 | One-step portable play | A friend downloads one archive, extracts it, runs one obvious launcher without admin rights, enters the Wellspring, hosts or joins through one short in-world flow, can copy/paste a join card, and every quit path flushes local state, sends a bounded reason when online and leaves no child process; identical commit/content IDs and checksum instructions cover Windows and Linux. |
-| 6 | Material-ready spell effects | Spell definitions declare shape, delivery, element, impact, residue and material operation through validated data; critical routes, spawns and objectives remain valid. |
-| 7 | In-world player codex and expression | Canonical translucent overview plus an eight-way character expression wheel remain readable, controller-friendly and visibility-safe. |
-| 8 | Repository/product cleanup | Remove obsolete vocabulary, graphics and adapters only after their accepted replacements pass. |
-| 9 | Network visibility integrity | Host-owned per-peer relevance envelopes omit all illegal information in limited-view modes. |
-| 10 | Continue complete game slices | Finish champions, arenas, chemistry, bots, objectives, environments, enemies and modes one vertical slice at a time. |
+| 6 | In-world player codex and expression | Canonical translucent overview plus an eight-way character expression wheel remain readable, controller-friendly and visibility-safe. |
+| 7 | Repository/product cleanup | Remove obsolete vocabulary, graphics and adapters only after their accepted replacements pass. |
+| 8 | Network visibility integrity | Host-owned per-peer relevance envelopes omit all illegal information in limited-view modes. |
+| 9 | Continue complete game slices | Finish champions, arenas, bots, objectives, environments, enemies and modes one vertical slice at a time. |
 
 Orders 1–8 are product priorities, not permission to scatter eight partial
 systems. If an earlier slice is externally blocked (for example a physical
@@ -133,8 +146,20 @@ Before checkpointing:
    not a pass.
 3. Update README truth, focused contracts, `.agent/memory.md`, the concise
    backlog and append-only worklog with exact commands/results/limitations.
-4. Commit and push one reversible green checkpoint, then immediately select the
-   next unmet acceptance row.
+4. Once the current slice is fully verified and documented, select the next
+   unmet row and begin its smallest safe, reversible piece **before** committing
+   the completed slice. The successor work may be a tested specimen, harness or
+   live presentation seed, but it must not falsify completion or break play.
+5. Re-run the checks affected by that overlap, then commit and push one
+   reversible green checkpoint that contains only accepted behavior and an
+   honest, clearly labelled successor seed.
+
+For each mechanic, explicitly review: immediate input response; controllable
+momentum; chain opportunities; resource/cooldown decision; opponent response;
+world/collision safety; audiovisual anticipation/action/recovery; HUD/station
+discoverability; reduced-effects equivalence; deterministic replay; host/client
+authority; and failure/refusal clarity. Prefer one memorable interaction with
+several uses over several shallow actions.
 
 Never claim packaged Windows/Linux, remote friends, physical controllers,
 visual acceptance, hidden-state security or fun/balance without the matching

@@ -10,7 +10,10 @@ static func step(state: PlayerState, command: SimCommand, config: SimConfig, wor
 		state.facing_y = direction.y
 	_capture_action_buffers(state, command, config)
 
-	var control_locked: bool = state.control_state in [
+	var impact_tech_started := false
+	if state.impact_recovery_ticks > 0:
+		impact_tech_started = _try_impact_recovery_tech(state, direction, config)
+	var control_locked: bool = state.impact_recovery_ticks > 0 or state.control_state in [
 		PlayerState.ControlState.LAUNCHED,
 		PlayerState.ControlState.GRAPPLED,
 		PlayerState.ControlState.CHARGING,
@@ -23,7 +26,13 @@ static func step(state: PlayerState, command: SimCommand, config: SimConfig, wor
 		_consume_technique_buffer(state, command, direction, config, world)
 	_apply_variable_air_time(state, command, config)
 
-	if control_locked:
+	if impact_tech_started:
+		pass # The technique owns this tick's velocity; ordinary control resumes next tick.
+	elif state.impact_recovery_ticks > 0:
+		_apply_impact_recovery_velocity(state, config)
+	elif control_locked:
+		if state.control_state == PlayerState.ControlState.LAUNCHED:
+			_apply_launch_influence(state, command, direction, config)
 		_apply_control_velocity(state, config)
 	else:
 		_apply_velocity(state, command, direction, config)
@@ -124,6 +133,7 @@ static func apply_control_state(
 		state.control_ticks = 0
 		state.control_speed = 0
 		state.slow_ratio = 1000
+		state.impact_recovery_ticks = 0
 		return true
 	if duration_ms <= 0:
 		return false
@@ -134,6 +144,9 @@ static func apply_control_state(
 	state.control_y = normalized.y
 	state.control_speed = clampi(speed, 0, MovementTuning.MAX_AUTHORED_SPEED)
 	state.slow_ratio = clampi(slow_ratio, MovementTuning.SLOW_MINIMUM_RATIO, MovementTuning.SLOW_MAXIMUM_RATIO)
+	state.impact_recovery_ticks = 0
+	if requested_state == PlayerState.ControlState.LAUNCHED:
+		_cancel_authored_movement(state)
 	state.last_event = "control_%d" % requested_state
 	return true
 
@@ -144,6 +157,7 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 	var was_air_dodging: bool = state.air_dodge_ticks > 0
 	var was_wall_skimming: bool = state.wall_skim_ticks > 0
 	var was_landing: bool = state.landing_ticks > 0
+	var was_impact_recovering: bool = state.impact_recovery_ticks > 0
 	var previous_control_state: int = state.control_state
 	for property_name: StringName in [
 		&"stamina_recovery_delay_ticks", &"hop_ticks", &"hop_cooldown_ticks",
@@ -151,13 +165,16 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 		&"slide_ticks", &"slide_cooldown_ticks", &"vault_ticks",
 		&"vault_cooldown_ticks", &"superglide_ticks", &"wall_memory_ticks",
 		&"wall_skim_ticks", &"wall_skim_cooldown_ticks", &"wall_skim_lockout_ticks",
-		&"landing_ticks", &"wall_lockout_ticks", &"control_ticks",
+		&"landing_ticks", &"impact_recovery_ticks", &"wall_lockout_ticks", &"control_ticks",
 		&"jump_buffer_ticks", &"technique_buffer_ticks", &"slide_buffer_ticks",
 		&"variable_jump_grace_ticks",
 	]:
 		state.set(property_name, maxi(0, int(state.get(property_name)) - 1))
 	if was_landing and state.landing_ticks == 0:
 		state.landing_intensity = 0
+	if was_impact_recovering and state.impact_recovery_ticks == 0:
+		state.technique_buffer_ticks = 0
+		state.last_event = "impact_recovery_end"
 	if was_hopping and state.hop_ticks == 0:
 		state.landing_intensity = _hop_landing_intensity(state.hop_mode, was_fast_falling)
 		state.hop_stage = 0
@@ -180,11 +197,76 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 		state.landing_ticks = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
 		state.landing_intensity = MovementTuning.LANDING_WALL_SKIM_INTENSITY
 		state.last_event = "wall_skim_end"
-	if previous_control_state != PlayerState.ControlState.FREE and state.control_ticks == 0:
+	if previous_control_state == PlayerState.ControlState.LAUNCHED and state.control_ticks == 0:
+		_begin_impact_recovery(state, config)
+	elif previous_control_state != PlayerState.ControlState.FREE and state.control_ticks == 0:
 		state.control_state = PlayerState.ControlState.FREE
 		state.control_speed = 0
 		state.slow_ratio = 1000
 		state.last_event = "control_end"
+
+
+static func _apply_launch_influence(state: PlayerState, command: SimCommand, direction: Vector2i, config: SimConfig) -> void:
+	if command.move_x == 0 and command.move_y == 0:
+		return
+	var influence_step: int = config.per_tick(MovementTuning.IMPACT_INFLUENCE_PER_SECOND)
+	var influenced := _normalized_fixed(
+		_approach(state.control_x, direction.x, influence_step),
+		_approach(state.control_y, direction.y, influence_step),
+		Vector2i(state.control_x, state.control_y),
+	)
+	state.control_x = influenced.x
+	state.control_y = influenced.y
+
+
+static func _begin_impact_recovery(state: PlayerState, config: SimConfig) -> void:
+	state.control_state = PlayerState.ControlState.FREE
+	state.control_ticks = 0
+	state.control_speed = 0
+	state.slow_ratio = 1000
+	state.impact_recovery_ticks = config.milliseconds_to_ticks(MovementTuning.IMPACT_RECOVERY_DURATION_MS)
+	@warning_ignore("integer_division")
+	state.velocity_x = state.velocity_x * MovementTuning.IMPACT_RECOVERY_SPEED_RETENTION / 1000
+	@warning_ignore("integer_division")
+	state.velocity_y = state.velocity_y * MovementTuning.IMPACT_RECOVERY_SPEED_RETENTION / 1000
+	state.landing_ticks = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
+	state.landing_intensity = MovementTuning.IMPACT_RECOVERY_INTENSITY
+	state.sprinting = false
+	state.last_event = "impact_recovery"
+
+
+static func _try_impact_recovery_tech(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
+	if state.technique_buffer_ticks <= 0 or state.stamina < MovementTuning.IMPACT_RECOVERY_TECH_COST:
+		return false
+	_spend_stamina(state, MovementTuning.IMPACT_RECOVERY_TECH_COST, config)
+	state.impact_recovery_ticks = 0
+	state.technique_buffer_ticks = 0
+	_set_directional_velocity(state, direction, MovementTuning.IMPACT_RECOVERY_TECH_SPEED)
+	_clear_landing_cue(state)
+	state.last_event = "impact_tech"
+	return true
+
+
+static func _apply_impact_recovery_velocity(state: PlayerState, config: SimConfig) -> void:
+	var braking: int = config.per_tick(MovementTuning.IMPACT_RECOVERY_DECELERATION)
+	state.velocity_x = _approach(state.velocity_x, 0, braking)
+	state.velocity_y = _approach(state.velocity_y, 0, braking)
+	state.sprinting = false
+
+
+static func _cancel_authored_movement(state: PlayerState) -> void:
+	state.hop_ticks = 0
+	state.hop_stage = 0
+	state.air_redirects_remaining = 0
+	state.fast_falling = false
+	state.air_dodge_ticks = 0
+	state.wave_dash_queued = false
+	state.wave_dash_ticks = 0
+	state.slide_ticks = 0
+	state.vault_ticks = 0
+	state.superglide_ticks = 0
+	state.wall_skim_ticks = 0
+	_clear_landing_cue(state)
 
 
 static func _try_hop(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
@@ -460,6 +542,7 @@ static func _apply_ground_velocity(state: PlayerState, command: SimCommand, dire
 
 
 static func _integrate(state: PlayerState, config: SimConfig, world: CollisionWorld) -> void:
+	var was_launched: bool = state.control_state == PlayerState.ControlState.LAUNCHED
 	var total_x: int = state.position_remainder_x + state.velocity_x
 	var total_y: int = state.position_remainder_y + state.velocity_y
 	@warning_ignore("integer_division")
@@ -488,11 +571,16 @@ static func _integrate(state: PlayerState, config: SimConfig, world: CollisionWo
 			state.slide_ticks = 0
 			state.superglide_ticks = 0
 			state.last_event = "movement_impact"
+		if was_launched:
+			_begin_impact_recovery(state, config)
+			state.last_event = "launch_impact"
 
 
 static func _update_mode(state: PlayerState, command: SimCommand) -> void:
 	if state.control_state != PlayerState.ControlState.FREE:
 		state.movement_mode = PlayerState.MovementMode.LAUNCHED + state.control_state - PlayerState.ControlState.LAUNCHED
+	elif state.impact_recovery_ticks > 0:
+		state.movement_mode = PlayerState.MovementMode.IMPACT_RECOVERY
 	elif state.superglide_ticks > 0:
 		state.movement_mode = PlayerState.MovementMode.SUPERGLIDE
 	elif state.air_dodge_ticks > 0:
@@ -560,6 +648,30 @@ static func _direction(input_x: int, input_y: int, fallback: Vector2i) -> Vector
 	if x != 0 and y != 0:
 		return Vector2i(x * 707, y * 707)
 	return Vector2i(x * 1000, y * 1000)
+
+
+static func _normalized_fixed(x: int, y: int, fallback: Vector2i) -> Vector2i:
+	if x == 0 and y == 0:
+		return fallback if fallback != Vector2i.ZERO else Vector2i(1000, 0)
+	var magnitude := _integer_sqrt(x * x + y * y)
+	if magnitude <= 0:
+		return fallback
+	@warning_ignore("integer_division")
+	var normalized_x: int = x * 1000 / magnitude
+	@warning_ignore("integer_division")
+	var normalized_y: int = y * 1000 / magnitude
+	return Vector2i(clampi(normalized_x, -1000, 1000), clampi(normalized_y, -1000, 1000))
+
+
+static func _integer_sqrt(value: int) -> int:
+	if value <= 0:
+		return 0
+	var estimate := value
+	var candidate := (estimate + 1) / 2
+	while candidate < estimate:
+		estimate = candidate
+		candidate = (estimate + value / estimate) / 2
+	return estimate
 
 
 static func _wall_kick_direction(requested: Vector2i, wall_normal: Vector2i) -> Vector2i:

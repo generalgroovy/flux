@@ -14,7 +14,8 @@
     "vault": {"kind": "crest_arc", "ramp": "aged_brass", "index": 3, "opacity": 0.48},
     "superglide": {"kind": "speed_fins", "ramp": "aged_brass", "index": 4, "opacity": 0.56},
     "fast_fall": {"kind": "fall_lines", "ramp": "deep_water", "index": 3, "opacity": 0.48},
-    "wall_skim": {"kind": "wall_sparks", "ramp": "aged_brass", "index": 4, "opacity": 0.52}
+    "wall_skim": {"kind": "wall_sparks", "ramp": "aged_brass", "index": 4, "opacity": 0.52},
+    "impact_recovery": {"kind": "recovery_brace", "ramp": "stamina", "index": 4, "opacity": 0.56}
   },
   "profiles": {
     "buoyant_keeper": {

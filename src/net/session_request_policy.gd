@@ -29,6 +29,10 @@ static func validate(
 			return ACCEPTED if _focused_station(state, stations_by_id) == "champion-loom" else REFUSED_DISTANCE
 		SessionTransport.REQUEST_SPELL_EQUIP:
 			return ACCEPTED if _focused_station(state, stations_by_id) == "spell-loom" else REFUSED_DISTANCE
+		SessionTransport.REQUEST_IMPACT_PRACTICE:
+			if state.control_state != PlayerState.ControlState.FREE or state.impact_recovery_ticks > 0:
+				return REFUSED_UNAVAILABLE
+			return ACCEPTED if _focused_station(state, stations_by_id) == "momentum-chime" else REFUSED_DISTANCE
 		SessionTransport.REQUEST_READY_TOGGLE, SessionTransport.REQUEST_PRACTICE_START:
 			return ACCEPTED if _focused_station(state, stations_by_id) == "session-hearth" else REFUSED_DISTANCE
 	return REFUSED_UNAVAILABLE

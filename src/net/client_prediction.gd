@@ -28,7 +28,7 @@ const STATE_FIELDS: Array[StringName] = [
 	&"wall_lockout_id", &"wall_lockout_ticks",
 	&"wall_skim_ticks", &"wall_skim_cooldown_ticks", &"wall_skim_x", &"wall_skim_y",
 	&"wall_skim_surface_id", &"wall_skim_lockout_id", &"wall_skim_lockout_ticks",
-	&"landing_ticks", &"landing_intensity", &"sprinting",
+	&"landing_ticks", &"landing_intensity", &"impact_recovery_ticks", &"sprinting",
 	&"control_state", &"control_ticks", &"control_x", &"control_y", &"control_speed", &"slow_ratio",
 ]
 const BOOLEAN_FIELDS: Array[StringName] = [&"fast_falling", &"wave_dash_queued", &"sprinting"]
@@ -47,7 +47,7 @@ const TIMER_FIELDS: Array[StringName] = [
 	&"slide_ticks", &"slide_cooldown_ticks", &"vault_ticks", &"vault_cooldown_ticks",
 	&"superglide_ticks", &"wall_memory_ticks", &"wall_lockout_ticks",
 	&"wall_skim_ticks", &"wall_skim_cooldown_ticks", &"wall_skim_lockout_ticks",
-	&"landing_ticks", &"control_ticks",
+	&"landing_ticks", &"impact_recovery_ticks", &"control_ticks",
 ]
 
 var config: SimConfig

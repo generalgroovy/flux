@@ -160,7 +160,7 @@ func _draw_atlas_candidate(canvas: CanvasItem, state: PlayerState, champion_id: 
 
 
 static func silhouette_state(state: PlayerState) -> String:
-	if state.movement_mode == PlayerState.MovementMode.LAUNCHED or state.control_state == PlayerState.ControlState.STUNNED:
+	if state.movement_mode in [PlayerState.MovementMode.LAUNCHED, PlayerState.MovementMode.IMPACT_RECOVERY] or state.control_state == PlayerState.ControlState.STUNNED:
 		return "hit"
 	if state.pending_cast_wire_id > 0 or state.last_event.begins_with("cast_start_"):
 		return "cast"
@@ -281,6 +281,12 @@ func _draw_movement_accent(canvas: CanvasItem, state: PlayerState, ground_anchor
 			for index: int in range(3):
 				var spark_direction := (-wall_side).rotated(-0.5 + float(index) * 0.5)
 				canvas.draw_line(contact, contact + spark_direction * (5.0 + float(index) * 2.0), Color(color, opacity), 1.0)
+		"recovery_brace":
+			var contraction := 1.0 - phase
+			for side_sign: float in [-1.0, 1.0]:
+				var brace_center := ground_anchor + side * side_sign * (18.0 + contraction * 5.0)
+				canvas.draw_arc(brace_center, 7.0, -1.2 if side_sign < 0.0 else 1.9, 1.2 if side_sign < 0.0 else 4.3, 7, Color(color, opacity * (0.6 + contraction * 0.4)), 2.0)
+			canvas.draw_line(ground_anchor - direction * 10.0, ground_anchor - direction * (17.0 + contraction * 5.0), Color(color, opacity * 0.8), 2.0)
 
 
 func _draw_oh_tipi(canvas: CanvasItem, definition: Dictionary, anchor: Vector2, direction: String, state_id: String, tick: int) -> void:

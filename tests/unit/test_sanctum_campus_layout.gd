@@ -27,7 +27,7 @@ func _test_repository_layout() -> void:
 	equal(layout.buildings_by_id.size(), 10, "authored buildings and low cover are registered")
 	equal(layout.landmarks_by_id.size(), 6, "combined quarters retain multiple memorable landmarks")
 	equal(layout.reset_zones_by_id.size(), 2, "movement and proving reset zones are explicit")
-	equal(layout.stations_by_id.size(), 11, "play, controls, spell, Farflow and host-stewardship stations are explicit")
+	equal(layout.stations_by_id.size(), 12, "play, movement practice, controls, spells, Farflow and host-stewardship stations are explicit")
 	equal(layout.practice_targets_by_id.size(), 1, "the Nexus sparring effigy is explicit")
 	equal(String(layout.arena_definition.get("id", "")), "proving-court-v1", "the first bounded arena has a stable authored identity")
 	equal((layout.arena_definition.get("spawns", []) as Array).size(), 8, "arena reserves eight ordered spawn anchors")
@@ -70,6 +70,7 @@ func _test_collision_compilation() -> void:
 	check(collision.can_occupy(Vector2i(2_460_000, 620_000), MovementTuning.PLAYER_RADIUS), "Parting Bell has authored collision clearance")
 	check(collision.can_occupy(Vector2i(1_080_000, 900_000), MovementTuning.PLAYER_RADIUS), "Controls Lectern has authored collision clearance")
 	check(collision.can_occupy(Vector2i(1_480_000, 900_000), MovementTuning.PLAYER_RADIUS), "Spell Loom has authored collision clearance")
+	check(collision.can_occupy(Vector2i(720_000, 720_000), MovementTuning.PLAYER_RADIUS), "Momentum Chime has authored collision clearance")
 	for gather_value: Variant in (layout.stations_by_id["session-hearth"] as Dictionary).get("gather_spawns", []):
 		var gather_values: Array = gather_value
 		check(collision.can_occupy(Vector2i(int(gather_values[0]), int(gather_values[1])) * SimConfig.FIXED_SCALE, MovementTuning.PLAYER_RADIUS), "Hearth gather spawn has authored collision clearance")
@@ -100,9 +101,9 @@ func _test_invalid_layouts_fail_closed() -> void:
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["interaction_radius"] = 900,
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["lines"] = "too vague",
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["position"] = [1200, 500],
-		func(data: Dictionary) -> void: (data["stations"][7] as Dictionary)["gather_spawns"] = [[2080, 620]],
-		func(data: Dictionary) -> void: ((data["stations"][7] as Dictionary)["gather_spawns"] as Array)[0] = [2300, 620],
-		func(data: Dictionary) -> void: ((data["stations"][7] as Dictionary)["gather_spawns"] as Array)[1] = [2144, 620],
+		func(data: Dictionary) -> void: (data["stations"][8] as Dictionary)["gather_spawns"] = [[2080, 620]],
+		func(data: Dictionary) -> void: ((data["stations"][8] as Dictionary)["gather_spawns"] as Array)[0] = [2300, 620],
+		func(data: Dictionary) -> void: ((data["stations"][8] as Dictionary)["gather_spawns"] as Array)[1] = [2144, 620],
 		func(data: Dictionary) -> void: (data["practice_targets"][0] as Dictionary)["health"] = 0,
 		func(data: Dictionary) -> void: (data["practice_targets"][0] as Dictionary)["entity_id"] = 1,
 		func(data: Dictionary) -> void: (data["practice_targets"][0] as Dictionary)["position"] = [1200, 500],

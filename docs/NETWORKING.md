@@ -2,7 +2,7 @@
 
 ## Current runnable boundary
 
-FLUX 2 protocol 27 / snapshot schema 11 exposes eleven walk-up Wellspring stations,
+FLUX 2 protocol 28 / snapshot schema 11 exposes twelve walk-up Wellspring stations,
 including the Farflow Charter, Session Hearth and host stewardship tools in
 the eastern Wellspring:
 
@@ -15,6 +15,7 @@ the eastern Wellspring:
 | **Company Ledger** | Lets only the host cycle connected guests in stable order; selection is visibly non-destructive and excludes returning reservations |
 | **Parting Bell** | Arms release of the Ledger selection, then requires a second matching press within three seconds; the guest receives a reason and no return reservation |
 | **Spell Loom** | Repositions every globally proven runtime spell in a Plain/Ctrl/Alt 3×4 weave; the host validates actor proximity and the next snapshot confirms all positions and per-spell cooldowns |
+| **Momentum Chime** | Starts a host-authoritative launch/impact-recovery drill only for a free champion standing at the Chime; repeat requests cannot erase the recovery decision |
 | **Proving Court** | Receives the intact connected roster at authored spawns, assigns combat teams and wards, scores knockouts, respawns defeated travellers, resolves score/time results and returns the company to the Hearth |
 
 After a result, the connected roster gathers at eight collision-cleared points

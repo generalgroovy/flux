@@ -102,6 +102,9 @@ func _test_projectile_and_event_round_trip() -> void:
 		{"type": "spray_fired", "event_id": 46, "owner_id": 1, "source_wire_id": CombatTuning.TIDELINE_WIRE_ID, "end_x": 1_520_000, "end_y": 720_000, "hit_count": 1},
 		{"type": "spray_hit", "event_id": 47, "owner_id": 1, "source_wire_id": CombatTuning.TIDELINE_WIRE_ID, "target_id": 900, "damage": CombatTuning.TIDELINE_DAMAGE},
 	]
+	var impact_station_event := SessionSnapshot.encode_event({"type": "station_confirmed", "event_id": 48, "entity_id": 1, "action": SessionTransport.REQUEST_IMPACT_PRACTICE})
+	check(not impact_station_event.is_empty() and SessionSnapshot._valid_event_values(impact_station_event), "Momentum Chime confirmation uses the bounded semantic event lane")
+	equal(int(SessionSnapshot.decode_event(impact_station_event).get("action", 0)), SessionTransport.REQUEST_IMPACT_PRACTICE, "Momentum Chime confirmation round-trips its stable action")
 	var snapshot := SessionSnapshot.capture(source, {1: "Host"}, events)
 	check(SessionSnapshot.validate(snapshot), "projectile/event snapshot validates")
 	var replica := SimWorld.new(120, 3, CollisionWorld.new(3_000_000, 2_000_000))

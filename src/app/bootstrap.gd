@@ -531,6 +531,11 @@ func _process(delta: float) -> void:
 	var steps: int = 0
 	while accumulator_seconds >= fixed_delta and steps < MAX_CATCH_UP_STEPS:
 		previous_position = current_position
+		if requested_capture_movement == "impact_recovery" and world.tick == 4 and not session_transport.is_connected_client():
+			MovementSystem.apply_control_state(
+				_local_player_state(), PlayerState.ControlState.LAUNCHED, 180,
+				Vector2i.RIGHT, 540_000, world.config,
+			)
 		var camera_origin := _camera_origin(_camera_focus_position(current_position))
 		var pointer_world_position := Vector2(capture_pointer_world) if capture_pointer_world.x >= 0 else camera_origin + get_viewport().get_mouse_position() / _camera_zoom_scale()
 		var command: SimCommand
@@ -1503,6 +1508,14 @@ func _handle_session_requests(requests: Array[Dictionary]) -> void:
 					_publish_session_event({"type": "request_refused", "entity_id": entity_id, "action": action, "reason": SessionRequestPolicy.REFUSED_UNAVAILABLE})
 					continue
 				_publish_session_event({"type": "station_confirmed", "entity_id": entity_id, "action": action})
+			SessionTransport.REQUEST_IMPACT_PRACTICE:
+				if not MovementSystem.apply_control_state(
+					state, PlayerState.ControlState.LAUNCHED, 320,
+					Vector2i.UP, 540_000, world.config,
+				):
+					_publish_session_event({"type": "request_refused", "entity_id": entity_id, "action": action, "reason": SessionRequestPolicy.REFUSED_UNAVAILABLE})
+					continue
+				_publish_session_event({"type": "station_confirmed", "entity_id": entity_id, "action": action})
 			SessionTransport.REQUEST_CHAMPION_NEXT:
 				var current_id := champion_catalog.champion_id_from_wire(state.champion_wire_id)
 				var next_id := champion_catalog.next_champion_id(current_id)
@@ -1576,7 +1589,10 @@ func _ingest_session_feedback(events: Array[Dictionary]) -> void:
 				social_bubbles.append({"entity_id": entity_id, "text": "HELLO!", "remaining": 2.0, "duration": 2.0})
 				print("FLUX2 farflow social: shared emote entity %d" % entity_id)
 			"station_confirmed":
-				station_notice = "%s restored the practice court." % String(session_names_by_entity.get(entity_id, "A traveller"))
+				if int(event.get("action", 0)) == SessionTransport.REQUEST_IMPACT_PRACTICE:
+					station_notice = "%s struck the Momentum Chime: steer, then V to tech." % String(session_names_by_entity.get(entity_id, "A traveller"))
+				else:
+					station_notice = "%s restored the practice court." % String(session_names_by_entity.get(entity_id, "A traveller"))
 				station_notice_seconds = 2.5
 			"champion_attuned":
 				var champion_id := champion_catalog.champion_id_from_wire(int(event.get("champion_wire_id", 0)))
@@ -1700,6 +1716,8 @@ func _activate_focused_station() -> void:
 			expanded_station_id = focused_station_id
 		"training_reset":
 			_submit_session_request(SessionTransport.REQUEST_TRAINING_RESET)
+		"impact_practice":
+			_submit_session_request(SessionTransport.REQUEST_IMPACT_PRACTICE)
 		"champion_switch":
 			_submit_session_request(SessionTransport.REQUEST_CHAMPION_NEXT)
 		"host_session":
@@ -2656,7 +2674,7 @@ func _requested_capture_movement() -> String:
 		if argument.begins_with("--capture-movement="):
 			var requested := parse_capture_movement(argument)
 			if requested.is_empty():
-				push_warning("Invalid movement capture; expected walk, brake, reverse, sprint, slide, jump, air_dodge, or technique")
+				push_warning("Invalid movement capture; expected walk, brake, reverse, sprint, slide, jump, air_dodge, technique, or impact_recovery")
 			return requested
 	return ""
 
@@ -2722,13 +2740,17 @@ static func parse_capture_movement(argument: String) -> String:
 	if not argument.begins_with("--capture-movement="):
 		return ""
 	var requested := argument.trim_prefix("--capture-movement=").strip_edges().to_lower()
-	return requested if requested in ["walk", "brake", "reverse", "sprint", "slide", "jump", "air_dodge", "technique"] else ""
+	return requested if requested in ["walk", "brake", "reverse", "sprint", "slide", "jump", "air_dodge", "technique", "impact_recovery"] else ""
 
 
 static func capture_movement_command(mode: String, tick: int, entity_id: int) -> SimCommand:
 	var held := 0
 	var pressed := 0
 	var move_x := 1000
+	var move_y := 0
+	if mode == "impact_recovery":
+		move_x = 0
+		move_y = -1000
 	if mode == "brake" and tick >= 30:
 		move_x = 0
 	elif mode == "reverse" and tick >= 30:
@@ -2745,7 +2767,7 @@ static func capture_movement_command(mode: String, tick: int, entity_id: int) ->
 		pressed |= SimCommand.PRESSED_TECHNIQUE
 	if mode == "technique" and tick == 6:
 		pressed |= SimCommand.PRESSED_TECHNIQUE
-	return SimCommand.new(tick, entity_id, move_x, 0, held, pressed, 1000, 0)
+	return SimCommand.new(tick, entity_id, move_x, move_y, held, pressed, 1000, 0)
 
 
 func _requested_farflow_mode() -> String:

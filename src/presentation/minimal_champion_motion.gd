@@ -6,8 +6,8 @@ const DEFAULT_PATH := "res://content/visual/minimal_champion_motion_v1.json"
 const EXPECTED_ID := "minimal-champion-motion-v1"
 const EXPECTED_AUTHORITY := "presentation only; motion samples never change simulation position, collision, timing or outcomes"
 const REQUIRED_MOTIONS := ["idle", "walk", "sprint", "low", "air", "cast", "hit"]
-const REQUIRED_ACCENTS := ["counter_strafe", "double_jump", "slide", "slide_jump", "air_dodge", "wave_dash", "wall_kick", "vault", "superglide", "fast_fall", "wall_skim"]
-const ALLOWED_ACCENT_KINDS := ["brake_ticks", "lift_ring", "ground_wake", "speed_fins", "ground_chevron", "kick_burst", "crest_arc", "fall_lines", "wall_sparks"]
+const REQUIRED_ACCENTS := ["counter_strafe", "double_jump", "slide", "slide_jump", "air_dodge", "wave_dash", "wall_kick", "vault", "superglide", "fast_fall", "wall_skim", "impact_recovery"]
+const ALLOWED_ACCENT_KINDS := ["brake_ticks", "lift_ring", "ground_wake", "speed_fins", "ground_chevron", "kick_burst", "crest_arc", "fall_lines", "wall_sparks", "recovery_brace"]
 
 
 class Sample:
@@ -109,7 +109,7 @@ func sample(profile_id: String, motion_id: String, elapsed_ticks_at_60: float, r
 
 
 static func motion_id(state: PlayerState) -> String:
-	if state.movement_mode in [PlayerState.MovementMode.LAUNCHED, PlayerState.MovementMode.GRAPPLED, PlayerState.MovementMode.STUNNED] \
+	if state.movement_mode in [PlayerState.MovementMode.LAUNCHED, PlayerState.MovementMode.GRAPPLED, PlayerState.MovementMode.STUNNED, PlayerState.MovementMode.IMPACT_RECOVERY] \
 		or state.control_state in [PlayerState.ControlState.LAUNCHED, PlayerState.ControlState.GRAPPLED, PlayerState.ControlState.STUNNED]:
 		return "hit"
 	if state.pending_cast_wire_id > 0 or state.movement_mode == PlayerState.MovementMode.CHARGING or state.last_event.begins_with("cast_start_"):

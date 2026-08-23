@@ -56,6 +56,15 @@ motion still resolves through the ordered collision world. A Conservatory
 integration route independently verifies slide, late slide jump, air redirect,
 marked vault, and crest superglide at 60 and 120 Hz.
 
+## Post-visual impact-agency checkpoint
+
+Authored launches now accept bounded directional influence while remaining
+host-owned. Natural expiry or cover impact enters a 220 ms recovery brace at
+42% retained speed; ordinary techniques cannot erase that decision, while a
+buffered V with direction spends exactly 18 Stamina for a 360 px/s tech. The
+Momentum Chime exposes the same request, authority and presentation path in the
+Conservatory at both supported tick rates.
+
 ## Third movement/combat checkpoint
 
 Protocol 3 now supplies authoritative runtime projectiles and the staged
@@ -68,7 +77,7 @@ and per-projectile/fighter reward identity are covered at both tick rates.
 ## Not yet migrated
 
 Variable jump/fast fall, character-specific mobility, moving platforms,
-impact influence/ground recovery, wall skims, rails/ziplines/lifts, elevation
+wall skims, rails/ziplines/lifts, elevation
 columns, full authored map collision, network prediction/reconciliation, and
 chemistry-derived surface modifiers remain explicit subsequent slices. Their
 schema space must be added with tests rather than inferred from presentation.

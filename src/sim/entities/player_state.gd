@@ -27,6 +27,7 @@ enum MovementMode {
 	SLOWED,
 	FAST_FALL,
 	WALL_SKIM,
+	IMPACT_RECOVERY,
 }
 
 enum ControlState {
@@ -154,6 +155,7 @@ var wall_skim_lockout_id: int = 0
 var wall_skim_lockout_ticks: int = 0
 var landing_ticks: int = 0
 var landing_intensity: int = 0
+var impact_recovery_ticks: int = 0
 var sprinting: bool = false
 var control_state: int = ControlState.FREE
 var control_ticks: int = 0
@@ -365,6 +367,7 @@ func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> voi
 	wall_skim_lockout_ticks = 0
 	landing_ticks = 0
 	landing_intensity = 0
+	impact_recovery_ticks = 0
 	sprinting = false
 	control_state = ControlState.FREE
 	control_ticks = 0
@@ -410,7 +413,7 @@ func canonical_values() -> PackedInt64Array:
 		wall_lockout_id, wall_lockout_ticks,
 		wall_skim_ticks, wall_skim_cooldown_ticks, wall_skim_x, wall_skim_y,
 		wall_skim_surface_id, wall_skim_lockout_id, wall_skim_lockout_ticks,
-		landing_ticks, landing_intensity, int(sprinting),
+		landing_ticks, landing_intensity, impact_recovery_ticks, int(sprinting),
 		control_state, control_ticks, control_x, control_y, control_speed, slow_ratio,
 	])
 	for wire_id: int in spell_wire_ids:

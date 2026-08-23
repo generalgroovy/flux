@@ -21,6 +21,7 @@ func _test_repository_motion() -> void:
 			check(sample.scale.y >= 0.94 and sample.scale.y <= 1.06, "%s/%s stays within vertical squash budget" % [profile_id, motion_id])
 	equal(motion.movement_accents.size(), MinimalChampionMotion.REQUIRED_ACCENTS.size(), "every declared movement-response family owns one bounded accent")
 	equal(String(motion.accent_by_id("counter_strafe").get("kind", "")), "brake_ticks", "ordinary reversal owns an editable heel-plant accent")
+	equal(String(motion.accent_by_id("impact_recovery").get("kind", "")), "recovery_brace", "impact recovery begins the reusable animation/environment slice with a readable brace accent")
 
 
 func _test_complete_movement_mapping() -> void:
@@ -46,6 +47,7 @@ func _test_complete_movement_mapping() -> void:
 		PlayerState.MovementMode.SLOWED: "walk",
 		PlayerState.MovementMode.FAST_FALL: "air",
 		PlayerState.MovementMode.WALL_SKIM: "low",
+		PlayerState.MovementMode.IMPACT_RECOVERY: "hit",
 	}
 	for movement_mode: int in expected:
 		state.movement_mode = movement_mode

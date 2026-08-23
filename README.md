@@ -58,8 +58,8 @@ even when design documentation already exists.
     dense-edge/clear-lane composition, district landmarks, and pixel direction
   - [ ] Offline-complete stations plus privacy-safe friends/presence, host
     teams/rules/practice/travel tools, and Garuda Sway/Windows acceptance
-  - [x] Fixed-point walk-up focus plus eleven diegetic stations: Movement Guide,
-    Practice Bell, Champion Loom, Spell Loom, Charter, Hearth, Host/Join gates,
+  - [x] Fixed-point walk-up focus plus twelve diegetic stations: Movement Guide,
+    Momentum Chime, Practice Bell, Champion Loom, Spell Loom, Charter, Hearth, Host/Join gates,
     Company Ledger and Parting Bell with transparent bubbles
   - [x] Direct-IP ENet host/join lifecycle, protocol/content handshake, eight-player
     cap, bounded validated input transport, mismatch refusal and loopback test
@@ -67,7 +67,7 @@ even when design documentation already exists.
     60 Hz snapshots, named remote sprites and Windows localhost process smoke
   - [x] Protocol-13 projectile lanes and semantic cast/hit/graze feedback under
     the existing 8 KiB packet cap with explicit presentation overflow
-  - [x] Host-authorized HELLO, Practice Bell and Champion Loom requests with
+  - [x] Host-authorized HELLO, Practice Bell, Momentum Chime and Loom requests with
     replicated confirmations/refusals and shared training-target state
   - [x] Peer-scoped host acknowledgement plus bounded movement-only prediction,
     deterministic reconciliation and readable ACK/correction diagnostics
@@ -107,6 +107,9 @@ even when design documentation already exists.
     canonical state
   - [x] V converts recent authored-obstacle contact into a bounded wall skim;
     world edges are excluded and same-surface chaining is locked out
+  - [x] Launched players retain bounded directional influence, enter a visible
+    220 ms impact recovery, and can buffer V to spend 18 Stamina on an early
+    directional tech; authored cover ends forced travel immediately
   - [x] Landing intensity is canonical and drives a restrained expanding rune
     ring, shadow squash, semantic land strip, and reduced-motion equivalent
   - [x] Separate Health, Stamina, and spell Flux; independent quantized aim and
@@ -132,8 +135,8 @@ even when design documentation already exists.
     playable sprite body: semantic movement selects its 25-action/eight-direction
     regions with nearest-neighbor rendering, composed with the shared jump lift
     and ground shadow before POV masking, and fails closed to the procedural body
-  - [ ] Add bounded impact influence, timed ground recovery,
-    authored elevation, sensitivity/dead-zone profiles, accepted final per-champion animation art,
+  - [ ] Add authored elevation, sensitivity/dead-zone profiles,
+    accepted final per-champion animation art,
     remaining champion runtime integration, and interactive route acceptance
 - [ ] **Chapter 4 — [Aiming, combat, and abilities](#aiming-combat-and-ability-composition)**
   - [x] Independent move/aim and held-primary command protocol
@@ -223,7 +226,7 @@ compatible documented license.
 | --- | --- | --- |
 | The Legend of Zelda: Oracle of Ages / Oracle of Seasons | Compact Game Boy Color-era top-down tiles, economical color ramps, strong character-to-environment scale, readable silhouettes, and clear interaction landmarks | An original FLUX virtual-pixel grid, palette, architecture, characters, props, animation, UI, and effects; no copied sprites, tiles, maps, symbols, palette extraction, characters, animation frames, or trade dress |
 | Titanfall/Apex family | Movement routes, momentum conversion, readable traversal objects, independent aim, squad legibility | A stamina-bounded universal movement grammar in authored top-down elevation lanes; champion mobility never bypasses collision or the global speed ceiling |
-| Super Smash Bros. Melee | Commitment, recovery, precise landing timing, momentum expression, bounded launch influence | Top-down landing cuts, wavedash geometry, readable startup/active/recovery phases, and future collision-safe impact influence—without copying characters, stages, move data, or control layout |
+| Super Smash Bros. Melee | Commitment, recovery, precise landing timing, momentum expression, bounded launch influence | Top-down landing cuts, wavedash geometry, readable startup/active/recovery phases, and collision-safe impact influence—without copying characters, stages, move data, or control layout |
 | Classic handheld Zelda games | A top-down jump reads instantly through compact body lift, a grounded shadow, apex, and crisp landing | An original authoritative elevation arc and original body/shadow presentation; no copied sprite, frame, timing, sound, map, input, or item behavior |
 | Hades / Hades II | Strong room silhouettes, layered depth, dramatic landmarks, dense scenic edges, responsive ambience, and clear combat floors | Original pixel-perspective Wellspring districts with FLUX materials, architecture, palette ramps, props, routes, lighting, UI, and interaction grammar; no copied rooms, assets, camera metrics, palette, symbols, or trade dress |
 | Noita | Materials and spells producing systemic consequences | A deterministic, host-authoritative, bounded 2.5D chemistry grid with reset groups, work budgets, explicit ownership, and immutable worldbone |
@@ -346,14 +349,14 @@ end cleanly. Changes are permission-checked, visible, rate-limited, logged, and
 frozen where competition demands it; hosting never grants remote file/shell or
 client-setting control.
 
-The current playable campus begins that shell with three walk-up objects below
-spawn. The **Movement Guide** toggles concise movement notes in a transparent
-world bubble; the **Practice Bell** restores the deterministic local court and
-all three resources; the **Champion Loom** cycles the current playable champion,
-authoritative resource profile, movement profile, and runtime sprite. F and
-controller north-face activate the nearest station, with fixed-point radius
-checks and stable identity tie-breaking. Settings, muster/host/join and travel
-stations remain gated work.
+The current playable campus exposes twelve fixed-point walk-up stations across
+the living Wellspring. The **Movement Guide** gives concise movement notes; the
+**Momentum Chime** launches a safe Conservatory drill where steering matters and
+V converts the 220 ms impact brace into an exact 18-Stamina tech; the **Practice
+Bell** restores the deterministic court and resources; the Champion and Spell
+Looms, Farflow gates, Charter, Hearth, Ledger and Parting Bell own the remaining
+live setup/session actions. F and controller north-face activate the nearest
+station with fixed-point radius checks and stable identity tie-breaking.
 
 Foreground terrain, roofs, foliage, buildings, and constructs fade/cut away or
 yield to an ownership-readable silhouette when they overlap a character that is
@@ -412,7 +415,7 @@ station acceptance.
 | Landing cut | Trade a timed landing input for reduced recovery and route continuity | Canonical intensity drives a land strip, shadow squash and fading rune ring; never deletes an attack/status commitment | Foundation and readable impact cue implemented |
 | Edgeweave | Skim the swept edge of a hostile projectile at committed speed to regain Stamina | No reward on hit, full Stamina, training pressure, low speed, cooldown, or repeat contact | Implemented |
 | Variable hop / fast fall | Change aerial duration and contest timing without a new jump | Held/released duration and a no-cost committed fast fall remain bounded and canonical | Implemented |
-| Impact influence / brace | Bend a launched trajectory slightly or time a safe ground recovery | Cannot cancel knockback, cross worldbone, or remove the attacker’s earned advantage | Planned |
+| Impact influence / tech | Bend a launched trajectory slightly; buffer V near impact to spend 18 Stamina and regain directional control early | Influence is gradual, cover ends launch, ordinary recovery lasts 220 ms, and the tech cannot cancel the original hit or exceed the speed ceiling | Implemented; live brace animation seed active |
 | Wall skim | Run briefly along an authored traversable wall | One Stamina purchase, 420 ms maximum, exit recovery, same-surface lockout, and no world-edge activation | Implemented against authored obstacle identity |
 
 The input layer will buffer only named transitions for short real-time windows
@@ -1879,7 +1882,7 @@ Knot (2/host-reset); capacity and traveller-damage/reset rules are visible and
 host-authoritative. Host listens on UDP `24872`; Join targets
 `127.0.0.1` or `--join-address=IP`. Compatibility, bounded input, stable
 two-character actors, 60 Hz movement snapshots and bounded combat presentation
-are live. HELLO, Practice Bell, Champion Loom, Spell Loom and training-target state are
+are live. HELLO, Practice Bell, Momentum Chime, Champion Loom, Spell Loom and training-target state are
 host-authorized and shared; guests predict only movement from a bounded input
 history and reconcile to peer-scoped host state. Connected/returning travellers
 appear at the Hearth; everyone can ready there and only the host can begin its
@@ -1892,7 +1895,7 @@ reopening Farflow. A dropped guest can use Join Farflow within 15 seconds to rec
 its exact in-memory actor. The host can safely review connected guests in the
 Ledger and must confirm release at the separate Bell; closing the whole company
 also requires a second Host Farflow press. Affected guests receive the reason,
-and administrative departures cannot reclaim their actor. Protocol 27 / snapshot schema 11 assign and validate
+and administrative departures cannot reclaim their actor. Protocol 28 / snapshot schema 11 assign and validate
 the sealed Charter and replicate authoritative court state; cross-platform
 package proof remains next. See the
 [networking contract](docs/NETWORKING.md).
@@ -1904,11 +1907,11 @@ controller D-pad right cycles the stable participant order. When the company
 returns, the observer is placed at the Hearth, readies through the ordinary
 request path, and can enter the next round. Snapshot schema 11 now travels in a
 bounded compressed wire envelope whose maximum eight-player fixture and live
-three-player journeys fit one ENet MTU; protocol 27 rejects older peers. This
+three-player journeys fit one ENet MTU; protocol 28 rejects older peers. This
 spectator view adds no new information channel, but competitive limited-view
 modes still require host-side per-peer visibility filtering.
 
-The current simulation uses protocol 27, snapshot schema 11 and preference
+The current simulation uses protocol 28, snapshot schema 11 and preference
 schema 8: Space or wheel-up invokes semantic jump, Shift sprints, C or
 wheel-down directly slides/fast-falls, and Plain/Ctrl/Alt layers combine with
 buttons 1–4 into twelve independently configurable spell positions. Alt wins
@@ -1935,6 +1938,13 @@ counter-strafe response. At 60/120 Hz, one-second travel measures
 motion scales from real residual velocity and a small editable heel-plant cue
 explains the few frames where facing opposes momentum. The complete movement
 tuning profile contributes to the Farflow compatibility signature.
+
+Authored launches now retain bounded steering instead of becoming a dead input
+window. Natural launch end or cover impact enters a readable 220 ms brace that
+retains 42% momentum; ordinary movement cannot silently erase it, while a
+buffered V plus direction spends exactly 18 Stamina to tech out at 360 px/s.
+The Momentum Chime teaches and host-validates this loop in the Conservatory, and
+its data-driven brace accent is the first animation/environment overlap seed.
 
 S. Wayne's Pocket Eclipse is the first true non-projectile spell: a 520-unit
 Light beam with a 190 ms readable startup. It stops at authored cover, hits only
@@ -1977,8 +1987,10 @@ reduced effects, geometry alignment and a real two-process Farflow greeting are
 reviewed. The integrated visual rubric passed at 4.57/5 with no category below
 4.0. The measured crisp/slightly slower ordinary-movement candidate is also
 engineering-complete across 60/120 Hz, 50/75/100% zoom and Farflow; hands-on A/B
-remains final tuning authority. The explicit movement/spell transition matrix is
-now the active slice.
+remains final tuning authority. The explicit movement/spell transition matrix
+and positive-Flux cadence foundation are complete; bounded impact agency and
+recovery are now live while authored Conservatory route acceptance remains the
+active movement slice.
 
 Production advances through small vertical slices. Each checkpoint must leave a
 launchable game, focused history, truthful status index, known rollback commit,
@@ -1996,7 +2008,7 @@ tools, accessibility, and compatibility agree.
 | F1 — chemistry storage/safety | Validated material registry, 128 x 128 packed columns, seeded materials/Charge/elevation, immutable worldbone, canonical queue/budgets/hashes, exact reset, read-only preview | Complete |
 | G1 — player configuration | Persisted keyboard remapping, world/aim-relative movement, full/cone POV, exact angle/range, CLI/hotkey controls, deterministic transforms | Complete |
 | G2 — authored Sanctum | Replace the schematic court with the first vast Nexus-to-Conservatory multi-area topology/visual slice, clear routes, landmarks, elevations, responsive ambience, fast-travel context, and original pixel kit | In progress: canonical campus topology/routes/worldbone/elevation/reset/station metadata validate; the live modular source-court, architecture, station and landmark candidate uses the approved runtime kit, but three-district/cutaway/zoom review and final visual acceptance remain |
-| G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: Oh Tipi/S. Wayne candidate bodies, shared lift/shadow, landing cue, eleven walk-up stations, three Farflow Charters and sparring effigy are live; accepted champion art and fallback taunt remain |
+| G3 — body/jump/interaction | Reusable basic skeleton, original compact body-lift/shadow jump, landing/interact/fallback-taunt presentation, reduced-motion parity | In progress: Oh Tipi/S. Wayne candidate bodies, shared lift/shadow, landing cue, twelve walk-up stations, three Farflow Charters and sparring effigy are live; accepted champion art and fallback taunt remain |
 | F2/G4 — systemic Sanctum | Structural/thermal reactions, authored traversal devices, input/controller UI, physics/chemistry practice and reset | Planned |
 | H1 — first ancestry/champion/spells | One approved body plan and character through loadout, unique taunt, dummy/bot, cues, replay, accessibility and platform source gates | Planned |
 | I1/I2 — shared Sanctum | Loopback/ENet, friend presence/join/reconnect, teams, friendly fire/session policy, host practice/travel/moderation/diagnostics | In progress: direct-IP gates, stable authoritative actors, 60 Hz movement/combat/targets, HELLO/Bell/Loom, movement prediction/reconciliation, Hearth start, first bounded round and 15-second exact-actor return pass Windows localhost; moderation and packaged Garuda smoke next |

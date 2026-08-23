@@ -4,7 +4,7 @@ extends RefCounted
 
 # Authoritative values are fixed-point world units, resource milli-units,
 # milliseconds, or scale-1000 ratios. They preserve the proven FLUX grammar.
-const COMPATIBILITY_ID: String = "movement-tuning-v2-crisp-response"
+const COMPATIBILITY_ID: String = "movement-tuning-v3-impact-agency"
 const PLAYER_RADIUS: int = 18_000
 const BASE_SPEED: int = 324_000
 const ACCELERATION: int = 1_980_000
@@ -63,6 +63,13 @@ const LANDING_WALL_KICK_INTENSITY: int = 880
 const LANDING_FAST_FALL_BONUS: int = 180
 const LANDING_AIR_DODGE_INTENSITY: int = 900
 const LANDING_WALL_SKIM_INTENSITY: int = 620
+const IMPACT_INFLUENCE_PER_SECOND: int = 1200
+const IMPACT_RECOVERY_DURATION_MS: int = 220
+const IMPACT_RECOVERY_SPEED_RETENTION: int = 420
+const IMPACT_RECOVERY_DECELERATION: int = 2_400_000
+const IMPACT_RECOVERY_TECH_COST: int = 18_000
+const IMPACT_RECOVERY_TECH_SPEED: int = 360_000
+const IMPACT_RECOVERY_INTENSITY: int = 960
 const SLIDE_COST: int = 22_000
 const SLIDE_ENTRY_SPEED: int = 250_000
 const SLIDE_SPEED: int = 720_000
@@ -122,6 +129,12 @@ static func compatibility_hash() -> String:
 			LANDING_SLIDE_JUMP_INTENSITY, LANDING_WALL_KICK_INTENSITY,
 			LANDING_FAST_FALL_BONUS, LANDING_AIR_DODGE_INTENSITY,
 			LANDING_WALL_SKIM_INTENSITY,
+		],
+		"impact": [
+			IMPACT_INFLUENCE_PER_SECOND, IMPACT_RECOVERY_DURATION_MS,
+			IMPACT_RECOVERY_SPEED_RETENTION, IMPACT_RECOVERY_DECELERATION,
+			IMPACT_RECOVERY_TECH_COST, IMPACT_RECOVERY_TECH_SPEED,
+			IMPACT_RECOVERY_INTENSITY,
 		],
 		"slide": [
 			SLIDE_COST, SLIDE_ENTRY_SPEED, SLIDE_SPEED, SLIDE_DURATION_MS,

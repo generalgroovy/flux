@@ -8,6 +8,7 @@ const CHAMPION_PATH: String = "res://content/champions/foundation_champions_v1.j
 func run() -> int:
 	_test_repository_catalog()
 	_test_affinity_ceiling_and_treevor_exception()
+	_test_unique_affinity_pairs()
 	_test_profiles_are_authoritative()
 	for tick_rate: int in [60, 120]:
 		_test_profiles_execute_at_rate(tick_rate)
@@ -57,6 +58,24 @@ func _test_affinity_ceiling_and_treevor_exception() -> void:
 	treevor["affinities"] = ["earth", "wind", "fire"]
 	(treevor_candidate.data["champions"] as Array).append(treevor)
 	check(treevor_candidate.validate(abilities), "Treevor may keep three first-eight affinities: %s" % treevor_candidate.last_error)
+
+
+func _test_unique_affinity_pairs() -> void:
+	var abilities := AbilityCatalog.new()
+	check(abilities.load_from_file(ABILITY_PATH), "ability catalog loads for pair uniqueness")
+	var source := ChampionCatalog.new()
+	check(source.load_from_file(CHAMPION_PATH, abilities), "champion source loads for pair uniqueness")
+
+	var candidate := ChampionCatalog.new()
+	candidate.data = source.data.duplicate(true)
+	var duplicate_pair: Dictionary = (candidate.data["champions"][0] as Dictionary).duplicate(true)
+	duplicate_pair["id"] = "duplicate_pair_fixture"
+	duplicate_pair["wire_id"] = 98
+	duplicate_pair["display_name"] = "Duplicate Pair Fixture"
+	duplicate_pair["affinities"] = ["ice", "water"]
+	(candidate.data["champions"] as Array).append(duplicate_pair)
+	check(not candidate.validate(abilities), "reverse-order duplicate affinity pair fails closed")
+	check(candidate.last_error.contains("combinations must be unique"), "duplicate pair failure explains the invariant")
 
 
 func _test_profiles_are_authoritative() -> void:

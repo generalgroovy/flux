@@ -1,12 +1,21 @@
 # Champion affinity contract — first-eight phase
 
-Status: **design-locked migration target**. The two currently executable champions also obey this rule in `foundation_champions_v1.json`.
+Status: **design-locked migration target**. The currently executable champions also obey this rule in `foundation_champions_v1.json`.
 
-During the first-eight chemistry phase, ordinary champions own exactly **two** element affinities and every ordinary champion must own a **unique unordered affinity pair**. **Treevor the Mason** is the sole deliberate exception and may own three affinities.
+Every champion receives exactly **3 innate affinity points** during the first-eight phase. Affinity points define how strongly the champion is aligned to an element without creating a hidden elemental damage wheel.
 
-This keeps champion identity focused while allowing the wider loadout/Flux Formula system to create cross-element composition. With eight promoted elements there are 28 possible unordered two-element pairs, which is enough to give every ordinary current roster slot its own elemental identity without adding third affinities.
+Ordinary champions own exactly **two** affinities and distribute the three points as **2 + 1**:
 
-Only the currently promoted element families may be champion affinities during this phase:
+- `2` = primary/dominant affinity;
+- `1` = secondary affinity.
+
+**Treevor the Mason** is the sole current three-affinity exception and distributes the same three-point budget as **1 + 1 + 1** across Earth, Wind and Fire.
+
+No current champion receives `3` points in a single element. The three-point budget is for distribution across affinities, not mono-element specialization.
+
+Ordinary champions must also keep a **unique unordered affinity pair**. With eight promoted elements there are 28 possible unordered two-element pairs, enough for the current roster without duplicate ordinary combinations.
+
+Only the currently promoted element families may receive affinity points during this phase:
 
 `Earth, Fire, Water, Wind, Ice, Charge, Light, Dark`
 
@@ -15,70 +24,94 @@ Only the currently promoted element families may be champion affinities during t
 Machine-readable source:
 [`content/champions/champion_affinities_first_eight_v1.json`](../content/champions/champion_affinities_first_eight_v1.json).
 
-## Roster
+## Strength semantics
 
-| Champion | First-eight affinities | Identity / migration decision |
-| --- | --- | --- |
-| Oh Tipi | **Water · Ice** | Current rider and freeze-route controller; Charge removed from innate affinity but remains available through legal loadouts. |
-| S. Wayne | **Dark · Light** | Eclipse boundary identity; unchanged. |
-| The Red Baron | **Fire · Ice** | Thermal aerial controller; legacy Void removed. |
-| Steezo | **Fire · Charge** | Volatile detonation engineer. |
-| **Treevor the Mason** | **Earth · Wind · Fire** | Sole three-affinity exception; terrain masonry, shaping and combustion liability are all core to the character. |
-| Oll' I | **Earth · Dark** | Heavy structural breaker with predatory/attritional pressure; avoids duplicate Earth/Fire. |
-| Fluup | **Charge · Wind** | Storm bruiser and landing-current converter. |
-| Wa Bidi | **Fire · Wind** | Fast route specialist; changed from duplicate Charge/Wind. |
-| Grace Reava | **Water · Wind** | Fluid aerial duelist. |
-| Nico Lai | **Charge · Light** | Precision shared-device engineer. |
-| Spai Si | **Wind · Dark** | Redirect duelist with deceptive vector control; changed from duplicate Wind/Light. |
-| Leaf the Hidden | **Earth · Wind** | Concealed grove route shaper; changed from duplicate Earth/Water. |
-| Ha Rekt | **Ice · Wind** | Aerial cold-line hunter. |
-| Dr. Apex | **Earth · Light** | Armored support/fortification identity. |
-| Haara | **Water · Light** | Bloom/resource planner; Spirit deferred and duplicate Wind/Light avoided. |
-| Hesus Christo | **Earth · Water** | Renewal vanguard rebuilding damaged routes. |
-| Grimm Bow | **Water · Dark** | Displacement/terrain archer with legacy Void normalized to Dark. |
-| Biggy Bob | **Earth · Fire** | Canonical forge-line masonry breacher. |
-| Jan Wicked | **Ice · Dark** | Black-ice circuit hunter. |
-| Ba Djoh | **Earth · Ice** | Huge permafrost/impact breaker; changed from duplicate Earth/Fire. |
-| Urzh | **Earth · Charge** | Conductive kiln/bulwark identity. |
-| Donnok | **Fire · Water** | Forge-rhythm terrain shaper with Steam interaction; changed from duplicate Earth/Fire. |
-| Djonah Thaan | **Dark · Charge** | Grave-current pursuit controller. |
-| Unnamed Angel | **Wind · Light** | Unapproved placeholder; Spirit deferred. |
+Affinity strength is deliberately bounded and readable.
 
-## Uniqueness rule
+| Strength | Meaning | Current mechanical consequence |
+| ---: | --- | --- |
+| **0** | No innate affinity | No affinity-based build discount for that element. |
+| **1** | Secondary affinity | May claim up to 1 point of an ability's authored `affinity_discount`. |
+| **2** | Primary affinity | May claim up to 2 points of an ability's authored `affinity_discount`. |
 
-For ordinary champions, affinity order does not matter. `Earth + Fire` and `Fire + Earth` are the same pair and cannot be assigned to two different ordinary champions.
-
-The migration catalog therefore validates conceptually against this invariant:
+The effective active-build discount is:
 
 ```text
-for each ordinary champion:
-    affinity_count == 2
-    unordered_pair is unique across ordinary roster
-
-Treevor:
-    affinity_count <= 3
-    canonical target == Earth + Wind + Fire
+effective_discount = min(champion_affinity_strength, ability.affinity_discount)
+effective_active_cost = max(1, authored_points - effective_discount)
 ```
 
-No third affinity should be added merely to distinguish two ordinary champions while unused two-element pairs remain available. A future third-affinity exception requires an explicit schema/design review rather than an ad-hoc roster fix.
+Existing foundation actives currently author `affinity_discount = 1`, so the weighted model **does not silently rebalance the current 13-point foundation loadout**. Primary affinity strength becomes mechanically distinct as later abilities deliberately author a larger affinity-discount ceiling.
+
+Affinity strength does **not** automatically multiply raw damage, status magnitude, reaction damage, reaction radius or reaction duration. Those remain explicit ability/reaction parameters with visible counterplay.
+
+## Roster
+
+| Champion | Weighted affinities | Identity |
+| --- | --- | --- |
+| **Oh Tipi** | **Water 2 · Charge 1** | Strong current/water specialist with secondary conductive alignment. |
+| **S. Wayne** | **Dark 2 · Light 1** | Eclipse tactician leaning toward concealment/attrition while retaining Light boundary play. |
+| **The Red Baron** | **Fire 2 · Ice 1** | Thermal aerial controller with Fire as the dominant pressure element. |
+| **Steezo** | **Charge 2 · Fire 1** | Device/detonation engineer whose electrical machinery dominates the volatile Fire layer. |
+| **Treevor the Mason** | **Earth 1 · Wind 1 · Fire 1** | Sole 1+1+1 exception: masonry, shaping and combustion liability are equally structural to the concept. |
+| **Oll' I** | **Earth 2 · Dark 1** | Heavy structural breaker with secondary predatory attrition. |
+| **Fluup** | **Charge 2 · Wind 1** | Storm bruiser centered on stored electrical force. |
+| **Wa Bidi** | **Wind 2 · Fire 1** | Fast route specialist whose movement/vector identity dominates combustion. |
+| **Grace Reava** | **Wind 2 · Water 1** | Aerial duelist driven by airflow with fluid secondary control. |
+| **Nico Lai** | **Charge 2 · Light 1** | Precision device engineer with Light as optical/support alignment. |
+| **Spai Si** | **Wind 2 · Dark 1** | Redirect duelist with deceptive Dark secondary pressure. |
+| **Leaf the Hidden** | **Earth 2 · Wind 1** | Grove/route shaper anchored in terrain with Wind for concealment and shaping. |
+| **Ha Rekt** | **Ice 2 · Wind 1** | Cold-line hunter with Wind supporting aerial routing. |
+| **Dr. Apex** | **Light 2 · Earth 1** | Support/fortification character dominated by Light protection and recovery identity. |
+| **Haara** | **Light 2 · Water 1** | Bloom/resource planner; Spirit remains deferred. |
+| **Hesus Christo** | **Earth 2 · Water 1** | Renewal vanguard with structure first and Water-assisted rebuilding. |
+| **Grimm Bow** | **Dark 2 · Water 1** | Concealment/attrition archer with Water displacement; legacy Void remains normalized to Dark. |
+| **Biggy Bob** | **Earth 2 · Fire 1** | Forge-line masonry breacher whose structure identity dominates the heat layer. |
+| **Jan Wicked** | **Ice 2 · Dark 1** | Black-ice hunter with Ice as the main control axis. |
+| **Ba Djoh** | **Earth 2 · Ice 1** | Huge permafrost/impact breaker anchored in mass and terrain. |
+| **Urzh** | **Charge 2 · Earth 1** | Conductive bulwark with Charge as the primary systems identity. |
+| **Donnok** | **Fire 2 · Water 1** | Forge-rhythm terrain shaper strongly aligned to heat with Steam-capable Water support. |
+| **Djonah Thaan** | **Dark 2 · Charge 1** | Grave-current pursuit controller dominated by Dark pressure. |
+| **Unnamed Angel** | **Light 2 · Wind 1** | Unapproved placeholder; Spirit remains deferred. |
+
+## Validation invariants
+
+For every current champion:
+
+```text
+sum(affinity_points) == 3
+all affinity point values are positive
+all affinity IDs are known and runtime-enabled
+```
+
+For ordinary champions:
+
+```text
+affinity_count == 2
+point distribution == 2 + 1
+unordered affinity pair is unique across ordinary roster
+```
+
+For Treevor:
+
+```text
+affinity_count == 3
+point distribution == 1 + 1 + 1
+canonical profile == Earth 1 + Wind 1 + Fire 1
+```
+
+The compatibility `affinities` list remains in champion/loadout JSON during migration, but `affinity_points` is the authoritative strength representation. Validators require both representations to contain the same element IDs so they cannot drift.
 
 ## Gameplay intent
 
-Affinities continue to affect **aligned active build cost only**. They do not multiply raw elemental damage and do not grant hidden matchup bonuses.
-
-A champion's pair should communicate both:
-
-1. a strong personal gameplay identity; and
-2. at least one characteristic map-interaction route within the first-eight reaction network.
+The weighted system adds identity without creating matchup multipliers. A primary affinity should mean **deeper access/efficiency in authored content**, while a secondary affinity establishes a meaningful second reaction route.
 
 Examples:
 
-- Biggy Bob's Earth/Fire naturally points toward Magma and structural transformation;
-- Donnok's Fire/Water points toward Steam and thermal terrain control;
-- Fluup's Charge/Wind points toward Ion Storm and movement-pressure lanes;
-- Ha Rekt's Ice/Wind points toward Hailstream and low-friction aerial routes;
-- S. Wayne's Dark/Light points toward Penumbra and information boundaries.
+- Oh Tipi's **Water 2 + Charge 1** emphasizes Water abilities while retaining Conductive Flood synergy;
+- S. Wayne's **Dark 2 + Light 1** emphasizes concealment/attrition while preserving Penumbra boundary play;
+- Donnok's **Fire 2 + Water 1** points naturally toward Steam and thermal terrain control;
+- Fluup's **Charge 2 + Wind 1** points toward electrical networks and Ion Storm pressure;
+- Ha Rekt's **Ice 2 + Wind 1** emphasizes Freeze/Black Ice control with Hailstream and aerial support.
 
-The wider reaction network still comes from loadout choice, teammates and manipulating existing map states rather than giving each champion access only to their affinity pair.
-
-Treevor keeps three because his character concept is specifically the intersection of **Earth structure**, **Wind shaping**, and **Fire liability/transformation**. The exception must not become precedent for later champions without deliberate review.
+The wider reaction network still comes from loadout choice, teammates and manipulating existing map states rather than giving each champion exclusive ownership of their affinity reactions.

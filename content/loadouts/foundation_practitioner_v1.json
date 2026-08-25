@@ -3,6 +3,7 @@
   "id": "foundation-practitioner-loadout-v1",
   "champion_id": "foundation-practitioner",
   "affinities": ["charge", "light"],
+  "affinity_points": {"charge": 2, "light": 1},
   "active_budget": 13,
   "slots": {
     "passive": "foundation-focus",

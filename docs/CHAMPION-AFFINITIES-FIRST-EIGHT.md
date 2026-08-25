@@ -21,8 +21,12 @@ Only the currently promoted element families may receive affinity points during 
 
 `Spirit`, `Chaos`, `Gravity`, and `Time` remain runtime-gated until the first-eight fundamental chemistry acceptance gate. Existing historical labels using those families are migration inputs rather than current affinity truth. Legacy `Void` is not a thirteenth family.
 
-Machine-readable source:
-[`content/champions/champion_affinities_first_eight_v1.json`](../content/champions/champion_affinities_first_eight_v1.json).
+Sources and rollout contracts:
+
+- machine-readable roster: [`content/champions/champion_affinities_first_eight_v1.json`](../content/champions/champion_affinities_first_eight_v1.json);
+- implementation order and acceptance: [`CHAMPION-AFFINITY-IMPLEMENTATION-PLAN.md`](CHAMPION-AFFINITY-IMPLEMENTATION-PLAN.md);
+- identity compatibility migrations: [`content/champions/champion_identity_migrations_v1.json`](../content/champions/champion_identity_migrations_v1.json);
+- chemistry implementation: [`ELEMENT-REACTIONS-IMPLEMENTATION-PLAN.md`](ELEMENT-REACTIONS-IMPLEMENTATION-PLAN.md).
 
 ## Strength semantics
 
@@ -58,7 +62,7 @@ Affinity strength does **not** automatically multiply raw damage, status magnitu
 | **Fluup** | **Wind 2 · Charge 1** | Storm bruiser centered on airflow, pressure and movement, with Charge as electrical support. |
 | **Wa Bidi** | **Wind 2 · Fire 1** | Fast route specialist whose movement/vector identity dominates combustion. |
 | **Grace Reava** | **Wind 2 · Water 1** | Aerial duelist driven by airflow with fluid secondary control. |
-| **Waka Aren Si** | **Charge 2 · Light 1** | Precision device engineer with Light as optical/support alignment; technical migration key remains `nico_lai` for now. |
+| **Waka Aren Si** | **Charge 2 · Light 1** | Precision device engineer with Light as optical/support alignment; technical migration key remains `nico_lai` until the explicit compatibility slice. |
 | **Spai Si** | **Wind 2 · Dark 1** | Redirect duelist with deceptive Dark secondary pressure. |
 | **Leaf the Hidden** | **Earth 2 · Wind 1** | Grove/route shaper anchored in terrain with Wind for concealment and shaping. |
 | **Ha Rekt** | **Ice 2 · Wind 1** | Cold-line hunter with Wind supporting aerial routing. |
@@ -102,6 +106,8 @@ canonical profile == Earth 1 + Wind 1 + Fire 1
 
 The compatibility `affinities` list remains in champion/loadout JSON during migration, but `affinity_points` is the authoritative strength representation. Validators require both representations to contain the same element IDs so they cannot drift.
 
+Waka Aren Si is the canonical player-facing name. The technical key `nico_lai` is a temporary compatibility detail and must be migrated only through the explicit versioned identity migration contract; old saves/replays must resolve through a documented adapter or fail clearly rather than silently selecting another character.
+
 ## Gameplay intent
 
 The weighted system adds identity without creating matchup multipliers. A primary affinity should mean **deeper access/efficiency in authored content**, while a secondary affinity establishes a meaningful second reaction route.
@@ -112,6 +118,7 @@ Examples:
 - S. Wayne's **Dark 2 + Light 1** emphasizes concealment/attrition while preserving Penumbra boundary play;
 - Donnok's **Fire 2 + Water 1** points naturally toward Steam and thermal terrain control;
 - Fluup's **Wind 2 + Charge 1** emphasizes vector/movement control while retaining Ion Storm and electrical landing interactions;
+- Waka Aren Si's **Charge 2 + Light 1** emphasizes device/conductor play with optical support;
 - Ha Rekt's **Ice 2 + Wind 1** emphasizes Freeze/Black Ice control with Hailstream and aerial support.
 
 The wider reaction network still comes from loadout choice, teammates and manipulating existing map states rather than giving each champion exclusive ownership of their affinity reactions.

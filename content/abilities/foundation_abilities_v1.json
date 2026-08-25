@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "foundation-abilities-v1",
-  "affinity_rule": "aligned_active_cost_discount_only",
+  "affinity_rule": "aligned_active_cost_discount_capped_by_affinity_strength",
   "elements": [
     {"id": "earth", "wire_id": 1, "runtime_enabled": true, "identity": "mass structures growth fracture"},
     {"id": "fire", "wire_id": 2, "runtime_enabled": true, "identity": "heat ignition smoke pressure"},

@@ -59,6 +59,7 @@ func validate(abilities: AbilityCatalog) -> bool:
 		return _fail("unsupported champion catalog schema")
 	if String(data.get("id", "")).is_empty():
 		return _fail("champion catalog id is required")
+	var affinity_pair_owners: Dictionary = {}
 	for value: Variant in data.get("champions", []):
 		if not value is Dictionary:
 			return _fail("every champion must be an object")
@@ -89,6 +90,13 @@ func validate(abilities: AbilityCatalog) -> bool:
 			if not bool((abilities.elements_by_id[affinity] as Dictionary).get("runtime_enabled", false)):
 				return _fail("champion affinity is not runtime-enabled: %s" % affinity)
 			affinity_set[affinity] = true
+		if affinities.size() == 2:
+			var affinity_pair: Array[String] = [String(affinities[0]), String(affinities[1])]
+			affinity_pair.sort()
+			var affinity_pair_key := "%s+%s" % [affinity_pair[0], affinity_pair[1]]
+			if affinity_pair_owners.has(affinity_pair_key):
+				return _fail("two-affinity combinations must be unique: %s conflicts with %s" % [champion_id, String(affinity_pair_owners[affinity_pair_key])])
+			affinity_pair_owners[affinity_pair_key] = champion_id
 		var stats: Dictionary = champion.get("stats", {})
 		for stat_name: String in STAT_BOUNDS:
 			if not stats.has(stat_name):

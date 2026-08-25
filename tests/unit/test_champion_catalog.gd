@@ -152,9 +152,7 @@ func _test_invalid_profiles_fail_closed() -> void:
 		func(data: Dictionary) -> void: (data["champions"][0] as Dictionary)["affinities"] = ["water"],
 		func(data: Dictionary) -> void: (data["champions"][0] as Dictionary)["affinities"] = ["water", "charge", "ice"],
 		func(data: Dictionary) -> void: ((data["champions"][0] as Dictionary)["affinity_points"] as Dictionary)["water"] = 3,
-		func(data: Dictionary) -> void:
-			(data["champions"][0] as Dictionary)["affinities"] = ["water", "spirit"]
-			(data["champions"][0] as Dictionary)["affinity_points"] = {"water": 2, "spirit": 1},
+		func(data: Dictionary) -> void: (data["champions"][0] as Dictionary)["affinities"] = ["water", "spirit"],
 		func(data: Dictionary) -> void: ((data["champions"][0] as Dictionary)["stats"] as Dictionary)["movement_speed_ratio"] = 5000,
 		func(data: Dictionary) -> void: ((data["champions"][0] as Dictionary)["foundation_kit"] as Dictionary)["primary"] = "missing",
 	]:

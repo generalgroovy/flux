@@ -4,6 +4,7 @@ extends RefCounted
 
 const SUPPORTED_SCHEMA_VERSION: int = 1
 const TREEVOR_CHAMPION_ID: String = "treevor_mason"
+const AFFINITY_POINT_BUDGET: int = 3
 const SUPPORTED_ANCESTRIES: Array[String] = [
 	"human", "dwarf", "gnome", "hobbit", "elf", "orc", "troll", "minotaur",
 	"seakin", "wyrmborn", "stoneborn", "treefolk", "sylph", "undead", "goblin",
@@ -78,6 +79,7 @@ func validate(abilities: AbilityCatalog) -> bool:
 			return _fail("champion size is unsupported: %s" % champion_id)
 		if String(champion.get("playstyle", "")).is_empty():
 			return _fail("champion needs a concise playstyle: %s" % champion_id)
+
 		var affinities: Array = champion.get("affinities", [])
 		var max_affinities := 3 if champion_id == TREEVOR_CHAMPION_ID else 2
 		if affinities.size() < 2 or affinities.size() > max_affinities:
@@ -90,6 +92,24 @@ func validate(abilities: AbilityCatalog) -> bool:
 			if not bool((abilities.elements_by_id[affinity] as Dictionary).get("runtime_enabled", false)):
 				return _fail("champion affinity is not runtime-enabled: %s" % affinity)
 			affinity_set[affinity] = true
+
+		var affinity_points: Dictionary = champion.get("affinity_points", {})
+		if affinity_points.size() != affinities.size():
+			return _fail("affinity_points must match champion affinities: %s" % champion_id)
+		var affinity_point_total := 0
+		for affinity: String in affinity_set:
+			if not affinity_points.has(affinity):
+				return _fail("affinity_points must include every champion affinity: %s/%s" % [champion_id, affinity])
+			var strength := int(affinity_points[affinity])
+			if strength < 1 or strength > 2:
+				return _fail("affinity strength must be 1 or 2: %s/%s" % [champion_id, affinity])
+			affinity_point_total += strength
+		for point_key: Variant in affinity_points.keys():
+			if not affinity_set.has(String(point_key)):
+				return _fail("affinity_points cannot contain undeclared affinity: %s/%s" % [champion_id, String(point_key)])
+		if affinity_point_total != AFFINITY_POINT_BUDGET:
+			return _fail("champion affinity points must total %d: %s" % [AFFINITY_POINT_BUDGET, champion_id])
+
 		if affinities.size() == 2:
 			var affinity_pair: Array[String] = [String(affinities[0]), String(affinities[1])]
 			affinity_pair.sort()
@@ -97,6 +117,7 @@ func validate(abilities: AbilityCatalog) -> bool:
 			if affinity_pair_owners.has(affinity_pair_key):
 				return _fail("two-affinity combinations must be unique: %s conflicts with %s" % [champion_id, String(affinity_pair_owners[affinity_pair_key])])
 			affinity_pair_owners[affinity_pair_key] = champion_id
+
 		var stats: Dictionary = champion.get("stats", {})
 		for stat_name: String in STAT_BOUNDS:
 			if not stats.has(stat_name):
@@ -128,6 +149,14 @@ func validate(abilities: AbilityCatalog) -> bool:
 
 func champion(champion_id: String) -> Dictionary:
 	return champions_by_id.get(champion_id, {})
+
+
+func affinity_strength(champion_id: String, element_id: String) -> int:
+	var champion_data: Dictionary = champion(champion_id)
+	if champion_data.is_empty():
+		return 0
+	var affinity_points: Dictionary = champion_data.get("affinity_points", {})
+	return int(affinity_points.get(element_id, 0))
 
 
 func champion_id_from_wire(wire_id: int) -> String:

@@ -3,6 +3,7 @@ extends RefCounted
 
 
 const SUPPORTED_SCHEMA_VERSION: int = 1
+const TREEVOR_CHAMPION_ID: String = "treevor_mason"
 const SUPPORTED_ANCESTRIES: Array[String] = [
 	"human", "dwarf", "gnome", "hobbit", "elf", "orc", "troll", "minotaur",
 	"seakin", "wyrmborn", "stoneborn", "treefolk", "sylph", "undead", "goblin",
@@ -77,8 +78,9 @@ func validate(abilities: AbilityCatalog) -> bool:
 		if String(champion.get("playstyle", "")).is_empty():
 			return _fail("champion needs a concise playstyle: %s" % champion_id)
 		var affinities: Array = champion.get("affinities", [])
-		if affinities.size() < 2 or affinities.size() > 3:
-			return _fail("champion requires two or three affinities: %s" % champion_id)
+		var max_affinities := 3 if champion_id == TREEVOR_CHAMPION_ID else 2
+		if affinities.size() < 2 or affinities.size() > max_affinities:
+			return _fail("champion requires two affinities; Treevor may have three: %s" % champion_id)
 		var affinity_set: Dictionary = {}
 		for affinity_value: Variant in affinities:
 			var affinity := String(affinity_value)

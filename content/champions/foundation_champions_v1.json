@@ -9,7 +9,7 @@
       "display_name": "Oh Tipi",
       "ancestry": "seakin",
       "size": "size_3_medium",
-      "affinities": ["water", "ice", "charge"],
+      "affinities": ["water", "ice"],
       "playstyle": "Steady current keeper with forgiving reserves and deliberate footwork.",
       "stats": {
         "health_maximum": 108000,

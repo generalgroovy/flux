@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "id": "champion-affinities-first-eight-v1",
+  "status": "design_locked_migration_target",
+  "fundamental_elements": ["earth", "fire", "water", "wind", "ice", "charge", "light", "dark"],
+  "deferred_elements": ["spirit", "chaos", "gravity", "time"],
+  "default_affinity_count": 2,
+  "default_max_affinities": 2,
+  "exceptions": {
+    "treevor_mason": {
+      "max_affinities": 3,
+      "reason": "Treevor is the deliberate three-element terrain-mason exception."
+    }
+  },
+  "champions": [
+    {"id":"oh_tipi","display_name":"Oh Tipi","affinities":["water","ice"],"migration_note":"Charge removed from champion affinity; Charge remains available through loadout/formula content where legal."},
+    {"id":"s_wayne","display_name":"S. Wayne","affinities":["dark","light"]},
+    {"id":"red_baron","display_name":"The Red Baron","affinities":["fire","ice"],"migration_note":"Legacy Void affinity removed; Fire/Ice preserves the authored thermal/air-control identity without resolving Void as a thirteenth family."},
+    {"id":"steezo","display_name":"Steezo","affinities":["fire","charge"]},
+    {"id":"treevor_mason","display_name":"Treevor the Mason","affinities":["earth","wind","fire"],"exception":true},
+    {"id":"oll_i","display_name":"Oll' I","affinities":["earth","fire"]},
+    {"id":"fluup","display_name":"Fluup","affinities":["charge","wind"]},
+    {"id":"wa_bidi","display_name":"Wa Bidi","affinities":["charge","wind"]},
+    {"id":"grace_reava","display_name":"Grace Reava","affinities":["wind","water"]},
+    {"id":"nico_lai","display_name":"Nico Lai","affinities":["charge","light"]},
+    {"id":"spai_si","display_name":"Spai Si","affinities":["wind","light"]},
+    {"id":"leaf_hidden","display_name":"Leaf the Hidden","affinities":["water","earth"]},
+    {"id":"ha_rekt","display_name":"Ha Rekt","affinities":["ice","wind"]},
+    {"id":"dr_apex","display_name":"Dr. Apex","affinities":["earth","light"]},
+    {"id":"haara","display_name":"Haara","affinities":["light","wind"],"migration_note":"Spirit remains deferred until first-eight fundamentals pass."},
+    {"id":"hesus_christo","display_name":"Hesus Christo","affinities":["earth","water"]},
+    {"id":"grimm_bow","display_name":"Grimm Bow","affinities":["dark","earth"],"migration_note":"Legacy Void is normalized to the existing Dark family for this migration target; Water is removed to preserve the two-affinity cap."},
+    {"id":"biggy_bob","display_name":"Biggy Bob","affinities":["earth","fire"]},
+    {"id":"jan_wicked","display_name":"Jan Wicked","affinities":["ice","dark"]},
+    {"id":"ba_djoh","display_name":"Ba Djoh","affinities":["earth","fire"]},
+    {"id":"urzh","display_name":"Urzh","affinities":["earth","charge"]},
+    {"id":"donnok","display_name":"Donnok","affinities":["earth","fire"]},
+    {"id":"djonah_thaan","display_name":"Djonah Thaan","affinities":["dark","charge"]},
+    {"id":"unnamed_angel","display_name":"Unnamed Angel","affinities":["wind","light"],"migration_note":"Unapproved placeholder remains non-selectable; Spirit is deferred."}
+  ]
+}

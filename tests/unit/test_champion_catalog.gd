@@ -7,6 +7,7 @@ const CHAMPION_PATH: String = "res://content/champions/foundation_champions_v1.j
 
 func run() -> int:
 	_test_repository_catalog()
+	_test_affinity_ceiling_and_treevor_exception()
 	_test_profiles_are_authoritative()
 	for tick_rate: int in [60, 120]:
 		_test_profiles_execute_at_rate(tick_rate)
@@ -30,7 +31,32 @@ func _test_repository_catalog() -> void:
 	equal(catalog.next_champion_id("s_wayne"), "oh_tipi", "champion cycle wraps")
 	equal(String(catalog.champion("oh_tipi").get("ancestry")), "seakin", "Oh Tipi is a Seakin")
 	equal(String(catalog.champion("s_wayne").get("ancestry")), "hobbit", "S. Wayne is a Hobbit")
-	equal((catalog.champion("s_wayne").get("affinities", []) as Array).size(), 2, "S. Wayne keeps two affinities")
+	equal(catalog.champion("oh_tipi").get("affinities", []), ["water", "ice"], "Oh Tipi is capped to Water/Ice")
+	equal(catalog.champion("s_wayne").get("affinities", []), ["dark", "light"], "S. Wayne keeps Dark/Light")
+
+
+func _test_affinity_ceiling_and_treevor_exception() -> void:
+	var abilities := AbilityCatalog.new()
+	check(abilities.load_from_file(ABILITY_PATH), "ability catalog loads for affinity ceiling")
+	var source := ChampionCatalog.new()
+	check(source.load_from_file(CHAMPION_PATH, abilities), "champion source loads for affinity ceiling")
+
+	var ordinary := ChampionCatalog.new()
+	ordinary.data = source.data.duplicate(true)
+	(ordinary.data["champions"][0] as Dictionary)["affinities"] = ["water", "ice", "charge"]
+	check(not ordinary.validate(abilities), "ordinary champion cannot keep three affinities")
+
+	var treevor_candidate := ChampionCatalog.new()
+	treevor_candidate.data = source.data.duplicate(true)
+	var treevor: Dictionary = (treevor_candidate.data["champions"][0] as Dictionary).duplicate(true)
+	treevor["id"] = ChampionCatalog.TREEVOR_CHAMPION_ID
+	treevor["wire_id"] = 99
+	treevor["display_name"] = "Treevor the Mason"
+	treevor["ancestry"] = "treefolk"
+	treevor["size"] = "size_4_large"
+	treevor["affinities"] = ["earth", "wind", "fire"]
+	(treevor_candidate.data["champions"] as Array).append(treevor)
+	check(treevor_candidate.validate(abilities), "Treevor may keep three first-eight affinities: %s" % treevor_candidate.last_error)
 
 
 func _test_profiles_are_authoritative() -> void:
@@ -91,6 +117,8 @@ func _test_invalid_profiles_fail_closed() -> void:
 		func(data: Dictionary) -> void: data["schema_version"] = 99,
 		func(data: Dictionary) -> void: (data["champions"][0] as Dictionary)["wire_id"] = 2,
 		func(data: Dictionary) -> void: (data["champions"][0] as Dictionary)["affinities"] = ["water"],
+		func(data: Dictionary) -> void: (data["champions"][0] as Dictionary)["affinities"] = ["water", "ice", "charge"],
+		func(data: Dictionary) -> void: (data["champions"][0] as Dictionary)["affinities"] = ["water", "spirit"],
 		func(data: Dictionary) -> void: ((data["champions"][0] as Dictionary)["stats"] as Dictionary)["movement_speed_ratio"] = 5000,
 		func(data: Dictionary) -> void: ((data["champions"][0] as Dictionary)["foundation_kit"] as Dictionary)["primary"] = "missing",
 	]:

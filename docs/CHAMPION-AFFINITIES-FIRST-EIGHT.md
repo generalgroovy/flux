@@ -55,10 +55,10 @@ Affinity strength does **not** automatically multiply raw damage, status magnitu
 | **Steezo** | **Charge 2 · Fire 1** | Device/detonation engineer whose electrical machinery dominates the volatile Fire layer. |
 | **Treevor the Mason** | **Earth 1 · Wind 1 · Fire 1** | Sole 1+1+1 exception: masonry, shaping and combustion liability are equally structural to the concept. |
 | **Oll' I** | **Earth 2 · Dark 1** | Heavy structural breaker with secondary predatory attrition. |
-| **Fluup** | **Charge 2 · Wind 1** | Storm bruiser centered on stored electrical force. |
+| **Fluup** | **Wind 2 · Charge 1** | Storm bruiser centered on airflow, pressure and movement, with Charge as electrical support. |
 | **Wa Bidi** | **Wind 2 · Fire 1** | Fast route specialist whose movement/vector identity dominates combustion. |
 | **Grace Reava** | **Wind 2 · Water 1** | Aerial duelist driven by airflow with fluid secondary control. |
-| **Nico Lai** | **Charge 2 · Light 1** | Precision device engineer with Light as optical/support alignment. |
+| **Waka Aren Si** | **Charge 2 · Light 1** | Precision device engineer with Light as optical/support alignment; technical migration key remains `nico_lai` for now. |
 | **Spai Si** | **Wind 2 · Dark 1** | Redirect duelist with deceptive Dark secondary pressure. |
 | **Leaf the Hidden** | **Earth 2 · Wind 1** | Grove/route shaper anchored in terrain with Wind for concealment and shaping. |
 | **Ha Rekt** | **Ice 2 · Wind 1** | Cold-line hunter with Wind supporting aerial routing. |
@@ -111,7 +111,7 @@ Examples:
 - Oh Tipi's **Water 2 + Charge 1** emphasizes Water abilities while retaining Conductive Flood synergy;
 - S. Wayne's **Dark 2 + Light 1** emphasizes concealment/attrition while preserving Penumbra boundary play;
 - Donnok's **Fire 2 + Water 1** points naturally toward Steam and thermal terrain control;
-- Fluup's **Charge 2 + Wind 1** points toward electrical networks and Ion Storm pressure;
+- Fluup's **Wind 2 + Charge 1** emphasizes vector/movement control while retaining Ion Storm and electrical landing interactions;
 - Ha Rekt's **Ice 2 + Wind 1** emphasizes Freeze/Black Ice control with Hailstream and aerial support.
 
 The wider reaction network still comes from loadout choice, teammates and manipulating existing map states rather than giving each champion exclusive ownership of their affinity reactions.

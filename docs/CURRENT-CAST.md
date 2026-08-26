@@ -10,35 +10,39 @@ foci are excluded from current and future champion recipes. Physical tools and
 weapons may support silhouette or animation only when magic still visibly
 starts at the hands.
 
-| # | Champion | Ancestry | Size | Affinities | Current availability |
+| # | Champion | Ancestry | Size | Weighted affinities | Current availability |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | Oh Tipi | Seakin | Medium | Water · Ice · Charge | Playable foundation champion |
-| 2 | S. Wayne | Hobbit | Small | Dark · Light | Playable foundation champion |
-| 3 | The Red Baron | Undead | Medium | Chaos/Void migration · Fire · Ice | Planned; kit not implemented |
-| 4 | Steezo | Goblin | Small | Fire · Charge · Light | Planned; kit not implemented |
-| 5 | Treevor the Mason | Treefolk | Large | Earth · Wind · Fire | Planned; kit not implemented |
-| 6 | Oll' I | Werewolf | Large | Earth · Fire · Light | Planned; kit not implemented |
-| 7 | Fluup | Orc | Large | Charge · Wind · Ice | Planned; kit not implemented |
-| 8 | Wa Bidi | Goblin | Small | Charge · Wind · Fire | Planned; kit not implemented |
-| 9 | Grace Reava | Sylph | Small | Wind · Water · Light | Planned; kit not implemented |
-| 10 | Nico Lai | Gnome | Tiny | Charge · Light | Planned; kit not implemented |
-| 11 | Spai Si | Demon | Medium | Wind · Light · Earth | Planned; kit not implemented |
-| 12 | Leaf the Hidden | Treefolk | Medium | Water · Earth · Light | Planned; kit not implemented |
-| 13 | Ha Rekt | Wyrmborn | Large | Ice · Wind · Fire | Planned; kit not implemented |
-| 14 | Dr. Apex | Stoneborn | Large | Earth · Light · Water | Planned; kit not implemented |
-| 15 | Haara | Nymph | Small | Light · Wind · Spirit | Planned; kit not implemented |
-| 16 | Hesus Christo | Elf | Medium | Earth · Water | Planned; kit not implemented |
-| 17 | Grimm Bow | Troll | Huge | Chaos/Void migration · Earth · Water | Planned; kit not implemented |
-| 18 | Biggy Bob | Dwarf | Medium | Earth · Fire · Light | Planned; kit not implemented |
-| 19 | Jan Wicked | Human | Medium | Ice · Dark · Charge | Planned; kit not implemented |
-| 20 | Ba Djoh | Minotaur | Huge | Earth · Fire · Water | Planned; kit not implemented |
-| 21 | Urzh | Stoneborn | Large | Earth · Fire · Charge | Planned; kit not implemented |
-| 22 | Donnok | Dwarf | Medium | Earth · Fire · Water | Planned; kit not implemented |
-| 23 | Djonah Thaan | Vampire | Medium | Dark · Charge · Fire | Planned; kit not implemented |
-| 24 | Unnamed Angel | Angel | Medium | Wind · Light · Spirit | Non-selectable identity placeholder |
+| 1 | Oh Tipi | Seakin | Medium | Water 2 · Charge 1 | Playable foundation champion |
+| 2 | S. Wayne | Hobbit | Small | Dark 2 · Light 1 | Playable foundation champion |
+| 3 | The Red Baron | Undead | Medium | Fire 2 · Ice 1 | Planned; kit not implemented |
+| 4 | Steezo | Goblin | Small | Charge 2 · Fire 1 | Planned; kit not implemented |
+| 5 | Treevor the Mason | Treefolk | Large | Earth 1 · Wind 1 · Fire 1 | Planned three-affinity exception |
+| 6 | Oll' I | Werewolf | Large | Earth 2 · Dark 1 | Planned; kit not implemented |
+| 7 | Fluup | Orc | Large | Wind 2 · Charge 1 | Planned; kit not implemented |
+| 8 | Wa Bidi | Goblin | Small | Wind 2 · Fire 1 | Planned; kit not implemented |
+| 9 | Grace Reava | Sylph | Small | Wind 2 · Water 1 | Planned; kit not implemented |
+| 10 | Waka Aren Si | Gnome | Tiny | Charge 2 · Light 1 | Planned; `nico_lai` remains a compatibility ID only |
+| 11 | Spai Si | Demon | Medium | Wind 2 · Dark 1 | Planned; kit not implemented |
+| 12 | Leaf the Hidden | Treefolk | Medium | Earth 2 · Wind 1 | Planned; kit not implemented |
+| 13 | Ha Rekt | Wyrmborn | Large | Ice 2 · Wind 1 | Planned; kit not implemented |
+| 14 | Dr. Apex | Stoneborn | Large | Light 2 · Earth 1 | Planned; kit not implemented |
+| 15 | Haara | Nymph | Small | Light 2 · Water 1 | Planned; kit not implemented |
+| 16 | Hesus Christo | Elf | Medium | Earth 2 · Water 1 | Planned; kit not implemented |
+| 17 | Grimm Bow | Troll | Huge | Dark 2 · Water 1 | Planned; kit not implemented |
+| 18 | Biggy Bob | Dwarf | Medium | Earth 2 · Fire 1 | Planned; kit not implemented |
+| 19 | Jan Wicked | Human | Medium | Ice 2 · Dark 1 | Planned; kit not implemented |
+| 20 | Ba Djoh | Minotaur | Huge | Earth 2 · Ice 1 | Planned; kit not implemented |
+| 21 | Urzh | Stoneborn | Large | Charge 2 · Earth 1 | Planned; kit not implemented |
+| 22 | Donnok | Dwarf | Medium | Fire 2 · Water 1 | Planned; kit not implemented |
+| 23 | Djonah Thaan | Vampire | Medium | Dark 2 · Charge 1 | Planned; kit not implemented |
+| 24 | Unnamed Angel | Angel | Medium | Light 2 · Wind 1 | Non-selectable identity placeholder |
 
 The board is for silhouette and ancestry coordination, not runtime promotion.
 A champion becomes playable only after its validated data, hands-only action
 atlas, effects, feedback, kit, tests, accessibility review, and host/client
 evidence pass on the same commit.
 
+The weighted element assignments are machine-owned by
+`content/champions/champion_affinities_first_eight_v1.json`. Historical concept
+boards can show superseded names, ancestries, or unweighted affinities; they are
+visual reference only and never override this table or the content catalog.

@@ -3,6 +3,33 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## Consolidation frontier — 2026-08-26
+
+- `origin/main` through `3f79847` is merged into
+  `codex/continuous-overhaul` at merge commit `345d6e9`; the pre-consolidation
+  movement/installer checkpoint is `79085f6`.
+- The imported `legacy/web-prototype/` second runtime is retired from the
+  product tree. Its final standalone checkout was clean and remote-backed at
+  `origin/integration/unify-flux` commit
+  `e13171473baf67b2264479467b650974a4c65290`; the Codex desktop protects that
+  original task-working-directory shell from recursive deletion, so no product
+  code may reference or use it.
+- The root README is now the concise current player/developer front door: one
+  Godot authority, honest install/host limitations, shipped-vs-planned state,
+  controls, full movement and resource contracts, first-eight element matrix,
+  24-character migration roster, ancestries, Wellspring/Farflow architecture,
+  embedded design images, and the exact chemistry playtest sequence.
+- New mainline reference inputs are present: compact Tiny→Huge character boards,
+  neutral/eight-element 32/64 px burst atlases, design-locked 36-pair reaction
+  data, weighted 2+1 first-eight affinities, and the Waka Aren Si display-name
+  compatibility contract.
+- The user-ordered active path is repository authority → plug-and-play
+  lifecycle → cohesive visual runtime → deterministic five-shot patterns →
+  eight configurable elemental bursts → all 36 bounded live reactions →
+  packaged playtest pause.
+- User-owned `node_modules/` and `scripts/firewall.ps1` remain untracked and
+  untouched.
+
 ## Current green frontier — 2026-08-26
 
 - Branch: `codex/continuous-overhaul`.

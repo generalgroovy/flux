@@ -1,100 +1,75 @@
-# FLUX immediate implementation order
+# FLUX 2 implementation path to first-eight playtest
 
-The current frontier uses protocol 29, snapshot schema 11 and preference
-schema 8; commit `5baa530` remains the published pre-movement rollback point.
-V0–V6 pass the integrated engineering visual gate on the current branch; preserve green points and work only in
-complete playable slices with a checkpoint after each accepted stage.
+Current frontier: protocol 29, snapshot 11, preferences 8, Godot 4.7.1,
+`codex/continuous-overhaul`. V0–V6 visual engineering, universal movement,
+positive-Flux combat, two champions, Wellspring, direct-IP Farflow, and the
+one-file Windows bootstrap are green foundations—not permission to claim final
+art, balance, internet accessibility, or chemistry.
 
-| Order | Outcome | Scope | Exit condition |
-| ---: | --- | --- | --- |
-| 0 | Visual overhaul — complete | V0–V6 in `.agent/VISUAL-OVERHAUL.md` are integrated; visual polish continues inside later slices without presentation owning rules. | Passed: reviewed live 720p/1080p standard/accessibility/reduced/pair frames, 4.57/5 mean with minimum 4.0, 50 suites/15,991 assertions and final 120 Hz Farflow journey. |
-| 1 | Crisp readable movement — engineering-complete | The measured 324 px/s candidate tightens acceleration/deceleration/reversal, preserves expressive advanced momentum and adds velocity-scaled animation response. | Passed deterministic distance/stop/reversal fixtures, all 60/120 movement routes, 50/75/100% captures and Farflow; hands-on A/B remains final tuning authority. |
-| 2 | Universal action chaining — engineering-complete | The canonical matrix covers all live movement/control states and spell shapes; recovery never silently blocks unrelated casts and startup is one visible execution commitment. | Passed simultaneous movement/cast, moving startup, recovery chain, startup refusal, physical refusal and own-cooldown fixtures at 60/120 Hz plus Farflow. |
-| 3 | Fast resource/cooldown economy — engineering-complete candidate | All runtime spells pay positive Flux, recovery delay and three cadence tiers are canonical, and action-specific cooldowns replace idle lockouts. | Passed exact exhaustion/no-free-cast/deliberate-recovery fixtures for both champions at 60/120 Hz, live HUD capture and 120 Hz Farflow; hands-on balance remains tuning authority. |
-| 4 | Gameplay/movement completion — active | Bounded launch agency, timed impact recovery and an exact-cost tech are live at the Momentum Chime; complete authored Conservatory routes and tune through direct play while preserving the proven movement/chaining/economy base. | Every movement/recovery choice has deterministic 60/120 evidence, readable live feedback, explicit costs/counterplay and host/client parity. |
-| 5 | Friend-ready Windows lifecycle — next | Produce one safe signed-ready `.exe` experience that installs or atomically updates the pinned game, launches it, preserves logs/settings, and closes cleanly; host/join must work between two ordinary Windows PCs without developer tools. | A clean Windows account completes download-to-play in one safe user action, a second PC joins the matching protocol build, update/rollback/failure paths are recoverable, uninstall is clean, and all artifacts have hashes and provenance. |
-| 6 | Natural animation and environment — seeded | Hands-only cast origin, roll/jump evasion contracts and reusable action aliases are the overlap seed; next add spell animation skeletons and a small Wellspring environment asset kit before broader map work. | Live routes and spells feel natural and readable at every zoom/reduced-effects mode without presentation owning displacement, damage, invulnerability or legality. |
-| 7 | Element chemistry | Promote deterministic bounded material reactions through worldbone safety, reset, replay, replication and readable environmental cues. | Players can deliberately create, read, exploit and counter a live reaction without invalidating critical topology or work budgets. |
-| 8 | Spell expansion with chemistry | Promote complete, distinct catalogs one element at a time and expose every proven spell at the Wellspring regardless of champion. | Each promoted element has four role-distinct runtime spells integrated with live chemistry where declared, and any champion can configure them into the 3x4 weave. |
+## Slice sequence
 
-## Movement tuning contract
+| Slice | Engineering work | Observable exit |
+|---:|---|---|
+| C0 authority | Remove duplicate browser runtime; preserve recovery commit and reusable principles; reconcile README, focused docs, roster names/ancestries/affinities; validate links/assets. | A newcomer finds one runtime, one command set, one state table, and no conflicting current roster truth. |
+| C1 lifecycle | Re-run clean setup/repair/update/installed boot; improve single-screen host/join address feedback; verify safe host/guest close and packaged Farflow. | Friend needs one `.exe`, one host address, and no Godot/Git/admin rights; known NAT/signing limits are visible. |
+| C2 visual runtime | Validate/split the burst reference atlas; add a data-driven burst presenter; reconcile canonical champion display metadata; review characters, elevation/shadows, environment and HUD at 50/75/100%. | Five simultaneous lanes and both champions read instantly in standard/high-contrast/reduced modes without effects changing rules. |
+| C3 burst simulation | Extend ability content with one reusable burst specification; deterministically rotate a normalized aim vector by five fixed offsets; allocate stable left-to-right projectile IDs; bound capacity/events/snapshot representation. | Repeatable 60/120 fixtures produce identical fan ordering, hits, grazes, cover stops, cost, cooldown, and cleanup. |
+| C4 eight spells | Instantiate Earth/Fire/Water/Wind/Ice/Charge/Light/Dark burst entries with stable IDs, positive costs, shared geometry, element presentation, and global Loom availability. | Either champion can weave and cast every first-eight burst; all eight remain mechanically comparable and visually distinct. |
+| C5 reaction catalog | Add a fail-closed runtime catalog loader requiring exactly the 36 unordered-with-repetition pairs, symmetric lookup, unique IDs, lifecycle, counters, bounds, and worldbone policy. | Missing/duplicate/asymmetric/unbounded recipe content fails tests and boot clearly. |
+| C6 exposure/contact | Add fixed-capacity element exposure cells keyed to the material grid; burst impact deposits one bounded source with owner/team/tick/strength; second source resolves one canonical recipe. | Repeated contact is deterministic, rate-bounded, authority-owned, and cannot mutate immutable worldbone. |
+| C7 shared reaction primitives | Implement reusable `surface`, `flow`, `cover`, `field`, `conduction`, `visibility`, `hazard`, `reveal/refraction`, and `fracture` effect families; map all recipes to bounded parameter sets. | Every pair has a live spatial effect and counter even when several recipes share safe physics primitives. |
+| C8 lifecycle/presentation | Formation telegraph, active state, residue/decay, compact label/icon, reduced/high-contrast cues, reset group, replay event, snapshot state and overflow diagnostics. | A player can identify the pair, boundary, danger/benefit, remaining phase, owner, and counter without reading source. |
+| C9 Crucible acceptance | Eight attunement plinths, two-source test basin, recipe codex, reset, route-safety checks, 60/120 full tests, source/import boots, packaged boot, Farflow pair, installer rebuild. | All 36 reactions are deliberately reproducible in-game; the exact green Windows build is ready for user playtest. |
 
-- Start with an 8–12% reduction to ordinary world traversal speed as a measured
-  candidate, not a blind final value. Preserve responsive input by shortening
-  stop/reversal distances rather than adding sluggish interpolation.
-- Walking, sprinting, counter-strafing, jumping, fast-fall, sliding, slide-jump,
-  wavedash, wall contact/jump, vault, superglide, aerial turn/tap-strafe and the
-  context technique remain available where their physical surfaces/states permit.
-- Measure distance per second, stop distance, reversal time, corner control,
-  jump landing accuracy and readability at 50/75/100% zoom at both tick rates.
-- Animation never owns displacement or legality; presentation follows the
-  fixed-tick simulation.
+## Burst contract
 
-## Chaining contract
+```text
+ordered offsets = [-24°, -12°, 0°, +12°, +24°]
+aim = continuous normalized simulation vector
+projectile identity = cast serial + ordered child index
+element = ability content, never client or renderer choice
+```
 
-Create a data-backed transition matrix spanning every movement action and every
-spell shape. A transition may fail only because of:
+The first burst family shares base range, speed class, radius, lifetime, damage
+budget, startup, and fan angles so chemistry—not disguised geometry—creates the
+initial difference. Tuning may later diverge only through explicit authored
+variants with new stable IDs and counterplay.
 
-1. an explicit physical state such as no wall, no ledge, grounded-only or
-   airborne-only;
-2. that action's own cooldown or a clearly declared shared charge;
-3. insufficient Stamina for movement or insufficient Flux for a spell; or
-4. a spell's visible execution commitment, such as an interruptible channel,
-   where the commitment itself is the designed physical action.
+## Chemistry model
 
-There is no hidden global cooldown, generic post-cast paralysis or animation
-lock. Buffer intent across short valid windows, define deterministic precedence
-for simultaneous commands and make every refusal observable. Exhaustively test
-pair transitions and selected long chains at 60/120 Hz, offline and through the
-authoritative host path.
+```text
+element source A + element source B
+  -> canonical symmetric recipe
+  -> formation threshold/telegraph
+  -> one or more bounded shared spatial primitives
+  -> active window with public counter
+  -> residue or deterministic decay/reset
+```
 
-## Resource and cadence contract
+The reaction catalog is authored truth. The runtime compiles recipes into safe
+shared primitives rather than evaluating scripts from data. Hard bounds cover
+area, propagation depth, lifetime, per-tick work, ownership, active reaction
+count, event count, snapshot size, and residue count.
 
-- `Flux` is the spell resource; `Stamina` is the movement resource. Do not
-  reintroduce Flow or show generic Mana as a third synonym in canonical UI.
-- Every damaging or pressure-producing cast has a positive Flux cost, including
-  Rillshot, Eclipse Disc and the shared Arc Primary. Holding a primary must
-  eventually demand a decision rather than provide infinite pressure.
-- Non-offensive utility may still cost Flux when it creates positional or tempo
-  value. Passive observation and ordinary walking do not cost Flux.
-- Prefer short action-specific cooldowns and meaningful costs over long idle
-  lockouts. Establish measured cadence tiers and tune them through encounter
-  fixtures rather than applying one blanket percentage.
-- Affinities may grant a small bounded cost/cadence/handling benefit but never
-  make a cast free, grant automatic elemental damage, or hard-lock other
-  elements.
-- Regeneration timing, combat-delay rules and costs are centralized, validated
-  and visible in the HUD and Spell Loom before balance claims.
+World structure remains three-layered:
 
-## Minimum complete spell catalog
+| Layer | Chemistry permission |
+|---|---|
+| Worldbone | Immutable bounds, connectivity, spawns, objectives, portals, reset machinery |
+| Authored structure | Typed/staged heat, cool, wet, charge, fracture, support, damage and repair |
+| Transient matter | Fixed-capacity liquid/gas/loose solid/field/residue cells with deterministic cleanup |
 
-The canonical element families remain Earth, Fire, Water, Wind, Ice, Charge,
-Light, Dark, Spirit, Chaos, Gravity and Time. Each element is incomplete until
-it owns at least four mechanically distinct, runtime-proven choices:
+## Verification ladder
 
-| Role | Requirement per element |
-| --- | --- |
-| Quick pressure | Aimable low-cost projectile, beam, spray or close expression with positive Flux cost and active counterplay. |
-| Control or defense | Field, ward, displacement, reveal, cleanse, interrupt or bounded protection with clear geometry and expiry. |
-| Movement or utility | Collision-safe repositioning, traversal, support or information tool that cannot bypass topology/visibility authority. |
-| High commitment | Strong signature action with readable startup, interruption/escape route, bounded duration and meaningful cost/cooldown. |
+1. Content/schema tests and exact catalog closure.
+2. Fixed-tick unit fixtures at 60 and 120 Hz.
+3. Simulation integration: cost, cooldown, collision, cover, reset, overflow.
+4. Network serialization and hostile-input refusal.
+5. Source boots at 60/120, then imported-resource boots.
+6. Visual capture at 50/75/100%, high contrast, reduced effects, and multiplayer.
+7. Packaged Windows boot, clean install/repair/update, and 2/4/8 Farflow journeys.
+8. Diff/provenance/docs/memory review, then one reversible commit and push.
 
-This is a 48-spell minimum library, promoted one element-complete vertical slice
-at a time after the visual, movement, chaining and economy gates. Catalog-only
-entries are not selectable. The Spell Loom queries the global runtime-enabled
-catalog, not the current champion kit; any champion may weave any proven spell
-into Plain 1–4, Ctrl+1–4 or Alt+1–4. Character affinities affect bounded
-efficiency/identity only. Preserve stable wire IDs, migrate saved weaves
-explicitly and keep host validation authoritative.
-
-## Checkpoint discipline
-
-For every slice: capture the previous visual/runtime baseline; define observable
-acceptance; implement the smallest complete live result; run focused and full
-deterministic tests, import and 60/120 boots, relevant multi-process Farflow,
-visual/accessibility captures and an interactive smoke; inspect diff and packet
-budgets; update README, memory, backlog and worklog; then begin the smallest safe
-piece of the next ordered slice before committing. Re-run affected checks and
-push one reversible green checkpoint containing accepted behavior plus an
-honestly labelled successor seed. Never claim charm, crispness, fun, balance,
-remote play or platform parity without direct evidence.
+Begin the next slice immediately after a green checkpoint, but never mix an
+unproven half-system into the last known playable commit. Pause for the user
+only after C9 or a real permission/product/technical blocker.

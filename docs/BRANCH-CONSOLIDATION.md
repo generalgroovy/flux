@@ -1,57 +1,60 @@
-# Repository and branch consolidation
+# Repository consolidation
 
-## Canonical Godot spine
+## Product authority
 
-The 2026-08-09 unification uses
-`origin/agent/visual-assets-production-v1` at `1e8c531` as the canonical Godot
-tree. It contains the complete `origin/main` foundation, skeleton-animation
-library, deterministic visual generators, runtime registries, Wellspring
-catalogs, champion candidates and their validators. A clean baseline passed
-12,070 assertions plus 60 and 120 Hz launches on Godot 4.7.1.
+`C:\Users\sende\Projects\flux` is the only authoritative FLUX 2 working
+tree. It is a Godot 4 project; `project.godot`, `src/`, `content/`, `assets/`,
+`packaging/`, and `scripts/` define the shipped product.
 
-All fetched FLUX2 histories remain reachable:
+The canonical integration branch is `codex/continuous-overhaul`. It contains
+the current Godot runtime, deterministic content validation, visual production
+assets, movement/combat slices, Farflow networking, and the Windows bootstrap.
+`main` remains merged into this branch rather than maintained as a competing
+local product state.
 
-- `origin/main` at `863bf89`, the Aider foundation, local-workflow, architecture
-  and initial character-reference branches are ancestors of the selected spine;
-- `origin/agent/skeleton-animation-foundation-v1` at `b7aa7ab` is a merge-only
-  tip whose tree adds nothing beyond the selected spine;
-- `origin/agent/fix-rendered-sprite-reference-images` at `a6ca114` contains
-  earlier concept-only reference boards superseded by the versioned production
-  catalogs and the current user-approved style target;
-- `origin/agent/odysseus-20260801-033835-48571` at `a6060ed` contains obsolete
-  placeholder agent files and an empty command log.
+## Retired browser lineage
 
-The final three tips are joined as history while retaining the validated current
-tree. Their files are still recoverable from Git and the verified all-ref bundle;
-none was deleted, rebased or force-pushed.
+The former browser-only checkout at `C:\Users\sende\Documents\FLUX` ended at
+commit `e13171473baf67b2264479467b650974a4c65290` on
+`origin/integration/unify-flux`. Before retirement it was verified clean and
+exactly synchronized with that remote branch. Its full source and history are
+therefore recoverable from <https://github.com/generalgroovy/flux.git>.
 
-## Import hygiene
+The imported `legacy/web-prototype/` copy is also retired. It was never loaded
+or packaged by Godot and keeping a second runtime in the product tree made
+installation, documentation, testing, and ownership needlessly ambiguous.
 
-Godot 4.7.1 generated twelve stable script UID sidecars that were missing from
-the visual-production branch. They are tracked so a fresh import does not dirty
-the canonical checkout. `.godot/` remains an ignored machine-local cache.
+No browser runtime code was promoted. The durable design lessons already have
+Godot-native implementations or explicit contracts:
 
-## Cross-repository layout
+| Retained lesson | FLUX 2 owner |
+|---|---|
+| Compact virtual-pixel presentation | `src/presentation/`, visual tokens |
+| Separate world pivot, feet, shadow, and airborne height | champion presenter and movement presentation |
+| Anticipation, travel, impact, and expiry phases | spell presentation contracts |
+| Shape and ownership remain readable without hue | projectile and effect presenters |
+| Rendering never owns simulation rules | fixed-tick systems under `src/simulation/` |
 
-The distinct legacy JavaScript FLUX history is preserved, consolidated, and
-imported with full ancestry beneath `legacy/web-prototype/` at legacy tip
-`1d0c807`. Godot remains the authoritative root described by
-`SPECIFICATION.md`; legacy presentation and simulation code does not become
-canonical merely because its history is retained.
+## Branch policy
 
-Every fetched legacy branch tip is an ancestor of that imported tip. The four
-newer pixel-prototype commits were merged normally. Four superseded archival
-tips were joined with the current legacy tree retained; the rationale and exact
-dependency-limited test evidence live in
-`legacy/web-prototype/docs/BRANCH-CONSOLIDATION.md`.
+- New work lands as small playable commits on `codex/continuous-overhaul`.
+- `origin/main` is merged normally when it advances; no history is rewritten.
+- Compatibility IDs are migration adapters, not permission to revive legacy
+  product language or a second runtime.
+- Generated imports, build output, caches, local dependencies, credentials, and
+  machine-specific firewall rules are not product source.
+- A slice may be pushed only after its relevant deterministic tests, source
+  boot, and imported-resource boot pass.
 
-The legacy gate currently has 149 passing tests and three dependency-blocked
-test files (`linkedom`, `ws`, and the server process that imports `ws`). The
-Godot runtime does not load or package this subtree. Preparing the locked Node
-dependencies and running exact `npm test` remains required before independently
-promoting the web prototype as release-green.
+## Recovery
 
-Dirty work from the former `/home/otp/Projects/flux2` checkout is applied only
-after its binary patch/archive recovery state is verified. Tool caches and chat
-history are preserved in the backup but never committed into the canonical
-repository.
+The retired browser state can be inspected without restoring it into the
+product tree:
+
+```powershell
+git clone --branch integration/unify-flux https://github.com/generalgroovy/flux.git legacy-review
+git -C legacy-review checkout e13171473baf67b2264479467b650974a4c65290
+```
+
+Do not use that checkout to launch or develop FLUX 2. The authoritative run,
+test, package, and installer commands are maintained in the root `README.md`.

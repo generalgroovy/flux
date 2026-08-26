@@ -46,6 +46,9 @@ Verification:
 - A 24-frame 1280×720 hand-cast capture at 75% (`.godot/visual-captures/hand-cast-v2-720`)
   was inspected; startup art now visibly begins in the empty-hand lane before
   the projectile leaves the actor.
+- High-contrast S. Wayne and reduced-effects Oh Tipi 1280×720 captures at 75%
+  (`body-v3-high-contrast-720`, `body-v3-reduced-720`) both passed and were
+  inspected; body silhouettes, resource bars and spell cells remain readable.
 - `scripts\\package.ps1 -Target Windows` rebuilt the export and one-file
   release bundle. The current installer is
   `exports\\release\\FLUX2-Windows-Setup.exe` (SHA-256

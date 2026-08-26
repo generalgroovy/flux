@@ -43,6 +43,10 @@ each playable slice.
   100% were visually inspected with the new body-only atlas.
 - The 24-frame `hand-cast-v2-720` capture at 75% shows the startup cue beginning
   in the empty-hand lane before projectile travel.
+- High-contrast and reduced-effects 1280×720 captures at 75% passed under
+  `.godot/visual-captures/body-v3-high-contrast-720` and
+  `.godot/visual-captures/body-v3-reduced-720`; both were inspected for
+  silhouette, HUD and spell-cell readability.
 - `scripts\package.ps1 -Target Windows` rebuilt the export and installer; the
   current installer SHA-256 is
   `f78c0463adcf3740adab6aac58a676a3ac5c5f41f01db866ca609e21f3ed640d`.

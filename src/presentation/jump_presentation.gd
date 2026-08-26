@@ -54,7 +54,7 @@ static func _active_timer(state: PlayerState, config: SimConfig) -> Vector2i:
 			state.hop_ticks,
 			config.milliseconds_to_ticks(_hop_duration_ms(state.hop_mode)),
 		)
-	if state.air_dodge_ticks > 0:
+	if state.air_dodge_ticks > 0 and not state.is_rolling():
 		return Vector2i(
 			state.air_dodge_ticks,
 			config.milliseconds_to_ticks(MovementTuning.AIR_DODGE_DURATION_MS),

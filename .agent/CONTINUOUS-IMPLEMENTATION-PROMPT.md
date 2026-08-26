@@ -9,7 +9,7 @@ disagree, preserve tested runtime truth and update stale prose in the same slice
 
 ## Current frontier and hard order
 
-V0–V6 pass in the live game. Preserve protocol 28, snapshot schema 11, the
+V0–V6 pass in the live game. Preserve protocol 29, snapshot schema 11, the
 published green checkpoint and all accepted visual/gameplay behavior. Continue
 in this strict player-facing order; do not skip ahead because a later catalog is
 easier to enumerate:
@@ -42,7 +42,7 @@ slices, checkpoint each green result, and immediately start the next accepted
 slice. Do not stop at plans, scaffolds, catalogs, generated images or passing
 unit tests when the player-facing outcome is still absent.
 
-The current green frontier is protocol 28 / snapshot schema 11: two foundation champions, the planned
+The current green frontier is protocol 29 / snapshot schema 11: two foundation champions, the planned
 non-ability movement grammar, bounded launch steering plus a timed impact-recovery/tech decision, full/cone POV with building cutaways, twelve
 Wellspring stations including a host-authoritative 3×4 Spell Loom,
 direct-IP host/join, shared interactions, Hearth readiness,

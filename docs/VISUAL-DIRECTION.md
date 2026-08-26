@@ -47,6 +47,13 @@ not runtime frames.
    construct, or high ledge fades/cuts away or yields to a restrained ownership
    silhouette when it covers a character inside authoritative LOS. No such cue
    appears for an actor outside permitted LOS.
+7. **Compact action and bullet-pattern clarity.** Study only broad production
+   principles found in crisp room-scale action games: economical silhouettes,
+   distinct projectile lanes, spell cadence, bounded impact bursts and dense
+   encounters that retain escape space. FLUX uses original old-world champions,
+   hand-cast magic, rooms, patterns, assets, UI and timing; it never reproduces
+   Enter the Gungeon or another bullet-hell game's weapons, enemies, rooms,
+   palette, exact mechanics, effects, animation or trade dress.
 
 Broad environmental study may include strongly staged room silhouettes,
 layered depth, landmark-first composition, dramatic readable lighting,
@@ -97,6 +104,12 @@ anchors, not permission to flatten pixel art into solid fills.
   item, or map behavior.
 - Effects budgets are per category and support reduced-motion and low-density
   modes without hiding authoritative events.
+- Every spell lane has a color-independent silhouette and speed family. Visual
+  noise may decorate a lane only after its owner, collision extent, travel
+  direction and active window are already clear.
+- Pattern density is budgeted per screen and per actor. Quiet silhouette rings,
+  collision edges and at least one readable escape route take priority over
+  particles, aura flourishes and ambient magic.
 
 ### Compact handheld readability target
 
@@ -122,6 +135,12 @@ are integration foundations, not final animation acceptance. Each champion must
 pass idle, movement, jump/rise/fall/land, traversal, combat, defense/damage,
 interaction, defeat, and signature/fallback taunt coverage applicable to its
 kit, with deterministic semantic event binding and no animation-owned outcomes.
+
+All champion casting is hands-only. Spell skeletons begin with hand anticipation,
+bind release geometry to declared hand anchors and end with readable recovery;
+staffs, wands, scepters, rods and held magical foci are excluded. Physical
+weapons or tools may exist for identity and non-magical action, but may not
+quietly become the source of a spell.
 
 ## Environment kit
 

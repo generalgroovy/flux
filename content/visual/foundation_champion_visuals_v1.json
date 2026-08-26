@@ -20,8 +20,9 @@
       "head_ratio": 0.43,
       "build": "sturdy_current_keeper",
       "motion_profile": "buoyant_keeper",
-      "equipment": "three_tined_current_staff",
-      "silhouette_features": ["fin_crown", "cheek_fins", "curling_tail", "trident"],
+      "equipment": "bare_hand_current_weaving",
+      "casting_origin": "hands",
+      "silhouette_features": ["fin_crown", "cheek_fins", "curling_tail", "open_current_hands"],
       "affinities": ["water", "ice", "charge"],
       "materials": {
         "outline": ["worldbone", 0],
@@ -39,8 +40,9 @@
       "head_ratio": 0.44,
       "build": "small_round_boundary_mage",
       "motion_profile": "grounded_weaver",
-      "equipment": "orbiting_focus_orb",
-      "silhouette_features": ["round_hair", "short_cloak", "large_bare_feet", "focus_orb"],
+      "equipment": "bare_hand_boundary_weaving",
+      "casting_origin": "hands",
+      "silhouette_features": ["round_hair", "short_cloak", "large_bare_feet", "open_focus_hand"],
       "affinities": ["dark", "light"],
       "materials": {
         "outline": ["worldbone", 0],

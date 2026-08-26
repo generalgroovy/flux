@@ -28,6 +28,7 @@ enum MovementMode {
 	FAST_FALL,
 	WALL_SKIM,
 	IMPACT_RECOVERY,
+	ROLL,
 }
 
 enum ControlState {
@@ -172,7 +173,11 @@ func _init(requested_entity_id: int = 1) -> void:
 
 
 func is_airborne() -> bool:
-	return hop_ticks > 0 or air_dodge_ticks > 0 or superglide_ticks > 0
+	return hop_ticks > 0 or (air_dodge_ticks > 0 and hop_mode != MovementMode.ROLL) or superglide_ticks > 0
+
+
+func is_rolling() -> bool:
+	return air_dodge_ticks > 0 and hop_mode == MovementMode.ROLL
 
 
 func reset_spell_slots_to_kit() -> void:
@@ -346,6 +351,7 @@ func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> voi
 	hop_ticks = 0
 	hop_cooldown_ticks = 0
 	hop_stage = 0
+	hop_mode = MovementMode.HOP
 	air_redirects_remaining = 0
 	air_dodge_ticks = 0
 	air_dodge_cooldown_ticks = 0

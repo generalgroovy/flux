@@ -6,7 +6,7 @@ const DEFAULT_PATH := "res://content/visual/minimal_champion_motion_v1.json"
 const EXPECTED_ID := "minimal-champion-motion-v1"
 const EXPECTED_AUTHORITY := "presentation only; motion samples never change simulation position, collision, timing or outcomes"
 const REQUIRED_MOTIONS := ["idle", "walk", "sprint", "low", "air", "cast", "hit"]
-const REQUIRED_ACCENTS := ["counter_strafe", "double_jump", "slide", "slide_jump", "air_dodge", "wave_dash", "wall_kick", "vault", "superglide", "fast_fall", "wall_skim", "impact_recovery"]
+const REQUIRED_ACCENTS := ["counter_strafe", "double_jump", "slide", "slide_jump", "air_dodge", "roll", "wave_dash", "wall_kick", "vault", "superglide", "fast_fall", "wall_skim", "impact_recovery"]
 const ALLOWED_ACCENT_KINDS := ["brake_ticks", "lift_ring", "ground_wake", "speed_fins", "ground_chevron", "kick_burst", "crest_arc", "fall_lines", "wall_sparks", "recovery_brace"]
 
 
@@ -125,7 +125,7 @@ static func motion_id(state: PlayerState) -> String:
 		PlayerState.MovementMode.FAST_FALL,
 	]:
 		return "air"
-	if state.movement_mode in [PlayerState.MovementMode.SLIDE, PlayerState.MovementMode.WAVE_DASH, PlayerState.MovementMode.WALL_SKIM]:
+	if state.movement_mode in [PlayerState.MovementMode.SLIDE, PlayerState.MovementMode.ROLL, PlayerState.MovementMode.WAVE_DASH, PlayerState.MovementMode.WALL_SKIM]:
 		return "low"
 	if state.movement_mode == PlayerState.MovementMode.SPRINT:
 		return "sprint"

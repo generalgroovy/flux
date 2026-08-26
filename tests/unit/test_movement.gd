@@ -9,6 +9,7 @@ func run() -> int:
 		_test_action_buffers(tick_rate)
 		_test_variable_jump_and_fast_fall(tick_rate)
 		_test_air_dodge_and_wavedash(tick_rate)
+		_test_ground_roll_and_evasion_windows(tick_rate)
 		_test_wall_contact_and_wall_kick(tick_rate)
 		_test_same_wall_lockout(tick_rate)
 		_test_wall_skim(tick_rate)
@@ -89,6 +90,29 @@ func _test_air_dodge_and_wavedash(tick_rate: int) -> void:
 		_step(world, 0, 1000)
 	equal(state.last_event, "wave_dash", "%d Hz queued wavedash starts once" % tick_rate)
 	check(state.wave_dash_ticks > 0, "%d Hz wavedash remains bounded" % tick_rate)
+
+
+func _test_ground_roll_and_evasion_windows(tick_rate: int) -> void:
+	var roll_world := SimWorld.new(tick_rate)
+	var roller: PlayerState = roll_world.player()
+	var initial_stamina := roller.stamina
+	_step(roll_world, 1000, 0, 0, SimCommand.PRESSED_TECHNIQUE)
+	equal(roller.last_event, "roll", "%d Hz open-ground technique starts a roll" % tick_rate)
+	equal(roller.movement_mode, PlayerState.MovementMode.ROLL, "%d Hz roll owns an explicit movement mode" % tick_rate)
+	check(roller.is_rolling() and not roller.is_airborne(), "%d Hz roll remains grounded" % tick_rate)
+	equal(roller.stamina, initial_stamina - MovementTuning.ROLL_COST, "%d Hz roll pays its exact Stamina cost" % tick_rate)
+	check(MovementSystem.is_combat_intangible(roller, roll_world.config), "%d Hz roll begins inside its invulnerability window" % tick_rate)
+	while MovementSystem.is_combat_intangible(roller, roll_world.config):
+		_step(roll_world, 1000, 0)
+	check(roller.air_dodge_ticks > 0, "%d Hz roll has readable recovery after invulnerability" % tick_rate)
+
+	var jump_world := SimWorld.new(tick_rate)
+	var jumper: PlayerState = jump_world.player()
+	_step(jump_world, 1000, 0, 0, SimCommand.PRESSED_JUMP)
+	check(MovementSystem.is_combat_intangible(jumper, jump_world.config), "%d Hz jump begins inside its invulnerability window" % tick_rate)
+	while MovementSystem.is_combat_intangible(jumper, jump_world.config):
+		_step(jump_world, 1000, 0, SimCommand.HELD_JUMP)
+	check(jumper.hop_ticks > 0, "%d Hz jump has readable recovery after invulnerability" % tick_rate)
 
 
 func _test_action_buffers(tick_rate: int) -> void:
@@ -227,7 +251,8 @@ func _test_wall_skim(tick_rate: int) -> void:
 	var after_first_skim: int = state.stamina
 	_step(world, 0, -1000, 0, SimCommand.PRESSED_TECHNIQUE)
 	equal(state.wall_skim_ticks, 0, "%d Hz same surface cannot immediately chain another skim" % tick_rate)
-	equal(state.stamina, after_first_skim, "%d Hz rejected same-surface skim spends no Stamina" % tick_rate)
+	equal(state.last_event, "roll", "%d Hz same-surface lockout falls back to the open-ground roll" % tick_rate)
+	equal(state.stamina, after_first_skim - MovementTuning.ROLL_COST, "%d Hz same-surface roll pays only its own Stamina" % tick_rate)
 
 	var boundary_world := SimWorld.new(tick_rate)
 	var boundary: PlayerState = boundary_world.player()
@@ -238,7 +263,8 @@ func _test_wall_skim(tick_rate: int) -> void:
 	var boundary_stamina: int = boundary.stamina
 	_step(boundary_world, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE)
 	equal(boundary.wall_skim_ticks, 0, "%d Hz outer world boundary cannot be skimmed" % tick_rate)
-	equal(boundary.stamina, boundary_stamina, "%d Hz rejected boundary skim spends no Stamina" % tick_rate)
+	equal(boundary.last_event, "roll", "%d Hz reserved world boundary falls back to a solid-world roll" % tick_rate)
+	equal(boundary.stamina, boundary_stamina - MovementTuning.ROLL_COST, "%d Hz boundary roll pays only its own Stamina" % tick_rate)
 
 
 func _test_vault_and_superglide(tick_rate: int) -> void:

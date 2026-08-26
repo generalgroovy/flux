@@ -32,7 +32,9 @@ projectiles, spell residues and interaction prompts instantly legible.
 | Play space | Dense detail belongs at scenic edges; navigable floors use quiet values, crisp silhouettes and obvious elevation/collision boundaries. |
 | Perspective | Gameplay floors remain square and screen-cardinal; tilted facades may rise no more than 0.85x their readable footprint, wall feet/door thresholds stay visible, and any occluding roof/canopy/wall cuts away predictably. Diamond-grid/isometric navigation is forbidden. |
 | Champions | Oh Tipi and S. Wayne use compact cartoon pixel proportions: head 40–45% of body height, short readable limbs, expressive face/pose, chunky equipment, 44–68px gameplay height, strong ancestry silhouettes, 1–2px outlines and restrained 2–3-element auras. Realistic/lanky or sexualized bodies fail review. |
-| Spells | Every currently playable projectile, beam, spray and field gets its own silhouette, cadence, travel/extent, impact and residue language; effects never erase actors or collision edges. |
+| Casting | Every champion channels magic visibly from open hands. Staffs, wands, scepters, rods, held magical foci and floating companion foci are forbidden; physical tools may support ancestry silhouettes but never become magic origins. |
+| Spells | Every currently playable projectile, beam, spray and field gets its own silhouette, cadence, travel/extent, impact and residue language; effects never erase actors or collision edges. Dense patterns preserve quiet actor rings and at least one legible escape lane. |
+| Bullet readability | Projectiles are gameplay state, never decoration: ownership, shape, speed tier, collision size, active timing and residue must parse without color, and the live effects budget prevents overlapping particles from disguising a lane. |
 | HUD | Compact brass/timber/parchment framing, portrait plus readable Health/Flux/Stamina, active Plain/Ctrl/Alt layer and exactly four active spell cells; never display a fifth spell button. |
 | Prompts | Short translucent parchment bubbles and contextual interaction prompts anchor near their source, avoid combat state and disappear promptly. |
 | Overview | The default frame shows routes, landmarks and nearby interaction choices without a debug-strip wall of text; detailed information stays in fast translucent overlays/stations. |
@@ -49,6 +51,10 @@ projectiles, spell residues and interaction prompts instantly legible.
 | V4 | Existing spell visuals | Give Rillshot, Tideline, Rimewake, Eclipse Disc and Pocket Eclipse distinct readable startup/action/impact/residue treatment plus honest refusal/cooldown/Flux feedback. |
 | V5 | GUI and interaction language | Replace the top debug strip with the compact three-resource/four-spell HUD, active layer indicator, contextual prompt and translucent station/bubble language at 720p and 1080p. |
 | V6 | Integrated visual acceptance | Capture live movement, casting, occlusion, station use and two-player Farflow frames; compare against the target rubric and fix every failed item before declaring the visual gate open. |
+| V7 | Hands-only cast re-acceptance | Validate the exact current 24-entry cast/status table, original 6×4 concept board, hands-only foundation recipes, grounded roll/jump evasion cue and reusable action aliases without promoting concept pixels as runtime art. |
+| V8 | Spell animation skeletons | Add delivery-specific hand anticipation, release, travel/extent, impact and recovery skeletons for projectile, beam, spray and field while simulation remains authoritative. |
+| V9 | Wellspring environment assets | Produce a small reusable source-court kit whose quiet lanes, cover reads, interaction anchors and material surfaces survive spell-pattern density at every zoom. |
+| V10 | Pattern-density acceptance | Capture two-player projectile, beam, spray and field combinations at 50/75/100%, grayscale and reduced effects; reject any frame without readable ownership and an escape lane. |
 
 ## Integrated acceptance
 
@@ -69,6 +75,8 @@ The visual gate opens only when all of these are true in the live game:
    real interactive capture pass on the same commit.
 7. Every runtime asset has provenance, license/originality notes, declared
    dimensions/pivots/import rules and a bounded memory/performance budget.
+8. Projectiles remain readable as discrete owned hazards under dense two-player
+   patterns; actor silhouettes and at least one safe response lane remain clear.
 
 Subjective charm requires review, but it is not an excuse for an unbounded gate:
 record one rubric score from 1–5 for cohesion, silhouette, material identity,

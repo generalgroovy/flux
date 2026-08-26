@@ -9,6 +9,7 @@
     "slide": {"kind": "ground_wake", "ramp": "warm_stone", "index": 4, "opacity": 0.42},
     "slide_jump": {"kind": "lift_ring", "ramp": "aged_brass", "index": 3, "opacity": 0.48},
     "air_dodge": {"kind": "speed_fins", "ramp": "deep_water", "index": 4, "opacity": 0.54},
+    "roll": {"kind": "ground_chevron", "ramp": "parchment", "index": 4, "opacity": 0.58},
     "wave_dash": {"kind": "ground_chevron", "ramp": "aged_brass", "index": 4, "opacity": 0.52},
     "wall_kick": {"kind": "kick_burst", "ramp": "warm_stone", "index": 4, "opacity": 0.58},
     "vault": {"kind": "crest_arc", "ramp": "aged_brass", "index": 3, "opacity": 0.48},

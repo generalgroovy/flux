@@ -99,7 +99,7 @@ The eastern Host/Join Farflow stations operate it without a detached menu; use
 `--join-address=IP`, `--session-port=24872` and `--player-name=Name` for direct-IP
 diagnostics. Its real loopback suite covers compatibility, bounded validated
 input, mismatch refusal and disconnect cleanup. Stable peer actors, host-side
-movement simulation and compact 60 Hz guest snapshots are live. Protocol 28 /
+movement simulation and compact 60 Hz guest snapshots are live. Protocol 29 /
 snapshot schema 11 carries bounded projectile/beam/spray lanes, persistent
 fields, target state, all twelve global-weave positions plus independent
 per-spell cooldowns, compact Hearth presence/readiness, packed Proving Court state and
@@ -174,12 +174,12 @@ filtering remains required before limited-information network modes.
 
 Both 60 and 120 Hz simulations publish shared state at 60 snapshots per second.
 Semantic events are retained for four snapshots and deduplicated by stable ID;
-do not clear an event after only one unreliable send. Protocol 28 validates and
+do not clear an event after only one unreliable send. Protocol 29 validates and
 FastLZ-packs snapshot schema 11 into a bounded wire envelope; both the maximum
 eight-player fixture and live three-player journeys must remain within the
 1,392-byte ENet MTU before the unreliable-ordered send.
 
-Protocol 28 reserves a normally disconnected guest's exact actor for 15 seconds and
+Protocol 29 reserves a normally disconnected guest's exact actor for 15 seconds and
 binds return to a random in-memory capability plus the original name. A normal
 player uses Join Farflow again; `--farflow-smoke-reconnect` is test-only. Do not
 print, persist or add that capability to snapshots/diagnostics.
@@ -243,6 +243,20 @@ scripts/package.sh all
 ```bat
 scripts\package.cmd -Target All
 ```
+
+The Windows package step additionally writes the single-file friend artifact
+`exports\release\FLUX2-Windows-Setup.exe`. It embeds the checksummed portable
+payload, installs into `%LOCALAPPDATA%\FLUX`, retains the prior selected version
+for rollback, and never requires elevation. Verify its clean-install, forced
+repair and installed-export boot path with:
+
+```powershell
+scripts\test-windows-bootstrap.ps1
+```
+
+The bootstrap source is intentionally repository-owned under
+`packaging/windows-bootstrap/`; generated source and installation test roots
+stay under ignored `.godot/` paths.
 
 `GODOT_EXPORT_TEMPLATE_ROOT` may point at an offline template cache. Packaging
 fails before export with the exact missing platform template; source run/test

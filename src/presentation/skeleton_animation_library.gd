@@ -8,6 +8,8 @@ var data: Dictionary = {}
 var last_error: String = ""
 var animations: Dictionary = {}
 var sizes: Dictionary = {}
+var aliases: Dictionary = {}
+var action_contracts: Dictionary = {}
 var directions: Array[String] = []
 var cell_size := Vector2i.ZERO
 var pivot := Vector2i.ZERO
@@ -55,10 +57,14 @@ func validate() -> bool:
 		directions.append(direction_id)
 	animations = data.get("animations", {})
 	sizes = data.get("sizes", {})
+	aliases = data.get("aliases", {})
+	action_contracts = data.get("action_contracts", {})
 	if animations.is_empty():
 		return _fail("at least one animation is required")
 	if sizes.size() != 5:
 		return _fail("exactly five skeleton sizes are required")
+	if String(data.get("casting_origin", "")) != "hands":
+		return _fail("all skeleton magic must originate from hands")
 	var occupied_blocks: Dictionary = {}
 	for animation_id: String in animations:
 		var animation: Dictionary = animations[animation_id]
@@ -75,6 +81,19 @@ func validate() -> bool:
 		var final_region := frame_region_from_values(block, directions.size() - 1, frames - 1)
 		if final_region.end.x > atlas_size.x or final_region.end.y > atlas_size.y:
 			return _fail("%s exceeds atlas bounds" % animation_id)
+	for alias_id: String in ["jump", "roll", "impact_recovery"]:
+		var target_id := String(aliases.get(alias_id, ""))
+		if target_id.is_empty() or not animations.has(target_id) or animations.has(alias_id):
+			return _fail("animation alias is invalid: %s" % alias_id)
+	for action_id: String in ["jump", "roll", "air_dodge", "cast"]:
+		var contract: Dictionary = action_contracts.get(action_id, {})
+		if (
+			String(contract.get("simulation_timer", "")).is_empty()
+			or int(contract.get("invulnerability_ms", -1)) < 0
+			or String(contract.get("world_collision", "")) != "solid"
+			or String(contract.get("magic_origin", "")) != "hands"
+		):
+			return _fail("animation action contract is invalid: %s" % action_id)
 	for size_id: String in sizes:
 		var size: Dictionary = sizes[size_id]
 		for path_key: String in ["atlas", "debug_atlas"]:
@@ -88,6 +107,7 @@ func validate() -> bool:
 
 
 func frame_region(size_id: String, animation_id: String, direction_id: String, frame_index: int) -> Rect2i:
+	animation_id = resolved_animation_id(animation_id)
 	if not sizes.has(size_id) or not animations.has(animation_id):
 		return Rect2i()
 	var direction_index := directions.find(direction_id)
@@ -98,6 +118,14 @@ func frame_region(size_id: String, animation_id: String, direction_id: String, f
 	if frame_index < 0 or frame_index >= frames:
 		return Rect2i()
 	return frame_region_from_values(_vector2i(animation.get("block", [])), direction_index, frame_index)
+
+
+func resolved_animation_id(animation_id: String) -> String:
+	return String(aliases.get(animation_id, animation_id))
+
+
+func action_contract(action_id: String) -> Dictionary:
+	return (action_contracts.get(action_id, {}) as Dictionary).duplicate(true)
 
 
 func frame_region_from_values(block: Vector2i, direction_index: int, frame_index: int) -> Rect2i:

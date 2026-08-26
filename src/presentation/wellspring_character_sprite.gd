@@ -169,6 +169,8 @@ static func animation_id_for_player(state: PlayerState) -> String:
 			return "slide_jump"
 		PlayerState.MovementMode.AIR_DODGE:
 			return "air_dodge"
+		PlayerState.MovementMode.ROLL:
+			return "air_dodge"
 		PlayerState.MovementMode.WAVE_DASH:
 			return "wavedash"
 		PlayerState.MovementMode.WALL_KICK:

@@ -22,13 +22,20 @@ critical topology.
 
 ## Download, run, host, and close
 
-FLUX 2 produces portable friend builds: extract one archive and use the obvious
-launcher—`PLAY-FLUX.cmd` on Windows or `play-flux.sh` on Linux. No installer or
-administrator access is required. Both players must use the same archive and
-checksum; they spawn directly in the Wellspring and use its Host/Join Farflow
-stations. Public direct-IP play may still require the host to allow the shown
-UDP port through a router/firewall; in-world address entry/join cards and
-physical Garuda package proof are the next onboarding gates.
+On Windows, send one file: `FLUX2-Windows-Setup.exe`. Double-clicking it verifies
+its included build, installs FLUX per-user without administrator access, creates
+a reusable **FLUX** launcher, and starts the game. Running a newer setup safely
+stages and verifies that build before switching versions; an interrupted update
+leaves the selected build intact. Local release output is
+`exports/release/FLUX2-Windows-Setup.exe`.
+
+Portable friend builds remain available as `FLUX2-Windows-x86_64.zip` and the
+Linux tarball. Both players must use the same build; they spawn directly in the
+Wellspring and use its Host/Join Farflow stations. The development installer is
+not yet publisher-signed, so Windows may ask the recipient to explicitly allow
+it. Public direct-IP play may still require the host to allow the shown UDP port
+through a router/firewall; signed distribution, in-world join cards and physical
+two-PC/Garuda package proof are the remaining onboarding gates.
 
 For a source checkout, run `scripts/run.cmd` on Windows or `scripts/run.sh` on
 Linux. Release engineers run `scripts/install-export-templates.cmd` (or the
@@ -86,10 +93,11 @@ even when design documentation already exists.
     and double-confirm company close with readable reasons and revoked return paths
   - [x] Late-court joiners become input-locked observers with stable participant
     focus, Tab/D-pad cycling, a clear next-gathering HUD and automatic Hearth play
-  - [x] Windows/Bash doctor, test, run and package entry points plus self-cleaning
+- [x] Windows/Bash doctor, test, run and package entry points plus self-cleaning
     two/three-process host/join/move/observe/reconnect acceptance journeys
   - [x] CRC-checked pinned desktop-template installer, runtime-only exports,
-    checksummed portable Windows/Linux archives and packaged Windows safe quit
+    checksummed portable Windows/Linux archives, a hash-verifying one-file
+    Windows installer/updater/launcher, and packaged Windows safe quit
   - [ ] Record packaged two-PC friend play and physical Garuda/Sway proof;
     in-world address/join-card flow, settings/travel, overlay parity, map UI,
     streaming, and destination persistence remain
@@ -406,9 +414,10 @@ station acceptance.
 | --- | --- | --- | --- |
 | Move + independent aim | Strafe, lead targets, hold crossfire, and retreat without surrendering aim | Acceleration, braking, and counter-strafe timing preserve readable momentum | Implemented |
 | Sprint | Pursuit, disengagement, and objective rotation | Continuous Stamina drain and delayed recovery; loud/visible movement signature planned | Implemented |
-| Hop / double jump | Clear ground pressure and vary elevation/timing | Paid edges, bounded aerial options, explicit landing state | Foundation implemented; authored elevation pending |
+| Hop / double jump | Clear ground pressure and vary elevation/timing | Paid edges, a 90 ms opening attack-invulnerability window, bounded aerial options, then explicit vulnerable landing state | Foundation implemented; authored elevation pending |
 | Slide / slide jump | Commit low and fast, then convert late into a longer route | Entry-speed gate, weak steering, Stamina cost, recovery, and hard cover stops | Implemented |
 | Air redirect / air dodge | Correct one line or make one committed aerial escape | Limited use, high cost, fixed duration, collision-safe recovery | Implemented |
+| Ground roll | Evade a predicted lane while preserving grounded route control | Context V only when no vault/wall-skim applies; 24 Stamina, 130 ms opening attack invulnerability inside a 240 ms solid-world action, then vulnerable recovery | Implemented |
 | Wavedash | Convert a late angled air dodge into grounded momentum | Exact landing geometry, one queued conversion, no free stacking | Implemented |
 | Wall contact / wall kick | Rebound from a brief valid wall-contact window | Stable wall identity and a 220 ms same-wall lockout prevent loops | Implemented |
 | Vault / superglide | Cross marked low cover and convert the narrow crest window | Only authored vault surfaces qualify; destination clearance and fixed ceiling are mandatory | Implemented against foundation geometry |
@@ -662,6 +671,14 @@ term for race. The supplied FLUX Champions sheet below is the minimum
 accepted visual baseline for character expression, silhouette, equipment,
 materials, elemental framing and pixel-art density. Canonical Flux2 data
 still overrides conflicting labels visible in that reference.
+
+The [current hands-only cast contract](docs/CURRENT-CAST.md) pairs an exact,
+status-labelled roster with a new original 6×4 concept board. Only Oh Tipi and
+S. Wayne are currently playable; the other named entries remain planned and the
+Angel remains non-selectable. Every champion channels magic through hands—never
+staffs, wands, scepters, rods, or held magical foci.
+
+![FLUX hands-only current cast concept](assets/concept/current-cast-hands-only-v1.png)
 
 ![FLUX Champions minimum character-art baseline](assets/concept/flux-champions-visual-style-v1.png)
 
@@ -1866,7 +1883,7 @@ scripts/run.sh --tick-rate=120
 
 Current foundation controls: WASD moves, mouse aims, left click fires the
 selected champion primary, right click or E casts active one, Shift sprints, C or wheel-down slides,
-Space or wheel-up uses the jump/movement chain, V uses the contextual vault/wall-skim/air technique,
+Space or wheel-up uses the jump/movement chain, V uses contextual vault/wall-skim/ground-roll/air technique,
 F interacts with the nearest Wellspring station, T / controller D-pad up shares
 a HELLO bubble, R restarts the match, and F6 restarts at the
 other supported tick rate. F7 changes movement reference, F8 changes view, and
@@ -1895,7 +1912,7 @@ reopening Farflow. A dropped guest can use Join Farflow within 15 seconds to rec
 its exact in-memory actor. The host can safely review connected guests in the
 Ledger and must confirm release at the separate Bell; closing the whole company
 also requires a second Host Farflow press. Affected guests receive the reason,
-and administrative departures cannot reclaim their actor. Protocol 28 / snapshot schema 11 assign and validate
+and administrative departures cannot reclaim their actor. Protocol 29 / snapshot schema 11 assign and validate
 the sealed Charter and replicate authoritative court state; cross-platform
 package proof remains next. See the
 [networking contract](docs/NETWORKING.md).
@@ -1907,11 +1924,11 @@ controller D-pad right cycles the stable participant order. When the company
 returns, the observer is placed at the Hearth, readies through the ordinary
 request path, and can enter the next round. Snapshot schema 11 now travels in a
 bounded compressed wire envelope whose maximum eight-player fixture and live
-three-player journeys fit one ENet MTU; protocol 28 rejects older peers. This
+three-player journeys fit one ENet MTU; protocol 29 rejects older peers. This
 spectator view adds no new information channel, but competitive limited-view
 modes still require host-side per-peer visibility filtering.
 
-The current simulation uses protocol 28, snapshot schema 11 and preference
+The current simulation uses protocol 29, snapshot schema 11 and preference
 schema 8: Space or wheel-up invokes semantic jump, Shift sprints, C or
 wheel-down directly slides/fast-falls, and Plain/Ctrl/Alt layers combine with
 buttons 1–4 into twelve independently configurable spell positions. Alt wins

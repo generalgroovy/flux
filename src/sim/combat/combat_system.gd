@@ -116,6 +116,9 @@ static func advance_projectiles(
 				continue
 			var hit_radius: int = target.radius + projectile.radius
 			if _segment_circle_hit(projectile, target, hit_radius):
+				if MovementSystem.is_combat_intangible(target, config):
+					target.last_event = "evaded_projectile"
+					continue
 				PlayerResourcesSystem.damage(target, projectile.damage, config)
 				if target.health > 0 and projectile.hit_control_duration_ms > 0:
 					MovementSystem.apply_control_state(
@@ -319,6 +322,7 @@ static func advance_fields(
 				or target.team_id == field.team_id
 				or target.health <= 0
 				or target.spawn_protection_ticks > 0
+				or MovementSystem.is_combat_intangible(target, config)
 				or field.has_affected(target.entity_id)
 			):
 				continue
@@ -413,7 +417,7 @@ static func resolve_instant_casts(
 		if shape == "spray":
 			_resolve_spray(owner, wire_id, definition, origin, direction, endpoint, players, config, world, resolved_events)
 			continue
-		var target: PlayerState = _first_beam_target(owner, origin, endpoint, int(definition["radius"]), players)
+		var target: PlayerState = _first_beam_target(owner, origin, endpoint, int(definition["radius"]), players, config)
 		if target != null:
 			endpoint = Vector2i(target.position_x, target.position_y)
 			PlayerResourcesSystem.damage(target, int(definition["damage"]), config)
@@ -482,6 +486,9 @@ static func _resolve_spray(
 		var remaining := Vector2i(target.position_x, target.position_y) - clear_endpoint
 		var hit_radius: int = target.radius + int(definition["radius"])
 		if remaining.length_squared() > hit_radius * hit_radius:
+			continue
+		if MovementSystem.is_combat_intangible(target, config):
+			target.last_event = "evaded_spray"
 			continue
 		PlayerResourcesSystem.damage(target, int(definition["damage"]), config)
 		if target.health > 0 and int(definition["hit_control_duration_ms"]) > 0:
@@ -552,6 +559,7 @@ static func _first_beam_target(
 	endpoint: Vector2i,
 	beam_radius: int,
 	players: Array[PlayerState],
+	config: SimConfig,
 ) -> PlayerState:
 	var delta := endpoint - origin
 	var length_squared: int = delta.length_squared()
@@ -574,6 +582,9 @@ static func _first_beam_target(
 		var separation := Vector2i(target.position_x, target.position_y) - closest
 		var hit_radius: int = target.radius + beam_radius
 		if separation.length_squared() > hit_radius * hit_radius:
+			continue
+		if MovementSystem.is_combat_intangible(target, config):
+			target.last_event = "evaded_beam"
 			continue
 		best = target
 		best_projection = projection
@@ -605,6 +616,7 @@ static func _resolve_edgeweave(
 			or target.team_id == projectile.team_id
 			or target.health <= 0
 			or target.edgeweave_cooldown_ticks > 0
+			or MovementSystem.is_combat_intangible(target, config)
 			or target.stamina >= target.stamina_maximum
 			or projectile.has_grazed(target.entity_id)
 			or target.velocity_x * target.velocity_x + target.velocity_y * target.velocity_y < CombatTuning.EDGEWEAVE_MINIMUM_SPEED * CombatTuning.EDGEWEAVE_MINIMUM_SPEED

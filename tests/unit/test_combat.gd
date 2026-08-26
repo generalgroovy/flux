@@ -15,7 +15,44 @@ func run() -> int:
 		_test_movement_spell_chains(tick_rate)
 		_test_pressure_exhaustion_and_recovery(tick_rate)
 		_test_edgeweave(tick_rate)
+		_test_evasive_intangibility(tick_rate)
 	return finish("combat")
+
+
+func _test_evasive_intangibility(tick_rate: int) -> void:
+	var config := SimConfig.new(tick_rate)
+	var collision := CollisionWorld.new(900_000, 720_000)
+	var owner := PlayerState.new(1)
+	owner.team_id = 1
+	var target := PlayerState.new(2)
+	target.team_id = 2
+	target.position_x = 330_000
+	target.position_y = 360_000
+	target.hop_mode = PlayerState.MovementMode.ROLL
+	target.air_dodge_ticks = config.milliseconds_to_ticks(MovementTuning.ROLL_DURATION_MS)
+	var projectile := ProjectileState.new(
+		9900, owner.entity_id, owner.team_id,
+		CombatTuning.PRIMARY_WIRE_ID, CombatTuning.PRIMARY_ELEMENT_WIRE_ID,
+		Vector2i(300_000, 360_000), Vector2i(1_800_000, 0),
+		CombatTuning.PRIMARY_RADIUS, CombatTuning.PRIMARY_DAMAGE,
+		tick_rate, PlayerState.ControlState.LAUNCHED, 180, 300_000, 1000, 0,
+	)
+	var events: Array[Dictionary] = []
+	var survivors := CombatSystem.advance_projectiles([projectile], [owner, target], config, collision, events)
+	equal(target.health, target.health_maximum, "%d Hz roll intangibility rejects projectile damage" % tick_rate)
+	equal(target.control_state, PlayerState.ControlState.FREE, "%d Hz roll intangibility rejects projectile control" % tick_rate)
+	equal(target.last_event, "evaded_projectile", "%d Hz projectile evasion remains explicit" % tick_rate)
+	equal(survivors.size(), 1, "%d Hz projectile passes through an intangible roller" % tick_rate)
+	check(not events.any(func(event: Dictionary) -> bool: return event.get("type") == "projectile_hit"), "%d Hz evasion emits no false hit" % tick_rate)
+
+	target.air_dodge_ticks = 0
+	target.hop_mode = PlayerState.MovementMode.HOP
+	target.hop_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS)
+	check(not PlayerResourcesSystem.damage(target, 10_000, config), "%d Hz opening jump frames reject direct combat damage" % tick_rate)
+	equal(target.health, target.health_maximum, "%d Hz opening jump frames preserve health" % tick_rate)
+	target.hop_ticks = 1
+	check(PlayerResourcesSystem.damage(target, 10_000, config), "%d Hz jump recovery is vulnerable" % tick_rate)
+	equal(target.health, target.health_maximum - 10_000, "%d Hz vulnerable jump recovery takes exact damage" % tick_rate)
 
 
 func _test_semantic_spell_slots(tick_rate: int) -> void:

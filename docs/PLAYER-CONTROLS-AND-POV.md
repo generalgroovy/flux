@@ -82,7 +82,12 @@ V after recent contact with an authored obstacle starts a 420 ms wall skim
 along the requested tangent for one 18-Stamina purchase. Stable positive wall
 identity excludes outer world boundaries, a 900 ms same-surface lockout prevents
 loops, and the end exposes a short recovery cue. The same semantic V press keeps
-its existing vault, aerial redirect and sprint-held air-dodge roles.
+its existing vault, aerial redirect and sprint-held air-dodge roles; on open
+ground it starts a 24-Stamina roll. Roll remains solid against world collision
+for 240 ms and ignores hostile damage/control only during its opening 130 ms.
+Jump-family actions likewise ignore hostile damage/control during their opening
+90 ms, then become vulnerable before landing. A bright broken contour exposes
+the exact active evasion phase; neither action passes through walls or topology.
 
 Every completed aerial route and wall-skim exit records a bounded 0–1000 landing
 intensity in canonical state. Presentation turns that truth into the champion's
@@ -124,7 +129,7 @@ cue, or diagnostic leak.
 | `Shift` | Sprint while held |
 | `C` / wheel down | Dedicated grounded slide press; airborne input commits fast fall |
 | `Space` / wheel up | Semantic jump / movement-chain press |
-| `V` | Contextual vault, recent-contact wall skim, air redirect, sprint-held air dodge, or buffered 18-Stamina impact tech |
+| `V` | Contextual vault, recent-contact wall skim, open-ground roll, air redirect, sprint-held air dodge, or buffered 18-Stamina impact tech |
 | `F` | Activate the nearest walk-up Wellspring station; controller north-face is equivalent |
 | Left mouse | Arc Primary; no default Space alias |
 | `E` / right mouse | Vector Lance |

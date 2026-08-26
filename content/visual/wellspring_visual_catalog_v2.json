@@ -272,7 +272,7 @@
       "selection_icon": "res://assets/sprites/champions_v2/hesus_christo/selection_icon_48.png",
       "size": "size_4_large",
       "status": "integrated_candidate",
-      "weapon": "renewal_staff"
+      "weapon": "renewal_hands"
     },
     "jan_wicked": {
       "all_keyframes_included": true,
@@ -322,7 +322,7 @@
       "selection_icon": "res://assets/sprites/champions_v2/leaf_hidden/selection_icon_48.png",
       "size": "size_3_medium",
       "status": "integrated_candidate",
-      "weapon": "grove_staff"
+      "weapon": "rootweaving_hands"
     },
     "nico_lai": {
       "all_keyframes_included": true,

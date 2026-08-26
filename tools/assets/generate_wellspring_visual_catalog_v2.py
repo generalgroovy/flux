@@ -73,13 +73,13 @@ EXEMPLAR_ELEMENTS = {
 }
 
 EXEMPLAR_WEAPONS = {
-    "human": "arc_blade", "dwarf": "forge_hammer", "gnome": "charge_staff",
+    "human": "arc_blade", "dwarf": "forge_hammer", "gnome": "charge_gloves",
     "hobbit": "wayfarer_sling", "elf": "wind_rapier", "orc": "stone_maul",
     "troll": "greatbow", "minotaur": "breaker_hammer", "seakin": "tide_conduit",
-    "wyrmborn": "ember_lance", "stoneborn": "kiln_shield", "treefolk": "grove_staff",
+    "wyrmborn": "ember_lance", "stoneborn": "kiln_shield", "treefolk": "root_gauntlets",
     "sylph": "gale_disc", "undead": "grave_sabre", "goblin": "spark_detonator",
     "nymph": "bloom_orb", "arachnoid": "silk_blade", "vampire": "night_rapier",
-    "demon": "rift_blade", "angel": "dawn_staff", "werewolf": "claw_gauntlet",
+    "demon": "rift_blade", "angel": "halo_bracers", "werewolf": "claw_gauntlet",
 }
 
 HAIR_BY_PRESENTATION = {
@@ -132,7 +132,7 @@ def race_profile(race_id: str, size_id: str, presentation: str, exemplar: bool =
         "accent": race["accent"],
         "feature": race["feature"],
         "hair": HAIR_BY_PRESENTATION[presentation],
-        "weapon": EXEMPLAR_WEAPONS[race_id] if exemplar else "training_staff",
+        "weapon": EXEMPLAR_WEAPONS[race_id] if exemplar else "training_bracers",
         "elements": EXEMPLAR_ELEMENTS[race_id] if exemplar else [],
         "status": "production_foundation" if not exemplar else "integrated_candidate",
     }

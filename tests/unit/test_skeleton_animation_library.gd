@@ -19,6 +19,10 @@ func _test_repository_manifest() -> void:
 	equal(library.directions.size(), 8, "eight directions are available")
 	equal(library.sizes.size(), 5, "all five size bands are available")
 	check(library.animations.size() >= 25, "planned movement, combat, reaction, utility, and cosmetic animations exist")
+	equal(library.resolved_animation_id("roll"), "air_dodge", "roll reuses the bounded four-frame evasive skeleton")
+	equal(library.resolved_animation_id("jump"), "hop", "player-facing jump resolves to the canonical hop skeleton")
+	equal(int(library.action_contract("roll").get("invulnerability_ms", 0)), MovementTuning.ROLL_INVULNERABILITY_MS, "roll skeleton documents the authoritative invulnerability window")
+	equal(String(library.action_contract("cast").get("magic_origin", "")), "hands", "cast skeleton is hands-only")
 
 
 func _test_all_regions_and_pivots() -> void:
@@ -38,6 +42,7 @@ func _test_all_regions_and_pivots() -> void:
 					check(region.end.x <= library.atlas_size.x and region.end.y <= library.atlas_size.y, "frame remains within atlas")
 	equal(library.pivot.x * 2, library.cell_size.x, "pivot is horizontally centered")
 	check(library.pivot.y >= library.cell_size.y - 4, "pivot remains close to the feet baseline")
+	equal(library.frame_region("size_3_medium", "roll", "south", 0), library.frame_region("size_3_medium", "air_dodge", "south", 0), "roll alias resolves to the same reusable atlas region")
 
 
 func _test_invalid_manifest_fails_closed() -> void:

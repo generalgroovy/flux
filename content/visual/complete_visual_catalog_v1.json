@@ -432,7 +432,7 @@
         "earth",
         "light"
       ],
-      "weapon": "grove_staff",
+      "weapon": "rootweaving_hands",
       "atlas": "res://assets/sprites/champions/leaf_hidden/leaf_hidden_atlas.png",
       "debug_atlas": "res://assets/sprites/champions/leaf_hidden/leaf_hidden_overlay_debug_atlas.png",
       "direction_preview": "res://assets/sprites/champions/leaf_hidden/leaf_hidden_direction_preview.png",
@@ -499,7 +499,7 @@
         "earth",
         "water"
       ],
-      "weapon": "renewal_staff",
+      "weapon": "renewal_hands",
       "atlas": "res://assets/sprites/champions/hesus_christo/hesus_christo_atlas.png",
       "debug_atlas": "res://assets/sprites/champions/hesus_christo/hesus_christo_overlay_debug_atlas.png",
       "direction_preview": "res://assets/sprites/champions/hesus_christo/hesus_christo_direction_preview.png",

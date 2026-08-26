@@ -188,7 +188,13 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	if not campus_renderer.configure_campus(campus_layout):
-		push_error("Wellspring renderer could not bind its architecture and purpose-wayfinding kits")
+		var architecture_error := "unavailable"
+		var wayfinding_error := "unavailable"
+		if campus_renderer.architecture_kit != null:
+			architecture_error = campus_renderer.architecture_kit.last_error
+		if campus_renderer.wayfinding != null:
+			wayfinding_error = campus_renderer.wayfinding.last_error
+		push_error("Wellspring renderer could not bind its kits: architecture=%s; wayfinding=%s" % [architecture_error, wayfinding_error])
 		get_tree().quit(1)
 		return
 	interaction_presenter = WellspringInteractionPresenter.new()

@@ -35,6 +35,7 @@ func _test_complete_movement_mapping() -> void:
 		PlayerState.MovementMode.SLIDE: "low",
 		PlayerState.MovementMode.SLIDE_JUMP: "air",
 		PlayerState.MovementMode.AIR_DODGE: "air",
+		PlayerState.MovementMode.ROLL: "low",
 		PlayerState.MovementMode.WAVE_DASH: "low",
 		PlayerState.MovementMode.WALL_KICK: "air",
 		PlayerState.MovementMode.VAULT: "air",

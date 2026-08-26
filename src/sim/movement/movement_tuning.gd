@@ -4,7 +4,7 @@ extends RefCounted
 
 # Authoritative values are fixed-point world units, resource milli-units,
 # milliseconds, or scale-1000 ratios. They preserve the proven FLUX grammar.
-const COMPATIBILITY_ID: String = "movement-tuning-v3-impact-agency"
+const COMPATIBILITY_ID: String = "movement-tuning-v4-evasive-frames"
 const PLAYER_RADIUS: int = 18_000
 const BASE_SPEED: int = 324_000
 const ACCELERATION: int = 1_980_000
@@ -26,6 +26,7 @@ const HOP_COST: int = 28_000
 const HOP_SPEED: int = 650_000
 const HOP_DURATION_MS: int = 160
 const HOP_COOLDOWN_MS: int = 500
+const JUMP_INVULNERABILITY_MS: int = 90
 const WALL_KICK_SPEED: int = 780_000
 const WALL_MEMORY_MS: int = 160
 const SAME_WALL_LOCKOUT_MS: int = 220
@@ -48,6 +49,12 @@ const AIR_DODGE_COST: int = 28_000
 const AIR_DODGE_SPEED: int = 860_000
 const AIR_DODGE_DURATION_MS: int = 180
 const AIR_DODGE_COOLDOWN_MS: int = 620
+const AIR_DODGE_INVULNERABILITY_MS: int = 120
+const ROLL_COST: int = 24_000
+const ROLL_SPEED: int = 620_000
+const ROLL_DURATION_MS: int = 240
+const ROLL_COOLDOWN_MS: int = 520
+const ROLL_INVULNERABILITY_MS: int = 130
 const WAVE_DASH_INPUT_WINDOW_MS: int = 85
 const WAVE_DASH_MINIMUM_TURN: int = 280_000
 const WAVE_DASH_SPEED: int = 740_000
@@ -111,6 +118,7 @@ static func compatibility_hash() -> String:
 		],
 		"hop_wall": [
 			HOP_COST, HOP_SPEED, HOP_DURATION_MS, HOP_COOLDOWN_MS,
+			JUMP_INVULNERABILITY_MS,
 			WALL_KICK_SPEED, WALL_MEMORY_MS, SAME_WALL_LOCKOUT_MS,
 			WALL_SKIM_COST, WALL_SKIM_SPEED, WALL_SKIM_DURATION_MS,
 			WALL_SKIM_COOLDOWN_MS, WALL_SKIM_SAME_SURFACE_LOCKOUT_MS,
@@ -120,6 +128,8 @@ static func compatibility_hash() -> String:
 			DOUBLE_JUMP_SPEED, DOUBLE_JUMP_DURATION_MS, AIR_REDIRECT_COST,
 			AIR_REDIRECT_BLEND, AIR_DODGE_COST, AIR_DODGE_SPEED,
 			AIR_DODGE_DURATION_MS, AIR_DODGE_COOLDOWN_MS,
+			AIR_DODGE_INVULNERABILITY_MS, ROLL_COST, ROLL_SPEED,
+			ROLL_DURATION_MS, ROLL_COOLDOWN_MS, ROLL_INVULNERABILITY_MS,
 			WAVE_DASH_INPUT_WINDOW_MS, WAVE_DASH_MINIMUM_TURN,
 			WAVE_DASH_SPEED, WAVE_DASH_DURATION_MS, WAVE_DASH_STEERING,
 		],

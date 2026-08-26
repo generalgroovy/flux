@@ -3,10 +3,10 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
-## Current green frontier — 2026-08-23
+## Current green frontier — 2026-08-26
 
 - Branch: `codex/continuous-overhaul`.
-- Protocol 28, snapshot schema 11, player preference schema 8.
+- Protocol 29, snapshot schema 11, player preference schema 8.
 - Two basic champions, the non-ability movement foundation, cone occlusion,
   twelve walk-up Wellspring stations, direct-IP Farflow, Charters, Hearth,
   Proving Court, reconnect, stewardship and late-join observation are live.
@@ -69,6 +69,19 @@ each playable slice.
   templates by bounded HTTP range with ZIP CRC/size validation, excludes
   non-runtime workspace content, emits checksummed Windows ZIP/Linux tar.gz
   friend builds and preserves Linux executable modes across a Windows host.
+- `scripts/package.ps1 -Target Windows` now also compiles the one-file
+  `exports/release/FLUX2-Windows-Setup.exe`. Its embedded ZIP is verified before
+  bounded zip-slip-safe extraction, installed per-user into a versioned staging
+  tree, selected only after every inner checksum passes, and reused as the local
+  launcher. `scripts/test-windows-bootstrap.ps1` passed clean install, forced
+  repair and installed 120 Hz export boot for payload
+  `0.1.0-dev-872b62227a-c08c59e8c4`; packaged Farflow host/guest/late-guest also
+  passed at 120 Hz on UDP 24913. The tested Downloads copy SHA-256 is
+  `4ea9be775c0c266b0be143af3b21da19bd67362aebae31e868059a65cc466c57`.
+- Release boot exposed and fixed an editor-vs-export validation defect: runtime
+  kits now validate authored source hashes/PNG bytes in source gates and imported
+  32×32 Texture2D resources in exports. The selected build is no longer changed
+  by source-only provenance files that Godot correctly compiles/remaps away.
 - Window close disables automatic quit, flushes preferences, gives hosted
   guests a bounded semantic reason, closes ENet and then exits. Source 60/120 Hz
   and real packaged Windows `PLAY-FLUX.cmd` safe-quit smokes pass.

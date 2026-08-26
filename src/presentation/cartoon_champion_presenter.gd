@@ -149,6 +149,7 @@ func draw(
 		_draw_oh_tipi(canvas, definition, anchor, direction, state_id, presentation_tick)
 	else:
 		_draw_s_wayne(canvas, definition, anchor, direction, state_id, presentation_tick)
+	_draw_evasion_contour(canvas, state, body_anchor, presentation_tick, config, reduced_effects)
 	return true
 
 
@@ -289,6 +290,25 @@ func _draw_movement_accent(canvas: CanvasItem, state: PlayerState, ground_anchor
 			canvas.draw_line(ground_anchor - direction * 10.0, ground_anchor - direction * (17.0 + contraction * 5.0), Color(color, opacity * 0.8), 2.0)
 
 
+func _draw_evasion_contour(
+	canvas: CanvasItem,
+	state: PlayerState,
+	ground_anchor: Vector2,
+	tick: int,
+	config: SimConfig,
+	reduced: bool,
+) -> void:
+	if not MovementSystem.is_combat_intangible(state, config):
+		return
+	var color := language.ramp_color("parchment", 4)
+	var phase := float(tick % 12) / 12.0
+	var radius := 20.0 + phase * 3.0
+	var opacity := 0.62 if not reduced else 0.48
+	var center := ground_anchor + Vector2(0.0, -22.0)
+	canvas.draw_arc(center, radius, -1.35 + phase, 0.25 + phase, 10, Color(color, opacity), 2.0)
+	canvas.draw_arc(center, radius, 1.8 + phase, 3.4 + phase, 10, Color(color, opacity), 2.0)
+
+
 func _draw_oh_tipi(canvas: CanvasItem, definition: Dictionary, anchor: Vector2, direction: String, state_id: String, tick: int) -> void:
 	var outline := _material(definition, "outline")
 	var skin_dark := _material(definition, "skin_dark")
@@ -404,6 +424,12 @@ func _validate_recipe(champion_id: String, value: Variant) -> bool:
 	var features: Array = definition.get("silhouette_features", [])
 	if features.size() < 3 or String(definition.get("equipment", "")).is_empty():
 		return _fail("Cartoon champion lacks a distinct silhouette/equipment read: %s" % champion_id)
+	if String(definition.get("casting_origin", "")) != "hands":
+		return _fail("Cartoon champion magic must originate from hands: %s" % champion_id)
+	var casting_tokens := "%s %s" % [String(definition.get("equipment", "")), " ".join(features)]
+	for forbidden_token: String in ["staff", "wand", "scepter", "rod", "focus_orb"]:
+		if forbidden_token in casting_tokens.to_lower():
+			return _fail("Cartoon champion uses a forbidden casting focus: %s" % champion_id)
 	var motion_profile := String(definition.get("motion_profile", ""))
 	if motion == null or not motion.has_profile(motion_profile):
 		return _fail("Cartoon champion lacks a validated minimal-motion profile: %s" % champion_id)

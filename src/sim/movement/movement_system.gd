@@ -91,6 +91,8 @@ static func _consume_technique_buffer(state: PlayerState, command: SimCommand, d
 		consumed = _try_vault(state, direction, config, world)
 		if not consumed:
 			consumed = _try_wall_skim(state, direction, config)
+		if not consumed:
+			consumed = _try_roll(state, direction, config)
 	if consumed:
 		state.technique_buffer_ticks = 0
 		if state.is_airborne():
@@ -155,6 +157,7 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 	var was_hopping: bool = state.hop_ticks > 0
 	var was_fast_falling: bool = state.fast_falling
 	var was_air_dodging: bool = state.air_dodge_ticks > 0
+	var was_rolling: bool = state.is_rolling()
 	var was_wall_skimming: bool = state.wall_skim_ticks > 0
 	var was_landing: bool = state.landing_ticks > 0
 	var was_impact_recovering: bool = state.impact_recovery_ticks > 0
@@ -183,7 +186,11 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 		state.landing_ticks = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
 		state.last_event = "land"
 	if was_air_dodging and state.air_dodge_ticks == 0:
-		if state.wave_dash_queued:
+		if was_rolling:
+			state.landing_ticks = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
+			state.landing_intensity = MovementTuning.LANDING_WALL_SKIM_INTENSITY
+			state.last_event = "roll_end"
+		elif state.wave_dash_queued:
 			state.wave_dash_ticks = config.milliseconds_to_ticks(MovementTuning.WAVE_DASH_DURATION_MS)
 			state.wave_dash_x = state.air_dodge_x
 			state.wave_dash_y = state.air_dodge_y
@@ -257,6 +264,7 @@ static func _apply_impact_recovery_velocity(state: PlayerState, config: SimConfi
 static func _cancel_authored_movement(state: PlayerState) -> void:
 	state.hop_ticks = 0
 	state.hop_stage = 0
+	state.hop_mode = PlayerState.MovementMode.AIR_DODGE
 	state.air_redirects_remaining = 0
 	state.fast_falling = false
 	state.air_dodge_ticks = 0
@@ -346,6 +354,56 @@ static func _try_air_dodge(state: PlayerState, direction: Vector2i, config: SimC
 	_clear_landing_cue(state)
 	state.last_event = "air_dodge"
 	return true
+
+
+static func _try_roll(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
+	if (
+		state.air_dodge_cooldown_ticks > 0 or state.air_dodge_ticks > 0
+		or state.slide_ticks > 0 or state.wave_dash_ticks > 0
+		or state.vault_ticks > 0 or state.superglide_ticks > 0
+		or state.stamina < MovementTuning.ROLL_COST
+	):
+		return false
+	_spend_stamina(state, MovementTuning.ROLL_COST, config)
+	state.hop_mode = PlayerState.MovementMode.ROLL
+	state.air_dodge_ticks = config.milliseconds_to_ticks(MovementTuning.ROLL_DURATION_MS)
+	state.air_dodge_cooldown_ticks = config.milliseconds_to_ticks(MovementTuning.ROLL_COOLDOWN_MS)
+	state.air_dodge_x = direction.x
+	state.air_dodge_y = direction.y
+	state.wave_dash_queued = false
+	state.sprinting = false
+	_clear_landing_cue(state)
+	state.last_event = "roll"
+	return true
+
+
+static func is_combat_intangible(state: PlayerState, config: SimConfig) -> bool:
+	if state == null or config == null:
+		return false
+	if state.hop_ticks > 0:
+		var hop_duration_ms := MovementTuning.HOP_DURATION_MS
+		if state.hop_mode == PlayerState.MovementMode.DOUBLE_JUMP:
+			hop_duration_ms = MovementTuning.DOUBLE_JUMP_DURATION_MS
+		elif state.hop_mode == PlayerState.MovementMode.SLIDE_JUMP:
+			hop_duration_ms = MovementTuning.SLIDE_JUMP_DURATION_MS
+		return _timer_is_in_opening_window(
+			state.hop_ticks,
+			config.milliseconds_to_ticks(hop_duration_ms),
+			config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS),
+		)
+	if state.air_dodge_ticks > 0:
+		var action_duration_ms := MovementTuning.ROLL_DURATION_MS if state.is_rolling() else MovementTuning.AIR_DODGE_DURATION_MS
+		var invulnerability_ms := MovementTuning.ROLL_INVULNERABILITY_MS if state.is_rolling() else MovementTuning.AIR_DODGE_INVULNERABILITY_MS
+		return _timer_is_in_opening_window(
+			state.air_dodge_ticks,
+			config.milliseconds_to_ticks(action_duration_ms),
+			config.milliseconds_to_ticks(invulnerability_ms),
+		)
+	return false
+
+
+static func _timer_is_in_opening_window(remaining_ticks: int, total_ticks: int, window_ticks: int) -> bool:
+	return remaining_ticks > 0 and total_ticks > 0 and total_ticks - remaining_ticks < window_ticks
 
 
 static func _try_slide(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
@@ -469,7 +527,8 @@ static func _apply_velocity(state: PlayerState, command: SimCommand, direction: 
 	if state.superglide_ticks > 0:
 		_set_directional_velocity(state, Vector2i(state.superglide_x, state.superglide_y), MovementTuning.SUPERGLIDE_SPEED)
 	elif state.air_dodge_ticks > 0:
-		_set_directional_velocity(state, Vector2i(state.air_dodge_x, state.air_dodge_y), MovementTuning.AIR_DODGE_SPEED)
+		var dodge_speed := MovementTuning.ROLL_SPEED if state.is_rolling() else MovementTuning.AIR_DODGE_SPEED
+		_set_directional_velocity(state, Vector2i(state.air_dodge_x, state.air_dodge_y), dodge_speed)
 	elif state.wave_dash_ticks > 0:
 		var steered := _steer(Vector2i(state.wave_dash_x, state.wave_dash_y), direction, command, MovementTuning.WAVE_DASH_STEERING)
 		state.wave_dash_x = steered.x
@@ -584,7 +643,7 @@ static func _update_mode(state: PlayerState, command: SimCommand) -> void:
 	elif state.superglide_ticks > 0:
 		state.movement_mode = PlayerState.MovementMode.SUPERGLIDE
 	elif state.air_dodge_ticks > 0:
-		state.movement_mode = PlayerState.MovementMode.AIR_DODGE
+		state.movement_mode = PlayerState.MovementMode.ROLL if state.is_rolling() else PlayerState.MovementMode.AIR_DODGE
 	elif state.wave_dash_ticks > 0:
 		state.movement_mode = PlayerState.MovementMode.WAVE_DASH
 	elif state.vault_ticks > 0:

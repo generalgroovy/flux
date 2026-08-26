@@ -10,6 +10,7 @@ const MOVEMENT_ANIMATIONS := {
 	PlayerState.MovementMode.SLIDE: "slide",
 	PlayerState.MovementMode.SLIDE_JUMP: "slide_jump",
 	PlayerState.MovementMode.AIR_DODGE: "air_dodge",
+	PlayerState.MovementMode.ROLL: "air_dodge",
 	PlayerState.MovementMode.WAVE_DASH: "wavedash",
 	PlayerState.MovementMode.WALL_KICK: "wall_kick",
 	PlayerState.MovementMode.VAULT: "vault",

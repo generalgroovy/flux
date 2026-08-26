@@ -29,4 +29,7 @@ $lines = Get-ChildItem -LiteralPath $exportRoot -Recurse -File | Where-Object { 
 }
 [System.IO.File]::WriteAllLines($manifest, [string[]]$lines, [System.Text.UTF8Encoding]::new($false))
 & (Join-Path $PSScriptRoot 'bundle-release.ps1') -Target $Target -ExportRoot $exportRoot -ReleaseRoot (Join-Path $exportRoot 'release')
+if ($Target -in @('Windows', 'All')) {
+    & (Join-Path $PSScriptRoot 'build-windows-bootstrap.ps1')
+}
 Write-Output "PASS: release exports, portable archives and checksums written to $exportRoot"

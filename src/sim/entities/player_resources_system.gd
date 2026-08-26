@@ -13,7 +13,7 @@ static func step(state: PlayerState, config: SimConfig) -> void:
 
 
 static func damage(state: PlayerState, amount: int, config: SimConfig) -> bool:
-	if amount <= 0 or state.health <= 0:
+	if amount <= 0 or state.health <= 0 or MovementSystem.is_combat_intangible(state, config):
 		return false
 	state.health = maxi(0, state.health - amount)
 	state.health_recovery_remainder = 0

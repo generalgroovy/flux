@@ -1,5 +1,35 @@
 # FLUX2 agent worklog
 
+## 2026-08-26 - quiet, code-page-safe Windows launch
+
+Playable outcome:
+
+- Replaced every non-ASCII status character in the one-file bootstrapper and
+  portable friend-build front door with plain ASCII, avoiding mojibake on
+  Windows systems that still launch through a legacy console code page.
+- Added a lifecycle acceptance assertion that rejects any future non-ASCII byte
+  in the shipped command launcher, friend README or bootstrapper source.
+- Disabled the repeatedly failing Linux-only `Godot foundation` GitHub workflow
+  after confirming 24 consecutive push failures were driving account email;
+  no queued or running copies remained. The checked-in successor is deliberately
+  manual, Windows-only and installs the official pinned/checksummed engine.
+
+Verification:
+
+- `scripts\\test.cmd`: 53 suites / 18,626 assertions, zero failures, followed by
+  independent 60/120 Hz source boots.
+- `scripts\\test-windows-bootstrap.ps1`: ASCII contract, clean install, repair
+  and installed export boot passed.
+- The noisy workflow remains disabled in repository settings; local Windows
+  gates remain authoritative until a maintainer deliberately enables and runs
+  the manual replacement.
+
+Known limitations and next slice:
+
+- GitHub may retain already-sent historical failure emails, but no automatic
+  workflow trigger remains to create new copies. Resume the active C2 whole-
+  scene visual-cohesion review without changing simulation rules.
+
 ## 2026-08-26 — export-safe nine-element projectile art
 
 Playable outcome:

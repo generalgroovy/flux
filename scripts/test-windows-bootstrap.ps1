@@ -6,6 +6,17 @@ param(
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'flux2-common.ps1')
 $repoRoot = Get-FluxRepoRoot
+$launcherTextFiles = @(
+    (Join-Path $repoRoot 'packaging\PLAY-FLUX.cmd'),
+    (Join-Path $repoRoot 'packaging\README-FIRST.txt'),
+    (Join-Path $repoRoot 'packaging\windows-bootstrap\FluxBootstrap.cs')
+)
+foreach ($launcherTextFile in $launcherTextFiles) {
+    $nonAscii = [System.IO.File]::ReadAllBytes($launcherTextFile) | Where-Object { $_ -gt 127 } | Select-Object -First 1
+    if ($null -ne $nonAscii) {
+        throw "Windows launcher source must stay ASCII-only to avoid code-page mojibake: $launcherTextFile"
+    }
+}
 if (-not $Installer) { $Installer = Join-Path $repoRoot 'exports\release\FLUX2-Windows-Setup.exe' }
 $Installer = [System.IO.Path]::GetFullPath($Installer)
 if (-not (Test-Path -LiteralPath $Installer -PathType Leaf)) { throw "Missing installer: $Installer" }

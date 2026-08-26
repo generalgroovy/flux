@@ -1,4 +1,4 @@
-FLUX 2 — PORTABLE FRIEND BUILD
+FLUX 2 - PORTABLE FRIEND BUILD
 ==============================
 
 No installer or administrator access is required.

@@ -29,6 +29,11 @@ each playable slice.
   packaged playtest pause.
 - User-owned `node_modules/` and `scripts/firewall.ps1` remain untracked and
   untouched.
+- Windows launch text is now ASCII-only and the bootstrap lifecycle gate rejects
+  regressions, preventing legacy-code-page mojibake. After 24 consecutive
+  push-triggered failures were identified as the email source, the outdated
+  Linux-only `Godot foundation` workflow was disabled with no queued/running
+  copies; its checked-in replacement is manual, pinned and Windows-only.
 - Windows lifecycle C1 is locally accepted. Player preference schema 9 stores a
   validated Farflow host/IP; the in-world Join gate accepts typing or Ctrl+V,
   confirms with Enter, cancels with Escape and keeps command-line overrides for

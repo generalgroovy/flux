@@ -57,15 +57,15 @@ namespace Flux.Bootstrap
                 try
                 {
                     window.Show();
-                    window.SetStatus("Checking the included build…");
+                    window.SetStatus("Checking the included build...");
                     string gamePath = InstallOrRepair(root, options, window);
 
-                    window.SetStatus(options.NoShortcuts ? "Installing the launcher…" : "Creating shortcuts…");
+                    window.SetStatus(options.NoShortcuts ? "Installing the launcher..." : "Creating shortcuts...");
                     InstallLauncherAndShortcuts(root, !options.NoShortcuts);
 
                     if (!options.InstallOnly)
                     {
-                        window.SetStatus("Starting FLUX…");
+                        window.SetStatus("Starting FLUX...");
                         LaunchGame(gamePath, options.GameArguments);
                     }
 
@@ -101,13 +101,13 @@ namespace Flux.Bootstrap
             string payloadFile = Path.Combine(root, ".payload-" + Guid.NewGuid().ToString("N") + ".zip");
             try
             {
-                window.SetStatus("Verifying the included build…");
+                window.SetStatus("Verifying the included build...");
                 CopyEmbeddedPayload(payloadFile);
                 string payloadHash = Sha256(payloadFile);
                 if (!String.Equals(payloadHash, PayloadSha256, StringComparison.OrdinalIgnoreCase))
                     throw new InvalidDataException("The included game payload failed its SHA-256 check.");
 
-                window.SetStatus("Installing the game safely…");
+                window.SetStatus("Installing the game safely...");
                 Directory.CreateDirectory(stagingDirectory);
                 ExtractSafely(payloadFile, stagingDirectory);
                 if (!VerifyInstall(stagingDirectory))
@@ -423,7 +423,7 @@ namespace Flux.Bootstrap
                 Controls.Add(title);
 
                 status = new Label();
-                status.Text = "Preparing…";
+                status.Text = "Preparing...";
                 status.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
                 status.AutoSize = false;
                 status.Location = new Point(27, 76);

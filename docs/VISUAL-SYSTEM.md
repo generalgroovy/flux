@@ -87,14 +87,22 @@ Oh Tipi and S. Wayne before further environment beautification.
 
 ## V2 foundation champions and minimal motion
 
-Oh Tipi and S. Wayne now draw from one promoted 672x192 body-only runtime atlas
-with 96x96 cells, a 48x84 ground pivot and reviewed south/east/west/north,
-jump, cast and hit silhouettes. The 1.7 MB generation source remains provenance-only
-and is excluded from exports; the quantized runtime atlas is 46 KB. Atlas,
-decoded-pixel and source hashes are pinned by
+Oh Tipi and S. Wayne now draw from one promoted 384×768 body-only runtime atlas
+with 96×96 cells and a 48×84 ground pivot. Each champion owns four semantic
+rows—grounded, jump, empty-hand cast and hit/recovery—and every row owns
+dedicated south/east/north/west art. The two generation sources remain
+provenance-only and are excluded from exports; the quantized runtime atlas is
+about 84 KB. Atlas, decoded-pixel and both source hashes are pinned by
 `content/visual/foundation_champion_visuals_v1.json` and
 `assets/sprites/champions_v3/foundation/provenance.json`; the manifest also
 requires the canonical body type and explicitly excluded baked layers.
+
+`scripts/build_cardinal_champion_atlas.py` is the deterministic promotion
+boundary. It proportionally slices the 1254px 4×4 matte sources, removes only
+edge-connected matte, keeps one scale per champion across all actions, aligns
+the shared pivot and packs champion-major/state-minor rows. This prevents pose
+changes from changing apparent body scale and lets artists replace one source
+sheet without adding renderer branches.
 
 Animation is deliberately reusable rather than baked into gameplay code.
 `content/visual/minimal_champion_motion_v1.json` declares bounded idle, walk,

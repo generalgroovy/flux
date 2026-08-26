@@ -1,5 +1,42 @@
 # FLUX2 agent worklog
 
+## 2026-08-26 - dedicated four-cardinal action atlas
+
+Playable outcome:
+
+- Replaced the foundation presenter's directional-action fallbacks with a
+  versioned 384×768 body-and-clothing-only runtime atlas. Oh Tipi and S. Wayne
+  each have dedicated grounded, jump, empty-hand cast and hit/recovery poses in
+  south, east, north and west.
+- Added a deterministic builder that handles the generated 1254px source grids
+  without dropping border pixels, derives one bounded scale per champion and
+  preserves the shared `(48,84)` feet pivot through every action.
+- Changed the visual manifest to a champion-major/state-minor row contract and
+  cardinal columns; the presenter now fails closed on layout, hash, state,
+  direction, pivot or decoded-pixel drift. Simulation aim, movement, hitboxes,
+  timing, invulnerability, costs and outcomes remain untouched.
+- Recorded both source sheets, exact generation prompts, source/runtime/imported
+  hashes and the reproducible command beside the promoted asset.
+
+Verification:
+
+- Deterministic rebuild reproduced runtime SHA-256
+  `b7620ebfb896c99ac21b956ac08ed6d6a5c2e0c7b15fcdb3de048960cd849de5`.
+- `scripts\test.cmd`: 54 suites, 16,735 assertions, zero failures; clean
+  Windows source boots passed at 60 and 120 Hz. Existing legacy archive
+  `Image.load_from_file` warnings remain expected.
+- Four-direction cast captures for both champions plus north/east jump and
+  west/south hit captures passed at 1280×720/75%, eight frames each, under
+  `.godot/visual-captures/cardinal-v4-*`. Representative frames were visually
+  inspected for profile/back reads, shared pivot and map/HUD readability.
+
+Next slice:
+
+- Add dedicated direction-complete locomotion/evasion body rows and capture
+  walk, sprint, slide and roll at 50/75/100% plus high contrast and reduced
+  effects. Grounded fallback plus reusable motion remains valid until then, so
+  no later visual/mechanical gate is claimed complete.
+
 ## 2026-08-26 - four-cardinal animation contract and live facing
 
 Playable outcome:

@@ -83,6 +83,16 @@ equipment and effects are independent layers; they may not change the pivot or
 silently shift the feet. Oversized features need an explicit attachment anchor
 and an authored clipping/occlusion test.
 
+The active Oh Tipi/S. Wayne candidate uses one 4×4 source sheet per champion:
+direction columns `south/east/north/west` and semantic rows
+`grounded/jump/cast/hit`. Run `scripts/build_cardinal_champion_atlas.py` to pack
+the versioned 384×768 atlas with 96×96 cells and pivot `(48,84)`. The builder
+derives proportional source boundaries, removes edge-connected matte and uses
+one bounded scale per champion across all sixteen cells. Runtime rows are
+champion-major then state-minor; runtime columns are the four cardinals. Exact
+source prompts, hashes and the build command live in
+`assets/sprites/champions_v3/foundation/`.
+
 The debug atlas and
 `assets/sprites/skeletons/skeleton_overlay_validation.png` provide the acceptance
 reference for all three body types.

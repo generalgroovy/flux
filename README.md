@@ -367,16 +367,17 @@ The retained `size_1_tiny`, `size_2_small`, `size_3_medium`, `size_4_large`,
 and `size_5_huge` path fragments belong to the legacy visual archive; only
 `small`, `middle`, and `large` are authored runtime body types.
 
-![Body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_body_v3.png)
+![Four-cardinal body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v4.png)
 
 This atlas is a reusable body/clothing layer for the two foundation champions;
 spells, auras, shadows, projectiles, environment and equipment are composed
 independently. Each champion's `atlas_row` is authored in
-`content/visual/foundation_champion_visuals_v1.json`, so adding a body-only
-champion is a validated content edit rather than a renderer change. The
-`cardinal_animation_contract` in that manifest keeps grounded, jump, cast and
-hit/recovery facing explicit for south/east/north/west; the runtime validator
-rejects missing cardinal mappings before the scene can boot.
+`content/visual/foundation_champion_visuals_v1.json`. The versioned 384×768
+atlas packs dedicated grounded, jump, empty-hand cast and hit/recovery art for
+south/east/north/west under each champion; neither profile is synthesized at
+runtime. The validator rejects missing states, directions, hashes, pivots or
+layout drift before the scene can boot, and the deterministic builder plus exact
+generation prompts live beside the source sheets.
 
 </details>
 

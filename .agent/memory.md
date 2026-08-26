@@ -3,6 +3,33 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## Dedicated cardinal action atlas — 2026-08-26
+
+- Oh Tipi and S. Wayne now use separate repository-owned 4×4 matte sources with
+  dedicated south/east/north/west columns and grounded/jump/empty-hand-cast/
+  hit-recovery rows. Both profiles are authored; the runtime no longer reuses a
+  grounded pose for east/north/west actions.
+- `scripts/build_cardinal_champion_atlas.py` proportionally slices the 1254px
+  sources, removes only edge-connected matte, preserves one scale per champion,
+  aligns pivot `(48,84)`, and deterministically packs the 384×768 body-only
+  `runtime_atlas_cardinal_v4.png`.
+- Runtime PNG SHA-256 is
+  `b7620ebfb896c99ac21b956ac08ed6d6a5c2e0c7b15fcdb3de048960cd849de5`;
+  Godot-imported RGBA SHA-256 is
+  `103b30737ff6b68a0ca449e6acde873e930f1242ede865511103c950a7ebfbea`.
+  Exact source hashes, ImageGen prompts, layout and build command are beside the
+  assets in `foundation/provenance.json` and `foundation/README.md`.
+- Full Windows source gate: 54 suites / 16,735 assertions, zero failures;
+  independent 60/120 Hz boots passed. A second build reproduced the exact PNG
+  hash. Eight-directional cast runs (four per champion) and four targeted
+  jump/hit runs produced 96 truthful 1280×720/75% frames under
+  `.godot/visual-captures/cardinal-v4-*`; representative cast, back-jump and
+  hit/recovery frames were visually inspected.
+- The next C2 slice is dedicated direction-complete locomotion/evasion body art
+  and live 50/75/100% accessibility capture. Walk/sprint/slide/roll currently
+  retain the grounded body cell and use reusable motion/accent layers, so V2 is
+  not yet claimed complete.
+
 ## Four-cardinal animation contract — 2026-08-26
 
 - Character animation data now explicitly requires `south`, `east`, `north`,

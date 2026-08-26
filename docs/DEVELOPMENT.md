@@ -77,10 +77,12 @@ dodge, vault, and superglide. This shared sampler is not evidence that any
 champion's frame-complete sprite manifest is finished.
 
 `src/presentation/wellspring_character_sprite.gd` loads the selected Oh Tipi or
-S. Wayne v2 integrated-candidate atlas and selects its semantic action,
-eight-direction region, and clock-derived frame. The live cartoon presenter
-additionally validates and selects the explicit south/east/north/west cardinal
-pose contract for every grounded, airborne, cast and hit state. The Champion Loom switches the
+S. Wayne compatibility atlas and selects its semantic action, eight-direction
+region, and clock-derived frame. The active cartoon presenter instead validates
+the 384×768 foundation body atlas and selects dedicated south/east/north/west
+art for every grounded, airborne, empty-hand cast and hit state. Build that
+atlas with `scripts/build_cardinal_champion_atlas.py`; its single scale per
+champion and shared `(48,84)` feet pivot are part of the content contract. The Champion Loom switches the
 canonical champion profile and presentation together. The bootstrap draws that
 region with nearest filtering, lifts only the body over the receiving-surface
 shadow, and draws it before the POV mask. Invalid loading or synchronization

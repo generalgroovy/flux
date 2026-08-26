@@ -1,24 +1,22 @@
 # Reusable champion body atlases v3
 
-The current foundation candidate is a body-and-clothing-only atlas for Oh Tipi
-and S. Wayne. It deliberately contains no spells, elements, particles, aura,
+The current foundation candidate is a four-cardinal body-and-clothing-only atlas
+for Oh Tipi and S. Wayne. It deliberately contains no spells, elements, particles, aura,
 shadow, environment, tools, weapons, equipment or detached focus; those layers
 are composed independently by the runtime. This keeps character art reusable
 when a spell, material, HUD or map changes.
 
 The runtime contract has exactly three body types: `small`, `middle`, and
-`large`. Champion-to-row assignment lives in the visual recipe, so adding a
-future body-only champion does not require renderer code changes. The canonical
-body sheet uses six cells per row: south/front idle,
-east profile, north/back, front jump, front empty-hand cast preparation and
-front hit/recovery. West is a deterministic mirror of east. Front faces are
-centered and symmetrical toward the camera; back views are centered and
-consistent with the same pivot.
+`large`. Champion-to-row assignment lives in the visual recipe. Each source has
+four direction columns (south/east/north/west) and four action rows
+(grounded/jump/cast/hit); the runtime packs states under each champion. Front
+faces are centered and symmetrical toward the camera, back views are centered,
+and both profiles are authored rather than mirrored at runtime.
 
 Canonical files:
 
-- `source_sheet_body_v3.png` - editable 1536×1024 source, flat matte, two rows;
-- `runtime_atlas_body_v3.png` - deterministic 672×192 RGBA runtime atlas;
+- `source_cardinal_oh_tipi_v4.png` and `source_cardinal_s_wayne_v4.png` - editable 4×4 flat-matte sources;
+- `runtime_atlas_cardinal_v4.png` - deterministic 384×768 RGBA runtime atlas;
 - `provenance.json` - source/runtime hashes, import policy and generation prompt.
 
 See `content/visual/foundation_champion_visuals_v1.json` and

@@ -1,25 +1,42 @@
 {
-  "schema_version": 2,
-  "asset_id": "flux-foundation-cartoon-champions-body-only-v2",
+  "schema_version": 3,
+  "asset_id": "flux-foundation-cartoon-champions-cardinal-actions-v3",
   "status": "integrated_candidate_pending_human_acceptance",
   "source": "Built-in ImageGen, directed for this FLUX repository on 2026-08-26",
-  "originality": "Original Oh Tipi and S. Wayne production exploration; no third-party pixels, characters, symbols, maps or interface assets may be copied into the result.",
-  "reference_boundary": "assets/concept/visual-system-cartoon-perspective-v2.png supplied only the repository's own accepted cartoon proportion and material direction; its steep map projection remains rejected.",
-  "source_file": "source_sheet_body_v3.png",
-  "source_sha256": "646528da4e44c5955ca918cab65aaa669d167cdefb80123790fcc93c5d4d353b",
-  "source_dimensions": [1536, 1024],
-  "runtime_file": "runtime_atlas_body_v3.png",
-  "runtime_sha256": "c250dbec8bfb2b97ca045efd311204c12fa6ae839db01ba2e65edeffa4e9f2a5",
-  "runtime_imported_rgba_sha256": "6cc5c31b0b9511d3cea768b088fddc356467eac68908df193e505bdc7b495bfb",
-  "runtime_dimensions": [672, 192],
+  "originality": "Original Oh Tipi and S. Wayne production exploration based only on repository-owned character identity art; no third-party pixels, characters, symbols, maps, or interface assets may be copied into the result.",
+  "reference_boundary": "The repository's own body-only v3 source supplied identity, clothing, proportions, palette, and pixel treatment. Zelda and Gungeon references remain mood-level only and supplied no pixels or protected visual identity.",
+  "sources": [
+    {
+      "champion": "oh_tipi",
+      "file": "source_cardinal_oh_tipi_v4.png",
+      "sha256": "fd1bbb9503f7a4f25098665c4f5dac8717b6656a849e8c9f12ef4aabc99ea1c0",
+      "dimensions": [1254, 1254]
+    },
+    {
+      "champion": "s_wayne",
+      "file": "source_cardinal_s_wayne_v4.png",
+      "sha256": "71c61ec36a63e0054632786cc38d5fc9261166f69e14c6a258a51dc83aa6418e",
+      "dimensions": [1254, 1254]
+    }
+  ],
+  "source_grid": {
+    "columns": ["south", "east", "north", "west"],
+    "rows": ["grounded", "jump", "cast", "hit"]
+  },
+  "runtime_file": "runtime_atlas_cardinal_v4.png",
+  "runtime_sha256": "b7620ebfb896c99ac21b956ac08ed6d6a5c2e0c7b15fcdb3de048960cd849de5",
+  "runtime_imported_rgba_sha256": "103b30737ff6b68a0ca449e6acde873e930f1242ede865511103c950a7ebfbea",
+  "runtime_dimensions": [384, 768],
   "runtime_cell": [96, 96],
   "runtime_pivot": [48, 84],
-  "rows": ["oh_tipi", "s_wayne"],
-  "columns": ["south", "east", "west_mirrored_from_east", "north", "jump", "cast", "hit"],
-  "build_command": "python scripts/build_foundation_champion_sprites.py assets/sprites/champions_v3/foundation/source_sheet_body_v3.png assets/sprites/champions_v3/foundation/runtime_atlas_body_v3.png",
+  "runtime_champions": ["oh_tipi", "s_wayne"],
+  "runtime_states": ["grounded", "jump", "cast", "hit"],
+  "runtime_directions": ["south", "east", "north", "west"],
+  "runtime_row_layout": "champion_major_state_minor",
+  "build_command": "python scripts/build_cardinal_champion_atlas.py assets/sprites/champions_v3/foundation/source_cardinal_oh_tipi_v4.png assets/sprites/champions_v3/foundation/source_cardinal_s_wayne_v4.png assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v4.png",
   "atlas_role": "body_and_clothing_only",
   "excluded_layers": ["spell", "element", "projectile", "aura", "shadow", "environment", "equipment", "focus"],
-  "direction_policy": "south_front_camera_facing; east_profile; west_mirrored_east; north_centered_back",
+  "direction_policy": "south_front_camera_facing; east_profile; north_centered_back; west_profile",
   "generation_prompt_file": "README.md",
   "import": "RGBA PNG, nearest-neighbor runtime sampling, no mipmaps, separate authoritative shadow and hitbox",
   "license_note": "Repository-owned generated candidate; retain this provenance and perform human visual/originality review before release promotion."

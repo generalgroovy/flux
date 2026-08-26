@@ -28,6 +28,7 @@ func _test_catalog() -> void:
 	equal(first.playable_spell_ids(), ["arc-primary", "eclipse-disc", "pocket-eclipse", "rillshot", "rimewake", "tideline", "vector-lance"], "only end-to-end spells enter the playable selector")
 	for gated_id: String in ["spirit", "chaos", "gravity", "time"]:
 		check(not bool((first.elements_by_id[gated_id] as Dictionary)["runtime_enabled"]), "%s remains explicitly gated" % gated_id)
+	equal(String(first.data.get("affinity_rule", "")), "aligned_active_cost_discount_capped_by_affinity_strength", "ability catalog declares weighted affinity discount rule")
 	equal(int(first.economy["recovery_delay_ms"]), PlayerTuning.FLUX_RECOVERY_DELAY_MS, "catalog owns the compiled Flux recovery delay")
 	equal((first.economy["cadence_tiers_ms"] as Dictionary).keys().size(), 3, "economy declares exactly three cadence tiers")
 	equal(int(first.ability("arc-primary")["flux_cost"]) * 1000, CombatTuning.PRIMARY_FLUX_COST, "foundation primary has exact positive Flux cost")
@@ -82,6 +83,9 @@ func _test_loadout() -> void:
 	check(second.load_from_file(LOADOUT_PATH, catalog), "foundation loadout reload validates")
 	equal(first.active_points, 13, "affinity-adjusted actives fill the 13-point budget exactly")
 	equal(first.spell_slot_ids, ["arc-primary", "vector-lance", "prism-ward", "stone-channel", "phase-step", "", "", "", "", "", "", ""], "loadout exposes the stable 3x4 spell weave")
+	equal(first.affinity_strength("charge"), 2, "foundation loadout exposes primary Charge strength 2")
+	equal(first.affinity_strength("light"), 1, "foundation loadout exposes secondary Light strength 1")
+	equal(first.affinity_strength("earth"), 0, "unaligned Earth has affinity strength 0")
 	equal(first.content_hash.length(), 64, "loadout has a SHA-256 compatibility hash")
 	equal(first.content_hash, second.content_hash, "loadout hash is stable across reloads")
 
@@ -93,6 +97,18 @@ func _test_invalid_content_fails_closed() -> void:
 	invalid_duplicate.data["slots"]["actives"] = ["vector-lance", "vector-lance", "stone-channel"]
 	check(not invalid_duplicate.validate(catalog), "duplicate active fails closed")
 	check(invalid_duplicate.last_error.contains("unique"), "duplicate failure is diagnosable")
+
+	var invalid_affinity_total := LoadoutDefinition.new()
+	invalid_affinity_total.data = JSON.parse_string(FileAccess.get_file_as_string(LOADOUT_PATH))
+	invalid_affinity_total.data["affinity_points"] = {"charge": 1, "light": 1}
+	check(not invalid_affinity_total.validate(catalog), "loadout must spend exactly three affinity points")
+	check(invalid_affinity_total.last_error.contains("must total"), "affinity-point failure is diagnosable")
+
+	var invalid_affinity_strength := LoadoutDefinition.new()
+	invalid_affinity_strength.data = JSON.parse_string(FileAccess.get_file_as_string(LOADOUT_PATH))
+	invalid_affinity_strength.data["affinity_points"] = {"charge": 3, "light": 0}
+	check(not invalid_affinity_strength.validate(catalog), "affinity strength outside 1..2 fails closed")
+	check(invalid_affinity_strength.last_error.contains("strength"), "affinity-strength failure is diagnosable")
 
 	var invalid_budget := LoadoutDefinition.new()
 	invalid_budget.data = JSON.parse_string(FileAccess.get_file_as_string(LOADOUT_PATH))

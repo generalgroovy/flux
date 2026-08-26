@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "id": "foundation-abilities-v1",
-  "affinity_rule": "aligned_active_cost_discount_only",
+  "affinity_rule": "aligned_active_cost_discount_capped_by_affinity_strength",
   "economy": {
     "resource": "flux",
     "recovery_delay_ms": 700,

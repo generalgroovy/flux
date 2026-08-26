@@ -23,6 +23,16 @@ Content sources:
 - [`foundation_materials_v1.json`](../content/materials/foundation_materials_v1.json)
 - [`sanctum_material_yard_v1.json`](../content/maps/sanctum_material_yard_v1.json)
 
+Reaction design sources, not yet executable runtime behavior:
+
+- [`ELEMENT-REACTIONS-FIRST-EIGHT.md`](ELEMENT-REACTIONS-FIRST-EIGHT.md)
+- [`ELEMENT-REACTIONS-IMPLEMENTATION-PLAN.md`](ELEMENT-REACTIONS-IMPLEMENTATION-PLAN.md)
+- [`first_eight_element_reactions_v1.json`](../content/reactions/first_eight_element_reactions_v1.json)
+
+The first reaction phase is locked to Earth, Fire, Water, Wind, Ice, Charge,
+Light and Dark. Spirit, Chaos, Gravity and Time remain reserved/gated until the
+complete first-eight fundamental acceptance gate passes.
+
 ## Cell storage
 
 Each of the 16,384 cells owns parallel packed integer values:
@@ -60,11 +70,49 @@ Reset copies the immutable seed columns, clears pending work/remainders/errors,
 and reproduces the exact original state and worldbone hashes. Presentation
 reads these arrays into one 128 x 128 texture and cannot mutate them.
 
+## First-eight reaction direction
+
+The design-locked first phase contains exactly 36 unordered element pairs. These
+pairs are map interactions rather than a hidden damage wheel: they create or
+alter materials, routes, friction, structures, visibility, conductor networks,
+projectile/vector geometry, concealment and readable actor statuses.
+
+The flagship lifecycle is:
+
+```text
+Earth + Fire
+-> Magma
+-> elevation-driven flow
+-> cooling crust
+-> Basalt
+-> fracture
+-> Rubble
+```
+
+Water may create Steam while rapidly cooling Magma, enabling an intentionally
+created basalt crossing that can later be fractured into rubble. This lifecycle
+must be implemented through typed material/structural state and bounded dirty
+collision; it may never mutate worldbone.
+
+The detailed implementation order is F2A reaction schema/orchestrator, F2B
+structure plus Magma/Basalt, F2C thermal/hydrology, F2D Charge networks, F2E
+vector/optical/visibility interactions, and F2F Dark/residue/matrix completion.
+Only after all 36 first-eight pairs meet deterministic, reset, safety, network,
+performance, readability and gameplay gates may the remaining four element
+families receive executable interaction design.
+
 ## Deliberate limitations and next gate
 
 F1 imports static examples of empty, worldbone, stone, brick, wood, water, oil,
 fire, steam, ice, rubble, Charge, and elevation. It does not yet flow liquids,
 transfer heat, burn, freeze, fracture, collapse, conduct, derive collision, or
-replicate deltas. F2 must introduce the single material phase orchestrator,
-typed structural damage/damaged stages/rubble, then thermal/Fire/steam/ice rules
-with conservation, fixed work, reset, replay, collision, and presentation tests.
+replicate deltas. The new first-eight registry is explicitly
+`design_locked_unimplemented`; its presence does not mean reactions currently
+step in simulation.
+
+F2A must first introduce a validated reaction catalog and the single material
+phase orchestrator. F2B then adds typed structural damage/damaged stages/rubble
+and the Magma -> Basalt lifecycle. Later F2 slices promote the remaining
+first-eight interactions with conservation, fixed work, reset, replay,
+worldbone, movement, collision, semantic network/presentation and 60/120 Hz
+tests.

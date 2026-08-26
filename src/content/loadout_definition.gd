@@ -3,6 +3,7 @@ extends RefCounted
 
 
 const SUPPORTED_SCHEMA_VERSION: int = 3
+const AFFINITY_POINT_BUDGET: int = 3
 
 var data: Dictionary = {}
 var last_error: String = ""
@@ -48,6 +49,23 @@ func validate(catalog: AbilityCatalog) -> bool:
 			return _fail("loadout affinity is not runtime-enabled: %s" % affinity)
 		affinity_set[affinity] = true
 
+	var affinity_points: Dictionary = data.get("affinity_points", {})
+	if affinity_points.size() != affinities.size():
+		return _fail("affinity_points must match loadout affinities")
+	var affinity_point_total := 0
+	for affinity: String in affinity_set:
+		if not affinity_points.has(affinity):
+			return _fail("affinity_points must include every loadout affinity: %s" % affinity)
+		var strength := int(affinity_points[affinity])
+		if strength < 1 or strength > 2:
+			return _fail("loadout affinity strength must be 1 or 2: %s" % affinity)
+		affinity_point_total += strength
+	for point_key: Variant in affinity_points.keys():
+		if not affinity_set.has(String(point_key)):
+			return _fail("affinity_points cannot contain undeclared affinity: %s" % String(point_key))
+	if affinity_point_total != AFFINITY_POINT_BUDGET:
+		return _fail("loadout affinity points must total %d" % AFFINITY_POINT_BUDGET)
+
 	var slots: Dictionary = data.get("slots", {})
 	for slot_name: String in ["passive", "primary", "mobility", "ultimate"]:
 		if not _validate_slot(catalog, String(slots.get(slot_name, "")), slot_name):
@@ -65,8 +83,12 @@ func validate(catalog: AbilityCatalog) -> bool:
 		active_ids[ability_id] = true
 		var ability: Dictionary = catalog.ability(ability_id)
 		var effective_points := int(ability.get("points", 0))
-		if affinity_set.has(String(ability.get("element", ""))):
-			effective_points = maxi(1, effective_points - int(ability.get("affinity_discount", 0)))
+		var element_id := String(ability.get("element", ""))
+		if affinity_set.has(element_id):
+			var strength := int(affinity_points.get(element_id, 0))
+			var authored_discount := int(ability.get("affinity_discount", 0))
+			var effective_discount := mini(strength, authored_discount)
+			effective_points = maxi(1, effective_points - effective_discount)
 		active_points += effective_points
 	var budget := int(data.get("active_budget", 0))
 	if budget != 13:
@@ -96,6 +118,11 @@ func validate(catalog: AbilityCatalog) -> bool:
 	if content_hash.length() != 64:
 		return _fail("loadout hash failed")
 	return true
+
+
+func affinity_strength(element_id: String) -> int:
+	var affinity_points: Dictionary = data.get("affinity_points", {})
+	return int(affinity_points.get(element_id, 0))
 
 
 func _validate_slot(catalog: AbilityCatalog, ability_id: String, expected_kind: String) -> bool:

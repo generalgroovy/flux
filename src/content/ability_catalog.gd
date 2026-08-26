@@ -46,8 +46,8 @@ func validate() -> bool:
 		return _fail("unsupported ability catalog schema")
 	if String(data.get("id", "")).is_empty():
 		return _fail("ability catalog id is required")
-	if String(data.get("affinity_rule", "")) != "aligned_active_cost_discount_only":
-		return _fail("affinities may only discount aligned active build cost")
+	if String(data.get("affinity_rule", "")) != "aligned_active_cost_discount_capped_by_affinity_strength":
+		return _fail("affinities may only discount aligned active build cost within authored affinity strength")
 	var economy_value: Variant = data.get("economy", {})
 	if not economy_value is Dictionary:
 		return _fail("ability economy must be an object")

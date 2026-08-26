@@ -48,6 +48,9 @@ Verification:
 - Additional captures passed at 1280×720/50%, 1280×720/100%, 1920×1080/75%,
   and a 20-frame 1280×720/75% startup/chain cast review; all dimensions and
   frame counts were verified by the capture harness.
+- Four-frame 1280×720/75% high-contrast and reduced-effects captures also pass;
+  critical HUD, route, actor, station and court-accent silhouettes remain
+  visible in both modes.
 - `scripts\\package.ps1 -Target Windows` rebuilt the package from `main`
   commit `b6756ae`; installer SHA-256 is
   `58c0ea2a0d71d1bc53f85adcd7ffe2f222df140d0a49e067bf50882b71b0c8ea` and

@@ -409,9 +409,10 @@ They improve approach readability and give the space a lived-in rhythm without
 changing topology, collision, routes, station radii, or simulation state.
 
 The current visual checkpoint has truthful 1280×720 captures at 50%, 75% and
-100% zoom, a 1920×1080 capture at 75%, and a 20-frame startup/chain cast capture
-under `.godot/visual-captures/post-unify-v9-*`; these are ignored review
-artifacts and can be regenerated with `scripts/capture-visual.ps1`.
+100% zoom, a 1920×1080 capture at 75%, an 8-frame startup/chain cast capture,
+and high-contrast/reduced-effects captures under
+`.godot/visual-captures/post-unify-v9-*`; these are ignored review artifacts
+and can be regenerated with `scripts/capture-visual.ps1`.
 
 Concept images guide proportion, color roles, mood, and readability. They do not
 define hitboxes, timing, abilities, map topology, or simulation rules. Promotion

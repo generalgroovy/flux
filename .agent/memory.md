@@ -12,6 +12,8 @@ each playable slice.
 - Verification: 54 suites / 18,676 assertions, zero failures; source boots at
   60/120 Hz. Eight truthful 1280×720/75% startup-and-chain cast frames captured
   in `.godot/visual-captures/post-unify-v9-hand-cue-v2`.
+- Four-frame 1280×720/75% high-contrast and reduced-effects captures pass;
+  HUD, routes, actors, stations and court accents remain legible.
 - The next package rebuild must include this slice; keep mechanics frozen until
   the V0–V6 visual gate is accepted.
 

@@ -148,10 +148,11 @@ slice and opens V4; subjective final cohesion is still scored at integrated V6.
 
 The post-unification review on 2026-08-26 extended this evidence with truthful
 1280×720 captures at 50%, 75% and 100%, a 1920×1080 capture at 75%, and a
-20-frame 1280×720/75% startup-and-chain cast run. The source court's six
-decoration anchors remain visible at overview and detail scales. These captures
-prove dimensions, launchability, and alignment only; the V6 rubric still needs
-interactive two-player, accessibility, and subjective cohesion review.
+20-frame 1280×720/75% startup-and-chain cast run, plus four-frame
+high-contrast and reduced-effects runs. The source court's six decoration
+anchors remain visible at overview and detail scales. These captures prove
+dimensions, launchability, and alignment only; the V6 rubric still needs
+interactive two-player and subjective cohesion review.
 
 ## V4 foundation-spell presentation
 

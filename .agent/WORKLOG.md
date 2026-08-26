@@ -1,5 +1,27 @@
 # FLUX2 agent worklog
 
+## 2026-08-26 - central visual registry and diagnostic hash
+
+Playable outcome:
+
+- Registered `spell_animation_skeletons_v1.json` in the central visual asset
+  registry and validate it through the same fail-closed loader used by the
+  foundation spell presenter.
+- Exposed the skeleton manifest hash in the Windows bootstrap diagnostic line,
+  making visual-content drift visible in handoff logs and captures.
+
+Verification:
+
+- `scripts\\test.cmd`: 54 suites, 18,671 assertions, zero failures, with
+  Windows source boots at 60 and 120 Hz.
+- Runtime diagnostics now include `spells <profile-hash>/skeleton
+  <skeleton-hash>`; legacy archive image-load warnings remain expected.
+
+Next slice:
+
+- Rebuild the Windows package from unified `main`, then continue the C2/V9
+  visual acceptance with source-court environment review.
+
 ## 2026-08-26 - reusable spell delivery animation skeletons
 
 Playable outcome:

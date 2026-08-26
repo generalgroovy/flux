@@ -303,7 +303,7 @@ func _ready() -> void:
 		elif capture_expanded_station_id == "farflow-join":
 			_open_join_address_editor()
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s, bursts %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s/skeleton %s, bursts %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -323,6 +323,7 @@ func _ready() -> void:
 			campus_renderer.architecture_kit.content_hash.left(12),
 			campus_renderer.wayfinding.content_hash.left(12),
 			foundation_spell_presenter.content_hash.left(12),
+			foundation_spell_presenter.animation_skeleton_hash.left(12),
 			burst_projectile_presenter.content_hash.left(12),
 			cartoon_champion_presenter.content_hash.left(12),
 			cartoon_champion_presenter.atlas_hash.left(12),

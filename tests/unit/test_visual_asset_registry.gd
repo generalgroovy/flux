@@ -15,6 +15,7 @@ func _test_repository_registry() -> void:
 	check(registry.champions.has("nico_lai"), "first champion candidate is registered")
 	check(registry.environment.has("sanctum_tiles"), "Sanctum tile kit is registered")
 	check(registry.environment.has("nexus_to_conservatory"), "first authored visual slice is registered")
+	check(registry.spell_animation_skeletons.has("manifest"), "spell animation skeleton manifest is centrally registered")
 	equal((registry.materials.get("order", []) as Array).size(), 11, "all foundation material tiles are registered")
 	equal((registry.icons["elements"].get("order", []) as Array).size(), 8, "all enabled element icons are registered")
 	equal((registry.icons["abilities"].get("order", []) as Array).size(), 6, "all foundation ability icons are registered")

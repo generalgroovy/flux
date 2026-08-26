@@ -163,6 +163,11 @@ unbounded phases; `FoundationSpellPresenter` refuses a profile whose
 hand-origin anticipation, lane/endpoint reads and quiet residue editable data
 while simulation continues to own the actual timeline and result.
 
+The manifest is registered in `content/visual/visual_asset_registry_v1.json`
+and its SHA-256 is printed in the Windows bootstrap diagnostic next to the
+foundation profile hash. A capture or handoff that shows a different skeleton
+hash is a different visual build, even when simulation content is unchanged.
+
 | Spell | Startup | Action/trail | Impact/residue |
 | --- | --- | --- | --- |
 | Rillshot | Gathered Water drop | Faceted drop with split rill wake | Expanding splash ring; no residue |

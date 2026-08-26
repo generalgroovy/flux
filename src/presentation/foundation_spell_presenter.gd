@@ -17,6 +17,7 @@ var profiles_by_wire: Dictionary[int, Dictionary] = {}
 var profiles_by_id: Dictionary[String, Dictionary] = {}
 var animation_skeletons := SpellAnimationSkeletonLibrary.new()
 var content_hash := ""
+var animation_skeleton_hash := ""
 var last_error := ""
 
 
@@ -27,11 +28,13 @@ func configure(visual_language: VisualLanguage, catalog: AbilityCatalog, path: S
 	profiles_by_id.clear()
 	animation_skeletons = SpellAnimationSkeletonLibrary.new()
 	content_hash = ""
+	animation_skeleton_hash = ""
 	last_error = ""
 	if language == null or catalog == null or language.elements.is_empty() or catalog.abilities_by_id.is_empty():
 		return _fail("Foundation spell presentation requires validated visual and ability catalogs")
 	if not animation_skeletons.load_from_file():
 		return _fail(animation_skeletons.last_error)
+	animation_skeleton_hash = animation_skeletons.content_hash
 	if not FileAccess.file_exists(path):
 		return _fail("Foundation spell presentation does not exist: %s" % path)
 	var source := FileAccess.get_file_as_string(path)

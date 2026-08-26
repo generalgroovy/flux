@@ -16,6 +16,7 @@ func _test_repository_profiles() -> void:
 	check(presenter.configure(language, catalog), "foundation spell presentation validates: %s" % presenter.last_error)
 	equal(presenter.profiles_by_id.size(), 5, "every playable foundation spell has one visual profile")
 	equal(presenter.animation_skeletons.skeletons.size(), 4, "foundation spells share four reusable delivery skeletons")
+	check(presenter.animation_skeleton_hash.length() == 64, "foundation spell presentation exposes the skeleton content hash")
 	equal(FoundationSpellPresenter.STARTUPS.size(), 5, "foundation spells own five distinct startup silhouettes")
 	check(presenter.content_hash.length() == 64, "foundation spell presentation has a stable content hash")
 	var observed_startups: Dictionary[String, bool] = {}

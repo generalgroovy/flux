@@ -1256,5 +1256,8 @@
     "skeleton_validation": "res://assets/sprites/skeletons/skeleton_overlay_validation.png",
     "singular_animation_archive": "res://assets/sprites/skeletons/skeleton_animation_pngs_v1.zip"
   },
+  "spell_animation_skeletons": {
+    "manifest": "res://content/visual/spell_animation_skeletons_v1.json"
+  },
   "license": "Project-original; repository license governs distribution."
 }

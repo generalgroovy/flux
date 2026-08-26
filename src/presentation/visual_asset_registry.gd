@@ -12,6 +12,7 @@ var champions: Dictionary = {}
 var environment: Dictionary = {}
 var materials: Dictionary = {}
 var icons: Dictionary = {}
+var spell_animation_skeletons: Dictionary = {}
 
 
 func load_from_file(path: String = DEFAULT_PATH) -> bool:
@@ -45,6 +46,13 @@ func validate() -> bool:
 	environment = data.get("environment", {})
 	materials = data.get("materials", {})
 	icons = data.get("icons", {})
+	spell_animation_skeletons = data.get("spell_animation_skeletons", {})
+	var spell_manifest_path := str(spell_animation_skeletons.get("manifest", ""))
+	if spell_manifest_path.is_empty() or not FileAccess.file_exists(spell_manifest_path):
+		return _fail("spell animation skeleton manifest is not registered")
+	var spell_library := SpellAnimationSkeletonLibrary.new()
+	if not spell_library.load_from_file(spell_manifest_path):
+		return _fail("registered spell animation skeleton manifest is invalid: %s" % spell_library.last_error)
 	if skeletons.size() != 5:
 		return _fail("visual registry requires five skeleton sizes")
 	for size_id: String in skeletons:

@@ -12,21 +12,27 @@ const REQUIRED_PHASES: Array[String] = ["startup", "release", "travel", "impact"
 var data: Dictionary = {}
 var skeletons: Dictionary = {}
 var phase_order: Array[String] = []
+var content_hash := ""
 var last_error := ""
 
 
 func load_from_file(path: String = DEFAULT_PATH) -> bool:
 	last_error = ""
+	content_hash = ""
 	if not FileAccess.file_exists(path):
 		return _fail("spell animation skeleton manifest does not exist: %s" % path)
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		return _fail("could not open spell animation skeleton manifest: %s" % path)
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	var source := file.get_as_text()
+	var parsed: Variant = JSON.parse_string(source)
 	if not parsed is Dictionary:
 		return _fail("spell animation skeleton manifest root must be an object")
 	data = parsed
-	return validate()
+	if not validate():
+		return false
+	content_hash = source.sha256_text()
+	return true
 
 
 func validate() -> bool:

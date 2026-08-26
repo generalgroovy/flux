@@ -392,7 +392,9 @@ Spell delivery animation is also data-driven:
 release → travel → impact → residue phases for projectile, beam, spray and
 field families. Foundation spell profiles reference one matching skeleton; the
 loader fails closed on shape mismatches while all simulation timing and outcomes
-remain authoritative.
+remain authoritative. The manifest is centrally registered in
+`content/visual/visual_asset_registry_v1.json` and its hash is printed in the
+bootstrap diagnostic for reproducible Windows handoffs.
 
 Concept images guide proportion, color roles, mood, and readability. They do not
 define hitboxes, timing, abilities, map topology, or simulation rules. Promotion

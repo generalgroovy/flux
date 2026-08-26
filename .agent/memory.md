@@ -3,6 +3,16 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## Visual registry/hash slice — 2026-08-26
+
+- `VisualAssetRegistry` now binds and validates the spell-animation skeleton
+  manifest, keeping visual content discoverable from one registry.
+- `FoundationSpellPresenter.animation_skeleton_hash` and the bootstrap line
+  expose the manifest version beside the profile hash for reproducible captures.
+- Verification: 54 suites / 18,671 assertions, zero failures; Windows source
+  boots at 60/120 Hz. Legacy archive image-load warnings remain expected.
+- Rebuild the Windows package from unified `main` before distributing it.
+
 ## Spell delivery skeleton slice — 2026-08-26
 
 - `content/visual/spell_animation_skeletons_v1.json` and

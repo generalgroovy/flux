@@ -29,6 +29,13 @@ Verification:
   west/south hit captures passed at 1280×720/75%, eight frames each, under
   `.godot/visual-captures/cardinal-v4-*`. Representative frames were visually
   inspected for profile/back reads, shared pivot and map/HUD readability.
+- Runtime/content commit `c4c4bce` was pushed and unified on `main` plus
+  `codex/continuous-overhaul`. A package rebuilt from that exact commit excludes
+  both editable source sheets and the superseded v3 atlas, includes the compact
+  v4 runtime atlas, and boots headlessly at 120 Hz. Installer SHA-256 is
+  `75a45940f906f8a81df0d60f7dfc3fa310d265873129f0caafcefaa49b7605c0`;
+  portable ZIP SHA-256 is
+  `f2bf73e21daeb3bceb345dfd9391e28f5526d190afc2970e9d0180d42d31133c`.
 
 Next slice:
 

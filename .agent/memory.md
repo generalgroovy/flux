@@ -29,6 +29,14 @@ each playable slice.
   and live 50/75/100% accessibility capture. Walk/sprint/slide/roll currently
   retain the grounded body cell and use reusable motion/accent layers, so V2 is
   not yet claimed complete.
+- Runtime/content checkpoint `c4c4bce` is unified on `main` and
+  `codex/continuous-overhaul`. Its Windows installer SHA-256 is
+  `75a45940f906f8a81df0d60f7dfc3fa310d265873129f0caafcefaa49b7605c0`;
+  portable ZIP SHA-256 is
+  `f2bf73e21daeb3bceb345dfd9391e28f5526d190afc2970e9d0180d42d31133c`.
+  The packaged executable booted headlessly at 120 Hz with atlas hash
+  `b7620ebfb896`; editable sources and the superseded atlas are excluded from
+  the export.
 
 ## Four-cardinal animation contract — 2026-08-26
 

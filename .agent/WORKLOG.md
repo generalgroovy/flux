@@ -51,8 +51,9 @@ Verification:
 - Four-frame 1280×720/75% high-contrast and reduced-effects captures also pass;
   critical HUD, route, actor, station and court-accent silhouettes remain
   visible in both modes.
-- `scripts\\package.ps1 -Target Windows` rebuilt the package from the exact
-  `main` tip `08cacfb`; installer SHA-256 is
+- `scripts\\package.ps1 -Target Windows` rebuilt the package from runtime/content
+  commit `08cacfb`; the following handoff-only commit changes no payload files.
+  Installer SHA-256 is
   `1bb4eee646ff49f9725784b61dad29cbd0208a8b1d8534641e98a5eebcd41bea` and
   portable ZIP SHA-256 is
   `e88869ebb321dd48ea61f9d9fa31c8c559c30b599b2c55dab7e4b412ea0f6a4e`.

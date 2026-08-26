@@ -21,6 +21,9 @@ each playable slice.
 - Canonical body types use bounded render scales around the shared feet pivot:
   `small` 0.90×, `middle` 1.00×, `large` 1.10×. This changes presentation only;
   simulation radius, hitboxes and outcomes remain authoritative.
+- Local and remote spell-startup drawing now uses a deterministic empty-hand
+  origin above that feet pivot, with aim/side offsets bounded in the presenter;
+  spell visuals no longer begin at the hitbox center.
 - Atlas source SHA-256:
   `646528da4e44c5955ca918cab65aaa669d167cdefb80123790fcc93c5d4d353b`;
   runtime PNG SHA-256:
@@ -32,15 +35,17 @@ each playable slice.
 - Superseded `source_sheet.png`, `runtime_atlas.png`, and intermediate
   hands-only PNGs were removed; tracked versions remain recoverable in Git.
 - Verification after the slice: `scripts\\test.cmd` passed 53 suites,
-  18,640 assertions, zero failures, with independent Windows source boots at
+  18,642 assertions, zero failures, with independent Windows source boots at
   60/120 Hz. The test output still contains expected editor image-load warnings
   for legacy visual archives.
 - Truthful 1280×720 four-frame captures passed at 50%, 75% and 100% camera zoom
   under `.godot/visual-captures/body-v3-*`; Oh Tipi at 50%/75% and S. Wayne at
   100% were visually inspected with the new body-only atlas.
+- The 24-frame `hand-cast-v2-720` capture at 75% shows the startup cue beginning
+  in the empty-hand lane before projectile travel.
 - `scripts\package.ps1 -Target Windows` rebuilt the export and installer; the
   current installer SHA-256 is
-  `9e9434068aae19d9cf6b86a164e1e1f1e758f4190e489a768dc0fc8acbc9a738`.
+  `f78c0463adcf3740adab6aac58a676a3ac5c5f41f01db866ca609e21f3ed640d`.
   The exported `exports\windows\flux2.exe` boots headlessly at 120 Hz.
 - `scripts\test-windows-bootstrap.ps1` was blocked when Device Guard refused
   the unsigned installer binary (also from `%TEMP%`); this host limitation is

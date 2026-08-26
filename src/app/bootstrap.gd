@@ -801,7 +801,7 @@ func _draw() -> void:
 		draw_arc(body_position, player_radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
 	if show_debug_overlay:
 		_draw_actor_hitbox_diagnostic(body_position, player_radius, presentation_champion_id)
-	_draw_spell_startup(presentation_state, body_position, roundi(visual_tick))
+	_draw_spell_startup(presentation_state, sprite_anchor, roundi(visual_tick))
 	if state.spawn_protection_ticks > 0:
 		var protection_ratio := clampf(float(state.spawn_protection_ticks) / float(maxi(1, world.config.milliseconds_to_ticks(1200))), 0.0, 1.0)
 		draw_arc(body_position, player_radius + 9.0, 0.0, TAU, 28, Color(ATTUNEMENT_COLOR, 0.32 + protection_ratio * 0.42), 2.0)
@@ -1151,7 +1151,7 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visua
 			draw_arc(body_position, radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
 		if show_debug_overlay:
 			_draw_actor_hitbox_diagnostic(body_position, radius, champion_id)
-		_draw_spell_startup(remote_state, body_position, visual_tick)
+		_draw_spell_startup(remote_state, sprite_anchor, visual_tick)
 		if remote_state.spawn_protection_ticks > 0:
 			var protection_ratio := clampf(float(remote_state.spawn_protection_ticks) / float(maxi(1, world.config.milliseconds_to_ticks(1200))), 0.0, 1.0)
 			draw_arc(body_position, radius + 9.0, 0.0, TAU, 28, Color(ATTUNEMENT_COLOR, 0.32 + protection_ratio * 0.42), 2.0)
@@ -1175,10 +1175,11 @@ func _draw_spell_startup(state: PlayerState, position: Vector2, visual_tick: int
 		return
 	var full_ticks := maxi(1, world.config.milliseconds_to_ticks(int(ability.get("startup_ms", 0))))
 	var phase := clampf(1.0 - float(state.pending_cast_ticks) / float(full_ticks), 0.0, 1.0)
+	var hand_origin := CartoonChampionPresenter.hand_cast_origin(position, Vector2(state.aim_x, state.aim_y))
 	foundation_spell_presenter.draw_startup(
 		self,
 		state.pending_cast_wire_id,
-		position,
+		hand_origin,
 		Vector2(state.aim_x, state.aim_y),
 		phase,
 		visual_tick,

@@ -21,6 +21,9 @@ Playable outcome:
 - Added bounded visual scale tokens (`small` 0.90×, `middle` 1.00×, `large`
   1.10×) around the shared feet pivot; simulation radius, hitboxes and outcomes
   remain unchanged.
+- Routed local and remote spell-startup visuals through a deterministic
+  forward empty-hand origin (`27 px` above the feet pivot with bounded aim and
+  side offsets), keeping the body atlas free of magical pixels.
 
 Files and contracts:
 
@@ -35,15 +38,18 @@ Files and contracts:
 
 Verification:
 
-- `scripts\\test.cmd`: 53 suites, 18,640 assertions, zero failures, with
+- `scripts\\test.cmd`: 53 suites, 18,642 assertions, zero failures, with
   independent Windows source boots at 60 and 120 Hz.
 - `scripts\\capture-visual.ps1` produced truthful 1280×720 four-frame captures
   at 50%, 75% and 100% zoom under `.godot/visual-captures/body-v3-*`; Oh Tipi
   (50%/75%) and S. Wayne (100%) were inspected.
+- A 24-frame 1280×720 hand-cast capture at 75% (`.godot/visual-captures/hand-cast-v2-720`)
+  was inspected; startup art now visibly begins in the empty-hand lane before
+  the projectile leaves the actor.
 - `scripts\\package.ps1 -Target Windows` rebuilt the export and one-file
   release bundle. The current installer is
   `exports\\release\\FLUX2-Windows-Setup.exe` (SHA-256
-  `9e9434068aae19d9cf6b86a164e1e1f1e758f4190e489a768dc0fc8acbc9a738`). The
+  `f78c0463adcf3740adab6aac58a676a3ac5c5f41f01db866ca609e21f3ed640d`). The
   exported `exports\\windows\\flux2.exe` boots headlessly at 120 Hz.
 - `scripts\\test-windows-bootstrap.ps1` reached the installer launch but this
   host's Device Guard policy blocked the unsigned installer binary, including

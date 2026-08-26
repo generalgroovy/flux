@@ -16,6 +16,9 @@ const BODY_TYPE_RENDER_SCALE := {
 	"middle": 1.00,
 	"large": 1.10,
 }
+const HAND_CAST_HEIGHT := 27.0
+const HAND_CAST_FORWARD := 4.0
+const HAND_CAST_SIDE := 7.0
 
 var language: VisualLanguage
 var champions: Dictionary = {}
@@ -190,6 +193,12 @@ static func cardinal_direction(x: int, y: int) -> String:
 
 static func body_type_render_scale(body_type: String) -> float:
 	return float(BODY_TYPE_RENDER_SCALE.get(body_type.to_lower(), 1.0))
+
+
+static func hand_cast_origin(body_anchor: Vector2, aim: Vector2) -> Vector2:
+	var direction := aim.normalized() if aim.length_squared() > 0.01 else Vector2.DOWN
+	var side := direction.orthogonal()
+	return body_anchor + Vector2(0.0, -HAND_CAST_HEIGHT) + direction * HAND_CAST_FORWARD + side * HAND_CAST_SIDE
 
 
 func _draw_aura(canvas: CanvasItem, definition: Dictionary, anchor: Vector2, tick: int, reduced: bool, motion_scale: float = 1.0) -> void:

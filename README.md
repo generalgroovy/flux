@@ -247,7 +247,8 @@ Champion atlases contain body and clothing only. Front/south poses face the
 camera with centered, balanced anatomy; north is a centered back view, east is
 an authored profile, and west is its deterministic mirror. Shadows, auras,
 spells, projectiles, environment, tools and equipment are separate reusable
-layers. Magic originates from visible empty hands; staffs, wands, rods,
+layers. Magic originates from a visible empty-hand lane above the shared feet
+pivot; staffs, wands, rods,
 scepters, held foci and floating companion foci are excluded. Character bodies
 and clothing avoid sexualized presentation.
 

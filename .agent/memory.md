@@ -29,10 +29,10 @@ each playable slice.
 - Verification: 54 suites / 18,674 assertions, zero failures; source boots at
   60/120 Hz. Four truthful 1280×720 frames captured at 75% zoom in
   `.godot/visual-captures/post-unify-v9-720`.
-- Windows package rebuilt from the exact unified `main` tip `2ba710f`; installer
-  SHA-256 `03783a8a47cee5fc593d962084d0b85d11a478f905d8aead0ee30687e229b6d2`,
+- Windows package rebuilt from the exact unified `main` tip `08cacfb`; installer
+  SHA-256 `1bb4eee646ff49f9725784b61dad29cbd0208a8b1d8534641e98a5eebcd41bea`,
   portable ZIP SHA-256
-  `fcf335ea6b85bac7be054c3b665cd12acc8035d101a5c4ac488711ec98c8352b`.
+  `e88869ebb321dd48ea61f9d9fa31c8c559c30b599b2c55dab7e4b412ea0f6a4e`.
 - Packaged `exports\\windows\\flux2.exe` headless smoke exited 0; `main` and
   `codex/continuous-overhaul` remain unified at the same commit.
 

@@ -52,10 +52,10 @@ Verification:
   critical HUD, route, actor, station and court-accent silhouettes remain
   visible in both modes.
 - `scripts\\package.ps1 -Target Windows` rebuilt the package from the exact
-  `main` tip `2ba710f`; installer SHA-256 is
-  `03783a8a47cee5fc593d962084d0b85d11a478f905d8aead0ee30687e229b6d2` and
+  `main` tip `08cacfb`; installer SHA-256 is
+  `1bb4eee646ff49f9725784b61dad29cbd0208a8b1d8534641e98a5eebcd41bea` and
   portable ZIP SHA-256 is
-  `fcf335ea6b85bac7be054c3b665cd12acc8035d101a5c4ac488711ec98c8352b`.
+  `e88869ebb321dd48ea61f9d9fa31c8c559c30b599b2c55dab7e4b412ea0f6a4e`.
 - `exports\\windows\\flux2.exe --headless --quit-after 3 --fixed-fps 120 --
   --tick-rate=120` exited 0 and printed the current visual/content hashes.
 

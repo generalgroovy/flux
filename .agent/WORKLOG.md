@@ -49,10 +49,10 @@ Verification:
   and a 20-frame 1280×720/75% startup/chain cast review; all dimensions and
   frame counts were verified by the capture harness.
 - `scripts\\package.ps1 -Target Windows` rebuilt the package from `main`
-  commit `b327bd7`; installer SHA-256 is
-  `02bec3e59e64109d2c6b0999f067086d5ae6ef64b9873f78b3ce3c9970c3b353` and
+  commit `b6756ae`; installer SHA-256 is
+  `58c0ea2a0d71d1bc53f85adcd7ffe2f222df140d0a49e067bf50882b71b0c8ea` and
   portable ZIP SHA-256 is
-  `3da6b7a83ab7f4f43bb0d848556d15352501e3feca74d4ec23f545ebf5ebbba2`.
+  `f1b00aabd06c73051a0b19c884fe93cd060b6bb43abb3aa1144f3150a3b5e9b9`.
 - `exports\\windows\\flux2.exe --headless --quit-after 3 --fixed-fps 120 --
   --tick-rate=120` exited 0 and printed the current visual/content hashes.
 

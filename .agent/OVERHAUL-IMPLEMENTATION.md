@@ -47,7 +47,7 @@ variants with new stable IDs and counterplay.
 | Body taxonomy | Exactly `small`, `middle`, `large`; legacy tiny/medium/huge inputs migrate once and never enter new authored data. |
 | Direction grammar | South/front is camera-facing and centered; north is centered back; east is authored profile; west is a deterministic mirror with corrected asymmetric ancestry details only when required. |
 | Atlas contents | Body and clothing pixels only; no spells, elements, particles, aura, shadow, world art, tool, weapon, equipment or detached focus. |
-| Composition | Runtime composes body, receiving-surface shadow, status/aura, cast effect, projectile and environment as separately editable presentation layers; the body layer uses a bounded `small` 0.90×, `middle` 1.00×, `large` 1.10× scale around the shared feet pivot, and cast startup is anchored to a forward hand lane. |
+| Composition | Runtime composes body, receiving-surface shadow, status/aura, cast effect, projectile and environment as separately editable presentation layers; the body layer uses a bounded `small` 0.90×, `middle` 1.00×, `large` 1.10× scale around the shared feet pivot, cast startup is anchored to a forward hand lane, and `atlas_row` is authored per champion in the visual recipe. |
 | Authority | Body type constrains validated tuning/presentation ranges; hitboxes, movement, casts and outcomes remain simulation-owned. |
 
 ## Chemistry model

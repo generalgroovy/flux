@@ -28,6 +28,7 @@ func _test_repository_recipes() -> void:
 		equal(String(recipe.get("casting_origin", "")), "hands", "%s casts visibly through hands" % champion_id)
 		equal(String(recipe.get("equipment", "")), "body_clothing_only", "%s keeps body and clothing separate from effects" % champion_id)
 		check(String(recipe.get("body_type", "")) in ["small", "middle", "large"], "%s uses one of three body types" % champion_id)
+		check(int(recipe.get("atlas_row", -1)) in [0, 1], "%s uses a data-driven foundation atlas row" % champion_id)
 		check("staff" not in String(recipe.get("equipment", "")).to_lower(), "%s has no staff casting focus" % champion_id)
 		equal(String(recipe.get("silhouette_features", [])[-1]), "open_empty_hands", "%s has empty hands in the body recipe" % champion_id)
 	equal(CartoonChampionPresenter.body_type_render_scale("small"), 0.90, "small body uses the bounded compact render scale")

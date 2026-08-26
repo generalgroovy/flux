@@ -3,6 +3,17 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## Data-driven body atlas rows — 2026-08-26
+
+- Body-only champion recipes now own `atlas_row` (`oh_tipi=0`, `s_wayne=1`);
+  the presenter no longer contains champion-specific row branches.
+- Missing/out-of-range rows fail closed during recipe validation and produce an
+  empty source region, keeping future champion additions data-only and safe.
+- Verification: `scripts\\test.cmd` passed 53 suites / 18,644 assertions with
+  zero failures and independent Windows source boots at 60/120 Hz.
+- Rebuild the packaged Windows installer after this commit; the prior package
+  hash in this file describes the preceding hand-origin slice.
+
 ## Body-only foundation slice — 2026-08-26
 
 - Canonical character body types are now exactly `small`, `middle`, and

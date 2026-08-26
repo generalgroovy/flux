@@ -7,7 +7,9 @@ are composed independently by the runtime. This keeps character art reusable
 when a spell, material, HUD or map changes.
 
 The runtime contract has exactly three body types: `small`, `middle`, and
-`large`. The canonical body sheet uses six cells per row: south/front idle,
+`large`. Champion-to-row assignment lives in the visual recipe, so adding a
+future body-only champion does not require renderer code changes. The canonical
+body sheet uses six cells per row: south/front idle,
 east profile, north/back, front jump, front empty-hand cast preparation and
 front hit/recovery. West is a deterministic mirror of east. Front faces are
 centered and symmetrical toward the camera; back views are centered and

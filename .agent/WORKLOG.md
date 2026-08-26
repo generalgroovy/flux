@@ -1,5 +1,31 @@
 # FLUX2 agent worklog
 
+## 2026-08-26 - data-driven body atlas row assignment
+
+Playable outcome:
+
+- Moved champion-to-row selection out of `cartoon_champion_presenter.gd` and
+  into the validated visual recipe as `atlas_row`.
+- Oh Tipi and S. Wayne now explicitly declare rows `0` and `1`; future
+  body-only champions can reuse the atlas contract through content data without
+  renderer branching.
+- Validation rejects missing or out-of-range rows, and the presenter returns an
+  empty region instead of drawing an invalid cell.
+
+Verification:
+
+- `scripts\\test.cmd`: 53 suites, 18,644 assertions, zero failures, with
+  Windows source boots at 60 and 120 Hz.
+- Existing visual captures, body-only provenance and installer limitations
+  remain unchanged; the next packaged installer must be rebuilt after this
+  content/renderer commit.
+
+Next slice:
+
+- Continue C2 visual acceptance with live body/effect composition review at
+  50/75/100% and accessibility/reduced-effects captures before unfreezing
+  gameplay/chemistry work.
+
 ## 2026-08-26 - canonical three body types and body-only champion layer
 
 Playable outcome:

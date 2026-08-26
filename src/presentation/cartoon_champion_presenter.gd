@@ -113,7 +113,9 @@ func recipe(champion_id: String) -> Dictionary:
 func source_region(champion_id: String, state: PlayerState) -> Rect2:
 	if state == null or not champions.has(champion_id):
 		return Rect2()
-	var row := 0 if champion_id == "oh_tipi" else 1
+	var row := int((champions[champion_id] as Dictionary).get("atlas_row", -1))
+	if row < 0 or row >= REQUIRED_FOUNDATION.size():
+		return Rect2()
 	var state_id := silhouette_state(state)
 	var column := 0
 	if state_id == "jump":
@@ -340,6 +342,9 @@ func _validate_recipe(champion_id: String, value: Variant) -> bool:
 	var definition: Dictionary = value
 	if String(definition.get("body_type", "")) not in EXPECTED_BODY_TYPES:
 		return _fail("Cartoon champion body type is unsupported: %s" % champion_id)
+	var atlas_row := int(definition.get("atlas_row", -1))
+	if atlas_row < 0 or atlas_row >= REQUIRED_FOUNDATION.size():
+		return _fail("Cartoon champion atlas row is unsupported: %s" % champion_id)
 	var height := int(definition.get("height", 0))
 	var ratio := float(definition.get("head_ratio", 0.0))
 	if height < 44 or height > 68 or ratio < 0.40 or ratio > 0.45:

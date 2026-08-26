@@ -365,7 +365,9 @@ and `size_5_huge` path fragments belong to the legacy visual archive; only
 
 This atlas is a reusable body/clothing layer for the two foundation champions;
 spells, auras, shadows, projectiles, environment and equipment are composed
-independently.
+independently. Each champion's `atlas_row` is authored in
+`content/visual/foundation_champion_visuals_v1.json`, so adding a body-only
+champion is a validated content edit rather than a renderer change.
 
 </details>
 

@@ -367,15 +367,15 @@ The retained `size_1_tiny`, `size_2_small`, `size_3_medium`, `size_4_large`,
 and `size_5_huge` path fragments belong to the legacy visual archive; only
 `small`, `middle`, and `large` are authored runtime body types.
 
-![Four-cardinal body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v4.png)
+![Four-cardinal body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v5.png)
 
 This atlas is a reusable body/clothing layer for the two foundation champions;
 spells, auras, shadows, projectiles, environment and equipment are composed
 independently. Each champion's `atlas_row` is authored in
-`content/visual/foundation_champion_visuals_v1.json`. The versioned 384×768
-atlas packs dedicated grounded, jump, empty-hand cast and hit/recovery art for
-south/east/north/west under each champion; neither profile is synthesized at
-runtime. The validator rejects missing states, directions, hashes, pivots or
+`content/visual/foundation_champion_visuals_v1.json`. The versioned 384×1536
+atlas packs dedicated grounded, jump, empty-hand cast, hit/recovery, walk,
+sprint, slide and roll art for south/east/north/west under each champion;
+neither profile is synthesized at runtime. The validator rejects missing states, directions, hashes, pivots or
 layout drift before the scene can boot, and the deterministic builder plus exact
 generation prompts live beside the source sheets.
 
@@ -419,6 +419,13 @@ The current visual checkpoint has truthful 1280×720 captures at 50%, 75% and
 and high-contrast/reduced-effects captures under
 `.godot/visual-captures/post-unify-v9-*`; these are ignored review artifacts
 and can be regenerated with `scripts/capture-visual.ps1`.
+
+The cardinal movement checkpoint adds four-direction walk/sprint plus correctly
+timed (post-trigger) slide/roll captures for both champions under
+`.godot/visual-captures/movement-v5-*`, along with 50%/100%, 1080p,
+high-contrast and reduced-effects samples. Capture-only
+`--capture-direction=south|east|north|west` makes that matrix reproducible and
+does not affect ordinary controls or simulation.
 
 Concept images guide proportion, color roles, mood, and readability. They do not
 define hitboxes, timing, abilities, map topology, or simulation rules. Promotion

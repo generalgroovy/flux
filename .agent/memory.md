@@ -3,6 +3,34 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## Cardinal locomotion and evasion atlas — 2026-08-26
+
+- The active body-only atlas now adds dedicated walk contact, sprint drive, low
+  slide and tucked roll rows to the four core action rows for Oh Tipi and
+  S. Wayne; all eight semantic rows own south/east/north/west art and share the
+  `(48,84)` feet pivot.
+- `runtime_atlas_cardinal_v5.png` is 384×1536 / 159,190 bytes. PNG SHA-256 is
+  `1bea3c7f8d35b331801a81cc63f54388671ec0df658ec8a16a18393ed6866680`;
+  Godot-imported RGBA SHA-256 is
+  `72ad872e6c5b824615a9cb348b384fd15a8e2933892828f3ca3f9633c8a9472b`.
+  A clean rebuild reproduced the exact PNG hash.
+- Walk/Slowed selects walk, Sprint selects sprint, Slide/Wave Dash/Wall Skim
+  selects the low row, Roll selects the compact tuck, and airborne techniques
+  retain the four-direction jump row. Reusable motion, shadow, wake, aura and
+  invulnerability-contour layers remain separate; no simulation rule changed.
+- The capture-only `--capture-direction=south|east|north|west` argument now
+  produces deterministic cardinal movement evidence while preserving the old
+  impact-recovery influence lane and ordinary player input.
+- Full Windows gate: 54 suites / 16,760 assertions, zero failures; 60/120 Hz
+  boots passed. Thirty-two direction/state runs cover walk/sprint and correctly
+  timed post-tick-6 slide/roll for both champions at 75%; additional 50%, 100%,
+  1920×1080, high-contrast and reduced-effects captures pass under
+  `.godot/visual-captures/movement-v5-*`.
+- Next visual slice: finish the remaining live champion semantic aliases
+  (defense/interaction/emote/defeat/control loss) against this same eight-row
+  grammar, then continue direction-aware spell delivery without adding a new
+  mechanic or champion.
+
 ## Dedicated cardinal action atlas — 2026-08-26
 
 - Oh Tipi and S. Wayne now use separate repository-owned 4×4 matte sources with

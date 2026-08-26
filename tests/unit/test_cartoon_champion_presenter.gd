@@ -16,9 +16,9 @@ func _test_repository_recipes() -> void:
 	check(presenter.atlas != null, "reviewed foundation runtime atlas loads")
 	check(presenter.motion != null and presenter.motion.content_hash.length() == 64, "editable minimal-motion recipes load with champion art")
 	check(presenter.content_hash.length() == 64, "champion presentation content has a stable hash")
-	equal(presenter.atlas_hash, "b7620ebfb896c99ac21b956ac08ed6d6a5c2e0c7b15fcdb3de048960cd849de5", "reviewed cardinal body-only runtime atlas hash is pinned")
+	equal(presenter.atlas_hash, "1bea3c7f8d35b331801a81cc63f54388671ec0df658ec8a16a18393ed6866680", "reviewed cardinal movement runtime atlas hash is pinned")
 	equal(presenter.cardinal_animation_contract.get("directions", []), ["south", "east", "north", "west"], "foundation animation contract covers four cardinal directions")
-	equal(presenter.cardinal_animation_contract.get("states", []), ["grounded", "jump", "cast", "hit"], "foundation animation contract covers every semantic action")
+	equal(presenter.cardinal_animation_contract.get("states", []), ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"], "foundation animation contract covers core and movement actions")
 	for champion_id: String in ["oh_tipi", "s_wayne"]:
 		check(presenter.can_present(champion_id), "%s has a promoted cartoon recipe" % champion_id)
 		var recipe := presenter.recipe(champion_id)
@@ -48,7 +48,7 @@ func _test_repository_recipes() -> void:
 	state.facing_y = 0
 	equal(presenter.source_region("oh_tipi", state), Rect2(288, 0, 96, 96), "Oh Tipi west grounded selects dedicated west art")
 	state.pending_cast_wire_id = 1
-	equal(presenter.source_region("s_wayne", state), Rect2(288, 576, 96, 96), "S. Wayne west cast selects dedicated cardinal action art")
+	equal(presenter.source_region("s_wayne", state), Rect2(288, 960, 96, 96), "S. Wayne west cast selects dedicated cardinal action art")
 	var cardinal_cases := [
 		{"facing": Vector2i(0, 1000), "state": "south", "column": 0},
 		{"facing": Vector2i(1000, 0), "state": "east", "column": 1},
@@ -70,6 +70,16 @@ func _test_repository_recipes() -> void:
 		directional_state.movement_mode = PlayerState.MovementMode.LAUNCHED
 		directional_state.hop_ticks = 0
 		equal(presenter.source_region("oh_tipi", directional_state), Rect2(expected_x, 288, 96, 96), "hit animation selects dedicated %s art" % case["state"])
+		directional_state.control_state = PlayerState.ControlState.FREE
+		var movement_cases := [
+			{"mode": PlayerState.MovementMode.WALK, "state": "walk", "row": 4},
+			{"mode": PlayerState.MovementMode.SPRINT, "state": "sprint", "row": 5},
+			{"mode": PlayerState.MovementMode.SLIDE, "state": "slide", "row": 6},
+			{"mode": PlayerState.MovementMode.ROLL, "state": "roll", "row": 7},
+		]
+		for movement_case: Dictionary in movement_cases:
+			directional_state.movement_mode = int(movement_case["mode"])
+			equal(presenter.source_region("oh_tipi", directional_state), Rect2(expected_x, float(movement_case["row"]) * 96.0, 96, 96), "%s animation selects dedicated %s art" % [movement_case["state"], case["state"]])
 	check(presenter.source_region("unreviewed", state).has_area() == false, "unreviewed champion has no source region")
 
 
@@ -84,7 +94,7 @@ func _test_semantic_states() -> void:
 	state.hop_mode = PlayerState.MovementMode.ROLL
 	state.air_dodge_ticks = 2
 	state.movement_mode = PlayerState.MovementMode.ROLL
-	equal(CartoonChampionPresenter.silhouette_state(state), "grounded", "roll keeps the grounded silhouette contract")
+	equal(CartoonChampionPresenter.silhouette_state(state), "roll", "roll uses the dedicated compact silhouette")
 	state.air_dodge_ticks = 0
 	state.movement_mode = PlayerState.MovementMode.IDLE
 	state.pending_cast_wire_id = 1
@@ -92,6 +102,15 @@ func _test_semantic_states() -> void:
 	state.pending_cast_wire_id = 0
 	state.control_state = PlayerState.ControlState.STUNNED
 	equal(CartoonChampionPresenter.silhouette_state(state), "hit", "stun uses hit silhouette")
+	state.control_state = PlayerState.ControlState.FREE
+	state.movement_mode = PlayerState.MovementMode.WALK
+	equal(CartoonChampionPresenter.silhouette_state(state), "walk", "walk uses the planted contact silhouette")
+	state.movement_mode = PlayerState.MovementMode.SPRINT
+	equal(CartoonChampionPresenter.silhouette_state(state), "sprint", "sprint uses the directional drive silhouette")
+	state.movement_mode = PlayerState.MovementMode.SLIDE
+	equal(CartoonChampionPresenter.silhouette_state(state), "slide", "slide uses the dedicated low silhouette")
+	state.movement_mode = PlayerState.MovementMode.WAVE_DASH
+	equal(CartoonChampionPresenter.silhouette_state(state), "slide", "wave dash reuses the direction-complete low body row")
 	equal(CartoonChampionPresenter.cardinal_direction(1000, 10), "east", "horizontal facing stays horizontal")
 	equal(CartoonChampionPresenter.cardinal_direction(-1000, 10), "west", "negative horizontal facing stays horizontal")
 	equal(CartoonChampionPresenter.cardinal_direction(0, -1000), "north", "negative vertical facing reads north")

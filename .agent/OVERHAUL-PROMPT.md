@@ -20,11 +20,11 @@ accessibility, visual tests, asset provenance and the smallest rule-neutral
 adapters required to expose already-authoritative state.
 
 Current C2 checkpoint: the live foundation atlas has dedicated grounded, jump,
-empty-hand cast and hit/recovery art for both champions in all four cardinals.
-The immediate next slice is body-only locomotion/evasion coverage—walk, sprint,
-slide and roll—using the same deterministic sources, 96px cells and shared feet
-pivot, followed by 50/75/100% standard/high-contrast/reduced capture. Do not
-skip from this checkpoint to new mechanics or new champions.
+empty-hand cast, hit/recovery, walk, sprint, slide and roll art for both
+champions in all four cardinals, with multi-zoom/accessibility evidence. The
+immediate next slice is to validate remaining live defense/interaction/emote/
+defeat/control aliases against that grammar, then improve direction-aware spell
+delivery and hand-origin readability. Do not skip to new mechanics or champions.
 
 Make the Wellspring and GUI match the charm, density, readable perspective and
 material richness of the supplied gameplay reference while remaining wholly

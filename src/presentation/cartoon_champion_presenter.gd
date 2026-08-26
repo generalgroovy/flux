@@ -3,13 +3,13 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_champion_visuals_v1.json"
-const EXPECTED_ID := "foundation-champion-visuals-v3-cardinal-actions"
+const EXPECTED_ID := "foundation-champion-visuals-v4-cardinal-movement"
 const EXPECTED_AUTHORITY := "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere"
 const REQUIRED_FOUNDATION := ["oh_tipi", "s_wayne"]
-const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v4.png"
+const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v5.png"
 const EXPECTED_BODY_TYPES: Array[String] = ["small", "middle", "large"]
 const EXPECTED_CARDINAL_DIRECTIONS: Array[String] = ["south", "east", "north", "west"]
-const EXPECTED_CARDINAL_STATES: Array[String] = ["grounded", "jump", "cast", "hit"]
+const EXPECTED_CARDINAL_STATES: Array[String] = ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"]
 const EXPECTED_EXCLUDED_LAYERS: Array[String] = ["spell", "element", "projectile", "aura", "shadow", "environment", "equipment", "focus"]
 const CELL_SIZE := Vector2(96.0, 96.0)
 const PIVOT := Vector2(48.0, 84.0)
@@ -59,7 +59,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	if not parsed is Dictionary:
 		return _fail("Cartoon champion recipe root must be an object")
 	var data: Dictionary = parsed
-	if int(data.get("schema_version", -1)) != 3 or String(data.get("id", "")) != EXPECTED_ID:
+	if int(data.get("schema_version", -1)) != 4 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Cartoon champion recipe identity is unsupported")
 	if String(data.get("authority", "")) != EXPECTED_AUTHORITY:
 		return _fail("Cartoon champion recipes must remain presentation-only")
@@ -75,7 +75,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 		return _fail("Cartoon champion cell/pivot differs from the visual contract")
 	var atlas_definition: Dictionary = data.get("atlas", {})
 	if String(atlas_definition.get("path", "")) != ATLAS_PATH \
-		or _vector2i(atlas_definition.get("dimensions", [])) != Vector2i(384, 768) \
+		or _vector2i(atlas_definition.get("dimensions", [])) != Vector2i(384, 1536) \
 		or atlas_definition.get("champions", []) != REQUIRED_FOUNDATION \
 		or atlas_definition.get("directions", []) != EXPECTED_CARDINAL_DIRECTIONS \
 		or atlas_definition.get("states", []) != EXPECTED_CARDINAL_STATES \
@@ -102,7 +102,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 		champions.clear()
 		return _fail("Foundation cartoon atlas cannot be loaded")
 	atlas = atlas_resource
-	if atlas.get_size() != Vector2(384.0, 768.0):
+	if atlas.get_size() != Vector2(384.0, 1536.0):
 		atlas = null
 		champions.clear()
 		return _fail("Foundation cartoon atlas dimensions are invalid")
@@ -181,12 +181,22 @@ func _draw_atlas_candidate(canvas: CanvasItem, state: PlayerState, champion_id: 
 
 
 static func silhouette_state(state: PlayerState) -> String:
-	if state.movement_mode in [PlayerState.MovementMode.LAUNCHED, PlayerState.MovementMode.IMPACT_RECOVERY] or state.control_state == PlayerState.ControlState.STUNNED:
+	if state.movement_mode in [PlayerState.MovementMode.LAUNCHED, PlayerState.MovementMode.GRAPPLED, PlayerState.MovementMode.STUNNED, PlayerState.MovementMode.IMPACT_RECOVERY] \
+		or state.control_state in [PlayerState.ControlState.LAUNCHED, PlayerState.ControlState.GRAPPLED, PlayerState.ControlState.STUNNED]:
 		return "hit"
-	if state.pending_cast_wire_id > 0 or state.last_event.begins_with("cast_start_"):
+	if state.pending_cast_wire_id > 0 or state.movement_mode == PlayerState.MovementMode.CHARGING \
+		or state.control_state == PlayerState.ControlState.CHARGING or state.last_event.begins_with("cast_start_"):
 		return "cast"
 	if state.is_airborne():
 		return "jump"
+	if state.movement_mode in [PlayerState.MovementMode.WALK, PlayerState.MovementMode.SLOWED]:
+		return "walk"
+	if state.movement_mode == PlayerState.MovementMode.SPRINT:
+		return "sprint"
+	if state.movement_mode in [PlayerState.MovementMode.SLIDE, PlayerState.MovementMode.WAVE_DASH, PlayerState.MovementMode.WALL_SKIM]:
+		return "slide"
+	if state.movement_mode == PlayerState.MovementMode.ROLL or state.is_rolling():
+		return "roll"
 	return "grounded"
 
 

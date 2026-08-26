@@ -81,6 +81,7 @@ var requested_capture_active_cast: bool = false
 var requested_capture_spell_slot: int = 0
 var requested_capture_chain_spell_slot: int = 0
 var requested_capture_movement: String = ""
+var requested_capture_movement_direction: Vector2i = Vector2i.RIGHT
 var requested_capture_social_bubble: bool = false
 var requested_capture_visual_profile: String = ""
 var requested_capture_reduced_effects: bool = false
@@ -226,6 +227,7 @@ func _ready() -> void:
 	requested_capture_spell_slot = _requested_capture_spell_slot()
 	requested_capture_chain_spell_slot = _requested_capture_chain_spell_slot()
 	requested_capture_movement = _requested_capture_movement()
+	requested_capture_movement_direction = _requested_capture_direction()
 	requested_capture_social_bubble = OS.get_cmdline_user_args().has("--capture-social-bubble")
 	ability_catalog = AbilityCatalog.new()
 	if not ability_catalog.load_from_file(ABILITY_CATALOG_PATH):
@@ -606,7 +608,7 @@ func _process(delta: float) -> void:
 		if requested_capture_movement == "impact_recovery" and world.tick == 4 and not session_transport.is_connected_client():
 			MovementSystem.apply_control_state(
 				_local_player_state(), PlayerState.ControlState.LAUNCHED, 180,
-				Vector2i.RIGHT, 540_000, world.config,
+				requested_capture_movement_direction, 540_000, world.config,
 			)
 		var camera_origin := _camera_origin(_camera_focus_position(current_position))
 		var pointer_world_position := Vector2(capture_pointer_world) if capture_pointer_world.x >= 0 else camera_origin + get_viewport().get_mouse_position() / _camera_zoom_scale()
@@ -620,7 +622,7 @@ func _process(delta: float) -> void:
 				pointer_world_position,
 			)
 		if not requested_capture_movement.is_empty() and not session_transport.is_connected_client():
-			command = capture_movement_command(requested_capture_movement, world.tick, input_router.entity_id)
+			command = capture_movement_command(requested_capture_movement, world.tick, input_router.entity_id, requested_capture_movement_direction)
 		if (requested_capture_active_cast or requested_capture_spell_slot > 0) and not capture_active_cast_sent and not session_transport.is_connected_client():
 			var capture_pressed := SimCommand.PRESSED_ACTIVE_1 if requested_capture_spell_slot == 0 else SimCommand.SPELL_PRESSED_BITS[requested_capture_spell_slot - 1]
 			command = SimCommand.new(world.tick, input_router.entity_id, 0, 0, 0, capture_pressed, command.aim_x, command.aim_y)
@@ -2807,6 +2809,17 @@ func _requested_capture_movement() -> String:
 	return ""
 
 
+func _requested_capture_direction() -> Vector2i:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--capture-direction="):
+			var requested := parse_capture_direction(argument)
+			if requested == Vector2i.ZERO:
+				push_warning("Invalid capture direction; expected south, east, north, or west")
+				return Vector2i.RIGHT
+			return requested
+	return Vector2i.RIGHT
+
+
 func _requested_capture_visual_profile() -> String:
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--capture-visual-profile="):
@@ -2871,18 +2884,38 @@ static func parse_capture_movement(argument: String) -> String:
 	return requested if requested in ["walk", "brake", "reverse", "sprint", "slide", "jump", "air_dodge", "technique", "impact_recovery"] else ""
 
 
-static func capture_movement_command(mode: String, tick: int, entity_id: int) -> SimCommand:
+static func parse_capture_direction(argument: String) -> Vector2i:
+	if not argument.begins_with("--capture-direction="):
+		return Vector2i.ZERO
+	match argument.trim_prefix("--capture-direction=").strip_edges().to_lower():
+		"south":
+			return Vector2i.DOWN
+		"east":
+			return Vector2i.RIGHT
+		"north":
+			return Vector2i.UP
+		"west":
+			return Vector2i.LEFT
+	return Vector2i.ZERO
+
+
+static func capture_movement_command(mode: String, tick: int, entity_id: int, direction: Vector2i = Vector2i.RIGHT) -> SimCommand:
 	var held := 0
 	var pressed := 0
-	var move_x := 1000
-	var move_y := 0
+	var normalized_direction := direction if direction in [Vector2i.DOWN, Vector2i.RIGHT, Vector2i.UP, Vector2i.LEFT] else Vector2i.RIGHT
+	var move_x := normalized_direction.x * 1000
+	var move_y := normalized_direction.y * 1000
 	if mode == "impact_recovery":
+		# Preserve the historical bounded influence lane; the separate aim and
+		# launch vectors still select the requested cardinal review direction.
 		move_x = 0
 		move_y = -1000
 	if mode == "brake" and tick >= 30:
 		move_x = 0
+		move_y = 0
 	elif mode == "reverse" and tick >= 30:
-		move_x = -1000
+		move_x = -normalized_direction.x * 1000
+		move_y = -normalized_direction.y * 1000
 	if mode == "sprint" or mode == "slide":
 		held |= SimCommand.HELD_SPRINT
 	if mode in ["jump", "air_dodge"] and tick >= 4 and tick < 30:
@@ -2895,7 +2928,7 @@ static func capture_movement_command(mode: String, tick: int, entity_id: int) ->
 		pressed |= SimCommand.PRESSED_TECHNIQUE
 	if mode == "technique" and tick == 6:
 		pressed |= SimCommand.PRESSED_TECHNIQUE
-	return SimCommand.new(tick, entity_id, move_x, move_y, held, pressed, 1000, 0)
+	return SimCommand.new(tick, entity_id, move_x, move_y, held, pressed, normalized_direction.x * 1000, normalized_direction.y * 1000)
 
 
 func _requested_farflow_mode() -> String:

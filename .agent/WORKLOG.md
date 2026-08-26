@@ -1,5 +1,46 @@
 # FLUX2 agent worklog
 
+## 2026-08-26 - cardinal locomotion and evasion body art
+
+Playable outcome:
+
+- Extended the body-only foundation from four to eight semantic rows per
+  champion: grounded, jump, empty-hand cast, hit/recovery, walk contact, sprint
+  drive, low slide and tucked roll, each with dedicated south/east/north/west
+  art.
+- Extended the deterministic builder to compose the core and movement 4×4
+  sources with one scale per champion. The previous three-positional command
+  still reproduces v4; paired movement flags produce the active 384×1536 v5
+  atlas and fail argument parsing if only one movement source is supplied.
+- Mapped authoritative player state to the new rows without changing any rule:
+  Slowed reuses walk; Wave Dash/Wall Skim reuse slide; airborne techniques reuse
+  jump; Roll gets the compact tuck and existing intangibility contour.
+- Added a capture-only cardinal direction parser and synthetic command vector,
+  making real movement evidence reproducible in every direction while normal
+  input and saved preferences remain untouched.
+
+Verification:
+
+- Deterministic rebuild reproduced PNG SHA-256
+  `1bea3c7f8d35b331801a81cc63f54388671ec0df658ec8a16a18393ed6866680`;
+  decoded Godot RGBA is pinned at
+  `72ad872e6c5b824615a9cb348b384fd15a8e2933892828f3ca3f9633c8a9472b`.
+- `scripts\test.cmd`: 54 suites / 16,760 assertions, zero failures; independent
+  60 and 120 Hz source boots passed. Existing legacy archive image-load warnings
+  remain expected.
+- Both champions passed four-direction 75% walk and sprint captures. Slide and
+  roll were rerun at twelve frames after the first four-frame pass honestly
+  ended before their tick-6 command; all sixteen corrected `*-timed` runs show
+  the active body row. Additional 50% sprint, 100% walk, 1080p slide,
+  high-contrast roll and reduced-effects slide captures passed and representative
+  action frames were inspected.
+
+Next slice:
+
+- Close the remaining live champion semantic aliases and begin the next
+  direction-aware spell-delivery visual slice. Keep mechanics frozen and retain
+  the green cardinal-movement package boundary.
+
 ## 2026-08-26 - dedicated four-cardinal action atlas
 
 Playable outcome:

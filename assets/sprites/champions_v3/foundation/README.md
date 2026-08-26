@@ -1,8 +1,8 @@
 # Foundation cardinal body atlas provenance
 
 This directory contains the active body-and-clothing-only production candidate
-for Oh Tipi and S. Wayne. Every grounded, jump, empty-hand cast, and
-hit/recovery pose has dedicated south, east, north, and west art. Spells,
+for Oh Tipi and S. Wayne. Every grounded, jump, empty-hand cast, hit/recovery,
+walk, sprint, slide, and roll pose has dedicated south, east, north, and west art. Spells,
 elements, auras, projectiles, shadows, environments, tools, and equipment remain
 independent runtime layers, so a pose or spell can be replaced without redrawing
 the other.
@@ -13,15 +13,17 @@ the other.
 |---|---|
 | `source_cardinal_oh_tipi_v4.png` | 1254×1254 matte source; 4 directions × 4 states |
 | `source_cardinal_s_wayne_v4.png` | 1254×1254 matte source; 4 directions × 4 states |
-| `runtime_atlas_cardinal_v4.png` | 384×768 RGBA; 96×96 cells; pivot `(48,84)` |
+| `source_movement_oh_tipi_v5.png` | 1254×1254 matte source; walk/sprint/slide/roll × 4 directions |
+| `source_movement_s_wayne_v5.png` | 1254×1254 matte source; walk/sprint/slide/roll × 4 directions |
+| `runtime_atlas_cardinal_v5.png` | 384×1536 RGBA; 96×96 cells; pivot `(48,84)` |
 | Columns | south/front, east, north/back, west |
-| Rows per champion | grounded, jump, empty-hand cast, hit/recovery |
+| Rows per champion | grounded, jump, empty-hand cast, hit/recovery, walk, sprint, slide, roll |
 | Atlas row layout | champion-major, state-minor: all Oh Tipi rows, then all S. Wayne rows |
 
 Rebuild deterministically from repository root:
 
 ```powershell
-python scripts/build_cardinal_champion_atlas.py assets/sprites/champions_v3/foundation/source_cardinal_oh_tipi_v4.png assets/sprites/champions_v3/foundation/source_cardinal_s_wayne_v4.png assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v4.png
+python scripts/build_cardinal_champion_atlas.py assets/sprites/champions_v3/foundation/source_cardinal_oh_tipi_v4.png assets/sprites/champions_v3/foundation/source_cardinal_s_wayne_v4.png assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v5.png --oh-tipi-movement assets/sprites/champions_v3/foundation/source_movement_oh_tipi_v5.png --s-wayne-movement assets/sprites/champions_v3/foundation/source_movement_s_wayne_v5.png
 ```
 
 The builder uses proportional source-cell boundaries because the generated
@@ -58,6 +60,34 @@ Scene/backdrop: one flat opaque vivid magenta matte across the entire canvas; ge
 Style/medium: original charming compact cartoon pixel art, crisp 1-2 pixel outlines at intended gameplay scale, readable top-down cardinal facing, no smooth painted rendering.
 Constraints: champion pixels contain body and clothing only; all hands empty; no text or labels; no cell borders; no shadows; no magic; no elemental effects; no aura; no projectiles; no particles; no weapons; no staff, wand, rod, scepter, focus, equipment, props, or environment. Preserve the non-sexualized compact body design. Do not add or remove limbs, hair, clothing, or ancestry features. Keep exactly one S. Wayne in each of sixteen cells and no other character.
 Avoid: cropped figures, overlapping cells, inconsistent identity or scale, three-quarter/diagonal poses, isometric perspective, duplicated direction, spell pixels, detached objects, extra characters, logos, watermark.
+```
+
+Oh Tipi movement/evasion:
+
+```text
+Use case: precise-object-edit
+Asset type: production-candidate body-only locomotion source sheet for an original 2D top-down cartoon pixel-action game
+Input image: Image 1 is the exact identity, clothing, proportions, palette, outline, and pixel-treatment reference for the blue seakin champion Oh Tipi.
+Primary request: Create a clean 4 by 4 equal-cell sprite source sheet of Oh Tipi with exactly sixteen isolated full-body movement/evasion poses.
+Grid contract: columns from left to right are SOUTH/front camera-facing, EAST/right profile, NORTH/centered back, WEST/left profile. Rows from top to bottom are WALK CONTACT, SPRINT DRIVE, LOW SLIDE, TUCKED ROLL. Maintain one consistent champion scale, feet baseline, outline weight, outfit, face, fin crown, cheek fins, tail, and compact proportions across the sheet. WALK shows a clear planted step with opposing arm/leg cadence; SPRINT has a stronger controlled directional lean and drive; SLIDE is low, elongated, and immediately distinct from running; ROLL is a compact tucked invulnerability silhouette. South stays balanced and camera-facing, north is a true centered back, east and west are opposing profiles.
+Scene/backdrop: one flat opaque vivid magenta matte across the entire canvas; generous clear space between cells.
+Style/medium: original charming compact cartoon pixel art, crisp 1-2 pixel outlines at intended gameplay scale, readable top-down cardinal facing, economical action silhouettes, no smooth painted rendering.
+Constraints: champion pixels contain body and clothing only; all hands empty; no text or labels; no cell borders; no shadows; no magic; no elemental effects; no aura; no speed lines; no dust; no projectiles; no particles; no weapons; no staff, wand, rod, scepter, trident, focus, equipment, props, or environment. Preserve the non-sexualized compact body design. Do not add or remove limbs, fins, tail, clothing, or ancestry features. Keep exactly one Oh Tipi in each of sixteen cells and no other character.
+Avoid: cropped figures, overlapping cells, inconsistent identity or scale, three-quarter/diagonal poses, isometric perspective, duplicated direction, spell pixels, detached objects, motion-effect pixels, extra characters, logos, watermark.
+```
+
+S. Wayne movement/evasion:
+
+```text
+Use case: precise-object-edit
+Asset type: production-candidate body-only locomotion source sheet for an original 2D top-down cartoon pixel-action game
+Input image: Image 1 is the exact identity, clothing, proportions, palette, outline, and pixel-treatment reference for the small hobbit champion S. Wayne.
+Primary request: Create a clean 4 by 4 equal-cell sprite source sheet of S. Wayne with exactly sixteen isolated full-body movement/evasion poses.
+Grid contract: columns from left to right are SOUTH/front camera-facing, EAST/right profile, NORTH/centered back, WEST/left profile. Rows from top to bottom are WALK CONTACT, SPRINT DRIVE, LOW SLIDE, TUCKED ROLL. Maintain one consistent champion scale, feet baseline, outline weight, face, round dark hair, purple-and-gold short cloak, large bare hobbit feet, and compact proportions across the sheet. WALK shows a clear planted step with opposing arm/leg cadence; SPRINT has a stronger controlled directional lean and drive; SLIDE is low, elongated, and immediately distinct from running; ROLL is a compact tucked invulnerability silhouette. South stays balanced and camera-facing, north is a true centered back, east and west are opposing profiles.
+Scene/backdrop: one flat opaque vivid magenta matte across the entire canvas; generous clear space between cells.
+Style/medium: original charming compact cartoon pixel art, crisp 1-2 pixel outlines at intended gameplay scale, readable top-down cardinal facing, economical action silhouettes, no smooth painted rendering.
+Constraints: champion pixels contain body and clothing only; all hands empty; no text or labels; no cell borders; no shadows; no magic; no elemental effects; no aura; no speed lines; no dust; no projectiles; no particles; no weapons; no staff, wand, rod, scepter, focus, equipment, props, or environment. Preserve the non-sexualized compact body design. Do not add or remove limbs, hair, clothing, large bare feet, or ancestry features. Keep exactly one S. Wayne in each of sixteen cells and no other character.
+Avoid: cropped figures, overlapping cells, inconsistent identity or scale, three-quarter/diagonal poses, isometric perspective, duplicated direction, spell pixels, detached objects, motion-effect pixels, extra characters, logos, watermark.
 ```
 
 Human visual/originality acceptance is still required before final-art

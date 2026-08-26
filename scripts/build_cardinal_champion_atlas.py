@@ -1,11 +1,11 @@
 """Build the reviewed four-cardinal FLUX body-only champion atlas.
 
 Each source is a four-column by four-row matte sheet. Columns are cardinal
-directions and rows are semantic action poses. The generated canvas may not be
-exactly divisible by four, so cell edges are derived proportionally instead of
-silently dropping border pixels. One scale is calculated per champion from its
-south idle pose and bounded against every pose; action changes therefore never
-resize the champion body.
+directions; the required sheets contribute core-action and movement/evasion
+rows. The generated canvas may not be exactly divisible by four, so cell edges
+are derived proportionally instead of silently dropping border pixels. One
+scale is calculated per champion from its south idle pose and bounded against
+every included pose; action changes therefore never resize the champion body.
 
 Spell, aura, shadow, environment, equipment, and gameplay state are excluded.
 """
@@ -25,7 +25,8 @@ SOURCE_ROWS = 4
 OUTPUT_CELL = 96
 OUTPUT_PIVOT_Y = 84
 DIRECTIONS = ("south", "east", "north", "west")
-STATES = ("grounded", "jump", "cast", "hit")
+BASE_STATES = ("grounded", "jump", "cast", "hit")
+MOVEMENT_STATES = ("walk", "sprint", "slide", "roll")
 CHAMPIONS = ("oh_tipi", "s_wayne")
 TARGET_IDLE_HEIGHTS = (68, 58)
 MAX_SPRITE_EXTENT = 92
@@ -59,22 +60,33 @@ def fit_sprite(sprite: Image.Image, scale: float) -> Image.Image:
     return sprite.resize(size, Image.Resampling.LANCZOS)
 
 
-def build(source_paths: tuple[Path, Path], output_path: Path) -> None:
+def load_sprite_rows(source_path: Path) -> list[list[Image.Image]]:
+    source = Image.open(source_path).convert("RGB")
+    if source.width < 4 or source.height < 4:
+        raise ValueError(f"source sheet is too small: {source_path} {source.size}")
+    return [
+        [isolated_sprite(source, row, column) for column in range(SOURCE_COLUMNS)]
+        for row in range(SOURCE_ROWS)
+    ]
+
+
+def build(
+    source_paths: tuple[Path, Path],
+    output_path: Path,
+    movement_source_paths: tuple[Path, Path] | None = None,
+) -> None:
+    states = BASE_STATES + (MOVEMENT_STATES if movement_source_paths else ())
     atlas = Image.new(
         "RGBA",
-        (len(DIRECTIONS) * OUTPUT_CELL, len(CHAMPIONS) * len(STATES) * OUTPUT_CELL),
+        (len(DIRECTIONS) * OUTPUT_CELL, len(CHAMPIONS) * len(states) * OUTPUT_CELL),
     )
     for champion_index, source_path in enumerate(source_paths):
-        source = Image.open(source_path).convert("RGB")
-        if source.width < 4 or source.height < 4:
-            raise ValueError(f"source sheet is too small: {source_path} {source.size}")
-        sprites = [
-            [isolated_sprite(source, row, column) for column in range(SOURCE_COLUMNS)]
-            for row in range(SOURCE_ROWS)
-        ]
+        sprites = load_sprite_rows(source_path)
+        if movement_source_paths:
+            sprites.extend(load_sprite_rows(movement_source_paths[champion_index]))
         scale = champion_scale(sprites, TARGET_IDLE_HEIGHTS[champion_index])
         for state_index, row in enumerate(sprites):
-            atlas_row = champion_index * len(STATES) + state_index
+            atlas_row = champion_index * len(states) + state_index
             for direction_index, sprite in enumerate(row):
                 fitted = fit_sprite(sprite, scale)
                 x = direction_index * OUTPUT_CELL + (OUTPUT_CELL - fitted.width) // 2
@@ -92,7 +104,7 @@ def build(source_paths: tuple[Path, Path], output_path: Path) -> None:
     atlas.save(output_path, optimize=True)
     print(
         f"built {output_path} {atlas.width}x{atlas.height}; "
-        f"columns={','.join(DIRECTIONS)}; states={','.join(STATES)}"
+        f"columns={','.join(DIRECTIONS)}; states={','.join(states)}"
     )
 
 
@@ -101,10 +113,18 @@ def main() -> None:
     parser.add_argument("oh_tipi_source", type=Path)
     parser.add_argument("s_wayne_source", type=Path)
     parser.add_argument("output", type=Path)
+    parser.add_argument("--oh-tipi-movement", type=Path)
+    parser.add_argument("--s-wayne-movement", type=Path)
     arguments = parser.parse_args()
+    movement_sources: tuple[Path, Path] | None = None
+    if (arguments.oh_tipi_movement is None) != (arguments.s_wayne_movement is None):
+        parser.error("both movement source sheets are required together")
+    if arguments.oh_tipi_movement is not None:
+        movement_sources = (arguments.oh_tipi_movement, arguments.s_wayne_movement)
     build(
         (arguments.oh_tipi_source, arguments.s_wayne_source),
         arguments.output,
+        movement_sources,
     )
 
 

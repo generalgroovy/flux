@@ -70,11 +70,13 @@ derived from the nearest cardinal, but they never replace cardinal coverage.
 Direction selection is presentation-only; simulation aim, collision, timing,
 invulnerability and outcomes remain authoritative and continuous.
 
-The current integrated candidate completes the first semantic rows—grounded,
-jump, empty-hand cast and hit/recovery—for both foundation champions with
-dedicated art in all four columns. Locomotion/evasion still reuses the grounded
-body cell plus shared motion/accent layers; V2 remains open until dedicated
-walk/sprint/slide/roll coverage and its multi-zoom accessibility evidence pass.
+The current integrated candidate supplies grounded, jump, empty-hand cast,
+hit/recovery, walk, sprint, slide and roll rows for both foundation champions
+with dedicated art in all four columns. Advanced airborne moves derive from
+jump and Wave Dash/Wall Skim derive from the low slide row while retaining
+separate motion/accent layers. V2 remains open until the remaining live
+defense/interaction/emote/defeat/control aliases and integrated two-player
+evidence pass; no additional movement body row is currently missing.
 
 Acceptance evidence must include a direction matrix capture showing both
 foundation champions in all four cardinals while idle, walking, jumping,

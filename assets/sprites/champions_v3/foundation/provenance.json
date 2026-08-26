@@ -1,6 +1,6 @@
 {
-  "schema_version": 3,
-  "asset_id": "flux-foundation-cartoon-champions-cardinal-actions-v3",
+  "schema_version": 4,
+  "asset_id": "flux-foundation-cartoon-champions-cardinal-movement-v4",
   "status": "integrated_candidate_pending_human_acceptance",
   "source": "Built-in ImageGen, directed for this FLUX repository on 2026-08-26",
   "originality": "Original Oh Tipi and S. Wayne production exploration based only on repository-owned character identity art; no third-party pixels, characters, symbols, maps, or interface assets may be copied into the result.",
@@ -17,23 +17,43 @@
       "file": "source_cardinal_s_wayne_v4.png",
       "sha256": "71c61ec36a63e0054632786cc38d5fc9261166f69e14c6a258a51dc83aa6418e",
       "dimensions": [1254, 1254]
+    },
+    {
+      "champion": "oh_tipi",
+      "role": "movement_and_evasion",
+      "file": "source_movement_oh_tipi_v5.png",
+      "sha256": "557e5938e1ba9a75769315c39cf7b6c3a6740a2614e7adf59aca03d4df52143c",
+      "dimensions": [1254, 1254]
+    },
+    {
+      "champion": "s_wayne",
+      "role": "movement_and_evasion",
+      "file": "source_movement_s_wayne_v5.png",
+      "sha256": "a96dc394eac9f20d20a45a99687616501a29cfa08b180c4ad867fde3c5bacf79",
+      "dimensions": [1254, 1254]
     }
   ],
-  "source_grid": {
-    "columns": ["south", "east", "north", "west"],
-    "rows": ["grounded", "jump", "cast", "hit"]
+  "source_grids": {
+    "core_actions": {
+      "columns": ["south", "east", "north", "west"],
+      "rows": ["grounded", "jump", "cast", "hit"]
+    },
+    "movement_and_evasion": {
+      "columns": ["south", "east", "north", "west"],
+      "rows": ["walk", "sprint", "slide", "roll"]
+    }
   },
-  "runtime_file": "runtime_atlas_cardinal_v4.png",
-  "runtime_sha256": "b7620ebfb896c99ac21b956ac08ed6d6a5c2e0c7b15fcdb3de048960cd849de5",
-  "runtime_imported_rgba_sha256": "103b30737ff6b68a0ca449e6acde873e930f1242ede865511103c950a7ebfbea",
-  "runtime_dimensions": [384, 768],
+  "runtime_file": "runtime_atlas_cardinal_v5.png",
+  "runtime_sha256": "1bea3c7f8d35b331801a81cc63f54388671ec0df658ec8a16a18393ed6866680",
+  "runtime_imported_rgba_sha256": "72ad872e6c5b824615a9cb348b384fd15a8e2933892828f3ca3f9633c8a9472b",
+  "runtime_dimensions": [384, 1536],
   "runtime_cell": [96, 96],
   "runtime_pivot": [48, 84],
   "runtime_champions": ["oh_tipi", "s_wayne"],
-  "runtime_states": ["grounded", "jump", "cast", "hit"],
+  "runtime_states": ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"],
   "runtime_directions": ["south", "east", "north", "west"],
   "runtime_row_layout": "champion_major_state_minor",
-  "build_command": "python scripts/build_cardinal_champion_atlas.py assets/sprites/champions_v3/foundation/source_cardinal_oh_tipi_v4.png assets/sprites/champions_v3/foundation/source_cardinal_s_wayne_v4.png assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v4.png",
+  "build_command": "python scripts/build_cardinal_champion_atlas.py assets/sprites/champions_v3/foundation/source_cardinal_oh_tipi_v4.png assets/sprites/champions_v3/foundation/source_cardinal_s_wayne_v4.png assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v5.png --oh-tipi-movement assets/sprites/champions_v3/foundation/source_movement_oh_tipi_v5.png --s-wayne-movement assets/sprites/champions_v3/foundation/source_movement_s_wayne_v5.png",
   "atlas_role": "body_and_clothing_only",
   "excluded_layers": ["spell", "element", "projectile", "aura", "shadow", "environment", "equipment", "focus"],
   "direction_policy": "south_front_camera_facing; east_profile; north_centered_back; west_profile",

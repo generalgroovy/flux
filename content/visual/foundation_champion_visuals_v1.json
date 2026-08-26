@@ -1,6 +1,6 @@
 {
-  "schema_version": 3,
-  "id": "foundation-champion-visuals-v3-cardinal-actions",
+  "schema_version": 4,
+  "id": "foundation-champion-visuals-v4-cardinal-movement",
   "authority": "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere",
   "atlas_role": "body_and_clothing_only",
   "front_pose": "camera_facing_symmetrical",
@@ -9,18 +9,18 @@
   "cell": [96, 96],
   "pivot": [48, 84],
   "atlas": {
-    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v4.png",
-    "sha256": "b7620ebfb896c99ac21b956ac08ed6d6a5c2e0c7b15fcdb3de048960cd849de5",
-    "imported_rgba_sha256": "103b30737ff6b68a0ca449e6acde873e930f1242ede865511103c950a7ebfbea",
-    "dimensions": [384, 768],
+    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v5.png",
+    "sha256": "1bea3c7f8d35b331801a81cc63f54388671ec0df658ec8a16a18393ed6866680",
+    "imported_rgba_sha256": "72ad872e6c5b824615a9cb348b384fd15a8e2933892828f3ca3f9633c8a9472b",
+    "dimensions": [384, 1536],
     "champions": ["oh_tipi", "s_wayne"],
-    "states": ["grounded", "jump", "cast", "hit"],
+    "states": ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"],
     "directions": ["south", "east", "north", "west"],
     "row_layout": "champion_major_state_minor"
   },
   "cardinal_animation_contract": {
     "directions": ["south", "east", "north", "west"],
-    "states": ["grounded", "jump", "cast", "hit"],
+    "states": ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"],
     "coverage": "every_champion_has_every_state_in_every_cardinal_direction",
     "row_layout": "champion_major_state_minor",
     "diagonal_policy": "derive_from_nearest_cardinal"

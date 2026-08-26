@@ -1,5 +1,31 @@
 # FLUX2 agent worklog
 
+## 2026-08-26 - shared hand-cast phase cue
+
+Playable outcome:
+
+- The foundation spell presenter now reads the validated delivery skeleton phase
+  at runtime and layers a small origin ring during `startup` plus a directional
+  release flash during `release` at the champion's empty hand.
+- The cue is shared by projectile, beam, spray and field profiles, uses the
+  existing element ramps and reduced-effects alpha, and leaves spell-specific
+  silhouettes and all authoritative timing/outcomes untouched.
+
+Verification:
+
+- `scripts\\test.cmd`: 54 suites, 18,676 assertions, zero failures; source
+  boots at 60/120 Hz. Expected legacy archive image-load warnings remain.
+- `scripts\\capture-visual.ps1 -Name post-unify-v9-hand-cue-v2 -Resolution
+  '1280x720' -TickRate 60 -Frames 8 -GameArguments
+  @('--camera-zoom=75','--champion=oh_tipi','--capture-cast-slot=1',
+  '--capture-chain-slot=2','--capture-pointer=900,720')` passed with eight
+  truthful frames.
+
+Next slice:
+
+- Continue V4 spell readability review with the same phase contract; keep the
+  visual gate closed to new mechanics until integrated acceptance is evidenced.
+
 ## 2026-08-26 - source-court approach accents
 
 Playable outcome:

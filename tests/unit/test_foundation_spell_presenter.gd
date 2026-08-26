@@ -17,6 +17,8 @@ func _test_repository_profiles() -> void:
 	equal(presenter.profiles_by_id.size(), 5, "every playable foundation spell has one visual profile")
 	equal(presenter.animation_skeletons.skeletons.size(), 4, "foundation spells share four reusable delivery skeletons")
 	check(presenter.animation_skeleton_hash.length() == 64, "foundation spell presentation exposes the skeleton content hash")
+	equal(String(presenter.animation_skeletons.phase_for("projectile", 0.10).get("cue", "")), "origin_ring", "projectile startup exposes the shared hand-gather cue")
+	equal(String(presenter.animation_skeletons.phase_for("projectile", 0.25).get("cue", "")), "release_flash", "projectile release exposes the shared forward-snap cue")
 	equal(FoundationSpellPresenter.STARTUPS.size(), 5, "foundation spells own five distinct startup silhouettes")
 	check(presenter.content_hash.length() == 64, "foundation spell presentation has a stable content hash")
 	var observed_startups: Dictionary[String, bool] = {}

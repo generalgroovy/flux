@@ -3,6 +3,18 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## Shared hand-cast phase cue — 2026-08-26
+
+- `FoundationSpellPresenter.draw_startup` now resolves the central skeleton's
+  phase and draws a shared origin ring for `startup` plus a directional release
+  flash for `release` at the empty hand; shape-specific visuals remain layered
+  and simulation still owns timing, cost, collision and outcomes.
+- Verification: 54 suites / 18,676 assertions, zero failures; source boots at
+  60/120 Hz. Eight truthful 1280×720/75% startup-and-chain cast frames captured
+  in `.godot/visual-captures/post-unify-v9-hand-cue-v2`.
+- The next package rebuild must include this slice; keep mechanics frozen until
+  the V0–V6 visual gate is accepted.
+
 ## Source-court approach accents — 2026-08-26
 
 - Added six validated, presentation-only decorations to

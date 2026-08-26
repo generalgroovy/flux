@@ -398,7 +398,9 @@ field families. Foundation spell profiles reference one matching skeleton; the
 loader fails closed on shape mismatches while all simulation timing and outcomes
 remain authoritative. The manifest is centrally registered in
 `content/visual/visual_asset_registry_v1.json` and its hash is printed in the
-bootstrap diagnostic for reproducible Windows handoffs.
+bootstrap diagnostic for reproducible Windows handoffs. The first two phases
+also drive a shared, restrained hand-gather and forward-release cue at the
+champion's empty hand; spell-specific silhouettes remain layered on top.
 
 The Nexus source court also has a small authored decoration layer: six bounded
 lantern, planter, and rune anchors live in the court profile, are validated

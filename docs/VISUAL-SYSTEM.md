@@ -175,7 +175,10 @@ shapes, with explicit draw-family and readability-cue tokens. The
 unbounded phases; `FoundationSpellPresenter` refuses a profile whose
 `skeleton_id` does not match its authoritative delivery shape. This keeps
 hand-origin anticipation, lane/endpoint reads and quiet residue editable data
-while simulation continues to own the actual timeline and result.
+while simulation continues to own the actual timeline and result. The presenter
+now renders the shared startup origin ring and release flash from those first
+two phase IDs before each spell's specific silhouette, giving every cast a
+consistent readable hand beat without adding a gameplay event.
 
 The manifest is registered in `content/visual/visual_asset_registry_v1.json`
 and its SHA-256 is printed in the Windows bootstrap diagnostic next to the

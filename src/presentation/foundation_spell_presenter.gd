@@ -122,6 +122,20 @@ func draw_startup(
 	var base := language.element_color(element, "base")
 	var bright := language.element_color(element, "bright")
 	var pulse := 0.0 if reduced_effects else sin(float(tick + wire_id) * 0.20) * 1.5
+	var skeleton_phase := animation_skeletons.phase_for(String(profile.get("shape", "")), progress)
+	var phase_id := String(skeleton_phase.get("id", ""))
+	# The delivery skeleton contributes a small shared hand cue before the
+	# spell-specific silhouette. It is presentation-only; the authoritative
+	# cast timer still decides when this layer appears and disappears.
+	match phase_id:
+		"startup":
+			var gather_radius := 5.0 + progress * 5.0
+			canvas.draw_circle(position, gather_radius, Color(base, 0.12 if reduced_effects else 0.20))
+			canvas.draw_arc(position, gather_radius + 4.0, -2.4, 0.6, 16, Color(bright, 0.72), 2.0)
+		"release":
+			var release_origin := position + direction * 7.0
+			canvas.draw_arc(release_origin, 9.0 + pulse * 0.35, 0.0, TAU, 16, Color(bright, 0.82), 2.0)
+			canvas.draw_line(position + direction * 2.0, position + direction * 14.0, Color(base, 0.64), 2.0)
 	match String(profile.get("startup", "")):
 		"gathered_drop":
 			var gather := position + direction * (16.0 + progress * 7.0)

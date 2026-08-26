@@ -11,7 +11,7 @@ physical places rather than a detached menu.
 
 ![Wellspring gameplay target](assets/concept/wellspring-gameplay-specimen-v3.png)
 
-> **Current playable state:** Windows/Linux source boot, two distinct champions,
+> **Current playable state:** Windows is the active release target. Two distinct champions,
 > full universal movement foundation, seven playable foundation spells, the
 > Wellspring campus, an authoritative 2–8 player direct-IP Farflow loop, and a
 > verified one-file Windows installer are working. Eight elemental bursts and
@@ -23,9 +23,8 @@ physical places rather than a detached menu.
 |---|---|---|
 | Windows player | Download and double-click `FLUX2-Windows-Setup.exe` | Hash-verified per-user install, Start Menu shortcut, safe version switch, then play |
 | Windows developer | Run `scripts\run.cmd` | Pinned Godot source launch at 120 Hz |
-| Linux developer | Run `./scripts/run.sh` | Pinned Godot source launch at 120 Hz |
 | Host | Walk east to **Host Farflow**, press interact | Opens authoritative UDP session on port `24872` |
-| Friend | Start the same build with the host address, then use **Join Farflow** | Compatibility-checked join; clear refusal on mismatch/full session |
+| Friend | Walk to **Join Farflow**, press interact, type/paste the host address, press Enter | Address is saved locally; join is compatibility-checked with clear refusal on mismatch/full session |
 | Everyone | Use the **Session Hearth** | Ready, synchronized start, results, and rematch without reopening the company |
 
 Build the one-file friend package on Windows:
@@ -41,8 +40,10 @@ an interrupted install leaves the previous version selected. The development
 build is unsigned, so Windows may show a publisher warning until a release
 certificate and signing pipeline exist.
 
-For internet play, the host currently forwards/allows **UDP 24872** and the
-friend launches with the host's address:
+For internet play, the host currently forwards/allows **UDP 24872**. The friend
+opens **Join Farflow**, types or pastes the host's public address, and presses
+Enter. The last valid address is saved on that PC. Developers and diagnostics
+may still override it from the command line:
 
 ```powershell
 scripts\run.cmd --join-address=203.0.113.10 --player-name="River Guest"
@@ -308,11 +309,6 @@ scripts\smoke-farflow.cmd
 scripts\smoke-farflow.cmd -Executable exports\windows\flux2.exe
 ```
 
-```bash
-./scripts/smoke-farflow.sh
-FLUX2_EXECUTABLE=exports/linux/flux2.x86_64 ./scripts/smoke-farflow.sh
-```
-
 ## Visual system and embedded reference gallery
 
 Runtime art uses an original compact handheld-era proportion language: large
@@ -407,17 +403,13 @@ scripts\test.cmd
 scripts\package.cmd Windows
 ```
 
-```bash
-./scripts/doctor.sh
-./scripts/run.sh
-./scripts/test.sh
-./scripts/package.sh linux
-```
-
 `scripts/test.*` runs deterministic suites plus source and imported-resource
 boots at both 60 and 120 Hz. A test is reported only when it actually ran.
 Generated `.godot/`, exports, local dependencies, credentials, and personal
 firewall rules are not source.
+
+Existing Linux-compatible simulation and helper scripts are retained but frozen;
+this implementation pass makes no new Linux release or acceptance claim.
 
 ## Continuous implementation order
 

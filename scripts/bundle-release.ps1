@@ -30,7 +30,7 @@ function Reset-ReleaseDirectory([string]$Path) {
 function Write-PlatformManifest([string]$Directory) {
     $manifest = Join-Path $Directory 'SHA256SUMS.txt'
     $lines = Get-ChildItem -LiteralPath $Directory -File | Where-Object { $_.FullName -ne $manifest } | Sort-Object Name | ForEach-Object {
-        "$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($_.Name)"
+        "$(Get-FluxFileSha256 $_.FullName)  $($_.Name)"
     }
     [System.IO.File]::WriteAllLines($manifest, [string[]]$lines, [System.Text.UTF8Encoding]::new($false))
 }
@@ -77,7 +77,7 @@ if ($Target -in @('Linux', 'All')) {
 
 $rootManifest = Join-Path $ReleaseRoot 'SHA256SUMS.txt'
 $rootLines = Get-ChildItem -LiteralPath $ReleaseRoot -File | Where-Object { $_.FullName -ne $rootManifest } | Sort-Object Name | ForEach-Object {
-    "$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($_.Name)"
+    "$(Get-FluxFileSha256 $_.FullName)  $($_.Name)"
 }
 [System.IO.File]::WriteAllLines($rootManifest, [string[]]$rootLines, [System.Text.UTF8Encoding]::new($false))
 Write-Output "PASS: portable $Target bundle(s) written to $ReleaseRoot"

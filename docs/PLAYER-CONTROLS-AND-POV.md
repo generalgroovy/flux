@@ -2,13 +2,12 @@
 
 ## Implemented checkpoint
 
-FLUX 2 now loads schema-v8 preferences from the stable offline profile
+FLUX 2 now loads schema-v9 preferences from the stable offline profile
 `user://player_preferences_v1.json`. The legacy filename is retained so existing
-schema-v1 installations are discovered and migrated in place. On Linux it
-normally resolves below
-`~/.local/share/godot/app_userdata/FLUX 2/`; Godot selects the equivalent user
-data location on other platforms. The file is created with safe defaults on the
-first launch and requires no account, network, subscription, or cloud service.
+schema-v1 installations are discovered and migrated in place. Godot stores it
+in the current Windows user's application-data area. The file is created with
+safe defaults on first launch and requires no account, network, subscription,
+or cloud service.
 
 The profile owns these independent concerns:
 
@@ -21,6 +20,7 @@ The profile owns these independent concerns:
 - a bounded 50/75/100% camera scale that defaults to the wider 75% view;
 - the reduced-motion accessibility preference used by G3 presentation;
 - the high-contrast presentation preference used by the V6 screen filter.
+- the last validated Farflow host/IP address entered at the in-world Join gate.
 
 Schema-v1/v2 profiles migrate the former defaults: C jump becomes Space jump,
 Alt sprint becomes Shift sprint, and the former Space primary alias becomes
@@ -35,7 +35,8 @@ action already owns Ctrl or Alt, that new layer remains unbound rather than
 creating a conflict. Missing mouse/controller lanes migrate to explicit unbound
 descriptors, and old profiles gain the 75% camera default. Schema-v7 profiles
 gain standard contrast without altering any existing binding or presentation
-choice.
+choice. Schema-v8 profiles gain the safe local Farflow address `127.0.0.1`;
+schema-v9 saves a player's subsequently validated host/IP entry.
 
 Unknown actions, unknown modes, conflicting non-zero keyboard keycodes,
 fractional values, unsupported schema versions, and values outside documented

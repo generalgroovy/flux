@@ -3,7 +3,7 @@ param(
     [ValidateRange(1024, 65535)][int]$Port = 24892,
     [ValidateSet(60, 120)][int]$TickRate = 120,
     [ValidateSet('open_commons', 'sparring_circle', 'duel_knot')][string]$Charter = 'open_commons',
-    [ValidateRange(5, 60)][int]$TimeoutSeconds = 20
+    [ValidateRange(5, 60)][int]$TimeoutSeconds = 30
 )
 . (Join-Path $PSScriptRoot 'flux2-common.ps1')
 

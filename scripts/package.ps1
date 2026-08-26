@@ -25,7 +25,7 @@ foreach ($preset in $presets) {
 $manifest = Join-Path $exportRoot 'SHA256SUMS.txt'
 $lines = Get-ChildItem -LiteralPath $exportRoot -Recurse -File | Where-Object { $_.FullName -ne $manifest } | Sort-Object FullName | ForEach-Object {
     $relative = $_.FullName.Substring($exportRoot.Length + 1).Replace('\', '/')
-    "$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $relative"
+    "$(Get-FluxFileSha256 $_.FullName)  $relative"
 }
 [System.IO.File]::WriteAllLines($manifest, [string[]]$lines, [System.Text.UTF8Encoding]::new($false))
 & (Join-Path $PSScriptRoot 'bundle-release.ps1') -Target $Target -ExportRoot $exportRoot -ReleaseRoot (Join-Path $exportRoot 'release')

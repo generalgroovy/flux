@@ -29,11 +29,25 @@ each playable slice.
   packaged playtest pause.
 - User-owned `node_modules/` and `scripts/firewall.ps1` remain untracked and
   untouched.
+- Windows lifecycle C1 is locally accepted. Player preference schema 9 stores a
+  validated Farflow host/IP; the in-world Join gate accepts typing or Ctrl+V,
+  confirms with Enter, cancels with Escape and keeps command-line overrides for
+  diagnostics. A reviewed 1280×720 capture is under ignored `.godot` evidence.
+- The setup pipeline no longer depends on the unavailable `Get-FileHash`
+  command; the shared .NET SHA-256 helper is used by packaging, bundling,
+  bootstrap compilation and update tests. The current one-file payload is
+  `0.1.0-dev-5a59a2cf68-bc04b7b4f7`, SHA-256
+  `dcdf7e45d88157164f3af1b5993ab2dc8524d08151592e130801073752d56b7a`.
+- C1 verification: 52 suites / 18,560 assertions plus source 60/120 boots;
+  baseline update from `0.1.0-dev-872b62227a-c08c59e8c4`, repair and installed
+  boot; packaged safe quit; packaged Open Commons (8), Sparring Circle (4) and
+  Duel Knot (2) Farflow journeys at 120 Hz on UDP 24914–24916. Signing,
+  NAT/relay and physical two-PC proof remain future release gates.
 
 ## Current green frontier — 2026-08-26
 
 - Branch: `codex/continuous-overhaul`.
-- Protocol 29, snapshot schema 11, player preference schema 8.
+- Protocol 29, snapshot schema 11, player preference schema 9.
 - Two basic champions, the non-ability movement foundation, cone occlusion,
   twelve walk-up Wellspring stations, direct-IP Farflow, Charters, Hearth,
   Proving Court, reconnect, stewardship and late-join observation are live.

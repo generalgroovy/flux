@@ -20,7 +20,7 @@ $compilerCandidates = @(
 $compiler = $compilerCandidates | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Select-Object -First 1
 if (-not $compiler) { throw 'The Windows .NET Framework C# compiler is required to build the one-file bootstrapper.' }
 
-$payloadHash = (Get-FileHash -LiteralPath $Payload -Algorithm SHA256).Hash.ToLowerInvariant()
+$payloadHash = Get-FluxFileSha256 $Payload
 $commit = (& git -C $repoRoot rev-parse --short=10 HEAD).Trim()
 if ($LASTEXITCODE -ne 0 -or -not $commit) { $commit = 'source' }
 $version = "0.1.0-dev-$commit-$($payloadHash.Substring(0, 10))"
@@ -59,7 +59,7 @@ if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $Output -PathType Leaf)
 $releaseRoot = Split-Path -Parent $Output
 $manifest = Join-Path $releaseRoot 'SHA256SUMS.txt'
 $lines = Get-ChildItem -LiteralPath $releaseRoot -File | Where-Object { $_.FullName -ne $manifest } | Sort-Object Name | ForEach-Object {
-    "$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($_.Name)"
+    "$(Get-FluxFileSha256 $_.FullName)  $($_.Name)"
 }
 [System.IO.File]::WriteAllLines($manifest, [string[]]$lines, [System.Text.UTF8Encoding]::new($false))
 Write-Output "PASS: Windows one-file installer/updater/launcher $Output ($version)"

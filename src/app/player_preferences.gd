@@ -2,8 +2,9 @@ class_name PlayerPreferences
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 8
+const SCHEMA_VERSION: int = 9
 const DEFAULT_PATH: String = "user://player_preferences_v1.json"
+const DEFAULT_FARFLOW_JOIN_ADDRESS: String = "127.0.0.1"
 const MOVEMENT_WORLD_RELATIVE: String = "world_relative"
 const MOVEMENT_AIM_RELATIVE: String = "aim_relative"
 const POV_FULL: String = "full"
@@ -157,6 +158,7 @@ var mouse_bindings: Dictionary[StringName, int] = {}
 var controller_bindings: Dictionary = {}
 var reduced_motion: bool = false
 var high_contrast: bool = false
+var farflow_join_address: String = DEFAULT_FARFLOW_JOIN_ADDRESS
 var last_error: String = ""
 
 
@@ -175,6 +177,7 @@ func reset_to_defaults() -> void:
 	controller_bindings = DEFAULT_CONTROLLER_BINDINGS.duplicate(true)
 	reduced_motion = false
 	high_contrast = false
+	farflow_join_address = DEFAULT_FARFLOW_JOIN_ADDRESS
 	last_error = ""
 
 
@@ -190,11 +193,11 @@ func apply_control_preset(preset_id: String) -> bool:
 func apply_dictionary(data: Dictionary) -> bool:
 	var raw_schema: Variant = data.get("schema_version", -1)
 	if not _is_whole_number(raw_schema):
-		last_error = "Player preferences require schema_version 1 through 8"
+		last_error = "Player preferences require schema_version 1 through 9"
 		return false
 	var requested_schema: int = int(raw_schema)
 	if requested_schema < 1 or requested_schema > SCHEMA_VERSION:
-		last_error = "Player preferences require schema_version 1 through 8"
+		last_error = "Player preferences require schema_version 1 through 9"
 		return false
 	var requested_movement: String = str(data.get("movement_reference", ""))
 	var requested_pov_mode: String = str(data.get("pov_mode", ""))
@@ -212,6 +215,13 @@ func apply_dictionary(data: Dictionary) -> bool:
 			last_error = "high_contrast must be a boolean"
 			return false
 		requested_high_contrast = raw_high_contrast
+	var requested_farflow_join_address: String = DEFAULT_FARFLOW_JOIN_ADDRESS
+	if requested_schema >= 9:
+		var raw_farflow_join_address: Variant = data.get("farflow_join_address", "")
+		if not raw_farflow_join_address is String or not is_valid_farflow_join_address(raw_farflow_join_address):
+			last_error = "farflow_join_address must be a valid host or IP address"
+			return false
+		requested_farflow_join_address = String(raw_farflow_join_address)
 	if not is_valid_movement_reference(requested_movement):
 		last_error = "Invalid movement_reference: %s" % requested_movement
 		return false
@@ -348,6 +358,7 @@ func apply_dictionary(data: Dictionary) -> bool:
 	controller_bindings = requested_controller_bindings
 	reduced_motion = requested_reduced_motion
 	high_contrast = requested_high_contrast
+	farflow_join_address = requested_farflow_join_address
 	last_error = ""
 	return true
 
@@ -365,6 +376,7 @@ func to_dictionary() -> Dictionary:
 		"controller_bindings": controller_bindings,
 		"reduced_motion": reduced_motion,
 		"high_contrast": high_contrast,
+		"farflow_join_address": farflow_join_address,
 	}
 
 
@@ -421,6 +433,16 @@ static func is_valid_movement_reference(requested_reference: String) -> bool:
 
 static func is_valid_pov_mode(requested_mode: String) -> bool:
 	return requested_mode == POV_FULL or requested_mode == POV_CONE
+
+
+static func is_valid_farflow_join_address(address: String) -> bool:
+	var safe_address := address.strip_edges()
+	if safe_address.is_empty() or safe_address.length() > 255 or safe_address != address:
+		return false
+	for character: String in safe_address:
+		if character.unicode_at(0) <= 32 or character in "/\\":
+			return false
+	return true
 
 
 static func validate_keyboard_bindings(requested_bindings: Dictionary) -> String:

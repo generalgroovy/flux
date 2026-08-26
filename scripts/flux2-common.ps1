@@ -5,6 +5,27 @@ function Get-FluxRepoRoot {
     return [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 }
 
+function Get-FluxFileSha256([string]$Path) {
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    if (-not (Test-Path -LiteralPath $fullPath -PathType Leaf)) {
+        throw "Cannot hash missing file: $fullPath"
+    }
+    $stream = [System.IO.File]::OpenRead($fullPath)
+    try {
+        $algorithm = [System.Security.Cryptography.SHA256]::Create()
+        try {
+            $bytes = $algorithm.ComputeHash($stream)
+            return ([System.BitConverter]::ToString($bytes)).Replace('-', '').ToLowerInvariant()
+        }
+        finally {
+            $algorithm.Dispose()
+        }
+    }
+    finally {
+        $stream.Dispose()
+    }
+}
+
 function Get-FluxGodot {
     if ($env:FLUX2_GODOT_BIN) {
         $candidate = [System.IO.Path]::GetFullPath($env:FLUX2_GODOT_BIN)

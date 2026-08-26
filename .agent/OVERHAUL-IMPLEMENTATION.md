@@ -1,10 +1,14 @@
 # FLUX 2 implementation path to first-eight playtest
 
-Current frontier: protocol 29, snapshot 11, preferences 8, Godot 4.7.1,
+Current frontier: protocol 29, snapshot 11, preferences 9, Godot 4.7.1,
 `codex/continuous-overhaul`. V0–V6 visual engineering, universal movement,
 positive-Flux combat, two champions, Wellspring, direct-IP Farflow, and the
 one-file Windows bootstrap are green foundations—not permission to claim final
 art, balance, internet accessibility, or chemistry.
+
+Active release scope is **Windows only**. Preserve portable simulation and the
+existing Linux scripts, but do not spend this pass on Linux packaging, smoke,
+documentation expansion, or acceptance claims.
 
 ## Slice sequence
 
@@ -65,7 +69,7 @@ World structure remains three-layered:
 2. Fixed-tick unit fixtures at 60 and 120 Hz.
 3. Simulation integration: cost, cooldown, collision, cover, reset, overflow.
 4. Network serialization and hostile-input refusal.
-5. Source boots at 60/120, then imported-resource boots.
+5. Windows source boots at 60/120, then imported-resource boots.
 6. Visual capture at 50/75/100%, high contrast, reduced effects, and multiplayer.
 7. Packaged Windows boot, clean install/repair/update, and 2/4/8 Farflow journeys.
 8. Diff/provenance/docs/memory review, then one reversible commit and push.

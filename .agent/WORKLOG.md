@@ -1,5 +1,45 @@
 # FLUX2 agent worklog
 
+## 2026-08-26 — Windows lifecycle and in-world friend address
+
+Playable outcome:
+
+- Added a focused type/paste editor directly to the **Join Farflow** station.
+  It validates and saves one host/IP locally, supports Enter/Escape and
+  controller accept/cancel, and preserves the CLI override for automation.
+- Advanced preferences to schema 9 with fail-closed host-address validation and
+  schema-v8 migration to the safe `127.0.0.1` default.
+- Removed the Windows packaging dependency on `Get-FileHash` by centralizing a
+  disposable-stream .NET SHA-256 helper across packaging, bundling, bootstrap
+  compilation and installer-update acceptance.
+- Extended the installer journey to install a distinct baseline first, prove an
+  atomic current-version switch, retain the recoverable old version, repair the
+  current payload and boot the installed export.
+- Narrowed active release acceptance to Windows while preserving existing Linux
+  source and scripts unchanged for a later reopened scope.
+
+Verification:
+
+- `scripts\\test.cmd`: 52 suites / 18,560 assertions, zero failures, followed by
+  independent source boots at 60 and 120 Hz.
+- The reviewed 1280×720 capture `farflow-join-address-v1` shows the live address
+  editor, saved-local notice, keyboard controls and UDP port in the world panel.
+- Fresh setup payload `0.1.0-dev-5a59a2cf68-bc04b7b4f7`, SHA-256
+  `dcdf7e45d88157164f3af1b5993ab2dc8524d08151592e130801073752d56b7a`.
+- Baseline update `0.1.0-dev-872b62227a-c08c59e8c4` → current, repair and
+  installed export boot passed; packaged GPU safe quit flushed local state and
+  closed its peer.
+- Packaged 120 Hz Farflow journeys passed Open Commons (8 places), Sparring
+  Circle (4) and Duel Knot (2) on UDP 24914–24916, including HELLO, movement
+  reconciliation, Hearth/Court flow, exact-actor return, rematch and host
+  stewardship; capacity-8/4 journeys also proved late-join spectating.
+
+Known limitations and next slice:
+
+- The development setup is unsigned and direct-IP internet play still requires
+  manual UDP forwarding; no signing, relay, NAT traversal or physical two-PC
+  acceptance is claimed. Proceed to C2 burst-atlas/runtime visual cohesion.
+
 ## 2026-08-23 — impact agency, recovery choice and Momentum Chime
 
 Playable outcome:

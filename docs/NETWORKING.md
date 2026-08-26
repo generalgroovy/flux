@@ -97,11 +97,14 @@ that ignores the notice. The host then emits a final, non-reserved departure.
 A client-sent administration packet is ignored. Closing the company applies the
 same reason-bearing path to every guest before the host returns offline.
 
-## Windows and Linux direct-IP smoke
+## Player-facing direct-IP journey
 
 The host launches normally, walks east to **Host Farflow**, and presses F. A
-friend launches the same commit and tick rate with an address override, walks
-to **Join Farflow**, and presses F:
+friend launches the same build, walks to **Join Farflow**, presses F, types or
+pastes the host's address, and presses Enter. The last valid address is retained
+in that PC's local preference profile. Escape cancels without changing it.
+
+Command-line overrides remain available for development automation:
 
 ```bash
 godot --path . -- --join-address=192.0.2.10 --session-port=24872 --player-name="River Guest"
@@ -125,7 +128,7 @@ override; normal players turn the in-world Farflow Charter before hosting.
 
 For repeatable local diagnostics, `--farflow=host` or `--farflow=join` opens the
 same station action immediately after boot. These switches exist for automated
-Windows/Linux smoke tests and do not introduce a detached player-facing menu.
+smoke tests and do not introduce a detached player-facing menu.
 `--farflow-smoke-emote` asks a diagnostic joining process to send one emote after
 its first snapshot so the reliable request/confirmation path can be exercised.
 `--farflow-smoke-prediction` adds a brief rightward input and reports only after

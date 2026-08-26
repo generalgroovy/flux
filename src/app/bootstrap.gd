@@ -91,6 +91,10 @@ var station_notice: String = ""
 var station_notice_seconds: float = 0.0
 var selected_champion_id: String = "oh_tipi"
 var join_address: String = "127.0.0.1"
+var join_address_editor_open: bool = false
+var join_address_editor_text: String = ""
+var join_address_editor_replace_on_type: bool = false
+var join_address_editor_error: String = ""
 var session_port: int = SessionTransport.DEFAULT_PORT
 var local_player_name: String = "Traveller"
 var selected_charter_id: String = SessionCharter.DEFAULT_ID
@@ -290,6 +294,8 @@ func _ready() -> void:
 			controls_editor.open_editor()
 		elif capture_expanded_station_id == "spell-loom":
 			spell_loom_editor.open_editor(_local_player_state(), ability_catalog)
+		elif capture_expanded_station_id == "farflow-join":
+			_open_join_address_editor()
 	print(
 		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
@@ -333,6 +339,9 @@ func _notification(what: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if join_address_editor_open:
+		_handle_join_address_input(event)
+		return
 	if spell_loom_editor != null and spell_loom_editor.is_open:
 		_handle_spell_loom_input(event)
 		return
@@ -418,6 +427,55 @@ func _unhandled_input(event: InputEvent) -> void:
 		queue_redraw()
 
 
+func _handle_join_address_input(event: InputEvent) -> void:
+	var handled := false
+	if event is InputEventKey and event.pressed and not event.echo:
+		var key_event := event as InputEventKey
+		match key_event.keycode:
+			KEY_ESCAPE:
+				_close_join_address_editor("Join cancelled.")
+			KEY_ENTER, KEY_KP_ENTER:
+				_commit_join_address_and_seek()
+			KEY_BACKSPACE:
+				join_address_editor_replace_on_type = false
+				join_address_editor_text = join_address_editor_text.left(maxi(0, join_address_editor_text.length() - 1))
+				join_address_editor_error = ""
+			KEY_DELETE:
+				join_address_editor_text = ""
+				join_address_editor_replace_on_type = false
+				join_address_editor_error = ""
+			KEY_V when key_event.ctrl_pressed:
+				var pasted := DisplayServer.clipboard_get().strip_edges()
+				if PlayerPreferences.is_valid_farflow_join_address(pasted):
+					join_address_editor_text = pasted
+					join_address_editor_replace_on_type = false
+					join_address_editor_error = ""
+				else:
+					join_address_editor_error = "Clipboard is not one safe host/IP address."
+			_:
+				if key_event.unicode >= 33 and key_event.unicode <= 126:
+					var character := String.chr(key_event.unicode)
+					if character not in "/\\" and join_address_editor_text.length() < 255:
+						if join_address_editor_replace_on_type:
+							join_address_editor_text = ""
+							join_address_editor_replace_on_type = false
+						join_address_editor_text += character
+						join_address_editor_error = ""
+		handled = true
+	elif event is InputEventJoypadButton and event.pressed:
+		var joy_event := event as InputEventJoypadButton
+		if joy_event.button_index == JOY_BUTTON_A:
+			_commit_join_address_and_seek()
+			handled = true
+		elif joy_event.button_index in [JOY_BUTTON_B, JOY_BUTTON_BACK]:
+			_close_join_address_editor("Join cancelled.")
+			handled = true
+	if handled:
+		controls_input_guard_frames = 2
+		get_viewport().set_input_as_handled()
+		queue_redraw()
+
+
 func _handle_spell_loom_input(event: InputEvent) -> void:
 	var handled := false
 	if event is InputEventKey and event.pressed and not event.echo:
@@ -488,7 +546,7 @@ func _process(delta: float) -> void:
 		_advance_safe_quit()
 		return
 	_update_reconnect_smoke(delta)
-	var controls_blocking: bool = (controls_editor != null and controls_editor.is_open) or (spell_loom_editor != null and spell_loom_editor.is_open) or controls_input_guard_frames > 0
+	var controls_blocking: bool = join_address_editor_open or (controls_editor != null and controls_editor.is_open) or (spell_loom_editor != null and spell_loom_editor.is_open) or controls_input_guard_frames > 0
 	if controls_input_guard_frames > 0:
 		controls_input_guard_frames -= 1
 	if not controls_blocking:
@@ -1247,8 +1305,15 @@ func _station_lines(station: Dictionary) -> Array:
 		var closing_armed := session_transport.is_host() and session_steward.is_armed(SessionSteward.Action.CLOSE_COMPANY, 0, world.tick)
 		return [session_transport.status_detail, "UDP %d · %d/%d travellers" % [session_port, session_transport.player_count(), _selected_session_capacity()], "CHARTER: %s" % SessionCharter.display_name(selected_charter_id), "F CONFIRMS CLOSING THE COMPANY" if closing_armed else ("F arms a three-second close" if session_transport.is_host() else "F opens a direct friend gate")]
 	if command == "join_session":
+		if join_address_editor_open:
+			return [
+				"TYPE OR CTRL+V THE HOST ADDRESS",
+				"> %s%s" % [join_address_editor_text, "_" if Time.get_ticks_msec() % 1000 < 600 else ""],
+				join_address_editor_error if not join_address_editor_error.is_empty() else "ENTER SEEKS · ESC CANCELS · PORT %d" % session_port,
+				"The address is saved only on this PC",
+			]
 		var charter_line := "HOST CHARTER APPEARS AFTER JOIN" if not session_transport.is_connected_client() else "CHARTER: %s · %d PLACES" % [SessionCharter.display_name(selected_charter_id), session_transport.player_capacity()]
-		return [session_transport.status_detail, "%s:%d" % [join_address, session_port], charter_line, "F closes the gate" if session_transport.mode != SessionTransport.Mode.OFFLINE else "F seeks the configured friend gate"]
+		return [session_transport.status_detail, "%s:%d" % [join_address, session_port], charter_line, "F closes the gate" if session_transport.mode != SessionTransport.Mode.OFFLINE else "F enters or confirms the friend address"]
 	if command == "session_charter":
 		var charter := SessionCharter.definition(selected_charter_id)
 		var locked := session_transport.is_online()
@@ -1704,6 +1769,9 @@ func _update_station_focus() -> void:
 	)
 	if not expanded_station_id.is_empty() and expanded_station_id != next_focus:
 		expanded_station_id = ""
+	if join_address_editor_open and next_focus != focused_station_id:
+		join_address_editor_open = false
+		join_address_editor_error = ""
 	focused_station_id = next_focus
 
 
@@ -1909,12 +1977,52 @@ func _toggle_join_session() -> void:
 	if session_transport.mode != SessionTransport.Mode.OFFLINE:
 		_return_to_offline("You left the Farflow company.")
 	else:
-		var signature := _session_compatibility_signature()
-		if session_transport.start_join(join_address, session_port, signature, local_player_name, SessionCharter.catalog_hash()):
-			station_notice = "Seeking %s:%d." % [join_address, session_port]
-			print("FLUX2 farflow join: seeking %s:%d" % [join_address, session_port])
-		else:
-			station_notice = session_transport.last_error
+		_open_join_address_editor()
+	expanded_station_id = focused_station_id
+
+
+func _open_join_address_editor() -> void:
+	join_address_editor_open = true
+	join_address_editor_text = join_address
+	join_address_editor_replace_on_type = true
+	join_address_editor_error = ""
+	station_notice = ""
+	station_notice_seconds = 0.0
+	expanded_station_id = focused_station_id
+
+
+func _close_join_address_editor(notice: String = "") -> void:
+	join_address_editor_open = false
+	join_address_editor_error = ""
+	join_address_editor_replace_on_type = false
+	controls_input_guard_frames = 2
+	if not notice.is_empty():
+		station_notice = notice
+		station_notice_seconds = 1.5
+
+
+func _commit_join_address_and_seek() -> void:
+	var requested := join_address_editor_text.strip_edges()
+	if not PlayerPreferences.is_valid_farflow_join_address(requested):
+		join_address_editor_error = "Use one host name or IP; no spaces, /, or \\."
+		return
+	join_address = requested
+	player_preferences.farflow_join_address = requested
+	var persisted := _save_player_preferences_if_persistent()
+	_close_join_address_editor()
+	if not persisted:
+		station_notice = "Seeking now; this PC could not save the address."
+		station_notice_seconds = 3.0
+	_start_join_session_now()
+
+
+func _start_join_session_now() -> void:
+	var signature := _session_compatibility_signature()
+	if session_transport.start_join(join_address, session_port, signature, local_player_name, SessionCharter.catalog_hash()):
+		station_notice = "Seeking %s:%d." % [join_address, session_port]
+		print("FLUX2 farflow join: seeking %s:%d" % [join_address, session_port])
+	else:
+		station_notice = session_transport.last_error
 	station_notice_seconds = 3.0
 	expanded_station_id = focused_station_id
 
@@ -2170,7 +2278,7 @@ func _start_requested_farflow() -> void:
 		"host":
 			_toggle_host_session()
 		"join":
-			_toggle_join_session()
+			_start_join_session_now()
 
 
 func _draw_pov_mask(origin: Vector2, aim: Vector2, camera_origin: Vector2) -> void:
@@ -2608,13 +2716,16 @@ func _requested_tick_rate() -> int:
 
 
 func _requested_join_address() -> String:
+	var fallback := PlayerPreferences.DEFAULT_FARFLOW_JOIN_ADDRESS
+	if player_preferences != null and PlayerPreferences.is_valid_farflow_join_address(player_preferences.farflow_join_address):
+		fallback = player_preferences.farflow_join_address
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--join-address="):
 			var requested := argument.trim_prefix("--join-address=").strip_edges()
 			if SessionTransport._valid_address(requested):
 				return requested
-			push_warning("Invalid join address override; using 127.0.0.1")
-	return "127.0.0.1"
+			push_warning("Invalid join address override; using saved address")
+	return fallback
 
 
 func _requested_session_port() -> int:

@@ -6,7 +6,9 @@ playable, and acceptance-driven.
 
 **Active platform scope:** Windows only. Existing Linux compatibility is
 preserved but receives no new packaging or acceptance work until the user
-reopens that scope.
+reopens that scope. Automatic Linux CI is disabled; the source-controlled
+foundation workflow is a deliberate manual Windows gate so failed development
+runs cannot generate notification floods.
 
 | Order | Complete playable slice | Acceptance |
 |---:|---|---|

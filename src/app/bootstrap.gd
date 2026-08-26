@@ -48,6 +48,7 @@ var compact_hud: CompactCombatHud
 var interaction_presenter: WellspringInteractionPresenter
 var cartoon_champion_presenter: CartoonChampionPresenter
 var foundation_spell_presenter: FoundationSpellPresenter
+var burst_projectile_presenter: BurstProjectilePresenter
 var ability_catalog: AbilityCatalog
 var champion_catalog: ChampionCatalog
 var loadout: LoadoutDefinition
@@ -236,6 +237,11 @@ func _ready() -> void:
 		push_error(foundation_spell_presenter.last_error)
 		get_tree().quit(1)
 		return
+	burst_projectile_presenter = BurstProjectilePresenter.new()
+	if not burst_projectile_presenter.configure(visual_language, ability_catalog):
+		push_error(burst_projectile_presenter.last_error)
+		get_tree().quit(1)
+		return
 	champion_catalog = ChampionCatalog.new()
 	if not champion_catalog.load_from_file(CHAMPION_CATALOG_PATH, ability_catalog):
 		push_error(champion_catalog.last_error)
@@ -297,7 +303,7 @@ func _ready() -> void:
 		elif capture_expanded_station_id == "farflow-join":
 			_open_join_address_editor()
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s, bursts %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -317,6 +323,7 @@ func _ready() -> void:
 			campus_renderer.architecture_kit.content_hash.left(12),
 			campus_renderer.wayfinding.content_hash.left(12),
 			foundation_spell_presenter.content_hash.left(12),
+			burst_projectile_presenter.content_hash.left(12),
 			cartoon_champion_presenter.content_hash.left(12),
 			cartoon_champion_presenter.atlas_hash.left(12),
 			hub_definition.districts_by_id.size(),
@@ -2695,6 +2702,8 @@ func _projectile_color(element_wire_id: int) -> Color:
 
 
 func _draw_projectile(projectile: ProjectileState, position: Vector2, color: Color) -> void:
+	if burst_projectile_presenter != null and burst_projectile_presenter.draw_projectile(self, projectile, world.tick, _reduced_effects_enabled()):
+		return
 	if foundation_spell_presenter != null and foundation_spell_presenter.draw_projectile(self, projectile, world.tick, _reduced_effects_enabled()):
 		return
 	var radius: float = float(projectile.radius) / 1000.0

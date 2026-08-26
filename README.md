@@ -65,7 +65,7 @@ channels are not claimed yet; test direct-IP builds only with trusted friends.
 | Chemistry | Material grid and 36 design-locked recipes | All recipes form, act, decay, reset, and explain themselves in-game |
 | Champions | Oh Tipi and S. Wayne playable | Do not expand until first-eight chemistry passes |
 | Farflow | Host-authoritative 2/4/8-player direct-IP loop | Per-peer LOS filtering, then measured later 32-player gate |
-| Visuals | Original compact pixel grammar and production candidates integrated | Runtime burst atlas and whole-scene cohesion acceptance |
+| Visuals | Original compact pixel grammar plus validated nine-element v3 projectile sheets live on every projectile | Whole-scene character/environment/HUD cohesion acceptance |
 
 ## Design pillars
 
@@ -345,15 +345,18 @@ zoom remains configurable from 50–100%.
 </details>
 
 <details>
-<summary><strong>Burst projectile production references</strong></summary>
+<summary><strong>Burst projectile production system</strong></summary>
 
-The combined atlases stack neutral plus Fire, Water, Wind, Earth, Charge, Ice,
-Light, and Dark. Each uses 8 directions × 16 phase columns: formation, travel,
-impact, residue, and one reserved migration cell.
+The reviewed v3 board supplies neutral plus Fire, Water, Wind, Earth, Charge,
+Ice, Light, and Dark. Deterministic tooling derives separate 32 px runtime
+sheets with 8 directions × 16 columns: formation, travel, impact, residue, and
+one reserved migration cell. Every live projectile now uses the appropriate
+element sheet while its exact aim, radius, collision, speed and outcome remain
+simulation-owned.
 
-![32px burst runtime candidate](reference/art/projectiles/burst_v2/burst_all_elements_runtime_candidate_32.png)
+![Nine-element burst style board](reference/art/projectiles/burst_v3/burst_element_style_board_v3.png)
 
-![64px burst detail reference](reference/art/projectiles/burst_v2/burst_all_elements_reference_64.png)
+![Fire runtime phases and directions](assets/effects/projectiles/burst_v3/burst_fire_runtime_32.png)
 
 </details>
 

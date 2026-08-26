@@ -37,9 +37,9 @@ Simulation aim remains continuous. Eight-direction art exists only for compact t
 
 Every promoted element must eventually be represented on every accepted delivery foundation, but simulation semantics remain authored rather than inferred from the sprite.
 
-## Burst v2 visual contract
+## Burst v3 visual contract
 
-The accepted reference grid is 16 columns x 8 directional rows.
+The validated runtime grid is 16 columns x 8 directional rows per element.
 
 - columns 0-1: spawn;
 - columns 2-7: travel;
@@ -47,9 +47,12 @@ The accepted reference grid is 16 columns x 8 directional rows.
 - columns 12-14: residue;
 - column 15: reserved.
 
-Reference cells are 64x64. A 32x32 runtime candidate is supplied for direct gameplay readability tests and to align with current element-VFX scale.
+Runtime cells are 32x32. The project-bound 3×3 style board is cropped and
+normalized by `tools/assets/prepare_burst_runtime_v3.py`; its generated manifest
+locks hashes, pixel budgets, pivots, directions and phase columns while keeping
+release approval explicitly false until integrated acceptance.
 
-Exact symmetry is generated from four source directions:
+Exact symmetry is derived from a right-facing source frame:
 
 - South = vertical mirror of North;
 - South-West = horizontal mirror of South-East;

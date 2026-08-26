@@ -1,5 +1,45 @@
 # FLUX2 agent worklog
 
+## 2026-08-26 — export-safe nine-element projectile art
+
+Playable outcome:
+
+- Detected that both imported burst-v2 PNG streams were truncated/undecodable;
+  removed that unusable package and its failing helper from the active tree.
+  The originals remain recoverable at commit `3f79847`.
+- Used the built-in image-generation workflow to create a new original,
+  transparent nine-element style board, saved project-locally under
+  `reference/art/projectiles/burst_v3/` with its production prompt.
+- Added a deterministic v3 generator that crops the ordered 3×3 board, anchors
+  each projectile on its luminous core, bounds its palette, creates
+  spawn/travel/impact/residue phases and derives exact mirrored eight-direction
+  rows into nine 512×256 runtime sheets.
+- Added an export-safe, fail-closed manifest/presenter. It validates provenance,
+  source/generator/asset hashes, grid, pivot, phases, symmetry, blank migration
+  cells and memory/disk budgets while explicitly refusing collision authority
+  or release approval.
+- Integrated the presenter ahead of procedural fallbacks so Arc Primary,
+  Vector Lance, Rillshot and Eclipse Disc now use their elemental animation;
+  the simulation radius remains visible and ricochet pips remain explicit.
+
+Verification:
+
+- `scripts\\test.cmd`: 53 suites / 18,626 assertions, zero failures, including
+  66 new atlas assertions, followed by independent source boots at 60/120 Hz.
+- `burst-runtime-v3-rillshot-75`: 20 truthful 1280×720 frames; inspected Water
+  travel at default 75% zoom with its core, direction and hit ring readable.
+- Windows export and setup generation passed. Packaged GPU safe quit loaded
+  burst hash `fa35baa91783`, flushed local state and closed the network peer.
+- Setup payload `0.1.0-dev-5c21b55e49-890cf994f9`, SHA-256
+  `00b2e51b2e477311102ad7c476644fd371e8c68eb8d9f1c8844988bd946291a1`.
+
+Known limitations and next slice:
+
+- This accepts the runtime projectile-art foundation, not final C2 scene
+  cohesion. Review both champions and live projectiles at 50/75/100% under
+  standard/high-contrast/reduced profiles, reconcile stale player-facing
+  character metadata, then pressure-test five lanes without changing rules.
+
 ## 2026-08-26 — Windows lifecycle and in-world friend address
 
 Playable outcome:

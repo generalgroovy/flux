@@ -20,9 +20,9 @@ each playable slice.
   24-character migration roster, ancestries, Wellspring/Farflow architecture,
   embedded design images, and the exact chemistry playtest sequence.
 - New mainline reference inputs are present: compact Tiny→Huge character boards,
-  neutral/eight-element 32/64 px burst atlases, design-locked 36-pair reaction
-  data, weighted 2+1 first-eight affinities, and the Waka Aren Si display-name
-  compatibility contract.
+  design-locked 36-pair reaction data, weighted 2+1 first-eight affinities, and
+  the Waka Aren Si display-name compatibility contract. The imported burst-v2
+  PNG streams were truncated and were replaced by the reviewed v3 pipeline.
 - The user-ordered active path is repository authority → plug-and-play
   lifecycle → cohesive visual runtime → deterministic five-shot patterns →
   eight configurable elemental bursts → all 36 bounded live reactions →
@@ -43,6 +43,18 @@ each playable slice.
   boot; packaged safe quit; packaged Open Commons (8), Sparring Circle (4) and
   Duel Knot (2) Farflow journeys at 120 Hz on UDP 24914–24916. Signing,
   NAT/relay and physical two-PC proof remain future release gates.
+- C2 projectile-art foundation is live. A project-bound nine-element style
+  board plus deterministic generator produces nine bounded 512×256 sheets;
+  the fail-closed presenter validates source/generator/asset hashes, exact
+  32×32 pivots, phases, mirrored directions, budgets and presentation-only
+  authority. All live projectiles use their element sheet and retain a visible
+  simulation-radius ring; the corrupted v2 files remain recoverable at
+  `3f79847` but are removed from the active tree.
+- C2 verification frontier: 53 suites / 18,626 assertions, source 60/120 boots,
+  inspected 1280×720 Water travel at 75% zoom, Windows export/package, and
+  packaged GPU safe quit. Current setup payload is
+  `0.1.0-dev-5c21b55e49-890cf994f9`, SHA-256
+  `00b2e51b2e477311102ad7c476644fd371e8c68eb8d9f1c8844988bd946291a1`.
 
 ## Current green frontier — 2026-08-26
 
@@ -100,7 +112,7 @@ each playable slice.
   movement cannot erase the decision. The host-authoritative Momentum Chime
   teaches that loop, refuses repeat requests during launch/recovery and uses a
   reusable reduced-effects-aware brace accent as the next visual slice seed.
-- Latest source verification is 18,428 assertions across 52 suites plus
+- Latest source verification is 18,626 assertions across 53 suites plus
   import/source 60/120 Hz boots and a fresh 120 Hz three-process
   spectator-to-Hearth-to-Round-2, reconnect and stewardship journey.
 - Fresh Windows and Linux friend packages plus packaged Windows safe quit pass

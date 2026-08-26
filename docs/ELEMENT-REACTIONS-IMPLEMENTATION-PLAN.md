@@ -1,253 +1,329 @@
 # First-eight element reaction implementation plan
 
 Status: **ordered implementation plan**. Runtime chemistry remains at F1 storage/
-safety until the individual slices below are implemented and accepted.
+safety until the slices below are implemented and accepted.
 
-This focused contract expands Chapter 5 of `OVERHAUL-PLAN.md`. It governs the
-order in which the first eight promoted element families enter the deterministic
-material simulation. The design source is
-[`ELEMENT-REACTIONS-FIRST-EIGHT.md`](ELEMENT-REACTIONS-FIRST-EIGHT.md), with the
-machine-readable draft in
-[`content/reactions/first_eight_element_reactions_v1.json`](../content/reactions/first_eight_element_reactions_v1.json).
+This plan implements the first-eight reaction network inside the **shared authored
+Wellspring sandbox**, not inside isolated test rooms only. The canonical design
+sources are:
+
+- [`ELEMENT-REACTIONS-FIRST-EIGHT.md`](ELEMENT-REACTIONS-FIRST-EIGHT.md)
+- [`ELEMENT-ENVIRONMENT-RESPONSES.md`](ELEMENT-ENVIRONMENT-RESPONSES.md)
+- [`CORE-GAME-DESIGN.md`](CORE-GAME-DESIGN.md)
+- `content/reactions/first_eight_element_reactions_v1.json`
 
 ## Scope lock
 
-Fundamental families in scope:
+Promoted families:
 
 `Earth, Fire, Water, Wind, Ice, Charge, Light, Dark`
 
-Explicitly deferred until the fundamental acceptance gate:
+Deferred until the fundamental acceptance gate:
 
 `Spirit, Chaos, Gravity, Time`
 
-No implementation slice may silently introduce behavior for a deferred family.
-The twelve-family ID catalog remains stable, but only the first-eight reaction
-registry may become executable during this phase.
+No slice may silently introduce production behavior for a deferred family.
+
+## Global design law
+
+Reactions are **world-state transformations**, not an elemental weakness wheel.
+They should primarily change:
+
+- movement and traction;
+- routes and traversal geometry;
+- visibility/information;
+- projectile trajectories;
+- structure/cover;
+- fields/networks;
+- timing and resource pressure.
+
+Damage and status are valid outputs but are not the organizing principle.
+
+The same world inputs must produce the same physical reaction regardless of which
+champion created them. Affinity may affect authored spell access/efficiency, but
+never multiplies reaction physics implicitly.
+
+## F2R — selective environment response foundation
+
+This is now a prerequisite for promoting live chemistry beyond contained test
+fixtures.
+
+Goal: make maps explicitly declare what can react and what is inert.
+
+Deliverables:
+
+1. typed response classes: inert, cosmetic, state, movement, visibility,
+   trajectory, structural, network, hazard, conversion;
+2. material/prop response registry with stable IDs;
+3. explicit element-operation whitelist per archetype;
+4. thresholds/capacity/lifetime/reset metadata for strong operations;
+5. editor/debug visualization of material tags, worldbone, reset groups and
+   supported responses;
+6. validator that rejects undeclared strong mutation callbacks;
+7. fixtures proving visually similar objects may have different semantic
+   response data without presentation becoming authority.
+
+Initial interaction-dense archetypes:
+
+- Water basin + sluice/pump;
+- furnace/fuel/heat source;
+- mutable soil/stone/brick + support;
+- relay/capacitor/grounding node;
+- prism/mirror;
+- vegetation/growth;
+- rubble/movable cover;
+- wind/pressure device.
+
+Exit gate: players/tools can determine from semantic data which interactions are
+valid; unsupported combinations remain deliberately inert.
 
 ## Global runtime contract
 
-Before any individual reaction becomes playable, the reaction kernel must own:
+Before a reaction becomes playable, the kernel must own:
 
-- stable reaction IDs and deterministic pair lookup;
-- explicit formation thresholds and material/state prerequisites;
-- one authoritative phase order per simulation tick;
-- bounded dirty/awake work independent of rendering and camera visibility;
+- stable reaction IDs and deterministic unordered-pair lookup;
+- explicit formation thresholds/prerequisites;
+- fixed authoritative phase order per simulation tick;
+- bounded dirty/awake work independent of camera/render visibility;
 - typed actor effects such as slow, DoT, interrupt, reveal, mark, displacement,
   traction and projectile redirect;
 - typed map effects such as flow, phase change, structure damage, temporary
   geometry, gas/visibility fields and conductor networks;
-- explicit ownership/credit for damage, reaction assists and environment kills;
-- formation/active/residue lifecycles with hard area/lifetime/propagation caps;
+- source/owner/team/assist metadata separated from physical outcome;
+- formation/active/residue lifecycle with hard area/lifetime/propagation caps;
 - exact reset and canonical hashing;
 - semantic presentation/network events rather than pixel-derived authority;
 - 60/120 Hz deterministic tests and replay fixtures;
-- worldbone preservation and route-safety validation.
+- worldbone preservation and route-safety validation;
+- shared-world zone policy so safe/social regions can reject hostile mutation;
+- eight-player stress bounds for events, reaction work and presentation.
 
 ## F2A — reaction schema and phase orchestrator
 
-Goal: make reaction definitions executable data without enabling meaningful map
-mutation yet.
+Goal: compile the complete first-eight design into executable data without yet
+allowing unreviewed major map mutation.
 
 Deliverables:
 
-1. `ReactionCatalog` validator for the first-eight registry.
-2. Exactly eight permitted fundamental IDs and 36 unordered pair definitions.
-3. Fail closed on unknown/gated element, duplicate/missing pair, asymmetric pair,
-   missing counter/telegraph, invalid bounds, or runtime-enabled content before
-   the kernel is ready.
-4. Stable reaction wire IDs generated/checked by manifest.
-5. `MaterialPhaseOrchestrator` with fixed ordered phases, bounded work and no
-   frame/render dependencies.
-6. Typed reaction-event record carrying tick, reaction ID, owner, region/cell,
-   formation stage and semantic outcome.
-7. Unit tests for catalog hashes, pair coverage, queue order and 60/120 Hz phase
-   scheduling.
+1. `ReactionCatalog` validator.
+2. Exactly eight enabled fundamental IDs and 36 unordered pair definitions.
+3. Fail closed on unknown/gated element, duplicate/missing pair, invalid bounds,
+   missing counter/telegraph or premature runtime enablement.
+4. Stable reaction wire IDs.
+5. `MaterialPhaseOrchestrator` with fixed ordered phases and bounded work.
+6. Typed reaction-event record carrying tick, reaction ID, region/cell,
+   source/owner/team, formation stage and semantic outcome.
+7. Conflict resolution for several player inputs in one tick through stable
+   deterministic ordering.
+8. Tests for hashes, pair coverage, queue order and 60/120 Hz scheduling.
 
-Exit gate: the complete 36-pair design compiles and validates but produces no
-unreviewed live reaction effects.
+Exit gate: all 36 pair definitions compile/validate; world mutation remains
+explicitly gated by implemented operation handlers.
 
 ## F2B — structure + flagship Magma lifecycle
 
-Goal: prove that chemistry can permanently-for-the-round reshape a route while
-remaining resettable and worldbone-safe.
+Goal: prove that chemistry can reshape a route while remaining resettable,
+multiplayer-safe and worldbone-safe.
 
-Foundation work:
+Foundation:
 
 - typed mutable structural health/damage classes;
 - warned damaged stages;
 - deterministic support checks;
 - ordered collapse;
 - rubble material/state;
-- dirty derived collision/navigation regions;
-- explicit basalt material or structural state.
+- bounded dirty collision/navigation updates;
+- explicit basalt material/structural state;
+- reset-group and shared-zone ownership rules.
 
-First reaction:
+Flagship lifecycle:
 
-`Earth + Fire -> Magma -> cooling crust -> Basalt -> fracture -> Rubble`
+```text
+Earth + Fire
+-> heated compatible Earth
+-> Magma
+-> bounded elevation-driven flow
+-> cooling crust
+-> Basalt
+-> fracture
+-> Rubble
+```
 
-Magma requirements:
+Requirements:
 
-- formation requires authored heat/material threshold;
-- molten cells follow deterministic elevation and bounded flow;
-- contact applies capped short DoT and ground denial;
-- wood/growth ignition and destructible-stone softening are typed operations;
-- Water can cause Steam plus rapid cooling;
-- Ice can accelerate cooling;
-- basalt can create a temporary bridge/wall/route but never worldbone;
-- later fracture produces rubble and recomputes only bounded dirty collision.
+- formation requires compatible authored material + heat threshold;
+- Magma follows deterministic elevation/neighbor order;
+- contact applies capped short DoT/ground denial;
+- selected growth/wood can ignite;
+- selected mutable stone can soften;
+- Water creates Steam + rapid cooling;
+- Ice accelerates solidification;
+- basalt may create temporary route/cover but never worldbone;
+- fracture produces rubble and recomputes only bounded dirty regions;
+- several players may contribute Earth/Fire/Water/Ice while credit remains
+  deterministic;
+- safe/social zones reject the hostile lifecycle entirely.
 
-Exit gate: the Material Yard demonstrates melt -> flow -> cool -> basalt ->
-fracture -> rubble identically in replay at 60 and 120 Hz, survives maximum
-reaction pressure without altering worldbone, and exactly resets.
+Exit gate: a shared Proving/Foundry fixture demonstrates melt -> flow -> cool ->
+basalt -> fracture -> rubble identically at 60/120 Hz, including two-plus player
+contributions and exact local reset.
 
-## F2C — thermal + hydrology fundamentals
-
-Goal: connect temperature, wetness, flow and traction to movement and terrain.
+## F2C — thermal + hydrology + movement
 
 Promote in order:
 
-1. **Freeze** — Water + Ice: progressive low-friction ice/temporary crossings.
-2. **Steam** — Fire + Water: brief scald then occluding gas.
-3. **Mud** — Earth + Water: acceleration/slide/takeoff modifier.
-4. **Thermal Shock** — Fire + Ice: thresholded structure fracture/Brittle.
-5. **Flood** — Water + Water: depth/elevation flow substrate.
-6. **Permafrost** — Earth + Ice: rigid route/cover that fractures.
-7. **Conflagration** — Fire + Fire: hotter short-lived fuel-consuming front.
-8. **Glacier** — Ice + Ice: temporary soft-solid cover/traversal geometry.
+1. **Freeze** — Water + Ice.
+2. **Steam** — Fire + Water.
+3. **Mud** — Earth + Water.
+4. **Thermal Shock** — Fire + Ice.
+5. **Flood** — Water + Water.
+6. **Permafrost** — Earth + Ice.
+7. **Conflagration** — Fire + Fire.
+8. **Glacier** — Ice + Ice.
 
-Required integration:
+Integration requirements:
 
-- traction modifiers feed deterministic movement rather than presentation;
-- gases feed semantic LOS/visibility policy without leaking hidden actors;
-- flow uses fixed neighbor order, integer conservation and bounded transfer;
-- thermal state uses explicit thresholds/hysteresis to prevent tick-edge flicker.
+- traction feeds canonical movement;
+- water depth/flow modifies movement through explicit bounded rules;
+- gases feed semantic visibility without leaking hidden actors;
+- flow uses fixed neighbor order and integer conservation;
+- thermal thresholds use hysteresis to avoid tick-edge flicker;
+- world activity boundaries prevent a training experiment from unexpectedly
+  flooding unrelated safe/social space;
+- existing slide/jump/wavedash routes are tested on dry, mud, ice and flood
+  surfaces.
 
 Exit gate: players can deliberately flood, freeze, melt, steam, muddy and
-fracture routes and the same commands reproduce the same map/movement hashes.
+fracture routes; the same commands reproduce the same player/world hashes.
 
-## F2D — Charge networks and electrical reactions
-
-Goal: make Charge spatially dependent on actual conductor connectivity.
+## F2D — Charge networks
 
 Promote:
 
-1. **Conductive Flood** — Water + Charge.
-2. **Grounding Network** — Earth + Charge.
-3. **Overload** — Charge + Charge.
-4. **Superconduct** — Ice + Charge.
-5. **Arcflash** — Charge + Light.
-6. **Plasma Arc** — Fire + Charge.
-7. **Ion Storm** — Wind + Charge.
-8. **Static Shroud** — Dark + Charge.
+1. Conductive Flood — Water + Charge.
+2. Grounding Network — Earth + Charge.
+3. Overload — Charge + Charge.
+4. Superconduct — Ice + Charge.
+5. Arcflash — Charge + Light.
+6. Plasma Arc — Fire + Charge.
+7. Ion Storm — Wind + Charge.
+8. Static Shroud — Dark + Charge.
 
 Required systems:
 
-- Charge remains an independent field, never an occupancy replacement;
-- deterministic conductor graph/region discovery with hard visit limits;
+- Charge remains an independent field;
+- explicit conductor tags/graphs, never visual-metal inference;
+- deterministic conductor discovery with hard visit limits;
 - visible warning before propagated damage/interrupt;
-- no repeated same-tick farming of one actor/network edge;
-- grounding and network-break counters are simulation facts;
-- device/capacitor hooks use shared typed interfaces, not map-specific scripts.
+- no same-tick repeat farming;
+- grounding/network break are semantic facts;
+- devices use shared typed interfaces, not bespoke map scripts;
+- eight-player overlapping network tests remain under packet/work budgets;
+- ownership/assist credit handles one player wetting, another charging and a
+  third triggering an overload.
 
-Exit gate: connected Water/metal/device fixtures produce bounded predictable
-propagation, grounding, overload and interruption with exact reset/replay.
+Exit gate: Water/relay/device fixtures produce bounded propagation, grounding,
+overload and interruption with exact reset/replay.
 
-## F2E — vector, optical and visibility interactions
-
-Goal: connect reactions to trajectories, cover, airborne movement and visual
-information without making rendering authoritative.
+## F2E — vectors, optics and visibility
 
 Promote:
 
-- **Vortex** — Wind + Wind;
-- **Dustfront** — Earth + Wind;
-- **Firestorm** — Fire + Wind;
-- **Mistcurrent** — Water + Wind;
-- **Hailstream** — Ice + Wind;
-- **Lightbend** — Wind + Light;
-- **Crystal Prism** — Earth + Light;
-- **Crystal Lens** — Ice + Light;
-- **Mirrorwater** — Water + Light;
-- **Solar Flare** — Fire + Light;
-- **Radiance** — Light + Light;
-- **Penumbra** — Light + Dark.
+- Vortex — Wind + Wind;
+- Dustfront — Earth + Wind;
+- Firestorm — Fire + Wind;
+- Mistcurrent — Water + Wind;
+- Hailstream — Ice + Wind;
+- Lightbend — Wind + Light;
+- Crystal Prism — Earth + Light;
+- Crystal Lens — Ice + Light;
+- Mirrorwater — Water + Light;
+- Solar Flare — Fire + Light;
+- Radiance — Light + Light;
+- Penumbra — Light + Dark.
 
 Required systems:
 
-- vector fields have explicit integer direction/strength and spatial bounds;
+- vector fields use explicit integer direction/strength/bounds;
 - projectile redirection is deterministic and visibly previewed;
-- actor air influence respects mass, collision and global speed ceilings;
-- reflective/refractive geometry uses semantic surfaces/angles, not sprite pixels;
-- visibility effects modify authoritative permitted information only when the
-  mode owns limited sight; local effects never reveal unreplicated state.
+- actor air influence respects mass, collision and global speed ceiling;
+- optical behavior uses semantic normals/surfaces, not sprite pixels;
+- visibility effects modify only authoritative permitted information;
+- several players' overlapping projectile trajectories remain readable;
+- reduced-effects mode preserves vector/optical boundaries.
 
-Exit gate: a player can intentionally curve a projectile, use a vortex for
-movement, create/remove occlusion and manipulate a Light/Dark boundary with
-clear counterplay and no information leak.
+Exit gate: players intentionally curve spells, use Vortex for movement, create or
+remove occlusion and manipulate Light/Dark boundaries without information leaks.
 
-## F2F — Dark, residues and completion of all 36 pairs
+## F2F — Dark, residues and pair completion
 
-Goal: complete the first-eight matrix and prove lifecycle/counter interactions.
+Promote remaining reactions including:
 
-Promote remaining reactions:
+- Blightsoil — Earth + Dark;
+- Cinderveil — Fire + Dark;
+- Blackwater — Water + Dark;
+- Shadowdraft — Wind + Dark;
+- Black Ice — Ice + Dark;
+- Umbral Field — Dark + Dark;
+- Fortify — Earth + Earth;
+- any first-eight pair not already promoted.
 
-- **Blightsoil** — Earth + Dark;
-- **Cinderveil** — Fire + Dark;
-- **Blackwater** — Water + Dark;
-- **Shadowdraft** — Wind + Dark;
-- **Black Ice** — Ice + Dark;
-- **Umbral Field** — Dark + Dark;
-- **Fortify** — Earth + Earth;
-- plus any first-eight pair not already promoted by F2B–F2E.
+Standardize:
 
-This slice also standardizes residue cleanup, overlapping-field ownership,
-reaction replacement/priority, repeated exposure guards and accessibility cues.
-Dark concealment must never become an information-security bypass: host-owned
-visibility and replication remain authoritative.
+- residue cleanup;
+- overlapping-field ownership;
+- replacement/priority;
+- repeated exposure guards;
+- accessibility cues;
+- cross-zone propagation rejection;
+- host/local reset interaction.
 
-Exit gate: all 36 unordered first-eight pair IDs have one tested executable
-baseline outcome, explicit counterplay and bounded lifecycle.
+Dark concealment must always retain disturbance/edge cues and cannot become an
+information-security bypass.
 
-## Fundamental acceptance gate — required before the last four elements
+Exit gate: all 36 pair IDs have one executable baseline with explicit counterplay,
+bounded lifecycle and shared-world behavior.
 
-Spirit, Chaos, Gravity and Time remain design/runtime gated until **all** of the
-following are true for the first eight:
+# Fundamental acceptance gate
 
-| Gate | Required evidence |
+Spirit, Chaos, Gravity and Time remain gated until all of the following pass:
+
+| Gate | Evidence |
 | --- | --- |
-| Pair completeness | Exactly 36 unordered pair definitions validate and execute; no implicit fallback reactions. |
-| Determinism | 60 and 120 Hz suites pass independently; same-rate replay hashes are stable across supported platforms. |
-| Worldbone safety | Maximum reaction/destruction fixtures cannot mutate worldbone or remove required spawn/objective connectivity. |
-| Reset | Every material, field, structure, residue, conductor and derived-collision state returns exactly to seed. |
-| Bounded work | Per-tick material/reaction/network work has measured hard ceilings and no camera dependence. |
-| Map interaction | Reactions demonstrably create/remove routes, alter traction/visibility, redirect movement/projectiles, or change cover; the system is not a damage-wheel implementation. |
-| Counterplay | Every strong outcome has visible preparation and at least one practical positional/material counter. |
-| Network | Host remains authoritative; clients receive bounded semantic events/corrections and cannot author reaction outcomes. |
-| Readability | Shape/motion/timing/residue communicate state in normal, grayscale, color-vision and reduced-effects tests. |
-| Performance | Dense first-eight stress fixtures pass the modest-hardware simulation/render/network budgets. |
-| Gameplay | Two-player chemistry sessions show repeatable deliberate setups, counters, route changes and recoverable mistakes. |
+| Pair completeness | Exactly 36 first-eight unordered pairs execute; no implicit fallback. |
+| Environment selectivity | Strong behavior occurs only on explicitly compatible material/prop definitions; inertness is supported. |
+| Determinism | 60/120 Hz suites pass; same-rate replay hashes remain stable. |
+| Shared multiplayer | Eight-player stress covers simultaneous inputs, ownership/assists and reaction event budgets. |
+| Worldbone safety | Maximum reaction/destruction pressure cannot mutate worldbone or remove critical connectivity. |
+| Zone safety | Safe/social regions reject hostile mutation; local reset groups cannot corrupt unrelated world regions. |
+| Reset | Materials, structures, fields, residues, networks and derived collision return exactly to seed where resettable. |
+| Bounded work | Hard per-tick/material/network/event ceilings exist and are measured. |
+| Map interaction | Reactions demonstrably change routes, movement, visibility, trajectories, cover or structure. |
+| Counterplay | Strong outcomes have visible preparation and practical positional/material answers. |
+| Readability | Normal/grayscale/color-vision/reduced-effects tests communicate formation, active state and residue. |
+| Performance | Shared-world dense fixtures pass modest-hardware simulation/render/network budgets. |
+| Gameplay | Multi-player sessions show deliberate setups, counters, cooperative combinations and recoverable mistakes. |
 
-Only after this gate may a new design review propose executable interactions for
-Spirit, Chaos, Gravity or Time. Their existing IDs stay reserved; no promises
-about their eventual reaction mechanics are made by this plan.
+Only then may a new design review propose executable Spirit, Chaos, Gravity or
+Time reactions.
 
-## Recommended development cadence
+# Development cadence
 
-Each reaction slice should follow the same reversible loop:
+Each reaction slice follows:
 
 ```text
-content definition
+response/content definition
 -> validator + failing deterministic fixture
--> minimal authoritative simulation
+-> minimal authoritative operation
 -> reset/replay/hash checks
--> movement/combat/map integration
+-> movement/spell/world integration
+-> multiplayer ownership/zone test
 -> semantic presentation/network event
--> counterplay fixture
+-> counterplay/readability fixture
 -> dense-work/performance fixture
 -> 60/120 + Linux/Windows gate
--> documented checkpoint
+-> focused reversible checkpoint
 ```
 
-Do not promote the next behavior slice while the current slice is red. Bounded
-schema/fixture preproduction for the next slice may overlap final verification,
-consistent with the repository rolling-handoff policy.
+Bounded schema/fixture preproduction may overlap final verification, but only one
+unstable authoritative behavior slice is promoted at a time.

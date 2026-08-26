@@ -1,143 +1,260 @@
-# The Wellspring hub contract
+# The Wellspring shared-world contract
 
-## Purpose
+Status: **canonical initial-map contract**.
 
-The Wellspring is FLUX 2's starting area, training campus, lobby, menu, social
-space, test laboratory, and expedition threshold. It must feel vast and worth
-learning without making routine configuration or matchmaking slow. Spatial
-interactions and overlay menus are two views of the same application commands.
+The Wellspring is FLUX's first large playable world: starting area, social space,
+training campus, elemental laboratory, combat sandbox, application shell and
+expedition threshold in one connected authored map.
 
-The authoritative layout seed is versioned in
-[`content/maps/wellspring_hub_v1.json`](../content/maps/wellspring_hub_v1.json). The
-concept image communicates atmosphere only. Final topology will be authored as
-worldbone, traversal, elevation, material, presentation, and navigation layers.
-The current concentric training court is a mechanics/debug fixture and does not
-pass this contract's topology, district-silhouette, pixel-art, density, or scale
-bar. Replacing it begins in G2, immediately after the completed control/POV
-checkpoint.
+It must not feel like a decorative menu that players leave to reach the “real”
+game. Movement, spellcasting, environmental interaction, multiplayer coexistence,
+training, discovery and local combat are already real gameplay inside the
+Wellspring.
 
-Living Wellspring V1 is the first product acceptance gate. The hub must be fully
-usable offline and must also support privacy-safe friend presence, direct/LAN/
-invite joining, hosted shared Wellspring sessions, and bounded host administration
-on Garuda Linux/Sway and Windows before later gameplay modes are accepted.
+See [`CORE-GAME-DESIGN.md`](CORE-GAME-DESIGN.md) for the wider product contract.
 
-## Spatial structure
+## 1. World premise
 
-The campus spans approximately 12,800 by 7,200 design units and three connected
-layers:
+The Wellspring spans approximately 12,800 x 7,200 design units across three
+connected layers:
 
-- **Terraces:** the main plazas, specialist districts, gardens, bridges, and
-  outer gates.
-- **Crown:** rooftops, observatories, suspended gardens, lift termini, race
-  routes, and airborne shortcuts.
-- **Undercroft:** foundry machinery, flooded laboratories, utility passages,
-  hidden practice rooms, and deterministic reset infrastructure.
+- **Terraces** — plazas, specialist districts, gardens, bridges, waterways and
+  outer gates;
+- **Crown** — rooftops, observatories, suspended gardens, race lines and airborne
+  shortcuts;
+- **Undercroft** — foundry machinery, flooded laboratories, utility passages,
+  hidden practice spaces and reset infrastructure.
 
-Each major district has at least two ordinary entrances, a clear landmark, an
-attunement shrine or direct shrine connection, and one movement-focused route.
-Related activities share a district so the place reads as a believable campus:
+These layers form one authored sandbox. Streaming/culling may divide technical
+work, but players experience a coherent connected world.
 
-| District | Combined functions | Signature traversal |
+## 2. Districts
+
+| District | Shared-world function | Signature systemic/movement role |
 | --- | --- | --- |
-| Nexus Court | arrival, onboarding, central map, attunement | fountain ring, four radial launch lines |
-| Wayfarer Concourse | social, wardrobe, host/join, modes, expeditions | balcony chain and gatehouse roof route |
-| Movement Conservatory | fundamentals, advanced tech, races, time trials | rails, wall-kick wells, gaps, vault and slide lines |
-| Alchemical Proving Grounds | aim, bots, destructibles, chemistry, combat labs | basin rim run and crater superglide |
-| Living Archive | codex, lore, builds, replays, analytics, research | book-stack vaults and observatory lift |
-| Verdant Recovery | rest, ingredients, crafting, interaction, dummies | suspended garden and root-canopy path |
-| Foundry Deep | fabrication, transmutation, undercroft, material reset | moving machinery line and flooded shortcut |
-| Crown Observatory | settings, accessibility, diagnostics, monitoring | rooftop redirect course and lift shafts |
-| Seasonal Expanse | biome pockets, private trials, weather laboratory | changing-surface route and island leaps |
+| Nexus Court | arrival, onboarding, attunement and central orientation | radial routes, safe social core, world overview |
+| Wayfarer Concourse | social, appearance, host/join, teams and travel | balconies, gatehouse routes, shared lobby visibility |
+| Movement Conservatory | movement fundamentals, advanced routes, races | wall/slide/vault/wavedash/superglide lines |
+| Alchemical Proving Grounds | aiming, spell geometry, bots, chemistry and destructibles | reaction basins, resettable terrain, projectile-pattern drills |
+| Living Archive | codex, builds, replays, analytics and discoveries | traversal through stacks/observatory, replay/training analysis |
+| Verdant Recovery | recovery, interaction, low-pressure crafting and growth systems | vegetation/growth/material experimentation |
+| Foundry Deep | fabrication, transmutation, structures, heat and water systems | machinery routes, furnace/magma/sluice interactions |
+| Crown Observatory | settings, accessibility, diagnostics and session monitoring | rooftop movement/readability testing |
+| Seasonal Expanse | biome pockets, private trials and later world events | changing surfaces and localized rule experiments |
 
-## Attunement fast travel
+District boundaries do not require global mode changes.
 
-Fast travel is infrastructure, not a loading-screen excuse.
+## 3. Several players in one world
 
-1. The Nexus fountain is available after onboarding.
-2. A district shrine unlocks when a player reaches and safely attunes it.
-3. An unlocked, enabled shrine can target any other unlocked, enabled shrine.
-4. Travel is refused during combat, a timed trial, an authoritative transition,
-   a material reset, or when destination clearance fails.
-5. The host validates multiplayer travel and moves a consenting party at one
-   deterministic transition tick. Solo travel has no consumable cost.
-6. Discovery, accessibility, and map UI may reveal a shrine's approximate
-   location without granting teleport access.
-7. Every destination has a normal route; teleportation never hides required
-   onboarding or substitutes for local encounter design.
+The current first acceptance target remains up to **eight connected players** in
+a host-authoritative session.
 
-The first implementation stores travel nodes and rules as validated content.
-Session ownership, transition orchestration, persistence, and destination
-clearance are later slices and must fail closed until implemented.
+Players may simultaneously:
 
-## Starting and menu flow
+- explore different districts;
+- train movement;
+- test spells;
+- spectate nearby activity;
+- form teams;
+- enter a duel or local trial;
+- cooperate against an event;
+- use social/configuration stations;
+- manipulate permitted chemistry regions.
 
-```text
-boot -> local profile -> accessibility/input check -> Nexus arrival
-  -> continue offline / training / local bots
-  -> host / join / browse modes (online capability shown explicitly)
-  -> loadout and appearance -> ready check -> expedition or arena
-```
+A local activity may temporarily seal a bounded region or participant set. It
+must not pause, unload or force unrelated players elsewhere into that activity.
 
-Escape/Start opens the overlay for settings, accessibility, input, save/quit,
-and already-attuned travel. World desks, gates, portals, and shrines open the
-same focused screens with additional spatial context. Network-dependent actions
-state why they are unavailable offline; offline play never waits for a service.
+## 4. Activity-zone classes
 
-## Shared Wellspring and host tools
+| Zone | Hostile damage | Hostile chemistry | Typical purpose |
+| --- | --- | --- | --- |
+| Safe/social | Off | Rejected or cosmetic-only | spawn, social, configuration |
+| Training | Configurable | Resettable/bounded | movement/spell practice |
+| Contested | Explicit policy | Enabled with budgets | free skirmish/objective activity |
+| Sealed trial | Ruleset-owned | Ruleset-owned | duel, race, chemistry challenge, boss/event |
+| Private laboratory | Owner/party configurable | Strong resettable interactions | experimentation |
 
-The friends/muster surface reports only privacy-approved states: offline,
-online, away, in Wellspring/activity, joinable, invite-only, full, blocked, or
-incompatible. Optional directory/presence/signalling/relay infrastructure is
-replaceable and self-hostable; direct/LAN joining and the complete offline hub
-remain first-class.
+Rules are simulation data. A visual sign alone never defines safety.
 
-The host may manage privacy/capacity, invitations, co-host/ownership, teams,
-readiness, spectators, late join, bot fill, friendly-fire/self-damage/healing/
-collision policy, trials, dummies, laboratory reset, shared waypoints, safe
-group travel, announcements, moderation, diagnostics, and clean end. All host
-commands are typed, authorized, bounded, visible, and locally auditable. Forced
-porting is limited to an explicitly opted-in host-managed practice policy with
-a reason/countdown and valid state/anchor/clearance checks.
+## 5. Route model
 
-## Traversal and safety rules
+Every major region provides:
 
-- Ordinary paths remain readable and do not demand advanced movement.
-- Advanced routes reduce travel time, expose collectibles or records, and teach
-  mechanics without becoming required accessibility barriers.
-- Water, pits, moving machinery, and mutable laboratories reset locally and do
-  not destroy profile progress or worldbone.
-- Combat-capable training regions are partitioned from social/spawn safety.
-- Foreground terrain, roofs, foliage, buildings, and constructs fade/cut away
-  or expose an ownership-readable silhouette when they cover a character inside
-  authoritative LOS. Actors outside LOS receive no presentation/debug leak.
-- The hub supports solo use first; multiplayer presence is an additive session
-  layer, not a dependency for menus or content access.
-- Each district can stream independently, while transition anchors preserve
-  deterministic spawn and replay metadata.
+1. **ordinary route** — clear and accessible without advanced techniques;
+2. **advanced route** — faster/more expressive and skill-dependent;
+3. **systemic route** — created/removed by element, structure, device or world
+   state;
+4. **recovery route** — prevents one failed movement technique from trapping the
+   player.
 
-## Implementation sequence
+Systemic route examples:
 
-1. Validate the map/district/travel definition and present a styled training
-   room over the deterministic movement foundation.
-2. Replace the schematic court with a multi-area Nexus-to-Conservatory world
-   slice using distinct silhouettes, ordinary/advanced paths, readable
-   elevation, distant district context, original pixel modules, and one visible
-   fast-travel destination.
-3. Add the map shell, overlay parity, one shrine interaction, and the complete
-   measured route through that accepted world slice.
-4. Add the Proving Grounds around the existing projectile family and bounded
-   128 x 128 chemistry laboratory, then promote active reactions.
-5. Add district streaming, persistence, party consent, destination clearance,
-   and replay-visible transitions.
+- freeze water to create a crossing;
+- cool Magma into basalt;
+- fracture a wall into rubble ramp/shortcut;
+- open a sluice and use the new current;
+- activate a wind lane;
+- redirect Light into a relay;
+- construct temporary ice/earth geometry.
 
-The G2 art kit is deliberately narrow but shipping-oriented: ground/cliff
-ramps, paths/plazas, water/shore, grass/garden edges, walls/arches, one roof
-family, one shrine, and navigation landmarks. Additional districts expand that
-kit only after gameplay-zoom readability, collision alignment, grayscale,
-performance, provenance, and 60/120 Hz presentation smokes pass.
+No advanced or systemic route may be the only way to leave spawn, reach required
+services or satisfy baseline accessibility.
 
-Composition may study the broad clarity of richly staged isometric action
-environments—layered depth, memorable room silhouettes, dramatic landmarks,
-responsive ambience, dense edges and clear floors—while retaining original
-FLUX 2 pixel perspective, topology, materials, palette, props, lighting, UI,
-animation, camera metrics, and trade dress.
+## 6. Worldbone, mutation and reset
+
+The shared world has three authority layers:
+
+### Immutable worldbone
+
+Contains:
+
+- critical outer bounds;
+- spawn safety;
+- essential district connectivity;
+- objective/service foundations;
+- reset machinery;
+- critical portals/transition anchors.
+
+It cannot be damaged or converted.
+
+### Authored mutable structure
+
+May include walls, supports, doors, bridges, glass, trees, devices and cover.
+Each declares structural rules, route-safety constraints and reset behavior.
+
+### Transient world state
+
+Includes liquids, gases, fields, residues, loose matter, growth, temporary
+geometry and element-created state. It has hard capacity/lifetime/work budgets.
+
+Mutable state belongs to a reset group so several players cannot permanently ruin
+the world for the rest of the lobby.
+
+## 7. Element/environment behavior
+
+The Wellspring is the primary place to learn that element interactions are
+**selective**.
+
+A player should be able to discover, for example:
+
+- authored Water freezes and conducts Charge;
+- soil becomes Mud;
+- selected Earth can become Magma under sufficient heat;
+- Wind moves gas and loose matter;
+- prism surfaces redirect Light;
+- relays/capacitors route Charge;
+- vegetation can grow/burn where authored;
+- some visually plausible interactions are deliberately inert.
+
+The environment response contract is
+[`ELEMENT-ENVIRONMENT-RESPONSES.md`](ELEMENT-ENVIRONMENT-RESPONSES.md).
+
+## 8. Local encounters and events
+
+The Wellspring supports activity without forcing every combat into a sealed room:
+
+- spontaneous skirmishes in contested spaces;
+- opt-in duel circles;
+- movement races;
+- chemistry challenges;
+- training targets/bots;
+- cooperative enemy events;
+- localized objectives;
+- major world/boss events that seal only the necessary area;
+- secrets requiring movement + material/element understanding.
+
+Encounter spawning must consider nearby unrelated players and existing material
+state so one activity cannot create unavoidable crossfire in another.
+
+## 9. Attunement and fast travel
+
+Fast travel remains diegetic infrastructure, not the primary navigation method.
+
+1. The central attunement point is available after onboarding.
+2. District destinations unlock through discovery/attunement.
+3. Every destination remains reachable by ordinary traversal.
+4. Travel fails closed during incompatible combat/trial/reset states.
+5. The host validates multiplayer travel and consent where party movement is
+   involved.
+6. Fast travel does not unload the logical existence of unrelated players in the
+   shared session.
+
+Local movement remains valuable because the world contains routes, interactions,
+secrets and other players between destinations.
+
+## 10. Host/session tools
+
+The host can manage:
+
+- capacity/privacy;
+- teams and readiness;
+- spectators/late join;
+- bots/training targets;
+- friendly-fire/self-damage/healing/collision policy by activity;
+- local trial start/reset;
+- laboratory resets;
+- shared waypoints;
+- moderation and diagnostics;
+- clean session end.
+
+Host authority never grants remote file/shell access or arbitrary client-setting
+control.
+
+## 11. Visual and LOS behavior
+
+Foreground terrain, roofs, foliage, buildings and constructs may fade/cut away
+or expose ownership-readable silhouettes when they occlude an actor that is
+already permitted by authoritative visibility rules.
+
+Presentation cannot reveal actors or projectiles the simulation/network did not
+permit the client to know about.
+
+Combat readability priority remains:
+
+1. local actor state;
+2. hostile spell geometry;
+3. immediate collision/terrain;
+4. strong telegraphs/reactions;
+5. other actors;
+6. persistent world state;
+7. decoration.
+
+## 12. Implementation sequence
+
+1. **Connected authored world slice** — replace remaining schematic geometry with
+   a coherent Nexus -> Movement -> Proving -> Foundry route including elevation,
+   landmarks, ordinary/advanced routes and visible district context.
+2. **Concurrent-world activity layer** — several players occupy different local
+   activities without global round transitions.
+3. **Mutable region/reset system** — explicit safe/training/contested/lab zone
+   rules and independent reset groups.
+4. **Spell delivery proving space** — Bolt + Burst pattern drills, then remaining
+   delivery kernels.
+5. **Selective environment responses** — water/sluice, furnace, mutable
+   structure, relay, prism, vegetation, rubble and wind-device archetypes.
+6. **Live chemistry** — flagship Magma chain plus Freeze/Steam/Mud/Charge network
+   fundamentals.
+7. **Encounter ecology** — roaming/local PvE, objectives, chemistry/movement
+   challenges and major events.
+8. **Polish/acceptance** — streaming, map UI, settings, accessibility, physical
+   Linux/Windows packaging and eight-player readability/performance evidence.
+
+## 13. Acceptance
+
+The first Wellspring product gate passes only when a player can launch directly
+into a coherent shared world and, without requiring another mode, meaningfully:
+
+- explore;
+- meet other players;
+- practice deep movement;
+- cast multiple delivery forms;
+- manipulate permitted environment state;
+- trigger/counter elemental reactions;
+- participate in or ignore local activities;
+- use social/configuration/travel systems;
+- reset experiments safely;
+- save/quit/reconnect;
+- understand what is dangerous and why.
+
+Procedural dungeons and larger modes are later applications of these accepted
+systems, not substitutes for this gate.

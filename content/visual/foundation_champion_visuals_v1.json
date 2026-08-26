@@ -16,6 +16,16 @@
     "rows": ["oh_tipi", "s_wayne"],
     "columns": ["south", "east", "west", "north", "jump", "cast", "hit"]
   },
+  "cardinal_animation_contract": {
+    "directions": ["south", "east", "north", "west"],
+    "state_pose_columns": {
+      "grounded": {"south": "south", "east": "east", "north": "north", "west": "west"},
+      "jump": {"south": "jump", "east": "east", "north": "north", "west": "west"},
+      "cast": {"south": "cast", "east": "east", "north": "north", "west": "west"},
+      "hit": {"south": "hit", "east": "east", "north": "north", "west": "west"}
+    },
+    "diagonal_policy": "derive_from_nearest_cardinal"
+  },
   "champions": {
     "oh_tipi": {
       "display_name": "Oh Tipi",

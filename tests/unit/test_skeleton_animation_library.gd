@@ -17,6 +17,8 @@ func _test_repository_manifest() -> void:
 	equal(library.cell_size, Vector2i(32, 32), "all skeletons use one stable cell size")
 	equal(library.pivot, Vector2i(16, 28), "all skeletons share the bottom-center pivot")
 	equal(library.directions.size(), 8, "eight directions are available")
+	equal(library.cardinal_directions, ["south", "east", "north", "west"], "four cardinal animation directions are explicit")
+	equal(library.cardinal_direction_indices(), [0, 2, 4, 6], "cardinal directions resolve to stable atlas rows")
 	equal(library.body_types.keys(), ["small", "middle", "large"], "exactly three ordered reusable body types are available")
 	check(library.animations.size() >= 25, "planned movement, combat, reaction, utility, and cosmetic animations exist")
 	equal(library.resolved_animation_id("roll"), "air_dodge", "roll reuses the bounded four-frame evasive skeleton")
@@ -40,6 +42,9 @@ func _test_all_regions_and_pivots() -> void:
 					equal(region.size, library.cell_size, "%s/%s/%s/%d uses exact cell size" % [body_type_id, animation_id, direction_id, frame_index])
 					check(region.position.x >= 0 and region.position.y >= 0, "frame origin is non-negative")
 					check(region.end.x <= library.atlas_size.x and region.end.y <= library.atlas_size.y, "frame remains within atlas")
+				for cardinal_direction: String in library.cardinal_directions:
+					var cardinal_region := library.frame_region(body_type_id, animation_id, cardinal_direction, 0)
+					check(cardinal_region.has_area(), "%s/%s has a %s cardinal frame" % [body_type_id, animation_id, cardinal_direction])
 	equal(library.pivot.x * 2, library.cell_size.x, "pivot is horizontally centered")
 	check(library.pivot.y >= library.cell_size.y - 4, "pivot remains close to the feet baseline")
 	equal(library.frame_region("middle", "roll", "south", 0), library.frame_region("middle", "air_dodge", "south", 0), "roll alias resolves to the same reusable atlas region")

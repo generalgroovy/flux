@@ -17,6 +17,7 @@ func _test_repository_recipes() -> void:
 	check(presenter.motion != null and presenter.motion.content_hash.length() == 64, "editable minimal-motion recipes load with champion art")
 	check(presenter.content_hash.length() == 64, "champion presentation content has a stable hash")
 	equal(presenter.atlas_hash, "c250dbec8bfb2b97ca045efd311204c12fa6ae839db01ba2e65edeffa4e9f2a5", "reviewed body-only runtime atlas hash is pinned")
+	equal(presenter.cardinal_animation_contract.get("directions", []), ["south", "east", "north", "west"], "foundation animation contract covers four cardinal directions")
 	for champion_id: String in ["oh_tipi", "s_wayne"]:
 		check(presenter.can_present(champion_id), "%s has a promoted cartoon recipe" % champion_id)
 		var recipe := presenter.recipe(champion_id)
@@ -46,7 +47,24 @@ func _test_repository_recipes() -> void:
 	state.facing_y = 0
 	equal(presenter.source_region("oh_tipi", state), Rect2(192, 0, 96, 96), "Oh Tipi west state selects the mirrored action cell")
 	state.pending_cast_wire_id = 1
-	equal(presenter.source_region("s_wayne", state), Rect2(480, 96, 96, 96), "S. Wayne cast selects its reviewed second-row cell")
+	equal(presenter.source_region("s_wayne", state), Rect2(192, 96, 96, 96), "S. Wayne west cast preserves its cardinal facing")
+	var cardinal_cases := [
+		{"facing": Vector2i(0, 1000), "state": "south", "grounded": 0, "cast": 5, "jump": 4},
+		{"facing": Vector2i(1000, 0), "state": "east", "grounded": 1, "cast": 1, "jump": 1},
+		{"facing": Vector2i(0, -1000), "state": "north", "grounded": 3, "cast": 3, "jump": 3},
+		{"facing": Vector2i(-1000, 0), "state": "west", "grounded": 2, "cast": 2, "jump": 2},
+	]
+	for case: Dictionary in cardinal_cases:
+		var directional_state := PlayerState.new()
+		directional_state.facing_x = int((case["facing"] as Vector2i).x)
+		directional_state.facing_y = int((case["facing"] as Vector2i).y)
+		equal(presenter.source_region("oh_tipi", directional_state).position.x, float(case["grounded"]) * 96.0, "grounded %s animation selects its cardinal body pose" % case["state"])
+		directional_state.pending_cast_wire_id = 1
+		equal(presenter.source_region("oh_tipi", directional_state).position.x, float(case["cast"]) * 96.0, "cast animation preserves %s cardinal facing" % case["state"])
+		directional_state.pending_cast_wire_id = 0
+		directional_state.movement_mode = PlayerState.MovementMode.HOP
+		directional_state.hop_ticks = 2
+		equal(presenter.source_region("oh_tipi", directional_state).position.x, float(case["jump"]) * 96.0, "jump animation preserves %s cardinal facing" % case["state"])
 	check(presenter.source_region("unreviewed", state).has_area() == false, "unreviewed champion has no source region")
 
 

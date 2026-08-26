@@ -1,5 +1,44 @@
 # FLUX2 agent worklog
 
+## 2026-08-26 - four-cardinal animation contract and live facing
+
+Playable outcome:
+
+- Added an explicit south/east/north/west contract to the character skeleton
+  manifest. The validator now fails closed unless every gameplay-critical
+  animation in `small`, `middle`, and `large` has bounded cardinal regions;
+  diagonals remain presentation-only authored/derived rows.
+- Added a data-driven cardinal pose table to the foundation champion visual
+  recipe. Oh Tipi and S. Wayne now preserve their cardinal body orientation
+  through grounded, jump, cast and hit states instead of snapping every action
+  back to the camera-facing cell.
+- Kept body/clothing, empty-hand cast cues, auras, receiving-surface shadows,
+  projectiles and environment separate. Direction selection changes no input,
+  simulation aim, collision, timing, invulnerability, cost, cooldown, network
+  state or outcome.
+- Updated the visual gate, implementation plan, continuous self-prompt, README,
+  sprite pipeline, developer guide and visual-system documentation with the
+  four-cardinal acceptance matrix.
+
+Verification:
+
+- `scripts\\test.cmd`: 54 suites, 16,730 assertions, zero failures; clean
+  Windows source boots passed independently at 60 and 120 Hz.
+- Eight deterministic captures passed at 1280×720/75% with three frames each:
+  Oh Tipi and S. Wayne facing south, east, north and west while the slot-one cast
+  harness exercised the live action path. Evidence is ignored under
+  `.godot/visual-captures/cardinal-v1-*`.
+- `git diff --check` passed apart from expected Windows line-ending notices.
+
+Known limitation and next slice:
+
+- The body-only foundation atlas currently contains dedicated south/front
+  jump/cast/hit cells but no authored east/north/west action cells. Those
+  directions correctly retain their cardinal body pose while reusable motion
+  and effect layers communicate the action. The next C2 slice must author and
+  promote direction-specific body-only action frames without changing the
+  validated mapping, feet pivot or simulation authority.
+
 ## 2026-08-26 - shared hand-cast phase cue
 
 Playable outcome:

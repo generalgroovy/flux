@@ -39,14 +39,17 @@ fast translucent station/overview panels so the main frame shows routes,
 landmarks, players, threats and interaction options.
 
 Work through visual tokens/pixel pipeline, the exact `small`/`middle`/`large`
-body system, two foundation champions,
+body system, four-cardinal animation coverage for every gameplay-critical state,
+two foundation champions,
 Wellspring environment, current spell visuals, GUI/interactions and integrated
 acceptance in that exact order. Do not accept a concept image, manifest,
 placeholder or isolated specimen as completion: the improvement must run in the
 actual game. Champion atlases contain only body and clothing: south/front faces
 the camera symmetrically, north is centered back, east is authored profile and
-west mirrors it; compose empty-hand casting, aura, shadow, projectile,
-equipment and environment in separate reusable layers. Capture and inspect
+west is a reviewed profile or deterministic mirror. Every gameplay-critical
+animation must select a valid frame in all four cardinals before the visual gate
+can advance; compose empty-hand casting, aura, shadow, projectile, equipment
+and environment in separate reusable layers. Capture and inspect
 720p/1080p frames at relevant zooms, ordinary
 and reduced effects, grayscale and common color-vision simulations, with
 collision/cutaway diagnostics. Require at least 4/5 in every visual rubric
@@ -78,3 +81,20 @@ launchable; preserve existing Linux source scripts but make no new Linux
 release or acceptance claim in the current scope.
 the published commit playable. Never copy protected assets or claim tests,
 visual quality, balance, platform parity or remote play without direct evidence.
+
+## Immediate cardinal-animation iteration
+
+Begin with the smallest safe visual slice: make the live presentation select
+and validate `south`, `east`, `north`, and `west` for every gameplay-critical
+animation state on both foundation champions and all three body contracts.
+Keep body/clothing pixels, hand-cast effects, shadows, auras, projectiles and
+environment in independent layers; do not change simulation authority, input,
+collision, timing, resource costs, cooldowns or network rules. Use data-driven
+direction mappings, fail-closed schema checks, stable feet pivots, nearest
+sampling and deterministic 60/120 Hz frame selection. Add focused tests before
+editing art, run the full Windows gate and source/imported boots, inspect
+direction-matrix captures at 50/75/100% plus reduced/high-contrast/grayscale
+modes, update `README.md`, `.agent/BACKLOG.md`, `.agent/memory.md` and
+`.agent/WORKLOG.md`, then commit and push one reversible green checkpoint.
+Immediately start the next visual substep after the checkpoint; pause only for
+a real blocker or when the integrated V0–V6 rubric is honestly evidenced.

@@ -78,7 +78,9 @@ champion's frame-complete sprite manifest is finished.
 
 `src/presentation/wellspring_character_sprite.gd` loads the selected Oh Tipi or
 S. Wayne v2 integrated-candidate atlas and selects its semantic action,
-eight-direction region, and clock-derived frame. The Champion Loom switches the
+eight-direction region, and clock-derived frame. The live cartoon presenter
+additionally validates and selects the explicit south/east/north/west cardinal
+pose contract for every grounded, airborne, cast and hit state. The Champion Loom switches the
 canonical champion profile and presentation together. The bootstrap draws that
 region with nearest filtering, lifts only the body over the receiving-surface
 shadow, and draws it before the POV mask. Invalid loading or synchronization

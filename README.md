@@ -247,12 +247,14 @@ retired vocabulary and migrate to small and large respectively; medium migrates
 to middle. Body type bounds silhouette, footprint and tuning ranges but never
 grants hidden reach, evasion, damage or elemental advantage.
 
-Champion atlases contain body and clothing only. Front/south poses face the
-camera with centered, balanced anatomy; north is a centered back view, east is
-an authored profile, and west is its deterministic mirror. Shadows, auras,
-spells, projectiles, environment, tools and equipment are separate reusable
-layers. Magic originates from a visible empty-hand lane above the shared feet
-pivot; staffs, wands, rods,
+Champion atlases contain body and clothing only. Every gameplay-critical
+animation has a valid frame in all four cardinals: front/south faces the camera
+with centered, balanced anatomy; north is a centered back view; east is an
+authored profile; and west is a reviewed profile or deterministic mirror.
+Diagonals may derive from the nearest cardinal. Shadows, auras, spells,
+projectiles, environment, tools and equipment are separate reusable layers.
+Magic originates from a visible empty-hand lane above the shared feet pivot;
+staffs, wands, rods,
 scepters, held foci and floating companion foci are excluded. Character bodies
 and clothing avoid sexualized presentation.
 
@@ -371,7 +373,10 @@ This atlas is a reusable body/clothing layer for the two foundation champions;
 spells, auras, shadows, projectiles, environment and equipment are composed
 independently. Each champion's `atlas_row` is authored in
 `content/visual/foundation_champion_visuals_v1.json`, so adding a body-only
-champion is a validated content edit rather than a renderer change.
+champion is a validated content edit rather than a renderer change. The
+`cardinal_animation_contract` in that manifest keeps grounded, jump, cast and
+hit/recovery facing explicit for south/east/north/west; the runtime validator
+rejects missing cardinal mappings before the scene can boot.
 
 </details>
 

@@ -3,6 +3,25 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## Four-cardinal animation contract — 2026-08-26
+
+- Character animation data now explicitly requires `south`, `east`, `north`,
+  and `west` coverage for every skeleton animation and all three canonical body
+  types; diagonals remain authored-or-derived presentation rows.
+- The live foundation cartoon presenter validates a data-driven cardinal pose
+  table and preserves facing through grounded, jump, cast and hit states. South
+  retains the dedicated action silhouettes; east/north/west retain their body
+  orientation while separate motion, hand-cast, shadow and feedback layers
+  communicate the action.
+- Full Windows source gate: 54 suites / 16,730 assertions, zero failures;
+  independent 60/120 Hz boots passed. Eight three-frame 1280×720/75% captures
+  cover both champions in south/east/north/west under
+  `.godot/visual-captures/cardinal-v1-*`.
+- This is the fail-closed direction/facing foundation, not final authored
+  action art. Next C2 slice: replace east/north/west action fallbacks with
+  reviewed body-only directional action frames while retaining the same data
+  contract and pivots.
+
 ## Shared hand-cast phase cue — 2026-08-26
 
 - `FoundationSpellPresenter.draw_startup` now resolves the central skeleton's

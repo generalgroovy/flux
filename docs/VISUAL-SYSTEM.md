@@ -30,9 +30,11 @@ hide legal information.
 Champions use compact cartoon proportions at gameplay scale: a large expressive
 head (40–45% of total body height), short sturdy limbs, body-and-clothing-only
 pixels, 1–2-pixel outlines, 3–5 colors per material and a separate grounded
-shadow. South/front faces the camera symmetrically; north/back is centered;
-east is authored profile and west mirrors it. Jump, cast and hit silhouettes
-must read before detail is approved. The revised concept board at
+shadow. Every gameplay-critical animation is covered in the four cardinals:
+south/front faces the camera symmetrically, north/back is centered, east is an
+authored profile and west is a reviewed profile or deterministic mirror. Jump,
+cast and hit silhouettes must read in each cardinal before detail is approved.
+The revised concept board at
 `assets/concept/visual-system-cartoon-perspective-v2.png` clarifies the intended
 charm and body language, but its steep courtyard is explicitly not the runtime
 camera target.

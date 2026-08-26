@@ -25,6 +25,12 @@
     "west",
     "south_west"
   ],
+  "cardinal_direction_order": ["south", "east", "north", "west"],
+  "cardinal_coverage": {
+    "required_for_every_animation": true,
+    "diagonal_policy": "authored_or_derived",
+    "diagonal_directions": ["south_east", "north_east", "north_west", "south_west"]
+  },
   "atlas_layout": {
     "block_columns": 5,
     "block_rows": 5,

@@ -4,6 +4,7 @@ extends RefCounted
 const SUPPORTED_SCHEMA_VERSION: int = 2
 const DEFAULT_PATH: String = "res://content/animations/skeleton_animation_manifest_v1.json"
 const REQUIRED_BODY_TYPES: Array[String] = ["small", "middle", "large"]
+const REQUIRED_CARDINAL_DIRECTIONS: Array[String] = ["south", "east", "north", "west"]
 
 var data: Dictionary = {}
 var last_error: String = ""
@@ -12,6 +13,7 @@ var body_types: Dictionary = {}
 var aliases: Dictionary = {}
 var action_contracts: Dictionary = {}
 var directions: Array[String] = []
+var cardinal_directions: Array[String] = []
 var cell_size := Vector2i.ZERO
 var pivot := Vector2i.ZERO
 var atlas_size := Vector2i.ZERO
@@ -56,6 +58,22 @@ func validate() -> bool:
 		if direction_id.is_empty() or directions.has(direction_id):
 			return _fail("direction ids must be unique and non-empty")
 		directions.append(direction_id)
+	var raw_cardinal_directions: Array = data.get("cardinal_direction_order", [])
+	if raw_cardinal_directions != REQUIRED_CARDINAL_DIRECTIONS:
+		return _fail("cardinal direction order must be south, east, north, west")
+	cardinal_directions.clear()
+	for direction_value: Variant in raw_cardinal_directions:
+		var direction_id := str(direction_value)
+		if not directions.has(direction_id) or cardinal_directions.has(direction_id):
+			return _fail("cardinal directions must be unique members of direction_order")
+		cardinal_directions.append(direction_id)
+	var cardinal_coverage: Dictionary = data.get("cardinal_coverage", {})
+	if not bool(cardinal_coverage.get("required_for_every_animation", false)):
+		return _fail("every animation must declare cardinal coverage")
+	if String(cardinal_coverage.get("diagonal_policy", "")) != "authored_or_derived":
+		return _fail("diagonal direction policy is unsupported")
+	if cardinal_coverage.get("diagonal_directions", []) != ["south_east", "north_east", "north_west", "south_west"]:
+		return _fail("diagonal direction order is unsupported")
 	animations = data.get("animations", {})
 	body_types = data.get("body_types", {})
 	aliases = data.get("aliases", {})
@@ -85,6 +103,11 @@ func validate() -> bool:
 		var final_region := frame_region_from_values(block, directions.size() - 1, frames - 1)
 		if final_region.end.x > atlas_size.x or final_region.end.y > atlas_size.y:
 			return _fail("%s exceeds atlas bounds" % animation_id)
+		for cardinal_direction: String in cardinal_directions:
+			var cardinal_index := directions.find(cardinal_direction)
+			var cardinal_region := frame_region_from_values(block, cardinal_index, frames - 1)
+			if cardinal_region.end.x > atlas_size.x or cardinal_region.end.y > atlas_size.y:
+				return _fail("%s lacks cardinal direction coverage: %s" % [animation_id, cardinal_direction])
 	for alias_id: String in ["jump", "roll", "impact_recovery"]:
 		var target_id := String(aliases.get(alias_id, ""))
 		if target_id.is_empty() or not animations.has(target_id) or animations.has(alias_id):
@@ -130,6 +153,13 @@ func resolved_animation_id(animation_id: String) -> String:
 
 func action_contract(action_id: String) -> Dictionary:
 	return (action_contracts.get(action_id, {}) as Dictionary).duplicate(true)
+
+
+func cardinal_direction_indices() -> Array[int]:
+	var indices: Array[int] = []
+	for direction_id: String in cardinal_directions:
+		indices.append(directions.find(direction_id))
+	return indices
 
 
 func frame_region_from_values(block: Vector2i, direction_index: int, frame_index: int) -> Rect2i:

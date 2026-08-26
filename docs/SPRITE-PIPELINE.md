@@ -20,12 +20,24 @@ Every frame uses a **32×32 virtual-pixel cell** and the exact pivot **(16, 28)*
 The body grows from the small envelope through the large envelope without moving
 the pivot. This is the contract future ancestry and champion layers must inherit.
 
-Direction order is:
+The runtime direction order is:
 
 ```text
 south, south_east, east, north_east,
 north, north_west, west, south_west
 ```
+
+The acceptance direction order is the four cardinal subset:
+
+```text
+south (front), east (profile), north (back), west (profile/mirror)
+```
+
+Every animation state must have a valid frame region for all four cardinals in
+each of `small`, `middle`, and `large`. Diagonals may be authored or derived
+from the nearest cardinal, but a missing cardinal frame fails validation. This
+keeps readable facing and action feedback intact while the simulation continues
+to aim on a continuous world-space vector.
 
 The 25 animation states cover the currently planned foundation:
 
@@ -78,6 +90,6 @@ reference for all three body types.
 ## Loader and tests
 
 `SkeletonAnimationLibrary` validates the manifest, asset presence, atlas sizes,
-unique blocks, regions, directions, and pivot. The headless test iterates every
-size, animation, direction, and frame so an invalid overlay cannot enter the
-main branch unnoticed.
+unique blocks, regions, directions, explicit cardinal coverage, and pivot. The
+headless test iterates every size, animation, cardinal direction, full direction
+and frame so an invalid overlay cannot enter the main branch unnoticed.

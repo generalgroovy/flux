@@ -16,11 +16,18 @@ Verification:
   Windows source boots at 60 and 120 Hz.
 - Runtime diagnostics now include `spells <profile-hash>/skeleton
   <skeleton-hash>`; legacy archive image-load warnings remain expected.
+- `scripts\\package.ps1 -Target Windows` rebuilt the unified package at
+  `c124cec`; installer SHA-256 is
+  `dbd1a6253473b3f0a345209c71651318cbbccadb9f6d2073cb5bf780237e2d78` and
+  portable ZIP SHA-256 is
+  `7fbbf6d445a1b7361a1e8245ced2a0bb4b5099f63c32238fe556cfe596c80b81`.
+- The exported `exports\\windows\\flux2.exe` boots headlessly at 120 Hz and
+  prints the skeleton hash beside the spell profile hash.
 
 Next slice:
 
-- Rebuild the Windows package from unified `main`, then continue the C2/V9
-  visual acceptance with source-court environment review.
+- Continue the C2/V9 visual acceptance with source-court environment review;
+  the current package is ready for a trusted Windows playtest.
 
 ## 2026-08-26 - reusable spell delivery animation skeletons
 

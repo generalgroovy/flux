@@ -43,6 +43,10 @@ signing pipeline exist. The portable `exports\release\FLUX2-Windows-x86_64.zip`
 bundle is the fallback for managed test machines; its checksum is listed in
 `exports\release\SHA256SUMS.txt`.
 
+The current unified Windows package is built from `main`; verify the supplied
+installer or portable ZIP against `exports\release\SHA256SUMS.txt` before
+sharing it.
+
 For internet play, the host currently forwards/allows **UDP 24872**. The friend
 opens **Join Farflow**, types or pastes the host's public address, and presses
 Enter. The last valid address is saved on that PC. Developers and diagnostics

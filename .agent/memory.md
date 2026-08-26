@@ -11,7 +11,11 @@ each playable slice.
   expose the manifest version beside the profile hash for reproducible captures.
 - Verification: 54 suites / 18,671 assertions, zero failures; Windows source
   boots at 60/120 Hz. Legacy archive image-load warnings remain expected.
-- Rebuild the Windows package from unified `main` before distributing it.
+- Windows package rebuilt from unified `main` at `c124cec`: installer SHA-256
+  `dbd1a6253473b3f0a345209c71651318cbbccadb9f6d2073cb5bf780237e2d78`, portable
+  ZIP SHA-256 `7fbbf6d445a1b7361a1e8245ced2a0bb4b5099f63c32238fe556cfe596c80b81`.
+- `exports\\windows\\flux2.exe` boots headlessly at 120 Hz; share only the
+  matching ZIP/installer and checksum file with trusted Windows testers.
 
 ## Spell delivery skeleton slice — 2026-08-26
 

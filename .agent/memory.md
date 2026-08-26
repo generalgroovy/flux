@@ -30,6 +30,13 @@ each playable slice.
   (defense/interaction/emote/defeat/control loss) against this same eight-row
   grammar, then continue direction-aware spell delivery without adding a new
   mechanic or champion.
+- Runtime/content checkpoint `649e0d8` is unified on `main` and
+  `codex/continuous-overhaul`. Installer SHA-256 is
+  `c265f5019b8f92db0a0c012d513e5b0952f81547f5cef0e8f152cb5e31566dc9`;
+  portable ZIP SHA-256 is
+  `55b53c3bbb43c3d83817c33fd5cdec81ddc6e66e8e08c991e0fa3dd6388ae2a8`.
+  The export log includes v5 only—no editable source or superseded v3/v4
+  atlas—and the packaged executable booted headlessly at 120 Hz.
 
 ## Dedicated cardinal action atlas — 2026-08-26
 

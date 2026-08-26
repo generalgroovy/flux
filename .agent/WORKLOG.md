@@ -34,6 +34,13 @@ Verification:
   the active body row. Additional 50% sprint, 100% walk, 1080p slide,
   high-contrast roll and reduced-effects slide captures passed and representative
   action frames were inspected.
+- Runtime/content commit `649e0d8` was pushed and unified on `main` and
+  `codex/continuous-overhaul`. The exact-commit Windows export includes only the
+  active v5 atlas, excludes all editable sources and superseded v3/v4 atlases,
+  and boots headlessly at 120 Hz. Installer SHA-256 is
+  `c265f5019b8f92db0a0c012d513e5b0952f81547f5cef0e8f152cb5e31566dc9`;
+  portable ZIP SHA-256 is
+  `55b53c3bbb43c3d83817c33fd5cdec81ddc6e66e8e08c991e0fa3dd6388ae2a8`.
 
 Next slice:
 

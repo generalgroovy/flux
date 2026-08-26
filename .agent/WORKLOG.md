@@ -1,5 +1,32 @@
 # FLUX2 agent worklog
 
+## 2026-08-26 - source-court approach accents
+
+Playable outcome:
+
+- Added six data-authored Nexus source-court accents (two lanterns, two
+  planters, and two elemental runes) to the presentation-only architecture kit.
+- Decorations validate their kind, element, scale, and interior offset against
+  the court footprint; invalid or out-of-bounds content fails closed.
+- Rendering uses shared visual-language ramps, shallow shadows, and reduced
+  effects alpha. The layer is drawn after pavers and cannot change topology,
+  collision, routes, station radii, or simulation state.
+
+Verification:
+
+- `scripts\\test.cmd`: 54 suites, 18,674 assertions, zero failures; source
+  boots at 60/120 Hz. Expected legacy archive image-load warnings remain.
+- `scripts\\capture-visual.ps1 -Name post-unify-v9-720 -Resolution
+  '1280x720' -TickRate 60 -Frames 4 -GameArguments
+  @('--camera-zoom=75','--champion=oh_tipi')` passed with four truthful frames.
+- The working tree is ready for a safe commit and push to unified `main`; the
+  current package remains the previous `f466de4` artifact until rebuilt.
+
+Next slice:
+
+- Continue C2 visual review with the integrated source-court readability pass;
+  do not advance to new mechanics until visual acceptance evidence is updated.
+
 ## 2026-08-26 - central visual registry and diagnostic hash
 
 Playable outcome:

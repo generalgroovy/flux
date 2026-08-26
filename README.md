@@ -400,6 +400,12 @@ remain authoritative. The manifest is centrally registered in
 `content/visual/visual_asset_registry_v1.json` and its hash is printed in the
 bootstrap diagnostic for reproducible Windows handoffs.
 
+The Nexus source court also has a small authored decoration layer: six bounded
+lantern, planter, and rune anchors live in the court profile, are validated
+relative to the court footprint, and render after pavers at restrained opacity.
+They improve approach readability and give the space a lived-in rhythm without
+changing topology, collision, routes, station radii, or simulation state.
+
 Concept images guide proportion, color roles, mood, and readability. They do not
 define hitboxes, timing, abilities, map topology, or simulation rules. Promotion
 requires deterministic slicing, manifests, native/4× review, accessibility,

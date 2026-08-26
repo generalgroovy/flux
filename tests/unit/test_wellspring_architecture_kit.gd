@@ -19,6 +19,8 @@ func _test_repository_kit() -> void:
 	check(kit.content_hash.length() == 64, "architecture kit has a stable content hash")
 	check(kit.runtime_kit != null and kit.runtime_kit.textures_by_id.size() == 8, "architecture reuses every approved pixel module through the validated runtime kit")
 	equal(String((kit.data["court_profile"] as Dictionary).get("district_style")), "nexus", "source court is bound to the Nexus presentation profile")
+	equal(kit.court_decorations.size(), 6, "source court has a bounded authored decoration set")
+	equal(String(kit.court_decorations[0].get("kind", "")), "lantern", "source court starts with a readable light marker")
 	equal(kit.building_profiles.size(), WellspringArchitectureKit.BUILDING_STYLES.size(), "every architecture style has one reusable profile")
 	equal(kit.station_profiles.size(), WellspringArchitectureKit.STATION_KINDS.size(), "every station kind has one furniture profile")
 	equal(kit.landmark_profiles.size(), WellspringArchitectureKit.LANDMARK_KINDS.size(), "every landmark kind has one frame profile")
@@ -67,3 +69,8 @@ func _test_fail_closed_contract() -> void:
 	(kit.data["budgets"] as Dictionary)["maximum_facade_ratio"] = 0.90
 	check(not kit.validate(layout), "facades that can steal the play footprint fail closed")
 	check(not kit.last_error.is_empty(), "architecture refusal is actionable")
+	var decoration_kit := WellspringArchitectureKit.new()
+	decoration_kit.language = language
+	decoration_kit.data = source.data.duplicate(true)
+	((decoration_kit.data["court_profile"] as Dictionary)["decorations"] as Array)[0]["offset"] = [999, 0]
+	check(not decoration_kit.validate(layout), "court decorations outside the playable floor fail closed")

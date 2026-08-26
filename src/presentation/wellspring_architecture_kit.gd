@@ -13,6 +13,7 @@ const FACADES := ["timber_frame", "garden_stone", "stone_timber", "foundry_brick
 const MOTIFS := ["route", "garden", "archive", "attunement", "service", "farflow", "foundry"]
 const FURNITURE := ["lectern", "bell", "loom", "gate", "desk", "hearth"]
 const LANDMARK_FRAMES := ["spire", "basin", "orrery", "gate", "crucible"]
+const COURT_DECORATION_KINDS := ["lantern", "planter", "rune"]
 
 var language: VisualLanguage
 var runtime_kit: SanctumRuntimeKit
@@ -20,6 +21,7 @@ var data: Dictionary = {}
 var building_profiles: Dictionary[String, Dictionary] = {}
 var station_profiles: Dictionary[String, Dictionary] = {}
 var landmark_profiles: Dictionary[String, Dictionary] = {}
+var court_decorations: Array[Dictionary] = []
 var content_hash := ""
 var last_error := ""
 
@@ -30,6 +32,7 @@ func configure(visual_language: VisualLanguage, layout: SanctumCampusLayout, pat
 	building_profiles.clear()
 	station_profiles.clear()
 	landmark_profiles.clear()
+	court_decorations.clear()
 	content_hash = ""
 	last_error = ""
 	if language == null or layout == null or language.ramps.is_empty() or layout.buildings_by_id.is_empty():
@@ -59,6 +62,7 @@ func validate(layout: SanctumCampusLayout) -> bool:
 	building_profiles.clear()
 	station_profiles.clear()
 	landmark_profiles.clear()
+	court_decorations.clear()
 	if int(data.get("schema_version", -1)) != 1 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Wellspring architecture identity is unsupported")
 	if String(data.get("authority", "")) != EXPECTED_AUTHORITY:
@@ -80,6 +84,8 @@ func validate(layout: SanctumCampusLayout) -> bool:
 		or int(court.get("cell_size", 0)) < 24 or int(court.get("cell_size", 0)) > 40 \
 		or not language.elements.has(String(court.get("accent", ""))):
 		return _fail("Wellspring source-court profile is invalid")
+	if not _index_court_decorations(court):
+		return false
 	if not _index_buildings(maximum_facade_ratio) or not _index_stations() or not _index_landmarks():
 		return false
 	for building: Dictionary in layout.buildings_by_id.values():
@@ -138,7 +144,62 @@ func draw_district_court(canvas: CanvasItem, district: Dictionary, reduced_effec
 	for index: int in range(8):
 		var direction := Vector2.from_angle(TAU * float(index) / 8.0)
 		canvas.draw_line(center + direction * 28.0, center + direction * 76.0, Color(language.ramp_color("aged_brass", 2), 0.28), 2.0)
+	_draw_court_decorations(canvas, center, reduced_effects)
 	return true
+
+
+func _index_court_decorations(court: Dictionary) -> bool:
+	var values: Variant = court.get("decorations", [])
+	if not values is Array or (values as Array).size() < 4 or (values as Array).size() > 12:
+		return _fail("Wellspring source-court decorations must stay within the small authored budget")
+	var half_width := float(court.get("width", 0)) * 0.5 - 48.0
+	var half_height := float(court.get("height", 0)) * 0.5 - 48.0
+	for value: Variant in values:
+		if not value is Dictionary:
+			return _fail("Wellspring source-court decoration must be an object")
+		var decoration: Dictionary = value
+		var offset_value: Variant = decoration.get("offset", [])
+		if String(decoration.get("kind", "")) not in COURT_DECORATION_KINDS \
+			or not language.elements.has(String(decoration.get("accent", ""))) \
+			or not offset_value is Array or (offset_value as Array).size() != 2 \
+			or absf(float((offset_value as Array)[0])) > half_width \
+			or absf(float((offset_value as Array)[1])) > half_height \
+			or float(decoration.get("scale", 0.0)) < 0.75 or float(decoration.get("scale", 0.0)) > 1.25:
+			return _fail("Wellspring source-court decoration is invalid")
+		court_decorations.append(decoration)
+	return true
+
+
+func _draw_court_decorations(canvas: CanvasItem, center: Vector2, reduced_effects: bool) -> void:
+	var glow_alpha := 0.10 if reduced_effects else 0.18
+	for decoration: Dictionary in court_decorations:
+		var offset_value: Array = decoration.get("offset", [])
+		var position := center + Vector2(float(offset_value[0]), float(offset_value[1]))
+		var size_scale := float(decoration.get("scale", 1.0))
+		var accent := language.element_color(String(decoration.get("accent", "light")), "bright")
+		canvas.draw_colored_polygon(_ellipse(position + Vector2(3, 6), Vector2(21, 9) * size_scale, 16), Color(language.ramp_color("worldbone", 0), 0.36))
+		match String(decoration.get("kind", "")):
+			"lantern":
+				canvas.draw_rect(Rect2(position + Vector2(-3, -18) * size_scale, Vector2(6, 20) * size_scale), language.ramp_color("timber", 3), true)
+				canvas.draw_rect(Rect2(position + Vector2(-10, -23) * size_scale, Vector2(20, 8) * size_scale), language.ramp_color("aged_brass", 2), true)
+				canvas.draw_rect(Rect2(position + Vector2(-6, -21) * size_scale, Vector2(12, 4) * size_scale), Color(accent, 0.78), true)
+				canvas.draw_circle(position + Vector2(0, -19) * size_scale, 16.0 * size_scale, Color(accent, glow_alpha))
+			"planter":
+				canvas.draw_rect(Rect2(position + Vector2(-18, -7) * size_scale, Vector2(36, 15) * size_scale), language.ramp_color("worldbone", 2), true)
+				canvas.draw_rect(Rect2(position + Vector2(-14, -8) * size_scale, Vector2(28, 8) * size_scale), language.ramp_color("garden", 2), true)
+				for leaf_offset: Vector2 in [Vector2(-10, -12), Vector2(0, -17), Vector2(10, -12)]:
+					canvas.draw_circle(position + leaf_offset * size_scale, 7.0 * size_scale, language.ramp_color("garden", 4))
+			"rune":
+				var diamond := PackedVector2Array([
+					position + Vector2(0, -15) * size_scale,
+					position + Vector2(15, 0) * size_scale,
+					position + Vector2(0, 15) * size_scale,
+					position + Vector2(-15, 0) * size_scale,
+				])
+				canvas.draw_colored_polygon(diamond, Color(accent, 0.12))
+				canvas.draw_polyline(_closed(diamond), Color(accent, 0.60), 2.0, false)
+				canvas.draw_line(position + Vector2(-7, 0) * size_scale, position + Vector2(7, 0) * size_scale, Color(accent, 0.52), 2.0)
+				canvas.draw_line(position + Vector2(0, -7) * size_scale, position + Vector2(0, 7) * size_scale, Color(accent, 0.52), 2.0)
 
 
 func _draw_court_pavers(canvas: CanvasItem, court: Rect2, cell_size: int) -> void:

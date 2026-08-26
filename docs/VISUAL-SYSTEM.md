@@ -129,6 +129,13 @@ visible doors, planted pavers, shallow water channels and landmark furniture
 reuse the approved `SanctumRuntimeKit`; reference/concept pixels never enter the
 runtime path.
 
+The source-court profile now carries six bounded decoration anchors. Lanterns
+mark the lateral approaches, planters soften the lower corners, and elemental
+runes bookend the north/south lanes. Anchors are validated against the court
+interior, use shared language ramps, and draw after pavers with reduced-effects
+alpha; they are presentation-only and cannot occlude actors, alter collision, or
+change station interaction radii.
+
 The architecture kit remains presentation-only. Authored campus data still owns
 topology, collision, route endpoints, elevation, station commands and interaction
 radii; the existing deterministic cutaway still uses the canonical footprint.

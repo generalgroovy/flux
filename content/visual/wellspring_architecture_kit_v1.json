@@ -16,7 +16,15 @@
     "center_offset_y": 92,
     "corner_step": 28,
     "cell_size": 32,
-    "accent": "water"
+    "accent": "water",
+    "decorations": [
+      {"kind": "lantern", "offset": [-248, -166], "accent": "light", "scale": 1.0},
+      {"kind": "lantern", "offset": [248, -166], "accent": "light", "scale": 1.0},
+      {"kind": "planter", "offset": [-248, 166], "accent": "wind", "scale": 1.0},
+      {"kind": "planter", "offset": [248, 166], "accent": "wind", "scale": 1.0},
+      {"kind": "rune", "offset": [0, -186], "accent": "charge", "scale": 1.0},
+      {"kind": "rune", "offset": [0, 186], "accent": "water", "scale": 1.0}
+    ]
   },
   "building_profiles": [
     {"style": "timber_hall", "roof_shape": "gable", "roof_ramp": "garden", "facade": "timber_frame", "motif": "route", "accent": "wind", "facade_ratio": 0.30, "bay_width": 36, "roof_rise": 18},

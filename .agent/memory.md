@@ -3,6 +3,21 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## Source-court approach accents — 2026-08-26
+
+- Added six validated, presentation-only decorations to
+  `court_profile.decorations`: two light lanterns, two wind planters, and two
+  charge/water runes. Their offsets stay inside the court interior and their
+  0.75–1.25 scale range is bounded.
+- The renderer draws these after pavers with shared ramps and lower opacity in
+  reduced-effects mode. They cannot change topology, collision, route data,
+  station radii, or simulation state.
+- Verification: 54 suites / 18,674 assertions, zero failures; source boots at
+  60/120 Hz. Four truthful 1280×720 frames captured at 75% zoom in
+  `.godot/visual-captures/post-unify-v9-720`.
+- `main` and `codex/continuous-overhaul` remain unified; rebuild the Windows
+  package after the next commit so its hashes describe this visual slice.
+
 ## Visual registry/hash slice — 2026-08-26
 
 - `VisualAssetRegistry` now binds and validates the spell-animation skeleton

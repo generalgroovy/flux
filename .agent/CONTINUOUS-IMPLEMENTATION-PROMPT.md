@@ -37,7 +37,8 @@ mockups and catalogs are never completion.
 
 Continuously turn the newest unified FLUX 2 checkpoint into a charming,
 responsive, self-hostable top-down elemental action game. Always leave one
-published commit runnable on Windows and Linux. Work in complete player-visible
+published commit runnable on Windows; preserve existing portable/Linux code but
+make no new Linux release or acceptance claim in the current scope. Work in complete player-visible
 slices, checkpoint each green result, and immediately start the next accepted
 slice. Do not stop at plans, scaffolds, catalogs, generated images or passing
 unit tests when the player-facing outcome is still absent.
@@ -53,7 +54,7 @@ single-trigger Ice field. All seven runtime-proven spells are globally weaveable
 for either champion with identity-owned replicated cooldowns and five honest
 empty positions. A persisted 50/75/100% world zoom defaults to the wider
 75% view. Preserve all of it. Export templates and
-physical Garuda Sway package proof remain honest external gaps.
+physical Garuda Sway package proof is outside the current Windows-only scope.
 
 ## Product target
 

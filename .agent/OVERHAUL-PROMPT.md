@@ -38,11 +38,16 @@ Alt+1–4. Do not copy the reference's fifth button. Keep detailed information i
 fast translucent station/overview panels so the main frame shows routes,
 landmarks, players, threats and interaction options.
 
-Work through visual tokens/pixel pipeline, two foundation champions,
+Work through visual tokens/pixel pipeline, the exact `small`/`middle`/`large`
+body system, two foundation champions,
 Wellspring environment, current spell visuals, GUI/interactions and integrated
 acceptance in that exact order. Do not accept a concept image, manifest,
 placeholder or isolated specimen as completion: the improvement must run in the
-actual game. Capture and inspect 720p/1080p frames at relevant zooms, ordinary
+actual game. Champion atlases contain only body and clothing: south/front faces
+the camera symmetrically, north is centered back, east is authored profile and
+west mirrors it; compose empty-hand casting, aura, shadow, projectile,
+equipment and environment in separate reusable layers. Capture and inspect
+720p/1080p frames at relevant zooms, ordinary
 and reduced effects, grayscale and common color-vision simulations, with
 collision/cutaway diagnostics. Require at least 4/5 in every visual rubric
 category and a 4.5/5 mean. Preserve fixed-tick authority and the last pushed
@@ -68,6 +73,8 @@ platform checks; implement it without touching unrelated user files; run focused
 and full tests, imports, independent 60/120 boots, applicable Farflow journeys
 and live frame/interactive review; inspect stderr, diff, MTU/performance and
 asset provenance; update the canonical docs and handoff state; commit and push
-one reversible green checkpoint. Always keep Windows/Linux source launchable and
+one reversible green checkpoint. Always keep the Windows source/package
+launchable; preserve existing Linux source scripts but make no new Linux
+release or acceptance claim in the current scope.
 the published commit playable. Never copy protected assets or claim tests,
 visual quality, balance, platform parity or remote play without direct evidence.

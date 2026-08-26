@@ -1,13 +1,14 @@
 class_name SkeletonAnimationLibrary
 extends RefCounted
 
-const SUPPORTED_SCHEMA_VERSION: int = 1
+const SUPPORTED_SCHEMA_VERSION: int = 2
 const DEFAULT_PATH: String = "res://content/animations/skeleton_animation_manifest_v1.json"
+const REQUIRED_BODY_TYPES: Array[String] = ["small", "middle", "large"]
 
 var data: Dictionary = {}
 var last_error: String = ""
 var animations: Dictionary = {}
-var sizes: Dictionary = {}
+var body_types: Dictionary = {}
 var aliases: Dictionary = {}
 var action_contracts: Dictionary = {}
 var directions: Array[String] = []
@@ -56,13 +57,16 @@ func validate() -> bool:
 			return _fail("direction ids must be unique and non-empty")
 		directions.append(direction_id)
 	animations = data.get("animations", {})
-	sizes = data.get("sizes", {})
+	body_types = data.get("body_types", {})
 	aliases = data.get("aliases", {})
 	action_contracts = data.get("action_contracts", {})
 	if animations.is_empty():
 		return _fail("at least one animation is required")
-	if sizes.size() != 5:
-		return _fail("exactly five skeleton sizes are required")
+	if body_types.size() != REQUIRED_BODY_TYPES.size():
+		return _fail("exactly three body types are required")
+	for body_type_id: String in REQUIRED_BODY_TYPES:
+		if not body_types.has(body_type_id):
+			return _fail("required body type is missing: %s" % body_type_id)
 	if String(data.get("casting_origin", "")) != "hands":
 		return _fail("all skeleton magic must originate from hands")
 	var occupied_blocks: Dictionary = {}
@@ -94,21 +98,21 @@ func validate() -> bool:
 			or String(contract.get("magic_origin", "")) != "hands"
 		):
 			return _fail("animation action contract is invalid: %s" % action_id)
-	for size_id: String in sizes:
-		var size: Dictionary = sizes[size_id]
+	for body_type_id: String in body_types:
+		var body_type: Dictionary = body_types[body_type_id]
 		for path_key: String in ["atlas", "debug_atlas"]:
-			var asset_path := str(size.get(path_key, ""))
+			var asset_path := str(body_type.get(path_key, ""))
 			if asset_path.is_empty() or not FileAccess.file_exists(asset_path):
-				return _fail("%s is missing %s" % [size_id, path_key])
+				return _fail("%s is missing %s" % [body_type_id, path_key])
 			var image := Image.load_from_file(asset_path)
 			if image == null or image.get_size() != atlas_size:
-				return _fail("%s %s dimensions do not match manifest" % [size_id, path_key])
+				return _fail("%s %s dimensions do not match manifest" % [body_type_id, path_key])
 	return true
 
 
-func frame_region(size_id: String, animation_id: String, direction_id: String, frame_index: int) -> Rect2i:
+func frame_region(body_type_id: String, animation_id: String, direction_id: String, frame_index: int) -> Rect2i:
 	animation_id = resolved_animation_id(animation_id)
-	if not sizes.has(size_id) or not animations.has(animation_id):
+	if not body_types.has(body_type_id) or not animations.has(animation_id):
 		return Rect2i()
 	var direction_index := directions.find(direction_id)
 	if direction_index < 0:
@@ -137,11 +141,11 @@ func frame_region_from_values(block: Vector2i, direction_index: int, frame_index
 	)
 
 
-func atlas_path(size_id: String, debug: bool = false) -> String:
-	if not sizes.has(size_id):
+func atlas_path(body_type_id: String, debug: bool = false) -> String:
+	if not body_types.has(body_type_id):
 		return ""
 	var key := "debug_atlas" if debug else "atlas"
-	return str((sizes[size_id] as Dictionary).get(key, ""))
+	return str((body_types[body_type_id] as Dictionary).get(key, ""))
 
 
 func _vector2i(value: Variant) -> Vector2i:

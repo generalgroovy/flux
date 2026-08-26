@@ -32,6 +32,9 @@ func _test_repository_catalog() -> void:
 	equal(catalog.next_champion_id("s_wayne"), "oh_tipi", "champion cycle wraps")
 	equal(String(catalog.champion("oh_tipi").get("ancestry")), "seakin", "Oh Tipi is a Seakin")
 	equal(String(catalog.champion("s_wayne").get("ancestry")), "hobbit", "S. Wayne is a Hobbit")
+	equal(String(catalog.champion("oh_tipi").get("body_type")), "middle", "Oh Tipi uses the middle reusable body type")
+	equal(String(catalog.champion("s_wayne").get("body_type")), "small", "S. Wayne uses the small reusable body type")
+	equal(ChampionCatalog.SUPPORTED_BODY_TYPES, ["small", "middle", "large"], "runtime exposes exactly three body types")
 	equal(catalog.champion("oh_tipi").get("affinities", []), ["water", "charge"], "Oh Tipi owns Water/Charge")
 	equal(catalog.affinity_strength("oh_tipi", "water"), 2, "Oh Tipi has primary Water strength 2")
 	equal(catalog.affinity_strength("oh_tipi", "charge"), 1, "Oh Tipi has secondary Charge strength 1")
@@ -66,7 +69,7 @@ func _test_affinity_point_budget_and_treevor_exception() -> void:
 	treevor["wire_id"] = 99
 	treevor["display_name"] = "Treevor the Mason"
 	treevor["ancestry"] = "treefolk"
-	treevor["size"] = "size_4_large"
+	treevor["body_type"] = "large"
 	treevor["affinities"] = ["earth", "wind", "fire"]
 	treevor["affinity_points"] = {"earth": 1, "wind": 1, "fire": 1}
 	(treevor_candidate.data["champions"] as Array).append(treevor)
@@ -152,6 +155,7 @@ func _test_invalid_profiles_fail_closed() -> void:
 	check(source.load_from_file(CHAMPION_PATH, abilities), "champion source loads")
 	for mutation: Callable in [
 		func(data: Dictionary) -> void: data["schema_version"] = 99,
+		func(data: Dictionary) -> void: (data["champions"][0] as Dictionary)["body_type"] = "size_3_medium",
 		func(data: Dictionary) -> void: (data["champions"][0] as Dictionary)["wire_id"] = 2,
 		func(data: Dictionary) -> void: (data["champions"][0] as Dictionary)["affinities"] = ["water"],
 		func(data: Dictionary) -> void: (data["champions"][0] as Dictionary)["affinities"] = ["water", "charge", "ice"],

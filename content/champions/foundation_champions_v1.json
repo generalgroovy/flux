@@ -1,6 +1,6 @@
 {
-  "schema_version": 1,
-  "id": "foundation-champions-v1",
+  "schema_version": 2,
+  "id": "foundation-champions-v2",
   "default_champion_id": "oh_tipi",
   "champions": [
     {
@@ -8,7 +8,7 @@
       "wire_id": 1,
       "display_name": "Oh Tipi",
       "ancestry": "seakin",
-      "size": "size_3_medium",
+      "body_type": "middle",
       "affinities": ["water", "charge"],
       "affinity_points": {"water": 2, "charge": 1},
       "playstyle": "Steady current keeper with forgiving reserves and deliberate footwork.",
@@ -32,7 +32,7 @@
       "wire_id": 2,
       "display_name": "S. Wayne",
       "ancestry": "hobbit",
-      "size": "size_2_small",
+      "body_type": "small",
       "affinities": ["dark", "light"],
       "affinity_points": {"dark": 2, "light": 1},
       "playstyle": "Swift boundary tactician with lean reserves and rapid Flux recovery.",

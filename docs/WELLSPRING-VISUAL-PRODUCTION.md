@@ -1,13 +1,15 @@
-# The Wellspring visual-production catalog v2
+# The Wellspring visual-production catalog v2 (legacy inventory)
 
 This catalog is generated from deterministic source code and is directly usable by
 Godot. Rendered pixels never define collision, damage, reach, chemistry or other
 simulation authority.
 
-Runtime status: Oh Tipi is the first `integrated_candidate` exercised by the
-playable bootstrap across semantic movement states and eight directions. It is
-still a candidate: the supplied FLUX Champions board remains the minimum visual
-quality target, and neither Oh Tipi nor the remaining roster is final art.
+Runtime status: this document preserves the older race/exemplar inventory for
+migration and provenance only. The current runtime contract is defined by
+`content/visual/foundation_champion_visuals_v1.json` and uses exactly three body
+types: `small`, `middle`, and `large`; the body-only Oh Tipi/S. Wayne atlas is the
+active foundation candidate. Nothing in this legacy catalog may add a fourth
+body type or reintroduce baked spells, shadows, props or environment pixels.
 
 ## Production status
 
@@ -24,7 +26,7 @@ quality target, and neither Oh Tipi nor the remaining roster is final art.
 
 ## Race and ancestry catalog
 
-| ID | Name | Status | Sizes | Presentations | Exemplar | Preview |
+| ID | Name | Status | Legacy source sets | Presentations | Exemplar | Preview |
 | --- | --- | --- | --- | --- | --- | --- |
 | `human` | Human | production_foundation | 5 | 2 | `Aster Vale` | `res://assets/sprites/races_v2/human/human_size_gender_matrix.png` |
 | `dwarf` | Dwarf | production_foundation | 5 | 2 | `Brun Forgehand` | `res://assets/sprites/races_v2/dwarf/dwarf_size_gender_matrix.png` |
@@ -48,38 +50,39 @@ quality target, and neither Oh Tipi nor the remaining roster is final art.
 | `angel` | Angel | production_foundation | 5 | 2 | `Aurelia Dawn` | `res://assets/sprites/races_v2/angel/angel_size_gender_matrix.png` |
 | `werewolf` | Werewolf | production_foundation | 5 | 2 | `Fen Marr` | `res://assets/sprites/races_v2/werewolf/werewolf_size_gender_matrix.png` |
 
-Every race includes Tiny, Small, Medium, Large and Huge foundations in masculine
-and feminine presentations. These are presentation foundations, not automatic
-gameplay permission for every race/size combination.
+The legacy race inventory contains five historical source sets in masculine and
+feminine presentations. They are retained for migration only: `tiny` maps to
+`small`, `medium` maps to `middle`, and `huge` maps to `large`. New content,
+selectors and runtime validators must use only the three canonical IDs.
 
 ## Champion and exemplar roster
 
-| ID | Name | Race | Size | Affinities | Status | Atlas | Hero portrait |
+| ID | Name | Race | Body type (migrated) | Affinities | Status | Atlas | Hero portrait |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `oh_tipi` | Oh Tipi | seakin | Medium | water, ice, charge | integrated_candidate | `res://assets/sprites/champions_v2/oh_tipi/atlas.png` | `res://assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png` |
+| `oh_tipi` | Oh Tipi | seakin | Middle | water, ice, charge | integrated_candidate | `res://assets/sprites/champions_v2/oh_tipi/atlas.png` | `res://assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png` |
 | `s_wayne` | S. Wayne | hobbit | Small | dark, light | integrated_candidate | `res://assets/sprites/champions_v2/s_wayne/atlas.png` | `res://assets/sprites/champions_v2/s_wayne/hero_portrait_256.png` |
-| `red_baron` | The Red Baron | undead | Medium | dark, fire, ice | integrated_candidate | `res://assets/sprites/champions_v2/red_baron/atlas.png` | `res://assets/sprites/champions_v2/red_baron/hero_portrait_256.png` |
+| `red_baron` | The Red Baron | undead | Middle | dark, fire, ice | integrated_candidate | `res://assets/sprites/champions_v2/red_baron/atlas.png` | `res://assets/sprites/champions_v2/red_baron/hero_portrait_256.png` |
 | `steezo` | Steezo | goblin | Small | fire, charge, light | integrated_candidate | `res://assets/sprites/champions_v2/steezo/atlas.png` | `res://assets/sprites/champions_v2/steezo/hero_portrait_256.png` |
 | `treevor_mason` | Treevor the Mason | treefolk | Large | earth, wind, fire | integrated_candidate | `res://assets/sprites/champions_v2/treevor_mason/atlas.png` | `res://assets/sprites/champions_v2/treevor_mason/hero_portrait_256.png` |
-| `oll_i` | Oll' I | minotaur | Huge | earth, fire, light | integrated_candidate | `res://assets/sprites/champions_v2/oll_i/atlas.png` | `res://assets/sprites/champions_v2/oll_i/hero_portrait_256.png` |
+| `oll_i` | Oll' I | minotaur | Large | earth, fire, light | integrated_candidate | `res://assets/sprites/champions_v2/oll_i/atlas.png` | `res://assets/sprites/champions_v2/oll_i/hero_portrait_256.png` |
 | `fluup` | Fluup | orc | Large | charge, wind, ice | integrated_candidate | `res://assets/sprites/champions_v2/fluup/atlas.png` | `res://assets/sprites/champions_v2/fluup/hero_portrait_256.png` |
 | `wa_bidi` | Wa Bidi | sylph | Small | charge, wind, fire | integrated_candidate | `res://assets/sprites/champions_v2/wa_bidi/atlas.png` | `res://assets/sprites/champions_v2/wa_bidi/hero_portrait_256.png` |
 | `grace_reava` | Grace Reava | nymph | Small | wind, water, light | integrated_candidate | `res://assets/sprites/champions_v2/grace_reava/atlas.png` | `res://assets/sprites/champions_v2/grace_reava/hero_portrait_256.png` |
-| `nico_lai` | Nico Lai | gnome | Tiny | charge, light | integrated_candidate | `res://assets/sprites/champions_v2/nico_lai/atlas.png` | `res://assets/sprites/champions_v2/nico_lai/hero_portrait_256.png` |
-| `spai_si` | Spai Si | elf | Medium | wind, light, earth | integrated_candidate | `res://assets/sprites/champions_v2/spai_si/atlas.png` | `res://assets/sprites/champions_v2/spai_si/hero_portrait_256.png` |
-| `leaf_hidden` | Leaf the Hidden | treefolk | Medium | water, earth, light | integrated_candidate | `res://assets/sprites/champions_v2/leaf_hidden/atlas.png` | `res://assets/sprites/champions_v2/leaf_hidden/hero_portrait_256.png` |
+| `nico_lai` | Nico Lai | gnome | Small | charge, light | integrated_candidate | `res://assets/sprites/champions_v2/nico_lai/atlas.png` | `res://assets/sprites/champions_v2/nico_lai/hero_portrait_256.png` |
+| `spai_si` | Spai Si | elf | Middle | wind, light, earth | integrated_candidate | `res://assets/sprites/champions_v2/spai_si/atlas.png` | `res://assets/sprites/champions_v2/spai_si/hero_portrait_256.png` |
+| `leaf_hidden` | Leaf the Hidden | treefolk | Middle | water, earth, light | integrated_candidate | `res://assets/sprites/champions_v2/leaf_hidden/atlas.png` | `res://assets/sprites/champions_v2/leaf_hidden/hero_portrait_256.png` |
 | `ha_rekt` | Ha Rekt | wyrmborn | Large | ice, wind, fire | integrated_candidate | `res://assets/sprites/champions_v2/ha_rekt/atlas.png` | `res://assets/sprites/champions_v2/ha_rekt/hero_portrait_256.png` |
 | `dr_apex` | Dr. Apex | stoneborn | Large | earth, light, water | integrated_candidate | `res://assets/sprites/champions_v2/dr_apex/atlas.png` | `res://assets/sprites/champions_v2/dr_apex/hero_portrait_256.png` |
 | `haara` | Haara | gnome | Small | light, wind, spirit | integrated_candidate | `res://assets/sprites/champions_v2/haara/atlas.png` | `res://assets/sprites/champions_v2/haara/hero_portrait_256.png` |
 | `hesus_christo` | Hesus Christo | wyrmborn | Large | earth, water | integrated_candidate | `res://assets/sprites/champions_v2/hesus_christo/atlas.png` | `res://assets/sprites/champions_v2/hesus_christo/hero_portrait_256.png` |
-| `grimm_bow` | Grimm Bow | troll | Huge | dark, earth, water | integrated_candidate | `res://assets/sprites/champions_v2/grimm_bow/atlas.png` | `res://assets/sprites/champions_v2/grimm_bow/hero_portrait_256.png` |
-| `biggy_bob` | Biggy Bob | dwarf | Medium | earth, fire, light | integrated_candidate | `res://assets/sprites/champions_v2/biggy_bob/atlas.png` | `res://assets/sprites/champions_v2/biggy_bob/hero_portrait_256.png` |
-| `jan_wicked` | Jan Wicked | human | Medium | ice, dark, charge | integrated_candidate | `res://assets/sprites/champions_v2/jan_wicked/atlas.png` | `res://assets/sprites/champions_v2/jan_wicked/hero_portrait_256.png` |
-| `ba_djoh` | Ba Djoh | minotaur | Huge | earth, fire, water | integrated_candidate | `res://assets/sprites/champions_v2/ba_djoh/atlas.png` | `res://assets/sprites/champions_v2/ba_djoh/hero_portrait_256.png` |
+| `grimm_bow` | Grimm Bow | troll | Large | dark, earth, water | integrated_candidate | `res://assets/sprites/champions_v2/grimm_bow/atlas.png` | `res://assets/sprites/champions_v2/grimm_bow/hero_portrait_256.png` |
+| `biggy_bob` | Biggy Bob | dwarf | Middle | earth, fire, light | integrated_candidate | `res://assets/sprites/champions_v2/biggy_bob/atlas.png` | `res://assets/sprites/champions_v2/biggy_bob/hero_portrait_256.png` |
+| `jan_wicked` | Jan Wicked | human | Middle | ice, dark, charge | integrated_candidate | `res://assets/sprites/champions_v2/jan_wicked/atlas.png` | `res://assets/sprites/champions_v2/jan_wicked/hero_portrait_256.png` |
+| `ba_djoh` | Ba Djoh | minotaur | Large | earth, fire, water | integrated_candidate | `res://assets/sprites/champions_v2/ba_djoh/atlas.png` | `res://assets/sprites/champions_v2/ba_djoh/hero_portrait_256.png` |
 | `urzh` | Urzh | stoneborn | Large | earth, fire, charge | integrated_candidate | `res://assets/sprites/champions_v2/urzh/atlas.png` | `res://assets/sprites/champions_v2/urzh/hero_portrait_256.png` |
-| `donnok` | Donnok | dwarf | Medium | earth, fire, water | integrated_candidate | `res://assets/sprites/champions_v2/donnok/atlas.png` | `res://assets/sprites/champions_v2/donnok/hero_portrait_256.png` |
-| `djonah_thaan` | Djonah Thaan | vampire | Medium | dark, charge, fire | integrated_candidate | `res://assets/sprites/champions_v2/djonah_thaan/atlas.png` | `res://assets/sprites/champions_v2/djonah_thaan/hero_portrait_256.png` |
-| `unnamed_angel` | Unnamed Angel | angel | Medium | wind, light, spirit | placeholder_unapproved | `res://assets/sprites/champions_v2/unnamed_angel/atlas.png` | `res://assets/sprites/champions_v2/unnamed_angel/hero_portrait_256.png` |
+| `donnok` | Donnok | dwarf | Middle | earth, fire, water | integrated_candidate | `res://assets/sprites/champions_v2/donnok/atlas.png` | `res://assets/sprites/champions_v2/donnok/hero_portrait_256.png` |
+| `djonah_thaan` | Djonah Thaan | vampire | Middle | dark, charge, fire | integrated_candidate | `res://assets/sprites/champions_v2/djonah_thaan/atlas.png` | `res://assets/sprites/champions_v2/djonah_thaan/hero_portrait_256.png` |
+| `unnamed_angel` | Unnamed Angel | angel | Middle | wind, light, spirit | placeholder_unapproved | `res://assets/sprites/champions_v2/unnamed_angel/atlas.png` | `res://assets/sprites/champions_v2/unnamed_angel/hero_portrait_256.png` |
 
 ## Animation keyframes
 

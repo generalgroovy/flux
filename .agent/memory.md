@@ -3,6 +3,49 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## Body-only foundation slice — 2026-08-26
+
+- Canonical character body types are now exactly `small`, `middle`, and
+  `large`; legacy `tiny→small`, `medium→middle`, and `huge→large` mappings are
+  explicit compatibility adapters only.
+- Oh Tipi is `middle` and S. Wayne is `small` in the champion catalog and visual
+  recipe. The skeleton manifest validates the same three IDs.
+- The active body atlas is
+  `assets/sprites/champions_v3/foundation/runtime_atlas_body_v3.png` with
+  source `source_sheet_body_v3.png`, 96×96 cells, pivot `(48,84)`, front-facing
+  symmetry, authored east profile, mirrored west and centered north/back.
+- Body atlas pixels contain body and clothing only. Spells, elements,
+  projectiles, auras, shadows, environment, tools, equipment and foci are
+  independent presentation layers; the old procedural staff/orb fallback was
+  removed so a missing atlas fails closed instead of drawing legacy props.
+- Canonical body types use bounded render scales around the shared feet pivot:
+  `small` 0.90×, `middle` 1.00×, `large` 1.10×. This changes presentation only;
+  simulation radius, hitboxes and outcomes remain authoritative.
+- Atlas source SHA-256:
+  `646528da4e44c5955ca918cab65aaa669d167cdefb80123790fcc93c5d4d353b`;
+  runtime PNG SHA-256:
+  `c250dbec8bfb2b97ca045efd311204c12fa6ae839db01ba2e65edeffa4e9f2a5`;
+  imported RGBA SHA-256:
+  `6cc5c31b0b9511d3cea768b088fddc356467eac68908df193e505bdc7b495bfb`.
+- The exact built-in ImageGen edit prompt and provenance are recorded in
+  `assets/sprites/champions_v3/foundation/README.md` and `provenance.json`.
+- Superseded `source_sheet.png`, `runtime_atlas.png`, and intermediate
+  hands-only PNGs were removed; tracked versions remain recoverable in Git.
+- Verification after the slice: `scripts\\test.cmd` passed 53 suites,
+  18,640 assertions, zero failures, with independent Windows source boots at
+  60/120 Hz. The test output still contains expected editor image-load warnings
+  for legacy visual archives.
+- Truthful 1280×720 four-frame captures passed at 50%, 75% and 100% camera zoom
+  under `.godot/visual-captures/body-v3-*`; Oh Tipi at 50%/75% and S. Wayne at
+  100% were visually inspected with the new body-only atlas.
+- `scripts\package.ps1 -Target Windows` rebuilt the export and installer; the
+  current installer SHA-256 is
+  `9e9434068aae19d9cf6b86a164e1e1f1e758f4190e489a768dc0fc8acbc9a738`.
+  The exported `exports\windows\flux2.exe` boots headlessly at 120 Hz.
+- `scripts\test-windows-bootstrap.ps1` was blocked when Device Guard refused
+  the unsigned installer binary (also from `%TEMP%`); this host limitation is
+  recorded explicitly and is not treated as a lifecycle pass.
+
 ## Consolidation frontier — 2026-08-26
 
 - `origin/main` through `3f79847` is merged into
@@ -19,7 +62,8 @@ each playable slice.
   controls, full movement and resource contracts, first-eight element matrix,
   24-character migration roster, ancestries, Wellspring/Farflow architecture,
   embedded design images, and the exact chemistry playtest sequence.
-- New mainline reference inputs are present: compact Tiny→Huge character boards,
+- New mainline reference inputs are present: compact archived body boards (the
+  current runtime reduces them to small/middle/large),
   design-locked 36-pair reaction data, weighted 2+1 first-eight affinities, and
   the Waka Aren Si display-name compatibility contract. The imported burst-v2
   PNG streams were truncated and were replaced by the reviewed v3 pipeline.
@@ -55,7 +99,7 @@ each playable slice.
   authority. All live projectiles use their element sheet and retain a visible
   simulation-radius ring; the corrupted v2 files remain recoverable at
   `3f79847` but are removed from the active tree.
-- C2 verification frontier: 53 suites / 18,626 assertions, source 60/120 boots,
+- C2 verification frontier before the body-only slice: 53 suites / 18,626 assertions, source 60/120 boots,
   inspected 1280×720 Water travel at 75% zoom, Windows export/package, and
   packaged GPU safe quit. Current setup payload is
   `0.1.0-dev-5c21b55e49-890cf994f9`, SHA-256
@@ -117,7 +161,7 @@ each playable slice.
   movement cannot erase the decision. The host-authoritative Momentum Chime
   teaches that loop, refuses repeat requests during launch/recovery and uses a
   reusable reduced-effects-aware brace accent as the next visual slice seed.
-- Latest source verification is 18,626 assertions across 53 suites plus
+- Latest source verification before the body-only slice was 18,626 assertions across 53 suites plus
   import/source 60/120 Hz boots and a fresh 120 Hz three-process
   spectator-to-Hearth-to-Round-2, reconnect and stewardship journey.
 - Fresh Windows and Linux friend packages plus packaged Windows safe quit pass

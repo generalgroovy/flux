@@ -72,7 +72,7 @@ Affinity strength does **not** automatically multiply raw damage, status magnitu
 | **Grimm Bow** | **Dark 2 · Water 1** | Concealment/attrition archer with Water displacement; legacy Void remains normalized to Dark. |
 | **Biggy Bob** | **Earth 2 · Fire 1** | Forge-line masonry breacher whose structure identity dominates the heat layer. |
 | **Jan Wicked** | **Ice 2 · Dark 1** | Black-ice hunter with Ice as the main control axis. |
-| **Ba Djoh** | **Earth 2 · Ice 1** | Huge permafrost/impact breaker anchored in mass and terrain. |
+| **Ba Djoh** | **Earth 2 · Ice 1** | Large permafrost/impact breaker anchored in mass and terrain. |
 | **Urzh** | **Charge 2 · Earth 1** | Conductive bulwark with Charge as the primary systems identity. |
 | **Donnok** | **Fire 2 · Water 1** | Forge-rhythm terrain shaper strongly aligned to heat with Steam-capable Water support. |
 | **Djonah Thaan** | **Dark 2 · Charge 1** | Grave-current pursuit controller dominated by Dark pressure. |

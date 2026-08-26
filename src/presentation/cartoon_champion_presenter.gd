@@ -3,12 +3,19 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_champion_visuals_v1.json"
-const EXPECTED_ID := "foundation-champion-visuals-v1"
+const EXPECTED_ID := "foundation-champion-visuals-v2-body-only"
 const EXPECTED_AUTHORITY := "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere"
 const REQUIRED_FOUNDATION := ["oh_tipi", "s_wayne"]
-const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas.png"
+const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_body_v3.png"
+const EXPECTED_BODY_TYPES: Array[String] = ["small", "middle", "large"]
+const EXPECTED_EXCLUDED_LAYERS: Array[String] = ["spell", "element", "projectile", "aura", "shadow", "environment", "equipment", "focus"]
 const CELL_SIZE := Vector2(96.0, 96.0)
 const PIVOT := Vector2(48.0, 84.0)
+const BODY_TYPE_RENDER_SCALE := {
+	"small": 0.90,
+	"middle": 1.00,
+	"large": 1.10,
+}
 
 var language: VisualLanguage
 var champions: Dictionary = {}
@@ -41,10 +48,18 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	if not parsed is Dictionary:
 		return _fail("Cartoon champion recipe root must be an object")
 	var data: Dictionary = parsed
-	if int(data.get("schema_version", -1)) != 1 or String(data.get("id", "")) != EXPECTED_ID:
+	if int(data.get("schema_version", -1)) != 2 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Cartoon champion recipe identity is unsupported")
 	if String(data.get("authority", "")) != EXPECTED_AUTHORITY:
 		return _fail("Cartoon champion recipes must remain presentation-only")
+	if String(data.get("atlas_role", "")) != "body_and_clothing_only":
+		return _fail("Cartoon champion atlas must contain body and clothing only")
+	if String(data.get("front_pose", "")) != "camera_facing_symmetrical":
+		return _fail("Cartoon champion front pose must face the camera symmetrically")
+	if String(data.get("direction_policy", "")) != "south_front_camera_facing; east_profile; west_mirrored_east; north_centered_back":
+		return _fail("Cartoon champion direction policy is unsupported")
+	if data.get("excluded_layers", []) != EXPECTED_EXCLUDED_LAYERS:
+		return _fail("Cartoon champion excluded-layer contract is invalid")
 	if _vector2i(data.get("cell", [])) != Vector2i(96, 96) or _vector2i(data.get("pivot", [])) != Vector2i(48, 84):
 		return _fail("Cartoon champion cell/pivot differs from the visual contract")
 	var atlas_definition: Dictionary = data.get("atlas", {})
@@ -129,8 +144,6 @@ func draw(
 	if canvas == null or state == null or not champions.has(champion_id):
 		return false
 	var definition: Dictionary = champions[champion_id]
-	var state_id := silhouette_state(state)
-	var direction := cardinal_direction(state.facing_x, state.facing_y)
 	var motion_id := MinimalChampionMotion.motion_id(state)
 	var motion_elapsed := MinimalChampionMotion.elapsed_for_state(state, motion_id, float(presentation_tick), config)
 	var motion_sample := motion.sample(String(definition.get("motion_profile", "")), motion_id, motion_elapsed, reduced_effects)
@@ -140,15 +153,14 @@ func draw(
 		motion_sample.scale = Vector2.ONE.lerp(motion_sample.scale, response)
 		motion_sample.aura_scale = lerpf(1.0, motion_sample.aura_scale, response)
 	var anchor := body_anchor + motion_sample.offset + _directional_lean(state, motion_id, reduced_effects)
+	var body_type := String(definition.get("body_type", "middle"))
+	var body_scale := body_type_render_scale(body_type)
 	_draw_counter_strafe_accent(canvas, state, body_anchor, reduced_effects)
 	_draw_movement_accent(canvas, state, body_anchor, presentation_tick, reduced_effects)
 	_draw_aura(canvas, definition, anchor, presentation_tick, reduced_effects, motion_sample.aura_scale)
-	if atlas != null:
-		_draw_atlas_candidate(canvas, state, champion_id, anchor, motion_sample.scale)
-	elif champion_id == "oh_tipi":
-		_draw_oh_tipi(canvas, definition, anchor, direction, state_id, presentation_tick)
-	else:
-		_draw_s_wayne(canvas, definition, anchor, direction, state_id, presentation_tick)
+	if atlas == null:
+		return false
+	_draw_atlas_candidate(canvas, state, champion_id, anchor, motion_sample.scale * body_scale)
 	_draw_evasion_contour(canvas, state, body_anchor, presentation_tick, config, reduced_effects)
 	return true
 
@@ -174,6 +186,10 @@ static func cardinal_direction(x: int, y: int) -> String:
 	if absi(x) > absi(y):
 		return "east" if x >= 0 else "west"
 	return "south" if y >= 0 else "north"
+
+
+static func body_type_render_scale(body_type: String) -> float:
+	return float(BODY_TYPE_RENDER_SCALE.get(body_type.to_lower(), 1.0))
 
 
 func _draw_aura(canvas: CanvasItem, definition: Dictionary, anchor: Vector2, tick: int, reduced: bool, motion_scale: float = 1.0) -> void:
@@ -309,108 +325,12 @@ func _draw_evasion_contour(
 	canvas.draw_arc(center, radius, 1.8 + phase, 3.4 + phase, 10, Color(color, opacity), 2.0)
 
 
-func _draw_oh_tipi(canvas: CanvasItem, definition: Dictionary, anchor: Vector2, direction: String, state_id: String, tick: int) -> void:
-	var outline := _material(definition, "outline")
-	var skin_dark := _material(definition, "skin_dark")
-	var skin := _material(definition, "skin")
-	var armor := _material(definition, "armor")
-	var trim := _material(definition, "trim")
-	var eye := _material(definition, "eye")
-	var tuck := 4.0 if state_id == "jump" else 0.0
-	var hit_shift := 3.0 if state_id == "hit" else 0.0
-	var side := -1.0 if direction == "west" else 1.0
-	# Curling tail and current staff establish the silhouette before body detail.
-	var tail_side := -side if direction in ["east", "west"] else 1.0
-	canvas.draw_arc(anchor + Vector2(15.0 * tail_side, -17.0), 10.0, -1.2, 1.9, 9, outline, 6.0)
-	canvas.draw_arc(anchor + Vector2(15.0 * tail_side, -17.0), 10.0, -1.2, 1.9, 9, skin_dark, 3.0)
-	var staff_x := anchor.x + (-24.0 if direction != "west" else 24.0)
-	var cast_lift := -7.0 if state_id == "cast" else 0.0
-	canvas.draw_line(Vector2(staff_x, anchor.y - 4.0), Vector2(staff_x, anchor.y - 54.0 + cast_lift), outline, 5.0)
-	canvas.draw_line(Vector2(staff_x, anchor.y - 4.0), Vector2(staff_x, anchor.y - 54.0 + cast_lift), trim, 2.0)
-	for tine: float in [-6.0, 0.0, 6.0]:
-		canvas.draw_line(Vector2(staff_x, anchor.y - 53.0 + cast_lift), Vector2(staff_x + tine, anchor.y - 63.0 + absf(tine) * 0.35 + cast_lift), outline, 4.0)
-		canvas.draw_line(Vector2(staff_x, anchor.y - 53.0 + cast_lift), Vector2(staff_x + tine, anchor.y - 63.0 + absf(tine) * 0.35 + cast_lift), skin, 2.0)
-	# Chunky feet and armor body.
-	canvas.draw_rect(Rect2(anchor + Vector2(-15.0 + hit_shift, -8.0 - tuck), Vector2(12.0, 7.0)), outline, true)
-	canvas.draw_rect(Rect2(anchor + Vector2(3.0 + hit_shift, -8.0 - tuck), Vector2(12.0, 7.0)), outline, true)
-	canvas.draw_colored_polygon(_offset(PackedVector2Array([Vector2(-15,-29), Vector2(15,-29), Vector2(18,-10), Vector2(10,-5), Vector2(-10,-5), Vector2(-18,-10)]), anchor + Vector2(hit_shift, -tuck)), outline)
-	canvas.draw_colored_polygon(_offset(PackedVector2Array([Vector2(-12,-27), Vector2(12,-27), Vector2(14,-11), Vector2(8,-8), Vector2(-8,-8), Vector2(-14,-11)]), anchor + Vector2(hit_shift, -tuck)), armor)
-	canvas.draw_rect(Rect2(anchor + Vector2(-13.0 + hit_shift, -18.0 - tuck), Vector2(26.0, 4.0)), trim, true)
-	# Large stepped head, crown fin and cheek fins keep the face readable at 75%.
-	var head := anchor + Vector2(hit_shift, -43.0 - tuck)
-	canvas.draw_colored_polygon(_offset(PackedVector2Array([Vector2(-13,-11), Vector2(9,-13), Vector2(15,-6), Vector2(15,8), Vector2(8,14), Vector2(-10,13), Vector2(-16,6), Vector2(-16,-5)]), head), outline)
-	canvas.draw_colored_polygon(_offset(PackedVector2Array([Vector2(-11,-8), Vector2(8,-10), Vector2(12,-5), Vector2(12,7), Vector2(6,11), Vector2(-8,10), Vector2(-13,5), Vector2(-13,-4)]), head), skin)
-	for fin: Vector2 in [Vector2(-8,-15), Vector2(0,-18), Vector2(8,-15)]:
-		canvas.draw_colored_polygon(_offset(PackedVector2Array([Vector2(-3,5), Vector2(0,-5), Vector2(4,5)]), head + fin), outline)
-		canvas.draw_colored_polygon(_offset(PackedVector2Array([Vector2(-1,3), Vector2(0,-3), Vector2(2,3)]), head + fin), skin_dark)
-	canvas.draw_colored_polygon(_offset(PackedVector2Array([Vector2(-14,-1), Vector2(-21,3), Vector2(-14,7)]), head), skin_dark)
-	canvas.draw_colored_polygon(_offset(PackedVector2Array([Vector2(13,-1), Vector2(20,3), Vector2(13,7)]), head), skin_dark)
-	_draw_face(canvas, head, direction, eye, outline)
-	if state_id == "cast":
-		canvas.draw_arc(head + Vector2(side * 19.0, 10.0), 7.0 + float(tick % 3), 0.0, TAU, 10, language.element_color("water", "bright"), 2.0)
-
-
-func _draw_s_wayne(canvas: CanvasItem, definition: Dictionary, anchor: Vector2, direction: String, state_id: String, tick: int) -> void:
-	var outline := _material(definition, "outline")
-	var skin_dark := _material(definition, "skin_dark")
-	var skin := _material(definition, "skin")
-	var armor := _material(definition, "armor")
-	var trim := _material(definition, "trim")
-	var hair := _material(definition, "hair")
-	var eye := _material(definition, "eye")
-	var tuck := 4.0 if state_id == "jump" else 0.0
-	var hit_shift := -3.0 if state_id == "hit" else 0.0
-	var side := -1.0 if direction == "west" else 1.0
-	# Hobbit feet stay deliberately large and rounded in every direction.
-	for foot_x: float in [-10.0, 3.0]:
-		canvas.draw_rect(Rect2(anchor + Vector2(foot_x + hit_shift, -7.0 - tuck), Vector2(10.0, 7.0)), outline, true)
-		canvas.draw_rect(Rect2(anchor + Vector2(foot_x + 2.0 + hit_shift, -5.0 - tuck), Vector2(7.0, 4.0)), skin_dark, true)
-	# Short cloak is a single broad read, with a bright clasp as the focal detail.
-	canvas.draw_colored_polygon(_offset(PackedVector2Array([Vector2(-14,-29), Vector2(14,-29), Vector2(18,-7), Vector2(7,-4), Vector2(-9,-5), Vector2(-17,-10)]), anchor + Vector2(hit_shift, -tuck)), outline)
-	canvas.draw_colored_polygon(_offset(PackedVector2Array([Vector2(-11,-27), Vector2(11,-27), Vector2(14,-9), Vector2(6,-7), Vector2(-7,-8), Vector2(-13,-11)]), anchor + Vector2(hit_shift, -tuck)), armor)
-	canvas.draw_rect(Rect2(anchor + Vector2(-12.0 + hit_shift, -18.0 - tuck), Vector2(24.0, 3.0)), trim, true)
-	canvas.draw_rect(Rect2(anchor + Vector2(-2.0 + hit_shift, -21.0 - tuck), Vector2(5.0, 5.0)), language.element_color("light", "bright"), true)
-	# The head consumes ~44% of height; round hair breaks the square face contour.
-	var head := anchor + Vector2(hit_shift, -40.0 - tuck)
-	canvas.draw_colored_polygon(_offset(PackedVector2Array([Vector2(-14,-11), Vector2(10,-12), Vector2(15,-5), Vector2(14,9), Vector2(8,13), Vector2(-10,12), Vector2(-15,6)]), head), outline)
-	canvas.draw_colored_polygon(_offset(PackedVector2Array([Vector2(-11,-8), Vector2(8,-9), Vector2(12,-4), Vector2(11,7), Vector2(6,10), Vector2(-8,9), Vector2(-12,5)]), head), skin)
-	for tuft: Vector2 in [Vector2(-10,-9), Vector2(-4,-13), Vector2(3,-14), Vector2(9,-10)]:
-		canvas.draw_rect(Rect2(head + tuft, Vector2(7.0, 7.0)), outline, true)
-		canvas.draw_rect(Rect2(head + tuft + Vector2(1.0, 1.0), Vector2(5.0, 5.0)), hair, true)
-	_draw_face(canvas, head, direction, eye, outline)
-	# Focus orb orbits on the open hand and snaps into the cast silhouette.
-	var orb_side := side if direction in ["east", "west"] else 1.0
-	var orb := head + Vector2(22.0 * orb_side, 13.0 if state_id != "cast" else 4.0)
-	var pulse := 1.0 + float((tick / 4) % 2)
-	canvas.draw_circle(orb, 7.0 + pulse, Color(language.element_color("dark", "base"), 0.28))
-	canvas.draw_circle(orb, 5.0, outline)
-	canvas.draw_circle(orb, 3.0, language.element_color("dark", "bright"))
-	canvas.draw_rect(Rect2(orb + Vector2(-1.0, -1.0), Vector2(3.0, 3.0)), language.element_color("light", "bright"), true)
-
-
-func _draw_face(canvas: CanvasItem, head: Vector2, direction: String, eye: Color, outline: Color) -> void:
-	if direction == "north":
-		return
-	if direction in ["east", "west"]:
-		var side := 1.0 if direction == "east" else -1.0
-		canvas.draw_rect(Rect2(head + Vector2(5.0 * side - 1.0, -1.0), Vector2(3.0, 4.0)), outline, true)
-		canvas.draw_rect(Rect2(head + Vector2(6.0 * side - 1.0, -1.0), Vector2(1.0, 2.0)), eye, true)
-		return
-	for eye_x: float in [-6.0, 5.0]:
-		canvas.draw_rect(Rect2(head + Vector2(eye_x, -2.0), Vector2(3.0, 4.0)), outline, true)
-		canvas.draw_rect(Rect2(head + Vector2(eye_x + 1.0, -1.0), Vector2(1.0, 2.0)), eye, true)
-	canvas.draw_line(head + Vector2(-3.0, 6.0), head + Vector2(3.0, 6.0), outline, 1.0)
-
-
-func _material(definition: Dictionary, material_id: String) -> Color:
-	var values: Array = (definition.get("materials", {}) as Dictionary).get(material_id, [])
-	return language.ramp_color(String(values[0]), int(values[1]))
-
-
 func _validate_recipe(champion_id: String, value: Variant) -> bool:
 	if not value is Dictionary:
 		return _fail("Cartoon champion recipe must be an object: %s" % champion_id)
 	var definition: Dictionary = value
+	if String(definition.get("body_type", "")) not in EXPECTED_BODY_TYPES:
+		return _fail("Cartoon champion body type is unsupported: %s" % champion_id)
 	var height := int(definition.get("height", 0))
 	var ratio := float(definition.get("head_ratio", 0.0))
 	if height < 44 or height > 68 or ratio < 0.40 or ratio > 0.45:
@@ -422,12 +342,12 @@ func _validate_recipe(champion_id: String, value: Variant) -> bool:
 		if String(element_id) not in VisualLanguage.REQUIRED_ELEMENTS:
 			return _fail("Cartoon champion uses an unknown element: %s" % champion_id)
 	var features: Array = definition.get("silhouette_features", [])
-	if features.size() < 3 or String(definition.get("equipment", "")).is_empty():
-		return _fail("Cartoon champion lacks a distinct silhouette/equipment read: %s" % champion_id)
+	if features.size() < 3 or String(definition.get("equipment", "")) != "body_clothing_only":
+		return _fail("Cartoon champion lacks a distinct body/clothing read: %s" % champion_id)
 	if String(definition.get("casting_origin", "")) != "hands":
 		return _fail("Cartoon champion magic must originate from hands: %s" % champion_id)
 	var casting_tokens := "%s %s" % [String(definition.get("equipment", "")), " ".join(features)]
-	for forbidden_token: String in ["staff", "wand", "scepter", "rod", "focus_orb"]:
+	for forbidden_token: String in ["staff", "wand", "scepter", "rod", "focus_orb", "orb", "spell", "aura", "shadow", "projectile", "environment"]:
 		if forbidden_token in casting_tokens.to_lower():
 			return _fail("Cartoon champion uses a forbidden casting focus: %s" % champion_id)
 	var motion_profile := String(definition.get("motion_profile", ""))

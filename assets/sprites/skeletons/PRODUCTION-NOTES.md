@@ -12,7 +12,7 @@ Each size directory contains:
 Repository-level review files:
 
 - `skeleton_overlay_validation.png` — nearest-neighbor size/direction review;
-- `skeleton_animation_pngs_v1.zip` — 125 transparent sheets: five sizes × 25 animations.
+- `skeleton_animation_pngs_v1.zip` — archived transparent sheets from the five-size prototype; current runtime uses three body types × 25 animations.
 
 Regenerate and validate with:
 

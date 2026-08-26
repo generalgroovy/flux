@@ -2,7 +2,7 @@ class_name ChampionCatalog
 extends RefCounted
 
 
-const SUPPORTED_SCHEMA_VERSION: int = 1
+const SUPPORTED_SCHEMA_VERSION: int = 2
 const TREEVOR_CHAMPION_ID: String = "treevor_mason"
 const AFFINITY_POINT_BUDGET: int = 3
 const SUPPORTED_ANCESTRIES: Array[String] = [
@@ -10,9 +10,7 @@ const SUPPORTED_ANCESTRIES: Array[String] = [
 	"seakin", "wyrmborn", "stoneborn", "treefolk", "sylph", "undead", "goblin",
 	"nymph", "arachnoid", "vampire", "demon", "angel", "werewolf",
 ]
-const SUPPORTED_SIZES: Array[String] = [
-	"size_1_tiny", "size_2_small", "size_3_medium", "size_4_large", "size_5_huge",
-]
+const SUPPORTED_BODY_TYPES: Array[String] = ["small", "middle", "large"]
 const STAT_BOUNDS: Dictionary = {
 	"health_maximum": Vector2i(60_000, 160_000),
 	"health_recovery_per_second": Vector2i(0, 8_000),
@@ -75,8 +73,8 @@ func validate(abilities: AbilityCatalog) -> bool:
 			return _fail("champion display name is required: %s" % champion_id)
 		if not SUPPORTED_ANCESTRIES.has(String(champion.get("ancestry", ""))):
 			return _fail("champion ancestry is unsupported: %s" % champion_id)
-		if not SUPPORTED_SIZES.has(String(champion.get("size", ""))):
-			return _fail("champion size is unsupported: %s" % champion_id)
+		if not SUPPORTED_BODY_TYPES.has(String(champion.get("body_type", ""))):
+			return _fail("champion body type is unsupported: %s" % champion_id)
 		if String(champion.get("playstyle", "")).is_empty():
 			return _fail("champion needs a concise playstyle: %s" % champion_id)
 

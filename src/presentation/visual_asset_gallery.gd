@@ -67,7 +67,7 @@ func _draw() -> void:
 	draw_texture(background, Vector2.ZERO)
 	var animation_id: String = ANIMATION_ORDER[animation_index]
 	var direction_id: String = skeletons.directions[direction_index]
-	var source := skeletons.frame_region("size_1_tiny", animation_id, direction_id, frame_index)
+	var source := skeletons.frame_region("small", animation_id, direction_id, frame_index)
 	var destination := Rect2(Vector2(364, 332), Vector2(128, 128))
 	draw_texture_rect_region(champion_atlas, destination, source)
 

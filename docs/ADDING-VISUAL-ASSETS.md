@@ -23,9 +23,14 @@ scripts/test.sh
    communicate the new anatomy clearly.
 5. Regenerate and validate.
 
-The generator creates five sizes, masculine and feminine presentation bases, a
+The legacy generator creates five archived size paths, masculine and feminine presentation bases, a
 named complete exemplar, all 25 animations in eight directions, portraits,
 previews, registries and README rows.
+
+Current runtime authoring uses exactly three body types (`small`, `middle`,
+`large`). Map legacy `tiny→small`, `medium→middle`, and `huge→large`; do not
+add a fourth body type. Champion atlases must contain body/clothing pixels only;
+spells, shadows, auras, environment and equipment are separate layers.
 
 ## Add a champion
 

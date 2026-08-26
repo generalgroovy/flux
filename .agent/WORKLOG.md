@@ -1,5 +1,72 @@
 # FLUX2 agent worklog
 
+## 2026-08-26 - canonical three body types and body-only champion layer
+
+Playable outcome:
+
+- Reworked the current body taxonomy to exactly `small`, `middle`, and `large`.
+  Legacy `tiny`, `medium`, and `huge` values are mapped only at compatibility
+  boundaries and cannot enter new champion or skeleton data.
+- Assigned Oh Tipi to `middle` and S. Wayne to `small`; the skeleton manifest,
+  champion catalog, fallback adapter and tests now share the same contract.
+- Promoted an original body-only foundation atlas for both champions. South/front
+  poses face the camera symmetrically, east is authored profile, west mirrors
+  east, north/back is centered, and jump/cast/hit cells preserve the same pivot.
+- Removed the old procedural staff/trident and floating-orb fallback. If the
+  body atlas is unavailable, the presentation adapter fails closed rather than
+  silently reintroducing forbidden props or effects.
+- Documented the reusable layer boundary: body/clothing pixels are independent
+  from hands-cast effects, spells, projectiles, auras, shadows, environment,
+  tools and equipment.
+- Added bounded visual scale tokens (`small` 0.90×, `middle` 1.00×, `large`
+  1.10×) around the shared feet pivot; simulation radius, hitboxes and outcomes
+  remain unchanged.
+
+Files and contracts:
+
+- `content/visual/foundation_champion_visuals_v1.json` schema 2,
+  `foundation-champion-visuals-v2-body-only`;
+- `assets/sprites/champions_v3/foundation/source_sheet_body_v3.png`;
+- `assets/sprites/champions_v3/foundation/runtime_atlas_body_v3.png`;
+- `assets/sprites/champions_v3/foundation/README.md` and `provenance.json`;
+- README, visual overhaul/implementation prompts, sprite pipeline, visual
+  system, cast and Wellspring visual-production docs;
+- exact source/runtime/imported hashes are repeated in `.agent/memory.md`.
+
+Verification:
+
+- `scripts\\test.cmd`: 53 suites, 18,640 assertions, zero failures, with
+  independent Windows source boots at 60 and 120 Hz.
+- `scripts\\capture-visual.ps1` produced truthful 1280×720 four-frame captures
+  at 50%, 75% and 100% zoom under `.godot/visual-captures/body-v3-*`; Oh Tipi
+  (50%/75%) and S. Wayne (100%) were inspected.
+- `scripts\\package.ps1 -Target Windows` rebuilt the export and one-file
+  release bundle. The current installer is
+  `exports\\release\\FLUX2-Windows-Setup.exe` (SHA-256
+  `9e9434068aae19d9cf6b86a164e1e1f1e758f4190e489a768dc0fc8acbc9a738`). The
+  exported `exports\\windows\\flux2.exe` boots headlessly at 120 Hz.
+- `scripts\\test-windows-bootstrap.ps1` reached the installer launch but this
+  host's Device Guard policy blocked the unsigned installer binary, including
+  from `%TEMP%`; the failure is environmental and is retained as an explicit
+  release limitation rather than marked as a pass.
+- New migration assertions cover every legacy body path and canonical mapping.
+- The body source was visually inspected at source and runtime resolution; no
+  spell, element, particle, aura, shadow, environment or held focus pixels are
+  present in the atlas.
+
+Known limitations and next slice:
+
+- The atlas is a validated integrated candidate, not a final 24-character art
+  promotion; full visual acceptance still needs live 50/75/100% captures and
+  accessibility/reduced-effects review.
+- Legacy v2 race inventories still exist as archived compatibility assets and
+  intentionally retain old path names; their loaders now expose canonical body
+  mapping so new runtime content cannot grow a fourth type.
+- Continue the visual gate with live body/effect composition and
+  accessibility/reduced-effects acceptance before resuming frozen
+  gameplay/chemistry work. Re-run the installer lifecycle on a Windows machine
+  without Device Guard blocking unsigned local binaries.
+
 ## 2026-08-26 - quiet, code-page-safe Windows launch
 
 Playable outcome:

@@ -1,6 +1,6 @@
 {
-  "schema_version": 1,
-  "id": "flux2-skeleton-animation-v1",
+  "schema_version": 2,
+  "id": "flux2-skeleton-animation-v2-three-body-types",
   "casting_origin": "hands",
   "aliases": {
     "jump": "hop",
@@ -59,11 +59,9 @@
     "interact": {"block": [3, 4], "frames": 3, "fps": 8, "loop": false, "tags": ["utility"], "events": {"footstep_frames": [], "active_frames": [], "landing_frame": -1}},
     "taunt": {"block": [4, 4], "frames": 4, "fps": 8, "loop": false, "tags": ["cosmetic"], "events": {"footstep_frames": [], "active_frames": [], "landing_frame": -1}}
   },
-  "sizes": {
-    "size_1_tiny": {"index": 1, "body_height": 12, "body_width": 6, "atlas": "res://assets/sprites/skeletons/size_1_tiny/skeleton_atlas.png", "debug_atlas": "res://assets/sprites/skeletons/size_1_tiny/skeleton_overlay_debug_atlas.png"},
-    "size_2_small": {"index": 2, "body_height": 16, "body_width": 8, "atlas": "res://assets/sprites/skeletons/size_2_small/skeleton_atlas.png", "debug_atlas": "res://assets/sprites/skeletons/size_2_small/skeleton_overlay_debug_atlas.png"},
-    "size_3_medium": {"index": 3, "body_height": 20, "body_width": 10, "atlas": "res://assets/sprites/skeletons/size_3_medium/skeleton_atlas.png", "debug_atlas": "res://assets/sprites/skeletons/size_3_medium/skeleton_overlay_debug_atlas.png"},
-    "size_4_large": {"index": 4, "body_height": 24, "body_width": 12, "atlas": "res://assets/sprites/skeletons/size_4_large/skeleton_atlas.png", "debug_atlas": "res://assets/sprites/skeletons/size_4_large/skeleton_overlay_debug_atlas.png"},
-    "size_5_huge": {"index": 5, "body_height": 28, "body_width": 14, "atlas": "res://assets/sprites/skeletons/size_5_huge/skeleton_atlas.png", "debug_atlas": "res://assets/sprites/skeletons/size_5_huge/skeleton_overlay_debug_atlas.png"}
+  "body_types": {
+    "small": {"index": 1, "body_height": 16, "body_width": 8, "atlas": "res://assets/sprites/skeletons/size_2_small/skeleton_atlas.png", "debug_atlas": "res://assets/sprites/skeletons/size_2_small/skeleton_overlay_debug_atlas.png"},
+    "middle": {"index": 2, "body_height": 20, "body_width": 10, "atlas": "res://assets/sprites/skeletons/size_3_medium/skeleton_atlas.png", "debug_atlas": "res://assets/sprites/skeletons/size_3_medium/skeleton_overlay_debug_atlas.png"},
+    "large": {"index": 3, "body_height": 24, "body_width": 12, "atlas": "res://assets/sprites/skeletons/size_4_large/skeleton_atlas.png", "debug_atlas": "res://assets/sprites/skeletons/size_4_large/skeleton_overlay_debug_atlas.png"}
   }
 }

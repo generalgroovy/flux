@@ -17,7 +17,7 @@ scale = Vector2(1.5, 1.5)
 script = ExtResource("2_character")
 source_kind = "champion"
 source_id = "oh_tipi"
-size_id = "size_3_medium"
+body_type = "middle"
 animation_id = "idle"
 direction_index = 0
 
@@ -27,7 +27,7 @@ scale = Vector2(1.5, 1.5)
 script = ExtResource("2_character")
 source_kind = "champion"
 source_id = "nico_lai"
-size_id = "size_1_tiny"
+body_type = "small"
 animation_id = "cast"
 direction_index = 0
 
@@ -37,7 +37,7 @@ scale = Vector2(1.5, 1.5)
 script = ExtResource("2_character")
 source_kind = "champion"
 source_id = "treevor_mason"
-size_id = "size_4_large"
+body_type = "large"
 animation_id = "taunt"
 direction_index = 0
 

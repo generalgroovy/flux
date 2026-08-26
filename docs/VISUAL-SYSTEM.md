@@ -28,10 +28,11 @@ of their readable footprint and foreground structures must cut away before they
 hide legal information.
 
 Champions use compact cartoon proportions at gameplay scale: a large expressive
-head (40–45% of total body height), short sturdy limbs, chunky equipment,
-1–2-pixel outlines, 3–5 colors per material and a separate grounded shadow.
-South/east/north, jump, cast and hit silhouettes must read before detail is
-approved. The revised concept board at
+head (40–45% of total body height), short sturdy limbs, body-and-clothing-only
+pixels, 1–2-pixel outlines, 3–5 colors per material and a separate grounded
+shadow. South/front faces the camera symmetrically; north/back is centered;
+east is authored profile and west mirrors it. Jump, cast and hit silhouettes
+must read before detail is approved. The revised concept board at
 `assets/concept/visual-system-cartoon-perspective-v2.png` clarifies the intended
 charm and body language, but its steep courtyard is explicitly not the runtime
 camera target.
@@ -84,13 +85,14 @@ Oh Tipi and S. Wayne before further environment beautification.
 
 ## V2 foundation champions and minimal motion
 
-Oh Tipi and S. Wayne now draw from one promoted 672x192 runtime atlas with
-96x96 cells, a 48x84 ground pivot and reviewed south/east/west/north, jump,
-cast and hit silhouettes. The 1.7 MB generation source remains provenance-only
+Oh Tipi and S. Wayne now draw from one promoted 672x192 body-only runtime atlas
+with 96x96 cells, a 48x84 ground pivot and reviewed south/east/west/north,
+jump, cast and hit silhouettes. The 1.7 MB generation source remains provenance-only
 and is excluded from exports; the quantized runtime atlas is 46 KB. Atlas,
 decoded-pixel and source hashes are pinned by
 `content/visual/foundation_champion_visuals_v1.json` and
-`assets/sprites/champions_v3/foundation/provenance.json`.
+`assets/sprites/champions_v3/foundation/provenance.json`; the manifest also
+requires the canonical body type and explicitly excluded baked layers.
 
 Animation is deliberately reusable rather than baked into gameplay code.
 `content/visual/minimal_champion_motion_v1.json` declares bounded idle, walk,

@@ -1,8 +1,9 @@
-"""Build the reviewed 96px FLUX foundation-champion atlas from its source sheet.
+"""Build the reviewed 96px FLUX body-only champion atlas from its source sheet.
 
 This script is deterministic and intentionally narrow: it removes only
-edge-connected magenta matte, scales each isolated source cell to the reviewed
-gameplay height, adds a mirrored west run, and packs two seven-cell rows.
+edge-connected magenta matte, scales each isolated body/clothing cell to the
+reviewed gameplay height, adds a mirrored west run, and packs two seven-cell
+rows. Spell, aura, shadow and environment layers are never generated here.
 """
 
 from __future__ import annotations
@@ -28,7 +29,7 @@ def is_matte(pixel: tuple[int, int, int]) -> bool:
     red, green, blue = pixel
     # The generated matte varies slightly around antialiased edges. Flooding
     # only from the cell border lets us accept that wider family without
-    # deleting isolated purple clothing, focus or spell detail.
+    # deleting isolated clothing detail.
     return (
         red > 95
         and blue > 95

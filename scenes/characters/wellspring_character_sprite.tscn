@@ -6,7 +6,7 @@
 script = ExtResource("1_character")
 source_kind = "champion"
 source_id = "nico_lai"
-size_id = "size_1_tiny"
+body_type = "small"
 presentation = "masculine"
 animation_id = "idle"
 direction_index = 0

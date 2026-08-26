@@ -9,7 +9,7 @@ const BLOCK_SIZE := Vector2i(384, 512)
 
 @export_enum("champion", "race_base", "race_exemplar") var source_kind: String = "champion"
 @export var source_id: String = "nico_lai"
-@export_enum("size_1_tiny", "size_2_small", "size_3_medium", "size_4_large", "size_5_huge") var size_id: String = "size_3_medium"
+@export_enum("small", "middle", "large") var body_type: String = "middle"
 @export_enum("masculine", "feminine") var presentation: String = "masculine"
 @export var animation_id: String = "idle"
 @export_range(0, 7, 1) var direction_index: int = 0
@@ -75,10 +75,12 @@ func set_champion(champion_id: String) -> bool:
 	return load_source()
 
 
-func set_race_base(race_id: String, new_size_id: String, new_presentation: String) -> bool:
+func set_race_base(race_id: String, new_body_type: String, new_presentation: String) -> bool:
 	source_kind = "race_base"
 	source_id = race_id
-	size_id = new_size_id
+	body_type = canonical_body_type(new_body_type)
+	if body_type.is_empty():
+		return _fail("unsupported character body type: %s" % new_body_type)
 	presentation = new_presentation
 	return load_source()
 
@@ -261,12 +263,37 @@ func _resolve_atlas_path() -> String:
 	if source_kind == "race_exemplar":
 		return str((race.get("exemplar", {}) as Dictionary).get("atlas", ""))
 	var variants: Dictionary = race.get("base_variants", {})
-	var sizes: Dictionary = variants.get(size_id, {})
+	var legacy_size_id := legacy_size_id_for_body_type(body_type)
+	var sizes: Dictionary = variants.get(legacy_size_id, {})
 	var variant: Dictionary = sizes.get(presentation, {})
 	var path := str(variant.get("atlas", ""))
 	if path.is_empty():
-		_fail("missing race-base atlas for %s/%s/%s" % [source_id, size_id, presentation])
+		_fail("missing race-base atlas for %s/%s/%s" % [source_id, body_type, presentation])
 	return path
+
+
+static func canonical_body_type(value: String) -> String:
+	match value.to_lower():
+		"small", "tiny", "size_1_tiny", "size_2_small":
+			return "small"
+		"middle", "medium", "size_3_medium":
+			return "middle"
+		"large", "huge", "size_4_large", "size_5_huge":
+			return "large"
+		_:
+			return ""
+
+
+static func legacy_size_id_for_body_type(value: String) -> String:
+	match canonical_body_type(value):
+		"small":
+			return "size_2_small"
+		"middle":
+			return "size_3_medium"
+		"large":
+			return "size_4_large"
+		_:
+			return ""
 
 
 func _build_animation_lookup() -> void:

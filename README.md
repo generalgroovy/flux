@@ -14,7 +14,7 @@ physical places rather than a detached menu.
 > **Current playable state:** Windows is the active release target. Two distinct champions,
 > full universal movement foundation, seven playable foundation spells, the
 > Wellspring campus, an authoritative 2–8 player direct-IP Farflow loop, and a
-> verified one-file Windows installer are working. Eight elemental bursts and
+> packaged one-file Windows installer are working. Eight elemental bursts and
 > the 36-reaction chemistry acceptance slice are the active implementation goal.
 
 ## Get, play, host, join
@@ -37,8 +37,11 @@ scripts\package.cmd Windows
 Send only `exports\release\FLUX2-Windows-Setup.exe`. Re-running a newer setup
 stages and verifies the new version before atomically switching the launcher;
 an interrupted install leaves the previous version selected. The development
-build is unsigned, so Windows may show a publisher warning until a release
-certificate and signing pipeline exist.
+build is unsigned, so Windows may show a publisher warning or an enterprise
+Device Guard policy may block the installer until a release certificate and
+signing pipeline exist. The portable `exports\release\FLUX2-Windows-x86_64.zip`
+bundle is the fallback for managed test machines; its checksum is listed in
+`exports\release\SHA256SUMS.txt`.
 
 For internet play, the host currently forwards/allows **UDP 24872**. The friend
 opens **Join Farflow**, types or pastes the host's public address, and presses
@@ -208,37 +211,45 @@ Only Oh Tipi and S. Wayne are currently selectable. Every other entry is a
 design/migration target, not a claim of playable content. Ordinary champions
 use a unique two-element 2+1 profile; Treevor is the sole 1+1+1 exception.
 
-| Champion | Ancestry | Size | Weighted affinities | Availability |
+| Champion | Ancestry | Body type | Weighted affinities | Availability |
 |---|---|---|---|---|
-| Oh Tipi | Seakin | Medium | Water 2 · Charge 1 | **Playable** |
+| Oh Tipi | Seakin | Middle | Water 2 · Charge 1 | **Playable** |
 | S. Wayne | Hobbit | Small | Dark 2 · Light 1 | **Playable** |
-| The Red Baron | Undead | Medium | Fire 2 · Ice 1 | Planned |
+| The Red Baron | Undead | Middle | Fire 2 · Ice 1 | Planned |
 | Steezo | Goblin | Small | Charge 2 · Fire 1 | Planned |
 | Treevor the Mason | Treefolk | Large | Earth 1 · Wind 1 · Fire 1 | Planned exception |
 | Oll' I | Werewolf | Large | Earth 2 · Dark 1 | Planned |
 | Fluup | Orc | Large | Wind 2 · Charge 1 | Planned |
 | Wa Bidi | Goblin | Small | Wind 2 · Fire 1 | Planned |
 | Grace Reava | Sylph | Small | Wind 2 · Water 1 | Planned |
-| Waka Aren Si | Gnome | Tiny | Charge 2 · Light 1 | Planned; `nico_lai` compatibility ID |
-| Spai Si | Demon | Medium | Wind 2 · Dark 1 | Planned |
-| Leaf the Hidden | Treefolk | Medium | Earth 2 · Wind 1 | Planned |
+| Waka Aren Si | Gnome | Small | Charge 2 · Light 1 | Planned; `nico_lai` compatibility ID |
+| Spai Si | Demon | Middle | Wind 2 · Dark 1 | Planned |
+| Leaf the Hidden | Treefolk | Middle | Earth 2 · Wind 1 | Planned |
 | Ha Rekt | Wyrmborn | Large | Ice 2 · Wind 1 | Planned |
 | Dr. Apex | Stoneborn | Large | Light 2 · Earth 1 | Planned |
 | Haara | Nymph | Small | Light 2 · Water 1 | Planned |
-| Hesus Christo | Elf | Medium | Earth 2 · Water 1 | Planned |
-| Grimm Bow | Troll | Huge | Dark 2 · Water 1 | Planned |
-| Biggy Bob | Dwarf | Medium | Earth 2 · Fire 1 | Planned |
-| Jan Wicked | Human | Medium | Ice 2 · Dark 1 | Planned |
-| Ba Djoh | Minotaur | Huge | Earth 2 · Ice 1 | Planned |
+| Hesus Christo | Elf | Middle | Earth 2 · Water 1 | Planned |
+| Grimm Bow | Troll | Large | Dark 2 · Water 1 | Planned |
+| Biggy Bob | Dwarf | Middle | Earth 2 · Fire 1 | Planned |
+| Jan Wicked | Human | Middle | Ice 2 · Dark 1 | Planned |
+| Ba Djoh | Minotaur | Large | Earth 2 · Ice 1 | Planned |
 | Urzh | Stoneborn | Large | Charge 2 · Earth 1 | Planned |
-| Donnok | Dwarf | Medium | Fire 2 · Water 1 | Planned |
-| Djonah Thaan | Vampire | Medium | Dark 2 · Charge 1 | Planned |
-| Unnamed Angel | Angel | Medium | Light 2 · Wind 1 | Non-selectable placeholder |
+| Donnok | Dwarf | Middle | Fire 2 · Water 1 | Planned |
+| Djonah Thaan | Vampire | Middle | Dark 2 · Charge 1 | Planned |
+| Unnamed Angel | Angel | Middle | Light 2 · Wind 1 | Non-selectable placeholder |
 
-Magic originates from open hands. Staffs, wands, rods, scepters, and held magic
-foci are excluded. Equipment may support a silhouette only when the cast still
-visibly starts at the hands. Character bodies and clothing avoid sexualized
-presentation; anatomy, ancestry, pose, and element language carry identity.
+Only three body types exist: `small`, `middle`, and `large`. Tiny and huge are
+retired vocabulary and migrate to small and large respectively; medium migrates
+to middle. Body type bounds silhouette, footprint and tuning ranges but never
+grants hidden reach, evasion, damage or elemental advantage.
+
+Champion atlases contain body and clothing only. Front/south poses face the
+camera with centered, balanced anatomy; north is a centered back view, east is
+an authored profile, and west is its deterministic mirror. Shadows, auras,
+spells, projectiles, environment, tools and equipment are separate reusable
+layers. Magic originates from visible empty hands; staffs, wands, rods,
+scepters, held foci and floating companion foci are excluded. Character bodies
+and clothing avoid sexualized presentation.
 
 ## Ancestry body plans
 
@@ -250,7 +261,7 @@ presentation; anatomy, ancestry, pose, and element language carry identity.
 | Hobbit | Low profile and recovery | Increased launch vulnerability |
 | Elf | Precision and air control | Fragile body budget |
 | Orc | Heavy commitments and interruption resistance | Slower recovery |
-| Troll | Huge endurance | Delayed, highly readable actions |
+| Troll | Large-body endurance | Delayed, highly readable actions |
 | Minotaur | Forward momentum and structural impact | Weak turning and miss recovery |
 | Seakin | Current/water-route steering | Depends on authored currents |
 | Wyrmborn | Strong anthropomorphic aerial commitment | Reduced Stamina budget |
@@ -265,8 +276,11 @@ presentation; anatomy, ancestry, pose, and element language carry identity.
 | Angel | Feather-wing body-plan foundation | Champion identity unapproved |
 | Demon | Angular redirect silhouette | No hidden reach or free evasion |
 
-Size changes only bounded health, recovery, speed, acceleration, mass,
-footprint, knockback, air control, camera/readability, and route clearance.
+Body type changes only bounded health, recovery, speed, acceleration, mass,
+footprint, knockback, air control, camera/readability, and route clearance; the
+presentation layer uses a restrained 0.90×/1.00×/1.10× body scale around the
+shared feet pivot for small/middle/large. Hitboxes and simulation outcomes do
+not inherit this art scale implicitly.
 Wings, tails, horns, fins, roots, and extra limbs are not surprise hitboxes.
 
 ## Wellspring structure
@@ -312,9 +326,9 @@ scripts\smoke-farflow.cmd -Executable exports\windows\flux2.exe
 ## Visual system and embedded reference gallery
 
 Runtime art uses an original compact handheld-era proportion language: large
-readable heads, short bodies, stable feet, strong asymmetrical champion
-silhouettes, restrained shading, clear hand-cast poses, clean shadow/elevation
-separation, and symmetric rules for mirrored directions. The 640×360 virtual
+readable heads, short bodies, stable feet, distinctive ancestry silhouettes,
+restrained shading, clear bare-hand cast poses, clean shadow/elevation
+separation, and symmetric front/back/mirrored-direction rules. The 640×360 virtual
 pixel composition scales with nearest-neighbor filtering while gameplay camera
 zoom remains configurable from 50–100%.
 
@@ -336,11 +350,21 @@ zoom remains configurable from 50–100%.
 </details>
 
 <details>
-<summary><strong>Compact character size ladder</strong></summary>
+<summary><strong>Canonical three-body system</strong></summary>
 
-| Tiny | Small | Medium | Large | Huge |
-|---|---|---|---|---|
-| ![Tiny body reference](reference/art/character_baselines/gbc_v1/size_1_tiny.png) | ![Small body reference](reference/art/character_baselines/gbc_v1/size_2_small.png) | ![Medium body reference](reference/art/character_baselines/gbc_v1/size_3_medium.png) | ![Large body reference](reference/art/character_baselines/gbc_v1/size_4_large.png) | ![Huge body reference](reference/art/character_baselines/gbc_v1/size_5_huge.png) |
+| Small | Middle | Large |
+|---|---|---|
+| ![Small body reference](reference/art/character_baselines/gbc_v1/size_2_small.png) | ![Middle body reference](reference/art/character_baselines/gbc_v1/size_3_medium.png) | ![Large body reference](reference/art/character_baselines/gbc_v1/size_4_large.png) |
+
+The retained `size_1_tiny`, `size_2_small`, `size_3_medium`, `size_4_large`,
+and `size_5_huge` path fragments belong to the legacy visual archive; only
+`small`, `middle`, and `large` are authored runtime body types.
+
+![Body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_body_v3.png)
+
+This atlas is a reusable body/clothing layer for the two foundation champions;
+spells, auras, shadows, projectiles, environment and equipment are composed
+independently.
 
 </details>
 
@@ -420,7 +444,7 @@ this implementation pass makes no new Linux release or acceptance claim.
 |---:|---|---|
 | 0 | Retire duplicate runtime → record recovery → replace stale docs | One Godot authority; no useful design truth lost |
 | 1 | Verify setup/update/launch → host card → join card → safe close | Fresh Windows user reaches Wellspring and a trusted friend joins with one shared file plus address |
-| 2 | Lock camera/pixel tokens → compact bodies → hand casts → environment → HUD | Whole scene reads at gameplay zoom, in motion, high contrast, and reduced motion |
+| 2 | Lock camera/pixel tokens → three body types → body-only directional atlases → separate hand-cast effects → environment → HUD | Whole scene reads at gameplay zoom, in motion, high contrast, and reduced motion; no spell or world pixels are baked into champion sprites |
 | 3 | Burst data contract → deterministic fan → projectile capacity → movement pressure room | Five-shot patterns stay readable and evadeable while every universal technique chains legally |
 | 4 | Eight burst spells → reaction catalog → exposure/contact → 36 bounded states → crucible/reset/codex | Every element can fire; every unordered pair forms, acts, decays, explains itself, and resets at 60/120 Hz |
 | 5 | **Playtest pause** | User receives a packaged current build and focused test route before roster expansion |

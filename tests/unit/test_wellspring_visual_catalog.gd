@@ -14,6 +14,10 @@ func run() -> int:
 func _test_repository_catalog() -> void:
 	var catalog := WellspringVisualCatalog.new()
 	check(catalog.load_from_file(), "Wellspring visual catalog validates: %s" % catalog.last_error)
+	equal(WellspringVisualCatalog.CANONICAL_BODY_TYPES, ["small", "middle", "large"], "legacy catalog exposes exactly three canonical body types")
+	equal(WellspringVisualCatalog.canonical_body_type("size_1_tiny"), "small", "tiny legacy path migrates to small")
+	equal(WellspringVisualCatalog.canonical_body_type("size_3_medium"), "middle", "medium legacy path migrates to middle")
+	equal(WellspringVisualCatalog.canonical_body_type("size_5_huge"), "large", "huge legacy path migrates to large")
 	equal(catalog.races.size(), 21, "all required race foundations are registered")
 	equal(catalog.champions.size(), 24, "all champion visual packages are registered")
 	equal(catalog.districts.size(), 9, "all Wellspring district packages are registered")

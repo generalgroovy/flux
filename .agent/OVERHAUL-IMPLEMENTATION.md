@@ -1,7 +1,8 @@
 # FLUX 2 implementation path to first-eight playtest
 
 Current frontier: protocol 29, snapshot 11, preferences 9, Godot 4.7.1,
-`codex/continuous-overhaul`. V0–V6 visual engineering, universal movement,
+`codex/continuous-overhaul`. V0–V6 visual engineering, the exact
+`small`/`middle`/`large` body contract, universal movement,
 positive-Flux combat, two champions, Wellspring, direct-IP Farflow, and the
 one-file Windows bootstrap are green foundations—not permission to claim final
 art, balance, internet accessibility, or chemistry.
@@ -16,7 +17,7 @@ documentation expansion, or acceptance claims.
 |---:|---|---|
 | C0 authority | Remove duplicate browser runtime; preserve recovery commit and reusable principles; reconcile README, focused docs, roster names/ancestries/affinities; validate links/assets. | A newcomer finds one runtime, one command set, one state table, and no conflicting current roster truth. |
 | C1 lifecycle | Re-run clean setup/repair/update/installed boot; improve single-screen host/join address feedback; verify safe host/guest close and packaged Farflow. | Friend needs one `.exe`, one host address, and no Godot/Git/admin rights; known NAT/signing limits are visible. |
-| C2 visual runtime | Validate/split the burst reference atlas; add a data-driven burst presenter; reconcile canonical champion display metadata; review characters, elevation/shadows, environment and HUD at 50/75/100%. | Five simultaneous lanes and both champions read instantly in standard/high-contrast/reduced modes without effects changing rules. |
+| C2 visual runtime | Keep champion body/clothing pixels separate from spells, aura, shadows, equipment and world art; enforce the three-body catalog; promote symmetric front/back plus mirrored side/action frames; review characters, elevation/shadows, projectiles, environment and HUD at 50/75/100%. | Both champions and five simultaneous lanes read instantly in standard/high-contrast/reduced modes; the same body atlas remains reusable across effects and no presentation layer changes rules. |
 | C3 burst simulation | Extend ability content with one reusable burst specification; deterministically rotate a normalized aim vector by five fixed offsets; allocate stable left-to-right projectile IDs; bound capacity/events/snapshot representation. | Repeatable 60/120 fixtures produce identical fan ordering, hits, grazes, cover stops, cost, cooldown, and cleanup. |
 | C4 eight spells | Instantiate Earth/Fire/Water/Wind/Ice/Charge/Light/Dark burst entries with stable IDs, positive costs, shared geometry, element presentation, and global Loom availability. | Either champion can weave and cast every first-eight burst; all eight remain mechanically comparable and visually distinct. |
 | C5 reaction catalog | Add a fail-closed runtime catalog loader requiring exactly the 36 unordered-with-repetition pairs, symmetric lookup, unique IDs, lifecycle, counters, bounds, and worldbone policy. | Missing/duplicate/asymmetric/unbounded recipe content fails tests and boot clearly. |
@@ -38,6 +39,16 @@ The first burst family shares base range, speed class, radius, lifetime, damage
 budget, startup, and fan angles so chemistry—not disguised geometry—creates the
 initial difference. Tuning may later diverge only through explicit authored
 variants with new stable IDs and counterplay.
+
+## Champion presentation contract
+
+| Contract | Required implementation |
+|---|---|
+| Body taxonomy | Exactly `small`, `middle`, `large`; legacy tiny/medium/huge inputs migrate once and never enter new authored data. |
+| Direction grammar | South/front is camera-facing and centered; north is centered back; east is authored profile; west is a deterministic mirror with corrected asymmetric ancestry details only when required. |
+| Atlas contents | Body and clothing pixels only; no spells, elements, particles, aura, shadow, world art, tool, weapon, equipment or detached focus. |
+| Composition | Runtime composes body, receiving-surface shadow, status/aura, cast effect, projectile and environment as separately editable presentation layers; the body layer uses a bounded `small` 0.90×, `middle` 1.00×, `large` 1.10× scale around the shared feet pivot. |
+| Authority | Body type constrains validated tuning/presentation ranges; hitboxes, movement, casts and outcomes remain simulation-owned. |
 
 ## Chemistry model
 

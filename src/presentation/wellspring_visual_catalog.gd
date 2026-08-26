@@ -15,6 +15,7 @@ const REQUIRED_SIZES := [
 	"size_4_large",
 	"size_5_huge",
 ]
+const CANONICAL_BODY_TYPES: Array[String] = ["small", "middle", "large"]
 const REQUIRED_PRESENTATIONS := ["masculine", "feminine"]
 
 var data: Dictionary = {}
@@ -83,7 +84,7 @@ func validate() -> bool:
 		if str(race.get("status", "")) != "production_foundation":
 			return _fail("%s race foundation has invalid status" % race_id)
 		if race.get("supported_sizes", []) != REQUIRED_SIZES:
-			return _fail("%s race foundation does not expose all five sizes" % race_id)
+			return _fail("%s legacy race foundation does not expose all five archive sizes" % race_id)
 		if race.get("presentations", []) != REQUIRED_PRESENTATIONS:
 			return _fail("%s race foundation does not expose both presentations" % race_id)
 		var base_variants: Dictionary = race.get("base_variants", {})
@@ -166,6 +167,18 @@ func champion(champion_id: String) -> Dictionary:
 
 func district(district_id: String) -> Dictionary:
 	return districts.get(district_id, {})
+
+
+static func canonical_body_type(value: String) -> String:
+	match value.to_lower():
+		"small", "tiny", "size_1_tiny", "size_2_small":
+			return "small"
+		"middle", "medium", "size_3_medium":
+			return "middle"
+		"large", "huge", "size_4_large", "size_5_huge":
+			return "large"
+		_:
+			return ""
 
 
 func _validate_character_package(entry: Dictionary, label: String) -> bool:

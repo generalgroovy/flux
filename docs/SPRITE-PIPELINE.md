@@ -1,19 +1,23 @@
 # Skeleton animation pipeline v1
 
-This slice replaces unreadable presentation boards with a deterministic, importable
-five-size animation foundation. It is presentation-only: simulation, collision,
+This slice replaces unreadable presentation boards with a deterministic,
+importable three-body animation foundation. It is presentation-only: simulation, collision,
 movement authority, and combat outcomes remain under `src/sim/`.
+
+The only runtime body IDs are `small`, `middle`, and `large`. Historical
+`size_1_tiny`, `size_3_medium`, and `size_5_huge` folders remain compatibility
+storage and map to those IDs; no new content may author them.
 
 ## Runtime assets
 
-Each size has two 960×1280 transparent PNG atlases:
+Each body type has two 960×1280 transparent PNG atlases:
 
 - `skeleton_atlas.png` — clean mannequin frames for runtime composition;
 - `skeleton_overlay_debug_atlas.png` — the same frames with a cyan silhouette
   envelope, centerline, red shared pivot, and feet baseline.
 
 Every frame uses a **32×32 virtual-pixel cell** and the exact pivot **(16, 28)**.
-The body grows from 12 pixels for Tiny through 28 pixels for Huge without moving
+The body grows from the small envelope through the large envelope without moving
 the pivot. This is the contract future ancestry and champion layers must inherit.
 
 Direction order is:
@@ -61,14 +65,15 @@ A character assigned to a size must use the same:
 - foot baseline and event frame;
 - atlas region returned by `SkeletonAnimationLibrary`.
 
-Character layers may extend outside the mannequin's body envelope for hair,
-horns, fins, wings, equipment, or effects, but they may not change the pivot or
+The current champion foundation atlas is stricter: its pixels contain body and
+clothing only. Hair, horns, fins, wings, shadows, auras, spells, projectiles,
+equipment and effects are independent layers; they may not change the pivot or
 silently shift the feet. Oversized features need an explicit attachment anchor
 and an authored clipping/occlusion test.
 
 The debug atlas and
 `assets/sprites/skeletons/skeleton_overlay_validation.png` provide the acceptance
-reference for all five sizes.
+reference for all three body types.
 
 ## Loader and tests
 

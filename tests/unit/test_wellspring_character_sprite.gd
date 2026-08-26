@@ -119,6 +119,12 @@ func _test_sync_preserves_authority() -> void:
 
 
 func _test_pivot_destination() -> void:
+	equal(WellspringCharacterSprite.canonical_body_type("size_1_tiny"), "small", "legacy tiny body maps to small")
+	equal(WellspringCharacterSprite.canonical_body_type("medium"), "middle", "legacy medium body maps to middle")
+	equal(WellspringCharacterSprite.canonical_body_type("huge"), "large", "legacy huge body maps to large")
+	equal(WellspringCharacterSprite.legacy_size_id_for_body_type("small"), "size_2_small", "small maps to the retained small archive path")
+	equal(WellspringCharacterSprite.legacy_size_id_for_body_type("middle"), "size_3_medium", "middle maps to the retained medium archive path")
+	equal(WellspringCharacterSprite.legacy_size_id_for_body_type("large"), "size_4_large", "large maps to the retained large archive path")
 	var destination := WellspringCharacterSprite.destination_rect(Vector2(100.0, 100.0))
 	equal(destination.position, Vector2(68.0, 44.0), "body anchor maps to the exact (32,56) atlas pivot")
 	equal(destination.size, Vector2(64.0, 64.0), "body draw uses one unscaled virtual-pixel cell")

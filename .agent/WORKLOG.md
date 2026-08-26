@@ -51,11 +51,11 @@ Verification:
 - Four-frame 1280×720/75% high-contrast and reduced-effects captures also pass;
   critical HUD, route, actor, station and court-accent silhouettes remain
   visible in both modes.
-- `scripts\\package.ps1 -Target Windows` rebuilt the package from `main`
-  commit `e90bb53`; installer SHA-256 is
-  `7b5ad079b48c6bf3943ab78e1a8f3c3df6d4489e02b6000b46859d80836347e1` and
+- `scripts\\package.ps1 -Target Windows` rebuilt the package from the exact
+  `main` tip `2ba710f`; installer SHA-256 is
+  `03783a8a47cee5fc593d962084d0b85d11a478f905d8aead0ee30687e229b6d2` and
   portable ZIP SHA-256 is
-  `ea401fbda222b01b47c1693882ea1eb838dae609eb16f6b9ef2cc3dd0b9ea784`.
+  `fcf335ea6b85bac7be054c3b665cd12acc8035d101a5c4ac488711ec98c8352b`.
 - `exports\\windows\\flux2.exe --headless --quit-after 3 --fixed-fps 120 --
   --tick-rate=120` exited 0 and printed the current visual/content hashes.
 

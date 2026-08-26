@@ -19,8 +19,13 @@ Verification:
 - `scripts\\capture-visual.ps1 -Name post-unify-v9-720 -Resolution
   '1280x720' -TickRate 60 -Frames 4 -GameArguments
   @('--camera-zoom=75','--champion=oh_tipi')` passed with four truthful frames.
-- The working tree is ready for a safe commit and push to unified `main`; the
-  current package remains the previous `f466de4` artifact until rebuilt.
+- `scripts\\package.ps1 -Target Windows` rebuilt the package from `main`
+  commit `67a992b`; installer SHA-256 is
+  `40a0fc5fc3ef99183b346913bfdd71f21f67785b6a28f60c727b2a729c249fb8` and
+  portable ZIP SHA-256 is
+  `7552b3f220b0733d67bd4351cd90132633766231b0fb525b0d6a8662b6a8ca8a`.
+- `exports\\windows\\flux2.exe --headless --quit-after 3 --fixed-fps 120 --
+  --tick-rate=120` exited 0 and printed the current visual/content hashes.
 
 Next slice:
 

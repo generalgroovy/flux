@@ -153,6 +153,16 @@ existing geometry/lifetime; semantic beam, spray, hit, trigger and refusal event
 drive short feedback. It cannot change a cast's range, radius, collision, cost,
 cooldown, damage, control, material result or outcome.
 
+`content/visual/spell_animation_skeletons_v1.json` is the reusable delivery
+grammar shared by those profiles. It defines five bounded phases—startup,
+release, travel, impact and residue—for projectile, beam, spray and field
+shapes, with explicit draw-family and readability-cue tokens. The
+`SpellAnimationSkeletonLibrary` loader rejects missing, overlapping, reordered or
+unbounded phases; `FoundationSpellPresenter` refuses a profile whose
+`skeleton_id` does not match its authoritative delivery shape. This keeps
+hand-origin anticipation, lane/endpoint reads and quiet residue editable data
+while simulation continues to own the actual timeline and result.
+
 | Spell | Startup | Action/trail | Impact/residue |
 | --- | --- | --- | --- |
 | Rillshot | Gathered Water drop | Faceted drop with split rill wake | Expanding splash ring; no residue |

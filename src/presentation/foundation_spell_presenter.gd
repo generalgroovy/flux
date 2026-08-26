@@ -15,6 +15,7 @@ var language: VisualLanguage
 var data: Dictionary = {}
 var profiles_by_wire: Dictionary[int, Dictionary] = {}
 var profiles_by_id: Dictionary[String, Dictionary] = {}
+var animation_skeletons := SpellAnimationSkeletonLibrary.new()
 var content_hash := ""
 var last_error := ""
 
@@ -24,10 +25,13 @@ func configure(visual_language: VisualLanguage, catalog: AbilityCatalog, path: S
 	data.clear()
 	profiles_by_wire.clear()
 	profiles_by_id.clear()
+	animation_skeletons = SpellAnimationSkeletonLibrary.new()
 	content_hash = ""
 	last_error = ""
 	if language == null or catalog == null or language.elements.is_empty() or catalog.abilities_by_id.is_empty():
 		return _fail("Foundation spell presentation requires validated visual and ability catalogs")
+	if not animation_skeletons.load_from_file():
+		return _fail(animation_skeletons.last_error)
 	if not FileAccess.file_exists(path):
 		return _fail("Foundation spell presentation does not exist: %s" % path)
 	var source := FileAccess.get_file_as_string(path)
@@ -74,6 +78,10 @@ func validate(catalog: AbilityCatalog) -> bool:
 			or String(ability.get("element", "")) != String(profile.get("element", "")) \
 			or String(ability.get("residue", "")) != String(profile.get("residue", "")):
 			return _fail("Foundation spell visual contradicts the ability catalog: %s" % profile_id)
+		var skeleton_id := String(profile.get("skeleton_id", ""))
+		if skeleton_id.is_empty() or not animation_skeletons.skeletons.has(skeleton_id) \
+			or String(animation_skeletons.skeletons[skeleton_id].get("shape", "")) != String(profile.get("shape", "")):
+			return _fail("Foundation spell visual has no matching animation skeleton: %s" % profile_id)
 		var startup := String(profile.get("startup", ""))
 		if startup not in STARTUPS or claimed_startups.has(startup) \
 			or String(profile.get("silhouette", "")) not in SILHOUETTES \
@@ -101,6 +109,8 @@ func draw_startup(
 	if canvas == null or not profiles_by_wire.has(wire_id):
 		return false
 	var profile: Dictionary = profiles_by_wire[wire_id]
+	if not animation_skeletons.skeletons.has(String(profile.get("skeleton_id", ""))):
+		return false
 	var direction := aim.normalized() if aim.length_squared() > 0.0 else Vector2.RIGHT
 	var side := direction.orthogonal()
 	var progress := clampf(phase, 0.0, 1.0)
@@ -220,6 +230,8 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 	if canvas == null or not profiles_by_wire.has(wire_id):
 		return false
 	var profile: Dictionary = profiles_by_wire[wire_id]
+	if not animation_skeletons.skeletons.has(String(profile.get("skeleton_id", ""))):
+		return false
 	var position: Vector2 = cue.get("position", Vector2.ZERO)
 	var start: Vector2 = cue.get("start", position)
 	var endpoint: Vector2 = cue.get("end", position)

@@ -387,6 +387,13 @@ simulation-owned.
 
 </details>
 
+Spell delivery animation is also data-driven:
+`content/visual/spell_animation_skeletons_v1.json` defines bounded startup →
+release → travel → impact → residue phases for projectile, beam, spray and
+field families. Foundation spell profiles reference one matching skeleton; the
+loader fails closed on shape mismatches while all simulation timing and outcomes
+remain authoritative.
+
 Concept images guide proportion, color roles, mood, and readability. They do not
 define hitboxes, timing, abilities, map topology, or simulation rules. Promotion
 requires deterministic slicing, manifests, native/4× review, accessibility,

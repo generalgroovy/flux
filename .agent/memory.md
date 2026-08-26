@@ -3,6 +3,22 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## Spell delivery skeleton slice — 2026-08-26
+
+- `content/visual/spell_animation_skeletons_v1.json` and
+  `src/presentation/spell_animation_skeleton_library.gd` define four reusable
+  shape families (projectile, beam, spray, field) and five ordered phases
+  (startup, release, travel, impact, residue).
+- Foundation spell profiles now carry `skeleton_id`; the presenter validates
+  shape agreement and refuses missing/mismatched delivery skeletons.
+- The skeleton contract is presentation-only. Simulation still owns every
+  authoritative timer, geometry, collision, resource, damage and outcome.
+- Verification: 54 suites / 18,669 assertions, zero failures; Windows source
+  boots at 60/120 Hz. Expected legacy image-load warnings remain in archive
+  validation.
+- Rebuild the Windows package after this commit; the previous installer hash
+  describes the body/hand-origin package and is not the new release artifact.
+
 ## Data-driven body atlas rows — 2026-08-26
 
 - Body-only champion recipes now own `atlas_row` (`oh_tipi=0`, `s_wayne=1`);

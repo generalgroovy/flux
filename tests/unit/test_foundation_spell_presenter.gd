@@ -15,6 +15,7 @@ func _test_repository_profiles() -> void:
 	var presenter := FoundationSpellPresenter.new()
 	check(presenter.configure(language, catalog), "foundation spell presentation validates: %s" % presenter.last_error)
 	equal(presenter.profiles_by_id.size(), 5, "every playable foundation spell has one visual profile")
+	equal(presenter.animation_skeletons.skeletons.size(), 4, "foundation spells share four reusable delivery skeletons")
 	equal(FoundationSpellPresenter.STARTUPS.size(), 5, "foundation spells own five distinct startup silhouettes")
 	check(presenter.content_hash.length() == 64, "foundation spell presentation has a stable content hash")
 	var observed_startups: Dictionary[String, bool] = {}
@@ -23,6 +24,7 @@ func _test_repository_profiles() -> void:
 		var ability := catalog.ability(profile_id)
 		equal(String(profile.get("shape")), String(ability.get("shape")), "%s visual shape matches simulation content" % profile_id)
 		equal(String(profile.get("element")), String(ability.get("element")), "%s visual element matches simulation content" % profile_id)
+		equal(String((presenter.animation_skeletons.skeletons[String(profile.get("skeleton_id", ""))] as Dictionary).get("shape", "")), String(profile.get("shape", "")), "%s uses the matching delivery skeleton" % profile_id)
 		observed_startups[String(profile.get("startup"))] = true
 	equal(observed_startups.size(), 5, "each live spell startup remains visually distinct")
 
@@ -43,3 +45,6 @@ func _test_fail_closed_catalog_alignment() -> void:
 	presenter.data = source.data.duplicate(true)
 	((presenter.data["profiles"] as Array)[1] as Dictionary)["startup"] = String(((presenter.data["profiles"] as Array)[0] as Dictionary)["startup"])
 	check(not presenter.validate(catalog), "two spells cannot collapse onto one startup silhouette")
+	presenter.data = source.data.duplicate(true)
+	((presenter.data["profiles"] as Array)[0] as Dictionary)["skeleton_id"] = "beam"
+	check(not presenter.validate(catalog), "spell delivery cannot use a mismatched animation skeleton")

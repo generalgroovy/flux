@@ -9,10 +9,10 @@
     "maximum_effect_alpha": 0.82
   },
   "profiles": [
-    {"id": "rillshot", "wire_id": 140, "shape": "projectile", "element": "water", "startup": "gathered_drop", "silhouette": "droplet", "trail": "split_rill", "impact": "splash_ring", "residue": "none"},
-    {"id": "tideline", "wire_id": 141, "shape": "spray", "element": "water", "startup": "rising_fan", "silhouette": "wave_fan", "trail": "curling_lanes", "impact": "breaker_arc", "residue": "none"},
-    {"id": "rimewake", "wire_id": 144, "shape": "field", "element": "ice", "startup": "frost_sigil", "silhouette": "crystal_wake", "trail": "none", "impact": "freeze_star", "residue": "field"},
-    {"id": "eclipse-disc", "wire_id": 142, "shape": "projectile", "element": "dark", "startup": "orbiting_crescents", "silhouette": "eclipse_disc", "trail": "orbit_echo", "impact": "crescent_break", "residue": "none"},
-    {"id": "pocket-eclipse", "wire_id": 143, "shape": "beam", "element": "light", "startup": "paired_focus", "silhouette": "eclipse_beam", "trail": "paired_boundary", "impact": "revealed_diamond", "residue": "none"}
+    {"id": "rillshot", "wire_id": 140, "shape": "projectile", "skeleton_id": "projectile", "element": "water", "startup": "gathered_drop", "silhouette": "droplet", "trail": "split_rill", "impact": "splash_ring", "residue": "none"},
+    {"id": "tideline", "wire_id": 141, "shape": "spray", "skeleton_id": "spray", "element": "water", "startup": "rising_fan", "silhouette": "wave_fan", "trail": "curling_lanes", "impact": "breaker_arc", "residue": "none"},
+    {"id": "rimewake", "wire_id": 144, "shape": "field", "skeleton_id": "field", "element": "ice", "startup": "frost_sigil", "silhouette": "crystal_wake", "trail": "none", "impact": "freeze_star", "residue": "field"},
+    {"id": "eclipse-disc", "wire_id": 142, "shape": "projectile", "skeleton_id": "projectile", "element": "dark", "startup": "orbiting_crescents", "silhouette": "eclipse_disc", "trail": "orbit_echo", "impact": "crescent_break", "residue": "none"},
+    {"id": "pocket-eclipse", "wire_id": 143, "shape": "beam", "skeleton_id": "beam", "element": "light", "startup": "paired_focus", "silhouette": "eclipse_beam", "trail": "paired_boundary", "impact": "revealed_diamond", "residue": "none"}
   ]
 }

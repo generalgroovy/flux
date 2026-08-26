@@ -1,5 +1,30 @@
 # FLUX2 agent worklog
 
+## 2026-08-26 - reusable spell delivery animation skeletons
+
+Playable outcome:
+
+- Added `SpellAnimationSkeletonLibrary` and a versioned visual manifest covering
+  projectile, beam, spray and field delivery families.
+- Each family now declares contiguous bounded startup, release, travel, impact
+  and residue phases with a draw-family and readability cue; foundation spell
+  profiles reference the matching family by `skeleton_id`.
+- `FoundationSpellPresenter` validates the cross-layer shape contract and fails
+  closed on a missing or mismatched skeleton. No simulation timer, collision,
+  cost, cooldown, damage or outcome was changed.
+
+Verification:
+
+- `scripts\\test.cmd`: 54 suites, 18,669 assertions, zero failures, with
+  Windows source boots at 60 and 120 Hz.
+- Existing body-only captures and package evidence remain valid; a new package
+  rebuild is required after the next consolidated commit.
+
+Next slice:
+
+- Continue C2 with live body/effect composition and accessibility/reduced-effects
+  acceptance, then author the reusable Wellspring source-court environment kit.
+
 ## 2026-08-26 - data-driven body atlas row assignment
 
 Playable outcome:

@@ -24,6 +24,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/unit/test_wellspring_wayfinding.gd"),
 	preload("res://tests/unit/test_wellspring_architecture_kit.gd"),
 	preload("res://tests/unit/test_foundation_spell_presenter.gd"),
+	preload("res://tests/unit/test_spell_animation_skeleton_library.gd"),
 	preload("res://tests/unit/test_burst_projectile_presenter.gd"),
 	preload("res://tests/unit/test_sprite_sheet_extractor.gd"),
 	preload("res://tests/unit/test_hub_definition.gd"),

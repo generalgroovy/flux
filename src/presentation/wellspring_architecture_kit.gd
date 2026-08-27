@@ -22,6 +22,7 @@ var building_profiles: Dictionary[String, Dictionary] = {}
 var station_profiles: Dictionary[String, Dictionary] = {}
 var landmark_profiles: Dictionary[String, Dictionary] = {}
 var court_decorations: Array[Dictionary] = []
+var surface_alignment: Dictionary = {}
 var content_hash := ""
 var last_error := ""
 
@@ -33,6 +34,7 @@ func configure(visual_language: VisualLanguage, layout: SanctumCampusLayout, pat
 	station_profiles.clear()
 	landmark_profiles.clear()
 	court_decorations.clear()
+	surface_alignment.clear()
 	content_hash = ""
 	last_error = ""
 	if language == null or layout == null or language.ramps.is_empty() or layout.buildings_by_id.is_empty():
@@ -63,6 +65,7 @@ func validate(layout: SanctumCampusLayout) -> bool:
 	station_profiles.clear()
 	landmark_profiles.clear()
 	court_decorations.clear()
+	surface_alignment.clear()
 	if int(data.get("schema_version", -1)) != 1 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Wellspring architecture identity is unsupported")
 	if String(data.get("authority", "")) != EXPECTED_AUTHORITY:
@@ -75,6 +78,8 @@ func validate(layout: SanctumCampusLayout) -> bool:
 		or int(budgets.get("station_footprint", 0)) < 36 or int(budgets.get("station_footprint", 0)) > 56 \
 		or int(budgets.get("landmark_footprint", 0)) < 72 or int(budgets.get("landmark_footprint", 0)) > 112:
 		return _fail("Wellspring architecture budgets are unsafe")
+	if not _validate_surface_alignment():
+		return false
 	var court: Dictionary = data.get("court_profile", {})
 	if String(court.get("district_style", "")) != "nexus" \
 		or int(court.get("width", 0)) < 480 or int(court.get("width", 0)) > 720 \
@@ -167,6 +172,28 @@ func _index_court_decorations(court: Dictionary) -> bool:
 			or float(decoration.get("scale", 0.0)) < 0.75 or float(decoration.get("scale", 0.0)) > 1.25:
 			return _fail("Wellspring source-court decoration is invalid")
 		court_decorations.append(decoration)
+	return true
+
+
+func _validate_surface_alignment() -> bool:
+	var candidate: Variant = data.get("surface_alignment", {})
+	if not candidate is Dictionary:
+		return _fail("Wellspring surface alignment must be an object")
+	var profile: Dictionary = candidate
+	var outer_margin := float(profile.get("cutaway_outer_margin", 0.0))
+	var inner_margin := float(profile.get("cutaway_inner_margin", 0.0))
+	var fade_distance := float(profile.get("cutaway_fade_distance", 0.0))
+	if int(profile.get("collision_marker_length", 0)) < 8 or int(profile.get("collision_marker_length", 0)) > 20 \
+		or int(profile.get("collision_marker_inset", -1)) < 0 or int(profile.get("collision_marker_inset", -1)) > 4 \
+		or float(profile.get("collision_edge_alpha", 0.0)) < 0.25 or float(profile.get("collision_edge_alpha", 0.0)) > 0.75 \
+		or int(profile.get("door_threshold_width", 0)) < 28 or int(profile.get("door_threshold_width", 0)) > 40 \
+		or int(profile.get("door_threshold_depth", 0)) < 4 or int(profile.get("door_threshold_depth", 0)) > 8 \
+		or outer_margin < 36.0 or outer_margin > 56.0 \
+		or inner_margin < 12.0 or inner_margin > 24.0 \
+		or outer_margin <= inner_margin \
+		or not is_equal_approx(fade_distance, outer_margin - inner_margin):
+		return _fail("Wellspring surface-alignment bounds are unsafe")
+	surface_alignment = profile.duplicate(true)
 	return true
 
 
@@ -286,6 +313,7 @@ func draw_building(canvas: CanvasItem, building: Dictionary) -> bool:
 	_draw_roof(canvas, bounds, facade, profile)
 	_draw_door_and_windows(canvas, bounds, facade, profile)
 	_draw_building_motif(canvas, bounds, facade, profile)
+	_draw_collision_alignment(canvas, footprint)
 	return true
 
 
@@ -530,8 +558,21 @@ func _draw_door_and_windows(canvas: CanvasItem, bounds: Rect2i, facade: Rect2, p
 	canvas.draw_rect(door, language.ramp_color("timber", 0), true)
 	canvas.draw_rect(door, language.ramp_color("aged_brass", 3), false, 2.0)
 	canvas.draw_circle(door.position + Vector2(door.size.x - 6, door.size.y * 0.55), 2.0, accent)
-	canvas.draw_rect(Rect2(door.position.x - 4, bounds.end.y, door.size.x + 8, 6), language.ramp_color("warm_stone", 3), true)
-	canvas.draw_line(Vector2(door.position.x - 4, bounds.end.y + 6), Vector2(door.end.x + 4, bounds.end.y + 6), language.ramp_color("worldbone", 0), 1.0)
+	var threshold := door_threshold_rect(
+		Rect2(bounds),
+		float(surface_alignment.get("door_threshold_width", 34)),
+		float(surface_alignment.get("door_threshold_depth", 6)),
+	)
+	canvas.draw_rect(threshold, language.ramp_color("warm_stone", 3), true)
+	canvas.draw_line(Vector2(threshold.position.x, threshold.end.y), threshold.end, language.ramp_color("worldbone", 0), 1.0)
+	var threshold_center := threshold.get_center()
+	for side: float in [-1.0, 1.0]:
+		canvas.draw_line(
+			threshold_center + Vector2(side * 7.0, -2.0),
+			threshold_center + Vector2(side * 3.0, 2.0),
+			Color(accent, 0.46),
+			1.0,
+		)
 	for window_x: int in range(bounds.position.x + 16, bounds.end.x - 12, int(profile.get("bay_width", 36))):
 		var window := Rect2(window_x, facade.position.y + 11, 11, 13)
 		if window.intersects(door.grow(5)):
@@ -569,6 +610,70 @@ func _draw_building_motif(canvas: CanvasItem, bounds: Rect2i, facade: Rect2, pro
 			canvas.draw_arc(center, 16.0, 0.0, TAU, 16, language.ramp_color("aged_brass", 3), 3.0)
 		_:
 			canvas.draw_colored_polygon(PackedVector2Array([center + Vector2(-7, -9), center + Vector2(8, -4), center + Vector2(5, 11), center + Vector2(-8, 7)]), Color(accent, 0.52))
+
+
+func _draw_collision_alignment(canvas: CanvasItem, footprint: Rect2) -> void:
+	var marker_length := float(surface_alignment.get("collision_marker_length", 12))
+	var marker_inset := float(surface_alignment.get("collision_marker_inset", 2))
+	var marker_alpha := float(surface_alignment.get("collision_edge_alpha", 0.58))
+	var marker_color := Color(language.ramp_color("warm_stone", 4), marker_alpha)
+	for segment: PackedVector2Array in collision_corner_segments(footprint, marker_length, marker_inset):
+		canvas.draw_line(segment[0], segment[1], marker_color, 2.0)
+
+
+func cutaway_amount(footprint: Rect2, focus_world_position: Vector2) -> float:
+	return cutaway_amount_for_profile(footprint, focus_world_position, surface_alignment)
+
+
+static func cutaway_amount_for_profile(footprint: Rect2, focus_world_position: Vector2, profile: Dictionary) -> float:
+	if footprint.size.x <= 0.0 or footprint.size.y <= 0.0:
+		return 0.0
+	var outer_margin := float(profile.get("cutaway_outer_margin", 44.0))
+	var inner_margin := float(profile.get("cutaway_inner_margin", 18.0))
+	var fade_distance := float(profile.get("cutaway_fade_distance", outer_margin - inner_margin))
+	if outer_margin <= inner_margin or fade_distance <= 0.0:
+		return 0.0
+	var outer := footprint.grow(outer_margin)
+	if not outer.has_point(focus_world_position):
+		return 0.0
+	var inner := footprint.grow(inner_margin)
+	if inner.has_point(focus_world_position):
+		return 1.0
+	var nearest := Vector2(
+		clampf(focus_world_position.x, inner.position.x, inner.end.x),
+		clampf(focus_world_position.y, inner.position.y, inner.end.y),
+	)
+	return 1.0 - clampf(focus_world_position.distance_to(nearest) / fade_distance, 0.0, 1.0)
+
+
+static func door_threshold_rect(footprint: Rect2, width: float, depth: float) -> Rect2:
+	if footprint.size.x <= 0.0 or footprint.size.y <= 0.0 or width <= 0.0 or depth <= 0.0:
+		return Rect2()
+	var bounded_width := minf(width, footprint.size.x)
+	return Rect2(footprint.get_center().x - bounded_width * 0.5, footprint.end.y, bounded_width, depth)
+
+
+static func collision_corner_segments(footprint: Rect2, marker_length: float, inset: float) -> Array[PackedVector2Array]:
+	var segments: Array[PackedVector2Array] = []
+	if footprint.size.x <= 0.0 or footprint.size.y <= 0.0 or marker_length <= 0.0 or inset < 0.0:
+		return segments
+	var length_x := minf(marker_length, maxf(0.0, footprint.size.x * 0.5 - inset))
+	var length_y := minf(marker_length, maxf(0.0, footprint.size.y * 0.5 - inset))
+	var left := footprint.position.x
+	var top := footprint.position.y
+	var right := footprint.end.x
+	var bottom := footprint.end.y
+	segments.assign([
+		PackedVector2Array([Vector2(left + inset, top), Vector2(left + inset + length_x, top)]),
+		PackedVector2Array([Vector2(left, top + inset), Vector2(left, top + inset + length_y)]),
+		PackedVector2Array([Vector2(right - inset - length_x, top), Vector2(right - inset, top)]),
+		PackedVector2Array([Vector2(right, top + inset), Vector2(right, top + inset + length_y)]),
+		PackedVector2Array([Vector2(left + inset, bottom), Vector2(left + inset + length_x, bottom)]),
+		PackedVector2Array([Vector2(left, bottom - inset - length_y), Vector2(left, bottom - inset)]),
+		PackedVector2Array([Vector2(right - inset - length_x, bottom), Vector2(right - inset, bottom)]),
+		PackedVector2Array([Vector2(right, bottom - inset - length_y), Vector2(right, bottom - inset)]),
+	])
+	return segments
 
 
 static func _point(values: Variant) -> Vector2:

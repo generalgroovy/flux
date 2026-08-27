@@ -13,6 +13,8 @@ var language: VisualLanguage
 var data: Dictionary = {}
 var profiles: Dictionary = {}
 var contact_profiles: Dictionary = {}
+var receiving_shadow_profiles: Dictionary = {}
+var elevation_shadow_opacity_step := 0.0
 var content_hash := ""
 var last_error := ""
 
@@ -22,6 +24,8 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	data.clear()
 	profiles.clear()
 	contact_profiles.clear()
+	receiving_shadow_profiles.clear()
+	elevation_shadow_opacity_step = 0.0
 	content_hash = ""
 	last_error = ""
 	if language == null or language.ramps.is_empty():
@@ -65,6 +69,22 @@ func validate() -> bool:
 			or float(profile.get("opacity", 0.0)) <= 0.0 or float(profile.get("opacity", 0.0)) > 0.6 \
 			or float(profile.get("length", 0.0)) < 2.0 or float(profile.get("length", 0.0)) > 18.0:
 			return _fail("Natural map contact profile is invalid: %s" % motion_id)
+	var receiving_shadows: Dictionary = data.get("receiving_shadows", {})
+	elevation_shadow_opacity_step = float(receiving_shadows.get("elevation_opacity_step", -1.0))
+	if elevation_shadow_opacity_step < 0.0 or elevation_shadow_opacity_step > 0.08:
+		return _fail("Natural map elevation shadow step is invalid")
+	receiving_shadow_profiles = receiving_shadows.get("profiles", {})
+	for surface_id: String in ["water", "garden", "nexus", "proving"]:
+		var shadow_profile: Dictionary = receiving_shadow_profiles.get(surface_id, {})
+		var ramp_id := String(shadow_profile.get("ramp", ""))
+		var fill_step := int(shadow_profile.get("fill_step", -1))
+		var rim_step := int(shadow_profile.get("rim_step", -1))
+		if not language.ramps.has(ramp_id) \
+			or fill_step < 0 or fill_step > 4 \
+			or rim_step < 0 or rim_step > 4 \
+			or float(shadow_profile.get("opacity_scale", 0.0)) < 0.50 or float(shadow_profile.get("opacity_scale", 0.0)) > 1.0 \
+			or float(shadow_profile.get("rim_opacity", 0.0)) < 0.10 or float(shadow_profile.get("rim_opacity", 0.0)) > 0.35:
+			return _fail("Natural map receiving-shadow profile is invalid: %s" % surface_id)
 	return true
 
 
@@ -141,6 +161,41 @@ func surface_style_at(layout: SanctumCampusLayout, point: Vector2) -> String:
 		if SanctumCampusLayout._parse_bounds(district.get("bounds", [])).has_point(Vector2i(point.round())):
 			return String(district.get("style", "nexus"))
 	return "nexus"
+
+
+func receiving_surface_id_at(layout: SanctumCampusLayout, point: Vector2) -> String:
+	if layout == null:
+		return "water"
+	var ordered: Array[String] = layout.districts_by_id.keys()
+	ordered.sort()
+	for district_id: String in ordered:
+		var district: Dictionary = layout.districts_by_id[district_id]
+		if SanctumCampusLayout._parse_bounds(district.get("bounds", [])).has_point(Vector2i(point.round())):
+			return String(district.get("style", "nexus"))
+	return "water"
+
+
+func receiving_shadow_sample(layout: SanctumCampusLayout, point: Vector2) -> Dictionary:
+	if language == null or receiving_shadow_profiles.is_empty():
+		return {}
+	var surface_id := receiving_surface_id_at(layout, point)
+	var profile: Dictionary = receiving_shadow_profiles.get(surface_id, {})
+	if profile.is_empty():
+		return {}
+	var ramp_id := String(profile.get("ramp", "worldbone"))
+	var elevation := layout.elevation_at(Vector2i(point.round())) if layout != null else 0
+	return {
+		"surface_id": surface_id,
+		"elevation": elevation,
+		"fill_color": language.ramp_color(ramp_id, int(profile.get("fill_step", 0))),
+		"rim_color": language.ramp_color(ramp_id, int(profile.get("rim_step", 3))),
+		"opacity_scale": clampf(
+			float(profile.get("opacity_scale", 0.82)) + float(elevation) * elevation_shadow_opacity_step,
+			0.5,
+			1.0,
+		),
+		"rim_opacity": float(profile.get("rim_opacity", 0.2)),
+	}
 
 
 func _draw_ground_patch(canvas: CanvasItem, position: Vector2, style: String, seed: int, edge: bool) -> void:

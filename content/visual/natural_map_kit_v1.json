@@ -42,5 +42,14 @@
     "sprint": {"period": 8, "opacity": 0.42, "length": 7.0},
     "low": {"period": 6, "opacity": 0.44, "length": 14.0},
     "air": {"period": 10, "opacity": 0.28, "length": 9.0}
+  },
+  "receiving_shadows": {
+    "elevation_opacity_step": 0.035,
+    "profiles": {
+      "water": {"ramp": "deep_water", "fill_step": 0, "rim_step": 3, "opacity_scale": 0.66, "rim_opacity": 0.24},
+      "garden": {"ramp": "garden", "fill_step": 0, "rim_step": 3, "opacity_scale": 0.82, "rim_opacity": 0.20},
+      "nexus": {"ramp": "worldbone", "fill_step": 0, "rim_step": 3, "opacity_scale": 0.90, "rim_opacity": 0.18},
+      "proving": {"ramp": "timber", "fill_step": 0, "rim_step": 3, "opacity_scale": 0.86, "rim_opacity": 0.20}
+    }
   }
 }

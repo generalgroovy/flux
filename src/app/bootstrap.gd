@@ -777,13 +777,12 @@ func _draw() -> void:
 	if campus_renderer.natural_kit != null:
 		campus_renderer.natural_kit.draw_actor_contact(self, campus_layout, presentation_state, shadow_center, roundi(visual_tick), _reduced_effects_enabled())
 	var shadow_scale: Vector2 = landing.shadow_scale if landing.active else presentation.shadow_scale
-	_set_world_local_transform(
+	_draw_receiving_surface_shadow(
 		shadow_center,
 		Vector2(player_radius * shadow_scale.x, player_radius * shadow_scale.y),
+		presentation.shadow_opacity,
 		camera_origin,
 	)
-	draw_circle(Vector2.ZERO, 1.0, Color(FOREST_SHADOW_COLOR, presentation.shadow_opacity))
-	_set_world_transform(camera_origin)
 	if landing.active:
 		_draw_landing_cue(shadow_center, landing)
 	var body_position := rendered_position + Vector2(0.0, -float(presentation.body_lift_pixels))
@@ -1137,9 +1136,12 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visua
 		if campus_renderer.natural_kit != null:
 			campus_renderer.natural_kit.draw_actor_contact(self, campus_layout, remote_state, shadow_center, visual_tick, _reduced_effects_enabled())
 		var shadow_scale: Vector2 = landing.shadow_scale if landing.active else presentation.shadow_scale
-		_set_world_local_transform(shadow_center, Vector2(radius * shadow_scale.x, radius * shadow_scale.y), camera_origin)
-		draw_circle(Vector2.ZERO, 1.0, Color(FOREST_SHADOW_COLOR, presentation.shadow_opacity))
-		_set_world_transform(camera_origin)
+		_draw_receiving_surface_shadow(
+			shadow_center,
+			Vector2(radius * shadow_scale.x, radius * shadow_scale.y),
+			presentation.shadow_opacity,
+			camera_origin,
+		)
 		if landing.active:
 			_draw_landing_cue(shadow_center, landing)
 		var body_position := position + Vector2(0.0, -float(presentation.body_lift_pixels))
@@ -1180,6 +1182,26 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visua
 		draw_rect(health_bar, Color(FOREST_SHADOW_COLOR, 0.9), true)
 		var health_ratio := clampf(float(remote_state.health) / float(maxi(1, remote_state.health_maximum)), 0.0, 1.0)
 		draw_rect(Rect2(health_bar.position + Vector2.ONE, Vector2((health_bar.size.x - 2.0) * health_ratio, 2.0)), Color("d9634f"), true)
+	_set_world_transform(camera_origin)
+
+
+func _draw_receiving_surface_shadow(center: Vector2, radii: Vector2, opacity: float, camera_origin: Vector2) -> void:
+	var sample: Dictionary = {}
+	if campus_renderer != null and campus_renderer.natural_kit != null:
+		sample = campus_renderer.natural_kit.receiving_shadow_sample(campus_layout, center)
+	var fill_color := FOREST_SHADOW_COLOR
+	var opacity_scale := 1.0
+	var rim_color := Color.TRANSPARENT
+	var rim_opacity := 0.0
+	if not sample.is_empty():
+		fill_color = sample.get("fill_color", fill_color)
+		opacity_scale = float(sample.get("opacity_scale", 1.0))
+		rim_color = sample.get("rim_color", rim_color)
+		rim_opacity = float(sample.get("rim_opacity", 0.0))
+	_set_world_local_transform(center, radii, camera_origin)
+	draw_circle(Vector2.ZERO, 1.0, Color(fill_color, clampf(opacity * opacity_scale, 0.0, 1.0)))
+	if rim_opacity > 0.0:
+		draw_arc(Vector2.ZERO, 0.92, 0.0, TAU, 18, Color(rim_color, rim_opacity), 0.08)
 	_set_world_transform(camera_origin)
 
 

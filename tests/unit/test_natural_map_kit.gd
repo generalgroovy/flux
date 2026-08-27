@@ -18,6 +18,8 @@ func _test_repository_kit() -> void:
 	check(float((kit.profiles["garden"] as Dictionary).get("edge_scale", 0.0)) > 1.0, "Conservatory scenic-edge props remain readable at overview zoom")
 	for motion_id: String in ["walk", "sprint", "low", "air"]:
 		check(kit.contact_profiles.has(motion_id), "%s has a surface-contact recipe" % motion_id)
+	equal(kit.receiving_shadow_profiles.size(), 4, "water and all three ground families own receiving-shadow recipes")
+	check(kit.elevation_shadow_opacity_step > 0.0, "receiving shadows expose a bounded elevation cue")
 
 
 func _test_surface_resolution() -> void:
@@ -31,6 +33,14 @@ func _test_surface_resolution() -> void:
 	equal(kit.surface_style_at(layout, Vector2(1280, 720)), "nexus", "commons resolves masonry contact")
 	equal(kit.surface_style_at(layout, Vector2(2200, 720)), "proving", "wayfarer quarter resolves proving contact")
 	equal(kit.surface_style_at(layout, Vector2(10, 10)), "nexus", "water/outside fails to conservative quiet contact")
+	var water_shadow := kit.receiving_shadow_sample(layout, Vector2(10, 10))
+	var garden_shadow := kit.receiving_shadow_sample(layout, Vector2(300, 720))
+	var nexus_shadow := kit.receiving_shadow_sample(layout, Vector2(1280, 720))
+	equal(String(water_shadow.get("surface_id", "")), "water", "deep water receives a distinct grounded shadow")
+	equal(int(garden_shadow.get("elevation", -1)), 1, "garden receiving shadow reads authored elevation")
+	equal(int(nexus_shadow.get("elevation", -1)), 2, "Nexus receiving shadow reads authored elevation")
+	check(float(nexus_shadow.get("opacity_scale", 0.0)) > float(garden_shadow.get("opacity_scale", 0.0)), "higher masonry keeps a slightly firmer contact read")
+	check((water_shadow.get("fill_color", Color.WHITE) as Color) != (nexus_shadow.get("fill_color", Color.WHITE) as Color), "water and masonry shadows use distinct material ramps")
 	var open_path := PackedVector2Array([Vector2(0, 0), Vector2(20, 20), Vector2(40, 0)])
 	var smoothed := NaturalMapKit.smoothed_path(open_path, 2)
 	equal(smoothed[0], open_path[0], "smoothed route preserves its authored start")
@@ -49,3 +59,8 @@ func _test_fail_closed_budget() -> void:
 	(kit.data["budgets"] as Dictionary)["maximum_details_per_district"] = 1000
 	check(not kit.validate(), "unbounded map detail density fails closed")
 	check(not kit.last_error.is_empty(), "natural map budget refusal is actionable")
+	var shadow_kit := NaturalMapKit.new()
+	shadow_kit.language = language
+	shadow_kit.data = source.data.duplicate(true)
+	(((shadow_kit.data["receiving_shadows"] as Dictionary)["profiles"] as Dictionary)["water"] as Dictionary)["rim_opacity"] = 0.9
+	check(not shadow_kit.validate(), "overstated receiving-shadow rims fail closed")

@@ -366,32 +366,39 @@ func _draw_building(canvas: CanvasItem, building: Dictionary, focus_world_positi
 
 
 func _draw_building_cutaway(canvas: CanvasItem, footprint: Rect2, focus_world_position: Vector2) -> void:
-	var amount := cutaway_amount(footprint, focus_world_position)
+	var amount := architecture_kit.cutaway_amount(footprint, focus_world_position) if architecture_kit != null else cutaway_amount(footprint, focus_world_position)
 	if amount <= 0.0:
 		return
-	# A cardinal footprint mask replaces decorative rise near the observed actor.
+	# A warm cardinal floor plan replaces decorative rise near the observed actor.
 	# Collision remains authored by SanctumCampusLayout; this only exposes it.
-	canvas.draw_rect(footprint.grow(-2.0), Color(language.ramp_color("worldbone", 1), 0.82 * amount), true)
-	canvas.draw_rect(footprint.grow(-2.0), Color(STONE_LIGHT, 0.78 * amount), false, 2.0)
-	var threshold := Rect2(footprint.get_center().x - 14.0, footprint.end.y, 28.0, 5.0)
-	canvas.draw_rect(threshold, Color(PATH_LIGHT, 0.90 * amount), true)
-	canvas.draw_line(threshold.position + Vector2(0.0, 5.0), threshold.end, Color(DEEP_FOREST, 0.72 * amount), 1.0)
+	var outer := footprint.grow(-2.0)
+	var inner := footprint.grow(-7.0)
+	canvas.draw_rect(outer, Color(language.ramp_color("worldbone", 1), 0.58 * amount), true)
+	canvas.draw_rect(inner, Color(language.ramp_color("warm_stone", 1), 0.86 * amount), true)
+	canvas.draw_rect(inner, Color(language.ramp_color("warm_stone", 3), 0.72 * amount), false, 2.0)
+	for x: int in range(roundi(inner.position.x) + 16, roundi(inner.end.x), 24):
+		canvas.draw_line(Vector2(x, inner.position.y + 3.0), Vector2(x, inner.end.y - 3.0), Color(STONE_LIGHT, 0.16 * amount), 1.0)
+	for y: int in range(roundi(inner.position.y) + 16, roundi(inner.end.y), 24):
+		canvas.draw_line(Vector2(inner.position.x + 3.0, y), Vector2(inner.end.x - 3.0, y), Color(STONE_LIGHT, 0.16 * amount), 1.0)
+	var threshold := WellspringArchitectureKit.door_threshold_rect(
+		footprint,
+		float(architecture_kit.surface_alignment.get("door_threshold_width", 34)) if architecture_kit != null else 34.0,
+		float(architecture_kit.surface_alignment.get("door_threshold_depth", 6)) if architecture_kit != null else 6.0,
+	)
+	canvas.draw_rect(threshold, Color(PATH_LIGHT, 0.92 * amount), true)
+	canvas.draw_line(Vector2(threshold.position.x, threshold.end.y), threshold.end, Color(DEEP_FOREST, 0.72 * amount), 1.0)
 
 
 static func cutaway_amount(footprint: Rect2, focus_world_position: Vector2) -> float:
-	if footprint.size.x <= 0.0 or footprint.size.y <= 0.0:
-		return 0.0
-	var outer := footprint.grow(44.0)
-	if not outer.has_point(focus_world_position):
-		return 0.0
-	var inner := footprint.grow(18.0)
-	if inner.has_point(focus_world_position):
-		return 1.0
-	var nearest := Vector2(
-		clampf(focus_world_position.x, inner.position.x, inner.end.x),
-		clampf(focus_world_position.y, inner.position.y, inner.end.y),
+	return WellspringArchitectureKit.cutaway_amount_for_profile(
+		footprint,
+		focus_world_position,
+		{
+			"cutaway_outer_margin": 44.0,
+			"cutaway_inner_margin": 18.0,
+			"cutaway_fade_distance": 26.0,
+		},
 	)
-	return 1.0 - clampf(focus_world_position.distance_to(nearest) / 26.0, 0.0, 1.0)
 
 
 func _draw_vault_rail(canvas: CanvasItem, bounds: Rect2i) -> void:

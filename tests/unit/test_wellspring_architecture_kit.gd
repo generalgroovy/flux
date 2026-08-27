@@ -21,6 +21,8 @@ func _test_repository_kit() -> void:
 	equal(String((kit.data["court_profile"] as Dictionary).get("district_style")), "nexus", "source court is bound to the Nexus presentation profile")
 	equal(kit.court_decorations.size(), 6, "source court has a bounded authored decoration set")
 	equal(String(kit.court_decorations[0].get("kind", "")), "lantern", "source court starts with a readable light marker")
+	equal(int(kit.surface_alignment.get("collision_marker_length", 0)), 12, "building collision corners use one editable marker contract")
+	equal(int(kit.surface_alignment.get("door_threshold_width", 0)), 34, "building thresholds share one readable approach width")
 	equal(kit.building_profiles.size(), WellspringArchitectureKit.BUILDING_STYLES.size(), "every architecture style has one reusable profile")
 	equal(kit.station_profiles.size(), WellspringArchitectureKit.STATION_KINDS.size(), "every station kind has one furniture profile")
 	equal(kit.landmark_profiles.size(), WellspringArchitectureKit.LANDMARK_KINDS.size(), "every landmark kind has one frame profile")
@@ -54,6 +56,13 @@ func _test_renderer_binding() -> void:
 	check(renderer.configure_campus(layout), "campus renderer binds architecture and wayfinding together")
 	check(renderer.architecture_kit.content_hash.length() == 64, "renderer exposes the bound architecture identity")
 	check(renderer.wayfinding.content_hash.length() == 64, "renderer keeps the bound wayfinding identity")
+	var footprint := Rect2(100, 100, 80, 64)
+	var markers := WellspringArchitectureKit.collision_corner_segments(footprint, 12.0, 2.0)
+	equal(markers.size(), 8, "four collision corners expose two exact approach markers each")
+	equal(markers[0], PackedVector2Array([Vector2(102, 100), Vector2(114, 100)]), "north-west marker follows the exact collision edge")
+	equal(markers[7], PackedVector2Array([Vector2(180, 150), Vector2(180, 162)]), "south-east marker follows the exact collision edge")
+	equal(WellspringArchitectureKit.door_threshold_rect(footprint, 34.0, 6.0), Rect2(123, 164, 34, 6), "door threshold begins outside the collision footprint")
+	equal(renderer.architecture_kit.cutaway_amount(footprint, Vector2(140, 100)), 1.0, "configured cutaway fully exposes a near diagonal approach")
 
 
 func _test_fail_closed_contract() -> void:
@@ -74,3 +83,8 @@ func _test_fail_closed_contract() -> void:
 	decoration_kit.data = source.data.duplicate(true)
 	((decoration_kit.data["court_profile"] as Dictionary)["decorations"] as Array)[0]["offset"] = [999, 0]
 	check(not decoration_kit.validate(layout), "court decorations outside the playable floor fail closed")
+	var surface_kit := WellspringArchitectureKit.new()
+	surface_kit.language = language
+	surface_kit.data = source.data.duplicate(true)
+	(surface_kit.data["surface_alignment"] as Dictionary)["cutaway_fade_distance"] = 99
+	check(not surface_kit.validate(layout), "cutaway margins that cannot interpolate exactly fail closed")

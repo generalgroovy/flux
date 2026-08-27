@@ -3,6 +3,40 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## 2026-08-27 - diagonal foundation core
+
+Playable outcome:
+
+- Promoted authored south-east, north-east, north-west, and south-west body art
+  for grounded, empty-hand cast, and hit/recovery on Oh Tipi and S. Wayne. The
+  eight-column runtime keeps a declared nearest-cardinal fallback for
+  jump/walk/sprint/slide/roll; transparent unpromoted cells are unreachable.
+- The reproducible builder now accepts paired diagonal-core inputs while
+  preserving one champion scale, the shared `(48,84)` feet pivot, and separate
+  body/effect/world layers. Exact prompts, source hashes, runtime hashes,
+  coverage, and fallback policy are pinned beside the assets.
+
+Verification:
+
+- `scripts\\test.cmd`: 54 suites / 17,154 assertions, zero failures; independent
+  60 and 120 Hz boots loaded protocol 30 and atlas SHA-256
+  `0df9edef7535d8e49833d3276b6f31ccc0a387aac63cb0b0b23e39cf8920f5b1`.
+- Four truthful 1280×720 captures cover both champions and all three promoted
+  state families; final frames retained clear identity, facing, pivot, and
+  body/effect separation.
+- Commit `72f519a` produced a package whose direct 120 Hz boot passed. Installer
+  SHA-256 is `fd574bed781d1c418a47a77a66591cedced6b3ea96cf857d8aea9d23e5e24703`;
+  portable ZIP SHA-256 is
+  `c40adef8b25f82b3bb97f51bdccedbb43afcee59fecfad9002fb803c6ce9a8fa`.
+- Clean-install/repair automation did not run because Windows Application
+  Control blocked the new unsigned setup before process start; no install pass
+  is claimed and the signing gate remains external.
+
+Next slice:
+
+- Promote diagonal walk/sprint cells and route free travel versus aim-held
+  forward/back/strafe gait through the shared direction resolver.
+
 ## Eight-direction command-path parity — 2026-08-27
 
 - Keyboard/controller sampling now uses Godot's circular movement vector and a

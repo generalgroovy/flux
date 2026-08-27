@@ -1,6 +1,6 @@
 {
-  "schema_version": 5,
-  "asset_id": "flux-foundation-cartoon-champions-eight-direction-core-v6",
+  "schema_version": 6,
+  "asset_id": "flux-foundation-cartoon-champions-eight-direction-locomotion-v7",
   "status": "integrated_candidate_pending_human_acceptance",
   "source": "Built-in ImageGen, directed for this FLUX repository on 2026-08-26 and 2026-08-27",
   "originality": "Original Oh Tipi and S. Wayne production exploration based only on repository-owned character identity art; no third-party pixels, characters, symbols, maps, or interface assets may be copied into the result.",
@@ -11,16 +11,19 @@
     {"champion": "oh_tipi", "role": "cardinal_movement_and_evasion", "file": "source_movement_oh_tipi_v5.png", "sha256": "557e5938e1ba9a75769315c39cf7b6c3a6740a2614e7adf59aca03d4df52143c", "dimensions": [1254, 1254]},
     {"champion": "s_wayne", "role": "cardinal_movement_and_evasion", "file": "source_movement_s_wayne_v5.png", "sha256": "a96dc394eac9f20d20a45a99687616501a29cfa08b180c4ad867fde3c5bacf79", "dimensions": [1254, 1254]},
     {"champion": "oh_tipi", "role": "diagonal_core", "file": "source_diagonal_core_oh_tipi_v6.png", "sha256": "2ad73a345e5178fcb73a56c83fa64ff0cfd02f7d4dca63f26e80bd1cc0a79186", "dimensions": [1254, 1254]},
-    {"champion": "s_wayne", "role": "diagonal_core", "file": "source_diagonal_core_s_wayne_v6.png", "sha256": "72b29e95a77380d115c8518d103d445271f62d5f26352363985d4415354320ea", "dimensions": [1254, 1254]}
+    {"champion": "s_wayne", "role": "diagonal_core", "file": "source_diagonal_core_s_wayne_v6.png", "sha256": "72b29e95a77380d115c8518d103d445271f62d5f26352363985d4415354320ea", "dimensions": [1254, 1254]},
+    {"champion": "oh_tipi", "role": "diagonal_locomotion", "file": "source_diagonal_locomotion_oh_tipi_v7.png", "sha256": "49ce1b109a809a1cbeb0e87da53d1e9cc3a8ddf9f090ab87f2064d96909bb667", "dimensions": [1774, 887]},
+    {"champion": "s_wayne", "role": "diagonal_locomotion", "file": "source_diagonal_locomotion_s_wayne_v7.png", "sha256": "80d782e4466df28c1001267bc9558182d47ab4575465ab793970b973c82fe9d5", "dimensions": [1254, 1254]}
   ],
   "source_grids": {
     "cardinal_core": {"columns": ["south", "east", "north", "west"], "rows": ["grounded", "jump", "cast", "hit"]},
     "cardinal_movement_and_evasion": {"columns": ["south", "east", "north", "west"], "rows": ["walk", "sprint", "slide", "roll"]},
-    "diagonal_core": {"columns": ["south_east", "north_east", "north_west", "south_west"], "rows": ["grounded", "cast", "hit"]}
+    "diagonal_core": {"columns": ["south_east", "north_east", "north_west", "south_west"], "rows": ["grounded", "cast", "hit"]},
+    "diagonal_locomotion": {"columns": ["south_east", "north_east", "north_west", "south_west"], "rows": ["walk", "sprint"], "normalization": "source_cell_width_to_1254px_four_column_basis"}
   },
-  "runtime_file": "runtime_atlas_eight_v6.png",
-  "runtime_sha256": "0df9edef7535d8e49833d3276b6f31ccc0a387aac63cb0b0b23e39cf8920f5b1",
-  "runtime_imported_rgba_sha256": "2c8e6c5b646be5385e14981230ce70cfec4565b7c0273ee96c3410d60a98fd04",
+  "runtime_file": "runtime_atlas_eight_v7.png",
+  "runtime_sha256": "79859259d0025be962323a794ce26537fc754664dae879200072948974f9dbc3",
+  "runtime_imported_rgba_sha256": "1a50f41b34a930e263539dacd972294343d1e9e1a398c0eceb8ffa2daa98f1ce",
   "runtime_dimensions": [768, 1536],
   "runtime_cell": [96, 96],
   "runtime_pivot": [48, 84],
@@ -29,11 +32,18 @@
   "runtime_directions": ["south", "south_east", "east", "north_east", "north", "north_west", "west", "south_west"],
   "runtime_row_layout": "champion_major_state_minor",
   "diagonal_core_contract": {
-    "promoted_states": ["grounded", "cast", "hit"],
-    "fallback_states": ["jump", "walk", "sprint", "slide", "roll"],
+    "promoted_states": ["grounded", "cast", "hit", "walk", "sprint"],
+    "fallback_states": ["jump", "slide", "roll"],
     "fallback_policy": "nearest_cardinal_until_promoted"
   },
-  "build_command": "python scripts/build_cardinal_champion_atlas.py assets/sprites/champions_v3/foundation/source_cardinal_oh_tipi_v4.png assets/sprites/champions_v3/foundation/source_cardinal_s_wayne_v4.png assets/sprites/champions_v3/foundation/runtime_atlas_eight_v6.png --oh-tipi-movement assets/sprites/champions_v3/foundation/source_movement_oh_tipi_v5.png --s-wayne-movement assets/sprites/champions_v3/foundation/source_movement_s_wayne_v5.png --oh-tipi-diagonal-core assets/sprites/champions_v3/foundation/source_diagonal_core_oh_tipi_v6.png --s-wayne-diagonal-core assets/sprites/champions_v3/foundation/source_diagonal_core_s_wayne_v6.png",
+  "diagonal_locomotion_contract": {
+    "promoted_states": ["walk", "sprint"],
+    "directions": ["south_east", "north_east", "north_west", "south_west"],
+    "gaits": ["idle", "forward", "backward", "strafe_left", "strafe_right"],
+    "facing_policy": "travel_when_free_aim_when_combat_intent",
+    "authority": "presentation_only"
+  },
+  "build_command": "python scripts/build_cardinal_champion_atlas.py assets/sprites/champions_v3/foundation/source_cardinal_oh_tipi_v4.png assets/sprites/champions_v3/foundation/source_cardinal_s_wayne_v4.png assets/sprites/champions_v3/foundation/runtime_atlas_eight_v7.png --oh-tipi-movement assets/sprites/champions_v3/foundation/source_movement_oh_tipi_v5.png --s-wayne-movement assets/sprites/champions_v3/foundation/source_movement_s_wayne_v5.png --oh-tipi-diagonal-core assets/sprites/champions_v3/foundation/source_diagonal_core_oh_tipi_v6.png --s-wayne-diagonal-core assets/sprites/champions_v3/foundation/source_diagonal_core_s_wayne_v6.png --oh-tipi-diagonal-locomotion assets/sprites/champions_v3/foundation/source_diagonal_locomotion_oh_tipi_v7.png --s-wayne-diagonal-locomotion assets/sprites/champions_v3/foundation/source_diagonal_locomotion_s_wayne_v7.png",
   "atlas_role": "body_and_clothing_only",
   "excluded_layers": ["spell", "element", "projectile", "aura", "shadow", "environment", "equipment", "focus"],
   "direction_policy": "south_front; south_east_front_right; east_profile; north_east_back_right; north_centered_back; north_west_back_left; west_profile; south_west_front_left",

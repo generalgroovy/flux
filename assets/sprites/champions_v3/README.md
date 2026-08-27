@@ -11,15 +11,18 @@ The runtime contract has exactly three body types: `small`, `middle`, and
 `large`. Champion-to-row assignment lives in the visual recipe. Each source has
 eight runtime direction columns (`S/SE/E/NE/N/NW/W/SW`). Its core cardinal
 source contributes grounded/jump/cast/hit, its movement source contributes
-walk/sprint/slide/roll, and its diagonal core source promotes grounded/cast/hit;
-unpromoted diagonal states resolve explicitly to the nearest cardinal. Front
+walk/sprint/slide/roll, and its diagonal core plus locomotion sources promote
+grounded/cast/hit/walk/sprint; jump/slide/roll resolve explicitly to the nearest
+cardinal. Front
 faces are centered and symmetrical toward the camera, back views are centered,
 and both profiles are authored rather than mirrored at runtime.
 
 Canonical files:
 
-- `source_cardinal_*_v4.png`, `source_movement_*_v5.png`, and `source_diagonal_core_*_v6.png` - editable flat-matte sources;
-- `runtime_atlas_eight_v6.png` - deterministic 768×1536 RGBA runtime atlas;
+- `source_cardinal_*_v4.png`, `source_movement_*_v5.png`,
+  `source_diagonal_core_*_v6.png`, and `source_diagonal_locomotion_*_v7.png`
+  - editable flat-matte sources;
+- `runtime_atlas_eight_v7.png` - deterministic 768×1536 RGBA runtime atlas;
 - `provenance.json` - source/runtime hashes, import policy and generation prompt.
 
 See `content/visual/foundation_champion_visuals_v1.json` and

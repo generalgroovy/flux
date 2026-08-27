@@ -6,6 +6,7 @@ func run() -> int:
 	_test_semantic_states()
 	_test_semantic_aliases_fail_closed()
 	_test_diagonal_contract_fails_closed()
+	_test_relative_locomotion_gaits()
 	return finish("cartoon-champion-presenter")
 
 
@@ -18,11 +19,13 @@ func _test_repository_recipes() -> void:
 	check(presenter.atlas != null, "reviewed foundation runtime atlas loads")
 	check(presenter.motion != null and presenter.motion.content_hash.length() == 64, "editable minimal-motion recipes load with champion art")
 	check(presenter.content_hash.length() == 64, "champion presentation content has a stable hash")
-	equal(presenter.atlas_hash, "0df9edef7535d8e49833d3276b6f31ccc0a387aac63cb0b0b23e39cf8920f5b1", "reviewed diagonal-core runtime atlas hash is pinned")
+	equal(presenter.atlas_hash, "79859259d0025be962323a794ce26537fc754664dae879200072948974f9dbc3", "reviewed diagonal-locomotion runtime atlas hash is pinned")
 	equal(presenter.cardinal_animation_contract.get("directions", []), ["south", "east", "north", "west"], "foundation animation contract covers four cardinal directions")
 	equal(presenter.cardinal_animation_contract.get("states", []), ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"], "foundation animation contract covers core and movement actions")
 	equal(presenter.diagonal_core_contract.get("directions", []), ["south_east", "north_east", "north_west", "south_west"], "foundation diagonal core covers four intercardinals")
 	equal(presenter.diagonal_core_contract.get("states", []), ["grounded", "cast", "hit"], "foundation diagonal core is explicitly state-scoped")
+	equal(presenter.diagonal_locomotion_contract.get("states", []), ["walk", "sprint"], "foundation diagonal locomotion is explicitly state-scoped")
+	equal(presenter.diagonal_locomotion_contract.get("gaits", []), ["idle", "forward", "backward", "strafe_left", "strafe_right"], "relative gait catalog is exact")
 	equal(presenter.semantic_state_aliases.size(), CartoonChampionPresenter.EXPECTED_SEMANTIC_ACTIONS.size(), "every authoritative semantic action has an explicit atlas alias")
 	for champion_id: String in ["oh_tipi", "s_wayne"]:
 		check(presenter.can_present(champion_id), "%s has a promoted cartoon recipe" % champion_id)
@@ -53,6 +56,8 @@ func _test_repository_recipes() -> void:
 	state.facing_y = 0
 	equal(presenter.source_region("oh_tipi", state), Rect2(576, 0, 96, 96), "Oh Tipi west grounded selects dedicated west art")
 	state.pending_cast_wire_id = 1
+	state.pending_cast_aim_x = -1000
+	state.pending_cast_aim_y = 0
 	equal(presenter.source_region("s_wayne", state), Rect2(576, 960, 96, 96), "S. Wayne west cast selects dedicated cardinal action art")
 	var cardinal_cases := [
 		{"facing": Vector2i(0, 1000), "state": "south", "column": 0},
@@ -67,6 +72,8 @@ func _test_repository_recipes() -> void:
 		var expected_x := float(case["column"]) * 96.0
 		equal(presenter.source_region("oh_tipi", directional_state), Rect2(expected_x, 0, 96, 96), "grounded %s animation selects dedicated cardinal art" % case["state"])
 		directional_state.pending_cast_wire_id = 1
+		directional_state.pending_cast_aim_x = directional_state.facing_x
+		directional_state.pending_cast_aim_y = directional_state.facing_y
 		equal(presenter.source_region("oh_tipi", directional_state), Rect2(expected_x, 192, 96, 96), "cast animation selects dedicated %s art" % case["state"])
 		directional_state.pending_cast_wire_id = 0
 		directional_state.movement_mode = PlayerState.MovementMode.HOP
@@ -98,10 +105,18 @@ func _test_repository_recipes() -> void:
 		var expected_x := float(case["column"]) * 96.0
 		equal(presenter.source_region("oh_tipi", diagonal_state), Rect2(expected_x, 0, 96, 96), "grounded %s selects promoted diagonal art" % case["state"])
 		diagonal_state.pending_cast_wire_id = 1
+		diagonal_state.pending_cast_aim_x = diagonal_state.facing_x
+		diagonal_state.pending_cast_aim_y = diagonal_state.facing_y
 		equal(presenter.source_region("oh_tipi", diagonal_state), Rect2(expected_x, 192, 96, 96), "cast %s selects promoted diagonal art" % case["state"])
 		diagonal_state.pending_cast_wire_id = 0
 		diagonal_state.movement_mode = PlayerState.MovementMode.LAUNCHED
 		equal(presenter.source_region("oh_tipi", diagonal_state), Rect2(expected_x, 288, 96, 96), "hit %s selects promoted diagonal art" % case["state"])
+		diagonal_state.movement_mode = PlayerState.MovementMode.WALK
+		diagonal_state.velocity_x = int((case["facing"] as Vector2i).x)
+		diagonal_state.velocity_y = int((case["facing"] as Vector2i).y)
+		equal(presenter.source_region("oh_tipi", diagonal_state), Rect2(expected_x, 384, 96, 96), "walk %s selects promoted diagonal art" % case["state"])
+		diagonal_state.movement_mode = PlayerState.MovementMode.SPRINT
+		equal(presenter.source_region("oh_tipi", diagonal_state), Rect2(expected_x, 480, 96, 96), "sprint %s selects promoted diagonal art" % case["state"])
 	var diagonal_fallback := PlayerState.new()
 	diagonal_fallback.facing_x = 707
 	diagonal_fallback.facing_y = -707
@@ -194,7 +209,8 @@ func _test_semantic_states() -> void:
 	equal(CartoonChampionPresenter.cardinal_direction(0, 1000), "south", "positive vertical facing reads south")
 	equal(CartoonChampionPresenter.direction_for_state("grounded", 707, -707), "north_east", "promoted grounded state resolves north-east")
 	equal(CartoonChampionPresenter.direction_for_state("cast", -707, 707), "south_west", "promoted cast resolves south-west")
-	equal(CartoonChampionPresenter.direction_for_state("walk", 707, -707), "north", "unpromoted walk keeps its explicit nearest-cardinal fallback")
+	equal(CartoonChampionPresenter.direction_for_state("walk", 707, -707), "north_east", "promoted walk resolves north-east")
+	equal(CartoonChampionPresenter.direction_for_state("jump", 707, -707), "north", "unpromoted jump keeps its explicit nearest-cardinal fallback")
 	state.movement_mode = PlayerState.MovementMode.WALK
 	state.movement_speed_ratio = 1000
 	state.velocity_x = MovementTuning.BASE_SPEED / 10
@@ -236,3 +252,42 @@ func _test_diagonal_contract_fails_closed() -> void:
 	check(not presenter._validate_diagonal_core_contract(contract), "missing diagonal core state fails closed")
 	check(not presenter.last_error.is_empty(), "diagonal contract failure is actionable")
 	equal(presenter.diagonal_core_contract, {}, "failed diagonal validation exposes no stale contract")
+	check(presenter.configure(language), "valid diagonal contracts reload before locomotion mutation")
+	var locomotion_contract := presenter.diagonal_locomotion_contract.duplicate(true)
+	locomotion_contract["gaits"] = ["forward", "backward"]
+	check(not presenter._validate_diagonal_locomotion_contract(locomotion_contract), "incomplete gait catalog fails closed")
+	equal(presenter.diagonal_locomotion_contract, {}, "failed locomotion validation exposes no stale contract")
+
+
+func _test_relative_locomotion_gaits() -> void:
+	var state := PlayerState.new()
+	state.movement_mode = PlayerState.MovementMode.WALK
+	state.velocity_x = 707
+	state.velocity_y = 707
+	state.facing_x = 707
+	state.facing_y = 707
+	equal(CartoonChampionPresenter.presentation_facing_vector(state, "walk"), Vector2i(707, 707), "free locomotion faces physical travel")
+	equal(CartoonChampionPresenter.locomotion_gait(state), "forward", "free locomotion uses forward gait")
+	state.primary_held = true
+	state.aim_x = -707
+	state.aim_y = -707
+	equal(CartoonChampionPresenter.presentation_facing_vector(state, "walk"), Vector2i(-707, -707), "combat intent faces independent aim")
+	equal(CartoonChampionPresenter.locomotion_gait(state), "backward", "opposed aim and travel select backward gait")
+	state.aim_x = -707
+	state.aim_y = 707
+	equal(CartoonChampionPresenter.locomotion_gait(state), "strafe_left", "quarter-turn combat travel selects left strafe")
+	state.aim_x = 707
+	state.aim_y = -707
+	equal(CartoonChampionPresenter.locomotion_gait(state), "strafe_right", "opposite quarter-turn selects right strafe")
+	var backward_sample := MinimalChampionMotion.Sample.new()
+	backward_sample.offset = Vector2(2.0, -2.0)
+	backward_sample.scale = Vector2(1.04, 0.96)
+	backward_sample.aura_scale = 1.08
+	CartoonChampionPresenter._apply_relative_gait_motion(backward_sample, "backward", false)
+	equal(backward_sample.offset, Vector2(-2.0, -1.44), "backward cadence reverses lateral phase and restrains bounce")
+	check(backward_sample.scale.distance_to(Vector2.ONE) < Vector2(1.04, 0.96).distance_to(Vector2.ONE), "backward cadence restrains squash/stretch")
+	var left_sample := MinimalChampionMotion.Sample.new()
+	var right_sample := MinimalChampionMotion.Sample.new()
+	CartoonChampionPresenter._apply_relative_gait_motion(left_sample, "strafe_left", false)
+	CartoonChampionPresenter._apply_relative_gait_motion(right_sample, "strafe_right", false)
+	equal(left_sample.offset.x, -right_sample.offset.x, "strafe cadence mirrors its lateral weight shift")

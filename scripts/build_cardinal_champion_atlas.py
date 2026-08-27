@@ -2,10 +2,13 @@
 
 Core and movement sources are four-column by four-row cardinal matte sheets.
 Optional diagonal-core sources are four-column by three-row matte sheets for
-grounded, empty-hand cast, and hit/recovery. Generated canvases need not divide
-evenly, so cell edges are derived proportionally instead of dropping border
-pixels. One scale is calculated per champion from its south idle pose and
-bounded against every included pose; action changes never resize the body.
+grounded, empty-hand cast, and hit/recovery; optional diagonal-locomotion
+sources are four-column by two-row sheets for walk and sprint. Generated
+canvases need not divide evenly, so cell edges are derived proportionally
+instead of dropping border pixels. Source cells are normalized to a shared
+four-column width before one scale is calculated per champion from its south
+idle pose and bounded against every included pose; action changes never resize
+the body.
 
 Spell, aura, shadow, environment, equipment, and gameplay state are excluded.
 """
@@ -13,6 +16,7 @@ Spell, aura, shadow, environment, equipment, and gameplay state are excluded.
 from __future__ import annotations
 
 import argparse
+from math import isclose
 from pathlib import Path
 
 from PIL import Image
@@ -21,8 +25,10 @@ from build_foundation_champion_sprites import remove_edge_matte
 
 
 SOURCE_COLUMNS = 4
+CANONICAL_SOURCE_WIDTH = 1254
 CARDINAL_SOURCE_ROWS = 4
 DIAGONAL_SOURCE_ROWS = 3
+DIAGONAL_LOCOMOTION_SOURCE_ROWS = 2
 OUTPUT_CELL = 96
 OUTPUT_PIVOT_Y = 84
 CARDINAL_DIRECTIONS = ("south", "east", "north", "west")
@@ -34,6 +40,7 @@ EIGHT_DIRECTIONS = (
 BASE_STATES = ("grounded", "jump", "cast", "hit")
 MOVEMENT_STATES = ("walk", "sprint", "slide", "roll")
 DIAGONAL_CORE_STATES = ("grounded", "cast", "hit")
+DIAGONAL_LOCOMOTION_STATES = ("walk", "sprint")
 CHAMPIONS = ("oh_tipi", "s_wayne")
 TARGET_IDLE_HEIGHTS = (68, 58)
 MAX_SPRITE_EXTENT = 92
@@ -79,9 +86,29 @@ def load_sprite_rows(
     source = Image.open(source_path).convert("RGB")
     if source.width < 4 or source.height < 4:
         raise ValueError(f"source sheet is too small: {source_path} {source.size}")
-    return [
+    rows = [
         [isolated_sprite(source, row, column, source_rows) for column in range(SOURCE_COLUMNS)]
         for row in range(source_rows)
+    ]
+    # Generated sheets may use a different canvas size while preserving their
+    # equal four-column grid. Normalize by source-cell width before the one
+    # champion-wide atlas scale is selected; action changes then cannot inherit
+    # accidental canvas-size changes.
+    source_scale = float(CANONICAL_SOURCE_WIDTH) / float(source.width)
+    if isclose(source_scale, 1.0, rel_tol=0.0, abs_tol=0.000001):
+        return rows
+    return [
+        [
+            sprite.resize(
+                (
+                    max(1, round(sprite.width * source_scale)),
+                    max(1, round(sprite.height * source_scale)),
+                ),
+                Image.Resampling.LANCZOS,
+            )
+            for sprite in row
+        ]
+        for row in rows
     ]
 
 
@@ -90,9 +117,13 @@ def build(
     output_path: Path,
     movement_source_paths: tuple[Path, Path] | None = None,
     diagonal_core_source_paths: tuple[Path, Path] | None = None,
+    diagonal_locomotion_source_paths: tuple[Path, Path] | None = None,
 ) -> None:
+    if diagonal_locomotion_source_paths is not None and diagonal_core_source_paths is None:
+        raise ValueError("diagonal locomotion requires diagonal core sources")
     states = BASE_STATES + (MOVEMENT_STATES if movement_source_paths else ())
-    directions = EIGHT_DIRECTIONS if diagonal_core_source_paths else CARDINAL_DIRECTIONS
+    has_diagonals = diagonal_core_source_paths is not None or diagonal_locomotion_source_paths is not None
+    directions = EIGHT_DIRECTIONS if has_diagonals else CARDINAL_DIRECTIONS
     atlas = Image.new(
         "RGBA",
         (len(directions) * OUTPUT_CELL, len(CHAMPIONS) * len(states) * OUTPUT_CELL),
@@ -108,12 +139,20 @@ def build(
                 DIAGONAL_SOURCE_ROWS,
             )
             diagonal_by_state = dict(zip(DIAGONAL_CORE_STATES, diagonal_rows))
+        if diagonal_locomotion_source_paths:
+            if not movement_source_paths:
+                raise ValueError("diagonal locomotion requires cardinal movement sources")
+            diagonal_rows = load_sprite_rows(
+                diagonal_locomotion_source_paths[champion_index],
+                DIAGONAL_LOCOMOTION_SOURCE_ROWS,
+            )
+            diagonal_by_state.update(dict(zip(DIAGONAL_LOCOMOTION_STATES, diagonal_rows)))
         scale_rows = sprites + list(diagonal_by_state.values())
         scale = champion_scale(scale_rows, TARGET_IDLE_HEIGHTS[champion_index])
         for state_index, row in enumerate(sprites):
             atlas_row = champion_index * len(states) + state_index
             for cardinal_index, sprite in enumerate(row):
-                direction_index = cardinal_index * 2 if diagonal_core_source_paths else cardinal_index
+                direction_index = cardinal_index * 2 if has_diagonals else cardinal_index
                 fitted = fit_sprite(sprite, scale)
                 x = direction_index * OUTPUT_CELL + (OUTPUT_CELL - fitted.width) // 2
                 y = atlas_row * OUTPUT_CELL + OUTPUT_PIVOT_Y - fitted.height
@@ -151,6 +190,8 @@ def main() -> None:
     parser.add_argument("--s-wayne-movement", type=Path)
     parser.add_argument("--oh-tipi-diagonal-core", type=Path)
     parser.add_argument("--s-wayne-diagonal-core", type=Path)
+    parser.add_argument("--oh-tipi-diagonal-locomotion", type=Path)
+    parser.add_argument("--s-wayne-diagonal-locomotion", type=Path)
     arguments = parser.parse_args()
     movement_sources: tuple[Path, Path] | None = None
     if (arguments.oh_tipi_movement is None) != (arguments.s_wayne_movement is None):
@@ -165,11 +206,22 @@ def main() -> None:
             arguments.oh_tipi_diagonal_core,
             arguments.s_wayne_diagonal_core,
         )
+    diagonal_locomotion_sources: tuple[Path, Path] | None = None
+    if (arguments.oh_tipi_diagonal_locomotion is None) != (arguments.s_wayne_diagonal_locomotion is None):
+        parser.error("both diagonal locomotion source sheets are required together")
+    if arguments.oh_tipi_diagonal_locomotion is not None:
+        diagonal_locomotion_sources = (
+            arguments.oh_tipi_diagonal_locomotion,
+            arguments.s_wayne_diagonal_locomotion,
+        )
+    if diagonal_locomotion_sources is not None and diagonal_sources is None:
+        parser.error("diagonal locomotion requires paired diagonal core sources")
     build(
         (arguments.oh_tipi_source, arguments.s_wayne_source),
         arguments.output,
         movement_sources,
         diagonal_sources,
+        diagonal_locomotion_sources,
     )
 
 

@@ -371,16 +371,18 @@ The retained `size_1_tiny`, `size_2_small`, `size_3_medium`, `size_4_large`,
 and `size_5_huge` path fragments belong to the legacy visual archive; only
 `small`, `middle`, and `large` are authored runtime body types.
 
-![Eight-direction body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_eight_v6.png)
+![Eight-direction body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_eight_v7.png)
 
 This atlas is a reusable body/clothing layer for the two foundation champions;
 spells, auras, shadows, projectiles, environment and equipment are composed
 independently. Each champion's `atlas_row` is authored in
 `content/visual/foundation_champion_visuals_v1.json`. The versioned 768×1536
 atlas packs eight direction columns under each champion. Grounded, empty-hand
-cast, and hit/recovery have authored diagonal cells; jump, walk, sprint, slide,
+cast, hit/recovery, walk, and sprint have authored diagonal cells; jump, slide,
 and roll retain explicit nearest-cardinal fallback until their own reviewed
-diagonal art is promoted. Neither profile is synthesized at runtime. The
+diagonal art is promoted. During free locomotion the body faces travel; while
+combat intent is active it faces aim and exposes forward, backward, and strafe
+gait cues. Neither profile is synthesized at runtime. The
 validator rejects missing states, directions, hashes, pivots or
 layout drift before the scene can boot, and the deterministic builder plus exact
 generation prompts live beside the source sheets.

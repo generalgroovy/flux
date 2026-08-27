@@ -24,6 +24,12 @@ each playable slice.
   at 1280×720/75% under `.godot/visual-captures/direction-d0-*`; inspection
   confirms diagonal travel/accent alignment and the intentionally visible
   nearest-cardinal body fallback rather than pretending diagonal body art exists.
+- Runtime/content checkpoint `18b2236` packages successfully; clean install,
+  forced repair, installed boot and direct packaged 120 Hz smoke passed.
+  Installer SHA-256 is
+  `6c96321b1dc0c67d6d4692ea9b7c776f31b69c17f1ae52f6dc3293b647048c07`;
+  portable ZIP SHA-256 is
+  `017a405498b217ad4eee108fdd02da1621b7afd79cf6047905c36e4b6e0309ee`.
 - Next slice: prove keyboard/controller normalization, client prediction,
   replay and Farflow command parity for all eight sectors without changing the
   simulation or starting diagonal art.

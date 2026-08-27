@@ -31,6 +31,12 @@ Verification:
   `.godot/visual-captures/direction-d0-*`. Representative final frames were
   inspected: travel and motion accents follow the diagonal while body art
   honestly retains the documented nearest-cardinal fallback.
+- Runtime/content commit `18b2236` produced the Windows portable package and
+  one-file installer. Clean install, forced repair, installed boot and direct
+  packaged 120 Hz smoke passed. Installer SHA-256 is
+  `6c96321b1dc0c67d6d4692ea9b7c776f31b69c17f1ae52f6dc3293b647048c07`;
+  portable ZIP SHA-256 is
+  `017a405498b217ad4eee108fdd02da1621b7afd79cf6047905c36e4b6e0309ee`.
 
 Next slice:
 

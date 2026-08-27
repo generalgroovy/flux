@@ -11,6 +11,9 @@ func run() -> int:
 func _test_replay_at_rate(tick_rate: int) -> void:
 	var commands: Array[SimCommand] = []
 	for tick: int in range(tick_rate * 2):
+		@warning_ignore("integer_division")
+		var direction_index := mini(EightDirectionResolver.DIRECTION_ORDER.size() - 1, tick * EightDirectionResolver.DIRECTION_ORDER.size() / (tick_rate * 2))
+		var fixed := EightDirectionResolver.FIXED_VECTORS[direction_index]
 		var held: int = SimCommand.HELD_SPRINT if tick < tick_rate else 0
 		if tick >= tick_rate / 2 and tick < tick_rate / 2 + tick_rate / 4:
 			held |= SimCommand.HELD_PRIMARY
@@ -19,7 +22,13 @@ func _test_replay_at_rate(tick_rate: int) -> void:
 			pressed |= SimCommand.PRESSED_JUMP
 		if tick == tick_rate / 3 + 2:
 			pressed |= SimCommand.PRESSED_TECHNIQUE
-		commands.append(SimCommand.new(tick, 1, 1000, 0, held, pressed, 0, -1000))
+		commands.append(SimCommand.new(tick, 1, fixed.x, fixed.y, held, pressed, fixed.x, fixed.y))
+	for direction_index: int in range(EightDirectionResolver.DIRECTION_ORDER.size()):
+		var fixed := EightDirectionResolver.FIXED_VECTORS[direction_index]
+		check(
+			commands.any(func(command: SimCommand) -> bool: return Vector2i(command.move_x, command.move_y) == fixed),
+			"%d Hz replay command log contains %s" % [tick_rate, EightDirectionResolver.DIRECTION_ORDER[direction_index]],
+		)
 	var first: ReplayData = ReplayData.record(commands, tick_rate, 8675309)
 	var second: ReplayData = ReplayData.record(commands, tick_rate, 8675309)
 	equal(first.expected_hashes, second.expected_hashes, "%d Hz repeated recording has identical hashes" % tick_rate)

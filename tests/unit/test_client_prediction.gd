@@ -4,6 +4,7 @@ extends FluxTestSuite
 func run() -> int:
 	for tick_rate: int in [60, 120]:
 		_test_deterministic_convergence(tick_rate)
+		_test_eight_direction_parity(tick_rate)
 	_test_soft_and_hard_correction()
 	_test_history_and_validation_bounds()
 	return finish("client-prediction")
@@ -37,6 +38,30 @@ func _test_deterministic_convergence(tick_rate: int) -> void:
 	equal(Vector2i(prediction.predicted_state.position_x, prediction.predicted_state.position_y), Vector2i(authority.position_x, authority.position_y), "%d Hz equal input converges exactly" % tick_rate)
 	_near(prediction.last_correction_pixels, 0.0, 0.001, "%d Hz equal prediction needs no correction" % tick_rate)
 	check(not prediction.reconcile(confirmed, authority.last_event), "%d Hz repeated authority tick fails closed" % tick_rate)
+
+
+func _test_eight_direction_parity(tick_rate: int) -> void:
+	var config := SimConfig.new(tick_rate)
+	var collision := CollisionWorld.new(2_000_000, 1_500_000)
+	for direction_index: int in range(EightDirectionResolver.DIRECTION_ORDER.size()):
+		var direction_id := EightDirectionResolver.DIRECTION_ORDER[direction_index]
+		var fixed := EightDirectionResolver.FIXED_VECTORS[direction_index]
+		var authority := _state()
+		var prediction := ClientPrediction.new()
+		check(prediction.configure(config, collision, 2), "%d Hz %s prediction configures" % [tick_rate, direction_id])
+		check(prediction.reconcile(ClientPrediction.capture_packet(authority, 20, -1)), "%d Hz %s authority initializes prediction" % [tick_rate, direction_id])
+		var command := SimCommand.new(0, 2, fixed.x, fixed.y, 0, 0, fixed.x, fixed.y)
+		check(prediction.queue_input(1, command), "%d Hz %s input enters prediction" % [tick_rate, direction_id])
+		var queued: SimCommand = prediction.pending_inputs[0]["command"]
+		equal(Vector2i(queued.move_x, queued.move_y), fixed, "%d Hz %s prediction preserves movement components" % [tick_rate, direction_id])
+		equal(Vector2i(queued.aim_x, queued.aim_y), fixed, "%d Hz %s prediction preserves aim heading" % [tick_rate, direction_id])
+		MovementSystem.step(authority, command, config, collision)
+		check(prediction.reconcile(ClientPrediction.capture_packet(authority, 21, 1), authority.last_event), "%d Hz %s authority reconciles" % [tick_rate, direction_id])
+		equal(
+			Vector2i(prediction.predicted_state.position_x, prediction.predicted_state.position_y),
+			Vector2i(authority.position_x, authority.position_y),
+			"%d Hz %s prediction converges without directional drift" % [tick_rate, direction_id],
+		)
 
 
 func _test_soft_and_hard_correction() -> void:

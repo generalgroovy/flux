@@ -91,6 +91,25 @@ func _test_enet_loopback_handshake_and_input() -> void:
 		equal(int(inputs[0].get("peer_id", 0)), client.local_peer_id, "host stamps trusted sender identity")
 		equal(int(inputs[0].get("entity_id", 0)), client.local_entity_id, "host stamps the trusted simulation entity")
 	check(host.take_inputs().is_empty(), "host input drain is single-consumer")
+	for direction_index: int in range(EightDirectionResolver.DIRECTION_ORDER.size()):
+		var fixed := EightDirectionResolver.FIXED_VECTORS[direction_index]
+		var direction_command := SimCommand.new(0, 1, fixed.x, fixed.y, 0, 0, fixed.x, fixed.y)
+		check(client.send_input(18 + direction_index, direction_command), "%s input enters Farflow" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
+	check(
+		_poll_until(host, client, func() -> bool: return host.incoming_inputs.size() == EightDirectionResolver.DIRECTION_ORDER.size()),
+		"host receives the complete eight-direction command matrix",
+	)
+	var direction_inputs := host.take_inputs()
+	equal(direction_inputs.size(), EightDirectionResolver.DIRECTION_ORDER.size(), "Farflow drains exactly eight directional inputs")
+	var direction_by_sequence := {}
+	for packet: Dictionary in direction_inputs:
+		direction_by_sequence[int(packet.get("sequence", -1))] = packet
+	for direction_index: int in range(EightDirectionResolver.DIRECTION_ORDER.size()):
+		var sequence := 18 + direction_index
+		var fixed := EightDirectionResolver.FIXED_VECTORS[direction_index]
+		var packet: Dictionary = direction_by_sequence.get(sequence, {})
+		equal(Vector2i(int(packet.get("move_x", 0)), int(packet.get("move_y", 0))), fixed, "%s movement survives Farflow exactly" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
+		equal(Vector2i(int(packet.get("aim_x", 0)), int(packet.get("aim_y", 0))), fixed, "%s aim survives Farflow exactly" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
 	check(client.send_input(17, command), "client can retransmit but cannot authorize a repeated sequence")
 	for _index: int in range(20):
 		host.poll()

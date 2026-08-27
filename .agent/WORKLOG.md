@@ -1,5 +1,37 @@
 # FLUX2 agent worklog
 
+## 2026-08-27 - eight-direction command-path parity
+
+Playable outcome:
+
+- Replaced independently sampled movement axes with one circular keyboard/
+  controller vector and bounded fixed-point quantization. Digital diagonals now
+  enter the ordinary command path as 707/707; partial controller gate magnitude
+  remains available through world- and aim-relative control schemes.
+- Replaced per-axis ground acceleration with a deterministic radial approach.
+  The parity test exposed that diagonals previously reached equal top speed
+  sooner; every heading now accelerates over the same vector distance. Partial
+  controller gate produces proportional ground speed without changing authored
+  maxima, Stamina economy, collision or action transitions.
+- Advanced the compatibility boundary from protocol 29 to 30 because movement
+  results changed. Snapshot schema 11, preference schema 9, stable command
+  fields and wire ranges remain unchanged.
+
+Verification:
+
+- `scripts\\test.cmd`: 54 suites / 17,126 assertions, zero failures; independent
+  60 and 120 Hz source boots report protocol 30. The matrix covers eight input
+  quantizations/transforms, heading/facing travel parity, partial analog speed,
+  client prediction/reconciliation, deterministic replay and real ENet loopback.
+- Every eight-sector prediction fixture converges exactly after authority; all
+  movement and aim components survive Farflow transport; repeated recordings
+  reproduce every tick hash at both rates.
+
+Next slice:
+
+- Promote diagonal grounded, empty-hand cast and hit/recovery body cells for Oh
+  Tipi and S. Wayne while retaining the shared pivot and separate effects.
+
 ## 2026-08-27 - shared eight-direction presentation resolver
 
 Playable outcome:

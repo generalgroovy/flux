@@ -37,6 +37,7 @@ func run() -> int:
 	equal(InputRouter.selected_spell_slot_index(3, true, false), 7, "Ctrl+4 selects position 8")
 	equal(InputRouter.selected_spell_slot_index(3, false, true), 11, "Alt+4 selects position 12")
 	equal(InputRouter.selected_spell_slot_index(1, true, true), 9, "Alt deterministically wins a dual-modifier chord")
+	_test_eight_direction_command_vectors()
 	check(_has_joy_button(&"emote", JOY_BUTTON_DPAD_UP), "social speech retains a controller d-pad shortcut")
 	check(not _keycodes(&"primary").has(KEY_SPACE), "primary has no Space keyboard alias")
 	check(_has_mouse_button(&"primary", MOUSE_BUTTON_LEFT), "primary retains left mouse")
@@ -45,6 +46,25 @@ func run() -> int:
 	check(InputMap.action_get_events(InputRouter.SPECTATE_NEXT_ACTION).size() >= 2, "spectator focus supports Tab and controller D-pad right")
 	_test_capture_pointer_parser()
 	return finish("input-router")
+
+
+func _test_eight_direction_command_vectors() -> void:
+	for direction_index: int in range(EightDirectionResolver.DIRECTION_ORDER.size()):
+		var direction_id := EightDirectionResolver.DIRECTION_ORDER[direction_index]
+		var fixed := EightDirectionResolver.FIXED_VECTORS[direction_index]
+		var sampled := InputRouter.quantize_movement_vector(Vector2(fixed) / 1000.0)
+		equal(sampled, fixed, "digital/controller vector preserves normalized %s command" % direction_id)
+		equal(
+			InputRouter.transform_movement(fixed.x, fixed.y, 1000, 0, PlayerPreferences.MOVEMENT_WORLD_RELATIVE),
+			fixed,
+			"world-relative transform preserves %s" % direction_id,
+		)
+	var analog := InputRouter.quantize_movement_vector(Vector2(0.42, -0.31))
+	equal(analog, Vector2i(420, -310), "sub-unit controller magnitude survives command quantization")
+	var overdriven := InputRouter.quantize_movement_vector(Vector2(2.0, 0.0))
+	equal(overdriven, Vector2i(1000, 0), "movement vector is bounded to the command envelope")
+	var aim_relative := InputRouter.transform_movement(420, -310, 1000, 0, PlayerPreferences.MOVEMENT_AIM_RELATIVE)
+	equal(aim_relative, Vector2i(310, 420), "aim-relative rotation preserves analog components around east-facing aim")
 
 
 func _keycodes(action: StringName) -> Array[int]:

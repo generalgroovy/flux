@@ -569,6 +569,8 @@ static func _apply_ground_velocity(state: PlayerState, command: SimCommand, dire
 	var sprinting: bool = moving and command.has_held(SimCommand.HELD_SPRINT) and state.stamina > 0
 	@warning_ignore("integer_division")
 	var speed: int = MovementTuning.BASE_SPEED * state.movement_speed_ratio / 1000
+	@warning_ignore("integer_division")
+	speed = speed * _input_magnitude(command.move_x, command.move_y) / 1000
 	if sprinting:
 		@warning_ignore("integer_division")
 		speed = speed * MovementTuning.SPRINT_MULTIPLIER / 1000
@@ -590,8 +592,13 @@ static func _apply_ground_velocity(state: PlayerState, command: SimCommand, dire
 			state.landing_intensity = 0
 			state.last_event = "landing_cut"
 	var step_amount: int = config.per_tick(rate)
-	state.velocity_x = _approach(state.velocity_x, desired_x, step_amount)
-	state.velocity_y = _approach(state.velocity_y, desired_y, step_amount)
+	var approached := _approach_vector(
+		Vector2i(state.velocity_x, state.velocity_y),
+		Vector2i(desired_x, desired_y),
+		step_amount,
+	)
+	state.velocity_x = approached.x
+	state.velocity_y = approached.y
 	state.sprinting = sprinting
 	if sprinting:
 		_apply_stamina_rate(state, -MovementTuning.SPRINT_DRAIN_PER_SECOND, config)
@@ -722,6 +729,13 @@ static func _normalized_fixed(x: int, y: int, fallback: Vector2i) -> Vector2i:
 	return Vector2i(clampi(normalized_x, -1000, 1000), clampi(normalized_y, -1000, 1000))
 
 
+static func _input_magnitude(x: int, y: int) -> int:
+	var magnitude := mini(1000, _integer_sqrt(x * x + y * y))
+	# The exact fixed-point diagonal is 707/707 (length 999 after integer
+	# truncation); treat the final two units as a full digital/controller gate.
+	return 1000 if magnitude >= 998 else magnitude
+
+
 static func _integer_sqrt(value: int) -> int:
 	if value <= 0:
 		return 0
@@ -761,6 +775,19 @@ static func _set_directional_velocity(state: PlayerState, direction: Vector2i, s
 
 static func _approach(current: int, target: int, amount: int) -> int:
 	return mini(current + amount, target) if current < target else maxi(current - amount, target)
+
+
+static func _approach_vector(current: Vector2i, target: Vector2i, amount: int) -> Vector2i:
+	var delta := target - current
+	var distance := _integer_sqrt(delta.x * delta.x + delta.y * delta.y)
+	if distance <= maxi(0, amount):
+		return target
+	var direction := _normalized_fixed(delta.x, delta.y, Vector2i.ZERO)
+	@warning_ignore("integer_division")
+	var step_x: int = direction.x * amount / 1000
+	@warning_ignore("integer_division")
+	var step_y: int = direction.y * amount / 1000
+	return current + Vector2i(step_x, step_y)
 
 
 static func _speed_squared(x: int, y: int) -> int:

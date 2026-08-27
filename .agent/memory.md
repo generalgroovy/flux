@@ -3,6 +3,27 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## Eight-direction command-path parity — 2026-08-27
+
+- Keyboard/controller sampling now uses Godot's circular movement vector and a
+  bounded fixed-point quantizer: full diagonals enter commands as 707/707 while
+  sub-unit controller gate magnitude remains intact. World- and aim-relative
+  transforms preserve those components.
+- A new radial velocity approach replaces independent per-axis acceleration.
+  The prior implementation had equal top speed but measurably faster diagonal
+  startup; all eight headings now travel within 0.5 px over a one-second
+  60/120 Hz fixture. Half controller gate reaches exactly half authored ground
+  speed without changing top speed, Stamina, cooldown, collision or action rules.
+- Client prediction, replay recording/verification and real ENet loopback now
+  exercise all eight direction vectors and preserve move/aim components exactly.
+  Reconciliation converges without directional drift at both supported rates.
+- Deterministic movement semantics advance the compatibility boundary to
+  protocol 30; snapshot schema remains 11 and preferences remain 9. Full
+  Windows source gate: 54 suites / 17,126 assertions, zero failures; independent
+  60/120 Hz boots passed.
+- Next visual slice: add diagonal grounded, empty-hand cast and hit/recovery
+  cells for Oh Tipi and S. Wayne on the existing body-only atlas pivot.
+
 ## Shared eight-direction resolver — 2026-08-27
 
 - `EightDirectionResolver` defines the single presentation order

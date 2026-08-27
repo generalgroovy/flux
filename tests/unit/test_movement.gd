@@ -3,6 +3,8 @@ extends FluxTestSuite
 
 func run() -> int:
 	for tick_rate: int in [60, 120]:
+		_test_eight_direction_ground_parity(tick_rate)
+		_test_analog_ground_magnitude(tick_rate)
 		_test_sprint_and_hop(tick_rate)
 		_test_double_jump(tick_rate)
 		_test_slide_and_slide_jump(tick_rate)
@@ -22,6 +24,51 @@ func run() -> int:
 
 func _step(world: SimWorld, move_x: int = 0, move_y: int = 0, held: int = 0, pressed: int = 0) -> void:
 	check(world.step([SimCommand.new(world.tick, 1, move_x, move_y, held, pressed)]), "world step succeeds")
+
+
+func _test_eight_direction_ground_parity(tick_rate: int) -> void:
+	var config := SimConfig.new(tick_rate)
+	var collision := CollisionWorld.new(4_000_000, 4_000_000)
+	var distances: Array[float] = []
+	for direction_index: int in range(EightDirectionResolver.DIRECTION_ORDER.size()):
+		var direction_id := EightDirectionResolver.DIRECTION_ORDER[direction_index]
+		var fixed := EightDirectionResolver.FIXED_VECTORS[direction_index]
+		var state := PlayerState.new(1)
+		state.position_x = 2_000_000
+		state.position_y = 2_000_000
+		for tick: int in range(tick_rate):
+			MovementSystem.step(state, SimCommand.new(tick, 1, fixed.x, fixed.y), config, collision)
+		equal(Vector2i(state.facing_x, state.facing_y), fixed, "%d Hz %s movement owns the exact authored facing" % [tick_rate, direction_id])
+		var displacement := Vector2(
+			float(state.position_x - 2_000_000),
+			float(state.position_y - 2_000_000),
+		)
+		distances.append(displacement.length())
+		check(displacement.length() > 0.0, "%d Hz %s movement advances" % [tick_rate, direction_id])
+	var baseline := distances[EightDirectionResolver.EAST]
+	for direction_index: int in range(distances.size()):
+		check(
+			absf(distances[direction_index] - baseline) <= 500.0,
+			"%d Hz %s travel has no diagonal speed advantage" % [tick_rate, EightDirectionResolver.DIRECTION_ORDER[direction_index]],
+		)
+
+
+func _test_analog_ground_magnitude(tick_rate: int) -> void:
+	var config := SimConfig.new(tick_rate)
+	var collision := CollisionWorld.new(4_000_000, 4_000_000)
+	var full := PlayerState.new(1)
+	var half := PlayerState.new(1)
+	full.position_x = 1_000_000
+	full.position_y = 1_000_000
+	half.position_x = 1_000_000
+	half.position_y = 2_000_000
+	for tick: int in range(tick_rate * 2):
+		MovementSystem.step(full, SimCommand.new(tick, 1, 1000, 0), config, collision)
+		MovementSystem.step(half, SimCommand.new(tick, 1, 500, 0), config, collision)
+	equal(full.velocity_x, MovementTuning.BASE_SPEED, "%d Hz full controller gate reaches authored speed" % tick_rate)
+	equal(half.velocity_x, MovementTuning.BASE_SPEED / 2, "%d Hz half controller gate reaches half authored speed" % tick_rate)
+	equal(full.velocity_y, 0, "%d Hz full analog fixture has no perpendicular drift" % tick_rate)
+	equal(half.velocity_y, 0, "%d Hz half analog fixture has no perpendicular drift" % tick_rate)
 
 
 func _test_sprint_and_hop(tick_rate: int) -> void:

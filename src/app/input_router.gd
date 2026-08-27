@@ -108,8 +108,12 @@ static func _add_event_once(action: StringName, event: InputEvent) -> void:
 
 
 func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> SimCommand:
-	var raw_move_x := roundi((Input.get_action_strength(&"move_right") - Input.get_action_strength(&"move_left")) * 1000.0)
-	var raw_move_y := roundi((Input.get_action_strength(&"move_down") - Input.get_action_strength(&"move_up")) * 1000.0)
+	var movement_input := Input.get_vector(
+		&"move_left", &"move_right", &"move_up", &"move_down", AIM_DEADZONE,
+	)
+	var quantized_movement := quantize_movement_vector(movement_input)
+	var raw_move_x := quantized_movement.x
+	var raw_move_y := quantized_movement.y
 	var held: int = 0
 	if Input.is_action_pressed(&"sprint"):
 		held |= SimCommand.HELD_SPRINT
@@ -181,6 +185,11 @@ static func selected_spell_slot_index(button_index: int, ctrl_layer: bool, alt_l
 	# Alt takes deterministic precedence if both modifier actions are held.
 	var layer_index: int = 2 if alt_layer else (1 if ctrl_layer else 0)
 	return layer_index * PlayerState.SPELL_BUTTON_COUNT + safe_button_index
+
+
+static func quantize_movement_vector(value: Vector2) -> Vector2i:
+	var bounded := value.limit_length(1.0)
+	return Vector2i(roundi(bounded.x * 1000.0), roundi(bounded.y * 1000.0))
 
 
 func configure_movement_reference(requested_reference: String) -> bool:

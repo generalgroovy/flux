@@ -3,6 +3,43 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## 2026-08-27 - diagonal locomotion and relative gait
+
+Playable outcome:
+
+- Promoted authored south-east, north-east, north-west, and south-west walk and
+  sprint body art for both foundation champions. A source-cell-width
+  normalization pass keeps generated 2:1 sheets at the same gameplay scale as
+  cardinal sources; the v6 atlas rebuild remains byte-identical.
+- During free movement the presenter faces physical travel. While a held attack
+  or cast signals combat intent it faces the independent aim and classifies
+  forward, backward, left-strafe, or right-strafe. These cues only alter body
+  art cadence/accents; simulation vectors, hitboxes, costs, and authority stay
+  unchanged. Diagonal locomotion cannot be promoted without diagonal core art.
+
+Verification:
+
+- `scripts\\test.cmd`: 54 suites / 17,154 assertions, zero failures; source
+  60/120 Hz boots report protocol 30 and atlas SHA-256
+  `79859259d0025be962323a794ce26537fc754664dae879200072948974f9dbc3`.
+- Four truthful 1280×720 captures passed for Oh Tipi walk south-east/sprint
+  north-east and S. Wayne walk south-west/sprint north-west; inspected final
+  frames retain aligned pivot, readable silhouette, and Wellspring route clarity.
+- Commit `e7b81f1` packaged successfully. Direct packaged 120 Hz boot passed;
+  export log contains only the active v7 atlas import. Installer SHA-256 is
+  `84fc72283086b019a6a018e97b71e8ff87dd165573c2f440876a3d9027ebf1e9`;
+  portable ZIP SHA-256 is
+  `65140f49002640d8c657fd1c02e2f19dfda02e3ccae44a12e046d568e7c7d0a8`.
+- Clean-install/repair automation remains externally blocked by this machine's
+  Windows Application Control policy for unsigned setup binaries; no installer
+  pass is claimed.
+
+Next slice:
+
+- Promote diagonal jump, slide, and roll/advanced-action sources with the same
+  pivot and fallback discipline, then align spell hand origins and projectile
+  presentation to the eight-direction contract.
+
 ## 2026-08-27 - diagonal foundation core
 
 Playable outcome:

@@ -29,10 +29,12 @@ func _test_repository_atlas() -> void:
 
 
 func _test_direction_and_animation_contract() -> void:
+	var presenter := _configured(false)
 	var velocities := [Vector2.UP, Vector2(1, -1), Vector2.RIGHT, Vector2(1, 1), Vector2.DOWN, Vector2(-1, 1), Vector2.LEFT, Vector2(-1, -1)]
 	for index: int in range(velocities.size()):
 		equal(BurstProjectilePresenter.direction_index(velocities[index]), index, "nearest-eight orientation keeps canonical row %d" % index)
-	equal(BurstProjectilePresenter.direction_index(Vector2.ZERO), 2, "stationary fallback faces east")
+	equal(BurstProjectilePresenter.direction_index(Vector2.ZERO), 4, "stationary fallback follows the shared south contract")
+	check(presenter.direction_contract_hash.length() == 64, "burst presentation exposes the shared direction content hash")
 	for projectile_id: int in range(6):
 		var column := BurstProjectilePresenter.travel_column(0, projectile_id, false)
 		check(column >= 2 and column <= 7, "normal travel frame stays inside authored phase")
@@ -57,6 +59,7 @@ func _test_fail_closed_mutations() -> void:
 		var presenter := BurstProjectilePresenter.new()
 		presenter.language = source.language
 		presenter.catalog = source.catalog
+		presenter.direction_contract = source.direction_contract
 		presenter.data = source.data.duplicate(true)
 		mutation.call(presenter.data)
 		check(not presenter.validate(false), "invalid burst atlas mutation fails closed")

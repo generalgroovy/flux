@@ -159,7 +159,10 @@ Use `spell-loom` as the station ID to inspect the 3×4 session editor.
 `--capture-cast-slot=1..12` instead sends one semantic layered spell edge, and
 `--capture-chain-slot=1..12` sends a second edge during the first spell's
 startup for deterministic transition/refusal review; it requires an initial
-capture cast and remains an offline diagnostic.
+capture cast and remains an offline diagnostic. The first cast edge waits for
+one ordinary command so `--capture-pointer=` establishes continuous aim before
+the simulation snapshots cast direction; the harness also records the exact
+normalized capture aim in its log.
 `--camera-zoom=50|75|100` selects a bounded visual-test scale. Combine these
 with `--champion=`, `--capture-spawn=` and `--capture-pointer=` only for
 repeatable movie-frame review of an already implemented spell.

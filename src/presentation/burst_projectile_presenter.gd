@@ -20,9 +20,11 @@ const ROW_COUNT := 8
 var language: VisualLanguage
 var catalog: AbilityCatalog
 var data: Dictionary = {}
+var direction_contract := SpellDeliveryDirectionContract.new()
 var textures_by_element: Dictionary[String, Texture2D] = {}
 var entries_by_element: Dictionary[String, Dictionary] = {}
 var content_hash := ""
+var direction_contract_hash := ""
 var last_error := ""
 
 
@@ -30,12 +32,17 @@ func configure(visual_language: VisualLanguage, ability_catalog: AbilityCatalog,
 	language = visual_language
 	catalog = ability_catalog
 	data = {}
+	direction_contract = SpellDeliveryDirectionContract.new()
 	textures_by_element = {}
 	entries_by_element = {}
 	content_hash = ""
+	direction_contract_hash = ""
 	last_error = ""
 	if language == null or catalog == null or language.elements.is_empty() or catalog.elements_by_id.is_empty():
 		return _fail("Burst presentation requires validated visual and ability catalogs")
+	if not direction_contract.load_from_file():
+		return _fail(direction_contract.last_error)
+	direction_contract_hash = direction_contract.content_hash
 	if not FileAccess.file_exists(path):
 		return _fail("Burst presentation manifest does not exist: %s" % path)
 	var source := FileAccess.get_file_as_string(path)
@@ -60,6 +67,8 @@ func validate(load_textures: bool = true) -> bool:
 		return _fail("Burst presentation approval state is invalid")
 	if String(data.get("authority", "")) != "presentation-only":
 		return _fail("Burst sprites cannot own simulation authority")
+	if not direction_contract.is_valid():
+		return _fail("Burst presentation requires the validated shared direction contract")
 	if not _validate_provenance() or not _validate_contract():
 		return false
 	return _validate_assets(load_textures)
@@ -100,9 +109,7 @@ func entry(element: String) -> Dictionary:
 
 
 static func direction_index(velocity: Vector2) -> int:
-	var direction_id := EightDirectionResolver.direction_id_from_vector(
-		roundi(velocity.x), roundi(velocity.y), "east",
-	)
+	var direction_id := SpellDeliveryDirectionContract.direction_id(velocity)
 	return DIRECTION_ORDER.find(direction_id)
 
 

@@ -50,6 +50,14 @@ func _test_repository_recipes() -> void:
 	equal(CartoonChampionPresenter.body_type_render_scale("legacy"), 1.0, "unknown body types fail safe to the neutral render scale")
 	equal(CartoonChampionPresenter.hand_cast_origin(Vector2.ZERO, Vector2.RIGHT), Vector2(4.0, -34.0), "casts originate from the authored forward hand lane")
 	equal(CartoonChampionPresenter.hand_cast_origin(Vector2(10.0, 6.0), Vector2.ZERO), Vector2(17.0, -17.0), "zero aim uses a deterministic down-facing hand lane")
+	for direction_id: String in EightDirectionResolver.DIRECTION_ORDER:
+		var fixed := EightDirectionResolver.fixed_vector(direction_id)
+		var continuous := Vector2(fixed.x, fixed.y).normalized()
+		var expected_origin := Vector2(0.0, -27.0) + continuous * 4.0 + continuous.orthogonal() * 7.0
+		check(CartoonChampionPresenter.hand_cast_origin(Vector2.ZERO, continuous).is_equal_approx(expected_origin), "hand origin preserves continuous aim through %s" % direction_id)
+	var arbitrary_aim := Vector2(0.83, -0.41).normalized()
+	var arbitrary_origin := Vector2(0.0, -27.0) + arbitrary_aim * 4.0 + arbitrary_aim.orthogonal() * 7.0
+	check(CartoonChampionPresenter.hand_cast_origin(Vector2.ZERO, arbitrary_aim).is_equal_approx(arbitrary_origin), "hand origin does not quantize continuous cast geometry")
 	check(not presenter.can_present("unreviewed"), "unreviewed champion fails closed")
 	var state := PlayerState.new()
 	state.facing_x = 0
@@ -200,6 +208,9 @@ func _test_semantic_states() -> void:
 	state.cast_recovery_ticks = 2
 	equal(CartoonChampionPresenter.semantic_action(state), "cast_recovery", "cast recovery retains a stable semantic action")
 	equal(presenter.silhouette_state(state), "cast", "cast recovery explicitly holds the readable cast silhouette")
+	state.aim_x = -707
+	state.aim_y = -707
+	equal(presenter.source_region("oh_tipi", state), Rect2(480, 192, 96, 96), "cast recovery retains nearest-eight north-west presentation")
 	state.health = 0
 	equal(CartoonChampionPresenter.semantic_action(state), "defeated", "defeat overrides every non-terminal action")
 	equal(presenter.silhouette_state(state), "hit", "defeat explicitly aliases to the current recovery silhouette")

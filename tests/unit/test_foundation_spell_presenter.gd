@@ -3,6 +3,7 @@ extends FluxTestSuite
 
 func run() -> int:
 	_test_repository_profiles()
+	_test_shared_direction_contract()
 	_test_fail_closed_catalog_alignment()
 	return finish("foundation-spell-presenter")
 
@@ -17,6 +18,7 @@ func _test_repository_profiles() -> void:
 	equal(presenter.profiles_by_id.size(), 5, "every playable foundation spell has one visual profile")
 	equal(presenter.animation_skeletons.skeletons.size(), 4, "foundation spells share four reusable delivery skeletons")
 	check(presenter.animation_skeleton_hash.length() == 64, "foundation spell presentation exposes the skeleton content hash")
+	check(presenter.direction_contract_hash.length() == 64, "foundation spell presentation exposes the shared direction content hash")
 	equal(String(presenter.animation_skeletons.phase_for("projectile", 0.10).get("cue", "")), "origin_ring", "projectile startup exposes the shared hand-gather cue")
 	equal(String(presenter.animation_skeletons.phase_for("projectile", 0.25).get("cue", "")), "release_flash", "projectile release exposes the shared forward-snap cue")
 	equal(FoundationSpellPresenter.STARTUPS.size(), 5, "foundation spells own five distinct startup silhouettes")
@@ -32,6 +34,36 @@ func _test_repository_profiles() -> void:
 	equal(observed_startups.size(), 5, "each live spell startup remains visually distinct")
 
 
+func _test_shared_direction_contract() -> void:
+	var contract := SpellDeliveryDirectionContract.new()
+	check(contract.load_from_file(), "shared spell direction contract validates: %s" % contract.last_error)
+	equal(contract.data.get("direction_order", []), EightDirectionResolver.DIRECTION_ORDER, "spell delivery uses the canonical S/SE/E/NE/N/NW/W/SW order")
+	var cases := [
+		{"vector": Vector2(0, 1000), "id": "south"},
+		{"vector": Vector2(707, 707), "id": "south_east"},
+		{"vector": Vector2(1000, 0), "id": "east"},
+		{"vector": Vector2(707, -707), "id": "north_east"},
+		{"vector": Vector2(0, -1000), "id": "north"},
+		{"vector": Vector2(-707, -707), "id": "north_west"},
+		{"vector": Vector2(-1000, 0), "id": "west"},
+		{"vector": Vector2(-707, 707), "id": "south_west"},
+	]
+	for case: Dictionary in cases:
+		var vector: Vector2 = case["vector"]
+		equal(SpellDeliveryDirectionContract.direction_id(vector), case["id"], "spell delivery classifies %s deterministically" % case["id"])
+		var expected_fixed := EightDirectionResolver.fixed_vector(String(case["id"]))
+		var expected := Vector2(expected_fixed.x, expected_fixed.y).normalized()
+		check(SpellDeliveryDirectionContract.visual_vector(vector).is_equal_approx(expected), "spell delivery exposes the fixed %s visual vector" % case["id"])
+	equal(SpellDeliveryDirectionContract.direction_id(Vector2.ZERO), "south", "zero spell aim fails safe to south")
+	check(SpellDeliveryDirectionContract.visual_vector(Vector2.ZERO).is_equal_approx(Vector2.DOWN), "zero spell aim exposes a stable down visual vector")
+	equal(SpellDeliveryDirectionContract.direction_id(Vector2(0.001, -0.001)), "north_east", "small non-zero continuous aim keeps its diagonal sector")
+	var invalid := SpellDeliveryDirectionContract.new()
+	invalid.data = contract.data.duplicate(true)
+	invalid.data["zero_vector_fallback"] = "east"
+	check(not invalid.validate(), "non-canonical spell direction fallback fails closed")
+	check(not invalid.last_error.is_empty(), "spell direction contract refusal is actionable")
+
+
 func _test_fail_closed_catalog_alignment() -> void:
 	var language := VisualLanguage.new()
 	check(language.load_from_file(), "visual language loads before spell visual mutation")
@@ -41,6 +73,8 @@ func _test_fail_closed_catalog_alignment() -> void:
 	check(source.configure(language, catalog), "valid spell presentation loads before mutation")
 	var presenter := FoundationSpellPresenter.new()
 	presenter.language = language
+	presenter.direction_contract = source.direction_contract
+	presenter.animation_skeletons = source.animation_skeletons
 	presenter.data = source.data.duplicate(true)
 	((presenter.data["profiles"] as Array)[0] as Dictionary)["shape"] = "beam"
 	check(not presenter.validate(catalog), "visual profile cannot contradict authoritative ability shape")

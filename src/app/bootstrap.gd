@@ -244,6 +244,10 @@ func _ready() -> void:
 		push_error(burst_projectile_presenter.last_error)
 		get_tree().quit(1)
 		return
+	if burst_projectile_presenter.direction_contract_hash != foundation_spell_presenter.direction_contract_hash:
+		push_error("Spell presenters resolved different direction contracts")
+		get_tree().quit(1)
+		return
 	champion_catalog = ChampionCatalog.new()
 	if not champion_catalog.load_from_file(CHAMPION_CATALOG_PATH, ability_catalog):
 		push_error(champion_catalog.last_error)
@@ -305,7 +309,7 @@ func _ready() -> void:
 		elif capture_expanded_station_id == "farflow-join":
 			_open_join_address_editor()
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s/skeleton %s, bursts %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s/skeleton %s/directions %s, bursts %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -326,6 +330,7 @@ func _ready() -> void:
 			campus_renderer.wayfinding.content_hash.left(12),
 			foundation_spell_presenter.content_hash.left(12),
 			foundation_spell_presenter.animation_skeleton_hash.left(12),
+			foundation_spell_presenter.direction_contract_hash.left(12),
 			burst_projectile_presenter.content_hash.left(12),
 			cartoon_champion_presenter.content_hash.left(12),
 			cartoon_champion_presenter.atlas_hash.left(12),
@@ -623,9 +628,17 @@ func _process(delta: float) -> void:
 			)
 		if not requested_capture_movement.is_empty() and not session_transport.is_connected_client():
 			command = capture_movement_command(requested_capture_movement, world.tick, input_router.entity_id, requested_capture_movement_direction)
-		if (requested_capture_active_cast or requested_capture_spell_slot > 0) and not capture_active_cast_sent and not session_transport.is_connected_client():
+		# Capture-only casts wait for one ordinary command so the requested pointer
+		# establishes continuous aim before CombatSystem snapshots cast direction.
+		if (requested_capture_active_cast or requested_capture_spell_slot > 0) and not capture_active_cast_sent and world.tick >= 1 and not session_transport.is_connected_client():
 			var capture_pressed := SimCommand.PRESSED_ACTIVE_1 if requested_capture_spell_slot == 0 else SimCommand.SPELL_PRESSED_BITS[requested_capture_spell_slot - 1]
-			command = SimCommand.new(world.tick, input_router.entity_id, 0, 0, 0, capture_pressed, command.aim_x, command.aim_y)
+			var capture_aim := Vector2(command.aim_x, command.aim_y)
+			if capture_pointer_world.x >= 0:
+				var requested_aim := pointer_world_position - current_position
+				if requested_aim.length_squared() > 0.01:
+					capture_aim = requested_aim
+			command = SimCommand.new(world.tick, input_router.entity_id, 0, 0, 0, capture_pressed, roundi(capture_aim.x), roundi(capture_aim.y))
+			print("FLUX2 spell capture aim: %d,%d" % [command.aim_x, command.aim_y])
 			capture_active_cast_sent = true
 		if (
 			requested_capture_chain_spell_slot > 0

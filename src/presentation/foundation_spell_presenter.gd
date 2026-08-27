@@ -15,8 +15,10 @@ var language: VisualLanguage
 var data: Dictionary = {}
 var profiles_by_wire: Dictionary[int, Dictionary] = {}
 var profiles_by_id: Dictionary[String, Dictionary] = {}
+var direction_contract := SpellDeliveryDirectionContract.new()
 var animation_skeletons := SpellAnimationSkeletonLibrary.new()
 var content_hash := ""
+var direction_contract_hash := ""
 var animation_skeleton_hash := ""
 var last_error := ""
 
@@ -26,12 +28,17 @@ func configure(visual_language: VisualLanguage, catalog: AbilityCatalog, path: S
 	data.clear()
 	profiles_by_wire.clear()
 	profiles_by_id.clear()
+	direction_contract = SpellDeliveryDirectionContract.new()
 	animation_skeletons = SpellAnimationSkeletonLibrary.new()
 	content_hash = ""
+	direction_contract_hash = ""
 	animation_skeleton_hash = ""
 	last_error = ""
 	if language == null or catalog == null or language.elements.is_empty() or catalog.abilities_by_id.is_empty():
 		return _fail("Foundation spell presentation requires validated visual and ability catalogs")
+	if not direction_contract.load_from_file():
+		return _fail(direction_contract.last_error)
+	direction_contract_hash = direction_contract.content_hash
 	if not animation_skeletons.load_from_file():
 		return _fail(animation_skeletons.last_error)
 	animation_skeleton_hash = animation_skeletons.content_hash
@@ -53,6 +60,8 @@ func validate(catalog: AbilityCatalog) -> bool:
 	last_error = ""
 	profiles_by_wire.clear()
 	profiles_by_id.clear()
+	if not direction_contract.is_valid():
+		return _fail("Foundation spell presentation requires the validated shared direction contract")
 	if int(data.get("schema_version", -1)) != 1 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Foundation spell presentation identity is unsupported")
 	if String(data.get("authority", "")) != EXPECTED_AUTHORITY:
@@ -114,8 +123,9 @@ func draw_startup(
 	var profile: Dictionary = profiles_by_wire[wire_id]
 	if not animation_skeletons.skeletons.has(String(profile.get("skeleton_id", ""))):
 		return false
-	var direction := aim.normalized() if aim.length_squared() > 0.0 else Vector2.RIGHT
+	var direction := aim.normalized() if aim.length_squared() > 0.0 else Vector2.DOWN
 	var side := direction.orthogonal()
+	var visual_direction := SpellDeliveryDirectionContract.visual_vector(aim)
 	var progress := clampf(phase, 0.0, 1.0)
 	var element := String(profile.get("element", "water"))
 	var dark := language.element_color(element, "dark")
@@ -133,9 +143,9 @@ func draw_startup(
 			canvas.draw_circle(position, gather_radius, Color(base, 0.12 if reduced_effects else 0.20))
 			canvas.draw_arc(position, gather_radius + 4.0, -2.4, 0.6, 16, Color(bright, 0.72), 2.0)
 		"release":
-			var release_origin := position + direction * 7.0
+			var release_origin := position + visual_direction * 7.0
 			canvas.draw_arc(release_origin, 9.0 + pulse * 0.35, 0.0, TAU, 16, Color(bright, 0.82), 2.0)
-			canvas.draw_line(position + direction * 2.0, position + direction * 14.0, Color(base, 0.64), 2.0)
+			canvas.draw_line(position + visual_direction * 2.0, position + visual_direction * 14.0, Color(base, 0.64), 2.0)
 	match String(profile.get("startup", "")):
 		"gathered_drop":
 			var gather := position + direction * (16.0 + progress * 7.0)
@@ -178,9 +188,8 @@ func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int,
 	var position := Vector2(float(projectile.position_x), float(projectile.position_y)) / SimConfig.FIXED_SCALE
 	var previous := Vector2(float(projectile.previous_x), float(projectile.previous_y)) / SimConfig.FIXED_SCALE
 	var velocity := Vector2(float(projectile.velocity_x), float(projectile.velocity_y))
-	var direction := velocity.normalized() if velocity.length_squared() > 0.0 else (position - previous).normalized()
-	if direction.length_squared() <= 0.0:
-		direction = Vector2.RIGHT
+	var travel_direction := velocity.normalized() if velocity.length_squared() > 0.0 else (position - previous).normalized()
+	var direction := SpellDeliveryDirectionContract.visual_vector(travel_direction)
 	var side := direction.orthogonal()
 	var radius := float(projectile.radius) / SimConfig.FIXED_SCALE
 	var element := String(profile.get("element", "water"))

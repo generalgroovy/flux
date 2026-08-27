@@ -1,5 +1,48 @@
 # FLUX2 agent worklog
 
+## 2026-08-28 - Wellspring surface and cutaway alignment
+
+Playable outcome:
+
+- Added one bounded presentation-only surface-alignment profile for exact
+  building-collision corner marks, exterior door thresholds and cutaway
+  margins. A diagonal approach now exposes the same rectangular footprint used
+  by simulation without moving or resizing any obstacle.
+- Replaced the near-building dark blackout with a warm cardinal floor-plan
+  reveal whose pavers, border and threshold keep the approach readable while
+  decorative roof/facade rise fades beneath it.
+- Local and remote champion contact shadows now derive fill, rim and bounded
+  opacity from the receiving surface plus authored district elevation. Water,
+  garden, Nexus masonry and proving ground remain materially distinct while
+  jump/landing geometry and timing stay unchanged.
+
+Verification:
+
+- `scripts\\test.ps1`: 55 suites / 17,250 assertions, zero failures; source
+  imports and 60/120 Hz boots pass under protocol 30. Existing legacy image
+  loader warnings remain unchanged.
+- Sixteen truthful 1280x720/100% frames at
+  `.godot/visual-captures/d6-routekeeper-corner-v2` show Oh Tipi approaching
+  the Routekeeper Lodge diagonally, stopping at the exact south-east collision
+  corner while the cutaway becomes a warm floor plan.
+- Twelve truthful diagnostic frames at
+  `.godot/visual-captures/d6-attunement-corner-debug-v2` show the Attunement
+  Hall art footprint, cyan collision rectangle, threshold, nearby low vault
+  cover and actor contact remaining aligned through the same diagonal route.
+- Runtime commit `4f23096` packaged successfully. Direct packaged 120 Hz boot
+  exited 0. Installer build ID is `0.1.0-dev-4f23096d95-919c706bb3`;
+  installer SHA-256 is
+  `840837c89076466dde57c0e920dc02a7c108ba315ce4b4916dc9fab7a548e3bf`
+  and portable ZIP SHA-256 is
+  `919c706bb3d18570e4f83376eccd5cf6986fc1116b5d60c5356add59c5bcd8fd`.
+
+Next slice:
+
+- D7 integrated direction matrix: both champions, representative movement,
+  evasion and spell delivery at 50/75/100%, accessibility modes and a real
+  Farflow pair. Keep D4 diagonal evasion body art as an explicit reviewed-source
+  follow-up rather than synthesizing unapproved pixels.
+
 ## 2026-08-28 - shared eight-way spell-delivery contract
 
 Playable outcome:

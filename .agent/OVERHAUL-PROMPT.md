@@ -2,7 +2,7 @@
 
 Act as FLUX's principal gameplay, systems, rendering, pixel-art integration,
 UX, QA, networking and release engineer. Continue from the newest green commit
-on `codex/continuous-overhaul`. Read `README.md`, `AGENTS.md` when it applies,
+on `main`, keeping `codex/continuous-overhaul` unified as a compatibility branch. Read `README.md`, `AGENTS.md` when it applies,
 `.agent/VISUAL-OVERHAUL.md`, `.agent/OVERHAUL-IMPLEMENTATION.md`,
 `.agent/CONTINUOUS-IMPLEMENTATION-PROMPT.md`, `.agent/memory.md`,
 `.agent/BACKLOG.md`, the newest `.agent/WORKLOG.md` entry and
@@ -19,14 +19,14 @@ runtime art, rendering, camera/pixel presentation, GUI, feedback, animation,
 accessibility, visual tests, asset provenance and the smallest rule-neutral
 adapters required to expose already-authoritative state.
 
-Current C2 checkpoint: the live foundation atlas has dedicated grounded, jump,
-empty-hand cast, hit/recovery, walk, sprint, slide and roll art for both
-champions in all four cardinals, with multi-zoom/accessibility evidence and
-validated semantic aliases. Treat that as the safe baseline, then expand both
-movement and facing to `S/SE/E/NE/N/NW/W/SW` one complete action family at a
-time before direction-aware spell delivery. Continuous analog movement/aim,
-normalized digital diagonals and simulation authority must remain unchanged.
-Do not skip to new mechanics or champions.
+Current C2 checkpoint: reviewed diagonal grounded/cast/hit/walk/sprint art,
+relative gait, safe directional evasion cues, shared eight-way spell delivery,
+and Wellspring collision/cutaway/receiving-shadow alignment are green. Jump,
+slide and roll retain explicit nearest-cardinal body art until reviewed
+diagonal sources exist. D7 integrated multi-zoom/accessibility/Farflow capture
+is next. Continuous analog movement/aim, normalized digital diagonals and
+simulation authority must remain unchanged. Do not skip to new mechanics or
+champions.
 
 Make the Wellspring and GUI match the charm, density, readable perspective and
 material richness of the supplied gameplay reference while remaining wholly

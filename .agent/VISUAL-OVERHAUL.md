@@ -97,6 +97,14 @@ back explicitly to south. D5 is green only because startup and release were
 captured diagonally for both foundation champions without changing collision,
 timing, cost, authority or outcome.
 
+Wellspring surface alignment is likewise presentation-only and fail-closed.
+Exact collision-corner marks, exterior thresholds and configured cutaway
+margins reveal a warm cardinal floor plan on approach; local and remote actor
+shadows sample water/garden/Nexus/proving material plus authored elevation.
+Diagnostic diagonal captures prove architecture, low cover, contact shadow and
+simulation footprint agree. D6 is green without granting art authority over
+collision, topology, movement, visibility or spell endpoints.
+
 Acceptance evidence must include a direction matrix capture showing both
 foundation champions in all eight compass directions while idle, walking,
 sprinting, reversing/strafe-moving, jumping, casting, taking damage and using

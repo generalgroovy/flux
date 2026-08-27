@@ -3,6 +3,39 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## 2026-08-28 - Wellspring surface and cutaway alignment
+
+Playable outcome:
+
+- `wellspring_architecture_kit_v1.json` now owns bounded collision-corner,
+  threshold and cutaway presentation values. Diagonal building approaches show
+  the exact simulation footprint and ease into a warm cardinal floor-plan
+  reveal instead of a dark blackout; no topology or collision changed.
+- `natural_map_kit_v1.json` now owns receiving-shadow recipes for water,
+  garden, Nexus and proving surfaces plus a small elevation opacity step. The
+  same helper renders local and remote champion shadows without changing
+  jump/landing authority.
+
+Verification:
+
+- `scripts\\test.ps1`: 55 suites / 17,250 assertions, zero failures; source
+  60/120 Hz boots pass under protocol 30.
+- Final truthful 1280x720/100% evidence is in
+  `.godot/visual-captures/d6-routekeeper-corner-v2` and
+  `.godot/visual-captures/d6-attunement-corner-debug-v2`; the latter proves the
+  visible architecture footprint matches the cyan collision rectangle beside
+  the low vault cover.
+- Runtime commit `4f23096` packaged and booted directly at 120 Hz. Installer
+  SHA-256 is
+  `840837c89076466dde57c0e920dc02a7c108ba315ce4b4916dc9fab7a548e3bf`;
+  portable ZIP SHA-256 is
+  `919c706bb3d18570e4f83376eccd5cf6986fc1116b5d60c5356add59c5bcd8fd`.
+
+Next slice:
+
+- D7 integrated direction/accessibility/Farflow matrix. D4 diagonal evasion
+  body art remains blocked on reviewed source material and must not be faked.
+
 ## 2026-08-28 - shared eight-way spell delivery
 
 Playable outcome:

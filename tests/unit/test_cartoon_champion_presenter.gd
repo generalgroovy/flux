@@ -4,6 +4,7 @@ extends FluxTestSuite
 func run() -> int:
 	_test_repository_recipes()
 	_test_semantic_states()
+	_test_semantic_aliases_fail_closed()
 	return finish("cartoon-champion-presenter")
 
 
@@ -19,6 +20,7 @@ func _test_repository_recipes() -> void:
 	equal(presenter.atlas_hash, "1bea3c7f8d35b331801a81cc63f54388671ec0df658ec8a16a18393ed6866680", "reviewed cardinal movement runtime atlas hash is pinned")
 	equal(presenter.cardinal_animation_contract.get("directions", []), ["south", "east", "north", "west"], "foundation animation contract covers four cardinal directions")
 	equal(presenter.cardinal_animation_contract.get("states", []), ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"], "foundation animation contract covers core and movement actions")
+	equal(presenter.semantic_state_aliases.size(), CartoonChampionPresenter.EXPECTED_SEMANTIC_ACTIONS.size(), "every authoritative semantic action has an explicit atlas alias")
 	for champion_id: String in ["oh_tipi", "s_wayne"]:
 		check(presenter.can_present(champion_id), "%s has a promoted cartoon recipe" % champion_id)
 		var recipe := presenter.recipe(champion_id)
@@ -84,33 +86,82 @@ func _test_repository_recipes() -> void:
 
 
 func _test_semantic_states() -> void:
+	var language := VisualLanguage.new()
+	check(language.load_from_file(), "visual language loads for semantic states")
+	var presenter := CartoonChampionPresenter.new()
+	check(presenter.configure(language), "foundation cartoon recipes load for semantic states")
 	var state := PlayerState.new()
-	equal(CartoonChampionPresenter.silhouette_state(state), "grounded", "idle state uses grounded silhouette")
+	equal(CartoonChampionPresenter.semantic_action(state), "idle", "idle resolves to a stable semantic action")
+	equal(presenter.silhouette_state(state), "grounded", "idle state uses its declared grounded alias")
 	state.movement_mode = PlayerState.MovementMode.HOP
 	state.hop_ticks = 2
-	equal(CartoonChampionPresenter.silhouette_state(state), "jump", "airborne state uses jump silhouette")
+	equal(CartoonChampionPresenter.semantic_action(state), "jump", "hop resolves to a stable semantic action")
+	equal(presenter.silhouette_state(state), "jump", "airborne state uses its declared jump alias")
 	state.movement_mode = PlayerState.MovementMode.IDLE
 	state.hop_ticks = 0
 	state.hop_mode = PlayerState.MovementMode.ROLL
 	state.air_dodge_ticks = 2
 	state.movement_mode = PlayerState.MovementMode.ROLL
-	equal(CartoonChampionPresenter.silhouette_state(state), "roll", "roll uses the dedicated compact silhouette")
+	equal(CartoonChampionPresenter.semantic_action(state), "roll", "roll retains a distinct semantic action")
+	equal(presenter.silhouette_state(state), "roll", "roll uses the dedicated compact silhouette")
 	state.air_dodge_ticks = 0
 	state.movement_mode = PlayerState.MovementMode.IDLE
 	state.pending_cast_wire_id = 1
-	equal(CartoonChampionPresenter.silhouette_state(state), "cast", "pending cast uses cast silhouette")
+	equal(CartoonChampionPresenter.semantic_action(state), "cast", "pending cast resolves to cast")
+	equal(presenter.silhouette_state(state), "cast", "pending cast uses cast silhouette")
 	state.pending_cast_wire_id = 0
 	state.control_state = PlayerState.ControlState.STUNNED
-	equal(CartoonChampionPresenter.silhouette_state(state), "hit", "stun uses hit silhouette")
+	equal(CartoonChampionPresenter.semantic_action(state), "stunned", "stun retains its semantic identity")
+	equal(presenter.silhouette_state(state), "hit", "stun explicitly aliases to the hit silhouette")
 	state.control_state = PlayerState.ControlState.FREE
 	state.movement_mode = PlayerState.MovementMode.WALK
-	equal(CartoonChampionPresenter.silhouette_state(state), "walk", "walk uses the planted contact silhouette")
+	equal(presenter.silhouette_state(state), "walk", "walk uses the planted contact silhouette")
 	state.movement_mode = PlayerState.MovementMode.SPRINT
-	equal(CartoonChampionPresenter.silhouette_state(state), "sprint", "sprint uses the directional drive silhouette")
+	equal(presenter.silhouette_state(state), "sprint", "sprint uses the directional drive silhouette")
 	state.movement_mode = PlayerState.MovementMode.SLIDE
-	equal(CartoonChampionPresenter.silhouette_state(state), "slide", "slide uses the dedicated low silhouette")
+	equal(presenter.silhouette_state(state), "slide", "slide uses the dedicated low silhouette")
 	state.movement_mode = PlayerState.MovementMode.WAVE_DASH
-	equal(CartoonChampionPresenter.silhouette_state(state), "slide", "wave dash reuses the direction-complete low body row")
+	equal(CartoonChampionPresenter.semantic_action(state), "wave_dash", "wave dash retains its semantic identity")
+	equal(presenter.silhouette_state(state), "slide", "wave dash explicitly aliases to the direction-complete low body row")
+	var semantic_by_mode := {
+		PlayerState.MovementMode.IDLE: "idle",
+		PlayerState.MovementMode.WALK: "walk",
+		PlayerState.MovementMode.SPRINT: "sprint",
+		PlayerState.MovementMode.HOP: "jump",
+		PlayerState.MovementMode.DOUBLE_JUMP: "double_jump",
+		PlayerState.MovementMode.SLIDE: "slide",
+		PlayerState.MovementMode.SLIDE_JUMP: "slide_jump",
+		PlayerState.MovementMode.AIR_DODGE: "air_dodge",
+		PlayerState.MovementMode.WAVE_DASH: "wave_dash",
+		PlayerState.MovementMode.WALL_KICK: "wall_kick",
+		PlayerState.MovementMode.VAULT: "vault",
+		PlayerState.MovementMode.SUPERGLIDE: "superglide",
+		PlayerState.MovementMode.LAUNCHED: "launched",
+		PlayerState.MovementMode.GRAPPLED: "grappled",
+		PlayerState.MovementMode.CHARGING: "charging",
+		PlayerState.MovementMode.STUNNED: "stunned",
+		PlayerState.MovementMode.ROOTED: "rooted",
+		PlayerState.MovementMode.SLOWED: "slowed",
+		PlayerState.MovementMode.FAST_FALL: "fast_fall",
+		PlayerState.MovementMode.WALL_SKIM: "wall_skim",
+		PlayerState.MovementMode.IMPACT_RECOVERY: "impact_recovery",
+		PlayerState.MovementMode.ROLL: "roll",
+	}
+	for movement_mode: int in semantic_by_mode:
+		var mode_state := PlayerState.new()
+		mode_state.movement_mode = movement_mode
+		equal(CartoonChampionPresenter.semantic_action(mode_state), semantic_by_mode[movement_mode], "%s resolves through the semantic visual contract" % PlayerState.MovementMode.keys()[movement_mode])
+		check(presenter.silhouette_state(mode_state) in CartoonChampionPresenter.EXPECTED_CARDINAL_STATES, "%s aliases to a promoted atlas state" % PlayerState.MovementMode.keys()[movement_mode])
+	state = PlayerState.new()
+	state.cast_recovery_ticks = 2
+	equal(CartoonChampionPresenter.semantic_action(state), "cast_recovery", "cast recovery retains a stable semantic action")
+	equal(presenter.silhouette_state(state), "cast", "cast recovery explicitly holds the readable cast silhouette")
+	state.health = 0
+	equal(CartoonChampionPresenter.semantic_action(state), "defeated", "defeat overrides every non-terminal action")
+	equal(presenter.silhouette_state(state), "hit", "defeat explicitly aliases to the current recovery silhouette")
+	for presentation_action: String in ["attack_primary", "defend", "interact", "taunt"]:
+		check(presenter.atlas_state_for_action(presentation_action) in CartoonChampionPresenter.EXPECTED_CARDINAL_STATES, "%s has an explicit reusable alias before it gains an authoritative local state" % presentation_action)
+	equal(presenter.atlas_state_for_action("unowned_action"), "", "unknown presentation actions fail closed instead of guessing a pose")
 	equal(CartoonChampionPresenter.cardinal_direction(1000, 10), "east", "horizontal facing stays horizontal")
 	equal(CartoonChampionPresenter.cardinal_direction(-1000, 10), "west", "negative horizontal facing stays horizontal")
 	equal(CartoonChampionPresenter.cardinal_direction(0, -1000), "north", "negative vertical facing reads north")
@@ -122,3 +173,25 @@ func _test_semantic_states() -> void:
 	check(starting_response > 0.0 and starting_response < 0.1, "early acceleration uses a restrained body response")
 	state.velocity_x = MovementTuning.BASE_SPEED
 	equal(CartoonChampionPresenter.movement_response_scale(state), 1.0, "full ordinary speed reaches the complete walk response")
+
+
+func _test_semantic_aliases_fail_closed() -> void:
+	var language := VisualLanguage.new()
+	check(language.load_from_file(), "visual language loads for adversarial alias tests")
+	var valid := CartoonChampionPresenter.new()
+	check(valid.configure(language), "valid semantic aliases load before adversarial mutations")
+	var mutations: Array[Dictionary] = []
+	var missing: Dictionary = valid.semantic_state_aliases.duplicate(true)
+	missing.erase("roll")
+	mutations.append(missing)
+	var extra: Dictionary = valid.semantic_state_aliases.duplicate(true)
+	extra["unowned_action"] = "grounded"
+	mutations.append(extra)
+	var bad_target: Dictionary = valid.semantic_state_aliases.duplicate(true)
+	bad_target["rooted"] = "missing_row"
+	mutations.append(bad_target)
+	for mutation: Dictionary in mutations:
+		var presenter := CartoonChampionPresenter.new()
+		check(not presenter._validate_semantic_state_aliases(mutation), "incomplete or unsafe semantic aliases fail closed")
+		check(not presenter.last_error.is_empty(), "semantic alias failure is actionable")
+		equal(presenter.semantic_state_aliases, {}, "failed alias validation exposes no stale mapping")

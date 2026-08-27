@@ -3,6 +3,42 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## Eight-direction movement plan — 2026-08-27
+
+- Final direction coverage is now `S/SE/E/NE/N/NW/W/SW` for movement and
+  facing, not character art alone. The current four-cardinal atlas remains the
+  green runtime fallback until each diagonal action family passes review.
+- Simulation movement/aim stay continuous; keyboard diagonals stay normalized.
+  A future shared presentation resolver will classify travel and facing
+  independently with stable sector hysteresis, enabling free travel-facing and
+  aim-facing forward/back/strafe gait without changing rules or networking.
+- Ordered slices are resolver/tests, eight-way input parity, diagonal core
+  bodies, diagonal locomotion/relative gait, advanced movement, spell delivery,
+  environment alignment, and full accessibility/Farflow/package acceptance.
+
+## Semantic champion action aliases — 2026-08-26
+
+- `foundation-champion-visuals-v5-semantic-actions` now declares every
+  authoritative movement/control/cast/defeat action plus the existing
+  attack/defense/interaction/taunt presentation vocabulary as an explicit alias
+  to one of the eight promoted cardinal body rows. Advanced moves reuse a row
+  intentionally; renderer branches no longer hide that choice.
+- `CartoonChampionPresenter.semantic_action()` preserves the specific live
+  action ID, while `atlas_state_for_action()` resolves validated content and
+  returns no region for an unknown action. Missing, extra, and nonexistent-row
+  aliases fail closed and clear stale mappings.
+- Westward impact-recovery and S. Wayne cast/recovery captures passed at
+  1280×720/75% under `.godot/visual-captures/semantic-v5-*`; the recovery body
+  no longer snaps to idle before its authoritative recovery timer ends.
+- Interaction, taunt, and defense aliases are ready for an app-local
+  presentation cue, but the current `PlayerState` does not own such a timer;
+  no false simulation state was added merely to trigger art.
+- Full Windows source gate: 54 suites / 16,833 assertions, zero failures;
+  independent 60/120 Hz boots passed with the unchanged v5 atlas hash.
+- Next visual slice: make projectile/beam/spray/field startup and release cues
+  select their cardinal empty-hand delivery lane through validated content,
+  then capture both foundation champions without changing spell rules.
+
 ## Cardinal locomotion and evasion atlas — 2026-08-26
 
 - The active body-only atlas now adds dedicated walk contact, sprint drive, low
@@ -26,10 +62,9 @@ each playable slice.
   timed post-tick-6 slide/roll for both champions at 75%; additional 50%, 100%,
   1920×1080, high-contrast and reduced-effects captures pass under
   `.godot/visual-captures/movement-v5-*`.
-- Next visual slice: finish the remaining live champion semantic aliases
-  (defense/interaction/emote/defeat/control loss) against this same eight-row
-  grammar, then continue direction-aware spell delivery without adding a new
-  mechanic or champion.
+- The follow-on semantic-alias slice now closes live movement, control, cast,
+  recovery and defeat coverage; interaction/taunt/defense have explicit future
+  aliases without pretending the simulation currently owns their timers.
 - Runtime/content checkpoint `649e0d8` is unified on `main` and
   `codex/continuous-overhaul`. Installer SHA-256 is
   `c265f5019b8f92db0a0c012d513e5b0952f81547f5cef0e8f152cb5e31566dc9`;

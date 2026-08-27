@@ -21,10 +21,12 @@ adapters required to expose already-authoritative state.
 
 Current C2 checkpoint: the live foundation atlas has dedicated grounded, jump,
 empty-hand cast, hit/recovery, walk, sprint, slide and roll art for both
-champions in all four cardinals, with multi-zoom/accessibility evidence. The
-immediate next slice is to validate remaining live defense/interaction/emote/
-defeat/control aliases against that grammar, then improve direction-aware spell
-delivery and hand-origin readability. Do not skip to new mechanics or champions.
+champions in all four cardinals, with multi-zoom/accessibility evidence and
+validated semantic aliases. Treat that as the safe baseline, then expand both
+movement and facing to `S/SE/E/NE/N/NW/W/SW` one complete action family at a
+time before direction-aware spell delivery. Continuous analog movement/aim,
+normalized digital diagonals and simulation authority must remain unchanged.
+Do not skip to new mechanics or champions.
 
 Make the Wellspring and GUI match the charm, density, readable perspective and
 material richness of the supplied gameplay reference while remaining wholly
@@ -46,15 +48,16 @@ fast translucent station/overview panels so the main frame shows routes,
 landmarks, players, threats and interaction options.
 
 Work through visual tokens/pixel pipeline, the exact `small`/`middle`/`large`
-body system, four-cardinal animation coverage for every gameplay-critical state,
+body system, eight-direction movement and animation coverage for every gameplay-critical state,
 two foundation champions,
 Wellspring environment, current spell visuals, GUI/interactions and integrated
 acceptance in that exact order. Do not accept a concept image, manifest,
 placeholder or isolated specimen as completion: the improvement must run in the
 actual game. Champion atlases contain only body and clothing: south/front faces
-the camera symmetrically, north is centered back, east is authored profile and
-west is a reviewed profile or deterministic mirror. Every gameplay-critical
-animation must select a valid frame in all four cardinals before the visual gate
+the camera symmetrically, north is centered back, sides are profiles and all
+four diagonals preserve ancestry/clothing identity. Every gameplay-critical
+animation and non-spell movement family must select a valid frame in all eight
+directions before the visual gate
 can advance; compose empty-hand casting, aura, shadow, projectile, equipment
 and environment in separate reusable layers. Capture and inspect
 720p/1080p frames at relevant zooms, ordinary
@@ -89,18 +92,22 @@ release or acceptance claim in the current scope.
 the published commit playable. Never copy protected assets or claim tests,
 visual quality, balance, platform parity or remote play without direct evidence.
 
-## Immediate cardinal-animation iteration
+## Immediate eight-direction movement/animation iteration
 
-Begin with the smallest safe visual slice: make the live presentation select
-and validate `south`, `east`, `north`, and `west` for every gameplay-critical
-animation state on both foundation champions and all three body contracts.
+Begin with the smallest safe visual slice: add one validated resolver for
+`south`, `south_east`, `east`, `north_east`, `north`, `north_west`, `west`, and
+`south_west`, then expand one complete action family at a time on both
+foundation champions and all three body contracts. Travel direction and facing
+direction remain distinct: free locomotion can face travel; aiming/casting uses
+aim-facing forward/back/strafe gait. Keyboard diagonals stay normalized and
+controller/mouse vectors stay continuous.
 Keep body/clothing pixels, hand-cast effects, shadows, auras, projectiles and
 environment in independent layers; do not change simulation authority, input,
 collision, timing, resource costs, cooldowns or network rules. Use data-driven
-direction mappings, fail-closed schema checks, stable feet pivots, nearest
+direction mappings, boundary/hysteresis tests, fail-closed schema checks, stable feet pivots, nearest
 sampling and deterministic 60/120 Hz frame selection. Add focused tests before
 editing art, run the full Windows gate and source/imported boots, inspect
-direction-matrix captures at 50/75/100% plus reduced/high-contrast/grayscale
+eight-direction movement/facing matrix captures at 50/75/100% plus reduced/high-contrast/grayscale
 modes, update `README.md`, `.agent/BACKLOG.md`, `.agent/memory.md` and
 `.agent/WORKLOG.md`, then commit and push one reversible green checkpoint.
 Immediately start the next visual substep after the checkpoint; pause only for

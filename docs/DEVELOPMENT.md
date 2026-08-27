@@ -89,6 +89,12 @@ shadow, and draws it before the POV mask. Invalid loading or synchronization
 releases the candidate and retains the procedural fallback. This runtime
 exercise does not promote either candidate to final art.
 
+`semantic_state_aliases` in the same visual manifest is the only mapping from
+specific live actions to those eight atlas rows. Its key set is exact and every
+target must be a promoted row; missing, extra, unknown, or stale aliases fail
+loading closed. Add new body art only when its silhouette materially improves
+gameplay readability—otherwise declare intentional reuse in this table.
+
 Deterministic movement review accepts
 `--capture-direction=south|east|north|west` beside `--capture-movement=`. The
 direction flag is capture-only: it normalizes the synthetic move/aim vector and

@@ -27,17 +27,20 @@ south, south_east, east, north_east,
 north, north_west, west, south_west
 ```
 
-The acceptance direction order is the four cardinal subset:
+The current promoted body subset is:
 
 ```text
 south (front), east (profile), north (back), west (profile/mirror)
 ```
 
-Every animation state must have a valid frame region for all four cardinals in
-each of `small`, `middle`, and `large`. Diagonals may be authored or derived
-from the nearest cardinal, but a missing cardinal frame fails validation. This
-keeps readable facing and action feedback intact while the simulation continues
-to aim on a continuous world-space vector.
+Every animation state currently requires all four cardinal regions in each of
+`small`, `middle`, and `large`; a missing cardinal fails validation. Final
+acceptance requires the complete eight-direction runtime order above for both
+travel and facing. Diagonals are added one complete action family at a time,
+with nearest-cardinal derivation retained only as the green migration fallback.
+The shared presentation resolver will classify continuous vectors without
+snapping simulation, and separately represent free travel-facing versus
+aim-facing forward/back/strafe gait.
 
 The 25 animation states cover the currently planned foundation:
 

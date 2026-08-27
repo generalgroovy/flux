@@ -30,10 +30,13 @@ hide legal information.
 Champions use compact cartoon proportions at gameplay scale: a large expressive
 head (40–45% of total body height), short sturdy limbs, body-and-clothing-only
 pixels, 1–2-pixel outlines, 3–5 colors per material and a separate grounded
-shadow. Every gameplay-critical animation is covered in the four cardinals:
-south/front faces the camera symmetrically, north/back is centered, east is an
-authored profile and west is a reviewed profile or deterministic mirror. Jump,
-cast and hit silhouettes must read in each cardinal before detail is approved.
+shadow. The current green body atlas covers four cardinals; final acceptance
+covers `S/SE/E/NE/N/NW/W/SW` for both movement and facing. South/front faces the
+camera symmetrically, north/back is centered, sides are profiles, and diagonal
+views preserve ancestry/clothing asymmetry. Travel and aim remain continuous;
+presentation resolves them independently so diagonal free movement and
+aim-facing forward/back/strafe gait read without changing simulation. Jump,
+cast and hit silhouettes must read in every direction before detail is approved.
 The revised concept board at
 `assets/concept/visual-system-cartoon-perspective-v2.png` clarifies the intended
 charm and body language, but its steep courtyard is explicitly not the runtime

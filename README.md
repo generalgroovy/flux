@@ -247,11 +247,15 @@ retired vocabulary and migrate to small and large respectively; medium migrates
 to middle. Body type bounds silhouette, footprint and tuning ranges but never
 grants hidden reach, evasion, damage or elemental advantage.
 
-Champion atlases contain body and clothing only. Every gameplay-critical
-animation has a valid frame in all four cardinals: front/south faces the camera
-with centered, balanced anatomy; north is a centered back view; east is an
-authored profile; and west is a reviewed profile or deterministic mirror.
-Diagonals may derive from the nearest cardinal. Shadows, auras, spells,
+Champion atlases contain body and clothing only. The current green runtime has
+valid frames in the four cardinals: front/south faces the camera with centered,
+balanced anatomy; north is a centered back view; east is an authored profile;
+and west is a reviewed profile or deterministic mirror. Final visual acceptance
+expands both movement and facing to `S/SE/E/NE/N/NW/W/SW`; nearest-cardinal
+diagonals remain only a migration fallback while reviewed diagonal action
+families are introduced. Simulation movement and aim stay continuous, keyboard
+diagonals stay normalized, and presentation resolves travel separately from
+facing so aim-facing forward/back/strafe movement remains readable. Shadows, auras, spells,
 projectiles, environment, tools and equipment are separate reusable layers.
 Magic originates from a visible empty-hand lane above the shared feet pivot;
 staffs, wands, rods,
@@ -426,6 +430,14 @@ timed (post-trigger) slide/roll captures for both champions under
 high-contrast and reduced-effects samples. Capture-only
 `--capture-direction=south|east|north|west` makes that matrix reproducible and
 does not affect ordinary controls or simulation.
+
+The body manifest now exposes exact semantic aliases for all live movement,
+control, cast/recovery and defeat states, plus reserved attack, defense,
+interaction and taunt presentation cues. Advanced actions intentionally reuse a
+promoted cardinal row through data rather than hidden renderer branches;
+unknown, missing, extra, or nonexistent-row aliases fail closed. Truthful
+impact/cast-recovery evidence lives under ignored
+`.godot/visual-captures/semantic-v5-*`.
 
 Concept images guide proportion, color roles, mood, and readability. They do not
 define hitboxes, timing, abilities, map topology, or simulation rules. Promotion

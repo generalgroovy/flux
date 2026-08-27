@@ -17,7 +17,7 @@ documentation expansion, or acceptance claims.
 |---:|---|---|
 | C0 authority | Remove duplicate browser runtime; preserve recovery commit and reusable principles; reconcile README, focused docs, roster names/ancestries/affinities; validate links/assets. | A newcomer finds one runtime, one command set, one state table, and no conflicting current roster truth. |
 | C1 lifecycle | Re-run clean setup/repair/update/installed boot; improve single-screen host/join address feedback; verify safe host/guest close and packaged Farflow. | Friend needs one `.exe`, one host address, and no Godot/Git/admin rights; known NAT/signing limits are visible. |
-| C2 visual runtime | Keep champion body/clothing pixels separate from spells, aura, shadows, equipment and world art; enforce the three-body catalog; combine deterministic core and movement 4×4 sources into dedicated grounded/jump/cast/hit/walk/sprint/slide/roll art in south/east/north/west on one shared feet pivot; bind foundation spells to reusable data-driven delivery skeletons; add bounded source-court decoration anchors; review characters, elevation/shadows, projectiles, environment and HUD at 50/75/100%. | Both champions and five simultaneous lanes read instantly in all four cardinals and standard/high-contrast/reduced modes; the same body atlas remains reusable across effects, delivery phases and court accents remain editable without renderer branches, and no presentation layer changes rules. |
+| C2 visual runtime | Keep champion body/clothing pixels separate from spells, aura, shadows, equipment and world art; enforce the three-body catalog; expand the green four-cardinal baseline to exact `S/SE/E/NE/N/NW/W/SW` movement/facing coverage over grounded/jump/cast/hit/walk/sprint/slide/roll rows on one shared feet pivot; bind foundation spells to reusable data-driven eight-direction delivery skeletons; review characters, movement, elevation/shadows, projectiles, environment and HUD at 50/75/100%. | Both champions, every locomotion/evasion family and five simultaneous lanes read instantly in all eight directions and standard/high-contrast/reduced modes; continuous movement/aim remain unchanged, advanced actions reuse promoted rows only through visible validated content, and no presentation layer changes rules. |
 | C3 burst simulation | Extend ability content with one reusable burst specification; deterministically rotate a normalized aim vector by five fixed offsets; allocate stable left-to-right projectile IDs; bound capacity/events/snapshot representation. | Repeatable 60/120 fixtures produce identical fan ordering, hits, grazes, cover stops, cost, cooldown, and cleanup. |
 | C4 eight spells | Instantiate Earth/Fire/Water/Wind/Ice/Charge/Light/Dark burst entries with stable IDs, positive costs, shared geometry, element presentation, and global Loom availability. | Either champion can weave and cast every first-eight burst; all eight remain mechanically comparable and visually distinct. |
 | C5 reaction catalog | Add a fail-closed runtime catalog loader requiring exactly the 36 unordered-with-repetition pairs, symmetric lookup, unique IDs, lifecycle, counters, bounds, and worldbone policy. | Missing/duplicate/asymmetric/unbounded recipe content fails tests and boot clearly. |
@@ -45,10 +45,25 @@ variants with new stable IDs and counterplay.
 | Contract | Required implementation |
 |---|---|
 | Body taxonomy | Exactly `small`, `middle`, `large`; legacy tiny/medium/huge inputs migrate once and never enter new authored data. |
-| Direction grammar | South/front is camera-facing and centered; north is centered back; east is authored profile; west is a deterministic mirror with corrected asymmetric ancestry details only when required. |
+| Direction grammar | Fixed order is `S/SE/E/NE/N/NW/W/SW`; south/front is camera-facing, north is centered back, sides are profiles, and diagonals are authored or reviewed mirrors with asymmetric ancestry/clothing corrections. |
+| Movement grammar | Digital input supports normalized eight-way movement and analog input remains continuous; presentation resolves travel and facing independently with stable sectors/hysteresis, using travel-facing locomotion when free and aim-facing forward/back/strafe gait while aiming. |
 | Atlas contents | Body and clothing pixels only; no spells, elements, particles, aura, shadow, world art, tool, weapon, equipment or detached focus. |
 | Composition | Runtime composes body, receiving-surface shadow, status/aura, cast effect, projectile and environment as separately editable presentation layers; the body layer uses a bounded `small` 0.90×, `middle` 1.00×, `large` 1.10× scale around the shared feet pivot, cast startup is anchored to a forward hand lane, and `atlas_row` is authored per champion in the visual recipe. |
 | Authority | Body type constrains validated tuning/presentation ranges; hitboxes, movement, casts and outcomes remain simulation-owned. |
+| Semantic reuse | Every live movement/control/cast/recovery/defeat action resolves to an atlas row through validated content; future attack/defense/interaction/taunt cues have explicit aliases and unknown IDs fail closed. |
+
+## Eight-direction movement/presentation expansion
+
+| Slice | Work | Observable exit |
+|---:|---|---|
+| D0 | Add one validated direction resolver and fixed direction order for travel, facing, hand origins, effects and captures. | Boundary, zero-vector, hysteresis and 60/120 Hz tests resolve identically without touching simulation vectors. |
+| D1 | Audit keyboard, controller, prediction, replay and Farflow movement in all eight sectors; retain diagonal normalization and analog magnitude. | Equal authored speed/cost/collision behavior in every direction; no diagonal advantage or network drift. |
+| D2 | Add diagonal grounded/cast/hit body columns for Oh Tipi and S. Wayne on the existing pivot. | Both identities read at native scale in all eight facings before locomotion expansion. |
+| D3 | Add diagonal walk/sprint and relative forward/back/left/right gait selection while aim and travel differ. | Eight-way travel looks intentional during free movement, strafing, reversing and mouse/controller aiming. |
+| D4 | Add diagonal jump/double-jump/slide/slide-jump/roll/air-dodge/wave-dash/wall-kick/vault/superglide/fast-fall/wall-skim aliases and accents. | Every non-spell movement technique preserves direction, shadow, pivot and evasion cues without a cardinal snap. |
+| D5 | Expand projectile/beam/spray/field anticipation, release hand origin, travel cue and recovery to eight facing sectors. | Empty-hand spell delivery aligns with continuous aim and never shifts body collision. |
+| D6 | Verify diagonal corners, cover, doors, elevation, cutaways and receiving-surface shadows. | Movement and spell visuals remain aligned around every Wellspring route and collision edge. |
+| D7 | Capture both champions across eight directions, zooms, accessibility modes and a real Farflow pair. | Complete direction matrix passes visual rubric, deterministic tests, source boots and packaged Windows smoke. |
 
 ## Chemistry model
 

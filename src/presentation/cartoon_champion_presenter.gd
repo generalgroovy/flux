@@ -3,13 +3,19 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_champion_visuals_v1.json"
-const EXPECTED_ID := "foundation-champion-visuals-v4-cardinal-movement"
+const EXPECTED_ID := "foundation-champion-visuals-v5-semantic-actions"
 const EXPECTED_AUTHORITY := "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere"
 const REQUIRED_FOUNDATION := ["oh_tipi", "s_wayne"]
 const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v5.png"
 const EXPECTED_BODY_TYPES: Array[String] = ["small", "middle", "large"]
 const EXPECTED_CARDINAL_DIRECTIONS: Array[String] = ["south", "east", "north", "west"]
 const EXPECTED_CARDINAL_STATES: Array[String] = ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"]
+const EXPECTED_SEMANTIC_ACTIONS: Array[String] = [
+	"idle", "walk", "sprint", "jump", "double_jump", "slide", "slide_jump", "air_dodge",
+	"wave_dash", "wall_kick", "vault", "superglide", "launched", "grappled", "charging",
+	"stunned", "rooted", "slowed", "fast_fall", "wall_skim", "impact_recovery", "roll",
+	"cast", "cast_recovery", "attack_primary", "defend", "interact", "taunt", "defeated",
+]
 const EXPECTED_EXCLUDED_LAYERS: Array[String] = ["spell", "element", "projectile", "aura", "shadow", "environment", "equipment", "focus"]
 const CELL_SIZE := Vector2(96.0, 96.0)
 const PIVOT := Vector2(48.0, 84.0)
@@ -32,6 +38,7 @@ var motion: MinimalChampionMotion
 var cardinal_animation_contract: Dictionary = {}
 var atlas_directions: Array = []
 var atlas_states: Array = []
+var semantic_state_aliases: Dictionary = {}
 
 
 func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> bool:
@@ -44,6 +51,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	cardinal_animation_contract.clear()
 	atlas_directions.clear()
 	atlas_states.clear()
+	semantic_state_aliases.clear()
 	motion = MinimalChampionMotion.new()
 	if not motion.load_from_file():
 		return _fail(motion.last_error)
@@ -59,7 +67,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	if not parsed is Dictionary:
 		return _fail("Cartoon champion recipe root must be an object")
 	var data: Dictionary = parsed
-	if int(data.get("schema_version", -1)) != 4 or String(data.get("id", "")) != EXPECTED_ID:
+	if int(data.get("schema_version", -1)) != 5 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Cartoon champion recipe identity is unsupported")
 	if String(data.get("authority", "")) != EXPECTED_AUTHORITY:
 		return _fail("Cartoon champion recipes must remain presentation-only")
@@ -82,6 +90,8 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 		or String(atlas_definition.get("row_layout", "")) != "champion_major_state_minor":
 		return _fail("Foundation cartoon atlas layout is unsupported")
 	if not _validate_cardinal_animation_contract(data.get("cardinal_animation_contract", {})):
+		return false
+	if not _validate_semantic_state_aliases(data.get("semantic_state_aliases", {})):
 		return false
 	atlas_directions = (atlas_definition.get("directions", []) as Array).duplicate()
 	atlas_states = (atlas_definition.get("states", []) as Array).duplicate()
@@ -180,24 +190,84 @@ func _draw_atlas_candidate(canvas: CanvasItem, state: PlayerState, champion_id: 
 	canvas.draw_texture_rect_region(atlas, Rect2(anchor - pivot, size), source)
 
 
-static func silhouette_state(state: PlayerState) -> String:
-	if state.movement_mode in [PlayerState.MovementMode.LAUNCHED, PlayerState.MovementMode.GRAPPLED, PlayerState.MovementMode.STUNNED, PlayerState.MovementMode.IMPACT_RECOVERY] \
-		or state.control_state in [PlayerState.ControlState.LAUNCHED, PlayerState.ControlState.GRAPPLED, PlayerState.ControlState.STUNNED]:
-		return "hit"
-	if state.pending_cast_wire_id > 0 or state.movement_mode == PlayerState.MovementMode.CHARGING \
-		or state.control_state == PlayerState.ControlState.CHARGING or state.last_event.begins_with("cast_start_"):
+func silhouette_state(state: PlayerState) -> String:
+	return atlas_state_for_action(semantic_action(state))
+
+
+func atlas_state_for_action(action_id: String) -> String:
+	return String(semantic_state_aliases.get(action_id, ""))
+
+
+static func semantic_action(state: PlayerState) -> String:
+	if state == null:
+		return "idle"
+	if state.health <= 0:
+		return "defeated"
+	match state.control_state:
+		PlayerState.ControlState.LAUNCHED:
+			return "launched"
+		PlayerState.ControlState.GRAPPLED:
+			return "grappled"
+		PlayerState.ControlState.CHARGING:
+			return "charging"
+		PlayerState.ControlState.STUNNED:
+			return "stunned"
+		PlayerState.ControlState.ROOTED:
+			return "rooted"
+		PlayerState.ControlState.SLOWED:
+			return "slowed"
+	if state.pending_cast_wire_id > 0 or state.last_event.begins_with("cast_start_"):
 		return "cast"
+	if state.cast_recovery_ticks > 0:
+		return "cast_recovery"
+	if state.is_rolling():
+		return "roll"
+	match state.movement_mode:
+		PlayerState.MovementMode.WALK:
+			return "walk"
+		PlayerState.MovementMode.SPRINT:
+			return "sprint"
+		PlayerState.MovementMode.HOP:
+			return "jump"
+		PlayerState.MovementMode.DOUBLE_JUMP:
+			return "double_jump"
+		PlayerState.MovementMode.SLIDE:
+			return "slide"
+		PlayerState.MovementMode.SLIDE_JUMP:
+			return "slide_jump"
+		PlayerState.MovementMode.AIR_DODGE:
+			return "air_dodge"
+		PlayerState.MovementMode.WAVE_DASH:
+			return "wave_dash"
+		PlayerState.MovementMode.WALL_KICK:
+			return "wall_kick"
+		PlayerState.MovementMode.VAULT:
+			return "vault"
+		PlayerState.MovementMode.SUPERGLIDE:
+			return "superglide"
+		PlayerState.MovementMode.LAUNCHED:
+			return "launched"
+		PlayerState.MovementMode.GRAPPLED:
+			return "grappled"
+		PlayerState.MovementMode.CHARGING:
+			return "charging"
+		PlayerState.MovementMode.STUNNED:
+			return "stunned"
+		PlayerState.MovementMode.ROOTED:
+			return "rooted"
+		PlayerState.MovementMode.SLOWED:
+			return "slowed"
+		PlayerState.MovementMode.FAST_FALL:
+			return "fast_fall"
+		PlayerState.MovementMode.WALL_SKIM:
+			return "wall_skim"
+		PlayerState.MovementMode.IMPACT_RECOVERY:
+			return "impact_recovery"
+		PlayerState.MovementMode.ROLL:
+			return "roll"
 	if state.is_airborne():
 		return "jump"
-	if state.movement_mode in [PlayerState.MovementMode.WALK, PlayerState.MovementMode.SLOWED]:
-		return "walk"
-	if state.movement_mode == PlayerState.MovementMode.SPRINT:
-		return "sprint"
-	if state.movement_mode in [PlayerState.MovementMode.SLIDE, PlayerState.MovementMode.WAVE_DASH, PlayerState.MovementMode.WALL_SKIM]:
-		return "slide"
-	if state.movement_mode == PlayerState.MovementMode.ROLL or state.is_rolling():
-		return "roll"
-	return "grounded"
+	return "idle"
 
 
 static func cardinal_direction(x: int, y: int) -> String:
@@ -403,6 +473,29 @@ func _validate_cardinal_animation_contract(value: Variant) -> bool:
 	if String(contract.get("diagonal_policy", "")) != "derive_from_nearest_cardinal":
 		return _fail("Cartoon champion diagonal direction policy is unsupported")
 	cardinal_animation_contract = contract.duplicate(true)
+	return true
+
+
+func _validate_semantic_state_aliases(value: Variant) -> bool:
+	semantic_state_aliases.clear()
+	if not value is Dictionary:
+		return _fail("Cartoon champion semantic state aliases must be an object")
+	var aliases: Dictionary = value
+	var actual_actions: Array[String] = []
+	for action_id: Variant in aliases.keys():
+		if not action_id is String:
+			return _fail("Cartoon champion semantic action IDs must be strings")
+		actual_actions.append(String(action_id))
+	var expected_actions := EXPECTED_SEMANTIC_ACTIONS.duplicate()
+	actual_actions.sort()
+	expected_actions.sort()
+	if actual_actions != expected_actions:
+		return _fail("Cartoon champion semantic action coverage is incomplete")
+	for action_id: String in expected_actions:
+		var atlas_state := String(aliases.get(action_id, ""))
+		if atlas_state not in EXPECTED_CARDINAL_STATES:
+			return _fail("Cartoon champion semantic action targets an unsupported atlas state: %s" % action_id)
+	semantic_state_aliases = aliases.duplicate(true)
 	return true
 
 

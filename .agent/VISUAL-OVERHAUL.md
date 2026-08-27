@@ -31,7 +31,8 @@ projectiles, spell residues and interaction prompts instantly legible.
 | Pixel policy | One documented world-pixel scale, nearest-neighbor sampling, stable pivots and deliberate whole-pixel presentation without changing fixed-point authority. |
 | Play space | Dense detail belongs at scenic edges; navigable floors use quiet values, crisp silhouettes and obvious elevation/collision boundaries. |
 | Perspective | Gameplay floors remain square and screen-cardinal; tilted facades may rise no more than 0.85x their readable footprint, wall feet/door thresholds stay visible, and any occluding roof/canopy/wall cuts away predictably. Diamond-grid/isometric navigation is forbidden. |
-| Champions | Oh Tipi and S. Wayne use compact cartoon pixel proportions: head 40–45% of body height, short readable limbs, expressive face/pose, 44–68px gameplay height, strong ancestry silhouettes and 1–2px outlines. Every gameplay-critical animation has an explicit south/front, east, north/back, and west/profile direction contract; south faces the camera symmetrically, north is centered back, east is authored profile, and west is a deterministic mirror or reviewed profile. Realistic/lanky or sexualized bodies fail review. |
+| Champions | Oh Tipi and S. Wayne use compact cartoon pixel proportions: head 40–45% of body height, short readable limbs, expressive face/pose, 44–68px gameplay height, strong ancestry silhouettes and 1–2px outlines. Every gameplay-critical animation has an explicit `S/SE/E/NE/N/NW/W/SW` contract; south faces the camera symmetrically, north is centered back, side views are clear profiles, and diagonal views preserve ancestry asymmetry. Realistic/lanky or sexualized bodies fail review. |
+| Movement direction | Keyboard combinations must produce all eight compass directions with normalized speed; controller and mouse-derived vectors remain continuous. Presentation bins travel and facing independently into eight stable sectors with bounded hysteresis, so diagonal movement is readable without snapping simulation or aim. |
 | Body types | Exactly three canonical IDs exist: `small`, `middle`, `large`. `tiny→small`, `medium→middle`, and `huge→large` are migration mappings only; no content, manifest, selector or future generator may expose a fourth runtime type. |
 | Layer separation | Champion sprite pixels contain body and clothing only. Shadow/elevation, aura, spell, projectile, residue, environment, tool, equipment and focus visuals are independent reusable layers with their own pivots, provenance and budgets. |
 | Casting | Every champion channels magic visibly from empty hands through separate action/effect layers. Staffs, wands, scepters, rods, held magical foci and floating companion foci are forbidden. |
@@ -48,39 +49,51 @@ projectiles, spell residues and interaction prompts instantly legible.
 | ---: | --- | --- |
 | V0 | Baseline and token specimen | Capture current 720p/1080p frames at 50/75/100%; freeze palette ramps, spacing, typography, outline, shadow, aura, effect and panel tokens in one runtime specimen scene. |
 | V1 | Runtime presentation foundation | Prove pixel snap/filtering, layering, cutaway masks, light/effect budgets and camera transforms in the actual game at 60/120 Hz. |
-| V2 | Two foundation champions | Replace schematic bodies for Oh Tipi and S. Wayne with original body-and-clothing-only production candidates, canonical `middle`/`small` assignments and all gameplay-critical action states in all four cardinal directions; front/back symmetry, authored east profile, reviewed/mirrored west, separate effects/shadows and diagnostic hitboxes are proven live. |
+| V2 | Two foundation champions | Replace schematic bodies for Oh Tipi and S. Wayne with original body-and-clothing-only production candidates, canonical `middle`/`small` assignments and all gameplay-critical action states in all eight compass directions; front/back symmetry, readable sides/diagonals, separate effects/shadows and diagnostic hitboxes are proven live. |
 | V3 | Wellspring environment | Replace the central source court, readable paths, water, academy facade, training target, spell station and near scenic edges with a coherent modular kit aligned to authored collision. |
 | V4 | Existing spell visuals | Give Rillshot, Tideline, Rimewake, Eclipse Disc and Pocket Eclipse distinct readable startup/action/impact/residue treatment plus honest refusal/cooldown/Flux feedback. |
 | V5 | GUI and interaction language | Replace the top debug strip with the compact three-resource/four-spell HUD, active layer indicator, contextual prompt and translucent station/bubble language at 720p and 1080p. |
-| V6 | Integrated visual acceptance | Capture live movement, casting, occlusion, station use and two-player Farflow frames in south/east/north/west; compare against the target rubric and fix every failed item before declaring the visual gate open. |
+| V6 | Integrated visual acceptance | Capture live movement, casting, occlusion, station use and two-player Farflow frames in `S/SE/E/NE/N/NW/W/SW`; compare against the target rubric and fix every failed item before declaring the visual gate open. |
 | V7 | Body/effect separation re-acceptance | Validate the exact current 24-entry cast/status table, original 6×4 concept board, three-body contract, body-only foundation atlases, separate bare-hand effects, grounded roll/jump evasion cue and reusable action aliases without promoting concept pixels as runtime art. |
 | V8 | Spell animation skeletons | Add delivery-specific hand anticipation, release, travel/extent, impact and recovery skeletons for projectile, beam, spray and field while simulation remains authoritative. |
 | V9 | Wellspring environment assets | Produce a small reusable source-court kit whose quiet lanes, cover reads, interaction anchors and material surfaces survive spell-pattern density at every zoom. |
 | V10 | Pattern-density acceptance | Capture two-player projectile, beam, spray and field combinations at 50/75/100%, grayscale and reduced effects; reject any frame without readable ownership and an escape lane. |
 
-## Four-cardinal animation contract
+## Eight-direction movement and animation contract
 
-The first visual acceptance slice is direction-complete in the four gameplay
-cardinals: `south` (camera-facing front), `east` (authored profile), `north`
-(centered back), and `west` (reviewed profile or deterministic east mirror).
-Each body type and every gameplay-critical state—idle, locomotion, airborne,
-evasion, cast, hit/recovery, control-loss, interaction and defeat—must expose a
-bounded frame region for all four directions. Diagonal rows may be authored or
-derived from the nearest cardinal, but they never replace cardinal coverage.
-Direction selection is presentation-only; simulation aim, collision, timing,
-invulnerability and outcomes remain authoritative and continuous.
+Final acceptance is direction-complete in this fixed clockwise order:
+`south`, `south_east`, `east`, `north_east`, `north`, `north_west`, `west`,
+`south_west`. Each body type and every gameplay-critical state—idle,
+locomotion, airborne, evasion, cast, hit/recovery, control-loss, interaction and
+defeat—must expose a bounded frame region for every direction. Side and diagonal
+mirrors are allowed only when ancestry/clothing asymmetry is corrected and the
+result is reviewed.
+
+Movement and facing are distinct inputs to presentation. Keyboard movement
+supports all eight normalized combinations; analog movement and aim stay
+continuous. A shared resolver classifies travel and facing with 45-degree
+sectors centered on each compass direction, 22.5-degree boundaries and bounded
+hysteresis to prevent edge flicker. When not actively aiming, locomotion may
+face travel; while aiming/casting, body facing follows aim and gait communicates
+forward, backward or lateral travel. This resolver changes no fixed-point
+position, speed, collision, timing, invulnerability, network value or outcome.
 
 The current integrated candidate supplies grounded, jump, empty-hand cast,
 hit/recovery, walk, sprint, slide and roll rows for both foundation champions
 with dedicated art in all four columns. Advanced airborne moves derive from
-jump and Wave Dash/Wall Skim derive from the low slide row while retaining
-separate motion/accent layers. V2 remains open until the remaining live
-defense/interaction/emote/defeat/control aliases and integrated two-player
-evidence pass; no additional movement body row is currently missing.
+jump and Wave Dash/Wall Skim derive from the low slide row through a versioned,
+exact semantic-alias manifest while retaining separate motion/accent layers.
+Movement, control, cast/recovery and defeat are live; attack, defense,
+interaction and taunt aliases are reserved without fabricating simulation
+timers. V2 remains open until those app-local cues and integrated two-player
+evidence pass. These four-cardinal rows remain the safe runtime baseline while
+reviewed diagonal columns are introduced one complete action family at a time;
+nearest-cardinal derivation is a migration fallback, not final acceptance.
 
 Acceptance evidence must include a direction matrix capture showing both
-foundation champions in all four cardinals while idle, walking, jumping,
-casting, taking damage and using an evasion action at 50/75/100% zoom. The
+foundation champions in all eight compass directions while idle, walking,
+sprinting, reversing/strafe-moving, jumping, casting, taking damage and using
+an evasion action at 50/75/100% zoom. The
 matrix must preserve the shared feet pivot, empty-hand casting origin,
 receiving-surface shadow and readable silhouettes in standard, high-contrast,
 grayscale and reduced-effects modes.

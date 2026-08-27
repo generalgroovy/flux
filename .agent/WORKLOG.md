@@ -1,5 +1,37 @@
 # FLUX2 agent worklog
 
+## 2026-08-26 - semantic champion action aliases
+
+Playable outcome:
+
+- Replaced hard-coded silhouette grouping with a versioned manifest mapping
+  from specific semantic action IDs to the eight promoted cardinal body rows.
+  All 22 simulation movement modes, every control state, cast startup/recovery,
+  defeat, and the existing attack/defense/interaction/taunt presentation
+  vocabulary are accounted for exactly.
+- Kept specific action identity separate from atlas reuse: Double Jump, Air
+  Dodge, Wall Kick, Vault, Superglide, Fast Fall and Slide Jump alias to jump;
+  Wave Dash and Wall Skim alias to slide; control loss and defeat alias to hit;
+  no duplicate body pixels or renderer-owned rule were introduced.
+- Extended the readable cast pose through authoritative cast recovery. Unknown,
+  missing, extra or nonexistent-row aliases expose no guessed or stale art.
+
+Verification:
+
+- Full deterministic Windows source gate passed: 54 suites / 16,833 assertions,
+  zero failures; independent 60/120 Hz boots loaded the same body atlas hash.
+  Existing legacy archive `Image.load_from_file` warnings remain expected.
+- Twelve-frame westward impact-recovery and sixteen-frame S. Wayne cast/recovery
+  runs produced truthful 1280×720/75% evidence under
+  `.godot/visual-captures/semantic-v5-*`; representative frames were visually
+  inspected.
+
+Next slice:
+
+- Bind spell startup/release hand cues to validated cardinal delivery lanes for
+  projectile, beam, spray and field profiles; keep simulation, spell economy,
+  hit geometry and outcomes frozen.
+
 ## 2026-08-26 - cardinal locomotion and evasion body art
 
 Playable outcome:

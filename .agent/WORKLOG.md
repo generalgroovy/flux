@@ -25,6 +25,12 @@ Verification:
   runs produced truthful 1280×720/75% evidence under
   `.godot/visual-captures/semantic-v5-*`; representative frames were visually
   inspected.
+- Checkpoint `06d9248` was pushed and unified on `main` and
+  `codex/continuous-overhaul`. The Windows package, clean install, forced repair,
+  installed boot and packaged 120 Hz smoke passed. Installer SHA-256 is
+  `ff4be85b7b0035d954c22b338d24f68f3fa4217204ce62eb078cca9691449fdb`;
+  portable ZIP SHA-256 is
+  `a81f49b277418eeb6454a2be2f6e332421f64b745315f948f00ba8501f9fb884`.
 
 Next slice:
 

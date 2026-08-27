@@ -35,6 +35,12 @@ each playable slice.
   no false simulation state was added merely to trigger art.
 - Full Windows source gate: 54 suites / 16,833 assertions, zero failures;
   independent 60/120 Hz boots passed with the unchanged v5 atlas hash.
+- Checkpoint `06d9248` is unified on `main` and
+  `codex/continuous-overhaul`. Its clean-install/repair/installed-boot test and
+  packaged 120 Hz smoke passed. Installer SHA-256 is
+  `ff4be85b7b0035d954c22b338d24f68f3fa4217204ce62eb078cca9691449fdb`;
+  portable ZIP SHA-256 is
+  `a81f49b277418eeb6454a2be2f6e332421f64b745315f948f00ba8501f9fb884`.
 - Next visual slice: make projectile/beam/spray/field startup and release cues
   select their cardinal empty-hand delivery lane through validated content,
   then capture both foundation champions without changing spell rules.

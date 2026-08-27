@@ -79,8 +79,10 @@ champion's frame-complete sprite manifest is finished.
 `src/presentation/wellspring_character_sprite.gd` loads the selected Oh Tipi or
 S. Wayne compatibility atlas and selects its semantic action, eight-direction
 region, and clock-derived frame. The active cartoon presenter instead validates
-the 384×1536 foundation body atlas and selects dedicated south/east/north/west
-art for grounded, airborne, empty-hand cast, hit, walk, sprint, slide and roll states. Build that
+the 768×1536 foundation body atlas and selects dedicated eight-direction art
+for grounded, empty-hand cast, and hit/recovery. Airborne, walk, sprint, slide,
+and roll retain a declared nearest-cardinal compatibility lane until their
+diagonal art is reviewed. Build that
 atlas with `scripts/build_cardinal_champion_atlas.py`; its single scale per
 champion and shared `(48,84)` feet pivot are part of the content contract. The Champion Loom switches the
 canonical champion profile and presentation together. The bootstrap draws that
@@ -100,8 +102,9 @@ Deterministic movement review accepts
 beside `--capture-movement=`. The direction flag is capture-only: it uses the
 shared fixed-point direction contract for the synthetic move/aim vector and
 cannot persist settings or alter ordinary keyboard, mouse, wheel or controller
-input. Runtime simulation vectors remain continuous; current body art uses its
-documented nearest-cardinal fallback until each diagonal family is promoted.
+input. Runtime simulation vectors remain continuous; grounded/cast/hit use the
+authored diagonal core and every other state uses its documented
+nearest-cardinal fallback until that family is promoted.
 
 `content/champions/foundation_champions_v1.json` is the canonical first-roster
 source for stable champion wire IDs, affinities, ancestry, size, bounded stats,

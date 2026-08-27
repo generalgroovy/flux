@@ -3,12 +3,19 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_champion_visuals_v1.json"
-const EXPECTED_ID := "foundation-champion-visuals-v5-semantic-actions"
+const EXPECTED_ID := "foundation-champion-visuals-v6-diagonal-core"
 const EXPECTED_AUTHORITY := "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere"
 const REQUIRED_FOUNDATION := ["oh_tipi", "s_wayne"]
-const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v5.png"
+const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v6.png"
 const EXPECTED_BODY_TYPES: Array[String] = ["small", "middle", "large"]
 const EXPECTED_CARDINAL_DIRECTIONS: Array[String] = ["south", "east", "north", "west"]
+const EXPECTED_DIRECTIONS: Array[String] = [
+	"south", "south_east", "east", "north_east",
+	"north", "north_west", "west", "south_west",
+]
+const EXPECTED_DIAGONAL_DIRECTIONS: Array[String] = ["south_east", "north_east", "north_west", "south_west"]
+const EXPECTED_DIAGONAL_CORE_STATES: Array[String] = ["grounded", "cast", "hit"]
+const EXPECTED_CARDINAL_FALLBACK_STATES: Array[String] = ["jump", "walk", "sprint", "slide", "roll"]
 const EXPECTED_CARDINAL_STATES: Array[String] = ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"]
 const EXPECTED_SEMANTIC_ACTIONS: Array[String] = [
 	"idle", "walk", "sprint", "jump", "double_jump", "slide", "slide_jump", "air_dodge",
@@ -36,6 +43,7 @@ var last_error := ""
 var atlas: Texture2D
 var motion: MinimalChampionMotion
 var cardinal_animation_contract: Dictionary = {}
+var diagonal_core_contract: Dictionary = {}
 var atlas_directions: Array = []
 var atlas_states: Array = []
 var semantic_state_aliases: Dictionary = {}
@@ -49,6 +57,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	last_error = ""
 	atlas = null
 	cardinal_animation_contract.clear()
+	diagonal_core_contract.clear()
 	atlas_directions.clear()
 	atlas_states.clear()
 	semantic_state_aliases.clear()
@@ -67,7 +76,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	if not parsed is Dictionary:
 		return _fail("Cartoon champion recipe root must be an object")
 	var data: Dictionary = parsed
-	if int(data.get("schema_version", -1)) != 5 or String(data.get("id", "")) != EXPECTED_ID:
+	if int(data.get("schema_version", -1)) != 6 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Cartoon champion recipe identity is unsupported")
 	if String(data.get("authority", "")) != EXPECTED_AUTHORITY:
 		return _fail("Cartoon champion recipes must remain presentation-only")
@@ -75,7 +84,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 		return _fail("Cartoon champion atlas must contain body and clothing only")
 	if String(data.get("front_pose", "")) != "camera_facing_symmetrical":
 		return _fail("Cartoon champion front pose must face the camera symmetrically")
-	if String(data.get("direction_policy", "")) != "south_front_camera_facing; east_profile; north_centered_back; west_profile":
+	if String(data.get("direction_policy", "")) != "south_front_camera_facing; south_east_front_three_quarter; east_profile; north_east_back_three_quarter; north_centered_back; north_west_back_three_quarter; west_profile; south_west_front_three_quarter":
 		return _fail("Cartoon champion direction policy is unsupported")
 	if data.get("excluded_layers", []) != EXPECTED_EXCLUDED_LAYERS:
 		return _fail("Cartoon champion excluded-layer contract is invalid")
@@ -83,13 +92,15 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 		return _fail("Cartoon champion cell/pivot differs from the visual contract")
 	var atlas_definition: Dictionary = data.get("atlas", {})
 	if String(atlas_definition.get("path", "")) != ATLAS_PATH \
-		or _vector2i(atlas_definition.get("dimensions", [])) != Vector2i(384, 1536) \
+		or _vector2i(atlas_definition.get("dimensions", [])) != Vector2i(768, 1536) \
 		or atlas_definition.get("champions", []) != REQUIRED_FOUNDATION \
-		or atlas_definition.get("directions", []) != EXPECTED_CARDINAL_DIRECTIONS \
+		or atlas_definition.get("directions", []) != EXPECTED_DIRECTIONS \
 		or atlas_definition.get("states", []) != EXPECTED_CARDINAL_STATES \
 		or String(atlas_definition.get("row_layout", "")) != "champion_major_state_minor":
 		return _fail("Foundation cartoon atlas layout is unsupported")
 	if not _validate_cardinal_animation_contract(data.get("cardinal_animation_contract", {})):
+		return false
+	if not _validate_diagonal_core_contract(data.get("diagonal_core_contract", {})):
 		return false
 	if not _validate_semantic_state_aliases(data.get("semantic_state_aliases", {})):
 		return false
@@ -112,7 +123,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 		champions.clear()
 		return _fail("Foundation cartoon atlas cannot be loaded")
 	atlas = atlas_resource
-	if atlas.get_size() != Vector2(384.0, 1536.0):
+	if atlas.get_size() != Vector2(768.0, 1536.0):
 		atlas = null
 		champions.clear()
 		return _fail("Foundation cartoon atlas dimensions are invalid")
@@ -141,7 +152,7 @@ func source_region(champion_id: String, state: PlayerState) -> Rect2:
 	if row < 0 or row >= REQUIRED_FOUNDATION.size():
 		return Rect2()
 	var state_id := silhouette_state(state)
-	var facing := cardinal_direction(state.facing_x, state.facing_y)
+	var facing := direction_for_state(state_id, state.facing_x, state.facing_y)
 	var state_index := atlas_states.find(state_id)
 	var direction_index := atlas_directions.find(facing)
 	if state_index < 0 or direction_index < 0:
@@ -272,6 +283,12 @@ static func semantic_action(state: PlayerState) -> String:
 
 static func cardinal_direction(x: int, y: int) -> String:
 	return EightDirectionResolver.nearest_cardinal_id(x, y)
+
+
+static func direction_for_state(state_id: String, x: int, y: int) -> String:
+	if state_id in EXPECTED_DIAGONAL_CORE_STATES:
+		return EightDirectionResolver.direction_id_from_vector(x, y)
+	return cardinal_direction(x, y)
 
 
 static func body_type_render_scale(body_type: String) -> float:
@@ -468,9 +485,28 @@ func _validate_cardinal_animation_contract(value: Variant) -> bool:
 		return _fail("Cartoon champion cardinal action coverage is unsupported")
 	if String(contract.get("row_layout", "")) != "champion_major_state_minor":
 		return _fail("Cartoon champion cardinal atlas row layout is unsupported")
-	if String(contract.get("diagonal_policy", "")) != "derive_from_nearest_cardinal":
+	if String(contract.get("diagonal_policy", "")) != "state_scoped_promoted_diagonals":
 		return _fail("Cartoon champion diagonal direction policy is unsupported")
 	cardinal_animation_contract = contract.duplicate(true)
+	return true
+
+
+func _validate_diagonal_core_contract(value: Variant) -> bool:
+	diagonal_core_contract.clear()
+	if not value is Dictionary:
+		return _fail("Cartoon champion diagonal core contract must be an object")
+	var contract: Dictionary = value
+	if contract.get("directions", []) != EXPECTED_DIAGONAL_DIRECTIONS:
+		return _fail("Cartoon champion diagonal core directions are incomplete")
+	if contract.get("states", []) != EXPECTED_DIAGONAL_CORE_STATES:
+		return _fail("Cartoon champion diagonal core states are incomplete")
+	if String(contract.get("coverage", "")) != "every_foundation_champion_has_every_diagonal_core_cell":
+		return _fail("Cartoon champion diagonal core coverage is unsupported")
+	if contract.get("fallback_states", []) != EXPECTED_CARDINAL_FALLBACK_STATES:
+		return _fail("Cartoon champion diagonal fallback states are incomplete")
+	if String(contract.get("fallback_policy", "")) != "nearest_cardinal_until_promoted":
+		return _fail("Cartoon champion diagonal fallback policy is unsupported")
+	diagonal_core_contract = contract.duplicate(true)
 	return true
 
 

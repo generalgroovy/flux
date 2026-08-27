@@ -1,21 +1,21 @@
 {
-  "schema_version": 5,
-  "id": "foundation-champion-visuals-v5-semantic-actions",
+  "schema_version": 6,
+  "id": "foundation-champion-visuals-v6-diagonal-core",
   "authority": "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere",
   "atlas_role": "body_and_clothing_only",
   "front_pose": "camera_facing_symmetrical",
-  "direction_policy": "south_front_camera_facing; east_profile; north_centered_back; west_profile",
+  "direction_policy": "south_front_camera_facing; south_east_front_three_quarter; east_profile; north_east_back_three_quarter; north_centered_back; north_west_back_three_quarter; west_profile; south_west_front_three_quarter",
   "excluded_layers": ["spell", "element", "projectile", "aura", "shadow", "environment", "equipment", "focus"],
   "cell": [96, 96],
   "pivot": [48, 84],
   "atlas": {
-    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v5.png",
-    "sha256": "1bea3c7f8d35b331801a81cc63f54388671ec0df658ec8a16a18393ed6866680",
-    "imported_rgba_sha256": "72ad872e6c5b824615a9cb348b384fd15a8e2933892828f3ca3f9633c8a9472b",
-    "dimensions": [384, 1536],
+    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v6.png",
+    "sha256": "0df9edef7535d8e49833d3276b6f31ccc0a387aac63cb0b0b23e39cf8920f5b1",
+    "imported_rgba_sha256": "2c8e6c5b646be5385e14981230ce70cfec4565b7c0273ee96c3410d60a98fd04",
+    "dimensions": [768, 1536],
     "champions": ["oh_tipi", "s_wayne"],
     "states": ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"],
-    "directions": ["south", "east", "north", "west"],
+    "directions": ["south", "south_east", "east", "north_east", "north", "north_west", "west", "south_west"],
     "row_layout": "champion_major_state_minor"
   },
   "cardinal_animation_contract": {
@@ -23,7 +23,14 @@
     "states": ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"],
     "coverage": "every_champion_has_every_state_in_every_cardinal_direction",
     "row_layout": "champion_major_state_minor",
-    "diagonal_policy": "derive_from_nearest_cardinal"
+    "diagonal_policy": "state_scoped_promoted_diagonals"
+  },
+  "diagonal_core_contract": {
+    "directions": ["south_east", "north_east", "north_west", "south_west"],
+    "states": ["grounded", "cast", "hit"],
+    "coverage": "every_foundation_champion_has_every_diagonal_core_cell",
+    "fallback_states": ["jump", "walk", "sprint", "slide", "roll"],
+    "fallback_policy": "nearest_cardinal_until_promoted"
   },
   "semantic_state_aliases": {
     "idle": "grounded",

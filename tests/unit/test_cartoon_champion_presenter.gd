@@ -5,6 +5,7 @@ func run() -> int:
 	_test_repository_recipes()
 	_test_semantic_states()
 	_test_semantic_aliases_fail_closed()
+	_test_diagonal_contract_fails_closed()
 	return finish("cartoon-champion-presenter")
 
 
@@ -17,9 +18,11 @@ func _test_repository_recipes() -> void:
 	check(presenter.atlas != null, "reviewed foundation runtime atlas loads")
 	check(presenter.motion != null and presenter.motion.content_hash.length() == 64, "editable minimal-motion recipes load with champion art")
 	check(presenter.content_hash.length() == 64, "champion presentation content has a stable hash")
-	equal(presenter.atlas_hash, "1bea3c7f8d35b331801a81cc63f54388671ec0df658ec8a16a18393ed6866680", "reviewed cardinal movement runtime atlas hash is pinned")
+	equal(presenter.atlas_hash, "0df9edef7535d8e49833d3276b6f31ccc0a387aac63cb0b0b23e39cf8920f5b1", "reviewed diagonal-core runtime atlas hash is pinned")
 	equal(presenter.cardinal_animation_contract.get("directions", []), ["south", "east", "north", "west"], "foundation animation contract covers four cardinal directions")
 	equal(presenter.cardinal_animation_contract.get("states", []), ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"], "foundation animation contract covers core and movement actions")
+	equal(presenter.diagonal_core_contract.get("directions", []), ["south_east", "north_east", "north_west", "south_west"], "foundation diagonal core covers four intercardinals")
+	equal(presenter.diagonal_core_contract.get("states", []), ["grounded", "cast", "hit"], "foundation diagonal core is explicitly state-scoped")
 	equal(presenter.semantic_state_aliases.size(), CartoonChampionPresenter.EXPECTED_SEMANTIC_ACTIONS.size(), "every authoritative semantic action has an explicit atlas alias")
 	for champion_id: String in ["oh_tipi", "s_wayne"]:
 		check(presenter.can_present(champion_id), "%s has a promoted cartoon recipe" % champion_id)
@@ -48,14 +51,14 @@ func _test_repository_recipes() -> void:
 	equal(presenter.source_region("oh_tipi", state), Rect2(0, 0, 96, 96), "Oh Tipi south grounded selects the first cell")
 	state.facing_x = -1000
 	state.facing_y = 0
-	equal(presenter.source_region("oh_tipi", state), Rect2(288, 0, 96, 96), "Oh Tipi west grounded selects dedicated west art")
+	equal(presenter.source_region("oh_tipi", state), Rect2(576, 0, 96, 96), "Oh Tipi west grounded selects dedicated west art")
 	state.pending_cast_wire_id = 1
-	equal(presenter.source_region("s_wayne", state), Rect2(288, 960, 96, 96), "S. Wayne west cast selects dedicated cardinal action art")
+	equal(presenter.source_region("s_wayne", state), Rect2(576, 960, 96, 96), "S. Wayne west cast selects dedicated cardinal action art")
 	var cardinal_cases := [
 		{"facing": Vector2i(0, 1000), "state": "south", "column": 0},
-		{"facing": Vector2i(1000, 0), "state": "east", "column": 1},
-		{"facing": Vector2i(0, -1000), "state": "north", "column": 2},
-		{"facing": Vector2i(-1000, 0), "state": "west", "column": 3},
+		{"facing": Vector2i(1000, 0), "state": "east", "column": 2},
+		{"facing": Vector2i(0, -1000), "state": "north", "column": 4},
+		{"facing": Vector2i(-1000, 0), "state": "west", "column": 6},
 	]
 	for case: Dictionary in cardinal_cases:
 		var directional_state := PlayerState.new()
@@ -82,6 +85,29 @@ func _test_repository_recipes() -> void:
 		for movement_case: Dictionary in movement_cases:
 			directional_state.movement_mode = int(movement_case["mode"])
 			equal(presenter.source_region("oh_tipi", directional_state), Rect2(expected_x, float(movement_case["row"]) * 96.0, 96, 96), "%s animation selects dedicated %s art" % [movement_case["state"], case["state"]])
+	var diagonal_cases := [
+		{"facing": Vector2i(707, 707), "state": "south_east", "column": 1},
+		{"facing": Vector2i(707, -707), "state": "north_east", "column": 3},
+		{"facing": Vector2i(-707, -707), "state": "north_west", "column": 5},
+		{"facing": Vector2i(-707, 707), "state": "south_west", "column": 7},
+	]
+	for case: Dictionary in diagonal_cases:
+		var diagonal_state := PlayerState.new()
+		diagonal_state.facing_x = int((case["facing"] as Vector2i).x)
+		diagonal_state.facing_y = int((case["facing"] as Vector2i).y)
+		var expected_x := float(case["column"]) * 96.0
+		equal(presenter.source_region("oh_tipi", diagonal_state), Rect2(expected_x, 0, 96, 96), "grounded %s selects promoted diagonal art" % case["state"])
+		diagonal_state.pending_cast_wire_id = 1
+		equal(presenter.source_region("oh_tipi", diagonal_state), Rect2(expected_x, 192, 96, 96), "cast %s selects promoted diagonal art" % case["state"])
+		diagonal_state.pending_cast_wire_id = 0
+		diagonal_state.movement_mode = PlayerState.MovementMode.LAUNCHED
+		equal(presenter.source_region("oh_tipi", diagonal_state), Rect2(expected_x, 288, 96, 96), "hit %s selects promoted diagonal art" % case["state"])
+	var diagonal_fallback := PlayerState.new()
+	diagonal_fallback.facing_x = 707
+	diagonal_fallback.facing_y = -707
+	diagonal_fallback.movement_mode = PlayerState.MovementMode.HOP
+	diagonal_fallback.hop_ticks = 2
+	equal(presenter.source_region("oh_tipi", diagonal_fallback), Rect2(384, 96, 96, 96), "unpromoted north-east jump explicitly falls back to north")
 	check(presenter.source_region("unreviewed", state).has_area() == false, "unreviewed champion has no source region")
 
 
@@ -166,6 +192,9 @@ func _test_semantic_states() -> void:
 	equal(CartoonChampionPresenter.cardinal_direction(-1000, 10), "west", "negative horizontal facing stays horizontal")
 	equal(CartoonChampionPresenter.cardinal_direction(0, -1000), "north", "negative vertical facing reads north")
 	equal(CartoonChampionPresenter.cardinal_direction(0, 1000), "south", "positive vertical facing reads south")
+	equal(CartoonChampionPresenter.direction_for_state("grounded", 707, -707), "north_east", "promoted grounded state resolves north-east")
+	equal(CartoonChampionPresenter.direction_for_state("cast", -707, 707), "south_west", "promoted cast resolves south-west")
+	equal(CartoonChampionPresenter.direction_for_state("walk", 707, -707), "north", "unpromoted walk keeps its explicit nearest-cardinal fallback")
 	state.movement_mode = PlayerState.MovementMode.WALK
 	state.movement_speed_ratio = 1000
 	state.velocity_x = MovementTuning.BASE_SPEED / 10
@@ -195,3 +224,15 @@ func _test_semantic_aliases_fail_closed() -> void:
 		check(not presenter._validate_semantic_state_aliases(mutation), "incomplete or unsafe semantic aliases fail closed")
 		check(not presenter.last_error.is_empty(), "semantic alias failure is actionable")
 		equal(presenter.semantic_state_aliases, {}, "failed alias validation exposes no stale mapping")
+
+
+func _test_diagonal_contract_fails_closed() -> void:
+	var language := VisualLanguage.new()
+	check(language.load_from_file(), "visual language loads for diagonal contract tests")
+	var presenter := CartoonChampionPresenter.new()
+	check(presenter.configure(language), "valid diagonal contract loads before mutation")
+	var contract := presenter.diagonal_core_contract.duplicate(true)
+	contract["states"] = ["grounded", "cast"]
+	check(not presenter._validate_diagonal_core_contract(contract), "missing diagonal core state fails closed")
+	check(not presenter.last_error.is_empty(), "diagonal contract failure is actionable")
+	equal(presenter.diagonal_core_contract, {}, "failed diagonal validation exposes no stale contract")

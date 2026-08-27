@@ -67,7 +67,7 @@ channels are not claimed yet; test direct-IP builds only with trusted friends.
 | Repository | One authoritative Godot runtime; browser runtime retired | Keep docs/content/runtime hashes in one lineage |
 | Lifecycle | Source launch, portable archives, checksums, one-file Windows setup/update/launch | Signed releases, clean uninstall UI, public update channel |
 | Wellspring | Nine districts, walk-up stations, practice actors, movement routes | Stronger authored landmarks and compact onboarding |
-| Movement | Full universal foundation at deterministic 60/120 Hz; normalized eight-way keyboard/controller commands, analog gate magnitude, and radial acceleration with no diagonal advantage | Diagonal body art, relative gait, pattern-pressure tuning and player playtest |
+| Movement | Full universal foundation at deterministic 60/120 Hz; normalized eight-way commands, analog magnitude, radial acceleration, and diagonal grounded/cast/recovery presentation | Diagonal locomotion/advanced-action art, relative gait, pattern-pressure tuning and player playtest |
 | Combat | Projectile, beam, spray, field, ricochet, launch, slow | Data-driven five-shot burst family for eight elements |
 | Chemistry | Material grid and 36 design-locked recipes | All recipes form, act, decay, reset, and explain themselves in-game |
 | Champions | Oh Tipi and S. Wayne playable | Do not expand until first-eight chemistry passes |
@@ -371,15 +371,17 @@ The retained `size_1_tiny`, `size_2_small`, `size_3_medium`, `size_4_large`,
 and `size_5_huge` path fragments belong to the legacy visual archive; only
 `small`, `middle`, and `large` are authored runtime body types.
 
-![Four-cardinal body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_cardinal_v5.png)
+![Eight-direction body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_eight_v6.png)
 
 This atlas is a reusable body/clothing layer for the two foundation champions;
 spells, auras, shadows, projectiles, environment and equipment are composed
 independently. Each champion's `atlas_row` is authored in
-`content/visual/foundation_champion_visuals_v1.json`. The versioned 384×1536
-atlas packs dedicated grounded, jump, empty-hand cast, hit/recovery, walk,
-sprint, slide and roll art for south/east/north/west under each champion;
-neither profile is synthesized at runtime. The validator rejects missing states, directions, hashes, pivots or
+`content/visual/foundation_champion_visuals_v1.json`. The versioned 768×1536
+atlas packs eight direction columns under each champion. Grounded, empty-hand
+cast, and hit/recovery have authored diagonal cells; jump, walk, sprint, slide,
+and roll retain explicit nearest-cardinal fallback until their own reviewed
+diagonal art is promoted. Neither profile is synthesized at runtime. The
+validator rejects missing states, directions, hashes, pivots or
 layout drift before the scene can boot, and the deterministic builder plus exact
 generation prompts live beside the source sheets.
 

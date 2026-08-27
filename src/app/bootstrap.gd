@@ -605,7 +605,7 @@ func _process(delta: float) -> void:
 	var steps: int = 0
 	while accumulator_seconds >= fixed_delta and steps < MAX_CATCH_UP_STEPS:
 		previous_position = current_position
-		if requested_capture_movement == "impact_recovery" and world.tick == 4 and not session_transport.is_connected_client():
+		if requested_capture_movement in ["hit", "impact_recovery"] and world.tick == 4 and not session_transport.is_connected_client():
 			MovementSystem.apply_control_state(
 				_local_player_state(), PlayerState.ControlState.LAUNCHED, 180,
 				requested_capture_movement_direction, 540_000, world.config,
@@ -2804,7 +2804,7 @@ func _requested_capture_movement() -> String:
 		if argument.begins_with("--capture-movement="):
 			var requested := parse_capture_movement(argument)
 			if requested.is_empty():
-				push_warning("Invalid movement capture; expected walk, brake, reverse, sprint, slide, jump, air_dodge, technique, or impact_recovery")
+				push_warning("Invalid movement capture; expected grounded, hit, walk, brake, reverse, sprint, slide, jump, air_dodge, technique, or impact_recovery")
 			return requested
 	return ""
 
@@ -2881,7 +2881,7 @@ static func parse_capture_movement(argument: String) -> String:
 	if not argument.begins_with("--capture-movement="):
 		return ""
 	var requested := argument.trim_prefix("--capture-movement=").strip_edges().to_lower()
-	return requested if requested in ["walk", "brake", "reverse", "sprint", "slide", "jump", "air_dodge", "technique", "impact_recovery"] else ""
+	return requested if requested in ["grounded", "hit", "walk", "brake", "reverse", "sprint", "slide", "jump", "air_dodge", "technique", "impact_recovery"] else ""
 
 
 static func parse_capture_direction(argument: String) -> Vector2i:
@@ -2901,6 +2901,9 @@ static func capture_movement_command(mode: String, tick: int, entity_id: int, di
 		normalized_direction = EightDirectionResolver.fixed_vector("east")
 	var move_x := normalized_direction.x
 	var move_y := normalized_direction.y
+	if mode == "grounded" and tick > 0:
+		move_x = 0
+		move_y = 0
 	if mode == "impact_recovery":
 		# Preserve the historical bounded influence lane; the separate aim and
 		# launch vectors still select the requested cardinal review direction.

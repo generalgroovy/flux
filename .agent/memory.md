@@ -21,6 +21,12 @@ each playable slice.
   protocol 30; snapshot schema remains 11 and preferences remain 9. Full
   Windows source gate: 54 suites / 17,126 assertions, zero failures; independent
   60/120 Hz boots passed.
+- Runtime/content checkpoint `b67c8f4` packages successfully; clean install,
+  forced repair, installed boot and direct packaged 120 Hz process smoke pass.
+  Installer SHA-256 is
+  `b86299606162cb836183a3b73ffab98a4e64b0288241ec7fa5a964296b15e988`;
+  portable ZIP SHA-256 is
+  `fa6a243d2435ae6142a02ef7ee278f27c13080dc5d0d659e2e754f06a6263ba0`.
 - Next visual slice: add diagonal grounded, empty-hand cast and hit/recovery
   cells for Oh Tipi and S. Wayne on the existing body-only atlas pivot.
 

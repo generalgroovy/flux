@@ -26,6 +26,12 @@ Verification:
 - Every eight-sector prediction fixture converges exactly after authority; all
   movement and aim components survive Farflow transport; repeated recordings
   reproduce every tick hash at both rates.
+- Runtime/content commit `b67c8f4` produced the protocol-30 Windows package.
+  Clean install, forced repair, installed boot and direct packaged 120 Hz
+  process smoke passed. Installer SHA-256 is
+  `b86299606162cb836183a3b73ffab98a4e64b0288241ec7fa5a964296b15e988`;
+  portable ZIP SHA-256 is
+  `fa6a243d2435ae6142a02ef7ee278f27c13080dc5d0d659e2e754f06a6263ba0`.
 
 Next slice:
 

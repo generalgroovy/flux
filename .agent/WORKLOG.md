@@ -1,5 +1,34 @@
 # FLUX2 agent worklog
 
+## 2026-08-27 - safe diagonal evasion presentation fallback
+
+Playable outcome:
+
+- Added a validated `diagonal_evasion_contract` for jump/slide/roll. The body
+  continues to use nearest-cardinal reviewed art until diagonal action sheets
+  pass review, while a presentation-only two-stroke contour cue follows the
+  true eight-way travel/facing vector during combat-intangible windows.
+- Contract validation is fail-closed and clears stale state. Presenter tests
+  cover contract shape and every eight-direction travel/facing fallback.
+
+Verification:
+
+- `scripts\\test.cmd`: 54 suites / 17,169 assertions, zero failures; source
+  60/120 Hz boots report protocol 30 and atlas SHA-256
+  `79859259d0025be962323a794ce26537fc754664dae879200072948974f9dbc3`.
+- Built-in ImageGen diagonal evasion generation returned HTTP 429
+  `usage_limit_reached`; no unreviewed source was copied or promoted.
+- `scripts\\package.cmd Windows` passed and the direct packaged 120 Hz boot
+  exited 0. Installer SHA-256 is
+  `be2a6a41f5bcc9dca55cb752a55533ab6dd717da661c2e6127051adf4f6d884f`; the
+  portable ZIP SHA-256 is
+  `047ad5a569f13568a22f51a5d87972da7494ed62bb318eced06836fc85ce5342`.
+
+Next slice:
+
+- Promote reviewed diagonal jump/slide/roll art when generation/review is
+  available, then align eight-way spell hand origins and projectile cues.
+
 ## 2026-08-27 - diagonal locomotion and relative gait
 
 Playable outcome:

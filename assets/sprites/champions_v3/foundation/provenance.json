@@ -43,6 +43,13 @@
     "facing_policy": "travel_when_free_aim_when_combat_intent",
     "authority": "presentation_only"
   },
+  "diagonal_evasion_contract": {
+    "states": ["jump", "slide", "roll"],
+    "directions": ["south_east", "north_east", "north_west", "south_west"],
+    "coverage": "directional_cue_with_nearest_cardinal_body_until_promoted",
+    "art_status": "awaiting_reviewed_source",
+    "authority": "presentation_only"
+  },
   "build_command": "python scripts/build_cardinal_champion_atlas.py assets/sprites/champions_v3/foundation/source_cardinal_oh_tipi_v4.png assets/sprites/champions_v3/foundation/source_cardinal_s_wayne_v4.png assets/sprites/champions_v3/foundation/runtime_atlas_eight_v7.png --oh-tipi-movement assets/sprites/champions_v3/foundation/source_movement_oh_tipi_v5.png --s-wayne-movement assets/sprites/champions_v3/foundation/source_movement_s_wayne_v5.png --oh-tipi-diagonal-core assets/sprites/champions_v3/foundation/source_diagonal_core_oh_tipi_v6.png --s-wayne-diagonal-core assets/sprites/champions_v3/foundation/source_diagonal_core_s_wayne_v6.png --oh-tipi-diagonal-locomotion assets/sprites/champions_v3/foundation/source_diagonal_locomotion_oh_tipi_v7.png --s-wayne-diagonal-locomotion assets/sprites/champions_v3/foundation/source_diagonal_locomotion_s_wayne_v7.png",
   "atlas_role": "body_and_clothing_only",
   "excluded_layers": ["spell", "element", "projectile", "aura", "shadow", "environment", "equipment", "focus"],

@@ -6,6 +6,7 @@ func run() -> int:
 	_test_semantic_states()
 	_test_semantic_aliases_fail_closed()
 	_test_diagonal_contract_fails_closed()
+	_test_diagonal_evasion_contract_and_direction()
 	_test_relative_locomotion_gaits()
 	return finish("cartoon-champion-presenter")
 
@@ -26,6 +27,8 @@ func _test_repository_recipes() -> void:
 	equal(presenter.diagonal_core_contract.get("states", []), ["grounded", "cast", "hit"], "foundation diagonal core is explicitly state-scoped")
 	equal(presenter.diagonal_locomotion_contract.get("states", []), ["walk", "sprint"], "foundation diagonal locomotion is explicitly state-scoped")
 	equal(presenter.diagonal_locomotion_contract.get("gaits", []), ["idle", "forward", "backward", "strafe_left", "strafe_right"], "relative gait catalog is exact")
+	equal(presenter.diagonal_evasion_contract.get("states", []), ["jump", "slide", "roll"], "foundation diagonal evasion contract covers all three evasion states")
+	equal(String(presenter.diagonal_evasion_contract.get("coverage", "")), "directional_cue_with_nearest_cardinal_body_until_promoted", "unreviewed diagonal evasion art is explicit and safe")
 	equal(presenter.semantic_state_aliases.size(), CartoonChampionPresenter.EXPECTED_SEMANTIC_ACTIONS.size(), "every authoritative semantic action has an explicit atlas alias")
 	for champion_id: String in ["oh_tipi", "s_wayne"]:
 		check(presenter.can_present(champion_id), "%s has a promoted cartoon recipe" % champion_id)
@@ -257,6 +260,37 @@ func _test_diagonal_contract_fails_closed() -> void:
 	locomotion_contract["gaits"] = ["forward", "backward"]
 	check(not presenter._validate_diagonal_locomotion_contract(locomotion_contract), "incomplete gait catalog fails closed")
 	equal(presenter.diagonal_locomotion_contract, {}, "failed locomotion validation exposes no stale contract")
+	check(presenter.configure(language), "valid diagonal contracts reload before evasion mutation")
+	var evasion_contract := presenter.diagonal_evasion_contract.duplicate(true)
+	evasion_contract["states"] = ["jump", "roll"]
+	check(not presenter._validate_diagonal_evasion_contract(evasion_contract), "missing diagonal evasion state fails closed")
+	equal(presenter.diagonal_evasion_contract, {}, "failed evasion validation exposes no stale contract")
+
+
+func _test_diagonal_evasion_contract_and_direction() -> void:
+	var state := PlayerState.new()
+	var directions := [
+		{"vector": Vector2i(0, 1000), "id": "south"},
+		{"vector": Vector2i(707, 707), "id": "south_east"},
+		{"vector": Vector2i(1000, 0), "id": "east"},
+		{"vector": Vector2i(707, -707), "id": "north_east"},
+		{"vector": Vector2i(0, -1000), "id": "north"},
+		{"vector": Vector2i(-707, -707), "id": "north_west"},
+		{"vector": Vector2i(-1000, 0), "id": "west"},
+		{"vector": Vector2i(-707, 707), "id": "south_west"},
+	]
+	for direction: Dictionary in directions:
+		state.velocity_x = int((direction["vector"] as Vector2i).x)
+		state.velocity_y = int((direction["vector"] as Vector2i).y)
+		equal(CartoonChampionPresenter.evasion_direction(state), direction["id"], "evasion cue follows every eight-direction travel vector")
+	state.velocity_x = 0
+	state.velocity_y = 0
+	state.facing_x = -707
+	state.facing_y = 707
+	equal(CartoonChampionPresenter.evasion_direction(state), "south_west", "stationary evasion cue follows authored facing")
+	state.facing_x = 0
+	state.facing_y = 0
+	equal(CartoonChampionPresenter.evasion_direction(state), "south", "zero-vector evasion cue fails safe to south")
 
 
 func _test_relative_locomotion_gaits() -> void:

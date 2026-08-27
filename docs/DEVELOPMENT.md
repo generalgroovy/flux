@@ -104,7 +104,10 @@ shared fixed-point direction contract for the synthetic move/aim vector and
 cannot persist settings or alter ordinary keyboard, mouse, wheel or controller
 input. Runtime simulation vectors remain continuous; grounded/cast/hit/walk/
 sprint use authored diagonal art and jump/slide/roll use their documented
-nearest-cardinal fallback until that family is promoted. Free locomotion faces
+nearest-cardinal body fallback until that family is promoted. During a combat
+intangible window, a presentation-only two-stroke cue points along the actual
+evasion vector so the player can read travel direction even while the body
+uses the safe fallback. Free locomotion faces
 travel; a held attack or cast faces aim and exposes a presentation-only relative
 gait cue.
 

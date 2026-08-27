@@ -3,6 +3,39 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## 2026-08-27 - safe diagonal evasion presentation fallback
+
+Playable outcome:
+
+- Added a fail-closed `diagonal_evasion_contract` for `jump`, `slide`, and
+  `roll`. These action families remain nearest-cardinal body art until reviewed
+  diagonal source sheets exist; the presenter now adds a small two-stroke cue
+  aligned to the actual eight-way travel/facing vector during combat
+  invulnerability frames. This is presentation-only and does not alter
+  movement, hitboxes, timing, costs, or authority.
+- Added deterministic coverage for all eight travel headings, stationary facing
+  fallback, zero-vector south fallback, contract mutation refusal, and stale
+  state clearing.
+
+Verification:
+
+- `scripts\\test.cmd`: 54 suites / 17,169 assertions, zero failures; source
+  60/120 Hz boots remain green with protocol 30 and the v7 atlas hash.
+- Built-in ImageGen was attempted for reviewed diagonal jump/slide/roll sheets
+  but returned HTTP 429 `usage_limit_reached`; no unreviewed art was promoted.
+- `scripts\\package.cmd Windows` passed and the direct packaged 120 Hz boot
+  exited 0. This checkpoint's installer SHA-256 is
+  `be2a6a41f5bcc9dca55cb752a55533ab6dd717da661c2e6127051adf4f6d884f`; the
+  portable ZIP SHA-256 is
+  `047ad5a569f13568a22f51a5d87972da7494ed62bb318eced06836fc85ce5342`.
+
+Next slice:
+
+- When reviewed source art is available, promote diagonal evasion cells through
+  the existing builder and contract without changing simulation. Until then,
+  align directional spell hand origins and projectile cues to the same eight-way
+  presentation contract.
+
 ## 2026-08-27 - diagonal locomotion and relative gait
 
 Playable outcome:

@@ -40,6 +40,13 @@
     "facing_policy": "travel_when_free_aim_when_combat_intent",
     "authority": "presentation_only"
   },
+  "diagonal_evasion_contract": {
+    "directions": ["south_east", "north_east", "north_west", "south_west"],
+    "states": ["jump", "slide", "roll"],
+    "coverage": "directional_cue_with_nearest_cardinal_body_until_promoted",
+    "art_status": "awaiting_reviewed_source",
+    "authority": "presentation_only"
+  },
   "semantic_state_aliases": {
     "idle": "grounded",
     "walk": "walk",

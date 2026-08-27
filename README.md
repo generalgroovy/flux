@@ -67,7 +67,7 @@ channels are not claimed yet; test direct-IP builds only with trusted friends.
 | Repository | One authoritative Godot runtime; browser runtime retired | Keep docs/content/runtime hashes in one lineage |
 | Lifecycle | Source launch, portable archives, checksums, one-file Windows setup/update/launch | Signed releases, clean uninstall UI, public update channel |
 | Wellspring | Nine districts, walk-up stations, practice actors, movement routes | Stronger authored landmarks and compact onboarding |
-| Movement | Full universal foundation at deterministic 60/120 Hz; normalized eight-way commands, analog magnitude, radial acceleration, and diagonal grounded/cast/recovery presentation | Diagonal locomotion/advanced-action art, relative gait, pattern-pressure tuning and player playtest |
+| Movement | Full universal foundation at deterministic 60/120 Hz; normalized eight-way commands, analog magnitude, radial acceleration, diagonal grounded/cast/recovery presentation, relative gait, and directional evasion cues | Reviewed diagonal jump/slide/roll art, pattern-pressure tuning and player playtest |
 | Combat | Projectile, beam, spray, field, ricochet, launch, slow | Data-driven five-shot burst family for eight elements |
 | Chemistry | Material grid and 36 design-locked recipes | All recipes form, act, decay, reset, and explain themselves in-game |
 | Champions | Oh Tipi and S. Wayne playable | Do not expand until first-eight chemistry passes |
@@ -379,10 +379,12 @@ independently. Each champion's `atlas_row` is authored in
 `content/visual/foundation_champion_visuals_v1.json`. The versioned 768×1536
 atlas packs eight direction columns under each champion. Grounded, empty-hand
 cast, hit/recovery, walk, and sprint have authored diagonal cells; jump, slide,
-and roll retain explicit nearest-cardinal fallback until their own reviewed
-diagonal art is promoted. During free locomotion the body faces travel; while
-combat intent is active it faces aim and exposes forward, backward, and strafe
-gait cues. Neither profile is synthesized at runtime. The
+and roll retain explicit nearest-cardinal body fallback until their own reviewed
+diagonal art is promoted, while an independent two-stroke directional evasion
+cue follows the actual travel/facing vector during invulnerability frames.
+During free locomotion the body faces travel; while combat intent is active it
+faces aim and exposes forward, backward, and strafe gait cues. Neither profile
+is synthesized at runtime. The
 validator rejects missing states, directions, hashes, pivots or
 layout drift before the scene can boot, and the deterministic builder plus exact
 generation prompts live beside the source sheets.

@@ -19,6 +19,7 @@ const EXPECTED_DIAGONAL_LOCOMOTION_STATES: Array[String] = ["walk", "sprint"]
 const EXPECTED_DIAGONAL_STATES: Array[String] = ["grounded", "cast", "hit", "walk", "sprint"]
 const EXPECTED_CARDINAL_FALLBACK_STATES: Array[String] = ["jump", "slide", "roll"]
 const EXPECTED_RELATIVE_GAITS: Array[String] = ["idle", "forward", "backward", "strafe_left", "strafe_right"]
+const EXPECTED_DIAGONAL_EVASION_STATES: Array[String] = ["jump", "slide", "roll"]
 const EXPECTED_CARDINAL_STATES: Array[String] = ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"]
 const EXPECTED_SEMANTIC_ACTIONS: Array[String] = [
 	"idle", "walk", "sprint", "jump", "double_jump", "slide", "slide_jump", "air_dodge",
@@ -48,6 +49,7 @@ var motion: MinimalChampionMotion
 var cardinal_animation_contract: Dictionary = {}
 var diagonal_core_contract: Dictionary = {}
 var diagonal_locomotion_contract: Dictionary = {}
+var diagonal_evasion_contract: Dictionary = {}
 var atlas_directions: Array = []
 var atlas_states: Array = []
 var semantic_state_aliases: Dictionary = {}
@@ -63,6 +65,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	cardinal_animation_contract.clear()
 	diagonal_core_contract.clear()
 	diagonal_locomotion_contract.clear()
+	diagonal_evasion_contract.clear()
 	atlas_directions.clear()
 	atlas_states.clear()
 	semantic_state_aliases.clear()
@@ -108,6 +111,8 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	if not _validate_diagonal_core_contract(data.get("diagonal_core_contract", {})):
 		return false
 	if not _validate_diagonal_locomotion_contract(data.get("diagonal_locomotion_contract", {})):
+		return false
+	if not _validate_diagonal_evasion_contract(data.get("diagonal_evasion_contract", {})):
 		return false
 	if not _validate_semantic_state_aliases(data.get("semantic_state_aliases", {})):
 		return false
@@ -495,6 +500,34 @@ func _draw_evasion_contour(
 	var center := ground_anchor + Vector2(0.0, -22.0)
 	canvas.draw_arc(center, radius, -1.35 + phase, 0.25 + phase, 10, Color(color, opacity), 2.0)
 	canvas.draw_arc(center, radius, 1.8 + phase, 3.4 + phase, 10, Color(color, opacity), 2.0)
+	_draw_directional_evasion_cue(canvas, state, ground_anchor, phase, color, opacity)
+
+
+static func evasion_direction(state: PlayerState) -> String:
+	if state == null:
+		return "south"
+	var velocity := Vector2i(state.velocity_x, state.velocity_y)
+	if velocity != Vector2i.ZERO:
+		return EightDirectionResolver.direction_id_from_vector(velocity.x, velocity.y)
+	return EightDirectionResolver.direction_id_from_vector(state.facing_x, state.facing_y)
+
+
+func _draw_directional_evasion_cue(
+	canvas: CanvasItem,
+	state: PlayerState,
+	ground_anchor: Vector2,
+	phase: float,
+	color: Color,
+	opacity: float,
+) -> void:
+	var direction_value := EightDirectionResolver.fixed_vector(evasion_direction(state))
+	var direction := Vector2(float(direction_value.x), float(direction_value.y)).normalized()
+	var side := direction.orthogonal()
+	var length := 9.0 + phase * 4.0
+	var start := ground_anchor - direction * (15.0 + phase * 3.0)
+	for side_sign: float in [-1.0, 1.0]:
+		var center := start + side * side_sign * 6.0
+		canvas.draw_line(center, center - direction * length, Color(color, opacity * 0.72), 2.0)
 
 
 func _validate_recipe(champion_id: String, value: Variant) -> bool:
@@ -590,6 +623,24 @@ func _validate_diagonal_locomotion_contract(value: Variant) -> bool:
 		or String(contract.get("authority", "")) != "presentation_only":
 		return _fail("Cartoon champion locomotion facing policy is unsupported")
 	diagonal_locomotion_contract = contract.duplicate(true)
+	return true
+
+
+func _validate_diagonal_evasion_contract(value: Variant) -> bool:
+	diagonal_evasion_contract.clear()
+	if not value is Dictionary:
+		return _fail("Cartoon champion diagonal evasion contract must be an object")
+	var contract: Dictionary = value
+	if contract.get("directions", []) != EXPECTED_DIAGONAL_DIRECTIONS:
+		return _fail("Cartoon champion diagonal evasion directions are incomplete")
+	if contract.get("states", []) != EXPECTED_DIAGONAL_EVASION_STATES:
+		return _fail("Cartoon champion diagonal evasion states are incomplete")
+	if String(contract.get("coverage", "")) != "directional_cue_with_nearest_cardinal_body_until_promoted":
+		return _fail("Cartoon champion diagonal evasion coverage is unsupported")
+	if String(contract.get("art_status", "")) != "awaiting_reviewed_source" \
+		or String(contract.get("authority", "")) != "presentation_only":
+		return _fail("Cartoon champion diagonal evasion policy is unsupported")
+	diagonal_evasion_contract = contract.duplicate(true)
 	return true
 
 

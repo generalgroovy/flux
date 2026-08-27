@@ -3,8 +3,10 @@
 This directory contains the active body-and-clothing-only production candidate
 for Oh Tipi and S. Wayne. Grounded, empty-hand cast, hit/recovery, walk, and
 sprint have dedicated `S/SE/E/NE/N/NW/W/SW` art. Jump, slide, and roll retain
-the validated south/east/north/west art and deliberately resolve to the nearest
-cardinal until their diagonal source sheets pass review. Spells,
+the validated south/east/north/west body art and deliberately resolve to the
+nearest cardinal until their diagonal source sheets pass review; a separate
+directional evasion cue still follows the real eight-way travel/facing vector.
+Spells,
 elements, auras, projectiles, shadows, environments, tools, and equipment remain
 independent runtime layers, so a pose or spell can be replaced without redrawing
 the other.

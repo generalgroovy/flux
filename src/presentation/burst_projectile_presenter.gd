@@ -100,27 +100,10 @@ func entry(element: String) -> Dictionary:
 
 
 static func direction_index(velocity: Vector2) -> int:
-	if velocity.length_squared() <= 0.0:
-		return 2
-	var direction := velocity.normalized()
-	var candidates := [
-		Vector2.UP,
-		Vector2(1.0, -1.0).normalized(),
-		Vector2.RIGHT,
-		Vector2(1.0, 1.0).normalized(),
-		Vector2.DOWN,
-		Vector2(-1.0, 1.0).normalized(),
-		Vector2.LEFT,
-		Vector2(-1.0, -1.0).normalized(),
-	]
-	var best_index := 0
-	var best_dot := -2.0
-	for index: int in range(candidates.size()):
-		var dot := direction.dot(candidates[index])
-		if dot > best_dot:
-			best_dot = dot
-			best_index = index
-	return best_index
+	var direction_id := EightDirectionResolver.direction_id_from_vector(
+		roundi(velocity.x), roundi(velocity.y), "east",
+	)
+	return DIRECTION_ORDER.find(direction_id)
 
 
 static func travel_column(tick: int, projectile_id: int, reduced_effects: bool) -> int:

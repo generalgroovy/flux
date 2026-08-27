@@ -3,6 +3,31 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## Shared eight-direction resolver — 2026-08-27
+
+- `EightDirectionResolver` defines the single presentation order
+  `S/SE/E/NE/N/NW/W/SW`, fixed-point review vectors, exact 22.5-degree sector
+  boundaries, an eight-degree stateful hysteresis margin, stable zero-vector
+  fallback, nearest-cardinal compatibility and forward/back/left/right relative
+  gait classification. It never quantizes or mutates simulation movement/aim.
+- Wellspring characters, foundation champions and burst-projectile direction
+  selection now share the contract. The active body atlas intentionally keeps
+  its nearest-cardinal fallback until diagonal body cells pass review.
+- Capture diagnostics accept all eight direction IDs and emit normalized
+  fixed-point move/aim commands, while still accepting the existing unit-cardinal
+  helper inputs used by tests. Unknown direction values fail closed to east.
+- Full Windows source gate: 54 suites / 16,897 assertions, zero failures;
+  independent 60/120 Hz source boots passed. Resolver coverage includes exact
+  boundaries, signed symmetry, hysteresis, zero input, fallback compatibility,
+  repeated tick-rate-equivalent sequences and relative gait.
+- Truthful south-east Oh Tipi walk and north-west S. Wayne sprint captures pass
+  at 1280×720/75% under `.godot/visual-captures/direction-d0-*`; inspection
+  confirms diagonal travel/accent alignment and the intentionally visible
+  nearest-cardinal body fallback rather than pretending diagonal body art exists.
+- Next slice: prove keyboard/controller normalization, client prediction,
+  replay and Farflow command parity for all eight sectors without changing the
+  simulation or starting diagonal art.
+
 ## Eight-direction movement plan — 2026-08-27
 
 - Final direction coverage is now `S/SE/E/NE/N/NW/W/SW` for movement and
@@ -60,9 +85,9 @@ each playable slice.
   selects the low row, Roll selects the compact tuck, and airborne techniques
   retain the four-direction jump row. Reusable motion, shadow, wake, aura and
   invulnerability-contour layers remain separate; no simulation rule changed.
-- The capture-only `--capture-direction=south|east|north|west` argument now
-  produces deterministic cardinal movement evidence while preserving the old
-  impact-recovery influence lane and ordinary player input.
+- The capture-only direction argument originally produced deterministic
+  cardinal evidence; the current D0 contract extends it to all eight directions
+  while preserving the old impact-recovery influence lane and ordinary input.
 - Full Windows gate: 54 suites / 16,760 assertions, zero failures; 60/120 Hz
   boots passed. Thirty-two direction/state runs cover walk/sprint and correctly
   timed post-tick-6 slide/roll for both champions at 75%; additional 50%, 100%,

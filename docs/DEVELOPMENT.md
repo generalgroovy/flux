@@ -96,10 +96,12 @@ loading closed. Add new body art only when its silhouette materially improves
 gameplay readability—otherwise declare intentional reuse in this table.
 
 Deterministic movement review accepts
-`--capture-direction=south|east|north|west` beside `--capture-movement=`. The
-direction flag is capture-only: it normalizes the synthetic move/aim vector and
+`--capture-direction=south|south_east|east|north_east|north|north_west|west|south_west`
+beside `--capture-movement=`. The direction flag is capture-only: it uses the
+shared fixed-point direction contract for the synthetic move/aim vector and
 cannot persist settings or alter ordinary keyboard, mouse, wheel or controller
-input.
+input. Runtime simulation vectors remain continuous; current body art uses its
+documented nearest-cardinal fallback until each diagonal family is promoted.
 
 `content/champions/foundation_champions_v1.json` is the canonical first-roster
 source for stable champion wire IDs, affinities, ancestry, size, bounded stats,

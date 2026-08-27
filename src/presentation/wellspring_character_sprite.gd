@@ -200,17 +200,7 @@ static func animation_id_for_player(state: PlayerState) -> String:
 
 
 static func direction_index_from_vector(x: int, y: int) -> int:
-	if x == 0 and y == 0:
-		return 0
-	var absolute_x := absi(x)
-	var absolute_y := absi(y)
-	if absolute_x * 2 < absolute_y:
-		return 0 if y > 0 else 4
-	if absolute_y * 2 < absolute_x:
-		return 2 if x > 0 else 6
-	if x > 0:
-		return 1 if y > 0 else 3
-	return 7 if y > 0 else 5
+	return EightDirectionResolver.classify_index(x, y)
 
 
 static func destination_rect(body_anchor: Vector2) -> Rect2:

@@ -1,5 +1,43 @@
 # FLUX2 agent worklog
 
+## 2026-08-27 - shared eight-direction presentation resolver
+
+Playable outcome:
+
+- Added one fixed-order `S/SE/E/NE/N/NW/W/SW` resolver for character,
+  projectile, effect and deterministic-capture presentation. Exact integer
+  sector thresholds make boundary results stable; stateful hysteresis prevents
+  flicker near adjacent headings and zero input preserves the last facing.
+- Routed existing Wellspring, foundation-champion and burst-projectile direction
+  helpers through the shared contract while preserving the green cardinal body
+  atlas through an explicit nearest-cardinal compatibility lane. Continuous
+  simulation movement, analog magnitude, aim, hitboxes and outcomes are not
+  quantized or changed.
+- Expanded capture diagnostics to every diagonal using normalized fixed-point
+  vectors and added relative forward/back/left/right gait classification for
+  the later aim-facing locomotion slice.
+
+Verification:
+
+- `scripts\\test.cmd`: 54 suites / 16,897 assertions, zero failures; independent
+  60 and 120 Hz source boots passed. The new 64-assertion resolver suite covers
+  order, fixed vectors, exact boundaries, signed symmetry, zero/fallback state,
+  hysteresis, repeated tick-rate-equivalent sequences and relative gait.
+- Input/capture coverage passes all eight parser sectors and verifies cardinal
+  compatibility plus normalized diagonal move/aim commands. Existing legacy
+  archive `Image.load_from_file` warnings remain expected.
+- Truthful eight-frame south-east Oh Tipi walk (60 Hz) and north-west S. Wayne
+  sprint (120 Hz) captures passed at 1280×720/75% under
+  `.godot/visual-captures/direction-d0-*`. Representative final frames were
+  inspected: travel and motion accents follow the diagonal while body art
+  honestly retains the documented nearest-cardinal fallback.
+
+Next slice:
+
+- Audit and prove all eight keyboard/controller sectors through command
+  sampling, prediction, replay and Farflow transport before any diagonal body
+  art is promoted.
+
 ## 2026-08-26 - semantic champion action aliases
 
 Playable outcome:

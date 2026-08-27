@@ -56,7 +56,7 @@ variants with new stable IDs and counterplay.
 
 | Slice | Work | Observable exit |
 |---:|---|---|
-| D0 | Add one validated direction resolver and fixed direction order for travel, facing, hand origins, effects and captures. | Boundary, zero-vector, hysteresis and 60/120 Hz tests resolve identically without touching simulation vectors. |
+| D0 — complete | One validated direction resolver and fixed direction order now serve travel, facing, hand origins, effects and captures. | Boundary, zero-vector, hysteresis and repeated 60/120-equivalent tests resolve identically without touching simulation vectors; the four-cardinal body fallback remains explicit. |
 | D1 | Audit keyboard, controller, prediction, replay and Farflow movement in all eight sectors; retain diagonal normalization and analog magnitude. | Equal authored speed/cost/collision behavior in every direction; no diagonal advantage or network drift. |
 | D2 | Add diagonal grounded/cast/hit body columns for Oh Tipi and S. Wayne on the existing pivot. | Both identities read at native scale in all eight facings before locomotion expansion. |
 | D3 | Add diagonal walk/sprint and relative forward/back/left/right gait selection while aim and travel differ. | Eight-way travel looks intentional during free movement, strafing, reversing and mouse/controller aiming. |

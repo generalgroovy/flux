@@ -428,8 +428,11 @@ The cardinal movement checkpoint adds four-direction walk/sprint plus correctly
 timed (post-trigger) slide/roll captures for both champions under
 `.godot/visual-captures/movement-v5-*`, along with 50%/100%, 1080p,
 high-contrast and reduced-effects samples. Capture-only
-`--capture-direction=south|east|north|west` makes that matrix reproducible and
-does not affect ordinary controls or simulation.
+`--capture-direction=south|south_east|east|north_east|north|north_west|west|south_west`
+makes the full direction matrix reproducible and does not affect ordinary
+controls or simulation. A shared fixed-point presentation resolver now owns
+this exact order, sector boundaries, zero-vector fallback and review
+hysteresis; continuous simulation movement and aim remain unchanged.
 
 The body manifest now exposes exact semantic aliases for all live movement,
 control, cast/recovery and defeat states, plus reserved attack, defense,

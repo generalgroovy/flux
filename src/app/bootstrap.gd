@@ -2814,7 +2814,7 @@ func _requested_capture_direction() -> Vector2i:
 		if argument.begins_with("--capture-direction="):
 			var requested := parse_capture_direction(argument)
 			if requested == Vector2i.ZERO:
-				push_warning("Invalid capture direction; expected south, east, north, or west")
+				push_warning("Invalid capture direction; expected south, south_east, east, north_east, north, north_west, west, or south_west")
 				return Vector2i.RIGHT
 			return requested
 	return Vector2i.RIGHT
@@ -2887,24 +2887,20 @@ static func parse_capture_movement(argument: String) -> String:
 static func parse_capture_direction(argument: String) -> Vector2i:
 	if not argument.begins_with("--capture-direction="):
 		return Vector2i.ZERO
-	match argument.trim_prefix("--capture-direction=").strip_edges().to_lower():
-		"south":
-			return Vector2i.DOWN
-		"east":
-			return Vector2i.RIGHT
-		"north":
-			return Vector2i.UP
-		"west":
-			return Vector2i.LEFT
-	return Vector2i.ZERO
+	var direction_id := argument.trim_prefix("--capture-direction=").strip_edges().to_lower()
+	return EightDirectionResolver.fixed_vector(direction_id) if direction_id in EightDirectionResolver.DIRECTION_ORDER else Vector2i.ZERO
 
 
 static func capture_movement_command(mode: String, tick: int, entity_id: int, direction: Vector2i = Vector2i.RIGHT) -> SimCommand:
 	var held := 0
 	var pressed := 0
-	var normalized_direction := direction if direction in [Vector2i.DOWN, Vector2i.RIGHT, Vector2i.UP, Vector2i.LEFT] else Vector2i.RIGHT
-	var move_x := normalized_direction.x * 1000
-	var move_y := normalized_direction.y * 1000
+	var normalized_direction := direction
+	if direction in [Vector2i.DOWN, Vector2i.RIGHT, Vector2i.UP, Vector2i.LEFT]:
+		normalized_direction *= 1000
+	elif not EightDirectionResolver.is_fixed_vector(direction):
+		normalized_direction = EightDirectionResolver.fixed_vector("east")
+	var move_x := normalized_direction.x
+	var move_y := normalized_direction.y
 	if mode == "impact_recovery":
 		# Preserve the historical bounded influence lane; the separate aim and
 		# launch vectors still select the requested cardinal review direction.
@@ -2914,8 +2910,8 @@ static func capture_movement_command(mode: String, tick: int, entity_id: int, di
 		move_x = 0
 		move_y = 0
 	elif mode == "reverse" and tick >= 30:
-		move_x = -normalized_direction.x * 1000
-		move_y = -normalized_direction.y * 1000
+		move_x = -normalized_direction.x
+		move_y = -normalized_direction.y
 	if mode == "sprint" or mode == "slide":
 		held |= SimCommand.HELD_SPRINT
 	if mode in ["jump", "air_dodge"] and tick >= 4 and tick < 30:
@@ -2928,7 +2924,7 @@ static func capture_movement_command(mode: String, tick: int, entity_id: int, di
 		pressed |= SimCommand.PRESSED_TECHNIQUE
 	if mode == "technique" and tick == 6:
 		pressed |= SimCommand.PRESSED_TECHNIQUE
-	return SimCommand.new(tick, entity_id, move_x, move_y, held, pressed, normalized_direction.x * 1000, normalized_direction.y * 1000)
+	return SimCommand.new(tick, entity_id, move_x, move_y, held, pressed, normalized_direction.x, normalized_direction.y)
 
 
 func _requested_farflow_mode() -> String:

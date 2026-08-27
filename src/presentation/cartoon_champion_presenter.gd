@@ -271,9 +271,7 @@ static func semantic_action(state: PlayerState) -> String:
 
 
 static func cardinal_direction(x: int, y: int) -> String:
-	if absi(x) > absi(y):
-		return "east" if x >= 0 else "west"
-	return "south" if y >= 0 else "north"
+	return EightDirectionResolver.nearest_cardinal_id(x, y)
 
 
 static func body_type_render_scale(body_type: String) -> float:

@@ -68,11 +68,11 @@ channels are not claimed yet; test direct-IP builds only with trusted friends.
 | Lifecycle | Source launch, portable archives, checksums, one-file Windows setup/update/launch | Signed releases, clean uninstall UI, public update channel |
 | Wellspring | Nine districts, walk-up stations, practice actors, movement routes | Stronger authored landmarks and compact onboarding |
 | Movement | Full universal foundation at deterministic 60/120 Hz; normalized eight-way commands, analog magnitude, radial acceleration, diagonal grounded/cast/recovery presentation, relative gait, and directional evasion cues | Reviewed diagonal jump/slide/roll art, pattern-pressure tuning and player playtest |
-| Combat | Projectile, beam, spray, field, ricochet, launch, slow | Data-driven five-shot burst family for eight elements |
+| Combat | Projectile, beam, spray, field, ricochet, launch and slow; one fail-closed eight-way delivery contract aligns body, hands and discrete effect art while simulation aim stays continuous | Data-driven five-shot burst family for eight elements |
 | Chemistry | Material grid and 36 design-locked recipes | All recipes form, act, decay, reset, and explain themselves in-game |
 | Champions | Oh Tipi and S. Wayne playable | Do not expand until first-eight chemistry passes |
 | Farflow | Host-authoritative 2/4/8-player direct-IP loop | Per-peer LOS filtering, then measured later 32-player gate |
-| Visuals | Original compact pixel grammar plus validated nine-element v3 projectile sheets live on every projectile | Whole-scene character/environment/HUD cohesion acceptance |
+| Visuals | Original compact pixel grammar, reviewed diagonal champion families, safe evasion cues, and direction-complete empty-hand spell delivery | Wellspring corner/cover/elevation alignment, remaining evasion art, then whole-scene acceptance |
 
 ## Design pillars
 
@@ -415,8 +415,12 @@ loader fails closed on shape mismatches while all simulation timing and outcomes
 remain authoritative. The manifest is centrally registered in
 `content/visual/visual_asset_registry_v1.json` and its hash is printed in the
 bootstrap diagnostic for reproducible Windows handoffs. The first two phases
-also drive a shared, restrained hand-gather and forward-release cue at the
-champion's empty hand; spell-specific silhouettes remain layered on top.
+also drive a shared, restrained hand-gather and release cue at the champion's
+empty hand. A separate fail-closed direction contract keeps body cast/recovery,
+gather/release, projectile orientation and trail art on the same nearest-eight
+sector while simulation aim, continuous hand offset and beam/spray geometry
+remain exact. Spell-specific silhouettes stay layered on top, never baked into
+champion sprites.
 
 The Nexus source court also has a small authored decoration layer: six bounded
 lantern, planter, and rune anchors live in the court profile, are validated

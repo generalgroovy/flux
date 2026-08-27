@@ -78,17 +78,24 @@ face travel; while aiming/casting, body facing follows aim and gait communicates
 forward, backward or lateral travel. This resolver changes no fixed-point
 position, speed, collision, timing, invulnerability, network value or outcome.
 
-The current integrated candidate supplies grounded, jump, empty-hand cast,
-hit/recovery, walk, sprint, slide and roll rows for both foundation champions
-with dedicated art in all four columns. Advanced airborne moves derive from
-jump and Wave Dash/Wall Skim derive from the low slide row through a versioned,
-exact semantic-alias manifest while retaining separate motion/accent layers.
-Movement, control, cast/recovery and defeat are live; attack, defense,
-interaction and taunt aliases are reserved without fabricating simulation
-timers. V2 remains open until those app-local cues and integrated two-player
-evidence pass. These four-cardinal rows remain the safe runtime baseline while
-reviewed diagonal columns are introduced one complete action family at a time;
-nearest-cardinal derivation is a migration fallback, not final acceptance.
+The current integrated candidate supplies authored eight-way grounded,
+empty-hand cast, hit/recovery, walk and sprint art for both foundation
+champions. Jump, slide and roll preserve reviewed nearest-cardinal body art plus
+an independent eight-way invulnerability cue until dedicated diagonal source
+sheets pass review. Advanced airborne moves derive from jump and Wave
+Dash/Wall Skim derive from the low slide row through a versioned semantic-alias
+manifest while retaining separate motion/accent layers. Movement, control,
+cast/recovery and defeat are live; attack, defense, interaction and taunt
+aliases remain reserved without fabricating simulation timers. V2 remains open
+until every remaining body family and integrated two-player evidence pass.
+
+Spell delivery uses one validated fail-closed direction contract. Body
+cast/recovery, hand gather/release, projectile orientation and trail art select
+the nearest stable `S/SE/E/NE/N/NW/W/SW` sector, while continuous simulation
+aim, hand offset and beam/spray geometry remain unquantized. Zero input falls
+back explicitly to south. D5 is green only because startup and release were
+captured diagonally for both foundation champions without changing collision,
+timing, cost, authority or outcome.
 
 Acceptance evidence must include a direction matrix capture showing both
 foundation champions in all eight compass directions while idle, walking,

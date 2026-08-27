@@ -1,7 +1,7 @@
 # FLUX 2 implementation path to first-eight playtest
 
 Current frontier: protocol 30, snapshot 11, preferences 9, Godot 4.7.1,
-`codex/continuous-overhaul`. V0–V6 visual engineering, the exact
+`main` (with `codex/continuous-overhaul` unified to the same checkpoint). V0–V6 visual engineering, the exact
 `small`/`middle`/`large` body contract, universal movement,
 positive-Flux combat, two champions, Wellspring, direct-IP Farflow, and the
 one-file Windows bootstrap are green foundations—not permission to claim final
@@ -61,7 +61,7 @@ variants with new stable IDs and counterplay.
 | D2 — complete | Added diagonal grounded/cast/hit body columns for Oh Tipi and S. Wayne on the existing pivot, with validated state-scoped coverage and fail-closed cardinal fallback for every other row. | Both identities read at native scale in all eight facings before locomotion expansion; deterministic captures cover both champions and all three promoted state families. |
 | D3 — complete | Added normalized diagonal walk/sprint source sheets, width-safe source normalization, and presentation-only travel-versus-aim facing with forward/backward/strafe gait cues. | Eight-way travel looks intentional during free movement, strafing, reversing and mouse/controller aiming; diagonal captures cover both champions and both locomotion states. |
 | D4 — partial / safe fallback | Added a validated eight-direction evasion contract for jump/slide/roll and presentation-only directional invulnerability cues; unreviewed action art remains an explicit nearest-cardinal fallback rather than silently synthesizing pixels. | Every current evasion state preserves direction, shadow, pivot and a readable cue without changing simulation; promotion remains blocked until reviewed diagonal source sheets are available. |
-| D5 | Expand projectile/beam/spray/field anticipation, release hand origin, travel cue and recovery to eight facing sectors. | Empty-hand spell delivery aligns with continuous aim and never shifts body collision. |
+| D5 — complete | One fail-closed delivery contract now serves projectile/beam/spray/field anticipation, release hand origin, projectile/trail art and cast recovery in all eight facing sectors. Body and discrete art use nearest-eight presentation while simulation aim, continuous hand offsets and beam/spray geometry remain exact. | Truthful Oh Tipi south-east spray and S. Wayne north-west beam captures align empty-hand startup/release with geometry; both presenters share one validated content hash and never shift body collision. |
 | D6 | Verify diagonal corners, cover, doors, elevation, cutaways and receiving-surface shadows. | Movement and spell visuals remain aligned around every Wellspring route and collision edge. |
 | D7 | Capture both champions across eight directions, zooms, accessibility modes and a real Farflow pair. | Complete direction matrix passes visual rubric, deterministic tests, source boots and packaged Windows smoke. |
 

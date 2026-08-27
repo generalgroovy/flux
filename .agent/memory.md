@@ -3,6 +3,40 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## 2026-08-28 - shared eight-way spell delivery
+
+Playable outcome:
+
+- `spell_delivery_direction_v1.json` is the single fail-closed presentation
+  contract for foundation spells and burst projectiles. Nearest-eight body
+  cast/recovery, hand gather/release and projectile art stay aligned while
+  continuous simulation aim, hand offsets and beam/spray geometry remain exact;
+  zero input deliberately faces south.
+- Bootstrap hash parity, all-eight/tiny/zero/mutation tests and continuous hand
+  origin coverage prevent either presenter from silently drifting. The
+  capture-only pointer harness now records exact player-relative cast aim after
+  one simulation tick without changing normal gameplay.
+
+Verification:
+
+- `scripts\\test.ps1`: 54 suites / 17,211 assertions, zero failures; source
+  60/120 Hz boots pass under protocol 30 with direction hash prefix
+  `e4f67a894f65`.
+- Truthful 1280x720/75% Oh Tipi south-east spray and S. Wayne north-west beam
+  captures passed under `.godot/visual-captures/*-v3`; startup, empty-hand
+  release and continuous geometry were inspected and aligned.
+- Runtime commit `bdf4332` packaged and booted directly at 120 Hz. Installer
+  SHA-256 is
+  `05d1e294db4a8f6900a3b4331f676ecca27c22c0d5aa21be3175c0961388f543`;
+  portable ZIP SHA-256 is
+  `a25b187d43a14c46c9ddf473ff371f602599eaf1da9a95f6893673175677785c`.
+
+Next slice:
+
+- D6 Wellspring environment alignment for diagonal corners, cover, doors,
+  elevation, cutaways and receiving-surface shadows. D4 diagonal evasion body
+  art remains an explicit reviewed-source follow-up.
+
 ## 2026-08-27 - safe diagonal evasion presentation fallback
 
 Playable outcome:

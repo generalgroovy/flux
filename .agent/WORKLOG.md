@@ -1,5 +1,47 @@
 # FLUX2 agent worklog
 
+## 2026-08-28 - shared eight-way spell-delivery contract
+
+Playable outcome:
+
+- Added one fail-closed `S/SE/E/NE/N/NW/W/SW` delivery contract shared by
+  foundation spell and burst-projectile presentation. Body cast/recovery,
+  gather/release art, projectile orientation and trail art use the nearest
+  stable sector; simulation aim, hand offset and beam/spray geometry preserve
+  their continuous vectors. Zero input falls back explicitly to south.
+- The bootstrap refuses mismatched presenter contract hashes. Deterministic
+  tests cover all eight sectors, tiny and zero vectors, malformed content,
+  every continuous hand origin and diagonal cast/recovery selection.
+- Fixed the capture-only cast harness so an explicit pointer produces the exact
+  player-relative aim after one simulation tick; ordinary input, combat and
+  networking are unchanged.
+
+Verification:
+
+- `scripts\\test.ps1`: 54 suites / 17,211 assertions, zero failures; source
+  60/120 Hz boots pass under protocol 30 and report direction-contract hash
+  prefix `e4f67a894f65`.
+- Truthful 1280x720/75% captures passed at
+  `.godot/visual-captures/a1-oh-tipi-southeast-spray-v3` (normalized aim
+  `789,614`) and `.godot/visual-captures/a1-s-wayne-northwest-beam-v3`
+  (normalized aim `-789,-614`). Inspected startup and release frames align
+  empty-hand pose, cue and continuous spell geometry.
+- Runtime commit `bdf4332` packaged successfully. Direct packaged 120 Hz boot
+  exited 0. Installer build ID is `0.1.0-dev-bdf4332021-a25b187d43`;
+  installer SHA-256 is
+  `05d1e294db4a8f6900a3b4331f676ecca27c22c0d5aa21be3175c0961388f543`
+  and portable ZIP SHA-256 is
+  `a25b187d43a14c46c9ddf473ff371f602599eaf1da9a95f6893673175677785c`.
+- Clean-install/repair is not re-claimed because this machine still blocks
+  unsigned setup binaries through Windows Application Control.
+
+Next slice:
+
+- D6 environment alignment: verify and improve diagonal corners, cover, doors,
+  elevation, cutaways and receiving-surface shadows while preserving collision
+  truth. Reviewed diagonal evasion art remains a separate blocked D4 polish
+  item, not a reason to stall the visual sequence.
+
 ## 2026-08-27 - safe diagonal evasion presentation fallback
 
 Playable outcome:

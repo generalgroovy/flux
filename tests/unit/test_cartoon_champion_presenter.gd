@@ -8,6 +8,7 @@ func run() -> int:
 	_test_diagonal_contract_fails_closed()
 	_test_diagonal_evasion_contract_and_direction()
 	_test_relative_locomotion_gaits()
+	_test_locomotion_contact_regions()
 	return finish("cartoon-champion-presenter")
 
 
@@ -20,7 +21,7 @@ func _test_repository_recipes() -> void:
 	check(presenter.atlas != null, "reviewed foundation runtime atlas loads")
 	check(presenter.motion != null and presenter.motion.content_hash.length() == 64, "editable minimal-motion recipes load with champion art")
 	check(presenter.content_hash.length() == 64, "champion presentation content has a stable hash")
-	equal(presenter.atlas_hash, "79859259d0025be962323a794ce26537fc754664dae879200072948974f9dbc3", "reviewed diagonal-locomotion runtime atlas hash is pinned")
+	equal(presenter.atlas_hash, "0c105cbce46d5dd13f9d19b9252ac2717a4f873c32ead65ac7724ec9e8f96401", "reviewed complete eight-way action atlas hash is pinned")
 	equal(presenter.cardinal_animation_contract.get("directions", []), ["south", "east", "north", "west"], "foundation animation contract covers four cardinal directions")
 	equal(presenter.cardinal_animation_contract.get("states", []), ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"], "foundation animation contract covers core and movement actions")
 	equal(presenter.diagonal_core_contract.get("directions", []), ["south_east", "north_east", "north_west", "south_west"], "foundation diagonal core covers four intercardinals")
@@ -28,7 +29,8 @@ func _test_repository_recipes() -> void:
 	equal(presenter.diagonal_locomotion_contract.get("states", []), ["walk", "sprint"], "foundation diagonal locomotion is explicitly state-scoped")
 	equal(presenter.diagonal_locomotion_contract.get("gaits", []), ["idle", "forward", "backward", "strafe_left", "strafe_right"], "relative gait catalog is exact")
 	equal(presenter.diagonal_evasion_contract.get("states", []), ["jump", "slide", "roll"], "foundation diagonal evasion contract covers all three evasion states")
-	equal(String(presenter.diagonal_evasion_contract.get("coverage", "")), "directional_cue_with_nearest_cardinal_body_until_promoted", "unreviewed diagonal evasion art is explicit and safe")
+	equal(String(presenter.diagonal_evasion_contract.get("coverage", "")), "every_foundation_champion_has_every_diagonal_evasion_cell", "every evasion state owns native diagonal art")
+	equal(presenter.locomotion_phase_contract.get("states", []), ["walk", "sprint"], "walk and sprint own alternating contact phases")
 	equal(presenter.semantic_state_aliases.size(), CartoonChampionPresenter.EXPECTED_SEMANTIC_ACTIONS.size(), "every authoritative semantic action has an explicit atlas alias")
 	for champion_id: String in ["oh_tipi", "s_wayne"]:
 		check(presenter.can_present(champion_id), "%s has a promoted cartoon recipe" % champion_id)
@@ -69,7 +71,7 @@ func _test_repository_recipes() -> void:
 	state.pending_cast_wire_id = 1
 	state.pending_cast_aim_x = -1000
 	state.pending_cast_aim_y = 0
-	equal(presenter.source_region("s_wayne", state), Rect2(576, 960, 96, 96), "S. Wayne west cast selects dedicated cardinal action art")
+	equal(presenter.source_region("s_wayne", state), Rect2(576, 1152, 96, 96), "S. Wayne west cast selects dedicated cardinal action art")
 	var cardinal_cases := [
 		{"facing": Vector2i(0, 1000), "state": "south", "column": 0},
 		{"facing": Vector2i(1000, 0), "state": "east", "column": 2},
@@ -128,12 +130,14 @@ func _test_repository_recipes() -> void:
 		equal(presenter.source_region("oh_tipi", diagonal_state), Rect2(expected_x, 384, 96, 96), "walk %s selects promoted diagonal art" % case["state"])
 		diagonal_state.movement_mode = PlayerState.MovementMode.SPRINT
 		equal(presenter.source_region("oh_tipi", diagonal_state), Rect2(expected_x, 480, 96, 96), "sprint %s selects promoted diagonal art" % case["state"])
-	var diagonal_fallback := PlayerState.new()
-	diagonal_fallback.facing_x = 707
-	diagonal_fallback.facing_y = -707
-	diagonal_fallback.movement_mode = PlayerState.MovementMode.HOP
-	diagonal_fallback.hop_ticks = 2
-	equal(presenter.source_region("oh_tipi", diagonal_fallback), Rect2(384, 96, 96, 96), "unpromoted north-east jump explicitly falls back to north")
+		diagonal_state.movement_mode = PlayerState.MovementMode.HOP
+		diagonal_state.hop_ticks = 2
+		equal(presenter.source_region("oh_tipi", diagonal_state), Rect2(expected_x, 96, 96, 96), "jump %s selects native diagonal art" % case["state"])
+		diagonal_state.hop_ticks = 0
+		diagonal_state.movement_mode = PlayerState.MovementMode.SLIDE
+		equal(presenter.source_region("oh_tipi", diagonal_state), Rect2(expected_x, 576, 96, 96), "slide %s selects native diagonal art" % case["state"])
+		diagonal_state.movement_mode = PlayerState.MovementMode.ROLL
+		equal(presenter.source_region("oh_tipi", diagonal_state), Rect2(expected_x, 672, 96, 96), "roll %s selects native diagonal art" % case["state"])
 	check(presenter.source_region("unreviewed", state).has_area() == false, "unreviewed champion has no source region")
 
 
@@ -224,7 +228,7 @@ func _test_semantic_states() -> void:
 	equal(CartoonChampionPresenter.direction_for_state("grounded", 707, -707), "north_east", "promoted grounded state resolves north-east")
 	equal(CartoonChampionPresenter.direction_for_state("cast", -707, 707), "south_west", "promoted cast resolves south-west")
 	equal(CartoonChampionPresenter.direction_for_state("walk", 707, -707), "north_east", "promoted walk resolves north-east")
-	equal(CartoonChampionPresenter.direction_for_state("jump", 707, -707), "north", "unpromoted jump keeps its explicit nearest-cardinal fallback")
+	equal(CartoonChampionPresenter.direction_for_state("jump", 707, -707), "north_east", "jump resolves native north-east art")
 	state.movement_mode = PlayerState.MovementMode.WALK
 	state.movement_speed_ratio = 1000
 	state.velocity_x = MovementTuning.BASE_SPEED / 10
@@ -276,6 +280,11 @@ func _test_diagonal_contract_fails_closed() -> void:
 	evasion_contract["states"] = ["jump", "roll"]
 	check(not presenter._validate_diagonal_evasion_contract(evasion_contract), "missing diagonal evasion state fails closed")
 	equal(presenter.diagonal_evasion_contract, {}, "failed evasion validation exposes no stale contract")
+	check(presenter.configure(language), "valid contracts reload before locomotion phase mutation")
+	var phase_contract := presenter.locomotion_phase_contract.duplicate(true)
+	phase_contract["frame_states"] = {"walk": ["walk", "walk_b"], "sprint": ["sprint"]}
+	check(not presenter._validate_locomotion_phase_contract(phase_contract), "missing alternate sprint contact fails closed")
+	equal(presenter.locomotion_phase_contract, {}, "failed locomotion phase validation exposes no stale contract")
 
 
 func _test_diagonal_evasion_contract_and_direction() -> void:
@@ -336,3 +345,21 @@ func _test_relative_locomotion_gaits() -> void:
 	CartoonChampionPresenter._apply_relative_gait_motion(left_sample, "strafe_left", false)
 	CartoonChampionPresenter._apply_relative_gait_motion(right_sample, "strafe_right", false)
 	equal(left_sample.offset.x, -right_sample.offset.x, "strafe cadence mirrors its lateral weight shift")
+
+
+func _test_locomotion_contact_regions() -> void:
+	var language := VisualLanguage.new()
+	check(language.load_from_file(), "visual language loads for contact-frame regions")
+	var presenter := CartoonChampionPresenter.new()
+	check(presenter.configure(language), "foundation recipes load for contact-frame regions")
+	var state := PlayerState.new()
+	state.movement_mode = PlayerState.MovementMode.WALK
+	state.velocity_x = 707
+	state.velocity_y = -707
+	state.facing_x = 707
+	state.facing_y = -707
+	equal(presenter.source_region_for_animation_state("oh_tipi", state, "walk"), Rect2(288, 384, 96, 96), "walk contact A owns north-east art")
+	equal(presenter.source_region_for_animation_state("oh_tipi", state, "walk_b"), Rect2(288, 768, 96, 96), "walk contact B owns north-east art")
+	state.movement_mode = PlayerState.MovementMode.SPRINT
+	equal(presenter.source_region_for_animation_state("s_wayne", state, "sprint"), Rect2(288, 1440, 96, 96), "S. Wayne sprint contact A owns north-east art")
+	equal(presenter.source_region_for_animation_state("s_wayne", state, "sprint_b"), Rect2(288, 1824, 96, 96), "S. Wayne sprint contact B owns north-east art")

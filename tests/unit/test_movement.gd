@@ -6,6 +6,7 @@ func run() -> int:
 		_test_eight_direction_ground_parity(tick_rate)
 		_test_analog_ground_magnitude(tick_rate)
 		_test_sprint_and_hop(tick_rate)
+		_test_directional_hop_control(tick_rate)
 		_test_double_jump(tick_rate)
 		_test_slide_and_slide_jump(tick_rate)
 		_test_action_buffers(tick_rate)
@@ -19,6 +20,7 @@ func run() -> int:
 		_test_control_states(tick_rate)
 		_test_impact_influence_and_recovery(tick_rate)
 	_test_impact_tick_rate_parity()
+	_test_air_control_tick_rate_parity()
 	return finish("movement")
 
 
@@ -83,6 +85,47 @@ func _test_sprint_and_hop(tick_rate: int) -> void:
 	equal(state.last_event, "hop", "%d Hz starts hop" % tick_rate)
 	equal(state.stamina, before_stamina - MovementTuning.HOP_COST, "%d Hz hop Stamina cost is exact" % tick_rate)
 	check(state.hop_ticks > 0, "%d Hz hop is airborne" % tick_rate)
+
+
+func _test_directional_hop_control(tick_rate: int) -> void:
+	var world := SimWorld.new(tick_rate)
+	var state: PlayerState = world.player()
+	_step(world, 707, 707, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+	equal(Vector2i(state.hop_x, state.hop_y), Vector2i(707, 707), "%d Hz jump launches in the startup input direction" % tick_rate)
+	equal(Vector2i(state.facing_x, state.facing_y), Vector2i(707, 707), "%d Hz takeoff facing follows startup input" % tick_rate)
+	var initial_velocity := Vector2i(state.velocity_x, state.velocity_y)
+	_step(world, -707, -707, SimCommand.HELD_JUMP)
+	equal(Vector2i(state.facing_x, state.facing_y), Vector2i(-707, -707), "%d Hz airborne facing immediately follows current input" % tick_rate)
+	check(state.hop_x < 707 and state.hop_y < 707, "%d Hz opposite airborne input starts steering velocity immediately" % tick_rate)
+	check(Vector2i(state.velocity_x, state.velocity_y) != initial_velocity, "%d Hz airborne steering changes travel without a technique press" % tick_rate)
+	var steer_ticks := world.config.milliseconds_to_ticks(120)
+	for _index: int in range(steer_ticks):
+		_step(world, -707, -707, SimCommand.HELD_JUMP)
+	check(state.hop_x < 0 and state.hop_y < 0, "%d Hz sustained airborne input redirects both travel axes" % tick_rate)
+	var retained_direction := Vector2i(state.hop_x, state.hop_y)
+	_step(world, 0, 0, SimCommand.HELD_JUMP)
+	equal(Vector2i(state.hop_x, state.hop_y), retained_direction, "%d Hz releasing direction preserves airborne momentum" % tick_rate)
+	var facing_world := SimWorld.new(tick_rate)
+	var facing_state: PlayerState = facing_world.player()
+	_step(facing_world, 1000, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+	for direction_id: String in EightDirectionResolver.DIRECTION_ORDER:
+		var fixed := EightDirectionResolver.fixed_vector(direction_id)
+		_step(facing_world, fixed.x, fixed.y, SimCommand.HELD_JUMP)
+		equal(Vector2i(facing_state.facing_x, facing_state.facing_y), fixed, "%d Hz airborne facing follows current %s input" % [tick_rate, direction_id])
+
+
+func _test_air_control_tick_rate_parity() -> void:
+	var world_60 := SimWorld.new(60)
+	var world_120 := SimWorld.new(120)
+	_step(world_60, 707, 707, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+	_step(world_120, 707, 707, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+	for _index: int in range(world_60.config.milliseconds_to_ticks(120)):
+		_step(world_60, -707, -707, SimCommand.HELD_JUMP)
+	for _index: int in range(world_120.config.milliseconds_to_ticks(120)):
+		_step(world_120, -707, -707, SimCommand.HELD_JUMP)
+	var direction_60 := Vector2i(world_60.player().hop_x, world_60.player().hop_y)
+	var direction_120 := Vector2i(world_120.player().hop_x, world_120.player().hop_y)
+	check((direction_60 - direction_120).abs().x <= 64 and (direction_60 - direction_120).abs().y <= 64, "120 ms airborne steering is equivalent at 60/120 Hz")
 
 
 func _test_double_jump(tick_rate: int) -> void:

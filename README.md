@@ -67,7 +67,7 @@ channels are not claimed yet; test direct-IP builds only with trusted friends.
 | Repository | One authoritative Godot runtime; browser runtime retired | Keep docs/content/runtime hashes in one lineage |
 | Lifecycle | Source launch, portable archives, checksums, one-file Windows setup/update/launch | Signed releases, clean uninstall UI, public update channel |
 | Wellspring | Nine districts, walk-up stations, practice actors, movement routes | Stronger authored landmarks and compact onboarding |
-| Movement | Full universal foundation at deterministic 60/120 Hz; normalized eight-way commands, analog magnitude, radial acceleration, diagonal grounded/cast/recovery presentation, relative gait, and directional evasion cues | Reviewed diagonal jump/slide/roll art, pattern-pressure tuning and player playtest |
+| Movement | Full universal foundation at deterministic 60/120 Hz; normalized eight-way commands, active directional air control/facing, alternating gait contacts, native eight-way jump/slide/roll art, relative gait, and directional evasion cues | Pattern-pressure tuning and player playtest |
 | Combat | Projectile, beam, spray, field, ricochet, launch and slow; one fail-closed eight-way delivery contract aligns body, hands and discrete effect art while simulation aim stays continuous | Data-driven five-shot burst family for eight elements |
 | Chemistry | Material grid and 36 design-locked recipes | All recipes form, act, decay, reset, and explain themselves in-game |
 | Champions | Oh Tipi and S. Wayne playable | Do not expand until first-eight chemistry passes |
@@ -122,9 +122,9 @@ cooldown. Ctrl and Alt are spell-layer modifiers; slide remains on C.
 |---|---|---|---|
 | Strafe + independent aim | Crossfire, retreat, prediction | Acceleration, brake, counter-strafe timing | Playable |
 | Sprint | Rotate, pursue, disengage | Continuous Stamina drain and delayed recovery | Playable |
-| Hop / double jump | Vary height and timing | Costs, bounded air actions, vulnerable landing; 90 ms opening attack intangibility | Playable |
+| Hop / double jump | Take off along held movement, steer and face through all eight directions in air | Steering trades momentum during a hard reversal; paid redirect remains stronger; vulnerable landing; 90 ms opening attack intangibility | Playable |
 | Slide / slide jump | Low committed burst into long route | Entry-speed gate, weak steering, Stamina, hard-cover stop | Playable |
-| Air redirect / air dodge | One committed correction or escape | Limited use, fixed duration, safe collision recovery | Playable |
+| Air redirect / air dodge | Strong snap correction or committed escape beyond ordinary air steering | Limited use, cost, fixed duration, safe collision recovery | Playable |
 | Ground roll | Evade a predicted lane while grounded | 24 Stamina; 130 ms opening attack intangibility inside 240 ms action | Playable |
 | Wavedash | Convert angled air dodge into ground momentum | Exact landing geometry; no free stacking | Playable |
 | Wall contact / wall kick | Rebound through authored wall routes | 220 ms same-wall lockout | Playable |
@@ -248,12 +248,11 @@ to middle. Body type bounds silhouette, footprint and tuning ranges but never
 grants hidden reach, evasion, damage or elemental advantage.
 
 Champion atlases contain body and clothing only. The current green runtime has
-valid frames in the four cardinals: front/south faces the camera with centered,
-balanced anatomy; north is a centered back view; east is an authored profile;
-and west is a reviewed profile or deterministic mirror. Final visual acceptance
-expands both movement and facing to `S/SE/E/NE/N/NW/W/SW`; nearest-cardinal
-diagonals remain only a migration fallback while reviewed diagonal action
-families are introduced. Simulation movement and aim stay continuous, keyboard
+authored frames in `S/SE/E/NE/N/NW/W/SW`: front/south faces the camera with
+centered, balanced anatomy; north is a centered back view; east/west are
+profiles; diagonals are distinct three-quarter silhouettes. Jump, slide, and
+roll now use native art in every direction. Walk and sprint alternate two
+opposite planted-leg contacts on each champion's editable cadence. Simulation movement and aim stay continuous, keyboard
 diagonals stay normalized, and presentation resolves travel separately from
 facing so aim-facing forward/back/strafe movement remains readable. Shadows, auras, spells,
 projectiles, environment, tools and equipment are separate reusable layers.
@@ -371,17 +370,17 @@ The retained `size_1_tiny`, `size_2_small`, `size_3_medium`, `size_4_large`,
 and `size_5_huge` path fragments belong to the legacy visual archive; only
 `small`, `middle`, and `large` are authored runtime body types.
 
-![Eight-direction body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_eight_v7.png)
+![Eight-direction body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_eight_v8.png)
 
 This atlas is a reusable body/clothing layer for the two foundation champions;
 spells, auras, shadows, projectiles, environment and equipment are composed
 independently. Each champion's `atlas_row` is authored in
-`content/visual/foundation_champion_visuals_v1.json`. The versioned 768×1536
-atlas packs eight direction columns under each champion. Grounded, empty-hand
-cast, hit/recovery, walk, and sprint have authored diagonal cells; jump, slide,
-and roll retain explicit nearest-cardinal body fallback until their own reviewed
-diagonal art is promoted, while an independent two-stroke directional evasion
-cue follows the actual travel/facing vector during invulnerability frames.
+`content/visual/foundation_champion_visuals_v1.json`. The versioned 768×1920
+atlas packs eight direction columns under each champion. Every grounded,
+empty-hand cast, hit/recovery, jump, slide, and roll state has native eight-way
+art; walk and sprint add a second opposite contact row for true leg alternation.
+An independent two-stroke directional evasion cue still reinforces actual
+travel/facing during invulnerability frames.
 During free locomotion the body faces travel; while combat intent is active it
 faces aim and exposes forward, backward, and strafe gait cues. Neither profile
 is synthesized at runtime. The
@@ -442,10 +441,10 @@ proves a real mixed-champion Farflow pair. It writes ignored truthful frames, a
 machine-readable manifest and one contact sheet below
 `.godot/visual-captures/`; a prefix is never overwritten or resumed silently.
 
-The cardinal movement checkpoint adds four-direction walk/sprint plus correctly
-timed (post-trigger) slide/roll captures for both champions under
-`.godot/visual-captures/movement-v5-*`, along with 50%/100%, 1080p,
-high-contrast and reduced-effects samples. Capture-only
+The complete eight-way movement checkpoint adds alternating walk/sprint contacts
+plus native jump/slide/roll art for both champions. Truthful live gait evidence
+is under `.godot/visual-captures/animation-v8-*`; older cardinal evidence remains
+under `.godot/visual-captures/movement-v5-*`. Capture-only
 `--capture-direction=south|south_east|east|north_east|north|north_west|west|south_west`
 makes the full direction matrix reproducible and does not affect ordinary
 controls or simulation. A shared fixed-point presentation resolver now owns
@@ -455,7 +454,7 @@ hysteresis; continuous simulation movement and aim remain unchanged.
 The body manifest now exposes exact semantic aliases for all live movement,
 control, cast/recovery and defeat states, plus reserved attack, defense,
 interaction and taunt presentation cues. Advanced actions intentionally reuse a
-promoted cardinal row through data rather than hidden renderer branches;
+promoted direction-complete row through data rather than hidden renderer branches;
 unknown, missing, extra, or nonexistent-row aliases fail closed. Truthful
 impact/cast-recovery evidence lives under ignored
 `.godot/visual-captures/semantic-v5-*`.

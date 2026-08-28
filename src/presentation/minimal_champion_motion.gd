@@ -108,6 +108,19 @@ func sample(profile_id: String, motion_id: String, elapsed_ticks_at_60: float, r
 	return result
 
 
+func locomotion_contact_frame(profile_id: String, motion_id: String, elapsed_ticks_at_60: float, phase_seed: int = 0) -> int:
+	if motion_id not in ["walk", "sprint"] or not profiles.has(profile_id):
+		return 0
+	var profile: Dictionary = profiles[profile_id]
+	if not profile.has(motion_id):
+		return 0
+	var duration := float((profile[motion_id] as Dictionary).get("duration_ticks", 1))
+	if duration <= 0.0:
+		return 0
+	var phase := fposmod(maxf(0.0, elapsed_ticks_at_60) + float(phase_seed), duration) / duration
+	return 1 if phase >= 0.5 else 0
+
+
 static func motion_id(state: PlayerState) -> String:
 	if state.movement_mode in [PlayerState.MovementMode.LAUNCHED, PlayerState.MovementMode.GRAPPLED, PlayerState.MovementMode.STUNNED, PlayerState.MovementMode.IMPACT_RECOVERY] \
 		or state.control_state in [PlayerState.ControlState.LAUNCHED, PlayerState.ControlState.GRAPPLED, PlayerState.ControlState.STUNNED]:

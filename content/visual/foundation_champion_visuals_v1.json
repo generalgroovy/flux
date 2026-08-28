@@ -1,6 +1,6 @@
 {
-  "schema_version": 7,
-  "id": "foundation-champion-visuals-v7-diagonal-locomotion",
+  "schema_version": 8,
+  "id": "foundation-champion-visuals-v8-complete-eight-way-action",
   "authority": "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere",
   "atlas_role": "body_and_clothing_only",
   "front_pose": "camera_facing_symmetrical",
@@ -9,12 +9,12 @@
   "cell": [96, 96],
   "pivot": [48, 84],
   "atlas": {
-    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v7.png",
-    "sha256": "79859259d0025be962323a794ce26537fc754664dae879200072948974f9dbc3",
-    "imported_rgba_sha256": "1a50f41b34a930e263539dacd972294343d1e9e1a398c0eceb8ffa2daa98f1ce",
-    "dimensions": [768, 1536],
+    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v8.png",
+    "sha256": "0c105cbce46d5dd13f9d19b9252ac2717a4f873c32ead65ac7724ec9e8f96401",
+    "imported_rgba_sha256": "758e2f76e766ae852d25348421dc315587892cb30a46bed89f9e8da7622dcdea",
+    "dimensions": [768, 1920],
     "champions": ["oh_tipi", "s_wayne"],
-    "states": ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"],
+    "states": ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll", "walk_b", "sprint_b"],
     "directions": ["south", "south_east", "east", "north_east", "north", "north_west", "west", "south_west"],
     "row_layout": "champion_major_state_minor"
   },
@@ -29,8 +29,8 @@
     "directions": ["south_east", "north_east", "north_west", "south_west"],
     "states": ["grounded", "cast", "hit"],
     "coverage": "every_foundation_champion_has_every_diagonal_core_cell",
-    "fallback_states": ["jump", "slide", "roll"],
-    "fallback_policy": "nearest_cardinal_until_promoted"
+    "fallback_states": [],
+    "fallback_policy": "none_all_states_promoted"
   },
   "diagonal_locomotion_contract": {
     "directions": ["south_east", "north_east", "north_west", "south_west"],
@@ -43,8 +43,18 @@
   "diagonal_evasion_contract": {
     "directions": ["south_east", "north_east", "north_west", "south_west"],
     "states": ["jump", "slide", "roll"],
-    "coverage": "directional_cue_with_nearest_cardinal_body_until_promoted",
-    "art_status": "awaiting_reviewed_source",
+    "coverage": "every_foundation_champion_has_every_diagonal_evasion_cell",
+    "art_status": "reviewed_source_integrated",
+    "authority": "presentation_only"
+  },
+  "locomotion_phase_contract": {
+    "states": ["walk", "sprint"],
+    "frame_states": {
+      "walk": ["walk", "walk_b"],
+      "sprint": ["sprint", "sprint_b"]
+    },
+    "coverage": "two_contacts_per_champion_per_eight_directions",
+    "timing": "motion_profile_half_cycle",
     "authority": "presentation_only"
   },
   "semantic_state_aliases": {

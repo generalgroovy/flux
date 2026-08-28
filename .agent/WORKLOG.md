@@ -1,5 +1,67 @@
 # FLUX2 agent worklog
 
+## 2026-08-28 - startup-directed jump and active air control
+
+Playable outcome:
+
+- A jump launches along the movement vector held on its accepted startup tick,
+  including every normalized keyboard diagonal and continuous controller input.
+- Every non-zero airborne movement input immediately updates the champion's
+  facing and bends the current jump momentum. Releasing movement preserves the
+  resulting momentum; a hard reversal briefly sacrifices speed instead of
+  producing an instantaneous turn.
+- The existing contextual V redirect remains the stronger, Stamina-priced snap
+  correction, and spell aim remains independent from movement-facing.
+- Jump duration, speed, Stamina cost, collision, invulnerability and network
+  command structure are unchanged. The movement compatibility hash advances to
+  reject mismatched deterministic peers.
+
+Verification:
+
+- `scripts\test.ps1`: 55 suites / 17,381 assertions, zero failures, including
+  takeoff, release, sustained steering, reversal and all-eight-facing fixtures
+  at both 60 and 120 Hz plus an explicit cross-rate steering-parity fixture.
+- Clean source imports and 60/120 Hz boots passed with movement compatibility
+  hash `665e2fe2335f...`; pre-existing direct-Image catalog warnings are unchanged.
+- `git diff --check` passed apart from the repository's existing LF/CRLF
+  conversion notices.
+
+Stop boundary / next slice:
+
+- No Wellspring topology, collision, routes, stations or environment art was
+  changed. The next step remains a user-selected starting-area expansion
+  proposal.
+
+## 2026-08-28 - alternating gait and complete eight-way evasion art
+
+Playable outcome:
+
+- Oh Tipi and S. Wayne now alternate two authored, opposite planted-leg frames
+  while walking and sprinting in every compass direction.
+- Jump, slide and roll now select native `S/SE/E/NE/N/NW/W/SW` body art; the
+  old nearest-cardinal evasion fallback is removed from the active contract.
+- The 768×1920 v8 atlas remains body/clothing-only. Shadows, elevation, aura,
+  evasion contour, spells and environment remain independently reusable layers.
+- Contact timing comes from the existing editable presentation profiles and is
+  rate-independent with bounded per-entity phase variation; gameplay state and
+  network protocol are unchanged.
+
+Verification:
+
+- `scripts\test.ps1`: 55 suites / 17,278 assertions, zero failures, with
+  clean source imports and 60/120 Hz boots. Atlas file and Godot-decoded RGBA
+  hashes are pinned and the phase contract fails closed when incomplete.
+- Truthful 1280×720 captures passed for north-east walk, north-west slide,
+  south-west jump and south-east roll under ignored
+  `.godot/visual-captures/animation-v8-*`.
+- The atlas builder, source hashes, exact ImageGen prompts and imported-texture
+  hash helper are recorded beside the versioned assets.
+
+Stop boundary / next slice:
+
+- No Wellspring topology, collision, route, station or environment asset was
+  changed. The next step is a user-selected starting-area expansion proposal.
+
 ## 2026-08-28 - integrated visual acceptance matrix
 
 Acceptance outcome:

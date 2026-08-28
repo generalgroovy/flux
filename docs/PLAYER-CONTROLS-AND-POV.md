@@ -79,6 +79,14 @@ additional simulation tick per tick. Fast fall costs no Stamina because the
 earlier landing is its commitment, and its explicit canonical/presentation state
 is replayed identically rather than inferred from animation.
 
+Jump startup latches the movement direction held on the accepted jump tick.
+While airborne, each non-zero movement vector immediately updates body facing
+and continuously bends jump momentum at the same time-scaled rate at 60 and
+120 Hz. Releasing movement preserves the current airborne momentum. A hard
+reversal briefly trades speed for turning instead of snapping through the
+player; contextual V remains the faster, Stamina-priced air redirect and sprint+V
+remains the committed air dodge. Spell aim stays independent and exact.
+
 V after recent contact with an authored obstacle starts a 420 ms wall skim
 along the requested tangent for one 18-Stamina purchase. Stable positive wall
 identity excludes outer world boundaries, a 900 ms same-surface lockout prevents

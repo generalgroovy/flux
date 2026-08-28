@@ -19,14 +19,13 @@ runtime art, rendering, camera/pixel presentation, GUI, feedback, animation,
 accessibility, visual tests, asset provenance and the smallest rule-neutral
 adapters required to expose already-authoritative state.
 
-Current C2 checkpoint: reviewed diagonal grounded/cast/hit/walk/sprint art,
-relative gait, safe directional evasion cues, shared eight-way spell delivery,
+Current C2 checkpoint: reviewed eight-way grounded/cast/hit/jump/slide/roll art,
+two-contact walk/sprint leg alternation, relative gait, directional evasion cues, shared eight-way spell delivery,
 Wellspring collision/cutaway/receiving-shadow alignment and the reproducible
 19-cell D7 direction/action/zoom/accessibility/Farflow evidence runner are
 green. The current honest rubric mean is 4.29/5 against the required 4.5, so
 raise original material identity and action/spell response before rerunning the
-same matrix. Jump, slide and roll retain explicit nearest-cardinal body art
-until reviewed diagonal sources exist. Continuous analog movement/aim,
+same matrix. Continuous analog movement/aim,
 normalized digital diagonals and simulation authority must remain unchanged.
 Do not skip to new mechanics or champions.
 
@@ -96,10 +95,10 @@ visual quality, balance, platform parity or remote play without direct evidence.
 
 ## Immediate eight-direction movement/animation iteration
 
-Begin with the smallest safe visual slice: add one validated resolver for
-`south`, `south_east`, `east`, `north_east`, `north`, `north_west`, `west`, and
-`south_west`, then expand one complete action family at a time on both
-foundation champions and all three body contracts. Travel direction and facing
+Continue from the complete v8 foundation atlas: preserve the validated resolver
+for `south`, `south_east`, `east`, `north_east`, `north`, `north_west`, `west`,
+and `south_west`, the two walk/sprint contacts, and native eight-way evasion art
+while expanding one complete action family at a time on future champions and body contracts. Travel direction and facing
 direction remain distinct: free locomotion can face travel; aiming/casting uses
 aim-facing forward/back/strafe gait. Keyboard diagonals stay normalized and
 controller/mouse vectors stay continuous.
@@ -107,7 +106,7 @@ Keep body/clothing pixels, hand-cast effects, shadows, auras, projectiles and
 environment in independent layers; do not change simulation authority, input,
 collision, timing, resource costs, cooldowns or network rules. Use data-driven
 direction mappings, boundary/hysteresis tests, fail-closed schema checks, stable feet pivots, nearest
-sampling and deterministic 60/120 Hz frame selection. Add focused tests before
+sampling and deterministic 60/120 Hz contact-frame selection. Add focused tests before
 editing art, run the full Windows gate and source/imported boots, inspect
 eight-direction movement/facing matrix captures at 50/75/100% plus reduced/high-contrast/grayscale
 modes, update `README.md`, `.agent/BACKLOG.md`, `.agent/memory.md` and

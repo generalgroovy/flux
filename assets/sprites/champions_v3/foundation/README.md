@@ -1,12 +1,10 @@
 # Foundation eight-direction body atlas provenance
 
 This directory contains the active body-and-clothing-only production candidate
-for Oh Tipi and S. Wayne. Grounded, empty-hand cast, hit/recovery, walk, and
-sprint have dedicated `S/SE/E/NE/N/NW/W/SW` art. Jump, slide, and roll retain
-the validated south/east/north/west body art and deliberately resolve to the
-nearest cardinal until their diagonal source sheets pass review; a separate
-directional evasion cue still follows the real eight-way travel/facing vector.
-Spells,
+for Oh Tipi and S. Wayne. Every grounded, empty-hand cast, hit/recovery, jump,
+slide, and roll state has dedicated `S/SE/E/NE/N/NW/W/SW` art. Walk and sprint
+also have two opposite contact frames in all eight directions, selected on the
+editable presentation motion profile's half-cycle. Spells,
 elements, auras, projectiles, shadows, environments, tools, and equipment remain
 independent runtime layers, so a pose or spell can be replaced without redrawing
 the other.
@@ -23,21 +21,25 @@ the other.
 | `source_diagonal_core_s_wayne_v6.png` | 1254×1254 matte source; SE/NE/NW/SW × grounded/cast/hit |
 | `source_diagonal_locomotion_oh_tipi_v7.png` | generated 4×2 matte source; SE/NE/NW/SW × walk/sprint |
 | `source_diagonal_locomotion_s_wayne_v7.png` | generated 4×2 matte source; SE/NE/NW/SW × walk/sprint |
-| `runtime_atlas_eight_v7.png` | 768×1536 RGBA; 96×96 cells; pivot `(48,84)` |
+| `source_cardinal_locomotion_phase_b_oh_tipi_v8.png` | generated 4×2 matte source; S/E/N/W × opposite walk/sprint contact |
+| `source_cardinal_locomotion_phase_b_s_wayne_v8.png` | generated 4×2 matte source; S/E/N/W × opposite walk/sprint contact |
+| `source_diagonal_actions_oh_tipi_v8.png` | generated 4×5 matte source; SE/NE/NW/SW × opposite walk/sprint, jump, slide, roll |
+| `source_diagonal_actions_s_wayne_v8.png` | generated 4×5 matte source; SE/NE/NW/SW × opposite walk/sprint, jump, slide, roll |
+| `runtime_atlas_eight_v8.png` | 768×1920 RGBA; 96×96 cells; pivot `(48,84)` |
 | Columns | south/front, south-east, east, north-east, north/back, north-west, west, south-west |
-| Rows per champion | grounded, jump, empty-hand cast, hit/recovery, walk, sprint, slide, roll |
+| Rows per champion | grounded, jump, empty-hand cast, hit/recovery, walk A, sprint A, slide, roll, walk B, sprint B |
 | Atlas row layout | champion-major, state-minor: all Oh Tipi rows, then all S. Wayne rows |
 
 Rebuild deterministically from repository root:
 
 ```powershell
-python scripts/build_cardinal_champion_atlas.py assets/sprites/champions_v3/foundation/source_cardinal_oh_tipi_v4.png assets/sprites/champions_v3/foundation/source_cardinal_s_wayne_v4.png assets/sprites/champions_v3/foundation/runtime_atlas_eight_v7.png --oh-tipi-movement assets/sprites/champions_v3/foundation/source_movement_oh_tipi_v5.png --s-wayne-movement assets/sprites/champions_v3/foundation/source_movement_s_wayne_v5.png --oh-tipi-diagonal-core assets/sprites/champions_v3/foundation/source_diagonal_core_oh_tipi_v6.png --s-wayne-diagonal-core assets/sprites/champions_v3/foundation/source_diagonal_core_s_wayne_v6.png --oh-tipi-diagonal-locomotion assets/sprites/champions_v3/foundation/source_diagonal_locomotion_oh_tipi_v7.png --s-wayne-diagonal-locomotion assets/sprites/champions_v3/foundation/source_diagonal_locomotion_s_wayne_v7.png
+python scripts/build_cardinal_champion_atlas.py assets/sprites/champions_v3/foundation/source_cardinal_oh_tipi_v4.png assets/sprites/champions_v3/foundation/source_cardinal_s_wayne_v4.png assets/sprites/champions_v3/foundation/runtime_atlas_eight_v8.png --oh-tipi-movement assets/sprites/champions_v3/foundation/source_movement_oh_tipi_v5.png --s-wayne-movement assets/sprites/champions_v3/foundation/source_movement_s_wayne_v5.png --oh-tipi-diagonal-core assets/sprites/champions_v3/foundation/source_diagonal_core_oh_tipi_v6.png --s-wayne-diagonal-core assets/sprites/champions_v3/foundation/source_diagonal_core_s_wayne_v6.png --oh-tipi-diagonal-locomotion assets/sprites/champions_v3/foundation/source_diagonal_locomotion_oh_tipi_v7.png --s-wayne-diagonal-locomotion assets/sprites/champions_v3/foundation/source_diagonal_locomotion_s_wayne_v7.png --oh-tipi-locomotion-phase-b assets/sprites/champions_v3/foundation/source_cardinal_locomotion_phase_b_oh_tipi_v8.png --s-wayne-locomotion-phase-b assets/sprites/champions_v3/foundation/source_cardinal_locomotion_phase_b_s_wayne_v8.png --oh-tipi-diagonal-actions assets/sprites/champions_v3/foundation/source_diagonal_actions_oh_tipi_v8.png --s-wayne-diagonal-actions assets/sprites/champions_v3/foundation/source_diagonal_actions_s_wayne_v8.png
 ```
 
 The builder uses proportional source-cell boundaries because the generated
 1254px canvas is not divisible by four. It removes only edge-connected magenta,
 uses one bounded scale per champion, aligns every cell to the shared feet pivot,
-packs the versioned atlas, and leaves unpromoted diagonal state cells transparent.
+packs the versioned atlas, and fails if any required source cell is empty.
 Source sheets are normalized by their four-column cell width before the shared
 champion scale is calculated, so generated sheets with different canvas sizes
 cannot silently resize one action family.
@@ -172,6 +174,64 @@ Scene/backdrop: one flat opaque vivid magenta matte across the entire canvas, wi
 Style/medium: original charming compact cartoon pixel art matching the inputs; crisp economical pixel clusters at gameplay scale; no smooth painted rendering.
 Constraints: body and clothing pixels only; exactly one S. Wayne per cell; empty hands; no text, labels, borders, shadows, magic, elements, auras, projectiles, particles, dust, speed lines, weapons, staff, wand, focus, equipment, props, or environment. Preserve identity and anatomy. No cropped figures or overlaps.
 Avoid: cardinal-only poses, duplicated columns, idle poses, sliding or rolling, isometric view, spell pixels, detached objects, extra characters, logos, watermark.
+```
+
+## Exact ImageGen prompts for v8
+
+The cardinal phase-B prompt was run once per champion. The Oh Tipi version was:
+
+```text
+Use case: precise-object-edit
+Asset type: versioned production-candidate body-only locomotion phase sheet for the FLUX 2D top-down pixel action game
+Input images: Image 1 is the exact Oh Tipi walk/sprint identity, outfit, proportions, palette and first-contact reference; Image 2 is the exact cardinal facing reference.
+Primary request: Create a NEW clean 4-column by 2-row equal-cell sprite source sheet containing exactly eight isolated full-body poses of the same Oh Tipi. This is the opposite gait contact phase, not a copy of Image 1.
+Grid contract: columns left to right SOUTH/front, EAST/right profile, NORTH/back, WEST/left profile. Rows top to bottom WALK OPPOSITE CONTACT and SPRINT OPPOSITE DRIVE. In every cell swap the planted and passing legs compared with Image 1 and counter-swing the arms naturally; sprint has stronger lean and stride. Preserve facing, stable feet baseline, centered feet pivot, scale, fin crown, cheek fins, tail, dark navy armor with aged-gold trim, cyan skin, compact non-sexualized proportions and crisp outline.
+Scene/backdrop: one flat opaque vivid magenta matte over the entire canvas with generous separation between equal cells.
+Style/medium: original charming compact cartoon pixel art matching the input; economical pixel clusters readable around 60 pixels tall; no smooth painting.
+Constraints: body and clothing pixels only; exactly one Oh Tipi per cell; empty hands; no text, labels, borders, shadows, magic, elements, aura, projectiles, particles, dust, speed lines, weapons, tools, equipment, props or environment; no cropped figures or overlap.
+Avoid: duplicated first-contact poses, wrong facing, extra limbs, inconsistent scale, spell pixels, detached objects, logos, watermark.
+```
+
+The S. Wayne phase-B prompt was:
+
+```text
+Use case: precise-object-edit
+Asset type: versioned production-candidate body-only locomotion phase sheet for the FLUX 2D top-down pixel action game
+Input images: Image 1 is the exact S. Wayne walk/sprint identity, outfit, proportions, palette and first-contact reference; Image 2 is the exact cardinal facing reference.
+Primary request: Create a NEW clean 4-column by 2-row equal-cell sprite source sheet containing exactly eight isolated full-body poses of the same S. Wayne. This is the opposite gait contact phase, not a copy of Image 1.
+Grid contract: columns left to right SOUTH/front, EAST/right profile, NORTH/back, WEST/left profile. Rows top to bottom WALK OPPOSITE CONTACT and SPRINT OPPOSITE DRIVE. In every cell swap the planted and passing legs compared with Image 1 and counter-swing the arms naturally; sprint has stronger lean and stride. Preserve facing, stable feet baseline, centered feet pivot, scale, round dark hair, warm dark skin, purple-and-gold short cloak, large bare hobbit feet, compact non-sexualized proportions and crisp outline.
+Scene/backdrop: one flat opaque vivid magenta matte over the entire canvas with generous separation between equal cells.
+Style/medium: original charming compact cartoon pixel art matching the input; economical pixel clusters readable around 58 pixels tall; no smooth painting.
+Constraints: body and clothing pixels only; exactly one S. Wayne per cell; empty hands; no text, labels, borders, shadows, magic, elements, aura, projectiles, particles, dust, speed lines, weapons, tools, equipment, props or environment; no cropped figures or overlap.
+Avoid: duplicated first-contact poses, wrong facing, extra limbs, inconsistent scale, spell pixels, detached objects, logos, watermark.
+```
+
+The diagonal action prompt was run once per champion. The Oh Tipi version was:
+
+```text
+Use case: precise-object-edit
+Asset type: versioned production-candidate body-only diagonal locomotion and evasion sheet for the FLUX 2D top-down pixel action game
+Input images: Image 1 is the exact Oh Tipi diagonal walk/sprint identity, outfit, proportions, palette and first-contact reference; Image 2 is the exact Oh Tipi cardinal movement-action reference for jump, slide and roll; Image 3 is the exact diagonal facing and body reference.
+Primary request: Create a NEW clean 4-column by 5-row equal-cell sprite source sheet containing exactly twenty isolated full-body poses of the same Oh Tipi.
+Grid contract: columns left to right SOUTH-EAST/front-right, NORTH-EAST/back-right, NORTH-WEST/back-left, SOUTH-WEST/front-left. Rows top to bottom: (1) WALK OPPOSITE CONTACT, swapping planted/passing legs and counter-swinging arms compared with Image 1; (2) SPRINT OPPOSITE DRIVE with stronger lean and stride; (3) JUMP with both feet visibly airborne, compact rising pose and arms balancing; (4) SLIDE, low elongated feet-first pose aligned precisely with facing; (5) ROLL, compact tucked somersault silhouette aligned precisely with facing. Preserve all four diagonal facings, stable centered feet pivot where applicable, scale, fin crown, cheek fins, tail, dark navy armor with aged-gold trim, cyan skin, compact non-sexualized proportions and crisp outline.
+Scene/backdrop: one flat opaque vivid magenta matte over the entire canvas with generous separation between equal cells.
+Style/medium: original charming compact cartoon pixel art matching the inputs; economical pixel clusters readable around 60 pixels tall; no smooth painting.
+Constraints: body and clothing pixels only; exactly one Oh Tipi per cell; empty hands; no text, labels, borders, shadows, magic, elements, aura, projectiles, particles, dust, speed lines, weapons, tools, equipment, props or environment; no cropped figures or overlap.
+Avoid: cardinal facings, duplicated first-contact poses, ambiguous direction, extra limbs, inconsistent scale, spell pixels, detached objects, logos, watermark.
+```
+
+The S. Wayne diagonal action prompt was:
+
+```text
+Use case: precise-object-edit
+Asset type: versioned production-candidate body-only diagonal locomotion and evasion sheet for the FLUX 2D top-down pixel action game
+Input images: Image 1 is the exact S. Wayne diagonal walk/sprint identity, outfit, proportions, palette and first-contact reference; Image 2 is the exact S. Wayne cardinal movement-action reference for jump, slide and roll; Image 3 is the exact diagonal facing and body reference.
+Primary request: Create a NEW clean 4-column by 5-row equal-cell sprite source sheet containing exactly twenty isolated full-body poses of the same S. Wayne.
+Grid contract: columns left to right SOUTH-EAST/front-right, NORTH-EAST/back-right, NORTH-WEST/back-left, SOUTH-WEST/front-left. Rows top to bottom: (1) WALK OPPOSITE CONTACT, swapping planted/passing legs and counter-swinging arms compared with Image 1; (2) SPRINT OPPOSITE DRIVE with stronger lean and stride; (3) JUMP with both feet visibly airborne, compact rising pose and arms balancing; (4) SLIDE, low elongated feet-first pose aligned precisely with facing; (5) ROLL, compact tucked somersault silhouette aligned precisely with facing. Preserve all four diagonal facings, stable centered feet pivot where applicable, scale, round dark hair, warm dark skin, purple-and-gold short cloak, large bare hobbit feet, compact non-sexualized proportions and crisp outline.
+Scene/backdrop: one flat opaque vivid magenta matte over the entire canvas with generous separation between equal cells.
+Style/medium: original charming compact cartoon pixel art matching the inputs; economical pixel clusters readable around 58 pixels tall; no smooth painting.
+Constraints: body and clothing pixels only; exactly one S. Wayne per cell; empty hands; no text, labels, borders, shadows, magic, elements, aura, projectiles, particles, dust, speed lines, weapons, tools, equipment, props or environment; no cropped figures or overlap.
+Avoid: cardinal facings, duplicated first-contact poses, ambiguous direction, extra limbs, inconsistent scale, spell pixels, detached objects, logos, watermark.
 ```
 
 Human visual/originality acceptance is still required before final-art

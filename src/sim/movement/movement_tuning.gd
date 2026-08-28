@@ -4,7 +4,7 @@ extends RefCounted
 
 # Authoritative values are fixed-point world units, resource milli-units,
 # milliseconds, or scale-1000 ratios. They preserve the proven FLUX grammar.
-const COMPATIBILITY_ID: String = "movement-tuning-v4-evasive-frames"
+const COMPATIBILITY_ID: String = "movement-tuning-v5-active-air-control"
 const PLAYER_RADIUS: int = 18_000
 const BASE_SPEED: int = 324_000
 const ACCELERATION: int = 1_980_000
@@ -26,6 +26,7 @@ const HOP_COST: int = 28_000
 const HOP_SPEED: int = 650_000
 const HOP_DURATION_MS: int = 160
 const HOP_COOLDOWN_MS: int = 500
+const HOP_STEERING_PER_SECOND: int = 6_000
 const JUMP_INVULNERABILITY_MS: int = 90
 const WALL_KICK_SPEED: int = 780_000
 const WALL_MEMORY_MS: int = 160
@@ -118,6 +119,7 @@ static func compatibility_hash() -> String:
 		],
 		"hop_wall": [
 			HOP_COST, HOP_SPEED, HOP_DURATION_MS, HOP_COOLDOWN_MS,
+			HOP_STEERING_PER_SECOND,
 			JUMP_INVULNERABILITY_MS,
 			WALL_KICK_SPEED, WALL_MEMORY_MS, SAME_WALL_LOCKOUT_MS,
 			WALL_SKIM_COST, WALL_SKIM_SPEED, WALL_SKIM_DURATION_MS,

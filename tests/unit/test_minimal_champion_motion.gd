@@ -5,6 +5,7 @@ func run() -> int:
 	_test_repository_motion()
 	_test_complete_movement_mapping()
 	_test_tick_rate_parity_and_reduced_motion()
+	_test_locomotion_contact_phase()
 	return finish("minimal-champion-motion")
 
 
@@ -77,3 +78,16 @@ func _test_tick_rate_parity_and_reduced_motion() -> void:
 	state.hop_ticks = config_60.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS) / 2
 	var elapsed_60 := MinimalChampionMotion.elapsed_for_state(state, "air", 0.0, config_60)
 	check(absf(elapsed_60 - elapsed_120) <= 0.5, "airborne pose phase is equivalent at 60/120 Hz")
+
+
+func _test_locomotion_contact_phase() -> void:
+	var motion := MinimalChampionMotion.new()
+	check(motion.load_from_file(), "motion loads for locomotion contact phases")
+	equal(motion.locomotion_contact_frame("buoyant_keeper", "walk", 0.0), 0, "walk begins on contact A")
+	equal(motion.locomotion_contact_frame("buoyant_keeper", "walk", 10.9), 0, "contact A holds through the first half-cycle")
+	equal(motion.locomotion_contact_frame("buoyant_keeper", "walk", 11.0), 1, "walk swaps legs at the half-cycle")
+	equal(motion.locomotion_contact_frame("buoyant_keeper", "walk", 22.0), 0, "walk loops back to contact A")
+	var phase_60 := motion.locomotion_contact_frame("grounded_weaver", "sprint", MinimalChampionMotion.tick_at_visual_rate(12, 60), 3)
+	var phase_120 := motion.locomotion_contact_frame("grounded_weaver", "sprint", MinimalChampionMotion.tick_at_visual_rate(24, 120), 3)
+	equal(phase_60, phase_120, "contact-frame cadence is equivalent at 60/120 Hz")
+	equal(motion.locomotion_contact_frame("buoyant_keeper", "idle", 99.0), 0, "non-locomotion states cannot select an alternate contact")

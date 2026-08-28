@@ -543,7 +543,15 @@ static func _apply_velocity(state: PlayerState, command: SimCommand, direction: 
 		state.slide_y = slide_direction.y
 		_set_directional_velocity(state, slide_direction, MovementTuning.SLIDE_SPEED)
 	elif state.hop_ticks > 0:
-		_set_directional_velocity(state, Vector2i(state.hop_x, state.hop_y), state.hop_speed)
+		var hop_direction := _steer_hop(
+			Vector2i(state.hop_x, state.hop_y),
+			direction,
+			command,
+			config,
+		)
+		state.hop_x = hop_direction.x
+		state.hop_y = hop_direction.y
+		_set_directional_velocity(state, hop_direction, state.hop_speed)
 	elif state.wall_skim_ticks > 0:
 		_set_directional_velocity(state, Vector2i(state.wall_skim_x, state.wall_skim_y), MovementTuning.WALL_SKIM_SPEED)
 	else:
@@ -758,6 +766,19 @@ static func _steer(current: Vector2i, requested: Vector2i, command: SimCommand, 
 	if command.move_x == 0 and command.move_y == 0:
 		return current
 	return _direction(_blend_axis(current.x, requested.x, ratio), _blend_axis(current.y, requested.y, ratio), current)
+
+
+static func _steer_hop(current: Vector2i, requested: Vector2i, command: SimCommand, config: SimConfig) -> Vector2i:
+	if command.move_x == 0 and command.move_y == 0 or config == null:
+		return current
+	@warning_ignore("integer_division")
+	var ratio := clampi(MovementTuning.HOP_STEERING_PER_SECOND / config.tick_rate, 1, 1000)
+	# Keep the blended magnitude: reversing in air should briefly trade speed
+	# for control instead of snapping through a zero-angle discontinuity.
+	return Vector2i(
+		_blend_axis(current.x, requested.x, ratio),
+		_blend_axis(current.y, requested.y, ratio),
+	)
 
 
 static func _blend_axis(current: int, requested: int, ratio: int) -> int:

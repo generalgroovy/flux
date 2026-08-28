@@ -79,10 +79,10 @@ forward, backward or lateral travel. This resolver changes no fixed-point
 position, speed, collision, timing, invulnerability, network value or outcome.
 
 The current integrated candidate supplies authored eight-way grounded,
-empty-hand cast, hit/recovery, walk and sprint art for both foundation
-champions. Jump, slide and roll preserve reviewed nearest-cardinal body art plus
-an independent eight-way invulnerability cue until dedicated diagonal source
-sheets pass review. Advanced airborne moves derive from jump and Wave
+empty-hand cast, hit/recovery, jump, slide and roll art for both foundation
+champions. Walk and sprint each alternate two opposite planted-leg contacts in
+all eight directions on an editable, rate-independent presentation cadence; the
+independent eight-way invulnerability cue remains a reinforcing layer. Advanced airborne moves derive from jump and Wave
 Dash/Wall Skim derive from the low slide row through a versioned semantic-alias
 manifest while retaining separate motion/accent layers. Movement, control,
 cast/recovery and defeat are live; attack, defense, interaction and taunt

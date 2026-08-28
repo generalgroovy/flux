@@ -704,3 +704,52 @@ the order crisp/slightly slower movement → universal chaining → positive-Flu
 offense and shorter cooldown economy → globally selectable four-role catalogs
 for all twelve elements. Preserve the published protocol-26 green point and the
 user-owned untracked paths throughout.
+
+## 2026-08-28 — v8 complete eight-way movement bodies
+
+- Built-in ImageGen produced four repository-bound body/clothing-only sources:
+  opposite cardinal walk/sprint contacts and diagonal opposite-contact/jump/
+  slide/roll sheets for Oh Tipi and S. Wayne. Originals remain under Codex's
+  generated-image store; exact prompts and hashes are recorded beside the art.
+- `runtime_atlas_eight_v8.png` is a deterministic 768×1920 atlas with 160 cells:
+  2 champions × 10 rows × 8 directions. Runtime file hash is
+  `0c105cbce46d5dd13f9d19b9252ac2717a4f873c32ead65ac7724ec9e8f96401`;
+  Godot-decoded RGBA8 hash is
+  `758e2f76e766ae852d25348421dc315587892cb30a46bed89f9e8da7622dcdea`.
+- Walk and sprint select A/B planted-leg contacts on each validated motion
+  profile's half-cycle with deterministic entity phase offsets. Reduced motion
+  damps translation/squash but does not erase readable gait alternation.
+- Jump, slide and roll resolve native `S/SE/E/NE/N/NW/W/SW` art. Continuous
+  movement, aim, collision, action timing, stamina, invulnerability and network
+  state are unchanged; the body atlas remains presentation-only.
+- `scripts/report_texture_rgba_hash.gd` provides a reproducible imported-texture
+  hash step for future versioned art changes.
+- Verification: `scripts/test.ps1` passed 55 suites / 17,278 assertions, zero
+  failures, plus clean source boots at 60 and 120 Hz. Truthful live captures
+  passed for north-east walk (both leg contacts), north-west slide, south-west
+  jump and south-east roll under `.godot/visual-captures/animation-v8-*`.
+  Existing catalog warnings about direct Image loads remain pre-existing.
+- Stop boundary honored: no Wellspring map topology, collision, routes, stations
+  or environment art changed. Next action requires selecting an expansion layout
+  proposal, then implementing one collision-aligned reusable map slice.
+
+## 2026-08-28 — active airborne movement control
+
+- `MovementSystem` now latches held movement for jump takeoff and applies
+  bounded, time-scaled steering to the current hop vector on every airborne
+  tick. No-input airtime preserves momentum; hard reversals pass through a
+  readable low-speed turn instead of snapping direction.
+- Non-zero current movement input already owns simulation facing during airtime,
+  and the jump presenter consumes that facing, so all eight visual directions
+  react immediately while spell aim remains independent.
+- Contextual V air redirect and sprint+V air dodge remain the faster paid
+  techniques; ordinary steering does not erase their role.
+- `MovementTuning.COMPATIBILITY_ID` is now
+  `movement-tuning-v5-active-air-control`; compatibility hashing includes the
+  steering rate, so deterministic peers fail closed on mismatched movement.
+- `scripts\test.ps1` passed 55 suites / 17,381 assertions with zero failures,
+  clean imports and source boots at 60 and 120 Hz. Movement has 1,175 assertions,
+  including same-tick takeoff, eight-way airborne facing, released-input
+  momentum, sustained reversal and 60/120 time-parity coverage.
+- Stop boundary remains active: the Wellspring map is unchanged and the next
+  product decision is selection of one expansion layout proposal.

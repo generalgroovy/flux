@@ -21,12 +21,14 @@ adapters required to expose already-authoritative state.
 
 Current C2 checkpoint: reviewed diagonal grounded/cast/hit/walk/sprint art,
 relative gait, safe directional evasion cues, shared eight-way spell delivery,
-and Wellspring collision/cutaway/receiving-shadow alignment are green. Jump,
-slide and roll retain explicit nearest-cardinal body art until reviewed
-diagonal sources exist. D7 integrated multi-zoom/accessibility/Farflow capture
-is next. Continuous analog movement/aim, normalized digital diagonals and
-simulation authority must remain unchanged. Do not skip to new mechanics or
-champions.
+Wellspring collision/cutaway/receiving-shadow alignment and the reproducible
+19-cell D7 direction/action/zoom/accessibility/Farflow evidence runner are
+green. The current honest rubric mean is 4.29/5 against the required 4.5, so
+raise original material identity and action/spell response before rerunning the
+same matrix. Jump, slide and roll retain explicit nearest-cardinal body art
+until reviewed diagonal sources exist. Continuous analog movement/aim,
+normalized digital diagonals and simulation authority must remain unchanged.
+Do not skip to new mechanics or champions.
 
 Make the Wellspring and GUI match the charm, density, readable perspective and
 material richness of the supplied gameplay reference while remaining wholly

@@ -72,7 +72,7 @@ channels are not claimed yet; test direct-IP builds only with trusted friends.
 | Chemistry | Material grid and 36 design-locked recipes | All recipes form, act, decay, reset, and explain themselves in-game |
 | Champions | Oh Tipi and S. Wayne playable | Do not expand until first-eight chemistry passes |
 | Farflow | Host-authoritative 2/4/8-player direct-IP loop | Per-peer LOS filtering, then measured later 32-player gate |
-| Visuals | Reviewed diagonal champion families, safe evasion cues, direction-complete empty-hand spell delivery, and Wellspring collision/threshold/cutaway/receiving-shadow alignment | Integrated multi-zoom/accessibility/Farflow matrix, remaining reviewed evasion art, then whole-scene acceptance |
+| Visuals | Reviewed diagonal champion families, safe evasion cues, direction-complete empty-hand spell delivery, Wellspring surface alignment, and a reproducible 19-cell multi-zoom/accessibility/Farflow matrix | Raise the honest 4.29/5 visual rubric to the required 4.5 with material/action-response polish, then remaining reviewed evasion art |
 
 ## Design pillars
 

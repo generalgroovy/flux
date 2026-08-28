@@ -3,6 +3,28 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## 2026-08-28 - integrated visual acceptance matrix
+
+- `scripts/capture-visual-matrix.cmd` now builds one non-overwriting review
+  matrix for both foundation champions, the fixed eight directions, eight
+  representative action states, 50/75/100% zoom, all accessibility review
+  profiles, 720p/1080p overviews and a real mixed-champion Farflow pair.
+- Exact-commit evidence at `.godot/visual-captures/d7-integrated-v2-*` contains
+  19 manifest cells and a single contact sheet. Farflow proves Oh Tipi host,
+  S. Wayne guest, join and shared greeting; all capture logs are clean.
+- Honest rubric: cohesion 4, silhouette 4, material identity 4, overview 5,
+  HUD 5, animation response 4, spell readability 4 = 4.29/5. Every floor
+  passes, but the 4.5 mean does not, so D7 and the visual mechanics freeze stay
+  open.
+- Full source gate: 55 suites / 17,250 assertions, zero failures; 60/120 Hz
+  boots pass. Exact `ae68385` Windows package boots at 120 Hz; build ID
+  `0.1.0-dev-ae6838530b-6e47209b29`, installer SHA-256
+  `a116c781ca836e245e7509cb99bef4db952e28ebd3e28feb48ecc444f1c3b2fa`, ZIP
+  SHA-256 `6e47209b2998c61e17b0d20baeb92642fe912b68822682e75f119970ec3ced99`.
+- Next: presentation-only material and action/spell-response polish, followed
+  by the same matrix. Keep diagonal evasion body art on its explicit reviewed
+  fallback until source sheets pass review.
+
 ## 2026-08-28 - Wellspring surface and cutaway alignment
 
 Playable outcome:

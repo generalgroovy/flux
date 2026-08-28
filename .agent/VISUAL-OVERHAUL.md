@@ -105,6 +105,15 @@ Diagnostic diagonal captures prove architecture, low cover, contact shadow and
 simulation footprint agree. D6 is green without granting art authority over
 collision, topology, movement, visibility or spell endpoints.
 
+D7 now has a reproducible non-overwriting evidence runner. Its 19-cell manifest
+and contact sheet cover both foundation champions, all eight direction/action
+assignments, every zoom and accessibility review profile, 720p/1080p overviews
+and a real mixed-champion Farflow pair. The first exact-commit review scored
+cohesion 4, silhouette 4, material identity 4, world overview 5, HUD clarity 5,
+animation response 4 and spell readability 4: 4.29/5. Every category clears
+the floor, but the required 4.5 mean does not; the visual gate remains closed
+until presentation-only material and response polish passes the same matrix.
+
 Acceptance evidence must include a direction matrix capture showing both
 foundation champions in all eight compass directions while idle, walking,
 sprinting, reversing/strafe-moving, jumping, casting, taking damage and using

@@ -1,5 +1,50 @@
 # FLUX2 agent worklog
 
+## 2026-08-28 - integrated visual acceptance matrix
+
+Acceptance outcome:
+
+- Added one bounded Windows review command that captures Oh Tipi and S. Wayne
+  across the fixed eight-direction order while distributing idle, walk,
+  sprint, reverse, jump, cast, hit and evade states. The same matrix covers
+  50/75/100% zoom and standard, high-contrast, grayscale, protanopia,
+  deuteranopia, tritanopia and reduced-effects presentation.
+- The command also captures 720p/1080p Wellspring overviews and a real
+  two-process mixed-champion Farflow session, then writes an ignored JSON
+  manifest and wrapped-label contact sheet. Existing prefixes fail closed and
+  are never overwritten or resumed silently.
+- Full-size sequence review kept every rubric category at 4 or above, but the
+  honest score is cohesion 4, silhouette 4, material identity 4, world
+  overview 5, HUD clarity 5, animation response 4 and spell readability 4:
+  30/35, or 4.29/5. D7 therefore remains open because the required mean is
+  4.5; mechanics remain frozen.
+
+Verification:
+
+- `scripts\\test.ps1`: 55 suites / 17,250 assertions, zero failures; source
+  imports and 60/120 Hz boots pass under protocol 30. Existing legacy image
+  loader warnings remain unchanged.
+- `.godot/visual-captures/d7-integrated-v2-manifest.json` records 19 cells from
+  exact source commit `ae68385`: 16 direction/action cells, two overview cells
+  and one 72-frame real Farflow pair. Forty capture/import logs contain no
+  script/import/runtime errors; the host records entity 2 joining and sharing
+  its greeting.
+- The reviewed sheet is
+  `.godot/visual-captures/d7-integrated-v2-contact-sheet.png`; targeted
+  full-size frames verified diagonal walk, jump lift/shadow, evade contour,
+  empty-hand cast origin and mixed Oh Tipi/S. Wayne network silhouettes.
+- Windows packaging and direct packaged 120 Hz boot passed. Build ID is
+  `0.1.0-dev-ae6838530b-6e47209b29`; installer SHA-256 is
+  `a116c781ca836e245e7509cb99bef4db952e28ebd3e28feb48ecc444f1c3b2fa`
+  and portable ZIP SHA-256 is
+  `6e47209b2998c61e17b0d20baeb92642fe912b68822682e75f119970ec3ced99`.
+
+Next slice:
+
+- D7 visual polish: raise material identity and action/spell response with
+  original, presentation-only refinements, then rerun the same exact matrix.
+  D4 diagonal evasion body art remains blocked on reviewed sources.
+
 ## 2026-08-28 - Wellspring surface and cutaway alignment
 
 Playable outcome:

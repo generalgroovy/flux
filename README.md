@@ -434,6 +434,14 @@ and high-contrast/reduced-effects captures under
 `.godot/visual-captures/post-unify-v9-*`; these are ignored review artifacts
 and can be regenerated with `scripts/capture-visual.ps1`.
 
+Run `scripts\capture-visual-matrix.cmd -Name review-name` for the bounded
+integrated review: it distributes idle, walk, sprint, reverse, jump, cast, hit
+and evade across all eight directions for Oh Tipi and S. Wayne, covers
+50/75/100% zoom plus every visual profile, captures 720p/1080p overviews, and
+proves a real mixed-champion Farflow pair. It writes ignored truthful frames, a
+machine-readable manifest and one contact sheet below
+`.godot/visual-captures/`; a prefix is never overwritten or resumed silently.
+
 The cardinal movement checkpoint adds four-direction walk/sprint plus correctly
 timed (post-trigger) slide/roll captures for both champions under
 `.godot/visual-captures/movement-v5-*`, along with 50%/100%, 1080p,

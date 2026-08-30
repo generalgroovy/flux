@@ -1,5 +1,37 @@
 # FLUX2 agent worklog
 
+## 2026-08-31 - eight-direction slide and press-edge integrity
+
+Playable outcome:
+
+- Local jump, technique, active, slide and spell press edges now combine the
+  explicit held transition with Godot's buffered just-pressed transition. A
+  short keyboard, mouse-wheel or controller press cannot vanish solely because
+  it begins and ends between render and simulation sampling.
+- The exact south-east `S+D+C` semantic path and every other compass-plus-slide
+  combination preserve normalized movement, emit one slide edge, retain held
+  fast-fall intent, cross the shared radial entry threshold and latch matching
+  slide/facing direction.
+- Costs, cooldowns, movement tuning, protocol, simulation authority and replay
+  representation are unchanged. Hardware rollover that prevents Windows from
+  reporting a chord remains honestly outside software authority; wheel-down and
+  remapping are equivalent supported inputs.
+
+Verification:
+
+- `scripts\test.ps1`: 55 suites / 17,961 assertions, zero failures. Input-router
+  coverage is 494 assertions and movement coverage is 1,447 assertions.
+- Clean source/import gates and independent 60/120 Hz boots passed.
+- A truthful 24-frame 1280x720 south-east slide capture passed at 120 Hz under
+  `.godot/visual-captures/movement-integrity-se-slide-v1` and visibly retained
+  the intended low south-east body lane.
+
+Next slice:
+
+- Commit and push this green point, rebuild the one-file Windows package from
+  that exact commit, then verify install/update/launch/close and packaged
+  Farflow before changing visual content.
+
 ## 2026-08-28 - startup-directed jump and active air control
 
 Playable outcome:

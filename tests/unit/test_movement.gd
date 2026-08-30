@@ -8,6 +8,7 @@ func run() -> int:
 		_test_sprint_and_hop(tick_rate)
 		_test_directional_hop_control(tick_rate)
 		_test_double_jump(tick_rate)
+		_test_eight_direction_slide_integrity(tick_rate)
 		_test_slide_and_slide_jump(tick_rate)
 		_test_action_buffers(tick_rate)
 		_test_variable_jump_and_fast_fall(tick_rate)
@@ -164,6 +165,21 @@ func _test_slide_and_slide_jump(tick_rate: int) -> void:
 	_step(world, 1000, 0, 0, SimCommand.PRESSED_JUMP)
 	equal(state.last_event, "slide_jump", "%d Hz late slide converts" % tick_rate)
 	check(state.hop_speed == MovementTuning.SLIDE_JUMP_SPEED, "%d Hz slide jump speed is authored" % tick_rate)
+
+
+func _test_eight_direction_slide_integrity(tick_rate: int) -> void:
+	for direction_index: int in range(EightDirectionResolver.DIRECTION_ORDER.size()):
+		var direction_id := EightDirectionResolver.DIRECTION_ORDER[direction_index]
+		var fixed := EightDirectionResolver.FIXED_VECTORS[direction_index]
+		var world := SimWorld.new(tick_rate)
+		var state: PlayerState = world.player()
+		while state.velocity_x * state.velocity_x + state.velocity_y * state.velocity_y < MovementTuning.SLIDE_ENTRY_SPEED * MovementTuning.SLIDE_ENTRY_SPEED:
+			_step(world, fixed.x, fixed.y)
+		_step(world, fixed.x, fixed.y, 0, SimCommand.PRESSED_SLIDE)
+		equal(state.last_event, "slide", "%d Hz %s starts slide at the same radial threshold" % [tick_rate, direction_id])
+		equal(Vector2i(state.slide_x, state.slide_y), fixed, "%d Hz %s slide latches the exact direction" % [tick_rate, direction_id])
+		equal(Vector2i(state.facing_x, state.facing_y), fixed, "%d Hz %s slide facing matches travel" % [tick_rate, direction_id])
+		check(state.velocity_x * fixed.x + state.velocity_y * fixed.y > 0, "%d Hz %s slide advances into the requested lane" % [tick_rate, direction_id])
 
 
 func _test_air_dodge_and_wavedash(tick_rate: int) -> void:

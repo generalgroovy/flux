@@ -37,7 +37,9 @@ func run() -> int:
 	equal(InputRouter.selected_spell_slot_index(3, true, false), 7, "Ctrl+4 selects position 8")
 	equal(InputRouter.selected_spell_slot_index(3, false, true), 11, "Alt+4 selects position 12")
 	equal(InputRouter.selected_spell_slot_index(1, true, true), 9, "Alt deterministically wins a dual-modifier chord")
+	_test_press_edge_resilience()
 	_test_eight_direction_command_vectors()
+	_test_eight_direction_slide_chords()
 	check(_has_joy_button(&"emote", JOY_BUTTON_DPAD_UP), "social speech retains a controller d-pad shortcut")
 	check(not _keycodes(&"primary").has(KEY_SPACE), "primary has no Space keyboard alias")
 	check(_has_mouse_button(&"primary", MOUSE_BUTTON_LEFT), "primary retains left mouse")
@@ -65,6 +67,47 @@ func _test_eight_direction_command_vectors() -> void:
 	equal(overdriven, Vector2i(1000, 0), "movement vector is bounded to the command envelope")
 	var aim_relative := InputRouter.transform_movement(420, -310, 1000, 0, PlayerPreferences.MOVEMENT_AIM_RELATIVE)
 	equal(aim_relative, Vector2i(310, 420), "aim-relative rotation preserves analog components around east-facing aim")
+
+
+func _test_press_edge_resilience() -> void:
+	check(InputRouter.pressed_edge(true, false, false), "held-state transition produces one semantic press")
+	check(InputRouter.pressed_edge(false, false, true), "buffered engine transition preserves a short press between samples")
+	check(not InputRouter.pressed_edge(true, true, false), "held action does not repeat without a new transition")
+	check(not InputRouter.pressed_edge(false, false, false), "idle action produces no semantic press")
+
+
+func _test_eight_direction_slide_chords() -> void:
+	var movement_actions: Array[StringName] = [&"move_left", &"move_right", &"move_up", &"move_down"]
+	for direction_index: int in range(EightDirectionResolver.DIRECTION_ORDER.size()):
+		for action: StringName in movement_actions:
+			Input.action_release(action)
+		Input.action_release(InputRouter.SLIDE_ACTION)
+		var fixed := EightDirectionResolver.FIXED_VECTORS[direction_index]
+		if fixed.x < 0:
+			Input.action_press(&"move_left")
+		elif fixed.x > 0:
+			Input.action_press(&"move_right")
+		if fixed.y < 0:
+			Input.action_press(&"move_up")
+		elif fixed.y > 0:
+			Input.action_press(&"move_down")
+		Input.action_press(InputRouter.SLIDE_ACTION)
+		var router := InputRouter.new(1)
+		var world := SimWorld.new(120)
+		var first_command: SimCommand = router.sample(0, Vector2.ZERO, Vector2.RIGHT)
+		equal(Vector2i(first_command.move_x, first_command.move_y), fixed, "%s movement chord reaches the command unchanged" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
+		check(first_command.has_pressed(SimCommand.PRESSED_SLIDE), "%s movement + slide emits the slide edge" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
+		check(first_command.has_held(SimCommand.HELD_FAST_FALL), "%s movement + slide retains the shared held intent" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
+		check(world.step([first_command]), "%s chord enters deterministic simulation" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
+		while world.player().slide_ticks == 0 and world.player().slide_buffer_ticks > 0:
+			var command: SimCommand = router.sample(world.tick, Vector2.ZERO, Vector2.RIGHT)
+			check(not command.has_pressed(SimCommand.PRESSED_SLIDE), "%s held chord does not repeat its press edge during catch-up" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
+			check(world.step([command]), "%s buffered chord advances" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
+		check(world.player().slide_ticks > 0, "%s movement + slide reaches the slide state" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
+		equal(Vector2i(world.player().slide_x, world.player().slide_y), fixed, "%s slide owns the requested direction" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
+	for action: StringName in movement_actions:
+		Input.action_release(action)
+	Input.action_release(InputRouter.SLIDE_ACTION)
 
 
 func _keycodes(action: StringName) -> Array[int]:

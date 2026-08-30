@@ -24,6 +24,7 @@ var slide_was_down: bool = false
 var spell_was_down: Array[bool] = [false, false, false, false]
 var movement_reference: String = PlayerPreferences.MOVEMENT_WORLD_RELATIVE
 var last_quantized_aim := Vector2i(1000, 0)
+var consumed_engine_edge_frames: Dictionary[StringName, int] = {}
 
 
 func _init(requested_entity_id: int = 1) -> void:
@@ -123,24 +124,33 @@ func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> S
 	var technique_down: bool = Input.is_action_pressed(&"technique")
 	var active_1_down: bool = Input.is_action_pressed(ACTIVE_1_ACTION)
 	var slide_down: bool = Input.is_action_pressed(SLIDE_ACTION)
+	var jump_pressed: bool = _action_pressed_edge(&"jump", jump_down, jump_was_down)
+	var technique_pressed: bool = _action_pressed_edge(&"technique", technique_down, technique_was_down)
+	var active_1_pressed: bool = _action_pressed_edge(ACTIVE_1_ACTION, active_1_down, active_1_was_down)
+	var slide_pressed: bool = _action_pressed_edge(SLIDE_ACTION, slide_down, slide_was_down)
 	if jump_down:
 		held |= SimCommand.HELD_JUMP
 	if slide_down:
 		held |= SimCommand.HELD_FAST_FALL
 	var pressed: int = 0
-	if jump_down and not jump_was_down:
+	if jump_pressed:
 		pressed |= SimCommand.PRESSED_JUMP
-	if technique_down and not technique_was_down:
+	if technique_pressed:
 		pressed |= SimCommand.PRESSED_TECHNIQUE
-	if active_1_down and not active_1_was_down:
+	if active_1_pressed:
 		pressed |= SimCommand.PRESSED_ACTIVE_1
-	if slide_down and not slide_was_down:
+	if slide_pressed:
 		pressed |= SimCommand.PRESSED_SLIDE
 	var ctrl_layer: bool = Input.is_action_pressed(SPELL_CTRL_LAYER_ACTION)
 	var alt_layer: bool = Input.is_action_pressed(SPELL_ALT_LAYER_ACTION)
 	for button_index: int in range(SPELL_ACTIONS.size()):
 		var spell_down: bool = Input.is_action_pressed(SPELL_ACTIONS[button_index])
-		if spell_down and not spell_was_down[button_index]:
+		var spell_pressed: bool = pressed_edge(
+			spell_down,
+			spell_was_down[button_index],
+			_consume_engine_edge(SPELL_ACTIONS[button_index]),
+		)
+		if spell_pressed:
 			var spell_slot_index := selected_spell_slot_index(button_index, ctrl_layer, alt_layer)
 			pressed |= SimCommand.SPELL_PRESSED_BITS[spell_slot_index]
 		spell_was_down[button_index] = spell_down
@@ -178,6 +188,27 @@ func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> S
 		quantized_aim.x,
 		quantized_aim.y,
 	)
+
+
+static func pressed_edge(down: bool, was_down: bool, engine_just_pressed: bool) -> bool:
+	# Godot retains a just-pressed transition across the render/physics boundary.
+	# Combine it with the explicit held-state edge so short wheel/key taps and
+	# keyboard chords cannot disappear between input polling and simulation.
+	return engine_just_pressed or (down and not was_down)
+
+
+func _action_pressed_edge(action: StringName, down: bool, was_down: bool) -> bool:
+	return pressed_edge(down, was_down, _consume_engine_edge(action))
+
+
+func _consume_engine_edge(action: StringName) -> bool:
+	if not Input.is_action_just_pressed(action):
+		return false
+	var process_frame: int = Engine.get_process_frames()
+	if int(consumed_engine_edge_frames.get(action, -1)) == process_frame:
+		return false
+	consumed_engine_edge_frames[action] = process_frame
+	return true
 
 
 static func selected_spell_slot_index(button_index: int, ctrl_layer: bool, alt_layer: bool) -> int:

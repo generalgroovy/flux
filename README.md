@@ -116,6 +116,14 @@ The Spell Loom exposes twelve independently ordered positions: Plain 1–4,
 Ctrl+1–4, and Alt+1–4. An empty position refuses without consuming Flux or
 cooldown. Ctrl and Alt are spell-layer modifiers; slide remains on C.
 
+Press edges are retained across the render-to-simulation boundary and then use
+the same 180 ms deterministic action buffer, so quick keyboard, mouse-wheel and
+controller chords are not lost between frames. All eight movement-plus-slide
+combinations are exercised end to end at 120 Hz and the resulting slide lanes
+are verified independently at both 60 and 120 Hz. If a physical keyboard cannot
+report a three-key chord because of hardware rollover, wheel-down or a Controls
+Lectern remap is the equivalent slide input.
+
 ## Movement grammar
 
 | Technique | Purpose | Bound / counterplay | State |

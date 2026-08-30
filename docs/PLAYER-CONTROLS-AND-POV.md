@@ -73,6 +73,16 @@ The buffer stores intent only: speed, aerial stage, cooldown, collision target,
 Stamina and control-lock requirements are rechecked every tick, and an expired
 or still-illegal action changes no state and spends no resource.
 
+The local input router combines held-state transitions with Godot's buffered
+just-pressed transition before creating the semantic command. This prevents a
+short key, wheel or controller press from disappearing between a render frame
+and the next simulation sample. The semantic `S+D+slide` path and all seven
+other compass combinations are tested through input mapping, command creation,
+buffer consumption and slide direction; simulation parity is also tested at 60
+and 120 Hz. Hardware that never reports a particular three-key chord cannot be
+reconstructed in software, so wheel-down and in-world remapping remain equal
+fallbacks rather than privileged mechanics.
+
 Holding Space or wheel-up preserves the authored jump arc. Releasing it cuts
 remaining air time to a 90 ms minimum; holding C or wheel-down while airborne advances the fall by one
 additional simulation tick per tick. Fast fall costs no Stamina because the

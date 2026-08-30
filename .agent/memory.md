@@ -753,3 +753,21 @@ user-owned untracked paths throughout.
   momentum, sustained reversal and 60/120 time-parity coverage.
 - Stop boundary remains active: the Wellspring map is unchanged and the next
   product decision is selection of one expansion layout proposal.
+
+## 2026-08-31 — press-edge and diagonal slide integrity
+
+- `InputRouter.sample()` now combines held-state edges with Godot's buffered
+  `is_action_just_pressed()` result for jump, technique, active, slide and all
+  four spell buttons. This closes the render/physics sampling gap without
+  changing semantic command bits or authoritative simulation.
+- End-to-end input fixtures cover all eight movement-plus-slide combinations;
+  explicit south-east input reaches `(707,707)`, emits exactly the semantic
+  slide edge, survives the 180 ms action buffer and latches south-east travel.
+- Independent movement fixtures prove equal radial entry, facing, direction and
+  forward travel in every compass lane at 60 and 120 Hz.
+- `scripts\test.ps1` passed 55 suites / 17,961 assertions with zero failures,
+  clean imports and source boots at both supported rates. A truthful 24-frame
+  120 Hz south-east slide capture also passed.
+- The pushed/package boundary remains pending at this note: preserve
+  `node_modules/`, `scripts/firewall.ps1` and the personal Downloads shortcut;
+  rebuild the Windows installer only after committing this exact green state.

@@ -11,23 +11,21 @@ prose; correct stale prose in the same slice.
 
 ## Hard priority
 
-Do not implement or retune movement, chaining, cooldowns, Flux/Stamina economy,
-new spells, characters, networking features or other mechanics until the live
-visual overhaul passes every V0–V6 gate in `.agent/VISUAL-OVERHAUL.md`. This is
-a strict product gate, not a suggestion. During it, change only original
-runtime art, rendering, camera/pixel presentation, GUI, feedback, animation,
-accessibility, visual tests, asset provenance and the smallest rule-neutral
-adapters required to expose already-authoritative state.
+The visual freeze is accepted. D7 scores 4.64/5 with every category at least
+4.5, and V10 keeps actor ownership plus an escape lane through projectile,
+beam, spray and field density at 50/75/100%, grayscale and reduced effects.
+Treat those gates as the minimum bar for every addition; do not spend another
+slice polishing disconnected visuals while the active gameplay acceptance is
+still open.
 
-Current C2 checkpoint: reviewed eight-way grounded/cast/hit/jump/slide/roll art,
-two-contact walk/sprint leg alternation, relative gait, directional evasion cues, shared eight-way spell delivery,
-Wellspring collision/cutaway/receiving-shadow alignment and the reproducible
-19-cell D7 direction/action/zoom/accessibility/Farflow evidence runner are
-green. The current honest rubric mean is 4.29/5 against the required 4.5, so
-raise original material identity and action/spell response before rerunning the
-same matrix. Continuous analog movement/aim,
-normalized digital diagonals and simulation authority must remain unchanged.
-Do not skip to new mechanics or champions.
+Current C2.5 checkpoint: Oh Tipi, S. Wayne and The Red Baron exercise middle,
+small and large equal-budget roles. All three share collision and universal
+movement; The Red Baron adds body/clothing-only eight-way art, the editable
+`iron_regent` motion profile, Fire Cinderbolt and Ice Rimewake. Continuous
+analog movement/aim, normalized digital diagonals and simulation authority
+remain unchanged. The next outcome is the deterministic readable five-shot
+fan, followed by one mechanically comparable burst for each first-eight
+element and then the bounded 36-pair chemistry runtime.
 
 Make the Wellspring and GUI match the charm, density, readable perspective and
 material richness of the supplied gameplay reference while remaining wholly
@@ -50,7 +48,7 @@ landmarks, players, threats and interaction options.
 
 Work through visual tokens/pixel pipeline, the exact `small`/`middle`/`large`
 body system, eight-direction movement and animation coverage for every gameplay-critical state,
-two foundation champions,
+three foundation champions,
 Wellspring environment, current spell visuals, GUI/interactions and integrated
 acceptance in that exact order. Do not accept a concept image, manifest,
 placeholder or isolated specimen as completion: the improvement must run in the
@@ -67,17 +65,15 @@ collision/cutaway diagnostics. Require at least 4/5 in every visual rubric
 category and a 4.5/5 mean. Preserve fixed-tick authority and the last pushed
 green rollback point throughout.
 
-## After visual acceptance
+## Current execution order
 
-V0–V6 are accepted. The slower/crisper ordinary profile, explicit transition
-matrix and positive-Flux cadence foundation are also engineering-complete.
-Continue in the authoritative order from
-`.agent/CONTINUOUS-IMPLEMENTATION-PROMPT.md`: finish gameplay and non-ability
-movement first; then natural reusable animation and movement-rich environment;
-then promote live bounded element chemistry; only then expand one complete
-element's spell catalog at a time with declared chemistry behavior. Do not use
-the already-complete earlier gates as permission to jump directly to catalog
-work.
+V0–V10, universal non-ability movement, natural reusable motion/environment,
+the explicit transition matrix and positive-Flux cadence foundation are green.
+Continue in the authoritative order from `.agent/BACKLOG.md`: five-shot pattern
+simulation, eight first-element burst entries, strict reaction catalog,
+exposure/contact, shared reaction primitives, lifecycle/presentation, and the
+Crucible playtest package. Do not add another champion before the three current
+roles are validated under pattern pressure.
 
 ## Operating discipline
 

@@ -105,17 +105,22 @@ Diagnostic diagonal captures prove architecture, low cover, contact shadow and
 simulation footprint agree. D6 is green without granting art authority over
 collision, topology, movement, visibility or spell endpoints.
 
-D7 now has a reproducible non-overwriting evidence runner. Its 19-cell manifest
-and contact sheet cover both foundation champions, all eight direction/action
+D7 now has a reproducible non-overwriting evidence runner. Its accepted
+three-champion extension has 27 cells covering all playable body roles, all eight direction/action
 assignments, every zoom and accessibility review profile, 720p/1080p overviews
 and a real mixed-champion Farflow pair. The first exact-commit review scored
-cohesion 4, silhouette 4, material identity 4, world overview 5, HUD clarity 5,
-animation response 4 and spell readability 4: 4.29/5. Every category clears
-the floor, but the required 4.5 mean does not; the visual gate remains closed
-until presentation-only material and response polish passes the same matrix.
+cohesion 4.5, silhouette 4.5, material identity 4.5, world overview 5, HUD clarity 5,
+animation response 4.5 and spell readability 4.5: 4.64/5. Every category and
+the required mean pass. V10 also passed 1,080 sampled two-player frames across
+50/75/100%, grayscale, reduced effects, projectile, beam, spray and field
+pressure without losing actor ownership or the last escape lane. The visual
+freeze is open; every added champion or spell must pass the same local gates.
+The current extension is `.godot/visual-captures/d7-three-v1-contact-sheet.png`;
+its real Farflow pair, both overview resolutions and every Red Baron action cell
+completed without capture/import errors.
 
-Acceptance evidence must include a direction matrix capture showing both
-foundation champions in all eight compass directions while idle, walking,
+Acceptance evidence must include a direction matrix capture showing every
+playable champion in all eight compass directions while idle, walking,
 sprinting, reversing/strafe-moving, jumping, casting, taking damage and using
 an evasion action at 50/75/100% zoom. The
 matrix must preserve the shared feet pivot, empty-hand casting origin,
@@ -128,7 +133,7 @@ The visual gate opens only when all of these are true in the live game:
 
 1. Side-by-side 720p and 1080p captures at the default 75% zoom show a charming,
    cohesive Wellspring rather than schematic blocks or debug text.
-2. Two champions are recognizable by silhouette at every zoom and remain
+2. Every playable champion is recognizable by silhouette at every zoom and remains
    readable while moving, jumping, casting, taking damage and standing in auras.
 3. The player can distinguish Health, Flux, Stamina, active spell layer, four
    spell states, cooldown, insufficient Flux, interactions and network status

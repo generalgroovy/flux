@@ -80,6 +80,8 @@ var capture_expanded_station_id: String = ""
 var requested_capture_active_cast: bool = false
 var requested_capture_spell_slot: int = 0
 var requested_capture_chain_spell_slot: int = 0
+var requested_capture_spell_sequence := PackedInt32Array()
+var requested_capture_wait_for_peer: bool = false
 var requested_capture_movement: String = ""
 var requested_capture_movement_direction: Vector2i = Vector2i.RIGHT
 var requested_capture_social_bubble: bool = false
@@ -87,6 +89,7 @@ var requested_capture_visual_profile: String = ""
 var requested_capture_reduced_effects: bool = false
 var capture_active_cast_sent: bool = false
 var capture_chain_cast_sent: bool = false
+var capture_spell_sequence_index: int = 0
 var focused_station_id: String = ""
 var expanded_station_id: String = ""
 var station_notice: String = ""
@@ -226,6 +229,8 @@ func _ready() -> void:
 	requested_capture_active_cast = OS.get_cmdline_user_args().has("--capture-cast-active")
 	requested_capture_spell_slot = _requested_capture_spell_slot()
 	requested_capture_chain_spell_slot = _requested_capture_chain_spell_slot()
+	requested_capture_spell_sequence = _requested_capture_spell_sequence()
+	requested_capture_wait_for_peer = OS.get_cmdline_user_args().has("--capture-wait-for-peer")
 	requested_capture_movement = _requested_capture_movement()
 	requested_capture_movement_direction = _requested_capture_direction()
 	requested_capture_social_bubble = OS.get_cmdline_user_args().has("--capture-social-bubble")
@@ -650,6 +655,32 @@ func _process(delta: float) -> void:
 			var chain_pressed := SimCommand.SPELL_PRESSED_BITS[requested_capture_chain_spell_slot - 1]
 			command = SimCommand.new(world.tick, input_router.entity_id, command.move_x, command.move_y, command.held_actions, chain_pressed, command.aim_x, command.aim_y)
 			capture_chain_cast_sent = true
+		if (
+			capture_spell_sequence_index < requested_capture_spell_sequence.size()
+			and world.tick >= 1
+			and (not requested_capture_wait_for_peer or world.players.size() >= 2)
+		):
+			var capture_state := _local_player_state()
+			var sequence_slot := int(requested_capture_spell_sequence[capture_spell_sequence_index])
+			var sequence_wire := capture_state.spell_wire_id(sequence_slot)
+			if (
+				capture_state.pending_cast_wire_id == 0
+				and capture_state.cast_recovery_ticks == 0
+				and sequence_wire > 0
+				and capture_state.spell_cooldown_for_wire(sequence_wire) == 0
+			):
+				var sequence_aim := Vector2(command.aim_x, command.aim_y)
+				if capture_pointer_world.x >= 0:
+					var requested_sequence_aim := pointer_world_position - current_position
+					if requested_sequence_aim.length_squared() > 0.01:
+						sequence_aim = requested_sequence_aim
+				command = SimCommand.new(
+					world.tick, input_router.entity_id,
+					command.move_x, command.move_y, command.held_actions,
+					SimCommand.SPELL_PRESSED_BITS[sequence_slot - 1],
+					roundi(sequence_aim.x), roundi(sequence_aim.y),
+				)
+				capture_spell_sequence_index += 1
 		if session_transport.is_connected_client() and requested_prediction_smoke and last_client_snapshot_tick >= 0 and prediction_smoke_inputs_sent < 18:
 			command = SimCommand.new(world.tick, input_router.entity_id, 1000, 0, 0, 0, 1000, 0)
 			prediction_smoke_inputs_sent += 1
@@ -2834,6 +2865,16 @@ func _requested_capture_chain_spell_slot() -> int:
 	return 0
 
 
+func _requested_capture_spell_sequence() -> PackedInt32Array:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--capture-spell-sequence="):
+			var requested := parse_capture_spell_sequence(argument)
+			if requested.is_empty():
+				push_warning("Invalid capture spell sequence; expected 1-12 positions separated by commas")
+			return requested
+	return PackedInt32Array()
+
+
 func _requested_capture_movement() -> String:
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--capture-movement="):
@@ -2910,6 +2951,24 @@ static func parse_capture_chain_spell_slot(argument: String) -> int:
 		return 0
 	var slot_number := value.to_int()
 	return slot_number if slot_number >= 1 and slot_number <= PlayerState.SPELL_SLOT_COUNT else 0
+
+
+static func parse_capture_spell_sequence(argument: String) -> PackedInt32Array:
+	var result := PackedInt32Array()
+	if not argument.begins_with("--capture-spell-sequence="):
+		return result
+	var values := argument.trim_prefix("--capture-spell-sequence=").split(",", false)
+	if values.is_empty() or values.size() > PlayerState.SPELL_SLOT_COUNT:
+		return result
+	for value: String in values:
+		var cleaned := value.strip_edges()
+		if not cleaned.is_valid_int():
+			return PackedInt32Array()
+		var slot_number := cleaned.to_int()
+		if slot_number < 1 or slot_number > PlayerState.SPELL_SLOT_COUNT:
+			return PackedInt32Array()
+		result.append(slot_number)
+	return result
 
 
 static func parse_capture_movement(argument: String) -> String:

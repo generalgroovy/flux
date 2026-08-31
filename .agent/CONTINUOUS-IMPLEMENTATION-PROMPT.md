@@ -9,25 +9,24 @@ disagree, preserve tested runtime truth and update stale prose in the same slice
 
 ## Current frontier and hard order
 
-V0–V6 pass in the live game. Preserve protocol 30, snapshot schema 11, the
+V0–V10 pass in the live game. Preserve protocol 30, snapshot schema 11, the
 published green checkpoint and all accepted visual/gameplay behavior. Continue
 in this strict player-facing order; do not skip ahead because a later catalog is
 easier to enumerate:
 
-1. **Gameplay and movement mechanics.** Finish impact agency/recovery, route
-   execution, input comfort and movement-versus-combat decisions. Judge every
-   change by intent response, fluidity, useful mastery, counterplay, spatial
-   readability and 60/120 Hz equivalence, not by feature count.
-2. **Animation and environment.** Make every accepted movement/action read
-   naturally through reusable presentation data, then author movement-rich
-   spaces and environmental affordances that teach those actions without text
-   walls. Presentation follows authority and never owns legality or distance.
-3. **Element chemistry.** Promote the first deterministic, bounded,
-   worldbone-safe material reactions end to end through simulation, cues,
-   reset, replay, network and route-safety evidence.
-4. **Spell expansion with chemistry.** Expand one complete element at a time
-   only after its environmental rules are live; each spell must create a
-   distinct aim/spacing/resource decision and declare its material operation.
+1. **Readable bullet-pattern pressure.** Implement one deterministic five-shot
+   fan with fixed ordered angles, bounded entities/work/packets, visible owner
+   and at least one deliberate evasion lane at every supported zoom.
+2. **First-eight burst library.** Instantiate one comparable positive-Flux
+   burst for Earth, Fire, Water, Wind, Ice, Charge, Light and Dark through the
+   global 3×4 Loom; element changes identity/chemistry, never hidden geometry or
+   automatic damage.
+3. **Element chemistry.** Promote all 36 symmetric first-eight reactions through
+   a fail-closed catalog, bounded exposure/contact, shared spatial primitives,
+   readable lifecycle, reset, replay, replication and route-safety evidence.
+4. **Crucible acceptance.** Make every pair deliberately reproducible and
+   understandable in-world, package the exact green Windows build, and pause for
+   the requested playtest before another roster expansion.
 
 Mechanics outside the active row are frozen except for the smallest adapter or
 harness required to prove the active slice. Concepts, manifests, detached
@@ -43,16 +42,17 @@ slices, checkpoint each green result, and immediately start the next accepted
 slice. Do not stop at plans, scaffolds, catalogs, generated images or passing
 unit tests when the player-facing outcome is still absent.
 
-The current green frontier is protocol 30 / snapshot schema 11: two foundation champions, the planned
+The current green frontier is protocol 30 / snapshot schema 11: Oh Tipi, S. Wayne
+and The Red Baron exercise middle, small and large equal-budget roles; the complete
 non-ability movement grammar, bounded launch steering plus a timed impact-recovery/tech decision, full/cone POV with building cutaways, twelve
 Wellspring stations including a host-authoritative 3×4 Spell Loom,
 direct-IP host/join, shared interactions, Hearth readiness,
 one Proving Court round, reconnect, stewardship and late-join observation pass
 the maintained Windows source journeys; Pocket Eclipse is a cover-stopped Light
-beam, Tideline a cover-aware multi-target Water spray and Rimewake a persistent
-single-trigger Ice field. All seven runtime-proven spells are globally weaveable
-for either champion with identity-owned replicated cooldowns and five honest
-empty positions. A persisted 50/75/100% world zoom defaults to the wider
+beam, Tideline a cover-aware multi-target Water spray, Rimewake a persistent
+single-trigger Ice field, and Cinderbolt is Red Baron's measured Fire projectile.
+All eight runtime-proven spells are globally weaveable for every champion with
+identity-owned replicated cooldowns and four honest empty positions. A persisted 50/75/100% world zoom defaults to the wider
 75% view. Preserve all of it. Export templates and
 physical Garuda Sway package proof is outside the current Windows-only scope.
 
@@ -77,18 +77,19 @@ not runtime art, collision geometry or permission to ship generated pixels.
 
 | Order | Player-visible outcome | Acceptance gate |
 | ---: | --- | --- |
-| 0 | Gameplay-scale visual overhaul | Complete V0–V6 in `.agent/VISUAL-OVERHAUL.md`; no new mechanics until live integrated visual acceptance. |
-| 1 | Gameplay/movement completion | Preserve the crisp base and chaining/economy foundations while adding bounded impact agency, explicit recovery, authored route acceptance and hands-on tuning evidence. |
-| 2 | Natural reusable animation and environment | Every accepted action has concise state-driven motion/feedback, and the Conservatory/environment offers readable ordinary, advanced and recovery routes. |
-| 3 | Live element chemistry | Promote reactions in bounded worldbone-safe vertical slices with deterministic work budgets, reset, replay, replication and shape-first cues. |
-| 4 | Chemistry-integrated spell expansion | Complete one element's four roles at a time; every spell is runtime-proven, globally weaveable and connected to live material rules where declared. |
-| 5 | One-step portable play | A friend downloads one archive, extracts it, runs one obvious launcher without admin rights, enters the Wellspring, hosts or joins through one short in-world flow, can copy/paste a join card, and every quit path flushes local state, sends a bounded reason when online and leaves no child process; identical commit/content IDs and checksum instructions cover Windows and Linux. |
-| 6 | In-world player codex and expression | Canonical translucent overview plus an eight-way character expression wheel remain readable, controller-friendly and visibility-safe. |
-| 7 | Repository/product cleanup | Remove obsolete vocabulary, graphics and adapters only after their accepted replacements pass. |
-| 8 | Network visibility integrity | Host-owned per-peer relevance envelopes omit all illegal information in limited-view modes. |
-| 9 | Continue complete game slices | Finish champions, arenas, bots, objectives, environments, enemies and modes one vertical slice at a time. |
+| 0 | Gameplay-scale visual overhaul — complete | D7 is 4.64/5 and V10 density preserves ownership/escape lanes across zoom/accessibility profiles. |
+| 1 | Gameplay/movement completion — complete foundation | Universal eight-way movement, chaining, intangibility, recovery, routes and 60/120 equivalence are green. |
+| 2 | Natural reusable animation and environment — complete foundation | Accepted actions use editable state-driven motion; the Wellspring composes validated reusable environment modules over authoritative routes. |
+| 3 | Readable five-shot pattern | Fixed ordered fan, positive cost, bounded entities/work/network, explicit owner and movement-safe escape lanes. |
+| 4 | First-eight burst library | Comparable Earth/Fire/Water/Wind/Ice/Charge/Light/Dark bursts are globally weaveable and visually distinct. |
+| 5 | Live element chemistry | Promote all reactions in bounded worldbone-safe vertical slices with deterministic work budgets, reset, replay, replication and shape-first cues. |
+| 6 | One-step Windows play | A friend runs one obvious installer without admin/dev tools, enters Wellspring, hosts or joins through one short in-world flow, and every quit path leaves no child process; exact commit/content IDs and checksums remain visible. |
+| 7 | In-world player codex and expression | Canonical translucent overview plus an eight-way character expression wheel remain readable, controller-friendly and visibility-safe. |
+| 8 | Repository/product cleanup | Remove obsolete vocabulary, graphics and adapters only after their accepted replacements pass. |
+| 9 | Network visibility integrity | Host-owned per-peer relevance envelopes omit all illegal information in limited-view modes. |
+| 10 | Continue complete game slices | Finish champions, arenas, bots, objectives, environments, enemies and modes one vertical slice at a time. |
 
-Orders 1–8 are product priorities, not permission to scatter eight partial
+Orders 3–9 are product priorities, not permission to scatter partial
 systems. If an earlier slice is externally blocked (for example a physical
 Garuda machine), record the exact missing evidence, complete every locally
 provable part and continue with the next coherent slice without claiming the

@@ -1,5 +1,55 @@
 # FLUX2 agent worklog
 
+## 2026-08-31 - accepted visual runtime, reusable Wellspring kit, and The Red Baron
+
+Playable outcome:
+
+- The accepted Wellspring presentation now composes a deterministic 16-module
+  original environment kit over the authoritative campus, preserving topology,
+  collision, visibility and movement while improving material identity at the
+  routes and landmarks.
+- The integrated D7 rubric reaches 4.64/5 with every category at least 4.5.
+  V10's real two-player projectile/beam/spray/field sequence preserves actor
+  ownership and an escape lane at all supported zoom/accessibility profiles.
+- The Red Baron is the first playable large champion. His transparent original
+  eight-direction source is deterministically converted into all ten body-only
+  action/contact rows; spells, aura, shadow, equipment and environment remain
+  separate layers. `iron_regent` gives him a restrained heavy visual cadence.
+- Small, middle and large now own validated equal-budget roles. They share the
+  same foundation collision and universal movement access: S. Wayne trades
+  reserves for tempo, Oh Tipi stays adaptable, and The Red Baron trades ground
+  speed/Flux recovery for Health/Stamina and lane presence.
+- Cinderbolt is a host-authoritative positive-Flux Fire projectile with its own
+  empty-hand startup, ember silhouette, forked trail and ash impact; Red Baron
+  pairs it with the existing Rimewake Ice field.
+
+Verification:
+
+- `scripts\test.ps1`: 57 suites / 19,234 assertions, zero failures, including
+  Red Baron catalog/application/combat at 60/120 Hz, all body-role envelopes,
+  eight-way atlas regions, motion bounds and six spell presentation profiles.
+- Truthful 120-frame 1280x720 Red Baron source capture passed under
+  `.godot/visual-captures/red-baron-playable-v1`; Health/Flux/Stamina tradeoffs,
+  Cinderbolt/Rimewake slots and the large body all resolve in the live game.
+- `d7-three-v1` passed all 27 integrated cells: 24 champion direction/action
+  assignments across zoom/accessibility profiles, 720p/1080p overview and a
+  real two-process Farflow pair. The assembled contact sheet was inspected.
+- Environment D7 evidence is
+  `.godot/visual-captures/d7-accept-v3-contact-sheet.png`; V10 evidence is
+  `.godot/visual-captures/v10-density-v1-contact-sheet.png`.
+- Source atlas SHA-256 is
+  `cb7601e3a3a9b435141ad82cb0254f8f9c365afaad846f31393c59996bde528f`;
+  imported RGBA SHA-256 is
+  `121f825d67d180127d7f4ed36ddca55ab0ead342b5100ddfc839e4585c330fed`.
+
+Known limits / next:
+
+- The exact new unsigned Windows executable is blocked before process start by
+  this host's Application Control, so source runtime and package construction
+  are verified but exact-package boot is not claimed.
+- Implement the fixed five-shot pattern with bounded IDs/work/packets and
+  pressure-test universal movement before adding the remaining element bursts.
+
 ## 2026-08-31 - eight-direction slide and press-edge integrity
 
 Playable outcome:

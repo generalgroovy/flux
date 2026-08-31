@@ -17,6 +17,7 @@ const COURT_DECORATION_KINDS := ["lantern", "planter", "rune"]
 
 var language: VisualLanguage
 var runtime_kit: SanctumRuntimeKit
+var environment_kit: WellspringEnvironmentKit
 var data: Dictionary = {}
 var building_profiles: Dictionary[String, Dictionary] = {}
 var station_profiles: Dictionary[String, Dictionary] = {}
@@ -42,6 +43,9 @@ func configure(visual_language: VisualLanguage, layout: SanctumCampusLayout, pat
 	runtime_kit = SanctumRuntimeKit.new()
 	if not runtime_kit.load_from_file():
 		return _fail("Wellspring architecture cannot bind the approved pixel modules: %s" % runtime_kit.last_error)
+	environment_kit = WellspringEnvironmentKit.new()
+	if not environment_kit.load_from_file():
+		return _fail("Wellspring architecture cannot bind the environment modules: %s" % environment_kit.last_error)
 	if not FileAccess.file_exists(path):
 		return _fail("Wellspring architecture kit does not exist: %s" % path)
 	var file := FileAccess.open(path, FileAccess.READ)
@@ -149,6 +153,8 @@ func draw_district_court(canvas: CanvasItem, district: Dictionary, reduced_effec
 	for index: int in range(8):
 		var direction := Vector2.from_angle(TAU * float(index) / 8.0)
 		canvas.draw_line(center + direction * 28.0, center + direction * 76.0, Color(language.ramp_color("aged_brass", 2), 0.28), 2.0)
+	if environment_kit != null:
+		environment_kit.draw_anchored(canvas, "brass-inlay", center + Vector2(0, 22), Color(1.0, 1.0, 1.0, 0.70), 1.18)
 	_draw_court_decorations(canvas, center, reduced_effects)
 	return true
 
@@ -207,11 +213,15 @@ func _draw_court_decorations(canvas: CanvasItem, center: Vector2, reduced_effect
 		canvas.draw_colored_polygon(_ellipse(position + Vector2(3, 6), Vector2(21, 9) * size_scale, 16), Color(language.ramp_color("worldbone", 0), 0.36))
 		match String(decoration.get("kind", "")):
 			"lantern":
+				if environment_kit != null:
+					environment_kit.draw_anchored(canvas, "brass-lantern", position + Vector2(0, 7) * size_scale, Color.WHITE, 0.82 * size_scale)
 				canvas.draw_rect(Rect2(position + Vector2(-3, -18) * size_scale, Vector2(6, 20) * size_scale), language.ramp_color("timber", 3), true)
 				canvas.draw_rect(Rect2(position + Vector2(-10, -23) * size_scale, Vector2(20, 8) * size_scale), language.ramp_color("aged_brass", 2), true)
 				canvas.draw_rect(Rect2(position + Vector2(-6, -21) * size_scale, Vector2(12, 4) * size_scale), Color(accent, 0.78), true)
 				canvas.draw_circle(position + Vector2(0, -19) * size_scale, 16.0 * size_scale, Color(accent, glow_alpha))
 			"planter":
+				if environment_kit != null:
+					environment_kit.draw_anchored(canvas, "garden-planter", position + Vector2(0, 8) * size_scale, Color.WHITE, 0.72 * size_scale)
 				canvas.draw_rect(Rect2(position + Vector2(-18, -7) * size_scale, Vector2(36, 15) * size_scale), language.ramp_color("worldbone", 2), true)
 				canvas.draw_rect(Rect2(position + Vector2(-14, -8) * size_scale, Vector2(28, 8) * size_scale), language.ramp_color("garden", 2), true)
 				for leaf_offset: Vector2 in [Vector2(-10, -12), Vector2(0, -17), Vector2(10, -12)]:
@@ -413,6 +423,20 @@ func _draw_facade(canvas: CanvasItem, facade: Rect2, profile: Dictionary) -> voi
 	var wall_texture := runtime_kit.texture("academy-wall") if runtime_kit != null else null
 	if wall_texture != null:
 		canvas.draw_texture_rect(wall_texture, facade, true, Color(1.0, 1.0, 1.0, 0.42 if facade_kind != "foundry_brick" else 0.28))
+	var authored_facade := environment_kit.texture("academy-facade") if environment_kit != null else null
+	if authored_facade != null:
+		var module_count := clampi(ceili(facade.size.x / 170.0), 1, 3)
+		var gap := 12.0
+		var module_width := minf(106.0, (facade.size.x - gap * float(module_count - 1)) / float(module_count))
+		var group_width := module_width * float(module_count) + gap * float(module_count - 1)
+		var start_x := facade.get_center().x - group_width * 0.5
+		for module_index: int in range(module_count):
+			canvas.draw_texture_rect(
+				authored_facade,
+				Rect2(start_x + float(module_index) * (module_width + gap), facade.position.y, module_width, facade.size.y),
+				false,
+				Color(1.0, 1.0, 1.0, 0.42 if facade_kind != "foundry_brick" else 0.26),
+			)
 	for y: int in range(roundi(facade.position.y) + 7, roundi(facade.end.y), 9):
 		canvas.draw_line(Vector2(facade.position.x + 3, y), Vector2(facade.end.x - 3, y), Color(language.ramp_color("warm_stone", 3), 0.23), 1.0)
 	var bay_width := int(profile.get("bay_width", 36))
@@ -463,6 +487,14 @@ func _draw_roof(canvas: CanvasItem, bounds: Rect2i, facade: Rect2, profile: Dict
 		canvas.draw_line(Vector2(bounds.position.x - overhang + 2, ridge_y), Vector2(bounds.end.x + overhang - 2, ridge_y), language.ramp_color("aged_brass", 3), 3.0)
 		for y: int in range(ridge_y + 8, roof_bottom, 10):
 			canvas.draw_line(Vector2(bounds.position.x + 3, y), Vector2(bounds.end.x - 3, y), Color(roof_light, 0.30), 2.0)
+		var authored_roof := environment_kit.texture("academy-roof") if environment_kit != null else null
+		if authored_roof != null and roof_bottom > ridge_y + 8:
+			canvas.draw_texture_rect(
+				authored_roof,
+				Rect2(bounds.position.x + 3, ridge_y + 2, bounds.size.x - 6, roof_bottom - ridge_y - 4),
+				false,
+				Color(roof_light.lightened(0.18), 0.38),
+			)
 		var module_step := maxi(58, int(profile.get("bay_width", 36)) * 2)
 		var module_index := 0
 		for x: int in range(bounds.position.x + module_step / 2, bounds.end.x - module_step / 3, module_step):
@@ -558,6 +590,10 @@ func _draw_door_and_windows(canvas: CanvasItem, bounds: Rect2i, facade: Rect2, p
 	canvas.draw_rect(door, language.ramp_color("timber", 0), true)
 	canvas.draw_rect(door, language.ramp_color("aged_brass", 3), false, 2.0)
 	canvas.draw_circle(door.position + Vector2(door.size.x - 6, door.size.y * 0.55), 2.0, accent)
+	var authored_door := environment_kit.texture("academy-door") if environment_kit != null else null
+	if authored_door != null:
+		var door_art := Rect2(door.get_center().x - 25, bounds.end.y - 40, 50, 40)
+		canvas.draw_texture_rect(authored_door, door_art, false, Color(1.0, 1.0, 1.0, 0.86))
 	var threshold := door_threshold_rect(
 		Rect2(bounds),
 		float(surface_alignment.get("door_threshold_width", 34)),
@@ -580,6 +616,9 @@ func _draw_door_and_windows(canvas: CanvasItem, bounds: Rect2i, facade: Rect2, p
 		canvas.draw_rect(window, Color(accent, 0.24), true)
 		canvas.draw_rect(window, language.ramp_color("aged_brass", 1), false, 1.0)
 		canvas.draw_line(window.position + Vector2(window.size.x * 0.5, 1), window.position + Vector2(window.size.x * 0.5, window.size.y - 1), Color(language.ui_color("text_primary"), 0.34), 1.0)
+		var authored_window := environment_kit.texture("academy-window") if environment_kit != null else null
+		if authored_window != null:
+			canvas.draw_texture_rect(authored_window, Rect2(window.get_center() - Vector2(12, 10), Vector2(24, 20)), false, Color(1.0, 1.0, 1.0, 0.72))
 
 
 func _draw_building_motif(canvas: CanvasItem, bounds: Rect2i, facade: Rect2, profile: Dictionary) -> void:

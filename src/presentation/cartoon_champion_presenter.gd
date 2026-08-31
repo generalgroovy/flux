@@ -3,10 +3,10 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_champion_visuals_v1.json"
-const EXPECTED_ID := "foundation-champion-visuals-v8-complete-eight-way-action"
+const EXPECTED_ID := "foundation-champion-visuals-v9-red-baron-large"
 const EXPECTED_AUTHORITY := "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere"
-const REQUIRED_FOUNDATION := ["oh_tipi", "s_wayne"]
-const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v8.png"
+const REQUIRED_FOUNDATION := ["oh_tipi", "s_wayne", "red_baron"]
+const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v9.png"
 const EXPECTED_BODY_TYPES: Array[String] = ["small", "middle", "large"]
 const EXPECTED_CARDINAL_DIRECTIONS: Array[String] = ["south", "east", "north", "west"]
 const EXPECTED_DIRECTIONS: Array[String] = [
@@ -87,7 +87,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	if not parsed is Dictionary:
 		return _fail("Cartoon champion recipe root must be an object")
 	var data: Dictionary = parsed
-	if int(data.get("schema_version", -1)) != 8 or String(data.get("id", "")) != EXPECTED_ID:
+	if int(data.get("schema_version", -1)) != 9 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Cartoon champion recipe identity is unsupported")
 	if String(data.get("authority", "")) != EXPECTED_AUTHORITY:
 		return _fail("Cartoon champion recipes must remain presentation-only")
@@ -103,7 +103,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 		return _fail("Cartoon champion cell/pivot differs from the visual contract")
 	var atlas_definition: Dictionary = data.get("atlas", {})
 	if String(atlas_definition.get("path", "")) != ATLAS_PATH \
-		or _vector2i(atlas_definition.get("dimensions", [])) != Vector2i(768, 1920) \
+		or _vector2i(atlas_definition.get("dimensions", [])) != Vector2i(768, 2880) \
 		or atlas_definition.get("champions", []) != REQUIRED_FOUNDATION \
 		or atlas_definition.get("directions", []) != EXPECTED_DIRECTIONS \
 		or atlas_definition.get("states", []) != EXPECTED_ATLAS_STATES \
@@ -140,7 +140,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 		champions.clear()
 		return _fail("Foundation cartoon atlas cannot be loaded")
 	atlas = atlas_resource
-	if atlas.get_size() != Vector2(768.0, 1920.0):
+	if atlas.get_size() != Vector2(768.0, 2880.0):
 		atlas = null
 		champions.clear()
 		return _fail("Foundation cartoon atlas dimensions are invalid")
@@ -491,10 +491,15 @@ func _draw_movement_accent(canvas: CanvasItem, state: PlayerState, ground_anchor
 				canvas.draw_line(contact, contact + spark_direction * (5.0 + float(index) * 2.0), Color(color, opacity), 1.0)
 		"recovery_brace":
 			var contraction := 1.0 - phase
+			var impact_center := ground_anchor + Vector2(0, -21) - direction * (6.0 + contraction * 3.0)
+			canvas.draw_circle(impact_center, 9.0 + contraction * 3.0, Color(language.ramp_color("worldbone", 0), opacity * 0.28))
+			for angle_offset: float in [-0.46, 0.0, 0.46]:
+				var ray := (-direction).rotated(angle_offset)
+				canvas.draw_line(impact_center + ray * 7.0, impact_center + ray * (15.0 + contraction * 5.0), Color(color, opacity * (0.72 + contraction * 0.28)), 3.0 if not reduced else 2.0)
 			for side_sign: float in [-1.0, 1.0]:
 				var brace_center := ground_anchor + side * side_sign * (18.0 + contraction * 5.0)
-				canvas.draw_arc(brace_center, 7.0, -1.2 if side_sign < 0.0 else 1.9, 1.2 if side_sign < 0.0 else 4.3, 7, Color(color, opacity * (0.6 + contraction * 0.4)), 2.0)
-			canvas.draw_line(ground_anchor - direction * 10.0, ground_anchor - direction * (17.0 + contraction * 5.0), Color(color, opacity * 0.8), 2.0)
+				canvas.draw_arc(brace_center, 7.0, -1.2 if side_sign < 0.0 else 1.9, 1.2 if side_sign < 0.0 else 4.3, 7, Color(color, opacity * (0.6 + contraction * 0.4)), 3.0 if not reduced else 2.0)
+			canvas.draw_line(ground_anchor - direction * 10.0, ground_anchor - direction * (19.0 + contraction * 6.0), Color(color, opacity * 0.9), 3.0 if not reduced else 2.0)
 
 
 func _draw_evasion_contour(

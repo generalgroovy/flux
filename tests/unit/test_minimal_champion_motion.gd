@@ -13,7 +13,7 @@ func _test_repository_motion() -> void:
 	var motion := MinimalChampionMotion.new()
 	check(motion.load_from_file(), "minimal champion motion validates: %s" % motion.last_error)
 	check(motion.content_hash.length() == 64, "minimal motion has a stable content hash")
-	for profile_id: String in ["buoyant_keeper", "grounded_weaver"]:
+	for profile_id: String in ["buoyant_keeper", "grounded_weaver", "iron_regent"]:
 		check(motion.has_profile(profile_id), "%s is an editable motion profile" % profile_id)
 		for motion_id: String in MinimalChampionMotion.REQUIRED_MOTIONS:
 			var sample := motion.sample(profile_id, motion_id, 11.0)

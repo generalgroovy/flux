@@ -252,6 +252,13 @@ func _draw_district_identity(canvas: CanvasItem, district: Dictionary, tick: int
 				canvas.draw_circle(plot_center, 10.0, Color(language.ramp_color("garden", 3), 0.44))
 				canvas.draw_circle(plot_center + Vector2(0, -3), 4.0, Color(language.element_color("light", "bright"), 0.34 + shimmer))
 			canvas.draw_line(Vector2(bounds.position.x + 170, bounds.position.y + 116), Vector2(bounds.position.x + 540, bounds.position.y + 116), Color(language.ramp_color("deep_water", 4), 0.20), 3.0)
+			if architecture_kit != null and architecture_kit.environment_kit != null:
+				for tree_anchor: Vector2 in [
+					Vector2(bounds.position.x + 72, bounds.position.y + 118),
+					Vector2(bounds.end.x - 76, bounds.end.y - 74),
+				]:
+					architecture_kit.environment_kit.draw_anchored(canvas, "broad-canopy-tree", tree_anchor, Color(1.0, 1.0, 1.0, 0.82), 0.86)
+				architecture_kit.environment_kit.draw_anchored(canvas, "flowering-bush", terrace.get_center() + Vector2(0, 29), Color.WHITE, 0.74)
 		"nexus":
 			var plaza_center := Vector2(bounds.get_center().x, bounds.get_center().y + 150)
 			for radius: float in [92.0, 64.0, 34.0]:
@@ -260,6 +267,12 @@ func _draw_district_identity(canvas: CanvasItem, district: Dictionary, tick: int
 				var direction := Vector2.from_angle(TAU * float(index) / 8.0)
 				canvas.draw_line(plaza_center + direction * 38.0, plaza_center + direction * 88.0, Color(language.ramp_color("warm_stone", 4), 0.16), 2.0)
 			canvas.draw_circle(anchor + Vector2(430, 720), 14.0, Color(language.ui_color("focus"), 0.12 + shimmer))
+			if architecture_kit != null and architecture_kit.environment_kit != null:
+				for bush_anchor: Vector2 in [
+					Vector2(bounds.position.x + 54, bounds.end.y - 54),
+					Vector2(bounds.end.x - 54, bounds.end.y - 54),
+				]:
+					architecture_kit.environment_kit.draw_anchored(canvas, "flowering-bush", bush_anchor, Color(1.0, 1.0, 1.0, 0.78), 0.72)
 		"proving":
 			var lane_start := Vector2(bounds.position.x + 112, bounds.position.y + 592)
 			for index: int in range(4):
@@ -267,6 +280,8 @@ func _draw_district_identity(canvas: CanvasItem, district: Dictionary, tick: int
 				canvas.draw_circle(target_position, 16.0, Color(language.ramp_color("worldbone", 0), 0.42))
 				canvas.draw_arc(target_position, 12.0, 0.0, TAU, 16, Color(language.element_color("fire", "bright"), 0.34 + shimmer), 2.0)
 				canvas.draw_circle(target_position, 4.0, Color(language.element_color("charge", "bright"), 0.38))
+				if architecture_kit != null and architecture_kit.environment_kit != null:
+					architecture_kit.environment_kit.draw_anchored(canvas, "training-target", target_position + Vector2(0, 29), Color.WHITE, 0.62)
 
 
 func _draw_route(canvas: CanvasItem, route: Dictionary) -> void:
@@ -418,6 +433,11 @@ func _draw_landmark(canvas: CanvasItem, landmark: Dictionary, tick: int, reduced
 	var kind := String(landmark.get("kind", ""))
 	var pulse: float = float((tick / 5) % 24) / 24.0
 	var glow_radius: float = 17.0 + (4.0 * pulse if pulse <= 0.5 else 4.0 * (1.0 - pulse))
+	if architecture_kit != null and architecture_kit.environment_kit != null:
+		if kind == "grand_fountain":
+			architecture_kit.environment_kit.draw_anchored(canvas, "source-fountain", position + Vector2(0, 30), Color.WHITE, 1.10)
+		elif kind == "portal_ring":
+			architecture_kit.environment_kit.draw_anchored(canvas, "farflow-portal", position + Vector2(0, 31), Color.WHITE, 1.08)
 	match kind:
 		"grand_fountain":
 			canvas.draw_circle(position, 42.0, CLIFF)

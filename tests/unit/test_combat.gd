@@ -12,6 +12,7 @@ func run() -> int:
 		_test_s_wayne_eclipse_disc(tick_rate)
 		_test_s_wayne_disc_ricochet(tick_rate)
 		_test_s_wayne_pocket_eclipse(tick_rate)
+		_test_red_baron_cinderbolt(tick_rate)
 		_test_movement_spell_chains(tick_rate)
 		_test_pressure_exhaustion_and_recovery(tick_rate)
 		_test_edgeweave(tick_rate)
@@ -76,10 +77,10 @@ func _test_semantic_spell_slots(tick_rate: int) -> void:
 	var empty_world := SimWorld.new(tick_rate)
 	var empty: PlayerState = empty_world.player()
 	var initial_flux: int = empty.flux
-	check(_step(empty_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_8, 1000, 0)), "%d Hz empty slot command steps" % tick_rate)
+	check(_step(empty_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_9, 1000, 0)), "%d Hz empty slot command steps" % tick_rate)
 	equal(empty.pending_cast_wire_id, 0, "%d Hz empty slot starts no cast" % tick_rate)
 	equal(empty.flux, initial_flux, "%d Hz empty slot spends no Flux" % tick_rate)
-	check(empty_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "empty_slot" and int(event.get("slot", 0)) == 8), "%d Hz empty slot refusal is explicit" % tick_rate)
+	check(empty_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "empty_slot" and int(event.get("slot", 0)) == 9), "%d Hz empty slot refusal is explicit" % tick_rate)
 
 	var rewoven_world := SimWorld.new(tick_rate)
 	var rewoven: PlayerState = rewoven_world.player()
@@ -115,6 +116,14 @@ func _apply_s_wayne(state: PlayerState) -> void:
 	var champions := ChampionCatalog.new()
 	check(champions.load_from_file("res://content/champions/foundation_champions_v1.json", abilities), "champion catalog loads for S. Wayne combat")
 	check(champions.apply_to_player(state, "s_wayne"), "S. Wayne combat profile applies")
+
+
+func _apply_red_baron(state: PlayerState) -> void:
+	var abilities := AbilityCatalog.new()
+	check(abilities.load_from_file("res://content/abilities/foundation_abilities_v1.json"), "ability catalog loads for Red Baron combat")
+	var champions := ChampionCatalog.new()
+	check(champions.load_from_file("res://content/champions/foundation_champions_v1.json", abilities), "champion catalog loads for Red Baron combat")
+	check(champions.apply_to_player(state, "red_baron"), "Red Baron combat profile applies")
 
 
 func _test_positive_flux_primary(tick_rate: int) -> void:
@@ -198,6 +207,25 @@ func _test_oh_tipi_rillshot(tick_rate: int) -> void:
 			break
 	check(saw_hit, "%d Hz Rillshot hits authoritatively" % tick_rate)
 	equal(enemy.health, enemy.health_maximum - CombatTuning.RILLSHOT_DAMAGE, "%d Hz Rillshot damage is exact" % tick_rate)
+
+
+func _test_red_baron_cinderbolt(tick_rate: int) -> void:
+	var world := SimWorld.new(tick_rate)
+	var caster: PlayerState = world.player()
+	_apply_red_baron(caster)
+	var enemy: PlayerState = _add_enemy(world, Vector2i(360_000, 360_000))
+	var initial_flux := caster.flux
+	check(_step(world, SimCommand.new(0, 1, 0, 0, SimCommand.HELD_PRIMARY, 0, 1000)), "%d Hz Cinderbolt starts" % tick_rate)
+	equal(caster.pending_cast_wire_id, CombatTuning.CINDERBOLT_WIRE_ID, "%d Hz Red Baron primary is Cinderbolt" % tick_rate)
+	equal(caster.flux, initial_flux - CombatTuning.CINDERBOLT_FLUX_COST, "%d Hz Cinderbolt spends exact positive Flux" % tick_rate)
+	var saw_hit := false
+	for _index: int in range(tick_rate):
+		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Cinderbolt flight steps" % tick_rate)
+		saw_hit = saw_hit or world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "projectile_hit" and int(event.get("source_wire_id", 0)) == CombatTuning.CINDERBOLT_WIRE_ID)
+		if saw_hit:
+			break
+	check(saw_hit, "%d Hz Cinderbolt hits authoritatively" % tick_rate)
+	equal(enemy.health, enemy.health_maximum - CombatTuning.CINDERBOLT_DAMAGE, "%d Hz Cinderbolt damage is exact" % tick_rate)
 
 
 func _test_oh_tipi_tideline(tick_rate: int) -> void:
@@ -480,13 +508,15 @@ func _test_movement_spell_chains(tick_rate: int) -> void:
 
 
 func _test_pressure_exhaustion_and_recovery(tick_rate: int) -> void:
-	for champion_id: String in ["oh_tipi", "s_wayne"]:
+	for champion_id: String in ["oh_tipi", "s_wayne", "red_baron"]:
 		var world := SimWorld.new(tick_rate)
 		var caster: PlayerState = world.player()
 		if champion_id == "oh_tipi":
 			_apply_oh_tipi(caster)
-		else:
+		elif champion_id == "s_wayne":
 			_apply_s_wayne(caster)
+		else:
+			_apply_red_baron(caster)
 		var definition := CombatTuning.cast_definition(caster.primary_wire_id)
 		var primary_cost := int(definition["flux_cost"])
 		@warning_ignore("integer_division")

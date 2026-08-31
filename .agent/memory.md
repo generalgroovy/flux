@@ -3,6 +3,38 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## 2026-08-31 - visual acceptance and first large champion
+
+- D7 was re-reviewed after material/action polish at cohesion 4.5, silhouette
+  4.5, material identity 4.5, overview 5, HUD 5, animation 4.5 and spell 4.5:
+  4.64/5. V10 sampled 1,080 two-player frames across 50/75/100%, grayscale and
+  reduced effects with projectile/beam/spray/field pressure; ownership and an
+  escape lane remained readable. The visual mechanics freeze is open.
+- Wellspring environment source V2 has explicit provenance, deterministic
+  extraction, a validated 16-module runtime kit and live renderer integration.
+  Source/runtime manifests and tests fail closed on path, dimensions and hash.
+- The Red Baron is selectable as the first `large` champion: original
+  body/clothing-only eight-way atlas row, open hands, `iron_regent` motion,
+  Fire 2/Ice 1, 132 Health, 96 Flux, 128 Stamina and 0.91 ground-speed ratio.
+  Cinderbolt is a positive-Flux Fire projectile; Rimewake supplies visible Ice
+  control. A truthful 120-frame source capture is under
+  `.godot/visual-captures/red-baron-playable-v1`.
+- `body_type_profiles_v1.json` makes small/skirmisher, middle/adapter and
+  large/anchor equal-budget roles. All share foundation collision and every
+  universal movement action; validated stat envelopes provide real strengths
+  and tradeoffs without hidden reach, damage, element or evasion advantages.
+- `scripts\test.ps1`: 57 suites / 19,234 assertions, zero failures; clean
+  source gates and 60/120 boots pass. Current unsigned newly generated Windows
+  EXEs remain blocked before process start by this host's Application Control;
+  package creation/hash verification is valid, but exact-package runtime is not
+  claimed until it runs on an eligible machine or is signed.
+- The expanded `d7-three-v1` matrix passed 27 non-overwriting cells: 24
+  champion direction/action captures, 720p/1080p overviews and a real
+  two-process Farflow pair. Red Baron remains legible through all assigned
+  zoom/accessibility profiles and body/spell layers stay separate.
+- Next: commit/push the green source checkpoint, then implement the deterministic five-shot fan before
+  the remaining first-eight bursts.
+
 ## 2026-08-28 - integrated visual acceptance matrix
 
 - `scripts/capture-visual-matrix.cmd` now builds one non-overwriting review

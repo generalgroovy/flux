@@ -3,13 +3,13 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_spell_visuals_v1.json"
-const EXPECTED_ID := "foundation-spell-visuals-v1"
+const EXPECTED_ID := "foundation-spell-visuals-v2-cinderbolt"
 const EXPECTED_AUTHORITY := "presentation only; simulation owns spell membership, geometry, timing, collision, resources, damage, control and outcomes"
-const REQUIRED_IDS := ["rillshot", "tideline", "rimewake", "eclipse-disc", "pocket-eclipse"]
-const STARTUPS := ["gathered_drop", "rising_fan", "frost_sigil", "orbiting_crescents", "paired_focus"]
-const SILHOUETTES := ["droplet", "wave_fan", "crystal_wake", "eclipse_disc", "eclipse_beam"]
-const TRAILS := ["none", "split_rill", "curling_lanes", "orbit_echo", "paired_boundary"]
-const IMPACTS := ["splash_ring", "breaker_arc", "freeze_star", "crescent_break", "revealed_diamond"]
+const REQUIRED_IDS := ["rillshot", "cinderbolt", "tideline", "rimewake", "eclipse-disc", "pocket-eclipse"]
+const STARTUPS := ["gathered_drop", "banked_coal", "rising_fan", "frost_sigil", "orbiting_crescents", "paired_focus"]
+const SILHOUETTES := ["droplet", "ember_spear", "wave_fan", "crystal_wake", "eclipse_disc", "eclipse_beam"]
+const TRAILS := ["none", "split_rill", "cinder_forks", "curling_lanes", "orbit_echo", "paired_boundary"]
+const IMPACTS := ["splash_ring", "ash_burst", "breaker_arc", "freeze_star", "crescent_break", "revealed_diamond"]
 
 var language: VisualLanguage
 var data: Dictionary = {}
@@ -62,7 +62,7 @@ func validate(catalog: AbilityCatalog) -> bool:
 	profiles_by_id.clear()
 	if not direction_contract.is_valid():
 		return _fail("Foundation spell presentation requires the validated shared direction contract")
-	if int(data.get("schema_version", -1)) != 1 or String(data.get("id", "")) != EXPECTED_ID:
+	if int(data.get("schema_version", -1)) != 2 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Foundation spell presentation identity is unsupported")
 	if String(data.get("authority", "")) != EXPECTED_AUTHORITY:
 		return _fail("Foundation spell presentation must remain presentation-only")
@@ -74,7 +74,7 @@ func validate(catalog: AbilityCatalog) -> bool:
 		return _fail("Foundation spell visual budgets are unsafe")
 	var profiles: Variant = data.get("profiles", [])
 	if not profiles is Array or (profiles as Array).size() != REQUIRED_IDS.size():
-		return _fail("Foundation spell presentation must define exactly five live profiles")
+		return _fail("Foundation spell presentation must define exactly six live profiles")
 	var claimed_startups: Dictionary[String, bool] = {}
 	for value: Variant in profiles:
 		if not value is Dictionary:
@@ -132,6 +132,22 @@ func draw_startup(
 	var base := language.element_color(element, "base")
 	var bright := language.element_color(element, "bright")
 	var pulse := 0.0 if reduced_effects else sin(float(tick + wire_id) * 0.20) * 1.5
+	var readability := startup_readability_geometry(aim, progress)
+	var brace_origin: Vector2 = position + (readability["origin"] as Vector2)
+	var brace_focus: Vector2 = position + (readability["focus"] as Vector2)
+	var brace_side: Vector2 = readability["side"]
+	var brace_half_width := float(readability["half_width"])
+	var brace_thickness := 2.0 if reduced_effects else 3.0
+	# A color-independent fork makes the hand channel, direction and release
+	# commitment readable before the spell-specific silhouette resolves.
+	for sign_value: float in [-1.0, 1.0]:
+		var start := brace_origin + brace_side * brace_half_width * sign_value
+		var finish := brace_focus + brace_side * brace_half_width * 0.48 * sign_value
+		canvas.draw_line(start, finish, Color(dark, 0.64), brace_thickness + 2.0)
+		canvas.draw_line(start, finish, Color(bright, 0.82), brace_thickness)
+		canvas.draw_circle(start, 2.0, Color(bright, 0.78))
+	canvas.draw_circle(brace_focus, 3.0 + progress * 2.0, Color(dark, 0.76))
+	canvas.draw_arc(brace_focus, 5.0 + progress * 3.0, 0.0, TAU, 12, Color(bright, 0.82), brace_thickness)
 	var skeleton_phase := animation_skeletons.phase_for(String(profile.get("shape", "")), progress)
 	var phase_id := String(skeleton_phase.get("id", ""))
 	# The delivery skeleton contributes a small shared hand cue before the
@@ -152,6 +168,13 @@ func draw_startup(
 			canvas.draw_arc(gather, 10.0 - progress * 4.0 + pulse, -2.6, 0.55, 14, Color(bright, 0.82), 2.0)
 			canvas.draw_line(gather - direction * 13.0 + side * 5.0, gather - direction * 4.0 + side * 2.0, Color(base, 0.54), 2.0)
 			canvas.draw_line(gather - direction * 13.0 - side * 5.0, gather - direction * 4.0 - side * 2.0, Color(base, 0.54), 2.0)
+		"banked_coal":
+			var coal := position + direction * (17.0 + progress * 8.0)
+			var coal_radius := 8.0 - progress * 3.0
+			canvas.draw_circle(coal, coal_radius + 3.0, Color(dark, 0.52))
+			canvas.draw_circle(coal, coal_radius, Color(base, 0.76))
+			canvas.draw_line(position + side * 7.0, coal - direction * 2.0, Color(bright, 0.72), 2.0)
+			canvas.draw_line(position - side * 7.0, coal - direction * 2.0, Color(bright, 0.72), 2.0)
 		"rising_fan":
 			for offset: float in [-0.34, 0.0, 0.34]:
 				var lane := direction.rotated(offset)
@@ -177,6 +200,18 @@ func draw_startup(
 		_:
 			return false
 	return true
+
+
+static func startup_readability_geometry(aim: Vector2, progress: float) -> Dictionary:
+	var direction := SpellDeliveryDirectionContract.visual_vector(aim)
+	var side := direction.orthogonal()
+	var bounded := clampf(progress, 0.0, 1.0)
+	return {
+		"origin": direction * 1.5,
+		"focus": direction * (10.0 + bounded * 8.0),
+		"side": side,
+		"half_width": 6.0 - bounded * 1.5,
+	}
 
 
 func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int, reduced_effects: bool) -> bool:
@@ -219,6 +254,20 @@ func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int,
 			canvas.draw_line(position - direction * 8.0 + side * 5.0, position - direction * 19.0 + side * 10.0, Color(base, 0.42), 2.0)
 			for bounce_index: int in range(projectile.remaining_bounces):
 				canvas.draw_circle(position + side * (radius + 7.0) + direction * float(bounce_index * 4 - 2), 1.5, bright)
+		"ember_spear":
+			var tip := position + direction * (radius + 6.0)
+			var tail := position - direction * (radius + (10.0 if reduced_effects else 17.0))
+			var flame := PackedVector2Array([
+				tip,
+				position + side * (radius + 1.0),
+				tail,
+				position - side * (radius + 1.0),
+			])
+			canvas.draw_colored_polygon(flame, base)
+			canvas.draw_polyline(_closed(flame), bright, 2.0, false)
+			for side_value: float in [-1.0, 1.0]:
+				canvas.draw_line(position - direction * 5.0, position - direction * 14.0 + side * side_value * 7.0, Color(dark, 0.58), 2.0)
+			canvas.draw_circle(position + direction * 2.0, maxf(2.0, radius * 0.34), Color(bright, 0.92))
 		_:
 			return false
 	return true
@@ -316,6 +365,12 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 			canvas.draw_arc(position, splash_radius * 0.72, -2.8, -0.2, 18, Color(bright, opacity), 3.0)
 			for side_value: float in [-1.0, 0.0, 1.0]:
 				canvas.draw_line(position + Vector2(side_value * 5.0, 0), position + Vector2(side_value * 13.0, -11.0 - phase * 11.0), Color(bright, opacity * 0.82), 2.0)
+		elif String(profile.get("impact", "")) == "ash_burst":
+			for index: int in range(8):
+				var burst_direction := Vector2.from_angle(TAU * float(index) / 8.0 + 0.18)
+				var length := 12.0 + phase * (22.0 if index % 2 == 0 else 14.0)
+				canvas.draw_line(position + burst_direction * 4.0, position + burst_direction * length, Color(bright if index % 2 == 0 else base, opacity), 2.0)
+			canvas.draw_circle(position, 7.0 + phase * 5.0, Color(dark, opacity * 0.48))
 		else:
 			canvas.draw_arc(position, 9.0 + phase * 20.0, -2.4, 0.7, 18, Color(base, opacity), 3.0)
 			canvas.draw_arc(position, 9.0 + phase * 20.0, 0.7, 3.84, 18, Color(language.element_color("light", "bright"), opacity * 0.72), 2.0)

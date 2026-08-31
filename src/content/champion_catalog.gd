@@ -28,11 +28,15 @@ var default_champion_id: String = ""
 var champions_by_id: Dictionary[String, Dictionary] = {}
 var champion_ids_by_wire: Dictionary[int, String] = {}
 var kit_wires_by_champion: Dictionary[String, Dictionary] = {}
+var body_type_profiles := BodyTypeProfileCatalog.new()
 
 
 func load_from_file(path: String, abilities: AbilityCatalog) -> bool:
 	last_error = ""
 	data = {}
+	body_type_profiles = BodyTypeProfileCatalog.new()
+	if not body_type_profiles.load_from_file():
+		return _fail(body_type_profiles.last_error)
 	if not FileAccess.file_exists(path):
 		return _fail("champion catalog does not exist: %s" % path)
 	var file := FileAccess.open(path, FileAccess.READ)
@@ -52,6 +56,8 @@ func validate(abilities: AbilityCatalog) -> bool:
 	champions_by_id = {}
 	champion_ids_by_wire = {}
 	kit_wires_by_champion = {}
+	if body_type_profiles.content_hash.is_empty() and not body_type_profiles.load_from_file():
+		return _fail(body_type_profiles.last_error)
 	if abilities == null or not abilities.last_error.is_empty() or abilities.content_hash.is_empty():
 		return _fail("champion catalog requires a valid ability catalog")
 	if int(data.get("schema_version", 0)) != SUPPORTED_SCHEMA_VERSION:
@@ -124,6 +130,8 @@ func validate(abilities: AbilityCatalog) -> bool:
 			var stat_value := int(stats[stat_name])
 			if stat_value < bounds.x or stat_value > bounds.y:
 				return _fail("champion stat is outside safe bounds: %s/%s" % [champion_id, stat_name])
+		if not body_type_profiles.accepts(String(champion.get("body_type", "")), stats):
+			return _fail("champion stats contradict the reusable body-type role: %s" % champion_id)
 		var kit: Dictionary = champion.get("foundation_kit", {})
 		var kit_wires: Dictionary = {}
 		for slot_name: String in ["primary", "active_1"]:
@@ -150,7 +158,7 @@ func validate(abilities: AbilityCatalog) -> bool:
 		return _fail("default champion must resolve")
 	if champions_by_id.size() < 2:
 		return _fail("foundation slice requires at least two champions")
-	content_hash = CanonicalContent.sha256({"abilities": abilities.content_hash, "champions": data})
+	content_hash = CanonicalContent.sha256({"abilities": abilities.content_hash, "body_types": body_type_profiles.content_hash, "champions": data})
 	return content_hash.length() == 64 or _fail("champion catalog hash failed")
 
 

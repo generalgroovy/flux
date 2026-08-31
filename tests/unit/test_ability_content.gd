@@ -25,7 +25,7 @@ func _test_catalog() -> void:
 	equal(first.content_hash, second.content_hash, "catalog hash is stable across reloads")
 	equal(first.elements_by_id.size(), 12, "all twelve thematic element families are declared")
 	equal(first.active_element_ids(), ["charge", "dark", "earth", "fire", "ice", "light", "water", "wind"], "only the first eight families are runtime-enabled")
-	equal(first.playable_spell_ids(), ["arc-primary", "eclipse-disc", "pocket-eclipse", "rillshot", "rimewake", "tideline", "vector-lance"], "only end-to-end spells enter the playable selector")
+	equal(first.playable_spell_ids(), ["arc-primary", "cinderbolt", "eclipse-disc", "pocket-eclipse", "rillshot", "rimewake", "tideline", "vector-lance"], "only end-to-end spells enter the playable selector")
 	for gated_id: String in ["spirit", "chaos", "gravity", "time"]:
 		check(not bool((first.elements_by_id[gated_id] as Dictionary)["runtime_enabled"]), "%s remains explicitly gated" % gated_id)
 	equal(String(first.data.get("affinity_rule", "")), "aligned_active_cost_discount_capped_by_affinity_strength", "ability catalog declares weighted affinity discount rule")
@@ -39,6 +39,9 @@ func _test_catalog() -> void:
 	equal(int(first.ability("vector-lance")["startup_ms"]), CombatTuning.ACTIVE_1_STARTUP_MS, "compiled active startup matches catalog")
 	equal(int(first.ability("rillshot")["wire_id"]), CombatTuning.RILLSHOT_WIRE_ID, "Rillshot wire matches compiled Oh Tipi kit")
 	equal(int(first.ability("rillshot")["flux_cost"]) * 1000, CombatTuning.RILLSHOT_FLUX_COST, "Oh Tipi primary has exact positive Flux cost")
+	equal(int(first.ability("cinderbolt")["wire_id"]), CombatTuning.CINDERBOLT_WIRE_ID, "Cinderbolt wire matches compiled Red Baron kit")
+	equal(int(first.ability("cinderbolt")["flux_cost"]) * 1000, CombatTuning.CINDERBOLT_FLUX_COST, "Red Baron primary has exact positive Flux cost")
+	equal(int(first.ability("cinderbolt")["cooldown_ms"]), CombatTuning.CINDERBOLT_COOLDOWN_MS, "Cinderbolt cadence matches compiled behavior")
 	equal(int(first.ability("tideline")["wire_id"]), CombatTuning.TIDELINE_WIRE_ID, "Tideline wire matches compiled Oh Tipi kit")
 	equal(int(first.ability("tideline")["flux_cost"]) * 1000, CombatTuning.TIDELINE_FLUX_COST, "Tideline Flux cost matches compiled behavior")
 	equal(int(first.ability("tideline")["startup_ms"]), CombatTuning.TIDELINE_STARTUP_MS, "Tideline startup matches compiled behavior")

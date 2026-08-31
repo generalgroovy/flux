@@ -7,8 +7,8 @@ simulation authority.
 Runtime status: this document preserves the older race/exemplar inventory for
 migration and provenance only. The current runtime contract is defined by
 `content/visual/foundation_champion_visuals_v1.json` and uses exactly three body
-types: `small`, `middle`, and `large`; the body-only Oh Tipi/S. Wayne atlas is the
-active foundation candidate. Nothing in this legacy catalog may add a fourth
+types: `small`, `middle`, and `large`; the body-only Oh Tipi/S. Wayne/Red Baron
+V9 atlas is the active foundation candidate. Nothing in this legacy catalog may add a fourth
 body type or reintroduce baked spells, shadows, props or environment pixels.
 
 ## Production status
@@ -61,7 +61,7 @@ selectors and runtime validators must use only the three canonical IDs.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `oh_tipi` | Oh Tipi | seakin | Middle | water, ice, charge | integrated_candidate | `res://assets/sprites/champions_v2/oh_tipi/atlas.png` | `res://assets/sprites/champions_v2/oh_tipi/hero_portrait_256.png` |
 | `s_wayne` | S. Wayne | hobbit | Small | dark, light | integrated_candidate | `res://assets/sprites/champions_v2/s_wayne/atlas.png` | `res://assets/sprites/champions_v2/s_wayne/hero_portrait_256.png` |
-| `red_baron` | The Red Baron | undead | Middle | dark, fire, ice | integrated_candidate | `res://assets/sprites/champions_v2/red_baron/atlas.png` | `res://assets/sprites/champions_v2/red_baron/hero_portrait_256.png` |
+| `red_baron` | The Red Baron | undead | Large | fire, ice | superseded_by_v9 | `res://assets/sprites/champions_v2/red_baron/atlas.png` | `res://assets/sprites/champions_v2/red_baron/hero_portrait_256.png` |
 | `steezo` | Steezo | goblin | Small | fire, charge, light | integrated_candidate | `res://assets/sprites/champions_v2/steezo/atlas.png` | `res://assets/sprites/champions_v2/steezo/hero_portrait_256.png` |
 | `treevor_mason` | Treevor the Mason | treefolk | Large | earth, wind, fire | integrated_candidate | `res://assets/sprites/champions_v2/treevor_mason/atlas.png` | `res://assets/sprites/champions_v2/treevor_mason/hero_portrait_256.png` |
 | `oll_i` | Oll' I | minotaur | Large | earth, fire, light | integrated_candidate | `res://assets/sprites/champions_v2/oll_i/atlas.png` | `res://assets/sprites/champions_v2/oll_i/hero_portrait_256.png` |

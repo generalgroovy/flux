@@ -1,6 +1,6 @@
 {
-  "schema_version": 8,
-  "id": "foundation-champion-visuals-v8-complete-eight-way-action",
+  "schema_version": 9,
+  "id": "foundation-champion-visuals-v9-red-baron-large",
   "authority": "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere",
   "atlas_role": "body_and_clothing_only",
   "front_pose": "camera_facing_symmetrical",
@@ -9,11 +9,11 @@
   "cell": [96, 96],
   "pivot": [48, 84],
   "atlas": {
-    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v8.png",
-    "sha256": "0c105cbce46d5dd13f9d19b9252ac2717a4f873c32ead65ac7724ec9e8f96401",
-    "imported_rgba_sha256": "758e2f76e766ae852d25348421dc315587892cb30a46bed89f9e8da7622dcdea",
-    "dimensions": [768, 1920],
-    "champions": ["oh_tipi", "s_wayne"],
+    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v9.png",
+    "sha256": "cb7601e3a3a9b435141ad82cb0254f8f9c365afaad846f31393c59996bde528f",
+    "imported_rgba_sha256": "121f825d67d180127d7f4ed36ddca55ab0ead342b5100ddfc839e4585c330fed",
+    "dimensions": [768, 2880],
+    "champions": ["oh_tipi", "s_wayne", "red_baron"],
     "states": ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll", "walk_b", "sprint_b"],
     "directions": ["south", "south_east", "east", "north_east", "north", "north_west", "west", "south_west"],
     "row_layout": "champion_major_state_minor"
@@ -131,6 +131,28 @@
         "armor": ["indigo_roof", 1],
         "trim": ["aged_brass", 3],
         "hair": ["timber", 0],
+        "eye": ["parchment", 4]
+      }
+    },
+    "red_baron": {
+      "display_name": "The Red Baron",
+      "ancestry": "undead",
+      "body_type": "large",
+      "atlas_row": 2,
+      "height": 68,
+      "head_ratio": 0.42,
+      "build": "broad_undead_lane_warden",
+      "motion_profile": "iron_regent",
+      "equipment": "body_clothing_only",
+      "casting_origin": "hands",
+      "silhouette_features": ["horned_crown", "broad_cape", "oversized_skull", "open_empty_hands"],
+      "affinities": ["fire", "ice"],
+      "materials": {
+        "outline": ["worldbone", 0],
+        "skin_dark": ["warm_stone", 1],
+        "skin": ["parchment", 4],
+        "armor": ["health", 1],
+        "trim": ["aged_brass", 3],
         "eye": ["parchment", 4]
       }
     }

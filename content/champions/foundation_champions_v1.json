@@ -49,6 +49,29 @@
         "primary": "eclipse-disc",
         "active_1": "pocket-eclipse"
       }
+    },
+    {
+      "id": "red_baron",
+      "wire_id": 3,
+      "display_name": "The Red Baron",
+      "ancestry": "undead",
+      "body_type": "large",
+      "affinities": ["fire", "ice"],
+      "affinity_points": {"fire": 2, "ice": 1},
+      "playstyle": "Resolute lane anchor with deep Health and Stamina reserves but deliberate ground tempo and Flux recovery.",
+      "stats": {
+        "health_maximum": 132000,
+        "health_recovery_per_second": 1200,
+        "flux_maximum": 96000,
+        "flux_recovery_per_second": 17000,
+        "stamina_maximum": 128000,
+        "stamina_recovery_per_second": 32000,
+        "movement_speed_ratio": 910
+      },
+      "foundation_kit": {
+        "primary": "cinderbolt",
+        "active_1": "rimewake"
+      }
     }
   ]
 }

@@ -14,7 +14,7 @@ equipment and environment are separate composited layers.
 | ---: | --- | --- | --- | --- | --- |
 | 1 | Oh Tipi | Seakin | Middle | Water 2 · Charge 1 | Playable foundation champion |
 | 2 | S. Wayne | Hobbit | Small | Dark 2 · Light 1 | Playable foundation champion |
-| 3 | The Red Baron | Undead | Middle | Fire 2 · Ice 1 | Planned; kit not implemented |
+| 3 | The Red Baron | Undead | Large | Fire 2 · Ice 1 | Playable anchor; Cinderbolt + Rimewake |
 | 4 | Steezo | Goblin | Small | Charge 2 · Fire 1 | Planned; kit not implemented |
 | 5 | Treevor the Mason | Treefolk | Large | Earth 1 · Wind 1 · Fire 1 | Planned three-affinity exception |
 | 6 | Oll' I | Werewolf | Large | Earth 2 · Dark 1 | Planned; kit not implemented |
@@ -46,3 +46,15 @@ The weighted element assignments are machine-owned by
 `content/champions/champion_affinities_first_eight_v1.json`. Historical concept
 boards can show superseded names, ancestries, or unweighted affinities; they are
 visual reference only and never override this table or the content catalog.
+
+## Playable body-role contract
+
+| Body | Role | Foundation champion | Compensation / cost |
+|---|---|---|---|
+| Small | Skirmisher | S. Wayne | Fast ground tempo and Flux recovery; lowest Health/Stamina reserves |
+| Middle | Adapter | Oh Tipi | Balanced resources and routing; no extreme stat |
+| Large | Anchor | The Red Baron | Deep Health/Stamina reserves; slowest ground tempo and Flux recovery |
+
+Every body has identical access to universal movement and the shared foundation
+collision radius. The distinction is a validated resource/tempo envelope, not
+hidden reach, damage, elemental advantage, or evasion.

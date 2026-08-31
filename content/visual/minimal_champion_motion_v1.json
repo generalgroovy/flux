@@ -152,6 +152,73 @@
           {"at": 1.0, "offset": [0.0, 0.0], "scale": [1.0, 1.0], "aura": 0.92}
         ]
       }
+    },
+    "iron_regent": {
+      "idle": {
+        "loop": true,
+        "duration_ticks": 108,
+        "keyframes": [
+          {"at": 0.0, "offset": [0.0, 0.0], "scale": [1.0, 1.0], "aura": 0.96},
+          {"at": 0.5, "offset": [0.0, -0.5], "scale": [1.006, 0.994], "aura": 1.03},
+          {"at": 1.0, "offset": [0.0, 0.0], "scale": [1.0, 1.0], "aura": 0.96}
+        ]
+      },
+      "walk": {
+        "loop": true,
+        "duration_ticks": 28,
+        "keyframes": [
+          {"at": 0.0, "offset": [-0.75, 0.5], "scale": [1.018, 0.982], "aura": 0.98},
+          {"at": 0.25, "offset": [0.0, -1.0], "scale": [0.99, 1.01], "aura": 1.02},
+          {"at": 0.5, "offset": [0.75, 0.5], "scale": [1.018, 0.982], "aura": 0.98},
+          {"at": 0.75, "offset": [0.0, -1.0], "scale": [0.99, 1.01], "aura": 1.02},
+          {"at": 1.0, "offset": [-0.75, 0.5], "scale": [1.018, 0.982], "aura": 0.98}
+        ]
+      },
+      "sprint": {
+        "loop": true,
+        "duration_ticks": 20,
+        "keyframes": [
+          {"at": 0.0, "offset": [-1.0, 0.5], "scale": [1.028, 0.972], "aura": 1.0},
+          {"at": 0.5, "offset": [1.0, -1.5], "scale": [0.982, 1.018], "aura": 1.07},
+          {"at": 1.0, "offset": [-1.0, 0.5], "scale": [1.028, 0.972], "aura": 1.0}
+        ]
+      },
+      "low": {
+        "loop": true,
+        "duration_ticks": 22,
+        "keyframes": [
+          {"at": 0.0, "offset": [-1.25, 2.0], "scale": [1.055, 0.945], "aura": 0.90},
+          {"at": 0.5, "offset": [0.75, 1.5], "scale": [1.035, 0.965], "aura": 0.98},
+          {"at": 1.0, "offset": [-1.25, 2.0], "scale": [1.055, 0.945], "aura": 0.90}
+        ]
+      },
+      "air": {
+        "loop": false,
+        "duration_ticks": 32,
+        "keyframes": [
+          {"at": 0.0, "offset": [0.0, 1.0], "scale": [1.04, 0.96], "aura": 1.0},
+          {"at": 0.45, "offset": [0.0, -1.25], "scale": [0.975, 1.025], "aura": 1.08},
+          {"at": 1.0, "offset": [0.0, 1.0], "scale": [1.045, 0.955], "aura": 1.0}
+        ]
+      },
+      "cast": {
+        "loop": false,
+        "duration_ticks": 24,
+        "keyframes": [
+          {"at": 0.0, "offset": [0.0, 1.5], "scale": [1.04, 0.96], "aura": 0.84},
+          {"at": 0.5, "offset": [0.0, -1.0], "scale": [0.978, 1.022], "aura": 1.16},
+          {"at": 1.0, "offset": [0.0, 0.0], "scale": [1.0, 1.0], "aura": 1.02}
+        ]
+      },
+      "hit": {
+        "loop": false,
+        "duration_ticks": 20,
+        "keyframes": [
+          {"at": 0.0, "offset": [-2.5, 0.5], "scale": [1.05, 0.95], "aura": 0.80},
+          {"at": 0.4, "offset": [1.5, 1.0], "scale": [0.975, 1.025], "aura": 1.06},
+          {"at": 1.0, "offset": [0.0, 0.0], "scale": [1.0, 1.0], "aura": 0.92}
+        ]
+      }
     }
   }
 }

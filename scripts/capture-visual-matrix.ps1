@@ -46,12 +46,13 @@ $profiles = @(
     @{ id = 'tritanopia'; argument = 'tritanopia'; reduced = $false },
     @{ id = 'high-contrast-reduced'; argument = 'high_contrast'; reduced = $true }
 )
-$champions = @('oh_tipi', 's_wayne')
+$champions = @('oh_tipi', 's_wayne', 'red_baron')
 $zoomOrders = @(
     @(50, 75, 100, 50, 75, 100, 50, 75),
-    @(100, 50, 75, 100, 50, 75, 100, 75)
+    @(100, 50, 75, 100, 50, 75, 100, 75),
+    @(75, 100, 50, 75, 100, 50, 75, 100)
 )
-$profileOffsets = @(0, 4)
+$profileOffsets = @(0, 4, 2)
 $spawn = @(1280, 720)
 $manifestEntries = [System.Collections.Generic.List[object]]::new()
 

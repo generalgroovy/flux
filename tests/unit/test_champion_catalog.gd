@@ -27,13 +27,16 @@ func _catalog() -> ChampionCatalog:
 func _test_repository_catalog() -> void:
 	var catalog := _catalog()
 	equal(catalog.default_champion_id, "oh_tipi", "Oh Tipi is the safe first-run champion")
-	equal(catalog.ordered_champion_ids(), ["oh_tipi", "s_wayne"], "wire order produces stable champion cycling")
+	equal(catalog.ordered_champion_ids(), ["oh_tipi", "s_wayne", "red_baron"], "wire order produces stable champion cycling")
 	equal(catalog.next_champion_id("oh_tipi"), "s_wayne", "champion cycle advances")
-	equal(catalog.next_champion_id("s_wayne"), "oh_tipi", "champion cycle wraps")
+	equal(catalog.next_champion_id("s_wayne"), "red_baron", "champion cycle reaches the large foundation champion")
+	equal(catalog.next_champion_id("red_baron"), "oh_tipi", "champion cycle wraps")
 	equal(String(catalog.champion("oh_tipi").get("ancestry")), "seakin", "Oh Tipi is a Seakin")
 	equal(String(catalog.champion("s_wayne").get("ancestry")), "hobbit", "S. Wayne is a Hobbit")
+	equal(String(catalog.champion("red_baron").get("ancestry")), "undead", "The Red Baron is Undead")
 	equal(String(catalog.champion("oh_tipi").get("body_type")), "middle", "Oh Tipi uses the middle reusable body type")
 	equal(String(catalog.champion("s_wayne").get("body_type")), "small", "S. Wayne uses the small reusable body type")
+	equal(String(catalog.champion("red_baron").get("body_type")), "large", "The Red Baron uses the large reusable body type")
 	equal(ChampionCatalog.SUPPORTED_BODY_TYPES, ["small", "middle", "large"], "runtime exposes exactly three body types")
 	equal(catalog.champion("oh_tipi").get("affinities", []), ["water", "charge"], "Oh Tipi owns Water/Charge")
 	equal(catalog.affinity_strength("oh_tipi", "water"), 2, "Oh Tipi has primary Water strength 2")
@@ -42,6 +45,9 @@ func _test_repository_catalog() -> void:
 	equal(catalog.champion("s_wayne").get("affinities", []), ["dark", "light"], "S. Wayne keeps Dark/Light")
 	equal(catalog.affinity_strength("s_wayne", "dark"), 2, "S. Wayne has primary Dark strength 2")
 	equal(catalog.affinity_strength("s_wayne", "light"), 1, "S. Wayne has secondary Light strength 1")
+	equal(catalog.champion("red_baron").get("affinities", []), ["fire", "ice"], "The Red Baron owns Fire/Ice")
+	equal(catalog.affinity_strength("red_baron", "fire"), 2, "The Red Baron has primary Fire strength 2")
+	equal(catalog.affinity_strength("red_baron", "ice"), 1, "The Red Baron has secondary Ice strength 1")
 
 
 func _test_affinity_point_budget_and_treevor_exception() -> void:
@@ -72,6 +78,7 @@ func _test_affinity_point_budget_and_treevor_exception() -> void:
 	treevor["body_type"] = "large"
 	treevor["affinities"] = ["earth", "wind", "fire"]
 	treevor["affinity_points"] = {"earth": 1, "wind": 1, "fire": 1}
+	treevor["stats"] = (treevor_candidate.data["champions"][2] as Dictionary)["stats"].duplicate(true)
 	(treevor_candidate.data["champions"] as Array).append(treevor)
 	check(treevor_candidate.validate(abilities), "Treevor may split the same three-point budget 1+1+1: %s" % treevor_candidate.last_error)
 
@@ -103,7 +110,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.primary_wire_id, CombatTuning.RILLSHOT_WIRE_ID, "Oh Tipi equips Rillshot")
 	equal(state.active_1_wire_id, CombatTuning.TIDELINE_WIRE_ID, "Oh Tipi equips Tideline")
 	equal(state.active_2_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "Oh Tipi equips Rimewake as the third proven spell")
-	equal(Array(state.spell_wire_ids), [140, 141, 144, 101, 110, 142, 143, 0, 0, 0, 0, 0], "Oh Tipi leads the global weave with champion spells")
+	equal(Array(state.spell_wire_ids), [140, 141, 144, 101, 110, 142, 143, 145, 0, 0, 0, 0], "Oh Tipi leads the global weave with champion spells")
 	equal(state.health, 108_000, "Oh Tipi starts at authored maximum Health")
 	equal(state.stamina_maximum, 108_000, "Oh Tipi has the larger Stamina reserve")
 	state.health = 54_000
@@ -114,11 +121,19 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.primary_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "S. Wayne equips Eclipse Disc")
 	equal(state.active_1_wire_id, CombatTuning.POCKET_ECLIPSE_WIRE_ID, "S. Wayne equips Pocket Eclipse")
 	equal(state.active_2_wire_id, 0, "S. Wayne does not expose an unfinished third spell")
-	equal(Array(state.spell_wire_ids), [142, 143, 101, 110, 140, 141, 144, 0, 0, 0, 0, 0], "champion switch keeps the global library and leads with the new champion kit")
+	equal(Array(state.spell_wire_ids), [142, 143, 101, 110, 140, 141, 144, 145, 0, 0, 0, 0], "champion switch keeps the global library and leads with the new champion kit")
 	equal(state.health, 45_000, "Health ratio survives an in-world champion switch")
 	equal(state.flux, 56_000, "Flux ratio survives an in-world champion switch")
 	equal(state.stamina, 48_000, "Stamina ratio survives an in-world champion switch")
 	equal(state.movement_speed_ratio, 1060, "S. Wayne owns the faster ground profile")
+	check(catalog.apply_to_player(state, "red_baron"), "The Red Baron profile applies")
+	equal(state.champion_wire_id, 3, "The Red Baron owns stable wire id 3")
+	equal(state.primary_wire_id, CombatTuning.CINDERBOLT_WIRE_ID, "The Red Baron equips Cinderbolt")
+	equal(state.active_1_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "The Red Baron equips Rimewake")
+	equal(Array(state.spell_wire_ids), [145, 144, 101, 110, 140, 141, 142, 143, 0, 0, 0, 0], "The Red Baron leads the weave with Fire/Ice spells")
+	equal(state.health_maximum, 132_000, "large body owns the deepest Health reserve")
+	equal(state.stamina_maximum, 128_000, "large body owns the deepest Stamina reserve")
+	equal(state.movement_speed_ratio, 910, "large body pays for staying power with deliberate ground speed")
 
 
 func _test_profiles_execute_at_rate(tick_rate: int) -> void:
@@ -126,26 +141,36 @@ func _test_profiles_execute_at_rate(tick_rate: int) -> void:
 	var roomy_collision := CollisionWorld.new(2_000_000, 2_000_000)
 	var oh_world := SimWorld.new(tick_rate, 1, roomy_collision)
 	var wayne_world := SimWorld.new(tick_rate, 1, roomy_collision)
+	var baron_world := SimWorld.new(tick_rate, 1, roomy_collision)
 	var oh_tipi: PlayerState = oh_world.player()
 	var s_wayne: PlayerState = wayne_world.player()
+	var red_baron: PlayerState = baron_world.player()
 	check(catalog.apply_to_player(oh_tipi, "oh_tipi"), "%d Hz Oh Tipi profile applies" % tick_rate)
 	check(catalog.apply_to_player(s_wayne, "s_wayne"), "%d Hz S. Wayne profile applies" % tick_rate)
-	for state: PlayerState in [oh_tipi, s_wayne]:
+	check(catalog.apply_to_player(red_baron, "red_baron"), "%d Hz Red Baron profile applies" % tick_rate)
+	for state: PlayerState in [oh_tipi, s_wayne, red_baron]:
 		state.position_x = 1_000_000
 		state.position_y = 1_000_000
 	for _index: int in range(tick_rate):
 		check(oh_world.step([SimCommand.new(oh_world.tick, 1, 1000)]), "%d Hz Oh Tipi movement steps" % tick_rate)
 		check(wayne_world.step([SimCommand.new(wayne_world.tick, 1, 1000)]), "%d Hz S. Wayne movement steps" % tick_rate)
+		check(baron_world.step([SimCommand.new(baron_world.tick, 1, 1000)]), "%d Hz Red Baron movement steps" % tick_rate)
 	check(s_wayne.velocity_x > oh_tipi.velocity_x, "%d Hz S. Wayne reaches the higher authored ground speed" % tick_rate)
 	check(s_wayne.position_x > oh_tipi.position_x, "%d Hz S. Wayne gains measurable ground over Oh Tipi" % tick_rate)
+	check(oh_tipi.velocity_x > red_baron.velocity_x, "%d Hz the large anchor preserves its deliberate speed tradeoff" % tick_rate)
+	check(red_baron.health_maximum > oh_tipi.health_maximum and red_baron.stamina_maximum > oh_tipi.stamina_maximum, "%d Hz the large anchor receives real reserve compensation" % tick_rate)
 	oh_tipi.flux = 0
 	s_wayne.flux = 0
+	red_baron.flux = 0
 	for _index: int in range(tick_rate):
 		PlayerResourcesSystem.step(oh_tipi, oh_world.config)
 		PlayerResourcesSystem.step(s_wayne, wayne_world.config)
+		PlayerResourcesSystem.step(red_baron, baron_world.config)
 	equal(oh_tipi.flux, oh_tipi.flux_recovery_per_second, "%d Hz Oh Tipi recovers the exact authored Flux rate" % tick_rate)
 	equal(s_wayne.flux, s_wayne.flux_recovery_per_second, "%d Hz S. Wayne recovers the exact authored Flux rate" % tick_rate)
+	equal(red_baron.flux, red_baron.flux_recovery_per_second, "%d Hz Red Baron recovers the exact authored Flux rate" % tick_rate)
 	check(oh_world.state_hash() != wayne_world.state_hash(), "%d Hz champion identity changes canonical world state" % tick_rate)
+	check(baron_world.state_hash() != oh_world.state_hash(), "%d Hz the large profile changes canonical world state" % tick_rate)
 
 
 func _test_invalid_profiles_fail_closed() -> void:

@@ -18,6 +18,7 @@ func _test_repository_kit() -> void:
 	check(kit.configure(language, layout), "architecture kit validates: %s" % kit.last_error)
 	check(kit.content_hash.length() == 64, "architecture kit has a stable content hash")
 	check(kit.runtime_kit != null and kit.runtime_kit.textures_by_id.size() == 8, "architecture reuses every approved pixel module through the validated runtime kit")
+	check(kit.environment_kit != null and kit.environment_kit.textures_by_id.size() == 16, "architecture binds the complete reusable environment module sheet")
 	equal(String((kit.data["court_profile"] as Dictionary).get("district_style")), "nexus", "source court is bound to the Nexus presentation profile")
 	equal(kit.court_decorations.size(), 6, "source court has a bounded authored decoration set")
 	equal(String(kit.court_decorations[0].get("kind", "")), "lantern", "source court starts with a readable light marker")

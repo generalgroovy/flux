@@ -5,6 +5,7 @@ param(
     [ValidateRange(2, 120)][int]$Frames = 4,
     [switch]$FarflowPair,
     [ValidateRange(1024, 65535)][int]$Port = 24920,
+    [string[]]$FarflowGuestArguments = @(),
     [Parameter(ValueFromRemainingArguments = $true)][string[]]$GameArguments
 )
 
@@ -39,6 +40,11 @@ if ($FarflowPair) {
     foreach ($argument in $GameArguments) {
         if ($argument -like '--farflow=*' -or $argument -like '--session-port=*' -or $argument -like '--player-name=*') {
             throw 'Paired Farflow capture owns farflow mode, port and diagnostic player names.'
+        }
+    }
+    foreach ($argument in $FarflowGuestArguments) {
+        if ($argument -like '--farflow=*' -or $argument -like '--session-port=*' -or $argument -like '--player-name=*') {
+            throw 'Paired Farflow guest arguments cannot override farflow mode, port or diagnostic player name.'
         }
     }
 }
@@ -115,7 +121,7 @@ try {
             '--headless', '--path', $temporaryRoot, '--fixed-fps', "$TickRate", '--',
             "--tick-rate=$TickRate", '--farflow=join', '--join-address=127.0.0.1',
             "--session-port=$Port", '--player-name=River Guest', '--farflow-smoke-emote'
-        )
+        ) + @($FarflowGuestArguments)
         $quotedPeerArguments = $peerArguments | ForEach-Object { '"' + $_.Replace('"', '\"') + '"' }
         $farflowPeerProcess = Start-Process -FilePath $godotBin -ArgumentList $quotedPeerArguments -RedirectStandardOutput $peerLogPath -RedirectStandardError $peerErrorPath -WindowStyle Hidden -PassThru
         if (-not $movieProcess.WaitForExit(120000)) { throw 'Visual Farflow host did not complete its bounded movie capture.' }

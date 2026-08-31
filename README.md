@@ -11,8 +11,8 @@ physical places rather than a detached menu.
 
 ![Wellspring gameplay target](assets/concept/wellspring-gameplay-specimen-v3.png)
 
-> **Current playable state:** Windows is the active release target. Two distinct champions,
-> full universal movement foundation, seven playable foundation spells, the
+> **Current playable state:** Windows is the active release target. Three distinct champions,
+> full universal movement foundation, eight playable foundation spells, the
 > Wellspring campus, an authoritative 2–8 player direct-IP Farflow loop, and a
 > packaged one-file Windows installer are working. Eight elemental bursts and
 > the 36-reaction chemistry acceptance slice are the active implementation goal.
@@ -70,9 +70,9 @@ channels are not claimed yet; test direct-IP builds only with trusted friends.
 | Movement | Full universal foundation at deterministic 60/120 Hz; normalized eight-way commands, active directional air control/facing, alternating gait contacts, native eight-way jump/slide/roll art, relative gait, and directional evasion cues | Pattern-pressure tuning and player playtest |
 | Combat | Projectile, beam, spray, field, ricochet, launch and slow; one fail-closed eight-way delivery contract aligns body, hands and discrete effect art while simulation aim stays continuous | Data-driven five-shot burst family for eight elements |
 | Chemistry | Material grid and 36 design-locked recipes | All recipes form, act, decay, reset, and explain themselves in-game |
-| Champions | Oh Tipi and S. Wayne playable | Do not expand until first-eight chemistry passes |
+| Champions | Oh Tipi (middle), S. Wayne (small), and The Red Baron (large) playable | Validate the three roles under bullet-pattern pressure before another champion |
 | Farflow | Host-authoritative 2/4/8-player direct-IP loop | Per-peer LOS filtering, then measured later 32-player gate |
-| Visuals | Reviewed diagonal champion families, safe evasion cues, direction-complete empty-hand spell delivery, Wellspring surface alignment, and a reproducible 19-cell multi-zoom/accessibility/Farflow matrix | Raise the honest 4.29/5 visual rubric to the required 4.5 with material/action-response polish, then remaining reviewed evasion art |
+| Visuals | Integrated Wellspring gate accepted at 4.64/5; reviewed eight-way champions, environment modules, compact HUD, spell-density and real Farflow evidence are green | Keep every new champion/spell inside the same silhouette, accessibility, density, and provenance gates |
 
 ## Design pillars
 
@@ -169,6 +169,17 @@ the authored opening windows. Solid world geometry remains solid.
 | Field/volume | Deny, reveal, slow, prime terrain | Exact boundary, delay, duration, counter |
 | Construct/tether | Change cover or sustain a relation | Health/support, sever rule, cleanup |
 
+| Playable spell | Element · shape | Foundation owner / decision |
+|---|---|---|
+| Rillshot | Water · projectile | Oh Tipi; quick flowing pressure |
+| Tideline | Water · spray | Oh Tipi; close fan displacement |
+| Rimewake | Ice · field | Oh Tipi / Red Baron; visible pursuit break |
+| Eclipse Disc | Dark · ricochet projectile | S. Wayne; one readable rebound |
+| Pocket Eclipse | Light · beam | S. Wayne; committed line control |
+| Cinderbolt | Fire · projectile | Red Baron; measured lane pressure |
+| Arc Primary | Charge · projectile | Global proven spell |
+| Vector Lance | Charge · projectile | Global proven active |
+
 The first bullet-pattern acceptance is five projectiles at
 `-24°, -12°, 0°, +12°, +24°`, ordered negative-to-positive for deterministic
 IDs and replay. Pattern geometry never changes because an element skin changes.
@@ -219,7 +230,7 @@ truth is [`content/reactions/first_eight_element_reactions_v1.json`](content/rea
 
 ## Champions
 
-Only Oh Tipi and S. Wayne are currently selectable. Every other entry is a
+Oh Tipi, S. Wayne, and The Red Baron are currently selectable. Every other entry is a
 design/migration target, not a claim of playable content. Ordinary champions
 use a unique two-element 2+1 profile; Treevor is the sole 1+1+1 exception.
 
@@ -227,7 +238,7 @@ use a unique two-element 2+1 profile; Treevor is the sole 1+1+1 exception.
 |---|---|---|---|---|
 | Oh Tipi | Seakin | Middle | Water 2 · Charge 1 | **Playable** |
 | S. Wayne | Hobbit | Small | Dark 2 · Light 1 | **Playable** |
-| The Red Baron | Undead | Middle | Fire 2 · Ice 1 | Planned |
+| The Red Baron | Undead | Large | Fire 2 · Ice 1 | **Playable** |
 | Steezo | Goblin | Small | Charge 2 · Fire 1 | Planned |
 | Treevor the Mason | Treefolk | Large | Earth 1 · Wind 1 · Fire 1 | Planned exception |
 | Oll' I | Werewolf | Large | Earth 2 · Dark 1 | Planned |
@@ -254,6 +265,17 @@ Only three body types exist: `small`, `middle`, and `large`. Tiny and huge are
 retired vocabulary and migrate to small and large respectively; medium migrates
 to middle. Body type bounds silhouette, footprint and tuning ranges but never
 grants hidden reach, evasion, damage or elemental advantage.
+
+| Body type | Equal-budget role | Strengths | Honest trade-offs |
+|---|---|---|---|
+| Small | Skirmisher | Ground speed, Flux recovery, compact visual read | Health and Stamina reserves |
+| Middle | Adapter | Balanced resources, route flexibility, stable recovery | No extreme stat; moderate commitments |
+| Large | Anchor | Health, Stamina, lane presence | Ground speed and Flux recovery |
+
+All three retain the same foundation collision radius and the complete universal
+movement grammar. The validated body-profile catalog rejects champion stats
+outside the selected role envelope, so size is asymmetric but never a strict
+upgrade.
 
 Champion atlases contain body and clothing only. The current green runtime has
 authored frames in `S/SE/E/NE/N/NW/W/SW`: front/south faces the camera with
@@ -378,12 +400,12 @@ The retained `size_1_tiny`, `size_2_small`, `size_3_medium`, `size_4_large`,
 and `size_5_huge` path fragments belong to the legacy visual archive; only
 `small`, `middle`, and `large` are authored runtime body types.
 
-![Eight-direction body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_eight_v8.png)
+![Eight-direction body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_eight_v9.png)
 
-This atlas is a reusable body/clothing layer for the two foundation champions;
+This atlas is a reusable body/clothing layer for all three foundation champions;
 spells, auras, shadows, projectiles, environment and equipment are composed
 independently. Each champion's `atlas_row` is authored in
-`content/visual/foundation_champion_visuals_v1.json`. The versioned 768×1920
+`content/visual/foundation_champion_visuals_v1.json`. The versioned 768×2880
 atlas packs eight direction columns under each champion. Every grounded,
 empty-hand cast, hit/recovery, jump, slide, and roll state has native eight-way
 art; walk and sprint add a second opposite contact row for true leg alternation.

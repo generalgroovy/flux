@@ -21,17 +21,21 @@ Invoke-FluxGodotChecked $godotBin @(
     '--import'
 ) (Join-Path $runLogRoot 'preflight.log')
 
-# FLUX intentionally targets the compatibility renderer. Make the interactive
-# Windows source launch explicit as well so a machine-specific default renderer
-# cannot silently select a different backend from project.godot.
-& $godotBin `
-    --path $repoRoot `
-    --rendering-method gl_compatibility `
-    --rendering-driver opengl3 `
-    -- `
-    "--tick-rate=$TickRate" `
-    @GameArguments
+# FLUX uses Godot's Compatibility renderer. Do not force native OpenGL on
+# Windows: project.godot prefers ANGLE (OpenGL ES over Direct3D 11) there and
+# falls back to native OpenGL when needed. This avoids grey/blank windows on
+# systems whose Windows OpenGL driver is incomplete or unreliable.
+$runArgs = @(
+    '--path', $repoRoot,
+    '--rendering-method', 'gl_compatibility',
+    '--verbose',
+    '--log-file', (Join-Path $runLogRoot 'game.log'),
+    '--',
+    "--tick-rate=$TickRate"
+) + $GameArguments
+
+& $godotBin @runArgs
 
 if ($LASTEXITCODE -ne 0) {
-    throw "FLUX 2 exited with code $LASTEXITCODE. Review the Godot output above and .godot\run\preflight.log."
+    throw "FLUX 2 exited with code $LASTEXITCODE. Review .godot\run\preflight.log and .godot\run\game.log."
 }

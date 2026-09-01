@@ -3,6 +3,45 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## 2026-09-01 - mature small/middle/large champion foundation
+
+- Foundation atlas V12 is the production body/clothing template for S. Wayne,
+  Oh Tipi and The Red Baron. Its strict authored order is small -> middle ->
+  large, with direction-invariant upright target heights of 58/68/76 px,
+  shared 96x96 cells, feet pivot `(48,84)` and runtime scale `1.0`.
+- Red Baron now leads the mature compact anatomy/material/ink grammar. Ordinary
+  crania occupy 24-30% of the body height; hair, fins, horns and ancestry crowns
+  are excluded from that measurement. A bounded source-time normalizer removes
+  source-sheet and direction scale drift without changing runtime scale.
+- Visual size remains presentation-only. All three roles retain the same
+  authoritative foundation collision radius and full movement grammar; the
+  validated equal-budget health/Flux/Stamina/speed profiles provide strengths
+  and tradeoffs without hidden reach, damage or evasion.
+- Red Baron has an identity-specific compact HUD portrait. Truthful 1280x720
+  runtime captures for all three templates are under
+  `.godot/visual-captures/foundation-v12-small`, `foundation-v12-middle` and
+  `foundation-v12-large`.
+- Built-in ImageGen supplied the repository-bound proportion study at
+  `assets/concept/foundation-proportion-reference-small-to-large-v1.png` using
+  precise-object-edit mode. It is an opaque concept reference only; exact prompt,
+  hash and authority are recorded beside it. The deterministic runtime atlas is
+  `runtime_atlas_eight_v12.png`, SHA-256
+  `640abbf46c2442506e12a31542c9a0ad375d32f53062e433d0787b88e920bd38`.
+- `scripts\test.ps1`: 57 suites / 17,222 assertions, zero failures. Import and
+  source boot pass at 120 Hz; the exact packaged PCK boots at 120 Hz with
+  protocol 32 and the V12 atlas hash.
+- Runtime/content commit `2cdad11` packages as
+  `0.1.0-dev-2cdad1185c-3eda371c3e`. The one-file `FLUX.exe` SHA-256 is
+  `d3df6359c4d2b7e6c7b91609c9643d8e6d5799c21f51ad9ef89205d31b8c29bd`;
+  the portable ZIP SHA-256 is
+  `3eda371c3ebeae07c88e3994ac81eb61a3643775050f675b7dba32d9aa16c2d4`.
+  This managed host blocks that exact newly compiled unsigned EXE before process
+  start under Windows Application Control, so signing remains the honest release
+  acceptance gate; package integrity and the embedded PCK boot are verified.
+- Next: resume the active C4 acceptance slice with one shared, data-driven burst
+  contract across Fire, Water, Earth, Wind, Charge, Ice, Light and Dark, keeping
+  the three-size visual/collision boundary invariant.
+
 ## 2026-09-01 - 120 Hz pattern room and shared champion ink
 
 - The runtime is now deliberately 120 Hz only and protocol 32. Startup,

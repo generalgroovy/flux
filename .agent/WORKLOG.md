@@ -1,5 +1,51 @@
 # FLUX2 agent worklog
 
+## 2026-09-01 - mature body templates and one-file Windows lifecycle
+
+Playable outcome:
+
+- S. Wayne, Oh Tipi and The Red Baron now use the deterministic V12 body-only
+  atlas. Small, middle and large have 58/68/76 px authored upright silhouettes,
+  one 96x96 cell/pivot contract and one runtime scale, so their gameplay roles
+  are immediately visible without animation-dependent size changes.
+- Red Baron anchors the mature compact anatomy, material and exterior-ink
+  grammar. The builder processes small -> middle -> large, normalizes state and
+  direction source scale, and keeps identity features separate from measured
+  ordinary head proportion.
+- Simulation fairness is explicit and fail-closed: size art cannot grant reach,
+  damage, evasion or collision changes. Existing equal-budget role stats and one
+  shared foundation collision radius remain authoritative.
+- The compact HUD now gives Red Baron an identity-specific portrait, so both
+  world and non-world character presentation use the updated model language.
+- The Windows player artifact is now simply `FLUX.exe`; the same file installs,
+  updates, repairs and starts the selected version, and migrates away from the
+  obsolete `FLUX Launcher.exe` name.
+
+Verification:
+
+- `scripts\test.ps1`: 57 suites / 17,222 assertions, zero failures. The champion
+  presenter contributes 510 matrix assertions and the animation skeleton 8,976.
+- Import and source launch pass at 120 Hz. The exact exported PCK boots through
+  the pinned Godot 4.7.1 engine at 120 Hz, protocol 32, atlas hash
+  `640abbf46c24`, exit 0.
+- Three truthful six-frame 1280x720 captures pass under
+  `.godot/visual-captures/foundation-v12-{small,middle,large}` and were visually
+  inspected for in-world scale and HUD identity.
+- Runtime/content commit: `2cdad11`. Package build ID:
+  `0.1.0-dev-2cdad1185c-3eda371c3e`. `FLUX.exe` SHA-256:
+  `d3df6359c4d2b7e6c7b91609c9643d8e6d5799c21f51ad9ef89205d31b8c29bd`;
+  portable ZIP SHA-256:
+  `3eda371c3ebeae07c88e3994ac81eb61a3643775050f675b7dba32d9aa16c2d4`.
+
+Known limits / next:
+
+- Windows Application Control blocks this exact newly compiled unsigned
+  `FLUX.exe` before process start on the managed development host. The package,
+  hashes and PCK are valid, but exact-wrapper release acceptance needs a trusted
+  signing certificate or an eligible physical Windows test machine.
+- Continue C4 with the comparable first-eight elemental burst contract; do not
+  retune body roles or add hidden size authority during that mechanical slice.
+
 ## 2026-09-01 - 120 Hz bullet-room checkpoint
 
 Playable outcome:

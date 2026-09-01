@@ -27,19 +27,21 @@ if (-not $hasImportedResources) {
     Write-Host 'Godot import output will appear below. This step is skipped on later launches.' -ForegroundColor DarkGray
     Write-Host ''
 
-    # Run directly in the current console instead of a hidden Start-Process so
-    # import progress and failures are visible to the tester.
-    $preflightOutput = & $godotBin `
+    # Stream import output live to the tester and save the same output to a log.
+    # Tee-Object -Variable also retains the lines for the error scan below.
+    $preflightOutput = @()
+    & $godotBin `
         --headless `
         --editor `
         --verbose `
         --path $repoRoot `
-        --import 2>&1
+        --import 2>&1 |
+        Tee-Object -Variable preflightOutput -FilePath $preflightLog |
+        Write-Output
+    $preflightExitCode = $LASTEXITCODE
 
-    $preflightOutput | Tee-Object -FilePath $preflightLog | Write-Output
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "FLUX resource preparation failed with code $LASTEXITCODE. Review .godot\run\preflight.log."
+    if ($preflightExitCode -ne 0) {
+        throw "FLUX resource preparation failed with code $preflightExitCode. Review .godot\run\preflight.log."
     }
 
     $bad = $preflightOutput | Select-String -Pattern 'SCRIPT ERROR|Parse Error|Compile Error|Failed to load script|Invalid call'

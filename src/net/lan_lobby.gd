@@ -4,9 +4,12 @@ extends CanvasLayer
 
 const DISCOVERY_PORT: int = 24_873
 const DISCOVERY_MAGIC: String = "FLUX2_LAN_V1"
+const DISCOVERY_KIND_QUERY: String = "discover"
+const DISCOVERY_KIND_ADVERTISEMENT: String = "advertise"
 const BROADCAST_ADDRESS: String = "255.255.255.255"
-const BROADCAST_INTERVAL_MS: int = 750
+const DISCOVERY_INTERVAL_MS: int = 750
 const HOST_STALE_MS: int = 3_500
+const LISTENER_RETRY_MS: int = 3_000
 const MAX_DISCOVERY_PACKET_BYTES: int = 2_048
 const MAX_DISCOVERED_HOSTS: int = 24
 const MAX_PACKETS_PER_POLL: int = 32
@@ -19,6 +22,7 @@ var broadcaster_ready: bool = false
 var discovery_error: String = ""
 var discovered_hosts: Dictionary = {}
 var last_broadcast_ms: int = 0
+var last_probe_ms: int = 0
 var last_listener_retry_ms: int = 0
 var browser_open: bool = false
 var host_rows_fingerprint: String = ""
@@ -30,7 +34,6 @@ var status_label: Label
 var browser_box: VBoxContainer
 var browser_status_label: Label
 var host_rows: VBoxContainer
-var direct_ip_button: Button
 
 
 func _ready() -> void:
@@ -60,13 +63,16 @@ func _process(_delta: float) -> void:
 	if transport == null:
 		return
 
-	if not listener_ready and Time.get_ticks_msec() - last_listener_retry_ms >= 3_000:
+	var now := Time.get_ticks_msec()
+	if not listener_ready and now - last_listener_retry_ms >= LISTENER_RETRY_MS:
 		_open_discovery_listener()
 	_poll_discovery_packets()
-	_expire_stale_hosts()
+	_expire_stale_hosts(now)
 
 	if transport.is_host():
-		_maybe_broadcast_host()
+		_maybe_broadcast_host(now)
+	elif browser_open and transport.mode == SessionTransport.Mode.OFFLINE:
+		_maybe_probe_for_hosts(now)
 
 	_update_ui()
 
@@ -130,15 +136,17 @@ func _build_ui() -> void:
 	browser_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	browser_box.add_child(browser_status_label)
 
-	host_rows = VBoxContainer.new()
-	host_rows.add_theme_constant_override("separation", 5)
-	browser_box.add_child(host_rows)
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(0.0, 150.0)
+	browser_box.add_child(scroll)
 
-	direct_ip_button = Button.new()
-	direct_ip_button.text = "Advanced: direct address"
-	direct_ip_button.tooltip_text = "Fallback for internet/VPN play or networks that block LAN discovery."
-	direct_ip_button.pressed.connect(_on_direct_ip_pressed)
-	browser_box.add_child(direct_ip_button)
+	host_rows = VBoxContainer.new()
+	host_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	host_rows.add_theme_constant_override("separation", 5)
+	scroll.add_child(host_rows)
+
+	if _is_visual_capture_run():
+		panel.visible = false
 
 
 func _transport() -> SessionTransport:
@@ -163,24 +171,21 @@ func _on_join_pressed() -> void:
 	if transport == null:
 		return
 	if transport.is_host():
-		browser_open = false
-		browser_box.visible = false
 		return
 	if transport.mode != SessionTransport.Mode.OFFLINE:
 		bootstrap.call("_return_to_offline", "You left the Farflow company.")
+		browser_open = false
+		browser_box.visible = false
+		_update_ui()
+		return
 	browser_open = not browser_open
 	browser_box.visible = browser_open
 	if browser_open:
 		_open_discovery_listener()
+		last_probe_ms = 0
 		host_rows_fingerprint = ""
 		_refresh_host_rows()
 	_update_ui()
-
-
-func _on_direct_ip_pressed() -> void:
-	browser_open = false
-	browser_box.visible = false
-	bootstrap.call("_open_join_address_editor")
 
 
 func _join_discovered_host(endpoint_key: String) -> void:
@@ -228,34 +233,57 @@ func _prepare_broadcaster() -> void:
 		discovery_error = "LAN advertising unavailable (error %d)." % error
 
 
-func _maybe_broadcast_host() -> void:
+func _maybe_probe_for_hosts(now: int) -> void:
+	if not listener_ready or now - last_probe_ms < DISCOVERY_INTERVAL_MS:
+		return
+	last_probe_ms = now
+	var query := JSON.stringify({
+		"magic": DISCOVERY_MAGIC,
+		"kind": DISCOVERY_KIND_QUERY,
+	}).to_utf8_buffer()
+	if listener.set_dest_address(BROADCAST_ADDRESS, DISCOVERY_PORT) == OK:
+		listener.put_packet(query)
+
+
+func _maybe_broadcast_host(now: int) -> void:
 	if not broadcaster_ready:
 		_prepare_broadcaster()
-	if not broadcaster_ready:
-		return
-	var now := Time.get_ticks_msec()
-	if now - last_broadcast_ms < BROADCAST_INTERVAL_MS:
+	if not broadcaster_ready or now - last_broadcast_ms < DISCOVERY_INTERVAL_MS:
 		return
 	last_broadcast_ms = now
+	var bytes := _host_advertisement_bytes()
+	if not bytes.is_empty():
+		broadcaster.put_packet(bytes)
+
+
+func _reply_to_discovery_query(address: String, port: int) -> void:
+	if not listener_ready or address.is_empty() or port < 1_024 or port > 65_535:
+		return
+	var bytes := _host_advertisement_bytes()
+	if bytes.is_empty():
+		return
+	if listener.set_dest_address(address, port) == OK:
+		listener.put_packet(bytes)
+
+
+func _host_advertisement_bytes() -> PackedByteArray:
 	var transport := _transport()
 	if transport == null or not transport.is_host():
-		return
+		return PackedByteArray()
 	var signature := String(bootstrap.call("_session_compatibility_signature"))
 	var name := String(bootstrap.get("local_player_name")).strip_edges().left(SessionTransport.MAX_PLAYER_NAME_LENGTH)
-	var charter_id := String(bootstrap.get("selected_charter_id")).left(48)
 	var packet := {
 		"magic": DISCOVERY_MAGIC,
+		"kind": DISCOVERY_KIND_ADVERTISEMENT,
 		"port": transport.bound_port,
 		"name": name,
 		"players": transport.player_count(),
 		"capacity": transport.player_capacity(),
 		"signature": signature,
-		"charter": charter_id,
 		"protocol": SimConfig.PROTOCOL_VERSION,
 	}
 	var bytes := JSON.stringify(packet).to_utf8_buffer()
-	if bytes.size() <= MAX_DISCOVERY_PACKET_BYTES:
-		broadcaster.put_packet(bytes)
+	return bytes if bytes.size() <= MAX_DISCOVERY_PACKET_BYTES else PackedByteArray()
 
 
 func _poll_discovery_packets() -> void:
@@ -265,36 +293,60 @@ func _poll_discovery_packets() -> void:
 	while listener.get_available_packet_count() > 0 and processed < MAX_PACKETS_PER_POLL:
 		var bytes := listener.get_packet()
 		var source_ip := listener.get_packet_ip()
+		var source_port := listener.get_packet_port()
 		processed += 1
 		if bytes.is_empty() or bytes.size() > MAX_DISCOVERY_PACKET_BYTES:
 			continue
 		var decoded: Variant = JSON.parse_string(bytes.get_string_from_utf8())
 		if typeof(decoded) != TYPE_DICTIONARY:
 			continue
-		_accept_discovery_packet(decoded as Dictionary, source_ip)
+		var packet := decoded as Dictionary
+		if String(packet.get("magic", "")) != DISCOVERY_MAGIC:
+			continue
+		var kind := String(packet.get("kind", ""))
+		if kind == DISCOVERY_KIND_QUERY:
+			var transport := _transport()
+			if transport != null and transport.is_host():
+				_reply_to_discovery_query(source_ip, source_port)
+			continue
+		if kind != DISCOVERY_KIND_ADVERTISEMENT:
+			continue
+		_accept_discovery_packet(packet, source_ip)
 
 
 func _accept_discovery_packet(packet: Dictionary, source_ip: String) -> void:
+	var local_signature := String(bootstrap.call("_session_compatibility_signature"))
+	var host := normalized_host(packet, source_ip, local_signature, Time.get_ticks_msec())
+	if host.is_empty():
+		return
+	var endpoint_key := "%s:%d" % [host["address"], host["port"]]
+	discovered_hosts[endpoint_key] = host
+	if discovered_hosts.size() > MAX_DISCOVERED_HOSTS:
+		_remove_oldest_host()
+	host_rows_fingerprint = ""
+
+
+static func normalized_host(packet: Dictionary, source_ip: String, local_signature: String, now_ms: int) -> Dictionary:
 	if String(packet.get("magic", "")) != DISCOVERY_MAGIC:
-		return
+		return {}
+	if String(packet.get("kind", "")) != DISCOVERY_KIND_ADVERTISEMENT:
+		return {}
 	if source_ip.is_empty():
-		return
+		return {}
 	var port := int(packet.get("port", 0))
 	if port < 1_024 or port > 65_535:
-		return
+		return {}
 	var signature := String(packet.get("signature", ""))
-	if not _valid_signature(signature):
-		return
+	if not _valid_signature(signature) or not _valid_signature(local_signature):
+		return {}
 	var players := clampi(int(packet.get("players", 0)), 1, SessionTransport.MAX_PLAYERS)
 	var capacity := clampi(int(packet.get("capacity", 0)), 2, SessionTransport.MAX_PLAYERS)
 	if players > capacity:
-		return
+		return {}
 	var name := String(packet.get("name", "Host")).strip_edges().left(SessionTransport.MAX_PLAYER_NAME_LENGTH)
 	if name.is_empty():
 		name = "Host"
-	var local_signature := String(bootstrap.call("_session_compatibility_signature"))
-	var endpoint_key := "%s:%d" % [source_ip, port]
-	discovered_hosts[endpoint_key] = {
+	return {
 		"address": source_ip,
 		"port": port,
 		"name": name,
@@ -302,27 +354,22 @@ func _accept_discovery_packet(packet: Dictionary, source_ip: String) -> void:
 		"capacity": capacity,
 		"signature": signature,
 		"compatible": signature == local_signature,
-		"charter": String(packet.get("charter", "")).left(48),
 		"protocol": int(packet.get("protocol", 0)),
-		"last_seen_ms": Time.get_ticks_msec(),
+		"last_seen_ms": maxi(0, now_ms),
 	}
-	if discovered_hosts.size() > MAX_DISCOVERED_HOSTS:
-		_remove_oldest_host()
-	host_rows_fingerprint = ""
 
 
-func _valid_signature(signature: String) -> bool:
+static func _valid_signature(signature: String) -> bool:
 	if signature.length() != 64:
 		return false
-	for index: int in signature.length():
+	for index: int in range(signature.length()):
 		var code := signature.unicode_at(index)
 		if not (code >= 48 and code <= 57) and not (code >= 97 and code <= 102):
 			return false
 	return true
 
 
-func _expire_stale_hosts() -> void:
-	var now := Time.get_ticks_msec()
+func _expire_stale_hosts(now: int) -> void:
 	var removed := false
 	for key: Variant in discovered_hosts.keys():
 		var host: Dictionary = discovered_hosts[key]
@@ -351,6 +398,7 @@ func _update_ui() -> void:
 		return
 	if transport.is_host():
 		host_button.text = "HOSTING %d/%d" % [transport.player_count(), transport.player_capacity()]
+		host_button.disabled = false
 		host_button.tooltip_text = "Click twice within the confirmation window to close the host."
 		join_button.disabled = true
 		join_button.text = "JOIN"
@@ -370,6 +418,7 @@ func _update_ui() -> void:
 	else:
 		host_button.text = "HOST"
 		host_button.disabled = false
+		host_button.tooltip_text = "Start a game visible to other FLUX players on this LAN."
 		join_button.disabled = false
 		join_button.text = "JOIN"
 		status_label.text = "Offline · Host or find a game on this Wi-Fi/LAN"
@@ -416,13 +465,10 @@ func _refresh_host_rows() -> void:
 		if compatible:
 			compatible_count += 1
 		var button := Button.new()
-		var charter_id := String(host.get("charter", ""))
-		var charter_label := SessionCharter.display_name(charter_id) if not charter_id.is_empty() else "Farflow"
-		button.text = "%s  ·  %d/%d  ·  %s%s" % [
+		button.text = "%s  ·  %d/%d%s" % [
 			String(host.get("name", "Host")),
 			int(host.get("players", 1)),
 			int(host.get("capacity", 2)),
-			charter_label,
 			"" if compatible else "  ·  DIFFERENT BUILD",
 		]
 		button.disabled = not compatible
@@ -432,3 +478,10 @@ func _refresh_host_rows() -> void:
 		host_rows.add_child(button)
 
 	browser_status_label.text = "%d compatible host%s found" % [compatible_count, "" if compatible_count == 1 else "s"]
+
+
+func _is_visual_capture_run() -> bool:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--capture-") or argument == "--visual-specimen":
+			return true
+	return false

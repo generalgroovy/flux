@@ -49,7 +49,12 @@ function Assert-FluxGodotVersion([string]$GodotBin) {
 }
 
 function Invoke-FluxGodotChecked {
-    param([string]$GodotBin, [string[]]$Arguments, [string]$LogPath)
+    param(
+        [string]$GodotBin,
+        [string[]]$Arguments,
+        [string]$LogPath,
+        [switch]$RejectWarnings
+    )
     $errorPath = "$LogPath.err"
     foreach ($path in @($LogPath, $errorPath)) {
         if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Force }
@@ -65,6 +70,10 @@ function Invoke-FluxGodotChecked {
     if ($process.ExitCode -ne 0) { throw "Godot exited with code $($process.ExitCode)" }
     $bad = $combined | Select-String -Pattern 'SCRIPT ERROR|Parse Error|Compile Error|Failed to load script|Invalid call'
     if ($bad) { throw 'Godot emitted a script/import/runtime error.' }
+    if ($RejectWarnings) {
+        $warnings = $combined | Select-String -Pattern '^(WARNING|ERROR):'
+        if ($warnings) { throw "Godot emitted $($warnings.Count) unexpected warning/error line(s)." }
+    }
 }
 
 function Get-FluxTickRate([int]$Requested) {

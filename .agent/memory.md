@@ -3,6 +3,23 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## 2026-09-02 - warning-clean named verification gates
+
+- `ImageAssetInspector` is the reusable import/export-safe path for PNG/JPEG/WebP
+  validation. It prefers imported `Texture2D` data, falls back to bytes inside
+  `res://` or `user://`, and rejects arbitrary OS paths and non-image content.
+- All five former `Image.load_from_file` validators now use the helper. The same
+  full gate went from 2,649 repeated warnings and about 2.1 MiB stderr to zero
+  warnings and zero stderr without suppression.
+- `scripts\test.cmd -Tier Fast|Full|Release` now names scope explicitly,
+  rejects unexpected Godot warning/error lines, and reports duration plus stderr
+  bytes. Fast passed in 9,852 ms; Full passed in 34,583 ms with 60 suites /
+  17,712 assertions. Release adds Windows package/install/repair/boot and remains
+  subject to the known unsigned-executable policy.
+- O0 and source O1 are complete; O7 has its newline-policy foundation. The next
+  safe optimization is O2: one immutable combat-definition table compiled from
+  validated authored ability content.
+
 ## 2026-09-02 - first-eight Burst baseline and optimization program
 
 - C4 is source-complete: Earth `147`, Fire `146`, Water `148`, Wind `149`, Ice

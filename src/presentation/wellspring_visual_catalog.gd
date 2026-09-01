@@ -209,7 +209,7 @@ func _validate_file(path: String, label: String) -> bool:
 func _validate_image(path: String, expected_size: Vector2i, label: String) -> bool:
 	if not _validate_file(path, label):
 		return false
-	var image := Image.load_from_file(path)
+	var image := ImageAssetInspector.load_image(path)
 	if image == null:
 		return _fail("%s could not be decoded" % label)
 	if image.get_size() != expected_size:

@@ -51,6 +51,15 @@ balance changes.
 | 7 | O5 runtime asset reachability and O10 full-pressure benchmark | Optimize the exact feature-complete acceptance build, not a moving target. |
 | 8 | O4 signed physical Windows proof, O8 human route, C9 package | Finish the honest friend-facing playtest gate. |
 
+## Current optimization state
+
+| Slice | State | Evidence / next boundary |
+|---:|---|---|
+| O0 | **Complete** | Unified/published `main` and compatibility branch; first-eight Burst simulation, truthful captures and current docs are green. |
+| O1 | **Complete in source** | `ImageAssetInspector` removed all 2,649 unsafe-load warnings; Fast and Full gates reject unexpected warnings and report time/stderr. Release invokes package/install/repair/boot and retains the external signing gate. |
+| O7 | **Foundation complete** | `.gitattributes` owns text/binary newline policy; normalize touched files per slice without a repository-wide churn commit. |
+| O2 | **Active next** | Compile validated ability content into one immutable runtime definition table without changing stable commands, snapshots or replay results. |
+
 ## Loop discipline
 
 Each slice begins from a published green rollback point. Focused tests run

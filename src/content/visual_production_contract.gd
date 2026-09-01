@@ -223,7 +223,7 @@ func _validate_present_front_reference(entry: Dictionary, path: String, label: S
 	var expected_hash := String(entry.get("sha256", ""))
 	if expected_hash.length() != 64 or expected_hash != _sha256(path):
 		return _fail("Present v3 front reference hash is invalid: %s" % label)
-	var image := Image.load_from_file(path)
+	var image := ImageAssetInspector.load_image(path)
 	if image == null or image.is_empty():
 		return _fail("Present v3 front reference cannot be decoded: %s" % label)
 	if image.get_size() != Vector2i(256, 256) or image.get_format() != Image.FORMAT_RGBA8:

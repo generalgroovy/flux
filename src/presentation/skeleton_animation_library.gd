@@ -127,7 +127,7 @@ func validate() -> bool:
 			var asset_path := str(body_type.get(path_key, ""))
 			if asset_path.is_empty() or not FileAccess.file_exists(asset_path):
 				return _fail("%s is missing %s" % [body_type_id, path_key])
-			var image := Image.load_from_file(asset_path)
+			var image := ImageAssetInspector.load_image(asset_path)
 			if image == null or image.get_size() != atlas_size:
 				return _fail("%s %s dimensions do not match manifest" % [body_type_id, path_key])
 	return true

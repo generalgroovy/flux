@@ -36,6 +36,18 @@ scripts\install-export-templates.cmd
 scripts\package.cmd Windows
 ```
 
+Developer verification is explicit and warning-clean:
+
+```powershell
+scripts\test.cmd -Tier Fast     # import + 120 Hz boot
+scripts\test.cmd -Tier Full     # Fast + all deterministic suites
+scripts\test.cmd -Tier Release  # Full + Windows package/install/repair/boot
+```
+
+Every tier reports elapsed time and stderr bytes. Unexpected Godot warnings are
+failures; the Release tier honestly remains blocked on this managed machine
+until the generated executable is trusted or signed.
+
 Send only `exports\release\FLUX.exe`. Double-clicking a newer copy stages and
 verifies the new version before atomically switching the installed `FLUX.exe`;
 an interrupted install leaves the previous version selected. The development

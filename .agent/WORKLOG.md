@@ -1,5 +1,35 @@
 # FLUX2 agent worklog
 
+## 2026-09-02 - warning-clean validation and named gates
+
+Engineering outcome:
+
+- Added one `ImageAssetInspector` boundary for imported textures and safe
+  source/user PNG, JPEG and WebP bytes. Skeleton, complete-visual,
+  production-contract, registry and Wellspring validators no longer invoke
+  Godot's export-unsafe `Image.load_from_file` path.
+- The test entrypoint now exposes Fast, Full and Release tiers. Every Godot
+  stage can reject unexpected warning/error lines; each gate reports elapsed
+  time and stderr size. The compatibility `-SkipFullSuite` switch maps to Fast.
+- Release composes the proven source gate with Windows packaging and the
+  clean-install/repair/installed-boot check; it does not hide the managed-host
+  signing blocker.
+
+Verification:
+
+- `scripts\test.ps1 -Tier Fast`: passed import and 120 Hz boot in 9,852 ms,
+  zero stderr bytes.
+- `scripts\test.ps1 -Tier Full`: 60 suites / 17,712 assertions, zero failures,
+  completed in 34,583 ms with zero warnings and zero stderr bytes.
+- Before this slice the same Full gate emitted 2,649 repeated warnings and
+  about 2.1 MiB stderr. No warning filter or exception list was introduced; all
+  direct unsafe image loads were removed.
+
+Next:
+
+- O2 compiles the validated ability catalog into the immutable simulation
+  definition table so combat data has one authored source before C5 chemistry.
+
 ## 2026-09-02 - first-eight comparable Burst baseline
 
 Playable outcome:

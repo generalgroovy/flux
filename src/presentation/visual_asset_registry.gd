@@ -121,7 +121,7 @@ func _validate_icon_group(group_id: String, expected_size: Vector2i, expected_co
 func _validate_image(path: String, expected_size: Vector2i, label: String) -> bool:
 	if path.is_empty() or not FileAccess.file_exists(path):
 		return _fail("%s is missing: %s" % [label, path])
-	var image := Image.load_from_file(path)
+	var image := ImageAssetInspector.load_image(path)
 	if image == null:
 		return _fail("%s could not be decoded" % label)
 	if image.get_size() != expected_size:

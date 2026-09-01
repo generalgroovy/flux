@@ -24,11 +24,11 @@
     "forbid_art_owned_collision": true
   },
   "character_contract": {
-    "style": "compact_expressive_cartoon_pixel",
-    "head_height_ratio": [0.40, 0.45],
+    "style": "mature_compact_expressive_cartoon_pixel",
+    "head_height_ratio": [0.24, 0.30],
     "grounded_cell": [96, 96],
     "grounded_pivot": [48, 84],
-    "gameplay_height_pixels": [44, 68],
+    "gameplay_height_pixels": [44, 76],
     "outline_pixels": [1, 2],
     "material_ramp_colors": [3, 5],
     "separate_ground_shadow": true,

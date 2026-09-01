@@ -14,14 +14,14 @@ physical places rather than a detached menu.
 > **Current playable state:** Windows is the active release target. Three distinct champions,
 > full universal movement foundation, eight playable foundation spells, the
 > Wellspring campus, an authoritative 2–8 player direct-IP Farflow loop, and a
-> packaged one-file Windows installer are working. Eight elemental bursts and
+> packaged one-file Windows player app are working. Eight elemental bursts and
 > the 36-reaction chemistry acceptance slice are the active implementation goal.
 
 ## Get, play, host, join
 
 | Person | One safe path | Result |
 |---|---|---|
-| Windows player | Download and double-click `FLUX2-Windows-Setup.exe` | Hash-verified per-user install, Start Menu shortcut, safe version switch, then play |
+| Windows player | Download and double-click `FLUX.exe` | One hash-verified file installs or updates per-user, repairs if needed, then starts the game |
 | Windows developer | Run `scripts\run.cmd` | Pinned Godot source launch at 120 Hz |
 | Host | Walk east to **Host Farflow**, press interact | Opens authoritative UDP session on port `24872` |
 | Friend | Walk to **Join Farflow**, press interact, type/paste the host address, press Enter | Address is saved locally; join is compatibility-checked with clear refusal on mismatch/full session |
@@ -34,17 +34,17 @@ scripts\install-export-templates.cmd
 scripts\package.cmd Windows
 ```
 
-Send only `exports\release\FLUX2-Windows-Setup.exe`. Re-running a newer setup
-stages and verifies the new version before atomically switching the launcher;
+Send only `exports\release\FLUX.exe`. Double-clicking a newer copy stages and
+verifies the new version before atomically switching the installed `FLUX.exe`;
 an interrupted install leaves the previous version selected. The development
 build is unsigned, so Windows may show a publisher warning or an enterprise
-Device Guard policy may block the installer until a release certificate and
+Device Guard policy may block the unsigned app until a release certificate and
 signing pipeline exist. The portable `exports\release\FLUX2-Windows-x86_64.zip`
 bundle is the fallback for managed test machines; its checksum is listed in
 `exports\release\SHA256SUMS.txt`.
 
 The current unified Windows package is built from `main`; verify the supplied
-installer or portable ZIP against `exports\release\SHA256SUMS.txt` before
+`FLUX.exe` or the portable ZIP against `exports\release\SHA256SUMS.txt` before
 sharing it.
 
 For internet play, the host currently forwards/allows **UDP 24872**. The friend
@@ -65,7 +65,7 @@ channels are not claimed yet; test direct-IP builds only with trusted friends.
 | Area | Now | Next acceptance |
 |---|---|---|
 | Repository | One authoritative Godot runtime; browser runtime retired | Keep docs/content/runtime hashes in one lineage |
-| Lifecycle | Source launch, portable archives, checksums, one-file Windows setup/update/launch | Signed releases, clean uninstall UI, public update channel |
+| Lifecycle | Source launch, portable archives, checksums, one-file Windows install/update/run | Signed releases, clean uninstall UI, public update channel |
 | Wellspring | Nine districts, walk-up stations, practice actors, movement routes | Stronger authored landmarks and compact onboarding |
 | Movement | Full universal foundation at deterministic 120 Hz; normalized eight-way commands, active directional air control/facing, alternating gait contacts, native eight-way jump/slide/roll art, relative gait, and directional evasion cues | Pattern-pressure tuning and player playtest |
 | Combat | Projectile, five-shot fan, beam, spray, field, ricochet, launch and slow; shape-first projectiles are larger and deliberately slower while one fail-closed eight-way delivery contract aligns body, hands and discrete effect art with continuous simulation aim | Comparable data-driven burst spells for the remaining first-eight elements |
@@ -278,7 +278,10 @@ grants hidden reach, evasion, damage or elemental advantage.
 All three retain the same foundation collision radius and the complete universal
 movement grammar. The validated body-profile catalog rejects champion stats
 outside the selected role envelope, so size is asymmetric but never a strict
-upgrade.
+upgrade. Their authored upright silhouettes progress `58 → 68 → 76 px`; this is
+large enough to identify skirmisher, adapter, and anchor at a glance while the
+shared hit radius prevents smaller art from gaining hidden evasion or larger art
+from gaining reach.
 
 Champion atlases contain body and clothing only. The current green runtime has
 authored frames in `S/SE/E/NE/N/NW/W/SW`: front/south faces the camera with
@@ -368,8 +371,8 @@ scripts\smoke-farflow.cmd -Executable exports\windows\flux2.exe
 
 ## Visual system and embedded reference gallery
 
-Runtime art uses an original compact handheld-era proportion language: large
-readable heads, short bodies, stable feet, distinctive ancestry silhouettes,
+Runtime art uses an original mature compact pixel proportion language: smaller
+ordinary heads, clear torsos and limbs, stable feet, distinctive ancestry silhouettes,
 restrained shading, clear bare-hand cast poses, clean shadow/elevation
 separation, and symmetric front/back/mirrored-direction rules. The 640×360 virtual
 pixel composition scales with nearest-neighbor filtering while gameplay camera
@@ -395,15 +398,16 @@ zoom remains configurable from 50–100%.
 <details>
 <summary><strong>Canonical three-body system</strong></summary>
 
-| Small | Middle | Large |
-|---|---|---|
-| ![Small body reference](reference/art/character_baselines/gbc_v1/size_2_small.png) | ![Middle body reference](reference/art/character_baselines/gbc_v1/size_3_medium.png) | ![Large body reference](reference/art/character_baselines/gbc_v1/size_4_large.png) |
+The production/redesign order is fixed from smallest to largest: S. Wayne
+(`small`) → Oh Tipi (`middle`) → The Red Baron (`large`).
+
+![Small-to-large mature proportion reference](assets/concept/foundation-proportion-reference-small-to-large-v1.png)
 
 The retained `size_1_tiny`, `size_2_small`, `size_3_medium`, `size_4_large`,
 and `size_5_huge` path fragments belong to the legacy visual archive; only
 `small`, `middle`, and `large` are authored runtime body types.
 
-![Eight-direction body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_eight_v11.png)
+![Eight-direction body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_eight_v12.png)
 
 This atlas is a reusable body/clothing layer for all three foundation champions;
 spells, auras, shadows, projectiles, environment and equipment are composed
@@ -412,11 +416,15 @@ independently. Each champion's `atlas_row` is authored in
 atlas packs eight direction columns under each champion. Every grounded,
 empty-hand cast, hit/recovery, jump, slide, and roll state has native eight-way
 art; walk and sprint add a second opposite contact row for true leg alternation.
-The Red Baron is the shared material-and-ink reference: a deterministic builder
+The Red Baron is the shared anatomy, material, and ink reference: a deterministic builder
 derives a restrained one-pixel exterior ink from his darkest visible material
-clusters and applies it cell-by-cell without recoloring, rescaling, or bleeding
-between champions. Identity palettes, ancestry features and the three authored
-body silhouettes remain distinct.
+clusters and applies it cell-by-cell without recoloring or bleeding between
+champions. A bounded source-time pass first removes direction-dependent scale
+drift, then processes `small`, `middle`, and `large`, keeping the 58/68/76 px
+upright heights, runtime scale `1.0`, and shared feet pivot while reducing
+oversized heads on the first two templates. Hair,
+fins, horns, identity palettes, ancestry features and the three authored body
+silhouettes remain distinct.
 An independent two-stroke directional evasion cue still reinforces actual
 travel/facing during invulnerability frames.
 During free locomotion the body faces travel; while combat intent is active it

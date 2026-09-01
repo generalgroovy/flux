@@ -10,6 +10,12 @@ func run() -> int:
 	equal(catalog.role("large"), "anchor", "large champions trade speed for staying power")
 	equal(int(catalog.shared_rules.get("competitive_budget", 0)), 100, "every size uses the same competitive budget")
 	equal(String(catalog.shared_rules.get("collision_radius_policy", "")), "shared_foundation_radius", "size cannot create a hidden collision advantage")
+	equal(catalog.shared_rules.get("visual_template_order", []), ["small", "middle", "large"], "body templates are promoted from smallest to largest")
+	var visual_heights: Dictionary = catalog.shared_rules.get("visual_template_height_pixels", {})
+	equal(int(visual_heights.get("small", 0)), 58, "small body owns the compact 58px silhouette")
+	equal(int(visual_heights.get("middle", 0)), 68, "middle body owns the balanced 68px silhouette")
+	equal(int(visual_heights.get("large", 0)), 76, "large body owns the bounded 76px silhouette")
+	equal(String(catalog.shared_rules.get("visual_size_authority", "")), "presentation_only_no_hidden_reach_evasion_or_damage", "visual size cannot grant hidden combat authority")
 	var movement: Array = catalog.shared_rules.get("universal_movement", [])
 	for action_id: String in ["jump", "slide", "roll", "air_dodge", "wave_dash", "wall_kick"]:
 		check(movement.has(action_id), "%s remains available to every size" % action_id)

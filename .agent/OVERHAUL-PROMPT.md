@@ -93,7 +93,7 @@ visual quality, balance, platform parity or remote play without direct evidence.
 
 ## Immediate eight-direction movement/animation iteration
 
-Continue from the complete v11 foundation atlas: preserve the validated resolver
+Continue from the complete v12 foundation atlas: preserve the validated resolver
 for `south`, `south_east`, `east`, `north_east`, `north`, `north_west`, `west`,
 and `south_west`, the two walk/sprint contacts, and native eight-way evasion art
 while expanding one complete action family at a time on future champions and body contracts. Travel direction and facing

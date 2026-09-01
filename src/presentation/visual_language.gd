@@ -85,13 +85,13 @@ func validate() -> bool:
 		if not bool(perspective.get(flag, false)):
 			return _fail("Perspective safety flag is required: %s" % flag)
 	var character: Dictionary = data.get("character_contract", {})
-	if String(character.get("style", "")) != "compact_expressive_cartoon_pixel":
-		return _fail("Character style must remain compact expressive cartoon pixel art")
-	if not _numeric_array_equals(character.get("head_height_ratio", []), [0.4, 0.45]):
+	if String(character.get("style", "")) != "mature_compact_expressive_cartoon_pixel":
+		return _fail("Character style must remain mature compact expressive cartoon pixel art")
+	if not _numeric_array_equals(character.get("head_height_ratio", []), [0.24, 0.30]):
 		return _fail("Character head/body readability ratio changed")
 	if _vector2i(character.get("grounded_cell", [])) != Vector2i(96, 96) or _vector2i(character.get("grounded_pivot", [])) != Vector2i(48, 84):
 		return _fail("Character grounded cell/pivot changed outside migration")
-	if not _numeric_array_equals(character.get("gameplay_height_pixels", []), [44.0, 68.0]) \
+	if not _numeric_array_equals(character.get("gameplay_height_pixels", []), [44.0, 76.0]) \
 		or not _numeric_array_equals(character.get("outline_pixels", []), [1.0, 2.0]) \
 		or not _numeric_array_equals(character.get("material_ramp_colors", []), [3.0, 5.0]):
 		return _fail("Character gameplay-scale pixel budget changed")

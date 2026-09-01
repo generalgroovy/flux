@@ -17,7 +17,7 @@ foreach ($launcherTextFile in $launcherTextFiles) {
         throw "Windows launcher source must stay ASCII-only to avoid code-page mojibake: $launcherTextFile"
     }
 }
-if (-not $Installer) { $Installer = Join-Path $repoRoot 'exports\release\FLUX2-Windows-Setup.exe' }
+if (-not $Installer) { $Installer = Join-Path $repoRoot 'exports\release\FLUX.exe' }
 $Installer = [System.IO.Path]::GetFullPath($Installer)
 if (-not (Test-Path -LiteralPath $Installer -PathType Leaf)) { throw "Missing installer: $Installer" }
 if ($BaselineInstaller) {
@@ -25,6 +25,18 @@ if ($BaselineInstaller) {
     if (-not (Test-Path -LiteralPath $BaselineInstaller -PathType Leaf)) { throw "Missing baseline installer: $BaselineInstaller" }
     if ((Get-FluxFileSha256 $BaselineInstaller) -eq (Get-FluxFileSha256 $Installer)) {
         throw 'Baseline and current installers are identical; an update test requires two distinct payloads.'
+    }
+}
+
+function Start-FluxBootstrapProcess([string]$Path, [string[]]$Arguments) {
+    try {
+        return Start-Process -FilePath $Path -ArgumentList $Arguments -PassThru -Wait
+    }
+    catch {
+        if ($_.Exception.Message -match 'Application Control policy has blocked') {
+            throw 'Windows Application Control blocked the unsigned FLUX development build. The package and PCK can still be verified locally, but managed-machine EXE acceptance requires a trusted release-signing certificate.'
+        }
+        throw
     }
 }
 
@@ -41,7 +53,7 @@ New-Item -ItemType Directory -Path $testRoot -Force | Out-Null
 try {
     $baselineVersion = ''
     if ($BaselineInstaller) {
-        $baseline = Start-Process -FilePath $BaselineInstaller -ArgumentList @('--install-only', '--no-shortcuts', "--install-root=$installRoot") -PassThru -Wait
+        $baseline = Start-FluxBootstrapProcess $BaselineInstaller @('--install-only', '--no-shortcuts', "--install-root=$installRoot")
         if ($baseline.ExitCode -ne 0) { throw "Baseline installer run failed with exit code $($baseline.ExitCode)" }
         $baselineState = Join-Path $installRoot 'current.txt'
         if (-not (Test-Path -LiteralPath $baselineState -PathType Leaf)) { throw 'Baseline installer did not select a current version.' }
@@ -49,12 +61,13 @@ try {
         if (-not $baselineVersion) { throw 'Baseline installer wrote an empty current version.' }
     }
 
-    $install = Start-Process -FilePath $Installer -ArgumentList @('--install-only', '--no-shortcuts', "--install-root=$installRoot") -PassThru -Wait
+    $install = Start-FluxBootstrapProcess $Installer @('--install-only', '--no-shortcuts', "--install-root=$installRoot")
     if ($install.ExitCode -ne 0) { throw "Clean installer run failed with exit code $($install.ExitCode)" }
 
     $state = Join-Path $installRoot 'current.txt'
     if (-not (Test-Path -LiteralPath $state -PathType Leaf)) { throw 'Installer did not atomically select a current version.' }
-    if (-not (Test-Path -LiteralPath (Join-Path $installRoot 'FLUX Launcher.exe') -PathType Leaf)) { throw 'Installer did not place the reusable per-user launcher.' }
+    if (-not (Test-Path -LiteralPath (Join-Path $installRoot 'FLUX.exe') -PathType Leaf)) { throw 'Installer did not place the reusable per-user FLUX executable.' }
+    if (Test-Path -LiteralPath (Join-Path $installRoot 'FLUX Launcher.exe') -PathType Leaf) { throw 'Installer retained the obsolete launcher filename.' }
     $version = (Get-Content -LiteralPath $state | Select-Object -First 1).Trim()
     if (-not $version) { throw 'Installer wrote an empty current version.' }
     if ($baselineVersion) {
@@ -71,7 +84,7 @@ try {
         if (-not (Test-Path -LiteralPath $required -PathType Leaf)) { throw "Installed payload is incomplete: $required" }
     }
 
-    $repair = Start-Process -FilePath $Installer -ArgumentList @('--install-only', '--no-shortcuts', '--repair', "--install-root=$installRoot") -PassThru -Wait
+    $repair = Start-FluxBootstrapProcess $Installer @('--install-only', '--no-shortcuts', '--repair', "--install-root=$installRoot")
     if ($repair.ExitCode -ne 0) { throw "Repair run failed with exit code $($repair.ExitCode)" }
 
     $boot = Start-Process -FilePath $game -ArgumentList @('--headless', '--quit-after', '3', '--fixed-fps', '120', '--', '--tick-rate=120') -WorkingDirectory $versionRoot -PassThru -Wait

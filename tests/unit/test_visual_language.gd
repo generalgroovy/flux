@@ -24,7 +24,7 @@ func _test_repository_language() -> void:
 	equal(String(perspective.get("projection")), "top_down_cardinal_with_tilted_facades", "perspective preserves cardinal-friendly floors")
 	check(bool(perspective.get("forbid_diamond_grid")), "misleading diamond navigation is explicitly forbidden")
 	var character: Dictionary = language.data.get("character_contract", {})
-	check(VisualLanguage._numeric_array_equals(character.get("head_height_ratio"), [0.4, 0.45]), "cartoon champions reserve a large expressive head read")
+	check(VisualLanguage._numeric_array_equals(character.get("head_height_ratio"), [0.24, 0.30]), "cartoon champions reserve a mature compact ordinary-head read")
 	equal(character.get("required_silhouette_states"), ["south", "east", "north", "jump", "cast", "hit"], "gameplay silhouette review is bounded")
 	check(language.content_hash().length() == 64, "visual language exposes a stable content hash")
 

@@ -5,6 +5,9 @@
   "shared_rules": {
     "competitive_budget": 100,
     "collision_radius_policy": "shared_foundation_radius",
+    "visual_template_order": ["small", "middle", "large"],
+    "visual_template_height_pixels": {"small": 58, "middle": 68, "large": 76},
+    "visual_size_authority": "presentation_only_no_hidden_reach_evasion_or_damage",
     "universal_movement": ["walk", "sprint", "jump", "double_jump", "slide", "slide_jump", "roll", "air_dodge", "wave_dash", "wall_kick", "vault", "superglide", "fast_fall", "wall_skim"]
   },
   "profiles": {

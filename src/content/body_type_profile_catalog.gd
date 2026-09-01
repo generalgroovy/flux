@@ -57,8 +57,15 @@ func validate() -> bool:
 	profiles = profiles_value
 	if int(shared_rules.get("competitive_budget", 0)) != 100 \
 		or String(shared_rules.get("collision_radius_policy", "")) != "shared_foundation_radius" \
+		or shared_rules.get("visual_template_order", []) != BODY_TYPES \
+		or String(shared_rules.get("visual_size_authority", "")) != "presentation_only_no_hidden_reach_evasion_or_damage" \
 		or (shared_rules.get("universal_movement", []) as Array).size() < 10:
 		return _fail("body types require one equal budget, shared collision policy and universal movement access")
+	var visual_heights: Dictionary = shared_rules.get("visual_template_height_pixels", {})
+	var expected_visual_heights := {"small": 58, "middle": 68, "large": 76}
+	for body_type: String in BODY_TYPES:
+		if not visual_heights.has(body_type) or int(visual_heights[body_type]) != int(expected_visual_heights[body_type]):
+			return _fail("body-type visual height progression is unsupported: %s" % body_type)
 	if profiles.keys().size() != BODY_TYPES.size():
 		return _fail("body-type catalog must define exactly small, middle and large")
 	for body_type: String in BODY_TYPES:

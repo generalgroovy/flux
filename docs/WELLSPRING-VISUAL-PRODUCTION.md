@@ -7,8 +7,9 @@ simulation authority.
 Runtime status: this document preserves the older race/exemplar inventory for
 migration and provenance only. The current runtime contract is defined by
 `content/visual/foundation_champion_visuals_v1.json` and uses exactly three body
-types: `small`, `middle`, and `large`; the body-only Oh Tipi/S. Wayne/Red Baron
-V9 atlas is the active foundation candidate. Nothing in this legacy catalog may add a fourth
+types: `small`, `middle`, and `large`; the body-only S. Wayne/Oh Tipi/Red Baron
+V12 atlas is the active foundation candidate and is rebuilt in that
+small-to-large template order. Nothing in this legacy catalog may add a fourth
 body type or reintroduce baked spells, shadows, props or environment pixels.
 
 ## Production status

@@ -79,7 +79,7 @@ champion's frame-complete sprite manifest is finished.
 `src/presentation/wellspring_character_sprite.gd` loads the selected Oh Tipi or
 S. Wayne compatibility atlas and selects its semantic action, eight-direction
 region, and clock-derived frame. The active cartoon presenter instead validates
-the 768×1536 foundation body atlas and selects dedicated eight-direction art
+the 768×2880 foundation body atlas and selects dedicated eight-direction art
 for grounded, empty-hand cast, hit/recovery, walk, and sprint. Airborne, slide,
 and roll retain a declared nearest-cardinal compatibility lane until their
 diagonal art is reviewed. Build that
@@ -274,7 +274,7 @@ scripts\package.cmd -Target All
 ```
 
 The Windows package step additionally writes the single-file friend artifact
-`exports\release\FLUX2-Windows-Setup.exe`. It embeds the checksummed portable
+`exports\release\FLUX.exe`. It embeds the checksummed portable
 payload, installs into `%LOCALAPPDATA%\FLUX`, retains the prior selected version
 for rollback, and never requires elevation. Verify its clean-install, forced
 repair and installed-export boot path with:

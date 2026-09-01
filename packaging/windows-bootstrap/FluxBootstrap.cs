@@ -16,6 +16,8 @@ namespace Flux.Bootstrap
     internal static class Program
     {
         private const string ProductName = "FLUX";
+        private const string LauncherFileName = "FLUX.exe";
+        private const string LegacyLauncherFileName = "FLUX Launcher.exe";
         private const string PayloadResource = "Flux.Payload.zip";
         private const string PayloadVersion = "__PAYLOAD_VERSION__";
         private const string PayloadSha256 = "__PAYLOAD_SHA256__";
@@ -48,7 +50,7 @@ namespace Flux.Bootstrap
             {
                 if (!createdNew)
                 {
-                    MessageBox.Show("FLUX setup is already running.", ProductName,
+                    MessageBox.Show("FLUX is already checking, installing, or starting.", ProductName,
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return 3;
                 }
@@ -76,8 +78,8 @@ namespace Flux.Bootstrap
                 {
                     window.Close();
                     MessageBox.Show(
-                        "FLUX was not changed because setup could not finish safely.\n\n" + error.Message,
-                        "FLUX setup", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        "FLUX could not install or update safely. Your previous playable version is still selected.\n\n" + error.Message,
+                        ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return 1;
                 }
             }
@@ -280,7 +282,7 @@ namespace Flux.Bootstrap
 
         private static void InstallLauncherAndShortcuts(string root, bool createShortcuts)
         {
-            string launcher = Path.Combine(root, "FLUX Launcher.exe");
+            string launcher = Path.Combine(root, LauncherFileName);
             string currentExecutable = Process.GetCurrentProcess().MainModule.FileName;
             if (!String.Equals(Path.GetFullPath(currentExecutable), Path.GetFullPath(launcher), StringComparison.OrdinalIgnoreCase))
             {
@@ -293,6 +295,14 @@ namespace Flux.Bootstrap
                     File.Replace(temporary, launcher, backup, true);
                 }
                 else File.Move(temporary, launcher);
+            }
+
+            string legacyLauncher = Path.Combine(root, LegacyLauncherFileName);
+            if (File.Exists(legacyLauncher) &&
+                !String.Equals(Path.GetFullPath(currentExecutable), Path.GetFullPath(legacyLauncher), StringComparison.OrdinalIgnoreCase))
+            {
+                try { File.Delete(legacyLauncher); }
+                catch { /* A previous launcher may still be closing; a later run retries. */ }
             }
 
             if (!createShortcuts) return;

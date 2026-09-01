@@ -27,11 +27,12 @@ thresholds and elevation transitions stay visible. Facades may rise up to 0.85
 of their readable footprint and foreground structures must cut away before they
 hide legal information.
 
-Champions use compact cartoon proportions at gameplay scale: a large expressive
-head (40–45% of total body height), short sturdy limbs, body-and-clothing-only
+Champions use mature compact cartoon proportions at gameplay scale: an ordinary
+head/skull at 24–30% of total body height, clear torso and limbs, body-and-clothing-only
 pixels, 1–2-pixel outlines, 3–5 colors per material and a separate grounded
-shadow. The current green body atlas covers four cardinals; final acceptance
-covers `S/SE/E/NE/N/NW/W/SW` for both movement and facing. South/front faces the
+shadow. Hair, fins, horns and ancestry crowns are silhouette features rather
+than cranium size. The current body atlas covers `S/SE/E/NE/N/NW/W/SW` for both
+movement and facing. South/front faces the
 camera symmetrically, north/back is centered, sides are profiles, and diagonal
 views preserve ancestry/clothing asymmetry. Travel and aim remain continuous;
 presentation resolves them independently so diagonal free movement and
@@ -90,21 +91,22 @@ Oh Tipi and S. Wayne before further environment beautification.
 
 ## V2 foundation champions and minimal motion
 
-Oh Tipi and S. Wayne now draw from one promoted 384×1536 body-only runtime atlas
-with 96×96 cells and a 48×84 ground pivot. Each champion owns four semantic
-core rows—grounded, jump, empty-hand cast and hit/recovery—plus walk contact,
-sprint drive, low slide and tucked roll; every row owns
-dedicated south/east/north/west art. The four generation sources remain
-provenance-only and are excluded from exports; the quantized runtime atlas is
-about 155 KB. Atlas, decoded-pixel and all four source hashes are pinned by
+S. Wayne, Oh Tipi and The Red Baron now draw from one promoted 768×2880
+body-only runtime atlas with 96×96 cells and a 48×84 ground pivot. Each champion
+owns grounded, jump, empty-hand cast, hit/recovery, walk, sprint, slide and roll
+art in all eight directions, plus alternate walk/sprint contacts. Source art
+remains provenance-only and is excluded from exports. Atlas and decoded-pixel
+hashes are pinned by
 `content/visual/foundation_champion_visuals_v1.json` and
 `assets/sprites/champions_v3/foundation/provenance.json`; the manifest also
 requires the canonical body type and explicitly excluded baked layers.
 
-`scripts/build_cardinal_champion_atlas.py` is the deterministic promotion
-boundary. It proportionally slices the 1254px 4×4 core and movement matte sources, removes only
-edge-connected matte, keeps one scale per champion across all actions, aligns
-the shared pivot and packs champion-major/state-minor rows. This prevents pose
+`scripts/build_cardinal_champion_atlas.py` and
+`scripts/build_red_baron_foundation_atlas.py` are the deterministic promotion
+boundary. They proportionally slice the source boards, remove only
+edge-connected matte, keep one scale per champion across all actions, align
+the shared pivot, apply the Red-Baron-led mature proportion grammar in strict
+`small` → `middle` → `large` order, and pack champion-major/state-minor rows. This prevents pose
 changes from changing apparent body scale and lets artists replace one source
 sheet without adding renderer branches.
 

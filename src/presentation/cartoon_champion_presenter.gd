@@ -3,10 +3,11 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_champion_visuals_v1.json"
-const EXPECTED_ID := "foundation-champion-visuals-v11-red-baron-style"
+const EXPECTED_ID := "foundation-champion-visuals-v12-mature-body-templates"
 const EXPECTED_AUTHORITY := "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere"
 const REQUIRED_FOUNDATION := ["oh_tipi", "s_wayne", "red_baron"]
-const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v11.png"
+const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v12.png"
+const PROPORTION_REFERENCE_PATH := "res://assets/concept/foundation-proportion-reference-small-to-large-v1.png"
 const EXPECTED_BODY_TYPES: Array[String] = ["small", "middle", "large"]
 const EXPECTED_CARDINAL_DIRECTIONS: Array[String] = ["south", "east", "north", "west"]
 const EXPECTED_DIRECTIONS: Array[String] = [
@@ -91,7 +92,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	if not parsed is Dictionary:
 		return _fail("Cartoon champion recipe root must be an object")
 	var data: Dictionary = parsed
-	if int(data.get("schema_version", -1)) != 11 or String(data.get("id", "")) != EXPECTED_ID:
+	if int(data.get("schema_version", -1)) != 12 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Cartoon champion recipe identity is unsupported")
 	if String(data.get("authority", "")) != EXPECTED_AUTHORITY:
 		return _fail("Cartoon champion recipes must remain presentation-only")
@@ -383,6 +384,11 @@ func _validate_body_template_contract(value: Variant) -> bool:
 		return _fail("Cartoon champion body template contract must be an object")
 	var contract: Dictionary = value
 	if contract.get("types", []) != EXPECTED_BODY_TYPES \
+		or contract.get("template_build_order", []) != EXPECTED_BODY_TYPES \
+		or String(contract.get("proportion_reference", "")) != PROPORTION_REFERENCE_PATH \
+		or contract.get("ordinary_head_ratio_range", []) != [0.24, 0.30] \
+		or String(contract.get("head_measurement_policy", "")) != "ordinary_cranium_excludes_hair_fins_horns_and_ancestry_crowns" \
+		or String(contract.get("anatomy_reference_champion", "")) != "red_baron" \
 		or _vector2i(contract.get("shared_cell", [])) != Vector2i(96, 96) \
 		or _vector2i(contract.get("shared_feet_pivot", [])) != Vector2i(48, 84) \
 		or contract.get("runtime_scale", []) != [1.0, 1.0]:
@@ -392,7 +398,7 @@ func _validate_body_template_contract(value: Variant) -> bool:
 		return _fail("Cartoon champion size lock must remain presentation-only and invariant")
 	var templates: Dictionary = contract.get("templates", {})
 	var expected_exemplars := {"small": "s_wayne", "middle": "oh_tipi", "large": "red_baron"}
-	var expected_heights := {"small": 58, "middle": 68, "large": 68}
+	var expected_heights := {"small": 58, "middle": 68, "large": 76}
 	for body_type: String in EXPECTED_BODY_TYPES:
 		if not templates.has(body_type) or not templates[body_type] is Dictionary:
 			return _fail("Cartoon champion body template is missing: %s" % body_type)
@@ -611,7 +617,7 @@ func _validate_recipe(champion_id: String, value: Variant) -> bool:
 		return _fail("Cartoon champion atlas row is unsupported: %s" % champion_id)
 	var height := int(definition.get("height", 0))
 	var ratio := float(definition.get("head_ratio", 0.0))
-	if height < 44 or height > 68 or ratio < 0.40 or ratio > 0.45:
+	if height < 44 or height > 76 or ratio < 0.24 or ratio > 0.30:
 		return _fail("Cartoon champion proportions exceed the gameplay contract: %s" % champion_id)
 	var affinities: Array = definition.get("affinities", [])
 	if affinities.size() < 2 or affinities.size() > 3:

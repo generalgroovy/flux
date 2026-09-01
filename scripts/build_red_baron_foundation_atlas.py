@@ -1,12 +1,15 @@
-"""Extend the reviewed foundation atlas with Red Baron's body-only rows.
+"""Build the three-template foundation atlas with Red Baron's body grammar.
 
 The source board contains one transparent pose for each of FLUX's fixed eight
 directions. This deterministic builder normalizes those poses to the shared
 96px cell and feet pivot, then derives bounded action contacts without ever
 resizing the character between states. Pose, contact and lean may change;
-canonical body mass, scale and feet pivot may not. Spell, aura, shadow,
-equipment, and world pixels remain excluded. Existing champion rows are copied
-without resampling.
+canonical body mass, scale and feet pivot may not. The final bounded proportion
+pass is deliberately evaluated in reusable-template order: small S. Wayne,
+middle Oh Tipi, then large Red Baron. It reduces the first two champions'
+oversized head treatment while keeping their authored total height and the
+shared feet pivot. Spell, aura, shadow, equipment, and world pixels remain
+excluded.
 """
 
 from __future__ import annotations
@@ -28,6 +31,33 @@ TARGET_HEIGHT = 68
 MAX_WIDTH = 90
 STYLE_REFERENCE_CHAMPION = "red_baron"
 OUTLINE_RADIUS = 1
+TEMPLATE_BUILD_ORDER = ("small", "middle", "large")
+TEMPLATE_ROWS = {
+    "small": 1,   # S. Wayne
+    "middle": 0,  # Oh Tipi
+    "large": 2,   # The Red Baron
+}
+TEMPLATE_EXEMPLARS = {
+    "small": "s_wayne",
+    "middle": "oh_tipi",
+    "large": "red_baron",
+}
+UPRIGHT_STATES = {
+    "grounded", "jump", "cast", "hit", "walk", "sprint", "walk_b", "sprint_b",
+}
+PROPORTION_PROFILES = {
+    # Fractions include hair/ancestry crowns; the manifest's ordinary-head
+    # ratio excludes those silhouette features. Each remap preserves the full
+    # cell's visible height and its bottom alignment.
+    "small": {"source_head_fraction": 0.50, "target_head_fraction": 0.37, "head_width_scale": 0.82},
+    "middle": {"source_head_fraction": 0.55, "target_head_fraction": 0.41, "head_width_scale": 0.84},
+    "large": {"source_head_fraction": 0.42, "target_head_fraction": 0.42, "head_width_scale": 1.00},
+}
+TEMPLATE_STATE_HEIGHTS = {
+    "small": {"upright": 58, "slide": 42, "roll": 41},
+    "middle": {"upright": 68, "slide": 52, "roll": 44},
+    "large": {"upright": 76, "slide": 76, "roll": 76},
+}
 
 
 def proportional_bounds(index: int, count: int, extent: int) -> tuple[int, int]:
@@ -119,6 +149,94 @@ def action_cell(pose: Image.Image, state: str, direction_index: int) -> Image.Im
     return cell
 
 
+def remap_mature_proportions(cell: Image.Image, template: str) -> Image.Image:
+    """Reduce head dominance without changing total pose height or feet."""
+    profile = PROPORTION_PROFILES[template]
+    if template == "large":
+        return cell.copy()
+    alpha = cell.getchannel("A").point(lambda value: 255 if value >= 48 else 0)
+    bounds = alpha.getbbox()
+    if bounds is None:
+        raise ValueError(f"{template} template contains an empty animation cell")
+    left, top, right, bottom = bounds
+    width = right - left
+    height = bottom - top
+    if width < 4 or height < 12:
+        raise ValueError(f"{template} template cell is too small to proportion safely: {bounds}")
+
+    source_head_height = max(3, round(height * profile["source_head_fraction"]))
+    source_head_height = min(source_head_height, height - 4)
+    target_head_height = max(3, round(height * profile["target_head_fraction"]))
+    target_head_height = min(target_head_height, height - 4)
+    split = top + source_head_height
+    head = cell.crop((left, top, right, split))
+    body = cell.crop((left, split, right, bottom))
+
+    target_head_width = max(3, round(width * profile["head_width_scale"]))
+    head = head.resize((target_head_width, target_head_height), Image.Resampling.NEAREST)
+    # The lower band expands only into space released by the head. Overall pose
+    # height, cell, centre line and ground alignment remain stable.
+    target_body_height = height - target_head_height + 1
+    body = body.resize((width, target_body_height), Image.Resampling.NEAREST)
+
+    output = Image.new("RGBA", cell.size)
+    body_y = bottom - target_body_height
+    output.alpha_composite(body, (PIVOT[0] - width // 2, body_y))
+    output.alpha_composite(head, (PIVOT[0] - target_head_width // 2, top))
+    return output
+
+
+def normalize_state_height(cell: Image.Image, target_height: int, template: str, state: str) -> Image.Image:
+    """Remove legacy source-sheet scale drift while preserving state elevation."""
+    alpha = cell.getchannel("A").point(lambda value: 255 if value >= 48 else 0)
+    bounds = alpha.getbbox()
+    if bounds is None:
+        raise ValueError(f"{template}/{state} template contains an empty animation cell")
+    left, top, right, bottom = bounds
+    width = right - left
+    height = bottom - top
+    target_width = max(3, round(width * target_height / height))
+    if target_width > CELL - 2:
+        raise ValueError(f"{template}/{state} cannot fit canonical height {target_height}: {bounds}")
+    pose = cell.crop(bounds).resize((target_width, target_height), Image.Resampling.NEAREST)
+    output = Image.new("RGBA", cell.size)
+    output.alpha_composite(pose, (PIVOT[0] - target_width // 2, bottom - target_height))
+    return output
+
+
+def normalize_body_templates(atlas: Image.Image) -> Image.Image:
+    """Apply and validate the canonical small-to-large production order."""
+    output = atlas.copy()
+    for template in TEMPLATE_BUILD_ORDER:
+        champion_row = TEMPLATE_ROWS[template]
+        for state_index, state in enumerate(STATE_ORDER):
+            for direction_index in range(DIRECTION_COUNT):
+                bounds = (
+                    direction_index * CELL,
+                    (champion_row * len(STATE_ORDER) + state_index) * CELL,
+                    (direction_index + 1) * CELL,
+                    (champion_row * len(STATE_ORDER) + state_index + 1) * CELL,
+                )
+                cell = atlas.crop(bounds)
+                if cell.getchannel("A").getbbox() is None:
+                    raise ValueError(
+                        f"{template}/{TEMPLATE_EXEMPLARS[template]}/{state}/{direction_index} is empty"
+                    )
+                height_kind = state if state in ("slide", "roll") else "upright"
+                cell = normalize_state_height(
+                    cell,
+                    TEMPLATE_STATE_HEIGHTS[template][height_kind],
+                    template,
+                    state,
+                )
+                if state in UPRIGHT_STATES:
+                    cell = remap_mature_proportions(cell, template)
+                output.paste((0, 0, 0, 0), bounds)
+                output.alpha_composite(cell, (bounds[0], bounds[1]))
+        print(f"proportioned {template}:{TEMPLATE_EXEMPLARS[template]}")
+    return output
+
+
 def red_baron_outline_colour(atlas: Image.Image, red_baron_y: int) -> tuple[int, int, int, int]:
     """Derive one shared ink colour from Red Baron's darkest visible clusters."""
     reference = atlas.crop((0, red_baron_y, atlas.width, atlas.height)).convert("RGBA")
@@ -181,6 +299,7 @@ def build(base_path: Path, source_path: Path, output_path: Path) -> None:
             cell = action_cell(pose, state, direction_index)
             atlas.alpha_composite(cell, (direction_index * CELL, red_baron_y + state_index * CELL))
 
+    atlas = normalize_body_templates(atlas)
     atlas = harmonize_champion_style(atlas, red_baron_y)
 
     alpha = atlas.getchannel("A").point(lambda value: 255 if value >= 48 else 0)
@@ -195,6 +314,7 @@ def build(base_path: Path, source_path: Path, output_path: Path) -> None:
     print(
         f"built {output_path} {atlas.width}x{atlas.height}; "
         f"champions=oh_tipi,s_wayne,red_baron; states={','.join(STATE_ORDER)}; "
+        f"template_order={','.join(TEMPLATE_BUILD_ORDER)}; "
         f"style_reference={STYLE_REFERENCE_CHAMPION}; outline={OUTLINE_RADIUS}px"
     )
 

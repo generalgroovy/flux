@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = Get-FluxRepoRoot
 if (-not $Payload) { $Payload = Join-Path $repoRoot 'exports\release\FLUX2-Windows-x86_64.zip' }
-if (-not $Output) { $Output = Join-Path $repoRoot 'exports\release\FLUX2-Windows-Setup.exe' }
+if (-not $Output) { $Output = Join-Path $repoRoot 'exports\release\FLUX.exe' }
 $Payload = [System.IO.Path]::GetFullPath($Payload)
 $Output = [System.IO.Path]::GetFullPath($Output)
 if (-not (Test-Path -LiteralPath $Payload -PathType Leaf)) { throw "Missing Windows payload: $Payload" }
@@ -57,9 +57,14 @@ if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $Output -PathType Leaf)
 }
 
 $releaseRoot = Split-Path -Parent $Output
+$legacyOutput = Join-Path $releaseRoot 'FLUX2-Windows-Setup.exe'
+if ((Test-Path -LiteralPath $legacyOutput -PathType Leaf) -and
+    -not [System.IO.Path]::GetFullPath($legacyOutput).Equals($Output, [System.StringComparison]::OrdinalIgnoreCase)) {
+    Remove-Item -LiteralPath $legacyOutput -Force
+}
 $manifest = Join-Path $releaseRoot 'SHA256SUMS.txt'
 $lines = Get-ChildItem -LiteralPath $releaseRoot -File | Where-Object { $_.FullName -ne $manifest } | Sort-Object Name | ForEach-Object {
     "$(Get-FluxFileSha256 $_.FullName)  $($_.Name)"
 }
 [System.IO.File]::WriteAllLines($manifest, [string[]]$lines, [System.Text.UTF8Encoding]::new($false))
-Write-Output "PASS: Windows one-file installer/updater/launcher $Output ($version)"
+Write-Output "PASS: one Windows file installs, updates, repairs, and starts FLUX: $Output ($version)"

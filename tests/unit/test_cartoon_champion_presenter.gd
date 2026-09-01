@@ -21,7 +21,7 @@ func _test_repository_recipes() -> void:
 	check(presenter.atlas != null, "reviewed foundation runtime atlas loads")
 	check(presenter.motion != null and presenter.motion.content_hash.length() == 64, "editable minimal-motion recipes load with champion art")
 	check(presenter.content_hash.length() == 64, "champion presentation content has a stable hash")
-	equal(presenter.atlas_hash, "1a03066760e9cb5e8be814a005880b19e5aba062640f48fe10eeee0a5585e9d2", "style-unified three-champion eight-way action atlas hash is pinned")
+	equal(presenter.atlas_hash, "640abbf46c2442506e12a31542c9a0ad375d32f53062e433d0787b88e920bd38", "mature-proportion three-champion eight-way action atlas hash is pinned")
 	equal(String(presenter.shared_style_contract.get("reference_champion", "")), "red_baron", "Red Baron defines the shared compact material and outline grammar")
 	equal(int(presenter.shared_style_contract.get("outline_radius_pixels", 0)), 1, "shared character ink remains a bounded one-pixel treatment")
 	equal(presenter.body_templates.keys(), ["small", "middle", "large"], "three reusable body-size templates load in canonical order")
@@ -43,8 +43,8 @@ func _test_repository_recipes() -> void:
 		var recipe := presenter.recipe(champion_id)
 		var height := int(recipe.get("height", 0))
 		var ratio := float(recipe.get("head_ratio", 0.0))
-		check(height >= 44 and height <= 68, "%s stays inside gameplay height" % champion_id)
-		check(ratio >= 0.40 and ratio <= 0.45, "%s keeps the compact cartoon head ratio" % champion_id)
+		check(height >= 44 and height <= 76, "%s stays inside gameplay height" % champion_id)
+		check(ratio >= 0.24 and ratio <= 0.30, "%s keeps the mature compact ordinary-head ratio" % champion_id)
 		check((recipe.get("affinities", []) as Array).size() in [2, 3], "%s exposes only a bounded aura palette" % champion_id)
 		equal(String(recipe.get("casting_origin", "")), "hands", "%s casts visibly through hands" % champion_id)
 		equal(String(recipe.get("equipment", "")), "body_clothing_only", "%s keeps body and clothing separate from effects" % champion_id)
@@ -84,11 +84,19 @@ func _test_repository_recipes() -> void:
 	equal(presenter.source_region("red_baron", state), Rect2(192, 1920, 96, 96), "The Red Baron east grounded selects the large foundation row")
 	equal(String(presenter.recipe("red_baron").get("body_type", "")), "large", "The Red Baron is the first promoted large body")
 	var atlas_image := presenter.atlas.get_image()
-	for state_index: int in range(CartoonChampionPresenter.EXPECTED_ATLAS_STATES.size()):
-		for direction_index: int in range(CartoonChampionPresenter.EXPECTED_DIRECTIONS.size()):
-			var region := Rect2i(direction_index * 96, (20 + state_index) * 96, 96, 96)
-			var used := atlas_image.get_region(region).get_used_rect()
-			check(used.size.y >= 67 and used.size.y <= 71, "large template preserves visible height plus shared ink for %s/%s" % [CartoonChampionPresenter.EXPECTED_ATLAS_STATES[state_index], CartoonChampionPresenter.EXPECTED_DIRECTIONS[direction_index]])
+	var template_height_contract := {
+		"oh_tipi": [70, 70, 70, 70, 70, 70, 54, 46, 70, 70],
+		"s_wayne": [60, 60, 60, 60, 60, 60, 44, 43, 60, 60],
+		"red_baron": [78, 78, 78, 78, 78, 78, 78, 78, 78, 78],
+	}
+	for champion_index: int in range(CartoonChampionPresenter.REQUIRED_FOUNDATION.size()):
+		var champion_id: String = CartoonChampionPresenter.REQUIRED_FOUNDATION[champion_index]
+		var state_heights: Array = template_height_contract[champion_id]
+		for state_index: int in range(CartoonChampionPresenter.EXPECTED_ATLAS_STATES.size()):
+			for direction_index: int in range(CartoonChampionPresenter.EXPECTED_DIRECTIONS.size()):
+				var region := Rect2i(direction_index * 96, (champion_index * 10 + state_index) * 96, 96, 96)
+				var used := atlas_image.get_region(region).get_used_rect()
+				equal(used.size.y, int(state_heights[state_index]), "%s template height is direction-invariant for %s/%s" % [champion_id, CartoonChampionPresenter.EXPECTED_ATLAS_STATES[state_index], CartoonChampionPresenter.EXPECTED_DIRECTIONS[direction_index]])
 	var cardinal_cases := [
 		{"facing": Vector2i(0, 1000), "state": "south", "column": 0},
 		{"facing": Vector2i(1000, 0), "state": "east", "column": 2},

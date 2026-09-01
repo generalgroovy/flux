@@ -9,23 +9,30 @@ elements, auras, projectiles, shadows, environments, tools, and equipment remain
 independent runtime layers, so a pose or spell can be replaced without redrawing
 the other.
 
-The active runtime is `runtime_atlas_eight_v11.png`: 768×2880 RGBA, 96×96
+The active runtime is `runtime_atlas_eight_v12.png`: 768×2880 RGBA, 96×96
 cells, eight fixed direction columns, ten state/contact rows per champion and
-pivot `(48,84)`. It is built in two deterministic stages:
+pivot `(48,84)`. The three reusable body templates are rebuilt in strict
+smallest-to-largest order: S. Wayne (`small`), Oh Tipi (`middle`), then The Red
+Baron (`large`). It is built in two deterministic stages:
 
 ```powershell
 python scripts/build_cardinal_champion_atlas.py assets/sprites/champions_v3/foundation/source_cardinal_oh_tipi_v4.png assets/sprites/champions_v3/foundation/source_cardinal_s_wayne_v4.png assets/sprites/champions_v3/foundation/runtime_atlas_eight_v8.png --oh-tipi-movement assets/sprites/champions_v3/foundation/source_movement_oh_tipi_v5.png --s-wayne-movement assets/sprites/champions_v3/foundation/source_movement_s_wayne_v5.png --oh-tipi-diagonal-core assets/sprites/champions_v3/foundation/source_diagonal_core_oh_tipi_v6.png --s-wayne-diagonal-core assets/sprites/champions_v3/foundation/source_diagonal_core_s_wayne_v6.png --oh-tipi-diagonal-locomotion assets/sprites/champions_v3/foundation/source_diagonal_locomotion_oh_tipi_v7.png --s-wayne-diagonal-locomotion assets/sprites/champions_v3/foundation/source_diagonal_locomotion_s_wayne_v7.png --oh-tipi-locomotion-phase-b assets/sprites/champions_v3/foundation/source_cardinal_locomotion_phase_b_oh_tipi_v8.png --s-wayne-locomotion-phase-b assets/sprites/champions_v3/foundation/source_cardinal_locomotion_phase_b_s_wayne_v8.png --oh-tipi-diagonal-actions assets/sprites/champions_v3/foundation/source_diagonal_actions_oh_tipi_v8.png --s-wayne-diagonal-actions assets/sprites/champions_v3/foundation/source_diagonal_actions_s_wayne_v8.png
-python scripts/build_red_baron_foundation_atlas.py assets/sprites/champions_v3/foundation/runtime_atlas_eight_v8.png assets/concept/red-baron-eight-direction-source-v1.png assets/sprites/champions_v3/foundation/runtime_atlas_eight_v11.png
+python scripts/build_red_baron_foundation_atlas.py assets/sprites/champions_v3/foundation/runtime_atlas_eight_v8.png assets/concept/red-baron-eight-direction-source-v1.png assets/sprites/champions_v3/foundation/runtime_atlas_eight_v12.png
 ```
 
-The second stage adds The Red Baron at an authored 68 px body height, preserves
-all champions at runtime scale `1.00`, then derives one restrained exterior ink
-from the darkest visible Red Baron material clusters. The one-pixel pass is
-bounded to each cell: it cannot recolor, resize, merge or bleed silhouettes.
+The second stage adds The Red Baron from his authored source poses, removes
+legacy direction/source-sheet scale drift, applies a bounded source-time
+anatomy pass in `small`, `middle`, `large` order, preserves 58/68/76 px authored
+upright heights and runtime scale `1.00`, then derives one
+restrained exterior ink from the darkest visible Red Baron material clusters.
+The proportion pass reduces head dominance on upright S. Wayne and Oh Tipi
+poses without changing total pose height, cell or feet alignment; slide and
+roll keep their authored tucked silhouettes. The one-pixel ink pass is bounded
+to each cell and cannot recolor, merge or bleed silhouettes.
 Current file SHA-256 is
-`1a03066760e9cb5e8be814a005880b19e5aba062640f48fe10eeee0a5585e9d2`;
+`640abbf46c2442506e12a31542c9a0ad375d32f53062e433d0787b88e920bd38`;
 Godot-decoded RGBA SHA-256 is
-`3f8175d534d42fe5325c5cba86668381216c17f2a4f14a77b4e168db0a7c0faa`.
+`75eb623c9ee8ed4559bc8d1edf481d12d87470501c003b83dd279c40abd53c89`.
 
 ## Reproducible layout
 

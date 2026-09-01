@@ -1,5 +1,46 @@
 # FLUX2 agent worklog
 
+## 2026-09-02 - first-eight comparable Burst baseline
+
+Playable outcome:
+
+- Earth, Fire, Water, Wind, Ice, Charge, Light and Dark now each expose one
+  globally weaveable five-lane Burst with stable wire identity. The family
+  shares exact geometry, economy, timing and damage so chemistry can be tested
+  without a disguised projectile advantage.
+- Element-specific runtime sheets, colors, HUD names/icons and chemistry
+  operations keep identity distinct while simulation still owns continuous aim,
+  ordered children, collision, resources, damage and outcomes.
+- A capture-only wire-list diagnostic can temporarily place any unique subset
+  of proven spells into the twelve positions. It uses the ordinary placement
+  invariant and never persists or changes player defaults.
+- The delivery/architecture optimization program now explicitly sequences
+  warning-clean tooling, single-source combat definitions, incremental
+  composition seams, bounded chemistry, asset reachability, signed Windows
+  proof, human playtest evidence and full-pressure 120 Hz budgets.
+
+Verification:
+
+- `scripts\test.ps1`: 58 suites / 17,684 assertions, zero failures; input-router
+  coverage increased to 525 assertions and elemental-Burst coverage contributes
+  352 assertions.
+- Windows import and source boot pass at the authoritative 120 Hz tick under
+  protocol 32. Ability content hash prefix is `1ddc55c73a6f`; Burst atlas
+  presentation prefix is `fa35baa91783`.
+- Eight non-overwriting 42-frame 1280x720 captures passed under
+  `.godot/visual-captures/elemental-burst-o0-v1-{element}`. At common frame 29,
+  all share readable lanes and collision scale while retaining element-specific
+  projectile sheets and HUD identity; every log records the correct wire and
+  ordered child IDs `1000..1004`.
+
+Known limits / next:
+
+- Full-suite stderr still contains 2,649 repeated `Image.load_from_file`
+  warnings (about 2.1 MiB). O1 replaces the unsafe validation path with one
+  reusable buffer/resource helper and makes unexpected warnings fail the named
+  test tiers before C5 chemistry begins.
+- Signed-wrapper and physical two-PC release evidence remain external gates.
+
 ## 2026-09-01 - mature body templates and one-file Windows lifecycle
 
 Playable outcome:

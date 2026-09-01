@@ -25,7 +25,7 @@ func _test_catalog() -> void:
 	equal(first.content_hash, second.content_hash, "catalog hash is stable across reloads")
 	equal(first.elements_by_id.size(), 12, "all twelve thematic element families are declared")
 	equal(first.active_element_ids(), ["charge", "dark", "earth", "fire", "ice", "light", "water", "wind"], "only the first eight families are runtime-enabled")
-	equal(first.playable_spell_ids(), ["arc-primary", "cinder-fan", "cinderbolt", "eclipse-disc", "pocket-eclipse", "rillshot", "rimewake", "tideline", "vector-lance"], "only end-to-end spells enter the playable selector")
+	equal(first.playable_spell_ids(), ["arc-burst", "arc-primary", "cinder-fan", "cinderbolt", "eclipse-burst", "eclipse-disc", "gale-burst", "pocket-eclipse", "prism-burst", "rill-burst", "rillshot", "rime-burst", "rimewake", "stone-burst", "tideline", "vector-lance"], "only end-to-end spells enter the playable selector")
 	for gated_id: String in ["spirit", "chaos", "gravity", "time"]:
 		check(not bool((first.elements_by_id[gated_id] as Dictionary)["runtime_enabled"]), "%s remains explicitly gated" % gated_id)
 	equal(String(first.data.get("affinity_rule", "")), "aligned_active_cost_discount_capped_by_affinity_strength", "ability catalog declares weighted affinity discount rule")
@@ -48,6 +48,19 @@ func _test_catalog() -> void:
 		content_fan_angles.append(int(angle))
 	equal(content_fan_angles, CombatTuning.CINDERFAN_ANGLES_DEGREES, "Cinder Fan content owns the exact symmetric five-lane contract")
 	equal(int(first.ability("cinder-fan")["flux_cost"]) * 1000, CombatTuning.CINDERFAN_FLUX_COST, "Cinder Fan has an exact positive Flux decision cost")
+	var expected_bursts := {
+		"earth": "stone-burst", "fire": "cinder-fan", "water": "rill-burst", "wind": "gale-burst",
+		"ice": "rime-burst", "charge": "arc-burst", "light": "prism-burst", "dark": "eclipse-burst",
+	}
+	for element_id: String in AbilityCatalog.FIRST_EIGHT_ELEMENTS:
+		var burst: Dictionary = first.ability(expected_bursts[element_id])
+		var burst_angles: Array[int] = []
+		for angle: Variant in burst.get("projectile_angles_degrees", []):
+			burst_angles.append(int(angle))
+		equal(String(burst.get("element", "")), element_id, "%s owns one Burst identity" % element_id)
+		equal(String(burst.get("delivery_kernel", "")), "burst", "%s uses the shared Burst delivery kernel" % element_id)
+		equal(int(burst.get("flux_cost", 0)) * 1000, CombatTuning.CINDERFAN_FLUX_COST, "%s Burst keeps the shared positive Flux cost" % element_id)
+		equal(burst_angles, [-24, -12, 0, 12, 24], "%s Burst keeps the shared five-lane geometry" % element_id)
 	equal(int(first.ability("tideline")["wire_id"]), CombatTuning.TIDELINE_WIRE_ID, "Tideline wire matches compiled Oh Tipi kit")
 	equal(int(first.ability("tideline")["flux_cost"]) * 1000, CombatTuning.TIDELINE_FLUX_COST, "Tideline Flux cost matches compiled behavior")
 	equal(int(first.ability("tideline")["startup_ms"]), CombatTuning.TIDELINE_STARTUP_MS, "Tideline startup matches compiled behavior")

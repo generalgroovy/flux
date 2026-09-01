@@ -3,6 +3,35 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## 2026-09-02 - first-eight Burst baseline and optimization program
+
+- C4 is source-complete: Earth `147`, Fire `146`, Water `148`, Wind `149`, Ice
+  `150`, Charge `151`, Light `152` and Dark `153` use one positive-Flux,
+  five-lane Burst contract at `-24,-12,0,12,24` degrees. All share economy,
+  timing, speed, radius, lifetime and damage; element changes presentation and
+  the future chemistry payload only.
+- The global Spell Loom exposes sixteen runtime spells over twelve equipped
+  positions. A capture-only, non-persistent wire override exercises out-of-weave
+  spells through ordinary proven-spell placement without changing defaults.
+- Eight truthful 42-frame 1280x720/120 Hz Red Baron captures are under
+  `.godot/visual-captures/elemental-burst-o0-v1-{element}`; the common frame-29
+  contact sheet shows identical lanes with distinct elemental sheets and HUD
+  identity. Each log records five ordered child IDs and the correct wire.
+- `scripts\test.ps1`: 58 suites / 17,684 assertions, zero failures. Import and
+  independent source boot pass at 120 Hz, protocol 32; ability hash prefix is
+  `1ddc55c73a6f` and Burst presentation prefix is `fa35baa91783`.
+- `.agent/OPTIMIZATION-IMPLEMENTATION.md` now defines O0-O10 explicitly:
+  checkpoint integrity, warning-clean test tiers, single-source combat data,
+  incremental bootstrap decomposition, Windows signing, asset reachability,
+  generated current truth, line endings, human playtest evidence, bounded
+  chemistry and full-pressure 120 Hz budgets.
+- The full suite remains green but emits 2,649 repeated export-unsafe image-load
+  warnings and roughly 2.1 MiB of stderr. O1 is the next implementation slice;
+  it must remove the causes rather than suppress output.
+
+Next: publish O0, then implement one reusable import-safe image inspection
+helper and warning-clean test tiers before beginning the C5 reaction catalog.
+
 ## 2026-09-01 - mature small/middle/large champion foundation
 
 - Foundation atlas V12 is the production body/clothing template for S. Wayne,

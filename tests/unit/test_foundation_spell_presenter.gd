@@ -17,13 +17,13 @@ func _test_repository_profiles() -> void:
 	check(catalog.load_from_file("res://content/abilities/foundation_abilities_v1.json"), "ability catalog loads for spell presentation")
 	var presenter := FoundationSpellPresenter.new()
 	check(presenter.configure(language, catalog), "foundation spell presentation validates: %s" % presenter.last_error)
-	equal(presenter.profiles_by_id.size(), 7, "every promoted champion spell has one visual profile")
+	equal(presenter.profiles_by_id.size(), 14, "every promoted champion spell and first-eight Burst has one visual profile")
 	equal(presenter.animation_skeletons.skeletons.size(), 4, "foundation spells share four reusable delivery skeletons")
 	check(presenter.animation_skeleton_hash.length() == 64, "foundation spell presentation exposes the skeleton content hash")
 	check(presenter.direction_contract_hash.length() == 64, "foundation spell presentation exposes the shared direction content hash")
 	equal(String(presenter.animation_skeletons.phase_for("projectile", 0.10).get("cue", "")), "origin_ring", "projectile startup exposes the shared hand-gather cue")
 	equal(String(presenter.animation_skeletons.phase_for("projectile", 0.25).get("cue", "")), "release_flash", "projectile release exposes the shared forward-snap cue")
-	equal(FoundationSpellPresenter.STARTUPS.size(), 7, "foundation spells own seven distinct startup silhouettes")
+	equal(FoundationSpellPresenter.STARTUPS.size(), 7, "foundation spells own seven delivery-readable startup silhouettes")
 	check(presenter.content_hash.length() == 64, "foundation spell presentation has a stable content hash")
 	var observed_startups: Dictionary[String, bool] = {}
 	for profile_id: String in FoundationSpellPresenter.REQUIRED_IDS:
@@ -33,7 +33,11 @@ func _test_repository_profiles() -> void:
 		equal(String(profile.get("element")), String(ability.get("element")), "%s visual element matches simulation content" % profile_id)
 		equal(String((presenter.animation_skeletons.skeletons[String(profile.get("skeleton_id", ""))] as Dictionary).get("shape", "")), String(profile.get("shape", "")), "%s uses the matching delivery skeleton" % profile_id)
 		observed_startups[String(profile.get("startup"))] = true
-	equal(observed_startups.size(), 7, "each live spell startup remains visually distinct")
+	equal(observed_startups.size(), 7, "Burst variants share one shape-first startup while other deliveries stay distinct")
+	for burst_id: String in FoundationSpellPresenter.BURST_IDS:
+		var burst_profile: Dictionary = presenter.profiles_by_id[burst_id]
+		equal(String(burst_profile.get("startup", "")), "elemental_burst", "%s reuses the same five-lane startup geometry" % burst_id)
+		equal(String(burst_profile.get("silhouette", "")), "burst_mote", "%s reuses the same Burst silhouette contract" % burst_id)
 
 
 func _test_shared_direction_contract() -> void:

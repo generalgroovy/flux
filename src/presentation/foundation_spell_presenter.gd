@@ -3,13 +3,14 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_spell_visuals_v1.json"
-const EXPECTED_ID := "foundation-spell-visuals-v3-cinderfan"
+const EXPECTED_ID := "foundation-spell-visuals-v4-first-eight-burst"
 const EXPECTED_AUTHORITY := "presentation only; simulation owns spell membership, geometry, timing, collision, resources, damage, control and outcomes"
-const REQUIRED_IDS := ["rillshot", "cinderbolt", "cinder-fan", "tideline", "rimewake", "eclipse-disc", "pocket-eclipse"]
-const STARTUPS := ["gathered_drop", "banked_coal", "kindled_fan", "rising_fan", "frost_sigil", "orbiting_crescents", "paired_focus"]
-const SILHOUETTES := ["droplet", "ember_spear", "wave_fan", "crystal_wake", "eclipse_disc", "eclipse_beam"]
-const TRAILS := ["none", "split_rill", "cinder_forks", "curling_lanes", "orbit_echo", "paired_boundary"]
-const IMPACTS := ["splash_ring", "ash_burst", "breaker_arc", "freeze_star", "crescent_break", "revealed_diamond"]
+const REQUIRED_IDS := ["rillshot", "cinderbolt", "cinder-fan", "stone-burst", "rill-burst", "gale-burst", "rime-burst", "arc-burst", "prism-burst", "eclipse-burst", "tideline", "rimewake", "eclipse-disc", "pocket-eclipse"]
+const BURST_IDS := ["stone-burst", "cinder-fan", "rill-burst", "gale-burst", "rime-burst", "arc-burst", "prism-burst", "eclipse-burst"]
+const STARTUPS := ["gathered_drop", "banked_coal", "elemental_burst", "rising_fan", "frost_sigil", "orbiting_crescents", "paired_focus"]
+const SILHOUETTES := ["droplet", "ember_spear", "burst_mote", "wave_fan", "crystal_wake", "eclipse_disc", "eclipse_beam"]
+const TRAILS := ["none", "split_rill", "cinder_forks", "burst_wake", "curling_lanes", "orbit_echo", "paired_boundary"]
+const IMPACTS := ["splash_ring", "ash_burst", "burst_break", "breaker_arc", "freeze_star", "crescent_break", "revealed_diamond"]
 
 var language: VisualLanguage
 var data: Dictionary = {}
@@ -62,7 +63,7 @@ func validate(catalog: AbilityCatalog) -> bool:
 	profiles_by_id.clear()
 	if not direction_contract.is_valid():
 		return _fail("Foundation spell presentation requires the validated shared direction contract")
-	if int(data.get("schema_version", -1)) != 2 or String(data.get("id", "")) != EXPECTED_ID:
+	if int(data.get("schema_version", -1)) != 3 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Foundation spell presentation identity is unsupported")
 	if String(data.get("authority", "")) != EXPECTED_AUTHORITY:
 		return _fail("Foundation spell presentation must remain presentation-only")
@@ -76,6 +77,7 @@ func validate(catalog: AbilityCatalog) -> bool:
 	if not profiles is Array or (profiles as Array).size() != REQUIRED_IDS.size():
 		return _fail("Foundation spell presentation must define one profile for every live foundation spell")
 	var claimed_startups: Dictionary[String, bool] = {}
+	var burst_elements: Dictionary[String, bool] = {}
 	for value: Variant in profiles:
 		if not value is Dictionary:
 			return _fail("Foundation spell profile must be an object")
@@ -95,17 +97,31 @@ func validate(catalog: AbilityCatalog) -> bool:
 			or String(animation_skeletons.skeletons[skeleton_id].get("shape", "")) != String(profile.get("shape", "")):
 			return _fail("Foundation spell visual has no matching animation skeleton: %s" % profile_id)
 		var startup := String(profile.get("startup", ""))
-		if startup not in STARTUPS or claimed_startups.has(startup) \
+		var is_burst := profile_id in BURST_IDS
+		if startup not in STARTUPS or (claimed_startups.has(startup) and not is_burst) \
 			or String(profile.get("silhouette", "")) not in SILHOUETTES \
 			or String(profile.get("trail", "")) not in TRAILS \
 			or String(profile.get("impact", "")) not in IMPACTS:
 			return _fail("Foundation spell visual vocabulary is invalid: %s" % profile_id)
+		if is_burst:
+			var element_id := String(profile.get("element", ""))
+			if String(ability.get("delivery_kernel", "")) != "burst" \
+				or String(profile.get("delivery_kernel", "")) != "burst" \
+				or startup != "elemental_burst" \
+				or String(profile.get("silhouette", "")) != "burst_mote" \
+				or String(profile.get("trail", "")) != "burst_wake" \
+				or String(profile.get("impact", "")) != "burst_break" \
+				or burst_elements.has(element_id):
+				return _fail("First-eight Burst visuals must share geometry and keep unique element identity: %s" % profile_id)
+			burst_elements[element_id] = true
 		claimed_startups[startup] = true
 		profiles_by_id[profile_id] = profile
 		profiles_by_wire[wire_id] = profile
 	for profile_id: String in REQUIRED_IDS:
 		if not profiles_by_id.has(profile_id):
 			return _fail("Foundation spell visual is missing: %s" % profile_id)
+	if burst_elements.size() != BURST_IDS.size():
+		return _fail("Foundation spell visuals require every first-eight Burst element")
 	return true
 
 
@@ -175,7 +191,7 @@ func draw_startup(
 			canvas.draw_circle(coal, coal_radius, Color(base, 0.76))
 			canvas.draw_line(position + side * 7.0, coal - direction * 2.0, Color(bright, 0.72), 2.0)
 			canvas.draw_line(position - side * 7.0, coal - direction * 2.0, Color(bright, 0.72), 2.0)
-		"kindled_fan":
+		"elemental_burst":
 			var reach := 16.0 + progress * 15.0
 			for offset: float in [-0.418879, -0.209440, 0.0, 0.209440, 0.418879]:
 				var lane := direction.rotated(offset)
@@ -276,6 +292,13 @@ func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int,
 			for side_value: float in [-1.0, 1.0]:
 				canvas.draw_line(position - direction * 5.0, position - direction * 14.0 + side * side_value * 7.0, Color(dark, 0.58), 2.0)
 			canvas.draw_circle(position + direction * 2.0, maxf(2.0, radius * 0.34), Color(bright, 0.92))
+		"burst_mote":
+			var tip := position + direction * (radius + 5.0)
+			var tail := position - direction * (radius + ProjectilePresentationMotion.trail_length(projectile, reduced_effects))
+			var mote := PackedVector2Array([tip, position + side * radius, tail, position - side * radius])
+			canvas.draw_colored_polygon(mote, base)
+			canvas.draw_polyline(_closed(mote), bright, 2.0, false)
+			canvas.draw_circle(position, maxf(2.0, radius * 0.34), Color(bright, 0.90))
 		_:
 			return false
 	canvas.draw_arc(position, radius, 0.0, TAU, 16, Color(bright, 0.58 if not reduced_effects else 0.70), 1.5)
@@ -369,7 +392,12 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 		canvas.draw_line(position + Vector2(10.0, 2.0), position + Vector2(17.0 + phase * 8.0, -7.0), Color(base, opacity * 0.72), 2.0)
 		return true
 	if event_type == "projectile_hit":
-		if String(profile.get("impact", "")) == "splash_ring":
+		if String(profile.get("impact", "")) == "burst_break":
+			for index: int in range(5):
+				var burst_direction := Vector2.from_angle(TAU * float(index) / 5.0 - PI * 0.5)
+				canvas.draw_line(position + burst_direction * 4.0, position + burst_direction * (12.0 + phase * 20.0), Color(bright if index % 2 == 0 else base, opacity), 2.0)
+			canvas.draw_arc(position, 7.0 + phase * 10.0, 0.0, TAU, 16, Color(dark, opacity * 0.62), 2.0)
+		elif String(profile.get("impact", "")) == "splash_ring":
 			var splash_radius := 10.0 + phase * 30.0
 			canvas.draw_arc(position, splash_radius, 0.0, TAU, 24, Color(base, opacity * 0.78), 2.0)
 			canvas.draw_arc(position, splash_radius * 0.72, -2.8, -0.2, 18, Color(bright, opacity), 3.0)

@@ -26,8 +26,12 @@ analog movement/aim, normalized digital diagonals and simulation authority
 remain unchanged. Cinder Fan now supplies the deterministic readable five-shot
 acceptance, and all three champions share a cell-bounded exterior ink derived
 from The Red Baron's material language without palette or scale replacement.
-The next outcome is one mechanically comparable burst for each remaining
-first-eight element, followed by the bounded 36-pair chemistry runtime.
+The eight mechanically comparable first-eight Bursts are source-green and have
+truthful 120 Hz comparison evidence. The immediate outcome is a clean published
+O0 checkpoint, followed by the bounded 36-pair chemistry runtime. Apply the
+explicit O0–O10 design, architecture, release, asset, testing and performance
+acceptance rules from `.agent/OPTIMIZATION-IMPLEMENTATION.md` at their assigned
+seams; do not turn them into a detached rewrite.
 
 Make the Wellspring and GUI match the charm, density, readable perspective and
 material richness of the supplied gameplay reference while remaining wholly

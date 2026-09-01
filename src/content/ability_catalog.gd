@@ -12,6 +12,8 @@ const MATERIAL_OPERATIONS: Array[String] = ["none", "heat", "cool", "wet", "char
 const RUNTIME_STATUSES: Array[String] = ["playable", "catalog_only"]
 const CADENCE_TIER_IDS: Array[String] = ["pressure", "tempo", "control"]
 const MAX_PROJECTILE_PATTERN_LANES: int = 9
+const FIRST_EIGHT_ELEMENTS: Array[String] = ["earth", "fire", "water", "wind", "ice", "charge", "light", "dark"]
+const BURST_ANGLES: Array[int] = [-24, -12, 0, 12, 24]
 
 var data: Dictionary = {}
 var last_error: String = ""
@@ -166,6 +168,8 @@ func validate() -> bool:
 		ability_ids_by_wire[wire_id] = ability_id
 	if abilities_by_id.is_empty():
 		return _fail("ability catalog must not be empty")
+	if not _validate_first_eight_bursts():
+		return false
 	content_hash = CanonicalContent.sha256(data)
 	if content_hash.length() != 64:
 		return _fail("ability catalog hash failed")
@@ -191,6 +195,44 @@ static func _valid_projectile_angles(value: Variant) -> bool:
 			return false
 		previous = angle
 	return int(angles[angles.size() / 2]) == 0
+
+
+func _validate_first_eight_bursts() -> bool:
+	var bursts_by_element: Dictionary = {}
+	for ability_id: String in abilities_by_id:
+		var ability: Dictionary = abilities_by_id[ability_id]
+		if not ability.has("delivery_kernel"):
+			continue
+		if String(ability.get("delivery_kernel", "")) != "burst":
+			return _fail("ability declares an unsupported delivery kernel: %s" % ability_id)
+		var element_id := String(ability.get("element", ""))
+		if element_id not in FIRST_EIGHT_ELEMENTS or bursts_by_element.has(element_id):
+			return _fail("first-eight Burst elements must be unique and complete: %s" % element_id)
+		if String(ability.get("shape", "")) != "projectile" \
+			or String(ability.get("delivery", "")) != "aimed" \
+			or String(ability.get("impact", "")) != "damage" \
+			or String(ability.get("residue", "")) != "none" \
+			or String(ability.get("runtime_status", "")) != "playable" \
+			or String(ability.get("slot_kind", "")) != "active" \
+			or String(ability.get("cadence_tier", "")) != "tempo" \
+			or bool(ability.get("material_runtime_enabled", true)):
+			return _fail("first-eight Burst delivery contract drifted: %s" % ability_id)
+		for field: String in ["points", "affinity_discount", "flux_cost", "cooldown_ms", "startup_ms", "recovery_ms"]:
+			var expected: int = int({"points": 5, "affinity_discount": 1, "flux_cost": 20, "cooldown_ms": 900, "startup_ms": 150, "recovery_ms": 160}[field])
+			if int(ability.get(field, -1)) != expected:
+				return _fail("first-eight Burst economy must remain comparable: %s/%s" % [ability_id, field])
+		var angles: Array[int] = []
+		for angle: Variant in ability.get("projectile_angles_degrees", []):
+			angles.append(int(angle))
+		if angles != BURST_ANGLES:
+			return _fail("first-eight Burst geometry must remain identical: %s" % ability_id)
+		bursts_by_element[element_id] = ability_id
+	if bursts_by_element.size() != FIRST_EIGHT_ELEMENTS.size():
+		return _fail("ability catalog requires exactly one comparable Burst for every first-eight element")
+	for element_id: String in FIRST_EIGHT_ELEMENTS:
+		if not bursts_by_element.has(element_id):
+			return _fail("ability catalog is missing the %s Burst" % element_id)
+	return true
 
 
 func ability(ability_id: String) -> Dictionary:

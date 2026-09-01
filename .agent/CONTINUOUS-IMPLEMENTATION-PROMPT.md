@@ -4,7 +4,7 @@ Use this prompt as the standing handoff for every implementation agent. Read it
 with `README.md`, `SPECIFICATION.md`, `.agent/VISUAL-OVERHAUL.md`,
 `.agent/OVERHAUL-IMPLEMENTATION.md`, `.agent/OVERHAUL-PROMPT.md`,
 `docs/VISUAL-DIRECTION.md`, `docs/OVERHAUL-PLAN.md`, `.agent/memory.md`,
-`.agent/BACKLOG.md` and the newest entries in `.agent/WORKLOG.md`; when they
+`.agent/BACKLOG.md`, `.agent/OPTIMIZATION-IMPLEMENTATION.md` and the newest entries in `.agent/WORKLOG.md`; when they
 disagree, preserve tested runtime truth and update stale prose in the same slice.
 
 ## Current frontier and hard order
@@ -17,10 +17,10 @@ easier to enumerate:
 1. **Readable bullet-pattern pressure — complete.** Preserve Cinder Fan's fixed
    ordered angles, bounded entities/work/packets, visible owner, single-hit
    protection and deliberate evasion lanes at every supported zoom.
-2. **First-eight burst library — active.** Instantiate one comparable positive-Flux
-   burst for Earth, Fire, Water, Wind, Ice, Charge, Light and Dark through the
-   global 3×4 Loom; element changes identity/chemistry, never hidden geometry or
-   automatic damage.
+2. **First-eight burst library — complete in source.** One comparable
+   positive-Flux burst for Earth, Fire, Water, Wind, Ice, Charge, Light and Dark
+   exists through the global 3×4 Loom with truthful 120 Hz comparison evidence;
+   preserve its geometry/economy baseline while chemistry is implemented.
 3. **Element chemistry.** Promote all 36 symmetric first-eight reactions through
    a fail-closed catalog, bounded exposure/contact, shared spatial primitives,
    readable lifecycle, reset, replay, replication and route-safety evidence.
@@ -87,8 +87,8 @@ not runtime art, collision geometry or permission to ship generated pixels.
 | 1 | Gameplay/movement completion — complete foundation | Universal eight-way movement, chaining, intangibility, recovery and routes are green at the authoritative 120 Hz tick. |
 | 2 | Natural reusable animation and environment — complete foundation | Accepted actions use editable state-driven motion; the Wellspring composes validated reusable environment modules over authoritative routes. |
 | 3 | Readable five-shot pattern — complete | Fixed ordered fan, positive cost, bounded entities/work/network, explicit owner and movement-safe escape lanes. |
-| 4 | First-eight burst library — active | Comparable Earth/Fire/Water/Wind/Ice/Charge/Light/Dark bursts are globally weaveable and visually distinct. |
-| 5 | Live element chemistry | Promote all reactions in bounded worldbone-safe vertical slices with deterministic work budgets, reset, replay, replication and shape-first cues. |
+| 4 | First-eight burst library — complete in source | Comparable Earth/Fire/Water/Wind/Ice/Charge/Light/Dark bursts are globally weaveable and visually distinct. |
+| 5 | Live element chemistry — active | Promote all reactions in bounded worldbone-safe vertical slices with deterministic work budgets, reset, replay, replication and shape-first cues. |
 | 6 | One-step Windows play | A friend runs one obvious installer without admin/dev tools, enters Wellspring, hosts or joins through one short in-world flow, and every quit path leaves no child process; exact commit/content IDs and checksums remain visible. |
 | 7 | In-world player codex and expression | Canonical translucent overview plus an eight-way character expression wheel remain readable, controller-friendly and visibility-safe. |
 | 8 | Repository/product cleanup | Remove obsolete vocabulary, graphics and adapters only after their accepted replacements pass. |

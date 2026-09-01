@@ -12,10 +12,11 @@ physical places rather than a detached menu.
 ![Wellspring gameplay target](assets/concept/wellspring-gameplay-specimen-v3.png)
 
 > **Current playable state:** Windows is the active release target. Three distinct champions,
-> full universal movement foundation, eight playable foundation spells, the
+> full universal movement foundation, sixteen playable foundation spells, the
 > Wellspring campus, an authoritative 2–8 player direct-IP Farflow loop, and a
-> packaged one-file Windows player app are working. Eight elemental bursts and
-> the 36-reaction chemistry acceptance slice are the active implementation goal.
+> packaged one-file Windows player app are working. Comparable bursts for all
+> eight first-phase elements are working; the strict 36-reaction catalog and
+> bounded chemistry runtime are the active implementation goal.
 
 ## Get, play, host, join
 
@@ -68,8 +69,8 @@ channels are not claimed yet; test direct-IP builds only with trusted friends.
 | Lifecycle | Source launch, portable archives, checksums, one-file Windows install/update/run | Signed releases, clean uninstall UI, public update channel |
 | Wellspring | Nine districts, walk-up stations, practice actors, movement routes | Stronger authored landmarks and compact onboarding |
 | Movement | Full universal foundation at deterministic 120 Hz; normalized eight-way commands, active directional air control/facing, alternating gait contacts, native eight-way jump/slide/roll art, relative gait, and directional evasion cues | Pattern-pressure tuning and player playtest |
-| Combat | Projectile, five-shot fan, beam, spray, field, ricochet, launch and slow; shape-first projectiles are larger and deliberately slower while one fail-closed eight-way delivery contract aligns body, hands and discrete effect art with continuous simulation aim | Comparable data-driven burst spells for the remaining first-eight elements |
-| Chemistry | Material grid and 36 design-locked recipes | All recipes form, act, decay, reset, and explain themselves in-game |
+| Combat | Sixteen runtime spells cover projectile, five-shot burst, beam, spray, field, ricochet, launch and slow; all eight elemental Bursts share exact geometry/economy while retaining distinct art and chemistry payloads | Keep the Burst baseline fixed while chemistry supplies the first systemic differences |
+| Chemistry | Material grid, eight depositing Burst payloads and 36 design-locked recipes | Fail-closed symmetric catalog, then bounded exposure/contact and shared reaction primitives |
 | Champions | Oh Tipi (middle), S. Wayne (small), and The Red Baron (large) playable | Validate the three roles under bullet-pattern pressure before another champion |
 | Farflow | Host-authoritative 2/4/8-player direct-IP loop | Per-peer LOS filtering, then measured later 32-player gate |
 | Visuals | Integrated Wellspring gate accepted at 4.64/5; the foundation champions share The Red Baron's cell-bounded dark-ink language, and the Proving Court uses quiet room lanes, response pockets and bounded markers | Keep every new champion/spell inside the same silhouette, accessibility, density, and provenance gates |
@@ -178,14 +179,22 @@ the authored opening windows. Solid world geometry remains solid.
 | Pocket Eclipse | Light · beam | S. Wayne; committed line control |
 | Cinderbolt | Fire · projectile | Red Baron; measured lane pressure |
 | Cinder Fan | Fire · five-shot fan | Red Baron; ordered lane pressure with deliberate gaps |
+| Stone Burst | Earth · five-shot burst | Global comparison spell; structure/fracture payload |
+| Rill Burst | Water · five-shot burst | Global comparison spell; flow/wetness payload |
+| Gale Burst | Wind · five-shot burst | Global comparison spell; pressure/redirection payload |
+| Rime Burst | Ice · five-shot burst | Global comparison spell; cold/friction payload |
+| Arc Burst | Charge · five-shot burst | Global comparison spell; conduction payload |
+| Prism Burst | Light · five-shot burst | Global comparison spell; reveal/refraction payload |
+| Eclipse Burst | Dark · five-shot burst | Global comparison spell; decay/concealment payload |
 | Arc Primary | Charge · projectile | Global proven spell |
 | Vector Lance | Charge · projectile | Global proven active |
 
-The first bullet-pattern acceptance is playable: five projectiles at
+The first-eight bullet-pattern baseline is playable: each element emits five projectiles at
 `-24°, -12°, 0°, +12°, +24°`, ordered negative-to-positive for deterministic
 IDs and replay. It spends one positive Flux cost, cannot multiply damage on one
 target, stays inside bounded work/snapshot capacity, and leaves authored dodge
-lanes. Pattern geometry never changes because an element skin changes.
+lanes. Element changes presentation and the future chemistry payload; it never
+changes this comparison geometry, economy, or damage budget.
 
 ## Elements
 

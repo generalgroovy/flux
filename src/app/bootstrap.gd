@@ -81,6 +81,7 @@ var requested_capture_active_cast: bool = false
 var requested_capture_spell_slot: int = 0
 var requested_capture_chain_spell_slot: int = 0
 var requested_capture_spell_sequence := PackedInt32Array()
+var requested_capture_spell_wires := PackedInt32Array()
 var requested_capture_wait_for_peer: bool = false
 var requested_capture_movement: String = ""
 var requested_capture_movement_direction: Vector2i = Vector2i.RIGHT
@@ -230,6 +231,7 @@ func _ready() -> void:
 	requested_capture_spell_slot = _requested_capture_spell_slot()
 	requested_capture_chain_spell_slot = _requested_capture_chain_spell_slot()
 	requested_capture_spell_sequence = _requested_capture_spell_sequence()
+	requested_capture_spell_wires = _requested_capture_spell_wires()
 	requested_capture_wait_for_peer = OS.get_cmdline_user_args().has("--capture-wait-for-peer")
 	requested_capture_movement = _requested_capture_movement()
 	requested_capture_movement_direction = _requested_capture_direction()
@@ -297,6 +299,10 @@ func _ready() -> void:
 		return
 	tick_rate = _requested_tick_rate()
 	if not _start_match(tick_rate):
+		get_tree().quit(1)
+		return
+	if not requested_capture_spell_wires.is_empty() and not apply_capture_spell_wires(_local_player_state(), requested_capture_spell_wires):
+		push_error("Capture-only spell weave could not be applied")
 		get_tree().quit(1)
 		return
 	if requested_capture_social_bubble:
@@ -2869,6 +2875,16 @@ func _requested_capture_spell_sequence() -> PackedInt32Array:
 	return PackedInt32Array()
 
 
+func _requested_capture_spell_wires() -> PackedInt32Array:
+	for argument: String in OS.get_cmdline_user_args():
+		if argument.begins_with("--capture-spell-wires="):
+			var requested := parse_capture_spell_wires(argument)
+			if requested.is_empty():
+				push_warning("Invalid capture spell wires; expected 1-12 unique playable wire IDs")
+			return requested
+	return PackedInt32Array()
+
+
 func _requested_capture_movement() -> String:
 	for argument: String in OS.get_cmdline_user_args():
 		if argument.begins_with("--capture-movement="):
@@ -2963,6 +2979,33 @@ static func parse_capture_spell_sequence(argument: String) -> PackedInt32Array:
 			return PackedInt32Array()
 		result.append(slot_number)
 	return result
+
+
+static func parse_capture_spell_wires(argument: String) -> PackedInt32Array:
+	var result := PackedInt32Array()
+	if not argument.begins_with("--capture-spell-wires="):
+		return result
+	var values := argument.trim_prefix("--capture-spell-wires=").split(",", false)
+	if values.is_empty() or values.size() > PlayerState.SPELL_SLOT_COUNT:
+		return result
+	for value: String in values:
+		var cleaned := value.strip_edges()
+		if not cleaned.is_valid_int():
+			return PackedInt32Array()
+		var wire_id := cleaned.to_int()
+		if not CombatTuning.is_runtime_wire_id(wire_id) or result.has(wire_id):
+			return PackedInt32Array()
+		result.append(wire_id)
+	return result
+
+
+static func apply_capture_spell_wires(state: PlayerState, wire_ids: PackedInt32Array) -> bool:
+	if state == null or wire_ids.is_empty() or wire_ids.size() > PlayerState.SPELL_SLOT_COUNT:
+		return false
+	for slot_index: int in range(wire_ids.size()):
+		if not state.place_proven_spell(slot_index, int(wire_ids[slot_index])):
+			return false
+	return state.has_valid_spell_slots()
 
 
 static func parse_capture_movement(argument: String) -> String:

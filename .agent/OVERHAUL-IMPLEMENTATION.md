@@ -11,6 +11,15 @@ Active release scope is **Windows only**. Preserve portable simulation and the
 existing Linux scripts, but do not spend this pass on Linux packaging, smoke,
 documentation expansion, or acceptance claims.
 
+Delivery and architecture work follows
+[`OPTIMIZATION-IMPLEMENTATION.md`](OPTIMIZATION-IMPLEMENTATION.md). Its O0–O10
+rows explicitly cover checkpoint integrity, warning-clean tests, single-source
+combat data, incremental application decomposition, Windows signing, runtime
+asset reachability, generated current-state documentation, line endings,
+human playtest evidence, bounded chemistry architecture, and 120 Hz stress
+budgets. Those optimizations support the C4–C9 player path; they do not reorder
+it or authorize a detached rewrite.
+
 ## Slice sequence
 
 | Slice | Engineering work | Observable exit |
@@ -20,7 +29,7 @@ documentation expansion, or acceptance claims.
 | C2 visual runtime — complete | Keep champion body/clothing pixels separate from spells, aura, shadows, equipment and world art; enforce the three-body catalog; maintain exact `S/SE/E/NE/N/NW/W/SW` movement/facing coverage over grounded/jump/cast/hit/walk/sprint/slide/roll on one shared feet pivot, including opposite walk/sprint contact frames; bind foundation spells to reusable data-driven eight-direction delivery skeletons; review characters, movement, elevation/shadows, projectiles, environment and HUD at 50/75/100%. | Integrated rubric is 4.64/5 and V10 density is green across zoom/accessibility profiles; V12 adds a direction-invariant 58/68/76px small-to-large progression, mature Red-Baron-led anatomy, and one shared cell-bounded ink contract while collision/runtime scale remain invariant; continuous movement/aim remain unchanged. |
 | C2.5 first large champion — complete | Promote The Red Baron with a body/clothing-only eight-way atlas, `iron_regent` motion, equal-budget large profile, Fire Cinderbolt and shared Ice Rimewake. | The selectable roster demonstrates small/middle/large roles; all retain universal movement/shared collision, and Red Baron combat/capture tests pass at 120 Hz. |
 | C3 burst simulation — complete | Cinder Fan uses one reusable burst specification; deterministically rotates a normalized aim vector by five fixed offsets; allocates stable left-to-right projectile IDs; bounds capacity/events/snapshot representation; prevents one fan multiplying damage on one target. | Repeatable 120 Hz fixtures prove exact fan ordering, cost, cooldown, hit, cover, cleanup and overflow behavior; the Proving Court supplies quiet crossed lanes and four response pockets. |
-| C4 eight spells | Instantiate Earth/Fire/Water/Wind/Ice/Charge/Light/Dark burst entries with stable IDs, positive costs, shared geometry, element presentation, and global Loom availability. | Either champion can weave and cast every first-eight burst; all eight remain mechanically comparable and visually distinct. |
+| C4 eight spells — complete | Instantiate Earth/Fire/Water/Wind/Ice/Charge/Light/Dark burst entries with stable IDs, positive costs, shared geometry, element presentation, and global Loom availability. | Every champion can weave and cast every first-eight burst; all eight remain mechanically comparable and visually distinct in truthful 120 Hz captures. |
 | C5 reaction catalog | Add a fail-closed runtime catalog loader requiring exactly the 36 unordered-with-repetition pairs, symmetric lookup, unique IDs, lifecycle, counters, bounds, and worldbone policy. | Missing/duplicate/asymmetric/unbounded recipe content fails tests and boot clearly. |
 | C6 exposure/contact | Add fixed-capacity element exposure cells keyed to the material grid; burst impact deposits one bounded source with owner/team/tick/strength; second source resolves one canonical recipe. | Repeated contact is deterministic, rate-bounded, authority-owned, and cannot mutate immutable worldbone. |
 | C7 shared reaction primitives | Implement reusable `surface`, `flow`, `cover`, `field`, `conduction`, `visibility`, `hazard`, `reveal/refraction`, and `fracture` effect families; map all recipes to bounded parameter sets. | Every pair has a live spatial effect and counter even when several recipes share safe physics primitives. |

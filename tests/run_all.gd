@@ -11,6 +11,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/unit/test_control_binding_editor.gd"),
 	preload("res://tests/unit/test_spell_loom_editor.gd"),
 	preload("res://tests/unit/test_combat.gd"),
+	preload("res://tests/unit/test_elemental_bursts.gd"),
 	preload("res://tests/unit/test_core.gd"),
 	preload("res://tests/unit/test_environment_kit_manifest.gd"),
 	preload("res://tests/unit/test_visual_candidate_manifest.gd"),

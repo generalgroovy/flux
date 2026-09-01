@@ -77,6 +77,9 @@ func _test_semantic_spell_slots(tick_rate: int) -> void:
 
 	var empty_world := SimWorld.new(tick_rate)
 	var empty: PlayerState = empty_world.player()
+	empty.spell_wire_ids[9] = 0
+	empty.spell_cooldown_ticks[9] = 0
+	empty._sync_legacy_spell_cooldowns()
 	var initial_flux: int = empty.flux
 	check(_step(empty_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_10, 1000, 0)), "%d Hz empty slot command steps" % tick_rate)
 	equal(empty.pending_cast_wire_id, 0, "%d Hz empty slot starts no cast" % tick_rate)

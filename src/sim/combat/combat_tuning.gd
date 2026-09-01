@@ -117,6 +117,38 @@ const CINDERFAN_ROTATIONS: Array[Vector2i] = [
 	Vector2i(978, 208),
 	Vector2i(914, 407),
 ]
+
+# Stable first-eight Burst wire identities. Fire keeps the already shipped
+# Cinder Fan wire; every other element reuses its exact simulation geometry and
+# economy. Element identity is payload/presentation data, never a hidden damage
+# or trajectory modifier.
+const EARTH_BURST_WIRE_ID: int = 147
+const WATER_BURST_WIRE_ID: int = 148
+const WIND_BURST_WIRE_ID: int = 149
+const ICE_BURST_WIRE_ID: int = 150
+const CHARGE_BURST_WIRE_ID: int = 151
+const LIGHT_BURST_WIRE_ID: int = 152
+const DARK_BURST_WIRE_ID: int = 153
+const ELEMENTAL_BURST_WIRE_IDS: Array[int] = [
+	EARTH_BURST_WIRE_ID,
+	CINDERFAN_WIRE_ID,
+	WATER_BURST_WIRE_ID,
+	WIND_BURST_WIRE_ID,
+	ICE_BURST_WIRE_ID,
+	CHARGE_BURST_WIRE_ID,
+	LIGHT_BURST_WIRE_ID,
+	DARK_BURST_WIRE_ID,
+]
+const ELEMENTAL_BURST_ELEMENT_WIRES: Dictionary = {
+	EARTH_BURST_WIRE_ID: 1,
+	CINDERFAN_WIRE_ID: 2,
+	WATER_BURST_WIRE_ID: 3,
+	WIND_BURST_WIRE_ID: 4,
+	ICE_BURST_WIRE_ID: 5,
+	CHARGE_BURST_WIRE_ID: 6,
+	LIGHT_BURST_WIRE_ID: 7,
+	DARK_BURST_WIRE_ID: 8,
+}
 const NO_HIT_CONTROL_STATE: int = 0
 const LAUNCHED_HIT_CONTROL_STATE: int = 1
 const SLOWED_HIT_CONTROL_STATE: int = 6
@@ -139,11 +171,22 @@ const RUNTIME_WIRE_IDS: Array[int] = [
 	POCKET_ECLIPSE_WIRE_ID,
 	CINDERBOLT_WIRE_ID,
 	CINDERFAN_WIRE_ID,
+	EARTH_BURST_WIRE_ID,
+	WIND_BURST_WIRE_ID,
+	WATER_BURST_WIRE_ID,
+	ICE_BURST_WIRE_ID,
+	CHARGE_BURST_WIRE_ID,
+	LIGHT_BURST_WIRE_ID,
+	DARK_BURST_WIRE_ID,
 ]
 
 
 static func is_runtime_wire_id(wire_id: int) -> bool:
 	return RUNTIME_WIRE_IDS.has(wire_id)
+
+
+static func is_elemental_burst(wire_id: int) -> bool:
+	return ELEMENTAL_BURST_ELEMENT_WIRES.has(wire_id)
 
 
 static func projectile_definition(wire_id: int) -> Dictionary:
@@ -152,6 +195,22 @@ static func projectile_definition(wire_id: int) -> Dictionary:
 
 
 static func cast_definition(wire_id: int) -> Dictionary:
+	if is_elemental_burst(wire_id):
+		var burst := _definition(
+			int(ELEMENTAL_BURST_ELEMENT_WIRES[wire_id]),
+			CINDERFAN_FLUX_COST,
+			CINDERFAN_COOLDOWN_MS,
+			CINDERFAN_STARTUP_MS,
+			CINDERFAN_RECOVERY_MS,
+			CINDERFAN_SPEED,
+			CINDERFAN_RADIUS,
+			CINDERFAN_DAMAGE,
+			CINDERFAN_LIFETIME_MS,
+		)
+		burst["delivery_kernel"] = "burst"
+		burst["projectile_angles_degrees"] = CINDERFAN_ANGLES_DEGREES
+		burst["projectile_rotations"] = CINDERFAN_ROTATIONS
+		return burst
 	match wire_id:
 		PRIMARY_WIRE_ID:
 			return _definition(PRIMARY_ELEMENT_WIRE_ID, PRIMARY_FLUX_COST, PRIMARY_COOLDOWN_MS, PRIMARY_STARTUP_MS, PRIMARY_RECOVERY_MS, PRIMARY_SPEED, PRIMARY_RADIUS, PRIMARY_DAMAGE, PRIMARY_LIFETIME_MS)
@@ -190,11 +249,6 @@ static func cast_definition(wire_id: int) -> Dictionary:
 			return result
 		CINDERBOLT_WIRE_ID:
 			return _definition(CINDERBOLT_ELEMENT_WIRE_ID, CINDERBOLT_FLUX_COST, CINDERBOLT_COOLDOWN_MS, CINDERBOLT_STARTUP_MS, CINDERBOLT_RECOVERY_MS, CINDERBOLT_SPEED, CINDERBOLT_RADIUS, CINDERBOLT_DAMAGE, CINDERBOLT_LIFETIME_MS)
-		CINDERFAN_WIRE_ID:
-			var result := _definition(CINDERFAN_ELEMENT_WIRE_ID, CINDERFAN_FLUX_COST, CINDERFAN_COOLDOWN_MS, CINDERFAN_STARTUP_MS, CINDERFAN_RECOVERY_MS, CINDERFAN_SPEED, CINDERFAN_RADIUS, CINDERFAN_DAMAGE, CINDERFAN_LIFETIME_MS)
-			result["projectile_angles_degrees"] = CINDERFAN_ANGLES_DEGREES
-			result["projectile_rotations"] = CINDERFAN_ROTATIONS
-			return result
 	return {}
 
 

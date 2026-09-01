@@ -1,0 +1,35 @@
+* text=auto
+.gitattributes text eol=lf
+
+# Engine, data, documentation, and portable scripts use one canonical newline.
+*.gd text eol=lf
+*.gdshader text eol=lf
+*.tscn text eol=lf
+*.tres text eol=lf
+*.cfg text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.uid text eol=lf
+
+# Windows entrypoints remain directly consumable by native Windows tooling.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary assets must never be newline-normalized.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.wav binary
+*.ogg binary
+*.ttf binary
+*.otf binary
+*.zip binary
+*.exe binary
+*.pck binary

@@ -3,7 +3,7 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/natural_map_kit_v1.json"
-const EXPECTED_ID := "natural-map-kit-v1"
+const EXPECTED_ID := "natural-map-kit-v2-bullet-room"
 const EXPECTED_AUTHORITY := "presentation only; authored map topology, collision, elevation and routes remain canonical elsewhere"
 const REQUIRED_STYLES := ["garden", "nexus", "proving"]
 const ALLOWED_FEATURES := ["grass_tuft", "leaf_pair", "blossom", "small_stone", "moss_seam", "brass_leaf", "dry_tuft"]
@@ -15,6 +15,7 @@ var profiles: Dictionary = {}
 var contact_profiles: Dictionary = {}
 var receiving_shadow_profiles: Dictionary = {}
 var elevation_shadow_opacity_step := 0.0
+var combat_floor: Dictionary = {}
 var content_hash := ""
 var last_error := ""
 
@@ -26,6 +27,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	contact_profiles.clear()
 	receiving_shadow_profiles.clear()
 	elevation_shadow_opacity_step = 0.0
+	combat_floor.clear()
 	content_hash = ""
 	last_error = ""
 	if language == null or language.ramps.is_empty():
@@ -49,15 +51,20 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 
 func validate() -> bool:
 	last_error = ""
-	if int(data.get("schema_version", -1)) != 1 or String(data.get("id", "")) != EXPECTED_ID:
+	if int(data.get("schema_version", -1)) != 2 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Natural map kit identity is unsupported")
 	if String(data.get("authority", "")) != EXPECTED_AUTHORITY:
 		return _fail("Natural map kit must remain presentation-only")
 	var budgets: Dictionary = data.get("budgets", {})
 	if int(budgets.get("detail_step", 0)) < 32 or int(budgets.get("detail_step", 0)) > 96 \
 		or int(budgets.get("maximum_details_per_district", 0)) > 240 \
-		or int(budgets.get("maximum_contact_marks_per_actor", 0)) > 8:
+		or int(budgets.get("maximum_contact_marks_per_actor", 0)) > 8 \
+		or int(budgets.get("maximum_arena_marks", 0)) < 8 \
+		or int(budgets.get("maximum_arena_marks", 0)) > 32:
 		return _fail("Natural map detail budget is unsafe")
+	combat_floor = data.get("combat_floor", {})
+	if not _validate_combat_floor(combat_floor):
+		return false
 	profiles = data.get("district_profiles", {})
 	for style: String in REQUIRED_STYLES:
 		if not profiles.has(style) or not _validate_district_profile(style, profiles[style]):
@@ -116,6 +123,51 @@ func draw_district_details(canvas: CanvasItem, district: Dictionary, district_in
 			var feature_scale := float(profile.get("edge_scale", 1.0)) if use_edge_prop else 1.0
 			_draw_feature(canvas, Vector2(x, y) + jitter, feature, style, tick, cell_seed, reduced_effects, feature_scale)
 			count += 1
+
+
+func draw_arena_floor(canvas: CanvasItem, bounds: Rect2i, tick: int, reduced_effects: bool) -> void:
+	if canvas == null or combat_floor.is_empty() or not combat_floor.get("arena", {}) is Dictionary:
+		return
+	var profile: Dictionary = combat_floor["arena"]
+	var outer := Rect2(bounds).grow(-float(profile.get("outer_inset", 14)))
+	var inner := Rect2(bounds).grow(-float(profile.get("inner_inset", 30)))
+	var lane_width := float(profile.get("lane_width", 76))
+	var pocket_radius := float(profile.get("safe_pocket_radius", 54))
+	var outline_alpha := float(profile.get("outline_alpha", 0.34))
+	var shimmer := 0.0 if reduced_effects else sin(float(tick) * 0.025) * 0.025
+	canvas.draw_rect(outer, Color(language.ramp_color("worldbone", 0), 0.18), true)
+	canvas.draw_rect(inner, Color(language.ramp_color("warm_stone", 1), 0.94), true)
+	canvas.draw_rect(outer, Color(language.ramp_color("aged_brass", 2), outline_alpha), false, 3.0)
+	canvas.draw_rect(inner, Color(language.ramp_color("warm_stone", 4), 0.24), false, 2.0)
+	var horizontal_lane := Rect2(inner.position.x, inner.get_center().y - lane_width * 0.5, inner.size.x, lane_width)
+	var vertical_lane := Rect2(inner.get_center().x - lane_width * 0.5, inner.position.y, lane_width, inner.size.y)
+	canvas.draw_rect(horizontal_lane, Color(language.ramp_color("warm_stone", 3), 0.075), true)
+	canvas.draw_rect(vertical_lane, Color(language.ramp_color("warm_stone", 3), 0.075), true)
+	canvas.draw_arc(inner.get_center(), lane_width * 0.58, 0.0, TAU, 32, Color(language.ramp_color("aged_brass", 3), 0.24 + shimmer), 2.0)
+	canvas.draw_arc(inner.get_center(), lane_width * 0.24, 0.0, TAU, 20, Color(language.ui_color("focus"), 0.18 + shimmer), 2.0)
+	for pocket: Vector2 in arena_safe_pockets(inner, pocket_radius):
+		var facing := (inner.get_center() - pocket).angle()
+		canvas.draw_arc(pocket, pocket_radius, facing - 1.05, facing + 1.05, 12, Color(language.ramp_color("aged_brass", 3), 0.30), 3.0)
+		canvas.draw_arc(pocket, pocket_radius - 8.0, facing - 0.82, facing + 0.82, 10, Color(language.ui_color("text_primary"), 0.12), 1.0)
+	var marker_count := int(profile.get("marker_count", 12))
+	for marker_index: int in range(marker_count):
+		var edge_progress := float(marker_index) / float(maxi(1, marker_count - 1))
+		var x := lerpf(inner.position.x + 28.0, inner.end.x - 28.0, edge_progress)
+		var marker_color := Color(language.ramp_color("aged_brass", 4), 0.24)
+		canvas.draw_line(Vector2(x - 5.0, inner.position.y + 4.0), Vector2(x + 5.0, inner.position.y + 4.0), marker_color, 2.0)
+		canvas.draw_line(Vector2(x - 5.0, inner.end.y - 4.0), Vector2(x + 5.0, inner.end.y - 4.0), marker_color, 2.0)
+
+
+static func arena_safe_pockets(inner: Rect2, radius: float) -> Array[Vector2]:
+	if not inner.has_area() or radius <= 0.0:
+		return []
+	var inset := radius + 18.0
+	return [
+		inner.position + Vector2(inset, inset),
+		Vector2(inner.end.x - inset, inner.position.y + inset),
+		inner.end - Vector2(inset, inset),
+		Vector2(inner.position.x + inset, inner.end.y - inset),
+	]
 
 
 func draw_actor_contact(canvas: CanvasItem, layout: SanctumCampusLayout, state: PlayerState, ground_anchor: Vector2, tick: int, reduced_effects: bool) -> void:
@@ -299,6 +351,34 @@ func _validate_district_profile(style: String, value: Variant) -> bool:
 		if String(edge_prop) not in ALLOWED_EDGE_PROPS:
 			return _fail("Natural district uses an unknown edge prop: %s/%s" % [style, edge_prop])
 	return true
+
+
+func _validate_combat_floor(value: Variant) -> bool:
+	if not value is Dictionary:
+		return _fail("Natural map combat-floor language must be an object")
+	var profile: Dictionary = value
+	var masonry_cell := _vector2i(profile.get("masonry_cell", []))
+	if masonry_cell.x < 24 or masonry_cell.x > 64 or masonry_cell.y < 16 or masonry_cell.y > 40 \
+		or float(profile.get("masonry_alpha", 0.0)) < 0.03 or float(profile.get("masonry_alpha", 0.0)) > 0.14 \
+		or float(profile.get("garden_alpha", 0.0)) < 0.02 or float(profile.get("garden_alpha", 0.0)) > 0.10:
+		return _fail("Natural map floor-cell language is unsafe")
+	if not profile.get("arena", {}) is Dictionary:
+		return _fail("Natural map arena language must be an object")
+	var arena: Dictionary = profile["arena"]
+	if int(arena.get("outer_inset", 0)) < 8 or int(arena.get("outer_inset", 0)) > 24 \
+		or int(arena.get("inner_inset", 0)) < 24 or int(arena.get("inner_inset", 0)) > 48 \
+		or int(arena.get("lane_width", 0)) < 56 or int(arena.get("lane_width", 0)) > 104 \
+		or int(arena.get("safe_pocket_radius", 0)) < 36 or int(arena.get("safe_pocket_radius", 0)) > 72 \
+		or int(arena.get("marker_count", 0)) < 8 or int(arena.get("marker_count", 0)) > int((data.get("budgets", {}) as Dictionary).get("maximum_arena_marks", 0)) \
+		or float(arena.get("outline_alpha", 0.0)) < 0.20 or float(arena.get("outline_alpha", 0.0)) > 0.50:
+		return _fail("Natural map arena readability profile is unsafe")
+	return true
+
+
+static func _vector2i(values: Variant) -> Vector2i:
+	if not values is Array or (values as Array).size() != 2:
+		return Vector2i.ZERO
+	return Vector2i(int((values as Array)[0]), int((values as Array)[1]))
 
 
 static func _hash_cell(x: int, y: int, seed: int) -> int:

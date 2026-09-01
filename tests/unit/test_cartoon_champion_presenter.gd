@@ -21,7 +21,13 @@ func _test_repository_recipes() -> void:
 	check(presenter.atlas != null, "reviewed foundation runtime atlas loads")
 	check(presenter.motion != null and presenter.motion.content_hash.length() == 64, "editable minimal-motion recipes load with champion art")
 	check(presenter.content_hash.length() == 64, "champion presentation content has a stable hash")
-	equal(presenter.atlas_hash, "cb7601e3a3a9b435141ad82cb0254f8f9c365afaad846f31393c59996bde528f", "reviewed three-champion eight-way action atlas hash is pinned")
+	equal(presenter.atlas_hash, "1a03066760e9cb5e8be814a005880b19e5aba062640f48fe10eeee0a5585e9d2", "style-unified three-champion eight-way action atlas hash is pinned")
+	equal(String(presenter.shared_style_contract.get("reference_champion", "")), "red_baron", "Red Baron defines the shared compact material and outline grammar")
+	equal(int(presenter.shared_style_contract.get("outline_radius_pixels", 0)), 1, "shared character ink remains a bounded one-pixel treatment")
+	equal(presenter.body_templates.keys(), ["small", "middle", "large"], "three reusable body-size templates load in canonical order")
+	equal(String((presenter.body_templates["small"] as Dictionary).get("exemplar", "")), "s_wayne", "S. Wayne defines the reusable small template")
+	equal(String((presenter.body_templates["middle"] as Dictionary).get("exemplar", "")), "oh_tipi", "Oh Tipi defines the reusable middle template")
+	equal(String((presenter.body_templates["large"] as Dictionary).get("exemplar", "")), "red_baron", "The Red Baron defines the reusable large template")
 	equal(presenter.cardinal_animation_contract.get("directions", []), ["south", "east", "north", "west"], "foundation animation contract covers four cardinal directions")
 	equal(presenter.cardinal_animation_contract.get("states", []), ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll"], "foundation animation contract covers core and movement actions")
 	equal(presenter.diagonal_core_contract.get("directions", []), ["south_east", "north_east", "north_west", "south_west"], "foundation diagonal core covers four intercardinals")
@@ -46,9 +52,9 @@ func _test_repository_recipes() -> void:
 		check(int(recipe.get("atlas_row", -1)) in [0, 1, 2], "%s uses a data-driven foundation atlas row" % champion_id)
 		check("staff" not in String(recipe.get("equipment", "")).to_lower(), "%s has no staff casting focus" % champion_id)
 		equal(String(recipe.get("silhouette_features", [])[-1]), "open_empty_hands", "%s has empty hands in the body recipe" % champion_id)
-	equal(CartoonChampionPresenter.body_type_render_scale("small"), 0.90, "small body uses the bounded compact render scale")
-	equal(CartoonChampionPresenter.body_type_render_scale("middle"), 1.0, "middle body uses the neutral render scale")
-	equal(CartoonChampionPresenter.body_type_render_scale("large"), 1.10, "large body uses the bounded readable render scale")
+	equal(CartoonChampionPresenter.body_type_render_scale("small"), 1.0, "small body scale is baked once into its reusable atlas template")
+	equal(CartoonChampionPresenter.body_type_render_scale("middle"), 1.0, "middle body scale is baked once into its reusable atlas template")
+	equal(CartoonChampionPresenter.body_type_render_scale("large"), 1.0, "large body scale is baked once into its reusable atlas template")
 	equal(CartoonChampionPresenter.body_type_render_scale("legacy"), 1.0, "unknown body types fail safe to the neutral render scale")
 	equal(CartoonChampionPresenter.hand_cast_origin(Vector2.ZERO, Vector2.RIGHT), Vector2(4.0, -34.0), "casts originate from the authored forward hand lane")
 	equal(CartoonChampionPresenter.hand_cast_origin(Vector2(10.0, 6.0), Vector2.ZERO), Vector2(17.0, -17.0), "zero aim uses a deterministic down-facing hand lane")
@@ -77,6 +83,12 @@ func _test_repository_recipes() -> void:
 	state.facing_y = 0
 	equal(presenter.source_region("red_baron", state), Rect2(192, 1920, 96, 96), "The Red Baron east grounded selects the large foundation row")
 	equal(String(presenter.recipe("red_baron").get("body_type", "")), "large", "The Red Baron is the first promoted large body")
+	var atlas_image := presenter.atlas.get_image()
+	for state_index: int in range(CartoonChampionPresenter.EXPECTED_ATLAS_STATES.size()):
+		for direction_index: int in range(CartoonChampionPresenter.EXPECTED_DIRECTIONS.size()):
+			var region := Rect2i(direction_index * 96, (20 + state_index) * 96, 96, 96)
+			var used := atlas_image.get_region(region).get_used_rect()
+			check(used.size.y >= 67 and used.size.y <= 71, "large template preserves visible height plus shared ink for %s/%s" % [CartoonChampionPresenter.EXPECTED_ATLAS_STATES[state_index], CartoonChampionPresenter.EXPECTED_DIRECTIONS[direction_index]])
 	var cardinal_cases := [
 		{"facing": Vector2i(0, 1000), "state": "south", "column": 0},
 		{"facing": Vector2i(1000, 0), "state": "east", "column": 2},
@@ -344,7 +356,7 @@ func _test_relative_locomotion_gaits() -> void:
 	backward_sample.aura_scale = 1.08
 	CartoonChampionPresenter._apply_relative_gait_motion(backward_sample, "backward", false)
 	equal(backward_sample.offset, Vector2(-2.0, -1.44), "backward cadence reverses lateral phase and restrains bounce")
-	check(backward_sample.scale.distance_to(Vector2.ONE) < Vector2(1.04, 0.96).distance_to(Vector2.ONE), "backward cadence restrains squash/stretch")
+	equal(backward_sample.scale, Vector2(1.04, 0.96), "relative gait never rescales the body template")
 	var left_sample := MinimalChampionMotion.Sample.new()
 	var right_sample := MinimalChampionMotion.Sample.new()
 	CartoonChampionPresenter._apply_relative_gait_motion(left_sample, "strafe_left", false)

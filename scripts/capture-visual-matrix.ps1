@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [ValidatePattern('^[a-z0-9][a-z0-9-]{0,19}$')][string]$Name = 'integrated-visual',
-    [ValidateSet(60, 120)][int]$TickRate = 60,
+    [ValidateSet(120)][int]$TickRate = 120,
     [ValidateRange(12, 60)][int]$Frames = 24,
     [ValidateRange(1024, 65535)][int]$Port = 24930
 )

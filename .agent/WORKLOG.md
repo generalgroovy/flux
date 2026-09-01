@@ -1,5 +1,46 @@
 # FLUX2 agent worklog
 
+## 2026-09-01 - 120 Hz bullet-room checkpoint
+
+Playable outcome:
+
+- FLUX now has one authoritative 120 Hz runtime and protocol 32; obsolete
+  tick-rate choices fail closed instead of multiplying tuning and QA paths.
+- The Red Baron can weave Cinder Fan, a five-projectile Fire pattern with fixed
+  ordered lanes, one positive Flux cost/cooldown, stable child IDs, bounded
+  capacity and cast-local single-target protection.
+- All live projectiles are slightly larger and slower. A shared presenter
+  interpolates authoritative fixed-tick positions and adds a 28–46 px
+  shape-first silhouette, collision rim and travel cue without owning gameplay.
+- The Proving Court is a reusable bullet room with quiet masonry seams, crossed
+  movement lanes, four response pockets and bounded edge cadence; topology and
+  collision are unchanged.
+- Champion atlas V11 unifies Oh Tipi, S. Wayne and The Red Baron around a
+  deterministic one-pixel exterior ink derived from Red Baron's darkest
+  material clusters. It remains cell-bounded and preserves palette, authored
+  body size, identity and runtime scale `1.00` in every action.
+
+Verification:
+
+- `scripts\test.ps1`: 57 suites / 17,057 assertions, zero failures; Windows
+  source/import and independent 120 Hz/protocol-32 boots pass.
+- `.godot/visual-captures/bullet-room-red-baron-v1` contains 120 truthful
+  1280×720 frames. The reviewed room retains legible actor/projectile lanes;
+  this machine recorded 6.25 ms average CPU render and 5.21 ms GPU render time
+  per frame against the 8.33 ms 120 Hz budget.
+- Runtime atlas SHA-256 is
+  `1a03066760e9cb5e8be814a005880b19e5aba062640f48fe10eeee0a5585e9d2`;
+  Godot-decoded RGBA SHA-256 is
+  `3f8175d534d42fe5325c5cba86668381216c17f2a4f14a77b4e168db0a7c0faa`.
+
+Known limits / next:
+
+- Render timing is evidence for this machine, not a universal hardware
+  guarantee. Exact new unsigned packaged-EXE boot remains subject to the
+  previously recorded local Application Control restriction.
+- Stop at this requested safe boundary. Next implementation slice is the shared
+  first-eight burst library, not another champion or disconnected visual pass.
+
 ## 2026-08-31 - accepted visual runtime, reusable Wellspring kit, and The Red Baron
 
 Playable outcome:

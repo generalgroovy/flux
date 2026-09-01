@@ -98,7 +98,8 @@ anchors, not permission to flatten pixel art into solid fills.
   anchor. A separate shadow remains on the receiving surface, grows broader and
   darker during ascent, is largest at the apex, contracts during descent, and
   settles on a crisp landing. Space is the production default jump key. The
-  same normalized authoritative phase drives presentation at 60 and 120 Hz.
+  same normalized authoritative phase drives presentation at the authoritative
+  120 Hz tick.
   This studies only the readability of classic handheld
   top-down adventure jumps and copies no sprite, frames, timing, sound, input,
   item, or map behavior.
@@ -175,5 +176,6 @@ has focus, disabled, pending, success, failure, and offline states.
 An asset or environment slice is not ready because it resembles the concept.
 It must also pass silhouette/readability review at gameplay zoom, color-vision
 and grayscale checks, collision/material alignment, reduced-effects review,
-memory/import budgets, 60/120 Hz presentation smokes, Linux/Windows parity, and
-originality/license provenance.
+memory/import budgets, 120 Hz Windows source/import presentation smokes, and
+originality/license provenance. Portable Linux code remains preserved but is
+outside the current release acceptance scope.

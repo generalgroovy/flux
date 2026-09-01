@@ -5,6 +5,7 @@ func run() -> int:
 	_test_repository_profiles()
 	_test_shared_direction_contract()
 	_test_startup_readability_geometry()
+	_test_projectile_presentation_motion()
 	_test_fail_closed_catalog_alignment()
 	return finish("foundation-spell-presenter")
 
@@ -16,13 +17,13 @@ func _test_repository_profiles() -> void:
 	check(catalog.load_from_file("res://content/abilities/foundation_abilities_v1.json"), "ability catalog loads for spell presentation")
 	var presenter := FoundationSpellPresenter.new()
 	check(presenter.configure(language, catalog), "foundation spell presentation validates: %s" % presenter.last_error)
-	equal(presenter.profiles_by_id.size(), 6, "every playable foundation spell has one visual profile")
+	equal(presenter.profiles_by_id.size(), 7, "every promoted champion spell has one visual profile")
 	equal(presenter.animation_skeletons.skeletons.size(), 4, "foundation spells share four reusable delivery skeletons")
 	check(presenter.animation_skeleton_hash.length() == 64, "foundation spell presentation exposes the skeleton content hash")
 	check(presenter.direction_contract_hash.length() == 64, "foundation spell presentation exposes the shared direction content hash")
 	equal(String(presenter.animation_skeletons.phase_for("projectile", 0.10).get("cue", "")), "origin_ring", "projectile startup exposes the shared hand-gather cue")
 	equal(String(presenter.animation_skeletons.phase_for("projectile", 0.25).get("cue", "")), "release_flash", "projectile release exposes the shared forward-snap cue")
-	equal(FoundationSpellPresenter.STARTUPS.size(), 6, "foundation spells own six distinct startup silhouettes")
+	equal(FoundationSpellPresenter.STARTUPS.size(), 7, "foundation spells own seven distinct startup silhouettes")
 	check(presenter.content_hash.length() == 64, "foundation spell presentation has a stable content hash")
 	var observed_startups: Dictionary[String, bool] = {}
 	for profile_id: String in FoundationSpellPresenter.REQUIRED_IDS:
@@ -32,7 +33,7 @@ func _test_repository_profiles() -> void:
 		equal(String(profile.get("element")), String(ability.get("element")), "%s visual element matches simulation content" % profile_id)
 		equal(String((presenter.animation_skeletons.skeletons[String(profile.get("skeleton_id", ""))] as Dictionary).get("shape", "")), String(profile.get("shape", "")), "%s uses the matching delivery skeleton" % profile_id)
 		observed_startups[String(profile.get("startup"))] = true
-	equal(observed_startups.size(), 6, "each live spell startup remains visually distinct")
+	equal(observed_startups.size(), 7, "each live spell startup remains visually distinct")
 
 
 func _test_shared_direction_contract() -> void:
@@ -77,6 +78,23 @@ func _test_startup_readability_geometry() -> void:
 	var fallback := FoundationSpellPresenter.startup_readability_geometry(Vector2.ZERO, -2.0)
 	check((fallback["focus"] as Vector2).normalized().is_equal_approx(Vector2.DOWN), "zero aim startup fails safe to south")
 	equal(float(fallback.get("half_width", 0.0)), 6.0, "startup progress clamps before geometry is emitted")
+
+
+func _test_projectile_presentation_motion() -> void:
+	var projectile := ProjectileState.new(7, 1, 1, 146, 2, Vector2i(200_000, 80_000), Vector2i(700_000, 0), 8_000, 4_000, 120)
+	projectile.previous_x = 100_000
+	projectile.previous_y = 40_000
+	equal(ProjectilePresentationMotion.interpolated_position(projectile, -1.0), Vector2(100.0, 40.0), "projectile interpolation clamps to the previous authoritative sample")
+	equal(ProjectilePresentationMotion.interpolated_position(projectile, 0.5), Vector2(150.0, 60.0), "projectile interpolation fills the visual half-step smoothly")
+	equal(ProjectilePresentationMotion.interpolated_position(projectile, 2.0), Vector2(200.0, 80.0), "projectile interpolation clamps to the current authoritative sample")
+	check(ProjectilePresentationMotion.travel_direction(projectile).is_equal_approx(Vector2.RIGHT), "projectile direction remains stable from canonical velocity")
+	var full_trail := ProjectilePresentationMotion.trail_length(projectile, false)
+	check(full_trail > 18.0 and full_trail < 19.0, "readable projectile owns a bounded continuous motion trail")
+	check(ProjectilePresentationMotion.trail_length(projectile, true) < full_trail, "reduced effects shortens rather than removes the readability trail")
+	equal(ProjectilePresentationMotion.visual_diameter(projectile), 28.0, "projectile art remains larger than its collision core at gameplay zoom")
+	equal(ProjectilePresentationMotion.leading_point(projectile), Vector2(11.0, 0.0), "projectile leading point exposes travel without relying on color")
+	var large_projectile := ProjectileState.new(8, 1, 1, 142, 8, Vector2i.ZERO, Vector2i(780_000, 0), 20_000, 4_000, 120)
+	equal(ProjectilePresentationMotion.visual_diameter(large_projectile), 46.0, "projectile art diameter stays inside the presentation budget")
 
 
 func _test_fail_closed_catalog_alignment() -> void:

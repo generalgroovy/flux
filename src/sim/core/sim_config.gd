@@ -2,20 +2,19 @@ class_name SimConfig
 extends RefCounted
 
 
-const PROTOCOL_VERSION: int = 30
+const PROTOCOL_VERSION: int = 32
 const FIXED_SCALE: int = 1000
-const MIN_TICK_RATE: int = 60
-const MAX_TICK_RATE: int = 120
+const TICK_RATE: int = 120
 
 var tick_rate: int
 
 
-func _init(requested_tick_rate: int = 60) -> void:
+func _init(requested_tick_rate: int = TICK_RATE) -> void:
 	tick_rate = requested_tick_rate if is_supported_tick_rate(requested_tick_rate) else 0
 
 
 static func is_supported_tick_rate(value: int) -> bool:
-	return value == MIN_TICK_RATE or value == MAX_TICK_RATE
+	return value == TICK_RATE
 
 
 func is_valid() -> bool:

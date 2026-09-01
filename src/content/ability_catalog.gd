@@ -11,6 +11,7 @@ const RESIDUES: Array[String] = ["none", "trail", "field", "construct"]
 const MATERIAL_OPERATIONS: Array[String] = ["none", "heat", "cool", "wet", "charge", "discharge", "fracture", "push", "reveal", "decay"]
 const RUNTIME_STATUSES: Array[String] = ["playable", "catalog_only"]
 const CADENCE_TIER_IDS: Array[String] = ["pressure", "tempo", "control"]
+const MAX_PROJECTILE_PATTERN_LANES: int = 9
 
 var data: Dictionary = {}
 var last_error: String = ""
@@ -157,6 +158,10 @@ func validate() -> bool:
 				return _fail("runtime spell cooldown is outside its cadence tier: %s" % ability_id)
 			if startup_ms <= 0 or recovery_ms <= 0:
 				return _fail("runtime spell requires positive startup and recovery: %s" % ability_id)
+		if shape == "projectile" and not _valid_projectile_angles(ability.get("projectile_angles_degrees", [0])):
+			return _fail("projectile angles must be ordered, odd, centered and symmetric: %s" % ability_id)
+		if shape != "projectile" and ability.has("projectile_angles_degrees"):
+			return _fail("only projectile spells may declare projectile angles: %s" % ability_id)
 		abilities_by_id[ability_id] = ability
 		ability_ids_by_wire[wire_id] = ability_id
 	if abilities_by_id.is_empty():
@@ -165,6 +170,27 @@ func validate() -> bool:
 	if content_hash.length() != 64:
 		return _fail("ability catalog hash failed")
 	return true
+
+
+static func _valid_projectile_angles(value: Variant) -> bool:
+	if not value is Array:
+		return false
+	var angles: Array = value
+	if angles.is_empty() or angles.size() > MAX_PROJECTILE_PATTERN_LANES or angles.size() % 2 == 0:
+		return false
+	var previous := -181
+	for index: int in range(angles.size()):
+		if typeof(angles[index]) not in [TYPE_INT, TYPE_FLOAT]:
+			return false
+		var angle := int(angles[index])
+		if float(angles[index]) != float(angle):
+			return false
+		if angle < -60 or angle > 60 or angle <= previous:
+			return false
+		if angle != -int(angles[angles.size() - 1 - index]):
+			return false
+		previous = angle
+	return int(angles[angles.size() / 2]) == 0
 
 
 func ability(ability_id: String) -> Dictionary:

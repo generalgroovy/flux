@@ -22,7 +22,7 @@ var last_error: String = ""
 
 
 func _init(
-	requested_tick_rate: int = 60,
+	requested_tick_rate: int = SimConfig.TICK_RATE,
 	requested_seed: int = 1,
 	requested_collision: CollisionWorld = null,
 	requested_map_id: String = MAP_ID,
@@ -43,7 +43,7 @@ func _init(
 			collision.add_obstacle(CollisionWorld.Obstacle.new(2, 820_000, 300_000, 900_000, 380_000, true))
 		players.append(PlayerState.new(1))
 	else:
-		last_error = "unsupported tick rate: %d; expected 60 or 120" % requested_tick_rate
+		last_error = "unsupported tick rate: %d; FLUX requires 120 Hz" % requested_tick_rate
 
 
 func is_valid() -> bool:
@@ -84,15 +84,10 @@ func step(commands: Array[SimCommand]) -> bool:
 		state.primary_held = command.has_held(SimCommand.HELD_PRIMARY)
 		PlayerResourcesSystem.step(state, config)
 		MovementSystem.step(state, command, config, collision)
-		var spawned: RefCounted = CombatSystem.step_player(
+		var spawned: Variant = CombatSystem.step_player(
 			state, command, config, next_projectile_id, next_field_id, collision, combat_events, transition_policy
 		)
-		if spawned is ProjectileState:
-			projectiles.append(spawned)
-			next_projectile_id += 1
-		elif spawned is FieldState:
-			fields.append(spawned)
-			next_field_id += 1
+		_store_combat_result(spawned)
 	for state: PlayerState in players:
 		if not seen.has(state.entity_id):
 			if state.health <= 0:
@@ -102,15 +97,10 @@ func step(commands: Array[SimCommand]) -> bool:
 			PlayerResourcesSystem.step(state, config)
 			var idle_command := SimCommand.new(tick, state.entity_id, 0, 0, 0, 0, state.aim_x, state.aim_y)
 			MovementSystem.step(state, idle_command, config, collision)
-			var spawned: RefCounted = CombatSystem.step_player(
+			var spawned: Variant = CombatSystem.step_player(
 				state, idle_command, config, next_projectile_id, next_field_id, collision, combat_events, transition_policy
 			)
-			if spawned is ProjectileState:
-				projectiles.append(spawned)
-				next_projectile_id += 1
-			elif spawned is FieldState:
-				fields.append(spawned)
-				next_field_id += 1
+			_store_combat_result(spawned)
 	CombatSystem.resolve_instant_casts(players, config, collision, combat_events)
 	fields.sort_custom(func(left: FieldState, right: FieldState) -> bool: return left.entity_id < right.entity_id)
 	fields = CombatSystem.advance_fields(fields, players, config, combat_events)
@@ -118,6 +108,22 @@ func step(commands: Array[SimCommand]) -> bool:
 	projectiles = CombatSystem.advance_projectiles(projectiles, players, config, collision, combat_events)
 	tick += 1
 	return true
+
+
+func _store_combat_result(spawned: Variant) -> void:
+	if spawned is ProjectileState:
+		projectiles.append(spawned)
+		next_projectile_id += 1
+	elif spawned is Array:
+		var stored_count := 0
+		for value: Variant in spawned:
+			if value is ProjectileState:
+				projectiles.append(value)
+				stored_count += 1
+		next_projectile_id += stored_count
+	elif spawned is FieldState:
+		fields.append(spawned)
+		next_field_id += 1
 
 
 static func _idle_defeated(state: PlayerState) -> void:

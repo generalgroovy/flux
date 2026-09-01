@@ -77,26 +77,25 @@ func _test_animation_and_direction_mapping() -> void:
 
 
 func _test_clock_and_action_frame_equivalence() -> void:
-	var at_60 := WellspringCharacterSprite.new()
-	var at_120 := WellspringCharacterSprite.new()
-	check(at_60.set_champion("oh_tipi"), "60 Hz sprite candidate loads")
-	check(at_120.set_champion("oh_tipi"), "120 Hz sprite candidate loads")
+	var first := WellspringCharacterSprite.new()
+	var repeat := WellspringCharacterSprite.new()
+	check(first.set_champion("oh_tipi"), "120 Hz sprite candidate loads")
+	check(repeat.set_champion("oh_tipi"), "repeat 120 Hz sprite candidate loads")
 	var walking := PlayerState.new()
 	walking.movement_mode = PlayerState.MovementMode.WALK
-	check(at_60.sync_from_player(walking, SimConfig.new(60), 30), "60 Hz loop sample synchronizes")
-	check(at_120.sync_from_player(walking, SimConfig.new(120), 60), "120 Hz loop sample synchronizes")
-	equal(at_60.current_frame, at_120.current_frame, "loop frame matches at the same 60/120 wall time")
-	equal(at_60.region_rect, at_120.region_rect, "loop atlas region matches at 60/120 Hz")
+	check(first.sync_from_player(walking, SimConfig.new(120), 60), "120 Hz loop sample synchronizes")
+	check(repeat.sync_from_player(walking, SimConfig.new(120), 60), "repeat 120 Hz loop sample synchronizes")
+	equal(first.current_frame, repeat.current_frame, "120 Hz loop frame selection is deterministic")
+	equal(first.region_rect, repeat.region_rect, "120 Hz loop atlas region is deterministic")
 
-	var jump_60 := _jump_state_at_half_phase(60)
 	var jump_120 := _jump_state_at_half_phase(120)
-	check(at_60.sync_from_player(jump_60, SimConfig.new(60), 8, 0.0), "60 Hz jump sample synchronizes")
-	check(at_120.sync_from_player(jump_120, SimConfig.new(120), 16, 0.0), "120 Hz jump sample synchronizes")
-	equal(at_60.animation_id, "hop", "jump selects hop animation")
-	equal(at_60.current_frame, at_120.current_frame, "normalized jump frame matches at 60/120 Hz")
-	equal(at_60.region_rect, at_120.region_rect, "normalized jump region matches at 60/120 Hz")
-	at_60.free()
-	at_120.free()
+	check(first.sync_from_player(jump_120, SimConfig.new(120), 16, 0.0), "120 Hz jump sample synchronizes")
+	check(repeat.sync_from_player(jump_120, SimConfig.new(120), 16, 0.0), "repeat 120 Hz jump sample synchronizes")
+	equal(first.animation_id, "hop", "jump selects hop animation")
+	equal(first.current_frame, repeat.current_frame, "120 Hz normalized jump frame is deterministic")
+	equal(first.region_rect, repeat.region_rect, "120 Hz normalized jump region is deterministic")
+	first.free()
+	repeat.free()
 
 
 func _test_sync_preserves_authority() -> void:

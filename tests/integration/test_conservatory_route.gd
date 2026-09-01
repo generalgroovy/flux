@@ -2,7 +2,7 @@ extends FluxTestSuite
 
 
 func run() -> int:
-	for tick_rate: int in [60, 120]:
+	for tick_rate: int in [120]:
 		_test_advanced_route(tick_rate)
 		_test_momentum_chime_route(tick_rate)
 	return finish("conservatory-route")

@@ -23,9 +23,11 @@ small and large equal-budget roles. All three share collision and universal
 movement; The Red Baron adds body/clothing-only eight-way art, the editable
 `iron_regent` motion profile, Fire Cinderbolt and Ice Rimewake. Continuous
 analog movement/aim, normalized digital diagonals and simulation authority
-remain unchanged. The next outcome is the deterministic readable five-shot
-fan, followed by one mechanically comparable burst for each first-eight
-element and then the bounded 36-pair chemistry runtime.
+remain unchanged. Cinder Fan now supplies the deterministic readable five-shot
+acceptance, and all three champions share a cell-bounded exterior ink derived
+from The Red Baron's material language without palette or scale replacement.
+The next outcome is one mechanically comparable burst for each remaining
+first-eight element, followed by the bounded 36-pair chemistry runtime.
 
 Make the Wellspring and GUI match the charm, density, readable perspective and
 material richness of the supplied gameplay reference while remaining wholly
@@ -70,7 +72,7 @@ green rollback point throughout.
 V0–V10, universal non-ability movement, natural reusable motion/environment,
 the explicit transition matrix and positive-Flux cadence foundation are green.
 Continue in the authoritative order from `.agent/BACKLOG.md`: five-shot pattern
-simulation, eight first-element burst entries, strict reaction catalog,
+simulation (complete), eight first-element burst entries, strict reaction catalog,
 exposure/contact, shared reaction primitives, lifecycle/presentation, and the
 Crucible playtest package. Do not add another champion before the three current
 roles are validated under pattern pressure.
@@ -80,7 +82,7 @@ roles are validated under pattern pressure.
 At each slice, inspect branch/status/history and current captures; name one
 observable outcome and its deterministic, visual, accessibility, network and
 platform checks; implement it without touching unrelated user files; run focused
-and full tests, imports, independent 60/120 boots, applicable Farflow journeys
+and full tests, imports, an independent 120 Hz boot, applicable Farflow journeys
 and live frame/interactive review; inspect stderr, diff, MTU/performance and
 asset provenance; update the canonical docs and handoff state; commit and push
 one reversible green checkpoint. Always keep the Windows source/package
@@ -91,7 +93,7 @@ visual quality, balance, platform parity or remote play without direct evidence.
 
 ## Immediate eight-direction movement/animation iteration
 
-Continue from the complete v8 foundation atlas: preserve the validated resolver
+Continue from the complete v11 foundation atlas: preserve the validated resolver
 for `south`, `south_east`, `east`, `north_east`, `north`, `north_west`, `west`,
 and `south_west`, the two walk/sprint contacts, and native eight-way evasion art
 while expanding one complete action family at a time on future champions and body contracts. Travel direction and facing
@@ -102,7 +104,7 @@ Keep body/clothing pixels, hand-cast effects, shadows, auras, projectiles and
 environment in independent layers; do not change simulation authority, input,
 collision, timing, resource costs, cooldowns or network rules. Use data-driven
 direction mappings, boundary/hysteresis tests, fail-closed schema checks, stable feet pivots, nearest
-sampling and deterministic 60/120 Hz contact-frame selection. Add focused tests before
+sampling and deterministic 120 Hz contact-frame selection. Add focused tests before
 editing art, run the full Windows gate and source/imported boots, inspect
 eight-direction movement/facing matrix captures at 50/75/100% plus reduced/high-contrast/grayscale
 modes, update `README.md`, `.agent/BACKLOG.md`, `.agent/memory.md` and

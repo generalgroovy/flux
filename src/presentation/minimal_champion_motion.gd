@@ -99,11 +99,12 @@ func sample(profile_id: String, motion_id: String, elapsed_ticks_at_60: float, r
 	var span := maxf(0.0001, float(right.get("at", 1.0)) - float(left.get("at", 0.0)))
 	var blend := clampf((phase - float(left.get("at", 0.0))) / span, 0.0, 1.0)
 	result.offset = _vector2(left.get("offset", []), Vector2.ZERO).lerp(_vector2(right.get("offset", []), Vector2.ZERO), blend)
-	result.scale = _vector2(left.get("scale", []), Vector2.ONE).lerp(_vector2(right.get("scale", []), Vector2.ONE), blend)
+	# Body dimensions belong to the three atlas templates. Motion may translate
+	# the pose and animate detached aura layers, but never resize body pixels.
+	result.scale = Vector2.ONE
 	result.aura_scale = lerpf(float(left.get("aura", 1.0)), float(right.get("aura", 1.0)), blend)
 	if reduced_motion:
 		result.offset *= 0.35
-		result.scale = Vector2.ONE.lerp(result.scale, 0.35)
 		result.aura_scale = lerpf(1.0, result.aura_scale, 0.35)
 	return result
 

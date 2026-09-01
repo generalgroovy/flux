@@ -2,7 +2,7 @@ extends FluxTestSuite
 
 
 func run() -> int:
-	for tick_rate: int in [60, 120]:
+	for tick_rate: int in [120]:
 		_test_replay_at_rate(tick_rate)
 	_test_rate_mismatch_rejected()
 	return finish("replay")

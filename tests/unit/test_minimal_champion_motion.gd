@@ -18,8 +18,7 @@ func _test_repository_motion() -> void:
 		for motion_id: String in MinimalChampionMotion.REQUIRED_MOTIONS:
 			var sample := motion.sample(profile_id, motion_id, 11.0)
 			check(sample.offset.abs().x <= 4.0 and sample.offset.abs().y <= 4.0, "%s/%s stays within translation budget" % [profile_id, motion_id])
-			check(sample.scale.x >= 0.94 and sample.scale.x <= 1.06, "%s/%s stays within horizontal squash budget" % [profile_id, motion_id])
-			check(sample.scale.y >= 0.94 and sample.scale.y <= 1.06, "%s/%s stays within vertical squash budget" % [profile_id, motion_id])
+			equal(sample.scale, Vector2.ONE, "%s/%s cannot resize its body template" % [profile_id, motion_id])
 	equal(motion.movement_accents.size(), MinimalChampionMotion.REQUIRED_ACCENTS.size(), "every declared movement-response family owns one bounded accent")
 	equal(String(motion.accent_by_id("counter_strafe").get("kind", "")), "brake_ticks", "ordinary reversal owns an editable heel-plant accent")
 	equal(String(motion.accent_by_id("impact_recovery").get("kind", "")), "recovery_brace", "impact recovery begins the reusable animation/environment slice with a readable brace accent")
@@ -61,23 +60,22 @@ func _test_complete_movement_mapping() -> void:
 
 
 func _test_tick_rate_parity_and_reduced_motion() -> void:
-	equal(MinimalChampionMotion.tick_at_visual_rate(60, 60), MinimalChampionMotion.tick_at_visual_rate(120, 120), "one second has equal 60/120 visual time")
-	equal(MinimalChampionMotion.tick_at_visual_rate(30, 60, 0.5), MinimalChampionMotion.tick_at_visual_rate(61, 120, 0.0), "interpolated visual time remains rate-independent")
+	equal(MinimalChampionMotion.tick_at_visual_rate(120, 120), 60.0, "one canonical simulation second advances the 60 fps art clock once")
+	equal(MinimalChampionMotion.tick_at_visual_rate(61, 120, 0.0), 30.5, "120 Hz half-ticks map exactly onto the art clock")
 	var motion := MinimalChampionMotion.new()
 	check(motion.load_from_file(), "motion loads for accessibility sample")
 	var normal := motion.sample("buoyant_keeper", "sprint", 7.0, false)
 	var reduced := motion.sample("buoyant_keeper", "sprint", 7.0, true)
 	check(reduced.offset.length() < normal.offset.length(), "reduced motion damps translation")
-	check(reduced.scale.distance_to(Vector2.ONE) < normal.scale.distance_to(Vector2.ONE), "reduced motion damps squash/stretch")
+	equal(normal.scale, Vector2.ONE, "ordinary motion keeps template scale invariant")
+	equal(reduced.scale, Vector2.ONE, "reduced motion keeps template scale invariant")
 	var state := PlayerState.new()
 	var config := SimConfig.new(120)
 	state.hop_mode = PlayerState.MovementMode.HOP
 	state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS) / 2
 	var elapsed_120 := MinimalChampionMotion.elapsed_for_state(state, "air", 0.0, config)
-	var config_60 := SimConfig.new(60)
-	state.hop_ticks = config_60.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS) / 2
-	var elapsed_60 := MinimalChampionMotion.elapsed_for_state(state, "air", 0.0, config_60)
-	check(absf(elapsed_60 - elapsed_120) <= 0.5, "airborne pose phase is equivalent at 60/120 Hz")
+	var expected_half_phase := float(MovementTuning.HOP_DURATION_MS) * 60.0 / 2000.0
+	check(absf(elapsed_120 - expected_half_phase) <= 0.5, "120 Hz airborne half-phase reaches the center of its 60 fps art duration")
 
 
 func _test_locomotion_contact_phase() -> void:
@@ -87,7 +85,6 @@ func _test_locomotion_contact_phase() -> void:
 	equal(motion.locomotion_contact_frame("buoyant_keeper", "walk", 10.9), 0, "contact A holds through the first half-cycle")
 	equal(motion.locomotion_contact_frame("buoyant_keeper", "walk", 11.0), 1, "walk swaps legs at the half-cycle")
 	equal(motion.locomotion_contact_frame("buoyant_keeper", "walk", 22.0), 0, "walk loops back to contact A")
-	var phase_60 := motion.locomotion_contact_frame("grounded_weaver", "sprint", MinimalChampionMotion.tick_at_visual_rate(12, 60), 3)
 	var phase_120 := motion.locomotion_contact_frame("grounded_weaver", "sprint", MinimalChampionMotion.tick_at_visual_rate(24, 120), 3)
-	equal(phase_60, phase_120, "contact-frame cadence is equivalent at 60/120 Hz")
+	equal(phase_120, 1, "120 Hz contact-frame cadence reaches the authored opposite contact")
 	equal(motion.locomotion_contact_frame("buoyant_keeper", "idle", 99.0), 0, "non-locomotion states cannot select an alternate contact")

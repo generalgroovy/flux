@@ -1,13 +1,31 @@
 # Foundation eight-direction body atlas provenance
 
 This directory contains the active body-and-clothing-only production candidate
-for Oh Tipi and S. Wayne. Every grounded, empty-hand cast, hit/recovery, jump,
+for Oh Tipi, S. Wayne and The Red Baron. Every grounded, empty-hand cast, hit/recovery, jump,
 slide, and roll state has dedicated `S/SE/E/NE/N/NW/W/SW` art. Walk and sprint
 also have two opposite contact frames in all eight directions, selected on the
 editable presentation motion profile's half-cycle. Spells,
 elements, auras, projectiles, shadows, environments, tools, and equipment remain
 independent runtime layers, so a pose or spell can be replaced without redrawing
 the other.
+
+The active runtime is `runtime_atlas_eight_v11.png`: 768×2880 RGBA, 96×96
+cells, eight fixed direction columns, ten state/contact rows per champion and
+pivot `(48,84)`. It is built in two deterministic stages:
+
+```powershell
+python scripts/build_cardinal_champion_atlas.py assets/sprites/champions_v3/foundation/source_cardinal_oh_tipi_v4.png assets/sprites/champions_v3/foundation/source_cardinal_s_wayne_v4.png assets/sprites/champions_v3/foundation/runtime_atlas_eight_v8.png --oh-tipi-movement assets/sprites/champions_v3/foundation/source_movement_oh_tipi_v5.png --s-wayne-movement assets/sprites/champions_v3/foundation/source_movement_s_wayne_v5.png --oh-tipi-diagonal-core assets/sprites/champions_v3/foundation/source_diagonal_core_oh_tipi_v6.png --s-wayne-diagonal-core assets/sprites/champions_v3/foundation/source_diagonal_core_s_wayne_v6.png --oh-tipi-diagonal-locomotion assets/sprites/champions_v3/foundation/source_diagonal_locomotion_oh_tipi_v7.png --s-wayne-diagonal-locomotion assets/sprites/champions_v3/foundation/source_diagonal_locomotion_s_wayne_v7.png --oh-tipi-locomotion-phase-b assets/sprites/champions_v3/foundation/source_cardinal_locomotion_phase_b_oh_tipi_v8.png --s-wayne-locomotion-phase-b assets/sprites/champions_v3/foundation/source_cardinal_locomotion_phase_b_s_wayne_v8.png --oh-tipi-diagonal-actions assets/sprites/champions_v3/foundation/source_diagonal_actions_oh_tipi_v8.png --s-wayne-diagonal-actions assets/sprites/champions_v3/foundation/source_diagonal_actions_s_wayne_v8.png
+python scripts/build_red_baron_foundation_atlas.py assets/sprites/champions_v3/foundation/runtime_atlas_eight_v8.png assets/concept/red-baron-eight-direction-source-v1.png assets/sprites/champions_v3/foundation/runtime_atlas_eight_v11.png
+```
+
+The second stage adds The Red Baron at an authored 68 px body height, preserves
+all champions at runtime scale `1.00`, then derives one restrained exterior ink
+from the darkest visible Red Baron material clusters. The one-pixel pass is
+bounded to each cell: it cannot recolor, resize, merge or bleed silhouettes.
+Current file SHA-256 is
+`1a03066760e9cb5e8be814a005880b19e5aba062640f48fe10eeee0a5585e9d2`;
+Godot-decoded RGBA SHA-256 is
+`3f8175d534d42fe5325c5cba86668381216c17f2a4f14a77b4e168db0a7c0faa`.
 
 ## Reproducible layout
 

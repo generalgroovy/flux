@@ -6,7 +6,7 @@ const YARD_PATH: String = "res://content/maps/sanctum_material_yard_v1.json"
 
 
 func run() -> int:
-	for tick_rate: int in [60, 120]:
+	for tick_rate: int in [120]:
 		_test_seed_immutability_and_reset(tick_rate)
 		_test_bounded_deterministic_work(tick_rate)
 	_test_invalid_configuration_fails_closed()
@@ -77,7 +77,7 @@ func _test_bounded_deterministic_work(tick_rate: int) -> void:
 	check(grid.wake_cell(first_cell % grid.width, floori(float(first_cell) / float(grid.width))), "%d Hz duplicate wake is accepted idempotently" % tick_rate)
 	equal(grid.awake_indices.size(), 600, "%d Hz duplicate wake does not duplicate work" % tick_rate)
 	var processed: PackedInt32Array = grid.process_awake()
-	var expected_budget := 512 if tick_rate == 60 else 256
+	var expected_budget := 256
 	equal(processed.size(), expected_budget, "%d Hz work is capped by per-second budget" % tick_rate)
 	equal(processed[0], mutable_indices[0], "%d Hz work begins at lowest canonical cell index" % tick_rate)
 	equal(processed[processed.size() - 1], mutable_indices[expected_budget - 1], "%d Hz work is processed in canonical order" % tick_rate)
@@ -99,7 +99,7 @@ func _test_invalid_configuration_fails_closed() -> void:
 	var content: Array = _content()
 	var grid := MaterialGrid.new()
 	check(not grid.initialize(content[1], content[0], SimConfig.new(90)), "unsupported material-grid tick rate fails closed")
-	check(grid.last_error.contains("60/120"), "invalid tick-rate failure is diagnosable")
+	check(grid.last_error.contains("120"), "invalid tick-rate failure is diagnosable")
 
 	var changed_registry := MaterialRegistry.new()
 	changed_registry.data = (content[0] as MaterialRegistry).data.duplicate(true)
@@ -110,6 +110,6 @@ func _test_invalid_configuration_fails_closed() -> void:
 	check(changed_registry.validate(), "changed but valid registry validates independently")
 	var mismatched_grid := MaterialGrid.new()
 	check(
-		not mismatched_grid.initialize(content[1], changed_registry, SimConfig.new(60)),
+		not mismatched_grid.initialize(content[1], changed_registry, SimConfig.new(120)),
 		"yard/catalog hash mismatch fails closed",
 	)

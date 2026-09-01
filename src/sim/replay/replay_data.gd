@@ -13,7 +13,7 @@ var commands: Array[SimCommand] = []
 var expected_hashes := PackedStringArray()
 
 
-func _init(requested_tick_rate: int = 60, requested_seed: int = 1) -> void:
+func _init(requested_tick_rate: int = SimConfig.TICK_RATE, requested_seed: int = 1) -> void:
 	tick_rate = requested_tick_rate
 	seed = requested_seed
 

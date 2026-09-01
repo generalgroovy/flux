@@ -7,13 +7,8 @@ func run() -> int:
 	equal(MovementTuning.DECELERATION, 3_000_000, "ordinary braking is deliberately tighter")
 	equal(MovementTuning.COUNTER_STRAFE_MULTIPLIER, 1900, "counter-strafe owns the crisp reversal profile")
 	check(MovementTuning.compatibility_hash().length() == 64, "all movement tuning contributes a stable compatibility identity")
-	var metrics_60 := _response_metrics(60)
 	var metrics_120 := _response_metrics(120)
-	_test_bounds(metrics_60)
 	_test_bounds(metrics_120)
-	check(absi(int(metrics_60["walk_distance"]) - int(metrics_120["walk_distance"])) <= 2_000, "one-second walk distance remains equivalent at 60/120 Hz")
-	check(absi(int(metrics_60["stop_distance"]) - int(metrics_120["stop_distance"])) <= 2_000, "stop distance remains equivalent at 60/120 Hz")
-	check(absi(int(metrics_60["reverse_overshoot"]) - int(metrics_120["reverse_overshoot"])) <= 2_000, "reversal drift remains equivalent at 60/120 Hz")
 	return finish("movement-response")
 
 

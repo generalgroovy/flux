@@ -2,7 +2,7 @@ extends FluxTestSuite
 
 
 func run() -> int:
-	for tick_rate: int in [60, 120]:
+	for tick_rate: int in [120]:
 		_test_eight_direction_ground_parity(tick_rate)
 		_test_analog_ground_magnitude(tick_rate)
 		_test_sprint_and_hop(tick_rate)
@@ -116,17 +116,14 @@ func _test_directional_hop_control(tick_rate: int) -> void:
 
 
 func _test_air_control_tick_rate_parity() -> void:
-	var world_60 := SimWorld.new(60)
-	var world_120 := SimWorld.new(120)
-	_step(world_60, 707, 707, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
-	_step(world_120, 707, 707, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
-	for _index: int in range(world_60.config.milliseconds_to_ticks(120)):
-		_step(world_60, -707, -707, SimCommand.HELD_JUMP)
-	for _index: int in range(world_120.config.milliseconds_to_ticks(120)):
-		_step(world_120, -707, -707, SimCommand.HELD_JUMP)
-	var direction_60 := Vector2i(world_60.player().hop_x, world_60.player().hop_y)
-	var direction_120 := Vector2i(world_120.player().hop_x, world_120.player().hop_y)
-	check((direction_60 - direction_120).abs().x <= 64 and (direction_60 - direction_120).abs().y <= 64, "120 ms airborne steering is equivalent at 60/120 Hz")
+	var first := SimWorld.new(120)
+	var repeat := SimWorld.new(120)
+	_step(first, 707, 707, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+	_step(repeat, 707, 707, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+	for _index: int in range(first.config.milliseconds_to_ticks(120)):
+		_step(first, -707, -707, SimCommand.HELD_JUMP)
+		_step(repeat, -707, -707, SimCommand.HELD_JUMP)
+	equal(Vector2i(first.player().hop_x, first.player().hop_y), Vector2i(repeat.player().hop_x, repeat.player().hop_y), "120 Hz airborne steering is deterministic")
 
 
 func _test_double_jump(tick_rate: int) -> void:
@@ -486,16 +483,11 @@ func _test_impact_influence_and_recovery(tick_rate: int) -> void:
 
 
 func _test_impact_tick_rate_parity() -> void:
-	var samples: Dictionary = {}
-	for tick_rate: int in [60, 120]:
-		var world := SimWorld.new(tick_rate)
+	var first := SimWorld.new(120)
+	var repeat := SimWorld.new(120)
+	for world: SimWorld in [first, repeat]:
 		var state: PlayerState = world.player()
-		check(MovementSystem.apply_control_state(state, PlayerState.ControlState.LAUNCHED, 200, Vector2i.RIGHT, 720_000, world.config), "%d Hz parity launch applies" % tick_rate)
+		check(MovementSystem.apply_control_state(state, PlayerState.ControlState.LAUNCHED, 200, Vector2i.RIGHT, 720_000, world.config), "120 Hz deterministic launch applies")
 		while state.control_state == PlayerState.ControlState.LAUNCHED:
 			_step(world, 0, -1000)
-		samples[tick_rate] = Vector4i(state.position_x, state.position_y, state.control_x, state.control_y)
-	var sixty: Vector4i = samples[60]
-	var one_twenty: Vector4i = samples[120]
-	check(absi(sixty.x - one_twenty.x) <= 8000, "impact travel remains within the measured 60/120 position tolerance")
-	check(absi(sixty.y - one_twenty.y) <= 8000, "impact influence remains within the measured 60/120 lateral tolerance")
-	check(absi(sixty.z - one_twenty.z) <= 20 and absi(sixty.w - one_twenty.w) <= 20, "impact influence direction is equivalent at 60/120 Hz")
+	equal(first.player().canonical_values(), repeat.player().canonical_values(), "120 Hz impact travel and directional influence are deterministic")

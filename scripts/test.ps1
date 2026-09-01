@@ -10,7 +10,5 @@ Invoke-FluxGodotChecked $godotBin @('--headless', '--editor', '--path', $repoRoo
 if (-not $SkipFullSuite) {
     Invoke-FluxGodotChecked $godotBin @('--headless', '--path', $repoRoot, '--script', 'res://tests/run_all.gd') (Join-Path $logRoot 'suite.log')
 }
-foreach ($tickRate in @(60, 120)) {
-    Invoke-FluxGodotChecked $godotBin @('--headless', '--path', $repoRoot, '--quit-after', '3', '--fixed-fps', "$tickRate", '--', "--tick-rate=$tickRate") (Join-Path $logRoot "boot-$tickRate.log")
-}
+Invoke-FluxGodotChecked $godotBin @('--headless', '--path', $repoRoot, '--quit-after', '3', '--fixed-fps', '120', '--', '--tick-rate=120') (Join-Path $logRoot 'boot-120.log')
 Write-Output 'PASS: Windows source gates completed.'

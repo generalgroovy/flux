@@ -66,7 +66,12 @@ def isolated_sprite(
     left, right = proportional_bounds(column, SOURCE_COLUMNS, source.width)
     top, bottom = proportional_bounds(row, source_rows, source.height)
     transparent = remove_edge_matte(source.crop((left, top, right, bottom)))
-    bounds = transparent.getbbox()
+    # Hidden RGB under zero alpha is still present in generated source PNGs.
+    # Only visible alpha may define a reusable character template footprint.
+    visible_alpha = transparent.getchannel("A").point(
+        lambda value: 255 if value >= 48 else 0
+    )
+    bounds = visible_alpha.getbbox()
     if bounds is None:
         raise ValueError(f"source cell {row},{column} contains no isolated sprite")
     return transparent.crop(bounds)

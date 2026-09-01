@@ -20,6 +20,11 @@ func _test_repository_kit() -> void:
 		check(kit.contact_profiles.has(motion_id), "%s has a surface-contact recipe" % motion_id)
 	equal(kit.receiving_shadow_profiles.size(), 4, "water and all three ground families own receiving-shadow recipes")
 	check(kit.elevation_shadow_opacity_step > 0.0, "receiving shadows expose a bounded elevation cue")
+	var masonry_cell := kit.combat_floor.get("masonry_cell", []) as Array
+	equal(Vector2i(int(masonry_cell[0]), int(masonry_cell[1])), Vector2i(40, 24), "combat floors use quiet staggered masonry rather than a debug grid")
+	var pockets := NaturalMapKit.arena_safe_pockets(Rect2(0, 0, 600, 420), 54.0)
+	equal(pockets.size(), 4, "proving floor exposes four readable response pockets")
+	check(pockets[0].distance_to(pockets[2]) > 400.0, "response pockets preserve a broad central bullet lane")
 
 
 func _test_surface_resolution() -> void:
@@ -64,3 +69,8 @@ func _test_fail_closed_budget() -> void:
 	shadow_kit.data = source.data.duplicate(true)
 	(((shadow_kit.data["receiving_shadows"] as Dictionary)["profiles"] as Dictionary)["water"] as Dictionary)["rim_opacity"] = 0.9
 	check(not shadow_kit.validate(), "overstated receiving-shadow rims fail closed")
+	var arena_kit := NaturalMapKit.new()
+	arena_kit.language = language
+	arena_kit.data = source.data.duplicate(true)
+	(((arena_kit.data["combat_floor"] as Dictionary)["arena"] as Dictionary)["marker_count"]) = 128
+	check(not arena_kit.validate(), "unbounded arena marks fail closed")

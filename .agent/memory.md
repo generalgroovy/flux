@@ -3,6 +3,39 @@
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 
+## 2026-09-01 - 120 Hz pattern room and shared champion ink
+
+- The runtime is now deliberately 120 Hz only and protocol 32. Startup,
+  preferences, captures, tests, replay fixtures and material/movement harnesses
+  reject obsolete tick rates rather than maintaining two tuning paths.
+- Cinder Fan is the first complete pattern spell: five stable ordered Fire
+  projectiles at `-24,-12,0,+12,+24`, one positive Flux spend, one cooldown,
+  bounded event/projectile/snapshot work and cast-local single-target hit
+  protection. It is globally weaveable through the existing 3×4 Spell Loom.
+- All live projectile families are roughly 13–15% slower than the prior
+  checkpoint and have a +2 px simulation radius. Presentation clamps readable
+  diameter to 28–46 px, interpolates authoritative fixed-tick positions, and
+  composes a dark under-silhouette, exact collision rim, travel cue, impact and
+  restrained trail without owning outcomes.
+- The Proving Court now uses a reusable quiet bullet-room floor: staggered
+  masonry, crossed lanes, bounded cadence marks and four response pockets.
+  Campus topology, worldbone, routes, cover and collision are unchanged.
+- Foundation atlas V11 keeps all champion/actions at runtime scale `1.00` and
+  applies a cell-bounded one-pixel exterior ink derived from The Red Baron's
+  darkest visible material clusters. Oh Tipi, S. Wayne and Red Baron preserve
+  their authored palettes, ancestry silhouettes and middle/small/large body
+  sizes. Atlas SHA-256 is
+  `1a03066760e9cb5e8be814a005880b19e5aba062640f48fe10eeee0a5585e9d2`.
+- `scripts\test.ps1`: 57 suites / 17,057 assertions, zero failures; Windows
+  source/import and independent 120 Hz/protocol-32 boot pass. Truthful
+  1280×720/120-frame evidence is
+  `.godot/visual-captures/bullet-room-red-baron-v1`; recorded render averages
+  on this machine are 6.25 ms CPU and 5.21 ms GPU per frame, inside the 8.33 ms
+  target (encoding time excluded).
+- Next after the requested stop: implement one shared comparable burst contract
+  across the remaining first-eight elements, with the same bounded geometry,
+  Spell Loom availability, shape-first read and 120 Hz evidence.
+
 ## 2026-08-31 - visual acceptance and first large champion
 
 - D7 was re-reviewed after material/action polish at cohesion 4.5, silhouette

@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [ValidatePattern('^[a-z0-9][a-z0-9-]{0,19}$')][string]$Name = 'pattern-density',
-    [ValidateSet(60, 120)][int]$TickRate = 60,
+    [ValidateSet(120)][int]$TickRate = 120,
     [ValidateRange(90, 120)][int]$Frames = 120,
     [ValidateRange(1024, 65520)][int]$Port = 24950
 )

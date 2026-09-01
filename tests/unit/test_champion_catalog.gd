@@ -10,7 +10,7 @@ func run() -> int:
 	_test_affinity_point_budget_and_treevor_exception()
 	_test_unique_affinity_pairs()
 	_test_profiles_are_authoritative()
-	for tick_rate: int in [60, 120]:
+	for tick_rate: int in [120]:
 		_test_profiles_execute_at_rate(tick_rate)
 	_test_invalid_profiles_fail_closed()
 	return finish("champion-catalog")
@@ -110,7 +110,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.primary_wire_id, CombatTuning.RILLSHOT_WIRE_ID, "Oh Tipi equips Rillshot")
 	equal(state.active_1_wire_id, CombatTuning.TIDELINE_WIRE_ID, "Oh Tipi equips Tideline")
 	equal(state.active_2_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "Oh Tipi equips Rimewake as the third proven spell")
-	equal(Array(state.spell_wire_ids), [140, 141, 144, 101, 110, 142, 143, 145, 0, 0, 0, 0], "Oh Tipi leads the global weave with champion spells")
+	equal(Array(state.spell_wire_ids), [140, 141, 144, 101, 110, 142, 143, 145, 146, 0, 0, 0], "Oh Tipi leads the global weave with champion spells")
 	equal(state.health, 108_000, "Oh Tipi starts at authored maximum Health")
 	equal(state.stamina_maximum, 108_000, "Oh Tipi has the larger Stamina reserve")
 	state.health = 54_000
@@ -121,7 +121,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.primary_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "S. Wayne equips Eclipse Disc")
 	equal(state.active_1_wire_id, CombatTuning.POCKET_ECLIPSE_WIRE_ID, "S. Wayne equips Pocket Eclipse")
 	equal(state.active_2_wire_id, 0, "S. Wayne does not expose an unfinished third spell")
-	equal(Array(state.spell_wire_ids), [142, 143, 101, 110, 140, 141, 144, 145, 0, 0, 0, 0], "champion switch keeps the global library and leads with the new champion kit")
+	equal(Array(state.spell_wire_ids), [142, 143, 101, 110, 140, 141, 144, 145, 146, 0, 0, 0], "champion switch keeps the global library and leads with the new champion kit")
 	equal(state.health, 45_000, "Health ratio survives an in-world champion switch")
 	equal(state.flux, 56_000, "Flux ratio survives an in-world champion switch")
 	equal(state.stamina, 48_000, "Stamina ratio survives an in-world champion switch")
@@ -130,7 +130,8 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.champion_wire_id, 3, "The Red Baron owns stable wire id 3")
 	equal(state.primary_wire_id, CombatTuning.CINDERBOLT_WIRE_ID, "The Red Baron equips Cinderbolt")
 	equal(state.active_1_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "The Red Baron equips Rimewake")
-	equal(Array(state.spell_wire_ids), [145, 144, 101, 110, 140, 141, 142, 143, 0, 0, 0, 0], "The Red Baron leads the weave with Fire/Ice spells")
+	equal(state.active_2_wire_id, CombatTuning.CINDERFAN_WIRE_ID, "The Red Baron equips Cinder Fan as readable lane pressure")
+	equal(Array(state.spell_wire_ids), [145, 144, 146, 101, 110, 140, 141, 142, 143, 0, 0, 0], "The Red Baron leads the weave with Fire/Ice spells")
 	equal(state.health_maximum, 132_000, "large body owns the deepest Health reserve")
 	equal(state.stamina_maximum, 128_000, "large body owns the deepest Stamina reserve")
 	equal(state.movement_speed_ratio, 910, "large body pays for staying power with deliberate ground speed")

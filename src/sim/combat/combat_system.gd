@@ -11,7 +11,7 @@ static func step_player(
 	world: CollisionWorld,
 	events: Array[Dictionary],
 	transition_policy: ActionTransitionPolicy,
-) -> RefCounted:
+) -> Variant:
 	for property_name: StringName in [
 		&"cast_recovery_ticks", &"edgeweave_cooldown_ticks",
 	]:
@@ -186,7 +186,7 @@ static func _release_cast(
 	field_id: int,
 	world: CollisionWorld,
 	events: Array[Dictionary],
-) -> RefCounted:
+) -> Variant:
 	var wire_id: int = state.pending_cast_wire_id
 	var definition := CombatTuning.cast_definition(wire_id)
 	if definition.is_empty():
@@ -204,45 +204,86 @@ static func _release_cast(
 		return null
 	if shape == "field":
 		return _release_field(state, wire_id, field_id, definition, config, world, events)
+	return _release_projectiles(state, wire_id, projectile_id, definition, config, world, events)
+
+
+static func _release_projectiles(
+	state: PlayerState,
+	wire_id: int,
+	first_projectile_id: int,
+	definition: Dictionary,
+	config: SimConfig,
+	world: CollisionWorld,
+	events: Array[Dictionary],
+) -> Array[ProjectileState]:
 	var speed := int(definition["speed"])
 	var radius := int(definition["radius"])
-
-	var direction := Vector2i(state.pending_cast_aim_x, state.pending_cast_aim_y)
+	var base_direction := Vector2i(state.pending_cast_aim_x, state.pending_cast_aim_y)
+	var rotations: Array = definition.get("projectile_rotations", [Vector2i(1000, 0)])
+	var angles: Array = definition.get("projectile_angles_degrees", [0])
 	@warning_ignore("integer_division")
 	var spawn_distance: int = state.radius + radius + CombatTuning.PROJECTILE_SPAWN_CLEARANCE
-	@warning_ignore("integer_division")
-	var spawn_position := Vector2i(
-		state.position_x + direction.x * spawn_distance / 1000,
-		state.position_y + direction.y * spawn_distance / 1000,
-	)
+	var directions: Array[Vector2i] = []
+	var spawn_positions: Array[Vector2i] = []
+	for rotation_value: Variant in rotations:
+		var direction := _rotate_fixed_direction(base_direction, rotation_value as Vector2i)
+		@warning_ignore("integer_division")
+		var spawn_position := Vector2i(
+			state.position_x + direction.x * spawn_distance / 1000,
+			state.position_y + direction.y * spawn_distance / 1000,
+		)
+		directions.append(direction)
+		spawn_positions.append(spawn_position)
 	state.pending_cast_wire_id = 0
 	state.pending_cast_ticks = 0
-	if not world.can_occupy(spawn_position, radius):
-		events.append({"type": "cast_blocked", "entity_id": state.entity_id, "wire_id": wire_id})
-		state.last_event = "cast_blocked_%d" % wire_id
-		return null
-	@warning_ignore("integer_division")
-	var velocity := Vector2i(direction.x * speed / 1000, direction.y * speed / 1000)
-	var projectile := ProjectileState.new(
-		projectile_id,
-		state.entity_id,
-		state.team_id,
-		wire_id,
-		int(definition["element_wire_id"]),
-		spawn_position,
-		velocity,
-		radius,
-		int(definition["damage"]),
-		config.milliseconds_to_ticks(int(definition["lifetime_ms"])),
-		int(definition["hit_control_state"]),
-		int(definition["hit_control_duration_ms"]),
-		int(definition["hit_control_speed"]),
-		int(definition["hit_control_slow_ratio"]),
-		int(definition["remaining_bounces"]),
-	)
-	events.append({"type": "projectile_spawned", "projectile_id": projectile_id, "owner_id": state.entity_id, "wire_id": wire_id})
+	for spawn_position: Vector2i in spawn_positions:
+		if not world.can_occupy(spawn_position, radius):
+			events.append({"type": "cast_blocked", "entity_id": state.entity_id, "wire_id": wire_id})
+			state.last_event = "cast_blocked_%d" % wire_id
+			return []
+	var projectiles: Array[ProjectileState] = []
+	for lane_index: int in range(directions.size()):
+		var direction := directions[lane_index]
+		@warning_ignore("integer_division")
+		var velocity := Vector2i(direction.x * speed / 1000, direction.y * speed / 1000)
+		var projectile_id := first_projectile_id + lane_index
+		projectiles.append(ProjectileState.new(
+			projectile_id,
+			state.entity_id,
+			state.team_id,
+			wire_id,
+			int(definition["element_wire_id"]),
+			spawn_positions[lane_index],
+			velocity,
+			radius,
+			int(definition["damage"]),
+			config.milliseconds_to_ticks(int(definition["lifetime_ms"])),
+			int(definition["hit_control_state"]),
+			int(definition["hit_control_duration_ms"]),
+			int(definition["hit_control_speed"]),
+			int(definition["hit_control_slow_ratio"]),
+			int(definition["remaining_bounces"]),
+		))
+		events.append({
+			"type": "projectile_spawned",
+			"projectile_id": projectile_id,
+			"owner_id": state.entity_id,
+			"wire_id": wire_id,
+			"lane_index": lane_index,
+			"lane_angle_degrees": int(angles[lane_index]) if lane_index < angles.size() else 0,
+			"lane_count": directions.size(),
+		})
 	state.last_event = "cast_release_%d" % wire_id
-	return projectile
+	return projectiles
+
+
+static func _rotate_fixed_direction(direction: Vector2i, rotation: Vector2i) -> Vector2i:
+	@warning_ignore("integer_division")
+	var rotated := Vector2i(
+		(direction.x * rotation.x - direction.y * rotation.y) / SimConfig.FIXED_SCALE,
+		(direction.x * rotation.y + direction.y * rotation.x) / SimConfig.FIXED_SCALE,
+	)
+	return SimCommand._normalized_direction(rotated.x, rotated.y)
 
 
 static func _release_field(

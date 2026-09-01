@@ -107,7 +107,7 @@ func draw(
 		district_index += 1
 	for route_value: Variant in layout.data.get("routes", []):
 		_draw_route(canvas, route_value as Dictionary)
-	_draw_arena(canvas, layout.arena_definition)
+	_draw_arena(canvas, layout.arena_definition, presentation_tick, reduced_effects)
 	for building_value: Variant in layout.data.get("buildings", []):
 		_draw_building(canvas, building_value as Dictionary, focus_world_position)
 	for landmark_value: Variant in layout.data.get("landmarks", []):
@@ -120,10 +120,12 @@ func draw(
 		_draw_district_label(canvas, district_value as Dictionary)
 
 
-func _draw_arena(canvas: CanvasItem, definition: Dictionary) -> void:
+func _draw_arena(canvas: CanvasItem, definition: Dictionary, tick: int, reduced_effects: bool) -> void:
 	if definition.is_empty():
 		return
 	var bounds := SanctumCampusLayout._parse_bounds(definition.get("bounds", []))
+	if natural_kit != null:
+		natural_kit.draw_arena_floor(canvas, bounds, tick, reduced_effects)
 	canvas.draw_rect(Rect2(bounds), Color(BRASS, 0.22), false, 4.0)
 	canvas.draw_rect(Rect2(bounds.grow(-8)), Color(PARCHMENT, 0.16), false, 2.0)
 	var court_label := "PROVING COURT · FIRST %d" % int(definition.get("score_limit", 0))
@@ -204,21 +206,30 @@ func _draw_district(canvas: CanvasItem, district: Dictionary, index: int) -> voi
 
 
 func _draw_cardinal_floor(canvas: CanvasItem, bounds: Rect2i, style: String, seed: int) -> void:
-	# Square screen-cardinal cells communicate navigation. Lines stay under the
-	# quiet-lane contrast budget and never become collision authority.
-	var cell_size := 32
-	var line_color := Color(STONE_LIGHT if style != "garden" else MOSS, 0.10)
-	for x: int in range(bounds.position.x + cell_size, bounds.end.x, cell_size):
-		canvas.draw_line(Vector2(x, bounds.position.y + 8), Vector2(x, bounds.end.y - 8), line_color, 1.0)
-	for y: int in range(bounds.position.y + cell_size, bounds.end.y, cell_size):
-		canvas.draw_line(Vector2(bounds.position.x + 8, y), Vector2(bounds.end.x - 8, y), line_color, 1.0)
-	for y: int in range(bounds.position.y + 16, bounds.end.y - 8, 32):
-		for x: int in range(bounds.position.x + 16, bounds.end.x - 8, 32):
-			var selector := (x / 32 + y / 32 + seed) % 5
-			if selector == 0:
-				canvas.draw_rect(Rect2(x + 5, y + 5, 3, 2), Color(STONE_LIGHT, 0.15), true)
-			elif selector == 3 and style == "garden":
-				canvas.draw_rect(Rect2(x + 7, y + 4, 2, 3), Color(MOSS, 0.19), true)
+	# Quiet staggered pavers replace the old full-screen debug-like square grid.
+	# The garden keeps sparse organic marks; masonry rooms retain cardinal read
+	# through short seams instead of high-frequency lines across combat lanes.
+	if style == "garden":
+		for y: int in range(bounds.position.y + 20, bounds.end.y - 10, 48):
+			for x: int in range(bounds.position.x + 20, bounds.end.x - 10, 48):
+				var selector := (x / 48 + y / 48 + seed) % 4
+				if selector == 0:
+					canvas.draw_line(Vector2(x - 3, y + 2), Vector2(x, y - 3), Color(MOSS, 0.16), 1.0)
+					canvas.draw_line(Vector2(x, y - 3), Vector2(x + 3, y + 1), Color(GRASS_LIGHT, 0.13), 1.0)
+		return
+	var cell_width := 40
+	var cell_height := 24
+	var seam := Color(STONE_LIGHT, 0.075 if style == "nexus" else 0.065)
+	for y: int in range(bounds.position.y + cell_height, bounds.end.y, cell_height):
+		var row_index := (y - bounds.position.y) / cell_height
+		var offset := cell_width / 2 if row_index % 2 == 1 else 0
+		for x: int in range(bounds.position.x + 8 - offset, bounds.end.x - 8, cell_width):
+			var start_x := maxf(float(bounds.position.x + 8), float(x + 3))
+			var end_x := minf(float(bounds.end.x - 8), float(x + cell_width - 3))
+			if end_x > start_x:
+				canvas.draw_line(Vector2(start_x, y), Vector2(end_x, y), seam, 1.0)
+			if x > bounds.position.x + 8 and x < bounds.end.x - 8:
+				canvas.draw_line(Vector2(x, y - 4), Vector2(x, y + 4), seam, 1.0)
 
 
 func _draw_district_edge_garden(canvas: CanvasItem, bounds: Rect2i, index: int) -> void:

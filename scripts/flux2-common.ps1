@@ -68,7 +68,7 @@ function Invoke-FluxGodotChecked {
 }
 
 function Get-FluxTickRate([int]$Requested) {
-    if ($Requested -notin @(60, 120)) { throw 'TickRate must be 60 or 120.' }
+    if ($Requested -ne 120) { throw 'TickRate must be 120.' }
     return $Requested
 }
 

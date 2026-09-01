@@ -94,7 +94,6 @@ const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"spell_layer_alt": KEY_ALT,
 	&"reset_match": KEY_R,
 	&"toggle_debug_overlay": KEY_F1,
-	&"toggle_tick_rate": KEY_F6,
 	&"toggle_movement_reference": KEY_F7,
 	&"toggle_pov_mode": KEY_F8,
 	&"adjust_pov_angle": KEY_F9,
@@ -266,6 +265,10 @@ func apply_dictionary(data: Dictionary) -> bool:
 		return false
 	for raw_action: Variant in binding_data:
 		var action := StringName(str(raw_action))
+		if action == &"toggle_tick_rate":
+			# Schema 1-9 saves may retain the retired F6 cadence toggle. The
+			# canonical 120 Hz runtime ignores it during lossless migration.
+			continue
 		if requested_schema <= 6 and action == &"spell_5":
 			continue
 		if not DEFAULT_KEYBOARD_BINDINGS.has(action):
@@ -282,6 +285,7 @@ func apply_dictionary(data: Dictionary) -> bool:
 	for action: StringName in DEFAULT_KEYBOARD_BINDINGS:
 		if not requested_bindings.has(action):
 			requested_bindings[action] = DEFAULT_KEYBOARD_BINDINGS[action]
+	requested_bindings.erase(&"toggle_tick_rate")
 	if requested_schema == 1:
 		if requested_bindings[&"jump"] == LEGACY_DEFAULT_KEYBOARD_BINDINGS[&"jump"]:
 			requested_bindings[&"jump"] = DEFAULT_KEYBOARD_BINDINGS[&"jump"]

@@ -74,7 +74,7 @@ func validate(load_textures: bool = true) -> bool:
 	return _validate_assets(load_textures)
 
 
-func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int, reduced_effects: bool) -> bool:
+func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int, reduced_effects: bool, interpolation_alpha: float = 1.0) -> bool:
 	if canvas == null or projectile == null or catalog == null:
 		return false
 	var ability := catalog.ability_from_wire(projectile.source_wire_id)
@@ -83,18 +83,24 @@ func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int,
 	var element := String(ability.get("element", "neutral"))
 	if not textures_by_element.has(element):
 		return false
-	var position := Vector2(projectile.position_x, projectile.position_y) / SimConfig.FIXED_SCALE
-	var velocity := Vector2(projectile.velocity_x, projectile.velocity_y)
-	var row := direction_index(velocity)
+	var position := ProjectilePresentationMotion.interpolated_position(projectile, interpolation_alpha)
+	var direction := ProjectilePresentationMotion.travel_direction(projectile)
+	var row := direction_index(direction)
 	var column := travel_column(tick, projectile.entity_id, reduced_effects)
 	var source := Rect2(column * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE)
 	var radius := float(projectile.radius) / SimConfig.FIXED_SCALE
-	var visual_size := clampf(radius * 2.2, 24.0, 40.0)
+	var visual_size := ProjectilePresentationMotion.visual_diameter(projectile)
 	var destination := Rect2(position - Vector2.ONE * visual_size * 0.5, Vector2.ONE * visual_size)
+	var dark := language.element_color(element, "dark")
 	var bright := language.element_color(element, "bright")
-	canvas.draw_circle(position + Vector2(0.0, maxf(2.0, radius * 0.35)), maxf(2.0, radius * 0.78), Color(0.02, 0.03, 0.03, 0.28))
+	var trail_start := position - direction * ProjectilePresentationMotion.trail_length(projectile, reduced_effects)
+	canvas.draw_line(trail_start, position - direction * radius * 0.45, Color(dark, 0.62), maxf(3.0, radius * 0.72), true)
+	canvas.draw_line(trail_start + direction * 2.0, position - direction * radius * 0.45, Color(bright, 0.38), maxf(1.5, radius * 0.34), true)
+	canvas.draw_circle(position + Vector2(0.0, maxf(3.0, radius * 0.48)), maxf(3.0, visual_size * 0.30), Color(0.02, 0.03, 0.03, 0.32))
+	canvas.draw_circle(position, visual_size * 0.45, Color(dark, 0.46))
 	canvas.draw_texture_rect_region(textures_by_element[element], destination, source)
-	canvas.draw_arc(position, maxf(2.0, radius), 0.0, TAU, 12, Color(bright, 0.34 if not reduced_effects else 0.48), 1.0)
+	canvas.draw_arc(position, maxf(2.0, radius), 0.0, TAU, 16, Color(bright, 0.52 if not reduced_effects else 0.66), 1.5)
+	canvas.draw_circle(position + ProjectilePresentationMotion.leading_point(projectile), 2.0, Color(bright, 0.92))
 	for bounce_index: int in range(mini(projectile.remaining_bounces, 3)):
 		canvas.draw_circle(position + Vector2(radius + 4.0 + bounce_index * 4.0, -radius - 2.0), 1.5, bright)
 	return true

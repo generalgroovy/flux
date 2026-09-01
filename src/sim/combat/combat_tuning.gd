@@ -10,8 +10,8 @@ const PRIMARY_FLUX_COST: int = 7_000
 const PRIMARY_COOLDOWN_MS: int = 200
 const PRIMARY_STARTUP_MS: int = 60
 const PRIMARY_RECOVERY_MS: int = 80
-const PRIMARY_SPEED: int = 1_120_000
-const PRIMARY_RADIUS: int = 5_000
+const PRIMARY_SPEED: int = 960_000
+const PRIMARY_RADIUS: int = 7_000
 const PRIMARY_DAMAGE: int = 10_000
 const PRIMARY_LIFETIME_MS: int = 1_200
 
@@ -21,8 +21,8 @@ const ACTIVE_1_FLUX_COST: int = 24_000
 const ACTIVE_1_COOLDOWN_MS: int = 900
 const ACTIVE_1_STARTUP_MS: int = 180
 const ACTIVE_1_RECOVERY_MS: int = 160
-const ACTIVE_1_SPEED: int = 980_000
-const ACTIVE_1_RADIUS: int = 7_000
+const ACTIVE_1_SPEED: int = 850_000
+const ACTIVE_1_RADIUS: int = 9_000
 const ACTIVE_1_DAMAGE: int = 25_000
 const ACTIVE_1_LIFETIME_MS: int = 1_500
 
@@ -32,8 +32,8 @@ const RILLSHOT_FLUX_COST: int = 6_000
 const RILLSHOT_COOLDOWN_MS: int = 180
 const RILLSHOT_STARTUP_MS: int = 55
 const RILLSHOT_RECOVERY_MS: int = 70
-const RILLSHOT_SPEED: int = 1_060_000
-const RILLSHOT_RADIUS: int = 6_000
+const RILLSHOT_SPEED: int = 900_000
+const RILLSHOT_RADIUS: int = 8_000
 const RILLSHOT_DAMAGE: int = 9_000
 const RILLSHOT_LIFETIME_MS: int = 1_150
 
@@ -68,8 +68,8 @@ const ECLIPSE_DISC_FLUX_COST: int = 8_000
 const ECLIPSE_DISC_COOLDOWN_MS: int = 230
 const ECLIPSE_DISC_STARTUP_MS: int = 70
 const ECLIPSE_DISC_RECOVERY_MS: int = 90
-const ECLIPSE_DISC_SPEED: int = 900_000
-const ECLIPSE_DISC_RADIUS: int = 9_000
+const ECLIPSE_DISC_SPEED: int = 780_000
+const ECLIPSE_DISC_RADIUS: int = 11_000
 const ECLIPSE_DISC_DAMAGE: int = 10_000
 const ECLIPSE_DISC_LIFETIME_MS: int = 1_600
 const ECLIPSE_DISC_BOUNCES: int = 1
@@ -92,10 +92,31 @@ const CINDERBOLT_FLUX_COST: int = 7_000
 const CINDERBOLT_COOLDOWN_MS: int = 210
 const CINDERBOLT_STARTUP_MS: int = 65
 const CINDERBOLT_RECOVERY_MS: int = 85
-const CINDERBOLT_SPEED: int = 980_000
-const CINDERBOLT_RADIUS: int = 7_000
+const CINDERBOLT_SPEED: int = 840_000
+const CINDERBOLT_RADIUS: int = 9_000
 const CINDERBOLT_DAMAGE: int = 10_000
 const CINDERBOLT_LIFETIME_MS: int = 1_250
+
+const CINDERFAN_WIRE_ID: int = 146
+const CINDERFAN_ELEMENT_WIRE_ID: int = 2
+const CINDERFAN_FLUX_COST: int = 20_000
+const CINDERFAN_COOLDOWN_MS: int = 900
+const CINDERFAN_STARTUP_MS: int = 150
+const CINDERFAN_RECOVERY_MS: int = 160
+const CINDERFAN_SPEED: int = 700_000
+const CINDERFAN_RADIUS: int = 8_000
+const CINDERFAN_DAMAGE: int = 4_000
+const CINDERFAN_LIFETIME_MS: int = 1_100
+# Ascending signed angles are also the stable lane-ID order. Integer unit
+# vectors avoid floating-point drift in authoritative simulation.
+const CINDERFAN_ANGLES_DEGREES: Array[int] = [-24, -12, 0, 12, 24]
+const CINDERFAN_ROTATIONS: Array[Vector2i] = [
+	Vector2i(914, -407),
+	Vector2i(978, -208),
+	Vector2i(1000, 0),
+	Vector2i(978, 208),
+	Vector2i(914, 407),
+]
 const NO_HIT_CONTROL_STATE: int = 0
 const LAUNCHED_HIT_CONTROL_STATE: int = 1
 const SLOWED_HIT_CONTROL_STATE: int = 6
@@ -117,6 +138,7 @@ const RUNTIME_WIRE_IDS: Array[int] = [
 	ECLIPSE_DISC_WIRE_ID,
 	POCKET_ECLIPSE_WIRE_ID,
 	CINDERBOLT_WIRE_ID,
+	CINDERFAN_WIRE_ID,
 ]
 
 
@@ -168,6 +190,11 @@ static func cast_definition(wire_id: int) -> Dictionary:
 			return result
 		CINDERBOLT_WIRE_ID:
 			return _definition(CINDERBOLT_ELEMENT_WIRE_ID, CINDERBOLT_FLUX_COST, CINDERBOLT_COOLDOWN_MS, CINDERBOLT_STARTUP_MS, CINDERBOLT_RECOVERY_MS, CINDERBOLT_SPEED, CINDERBOLT_RADIUS, CINDERBOLT_DAMAGE, CINDERBOLT_LIFETIME_MS)
+		CINDERFAN_WIRE_ID:
+			var result := _definition(CINDERFAN_ELEMENT_WIRE_ID, CINDERFAN_FLUX_COST, CINDERFAN_COOLDOWN_MS, CINDERFAN_STARTUP_MS, CINDERFAN_RECOVERY_MS, CINDERFAN_SPEED, CINDERFAN_RADIUS, CINDERFAN_DAMAGE, CINDERFAN_LIFETIME_MS)
+			result["projectile_angles_degrees"] = CINDERFAN_ANGLES_DEGREES
+			result["projectile_rotations"] = CINDERFAN_ROTATIONS
+			return result
 	return {}
 
 

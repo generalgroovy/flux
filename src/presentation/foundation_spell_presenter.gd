@@ -3,10 +3,10 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_spell_visuals_v1.json"
-const EXPECTED_ID := "foundation-spell-visuals-v2-cinderbolt"
+const EXPECTED_ID := "foundation-spell-visuals-v3-cinderfan"
 const EXPECTED_AUTHORITY := "presentation only; simulation owns spell membership, geometry, timing, collision, resources, damage, control and outcomes"
-const REQUIRED_IDS := ["rillshot", "cinderbolt", "tideline", "rimewake", "eclipse-disc", "pocket-eclipse"]
-const STARTUPS := ["gathered_drop", "banked_coal", "rising_fan", "frost_sigil", "orbiting_crescents", "paired_focus"]
+const REQUIRED_IDS := ["rillshot", "cinderbolt", "cinder-fan", "tideline", "rimewake", "eclipse-disc", "pocket-eclipse"]
+const STARTUPS := ["gathered_drop", "banked_coal", "kindled_fan", "rising_fan", "frost_sigil", "orbiting_crescents", "paired_focus"]
 const SILHOUETTES := ["droplet", "ember_spear", "wave_fan", "crystal_wake", "eclipse_disc", "eclipse_beam"]
 const TRAILS := ["none", "split_rill", "cinder_forks", "curling_lanes", "orbit_echo", "paired_boundary"]
 const IMPACTS := ["splash_ring", "ash_burst", "breaker_arc", "freeze_star", "crescent_break", "revealed_diamond"]
@@ -74,7 +74,7 @@ func validate(catalog: AbilityCatalog) -> bool:
 		return _fail("Foundation spell visual budgets are unsafe")
 	var profiles: Variant = data.get("profiles", [])
 	if not profiles is Array or (profiles as Array).size() != REQUIRED_IDS.size():
-		return _fail("Foundation spell presentation must define exactly six live profiles")
+		return _fail("Foundation spell presentation must define one profile for every live foundation spell")
 	var claimed_startups: Dictionary[String, bool] = {}
 	for value: Variant in profiles:
 		if not value is Dictionary:
@@ -175,6 +175,13 @@ func draw_startup(
 			canvas.draw_circle(coal, coal_radius, Color(base, 0.76))
 			canvas.draw_line(position + side * 7.0, coal - direction * 2.0, Color(bright, 0.72), 2.0)
 			canvas.draw_line(position - side * 7.0, coal - direction * 2.0, Color(bright, 0.72), 2.0)
+		"kindled_fan":
+			var reach := 16.0 + progress * 15.0
+			for offset: float in [-0.418879, -0.209440, 0.0, 0.209440, 0.418879]:
+				var lane := direction.rotated(offset)
+				var lane_color := bright if is_zero_approx(offset) else base
+				canvas.draw_line(position + lane * 7.0, position + lane * reach, Color(lane_color, 0.58 + progress * 0.24), 2.0)
+				canvas.draw_circle(position + lane * reach, 2.0 + progress * 1.5, Color(lane_color, 0.76))
 		"rising_fan":
 			for offset: float in [-0.34, 0.0, 0.34]:
 				var lane := direction.rotated(offset)
@@ -214,16 +221,14 @@ static func startup_readability_geometry(aim: Vector2, progress: float) -> Dicti
 	}
 
 
-func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int, reduced_effects: bool) -> bool:
+func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int, reduced_effects: bool, interpolation_alpha: float = 1.0) -> bool:
 	if canvas == null or projectile == null or not profiles_by_wire.has(projectile.source_wire_id):
 		return false
 	var profile: Dictionary = profiles_by_wire[projectile.source_wire_id]
 	if String(profile.get("shape", "")) != "projectile":
 		return false
-	var position := Vector2(float(projectile.position_x), float(projectile.position_y)) / SimConfig.FIXED_SCALE
-	var previous := Vector2(float(projectile.previous_x), float(projectile.previous_y)) / SimConfig.FIXED_SCALE
-	var velocity := Vector2(float(projectile.velocity_x), float(projectile.velocity_y))
-	var travel_direction := velocity.normalized() if velocity.length_squared() > 0.0 else (position - previous).normalized()
+	var position := ProjectilePresentationMotion.interpolated_position(projectile, interpolation_alpha)
+	var travel_direction := ProjectilePresentationMotion.travel_direction(projectile)
 	var direction := SpellDeliveryDirectionContract.visual_vector(travel_direction)
 	var side := direction.orthogonal()
 	var radius := float(projectile.radius) / SimConfig.FIXED_SCALE
@@ -231,9 +236,12 @@ func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int,
 	var dark := language.element_color(element, "dark")
 	var base := language.element_color(element, "base")
 	var bright := language.element_color(element, "bright")
+	var visual_size := ProjectilePresentationMotion.visual_diameter(projectile)
+	canvas.draw_circle(position + Vector2(0.0, maxf(3.0, radius * 0.48)), maxf(3.0, visual_size * 0.30), Color(0.02, 0.03, 0.03, 0.32))
+	canvas.draw_circle(position, visual_size * 0.44, Color(dark, 0.20))
 	match String(profile.get("silhouette", "")):
 		"droplet":
-			var wake_length := 9.0 if reduced_effects else 16.0
+			var wake_length := ProjectilePresentationMotion.trail_length(projectile, reduced_effects)
 			for side_value: float in [-1.0, 1.0]:
 				canvas.draw_line(position - direction * 3.0 + side * side_value * 3.0, position - direction * wake_length + side * side_value * 5.0, Color(base, 0.42), 2.0)
 			var drop := PackedVector2Array([
@@ -256,7 +264,7 @@ func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int,
 				canvas.draw_circle(position + side * (radius + 7.0) + direction * float(bounce_index * 4 - 2), 1.5, bright)
 		"ember_spear":
 			var tip := position + direction * (radius + 6.0)
-			var tail := position - direction * (radius + (10.0 if reduced_effects else 17.0))
+			var tail := position - direction * (radius + ProjectilePresentationMotion.trail_length(projectile, reduced_effects))
 			var flame := PackedVector2Array([
 				tip,
 				position + side * (radius + 1.0),
@@ -270,6 +278,8 @@ func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int,
 			canvas.draw_circle(position + direction * 2.0, maxf(2.0, radius * 0.34), Color(bright, 0.92))
 		_:
 			return false
+	canvas.draw_arc(position, radius, 0.0, TAU, 16, Color(bright, 0.58 if not reduced_effects else 0.70), 1.5)
+	canvas.draw_circle(position + ProjectilePresentationMotion.leading_point(projectile), 1.75, Color(bright, 0.92))
 	return true
 
 

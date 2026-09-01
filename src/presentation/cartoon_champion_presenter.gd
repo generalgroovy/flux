@@ -3,10 +3,10 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_champion_visuals_v1.json"
-const EXPECTED_ID := "foundation-champion-visuals-v9-red-baron-large"
+const EXPECTED_ID := "foundation-champion-visuals-v11-red-baron-style"
 const EXPECTED_AUTHORITY := "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere"
 const REQUIRED_FOUNDATION := ["oh_tipi", "s_wayne", "red_baron"]
-const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v9.png"
+const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v11.png"
 const EXPECTED_BODY_TYPES: Array[String] = ["small", "middle", "large"]
 const EXPECTED_CARDINAL_DIRECTIONS: Array[String] = ["south", "east", "north", "west"]
 const EXPECTED_DIRECTIONS: Array[String] = [
@@ -32,9 +32,9 @@ const EXPECTED_EXCLUDED_LAYERS: Array[String] = ["spell", "element", "projectile
 const CELL_SIZE := Vector2(96.0, 96.0)
 const PIVOT := Vector2(48.0, 84.0)
 const BODY_TYPE_RENDER_SCALE := {
-	"small": 0.90,
+	"small": 1.00,
 	"middle": 1.00,
-	"large": 1.10,
+	"large": 1.00,
 }
 const HAND_CAST_HEIGHT := 27.0
 const HAND_CAST_FORWARD := 4.0
@@ -55,6 +55,8 @@ var locomotion_phase_contract: Dictionary = {}
 var atlas_directions: Array = []
 var atlas_states: Array = []
 var semantic_state_aliases: Dictionary = {}
+var body_templates: Dictionary = {}
+var shared_style_contract: Dictionary = {}
 
 
 func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> bool:
@@ -72,6 +74,8 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	atlas_directions.clear()
 	atlas_states.clear()
 	semantic_state_aliases.clear()
+	body_templates.clear()
+	shared_style_contract.clear()
 	motion = MinimalChampionMotion.new()
 	if not motion.load_from_file():
 		return _fail(motion.last_error)
@@ -87,7 +91,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	if not parsed is Dictionary:
 		return _fail("Cartoon champion recipe root must be an object")
 	var data: Dictionary = parsed
-	if int(data.get("schema_version", -1)) != 9 or String(data.get("id", "")) != EXPECTED_ID:
+	if int(data.get("schema_version", -1)) != 11 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Cartoon champion recipe identity is unsupported")
 	if String(data.get("authority", "")) != EXPECTED_AUTHORITY:
 		return _fail("Cartoon champion recipes must remain presentation-only")
@@ -101,6 +105,10 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 		return _fail("Cartoon champion excluded-layer contract is invalid")
 	if _vector2i(data.get("cell", [])) != Vector2i(96, 96) or _vector2i(data.get("pivot", [])) != Vector2i(48, 84):
 		return _fail("Cartoon champion cell/pivot differs from the visual contract")
+	if not _validate_body_template_contract(data.get("body_template_contract", {})):
+		return false
+	if not _validate_shared_style_contract(data.get("shared_style_contract", {})):
+		return false
 	var atlas_definition: Dictionary = data.get("atlas", {})
 	if String(atlas_definition.get("path", "")) != ATLAS_PATH \
 		or _vector2i(atlas_definition.get("dimensions", [])) != Vector2i(768, 2880) \
@@ -201,12 +209,9 @@ func draw(
 	if motion_id in ["walk", "sprint"]:
 		var response := movement_response_scale(state)
 		motion_sample.offset *= response
-		motion_sample.scale = Vector2.ONE.lerp(motion_sample.scale, response)
 		motion_sample.aura_scale = lerpf(1.0, motion_sample.aura_scale, response)
 		_apply_relative_gait_motion(motion_sample, locomotion_gait(state), reduced_effects)
 	var anchor := body_anchor + motion_sample.offset + _directional_lean(state, motion_id, reduced_effects)
-	var body_type := String(definition.get("body_type", "middle"))
-	var body_scale := body_type_render_scale(body_type)
 	_draw_counter_strafe_accent(canvas, state, body_anchor, reduced_effects)
 	_draw_movement_accent(canvas, state, body_anchor, presentation_tick, reduced_effects)
 	_draw_aura(canvas, definition, anchor, presentation_tick, reduced_effects, motion_sample.aura_scale)
@@ -217,16 +222,14 @@ func draw(
 		var phase_seed := maxi(0, state.entity_id) * 3
 		if motion.locomotion_contact_frame(String(definition.get("motion_profile", "")), motion_id, motion_elapsed, phase_seed) == 1:
 			animation_state += "_b"
-	_draw_atlas_candidate(canvas, state, champion_id, animation_state, anchor, motion_sample.scale * body_scale)
+	_draw_atlas_candidate(canvas, state, champion_id, animation_state, anchor)
 	_draw_evasion_contour(canvas, state, body_anchor, presentation_tick, config, reduced_effects)
 	return true
 
 
-func _draw_atlas_candidate(canvas: CanvasItem, state: PlayerState, champion_id: String, animation_state: String, anchor: Vector2, motion_scale: Vector2) -> void:
+func _draw_atlas_candidate(canvas: CanvasItem, state: PlayerState, champion_id: String, animation_state: String, anchor: Vector2) -> void:
 	var source := source_region_for_animation_state(champion_id, state, animation_state)
-	var size := CELL_SIZE * motion_scale
-	var pivot := Vector2(PIVOT.x * motion_scale.x, PIVOT.y * motion_scale.y)
-	canvas.draw_texture_rect_region(atlas, Rect2(anchor - pivot, size), source)
+	canvas.draw_texture_rect_region(atlas, Rect2(anchor - PIVOT, CELL_SIZE), source)
 
 
 func silhouette_state(state: PlayerState) -> String:
@@ -363,18 +366,61 @@ static func _apply_relative_gait_motion(sample: MinimalChampionMotion.Sample, ga
 		"backward":
 			sample.offset.x *= -1.0
 			sample.offset.y *= lerpf(1.0, 0.72, strength)
-			sample.scale = Vector2.ONE.lerp(sample.scale, lerpf(1.0, 0.82, strength))
 			sample.aura_scale = lerpf(1.0, sample.aura_scale, lerpf(1.0, 0.84, strength))
 		"strafe_left":
 			sample.offset.x -= 0.65 * strength
-			sample.scale.x *= lerpf(1.0, 1.025, strength)
 		"strafe_right":
 			sample.offset.x += 0.65 * strength
-			sample.scale.x *= lerpf(1.0, 1.025, strength)
 
 
 static func body_type_render_scale(body_type: String) -> float:
 	return float(BODY_TYPE_RENDER_SCALE.get(body_type.to_lower(), 1.0))
+
+
+func _validate_body_template_contract(value: Variant) -> bool:
+	body_templates.clear()
+	if not value is Dictionary:
+		return _fail("Cartoon champion body template contract must be an object")
+	var contract: Dictionary = value
+	if contract.get("types", []) != EXPECTED_BODY_TYPES \
+		or _vector2i(contract.get("shared_cell", [])) != Vector2i(96, 96) \
+		or _vector2i(contract.get("shared_feet_pivot", [])) != Vector2i(48, 84) \
+		or contract.get("runtime_scale", []) != [1.0, 1.0]:
+		return _fail("Cartoon champion body template geometry is unsupported")
+	if String(contract.get("shared_collision_policy", "")) != "universal_gameplay_collision_independent_of_visual_body_type" \
+		or String(contract.get("animation_policy", "")) != "pose_and_offset_only_never_rescale_body":
+		return _fail("Cartoon champion size lock must remain presentation-only and invariant")
+	var templates: Dictionary = contract.get("templates", {})
+	var expected_exemplars := {"small": "s_wayne", "middle": "oh_tipi", "large": "red_baron"}
+	var expected_heights := {"small": 58, "middle": 68, "large": 68}
+	for body_type: String in EXPECTED_BODY_TYPES:
+		if not templates.has(body_type) or not templates[body_type] is Dictionary:
+			return _fail("Cartoon champion body template is missing: %s" % body_type)
+		var template: Dictionary = templates[body_type]
+		if String(template.get("exemplar", "")) != String(expected_exemplars[body_type]) \
+			or int(template.get("reference_height", 0)) != int(expected_heights[body_type]) \
+			or String(template.get("silhouette", "")).is_empty():
+			return _fail("Cartoon champion body template is invalid: %s" % body_type)
+	body_templates = templates.duplicate(true)
+	return true
+
+
+func _validate_shared_style_contract(value: Variant) -> bool:
+	shared_style_contract.clear()
+	if not value is Dictionary:
+		return _fail("Cartoon champion shared style contract must be an object")
+	var contract: Dictionary = value
+	if String(contract.get("reference_champion", "")) != "red_baron" \
+		or String(contract.get("outline_source", "")) != "darkest_visible_red_baron_material_clusters" \
+		or int(contract.get("outline_radius_pixels", 0)) != 1 \
+		or String(contract.get("outline_application", "")) != "cell_bounded_exterior_ink_without_rescale" \
+		or int(contract.get("palette_budget", 0)) != 64 \
+		or String(contract.get("material_language", "")) != "compact_cartoon_pixel_clusters_with_dark_ink_and_bounded_highlights" \
+		or String(contract.get("identity_policy", "")) != "share rendering grammar while preserving ancestry silhouette body template clothing and palette" \
+		or String(contract.get("authority", "")) != "presentation_only":
+		return _fail("Cartoon champion shared style contract is unsupported")
+	shared_style_contract = contract.duplicate(true)
+	return true
 
 
 static func hand_cast_origin(body_anchor: Vector2, aim: Vector2) -> Vector2:
@@ -553,8 +599,13 @@ func _validate_recipe(champion_id: String, value: Variant) -> bool:
 	if not value is Dictionary:
 		return _fail("Cartoon champion recipe must be an object: %s" % champion_id)
 	var definition: Dictionary = value
-	if String(definition.get("body_type", "")) not in EXPECTED_BODY_TYPES:
+	var body_type := String(definition.get("body_type", ""))
+	if body_type not in EXPECTED_BODY_TYPES:
 		return _fail("Cartoon champion body type is unsupported: %s" % champion_id)
+	var body_template: Dictionary = body_templates.get(body_type, {})
+	if body_template.is_empty() or String(body_template.get("exemplar", "")) != champion_id \
+		or int(body_template.get("reference_height", 0)) != int(definition.get("height", 0)):
+		return _fail("Cartoon champion does not match its reusable body template: %s" % champion_id)
 	var atlas_row := int(definition.get("atlas_row", -1))
 	if atlas_row < 0 or atlas_row >= REQUIRED_FOUNDATION.size():
 		return _fail("Cartoon champion atlas row is unsupported: %s" % champion_id)

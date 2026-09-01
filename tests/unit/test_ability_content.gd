@@ -25,7 +25,7 @@ func _test_catalog() -> void:
 	equal(first.content_hash, second.content_hash, "catalog hash is stable across reloads")
 	equal(first.elements_by_id.size(), 12, "all twelve thematic element families are declared")
 	equal(first.active_element_ids(), ["charge", "dark", "earth", "fire", "ice", "light", "water", "wind"], "only the first eight families are runtime-enabled")
-	equal(first.playable_spell_ids(), ["arc-primary", "cinderbolt", "eclipse-disc", "pocket-eclipse", "rillshot", "rimewake", "tideline", "vector-lance"], "only end-to-end spells enter the playable selector")
+	equal(first.playable_spell_ids(), ["arc-primary", "cinder-fan", "cinderbolt", "eclipse-disc", "pocket-eclipse", "rillshot", "rimewake", "tideline", "vector-lance"], "only end-to-end spells enter the playable selector")
 	for gated_id: String in ["spirit", "chaos", "gravity", "time"]:
 		check(not bool((first.elements_by_id[gated_id] as Dictionary)["runtime_enabled"]), "%s remains explicitly gated" % gated_id)
 	equal(String(first.data.get("affinity_rule", "")), "aligned_active_cost_discount_capped_by_affinity_strength", "ability catalog declares weighted affinity discount rule")
@@ -42,6 +42,12 @@ func _test_catalog() -> void:
 	equal(int(first.ability("cinderbolt")["wire_id"]), CombatTuning.CINDERBOLT_WIRE_ID, "Cinderbolt wire matches compiled Red Baron kit")
 	equal(int(first.ability("cinderbolt")["flux_cost"]) * 1000, CombatTuning.CINDERBOLT_FLUX_COST, "Red Baron primary has exact positive Flux cost")
 	equal(int(first.ability("cinderbolt")["cooldown_ms"]), CombatTuning.CINDERBOLT_COOLDOWN_MS, "Cinderbolt cadence matches compiled behavior")
+	equal(int(first.ability("cinder-fan")["wire_id"]), CombatTuning.CINDERFAN_WIRE_ID, "Cinder Fan wire matches the compiled pattern")
+	var content_fan_angles: Array[int] = []
+	for angle: Variant in first.ability("cinder-fan")["projectile_angles_degrees"]:
+		content_fan_angles.append(int(angle))
+	equal(content_fan_angles, CombatTuning.CINDERFAN_ANGLES_DEGREES, "Cinder Fan content owns the exact symmetric five-lane contract")
+	equal(int(first.ability("cinder-fan")["flux_cost"]) * 1000, CombatTuning.CINDERFAN_FLUX_COST, "Cinder Fan has an exact positive Flux decision cost")
 	equal(int(first.ability("tideline")["wire_id"]), CombatTuning.TIDELINE_WIRE_ID, "Tideline wire matches compiled Oh Tipi kit")
 	equal(int(first.ability("tideline")["flux_cost"]) * 1000, CombatTuning.TIDELINE_FLUX_COST, "Tideline Flux cost matches compiled behavior")
 	equal(int(first.ability("tideline")["startup_ms"]), CombatTuning.TIDELINE_STARTUP_MS, "Tideline startup matches compiled behavior")
@@ -160,3 +166,11 @@ func _test_invalid_content_fails_closed() -> void:
 	arc["material_runtime_enabled"] = true
 	check(not false_material_gate.validate(), "enabled no-op material mutation fails closed")
 	check(false_material_gate.last_error.contains("cannot be none"), "material gate failure is diagnosable")
+
+	var asymmetric_fan := AbilityCatalog.new()
+	asymmetric_fan.data = catalog.data.duplicate(true)
+	for ability: Dictionary in asymmetric_fan.data["abilities"]:
+		if ability["id"] == "cinder-fan":
+			ability["projectile_angles_degrees"] = [-24, -12, 0, 12, 25]
+	check(not asymmetric_fan.validate(), "asymmetric projectile fan fails closed")
+	check(asymmetric_fan.last_error.contains("projectile angles"), "projectile pattern failure is diagnosable")

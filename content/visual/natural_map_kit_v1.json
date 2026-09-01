@@ -1,12 +1,26 @@
 {
-  "schema_version": 1,
-  "id": "natural-map-kit-v1",
+  "schema_version": 2,
+  "id": "natural-map-kit-v2-bullet-room",
   "authority": "presentation only; authored map topology, collision, elevation and routes remain canonical elsewhere",
   "seed": 17041,
   "budgets": {
     "detail_step": 48,
     "maximum_details_per_district": 180,
-    "maximum_contact_marks_per_actor": 6
+    "maximum_contact_marks_per_actor": 6,
+    "maximum_arena_marks": 24
+  },
+  "combat_floor": {
+    "masonry_cell": [40, 24],
+    "masonry_alpha": 0.08,
+    "garden_alpha": 0.04,
+    "arena": {
+      "outer_inset": 14,
+      "inner_inset": 30,
+      "lane_width": 76,
+      "safe_pocket_radius": 54,
+      "marker_count": 12,
+      "outline_alpha": 0.34
+    }
   },
   "district_profiles": {
     "garden": {

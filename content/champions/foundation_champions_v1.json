@@ -70,7 +70,8 @@
       },
       "foundation_kit": {
         "primary": "cinderbolt",
-        "active_1": "rimewake"
+        "active_1": "rimewake",
+        "active_2": "cinder-fan"
       }
     }
   ]

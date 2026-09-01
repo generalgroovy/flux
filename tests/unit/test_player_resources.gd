@@ -2,7 +2,7 @@ extends FluxTestSuite
 
 
 func run() -> int:
-	for tick_rate: int in [60, 120]:
+	for tick_rate: int in [120]:
 		_test_separate_resources(tick_rate)
 		_test_health_recovery_delay(tick_rate)
 		_test_flux_spend_and_recovery(tick_rate)

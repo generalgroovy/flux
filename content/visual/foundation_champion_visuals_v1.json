@@ -1,6 +1,6 @@
 {
-  "schema_version": 9,
-  "id": "foundation-champion-visuals-v9-red-baron-large",
+  "schema_version": 11,
+  "id": "foundation-champion-visuals-v11-red-baron-style",
   "authority": "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere",
   "atlas_role": "body_and_clothing_only",
   "front_pose": "camera_facing_symmetrical",
@@ -8,10 +8,45 @@
   "excluded_layers": ["spell", "element", "projectile", "aura", "shadow", "environment", "equipment", "focus"],
   "cell": [96, 96],
   "pivot": [48, 84],
+  "body_template_contract": {
+    "types": ["small", "middle", "large"],
+    "runtime_scale": [1.0, 1.0],
+    "shared_cell": [96, 96],
+    "shared_feet_pivot": [48, 84],
+    "shared_collision_policy": "universal_gameplay_collision_independent_of_visual_body_type",
+    "animation_policy": "pose_and_offset_only_never_rescale_body",
+    "templates": {
+      "small": {
+        "exemplar": "s_wayne",
+        "reference_height": 58,
+        "silhouette": "compact_low_center"
+      },
+      "middle": {
+        "exemplar": "oh_tipi",
+        "reference_height": 68,
+        "silhouette": "balanced_clear_limbs"
+      },
+      "large": {
+        "exemplar": "red_baron",
+        "reference_height": 68,
+        "silhouette": "broad_high_mass"
+      }
+    }
+  },
+  "shared_style_contract": {
+    "reference_champion": "red_baron",
+    "outline_source": "darkest_visible_red_baron_material_clusters",
+    "outline_radius_pixels": 1,
+    "outline_application": "cell_bounded_exterior_ink_without_rescale",
+    "palette_budget": 64,
+    "material_language": "compact_cartoon_pixel_clusters_with_dark_ink_and_bounded_highlights",
+    "identity_policy": "share rendering grammar while preserving ancestry silhouette body template clothing and palette",
+    "authority": "presentation_only"
+  },
   "atlas": {
-    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v9.png",
-    "sha256": "cb7601e3a3a9b435141ad82cb0254f8f9c365afaad846f31393c59996bde528f",
-    "imported_rgba_sha256": "121f825d67d180127d7f4ed36ddca55ab0ead342b5100ddfc839e4585c330fed",
+    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v11.png",
+    "sha256": "1a03066760e9cb5e8be814a005880b19e5aba062640f48fe10eeee0a5585e9d2",
+    "imported_rgba_sha256": "3f8175d534d42fe5325c5cba86668381216c17f2a4f14a77b4e168db0a7c0faa",
     "dimensions": [768, 2880],
     "champions": ["oh_tipi", "s_wayne", "red_baron"],
     "states": ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll", "walk_b", "sprint_b"],
@@ -94,7 +129,7 @@
       "ancestry": "seakin",
       "body_type": "middle",
       "atlas_row": 0,
-      "height": 66,
+      "height": 68,
       "head_ratio": 0.43,
       "build": "sturdy_current_keeper",
       "motion_profile": "buoyant_keeper",

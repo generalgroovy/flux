@@ -67,12 +67,12 @@ channels are not claimed yet; test direct-IP builds only with trusted friends.
 | Repository | One authoritative Godot runtime; browser runtime retired | Keep docs/content/runtime hashes in one lineage |
 | Lifecycle | Source launch, portable archives, checksums, one-file Windows setup/update/launch | Signed releases, clean uninstall UI, public update channel |
 | Wellspring | Nine districts, walk-up stations, practice actors, movement routes | Stronger authored landmarks and compact onboarding |
-| Movement | Full universal foundation at deterministic 60/120 Hz; normalized eight-way commands, active directional air control/facing, alternating gait contacts, native eight-way jump/slide/roll art, relative gait, and directional evasion cues | Pattern-pressure tuning and player playtest |
-| Combat | Projectile, beam, spray, field, ricochet, launch and slow; one fail-closed eight-way delivery contract aligns body, hands and discrete effect art while simulation aim stays continuous | Data-driven five-shot burst family for eight elements |
+| Movement | Full universal foundation at deterministic 120 Hz; normalized eight-way commands, active directional air control/facing, alternating gait contacts, native eight-way jump/slide/roll art, relative gait, and directional evasion cues | Pattern-pressure tuning and player playtest |
+| Combat | Projectile, five-shot fan, beam, spray, field, ricochet, launch and slow; shape-first projectiles are larger and deliberately slower while one fail-closed eight-way delivery contract aligns body, hands and discrete effect art with continuous simulation aim | Comparable data-driven burst spells for the remaining first-eight elements |
 | Chemistry | Material grid and 36 design-locked recipes | All recipes form, act, decay, reset, and explain themselves in-game |
 | Champions | Oh Tipi (middle), S. Wayne (small), and The Red Baron (large) playable | Validate the three roles under bullet-pattern pressure before another champion |
 | Farflow | Host-authoritative 2/4/8-player direct-IP loop | Per-peer LOS filtering, then measured later 32-player gate |
-| Visuals | Integrated Wellspring gate accepted at 4.64/5; reviewed eight-way champions, environment modules, compact HUD, spell-density and real Farflow evidence are green | Keep every new champion/spell inside the same silhouette, accessibility, density, and provenance gates |
+| Visuals | Integrated Wellspring gate accepted at 4.64/5; the foundation champions share The Red Baron's cell-bounded dark-ink language, and the Proving Court uses quiet room lanes, response pockets and bounded markers | Keep every new champion/spell inside the same silhouette, accessibility, density, and provenance gates |
 
 ## Design pillars
 
@@ -120,7 +120,7 @@ Press edges are retained across the render-to-simulation boundary and then use
 the same 180 ms deterministic action buffer, so quick keyboard, mouse-wheel and
 controller chords are not lost between frames. All eight movement-plus-slide
 combinations are exercised end to end at 120 Hz and the resulting slide lanes
-are verified independently at both 60 and 120 Hz. If a physical keyboard cannot
+are verified at the authoritative 120 Hz tick. If a physical keyboard cannot
 report a three-key chord because of hardware rollover, wheel-down or a Controls
 Lectern remap is the equivalent slide input.
 
@@ -177,12 +177,15 @@ the authored opening windows. Solid world geometry remains solid.
 | Eclipse Disc | Dark · ricochet projectile | S. Wayne; one readable rebound |
 | Pocket Eclipse | Light · beam | S. Wayne; committed line control |
 | Cinderbolt | Fire · projectile | Red Baron; measured lane pressure |
+| Cinder Fan | Fire · five-shot fan | Red Baron; ordered lane pressure with deliberate gaps |
 | Arc Primary | Charge · projectile | Global proven spell |
 | Vector Lance | Charge · projectile | Global proven active |
 
-The first bullet-pattern acceptance is five projectiles at
+The first bullet-pattern acceptance is playable: five projectiles at
 `-24°, -12°, 0°, +12°, +24°`, ordered negative-to-positive for deterministic
-IDs and replay. Pattern geometry never changes because an element skin changes.
+IDs and replay. It spends one positive Flux cost, cannot multiply damage on one
+target, stays inside bounded work/snapshot capacity, and leaves authored dodge
+lanes. Pattern geometry never changes because an element skin changes.
 
 ## Elements
 
@@ -317,10 +320,10 @@ and clothing avoid sexualized presentation.
 | Demon | Angular redirect silhouette | No hidden reach or free evasion |
 
 Body type changes only bounded health, recovery, speed, acceleration, mass,
-footprint, knockback, air control, camera/readability, and route clearance; the
-presentation layer uses a restrained 0.90×/1.00×/1.10× body scale around the
-shared feet pivot for small/middle/large. Hitboxes and simulation outcomes do
-not inherit this art scale implicitly.
+footprint, knockback, air control, camera/readability, and route clearance.
+Small, middle and large bodies all render at `1.00×` around the shared feet
+pivot; their authored atlas silhouettes, not per-action scaling, carry the size
+difference. Hitboxes and simulation outcomes never inherit art size implicitly.
 Wings, tails, horns, fins, roots, and extra limbs are not surprise hitboxes.
 
 ## Wellspring structure
@@ -400,7 +403,7 @@ The retained `size_1_tiny`, `size_2_small`, `size_3_medium`, `size_4_large`,
 and `size_5_huge` path fragments belong to the legacy visual archive; only
 `small`, `middle`, and `large` are authored runtime body types.
 
-![Eight-direction body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_eight_v9.png)
+![Eight-direction body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_eight_v11.png)
 
 This atlas is a reusable body/clothing layer for all three foundation champions;
 spells, auras, shadows, projectiles, environment and equipment are composed
@@ -409,6 +412,11 @@ independently. Each champion's `atlas_row` is authored in
 atlas packs eight direction columns under each champion. Every grounded,
 empty-hand cast, hit/recovery, jump, slide, and roll state has native eight-way
 art; walk and sprint add a second opposite contact row for true leg alternation.
+The Red Baron is the shared material-and-ink reference: a deterministic builder
+derives a restrained one-pixel exterior ink from his darkest visible material
+clusters and applies it cell-by-cell without recoloring, rescaling, or bleeding
+between champions. Identity palettes, ancestry features and the three authored
+body silhouettes remain distinct.
 An independent two-stroke directional evasion cue still reinforces actual
 travel/facing during invulnerability frames.
 During free locomotion the body faces travel; while combat intent is active it
@@ -428,7 +436,10 @@ Ice, Light, and Dark. Deterministic tooling derives separate 32 px runtime
 sheets with 8 directions × 16 columns: formation, travel, impact, residue, and
 one reserved migration cell. Every live projectile now uses the appropriate
 element sheet while its exact aim, radius, collision, speed and outcome remain
-simulation-owned.
+simulation-owned. Live projectile presentation clamps the readable diameter to
+28–46 px, adds a dark under-silhouette, exact collision rim and forward travel
+cue, and interpolates from authoritative fixed-tick positions; current projectile
+speeds are intentionally about 13–15% slower than the preceding checkpoint.
 
 ![Nine-element burst style board](reference/art/projectiles/burst_v3/burst_element_style_board_v3.png)
 
@@ -536,7 +547,7 @@ scripts\package.cmd Windows
 ```
 
 `scripts/test.*` runs deterministic suites plus source and imported-resource
-boots at both 60 and 120 Hz. A test is reported only when it actually ran.
+boots at the authoritative 120 Hz tick. A test is reported only when it actually ran.
 Generated `.godot/`, exports, local dependencies, credentials, and personal
 firewall rules are not source.
 
@@ -550,8 +561,8 @@ this implementation pass makes no new Linux release or acceptance claim.
 | 0 | Retire duplicate runtime → record recovery → replace stale docs | One Godot authority; no useful design truth lost |
 | 1 | Verify setup/update/launch → host card → join card → safe close | Fresh Windows user reaches Wellspring and a trusted friend joins with one shared file plus address |
 | 2 | Lock camera/pixel tokens → three body types → body-only directional atlases → separate hand-cast effects → environment → HUD | Whole scene reads at gameplay zoom, in motion, high contrast, and reduced motion; no spell or world pixels are baked into champion sprites |
-| 3 | Burst data contract → deterministic fan → projectile capacity → movement pressure room | Five-shot patterns stay readable and evadeable while every universal technique chains legally |
-| 4 | Eight burst spells → reaction catalog → exposure/contact → 36 bounded states → crucible/reset/codex | Every element can fire; every unordered pair forms, acts, decays, explains itself, and resets at 60/120 Hz |
+| 3 | **Complete:** burst data contract → deterministic fan → projectile capacity → movement pressure room | Five-shot patterns stay readable and evadeable while every universal technique chains legally at 120 Hz |
+| 4 | Eight burst spells → reaction catalog → exposure/contact → 36 bounded states → crucible/reset/codex | Every element can fire; every unordered pair forms, acts, decays, explains itself, and resets at 120 Hz |
 | 5 | **Playtest pause** | User receives a packaged current build and focused test route before roster expansion |
 
 After the first-eight playtest, work resumes with reaction tuning, richer spell

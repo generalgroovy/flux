@@ -2,9 +2,11 @@
 
 The source board contains one transparent pose for each of FLUX's fixed eight
 directions. This deterministic builder normalizes those poses to the shared
-96px cell and feet pivot, then derives bounded action contacts without adding
-spell, aura, shadow, equipment, or world pixels. Existing champion rows are
-copied without resampling.
+96px cell and feet pivot, then derives bounded action contacts without ever
+resizing the character between states. Pose, contact and lean may change;
+canonical body mass, scale and feet pivot may not. Spell, aura, shadow,
+equipment, and world pixels remain excluded. Existing champion rows are copied
+without resampling.
 """
 
 from __future__ import annotations
@@ -12,7 +14,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageChops, ImageFilter
 
 
 CELL = 96
@@ -24,6 +26,8 @@ STATE_ORDER = (
 )
 TARGET_HEIGHT = 68
 MAX_WIDTH = 90
+STYLE_REFERENCE_CHAMPION = "red_baron"
+OUTLINE_RADIUS = 1
 
 
 def proportional_bounds(index: int, count: int, extent: int) -> tuple[int, int]:
@@ -35,7 +39,13 @@ def source_poses(source: Image.Image) -> list[Image.Image]:
     for index in range(DIRECTION_COUNT):
         left, right = proportional_bounds(index, DIRECTION_COUNT, source.width)
         pose = source.crop((left, 0, right, source.height))
-        bounds = pose.getbbox()
+        # Generated PNGs retain RGB values under transparent pixels. Cropping
+        # all channels would make invisible canvas padding shrink the runtime
+        # body and violate the large-template contract.
+        visible_alpha = pose.getchannel("A").point(
+            lambda value: 255 if value >= 48 else 0
+        )
+        bounds = visible_alpha.getbbox()
         if bounds is None:
             raise ValueError(f"Red Baron source direction {index} is empty")
         poses.append(pose.crop(bounds))
@@ -57,13 +67,6 @@ def paste_at_pivot(canvas: Image.Image, pose: Image.Image, pivot_y: int = PIVOT[
     x = PIVOT[0] - pose.width // 2
     y = pivot_y - pose.height
     canvas.alpha_composite(pose, (x, y))
-
-
-def scaled_pose(pose: Image.Image, scale_x: float, scale_y: float) -> Image.Image:
-    return pose.resize(
-        (max(1, round(pose.width * scale_x)), max(1, round(pose.height * scale_y))),
-        Image.Resampling.LANCZOS,
-    )
 
 
 def sheared_pose(pose: Image.Image, amount: int) -> Image.Image:
@@ -94,15 +97,15 @@ def action_cell(pose: Image.Image, state: str, direction_index: int) -> Image.Im
     cell = Image.new("RGBA", (CELL, CELL))
     horizontal_sign = 1 if direction_index in (1, 2, 3) else -1 if direction_index in (5, 6, 7) else 0
     if state == "jump":
-        paste_at_pivot(cell, scaled_pose(pose, 0.98, 0.91), PIVOT[1] - 3)
+        paste_at_pivot(cell, pose, PIVOT[1] - 3)
     elif state == "cast":
-        paste_at_pivot(cell, scaled_pose(pose, 1.045, 0.985))
+        paste_at_pivot(cell, sheared_pose(pose, horizontal_sign * 2 if horizontal_sign else 1))
     elif state == "hit":
         paste_at_pivot(cell, sheared_pose(pose, -horizontal_sign * 4 if horizontal_sign else 3))
     elif state == "slide":
-        paste_at_pivot(cell, scaled_pose(pose, 1.04, 0.67), PIVOT[1] + 1)
+        paste_at_pivot(cell, sheared_pose(pose, horizontal_sign * 5 if horizontal_sign else 4), PIVOT[1] + 1)
     elif state == "roll":
-        paste_at_pivot(cell, scaled_pose(pose, 0.78, 0.72), PIVOT[1])
+        paste_at_pivot(cell, sheared_pose(pose, -horizontal_sign * 6 if horizontal_sign else -5), PIVOT[1])
     elif state in ("sprint", "sprint_b"):
         contact_phase = 0 if state == "sprint" else 1
         paste_at_pivot(cell, sheared_pose(pose, horizontal_sign * 3))
@@ -114,6 +117,54 @@ def action_cell(pose: Image.Image, state: str, direction_index: int) -> Image.Im
     else:
         paste_at_pivot(cell, pose)
     return cell
+
+
+def red_baron_outline_colour(atlas: Image.Image, red_baron_y: int) -> tuple[int, int, int, int]:
+    """Derive one shared ink colour from Red Baron's darkest visible clusters."""
+    reference = atlas.crop((0, red_baron_y, atlas.width, atlas.height)).convert("RGBA")
+    visible = [
+        pixel for pixel in reference.getdata()
+        if pixel[3] >= 48
+    ]
+    if not visible:
+        raise ValueError("Red Baron reference contains no visible style pixels")
+    visible.sort(key=lambda pixel: pixel[0] * 299 + pixel[1] * 587 + pixel[2] * 114)
+    sample = visible[:max(1, len(visible) // 10)]
+    sample.sort(key=lambda pixel: (pixel[0], pixel[1], pixel[2]))
+    median = sample[len(sample) // 2]
+    return median[0], median[1], median[2], 255
+
+
+def apply_shared_outline(cell: Image.Image, ink: tuple[int, int, int, int]) -> Image.Image:
+    """Add one bounded exterior pixel of Red-Baron-derived ink per atlas cell."""
+    alpha = cell.getchannel("A").point(lambda value: 255 if value >= 48 else 0)
+    expanded = alpha.filter(ImageFilter.MaxFilter(OUTLINE_RADIUS * 2 + 1))
+    outline_alpha = ImageChops.subtract(expanded, alpha)
+    outline = Image.new("RGBA", cell.size, ink)
+    outline.putalpha(outline_alpha)
+    output = Image.new("RGBA", cell.size)
+    output.alpha_composite(outline)
+    output.alpha_composite(cell)
+    return output
+
+
+def harmonize_champion_style(atlas: Image.Image, red_baron_y: int) -> Image.Image:
+    """Apply one outline grammar without rescaling or merging body identities."""
+    ink = red_baron_outline_colour(atlas, red_baron_y)
+    output = Image.new("RGBA", atlas.size)
+    for row in range(3 * len(STATE_ORDER)):
+        for column in range(DIRECTION_COUNT):
+            bounds = (
+                column * CELL,
+                row * CELL,
+                (column + 1) * CELL,
+                (row + 1) * CELL,
+            )
+            output.alpha_composite(
+                apply_shared_outline(atlas.crop(bounds), ink),
+                (bounds[0], bounds[1]),
+            )
+    return output
 
 
 def build(base_path: Path, source_path: Path, output_path: Path) -> None:
@@ -130,6 +181,8 @@ def build(base_path: Path, source_path: Path, output_path: Path) -> None:
             cell = action_cell(pose, state, direction_index)
             atlas.alpha_composite(cell, (direction_index * CELL, red_baron_y + state_index * CELL))
 
+    atlas = harmonize_champion_style(atlas, red_baron_y)
+
     alpha = atlas.getchannel("A").point(lambda value: 255 if value >= 48 else 0)
     atlas = atlas.convert("RGB").quantize(
         colors=64,
@@ -141,7 +194,8 @@ def build(base_path: Path, source_path: Path, output_path: Path) -> None:
     atlas.save(output_path, optimize=True)
     print(
         f"built {output_path} {atlas.width}x{atlas.height}; "
-        f"champions=oh_tipi,s_wayne,red_baron; states={','.join(STATE_ORDER)}"
+        f"champions=oh_tipi,s_wayne,red_baron; states={','.join(STATE_ORDER)}; "
+        f"style_reference={STYLE_REFERENCE_CHAMPION}; outline={OUTLINE_RADIUS}px"
     )
 
 

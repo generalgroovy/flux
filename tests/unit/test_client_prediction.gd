@@ -2,7 +2,7 @@ extends FluxTestSuite
 
 
 func run() -> int:
-	for tick_rate: int in [60, 120]:
+	for tick_rate: int in [120]:
 		_test_deterministic_convergence(tick_rate)
 		_test_eight_direction_parity(tick_rate)
 	_test_soft_and_hard_correction()
@@ -90,7 +90,7 @@ func _test_soft_and_hard_correction() -> void:
 
 func _test_history_and_validation_bounds() -> void:
 	var prediction := ClientPrediction.new()
-	check(prediction.configure(SimConfig.new(60), CollisionWorld.new(2_000_000, 1_500_000), 2), "history fixture configures")
+	check(prediction.configure(SimConfig.new(120), CollisionWorld.new(2_000_000, 1_500_000), 2), "history fixture configures at the canonical rate")
 	var authority := _state()
 	var initial := ClientPrediction.capture_packet(authority, 1, -1)
 	check(prediction.reconcile(initial), "history fixture initializes")

@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory = $true)][ValidatePattern('^[a-z0-9][a-z0-9-]{0,47}$')][string]$Name,
     [ValidateSet('1280x720', '1920x1080')][string]$Resolution = '1280x720',
-    [ValidateSet(60, 120)][int]$TickRate = 60,
+    [ValidateSet(120)][int]$TickRate = 120,
     [ValidateRange(2, 120)][int]$Frames = 4,
     [switch]$FarflowPair,
     [ValidateRange(1024, 65535)][int]$Port = 24920,

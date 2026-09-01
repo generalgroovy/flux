@@ -48,7 +48,7 @@ projectiles, spell residues and interaction prompts instantly legible.
 | Gate | Deliverable | Evidence required before moving on |
 | ---: | --- | --- |
 | V0 | Baseline and token specimen | Capture current 720p/1080p frames at 50/75/100%; freeze palette ramps, spacing, typography, outline, shadow, aura, effect and panel tokens in one runtime specimen scene. |
-| V1 | Runtime presentation foundation | Prove pixel snap/filtering, layering, cutaway masks, light/effect budgets and camera transforms in the actual game at 60/120 Hz. |
+| V1 | Runtime presentation foundation | Prove pixel snap/filtering, layering, cutaway masks, light/effect budgets and camera transforms in the actual game at 120 Hz. |
 | V2 | Two foundation champions | Replace schematic bodies for Oh Tipi and S. Wayne with original body-and-clothing-only production candidates, canonical `middle`/`small` assignments and all gameplay-critical action states in all eight compass directions; front/back symmetry, readable sides/diagonals, separate effects/shadows and diagnostic hitboxes are proven live. |
 | V3 | Wellspring environment | Replace the central source court, readable paths, water, academy facade, training target, spell station and near scenic edges with a coherent modular kit aligned to authored collision. |
 | V4 | Existing spell visuals | Give Rillshot, Tideline, Rimewake, Eclipse Disc and Pocket Eclipse distinct readable startup/action/impact/residue treatment plus honest refusal/cooldown/Flux feedback. |
@@ -142,7 +142,7 @@ The visual gate opens only when all of these are true in the live game:
    cutaways align in diagnostic and ordinary frames.
 5. Grayscale, color-vision and reduced-effects captures preserve gameplay
    information; no effect or decoration hides an actor or threat.
-6. Independent 60/120 Hz boots, deterministic tests, source Farflow smoke and a
+6. Independent 120 Hz boots, deterministic tests, source Farflow smoke and a
    real interactive capture pass on the same commit.
 7. Every runtime asset has provenance, license/originality notes, declared
    dimensions/pivots/import rules and a bounded memory/performance budget.

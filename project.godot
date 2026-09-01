@@ -10,6 +10,7 @@ config/description="Deterministic top-down elemental arena foundation"
 run/main_scene="res://scenes/bootstrap/bootstrap.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon=""
+run/max_fps=120
 
 [display]
 
@@ -22,7 +23,11 @@ window/stretch/mode="canvas_items"
 [flux]
 
 simulation/default_tick_rate=120
-simulation/supported_tick_rates=PackedInt32Array(60, 120)
+simulation/supported_tick_rates=PackedInt32Array(120)
+
+[physics]
+
+common/physics_ticks_per_second=120
 
 [rendering]
 

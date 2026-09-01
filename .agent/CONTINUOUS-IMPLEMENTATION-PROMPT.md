@@ -9,15 +9,15 @@ disagree, preserve tested runtime truth and update stale prose in the same slice
 
 ## Current frontier and hard order
 
-V0–V10 pass in the live game. Preserve protocol 30, snapshot schema 11, the
+V0–V10 pass in the live game. Preserve protocol 32, snapshot schema 11, the
 published green checkpoint and all accepted visual/gameplay behavior. Continue
 in this strict player-facing order; do not skip ahead because a later catalog is
 easier to enumerate:
 
-1. **Readable bullet-pattern pressure.** Implement one deterministic five-shot
-   fan with fixed ordered angles, bounded entities/work/packets, visible owner
-   and at least one deliberate evasion lane at every supported zoom.
-2. **First-eight burst library.** Instantiate one comparable positive-Flux
+1. **Readable bullet-pattern pressure — complete.** Preserve Cinder Fan's fixed
+   ordered angles, bounded entities/work/packets, visible owner, single-hit
+   protection and deliberate evasion lanes at every supported zoom.
+2. **First-eight burst library — active.** Instantiate one comparable positive-Flux
    burst for Earth, Fire, Water, Wind, Ice, Charge, Light and Dark through the
    global 3×4 Loom; element changes identity/chemistry, never hidden geometry or
    automatic damage.
@@ -42,7 +42,7 @@ slices, checkpoint each green result, and immediately start the next accepted
 slice. Do not stop at plans, scaffolds, catalogs, generated images or passing
 unit tests when the player-facing outcome is still absent.
 
-The current green frontier is protocol 30 / snapshot schema 11: Oh Tipi, S. Wayne
+The current green frontier is protocol 32 / snapshot schema 11: Oh Tipi, S. Wayne
 and The Red Baron exercise middle, small and large equal-budget roles; the complete
 non-ability movement grammar, bounded launch steering plus a timed impact-recovery/tech decision, full/cone POV with building cutaways, twelve
 Wellspring stations including a host-authoritative 3×4 Spell Loom,
@@ -51,6 +51,12 @@ one Proving Court round, reconnect, stewardship and late-join observation pass
 the maintained Windows source journeys; Pocket Eclipse is a cover-stopped Light
 beam, Tideline a cover-aware multi-target Water spray, Rimewake a persistent
 single-trigger Ice field, and Cinderbolt is Red Baron's measured Fire projectile.
+His Cinder Fan is the first deterministic five-lane pattern. Projectiles use a
+bounded 28–46 px shape-first presentation, a clear collision rim and slower
+travel cadence; the Proving Court supplies quiet crossed lanes and four response
+pockets. All foundation champion frames share a cell-bounded one-pixel exterior
+ink derived from The Red Baron's darkest material clusters without runtime scale
+changes or palette replacement.
 All eight runtime-proven spells are globally weaveable for every champion with
 identity-owned replicated cooldowns and four honest empty positions. A persisted 50/75/100% world zoom defaults to the wider
 75% view. Preserve all of it. Export templates and
@@ -78,10 +84,10 @@ not runtime art, collision geometry or permission to ship generated pixels.
 | Order | Player-visible outcome | Acceptance gate |
 | ---: | --- | --- |
 | 0 | Gameplay-scale visual overhaul — complete | D7 is 4.64/5 and V10 density preserves ownership/escape lanes across zoom/accessibility profiles. |
-| 1 | Gameplay/movement completion — complete foundation | Universal eight-way movement, chaining, intangibility, recovery, routes and 60/120 equivalence are green. |
+| 1 | Gameplay/movement completion — complete foundation | Universal eight-way movement, chaining, intangibility, recovery and routes are green at the authoritative 120 Hz tick. |
 | 2 | Natural reusable animation and environment — complete foundation | Accepted actions use editable state-driven motion; the Wellspring composes validated reusable environment modules over authoritative routes. |
-| 3 | Readable five-shot pattern | Fixed ordered fan, positive cost, bounded entities/work/network, explicit owner and movement-safe escape lanes. |
-| 4 | First-eight burst library | Comparable Earth/Fire/Water/Wind/Ice/Charge/Light/Dark bursts are globally weaveable and visually distinct. |
+| 3 | Readable five-shot pattern — complete | Fixed ordered fan, positive cost, bounded entities/work/network, explicit owner and movement-safe escape lanes. |
+| 4 | First-eight burst library — active | Comparable Earth/Fire/Water/Wind/Ice/Charge/Light/Dark bursts are globally weaveable and visually distinct. |
 | 5 | Live element chemistry | Promote all reactions in bounded worldbone-safe vertical slices with deterministic work budgets, reset, replay, replication and shape-first cues. |
 | 6 | One-step Windows play | A friend runs one obvious installer without admin/dev tools, enters Wellspring, hosts or joins through one short in-world flow, and every quit path leaves no child process; exact commit/content IDs and checksums remain visible. |
 | 7 | In-world player codex and expression | Canonical translucent overview plus an eight-way character expression wheel remain readable, controller-friendly and visibility-safe. |
@@ -141,7 +147,7 @@ During implementation:
 
 Before checkpointing:
 
-1. Run focused tests, full headless suites, import, independent 60/120 Hz boots,
+1. Run focused tests, full headless suites, import, an independent 120 Hz boot,
    the applicable multi-process journey and an actual visual/interactive smoke.
 2. Inspect stderr, packet/MTU budgets, generated files, diff scope, stale terms,
    image provenance and cleanup behavior; a process exiting zero after a crash is

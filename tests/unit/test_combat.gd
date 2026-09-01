@@ -2,7 +2,7 @@ extends FluxTestSuite
 
 
 func run() -> int:
-	for tick_rate: int in [60, 120]:
+	for tick_rate: int in [120]:
 		_test_semantic_spell_slots(tick_rate)
 		_test_positive_flux_primary(tick_rate)
 		_test_vector_lance_flux_and_hit(tick_rate)
@@ -13,6 +13,7 @@ func run() -> int:
 		_test_s_wayne_disc_ricochet(tick_rate)
 		_test_s_wayne_pocket_eclipse(tick_rate)
 		_test_red_baron_cinderbolt(tick_rate)
+		_test_red_baron_cinder_fan(tick_rate)
 		_test_movement_spell_chains(tick_rate)
 		_test_pressure_exhaustion_and_recovery(tick_rate)
 		_test_edgeweave(tick_rate)
@@ -77,10 +78,10 @@ func _test_semantic_spell_slots(tick_rate: int) -> void:
 	var empty_world := SimWorld.new(tick_rate)
 	var empty: PlayerState = empty_world.player()
 	var initial_flux: int = empty.flux
-	check(_step(empty_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_9, 1000, 0)), "%d Hz empty slot command steps" % tick_rate)
+	check(_step(empty_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_10, 1000, 0)), "%d Hz empty slot command steps" % tick_rate)
 	equal(empty.pending_cast_wire_id, 0, "%d Hz empty slot starts no cast" % tick_rate)
 	equal(empty.flux, initial_flux, "%d Hz empty slot spends no Flux" % tick_rate)
-	check(empty_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "empty_slot" and int(event.get("slot", 0)) == 9), "%d Hz empty slot refusal is explicit" % tick_rate)
+	check(empty_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "empty_slot" and int(event.get("slot", 0)) == 10), "%d Hz empty slot refusal is explicit" % tick_rate)
 
 	var rewoven_world := SimWorld.new(tick_rate)
 	var rewoven: PlayerState = rewoven_world.player()
@@ -226,6 +227,56 @@ func _test_red_baron_cinderbolt(tick_rate: int) -> void:
 			break
 	check(saw_hit, "%d Hz Cinderbolt hits authoritatively" % tick_rate)
 	equal(enemy.health, enemy.health_maximum - CombatTuning.CINDERBOLT_DAMAGE, "%d Hz Cinderbolt damage is exact" % tick_rate)
+
+
+func _test_red_baron_cinder_fan(tick_rate: int) -> void:
+	var collision := CollisionWorld.new(1_200_000, 720_000)
+	var world := SimWorld.new(tick_rate, 146, collision)
+	var caster: PlayerState = world.player()
+	_apply_red_baron(caster)
+	var enemy: PlayerState = _add_enemy(world, Vector2i(600_000, 360_000), 9)
+	enemy.actor_kind = PlayerState.ActorKind.TRAINING_TARGET
+	var initial_flux := caster.flux
+	check(_step(world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_3, 1000, 0)), "%d Hz Cinder Fan starts from Red Baron's third kit slot" % tick_rate)
+	equal(caster.pending_cast_wire_id, CombatTuning.CINDERFAN_WIRE_ID, "%d Hz Cinder Fan owns the requested cast channel" % tick_rate)
+	equal(caster.flux, initial_flux - CombatTuning.CINDERFAN_FLUX_COST, "%d Hz Cinder Fan spends one exact positive Flux cost" % tick_rate)
+	var spawn_events: Array[Dictionary] = []
+	for _index: int in range(tick_rate):
+		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000, 0)), "%d Hz Cinder Fan release advances" % tick_rate)
+		for event: Dictionary in world.combat_events:
+			if event.get("type") == "projectile_spawned" and int(event.get("wire_id", 0)) == CombatTuning.CINDERFAN_WIRE_ID:
+				spawn_events.append(event)
+		if spawn_events.size() == 5:
+			break
+	equal(spawn_events.size(), 5, "%d Hz Cinder Fan releases exactly five bounded lanes" % tick_rate)
+	equal(world.projectiles.size(), 5, "%d Hz all five fan lanes enter authoritative collision state" % tick_rate)
+	equal(world.next_projectile_id, 1005, "%d Hz fan reserves exactly five stable projectile IDs" % tick_rate)
+	var observed_ids: Array[int] = []
+	var observed_angles: Array[int] = []
+	for event: Dictionary in spawn_events:
+		observed_ids.append(int(event.get("projectile_id", 0)))
+		observed_angles.append(int(event.get("lane_angle_degrees", 999)))
+	equal(observed_ids, [1000, 1001, 1002, 1003, 1004], "%d Hz projectile IDs follow left-to-right lane order" % tick_rate)
+	equal(observed_angles, CombatTuning.CINDERFAN_ANGLES_DEGREES, "%d Hz fan exposes exact -24..24 degree readability" % tick_rate)
+	if world.projectiles.size() == 5:
+		equal(world.projectiles[0].velocity_x, world.projectiles[4].velocity_x, "%d Hz outer fan lanes have mirrored forward speed" % tick_rate)
+		equal(world.projectiles[0].velocity_y, -world.projectiles[4].velocity_y, "%d Hz outer fan lanes mirror vertically" % tick_rate)
+		equal(world.projectiles[1].velocity_y, -world.projectiles[3].velocity_y, "%d Hz inner fan lanes mirror vertically" % tick_rate)
+		equal(world.projectiles[2].velocity_y, 0, "%d Hz center fan lane preserves exact aim" % tick_rate)
+	var snapshot := SessionSnapshot.capture(world, {1: "Baron"}, world.combat_events)
+	check(SessionSnapshot.validate(snapshot), "%d Hz five-shot fan fits the validated network snapshot" % tick_rate)
+	equal(int((snapshot["overflow"] as PackedInt32Array)[0]), 0, "%d Hz one complete fan stays inside the projectile packet budget" % tick_rate)
+
+	check(_step(world, SimCommand.new(world.tick, 1, 1000, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP, 1000, 0)), "%d Hz movement remains executable under live fan pressure" % tick_rate)
+	check(caster.is_airborne(), "%d Hz jump can chain while the fan lanes remain active" % tick_rate)
+	var saw_center_hit := false
+	for _index: int in range(tick_rate * 2):
+		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000, 0)), "%d Hz Cinder Fan flight advances" % tick_rate)
+		saw_center_hit = saw_center_hit or world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "projectile_hit" and int(event.get("source_wire_id", 0)) == CombatTuning.CINDERFAN_WIRE_ID)
+		if saw_center_hit:
+			break
+	check(saw_center_hit, "%d Hz one readable fan lane resolves authoritative collision" % tick_rate)
+	equal(enemy.health, enemy.health_maximum - CombatTuning.CINDERFAN_DAMAGE, "%d Hz ranged center-lane damage is exact without hidden fan multiplication" % tick_rate)
 
 
 func _test_oh_tipi_tideline(tick_rate: int) -> void:

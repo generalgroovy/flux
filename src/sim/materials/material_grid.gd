@@ -46,7 +46,7 @@ func initialize(
 		or requested_registry.content_hash.length() != 64
 		or requested_definition.material_catalog_hash != requested_registry.content_hash
 	):
-		return _fail("material grid requires valid definition, registry, and 60/120 Hz config")
+		return _fail("material grid requires valid definition, registry, and 120 Hz config")
 	definition = requested_definition
 	registry = requested_registry
 	config = requested_config

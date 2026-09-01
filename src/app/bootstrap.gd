@@ -583,13 +583,6 @@ func _process(delta: float) -> void:
 		elif not _restart_shared_seed(tick_rate):
 			set_process(false)
 			return
-	if not controls_blocking and Input.is_action_just_pressed(&"toggle_tick_rate"):
-		if session_transport.is_online():
-			station_notice = "Close Farflow before changing the simulation cadence."
-			station_notice_seconds = 2.5
-		elif not _start_match(60 if tick_rate == 120 else 120):
-			set_process(false)
-			return
 	_update_station_focus()
 	if session_steward != null and world != null:
 		session_steward.expire(world.tick)
@@ -787,9 +780,9 @@ func _draw() -> void:
 	for field: FieldState in world.fields:
 		_draw_field(field)
 	for projectile: ProjectileState in world.projectiles:
-		var projectile_position := Vector2(float(projectile.position_x) / 1000.0, float(projectile.position_y) / 1000.0)
+		var projectile_position := ProjectilePresentationMotion.interpolated_position(projectile, alpha)
 		var projectile_color: Color = _projectile_color(projectile.element_wire_id)
-		_draw_projectile(projectile, projectile_position, projectile_color)
+		_draw_projectile(projectile, projectile_position, projectile_color, alpha)
 	_draw_practice_targets(camera_origin)
 	_draw_combat_cues(camera_origin)
 	var state: PlayerState = _local_player_state()
@@ -2771,14 +2764,15 @@ func _projectile_color(element_wire_id: int) -> Color:
 			return FLUX_COLOR
 
 
-func _draw_projectile(projectile: ProjectileState, position: Vector2, color: Color) -> void:
-	if burst_projectile_presenter != null and burst_projectile_presenter.draw_projectile(self, projectile, world.tick, _reduced_effects_enabled()):
+func _draw_projectile(projectile: ProjectileState, position: Vector2, color: Color, interpolation_alpha: float) -> void:
+	if burst_projectile_presenter != null and burst_projectile_presenter.draw_projectile(self, projectile, world.tick, _reduced_effects_enabled(), interpolation_alpha):
 		return
-	if foundation_spell_presenter != null and foundation_spell_presenter.draw_projectile(self, projectile, world.tick, _reduced_effects_enabled()):
+	if foundation_spell_presenter != null and foundation_spell_presenter.draw_projectile(self, projectile, world.tick, _reduced_effects_enabled(), interpolation_alpha):
 		return
 	var radius: float = float(projectile.radius) / 1000.0
-	var previous := Vector2(float(projectile.previous_x) / 1000.0, float(projectile.previous_y) / 1000.0)
-	draw_line(previous, position, Color(color, 0.42), maxf(2.0, radius * 0.65))
+	var direction := ProjectilePresentationMotion.travel_direction(projectile)
+	var trail_start := position - direction * ProjectilePresentationMotion.trail_length(projectile, _reduced_effects_enabled())
+	draw_line(trail_start, position - direction * radius * 0.35, Color(color, 0.42), maxf(2.0, radius * 0.65), true)
 	draw_circle(position, radius + 7.0, Color(color, 0.18))
 	draw_circle(position, radius, color)
 

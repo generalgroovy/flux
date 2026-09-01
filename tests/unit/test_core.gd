@@ -11,11 +11,10 @@ func run() -> int:
 
 
 func _test_supported_tick_rates() -> void:
-	equal(SimConfig.PROTOCOL_VERSION, 30, "current host-authoritative eight-direction parity protocol is explicit")
-	check(SimConfig.new(60).is_valid(), "60 Hz is supported")
-	check(SimConfig.new(120).is_valid(), "120 Hz is supported")
+	equal(SimConfig.PROTOCOL_VERSION, 32, "current 120 Hz host-authoritative protocol is explicit")
+	check(not SimConfig.new(60).is_valid(), "retired 60 Hz cadence fails closed")
+	check(SimConfig.new(120).is_valid(), "120 Hz is the sole supported cadence")
 	check(not SimConfig.new(90).is_valid(), "intermediate tick rates fail closed")
-	equal(SimConfig.new(60).milliseconds_to_ticks(85), 6, "60 Hz duration rounds upward")
 	equal(SimConfig.new(120).milliseconds_to_ticks(85), 11, "120 Hz duration rounds upward")
 
 
@@ -33,7 +32,7 @@ func _test_command_serialization() -> void:
 
 
 func _test_independent_aim() -> void:
-	var world := SimWorld.new(60)
+	var world := SimWorld.new(120)
 	var command := SimCommand.new(0, 1, 1000, 0, SimCommand.HELD_PRIMARY, 0, 0, -1000)
 	check(world.step([command]), "independent-aim command steps")
 	var state: PlayerState = world.player()
@@ -43,14 +42,14 @@ func _test_independent_aim() -> void:
 
 
 func _test_command_validation() -> void:
-	var world := SimWorld.new(60)
+	var world := SimWorld.new(120)
 	equal(world.state_hash().length(), 64, "world state uses a SHA-256 compatibility hash")
 	check(not world.step([SimCommand.new(1, 1)]), "future command tick is rejected")
 	check(world.last_error.contains("does not match"), "tick rejection is diagnosable")
 
 
 func _test_actor_kind_is_canonical() -> void:
-	var champion_world := SimWorld.new(60)
-	var target_world := SimWorld.new(60)
+	var champion_world := SimWorld.new(120)
+	var target_world := SimWorld.new(120)
 	target_world.player().actor_kind = PlayerState.ActorKind.TRAINING_TARGET
 	check(champion_world.state_hash() != target_world.state_hash(), "champion and practice-target actor kinds hash differently")

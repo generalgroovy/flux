@@ -14,7 +14,7 @@ func run() -> int:
 		&"aim_left", &"aim_right", &"aim_up", &"aim_down",
 		&"sprint", &"slide", &"jump", &"technique", &"interact", &"emote", &"spectate_next", &"primary", &"active_1",
 		&"spell_1", &"spell_2", &"spell_3", &"spell_4", &"spell_layer_ctrl", &"spell_layer_alt",
-		&"reset_match", &"toggle_debug_overlay", &"toggle_tick_rate",
+		&"reset_match", &"toggle_debug_overlay",
 		&"toggle_movement_reference", &"toggle_pov_mode",
 		&"adjust_pov_angle", &"adjust_pov_range", &"adjust_camera_zoom",
 	]:
@@ -39,6 +39,7 @@ func run() -> int:
 	equal(InputRouter.selected_spell_slot_index(1, true, true), 9, "Alt deterministically wins a dual-modifier chord")
 	_test_press_edge_resilience()
 	_test_eight_direction_command_vectors()
+	_test_absolute_keyboard_chords()
 	_test_eight_direction_slide_chords()
 	check(_has_joy_button(&"emote", JOY_BUTTON_DPAD_UP), "social speech retains a controller d-pad shortcut")
 	check(not _keycodes(&"primary").has(KEY_SPACE), "primary has no Space keyboard alias")
@@ -74,6 +75,28 @@ func _test_press_edge_resilience() -> void:
 	check(InputRouter.pressed_edge(false, false, true), "buffered engine transition preserves a short press between samples")
 	check(not InputRouter.pressed_edge(true, true, false), "held action does not repeat without a new transition")
 	check(not InputRouter.pressed_edge(false, false, false), "idle action produces no semantic press")
+
+
+func _test_absolute_keyboard_chords() -> void:
+	var movement_actions: Array[StringName] = [&"move_left", &"move_right", &"move_up", &"move_down"]
+	for direction_index: int in range(EightDirectionResolver.DIRECTION_ORDER.size()):
+		for action: StringName in movement_actions:
+			Input.action_release(action)
+		var fixed := EightDirectionResolver.FIXED_VECTORS[direction_index]
+		if fixed.x < 0:
+			Input.action_press(&"move_left")
+		elif fixed.x > 0:
+			Input.action_press(&"move_right")
+		if fixed.y < 0:
+			Input.action_press(&"move_up")
+		elif fixed.y > 0:
+			Input.action_press(&"move_down")
+		var router := InputRouter.new(1)
+		check(router.configure_movement_reference(PlayerPreferences.MOVEMENT_WORLD_RELATIVE), "absolute keyboard mode configures")
+		var command := router.sample(0, Vector2.ZERO, Vector2.RIGHT)
+		equal(Vector2i(command.move_x, command.move_y), fixed, "absolute keyboard chord resolves exact %s lane" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
+	for action: StringName in movement_actions:
+		Input.action_release(action)
 
 
 func _test_eight_direction_slide_chords() -> void:
@@ -148,8 +171,8 @@ func _test_capture_pointer_parser() -> void:
 	check(not BootstrapScript.has_emote_smoke_argument("--farflow-smoke-emote=true"), "diagnostic social smoke switch fails closed on alternate syntax")
 	check(BootstrapScript.has_prediction_smoke_argument("--farflow-smoke-prediction"), "diagnostic prediction smoke switch parses exactly")
 	check(not BootstrapScript.has_prediction_smoke_argument("--farflow-smoke-prediction=true"), "diagnostic prediction smoke switch fails closed on alternate syntax")
-	equal(BootstrapScript.snapshot_tick_interval(60), 1, "60 Hz match publishes 60 snapshots per second")
 	equal(BootstrapScript.snapshot_tick_interval(120), 2, "120 Hz match publishes 60 snapshots per second")
+	equal(BootstrapScript.snapshot_tick_interval(60), 0, "retired 60 Hz cadence fails closed")
 	equal(BootstrapScript.snapshot_tick_interval(90), 0, "unsupported match cadence cannot derive a snapshot interval")
 	check(BootstrapScript.has_reconnect_smoke_argument("--farflow-smoke-reconnect"), "diagnostic reconnect smoke switch parses exactly")
 	check(not BootstrapScript.has_reconnect_smoke_argument("--farflow-smoke-reconnect=true"), "diagnostic reconnect smoke switch fails closed on alternate syntax")

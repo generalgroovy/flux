@@ -17,7 +17,13 @@ each playable slice.
   `.godot/visual-captures/elemental-burst-o0-v1-{element}`; the common frame-29
   contact sheet shows identical lanes with distinct elemental sheets and HUD
   identity. Each log records five ordered child IDs and the correct wire.
-- `scripts\test.ps1`: 58 suites / 17,684 assertions, zero failures. Import and
+- Concurrent `main` work was integrated without discarding either lineage:
+  Windows now prefers ANGLE with native fallback, first-run import is visible,
+  and bounded compatible-build LAN discovery is mounted in the Wellspring.
+  Its Host/Join panel appears only at the three physical Farflow stations, so
+  discovery does not create a detached always-on menu or consume combat space.
+- `scripts\test.ps1`: 59 suites / 17,706 assertions, zero failures after the
+  LAN integration. Import and
   independent source boot pass at 120 Hz, protocol 32; ability hash prefix is
   `1ddc55c73a6f` and Burst presentation prefix is `fa35baa91783`.
 - `.agent/OPTIMIZATION-IMPLEMENTATION.md` now defines O0-O10 explicitly:

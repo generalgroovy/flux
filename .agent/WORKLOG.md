@@ -21,9 +21,14 @@ Playable outcome:
 
 Verification:
 
-- `scripts\test.ps1`: 58 suites / 17,684 assertions, zero failures; input-router
+- Concurrent remote `main` improvements were merged: Windows ANGLE/native
+  fallback, visible first-run import, and bounded zero-config LAN discovery.
+  The discovery service is preserved, but its controls are contextual to the
+  physical Host/Join/Charter stations instead of remaining an always-on menu.
+- `scripts\test.ps1`: 59 suites / 17,706 assertions, zero failures after the
+  contextual LAN integration; input-router
   coverage increased to 525 assertions and elemental-Burst coverage contributes
-  352 assertions.
+  352 assertions; LAN lobby coverage contributes 22 assertions.
 - Windows import and source boot pass at the authoritative 120 Hz tick under
   protocol 32. Ability content hash prefix is `1ddc55c73a6f`; Burst atlas
   presentation prefix is `fa35baa91783`.

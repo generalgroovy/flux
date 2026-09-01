@@ -4,6 +4,7 @@ extends FluxTestSuite
 func run() -> int:
 	_test_discovery_packet_validation()
 	_test_discovery_compatibility_and_source_identity()
+	_test_wellspring_context_boundary()
 	return finish("lan-lobby")
 
 
@@ -63,3 +64,11 @@ func _test_discovery_compatibility_and_source_identity() -> void:
 	oversized_name["name"] = "X".repeat(SessionTransport.MAX_PLAYER_NAME_LENGTH + 20)
 	var bounded := LanLobby.normalized_host(oversized_name, "10.0.0.9", local_signature, 30)
 	equal(String(bounded.get("name", "")).length(), SessionTransport.MAX_PLAYER_NAME_LENGTH, "discovered host names are bounded")
+
+
+func _test_wellspring_context_boundary() -> void:
+	check(LanLobby.context_panel_visible("farflow-host", false), "LAN controls appear at the physical Host Farflow station")
+	check(LanLobby.context_panel_visible("farflow-join", false), "LAN controls appear at the physical Join Farflow station")
+	check(LanLobby.context_panel_visible("farflow-charter", false), "LAN controls remain available beside the Farflow charter")
+	check(not LanLobby.context_panel_visible("spell-loom", false), "LAN controls do not become a detached always-on menu")
+	check(not LanLobby.context_panel_visible("farflow-join", true), "visual acceptance runs remain free of diagnostic LAN UI")

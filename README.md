@@ -25,7 +25,8 @@ physical places rather than a detached menu.
 | Windows player | Download and double-click `FLUX.exe` | One hash-verified file installs or updates per-user, repairs if needed, then starts the game |
 | Windows developer | Run `scripts\run.cmd` | Pinned Godot source launch at 120 Hz |
 | Host | Walk east to **Host Farflow**, press interact | Opens authoritative UDP session on port `24872` |
-| Friend | Walk to **Join Farflow**, press interact, type/paste the host address, press Enter | Address is saved locally; join is compatibility-checked with clear refusal on mismatch/full session |
+| Friend on the same LAN | Walk to the Farflow stations and choose **Join** | Compatible hosts appear automatically through bounded UDP discovery; different builds remain visible but cannot be joined |
+| Internet friend | Walk to **Join Farflow**, press interact, type/paste the host address, press Enter | Address is saved locally; join is compatibility-checked with clear refusal on mismatch/full session |
 | Everyone | Use the **Session Hearth** | Ready, synchronized start, results, and rematch without reopening the company |
 
 Build the one-file friend package on Windows:
@@ -58,8 +59,10 @@ scripts\run.cmd --join-address=203.0.113.10 --player-name="River Guest"
 ```
 
 LAN play uses the host's LAN address. Two local copies default to `127.0.0.1`.
-Automatic discovery, relay, NAT traversal, encryption, and signed public update
-channels are not claimed yet; test direct-IP builds only with trusted friends.
+LAN discovery is automatic while the contextual Farflow station panel is open;
+its controls never become a detached main menu. Relay, NAT traversal,
+encryption, and signed public update channels are not claimed yet; test
+direct-IP internet builds only with trusted friends.
 
 ## Product state
 
@@ -72,7 +75,7 @@ channels are not claimed yet; test direct-IP builds only with trusted friends.
 | Combat | Sixteen runtime spells cover projectile, five-shot burst, beam, spray, field, ricochet, launch and slow; all eight elemental Bursts share exact geometry/economy while retaining distinct art and chemistry payloads | Keep the Burst baseline fixed while chemistry supplies the first systemic differences |
 | Chemistry | Material grid, eight depositing Burst payloads and 36 design-locked recipes | Fail-closed symmetric catalog, then bounded exposure/contact and shared reaction primitives |
 | Champions | Oh Tipi (middle), S. Wayne (small), and The Red Baron (large) playable | Validate the three roles under bullet-pattern pressure before another champion |
-| Farflow | Host-authoritative 2/4/8-player direct-IP loop | Per-peer LOS filtering, then measured later 32-player gate |
+| Farflow | Host-authoritative 2/4/8-player loop with contextual zero-config LAN discovery and direct-IP internet joining | Physical two-PC LAN/internet proof, then per-peer LOS filtering; measured 32-player work remains deferred |
 | Visuals | Integrated Wellspring gate accepted at 4.64/5; the foundation champions share The Red Baron's cell-bounded dark-ink language, and the Proving Court uses quiet room lanes, response pockets and bounded markers | Keep every new champion/spell inside the same silhouette, accessibility, density, and provenance gates |
 
 ## Design pillars

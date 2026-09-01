@@ -26,6 +26,7 @@ var last_probe_ms: int = 0
 var last_listener_retry_ms: int = 0
 var browser_open: bool = false
 var host_rows_fingerprint: String = ""
+var visual_capture_run: bool = false
 
 var panel: PanelContainer
 var host_button: Button
@@ -45,6 +46,7 @@ func _ready() -> void:
 
 func _initialize() -> void:
 	bootstrap = get_parent()
+	visual_capture_run = _is_visual_capture_run()
 	_build_ui()
 	_open_discovery_listener()
 	_prepare_broadcaster()
@@ -62,6 +64,12 @@ func _process(_delta: float) -> void:
 	var transport := _transport()
 	if transport == null:
 		return
+	var focused_station_id := String(bootstrap.get("focused_station_id"))
+	var context_visible := context_panel_visible(focused_station_id, visual_capture_run)
+	panel.visible = context_visible
+	if not context_visible and browser_open:
+		browser_open = false
+		browser_box.visible = false
 
 	var now := Time.get_ticks_msec()
 	if not listener_ready and now - last_listener_retry_ms >= LISTENER_RETRY_MS:
@@ -86,6 +94,7 @@ func _build_ui() -> void:
 	panel.offset_right = -16.0
 	panel.offset_top = 16.0
 	panel.custom_minimum_size = Vector2(356.0, 0.0)
+	panel.visible = false
 	add_child(panel)
 
 	var outer := VBoxContainer.new()
@@ -145,8 +154,10 @@ func _build_ui() -> void:
 	host_rows.add_theme_constant_override("separation", 5)
 	scroll.add_child(host_rows)
 
-	if _is_visual_capture_run():
-		panel.visible = false
+
+
+static func context_panel_visible(focused_station_id: String, capture_run: bool) -> bool:
+	return not capture_run and focused_station_id in ["farflow-host", "farflow-join", "farflow-charter"]
 
 
 func _transport() -> SessionTransport:

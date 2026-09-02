@@ -15,7 +15,7 @@ const SPELL_PICKER_WIDTH: float = 98.0
 var is_open: bool = false
 var selected_slot_index: int = 0
 var selected_spell_index: int = 0
-var available_wire_ids := PackedInt32Array(CombatTuning.RUNTIME_WIRE_IDS)
+var available_wire_ids := PackedInt32Array(CombatTuning.runtime_wire_ids())
 var status_message: String = "Choose a slot and one proven global spell."
 
 
@@ -63,7 +63,7 @@ func selected_wire_id(_state: PlayerState = null) -> int:
 func configure_for_catalog(catalog: AbilityCatalog) -> void:
 	var prior_wire_id := selected_wire_id()
 	available_wire_ids = PackedInt32Array()
-	for wire_id: int in CombatTuning.RUNTIME_WIRE_IDS:
+	for wire_id: int in CombatTuning.runtime_wire_ids():
 		if catalog == null or not catalog.ability_from_wire(wire_id).is_empty():
 			available_wire_ids.append(wire_id)
 	selected_spell_index = available_wire_ids.find(prior_wire_id)
@@ -97,4 +97,5 @@ static func decode_library_index(value: int) -> int:
 
 
 static func wire_id_for_library_index(library_index: int) -> int:
-	return CombatTuning.RUNTIME_WIRE_IDS[library_index] if library_index >= 0 and library_index < CombatTuning.RUNTIME_WIRE_IDS.size() else 0
+	var runtime_wire_ids := CombatTuning.runtime_wire_ids()
+	return runtime_wire_ids[library_index] if library_index >= 0 and library_index < runtime_wire_ids.size() else 0

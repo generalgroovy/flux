@@ -100,7 +100,7 @@ func _test_projectile_and_event_round_trip() -> void:
 		{"type": "ready_changed", "event_id": 44, "entity_id": 1, "ready": true},
 		{"type": "beam_fired", "event_id": 45, "owner_id": 1, "source_wire_id": CombatTuning.POCKET_ECLIPSE_WIRE_ID, "target_id": 900, "end_x": 1_500_000, "end_y": 720_000},
 		{"type": "spray_fired", "event_id": 46, "owner_id": 1, "source_wire_id": CombatTuning.TIDELINE_WIRE_ID, "end_x": 1_520_000, "end_y": 720_000, "hit_count": 1},
-		{"type": "spray_hit", "event_id": 47, "owner_id": 1, "source_wire_id": CombatTuning.TIDELINE_WIRE_ID, "target_id": 900, "damage": CombatTuning.TIDELINE_DAMAGE},
+		{"type": "spray_hit", "event_id": 47, "owner_id": 1, "source_wire_id": CombatTuning.TIDELINE_WIRE_ID, "target_id": 900, "damage": int(CombatTuning.cast_definition(CombatTuning.TIDELINE_WIRE_ID)["damage"])},
 	]
 	var impact_station_event := SessionSnapshot.encode_event({"type": "station_confirmed", "event_id": 48, "entity_id": 1, "action": SessionTransport.REQUEST_IMPACT_PRACTICE})
 	check(not impact_station_event.is_empty() and SessionSnapshot._valid_event_values(impact_station_event), "Momentum Chime confirmation uses the bounded semantic event lane")
@@ -125,7 +125,7 @@ func _test_projectile_and_event_round_trip() -> void:
 		equal(String(replica.combat_events[5].get("type", "")), "spray_fired", "spray fan cue decodes distinctly")
 		equal(int(replica.combat_events[5].get("hit_count", 0)), 1, "spray affected count round-trips")
 		equal(String(replica.combat_events[6].get("type", "")), "spray_hit", "spray target cue decodes distinctly")
-		equal(int(replica.combat_events[6].get("damage", 0)), CombatTuning.TIDELINE_DAMAGE, "spray hit damage round-trips")
+		equal(int(replica.combat_events[6].get("damage", 0)), int(CombatTuning.cast_definition(CombatTuning.TIDELINE_WIRE_ID)["damage"]), "spray hit damage round-trips")
 	equal(replica.player().last_event, "cast_release_140", "readable cast event round-trips")
 
 
@@ -150,9 +150,9 @@ func _test_field_round_trip() -> void:
 	guest.champion_wire_id = 2
 	source.players.append(guest)
 	var field := FieldState.new(
-		2000, 1, 1, CombatTuning.RIMEWAKE_WIRE_ID, CombatTuning.RIMEWAKE_ELEMENT_WIRE_ID,
-		Vector2i(1_400_000, 720_000), CombatTuning.RIMEWAKE_RADIUS, 180,
-		PlayerState.ControlState.SLOWED, CombatTuning.RIMEWAKE_SLOW_DURATION_MS, CombatTuning.RIMEWAKE_SLOW_RATIO,
+		2000, 1, 1, CombatTuning.RIMEWAKE_WIRE_ID, int(CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID)["element_wire_id"]),
+		Vector2i(1_400_000, 720_000), int(CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID)["radius"]), 180,
+		PlayerState.ControlState.SLOWED, int(CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID)["hit_control_duration_ms"]), int(CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID)["hit_control_slow_ratio"]),
 	)
 	field.record_affected(2)
 	source.fields.append(field)
@@ -205,13 +205,13 @@ func _test_maximum_envelope_fits_transport() -> void:
 			1 + index % SessionSnapshot.MAX_PLAYERS,
 			1 + index % SessionSnapshot.MAX_PLAYERS,
 			CombatTuning.RIMEWAKE_WIRE_ID,
-			CombatTuning.RIMEWAKE_ELEMENT_WIRE_ID,
+			int(CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID)["element_wire_id"]),
 			Vector2i(600_000 + index * 20_000, 650_000),
-			CombatTuning.RIMEWAKE_RADIUS,
+			int(CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID)["radius"]),
 			180,
 			PlayerState.ControlState.SLOWED,
-			CombatTuning.RIMEWAKE_SLOW_DURATION_MS,
-			CombatTuning.RIMEWAKE_SLOW_RATIO,
+			int(CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID)["hit_control_duration_ms"]),
+			int(CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID)["hit_control_slow_ratio"]),
 		)
 		field.record_affected(1 + (index + 1) % SessionSnapshot.MAX_PLAYERS)
 		world.fields.append(field)

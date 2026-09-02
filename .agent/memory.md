@@ -927,3 +927,26 @@ user-owned untracked paths throughout.
 - The pushed/package boundary remains pending at this note: preserve
   `node_modules/`, `scripts/firewall.ps1` and the personal Downloads shortcut;
   rebuild the Windows installer only after committing this exact green state.
+## 2026-09-02 — O2 single-source combat definition authority
+
+- Added strict fixed-point simulation fields and stable runtime ordering to the
+  validated ability catalog for all 16 playable spells. Missing, fractional,
+  gated, duplicate or incomplete runtime data now fails closed with a named
+  ability/field error before simulation begins.
+- `CombatDefinitionTable` compiles the validated catalog once, returns defensive
+  definition copies, owns the runtime Loom order and derives a compatibility
+  hash from the source catalog plus compiler contract. Production combat,
+  snapshot validation, player spell state, the Loom and presentation now resolve
+  through this table.
+- Removed every mirrored per-spell economy/timing/geometry/damage/control
+  constant and the dead code-owned definition builders from `CombatTuning`.
+  Stable wire IDs remain as protocol adapters; cross-spell projectile clearance
+  and Edgeweave rules remain code-owned.
+- Captured pre-migration canonical signatures for every live wire. Tests prove
+  exact definition parity, deterministic runtime order, immutable lookup,
+  authored-change/hash coupling, and fail-closed invalid fields while existing
+  snapshot, replay and combat fixtures remain unchanged.
+- `scripts\test.ps1 -Tier Full` passed 61 suites / 17,781 assertions, clean
+  import, an independent 120 Hz boot, zero failures, zero warnings and zero
+  stderr in 34,928 ms. Next boundary is C5/O9: complete symmetric reaction
+  catalog and bounded shared-primitives compiler with no live mutation yet.

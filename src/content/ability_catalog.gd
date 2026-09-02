@@ -22,6 +22,7 @@ var elements_by_id: Dictionary = {}
 var abilities_by_id: Dictionary = {}
 var ability_ids_by_wire: Dictionary = {}
 var economy: Dictionary = {}
+var runtime_wire_ids: Array[int] = []
 
 
 func load_from_file(path: String) -> bool:
@@ -45,6 +46,7 @@ func validate() -> bool:
 	abilities_by_id = {}
 	ability_ids_by_wire = {}
 	economy = {}
+	runtime_wire_ids = []
 	if int(data.get("schema_version", 0)) != SUPPORTED_SCHEMA_VERSION:
 		return _fail("unsupported ability catalog schema")
 	if String(data.get("id", "")).is_empty():
@@ -160,6 +162,8 @@ func validate() -> bool:
 				return _fail("runtime spell cooldown is outside its cadence tier: %s" % ability_id)
 			if startup_ms <= 0 or recovery_ms <= 0:
 				return _fail("runtime spell requires positive startup and recovery: %s" % ability_id)
+			if not _validate_playable_simulation(ability):
+				return false
 		if shape == "projectile" and not _valid_projectile_angles(ability.get("projectile_angles_degrees", [0])):
 			return _fail("projectile angles must be ordered, odd, centered and symmetric: %s" % ability_id)
 		if shape != "projectile" and ability.has("projectile_angles_degrees"):
@@ -168,6 +172,8 @@ func validate() -> bool:
 		ability_ids_by_wire[wire_id] = ability_id
 	if abilities_by_id.is_empty():
 		return _fail("ability catalog must not be empty")
+	if not _validate_runtime_wire_order():
+		return false
 	if not _validate_first_eight_bursts():
 		return false
 	content_hash = CanonicalContent.sha256(data)
@@ -195,6 +201,74 @@ static func _valid_projectile_angles(value: Variant) -> bool:
 			return false
 		previous = angle
 	return int(angles[angles.size() / 2]) == 0
+
+
+func _validate_playable_simulation(ability: Dictionary) -> bool:
+	var ability_id := String(ability.get("id", ""))
+	var shape := String(ability.get("shape", ""))
+	var required_positive: Array[String] = ["radius"]
+	match shape:
+		"projectile":
+			required_positive.append_array(["speed", "damage", "lifetime_ms"])
+			for angle_value: Variant in ability.get("projectile_angles_degrees", [0]):
+				if int(angle_value) not in BURST_ANGLES:
+					return _fail("runtime projectile angles have no deterministic rotation: %s/%d" % [ability_id, int(angle_value)])
+			if ability.has("remaining_bounces") and not _bounded_integer(ability["remaining_bounces"], 0, 8):
+				return _fail("runtime projectile bounce count is invalid: %s" % ability_id)
+		"beam", "spray":
+			required_positive.append_array(["range", "damage"])
+			if shape == "spray":
+				required_positive.append("cone_cosine_squared_per_million")
+			if not _valid_hit_control(ability):
+				return _fail("runtime instant spell hit control is invalid: %s" % ability_id)
+		"field":
+			required_positive.append_array(["range", "lifetime_ms"])
+			if not _valid_hit_control(ability):
+				return _fail("runtime field hit control is invalid: %s" % ability_id)
+		_:
+			return _fail("playable spell has no compiled simulation shape: %s" % ability_id)
+	for field: String in required_positive:
+		if not _bounded_integer(ability.get(field), 1, 10_000_000):
+			return _fail("runtime spell simulation field is invalid: %s/%s" % [ability_id, field])
+	return true
+
+
+func _valid_hit_control(ability: Dictionary) -> bool:
+	if not _bounded_integer(ability.get("hit_control_state"), 0, 6) \
+		or int(ability["hit_control_state"]) not in [0, 1, 6] \
+		or not _bounded_integer(ability.get("hit_control_duration_ms"), 0, 5_000) \
+		or not _bounded_integer(ability.get("hit_control_speed"), 0, 2_000_000) \
+		or not _bounded_integer(ability.get("hit_control_slow_ratio"), 1, 1_000):
+		return false
+	return int(ability["hit_control_state"]) == 0 or int(ability["hit_control_duration_ms"]) > 0
+
+
+static func _bounded_integer(value: Variant, minimum: int, maximum: int) -> bool:
+	if typeof(value) not in [TYPE_INT, TYPE_FLOAT]:
+		return false
+	var integer := int(value)
+	return float(value) == float(integer) and integer >= minimum and integer <= maximum
+
+
+func _validate_runtime_wire_order() -> bool:
+	var order_value: Variant = data.get("runtime_wire_ids", [])
+	if not order_value is Array:
+		return _fail("runtime wire order must be an array")
+	var seen: Dictionary = {}
+	for wire_value: Variant in order_value:
+		if not _bounded_integer(wire_value, 1, 65_535):
+			return _fail("runtime wire order contains an invalid wire")
+		var wire_id := int(wire_value)
+		if seen.has(wire_id) or not ability_ids_by_wire.has(wire_id):
+			return _fail("runtime wire order must contain unique known wires: %d" % wire_id)
+		var entry: Dictionary = ability_from_wire(wire_id)
+		if String(entry.get("runtime_status", "")) != "playable":
+			return _fail("runtime wire order contains a gated ability: %d" % wire_id)
+		seen[wire_id] = true
+		runtime_wire_ids.append(wire_id)
+	if runtime_wire_ids.size() != playable_spell_ids().size():
+		return _fail("runtime wire order must contain every playable spell exactly once")
+	return true
 
 
 func _validate_first_eight_bursts() -> bool:

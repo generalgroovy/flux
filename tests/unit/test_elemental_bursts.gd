@@ -31,9 +31,9 @@ func _test_shared_first_eight_contract() -> void:
 		equal(String(ability.get("element", "")), element_id, "%s Burst owns the expected payload identity" % element_id)
 		equal(int(definition.get("element_wire_id", 0)), index + 1, "%s Burst owns the expected element wire" % element_id)
 		equal(String(definition.get("delivery_kernel", "")), "burst", "%s Burst resolves through the shared kernel" % element_id)
-		equal(definition.get("projectile_angles_degrees", []), CombatTuning.CINDERFAN_ANGLES_DEGREES, "%s Burst keeps the common five-lane angles" % element_id)
-		equal(int(definition.get("damage", 0)), CombatTuning.CINDERFAN_DAMAGE, "%s gains no hidden elemental damage advantage" % element_id)
-		equal(int(definition.get("flux_cost", 0)), CombatTuning.CINDERFAN_FLUX_COST, "%s pays the same positive Flux cost" % element_id)
+		equal(definition.get("projectile_angles_degrees", []), CombatTuning.cast_definition(CombatTuning.CINDERFAN_WIRE_ID)["projectile_angles_degrees"], "%s Burst keeps the common five-lane angles" % element_id)
+		equal(int(definition.get("damage", 0)), int(CombatTuning.cast_definition(CombatTuning.CINDERFAN_WIRE_ID)["damage"]), "%s gains no hidden elemental damage advantage" % element_id)
+		equal(int(definition.get("flux_cost", 0)), int(CombatTuning.cast_definition(CombatTuning.CINDERFAN_WIRE_ID)["flux_cost"]), "%s pays the same positive Flux cost" % element_id)
 		check(CombatTuning.is_runtime_wire_id(wire_id), "%s Burst is in the global runtime library" % element_id)
 
 
@@ -62,7 +62,7 @@ func _test_geometry_and_snapshot_at_120_hz() -> void:
 		var flux_before := caster.flux
 		check(world.step([SimCommand.new(0, caster.entity_id, 0, 0, 0, SimCommand.PRESSED_SPELL_1, 1000, 0)]), "Burst wire %d begins at 120 Hz" % wire_id)
 		equal(caster.pending_cast_wire_id, wire_id, "Burst wire %d owns its startup channel" % wire_id)
-		equal(caster.flux, flux_before - CombatTuning.CINDERFAN_FLUX_COST, "Burst wire %d spends exactly one shared Flux cost" % wire_id)
+		equal(caster.flux, flux_before - int(CombatTuning.cast_definition(CombatTuning.CINDERFAN_WIRE_ID)["flux_cost"]), "Burst wire %d spends exactly one shared Flux cost" % wire_id)
 		var spawn_events: Array[Dictionary] = []
 		for _tick: int in range(60):
 			check(world.step([SimCommand.new(world.tick, caster.entity_id, 0, 0, 0, 0, 1000, 0)]), "Burst wire %d advances to release" % wire_id)
@@ -79,7 +79,7 @@ func _test_geometry_and_snapshot_at_120_hz() -> void:
 			var projectile: ProjectileState = world.projectiles[lane_index]
 			signature.append([projectile.position_x, projectile.position_y, projectile.velocity_x, projectile.velocity_y, projectile.radius, projectile.damage, projectile.lifetime_ticks])
 			observed_angles.append(int(spawn_events[lane_index].get("lane_angle_degrees", 999)))
-		equal(observed_angles, CombatTuning.CINDERFAN_ANGLES_DEGREES, "Burst wire %d preserves stable left-to-right lane order" % wire_id)
+		equal(observed_angles, CombatTuning.cast_definition(CombatTuning.CINDERFAN_WIRE_ID)["projectile_angles_degrees"], "Burst wire %d preserves stable left-to-right lane order" % wire_id)
 		if baseline_signature.is_empty():
 			baseline_signature = signature
 		else:

@@ -34,9 +34,9 @@ func _test_evasive_intangibility(tick_rate: int) -> void:
 	target.air_dodge_ticks = config.milliseconds_to_ticks(MovementTuning.ROLL_DURATION_MS)
 	var projectile := ProjectileState.new(
 		9900, owner.entity_id, owner.team_id,
-		CombatTuning.PRIMARY_WIRE_ID, CombatTuning.PRIMARY_ELEMENT_WIRE_ID,
+		CombatTuning.PRIMARY_WIRE_ID, int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["element_wire_id"]),
 		Vector2i(300_000, 360_000), Vector2i(1_800_000, 0),
-		CombatTuning.PRIMARY_RADIUS, CombatTuning.PRIMARY_DAMAGE,
+		int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["radius"]), int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["damage"]),
 		tick_rate, PlayerState.ControlState.LAUNCHED, 180, 300_000, 1000, 0,
 	)
 	var events: Array[Dictionary] = []
@@ -73,7 +73,7 @@ func _test_semantic_spell_slots(tick_rate: int) -> void:
 	var global_spell: PlayerState = global_world.player()
 	check(_step(global_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_4, 1000, 0)), "%d Hz global non-kit spell command steps" % tick_rate)
 	equal(global_spell.pending_cast_wire_id, CombatTuning.TIDELINE_WIRE_ID, "%d Hz globally woven Tideline starts for the default Arc kit" % tick_rate)
-	equal(global_spell.flux, global_spell.flux_maximum - CombatTuning.TIDELINE_FLUX_COST, "%d Hz globally woven spell pays its canonical Flux cost" % tick_rate)
+	equal(global_spell.flux, global_spell.flux_maximum - int(CombatTuning.cast_definition(CombatTuning.TIDELINE_WIRE_ID)["flux_cost"]), "%d Hz globally woven spell pays its canonical Flux cost" % tick_rate)
 
 	var empty_world := SimWorld.new(tick_rate)
 	var empty: PlayerState = empty_world.player()
@@ -137,7 +137,7 @@ func _test_positive_flux_primary(tick_rate: int) -> void:
 	var initial_flux: int = caster.flux
 	check(_step(world, SimCommand.new(0, 1, 0, 0, SimCommand.HELD_PRIMARY, 0, 1000, 0)), "%d Hz primary start steps" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.PRIMARY_WIRE_ID, "%d Hz primary enters authored startup" % tick_rate)
-	equal(caster.flux, initial_flux - CombatTuning.PRIMARY_FLUX_COST, "%d Hz primary spends exact positive Flux" % tick_rate)
+	equal(caster.flux, initial_flux - int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["flux_cost"]), "%d Hz primary spends exact positive Flux" % tick_rate)
 	var saw_spawn: bool = false
 	var saw_hit: bool = false
 	for _index: int in range(tick_rate):
@@ -149,17 +149,17 @@ func _test_positive_flux_primary(tick_rate: int) -> void:
 			break
 	check(saw_spawn, "%d Hz primary releases after startup" % tick_rate)
 	check(saw_hit, "%d Hz primary resolves an authoritative hit" % tick_rate)
-	equal(enemy.health, PlayerTuning.HEALTH_MAXIMUM - CombatTuning.PRIMARY_DAMAGE, "%d Hz primary damage is exact" % tick_rate)
-	equal(caster.flux, initial_flux - CombatTuning.PRIMARY_FLUX_COST, "%d Hz primary cannot recover before its combat delay" % tick_rate)
+	equal(enemy.health, PlayerTuning.HEALTH_MAXIMUM - int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["damage"]), "%d Hz primary damage is exact" % tick_rate)
+	equal(caster.flux, initial_flux - int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["flux_cost"]), "%d Hz primary cannot recover before its combat delay" % tick_rate)
 	check(caster.primary_cooldown_ticks > 0, "%d Hz primary cooldown is active" % tick_rate)
 
 	var refused_world := SimWorld.new(tick_rate)
 	var refused: PlayerState = refused_world.player()
-	refused.flux = CombatTuning.PRIMARY_FLUX_COST - 1
+	refused.flux = int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["flux_cost"]) - 1
 	refused.flux_recovery_delay_ticks = tick_rate
 	check(_step(refused_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_1)), "%d Hz unaffordable primary command steps" % tick_rate)
 	equal(refused.pending_cast_wire_id, 0, "%d Hz unaffordable primary cannot enter startup" % tick_rate)
-	equal(refused.flux, CombatTuning.PRIMARY_FLUX_COST - 1, "%d Hz refused primary spends nothing" % tick_rate)
+	equal(refused.flux, int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["flux_cost"]) - 1, "%d Hz refused primary spends nothing" % tick_rate)
 	check(refused_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "flux"), "%d Hz semantic primary reports insufficient Flux" % tick_rate)
 
 
@@ -169,7 +169,7 @@ func _test_vector_lance_flux_and_hit(tick_rate: int) -> void:
 	var enemy: PlayerState = _add_enemy(world, Vector2i(420_000, 360_000))
 	check(_step(world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_ACTIVE_1, 1000, 0)), "%d Hz Vector Lance start steps" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.ACTIVE_1_WIRE_ID, "%d Hz Vector Lance enters authored startup" % tick_rate)
-	equal(caster.flux, PlayerTuning.FLUX_MAXIMUM - CombatTuning.ACTIVE_1_FLUX_COST, "%d Hz Vector Lance Flux cost is exact" % tick_rate)
+	equal(caster.flux, PlayerTuning.FLUX_MAXIMUM - int(CombatTuning.cast_definition(CombatTuning.ACTIVE_1_WIRE_ID)["flux_cost"]), "%d Hz Vector Lance Flux cost is exact" % tick_rate)
 	var saw_hit: bool = false
 	for _index: int in range(tick_rate * 2):
 		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000, 0)), "%d Hz Vector Lance flight steps" % tick_rate)
@@ -181,16 +181,16 @@ func _test_vector_lance_flux_and_hit(tick_rate: int) -> void:
 		if saw_hit:
 			break
 	check(saw_hit, "%d Hz Vector Lance resolves an authoritative hit" % tick_rate)
-	equal(enemy.health, PlayerTuning.HEALTH_MAXIMUM - CombatTuning.ACTIVE_1_DAMAGE, "%d Hz Vector Lance damage is exact" % tick_rate)
+	equal(enemy.health, PlayerTuning.HEALTH_MAXIMUM - int(CombatTuning.cast_definition(CombatTuning.ACTIVE_1_WIRE_ID)["damage"]), "%d Hz Vector Lance damage is exact" % tick_rate)
 	check(caster.active_1_cooldown_ticks > 0, "%d Hz Vector Lance cooldown is active" % tick_rate)
 
 	var refused_world := SimWorld.new(tick_rate)
 	var refused: PlayerState = refused_world.player()
-	refused.flux = CombatTuning.ACTIVE_1_FLUX_COST - 1
+	refused.flux = int(CombatTuning.cast_definition(CombatTuning.ACTIVE_1_WIRE_ID)["flux_cost"]) - 1
 	refused.flux_recovery_delay_ticks = tick_rate
 	check(_step(refused_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_ACTIVE_1)), "%d Hz refused cast command steps" % tick_rate)
 	equal(refused.pending_cast_wire_id, 0, "%d Hz unaffordable active does not enter startup" % tick_rate)
-	equal(refused.flux, CombatTuning.ACTIVE_1_FLUX_COST - 1, "%d Hz refused active spends nothing while recovery is held" % tick_rate)
+	equal(refused.flux, int(CombatTuning.cast_definition(CombatTuning.ACTIVE_1_WIRE_ID)["flux_cost"]) - 1, "%d Hz refused active spends nothing while recovery is held" % tick_rate)
 	check(refused_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused"), "%d Hz refused active emits a diagnostic event" % tick_rate)
 
 
@@ -202,7 +202,7 @@ func _test_oh_tipi_rillshot(tick_rate: int) -> void:
 	var initial_flux: int = caster.flux
 	check(_step(world, SimCommand.new(0, 1, 0, 0, SimCommand.HELD_PRIMARY, 0, 1000)), "%d Hz Rillshot starts" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.RILLSHOT_WIRE_ID, "%d Hz Oh Tipi primary is Rillshot" % tick_rate)
-	equal(caster.flux, initial_flux - CombatTuning.RILLSHOT_FLUX_COST, "%d Hz Rillshot spends exact positive Flux" % tick_rate)
+	equal(caster.flux, initial_flux - int(CombatTuning.cast_definition(CombatTuning.RILLSHOT_WIRE_ID)["flux_cost"]), "%d Hz Rillshot spends exact positive Flux" % tick_rate)
 	var saw_hit: bool = false
 	for _index: int in range(tick_rate):
 		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Rillshot flight steps" % tick_rate)
@@ -210,7 +210,7 @@ func _test_oh_tipi_rillshot(tick_rate: int) -> void:
 		if saw_hit:
 			break
 	check(saw_hit, "%d Hz Rillshot hits authoritatively" % tick_rate)
-	equal(enemy.health, enemy.health_maximum - CombatTuning.RILLSHOT_DAMAGE, "%d Hz Rillshot damage is exact" % tick_rate)
+	equal(enemy.health, enemy.health_maximum - int(CombatTuning.cast_definition(CombatTuning.RILLSHOT_WIRE_ID)["damage"]), "%d Hz Rillshot damage is exact" % tick_rate)
 
 
 func _test_red_baron_cinderbolt(tick_rate: int) -> void:
@@ -221,7 +221,7 @@ func _test_red_baron_cinderbolt(tick_rate: int) -> void:
 	var initial_flux := caster.flux
 	check(_step(world, SimCommand.new(0, 1, 0, 0, SimCommand.HELD_PRIMARY, 0, 1000)), "%d Hz Cinderbolt starts" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.CINDERBOLT_WIRE_ID, "%d Hz Red Baron primary is Cinderbolt" % tick_rate)
-	equal(caster.flux, initial_flux - CombatTuning.CINDERBOLT_FLUX_COST, "%d Hz Cinderbolt spends exact positive Flux" % tick_rate)
+	equal(caster.flux, initial_flux - int(CombatTuning.cast_definition(CombatTuning.CINDERBOLT_WIRE_ID)["flux_cost"]), "%d Hz Cinderbolt spends exact positive Flux" % tick_rate)
 	var saw_hit := false
 	for _index: int in range(tick_rate):
 		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Cinderbolt flight steps" % tick_rate)
@@ -229,7 +229,7 @@ func _test_red_baron_cinderbolt(tick_rate: int) -> void:
 		if saw_hit:
 			break
 	check(saw_hit, "%d Hz Cinderbolt hits authoritatively" % tick_rate)
-	equal(enemy.health, enemy.health_maximum - CombatTuning.CINDERBOLT_DAMAGE, "%d Hz Cinderbolt damage is exact" % tick_rate)
+	equal(enemy.health, enemy.health_maximum - int(CombatTuning.cast_definition(CombatTuning.CINDERBOLT_WIRE_ID)["damage"]), "%d Hz Cinderbolt damage is exact" % tick_rate)
 
 
 func _test_red_baron_cinder_fan(tick_rate: int) -> void:
@@ -242,7 +242,7 @@ func _test_red_baron_cinder_fan(tick_rate: int) -> void:
 	var initial_flux := caster.flux
 	check(_step(world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_3, 1000, 0)), "%d Hz Cinder Fan starts from Red Baron's third kit slot" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.CINDERFAN_WIRE_ID, "%d Hz Cinder Fan owns the requested cast channel" % tick_rate)
-	equal(caster.flux, initial_flux - CombatTuning.CINDERFAN_FLUX_COST, "%d Hz Cinder Fan spends one exact positive Flux cost" % tick_rate)
+	equal(caster.flux, initial_flux - int(CombatTuning.cast_definition(CombatTuning.CINDERFAN_WIRE_ID)["flux_cost"]), "%d Hz Cinder Fan spends one exact positive Flux cost" % tick_rate)
 	var spawn_events: Array[Dictionary] = []
 	for _index: int in range(tick_rate):
 		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000, 0)), "%d Hz Cinder Fan release advances" % tick_rate)
@@ -260,7 +260,7 @@ func _test_red_baron_cinder_fan(tick_rate: int) -> void:
 		observed_ids.append(int(event.get("projectile_id", 0)))
 		observed_angles.append(int(event.get("lane_angle_degrees", 999)))
 	equal(observed_ids, [1000, 1001, 1002, 1003, 1004], "%d Hz projectile IDs follow left-to-right lane order" % tick_rate)
-	equal(observed_angles, CombatTuning.CINDERFAN_ANGLES_DEGREES, "%d Hz fan exposes exact -24..24 degree readability" % tick_rate)
+	equal(observed_angles, CombatTuning.cast_definition(CombatTuning.CINDERFAN_WIRE_ID)["projectile_angles_degrees"], "%d Hz fan exposes exact -24..24 degree readability" % tick_rate)
 	if world.projectiles.size() == 5:
 		equal(world.projectiles[0].velocity_x, world.projectiles[4].velocity_x, "%d Hz outer fan lanes have mirrored forward speed" % tick_rate)
 		equal(world.projectiles[0].velocity_y, -world.projectiles[4].velocity_y, "%d Hz outer fan lanes mirror vertically" % tick_rate)
@@ -279,7 +279,7 @@ func _test_red_baron_cinder_fan(tick_rate: int) -> void:
 		if saw_center_hit:
 			break
 	check(saw_center_hit, "%d Hz one readable fan lane resolves authoritative collision" % tick_rate)
-	equal(enemy.health, enemy.health_maximum - CombatTuning.CINDERFAN_DAMAGE, "%d Hz ranged center-lane damage is exact without hidden fan multiplication" % tick_rate)
+	equal(enemy.health, enemy.health_maximum - int(CombatTuning.cast_definition(CombatTuning.CINDERFAN_WIRE_ID)["damage"]), "%d Hz ranged center-lane damage is exact without hidden fan multiplication" % tick_rate)
 
 
 func _test_oh_tipi_tideline(tick_rate: int) -> void:
@@ -291,7 +291,7 @@ func _test_oh_tipi_tideline(tick_rate: int) -> void:
 	var outside_enemy: PlayerState = _add_enemy(world, Vector2i(160_000, 100_000), 4)
 	check(_step(world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_ACTIVE_1, 1000)), "%d Hz Tideline starts" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.TIDELINE_WIRE_ID, "%d Hz Oh Tipi active is Tideline" % tick_rate)
-	equal(caster.flux, caster.flux_maximum - CombatTuning.TIDELINE_FLUX_COST, "%d Hz Tideline Flux spend is exact" % tick_rate)
+	equal(caster.flux, caster.flux_maximum - int(CombatTuning.cast_definition(CombatTuning.TIDELINE_WIRE_ID)["flux_cost"]), "%d Hz Tideline Flux spend is exact" % tick_rate)
 	var spray_event: Dictionary = {}
 	var hit_targets: Array[int] = []
 	for _index: int in range(tick_rate * 2):
@@ -307,12 +307,12 @@ func _test_oh_tipi_tideline(tick_rate: int) -> void:
 	equal(int(spray_event.get("hit_count", 0)), 2, "%d Hz Tideline reports every legal fan target" % tick_rate)
 	equal(hit_targets, [2, 3], "%d Hz Tideline spray hits are stable entity order" % tick_rate)
 	equal(world.projectiles.size(), 0, "%d Hz spray never enters projectile storage" % tick_rate)
-	equal(enemy.health, enemy.health_maximum - CombatTuning.TIDELINE_DAMAGE, "%d Hz Tideline damage is exact" % tick_rate)
-	equal(fan_enemy.health, fan_enemy.health_maximum - CombatTuning.TIDELINE_DAMAGE, "%d Hz Tideline damages a second in-fan target once" % tick_rate)
+	equal(enemy.health, enemy.health_maximum - int(CombatTuning.cast_definition(CombatTuning.TIDELINE_WIRE_ID)["damage"]), "%d Hz Tideline damage is exact" % tick_rate)
+	equal(fan_enemy.health, fan_enemy.health_maximum - int(CombatTuning.cast_definition(CombatTuning.TIDELINE_WIRE_ID)["damage"]), "%d Hz Tideline damages a second in-fan target once" % tick_rate)
 	equal(outside_enemy.health, outside_enemy.health_maximum, "%d Hz Tideline leaves targets outside the fan untouched" % tick_rate)
 	equal(enemy.control_state, PlayerState.ControlState.LAUNCHED, "%d Hz Tideline applies bounded launch control" % tick_rate)
-	equal(enemy.control_speed, CombatTuning.TIDELINE_LAUNCH_SPEED, "%d Hz Tideline launch speed is exact" % tick_rate)
-	equal(enemy.control_ticks, world.config.milliseconds_to_ticks(CombatTuning.TIDELINE_LAUNCH_DURATION_MS), "%d Hz Tideline launch duration is exact" % tick_rate)
+	equal(enemy.control_speed, int(CombatTuning.cast_definition(CombatTuning.TIDELINE_WIRE_ID)["hit_control_speed"]), "%d Hz Tideline launch speed is exact" % tick_rate)
+	equal(enemy.control_ticks, world.config.milliseconds_to_ticks(int(CombatTuning.cast_definition(CombatTuning.TIDELINE_WIRE_ID)["hit_control_duration_ms"])), "%d Hz Tideline launch duration is exact" % tick_rate)
 	equal(fan_enemy.control_state, PlayerState.ControlState.LAUNCHED, "%d Hz second fan target receives the same bounded launch" % tick_rate)
 
 	var covered_collision := CollisionWorld.new(800_000, 720_000)
@@ -350,7 +350,7 @@ func _test_oh_tipi_rimewake(tick_rate: int) -> void:
 	var before_hash := world.state_hash()
 	check(_step(world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_3, 1000, 0)), "%d Hz Rimewake slot starts" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "%d Hz slot 3 adapts to Rimewake" % tick_rate)
-	equal(caster.flux, caster.flux_maximum - CombatTuning.RIMEWAKE_FLUX_COST, "%d Hz Rimewake Flux spend is exact" % tick_rate)
+	equal(caster.flux, caster.flux_maximum - int(CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID)["flux_cost"]), "%d Hz Rimewake Flux spend is exact" % tick_rate)
 	var spawn_event: Dictionary = {}
 	var trigger_targets: Array[int] = []
 	for _index: int in range(tick_rate):
@@ -367,12 +367,12 @@ func _test_oh_tipi_rimewake(tick_rate: int) -> void:
 	equal(world.projectiles.size(), 0, "%d Hz Rimewake never enters projectile storage" % tick_rate)
 	equal(trigger_targets, [enemy.entity_id], "%d Hz Rimewake first entry resolves in stable order and ignores ally/protected/defeated actors" % tick_rate)
 	equal(enemy.control_state, PlayerState.ControlState.SLOWED, "%d Hz Rimewake applies bounded slow control" % tick_rate)
-	equal(enemy.slow_ratio, CombatTuning.RIMEWAKE_SLOW_RATIO, "%d Hz Rimewake slow ratio is exact" % tick_rate)
-	equal(enemy.control_ticks, world.config.milliseconds_to_ticks(CombatTuning.RIMEWAKE_SLOW_DURATION_MS), "%d Hz Rimewake slow duration is exact" % tick_rate)
+	equal(enemy.slow_ratio, int(CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID)["hit_control_slow_ratio"]), "%d Hz Rimewake slow ratio is exact" % tick_rate)
+	equal(enemy.control_ticks, world.config.milliseconds_to_ticks(int(CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID)["hit_control_duration_ms"])), "%d Hz Rimewake slow duration is exact" % tick_rate)
 	equal(ally.control_state, PlayerState.ControlState.FREE, "%d Hz allied actor is unaffected by Rimewake" % tick_rate)
 	equal(protected_enemy.control_state, PlayerState.ControlState.FREE, "%d Hz protected actor is unaffected by Rimewake" % tick_rate)
 	equal(defeated_enemy.control_state, PlayerState.ControlState.FREE, "%d Hz defeated actor is unaffected by Rimewake" % tick_rate)
-	equal(caster.active_2_cooldown_ticks, world.config.milliseconds_to_ticks(CombatTuning.RIMEWAKE_COOLDOWN_MS), "%d Hz Rimewake owns an independent exact cooldown" % tick_rate)
+	equal(caster.active_2_cooldown_ticks, world.config.milliseconds_to_ticks(int(CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID)["cooldown_ms"])), "%d Hz Rimewake owns an independent exact cooldown" % tick_rate)
 	check(world.state_hash() != before_hash, "%d Hz persistent field contributes to canonical state" % tick_rate)
 
 	MovementSystem.apply_control_state(enemy, PlayerState.ControlState.FREE, 0, Vector2i.ZERO, 0, world.config)
@@ -432,7 +432,7 @@ func _test_s_wayne_eclipse_disc(tick_rate: int) -> void:
 	var initial_flux: int = caster.flux
 	check(_step(world, SimCommand.new(0, 1, 0, 0, SimCommand.HELD_PRIMARY, 0, 1000)), "%d Hz Eclipse Disc starts" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "%d Hz S. Wayne primary is Eclipse Disc" % tick_rate)
-	equal(caster.flux, initial_flux - CombatTuning.ECLIPSE_DISC_FLUX_COST, "%d Hz Eclipse Disc spends exact positive Flux" % tick_rate)
+	equal(caster.flux, initial_flux - int(CombatTuning.cast_definition(CombatTuning.ECLIPSE_DISC_WIRE_ID)["flux_cost"]), "%d Hz Eclipse Disc spends exact positive Flux" % tick_rate)
 	var saw_hit: bool = false
 	for _index: int in range(tick_rate):
 		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Eclipse Disc flight steps" % tick_rate)
@@ -440,7 +440,7 @@ func _test_s_wayne_eclipse_disc(tick_rate: int) -> void:
 		if saw_hit:
 			break
 	check(saw_hit, "%d Hz Eclipse Disc hits authoritatively" % tick_rate)
-	equal(enemy.health, enemy.health_maximum - CombatTuning.ECLIPSE_DISC_DAMAGE, "%d Hz Eclipse Disc damage is exact" % tick_rate)
+	equal(enemy.health, enemy.health_maximum - int(CombatTuning.cast_definition(CombatTuning.ECLIPSE_DISC_WIRE_ID)["damage"]), "%d Hz Eclipse Disc damage is exact" % tick_rate)
 
 
 func _test_s_wayne_disc_ricochet(tick_rate: int) -> void:
@@ -449,11 +449,11 @@ func _test_s_wayne_disc_ricochet(tick_rate: int) -> void:
 	var owner := PlayerState.new(1)
 	var projectile := ProjectileState.new(
 		9004, owner.entity_id, owner.team_id,
-		CombatTuning.ECLIPSE_DISC_WIRE_ID, CombatTuning.ECLIPSE_DISC_ELEMENT_WIRE_ID,
-		Vector2i(250_000, 350_000), Vector2i(CombatTuning.ECLIPSE_DISC_SPEED, 0),
-		CombatTuning.ECLIPSE_DISC_RADIUS, CombatTuning.ECLIPSE_DISC_DAMAGE,
+		CombatTuning.ECLIPSE_DISC_WIRE_ID, int(CombatTuning.cast_definition(CombatTuning.ECLIPSE_DISC_WIRE_ID)["element_wire_id"]),
+		Vector2i(250_000, 350_000), Vector2i(int(CombatTuning.cast_definition(CombatTuning.ECLIPSE_DISC_WIRE_ID)["speed"]), 0),
+		int(CombatTuning.cast_definition(CombatTuning.ECLIPSE_DISC_WIRE_ID)["radius"]), int(CombatTuning.cast_definition(CombatTuning.ECLIPSE_DISC_WIRE_ID)["damage"]),
 		tick_rate, CombatTuning.NO_HIT_CONTROL_STATE, 0, 0, 1000,
-		CombatTuning.ECLIPSE_DISC_BOUNCES,
+		int(CombatTuning.cast_definition(CombatTuning.ECLIPSE_DISC_WIRE_ID)["remaining_bounces"]),
 	)
 	var projectiles: Array[ProjectileState] = [projectile]
 	var bounced: bool = false
@@ -477,7 +477,7 @@ func _test_s_wayne_pocket_eclipse(tick_rate: int) -> void:
 	var enemy: PlayerState = _add_enemy(world, Vector2i(420_000, 360_000))
 	check(_step(world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_ACTIVE_1, 1000)), "%d Hz Pocket Eclipse starts" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.POCKET_ECLIPSE_WIRE_ID, "%d Hz S. Wayne active is Pocket Eclipse" % tick_rate)
-	equal(caster.flux, caster.flux_maximum - CombatTuning.POCKET_ECLIPSE_FLUX_COST, "%d Hz Pocket Eclipse Flux spend is exact" % tick_rate)
+	equal(caster.flux, caster.flux_maximum - int(CombatTuning.cast_definition(CombatTuning.POCKET_ECLIPSE_WIRE_ID)["flux_cost"]), "%d Hz Pocket Eclipse Flux spend is exact" % tick_rate)
 	var beam_event: Dictionary = {}
 	for _index: int in range(tick_rate * 2):
 		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000)), "%d Hz Pocket Eclipse release steps" % tick_rate)
@@ -490,10 +490,10 @@ func _test_s_wayne_pocket_eclipse(tick_rate: int) -> void:
 	equal(int(beam_event.get("target_id", 0)), enemy.entity_id, "%d Hz Pocket Eclipse names its first legal target" % tick_rate)
 	equal(Vector2i(int(beam_event.get("end_x", 0)), int(beam_event.get("end_y", 0))), Vector2i(enemy.position_x, enemy.position_y), "%d Hz Pocket Eclipse terminates visibly at its hit" % tick_rate)
 	equal(world.projectiles.size(), 0, "%d Hz beam never enters projectile storage" % tick_rate)
-	equal(enemy.health, enemy.health_maximum - CombatTuning.POCKET_ECLIPSE_DAMAGE, "%d Hz Pocket Eclipse damage is exact" % tick_rate)
+	equal(enemy.health, enemy.health_maximum - int(CombatTuning.cast_definition(CombatTuning.POCKET_ECLIPSE_WIRE_ID)["damage"]), "%d Hz Pocket Eclipse damage is exact" % tick_rate)
 	equal(enemy.control_state, PlayerState.ControlState.SLOWED, "%d Hz Pocket Eclipse applies bounded slow control" % tick_rate)
-	equal(enemy.slow_ratio, CombatTuning.POCKET_ECLIPSE_SLOW_RATIO, "%d Hz Pocket Eclipse slow ratio is exact" % tick_rate)
-	equal(enemy.control_ticks, world.config.milliseconds_to_ticks(CombatTuning.POCKET_ECLIPSE_SLOW_DURATION_MS), "%d Hz Pocket Eclipse slow duration is exact" % tick_rate)
+	equal(enemy.slow_ratio, int(CombatTuning.cast_definition(CombatTuning.POCKET_ECLIPSE_WIRE_ID)["hit_control_slow_ratio"]), "%d Hz Pocket Eclipse slow ratio is exact" % tick_rate)
+	equal(enemy.control_ticks, world.config.milliseconds_to_ticks(int(CombatTuning.cast_definition(CombatTuning.POCKET_ECLIPSE_WIRE_ID)["hit_control_duration_ms"])), "%d Hz Pocket Eclipse slow duration is exact" % tick_rate)
 
 	var covered_collision := CollisionWorld.new(800_000, 720_000)
 	covered_collision.add_obstacle(CollisionWorld.Obstacle.new(77, 300_000, 300_000, 340_000, 420_000))
@@ -539,7 +539,7 @@ func _test_movement_spell_chains(tick_rate: int) -> void:
 	var flux_before_chain := caster.flux
 	check(_step(world, SimCommand.new(world.tick, caster.entity_id, 1000, 0, 0, SimCommand.PRESSED_SPELL_2)), "%d Hz recovery-chain Tideline command steps" % tick_rate)
 	equal(caster.pending_cast_wire_id, CombatTuning.TIDELINE_WIRE_ID, "%d Hz a different spell starts during generic recovery" % tick_rate)
-	equal(caster.flux, flux_before_chain - CombatTuning.TIDELINE_FLUX_COST, "%d Hz recovery chain retains exact spell cost" % tick_rate)
+	equal(caster.flux, flux_before_chain - int(CombatTuning.cast_definition(CombatTuning.TIDELINE_WIRE_ID)["flux_cost"]), "%d Hz recovery chain retains exact spell cost" % tick_rate)
 	check(_step(world, SimCommand.new(world.tick, caster.entity_id, 1000, 0, 0, SimCommand.PRESSED_SPELL_3)), "%d Hz occupied-channel command steps" % tick_rate)
 	check(world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "startup_commitment" and int(event.get("wire_id", 0)) == CombatTuning.RIMEWAKE_WIRE_ID), "%d Hz occupied startup refuses the next spell visibly" % tick_rate)
 
@@ -608,17 +608,17 @@ func _test_edgeweave(tick_rate: int) -> void:
 	runner.velocity_y = 0
 	runner.stamina = 50_000
 	var shooter: PlayerState = _add_enemy(world, Vector2i(180_000, 100_000))
-	var hit_radius: int = runner.radius + CombatTuning.PRIMARY_RADIUS
+	var hit_radius: int = runner.radius + int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["radius"])
 	var projectile := ProjectileState.new(
 		9001,
 		shooter.entity_id,
 		shooter.team_id,
 		CombatTuning.PRIMARY_WIRE_ID,
-		CombatTuning.PRIMARY_ELEMENT_WIRE_ID,
+		int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["element_wire_id"]),
 		Vector2i(runner.position_x - 30_000, runner.position_y + hit_radius + 8_000),
 		Vector2i(2_000_000, 0),
-		CombatTuning.PRIMARY_RADIUS,
-		CombatTuning.PRIMARY_DAMAGE,
+		int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["radius"]),
+		int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["damage"]),
 		tick_rate,
 	)
 	var events: Array[Dictionary] = []
@@ -644,17 +644,17 @@ func _test_edgeweave(tick_rate: int) -> void:
 		shooter.entity_id,
 		shooter.team_id,
 		CombatTuning.PRIMARY_WIRE_ID,
-		CombatTuning.PRIMARY_ELEMENT_WIRE_ID,
+		int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["element_wire_id"]),
 		Vector2i(runner.position_x - 30_000, runner.position_y),
 		Vector2i(2_000_000, 0),
-		CombatTuning.PRIMARY_RADIUS,
-		CombatTuning.PRIMARY_DAMAGE,
+		int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["radius"]),
+		int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["damage"]),
 		tick_rate,
 	)
 	events = []
 	CombatSystem.advance_projectiles([hit_projectile], world.players, world.config, world.collision, events)
 	equal(runner.stamina, 50_000, "%d Hz inner hit volume never rewards Edgeweave" % tick_rate)
-	equal(runner.health, PlayerTuning.HEALTH_MAXIMUM - CombatTuning.PRIMARY_DAMAGE, "%d Hz inner hit still applies damage" % tick_rate)
+	equal(runner.health, PlayerTuning.HEALTH_MAXIMUM - int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["damage"]), "%d Hz inner hit still applies damage" % tick_rate)
 
 	runner.health = PlayerTuning.HEALTH_MAXIMUM
 	runner.edgeweave_cooldown_ticks = 0
@@ -662,7 +662,7 @@ func _test_edgeweave(tick_rate: int) -> void:
 	var training_projectile := ProjectileState.new(
 		9003, shooter.entity_id, shooter.team_id, 9999, 0,
 		Vector2i(runner.position_x - 30_000, runner.position_y + hit_radius + 8_000),
-		Vector2i(2_000_000, 0), CombatTuning.PRIMARY_RADIUS, 0, tick_rate
+		Vector2i(2_000_000, 0), int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["radius"]), 0, tick_rate
 	)
 	CombatSystem.advance_projectiles([training_projectile], world.players, world.config, world.collision, [])
 	equal(runner.stamina, 50_000, "%d Hz training pressure never rewards Edgeweave" % tick_rate)

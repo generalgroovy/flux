@@ -40,7 +40,7 @@ func _test_editor_navigation_and_encoding() -> void:
 	check(editor.is_open, "Spell Loom opens explicitly")
 	editor.move_selection(-1, -1)
 	equal(editor.selected_slot_index, 11, "weave-position navigation wraps")
-	equal(editor.selected_spell_index, CombatTuning.RUNTIME_WIRE_IDS.size() - 1, "global spell navigation wraps")
+	equal(editor.selected_spell_index, CombatTuning.runtime_wire_ids().size() - 1, "global spell navigation wraps")
 	equal(editor.selected_wire_id(), CombatTuning.DARK_BURST_WIRE_ID, "wrapped selection resolves through stable runtime order")
 	equal(editor.request_value(), 544, "Alt+4 global spell has a bounded request encoding")
 	equal(SpellLoomEditor.decode_slot_index(544), 11, "request decodes position deterministically")

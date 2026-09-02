@@ -3920,3 +3920,14 @@ Known limitations and risks:
 - Repository cutover and remote push remain separate reversible operations.
 
 Commit: pending at pre-commit record time. Push: pending.
+## 2026-09-02 — O2 combat authority migration
+
+- Promoted the validated ability catalog from partial economy metadata to the
+  only runtime spell-balance source and compiled its 16 live wires through
+  `CombatDefinitionTable`.
+- Preserved stable wire identities and all shipped command outcomes through
+  canonical pre-migration signatures, then removed mirrored balance constants
+  and definition builders.
+- Full Windows source gate: 61 suites / 17,781 assertions, 120 Hz boot, no
+  failures, warnings or stderr. C5 reaction truth is next; world mutation stays
+  disabled until its complete 36-pair contract passes.

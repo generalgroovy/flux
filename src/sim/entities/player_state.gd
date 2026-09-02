@@ -185,7 +185,7 @@ func reset_spell_slots_to_kit() -> void:
 	for wire_id: int in kit_spell_wire_ids():
 		if wire_id > 0 and not spell_wire_ids.has(wire_id):
 			spell_wire_ids.append(wire_id)
-	for wire_id: int in CombatTuning.RUNTIME_WIRE_IDS:
+	for wire_id: int in CombatTuning.runtime_wire_ids():
 		if spell_wire_ids.size() >= SPELL_SLOT_COUNT:
 			break
 		if not spell_wire_ids.has(wire_id):
@@ -205,7 +205,7 @@ func kit_spell_wire_ids() -> PackedInt32Array:
 
 
 func proven_spell_wire_ids() -> PackedInt32Array:
-	return PackedInt32Array(CombatTuning.RUNTIME_WIRE_IDS)
+	return PackedInt32Array(CombatTuning.runtime_wire_ids())
 
 
 func spell_wire_id(slot_number: int) -> int:

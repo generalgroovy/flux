@@ -2734,7 +2734,8 @@ func _material_color(material_id: String) -> Color:
 func _draw_field(field: FieldState) -> void:
 	var center := Vector2(float(field.position_x) / SimConfig.FIXED_SCALE, float(field.position_y) / SimConfig.FIXED_SCALE)
 	var radius := float(field.radius) / SimConfig.FIXED_SCALE
-	var full_lifetime := maxi(1, world.config.milliseconds_to_ticks(CombatTuning.RIMEWAKE_LIFETIME_MS))
+	var rimewake := CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID)
+	var full_lifetime := maxi(1, world.config.milliseconds_to_ticks(int(rimewake.get("lifetime_ms", 1))))
 	var life_ratio := clampf(float(field.lifetime_ticks) / float(full_lifetime), 0.0, 1.0)
 	if foundation_spell_presenter != null and foundation_spell_presenter.draw_field(self, field, life_ratio, world.tick, _reduced_effects_enabled()):
 		return

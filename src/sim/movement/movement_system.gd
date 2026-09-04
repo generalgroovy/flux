@@ -31,6 +31,7 @@ static func step(state: PlayerState, command: SimCommand, config: SimConfig, wor
 		_consume_jump_buffer(state, command, direction, config)
 		_consume_technique_buffer(state, command, direction, config, world)
 	_apply_variable_air_time(state, command, config)
+	_apply_variable_slide_time(state, command, config)
 
 	if impact_tech_started:
 		pass # The technique owns this tick's velocity; ordinary control resumes next tick.
@@ -141,9 +142,34 @@ static func _apply_variable_air_time(state: PlayerState, command: SimCommand, co
 		return
 	var jump_is_held: bool = command.has_held(SimCommand.HELD_JUMP) or command.has_pressed(SimCommand.PRESSED_JUMP)
 	var minimum_ticks: int = config.milliseconds_to_ticks(MovementTuning.VARIABLE_JUMP_MINIMUM_MS)
+	if jump_is_held and state.hop_ticks > minimum_ticks:
+		if state.stamina < config.per_tick(MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND):
+			state.hop_ticks = minimum_ticks
+			state.last_event = "jump_sustain_empty"
+		else:
+			_apply_stamina_rate(state, -MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND, config)
+			state.stamina_recovery_delay_ticks = config.milliseconds_to_ticks(MovementTuning.STAMINA_RECOVERY_DELAY_MS)
+		return
 	if not jump_is_held and state.hop_ticks > minimum_ticks:
 		state.hop_ticks = minimum_ticks
 		state.last_event = "jump_cut"
+
+
+static func _apply_variable_slide_time(state: PlayerState, command: SimCommand, config: SimConfig) -> void:
+	if state.slide_ticks <= 0:
+		return
+	var minimum_ticks := config.milliseconds_to_ticks(MovementTuning.SLIDE_MINIMUM_MS)
+	if state.slide_ticks <= minimum_ticks:
+		return
+	if not command.has_held(SimCommand.HELD_SLIDE):
+		state.slide_ticks = minimum_ticks
+		return
+	if state.stamina < config.per_tick(MovementTuning.SLIDE_SUSTAIN_DRAIN_PER_SECOND):
+		state.slide_ticks = minimum_ticks
+		state.last_event = "slide_sustain_empty"
+		return
+	_apply_stamina_rate(state, -MovementTuning.SLIDE_SUSTAIN_DRAIN_PER_SECOND, config)
+	state.stamina_recovery_delay_ticks = config.milliseconds_to_ticks(MovementTuning.STAMINA_RECOVERY_DELAY_MS)
 
 
 static func apply_control_state(
@@ -421,8 +447,11 @@ static func is_combat_intangible(state: PlayerState, config: SimConfig) -> bool:
 	if state.hop_ticks > 0:
 		return state.jump_protection_ticks > 0
 	if state.slide_ticks > 0:
-		return _timer_is_in_opening_window(state.slide_ticks,
-			config.milliseconds_to_ticks(MovementTuning.SLIDE_DURATION_MS),
+		# Slide duration can now be released or exhausted early. Cooldown age is
+		# the authoritative accepted-action clock, so sustain can never refresh
+		# or accidentally erase the separately purchased opening protection.
+		return _timer_is_in_opening_window(state.slide_cooldown_ticks,
+			config.milliseconds_to_ticks(MovementTuning.SLIDE_COOLDOWN_MS),
 			config.milliseconds_to_ticks(MovementTuning.SLIDE_INVULNERABILITY_MS))
 	if state.air_dodge_ticks > 0:
 		var action_duration_ms := MovementTuning.ROLL_DURATION_MS if state.is_rolling() else MovementTuning.AIR_DODGE_DURATION_MS

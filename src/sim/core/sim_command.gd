@@ -6,6 +6,9 @@ const HELD_SPRINT: int = 1 << 0
 const HELD_PRIMARY: int = 1 << 1
 const HELD_JUMP: int = 1 << 2
 const HELD_FAST_FALL: int = 1 << 3
+# The same physical C / wheel-down intent sustains a grounded slide and commits
+# an airborne fast fall. The alias preserves the established command bit.
+const HELD_SLIDE: int = HELD_FAST_FALL
 const PRESSED_EVADE: int = 1 << 16
 const PRESSED_JUMP: int = 1 << 0
 const PRESSED_TECHNIQUE: int = 1 << 1

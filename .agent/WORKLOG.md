@@ -1,5 +1,22 @@
 # FLUX2 agent worklog
 
+## 2026-09-04 - tactile arena paid-sustain checkpoint
+
+- Advanced protocol to 35 and movement tuning to v7. Jump and slide now use a
+  guaranteed paid opening plus held Stamina sustain; release/exhaustion ends the
+  optional tail without refreshing protection, speed or cooldown.
+- Preserved the existing command footprint: grounded C/wheel-down is held Slide,
+  while the same stable bit remains Fast Fall in air. Prediction/replay/host use
+  the same deterministic command and compatibility hash.
+- Added explicit compact-HUD sustain rates, subtle Reduced-Effects-aware
+  fountain/portal/lantern/station motion and distance-faded station titles.
+  Zoomed-out play now preserves props and destinations without tiny label noise.
+- Final focused gate passed 2,746 assertions. Full passed 67 suites / 22,733
+  assertions, zero failures/stderr, plus source import and protocol-35 120 Hz
+  boot in 35,533 ms.
+- Inspected truthful Jump/Slide motion sequences and 50/75/100% views. This is a
+  source candidate; human feel/charm and physical 120 fps remain open.
+
 ## 2026-09-04 - Grace Riva, Wa Bidi and travel-facing body slice
 
 - Promoted Grace Riva (Sylph, Wind/Water/Light) then Wa Bidi (Goblin,

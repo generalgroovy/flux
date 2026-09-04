@@ -4,12 +4,13 @@ This queue reflects the current user-ordered path to the first-eight chemistry
 playtest. Completed detail belongs in `WORKLOG.md`; this file stays short,
 playable, and acceptance-driven.
 
-**Newest user priority:** U1-U5 in `docs/CLARITY-AND-CONTROL-ITERATION.md`:
-Baron-led anatomy, single-element clarity, complete drag/drop spell desk, concise
-guidance, then lift-only/input-steered jump. These explicitly authorized changes
-precede chemistry; hybrids stay disabled until all chemistry acceptance passes.
+**Newest user priority:** T0-T4 in `docs/TACTILE-ARENA-ACCEPTANCE.md` is a green
+source candidate: paid jump/slide sustain, explicit Stamina feedback, quiet
+animated landmarks, proximity-relevant station labels and 50/75/100% review.
+Human movement/charm acceptance is now the gate; after feedback, correct the
+observed feel issue or resume the prior travel-motion/prop refinement frontier.
 
-U1-U5 source gate passed (67 suites / 21,548 assertions). Next: exact motion-facing
+U1-U5 source gate passed (67 suites / 21,548 assertions). Then: exact motion-facing
 and alternating walk contacts; Grace Riva then Wa Bidi with existing single-element
 spells and reusable size templates; map-object refinement. Keep each promotion
 independently green and retain human visual acceptance as a separate gate.

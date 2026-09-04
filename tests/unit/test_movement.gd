@@ -13,6 +13,7 @@ func run() -> int:
 		_test_slide_and_slide_jump(tick_rate)
 		_test_action_buffers(tick_rate)
 		_test_variable_jump_and_fast_fall(tick_rate)
+		_test_paid_jump_and_slide_sustain(tick_rate)
 		_test_air_dodge_and_wavedash(tick_rate)
 		_test_ground_roll_and_evasion_windows(tick_rate)
 		_test_wall_contact_and_wall_kick(tick_rate)
@@ -167,7 +168,8 @@ func _test_double_jump(tick_rate: int) -> void:
 	equal(state.hop_stage, 2, "%d Hz double jump is bounded to stage two" % tick_rate)
 	var after_double: int = state.stamina
 	_step(world, -1000, 0, 0, SimCommand.PRESSED_JUMP)
-	equal(state.stamina, after_double, "%d Hz third jump cannot stack" % tick_rate)
+	equal(state.stamina, after_double - world.config.per_tick(MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND), "%d Hz third jump cannot stack; its held tick only sustains the existing arc" % tick_rate)
+	equal(state.hop_stage, 2, "%d Hz denied third jump preserves stage two" % tick_rate)
 
 
 func _test_slide_and_slide_jump(tick_rate: int) -> void:
@@ -333,6 +335,56 @@ func _test_variable_jump_and_fast_fall(tick_rate: int) -> void:
 	while fall_state.landing_ticks > 0:
 		_step(fall_world)
 	equal(fall_state.landing_intensity, 0, "%d Hz landing intensity clears with its recovery window" % tick_rate)
+
+
+func _test_paid_jump_and_slide_sustain(tick_rate: int) -> void:
+	var held_jump := SimWorld.new(tick_rate)
+	var tap_jump := SimWorld.new(tick_rate)
+	_step(held_jump, 0, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+	_step(tap_jump, 0, 0, 0, SimCommand.PRESSED_JUMP)
+	_step(held_jump, 0, 0, SimCommand.HELD_JUMP)
+	_step(tap_jump)
+	check(held_jump.player().hop_ticks > tap_jump.player().hop_ticks, "held jump buys more airtime than a tap")
+	check(held_jump.player().stamina < tap_jump.player().stamina, "only held jump pays sustain Stamina")
+	equal(tap_jump.player().stamina, MovementTuning.STAMINA_MAXIMUM - MovementTuning.HOP_COST, "tap jump pays only its reliable opening cost")
+	var jump_protection := held_jump.player().jump_protection_ticks
+	_step(held_jump, 0, 0, SimCommand.HELD_JUMP)
+	equal(held_jump.player().jump_protection_ticks, jump_protection - 1, "holding jump never refreshes opening protection")
+
+	var exhausted_jump := SimWorld.new(tick_rate)
+	exhausted_jump.player().stamina = MovementTuning.HOP_COST
+	_step(exhausted_jump, 0, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+	_step(exhausted_jump, 0, 0, SimCommand.HELD_JUMP)
+	equal(exhausted_jump.player().last_event, "jump_sustain_empty", "empty Stamina releases jump sustain honestly")
+	equal(exhausted_jump.player().hop_ticks, exhausted_jump.config.milliseconds_to_ticks(MovementTuning.VARIABLE_JUMP_MINIMUM_MS), "empty jump retains the guaranteed tap arc")
+	var partial_jump := SimWorld.new(tick_rate)
+	partial_jump.player().stamina = MovementTuning.HOP_COST + partial_jump.config.per_tick(MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND) - 1
+	_step(partial_jump, 0, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+	_step(partial_jump, 0, 0, SimCommand.HELD_JUMP)
+	equal(partial_jump.player().last_event, "jump_sustain_empty", "a partial tick of Stamina cannot buy a full jump-sustain tick")
+
+	var held_slide := SimWorld.new(tick_rate)
+	var tap_slide := SimWorld.new(tick_rate)
+	for slide_world: SimWorld in [held_slide, tap_slide]:
+		while slide_world.player().velocity_x < MovementTuning.SLIDE_ENTRY_SPEED:
+			_step(slide_world, 1000, 0)
+	_step(held_slide, 1000, 0, SimCommand.HELD_SLIDE, SimCommand.PRESSED_SLIDE)
+	_step(tap_slide, 1000, 0, 0, SimCommand.PRESSED_SLIDE)
+	check(held_slide.player().slide_ticks > tap_slide.player().slide_ticks, "held slide buys a longer lane crossing than a tap")
+	check(held_slide.player().stamina < tap_slide.player().stamina, "only held slide pays sustain Stamina")
+	equal(tap_slide.player().slide_ticks, tap_slide.config.milliseconds_to_ticks(MovementTuning.SLIDE_MINIMUM_MS), "tap slide keeps its guaranteed readable duration")
+	var slide_protection := held_slide.player().slide_ticks
+	for _index: int in range(held_slide.config.milliseconds_to_ticks(MovementTuning.SLIDE_INVULNERABILITY_MS) + 1):
+		_step(held_slide, 1000, 0, SimCommand.HELD_SLIDE)
+	check(held_slide.player().slide_ticks < slide_protection, "held slide timer remains finite")
+	check(not MovementSystem.is_combat_intangible(held_slide.player(), held_slide.config), "holding slide never extends opening protection")
+	var exhausted_slide := SimWorld.new(tick_rate)
+	while exhausted_slide.player().velocity_x < MovementTuning.SLIDE_ENTRY_SPEED:
+		_step(exhausted_slide, 1000, 0)
+	exhausted_slide.player().stamina = MovementTuning.SLIDE_COST + exhausted_slide.config.per_tick(MovementTuning.SLIDE_SUSTAIN_DRAIN_PER_SECOND) - 1
+	_step(exhausted_slide, 1000, 0, SimCommand.HELD_SLIDE, SimCommand.PRESSED_SLIDE)
+	equal(exhausted_slide.player().last_event, "slide_sustain_empty", "a partial tick of Stamina cannot buy a full slide-sustain tick")
+	equal(exhausted_slide.player().slide_ticks, exhausted_slide.config.milliseconds_to_ticks(MovementTuning.SLIDE_MINIMUM_MS), "exhausted slide retains its guaranteed tap duration")
 
 
 func _test_same_wall_lockout(tick_rate: int) -> void:

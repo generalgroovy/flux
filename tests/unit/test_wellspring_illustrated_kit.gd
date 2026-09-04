@@ -24,6 +24,15 @@ func run() -> int:
 	equal(kit.cover_opacity(building, Vector2(200, 0)), 1.0, "distant architecture remains fully visible")
 	equal(kit.landmark_opacity(Vector2(400, 400), Vector2(400, 400)), 0.30, "decorative fountain stays quiet when the player crosses its footprint")
 	equal(kit.landmark_opacity(Vector2(400, 400), Vector2(600, 600)), 1.0, "distant fountain retains its full artwork")
+	equal(kit.ambient_phase(0, 180), 0.0, "ambient landmark motion starts from a quiet phase")
+	equal(kit.ambient_phase(90, 180), 1.0, "ambient landmark motion reaches one bounded crest")
+	equal(kit.ambient_phase(90, 180, true), 0.0, "Reduced Effects freezes nonessential landmark motion")
+	for tick: int in range(-360, 361, 17):
+		check(kit.ambient_phase(tick, 180) >= 0.0 and kit.ambient_phase(tick, 180) <= 1.0, "ambient landmark phase remains bounded")
+	equal(kit.station_label_opacity(Vector2(400, 400), Vector2(400, 400)), 1.0, "nearby station title remains fully readable")
+	equal(kit.station_label_opacity(Vector2(400, 400), Vector2(920, 400)), 0.0, "distant station title yields the overview lane to gameplay")
+	var fading_label := kit.station_label_opacity(Vector2(400, 400), Vector2(800, 400))
+	check(fading_label > 0.0 and fading_label < 1.0, "station title fades continuously across the relevance band")
 	check(kit.surface_at(Vector2(1536, 900)) in [0, 1], "source court reads as stone")
 	equal(kit.surface_at(Vector2(10, 10)), 8, "outer shore reads as water")
 	for decoration: Dictionary in kit.decorations:

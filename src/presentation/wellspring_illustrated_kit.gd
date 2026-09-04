@@ -216,15 +216,26 @@ static func cover_opacity(bounds: Rect2, focus: Vector2, clearance: float = 56.0
 	return lerpf(0.30, 1.0, clampf(focus.distance_to(nearest) / maxf(1.0, clearance), 0.0, 1.0))
 
 
-func draw_landmark(canvas: CanvasItem, landmark: Dictionary, focus: Vector2 = Vector2(-1000000, -1000000)) -> void:
+func draw_landmark(canvas: CanvasItem, landmark: Dictionary, focus: Vector2 = Vector2(-1000000, -1000000), tick: int = 0, reduced_effects: bool = false) -> void:
 	var point := Vector2(landmark["position"][0], landmark["position"][1])
 	var kind := String(landmark["kind"])
+	var phase := ambient_phase(tick, 180, reduced_effects)
 	if kind == "grand_fountain":
 		for radius: int in [92, 104]:
 			canvas.draw_arc(point, radius, 0, TAU, 64, Color("a28a59"), 3)
+		# Two quiet water rings move at different phases. They are decoration,
+		# never a spell telegraph, collision surface or simulation timer.
+		for offset: float in [0.0, 0.5]:
+			var ripple := fmod(phase + offset, 1.0)
+			canvas.draw_arc(point + Vector2(0, 24), 58.0 + ripple * 25.0, 0, TAU, 48, Color(0.31, 0.79, 0.85, (1.0 - ripple) * 0.18), 2.0)
 		var alpha := landmark_opacity(point, focus)
 		draw_prop(canvas, "fountain", point + Vector2(0, 38), 154, Color(1, 1, 1, alpha))
 	else:
+		if kind == "portal_ring":
+			canvas.draw_circle(point + Vector2(0, 8), 27.0 + phase * 3.0, Color(0.38, 0.65, 0.86, 0.07 + phase * 0.05))
+			canvas.draw_arc(point + Vector2(0, 8), 31.0, -2.7 + phase * 0.35, 0.45 + phase * 0.35, 28, Color(0.72, 0.62, 0.91, 0.42), 2.0)
+		else:
+			canvas.draw_circle(point + Vector2(0, 2), 13.0 + phase * 2.0, Color(0.95, 0.72, 0.31, 0.08 + phase * 0.05))
 		draw_prop(canvas, "banner" if kind == "portal_ring" else "lantern", point + Vector2(0, 14), 74)
 
 
@@ -234,16 +245,36 @@ static func landmark_opacity(point: Vector2, focus: Vector2) -> float:
 	return cover_opacity(Rect2(point - Vector2(48, 84), Vector2(96, 122)), focus, 56)
 
 
-func draw_station(canvas: CanvasItem, station: Dictionary) -> void:
+static func ambient_phase(tick: int, period_ticks: int = 180, reduced_effects: bool = false) -> float:
+	if reduced_effects:
+		return 0.0
+	var period := maxi(2, period_ticks)
+	var normalized := float(posmod(tick, period)) / float(period)
+	return 0.5 - 0.5 * cos(normalized * TAU)
+
+
+static func station_label_opacity(point: Vector2, focus: Vector2) -> float:
+	if focus.x < -100000.0 or focus.y < -100000.0:
+		return 1.0
+	var distance := point.distance_to(focus)
+	return 1.0 - smoothstep(280.0, 520.0, distance)
+
+
+func draw_station(canvas: CanvasItem, station: Dictionary, tick: int = 0, reduced_effects: bool = false, focus: Vector2 = Vector2(-1000000, -1000000)) -> void:
 	var point := Vector2(station["position"][0], station["position"][1])
 	var kind := String(station["kind"])
 	var prop := "bell" if kind in ["parting", "training"] else ("banner" if kind == "farflow" else "lectern")
+	var phase := ambient_phase(tick + absi(String(station.get("id", "")).hash()) % 90, 180, reduced_effects)
+	var accent := Color("78ced3") if kind in ["guide", "controls", "farflow"] else (Color("ab83d8") if kind in ["champion", "spell"] else Color("d5ae5b"))
+	canvas.draw_arc(point + Vector2(0, 7), 22.0 + phase * 3.0, 0, TAU, 24, Color(accent, 0.18 + phase * 0.10), 2.0)
 	draw_prop(canvas, prop, point + Vector2(0, 14), 72)
 	var title := String(station["title"])
 	var font := ThemeDB.fallback_font
 	var width := font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x
-	canvas.draw_rect(Rect2(point + Vector2(-width * 0.5 - 6, 20), Vector2(width + 12, 21)), Color(0.14, 0.13, 0.10, 0.82))
-	canvas.draw_string(font, point + Vector2(-width * 0.5, 35), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("e9ddbc"))
+	var label_alpha := station_label_opacity(point, focus)
+	if label_alpha > 0.01:
+		canvas.draw_rect(Rect2(point + Vector2(-width * 0.5 - 6, 20), Vector2(width + 12, 21)), Color(0.14, 0.13, 0.10, 0.82 * label_alpha))
+		canvas.draw_string(font, point + Vector2(-width * 0.5, 35), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(0.91, 0.87, 0.74, label_alpha))
 
 
 func _fail(message: String) -> bool:

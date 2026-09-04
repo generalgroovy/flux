@@ -28,6 +28,14 @@ func _test_repository_hud() -> void:
 	check(not CompactCombatHud.spell_is_affordable(state, {"flux_cost": 6}), "HUD compares authored whole-Flux cost against milli-unit state")
 	state.flux = 6_000
 	check(CompactCombatHud.spell_is_affordable(state, {"flux_cost": 6}), "HUD affordability becomes ready at the exact milli-unit boundary")
+	state = PlayerState.new()
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "neutral Stamina keeps the compact label")
+	state.hop_ticks = SimConfig.new(120).milliseconds_to_ticks(MovementTuning.VARIABLE_JUMP_MINIMUM_MS) + 1
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA  JUMP -120/s", "paid jump sustain is explicit without relying on color")
+	state.hop_ticks -= 1
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "tap jump does not claim a sustain drain")
+	state.slide_ticks = SimConfig.new(120).milliseconds_to_ticks(MovementTuning.SLIDE_MINIMUM_MS) + 1
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA  SLIDE -60/s", "paid slide sustain is explicit without relying on color")
 
 
 func _test_fail_closed_contract() -> void:

@@ -233,7 +233,9 @@ func _test_capture_pointer_parser() -> void:
 	for burst_index: int in range(first_eight_bursts.size()):
 		equal(capture_state.spell_wire_id(burst_index + 1), first_eight_bursts[burst_index], "capture-only weave keeps requested Burst order at slot %d" % (burst_index + 1))
 	var slide_capture: SimCommand = BootstrapScript.capture_movement_command("slide", 6, 1)
-	check(slide_capture.has_held(SimCommand.HELD_SPRINT) and slide_capture.has_pressed(SimCommand.PRESSED_SLIDE), "slide capture uses the ordinary semantic sprint-slide command")
+	check(slide_capture.has_held(SimCommand.HELD_SPRINT) and slide_capture.has_held(SimCommand.HELD_SLIDE) and slide_capture.has_pressed(SimCommand.PRESSED_SLIDE), "slide capture uses the ordinary held semantic sprint-slide command")
+	var slide_release: SimCommand = BootstrapScript.capture_movement_command("slide", 42, 1)
+	check(not slide_release.has_held(SimCommand.HELD_SLIDE), "slide capture releases paid sustain after the authored maximum")
 	var north_slide: SimCommand = BootstrapScript.capture_movement_command("slide", 6, 1, Vector2i.UP)
 	equal(Vector2i(north_slide.move_x, north_slide.move_y), Vector2i(0, -1000), "movement capture applies the requested cardinal direction")
 	equal(Vector2i(north_slide.aim_x, north_slide.aim_y), Vector2i(0, -1000), "movement capture keeps aim aligned to the cardinal review direction")

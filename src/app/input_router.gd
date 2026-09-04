@@ -135,7 +135,7 @@ func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> S
 	if jump_down:
 		held |= SimCommand.HELD_JUMP
 	if slide_down:
-		held |= SimCommand.HELD_FAST_FALL
+		held |= SimCommand.HELD_SLIDE # Same wire bit becomes fast fall while airborne.
 	var pressed: int = SimCommand.PRESSED_EVADE if evade_pressed else 0
 	if jump_pressed:
 		pressed |= SimCommand.PRESSED_JUMP

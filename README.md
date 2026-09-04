@@ -37,7 +37,7 @@ from the earlier artwork. See the [visual acceptance ledger](docs/VISUAL-REFINEM
 Run `.\flux.cmd play` for this source revision. Existing Windows exports predate
 these changes and must be rebuilt before sharing; do not mix old packages and
 new-source hosts. The [map/movement ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md)
-records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current air control uses protocol 34.
+records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current paid-sustain movement uses protocol 35.
 
 ![Current five-champion motion contact sheet](assets/concept/five-champion-motion-reference-v1.png)
 
@@ -181,8 +181,8 @@ in a versioned local profile.
 | Primary | Left mouse | Right trigger |
 | Active | Right mouse or E | West face |
 | Sprint | Shift | Left shoulder |
-| Slide / fast-fall intent | C or wheel down | South face |
-| Jump / movement chain | Space or wheel up | Right shoulder |
+| Slide / fast-fall intent | Tap C/wheel down for 150 ms; hold for paid sustain | South face |
+| Jump / movement chain | Tap Space/wheel up for short hop; hold for paid sustain | Right shoulder |
 | Context technique | V | East face |
 | Interact | F | North face |
 | Speech wheel | Hold T, choose direction | D-pad up |
@@ -207,8 +207,9 @@ Lectern remap is the equivalent slide input.
 
 **2026-09-04 playable revision:** the larger Wellspring loop and no-vault
 movement update are implemented in source. Sprint+Jump stays Jump; Q / left
-trigger is Evade, V / B is Wall/Air Turn/Tech. Slide has a brief 50 ms opening
-protection window and second-press brake. [Current map, controls and acceptance
+trigger is Evade, V / B is Wall/Air Turn/Tech. Jump/Slide holds spend Stamina
+for their optional tails; Slide has a brief 50 ms opening protection window and
+second-press brake. [Current map, controls and acceptance
 ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md) separates tested behavior from
 pending human balance/visual acceptance and independent activity isolation.
 
@@ -216,8 +217,8 @@ pending human balance/visual acceptance and independent activity isolation.
 |---|---|---|---|
 | Strafe + independent aim | Crossfire, retreat, prediction | Acceleration, brake, counter-strafe timing | Playable |
 | Sprint | Rotate, pursue, disengage | Continuous Stamina drain and delayed recovery | Playable |
-| Hop / double jump | Take off along held movement, steer and face through all eight directions in air | Steering trades momentum during a hard reversal; paid redirect remains stronger; vulnerable landing; 90 ms opening attack intangibility | Playable |
-| Slide / slide jump | Low committed burst into long route | Entry-speed gate; 50 ms opening protection; vulnerable tail; second C brakes; world stays solid | Playable |
+| Hop / double jump | Take off along held movement, steer and face through all eight directions in air | Tap is reliable; holding pays 120 Stamina/s for the longer arc; release/exhaustion short-hops; protection remains the 90 ms opening | Playable |
+| Slide / slide jump | Tap gives a 150 ms committed burst; hold pays 60 Stamina/s to travel toward the 300 ms cap | Entry-speed gate; 50 ms opening protection; vulnerable paid tail; release/exhaustion shortens it; second C brakes; world stays solid | Playable |
 | Air redirect / air dodge | Strong snap correction or committed escape beyond ordinary air steering | Limited use, cost, fixed duration, safe collision recovery | Playable |
 | Ground roll | Evade a predicted lane while grounded | 24 Stamina; 130 ms opening attack intangibility inside 240 ms action | Playable |
 | Wavedash | Convert angled air dodge into ground momentum | Exact landing geometry; no free stacking | Playable |
@@ -466,7 +467,7 @@ default in gameplay while the Wellspring does not force limited information.
 | Capacity | Public cap 8; charters provide 2/4/8; later 32 only after measured architecture gate |
 | Transport | Godot ENet over UDP 24872, direct IP |
 | Authority | Host owns movement validation, resources, casts, hits, cooldowns, stations, roster, score, reset |
-| Compatibility | Protocol 34, snapshot 12, tick/tuning/map/content hashes |
+| Compatibility | Protocol 35, snapshot 12, tick/tuning/map/content hashes |
 | Client feel | Local movement prediction and bounded reconciliation; combat stays authoritative |
 | Join in progress | Observer until next gathering, then normal Hearth readiness |
 | Disconnect | 15-second in-memory exact-actor reservation and capability rotation |

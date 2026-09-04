@@ -116,7 +116,7 @@ func draw(
 	if wayfinding != null and (illustrated_kit == null or illustrated_kit.ground == null):
 		wayfinding.draw(canvas, focus_world_position, presentation_tick, reduced_effects)
 	for station_value: Variant in layout.data.get("stations", []):
-		_draw_station(canvas, station_value as Dictionary, presentation_tick, reduced_effects)
+		_draw_station(canvas, station_value as Dictionary, presentation_tick, reduced_effects, focus_world_position)
 	for district_value: Variant in layout.data.get("districts", []):
 		_draw_district_label(canvas, district_value as Dictionary)
 
@@ -444,7 +444,7 @@ func _draw_practice_wall(canvas: CanvasItem, bounds: Rect2i) -> void:
 
 func _draw_landmark(canvas: CanvasItem, landmark: Dictionary, tick: int, reduced_effects: bool, focus: Vector2 = Vector2(-1000000, -1000000)) -> void:
 	if illustrated_kit != null and illustrated_kit.ground != null:
-		illustrated_kit.draw_landmark(canvas, landmark, focus)
+		illustrated_kit.draw_landmark(canvas, landmark, focus, tick, reduced_effects)
 		return
 	if architecture_kit != null:
 		architecture_kit.draw_landmark_frame(canvas, landmark, tick, reduced_effects)
@@ -490,9 +490,9 @@ func _draw_landmark(canvas: CanvasItem, landmark: Dictionary, tick: int, reduced
 		canvas.draw_circle(position, glow_radius + 8.0, Color(CYAN, 0.12))
 
 
-func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int, reduced_effects: bool) -> void:
+func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int, reduced_effects: bool, focus: Vector2 = Vector2(-1000000, -1000000)) -> void:
 	if illustrated_kit != null and illustrated_kit.ground != null:
-		illustrated_kit.draw_station(canvas, station)
+		illustrated_kit.draw_station(canvas, station, tick, reduced_effects, focus)
 		return
 	if architecture_kit != null:
 		architecture_kit.draw_station_frame(canvas, station, tick, reduced_effects)

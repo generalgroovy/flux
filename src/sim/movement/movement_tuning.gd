@@ -4,7 +4,7 @@ extends RefCounted
 
 # Authoritative values are fixed-point world units, resource milli-units,
 # milliseconds, or scale-1000 ratios. They preserve the proven FLUX grammar.
-const COMPATIBILITY_ID: String = "movement-tuning-v6-no-vault-wall-control"
+const COMPATIBILITY_ID: String = "movement-tuning-v7-paid-sustain"
 const PLAYER_RADIUS: int = 18_000
 const BASE_SPEED: int = 324_000
 const ACCELERATION: int = 1_980_000
@@ -26,6 +26,7 @@ const HOP_COST: int = 28_000
 const HOP_SPEED: int = 650_000
 const HOP_DURATION_MS: int = 160
 const HOP_COOLDOWN_MS: int = 500
+const JUMP_SUSTAIN_DRAIN_PER_SECOND: int = 120_000
 const HOP_STEERING_PER_SECOND: int = 6_000
 const JUMP_INVULNERABILITY_MS: int = 90
 const WALL_KICK_SPEED: int = 780_000
@@ -86,12 +87,14 @@ const SLIDE_COST: int = 22_000
 const SLIDE_ENTRY_SPEED: int = 250_000
 const SLIDE_SPEED: int = 720_000
 const SLIDE_DURATION_MS: int = 300
+const SLIDE_MINIMUM_MS: int = 150
+const SLIDE_SUSTAIN_DRAIN_PER_SECOND: int = 60_000
 const SLIDE_COOLDOWN_MS: int = 780
 const SLIDE_STEERING: int = 320
 const SLIDE_JUMP_COST: int = 20_000
 const SLIDE_JUMP_SPEED: int = 790_000
 const SLIDE_JUMP_DURATION_MS: int = 230
-const SLIDE_JUMP_WINDOW_MS: int = 140
+const SLIDE_JUMP_WINDOW_MS: int = 110
 
 const VAULT_COST: int = 14_000
 const VAULT_APPROACH: int = 42_000
@@ -123,6 +126,7 @@ static func compatibility_hash() -> String:
 		],
 		"hop_wall": [
 			HOP_COST, HOP_SPEED, HOP_DURATION_MS, HOP_COOLDOWN_MS,
+			JUMP_SUSTAIN_DRAIN_PER_SECOND,
 			HOP_STEERING_PER_SECOND,
 			JUMP_INVULNERABILITY_MS,
 			WALL_KICK_SPEED, WALL_MEMORY_MS, SAME_WALL_LOCKOUT_MS,
@@ -155,6 +159,7 @@ static func compatibility_hash() -> String:
 		"movement_revision": [SLIDE_INVULNERABILITY_MS, LANDING_INPUT_BUFFER_MS, WALL_CONTACT_TOLERANCE, MATERIAL_MOTION_ENABLED, SurfaceMotionPolicy.COMPATIBILITY_ID],
 		"slide": [
 			SLIDE_COST, SLIDE_ENTRY_SPEED, SLIDE_SPEED, SLIDE_DURATION_MS,
+			SLIDE_MINIMUM_MS, SLIDE_SUSTAIN_DRAIN_PER_SECOND,
 			SLIDE_COOLDOWN_MS, SLIDE_STEERING, SLIDE_JUMP_COST,
 			SLIDE_JUMP_SPEED, SLIDE_JUMP_DURATION_MS, SLIDE_JUMP_WINDOW_MS,
 		],

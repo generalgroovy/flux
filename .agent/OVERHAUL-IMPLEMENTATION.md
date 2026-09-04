@@ -1,6 +1,6 @@
 # FLUX 2 implementation path to first-eight playtest
 
-Current frontier: protocol 34, snapshot 12, preferences 10, Godot 4.7.1,
+Current frontier: protocol 35, snapshot 12, preferences 10, Godot 4.7.1,
 canonical `main` (the remote compatibility ref mirrors its published checkpoint;
 the non-authoritative local compatibility ref may lag until a safe
 fast-forward). V0–V6 visual engineering, the exact
@@ -40,6 +40,13 @@ composable mastery. A technically complete slice is not product-complete until
 commitment, ownership, consequence, counter and recovery are readable.
 
 ## Slice sequence
+
+Immediate tactile-arena slice: execute T0-T4 in
+[`docs/TACTILE-ARENA-ACCEPTANCE.md`](../docs/TACTILE-ARENA-ACCEPTANCE.md).
+Jump and slide keep reliable paid openings while held extensions drain Stamina;
+the extra duration never refreshes protection. Pair the mechanic with compact
+resource feedback and presentation-only Wellspring motion before resuming the
+prior visual/chemistry frontier.
 
 Current follow-on A-E: `docs/CAST-MOTION-ACCEPTANCE.md`. Grace Riva and Wa Bidi
 are explicitly authorized promotions with existing single-element kits, after

@@ -3055,6 +3055,10 @@ static func capture_movement_command(mode: String, tick: int, entity_id: int, di
 		move_y = -normalized_direction.y
 	if mode == "sprint" or mode == "slide":
 		held |= SimCommand.HELD_SPRINT
+	if mode == "slide" and tick >= 6 and tick < 42:
+		# Truthful review capture holds the same C/wheel semantic that now pays
+		# for the optional slide tail; the press at tick six still starts it.
+		held |= SimCommand.HELD_SLIDE
 	if mode in ["jump", "air_dodge"] and tick >= 4 and tick < 30:
 		held |= SimCommand.HELD_JUMP
 	if mode in ["jump", "air_dodge"] and tick == 4:

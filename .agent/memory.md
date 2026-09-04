@@ -1,5 +1,24 @@
 # Active implementation memory
 
+## 2026-09-04 current checkpoint: paid movement sustain and quiet arena motion
+
+- Protocol 35 adds no wire bit or snapshot field: held Jump sustains beyond the
+  tap arc at 120 Stamina/s; held grounded C/wheel-down sustains Slide from 150
+  toward 300 ms at 60 Stamina/s. Openings remain 28/22 Stamina.
+- Release or exhaustion cuts only the optional tail. Jump protection remains an
+  explicit timer; slide protection derives from authoritative cooldown age, so
+  neither held input nor shortened duration can refresh/erase the paid opening.
+- Compact HUD names `JUMP -120/s` or `SLIDE -60/s`. Wellspring fountains,
+  portal/lantern accents and station rings use bounded presentation phases;
+  Reduced Effects freezes them. Distant station titles fade while props remain.
+- Final Full gate: 67 suites / 22,733 assertions / zero failures or stderr,
+  35,533 ms; source import and 120 Hz boot passed. Receipt
+  `.godot/receipts/tactile-arena-final-full.json`.
+- Truthful 120 Hz captures: `tactile-arena-jump-v1`,
+  `tactile-arena-slide-v1`, and final 50% label-density review
+  `tactile-arena-scale-50-v2`; 75% and 100% also inspected. Human feel/charm and
+  hardware frame-rate acceptance remain pending.
+
 ## 2026-09-04 current checkpoint: five-character cast and travel-facing motion
 
 - Grace Riva and Wa Bidi are selectable small-template basics with three-point

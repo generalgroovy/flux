@@ -66,7 +66,8 @@ func _test_air_wall_budget() -> void:
 		state.wall_memory_ticks = 12
 		state.wall_contact_id = 4
 		MovementSystem.step(state, SimCommand.new(2, 1, normal.x, normal.y, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP), config, arena)
-		equal(state.stamina, paid, "opposite wall cannot grant a third air action")
+		equal(state.stamina, paid - config.per_tick(MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND), "opposite wall cannot grant a third air action; its held tick only sustains the current arc")
+		equal(state.hop_stage, 2, "denied opposite-wall repeat preserves the spent air stage")
 
 
 func _test_explicit_intents_and_attachment() -> void:

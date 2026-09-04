@@ -134,7 +134,7 @@ func _draw_resources(canvas: CanvasItem, rectangle: Rect2, state: PlayerState, c
 	var bar_height := float(layout.get("resource_bar_height", 20))
 	_draw_resource_bar(canvas, Rect2(bar_x, rectangle.position.y + 29, bar_width, bar_height), "HEALTH", state.health, state.health_maximum, language.ramp_color("health", 3))
 	_draw_resource_bar(canvas, Rect2(bar_x, rectangle.position.y + 56, bar_width, bar_height), flux_status_label(state, tick_rate), state.flux, state.flux_maximum, language.ramp_color("flux", 3))
-	_draw_resource_bar(canvas, Rect2(bar_x, rectangle.position.y + 83, bar_width, bar_height), "STAMINA", state.stamina, state.stamina_maximum, language.ramp_color("stamina", 3))
+	_draw_resource_bar(canvas, Rect2(bar_x, rectangle.position.y + 83, bar_width, bar_height), stamina_status_label(state, tick_rate), state.stamina, state.stamina_maximum, language.ramp_color("stamina", 3))
 
 
 static func flux_status_label(state: PlayerState, tick_rate: int) -> String:
@@ -143,6 +143,19 @@ static func flux_status_label(state: PlayerState, tick_rate: int) -> String:
 	if state.flux_recovery_delay_ticks > 0:
 		return "FLUX WAIT %.1fs" % (float(state.flux_recovery_delay_ticks) / float(maxi(1, tick_rate)))
 	return "FLUX RISING"
+
+
+static func stamina_status_label(state: PlayerState, tick_rate: int) -> String:
+	if state == null:
+		return "STAMINA"
+	var safe_rate := maxi(1, tick_rate)
+	var jump_minimum := ceili(float(MovementTuning.VARIABLE_JUMP_MINIMUM_MS * safe_rate) / 1000.0)
+	var slide_minimum := ceili(float(MovementTuning.SLIDE_MINIMUM_MS * safe_rate) / 1000.0)
+	if state.hop_ticks > jump_minimum:
+		return "STAMINA  JUMP -%d/s" % (MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND / 1000)
+	if state.slide_ticks > slide_minimum:
+		return "STAMINA  SLIDE -%d/s" % (MovementTuning.SLIDE_SUSTAIN_DRAIN_PER_SECOND / 1000)
+	return "STAMINA"
 
 
 func _draw_resource_bar(canvas: CanvasItem, rectangle: Rect2, label: String, value: int, maximum: int, color: Color) -> void:

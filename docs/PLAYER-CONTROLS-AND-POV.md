@@ -9,8 +9,10 @@ the movement update, as requested. Vault entry and vault-crest superglide are
 retired; their serialized IDs/fields remain reserved compatibility slots.
 Sprint + Jump always jumps. Q / left trigger is explicit Evade, V / B is
 Wall / Air Turn / Impact Tech. C / wheel-down slides, and a second press brakes.
-Slide has a 6-tick (50 ms) opening attack-protection window. Jump protection
-uses its own authoritative timer, independent of shortened animation/airtime.
+Slide has a 6-tick (50 ms) opening attack-protection window. Tapping Slide buys
+the 150 ms opening; holding pays 60 Stamina/s to sustain toward 300 ms. Jump
+holding likewise pays 120 Stamina/s beyond its tap arc. Jump protection uses
+its own authoritative timer, independent of shortened or sustained airtime.
 Material-assisted drift/grip is neutral-only preparation; non-vault landing
 burst is excluded. See [current slice and acceptance](WELLSPRING-MOVEMENT-ACCEPTANCE.md).
 
@@ -23,9 +25,9 @@ I-frames mean protection from hostile attack contact, not passage through walls.
 |---|---|---|
 | Eight-way walk / strafe / counter-strafe | Normalized digital directions, continuous analog magnitude, separate aim, acceleration/braking | Keep; reduce unintended input interpretation before changing speed |
 | Sprint | Held Shift, Stamina drain; Sprint+Jump stays Jump | Keep; measure control clarity in playtests |
-| Jump / hop | Directional takeoff, active air steering, 28 Stamina, 160 ms maximum authored arc; 90 ms opening attack i-frames | Keep launch/landing mindgames and improve phase clarity; audit short-hop/fast-fall interaction with protection timing |
+| Jump / hop | Directional takeoff, active air steering, 28 Stamina opening; hold pays 120 Stamina/s toward the 160 ms cap; release/exhaustion cuts to the tap arc; 90 ms opening attack i-frames | Keep a reliable tap and expressive paid hold; sustain never extends protection |
 | Double jump | Second paid stage, 24 Stamina, 200 ms arc; jump-family opening protection | Outward recent air-wall contact deliberately chooses wall kick instead; both spend stage two |
-| Slide | C/wheel down; entry-speed gate, 22 Stamina, 300 ms duration, 780 ms cooldown; **6 protected ticks (50 ms)** | Implemented candidate; retain vulnerable tail, cost and cooldown; second press brakes |
+| Slide | C/wheel down; entry-speed gate, 22 Stamina opening; tap commits 150 ms and hold pays 60 Stamina/s toward the 300 ms cap; 780 ms cooldown; **6 protected ticks (50 ms)** | Release/exhaustion cuts the paid tail; second press brakes; sustain never extends protection |
 | Slide jump | Late slide conversion, 20 additional Stamina, 230 ms arc; jump-family opening protection | Keep; distinguish early buffered intent from successful conversion and avoid inherited/duplicated i-frames |
 | Ordinary air steering / turnaround | Held direction continuously bends travel; body follows input; release preserves momentum | Keep as the default aerial tool; provide broad reversal pockets and honest momentum loss |
 | Paid air redirect | V while hopping, 10 Stamina, one redirect per jump stage | Keep a stronger correction than ordinary steering; no new i-frames from direction change |
@@ -34,7 +36,7 @@ I-frames mean protection from hostile attack contact, not passage through walls.
 | Wavedash | Late angled air dodge queues a ground momentum conversion | Keep; ground conversion does not grant a new free protection window |
 | Wall jump / kick | Jump consumes recent wall contact; 28 Stamina, 220 ms same-wall lockout | Outward recent airborne wall contact selects kick and spends the second air-action budget; otherwise double jump |
 | Wallrun (wall-skim kernel) | V + tangent at a runnable practice wall; 18 Stamina, 420 ms maximum, 900 ms same-surface lockout | Continuous contact, immediate end/away/V detach; no corner magnetism or i-frames; not roof climbing |
-| Variable jump / fast fall | Release Jump cuts the arc; airborne C accelerates descent | Keep separate timing choices; do not confuse either with a fresh evade |
+| Variable jump / fast fall | Hold Jump pays for extra arc, release/exhaustion cuts it; airborne C accelerates descent | Keep separate timing choices; neither creates a fresh evade |
 | Landing cut | Counter-steer during a 110 ms landing window boosts braking response | Keep; explain as landing reversal, not attack-cancel or free speed generation |
 | Launch influence / impact tech | Direction bends launch; buffered V recovers from impact for 18 Stamina | Keep; teach one recovery cause and correction, no automatic escape from all control |
 | Edgeweave | Hostile projectile near-miss can recover Stamina under bounded eligibility | Keep; audit reward once per source/contact so dense patterns cannot fund perpetual evasion |
@@ -90,7 +92,7 @@ remove meaningful decisions or accessibility rather than creating useful depth.
 |---|---|---|
 | M3a -- campus foundation implemented first | Six physical practice areas, ordinary loop, runnable walls, duel cover, three targets and moved stations | Full-width public-route clearance, spawn/station/target validation; visual playtest still pending |
 | M0 -- implemented | Vault entry and dependent crest activation retired; old fields reserved | Protocol 33, snapshot 12; command/replay/prediction tests |
-| M1 -- implemented candidate | Consistent Jump, separate Evade, six-tick slide protection, brake, independent jump protection timer | Eight-way tests and unchanged Stamina/cooldown limits |
+| M1 -- implemented candidate | Consistent Jump, separate Evade, paid jump/slide sustain, six-tick slide protection, brake, independent jump protection timer | Eight-way tests, deterministic tap/hold/exhaustion costs and no protection refresh |
 | M2 -- implemented candidate | Contact-based wallrun, outward airborne wall kick and deliberate detach | Finite air budget, contact/end/lockout checks |
 | M3b -- pending | Independent concurrent activities, local reset isolation, additional pattern challenge tools | 2/4/8-player pressure and human movement/visual acceptance |
 
@@ -245,8 +247,8 @@ cue, or diagnostic leak.
 | Input | Action |
 | --- | --- |
 | `Shift` | Sprint while held |
-| `C` / wheel down | Dedicated grounded slide press; airborne input commits fast fall |
-| `Space` / wheel up | Semantic jump / movement-chain press |
+| `C` / wheel down | Tap for the grounded slide opening, hold for paid sustain; airborne input commits fast fall |
+| `Space` / wheel up | Tap for short hop / movement-chain press, hold for paid jump sustain |
 | `Q` / left trigger | Explicit grounded roll / airborne dodge; late angled dodge can wavedash |
 | `V` / B | Recent-contact wallrun, air redirect, or buffered 18-Stamina impact tech |
 | `F2` / `F3` | Local practice trace toggle / next recording and same-start previous-run echo |

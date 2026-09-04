@@ -41,6 +41,10 @@ commitment, ownership, consequence, counter and recovery are readable.
 
 ## Slice sequence
 
+Latest user override: R1-R4 in `docs/VISUAL-REFINEMENT-ACCEPTANCE.md` now precede
+C6: illustrated tile/prop campus, coherent camera angle, small-to-large body
+refinement across all action/direction families, then integrated acceptance.
+
 ### 2026-09-04 movement/map revision
 
 The user promoted the map before M0-M2. The 3072 x 1728 loop is now

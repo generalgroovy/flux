@@ -1,6 +1,8 @@
 {
-  "schema_version": 12,
-  "id": "foundation-champion-visuals-v12-mature-body-templates",
+  "schema_version": 13,
+  "id": "foundation-champion-visuals-v13-elevated-body-templates",
+  "art_camera": {"elevation_degrees": 55, "ground_axes": "screen_cardinal"},
+  "derived_pose_sources": {"hit": "grounded_with_bounded_recoil", "sprint_b": "walk_b_with_sprint_timing"},
   "authority": "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere",
   "atlas_role": "body_and_clothing_only",
   "front_pose": "camera_facing_symmetrical",
@@ -11,7 +13,7 @@
   "body_template_contract": {
     "types": ["small", "middle", "large"],
     "template_build_order": ["small", "middle", "large"],
-    "proportion_reference": "res://assets/concept/foundation-proportion-reference-small-to-large-v1.png",
+    "proportion_reference": "res://assets/concept/foundation-proportion-reference-small-to-large-v2.png",
     "ordinary_head_ratio_range": [0.24, 0.30],
     "head_measurement_policy": "ordinary_cranium_excludes_hair_fins_horns_and_ancestry_crowns",
     "anatomy_reference_champion": "red_baron",
@@ -40,7 +42,7 @@
   },
   "shared_style_contract": {
     "reference_champion": "red_baron",
-    "outline_source": "darkest_visible_red_baron_material_clusters",
+    "outline_source": "shared_64_color_old_world_material_palette",
     "outline_radius_pixels": 1,
     "outline_application": "cell_bounded_exterior_ink_without_rescale",
     "palette_budget": 64,
@@ -49,9 +51,9 @@
     "authority": "presentation_only"
   },
   "atlas": {
-    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v12.png",
-    "sha256": "640abbf46c2442506e12a31542c9a0ad375d32f53062e433d0787b88e920bd38",
-    "imported_rgba_sha256": "75eb623c9ee8ed4559bc8d1edf481d12d87470501c003b83dd279c40abd53c89",
+    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v13.png",
+    "sha256": "237d751b446571787516d8e83fa04f7ec3cbd982fb2d41dc5bcbf6a84fa73090",
+    "imported_rgba_sha256": "33ed4f68349a7db1a14208fe8a0717a55a005bc7c18bbb3ab44ac624768c2ecd",
     "dimensions": [768, 2880],
     "champions": ["oh_tipi", "s_wayne", "red_baron"],
     "states": ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll", "walk_b", "sprint_b"],

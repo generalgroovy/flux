@@ -4,9 +4,14 @@ This queue reflects the current user-ordered path to the first-eight chemistry
 playtest. Completed detail belongs in `WORKLOG.md`; this file stays short,
 playable, and acceptance-driven.
 
+**Active now:** user-requested illustrated map/camera overhaul and all-size,
+all-direction/action body refinement; R1-R4 in
+`docs/VISUAL-REFINEMENT-ACCEPTANCE.md` precede C6. Earlier visual approval is
+historical, not acceptance of the replacement.
+
 **2026-09-04 execution override:** the movement-led campus and subsequent M0-M2
-movement retirement/refinement are implemented source candidates. Resume C6-C9
-chemistry from this green checkpoint; preserve human visual/feel acceptance.
+movement retirement/refinement are implemented source candidates. Finish the
+new R1-R4 visual/camera acceptance before resuming C6-C9 chemistry; preserve human visual/feel acceptance.
 Material-assisted drift/grip stays disabled with an inert chemistry seam;
 non-vault landing burst is excluded. Concurrent activity ownership is a separate
 acceptance task, not implied by six physical practice areas. See the
@@ -22,7 +27,7 @@ runs cannot generate notification floods.
 |---:|---|---|
 | 0 | **One authoritative product — complete** | Imported browser runtime retired with remote recovery recorded; README/roster truth reconciled; full Godot gate green without touching user-owned local files. |
 | 1 | **Plug-and-play lifecycle — implementation complete; installer acceptance blocked** | The 2026-09-04 actual Windows game export boots at 120 Hz; its catalog summary matches source. The rebuilt unsigned `FLUX.exe` installer is still blocked by Application Control before clean install, so signing/trust, installed repair/update acceptance, NAT/relay automation and physical two-PC proof remain open. Do not generalize the installer block to the successfully tested game export. |
-| 2 | **Whole-scene visual cohesion — complete** | Reusable Wellspring modules, eight-way body/action art, empty-hand spells and compact HUD pass the 4.64/5 D7 rubric; V10 density preserves ownership and escape lanes across zoom/accessibility profiles. |
+| 2 | **Whole-scene visual cohesion — reopened** | Earlier 4.64/5 evidence is historical. R1-R4 replaces campus textures/props and all three eight-way body templates; current captures, geometry checks and human charm/readability review must judge the replacement. |
 | 3 | **Three viable body roles + Red Baron — complete in source** | Small skirmisher, middle adapter and large anchor use direction-invariant 58/68/76px body templates, shared collision, runtime scale `1.0` and universal movement on equal budget; Red Baron is selectable with eight-way body/clothing art, identity HUD portrait, Cinderbolt/Rimewake and 120 Hz combat tests. Exact interactive capture remains part of the checkpoint. |
 | 4 | **Readable bullet-pattern pressure — complete in source** | Cinder Fan deterministically emits `-24,-12,0,+12,+24` lanes with ordered IDs, one cost, single-hit protection, bounded collision/snapshot work, a readable 28–46 px projectile envelope and clean evasion lanes at 120 Hz; the Proving Court floor now exposes quiet lanes and four response pockets. |
 | 5 | **Eight elemental bursts + one combat authority — complete in source** | Fire, Water, Earth, Wind, Charge, Ice, Light, and Dark provide positive-Flux global Bursts with identical five-lane geometry/economy; all 16 live spell definitions now compile exclusively from the validated catalog, with 61 suites / 17,781 assertions and eight truthful 120 Hz captures proving simulation and presentation. |

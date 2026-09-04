@@ -3,11 +3,11 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_champion_visuals_v1.json"
-const EXPECTED_ID := "foundation-champion-visuals-v12-mature-body-templates"
+const EXPECTED_ID := "foundation-champion-visuals-v13-elevated-body-templates"
 const EXPECTED_AUTHORITY := "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere"
 const REQUIRED_FOUNDATION := ["oh_tipi", "s_wayne", "red_baron"]
-const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v12.png"
-const PROPORTION_REFERENCE_PATH := "res://assets/concept/foundation-proportion-reference-small-to-large-v1.png"
+const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v13.png"
+const PROPORTION_REFERENCE_PATH := "res://assets/concept/foundation-proportion-reference-small-to-large-v2.png"
 const EXPECTED_BODY_TYPES: Array[String] = ["small", "middle", "large"]
 const EXPECTED_CARDINAL_DIRECTIONS: Array[String] = ["south", "east", "north", "west"]
 const EXPECTED_DIRECTIONS: Array[String] = [
@@ -92,8 +92,11 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	if not parsed is Dictionary:
 		return _fail("Cartoon champion recipe root must be an object")
 	var data: Dictionary = parsed
-	if int(data.get("schema_version", -1)) != 12 or String(data.get("id", "")) != EXPECTED_ID:
+	if int(data.get("schema_version", -1)) != 13 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Cartoon champion recipe identity is unsupported")
+	var art_camera: Dictionary = data.get("art_camera", {})
+	if int(art_camera.get("elevation_degrees", 0)) != 55 or String(art_camera.get("ground_axes", "")) != "screen_cardinal":
+		return _fail("Champion camera must agree with cardinal campus art")
 	if String(data.get("authority", "")) != EXPECTED_AUTHORITY:
 		return _fail("Cartoon champion recipes must remain presentation-only")
 	if String(data.get("atlas_role", "")) != "body_and_clothing_only":
@@ -417,7 +420,7 @@ func _validate_shared_style_contract(value: Variant) -> bool:
 		return _fail("Cartoon champion shared style contract must be an object")
 	var contract: Dictionary = value
 	if String(contract.get("reference_champion", "")) != "red_baron" \
-		or String(contract.get("outline_source", "")) != "darkest_visible_red_baron_material_clusters" \
+		or String(contract.get("outline_source", "")) != "shared_64_color_old_world_material_palette" \
 		or int(contract.get("outline_radius_pixels", 0)) != 1 \
 		or String(contract.get("outline_application", "")) != "cell_bounded_exterior_ink_without_rescale" \
 		or int(contract.get("palette_budget", 0)) != 64 \

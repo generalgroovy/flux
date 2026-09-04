@@ -12,12 +12,15 @@ prose; correct stale prose in the same slice.
 
 ## Hard priority
 
-The visual freeze is accepted. D7 scores 4.64/5 with every category at least
+Latest user revision reopens the live visual gate: implement R1-R4 in
+`docs/VISUAL-REFINEMENT-ACCEPTANCE.md` before chemistry. Match concept material
+richness and a user-friendly elevated/cardinal camera across map and bodies.
+
+Historical visual baseline: D7 scored 4.64/5 with every category at least
 4.5, and V10 keeps actor ownership plus an escape lane through projectile,
 beam, spray and field density at 50/75/100%, grayscale and reduced effects.
-Treat those gates as the minimum bar for every addition; do not spend another
-slice polishing disconnected visuals while the active gameplay acceptance is
-still open.
+Treat those earlier gates as the minimum bar; they are not acceptance of the
+user-requested v13/illustrated replacement. Complete its integrated review first.
 
 Current C2.5 checkpoint: Oh Tipi, S. Wayne and The Red Baron exercise middle,
 small and large equal-budget roles. All three share collision and universal
@@ -116,7 +119,7 @@ visual quality, balance, platform parity or remote play without direct evidence.
 
 ## Immediate eight-direction movement/animation iteration
 
-Continue from the complete v12 foundation atlas: preserve the validated resolver
+Continue from the integrated v13 foundation atlas: preserve the validated resolver
 for `south`, `south_east`, `east`, `north_east`, `north`, `north_west`, `west`,
 and `south_west`, the two walk/sprint contacts, and native eight-way evasion art
 while expanding one complete action family at a time on future champions and body contracts. Travel direction and facing

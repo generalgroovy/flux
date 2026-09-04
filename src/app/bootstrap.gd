@@ -378,6 +378,11 @@ func _ready() -> void:
 		]
 	)
 	set_process(true)
+	print("FLUX2 illustrated campus: %s, art elevation 55deg/cardinal, setup %d ms, %d decorations" % [
+		campus_renderer.illustrated_kit.content_hash.left(12),
+		campus_renderer.illustrated_kit.ground_generation_ms,
+		campus_renderer.illustrated_kit.decorations.size(),
+	])
 	queue_redraw()
 
 
@@ -3050,7 +3055,7 @@ static func parse_capture_movement(argument: String) -> String:
 	if not argument.begins_with("--capture-movement="):
 		return ""
 	var requested := argument.trim_prefix("--capture-movement=").strip_edges().to_lower()
-	return requested if requested in ["grounded", "hit", "walk", "brake", "reverse", "sprint", "slide", "jump", "air_dodge", "technique", "impact_recovery"] else ""
+	return requested if requested in ["grounded", "hit", "walk", "brake", "reverse", "sprint", "slide", "roll", "jump", "air_dodge", "technique", "impact_recovery"] else ""
 
 
 static func parse_capture_direction(argument: String) -> Vector2i:
@@ -3092,6 +3097,8 @@ static func capture_movement_command(mode: String, tick: int, entity_id: int, di
 		pressed |= SimCommand.PRESSED_JUMP
 	if mode == "slide" and tick == 6:
 		pressed |= SimCommand.PRESSED_SLIDE
+	if mode == "roll" and tick == 6:
+		pressed |= SimCommand.PRESSED_EVADE
 	if mode == "air_dodge" and tick == 12:
 		pressed |= SimCommand.PRESSED_EVADE
 	if mode == "technique" and tick == 6:

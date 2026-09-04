@@ -16,15 +16,32 @@ physical places rather than a detached menu.
 > Wellspring campus, an authoritative 2–8 player direct-IP Farflow loop, and a
 > packaged one-file Windows player app are working. Comparable bursts for all
 > eight first-phase elements and the strict, symmetric 36-reaction definition
-> compiler are working; bounded exposure/contact is the active chemistry goal,
+> compiler are working; bounded exposure/contact is the next chemistry goal,
 > and world mutation remains deliberately gated until that slice passes.
 
-**Newest source checkpoint:** the 3072x1728 six-area campus and no-vault movement
-revision are implemented; run `.\flux.cmd play` to test them. The existing local
-Windows exports predate this protocol-33 checkpoint and must be rebuilt before
-sharing this revision. Do not mix old packages with new-source hosts. See the
-[map/movement acceptance ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md) for
-controls, verification and remaining visual/feel acceptance.
+**Newest source revision:** illustrated stone/grass/water terrain, slate-and-timber
+buildings, reusable props and renewed small/middle/large eight-way body templates
+are integrated into the 3072x1728 six-area campus. The art uses an elevated
+approximately 55-degree view, while floors, movement, aiming and collisions
+remain screen-aligned. Roof/canopy fading preserves nearby character visibility;
+50/75/100% zoom remains available. Visual acceptance is reopened, not inherited
+from the earlier artwork. See the [visual acceptance ledger](docs/VISUAL-REFINEMENT-ACCEPTANCE.md).
+
+![Current in-game Wellspring overview, 1080p at 50% zoom](docs/evidence/illustrated-wellspring-v1/overview.png)
+
+Run `.\flux.cmd play` for this source revision. Existing Windows exports predate
+these changes and must be rebuilt before sharing; do not mix old packages and
+new-source hosts. The [map/movement ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md)
+records the unchanged no-vault controls and protocol-33 movement checkpoint.
+
+![Current body templates, extracted from gameplay art](assets/concept/foundation-proportion-reference-small-to-large-v2.png)
+
+Rows: small S. Wayne, middle Oh Tipi, large Red Baron. Columns: front, side,
+back, walk A/B, jump, slide, roll. All ten runtime pose rows cover eight directions;
+hit/recovery derives from grounded recoil and sprint B reuses walk B. The 29
+semantic actions use explicit aliases, not 29 independently drawn animations.
+Spells, auras and ground shadows remain separate from body/clothing artwork.
+See [editable sources and prompt specifications](reference/art/wellspring_v3/README.md).
 
 Current counts deliberately distinguish authored inventory from promoted play:
 
@@ -101,7 +118,7 @@ direct-IP internet builds only with trusted friends.
 
 | Area | Now | Next acceptance |
 |---|---|---|
-| Repository | One authoritative Godot runtime; generated state/drift checks, selectable suites, receipts, developer front door, asset inventory, canonical roster adapters and exact-package content evidence are verified | Campus + no-vault movement are implemented; next C6 exposure/contact; unsigned installer trust remains independently blocked |
+| Repository | One authoritative Godot runtime; generated state/drift checks, selectable suites, receipts, developer front door, asset inventory, canonical roster adapters and exact-package content evidence are verified | Current visual/camera replacement before C6 exposure/contact; unsigned installer trust remains independently blocked |
 | Lifecycle | Source launch, portable archives, checksums, one-file Windows install/update/run | Signed releases, clean uninstall UI, public update channel |
 | Wellspring | Nine districts, walk-up stations, practice actors, movement routes | Stronger authored landmarks and compact onboarding |
 | Movement | Full universal foundation at deterministic 120 Hz; normalized eight-way commands, active directional air control/facing, alternating gait contacts, native eight-way jump/slide/roll art, relative gait, and directional evasion cues | Measure response/braking/reversal/chains during chemistry, then tune the existing grammar from the packaged playtest before adding techniques |

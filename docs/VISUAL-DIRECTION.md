@@ -2,6 +2,12 @@
 
 Status: **canonical art-direction contract**.
 
+Current implementation: [illustrated camera/body acceptance](VISUAL-REFINEMENT-ACCEPTANCE.md).
+Map and champion artwork share approximately 55-degree elevation, short visible
+facades and readable shoulder/roof tops. Floors remain screen-cardinal: no
+isometric input rotation, collision skew or angle-dependent body scaling.
+Occluding roofs/canopies fade near the observed actor; zoom remains 50/75/100%.
+
 ## Intent
 
 FLUX 2 should feel like a living magical instrument: handcrafted, old, repaired,

@@ -1180,3 +1180,48 @@ user-owned untracked paths throughout.
   exports predate this source revision; no installer/security acceptance claim.
 - Next: C6 bounded contact/exposure, then C7-C9 reactions/lifecycle/Crucible and
   the required playtest pause. Keep current source runnable with flux.cmd play.
+
+## 2026-09-04 -- illustrated campus, elevated camera and v13 body checkpoint
+
+- Latest user reopened visual acceptance before chemistry. Implemented original
+  surface/prop art and all three body templates in small -> middle -> large
+  order; no gameplay balance, collision, movement, protocol or chemistry writes.
+- Shared approximately 55-degree art camera with screen-cardinal coordinates;
+  bounded 62px facades, continuous roof/canopy fading, retained 50/75/100% zoom.
+  Removed duplicate wayfinding labels and the old opaque schematic cutaway from
+  the illustrated renderer. The physical six-area layout remains unchanged.
+- New presentation-only manifest, 16 surfaces/16 props, one cached 3072x1728
+  ground texture and 91 bounded planted props. Setup measured 75 ms in final
+  Full. Decoded imported hashes work for remapped/exported textures.
+- Built-in image generator supplied original sources, stored with SHA-256 and
+  prompt specs under reference/art/wellspring_v3. First prop boards contained
+  opaque preview mattes; final import explicitly extracts border-connected
+  neutral matte. Connected-body crops prevent neighboring frame fragments from
+  changing character scale. Source originals are preserved.
+- v13 atlas: 240 cells, 8 directions, 10 runtime pose rows, shared (48,84) feet,
+  58/68/76 upright pixel heights plus 1px ink, palette of 64 opaque colors.
+  Hit derives from neutral recoil; sprint B derives from walk B. All 29 semantic
+  actions retain explicit aliases, not individually authored animation claims.
+- Verification: focused visual/input suites, then scripts/test.ps1 -Tier Full
+  -ReceiptPath .godot/receipts/illustrated-final-full.json: 67 suites / 19,717
+  assertions; zero failures/warnings/stderr; import and 120 Hz boot; 45,431 ms.
+- scripts/smoke-farflow.ps1 -TickRate 120 -TimeoutSeconds 60 passed local join,
+  shared HELLO, reconciliation, rounds, spectating/return, rematch and host removal.
+  This is local multi-process proof, not a two-PC internet test.
+- Inspected actual isolated captures: illustrated-final-overview (1080p/50%),
+  illustrated-final-jump (720p/75%, reduced), illustrated-roll-verified
+  (720p/100%, grayscale), illustrated-final-slide-pressure (90 frames, slide
+  and spell sequence), illustrated-camera-final (720p/75%, near building).
+  Earlier illustrated-final-roll was only idle because the capture parser lacked
+  roll. Added/tested an explicit real Evade capture at tick 6 and reviewed the
+  corrected tucked roll. A temporary test used the wrong SimCommand accessor;
+  fixed it to has_pressed before the final clean Full gate.
+- Committed evidence copies are docs/evidence/illustrated-wellspring-v1; body
+  reference v2 is extracted from runtime pixels, not a separate idealized image.
+- Human charm/feel approval remains open. Existing installers/exports are older.
+  Movie CPU render averages of roughly 10-12 ms included capture-workload
+  contention; they do not establish a steady-state 120 FPS guarantee. Measure
+  real-time rendered frame budget separately before broad performance claims.
+- Next: user review of this camera/map/body candidate and targeted readability/
+  performance refinements, then R4 completion before C6-C9. No new mechanic,
+  roster expansion, material movement or landing burst during the visual gate.

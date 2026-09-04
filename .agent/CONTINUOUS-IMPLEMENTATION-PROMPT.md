@@ -13,7 +13,11 @@ slice without rewriting historical evidence.
 
 ## Current frontier and hard order
 
-V0–V10 pass in the live game. The current source uses protocol 33, snapshot
+The user reopened visual acceptance: finish R1-R4 in
+`docs/VISUAL-REFINEMENT-ACCEPTANCE.md` before new chemistry. Illustrated terrain,
+low elevated facades, cutout props and v13 small/middle/large eight-way body art
+are integrated candidates. Earlier V0–V10 scores describe the previous artwork,
+not approval of this replacement. The current source uses protocol 33, snapshot
 schema 12 and preferences 10; preserve the published green checkpoint and all
 accepted visual/gameplay behavior. Continue
 in this strict player-facing order; do not skip ahead because a later catalog is

@@ -32,6 +32,7 @@ var language: VisualLanguage
 var natural_kit: NaturalMapKit
 var wayfinding: WellspringWayfinding
 var architecture_kit: WellspringArchitectureKit
+var illustrated_kit: WellspringIllustratedKit
 
 
 func configure(visual_language: VisualLanguage) -> bool:
@@ -69,6 +70,7 @@ func configure(visual_language: VisualLanguage) -> bool:
 		return false
 	wayfinding = WellspringWayfinding.new()
 	architecture_kit = WellspringArchitectureKit.new()
+	illustrated_kit = WellspringIllustratedKit.new()
 	return true
 
 
@@ -76,6 +78,9 @@ func configure_campus(layout: SanctumCampusLayout) -> bool:
 	if wayfinding == null or architecture_kit == null:
 		return false
 	if not architecture_kit.configure(language, layout):
+		return false
+	if not illustrated_kit.configure(layout):
+		push_error(illustrated_kit.last_error)
 		return false
 	return wayfinding.configure(language, layout)
 
@@ -92,29 +97,23 @@ func draw(
 	focus_world_position: Vector2 = Vector2(-1000000.0, -1000000.0),
 	reduced_effects: bool = false,
 ) -> void:
-	_draw_water(canvas, layout.canvas_size, layout.reserved_ui_top, presentation_tick)
-	_draw_distant_context(canvas)
-	for connection_value: Variant in layout.data.get("connections", []):
-		_draw_connection(canvas, connection_value as Dictionary)
-	var district_index: int = 0
-	for district_value: Variant in layout.data.get("districts", []):
-		var district: Dictionary = district_value
-		_draw_district(canvas, district, district_index)
-		natural_kit.draw_district_details(canvas, district, district_index, presentation_tick, reduced_effects)
-		_draw_district_identity(canvas, district, presentation_tick, reduced_effects)
-		district_index += 1
-	for route_value: Variant in layout.data.get("routes", []):
-		_draw_route(canvas, route_value as Dictionary)
-	if architecture_kit != null:
+	if illustrated_kit != null and illustrated_kit.ground != null:
+		illustrated_kit.draw_ground(canvas)
+		illustrated_kit.draw_gardens(canvas, focus_world_position)
+	else:
+		# Development previews without campus setup retain a readable fallback.
+		_draw_water(canvas, layout.canvas_size, layout.reserved_ui_top, presentation_tick)
 		for district_value: Variant in layout.data.get("districts", []):
-			architecture_kit.draw_district_court(canvas, district_value, reduced_effects)
+			_draw_district(canvas, district_value, 0)
+		for route_value: Variant in layout.data.get("routes", []):
+			_draw_route(canvas, route_value)
 	_draw_activity_areas(canvas, layout)
 	_draw_arena(canvas, layout.arena_definition, presentation_tick, reduced_effects)
 	for building_value: Variant in layout.data.get("buildings", []):
 		_draw_building(canvas, building_value as Dictionary, focus_world_position)
 	for landmark_value: Variant in layout.data.get("landmarks", []):
 		_draw_landmark(canvas, landmark_value as Dictionary, presentation_tick, reduced_effects)
-	if wayfinding != null:
+	if wayfinding != null and (illustrated_kit == null or illustrated_kit.ground == null):
 		wayfinding.draw(canvas, focus_world_position, presentation_tick, reduced_effects)
 	for station_value: Variant in layout.data.get("stations", []):
 		_draw_station(canvas, station_value as Dictionary, presentation_tick, reduced_effects)
@@ -126,7 +125,7 @@ func _draw_arena(canvas: CanvasItem, definition: Dictionary, tick: int, reduced_
 	if definition.is_empty():
 		return
 	var bounds := SanctumCampusLayout._parse_bounds(definition.get("bounds", []))
-	if natural_kit != null:
+	if natural_kit != null and (illustrated_kit == null or illustrated_kit.ground == null):
 		natural_kit.draw_arena_floor(canvas, bounds, tick, reduced_effects)
 	canvas.draw_rect(Rect2(bounds), Color(BRASS, 0.22), false, 4.0)
 	canvas.draw_rect(Rect2(bounds.grow(-8)), Color(PARCHMENT, 0.16), false, 2.0)
@@ -341,6 +340,9 @@ func _draw_route_seams(canvas: CanvasItem, points: PackedVector2Array, width: fl
 
 func _draw_building(canvas: CanvasItem, building: Dictionary, focus_world_position: Vector2) -> void:
 	var bounds := SanctumCampusLayout._parse_bounds(building.get("bounds", []))
+	if illustrated_kit != null and illustrated_kit.ground != null:
+		illustrated_kit.draw_building(canvas, building, focus_world_position)
+		return
 	var style := String(building.get("style", "timber_hall"))
 	if style == "practice_wall":
 		_draw_practice_wall(canvas, bounds)
@@ -441,6 +443,9 @@ func _draw_practice_wall(canvas: CanvasItem, bounds: Rect2i) -> void:
 
 
 func _draw_landmark(canvas: CanvasItem, landmark: Dictionary, tick: int, reduced_effects: bool) -> void:
+	if illustrated_kit != null and illustrated_kit.ground != null:
+		illustrated_kit.draw_landmark(canvas, landmark)
+		return
 	if architecture_kit != null:
 		architecture_kit.draw_landmark_frame(canvas, landmark, tick, reduced_effects)
 	var values: Array = landmark.get("position", [])
@@ -486,6 +491,9 @@ func _draw_landmark(canvas: CanvasItem, landmark: Dictionary, tick: int, reduced
 
 
 func _draw_station(canvas: CanvasItem, station: Dictionary, tick: int, reduced_effects: bool) -> void:
+	if illustrated_kit != null and illustrated_kit.ground != null:
+		illustrated_kit.draw_station(canvas, station)
+		return
 	if architecture_kit != null:
 		architecture_kit.draw_station_frame(canvas, station, tick, reduced_effects)
 	var values: Array = station.get("position", [])

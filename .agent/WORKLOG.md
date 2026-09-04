@@ -4071,3 +4071,24 @@ Commit: pending at pre-commit record time. Push: pending.
   flux.cmd play -SmokeTest front door, current-state check and staged whitespace
   check passed. Reviewed 64 project files; personal scripts, shortcut,
   node_modules and ignored reports/builds remain outside the checkpoint.
+
+## 2026-09-04 -- illustrated world and elevated eight-way body refinement
+
+- Replaced live flat district treatment with cached material tiling, reusable
+  original cutout props, planted borders and textured low-rise architecture.
+  Shared 55-degree art grammar keeps screen-cardinal movement/aim unchanged.
+- Rebuilt small/middle/large templates from immutable source boards; 240 cells,
+  shared feet, stable upright heights, crouched slide/roll mass, alternate walk
+  contacts. Hit and sprint-B reuse is explicit. No spell/environment pixels in
+  body sheets; source prompts, hashes, compiler and audit remain reusable.
+- Continuous cover opacity replaced hard pop and legacy schematic cutaway;
+  duplicate fixed labels no longer obscure the fountain. Added a real-command
+  roll capture and its input test after visual inspection caught an idle capture.
+- Final Full: 67 suites / 19,717 assertions, zero stderr, 45,431 ms. Local Farflow
+  host/join/round/rematch/stewardship passed at 120 Hz. Actual 50/75/100% views,
+  reduced effects, grayscale, jump, roll, slide/casting and roof approach inspected.
+- This is a playable source candidate, not human art acceptance or a freshly
+  validated installer. Existing packages are stale; real-time 120 FPS hardware
+  evidence remains separate from 120 Hz simulation/offline capture cadence.
+- Next: R4 user visual/feel review and targeted camera/readability/performance
+  refinements before C6 chemistry. Personal files remain untouched.

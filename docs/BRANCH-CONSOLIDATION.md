@@ -1,16 +1,18 @@
 # Repository consolidation
 
+Status: **canonical repository and branch authority contract**.
+
 ## Product authority
 
-`C:\Users\sende\Projects\flux` is the only authoritative FLUX 2 working
+`C:\Users\sende\Projects\flux` is the only authoritative FLUX working
 tree. It is a Godot 4 project; `project.godot`, `src/`, `content/`, `assets/`,
 `packaging/`, and `scripts/` define the shipped product.
 
-The canonical integration branch is `codex/continuous-overhaul`. It contains
-the current Godot runtime, deterministic content validation, visual production
-assets, movement/combat slices, Farflow networking, and the Windows bootstrap.
-`main` remains merged into this branch rather than maintained as a competing
-local product state.
+The canonical integration branch is `main`. Every published playable checkpoint
+lands there after its relevant gates pass. `codex/continuous-overhaul` is a
+compatibility/handoff branch only; it may be fast-forwarded to a green `main`
+checkpoint but never defines newer product truth or receives independent
+long-lived work.
 
 ## Retired browser lineage
 
@@ -33,12 +35,14 @@ Godot-native implementations or explicit contracts:
 | Separate world pivot, feet, shadow, and airborne height | champion presenter and movement presentation |
 | Anticipation, travel, impact, and expiry phases | spell presentation contracts |
 | Shape and ownership remain readable without hue | projectile and effect presenters |
-| Rendering never owns simulation rules | fixed-tick systems under `src/simulation/` |
+| Rendering never owns simulation rules | fixed-tick systems under `src/sim/` |
 
 ## Branch policy
 
-- New work lands as small playable commits on `codex/continuous-overhaul`.
-- `origin/main` is merged normally when it advances; no history is rewritten.
+- New work uses one short-lived `codex/<gate>-<outcome>` branch only when useful;
+  accepted playable checkpoints land on `main` without rewriting history.
+- `codex/continuous-overhaul` may be fast-forwarded after acceptance for old
+  handoff links; divergence is resolved toward the tested `main` checkpoint.
 - Compatibility IDs are migration adapters, not permission to revive legacy
   product language or a second runtime.
 - Generated imports, build output, caches, local dependencies, credentials, and

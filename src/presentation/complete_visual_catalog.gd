@@ -5,6 +5,7 @@ extends RefCounted
 const SUPPORTED_SCHEMA_VERSION: int = 1
 const DEFAULT_PATH: String = "res://content/visual/complete_visual_catalog_v1.json"
 const CHARACTER_ATLAS_SIZE := Vector2i(960, 1280)
+const ChampionRosterPlanScript = preload("res://src/content/champion_roster_plan.gd")
 
 var data: Dictionary = {}
 var last_error: String = ""
@@ -15,6 +16,7 @@ var props: Dictionary = {}
 var element_vfx: Dictionary = {}
 var ui: Dictionary = {}
 var overviews: Dictionary = {}
+var roster_plan = ChampionRosterPlanScript.new()
 
 
 func load_from_file(path: String = DEFAULT_PATH) -> bool:
@@ -33,6 +35,8 @@ func load_from_file(path: String = DEFAULT_PATH) -> bool:
 
 func validate() -> bool:
 	last_error = ""
+	if roster_plan.ordered_ids.is_empty() and not roster_plan.load_from_files():
+		return _fail("canonical champion roster cannot be loaded: %s" % roster_plan.last_error)
 	if int(data.get("schema_version", -1)) != SUPPORTED_SCHEMA_VERSION:
 		return _fail("unsupported complete visual catalog schema")
 	var contract: Dictionary = data.get("character_contract", {})
@@ -46,7 +50,7 @@ func validate() -> bool:
 		return _fail("complete visual catalog requires 25 animation states")
 
 	ancestries = data.get("ancestries", {})
-	champions = data.get("champions", {})
+	var asset_champions: Dictionary = data.get("champions", {})
 	districts = data.get("districts", {})
 	props = data.get("props", {})
 	element_vfx = data.get("element_vfx", {})
@@ -54,7 +58,7 @@ func validate() -> bool:
 	overviews = data.get("overviews", {})
 	if ancestries.size() != 23:
 		return _fail("complete visual catalog requires 23 ancestry/body plans")
-	if champions.size() != 24:
+	if asset_champions.size() != 24:
 		return _fail("complete visual catalog requires 24 champion slots")
 	if districts.size() != 9:
 		return _fail("complete visual catalog requires nine Sanctum districts")
@@ -68,8 +72,8 @@ func validate() -> bool:
 		if not _validate_image(str(ancestry.get("preview", "")), Vector2i(1024, 128), "%s ancestry preview" % ancestry_id):
 			return false
 
-	for champion_id: String in champions:
-		var champion: Dictionary = champions[champion_id]
+	for champion_id: String in asset_champions:
+		var champion: Dictionary = asset_champions[champion_id]
 		if champion_id == "unnamed_angel":
 			if str(champion.get("status", "")) != "placeholder_unapproved":
 				return _fail("Unnamed Angel must remain placeholder_unapproved")
@@ -87,6 +91,8 @@ func validate() -> bool:
 			return false
 		if not _validate_image(str(champion.get("selection_icon", "")), Vector2i(32, 32), "%s selection icon" % champion_id):
 			return false
+	if not _apply_canonical_champion_metadata(asset_champions):
+		return false
 
 	for district_id: String in districts:
 		var district: Dictionary = districts[district_id]
@@ -124,6 +130,20 @@ func ancestry(ancestry_id: String) -> Dictionary:
 
 func district(district_id: String) -> Dictionary:
 	return districts.get(district_id, {})
+
+
+func _apply_canonical_champion_metadata(asset_champions: Dictionary) -> bool:
+	champions.clear()
+	if roster_plan.ordered_ids.size() != 24:
+		return _fail("canonical champion roster count differs from the visual archive")
+	for champion_id: String in roster_plan.ordered_ids:
+		if not asset_champions.has(champion_id):
+			return _fail("complete visual archive is missing canonical champion ID: %s" % champion_id)
+		var canonical: Dictionary = roster_plan.visual_metadata(champion_id, asset_champions[champion_id])
+		if not ancestries.has(String(canonical["ancestry"])):
+			return _fail("canonical champion ancestry lacks a visual foundation: %s" % champion_id)
+		champions[champion_id] = canonical
+	return true
 
 
 func _validate_image(path: String, expected_size: Vector2i, label: String) -> bool:

@@ -1,5 +1,10 @@
 # Prompt: compact HUD and purposeful Wellspring
 
+Status: **completed historical slice prompt**. Do not execute this as current
+work or restore its retired dual-rate acceptance. Current visual and map work is
+ordered by `.agent/BACKLOG.md`, `docs/PLAYER-EXPERIENCE-OVERHAUL.md`,
+`docs/VISUAL-SYSTEM.md` and `docs/WELLSPRING-HUB.md`.
+
 Continue FLUX's visual-first overhaul on `codex/continuous-overhaul`. Keep all
 simulation, movement, combat, networking and collision rules unchanged. Make
 only original presentation, map-wayfinding, GUI, accessibility, asset-data and

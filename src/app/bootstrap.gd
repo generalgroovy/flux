@@ -2,6 +2,7 @@ extends Node2D
 
 
 const MAX_CATCH_UP_STEPS: int = 8
+const RuntimeContentSummaryScript = preload("res://src/app/runtime_content_summary.gd")
 const SNAPSHOT_RATE: int = 60
 const EMOTE_COOLDOWN_MS: int = 1200
 const STEWARD_CONFIRMATION_MS: int = 3000
@@ -12,6 +13,7 @@ const APPLICATION_CLOSE_REASON: String = "The host safely closed FLUX 2."
 const HUB_DEFINITION_PATH: String = "res://content/maps/sanctum_hub_v1.json"
 const CAMPUS_LAYOUT_PATH: String = "res://content/maps/sanctum_campus_g2_v1.json"
 const ABILITY_CATALOG_PATH: String = "res://content/abilities/foundation_abilities_v1.json"
+const REACTION_CATALOG_PATH: String = "res://content/reactions/first_eight_element_reactions_v1.json"
 const CHAMPION_CATALOG_PATH: String = "res://content/champions/foundation_champions_v1.json"
 const LOADOUT_PATH: String = "res://content/loadouts/foundation_practitioner_v1.json"
 const MATERIAL_CATALOG_PATH: String = "res://content/materials/foundation_materials_v1.json"
@@ -50,6 +52,10 @@ var cartoon_champion_presenter: CartoonChampionPresenter
 var foundation_spell_presenter: FoundationSpellPresenter
 var burst_projectile_presenter: BurstProjectilePresenter
 var ability_catalog: AbilityCatalog
+var runtime_content_summary: Dictionary = {}
+var runtime_content_lines: Array[String] = []
+var reaction_catalog: ReactionCatalog
+var reaction_definitions: ReactionDefinitionTable
 var champion_catalog: ChampionCatalog
 var loadout: LoadoutDefinition
 var material_registry: MaterialRegistry
@@ -241,6 +247,16 @@ func _ready() -> void:
 		push_error(ability_catalog.last_error)
 		get_tree().quit(1)
 		return
+	reaction_catalog = ReactionCatalog.new()
+	if not reaction_catalog.load_from_file(REACTION_CATALOG_PATH):
+		push_error(reaction_catalog.last_error)
+		get_tree().quit(1)
+		return
+	reaction_definitions = ReactionDefinitionTable.new()
+	if not reaction_definitions.compile(reaction_catalog, ability_catalog):
+		push_error(reaction_definitions.last_error)
+		get_tree().quit(1)
+		return
 	foundation_spell_presenter = FoundationSpellPresenter.new()
 	if not foundation_spell_presenter.configure(visual_language, ability_catalog):
 		push_error(foundation_spell_presenter.last_error)
@@ -261,6 +277,8 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	selected_champion_id = _requested_champion_id()
+	runtime_content_summary = RuntimeContentSummaryScript.build(ability_catalog, champion_catalog, reaction_catalog)
+	runtime_content_lines = RuntimeContentSummaryScript.spell_loom_lines(runtime_content_summary)
 	join_address = _requested_join_address()
 	session_port = _requested_session_port()
 	local_player_name = _requested_player_name()
@@ -320,7 +338,7 @@ func _ready() -> void:
 		elif capture_expanded_station_id == "farflow-join":
 			_open_join_address_editor()
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s/skeleton %s/directions %s, bursts %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s/skeleton %s/directions %s, bursts %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, reactions %s/gated, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -349,6 +367,7 @@ func _ready() -> void:
 			hub_definition.travel_nodes_by_id.size(),
 			campus_layout.content_hash.left(12),
 			ability_catalog.content_hash.left(12),
+			reaction_definitions.content_hash.left(12),
 			champion_catalog.content_hash.left(12),
 			loadout.active_points,
 			material_registry.content_hash.left(12),
@@ -365,6 +384,8 @@ func _notification(what: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if world == null:
+		return
 	if join_address_editor_open:
 		_handle_join_address_input(event)
 		return
@@ -561,6 +582,8 @@ func _exit_tree() -> void:
 
 
 func _process(delta: float) -> void:
+	if world == null:
+		return
 	if session_transport != null:
 		session_transport.poll()
 		_sync_session_transport()
@@ -768,6 +791,8 @@ func _send_host_reconciliations() -> void:
 
 
 func _draw() -> void:
+	if world == null:
+		return
 	var alpha: float = clampf(accumulator_seconds * float(tick_rate), 0.0, 1.0)
 	var rendered_position: Vector2 = previous_position.lerp(current_position, alpha)
 	var camera_focus_position := _camera_focus_position(rendered_position)
@@ -995,6 +1020,8 @@ func _draw_spell_loom_editor() -> void:
 	var material_operation := String(selected_ability.get("material_operation", "none")).to_upper()
 	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 380), "MATERIAL · %s · SEALED" % material_operation, HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, Color(BRASS_COLOR, 0.85))
 	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 430), "HOST-SEALED IN FARFLOW" if session_transport.is_online() else "OFFLINE HOST AUTHORITY", HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, FLUX_COLOR)
+	for line_index: int in runtime_content_lines.size():
+		draw_string(ThemeDB.fallback_font, Vector2(detail_x, 456 + line_index * 20), runtime_content_lines[line_index], HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, PALE_STONE_COLOR)
 	var footer_y := panel.end.y - 58.0
 	draw_line(Vector2(panel.position.x + 28, footer_y - 20), Vector2(panel.end.x - 28, footer_y - 20), Color(FLUX_COLOR, 0.45), 1.0)
 	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 40, footer_y), spell_loom_editor.status_message, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 80.0, 13, PARCHMENT_COLOR)
@@ -2200,6 +2227,7 @@ func _session_compatibility_signature() -> String:
 		ability_catalog.content_hash,
 		champion_catalog.content_hash,
 		SessionCharter.catalog_hash(),
+		reaction_definitions.content_hash,
 	)
 
 

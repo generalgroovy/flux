@@ -1,5 +1,8 @@
 # Material registry and grid foundation
 
+Status: **canonical current material-state foundation**. Registry/grid/reset are
+live; first-eight reaction mutation remains gated by C6–C9.
+
 ## Implemented scope
 
 Checkpoint F1 implements reactive-material gates C0 and C1 without pretending
@@ -8,15 +11,15 @@ that reactions already exist:
 - a versioned canonical catalog with eleven occupancy materials and independent
   amount, temperature, wetness, Charge, and elevation fields;
 - stable positive material wire IDs and SHA-256 content hashes;
-- a validated Sanctum Material Yard definition authored as compact,
+- a validated Wellspring Material Yard definition authored as compact,
   non-overlapping rectangles and expanded into exactly 128 x 128 cells;
 - packed integer columns rather than one Godot node or dictionary per cell;
 - a complete worldbone perimeter and internal reset plinth with a separately
   verifiable immutable hash;
 - a deterministic deduplicated awake queue processed in ascending cell order
-  under a real-time work budget compiled for 60 or 120 Hz;
+  under a real-time work budget compiled for the authoritative 120 Hz;
 - guarded runtime writes, exact seed reset, canonical full-state hashing, and a
-  read-only one-texture debug preview in the playable Sanctum.
+  read-only one-texture debug preview in the playable Wellspring.
 
 Content sources:
 
@@ -62,8 +65,8 @@ or any incomplete worldbone edge.
 Runtime writes cannot change a worldbone cell or create new worldbone. Mutable
 writes validate ID, amount, temperature, wetness, and Charge, then enter the
 deduplicated awake queue. Queue insertion history is discarded by canonical
-ascending processing. The authored 30,720-cells/second ceiling compiles to 512
-cells/tick at 60 Hz and 256 cells/tick at 120 Hz; unused whole-tick capacity is
+ascending processing. The authored 30,720-cells/second ceiling compiles to 256
+cells/tick at the authoritative 120 Hz; unused whole-tick capacity is
 not banked into an unbounded burst.
 
 Reset copies the immutable seed columns, clears pending work/remainders/errors,
@@ -114,5 +117,4 @@ F2A must first introduce a validated reaction catalog and the single material
 phase orchestrator. F2B then adds typed structural damage/damaged stages/rubble
 and the Magma -> Basalt lifecycle. Later F2 slices promote the remaining
 first-eight interactions with conservation, fixed work, reset, replay,
-worldbone, movement, collision, semantic network/presentation and 60/120 Hz
-tests.
+worldbone, movement, collision, semantic network/presentation and 120 Hz tests.

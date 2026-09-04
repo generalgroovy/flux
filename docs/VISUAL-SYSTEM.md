@@ -1,5 +1,7 @@
 # FLUX runtime visual system
 
+Status: **canonical runtime presentation architecture**.
+
 The runtime visual system is presentation-only. It may interpret authoritative
 state, but it never decides movement, collision, visibility, resources, spell
 membership, damage, cooldowns, score or outcomes.
@@ -17,6 +19,31 @@ membership, damage, cooldowns, score or outcomes.
 Every promoted character, environment, spell and GUI slice must reuse these
 boundaries or version them explicitly. A local hard-coded palette, arbitrary
 layer, unbounded particle count or renderer-owned rule is a regression.
+
+## Maintained cohesion hierarchy
+
+The accepted visual gate is a foundation, not permission for later slices to
+invent their own look. Every touched asset follows the same reading order and
+is reviewed inside live gameplay rather than only on an isolated sheet.
+
+| Priority | Live read | Shared rule |
+| ---: | --- | --- |
+| 1 | Champion and immediate state | Stable 58/68/76 px body envelopes, shared feet pivot, body/clothing-only atlas, ancestry silhouette and no per-action scaling. |
+| 2 | Hostile spell geometry | Dark boundary, bright controlled core, ownership shape, bounded size/speed class and unambiguous travel/collision cue. |
+| 3 | Interactions and major reactions | Short contextual parchment treatment, anchored source and a shape/timing cue that survives grayscale. |
+| 4 | Routes, cover and landmarks | Quiet walkable values, visible collision feet/thresholds, large district silhouettes and authored response lanes. |
+| 5 | Material texture and ambient life | Warm stone, timber, brass, water and growth detail concentrates at scenic edges and never competes with play. |
+
+Map composition works from large landmark → route/cover → interaction anchor →
+ambient detail. Repeated rectangular fill, uniform green/tan fields and local
+decorative noise are polish defects even when collision is correct. The
+ordinary build hides capture diagnostics and historical labels.
+
+Projectiles use a small validated family of screen-readable size and speed
+classes. Visual minimums may protect readability at wide zoom, but simulation
+radius, trajectory, timing and collision remain unchanged. Effects are pooled
+or simplified only after measurement and may never merge separate hazards into
+one unreadable glow.
 
 ## Perspective and character read
 
@@ -45,8 +72,9 @@ camera target.
 
 ## V0 baseline
 
-Baseline source captures were recorded on 2026-08-13 from commit `e996610` at
-1280x720 and 1920x1080, camera 50/75/100%, full view, fixed 60 Hz. The 75% frame
+Historical baseline captures were recorded on 2026-08-13 from commit `e996610`
+at 1280x720 and 1920x1080, camera 50/75/100%, full view, fixed 60 Hz. They are
+comparison evidence, not a supported current runtime. The 75% frame
 demonstrates the primary failure clearly: flat schematic surfaces, tiny actor
 scale and a text-heavy top HUD preserve rules but do not meet FLUX's charm,
 material, silhouette or overview targets.
@@ -54,13 +82,7 @@ material, silhouette or overview targets.
 Run the live token specimen on Windows:
 
 ```powershell
-scripts/run.cmd 60 --visual-specimen --pov-mode=full --camera-zoom=75
-```
-
-Or on Linux:
-
-```bash
-scripts/run.sh 60 --visual-specimen --pov-mode=full --camera-zoom=75
+scripts/run.cmd --visual-specimen --pov-mode=full --camera-zoom=75
 ```
 
 The specimen freezes vocabulary; it does not open the visual gate. V1–V6 in
@@ -80,8 +102,8 @@ Decorative roofs and facades never own collision. A deterministic
 presentation-only proximity mask replaces architecture with its cardinal
 footprint near the observed actor, easing across a bounded 26-unit band. Cone
 visibility continues to use the separate authoritative building bounds. The
-same renderer, camera transform and cutaway calculation run at 60 and 120 Hz;
-none of them write simulation state.
+same renderer, camera transform and cutaway calculation read the authoritative
+120 Hz state; none of them write simulation state.
 
 V1 captures at 1280x720 and 1920x1080 confirm alignment at the default 75%
 overview. They remain internal evidence under `.godot/visual-gate-v1/`: the
@@ -120,8 +142,8 @@ Animation is deliberately reusable rather than baked into gameplay code.
 `content/visual/minimal_champion_motion_v1.json` declares bounded idle, walk,
 sprint, low-profile, airborne, cast and hit keyframes for two motion profiles,
 plus one restrained visual accent for every advanced movement family. The live
-presenter derives pose selection only from authoritative state and samples one
-60 Hz visual timeline at either simulation rate. Offsets stay within four
+presenter derives pose selection only from authoritative state and samples a
+rate-independent presentation phase from 120 Hz state. Offsets stay within four
 pixels, squash/stretch within 6%, reduced motion damps all three channels, and
 the `--debug-overlay` diagnostic proves the sprite never owns its hitbox.
 
@@ -140,7 +162,7 @@ Use the deterministic movement review harness on Windows, changing the final
 mode through `walk`, `sprint`, `slide`, `jump`, `air_dodge` and `technique`:
 
 ```powershell
-scripts/run.cmd 60 --capture-spawn=300,720 --capture-pointer=900,720 --capture-movement=slide --champion=oh_tipi
+scripts/run.cmd --capture-spawn=300,720 --capture-pointer=900,720 --capture-movement=slide --champion=oh_tipi
 ```
 
 `content/visual/wellspring_architecture_kit_v1.json` adds the next reusable

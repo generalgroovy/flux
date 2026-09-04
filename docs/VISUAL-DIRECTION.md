@@ -1,5 +1,7 @@
 # FLUX 2 visual direction
 
+Status: **canonical art-direction contract**.
+
 ## Intent
 
 FLUX 2 should feel like a living magical instrument: handcrafted, old, repaired,
@@ -8,7 +10,7 @@ The world combines warm masonry, dark wood, botanical overgrowth, aged brass,
 deep water, and compact alchemical machinery. Magic is not generic bloom; it is
 a controlled system of shapes, pulses, residue, and material change.
 
-The generated [Sanctum visual target](../assets/concept/sanctum-hub-visual-direction-v1.png)
+The generated [Wellspring visual target](../assets/concept/sanctum-hub-visual-direction-v1.png)
 establishes atmosphere and district scale. It does not define final geometry,
 camera metrics, tiles, protected routes, or authoritative chemistry cells.
 
@@ -160,9 +162,9 @@ The first original modular kit should cover:
 All modules require presentation art plus separate authored topology, elevation,
 traversal, material seed, reset group, navigation hint, and safety metadata.
 
-## HUD, menus, and the lobby
+## HUD, overlays, and the lobby
 
-The Sanctum is the primary menu in spatial form, but common actions must also be
+The Wellspring is the application interface in spatial form, but common actions must also be
 available through a fast, controller-friendly overlay. Spatial and overlay
 flows invoke the same application commands; neither owns hidden game state.
 

@@ -1,6 +1,6 @@
 # First-eight element reaction contract
 
-Status: **design-locked, runtime-unimplemented**.
+Status: **C5 compiled and compatibility-bound; world mutation gated until C6**.
 
 This contract defines the first chemistry interaction set for the eight currently
 promoted element families: **Earth, Fire, Water, Wind, Ice, Charge, Light, and
@@ -10,8 +10,16 @@ material/reaction stack passes its full acceptance gate.
 `Spirit`, `Chaos`, `Gravity`, and `Time` remain declared thematic families but
 are excluded from this reaction contract and remain runtime-gated. They must not
 receive production reaction behavior before the first-eight fundamentals are
-accepted at 60 and 120 Hz with reset, replay, worldbone, network, performance,
+accepted at the authoritative 120 Hz with reset, replay, worldbone, network, performance,
 and readability evidence.
+
+The C5 compiler assigns stable wires `301–336`, resolves both input orders to
+one canonical definition, and maps every pair onto nine shared spatial
+primitives and seven clamped integer channels. Global/per-reaction area,
+propagation, lifetime, work, event and ownership capacities validate before
+boot and contribute to Farflow compatibility. `runtime_enabled` remains false:
+this is executable truth, not permission for presentation or content to mutate
+the material grid before C6 exposure/contact authority exists.
 
 ## Design law
 

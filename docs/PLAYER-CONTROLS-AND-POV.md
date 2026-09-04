@@ -1,5 +1,7 @@
 # Player controls and point-of-view settings
 
+Status: **canonical current input, movement-facing and POV contract**.
+
 ## Implemented checkpoint
 
 FLUX 2 now loads schema-v9 preferences from the stable offline profile
@@ -78,8 +80,8 @@ just-pressed transition before creating the semantic command. This prevents a
 short key, wheel or controller press from disappearing between a render frame
 and the next simulation sample. The semantic `S+D+slide` path and all seven
 other compass combinations are tested through input mapping, command creation,
-buffer consumption and slide direction; simulation parity is also tested at 60
-and 120 Hz. Hardware that never reports a particular three-key chord cannot be
+buffer consumption and slide direction; simulation integrity is tested at 120
+Hz. Hardware that never reports a particular three-key chord cannot be
 reconstructed in software, so wheel-down and in-world remapping remain equal
 fallbacks rather than privileged mechanics.
 
@@ -91,8 +93,8 @@ is replayed identically rather than inferred from animation.
 
 Jump startup latches the movement direction held on the accepted jump tick.
 While airborne, each non-zero movement vector immediately updates body facing
-and continuously bends jump momentum at the same time-scaled rate at 60 and
-120 Hz. Releasing movement preserves the current airborne momentum. A hard
+and continuously bends jump momentum at the authoritative 120 Hz rate.
+Releasing movement preserves the current airborne momentum. A hard
 reversal briefly trades speed for turning instead of snapping through the
 player; contextual V remains the faster, Stamina-priced air redirect and sprint+V
 remains the committed air dodge. Spell aim stays independent and exact.
@@ -125,7 +127,7 @@ aim-facing angle inside the selected range:
 - full view is a distinct mode and has no artificial range boundary.
 
 The current checkpoint is a local presentation/accessibility policy in the
-offline Sanctum. In cone mode every authored `los_cutaway` building projects a
+offline Wellspring. In cone mode every authored `los_cutaway` building projects a
 bounded presentation shadow through its silhouette corners; low traversal rails
 remain explicitly non-occluding. It does not yet conceal networked entities. A
 competitive or PvPvE mode that restricts information must enforce
@@ -193,8 +195,8 @@ player profile on exit.
 - Movement transforms are deterministic integer operations before command
   construction; replay stores the resulting world vector and independent aim.
 - Saved profiles round-trip without network access.
-- Both 60 and 120 Hz boot with the same selected preferences.
-- Equivalent normalized jump samples at 60/120 Hz produce the same body lift,
+- Source and imported-resource builds boot at 120 Hz with the same selected preferences.
+- Equivalent normalized jump samples at 120 Hz produce the same body lift,
   shadow width, and shadow opacity across all current aerial traversal modes.
 - Jump presentation sampling does not mutate position, collision radius,
   canonical values, replay data, camera focus, or POV origin.

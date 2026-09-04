@@ -1,5 +1,10 @@
 # flux2
 
+Status: **experimental historical design workspace**. Current material and
+reaction authority lives in `MATERIAL-GRID-FOUNDATION.md`,
+`ELEMENT-REACTIONS-FIRST-EIGHT.md` and
+`ELEMENT-REACTIONS-IMPLEMENTATION-PLAN.md`.
+
 Experimental and reference workspace for FLUX.
 
 This repository contains production references, technical design contracts, and
@@ -10,9 +15,9 @@ acceptance gates before promotion.
 
 ## Character reference material
 
-[Open the full character sprite and skeleton reference](reference/character-sprites/README.md)
+[Open the full character sprite and skeleton reference](../reference/character-sprites/README.md)
 
-![Front view reference preview](reference/character-sprites/front-views-board.png)
+![Front view reference preview](../reference/character-sprites/front-views-board.png)
 
 # Reactive pixel-material and chemistry system
 

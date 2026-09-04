@@ -1,5 +1,7 @@
 # Skeleton animation pipeline v1
 
+Status: **canonical active three-body sprite and animation pipeline**.
+
 This slice replaces unreadable presentation boards with a deterministic,
 importable three-body animation foundation. It is presentation-only: simulation, collision,
 movement authority, and combat outcomes remain under `src/sim/`.

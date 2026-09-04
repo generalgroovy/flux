@@ -1,5 +1,11 @@
 # Projectile delivery implementation plan
 
+Status: **historical implementation record**. P0–P4 informed the completed
+five-lane Burst foundation, but its dual-rate checks and “current combat” notes
+are no longer current instructions. Runtime truth is 120 Hz and protocol 32;
+current expansion gates live in `PROJECTILE-DELIVERY-FOUNDATIONS.md`,
+`FOUNDATION-SYSTEMS.md` and `.agent/BACKLOG.md`.
+
 ## P0 — visual/data contract
 
 - Register delivery IDs independently from elements.

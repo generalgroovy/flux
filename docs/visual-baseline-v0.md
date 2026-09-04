@@ -1,5 +1,8 @@
 # Visual Gate V0 baseline — 2026-08-13
 
+Status: **historical measured baseline**. Its fixed-60-Hz captures record the
+old comparison state and are not current runtime instructions.
+
 Source commit: `e996610`. Captures: Windows source, Godot 4.7.1, AMD OpenGL,
 fixed 60 Hz, full view, 1280x720 and 1920x1080, camera 50/75/100%.
 

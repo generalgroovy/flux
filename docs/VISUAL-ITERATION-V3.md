@@ -1,5 +1,9 @@
 # FLUX2 visual iteration v3
 
+Status: **historical candidate-generation record**. Retain for provenance and
+review rationale only; current runtime visual authority lives in
+`VISUAL-SYSTEM.md`, `SPRITE-PIPELINE.md` and validated live manifests.
+
 The user-supplied champion roster is the minimum expected visual baseline. The
 procedural v2 catalog remains a technical integration scaffold and must not be
 presented as accepted final art.

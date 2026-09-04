@@ -1,5 +1,24 @@
 # FLUX2 development
 
+Status: **migration/historical developer reference**.
+
+> **Migration reference.** This long-form document contains useful historical
+> harness detail but still includes retired Linux, protocol and 60 Hz paths.
+> The current developer entry points are the Windows commands in `README.md`;
+> gameplay authority is 120 Hz, protocol 32. C5.5 will split retained harness
+> reference from generated current-state instructions and archive the rest.
+
+## Current developer-sandbox direction
+
+All new diagnostics follow
+[`FOUNDATION-SYSTEMS.md`](FOUNDATION-SYSTEMS.md): a versioned scenario declares
+actors, loadouts, seed, command stream, duration and checks; it drives ordinary
+semantic commands through the production simulation. Read-only overlays may
+inspect state and capacity. Fault injection is test-only and bounded.
+Simulation-affecting content requires validation, safe restart and a new
+compatibility hash; only offline presentation content may support validated
+reload. Source, replay, Farflow and packaged proof must not have separate rules.
+
 ## One-time preparation
 
 The repository pins Godot 4.7.1 and its official Linux archive digest. Install

@@ -30,7 +30,7 @@ if ($BaselineInstaller) {
 
 function Start-FluxBootstrapProcess([string]$Path, [string[]]$Arguments) {
     try {
-        return Start-Process -FilePath $Path -ArgumentList $Arguments -PassThru -Wait
+        return Start-Process -FilePath $Path -ArgumentList $Arguments -WindowStyle Hidden -PassThru -Wait
     }
     catch {
         if ($_.Exception.Message -match 'Application Control policy has blocked') {
@@ -87,7 +87,7 @@ try {
     $repair = Start-FluxBootstrapProcess $Installer @('--install-only', '--no-shortcuts', '--repair', "--install-root=$installRoot")
     if ($repair.ExitCode -ne 0) { throw "Repair run failed with exit code $($repair.ExitCode)" }
 
-    $boot = Start-Process -FilePath $game -ArgumentList @('--headless', '--quit-after', '3', '--fixed-fps', '120', '--', '--tick-rate=120') -WorkingDirectory $versionRoot -PassThru -Wait
+    $boot = Start-Process -FilePath $game -ArgumentList @('--headless', '--quit-after', '3', '--fixed-fps', '120', '--', '--tick-rate=120') -WorkingDirectory $versionRoot -WindowStyle Hidden -PassThru -Wait
     if ($boot.ExitCode -ne 0) { throw "Installed game boot failed with exit code $($boot.ExitCode)" }
 
     $journey = if ($baselineVersion) { "baseline update ($baselineVersion -> $version), repair" } else { 'clean install, repair' }

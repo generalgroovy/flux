@@ -1,5 +1,11 @@
 # Extending FLUX2 visual assets
 
+Status: **migration/source-pipeline reference**. The v2/five-path generator
+below is retained for reproducibility, not as the current champion-authoring
+front door. New promoted assets must use the three-body contracts in
+`SPRITE-PIPELINE.md` and `VISUAL-SYSTEM.md`; C5.5 will replace this guide with a
+generated command/asset manifest before routine content expansion.
+
 The Wellspring v2 visual pipeline is manifest-driven and deterministic. Runtime
 art is generated from versioned profile data and validated before it is accepted
 by Godot or CI.

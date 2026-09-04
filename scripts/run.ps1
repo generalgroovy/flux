@@ -1,6 +1,7 @@
 param(
     [ValidateSet(120)][int]$TickRate = 120,
-    [Parameter(ValueFromRemainingArguments = $true)][string[]]$GameArguments
+    [switch]$SmokeTest,
+    [Parameter(ValueFromRemainingArguments = $true)][string[]]$GameArguments = @()
 )
 . (Join-Path $PSScriptRoot 'flux2-common.ps1')
 
@@ -64,13 +65,18 @@ $runArgs = @(
     '--path', $repoRoot,
     '--rendering-method', 'gl_compatibility',
     '--verbose',
-    '--log-file', (Join-Path $runLogRoot 'game.log'),
-    '--',
-    "--tick-rate=$TickRate"
-) + $GameArguments
+    '--log-file', (Join-Path $runLogRoot $(if ($SmokeTest) { 'launcher-smoke.log' } else { 'game.log' }))
+)
+if ($SmokeTest) { $runArgs += @('--headless', '--quit-after', '3', '--fixed-fps', '120') }
+$runArgs += @('--', "--tick-rate=$TickRate") + $GameArguments
+if ($SmokeTest) { $runArgs += '--no-lan-discovery' }
 
-& $godotBin @runArgs
+# Windows PowerShell may return immediately for a GUI executable and leave
+# LASTEXITCODE from an earlier command. Own the process handle through exit.
+$quotedRunArgs = $runArgs | ForEach-Object { '"' + $_.Replace('"', '\"') + '"' }
+$windowStyle = if ($SmokeTest) { 'Hidden' } else { 'Normal' }
+$gameProcess = Start-Process -FilePath $godotBin -ArgumentList $quotedRunArgs -WorkingDirectory $repoRoot -WindowStyle $windowStyle -PassThru -Wait
 
-if ($LASTEXITCODE -ne 0) {
-    throw "FLUX 2 exited with code $LASTEXITCODE. Review .godot\run\preflight.log and .godot\run\game.log."
+if ($gameProcess.ExitCode -ne 0) {
+    throw "FLUX 2 exited with code $($gameProcess.ExitCode). Review the logs in .godot\run."
 }

@@ -21,6 +21,11 @@ foreach ($preset in $presets) {
     $logName = $preset.Name.ToLowerInvariant().Replace(' ', '-') + '.log'
     Invoke-FluxGodotChecked $godotBin @('--headless', '--path', $repoRoot, '--export-release', $preset.Name, $output) (Join-Path $packageLogRoot $logName)
     if (-not (Test-Path -LiteralPath $output -PathType Leaf)) { throw "Export failed: $($preset.Name)" }
+    if ($preset.Name -eq 'Windows x86_64') {
+        # Read the exported payload, not the checkout, before bundling its identity.
+        $packPath = [System.IO.Path]::ChangeExtension($output, '.pck')
+        & (Join-Path $PSScriptRoot 'runtime-state.ps1') -PackPath $packPath -OutputPath (Join-Path (Split-Path -Parent $output) 'BUILD-STATE.json')
+    }
 }
 $manifest = Join-Path $exportRoot 'SHA256SUMS.txt'
 $lines = Get-ChildItem -LiteralPath $exportRoot -Recurse -File | Where-Object { $_.FullName -ne $manifest } | Sort-Object FullName | ForEach-Object {

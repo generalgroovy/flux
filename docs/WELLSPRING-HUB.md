@@ -237,7 +237,8 @@ Combat readability priority remains:
 7. **Encounter ecology** — roaming/local PvE, objectives, chemistry/movement
    challenges and major events.
 8. **Polish/acceptance** — streaming, map UI, settings, accessibility, physical
-   Linux/Windows packaging and eight-player readability/performance evidence.
+   Windows packaging and eight-player readability/performance evidence; portable
+   Linux source remains frozen outside the active release gate.
 
 ## 13. Acceptance
 

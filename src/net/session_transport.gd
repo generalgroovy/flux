@@ -94,6 +94,7 @@ static func compatibility_signature(
 	ability_hash: String,
 	champion_hash: String,
 	charter_catalog_hash: String = "",
+	reaction_hash: String = "",
 ) -> String:
 	return CanonicalContent.sha256({
 		"protocol_version": protocol_version,
@@ -104,6 +105,7 @@ static func compatibility_signature(
 		"ability_hash": ability_hash,
 		"champion_hash": champion_hash,
 		"charter_catalog_hash": charter_catalog_hash,
+		"reaction_hash": reaction_hash,
 	})
 
 

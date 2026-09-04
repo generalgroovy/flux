@@ -158,6 +158,24 @@ Therefore:
 - persistent discoveries/unlocks are stored separately from transient combat
   destruction.
 
+### 4.4 Player and developer sandbox symmetry
+
+The Wellspring is simultaneously the player's systemic playground and the
+developer's integration surface. Movement routes, Loom configuration, targets,
+the Elemental Crucible, duels, Farflow and resets must be enjoyable and
+discoverable in ordinary play while also supporting reproducible scenarios.
+
+| Audience | Capability | Shared safeguard |
+| --- | --- | --- |
+| Player | Configure legal spells, practice movement, combine elements, duel/cooperate, observe and reset bounded areas | In-world context, clear ownership, host validation and no privileged state mutation |
+| Developer | Select a scenario/seed, drive semantic commands, inspect state/capacities, capture evidence and inject bounded failures | The production catalog, simulation, networking, presentation and package remain the exercised path |
+
+Debug tools may reveal truth but cannot create a second ruleset. Presentation
+content may reload offline after validation; simulation-affecting changes
+require a safe restart and a new compatibility hash. The complete architecture,
+performance and expansion admission rules live in
+[`FOUNDATION-SYSTEMS.md`](FOUNDATION-SYSTEMS.md).
+
 ## 5. Movement is the primary defensive language
 
 FLUX does not reduce evasion to one universal dodge roll. Projectile-heavy games
@@ -205,6 +223,25 @@ Spell patterns should test different movement knowledge:
 
 The goal is not maximum projectile count. It is **maximum readable decision
 density**.
+
+### 5.4 Feel, chaining and body-role contract
+
+Smoothness means immediate, predictable control—not removal of every
+commitment. FLUX measures the existing movement language before expanding it.
+
+| Area | Design contract |
+| --- | --- |
+| Authoritative cadence | Gameplay exists at 120 Hz only; timing is expressed in deterministic ticks and never depends on render rate. |
+| Response | A legal input changes authoritative state within one tick; delayed actions visibly communicate the commitment that owns the delay. |
+| Chaining | One explicit transition graph owns buffers, cancels, costs, cooldowns and refusals for movement and casting. |
+| Momentum | Acceleration, braking, reversal, landing and air steering preserve player intent unless collision, control loss or an authored commitment prevents it. |
+| Direction | Digital travel supports all eight normalized directions; analog travel and aim stay continuous; facing remains a separate readable presentation channel. |
+| Body roles | Small gains acceleration/recovery, middle remains flexible, and large gains stability/momentum; shared honest collision and universal techniques prevent hidden size advantage. |
+| Feedback | A refused action presents one primary cause rather than silently dropping input or emitting several competing messages. |
+| Evidence | Input response, stopping distance, reversal time, landing recovery, chain success and route time are captured in repeatable 120 Hz journeys and a named human playtest. |
+
+No new movement technique is justified while an existing technique lacks a
+distinct purpose, readable state change, deterministic test or counterplay.
 
 ## 6. Spellcasting replaces weapon taxonomy
 
@@ -460,6 +497,22 @@ Rules:
 - hit/impact particles cannot obscure the next threat;
 - hue is supplemental; shape, value, timing, motion and sound carry meaning too.
 
+The maintained visual hierarchy is:
+
+| Layer | Cohesive language |
+| --- | --- |
+| World | Warm masonry, dark timber, aged brass, deep water and restrained growth; quiet movement lanes carry less contrast than their scenic edges. |
+| Landmarks | Large silhouettes establish district and route identity before small decoration is added. |
+| Champions | Stable `small`/`middle`/`large` envelopes share one feet pivot and body/clothing-only construction; ancestry, posture and material blocks preserve identity. |
+| Shadow/elevation | A separate receiving-surface shadow communicates contact and jump height without scaling the champion or changing collision. |
+| Spells/projectiles | Dark outer shape, bright elemental core, ownership geometry, speed/size class, travel cue, impact and restrained residue remain distinct without relying on hue. |
+| Interface | Health, Flux, Stamina, active spell layer and four spell cells remain immediate; rules, configuration and diagnostics appear only in contextual Wellspring surfaces. |
+| Ambient detail | Decoration supports place and rhythm but yields to actors, danger, collision edges, routes and interaction anchors. |
+
+At every supported zoom the reading order is champion → dangerous geometry →
+interaction → architecture → ambient detail. Ordinary gameplay must feel like
+an inhabited old-world magical campus, never a debug board or detached menu.
+
 ## 13. Progression and economy
 
 The core progression should expand **possibilities and knowledge**, not create
@@ -509,9 +562,13 @@ A feature belongs in the core only if it survives these questions:
 6. Can the environment explicitly opt out when interaction would add noise or
    unrealistic complexity without gameplay value?
 7. Does the visual layer remain downstream of gameplay authority?
-8. Does it compose with existing systems instead of becoming a one-off gimmick?
-9. Is there practical counterplay or a clear resource/position cost?
-10. Can a new player understand the failure while an expert can still discover
+8. Does it remain responsive, reproducible and measurable at the single 120 Hz
+   authority rather than merely looking smooth in one capture?
+9. Does it extend shared content, action and visual contracts instead of adding
+   another local exception or competing source of truth?
+10. Does it compose with existing systems instead of becoming a one-off gimmick?
+11. Is there practical counterplay or a clear resource/position cost?
+12. Can a new player understand the failure while an expert can still discover
     deeper use?
 
 If not, simplify, defer or remove it.

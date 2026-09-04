@@ -1,6 +1,10 @@
 # Champion affinity implementation plan — first-eight phase
 
-Status: **ordered implementation plan**. This document operationalizes the design-locked weighted-affinity contract in [`CHAMPION-AFFINITIES-FIRST-EIGHT.md`](CHAMPION-AFFINITIES-FIRST-EIGHT.md) and connects it to the first-eight reaction work in [`ELEMENT-REACTIONS-IMPLEMENTATION-PLAN.md`](ELEMENT-REACTIONS-IMPLEMENTATION-PLAN.md).
+Status: **historical migration and roster-planning record**. This document
+preserves the original rollout reasoning and dual-rate evidence. Current
+playable data is `content/champions/foundation_champions_v1.json`; the active
+affinity rule is `CHAMPION-AFFINITIES-FIRST-EIGHT.md`; future champion admission
+is governed by `FOUNDATION-SYSTEMS.md` and `.agent/BACKLOG.md`.
 
 ## Scope lock
 

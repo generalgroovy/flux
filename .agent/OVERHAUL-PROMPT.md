@@ -4,8 +4,9 @@ Act as FLUX's principal gameplay, systems, rendering, pixel-art integration,
 UX, QA, networking and release engineer. Continue from the newest green commit
 on `main`, keeping `codex/continuous-overhaul` unified as a compatibility branch. Read `README.md`, `AGENTS.md` when it applies,
 `.agent/VISUAL-OVERHAUL.md`, `.agent/OVERHAUL-IMPLEMENTATION.md`,
-`.agent/CONTINUOUS-IMPLEMENTATION-PROMPT.md`, `.agent/memory.md`,
+`.agent/DELIVERY-EFFICIENCY.md`, `.agent/CONTINUOUS-IMPLEMENTATION-PROMPT.md`, `.agent/memory.md`,
 `.agent/BACKLOG.md`, the newest `.agent/WORKLOG.md` entry and
+`docs/PLAYER-EXPERIENCE-OVERHAUL.md`, `docs/FOUNDATION-SYSTEMS.md` and
 `docs/VISUAL-DIRECTION.md` before editing. Runtime truth and tests outrank stale
 prose; correct stale prose in the same slice.
 
@@ -27,11 +28,21 @@ remain unchanged. Cinder Fan now supplies the deterministic readable five-shot
 acceptance, and all three champions share a cell-bounded exterior ink derived
 from The Red Baron's material language without palette or scale replacement.
 The eight mechanically comparable first-eight Bursts are source-green and have
-truthful 120 Hz comparison evidence. The immediate outcome is a clean published
-O0 checkpoint, followed by the bounded 36-pair chemistry runtime. Apply the
-explicit O0–O10 design, architecture, release, asset, testing and performance
-acceptance rules from `.agent/OPTIMIZATION-IMPLEMENTATION.md` at their assigned
-seams; do not turn them into a detached rewrite.
+truthful 120 Hz comparison evidence. C5 reaction definitions and C5.5 current
+truth/tooling/roster adapters are complete in the current checkpoint, with
+64 suites / 18,281 assertions passing. Next implement C6 bounded exposure/contact,
+then shared reaction primitives and lifecycle. Unsigned Windows installer trust
+remains a separate release blocker; do not weaken security or claim install
+acceptance. Apply the explicit O0–O14 design,
+architecture, release, asset, testing, measured-feel and visual-cohesion rules
+from `.agent/OPTIMIZATION-IMPLEMENTATION.md` at their assigned seams; do not
+turn them into a detached rewrite.
+
+Use the player-experience contract as the product filter: each addition must
+create a readable decision, combine with existing systems, carry an honest
+cost/counter and teach failure through one actionable cause. Depth comes from
+movement, geometry, elements, world state and social timing composing; option,
+particle and text count are not quality measures.
 
 Make the Wellspring and GUI match the charm, density, readable perspective and
 material richness of the supplied gameplay reference while remaining wholly
@@ -76,10 +87,15 @@ green rollback point throughout.
 V0–V10, universal non-ability movement, natural reusable motion/environment,
 the explicit transition matrix and positive-Flux cadence foundation are green.
 Continue in the authoritative order from `.agent/BACKLOG.md`: five-shot pattern
-simulation (complete), eight first-element burst entries, strict reaction catalog,
-exposure/contact, shared reaction primitives, lifecycle/presentation, and the
-Crucible playtest package. Do not add another champion before the three current
-roles are validated under pattern pressure.
+simulation and eight first-element burst entries (complete), strict reaction
+catalog, current-truth/live-manifest migration, exposure/contact, shared
+reaction primitives, lifecycle/presentation, and the Crucible playtest package.
+At the required playtest pause, use measured feedback for the existing movement
+grammar and maintained visual hierarchy, then execute F0–F7 from
+`docs/FOUNDATION-SYSTEMS.md` to harden composable gameplay kernels and the
+production-path player/developer sandbox before adding techniques, champions,
+elements, spell types, ancestries, maps or modes. Do not add another champion
+before the three current roles are validated under pattern pressure.
 
 ## Operating discipline
 

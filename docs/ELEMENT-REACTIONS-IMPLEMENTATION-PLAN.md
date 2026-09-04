@@ -1,7 +1,8 @@
 # First-eight element reaction implementation plan
 
-Status: **ordered implementation plan**. Runtime chemistry remains at F1 storage/
-safety until the slices below are implemented and accepted.
+Status: **C5/F2A catalog compiler complete; C6 exposure/contact is active next**.
+Runtime world mutation remains disabled until the bounded contact authority and
+its reset/replay fixtures pass.
 
 This plan implements the first-eight reaction network inside the **shared authored
 Wellspring sandbox**, not inside isolated test rooms only. The canonical design
@@ -93,29 +94,25 @@ Before a reaction becomes playable, the kernel must own:
 - formation/active/residue lifecycle with hard area/lifetime/propagation caps;
 - exact reset and canonical hashing;
 - semantic presentation/network events rather than pixel-derived authority;
-- 60/120 Hz deterministic tests and replay fixtures;
+- authoritative 120 Hz deterministic tests and replay fixtures;
 - worldbone preservation and route-safety validation;
 - shared-world zone policy so safe/social regions can reject hostile mutation;
 - eight-player stress bounds for events, reaction work and presentation.
 
-## F2A — reaction schema and phase orchestrator
+## F2A — reaction schema and definition compiler
 
 Goal: compile the complete first-eight design into executable data without yet
 allowing unreviewed major map mutation.
 
-Deliverables:
-
-1. `ReactionCatalog` validator.
-2. Exactly eight enabled fundamental IDs and 36 unordered pair definitions.
-3. Fail closed on unknown/gated element, duplicate/missing pair, invalid bounds,
-   missing counter/telegraph or premature runtime enablement.
-4. Stable reaction wire IDs.
-5. `MaterialPhaseOrchestrator` with fixed ordered phases and bounded work.
-6. Typed reaction-event record carrying tick, reaction ID, region/cell,
-   source/owner/team, formation stage and semantic outcome.
-7. Conflict resolution for several player inputs in one tick through stable
-   deterministic ordering.
-8. Tests for hashes, pair coverage, queue order and 60/120 Hz scheduling.
+| Deliverable | State |
+|---|---|
+| `ReactionCatalog` validator; exact eight enabled IDs and 36 unordered pairs | **Complete** |
+| Unknown/gated element, duplicate/missing pair, invalid/fractional bounds, missing counter/telegraph and premature enablement fail closed | **Complete** |
+| Stable wires `301–336`, symmetric lookup and content/compatibility hashes | **Complete** |
+| Seven integer channels compiled onto nine shared primitive profiles | **Complete** |
+| Fixed-capacity exposure/contact queue and ordered phase orchestrator | **C6 next** |
+| Typed formation event with tick/cell/source/owner/team and deterministic same-tick conflict order | **C6 next** |
+| Snapshot, replay, reset and 120 Hz scheduling proof | **C6–C8** |
 
 Exit gate: all 36 pair definitions compile/validate; world mutation remains
 explicitly gated by implemented operation handlers.
@@ -165,7 +162,7 @@ Requirements:
 - safe/social zones reject the hostile lifecycle entirely.
 
 Exit gate: a shared Proving/Foundry fixture demonstrates melt -> flow -> cool ->
-basalt -> fracture -> rubble identically at 60/120 Hz, including two-plus player
+basalt -> fracture -> rubble identically at 120 Hz, including two-plus player
 contributions and exact local reset.
 
 ## F2C — thermal + hydrology + movement
@@ -292,7 +289,7 @@ Spirit, Chaos, Gravity and Time remain gated until all of the following pass:
 | --- | --- |
 | Pair completeness | Exactly 36 first-eight unordered pairs execute; no implicit fallback. |
 | Environment selectivity | Strong behavior occurs only on explicitly compatible material/prop definitions; inertness is supported. |
-| Determinism | 60/120 Hz suites pass; same-rate replay hashes remain stable. |
+| Determinism | Authoritative 120 Hz suites pass; same-rate replay hashes remain stable. |
 | Shared multiplayer | Eight-player stress covers simultaneous inputs, ownership/assists and reaction event budgets. |
 | Worldbone safety | Maximum reaction/destruction pressure cannot mutate worldbone or remove critical connectivity. |
 | Zone safety | Safe/social regions reject hostile mutation; local reset groups cannot corrupt unrelated world regions. |
@@ -321,7 +318,7 @@ response/content definition
 -> semantic presentation/network event
 -> counterplay/readability fixture
 -> dense-work/performance fixture
--> 60/120 + Linux/Windows gate
+-> warning-clean Windows 120 Hz gate
 -> focused reversible checkpoint
 ```
 

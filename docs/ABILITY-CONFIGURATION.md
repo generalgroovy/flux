@@ -3,10 +3,12 @@
 Status: **canonical configuration boundary for current combat foundations**.
 
 This contract began as the validated canonical configuration checkpoint and now
-records the boundary consumed by deterministic runtime combat. Arc Primary, Vector Lance,
-Oh Tipi's Rillshot/Tideline and S. Wayne's Eclipse Disc/Pocket Eclipse cast end
-to end; the remaining catalog entries
-are configuration only. Network-visible identities, resource rules, loadout legality, affinity
+records the boundary consumed by deterministic runtime combat. Sixteen catalog
+entries now cast end to end: Arc Primary, Vector Lance, the three foundation
+champions' paired kit spells, and the complete comparable
+Earth/Fire/Water/Wind/Ice/Charge/Light/Dark Burst set (with Cinder Fan as its
+Fire member). Remaining entries are
+configuration only. Network-visible identities, resource rules, loadout legality, affinity
 behavior, and compatibility hashes remain trustworthy before any additional
 combat code may promote an entry.
 
@@ -34,7 +36,7 @@ cast, hit, reaction or movement authority.
 Schema 3 requires each ability to declare a bounded shape (`projectile`, `beam`,
 `spray`, `field`, `defense`, `movement`, plus passive/ultimate), delivery,
 impact, residue and planned material operation. `runtime_status` separates the
-seven end-to-end spells from catalog-only designs, while
+sixteen end-to-end spells from catalog-only designs, while
 `material_runtime_enabled` remains false until a deterministic grid operation,
 reset rule and route-safety proof actually exist.
 
@@ -124,9 +126,12 @@ session.
 The foundation loadout uses two affinities and exactly fills 13 active points:
 Vector Lance 5→4 (Charge), Prism Ward 5→4 (Light), and Stone Channel 5 (Earth).
 This demonstrates discounts without granting elemental damage superiority.
-Its schema-v3 weave places Arc Primary, Vector Lance, Prism Ward, Stone Channel
-and Phase Step first, followed by seven explicit empties. Only the first two are promoted into current champion
-runtime kits; unpromoted entries remain validated content rather than fake casts.
+The original schema-v3 validation fixture places Arc Primary, Vector Lance,
+Prism Ward, Stone Channel and Phase Step first, followed by seven explicit
+empties. Only the first two entries in that fixture are runtime-promoted;
+additional live champion and Burst spells come from the same global catalog and
+are arranged by champion attunement or Loom selection. Unpromoted fixture
+entries remain validated content rather than fake casts.
 Pocket Eclipse is the first promoted non-projectile shape: a finite Light beam
 resolved after all actors move for the tick, stopped by cover, and applied once
 to the nearest legal target along its lane.
@@ -139,7 +144,8 @@ actors and dead actors remain unaffected, and planned material cooling is sealed
 
 ## Current Spell Loom boundary
 
-The eleventh Wellspring station is a host-authoritative Spell Loom. It exposes
+One of the Wellspring's twelve current walk-up stations is a host-authoritative
+Spell Loom. It exposes
 a 3×4 Plain/Ctrl/Alt grid and all end-to-end runtime-proven spells regardless of
 the selected champion.
 Placing one into a position swaps it with its previous position, so canonical
@@ -156,8 +162,9 @@ kit to the front, then appends every other globally proven spell in stable wire
 order; it never hides another champion's runtime-proven spell. Left/right click
 and the existing active key remain explicit legacy access paths during migration.
 Catalog-only abilities never appear in the Loom, and no material operation is
-enabled by rearranging a slot. The bounded request lane reserves 48 future global
-library entries, while only the seven currently proven spells resolve to wires.
+enabled by rearranging a slot. The bounded request lane reserves 48 future
+global library entries, while only the sixteen currently proven spells resolve
+to wires.
 
 ## Promotion sequence
 

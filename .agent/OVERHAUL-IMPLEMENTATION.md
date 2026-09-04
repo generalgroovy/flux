@@ -1,7 +1,9 @@
 # FLUX 2 implementation path to first-eight playtest
 
 Current frontier: protocol 32, snapshot 11, preferences 9, Godot 4.7.1,
-`main` (with `codex/continuous-overhaul` unified to the same checkpoint). V0–V6 visual engineering, the exact
+canonical `main` (the remote compatibility ref mirrors its published checkpoint;
+the non-authoritative local compatibility ref may lag until a safe
+fast-forward). V0–V6 visual engineering, the exact
 `small`/`middle`/`large` body contract, universal movement,
 positive-Flux combat, three champions, Wellspring, direct-IP Farflow, and the
 one-file Windows bootstrap are green foundations. All live spell balance and
@@ -14,13 +16,28 @@ existing Linux scripts, but do not spend this pass on Linux packaging, smoke,
 documentation expansion, or acceptance claims.
 
 Delivery and architecture work follows
-[`OPTIMIZATION-IMPLEMENTATION.md`](OPTIMIZATION-IMPLEMENTATION.md). Its O0–O10
+[`OPTIMIZATION-IMPLEMENTATION.md`](OPTIMIZATION-IMPLEMENTATION.md). Its O0–O14
 rows explicitly cover checkpoint integrity, warning-clean tests, single-source
 combat data, incremental application decomposition, Windows signing, runtime
 asset reachability, generated current-state documentation, line endings,
 human playtest evidence, bounded chemistry architecture, and 120 Hz stress
-budgets. Those optimizations support the C4–C9 player path; they do not reorder
-it or authorize a detached rewrite.
+budgets, measured movement feel, continuing visual cohesion, composable content
+and production-path player/developer sandboxes. Those
+optimizations support the C4–C9 player path; they do not authorize a detached
+rewrite or broad retuning before the packaged playtest.
+
+Execution speed follows
+[`DELIVERY-EFFICIENCY.md`](DELIVERY-EFFICIENCY.md): selected suites during the
+inner loop, a mandatory Full checkpoint, scenario-first reproduction, generated
+state/receipts and touched-seam extraction. It never converts skipped work into
+a green claim.
+
+Player-facing acceptance follows
+[`docs/PLAYER-EXPERIENCE-OVERHAUL.md`](../docs/PLAYER-EXPERIENCE-OVERHAUL.md):
+strong defaults and contextual teaching make entry simple, while movement,
+spell geometry, chemistry, champion/body roles and world state provide
+composable mastery. A technically complete slice is not product-complete until
+commitment, ownership, consequence, counter and recovery are readable.
 
 ## Slice sequence
 
@@ -32,11 +49,91 @@ it or authorize a detached rewrite.
 | C2.5 first large champion — complete | Promote The Red Baron with a body/clothing-only eight-way atlas, `iron_regent` motion, equal-budget large profile, Fire Cinderbolt and shared Ice Rimewake. | The selectable roster demonstrates small/middle/large roles; all retain universal movement/shared collision, and Red Baron combat/capture tests pass at 120 Hz. |
 | C3 burst simulation — complete | Cinder Fan uses one reusable burst specification; deterministically rotates a normalized aim vector by five fixed offsets; allocates stable left-to-right projectile IDs; bounds capacity/events/snapshot representation; prevents one fan multiplying damage on one target. | Repeatable 120 Hz fixtures prove exact fan ordering, cost, cooldown, hit, cover, cleanup and overflow behavior; the Proving Court supplies quiet crossed lanes and four response pockets. |
 | C4 eight spells — complete | Instantiate Earth/Fire/Water/Wind/Ice/Charge/Light/Dark burst entries with stable IDs, positive costs, shared geometry, element presentation, and global Loom availability. | Every champion can weave and cast every first-eight burst; all eight remain mechanically comparable and visually distinct in truthful 120 Hz captures. |
-| C5 reaction catalog — active | Add a fail-closed runtime catalog loader requiring exactly the 36 unordered-with-repetition pairs, symmetric lookup, unique IDs, lifecycle, counters, bounds, and worldbone policy; compile recipes onto bounded shared primitives without enabling mutation yet. | Missing/duplicate/asymmetric/unbounded recipe content fails tests and boot clearly; pair order cannot affect lookup or compatibility hash. |
+| C5 reaction catalog — complete in this checkpoint | The fail-closed loader requires exactly 36 unordered-with-repetition pairs, symmetric lookup, unique IDs, lifecycle, counters, bounds and worldbone policy; recipes compile onto bounded shared primitives while mutation remains disabled. | Missing/duplicate/asymmetric/unbounded content fails tests and boot clearly; pair order cannot affect lookup or compatibility hash. |
+| C5.5 authority cleanup — complete in this checkpoint | Generated state/drift checks, stable suite selection, truthful receipts, `.\flux.cmd`, document statuses and conservative asset classification are green. Canonical roster adapters reconcile metadata without certifying archived pixels; derived Loom and exported-pack summaries are tested. The actual Windows export boots; unsigned installer trust remains independently blocked. | Protocol 32, Windows-only acceptance, 120 Hz, three body types and canonical names agree across runtime and docs; the exported payload boots and reports matching live content; C6 is the next source slice. |
 | C6 exposure/contact | Add fixed-capacity element exposure cells keyed to the material grid; burst impact deposits one bounded source with owner/team/tick/strength; second source resolves one canonical recipe. | Repeated contact is deterministic, rate-bounded, authority-owned, and cannot mutate immutable worldbone. |
 | C7 shared reaction primitives | Implement reusable `surface`, `flow`, `cover`, `field`, `conduction`, `visibility`, `hazard`, `reveal/refraction`, and `fracture` effect families; map all recipes to bounded parameter sets. | Every pair has a live spatial effect and counter even when several recipes share safe physics primitives. |
 | C8 lifecycle/presentation | Formation telegraph, active state, residue/decay, compact label/icon, reduced/high-contrast cues, reset group, replay event, snapshot state and overflow diagnostics. | A player can identify the pair, boundary, danger/benefit, remaining phase, owner, and counter without reading source. |
-| C9 Crucible acceptance | Eight attunement plinths, two-source test basin, recipe codex, reset, route-safety checks, 120 Hz full tests, source/import boots, packaged boot, Farflow pair, installer rebuild. | All 36 reactions are deliberately reproducible in-game; the exact green Windows build is ready for user playtest. |
+| C9 Crucible acceptance | Eight attunement plinths, two-source test basin, recipe codex, reset, route-safety checks, 120 Hz full tests, source/import boots, packaged boot, Farflow pair, installer rebuild and named solo/friend/accessibility/recovery journeys. | All 36 reactions are deliberately reproducible in-game; a newcomer can reach, create, read, counter and reset them; the exact green Windows build is ready for user playtest. |
+| C10 post-playtest feel/cohesion — planned | After the required C9 pause and feedback, rank observed confusion, missed intent and repetitive decisions; tune the existing movement/action language and weak visual areas, then remove newly proven-unreachable assets before adding scope. | Existing techniques feel crisp and distinct at 120 Hz; body roles remain viable and fair; every common refusal teaches one correction; the ordinary frame reads as one inhabited Wellspring; no compatibility, replay, network or package regression. |
+
+C5.5 also adds the minimum delivery acceleration needed by C6: stable selectable
+test-suite IDs, a thin Windows task front door and a machine-readable validation
+receipt schema. C6 contributes the first production scenario rather than
+building a detached general tool. Full tests remain mandatory before every
+published checkpoint.
+
+After C10, execute F0–F7 from
+[`docs/FOUNDATION-SYSTEMS.md`](../docs/FOUNDATION-SYSTEMS.md): translate playtest
+findings into scenarios; harden movement, combat, chemistry and champion
+composition; finish player and developer sandbox loops; then prove the complete
+foundation at eight-player 120 Hz pressure. Directed module boundaries,
+versioned content-unit states, compatibility classes and representative
+champion/spell/map/bot/ruleset fixtures must also pass. Routine roster, element,
+spell-type, ancestry, map, enemy and mode expansion remains closed until F7.
+
+The F0–F7 gate also proves the complete experience journeys in
+`docs/PLAYER-EXPERIENCE-OVERHAUL.md`; deterministic correctness does not stand
+in for first-run usability, combat comprehension, expression, charm or recovery.
+
+## Repository authority cleanup contract
+
+| Class | Earliest safe treatment |
+|---|---|
+| Current runtime/catalog | Create and validate its versioned replacement first; migrate all loaders, hashes, tests and package references before retirement. |
+| Save/network compatibility ID | Keep behind an explicit adapter until the declared migration window closes; never expose it as current player vocabulary. |
+| Superseded specification/plan | Add a historical banner and archive index during C5.5; preserve evidence, but remove it from current navigation. |
+| Generated/local output | Keep ignored and outside package authority; never stage personal scripts, dependencies, credentials or captures accidentally. |
+| Apparently unused asset | Classify through scene/catalog/hash/export reachability and history; delete only when the report proves it unreachable. |
+
+Player-facing vocabulary is Wellspring, canonical champion names and
+`small`/`middle`/`large`. Internal `Sanctum*` symbols are low-value migration
+targets and remain until their consumers can be changed in one tested seam.
+
+Known C5.5 reconciliation targets are explicit:
+
+| Conflict | Resolution |
+| --- | --- |
+| `main` versus compatibility branch | `main` alone owns integration; compatibility refs may only mirror accepted checkpoints |
+| Sanctum technical paths versus Wellspring product language | Preserve stable technical adapters until atomic migration; never show Sanctum as a second current place |
+| `nico_lai`/Nico Lai and `donnok`/Donnok | Migrate to Waka Aren Si and Don Doko Don across content, assets, saves, replays, UI and tests in one versioned slice |
+| Five legacy size paths versus three body roles | Live authoring exposes only `small`/`middle`/`large`; old paths remain classified migration inputs |
+| 120 Hz gameplay, 60 Hz snapshots and a 60-sample presentation timebase | Document distinct simulation/transport/presentation roles; reject any alternate gameplay cadence |
+| Windows 120 Hz entry points versus frozen Linux helpers accepting 60 | Current Windows launch/test/package paths enforce 120; either migrate Linux helpers atomically when Linux returns to scope or label/refuse the obsolete option before claiming support |
+| 21 authored ability records versus 16 runtime spells | Generated state reports both; only the 16 ordered runtime wire IDs are selectable/hashed as the current Loom library, while passive/gated records remain visibly non-runtime |
+| 36 compiled reactions versus zero live chemistry mutation | Report catalog completeness and `runtime_enabled=false` separately; no plan, UI or package may imply that recipes already mutate the world |
+| Playable roster versus planned 2–3-affinity roster | Generated current state lists only three selectable champions; planned identities never enter runtime hashes or UI before promotion |
+| Active v3 visual contract versus stale five-size/identity inventory | Split current production metadata from classified archive inputs, preserve tested resolvers until all consumers migrate, and never let archive roster fields override the canonical cast/affinity manifests |
+| Old visual catalogs versus body-only current recipes | Replace and prove every live consumer before archival; concept/generated pixels never define gameplay identity |
+
+## Gameplay-feel optimization contract
+
+| Area | Required direction |
+|---|---|
+| Response | A legal input affects authoritative state within one 120 Hz tick unless a visible authored commitment blocks it. |
+| Direction | Keyboard covers eight normalized directions; analog travel/aim remain continuous; presentation hysteresis never quantizes simulation. |
+| Chaining | One tested transition table owns buffer, cancel, cost, cooldown and refusal rules instead of scattered special cases. |
+| Momentum | Acceleration, braking, reversal, landing and airborne steering use stable curves and preserve intent when no real commitment forbids it. |
+| Body roles | Small favors acceleration/recovery, middle flexibility, and large stability/momentum; shared collision and universal movement prevent hidden size advantage. |
+| Feedback | Every refusal reports one primary cause: physical state, obstruction, Stamina, Flux, cooldown, slot or authority. |
+| Measurement | Capture input response, stop distance, reversal time, landing recovery, chain success and route time; use playtest evidence before balance claims. |
+
+No new movement technique enters scope until every existing technique has a
+distinct use, readable transition, deterministic test and honest counterplay.
+
+## Continuing visual-cohesion contract
+
+| Layer | Maintained rule |
+|---|---|
+| World | Warm stone, timber, aged brass, deep water and restrained growth; quiet navigable lanes, richer scenic edges and large destination landmarks. |
+| Champions | Stable 58/68/76 px envelopes, shared feet pivot, body/clothing only, empty hands and ancestry silhouettes; animation never changes apparent size. |
+| Shadows/elevation | Separate receiving-surface shadow communicates grounding and lift without scaling the body or moving collision. |
+| Spells/projectiles | Dark outer read, bright elemental core, ownership shape, size/speed class, travel cue, impact and restrained residue survive grayscale. |
+| Interface | Health/Flux/Stamina, active Plain/Ctrl/Alt layer and four cells stay primary; capture diagnostics and detailed rules remain contextual. |
+| Hierarchy | Champions first, dangerous geometry second, interactions third, architecture fourth and ambient detail last at every zoom. |
+
+New art extends the shared tokens and modular kits rather than inventing local
+palettes, framing, pivots, effects or density rules.
 
 ## Burst contract
 

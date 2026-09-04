@@ -48,6 +48,9 @@ func _initialize() -> void:
 	bootstrap = get_parent()
 	visual_capture_run = _is_visual_capture_run()
 	_build_ui()
+	if not discovery_enabled(OS.get_cmdline_user_args()):
+		discovery_error = "LAN discovery disabled for this diagnostic run."
+		return
 	_open_discovery_listener()
 	_prepare_broadcaster()
 	set_process(true)
@@ -56,6 +59,10 @@ func _initialize() -> void:
 func _exit_tree() -> void:
 	listener.close()
 	broadcaster.close()
+
+
+static func discovery_enabled(arguments: PackedStringArray) -> bool:
+	return not arguments.has("--no-lan-discovery")
 
 
 func _process(_delta: float) -> void:

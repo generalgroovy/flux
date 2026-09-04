@@ -25,6 +25,7 @@ func _test_validation_fails_closed() -> void:
 	equal(SessionTransport.MAX_PLAYERS, 8, "public session cap is eight players")
 	check(SessionCharter.catalog_hash().length() == 64, "session charter catalog contributes a bounded compatibility identity")
 	equal(_signature().length(), 64, "compatibility identity is a SHA-256 digest")
+	check(SessionTransport.compatibility_signature(SimConfig.PROTOCOL_VERSION, 120, "a".repeat(64), "b".repeat(64), "c".repeat(64), "d".repeat(64), "e".repeat(64)) != _signature(), "reaction definitions contribute to Farflow compatibility")
 	check(not transport.start_host(80, _signature()), "privileged production host port is rejected")
 	check(transport.last_error.contains("1024"), "invalid host port has an actionable error")
 	check(not transport.start_join("bad address", SessionTransport.DEFAULT_PORT, _signature()), "address whitespace is rejected")

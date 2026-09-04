@@ -1,5 +1,8 @@
 # Living Wellspring V1 acceptance contract
 
+Status: **canonical initial-world acceptance target**. Rows describe required
+proof, not an automatic claim that every journey already passes.
+
 ## Product gate
 
 Living Wellspring V1 is FLUX 2's first product acceptance test. It is a cohesive
@@ -24,8 +27,9 @@ The same build must support these end-to-end journeys:
 4. As host, configure lobby/team/friendly-fire policy, readiness and privacy;
    manage bots/dummies/trials; invite or moderate; use announced safe group
    travel; inspect health; and end the session without orphan processes.
-5. Run equivalent source and packaged journeys on Garuda Linux/Sway and Windows
-   with compatible protocol/content/save versions.
+5. Run equivalent source and packaged journeys on the declared Windows targets
+   with compatible protocol/content/save versions; preserve portable Linux
+   source without making a current Linux package claim.
 
 ## World and feeling
 
@@ -52,7 +56,7 @@ the same semantic geometry revision.
 
 ## Foundation systems inside the gate
 
-- deterministic 60/120 Hz movement, collision, elevation, replay and reset;
+- deterministic 120 Hz movement, collision, elevation, replay and reset;
 - an original reusable character skeleton with ground/body/aim/shadow/effect
   anchors and a compact top-down body-lift jump with clear apex/landing;
 - validated ancestry and champion layering, one accepted champion/loadout/spell
@@ -85,16 +89,16 @@ report/export controls.
 ## Verification matrix
 
 - pure schemas/systems and invalid-input tests;
-- deterministic replay/reset at 60 and 120 Hz;
+- deterministic replay/reset at the authoritative 120 Hz;
 - full offline start-to-stop journey;
-- loopback plus two-machine Garuda Linux/Sway and Windows host/join/reconnect;
+- loopback plus two-machine Windows host/join/reconnect;
 - latency, loss, duplication, reordering, invalid privilege, version/content
   mismatch, presence loss, host exit, and cleanup tests;
 - gameplay-zoom, grayscale/color-vision, reduced motion/effects, readable text,
   remapping, controller, and audio-alternative review;
 - LOS-visible actor cutaway/silhouette and LOS-hidden information-leak tests;
 - modest-hardware simulation/render/network/memory/load profiling;
-- Linux and Windows source and package smoke, save migration, logs, crash
+- Windows source and package smoke, save migration, logs, crash
   recovery, update/rollback and clean uninstall.
 
 ## Rolling slice handoff

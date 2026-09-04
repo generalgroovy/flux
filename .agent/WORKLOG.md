@@ -3931,3 +3931,114 @@ Commit: pending at pre-commit record time. Push: pending.
 - Full Windows source gate: 61 suites / 17,781 assertions, 120 Hz boot, no
   failures, warnings or stderr. C5 reaction truth is next; world mutation stays
   disabled until its complete 36-pair contract passes.
+
+## 2026-09-02 — delivery-plan consolidation
+
+- Added C5.5 immediately after the reaction-catalog checkpoint: generate one
+  current-state authority, migrate live stale visual catalogs through validated
+  replacements, classify asset reachability, and archive historical plans
+  without deleting active compatibility adapters.
+- Expanded optimization coverage through O11 measured movement feel, O12
+  maintained visual cohesion, O13 composable content and O14 production-path
+  player/developer sandboxes. These gates run after the required C9 playtest;
+  regression checks, telemetry and shared visual hierarchy apply immediately.
+- Added `docs/FOUNDATION-SYSTEMS.md` as the canonical F0–F7 contract for system
+  ownership, composition, smoothness, sandbox tooling, maintainability,
+  performance and expansion admission before routine content growth.
+- Added `.agent/DELIVERY-EFFICIENCY.md` as the execution contract. It records
+  architecture/tooling alternatives, a ≤2s static / ≤5s focused / ≤15s Fast /
+  ≤45s Full feedback ladder, selectable suite registry, scenario-first work,
+  current-state and validation receipts, thin Windows task entry point, WIP
+  limit one, measured performance workflow and compact handoff contract.
+- Scheduled only the minimum high-return tooling: finish C5 unchanged; add test
+  selection/state/receipt/front-door/reachability in C5.5; prove the first real
+  scenario and touched-seam extraction through C6; generalize only after those
+  patterns survive C6–C9.
+- Core design now requires single-tick legal-input response at 120 Hz, one
+  action transition/refusal contract, measured momentum/chain evidence, fair
+  three-body roles and no new movement technique before existing techniques are
+  distinct and readable.
+- Visual design now standardizes stable body envelopes, receiving-surface
+  shadows, projectile size/speed classes, quiet lanes, landmark-first map
+  composition and the champion → threat → interaction → world → decoration
+  reading order.
+- Corrected current-facing protocol references to 32 and marked obsolete root
+  specification/development material as historical pending C5.5 archival.
+- Windows Fast gate passed clean import plus independent 120 Hz boot in 12,427
+  ms with zero stderr. No source/runtime behavior changed in this documentation
+  slice.
+
+## 2026-09-02 — experience contract and fun-depth prioritization
+
+- Rebuilt `docs/PLAYER-EXPERIENCE-OVERHAUL.md` around the current 120 Hz,
+  protocol-32 Windows product instead of its obsolete dual-rate, seven-spell
+  assumptions.
+- Established a reusable quality filter for decisions, readability,
+  composition, non-repetition, honest cost and teachable failure, plus a P0–P4
+  ladder that resolves lifecycle and gameplay-clarity defects before scope or
+  decorative polish.
+- Specified action-first Wellspring learning, compact information budgets,
+  plug-and-play limits, visual charm/clarity rules and eight named human
+  acceptance journeys. These now supplement rather than replace deterministic,
+  network, performance and package evidence.
+- Threaded the contract through the current README, backlog, prompts,
+  implementation plan, optimization plan, foundation plan and slice/handoff
+  records. Also corrected current ability documentation to 16 runtime spells
+  and twelve equipped positions.
+- Static validation is clean. `scripts\test.cmd Fast` passed import plus an
+  independent protocol-32 120 Hz boot in 14,745 ms with zero stderr. This slice
+  changes documentation and priorities, not runtime behavior.
+
+## 2026-09-04 — current-truth implementation and Windows package verification
+
+- Implemented the planned thin developer front door, generated state checks,
+  stable focused-suite selection, validation receipts and conservative asset
+  inventory; retained unreferenced candidates and personal files.
+- Canonical roster metadata now supplies both visual-catalog adapters without
+  rewriting archived pixel provenance or changing compatibility IDs; planned
+  characters remain non-selectable. Added linked-catalog and failure-path tests.
+- The Spell Loom now reports actual selectable spells, positions, playable
+  champions and sealed chemistry. Runtime-derived state is also exported into
+  Windows `BUILD-STATE.json`, with the actual PCK hash, and bundled in the ZIP.
+- Fixed inherited test settings that could silently filter Full; unknown suites
+  fail explicitly with a failed receipt. Startup callbacks now remain inert
+  after initialization failure instead of flooding secondary errors.
+- Final Full: **64 suites, 18,278 assertions, zero failures/stderr**, clean
+  import and 120 Hz boot, 36,185 ms. Two-frame Loom captures at 720p and 1080p
+  were inspected successfully. Source and exported-pack content summaries match;
+  an actual exported Windows game boots cleanly at 120 Hz.
+- Release ran in 67,462 ms and remains **failed**: deterministic/source stages
+  and Windows export/bundle/bootstrap compilation succeeded, but Application
+  Control blocked the unsigned installer before clean install or repair. No
+  security workaround was attempted; installed/update/two-PC acceptance is open.
+- An editor-based isolated PCK boot was an invalid player-build test because
+  it enables source-only provenance checks; actual exported-EXE boot corrected
+  that diagnosis. Provenance validation was not weakened.
+- Source changes remain uncommitted on main; C5/C5.5 checkpoint publication and
+  trusted installer signing are next handoff actions before live C6 chemistry.
+
+### Same checkpoint — source-launch process ownership
+
+- The source game was opened and verified responding. Fixed a false launcher
+  failure caused by Windows PowerShell returning early for a GUI executable and
+  reading stale `LASTEXITCODE`; it now waits for the actual process.
+- Added bounded `play -SmokeTest` and explicit diagnostic LAN-discovery opt-out
+  so boot checks do not compete with the player's open game. Default play and
+  headless network tests retain LAN discovery; three regression assertions cover
+  that boundary. No movement/combat or network protocol semantics changed.
+- Source-launch smoke passed. Latest Full: **64 suites / 18,281 assertions**,
+  zero failures/stderr, 45,214 ms; PowerShell parsing and diff checks passed.
+- Final Windows package refreshed successfully and its actual game EXE passed
+  a 120 Hz isolated boot. The unsigned installer was rebuilt but not retried
+  after the trust-policy block. Source game remained open and responsive.
+
+## 2026-09-04 — C5/C5.5 publication preparation
+
+- User authorized push. Reviewed the complete staged project delta, refreshed
+  origin with no incoming main divergence, and preserved all personal/generated
+  files outside the commit.
+- Full rerun passed: 64 suites / 18,281 assertions, zero failures/stderr,
+  clean import and 120 Hz boot in 40,889 ms.
+- README, backlog and standing prompts now mark C5/C5.5 complete and identify
+  C6 → C7 → C8 → C9 as the next source path. Signing/trust remains a separate
+  external release-acceptance requirement; this request adds no live mechanics.

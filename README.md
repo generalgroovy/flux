@@ -15,15 +15,26 @@ physical places rather than a detached menu.
 > full universal movement foundation, sixteen playable foundation spells, the
 > Wellspring campus, an authoritative 2–8 player direct-IP Farflow loop, and a
 > packaged one-file Windows player app are working. Comparable bursts for all
-> eight first-phase elements are working; the strict 36-reaction catalog and
-> bounded chemistry runtime are the active implementation goal.
+> eight first-phase elements and the strict, symmetric 36-reaction definition
+> compiler are working; bounded exposure/contact is the active chemistry goal,
+> and world mutation remains deliberately gated until that slice passes.
+
+Current counts deliberately distinguish authored inventory from promoted play:
+
+| Dimension | Authoritative current meaning |
+|---|---|
+| Abilities | 21 validated authored records; 16 have runtime wire IDs and are globally weaveable, while five passive/gated kit records are not selectable spells |
+| Chemistry | 36 symmetric definitions compile and hash; `runtime_enabled` remains false until bounded exposure/contact, execution and reset pass |
+| Champions | 3 playable entries; 24 identities in the non-selectable roster/affinity plan |
+| Bodies | 3 authored gameplay roles: small, middle and large; five-size paths are legacy source/archive adapters only |
+| Cadence | 120 Hz authoritative simulation; 60 Hz transport snapshots and a 60-sample presentation clock are distinct non-gameplay cadences |
 
 ## Get, play, host, join
 
 | Person | One safe path | Result |
 |---|---|---|
 | Windows player | Download and double-click `FLUX.exe` | One hash-verified file installs or updates per-user, repairs if needed, then starts the game |
-| Windows developer | Run `scripts\run.cmd` | Pinned Godot source launch at 120 Hz |
+| Windows developer | Run `.\flux.cmd play` | One thin task front door dispatches to the pinned Godot source launch at 120 Hz |
 | Host | Walk east to **Host Farflow**, press interact | Opens authoritative UDP session on port `24872` |
 | Friend on the same LAN | Walk to the Farflow stations and choose **Join** | Compatible hosts appear automatically through bounded UDP discovery; different builds remain visible but cannot be joined |
 | Internet friend | Walk to **Join Farflow**, press interact, type/paste the host address, press Enter | Address is saved locally; join is compatibility-checked with clear refusal on mismatch/full session |
@@ -40,13 +51,16 @@ Developer verification is explicit and warning-clean:
 
 ```powershell
 scripts\test.cmd -Tier Fast     # import + 120 Hz boot
+scripts\test.cmd -Tier Focused -Suite reaction-catalog
 scripts\test.cmd -Tier Full     # Fast + all deterministic suites
 scripts\test.cmd -Tier Release  # Full + Windows package/install/repair/boot
 ```
 
 Every tier reports elapsed time and stderr bytes. Unexpected Godot warnings are
-failures; the Release tier honestly remains blocked on this managed machine
-until the generated executable is trusted or signed.
+failures. On 2026-09-04 the actual Windows game export booted successfully,
+but Application Control still blocked the rebuilt unsigned `FLUX.exe`
+installer before installation; Release acceptance needs trusted signing or
+administrator-approved publisher trust. No security settings were changed.
 
 Send only `exports\release\FLUX.exe`. Double-clicking a newer copy stages and
 verifies the new version before atomically switching the installed `FLUX.exe`;
@@ -80,15 +94,15 @@ direct-IP internet builds only with trusted friends.
 
 | Area | Now | Next acceptance |
 |---|---|---|
-| Repository | One authoritative Godot runtime; browser runtime retired | Keep docs/content/runtime hashes in one lineage |
+| Repository | One authoritative Godot runtime; generated state/drift checks, selectable suites, receipts, developer front door, asset inventory, canonical roster adapters and exact-package content evidence are verified | C6 bounded exposure/contact is next; unsigned installer trust remains independently blocked |
 | Lifecycle | Source launch, portable archives, checksums, one-file Windows install/update/run | Signed releases, clean uninstall UI, public update channel |
 | Wellspring | Nine districts, walk-up stations, practice actors, movement routes | Stronger authored landmarks and compact onboarding |
-| Movement | Full universal foundation at deterministic 120 Hz; normalized eight-way commands, active directional air control/facing, alternating gait contacts, native eight-way jump/slide/roll art, relative gait, and directional evasion cues | Pattern-pressure tuning and player playtest |
+| Movement | Full universal foundation at deterministic 120 Hz; normalized eight-way commands, active directional air control/facing, alternating gait contacts, native eight-way jump/slide/roll art, relative gait, and directional evasion cues | Measure response/braking/reversal/chains during chemistry, then tune the existing grammar from the packaged playtest before adding techniques |
 | Combat | Sixteen runtime spells cover projectile, five-shot burst, beam, spray, field, ricochet, launch and slow; one validated catalog exclusively owns their economy, timing, geometry, damage, control and Loom order; all eight elemental Bursts share exact geometry/economy while retaining distinct art and chemistry payloads | Keep the Burst baseline fixed while chemistry supplies the first systemic differences |
-| Chemistry | Material grid, eight depositing Burst payloads and 36 design-locked recipes | Fail-closed symmetric catalog, then bounded exposure/contact and shared reaction primitives |
+| Chemistry | Material grid, eight element-bearing Bursts, and 36 compiled symmetric recipes mapped to nine bounded spatial primitives and seven integer channels; mutation is off | Bounded exposure/contact, shared effect execution, lifecycle/presentation, reset, replay and Farflow proof |
 | Champions | Oh Tipi (middle), S. Wayne (small), and The Red Baron (large) playable | Validate the three roles under bullet-pattern pressure before another champion |
 | Farflow | Host-authoritative 2/4/8-player loop with contextual zero-config LAN discovery and direct-IP internet joining | Physical two-PC LAN/internet proof, then per-peer LOS filtering; measured 32-player work remains deferred |
-| Visuals | Integrated Wellspring gate accepted at 4.64/5; the foundation champions share The Red Baron's cell-bounded dark-ink language, and the Proving Court uses quiet room lanes, response pockets and bounded markers | Keep every new champion/spell inside the same silhouette, accessibility, density, and provenance gates |
+| Visuals | Integrated Wellspring gate accepted at 4.64/5; the foundation champions share The Red Baron's cell-bounded dark-ink language, and the Proving Court uses quiet room lanes, response pockets and bounded markers | Maintain one world/body/shadow/spell/projectile/interface hierarchy and improve weak live areas from gameplay captures, not isolated concept art |
 
 ## Design pillars
 
@@ -99,7 +113,14 @@ direct-IP internet builds only with trusted friends.
 | Chemistry changes space | Reactions create routes, cover, hazards, visibility, friction, conduction, and counters—not automatic elemental bonus damage |
 | Fast, not frictionless | Actions chain when physically legal; startup, cost, recovery, collision, and authored cooldowns preserve decisions |
 | Minimal spectacle, maximal response | Strong silhouettes, restrained effects, exact hit confirmation, and no state hidden behind decoration |
+| One visual grammar | Champions read first, threats second, interactions third, architecture fourth, and ambient detail last at every zoom |
 | One simulation truth | Fixed-tick systems own outcomes; rendering, particles, sound, and camera never invent gameplay |
+| One production sandbox | Players, developers, tests and captures exercise the same validated commands, systems, reset rules and packaged runtime |
+| Composition before duplication | New champions, spells, elements, ancestries and materials combine reusable kernels and fail closed when incomplete |
+| Simple verbs, deep combinations | Depth comes from movement, geometry, elements, world state and timing composing—not hidden exceptions or option count |
+| Learn by doing | Strong defaults, nearby affordances and one contextual prompt teach before the Living Archive explains |
+| Failure is actionable | Every blocked action or failed journey names one cause, one safe next action and preserves a quick retry |
+| Plug-and-play is gameplay | Obtain, install/update, start, host/join, leave and recover are short, honest and safe player journeys |
 | Always playable | Every slice ends launchable, tested, documented, and recoverable before the next begins |
 
 Broad inspiration comes from compact pixel adventures, room-scale action games,
@@ -161,6 +182,15 @@ Lectern remap is the equivalent slide input.
 
 Roll, jump, and air dodge intangibility applies only to attack contact during
 the authored opening windows. Solid world geometry remains solid.
+
+Movement polish is measured rather than guessed: legal input should affect
+authoritative state within one 120 Hz tick unless a visible commitment blocks
+it; one transition contract owns buffers/cancels/costs/cooldowns/refusals; and
+repeatable journeys record stopping distance, reversal, landing recovery and
+chain success. Small favors acceleration/recovery, middle flexibility and
+large stability/momentum without changing universal access or creating hidden
+collision advantage. No new technique is added until every existing one has a
+distinct use, readable transition, deterministic test and counterplay.
 
 ## Combat, resources, and spell geometry
 
@@ -249,43 +279,50 @@ The matrix is symmetric: row+column and column+row resolve to one recipe.
 | **Light** | Crystal Prism | Solar Flare | Mirrorwater | Lightbend | Crystal Lens | Arcflash | Radiance | Penumbra |
 | **Dark** | Blightsoil | Cinderveil | Blackwater | Shadowdraft | Black Ice | Static Shroud | Penumbra | Umbral Field |
 
-Every recipe has `formation → active → residue/decay`, public thresholds,
+Every recipe now compiles through stable wire IDs into one of nine shared
+primitives (`surface`, `flow`, `cover`, `field`, `conduction`, `visibility`,
+`hazard`, `refraction`, `fracture`) and seven clamped integer channels. Each has
+`formation → active → residue/decay`, public thresholds,
 bounded area/propagation/lifetime/work/ownership, and at least one spatial
 counter. Worldbone is immutable; authored structures can stage and break;
-transient matter has hard capacities and deterministic cleanup. The machine
-truth is [`content/reactions/first_eight_element_reactions_v1.json`](content/reactions/first_eight_element_reactions_v1.json).
+transient matter has hard capacities and deterministic cleanup. C5 validates
+and compatibility-hashes this truth but cannot mutate the world; C6 promotes
+bounded exposure/contact. The machine truth is
+[`content/reactions/first_eight_element_reactions_v1.json`](content/reactions/first_eight_element_reactions_v1.json).
 
 ## Champions
 
 Oh Tipi, S. Wayne, and The Red Baron are currently selectable. Every other entry is a
-design/migration target, not a claim of playable content. Ordinary champions
-use a unique two-element 2+1 profile; Treevor is the sole 1+1+1 exception.
+design/migration target, not a claim of playable content. Every champion spends
+the same three affinity points: two-element specialists use `2+1`, while
+three-element generalists use `1+1+1` and gain breadth without a strength-2
+discount. Duplicate combinations are legal when their full play patterns differ.
 
 | Champion | Ancestry | Body type | Weighted affinities | Availability |
 |---|---|---|---|---|
 | Oh Tipi | Seakin | Middle | Water 2 · Charge 1 | **Playable** |
 | S. Wayne | Hobbit | Small | Dark 2 · Light 1 | **Playable** |
 | The Red Baron | Undead | Large | Fire 2 · Ice 1 | **Playable** |
-| Steezo | Goblin | Small | Charge 2 · Fire 1 | Planned |
-| Treevor the Mason | Treefolk | Large | Earth 1 · Wind 1 · Fire 1 | Planned exception |
-| Oll' I | Werewolf | Large | Earth 2 · Dark 1 | Planned |
-| Fluup | Orc | Large | Wind 2 · Charge 1 | Planned |
-| Wa Bidi | Goblin | Small | Wind 2 · Fire 1 | Planned |
-| Grace Reava | Sylph | Small | Wind 2 · Water 1 | Planned |
+| Steezo | Goblin | Small | Charge 1 · Fire 1 · Light 1 | Planned |
+| Treevor the Mason | Treefolk | Large | Earth 1 · Wind 1 · Fire 1 | Planned |
+| Oll' I | Werewolf | Large | Earth 1 · Fire 1 · Light 1 | Planned |
+| Fluup | Orc | Large | Wind 1 · Charge 1 · Ice 1 | Planned |
+| Wa Bidi | Goblin | Small | Charge 1 · Wind 1 · Fire 1 | Planned |
+| Grace Reava | Sylph | Small | Wind 1 · Water 1 · Light 1 | Planned |
 | Waka Aren Si | Gnome | Small | Charge 2 · Light 1 | Planned; `nico_lai` compatibility ID |
-| Spai Si | Demon | Middle | Wind 2 · Dark 1 | Planned |
-| Leaf the Hidden | Treefolk | Middle | Earth 2 · Wind 1 | Planned |
-| Ha Rekt | Wyrmborn | Large | Ice 2 · Wind 1 | Planned |
-| Dr. Apex | Stoneborn | Large | Light 2 · Earth 1 | Planned |
-| Haara | Nymph | Small | Light 2 · Water 1 | Planned |
+| Spai Si | Demon | Middle | Wind 1 · Earth 1 · Light 1 | Planned |
+| Leaf the Hidden | Treefolk | Middle | Water 1 · Earth 1 · Light 1 | Planned |
+| Ha Rekt | Wyrmborn | Large | Ice 1 · Wind 1 · Fire 1 | Planned |
+| Dr. Apex | Stoneborn | Large | Earth 1 · Light 1 · Water 1 | Planned |
+| Haara | Nymph | Small | Light 2 · Wind 1 | Planned |
 | Hesus Christo | Elf | Middle | Earth 2 · Water 1 | Planned |
-| Grimm Bow | Troll | Large | Dark 2 · Water 1 | Planned |
-| Biggy Bob | Dwarf | Middle | Earth 2 · Fire 1 | Planned |
-| Jan Wicked | Human | Middle | Ice 2 · Dark 1 | Planned |
-| Ba Djoh | Minotaur | Large | Earth 2 · Ice 1 | Planned |
-| Urzh | Stoneborn | Large | Charge 2 · Earth 1 | Planned |
-| Donnok | Dwarf | Middle | Fire 2 · Water 1 | Planned |
-| Djonah Thaan | Vampire | Middle | Dark 2 · Charge 1 | Planned |
+| Grimm Bow | Troll | Large | Earth 2 · Water 1; Chaos reserved | Planned |
+| Biggy Bob | Dwarf | Middle | Earth 1 · Fire 1 · Light 1 | Planned |
+| Jan Wicked | Human | Middle | Ice 1 · Dark 1 · Charge 1 | Planned |
+| Ba Djoh | Minotaur | Large | Earth 1 · Fire 1 · Water 1 | Planned |
+| Urzh | Stoneborn | Large | Earth 1 · Fire 1 · Charge 1 | Planned |
+| Don Doko Don | Dwarf | Middle | Earth 1 · Fire 1 · Water 1 | Planned; `donnok` compatibility ID |
+| Djonah Thaan | Vampire | Middle | Dark 1 · Charge 1 · Fire 1 | Planned |
 | Unnamed Angel | Angel | Middle | Light 2 · Wind 1 | Non-selectable placeholder |
 
 Only three body types exist: `small`, `middle`, and `large`. Tiny and huge are
@@ -379,7 +416,7 @@ default in gameplay while the Wellspring does not force limited information.
 | Capacity | Public cap 8; charters provide 2/4/8; later 32 only after measured architecture gate |
 | Transport | Godot ENet over UDP 24872, direct IP |
 | Authority | Host owns movement validation, resources, casts, hits, cooldowns, stations, roster, score, reset |
-| Compatibility | Protocol 30, snapshot 11, tick/tuning/map/content hashes |
+| Compatibility | Protocol 32, snapshot 11, tick/tuning/map/content hashes |
 | Client feel | Local movement prediction and bounded reconciliation; combat stays authoritative |
 | Join in progress | Observer until next gathering, then normal Hearth readiness |
 | Disconnect | 15-second in-memory exact-actor reservation and capability rotation |
@@ -539,6 +576,24 @@ gameplay-zoom evidence, and tests.
 
 ## Architecture
 
+### Authority order
+
+When two sources disagree, use this order and repair the lower source in the
+same slice:
+
+| Rank | Authority |
+| ---: | --- |
+| 1 | Executed runtime, validated content and passing tests; no prose may overrule observed behavior |
+| 2 | `README.md`, `.agent/BACKLOG.md`, `.agent/OVERHAUL-IMPLEMENTATION.md` and `.agent/memory.md` for current state/order |
+| 3 | Focused documents explicitly labelled `canonical` for product/system contracts |
+| 4 | Files labelled `planned` for gated future behavior; never claim them as live |
+| 5 | Files labelled `migration`, `historical`, `baseline` or `superseded`; consult only for lineage and recovery |
+
+`SPECIFICATION.md`, `docs/OVERHAUL-PLAN.md` and `docs/DEVELOPMENT.md` are not
+current entry points. C5.5 now generates protocol/schema/hash/count/platform/
+package reports and verifies current-facing counts against source; the Loom and
+exported payload also expose the same validated runtime-content summary.
+
 ```text
 content/       validated champions, abilities, maps, materials, reactions, visuals
 src/sim/       fixed-tick deterministic movement/combat/state
@@ -567,24 +622,84 @@ validated content -> commands -> fixed-tick simulation -> authoritative state
 No renderer, particle, animation, sound, client packet, or concept image owns an
 outcome.
 
+The incremental architecture target keeps `bootstrap.gd` as the composition
+root only. Runtime-content validation, Wellspring interactions, Farflow
+orchestration, combat presentation, capture diagnostics and safe quit move into
+focused collaborators only when their seam is touched; movement, combat,
+networking and rendering are never rewritten together. Packet validation/codec
+logic separates from ENet lifecycle without moving authority to clients.
+
+Expansion follows the canonical
+[foundation systems contract](docs/FOUNDATION-SYSTEMS.md): champions compose
+ancestry/body/stats/affinities/kit/presentation; spells compose delivery,
+elemental payload, modifiers, economy, outcomes and presentation; reactions
+compile unordered element pairs onto bounded shared primitives. Versioned
+developer scenarios submit ordinary semantic commands, so focused tests,
+replays, Farflow and packaged builds prove one production rule path.
+Enemies use bounded command policies rather than private physics; objectives and
+modes compose session/lifecycle policies rather than fork combat. After F7,
+every content unit moves through intent → definition → isolated proof →
+production integration → communication → stress/package → promotion. Stable
+IDs, explicit dependencies, capacity budgets, compatibility classes, generated
+acceptance rows and migrations make expansion repeatable without executable
+mods or champion/element-specific controller branches.
+The developer loop follows the
+[delivery-efficiency plan](.agent/DELIVERY-EFFICIENCY.md): selected suites and
+small scenarios provide fast inner feedback, while every published checkpoint
+still runs the complete deterministic gate and records an honest receipt.
+
 ## Develop, test, package
 
-Pinned engine: **Godot 4.7.1**.
+Pinned engine: **Godot 4.7.1**. `.\flux.cmd` is the single Windows developer task
+front door; it delegates rather than duplicating the underlying scripts.
 
 ```powershell
-scripts\doctor.cmd
-scripts\run.cmd
-scripts\test.cmd
-scripts\package.cmd Windows
+.\flux.cmd doctor
+.\flux.cmd check
+.\flux.cmd assets
+.\flux.cmd play
+.\flux.cmd play -SmokeTest
+.\flux.cmd test -Tier Full
+.\flux.cmd package
 ```
 
-`scripts/test.*` runs deterministic suites plus source and imported-resource
-boots at the authoritative 120 Hz tick. A test is reported only when it actually ran.
+`scripts/current-state.cmd -Check` writes the ignored
+`.godot/reports/current-state.json` report from executed settings, source and
+catalogs, then fails on current contract drift. `scripts/test.*` runs that audit,
+deterministic suites, and source/imported-resource boots at the authoritative
+120 Hz tick. `-Tier Focused -Suite <stable-id>` runs only named suites; Full
+cannot accept a filter and therefore cannot silently become partial. Use
+`scripts\test.cmd -ListSuites` to discover IDs. Every completed gate writes an
+ignored, hash-bearing JSON receipt under `.godot/receipts/` containing only the
+steps and suites that actually ran.
+
+The Spell Loom's compact status lines are derived from its loaded catalogs:
+16 selectable spells, 12 positions, 3 playable champions and 36 sealed recipes.
+`scripts/runtime-state.ps1` emits the same validated runtime content summary;
+with `-PackPath <file.pck>` it executes the exported payload from its own
+directory, without checkout fallback. Windows packaging includes that result
+as `BUILD-STATE.json`, bound to the PCK's SHA-256. This proves content identity,
+not installer execution, remote connectivity or human playtest acceptance.
+
+`.\flux.cmd assets` writes a conservative tracked-asset inventory under
+`.godot/reports/`. It separates direct runtime-code references, catalog
+declarations, tooling inputs, documentation-only references and unreferenced
+candidates. A candidate is never safe to delete until catalog, export and
+history reachability are also proven.
+
+`play -SmokeTest` tests the real source launcher with a bounded headless
+120 Hz run and no LAN discovery socket, so it can run while another game is
+open. Normal play keeps discovery enabled. The launcher waits for the actual
+game process; it no longer mistakes an old PowerShell exit code for a failure.
+
 Generated `.godot/`, exports, local dependencies, credentials, and personal
 firewall rules are not source.
 
-Existing Linux-compatible simulation and helper scripts are retained but frozen;
-this implementation pass makes no new Linux release or acceptance claim.
+Linux-oriented source and helper scripts are retained as frozen compatibility
+and migration evidence; some still expose the retired 60 Hz option and are not
+current validation entry points. The supported Windows paths above enforce the
+single 120 Hz gameplay cadence. This pass makes no Linux release or acceptance
+claim.
 
 ## Continuous implementation order
 
@@ -594,10 +709,15 @@ this implementation pass makes no new Linux release or acceptance claim.
 | 1 | Verify setup/update/launch → host card → join card → safe close | Fresh Windows user reaches Wellspring and a trusted friend joins with one shared file plus address |
 | 2 | Lock camera/pixel tokens → three body types → body-only directional atlases → separate hand-cast effects → environment → HUD | Whole scene reads at gameplay zoom, in motion, high contrast, and reduced motion; no spell or world pixels are baked into champion sprites |
 | 3 | **Complete:** burst data contract → deterministic fan → projectile capacity → movement pressure room | Five-shot patterns stay readable and evadeable while every universal technique chains legally at 120 Hz |
-| 4 | Eight burst spells → reaction catalog → exposure/contact → 36 bounded states → crucible/reset/codex | Every element can fire; every unordered pair forms, acts, decays, explains itself, and resets at 120 Hz |
-| 5 | **Playtest pause** | User receives a packaged current build and focused test route before roster expansion |
+| 4 | **Complete:** eight bursts → bounded reaction catalog | Every unordered pair has one symmetric, fail-closed, compatibility-hashed recipe while live mutation remains off |
+| 4.5 | **Complete in this checkpoint:** generated truth/tooling → canonical roster adapters → in-game/package state | Protocol/platform/tick/roster/body/content truth agrees before persistent reaction state is added; archival pixels remain separate and compatibility is preserved |
+| 5 | Exposure/contact → shared primitives → lifecycle/readability → Crucible/reset/codex | Every pair forms, acts, decays, explains itself, replicates and resets at 120 Hz |
+| 6 | **Playtest pause** | The exact packaged green build passes named solo, movement, pressure, chemistry, friend, accessibility and recovery journeys before broad retuning or scope expansion |
+| 7 | Measured movement feel → action clarity → projectile/map hierarchy → visual cohesion | Existing techniques become crisp and distinct, failures teach one correction and the Wellspring reads as one inhabited world before growth |
+| 8 | F0–F7: scenarios → movement → combat → chemistry → champion composition → player sandbox → developer sandbox → stress acceptance | The reusable base is fun, understandable, expressive, maintainable, performant and proven before routine content expansion |
 
-After the first-eight playtest, work resumes with reaction tuning, richer spell
+After the first-eight playtest, work first resolves recorded movement-feel and
+visual-cohesion findings. It then resumes with reaction tuning, richer spell
 geometries/chemistry, one complete champion at a time, per-peer visibility,
 additional maps, bots, and only then broader modes/roster.
 
@@ -605,9 +725,12 @@ additional maps, bots, and only then broader modes/roster.
 
 - [Repository consolidation](docs/BRANCH-CONSOLIDATION.md)
 - [Player controls and POV](docs/PLAYER-CONTROLS-AND-POV.md)
+- [Player experience and usability](docs/PLAYER-EXPERIENCE-OVERHAUL.md)
 - [Combat foundation](docs/COMBAT-FOUNDATION.md)
 - [Ability configuration](docs/ABILITY-CONFIGURATION.md)
 - [Core game design](docs/CORE-GAME-DESIGN.md)
+- [Foundation systems and expansion](docs/FOUNDATION-SYSTEMS.md)
+- [Delivery efficiency](.agent/DELIVERY-EFFICIENCY.md)
 - [Spell delivery foundations](docs/SPELLCASTING-DELIVERY-FOUNDATIONS.md)
 - [First-eight affinities](docs/CHAMPION-AFFINITIES-FIRST-EIGHT.md)
 - [First-eight reactions](docs/ELEMENT-REACTIONS-FIRST-EIGHT.md)
@@ -619,7 +742,13 @@ additional maps, bots, and only then broader modes/roster.
 - [Wellspring](docs/WELLSPRING-HUB.md)
 - [Sprite pipeline](docs/SPRITE-PIPELINE.md)
 - [Visual system](docs/VISUAL-SYSTEM.md)
-- [Development workflow](docs/DEVELOPMENT.md)
+
+Historical and migration references remain linkable for evidence but do not
+define current work: [root specification](SPECIFICATION.md),
+[long-form overhaul record](docs/OVERHAUL-PLAN.md),
+[legacy development notes](docs/DEVELOPMENT.md),
+[Sanctum naming adapter](docs/SANCTUM-HUB.md), and completed implementation or
+visual-baseline records explicitly labelled as such.
 
 The source license and third-party notices govern redistribution. Reference
 material is never permission to copy another game's protected expression.

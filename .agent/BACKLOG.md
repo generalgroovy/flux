@@ -13,18 +13,24 @@ runs cannot generate notification floods.
 | Order | Complete playable slice | Acceptance |
 |---:|---|---|
 | 0 | **One authoritative product — complete** | Imported browser runtime retired with remote recovery recorded; README/roster truth reconciled; full Godot gate green without touching user-owned local files. |
-| 1 | **Plug-and-play lifecycle — implementation complete; release acceptance gated** | `FLUX.exe` embeds the verified portable payload and owns install/repair/update/start without admin/dev tools; the current PCK boots at 120 Hz. This managed workstation blocks every newly exported unsigned EXE under Application Control, so exact-wrapper execution, signing, NAT/relay automation and physical two-PC proof remain honest gates. |
+| 1 | **Plug-and-play lifecycle — implementation complete; installer acceptance blocked** | The 2026-09-04 actual Windows game export boots at 120 Hz; its catalog summary matches source. The rebuilt unsigned `FLUX.exe` installer is still blocked by Application Control before clean install, so signing/trust, installed repair/update acceptance, NAT/relay automation and physical two-PC proof remain open. Do not generalize the installer block to the successfully tested game export. |
 | 2 | **Whole-scene visual cohesion — complete** | Reusable Wellspring modules, eight-way body/action art, empty-hand spells and compact HUD pass the 4.64/5 D7 rubric; V10 density preserves ownership and escape lanes across zoom/accessibility profiles. |
 | 3 | **Three viable body roles + Red Baron — complete in source** | Small skirmisher, middle adapter and large anchor use direction-invariant 58/68/76px body templates, shared collision, runtime scale `1.0` and universal movement on equal budget; Red Baron is selectable with eight-way body/clothing art, identity HUD portrait, Cinderbolt/Rimewake and 120 Hz combat tests. Exact interactive capture remains part of the checkpoint. |
 | 4 | **Readable bullet-pattern pressure — complete in source** | Cinder Fan deterministically emits `-24,-12,0,+12,+24` lanes with ordered IDs, one cost, single-hit protection, bounded collision/snapshot work, a readable 28–46 px projectile envelope and clean evasion lanes at 120 Hz; the Proving Court floor now exposes quiet lanes and four response pockets. |
 | 5 | **Eight elemental bursts + one combat authority — complete in source** | Fire, Water, Earth, Wind, Charge, Ice, Light, and Dark provide positive-Flux global Bursts with identical five-lane geometry/economy; all 16 live spell definitions now compile exclusively from the validated catalog, with 61 suites / 17,781 assertions and eight truthful 120 Hz captures proving simulation and presentation. |
-| 6 | **Complete first-eight chemistry — active** | All 36 symmetric pairs validate, form from bounded elemental exposure, create readable spatial effects through shared primitives, decay/residue/reset deterministically, preserve worldbone and route budgets, replicate/replay, and can be tested/explained in the Elemental Crucible at 120 Hz. |
-| 7 | **Playtest pause** | Package the exact green Windows build, provide the focused Wellspring → movement lane → pattern lane → Crucible → Farflow route, and wait for player feedback before roster expansion. |
+| 6 | **Reaction catalog — complete in this checkpoint** | All 36 symmetric pairs compile from one validated bounded catalog, resolve identically in either order, contribute to compatibility and enable no mutation. |
+| 7 | **Current truth + faster feedback — complete in this checkpoint** | Generated state/drift checks, 64 stable suite IDs, focused execution, receipts, `.\flux.cmd`, document statuses, 911-asset inventory and canonical roster adapters are implemented. Derived Loom status passes 720p/1080p review; exported-pack content matches source; actual export boots. C6 is next; installer trust remains a separate release blocker. |
+| 8 | **Complete first-eight chemistry** | All pairs form from bounded exposure, create readable spatial effects through shared primitives, decay/residue/reset deterministically, preserve worldbone and route budgets, replicate/replay, and can be tested/explained in the Elemental Crucible. |
+| 9 | **Playtest pause** | Package the exact green Windows build and run the named solo, movement, pressure, chemistry, friend, accessibility and recovery journeys through Wellspring → movement lane → pattern lane → Crucible → Farflow; record confusion and correction, then wait for feedback before roster expansion. |
+| 10 | **Measured feel + cohesion pass — after feedback** | Rank observed missed intent, unclear consequence, repetitive choices and visual competition; tune existing movement/action transitions and weak live areas while preserving universal techniques, three fair body roles, package integrity and 120 Hz authority. |
+| 11 | **Foundation F0–F7** | Prove directed dependencies, versioned content-unit promotion, composable movement/combat/chemistry/champion/actor/objective/mode kernels, action-first learning, quick reset, reproducible scenarios, package parity and eight-player performance before routine expansion. |
 
 ## Non-negotiable slice rules
 
-- Keep `main` launchable at every interruption boundary; maintain
-  `codex/continuous-overhaul` as its unified compatibility branch.
+- Keep `main` launchable at every interruption boundary. The remote
+  `codex/continuous-overhaul` compatibility ref may mirror an accepted `main`
+  checkpoint; a lagging local ref is non-authoritative and is fast-forwarded
+  only at a safe branch boundary.
 - Prefer one reusable data contract over eight or thirty-six bespoke scripts.
 - Simulation/host owns legality and outcomes; presentation owns only readable
   interpretation.
@@ -34,6 +40,15 @@ runs cannot generate notification floods.
 - Run focused tests first, then full deterministic tests, Windows source/import
   boots, packaged boot, and relevant Farflow processes before a green checkpoint.
 - Never stage/delete `node_modules/` or `scripts/firewall.ps1`.
-- Execute O0–O10 from `.agent/OPTIMIZATION-IMPLEMENTATION.md` only at their
+- Execute O0–O14 from `.agent/OPTIMIZATION-IMPLEMENTATION.md` only at their
   assigned seams; optimizations may not become a detached rewrite or reorder
   the first-eight chemistry acceptance path.
+- Execute `.agent/DELIVERY-EFFICIENCY.md` as the development loop: scenario and
+  selected suites for fast feedback, Fast at structural seams, Full at every
+  checkpoint, and Release only for package acceptance.
+- Fix movement or visual regressions immediately, but add no new technique or
+  broad retuning before C9 evidence; every ordinary frame preserves the order
+  champion → threat → interaction → world → decoration.
+- Apply `docs/PLAYER-EXPERIENCE-OVERHAUL.md` to every slice: a new mechanic must
+  create a readable decision, compose with existing languages, expose an honest
+  cost/counter and teach failure; more options or spectacle alone are not value.

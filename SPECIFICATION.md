@@ -1,8 +1,17 @@
 # FLUX 2 Godot 4.x Production Specification
 
+> **Historical specification — not current authority.** This file records the
+> earlier mixed-platform, 60/120 Hz Sanctum implementation direction. Current
+> product truth lives in `README.md`, `.agent/OVERHAUL-IMPLEMENTATION.md`,
+> `.agent/OPTIMIZATION-IMPLEMENTATION.md` and validated runtime content. C5.5
+> will archive/index useful evidence and replace current-facing specification
+> data with the generated Windows/120 Hz state manifest.
+
 ## 1. Status
 
-This document is the normative technical specification for reimplementing FLUX in Godot 4.x. Where older prototypes or reference documents conflict with this specification, this document governs runtime architecture, networking, determinism, project structure, and acceptance criteria.
+This document was the normative technical specification for an earlier FLUX
+implementation phase. It no longer governs current runtime architecture,
+networking, determinism, product vocabulary or acceptance criteria.
 
 The implementation must remain incremental. Existing gameplay concepts and reference assets are inputs, not reasons to preserve unsuitable runtime architecture.
 

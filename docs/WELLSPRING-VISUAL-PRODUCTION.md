@@ -1,5 +1,7 @@
 # The Wellspring visual-production catalog v2 (legacy inventory)
 
+Status: **historical/migration visual inventory**.
+
 This catalog is generated from deterministic source code and is directly usable by
 Godot. Rendered pixels never define collision, damage, reach, chemistry or other
 simulation authority.

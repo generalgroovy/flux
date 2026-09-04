@@ -1,11 +1,15 @@
 # FLUX 2 continuous implementation directive
 
 Use this prompt as the standing handoff for every implementation agent. Read it
-with `README.md`, `SPECIFICATION.md`, `.agent/VISUAL-OVERHAUL.md`,
-`.agent/OVERHAUL-IMPLEMENTATION.md`, `.agent/OVERHAUL-PROMPT.md`,
-`docs/VISUAL-DIRECTION.md`, `docs/OVERHAUL-PLAN.md`, `.agent/memory.md`,
-`.agent/BACKLOG.md`, `.agent/OPTIMIZATION-IMPLEMENTATION.md` and the newest entries in `.agent/WORKLOG.md`; when they
-disagree, preserve tested runtime truth and update stale prose in the same slice.
+with `README.md`, `.agent/OVERHAUL-IMPLEMENTATION.md`, `.agent/BACKLOG.md`,
+`.agent/OPTIMIZATION-IMPLEMENTATION.md`, `.agent/DELIVERY-EFFICIENCY.md`,
+`.agent/memory.md`, the newest `.agent/WORKLOG.md` entry,
+`docs/PLAYER-EXPERIENCE-OVERHAUL.md`, `docs/FOUNDATION-SYSTEMS.md`, and the
+focused contract for the active system. Read `SPECIFICATION.md`,
+`docs/OVERHAUL-PLAN.md`, `docs/DEVELOPMENT.md` and explicitly historical or
+migration-labelled files only when investigating lineage. When sources
+disagree, tested runtime truth wins; correct current-facing prose in the same
+slice without rewriting historical evidence.
 
 ## Current frontier and hard order
 
@@ -32,6 +36,12 @@ Mechanics outside the active row are frozen except for the smallest adapter or
 harness required to prove the active slice. Concepts, manifests, detached
 mockups and catalogs are never completion.
 
+Every slice must also pass the experience filter: it creates a meaningful
+decision, exposes commitment/ownership/counterplay, composes with at least two
+existing languages where applicable, has an honest cost and leaves one clear
+lesson plus a quick retry when it fails. Prefer fewer reusable verbs with many
+legible combinations over more isolated mechanics, effects or interface text.
+
 ## Mission
 
 Continuously turn the newest unified FLUX 2 checkpoint into a charming,
@@ -57,8 +67,9 @@ travel cadence; the Proving Court supplies quiet crossed lanes and four response
 pockets. All foundation champion frames share a cell-bounded one-pixel exterior
 ink derived from The Red Baron's darkest material clusters without runtime scale
 changes or palette replacement.
-All eight runtime-proven spells are globally weaveable for every champion with
-identity-owned replicated cooldowns and four honest empty positions. A persisted 50/75/100% world zoom defaults to the wider
+All sixteen runtime-proven spells are globally weaveable for every champion
+through twelve equipped positions, with identity-owned replicated cooldowns and
+the remaining proven catalog selectable at the Loom. A persisted 50/75/100% world zoom defaults to the wider
 75% view. Preserve all of it. Export templates and
 physical Garuda Sway package proof is outside the current Windows-only scope.
 

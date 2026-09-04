@@ -1,8 +1,15 @@
 # FLUX overhaul implementation plan — shared sandbox core
 
-Status: **canonical implementation order**.
+Status: **historical long-form design and implementation record**.
 
-This plan supersedes the earlier arena/room-oriented sequencing. Existing green
+This file preserves earlier reasoning, completed evidence and unimplemented
+ideas, including retired dual-rate and mixed-platform assumptions. It is not a
+current task queue. Current order lives in `.agent/BACKLOG.md` and
+`.agent/OVERHAUL-IMPLEMENTATION.md`; current product and expansion contracts
+live in `CORE-GAME-DESIGN.md`, `PLAYER-EXPERIENCE-OVERHAUL.md` and
+`FOUNDATION-SYSTEMS.md`.
+
+This plan once superseded the earlier arena/room-oriented sequencing. Existing green
 foundations remain valid, but the product they support is now explicitly the
 shared elemental sandbox defined in [`CORE-GAME-DESIGN.md`](CORE-GAME-DESIGN.md).
 

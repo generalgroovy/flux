@@ -1,5 +1,10 @@
 # FLUX 2 visual asset production v1
 
+Status: **historical source-asset checkpoint**. It preserves provenance and the
+older five-path production experiment; it is not current body, roster or asset
+promotion authority. Use `SPRITE-PIPELINE.md`, `VISUAL-SYSTEM.md` and the live
+three-body manifests for new work.
+
 This checkpoint establishes a reproducible, importable visual foundation for the
 complete currently specified roster, ancestry/body-plan catalog and Living
 Sanctum district set. It does not falsely promote visual candidates into accepted

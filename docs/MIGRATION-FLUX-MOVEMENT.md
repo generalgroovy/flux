@@ -1,5 +1,9 @@
 # FLUX to FLUX2 movement migration
 
+Status: **historical migration evidence**. The target assumptions below record
+the original import decision and must not override the current protocol-32,
+120-Hz-only movement contract.
+
 Source baseline: `generalgroovy/flux` at commit `d49c9a9`, inspected 2026-08-01.
 Target baseline: Godot 4.7.1, protocol version 3.
 

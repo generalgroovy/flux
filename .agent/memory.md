@@ -950,3 +950,170 @@ user-owned untracked paths throughout.
   import, an independent 120 Hz boot, zero failures, zero warnings and zero
   stderr in 34,928 ms. Next boundary is C5/O9: complete symmetric reaction
   catalog and bounded shared-primitives compiler with no live mutation yet.
+
+## 2026-09-02 — integrated cleanup, feel and cohesion plan
+
+- Extended the delivery architecture from O0–O10 to O0–O14 without reordering
+  the first-eight acceptance path. C5 remains the active green checkpoint;
+  C5.5 now owns generated current truth, live visual-catalog migration and
+  asset classification before C6 persists exposure/contact state.
+- Marked the obsolete root specification and mixed-platform development guide
+  as historical/migration references. Current contracts now agree on protocol
+  32, Windows-only release acceptance and a single 120 Hz authority.
+- Added post-C9 O11 movement-feel and O12 visual-cohesion gates. Their
+  regression standards apply now; deliberate retuning waits for the packaged
+  playtest. Existing techniques must become measured, distinct and readable
+  before new movement scope is allowed.
+- Added O13 composable-content and O14 production-path sandbox gates plus the
+  canonical `docs/FOUNDATION-SYSTEMS.md` F0–F7 sequence. New champions,
+  ancestries, spell deliveries, spells, elements, reactions, materials and maps
+  remain closed until their reusable kernels, player loops, developer scenarios
+  and eight-player pressure acceptance are proven.
+- Added `.agent/DELIVERY-EFFICIENCY.md` from measured repository constraints:
+  the monolithic 62-suite runner, 12–13 second Fast boot/import gate, roughly
+  36-second Full gate, fragmented evidence scripts and 3,452-line bootstrap.
+  C5.5 now owns stable selectable suite IDs, a thin `flux.cmd` front door,
+  generated state/receipts and reachability reporting; C6 supplies the first
+  production scenario instead of a speculative general framework.
+- Recorded rejected alternatives and reopening conditions: no rewrite, generic
+  ECS, executable gameplay mods, authoritative hot reload, editor-first tooling,
+  premature roster/32-player expansion or profile-free optimization. The inner
+  loop uses schema/unit/invariant/scenario proof, while Full remains mandatory
+  at each published checkpoint.
+- Defined one maintained live hierarchy: champion → dangerous geometry →
+  interaction → architecture → ambient detail, with stable body envelopes,
+  separate receiving-surface shadows and bounded projectile size/speed classes.
+- Verification: `scripts\test.cmd Fast` passed import and independent 120 Hz
+  boot in 12,427 ms with protocol 32, the reaction catalog gated, and zero
+  stderr. `git diff --check` found no whitespace errors; line-ending notices
+  remain the expected O7 touched-file normalization boundary.
+- Next: finish and publish the current C5 reaction-catalog checkpoint, then
+  execute C5.5 before beginning C6 exposure/contact.
+
+## 2026-09-02 — player-experience and design-priority consolidation
+
+- Replaced the stale player-experience plan with the canonical
+  `docs/PLAYER-EXPERIENCE-OVERHAUL.md`, aligned to Windows, Godot 4.7.1,
+  protocol 32, 120 Hz, three champions, 16 live spells, 12 equipped positions
+  and the mutation-gated 36-reaction catalog.
+- Defined the experience loop as arrive → act → observe world response →
+  combine systems → reset quickly → develop a personal style. Depth must come
+  from composing movement, aim, delivery geometry, chemistry, body role, world
+  route and social timing rather than hidden exceptions or option volume.
+- Added a six-question fun filter and a P0–P4 priority ladder: lifecycle/trust,
+  action readability, dominant/dead-time choices, missing composition seams,
+  then restrained charm on the proven loop. A higher-priority defect cannot be
+  covered with more content, interface prose or effects.
+- Defined action-first Wellspring learning, an information budget, visual
+  hierarchy, plug-and-play targets and named solo/movement/pressure/chemistry/
+  body/friend/accessibility/recovery acceptance journeys. Human observations
+  prove usability and fun; deterministic assertions continue to prove rules.
+- Integrated the contract into README, backlog, implementation/optimization
+  plans, standing prompts, foundation systems and the delivery slice card.
+  Corrected the ability configuration and standing handoff from stale seven/
+  eight-spell wording to the 16-entry runtime catalog.
+- Validation: `git diff --check` reports no whitespace errors; current-facing
+  documentation contains no protocol-26 or seven/eight-live-spell claims.
+  `scripts\test.cmd Fast` passed clean import and independent protocol-32 120 Hz
+  boot in 14,745 ms with zero stderr. Runtime behavior was not changed by this
+  planning slice.
+
+## 2026-09-04 — C5.5 current truth, faster tests and package evidence
+
+- Authoritative checkout remains `C:\Users\sende\Projects\flux`, `main` at
+  `aff5f7f` plus the preserved working diff. No commit, push, branch deletion
+  or source asset deletion was performed. Personal `node_modules/`,
+  `scripts/firewall.ps1` and `scripts/Downloads - Shortcut.lnk` remain untouched.
+- Consolidated canonical foundation, delivery-efficiency and player-experience
+  contracts; added document status classes and corrected current networking,
+  controls, roster and Wellspring prose. Historical assets/specs are evidence,
+  not playable authority. Planned affinities use 2–3 elements / three points;
+  Chaos stays reserved and is never silently aliased to Dark.
+- Implemented `.\flux.cmd` (play/check/assets/test/list-tests/doctor/package),
+  current-state drift reporting, conservative tracked-asset inventory, 64 stable
+  selectable test IDs and hash-bearing truthful receipts. Full clears inherited
+  selector/list variables then restores the parent environment; negative unknown
+  suite returns failure with a failed receipt. Missing-engine errors are caught.
+- Added validated `champion_roster_plan_v1.json`: 24 identities, only three
+  playable, one placeholder, canonical ancestry/body/availability and explicit
+  Waka Aren Si/Don Doko Don compatibility IDs. Both visual catalog adapters use
+  one shared metadata mapper, retaining `archive_*` and `legacy_visual_archive`;
+  corrected labels do not certify old pixels. Failed validation clears partial
+  lookups; linked catalogs contribute to the plan hash.
+- Added runtime-derived content summary and compact Loom status: 16 selectable
+  spells / 12 positions / three playable champions / 36 sealed recipes. The
+  same summary can execute from an exported PCK without checkout fallback.
+  Windows packaging includes PCK-hash-bound `BUILD-STATE.json` in the ZIP and
+  embedded installer payload. This is evidence, never gameplay configuration.
+- Added inert pre-initialization callbacks to prevent secondary draw/input
+  errors when startup already failed. No movement, combat tuning or reaction
+  mutation was enabled by this slice.
+
+| Executed verification | Result |
+| --- | --- |
+| Final `.\flux.cmd test -Tier Full` | PASS: 64 suites / 18,278 assertions; clean import and 120 Hz boot; 36,185 ms; zero stderr |
+| Inherited selector/list negative case | Full still ran every suite and restored parent values |
+| Unknown suite | Expected exit 2, failed receipt, zero executed suites |
+| Asset inventory | 911 tracked assets; zero missing runtime literals/case collisions; five candidates retained, not deleted |
+| Loom captures | Two frames each at 720p/1080p; visually inspected, status lines readable without overlap |
+| Source versus exported-pack summary | Identical validated runtime content; exported PCK hash recorded |
+| Actual exported Windows EXE | PASS: headless 120 Hz boot; not merely editor `--main-pack` |
+| Release tier | Full stage passed, Windows export/ZIP/installer built; FAILED at unsigned `FLUX.exe` launch under Application Control, before install/repair |
+
+- Evidence lives in ignored `.godot/receipts/latest-full.json`,
+  `.godot/receipts/latest-release.json`, `.godot/receipts/selector-negative.json`,
+  `.godot/reports/`, `.godot/c55-pack-check/` and
+  `.godot/visual-captures/c55-loom-state-{720,1080}/`.
+- Important diagnostic distinction: editor-driven isolated PCK boot enables
+  editor-only source provenance checks and fails; this is not proof the player
+  export is broken. The actual exported game boot passed. Do not weaken
+  provenance validation to accommodate the wrong test harness.
+- Release test did not bypass Application Control or change trust settings.
+  Receipt stderr_bytes covers captured Godot steps, not proof that installation
+  ran; overall Release result remains failed. Signing/publisher trust requires
+  owner/admin coordination; physical remote two-PC acceptance remains open.
+- Next: review and publish the source-green C5/C5.5 checkpoint when authorized;
+  resolve installer trust through legitimate signing. Then C6 adds bounded
+  exposure/contact, followed by shared reaction primitives/lifecycle and C9
+  Crucible playtest. Keep mutation gated until those dedicated slices pass.
+
+### Same checkpoint — live-launch verification
+
+- Opened source game (PID 4704, FLUX 2 DEBUG, responding) without closing or
+  replacing it during follow-up diagnostics. Its gameplay state matches the
+  accepted slice; subsequent changes affect launcher/test isolation only.
+- Found Windows PowerShell GUI launch returning before process completion and
+  reading stale `LASTEXITCODE=-1` while the game remained healthy. `run.ps1`
+  now waits on its actual process handle, quotes arguments, and initializes
+  absent game arguments to an empty array.
+- Added `play -SmokeTest`: bounded headless 120 Hz source-launch/exit check with
+  a separate log and explicit `--no-lan-discovery`. The first concurrent smoke
+  encountered the already-open game's discovery socket; explicit diagnostic
+  opt-out fixes isolation while normal/headless network play retains discovery.
+  Full boot uses the opt-out; dedicated networking tests are unchanged.
+- Launcher smoke then passed cleanly. Final Full after this fix: 64 suites /
+  18,281 assertions, zero failures/stderr, 45,214 ms while the user game remained
+  open. Changed PowerShell scripts parse cleanly; `git diff --check` is clean.
+- Installer diagnostic processes use hidden windows. Application Control's
+  unsigned-installer block remains authoritative; do not retry it or weaken
+  security. Trusted publisher signing remains required for installer acceptance.
+- Final package refresh includes the launcher-diagnostic isolation changes;
+  `exports/windows/flux2.exe` booted cleanly at 120 Hz, and `exports/release/FLUX.exe`
+  was rebuilt without retrying its blocked execution. Current-state and diff
+  checks passed afterwards; user game PID 4704 remained responsive.
+
+## 2026-09-04 — authorized C5/C5.5 publication checkpoint
+
+- User requested committing/pushing the accumulated project changes and the
+  next-slice overview. Refreshed origin: main has no incoming divergence.
+- Staged only the 85 project source/content/test/documentation files; excluded
+  personal scripts, the shortcut, node_modules and ignored builds/reports.
+- Re-ran Full before publication: 64 suites / 18,281 assertions, zero failures
+  or stderr, clean import/120 Hz boot, 40,889 ms. Whitespace and current-state
+  checks passed; unsigned-installer acceptance remains explicitly blocked.
+- Current plans now mark C5 and C5.5 complete in this checkpoint. Next source
+  work is C6 exposure/contact, C7 shared reaction effects, C8 lifecycle/readability/
+  replication, then C9 Crucible acceptance and mandatory user playtest pause.
+- Publish main without rewriting history; the ancestor-only compatibility
+  branch may mirror this checkpoint. No new chemistry implementation is part
+  of this publication-only request.

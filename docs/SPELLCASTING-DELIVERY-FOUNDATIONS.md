@@ -138,8 +138,8 @@ IDs are allocated in stable angular order:
 leftmost -> inner-left -> center -> inner-right -> rightmost
 ```
 
-This order must remain deterministic at 60 and 120 Hz and across replay/network
-serialization.
+This order must remain deterministic at the authoritative 120 Hz and across
+replay/network serialization.
 
 ### Configurable authored variants
 
@@ -280,7 +280,7 @@ pivots and all eight directions.
 A delivery is not complete because an animation exists. It needs:
 
 1. deterministic simulation representation;
-2. 60/120 Hz fixtures;
+2. authoritative 120 Hz fixtures;
 3. replay/hash stability;
 4. network authority and bounded event size;
 5. collision/expiry/ownership rules;

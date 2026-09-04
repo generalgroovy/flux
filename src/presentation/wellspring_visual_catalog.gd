@@ -17,6 +17,7 @@ const REQUIRED_SIZES := [
 ]
 const CANONICAL_BODY_TYPES: Array[String] = ["small", "middle", "large"]
 const REQUIRED_PRESENTATIONS := ["masculine", "feminine"]
+const ChampionRosterPlanScript = preload("res://src/content/champion_roster_plan.gd")
 
 var data: Dictionary = {}
 var last_error: String = ""
@@ -28,6 +29,7 @@ var props: Dictionary = {}
 var element_vfx: Dictionary = {}
 var ui: Dictionary = {}
 var wellspring: Dictionary = {}
+var roster_plan = ChampionRosterPlanScript.new()
 
 
 func load_from_file(path: String = DEFAULT_PATH) -> bool:
@@ -46,6 +48,8 @@ func load_from_file(path: String = DEFAULT_PATH) -> bool:
 
 func validate() -> bool:
 	last_error = ""
+	if roster_plan.ordered_ids.is_empty() and not roster_plan.load_from_files():
+		return _fail("canonical champion roster cannot be loaded: %s" % roster_plan.last_error)
 	if int(data.get("schema_version", -1)) != SUPPORTED_SCHEMA_VERSION:
 		return _fail("unsupported Wellspring visual catalog schema")
 	if str(data.get("id", "")) != "wellspring-visual-catalog-v2":
@@ -64,7 +68,7 @@ func validate() -> bool:
 		return _fail("Wellspring character contract requires 25 animation states")
 
 	races = data.get("races", {})
-	champions = data.get("champions", {})
+	var asset_champions: Dictionary = data.get("champions", {})
 	wellspring = data.get("wellspring", {})
 	districts = wellspring.get("districts", {})
 	materials = data.get("materials", {})
@@ -74,7 +78,7 @@ func validate() -> bool:
 
 	if races.size() != REQUIRED_RACE_COUNT:
 		return _fail("Wellspring visual catalog requires %d race foundations" % REQUIRED_RACE_COUNT)
-	if champions.size() != REQUIRED_CHAMPION_COUNT:
+	if asset_champions.size() != REQUIRED_CHAMPION_COUNT:
 		return _fail("Wellspring visual catalog requires %d champion packages" % REQUIRED_CHAMPION_COUNT)
 	if districts.size() != REQUIRED_DISTRICT_COUNT:
 		return _fail("Wellspring visual catalog requires %d district packages" % REQUIRED_DISTRICT_COUNT)
@@ -101,8 +105,8 @@ func validate() -> bool:
 		if not _validate_image(str(race.get("matrix_preview", "")), Vector2i(800, 384), "%s matrix preview" % race_id):
 			return false
 
-	for champion_id: String in champions:
-		var champion: Dictionary = champions[champion_id]
+	for champion_id: String in asset_champions:
+		var champion: Dictionary = asset_champions[champion_id]
 		if not races.has(str(champion.get("ancestry", ""))):
 			return _fail("%s references an unknown race" % champion_id)
 		if champion_id == "unnamed_angel":
@@ -112,6 +116,8 @@ func validate() -> bool:
 			return _fail("%s champion package must remain integrated_candidate" % champion_id)
 		if not _validate_character_package(champion, "%s champion" % champion_id):
 			return false
+	if not _apply_canonical_champion_metadata(asset_champions):
+		return false
 
 	if str(wellspring.get("id", "")) != "wellspring" or str(wellspring.get("name", "")) != "The Wellspring":
 		return _fail("central hub must be The Wellspring")
@@ -167,6 +173,20 @@ func champion(champion_id: String) -> Dictionary:
 
 func district(district_id: String) -> Dictionary:
 	return districts.get(district_id, {})
+
+
+func _apply_canonical_champion_metadata(asset_champions: Dictionary) -> bool:
+	champions.clear()
+	if roster_plan.ordered_ids.size() != REQUIRED_CHAMPION_COUNT:
+		return _fail("canonical champion roster count differs from the visual archive")
+	for champion_id: String in roster_plan.ordered_ids:
+		if not asset_champions.has(champion_id):
+			return _fail("visual archive is missing canonical champion ID: %s" % champion_id)
+		var canonical: Dictionary = roster_plan.visual_metadata(champion_id, asset_champions[champion_id])
+		if not races.has(String(canonical["ancestry"])):
+			return _fail("canonical champion ancestry lacks a visual foundation: %s" % champion_id)
+		champions[champion_id] = canonical
+	return true
 
 
 static func canonical_body_type(value: String) -> String:

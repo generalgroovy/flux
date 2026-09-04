@@ -8,11 +8,14 @@ const SUITES: Array[Script] = [
 	preload("res://tests/unit/test_ability_content.gd"),
 	preload("res://tests/unit/test_combat_definition_table.gd"),
 	preload("res://tests/unit/test_champion_catalog.gd"),
+	preload("res://tests/unit/test_champion_roster_plan.gd"),
+	preload("res://tests/unit/test_runtime_content_summary.gd"),
 	preload("res://tests/unit/test_body_type_profile_catalog.gd"),
 	preload("res://tests/unit/test_control_binding_editor.gd"),
 	preload("res://tests/unit/test_spell_loom_editor.gd"),
 	preload("res://tests/unit/test_combat.gd"),
 	preload("res://tests/unit/test_elemental_bursts.gd"),
+	preload("res://tests/unit/test_reaction_catalog.gd"),
 	preload("res://tests/unit/test_core.gd"),
 	preload("res://tests/unit/test_environment_kit_manifest.gd"),
 	preload("res://tests/unit/test_visual_candidate_manifest.gd"),
@@ -71,21 +74,86 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	var suites_by_id := _suite_registry()
+	if suites_by_id.is_empty():
+		print("FAIL: test suite registry is empty or contains duplicate IDs")
+		quit(1)
+		return
+	if _should_list_suites():
+		for suite_id: String in suites_by_id:
+			print(suite_id)
+		print("PASS: listed %d stable FLUX2 suite IDs" % suites_by_id.size())
+		quit(0)
+		return
+	var requested_ids := _requested_suite_ids()
+	for requested_id: String in requested_ids:
+		if not suites_by_id.has(requested_id):
+			print("FAIL: unknown test suite ID: %s" % requested_id)
+			print("Available suite IDs: %s" % ",".join(suites_by_id.keys()))
+			quit(2)
+			return
 	var failures: int = 0
-	for suite_script: Script in SUITES:
+	var executed: int = 0
+	for suite_id: String in suites_by_id:
+		if not requested_ids.is_empty() and suite_id not in requested_ids:
+			continue
+		var suite_script: Script = suites_by_id[suite_id]
 		if not suite_script.can_instantiate():
 			failures += 1
-			print("FAIL: test suite script cannot instantiate: ", suite_script.resource_path)
+			print("FAIL: test suite script cannot instantiate: ", suite_id, " (", suite_script.resource_path, ")")
 			continue
 		var suite: FluxTestSuite = suite_script.new()
 		if suite == null:
 			failures += 1
-			print("FAIL: test suite constructor returned null: ", suite_script.resource_path)
+			print("FAIL: test suite constructor returned null: ", suite_id, " (", suite_script.resource_path, ")")
 			continue
+		executed += 1
 		failures += suite.run()
 	if failures == 0:
-		print("PASS: all FLUX2 headless suites")
+		if requested_ids.is_empty():
+			print("PASS: all FLUX2 headless suites")
+		else:
+			print("PASS: %d selected FLUX2 headless suite(s): %s" % [executed, ",".join(requested_ids)])
 		quit(0)
 	else:
 		print("FAIL: %d assertion(s) failed" % failures)
 		quit(1)
+
+
+func _suite_registry() -> Dictionary:
+	var result: Dictionary = {}
+	for suite_script: Script in SUITES:
+		var suite_id := _suite_id(suite_script)
+		if suite_id.is_empty() or result.has(suite_id):
+			return {}
+		result[suite_id] = suite_script
+	return result
+
+
+func _suite_id(suite_script: Script) -> String:
+	var filename := suite_script.resource_path.get_file().trim_suffix(".gd")
+	return filename.trim_prefix("test_").replace("_", "-")
+
+
+func _requested_suite_ids() -> Array[String]:
+	var result: Array[String] = []
+	var environment_selection := OS.get_environment("FLUX2_TEST_SUITES")
+	if not environment_selection.is_empty():
+		_append_suite_ids(result, environment_selection)
+	for argument: String in OS.get_cmdline_user_args():
+		if not argument.begins_with("--suite="):
+			continue
+		_append_suite_ids(result, argument.trim_prefix("--suite="))
+	return result
+
+
+func _append_suite_ids(result: Array[String], encoded_ids: String) -> void:
+	for raw_id: String in encoded_ids.split(",", false):
+		var suite_id := raw_id.strip_edges().to_lower()
+		if not suite_id.is_empty() and suite_id not in result:
+			result.append(suite_id)
+
+
+func _should_list_suites() -> bool:
+	return OS.get_environment("FLUX2_TEST_MODE") == "list" \
+		or OS.get_cmdline_user_args().has("--list-suites")

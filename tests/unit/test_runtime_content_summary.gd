@@ -1,0 +1,35 @@
+extends FluxTestSuite
+
+
+const SummaryScript = preload("res://src/app/runtime_content_summary.gd")
+const BootstrapScript = preload("res://src/app/bootstrap.gd")
+
+
+func run() -> int:
+	var uninitialized = BootstrapScript.new()
+	uninitialized._process(1.0 / 120.0)
+	uninitialized._draw()
+	uninitialized._unhandled_input(InputEventKey.new())
+	check(uninitialized.world == null, "failed startup callbacks remain inert instead of cascading input/render errors")
+	uninitialized.free()
+	var abilities := AbilityCatalog.new()
+	var champions := ChampionCatalog.new()
+	var reactions := ReactionCatalog.new()
+	check(SummaryScript.build(abilities, champions, reactions).is_empty(), "unloaded catalogs cannot produce a healthy summary")
+	check(SummaryScript.build(null, null, null).is_empty(), "missing catalogs fail closed")
+	check(abilities.load_from_file("res://content/abilities/foundation_abilities_v1.json"), "summary abilities load")
+	check(champions.load_from_file("res://content/champions/foundation_champions_v1.json", abilities), "summary champions load")
+	check(reactions.load_from_file("res://content/reactions/first_eight_element_reactions_v1.json"), "summary recipes load")
+	var summary: Dictionary = SummaryScript.build(abilities, champions, reactions)
+	equal(summary["runtime"]["simulation_hz"], 120, "summary exposes actual simulation rate")
+	equal(summary["runtime"]["protocol"], SimConfig.PROTOCOL_VERSION, "summary follows protocol authority")
+	equal(summary["content"]["abilities_authored"], 21, "authored inventory remains separate")
+	equal(summary["content"]["spells_runtime_selectable"], 16, "only promoted spells are advertised")
+	equal(summary["content"]["spell_positions"], 12, "twelve positions are not twelve catalog spells")
+	equal(summary["content"]["champions_playable"], 3, "only promoted champions are advertised")
+	equal(summary["content"]["reaction_mutation_enabled"], false, "compiled recipes do not imply active chemistry")
+	equal(summary["content"]["reactions_defined"], 36, "all compiled definitions are counted")
+	equal(SummaryScript.spell_loom_lines(summary), ["16 SPELLS / 12 POSITIONS", "3 PLAYABLE CHAMPIONS", "36 RECIPES / CHEMISTRY SEALED"], "compact player copy is honest and derived")
+	(summary["content"]["body_roles"] as Array).clear()
+	equal(ChampionCatalog.SUPPORTED_BODY_TYPES.size(), 3, "report cannot mutate source vocabulary")
+	return finish("runtime-content-summary")

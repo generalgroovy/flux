@@ -2,6 +2,9 @@ extends FluxTestSuite
 
 
 func run() -> int:
+	check(LanLobby.discovery_enabled(PackedStringArray()), "normal play retains LAN discovery")
+	check(not LanLobby.discovery_enabled(PackedStringArray(["--no-lan-discovery"])), "isolated smoke explicitly avoids the shared LAN port")
+	check(LanLobby.discovery_enabled(PackedStringArray(["--headless"])), "headless network tests do not silently lose discovery")
 	_test_discovery_packet_validation()
 	_test_discovery_compatibility_and_source_identity()
 	_test_wellspring_context_boundary()

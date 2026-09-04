@@ -1,8 +1,12 @@
 # Friend-session networking
 
+Status: **canonical current Farflow/networking contract**. Active release
+acceptance is Windows-only; a 120 Hz host simulation intentionally publishes
+bounded 60 Hz transport snapshots for interpolation.
+
 ## Current runnable boundary
 
-FLUX 2 protocol 30 / snapshot schema 11 exposes twelve walk-up Wellspring stations,
+FLUX 2 protocol 32 / snapshot schema 11 exposes twelve walk-up Wellspring stations,
 including the Farflow Charter, Session Hearth and host stewardship tools in
 the eastern Wellspring:
 
@@ -50,8 +54,10 @@ both champions against the effigy.
 
 This checkpoint includes a first playable shared-movement loop. The host maps
 accepted peers to stable entities 2-8, gives the first guest S. Wayne beside the
-host's Oh Tipi, consumes only validated inputs, simulates every traveller, and
-publishes compact snapshots at 60 Hz. Each client follows its assigned actor,
+host's Oh Tipi, consumes only validated inputs, simulates every traveller at the
+authoritative 120 Hz, and publishes compact transport snapshots at 60 Hz. The
+lower snapshot cadence is an intentional bounded network/presentation rate, not
+an alternate gameplay simulation. Each client follows its assigned actor,
 renders the named remote traveller, and receives authoritative resources,
 movement, projectiles, training-target health and semantic feedback. `T` /
 controller D-pad up sends a shared HELLO bubble; the host also authorizes
@@ -59,7 +65,7 @@ Practice Bell resets, per-actor Champion Loom attunement and 3×4 Spell Loom
 placement from authoritative station proximity. The render snapshot keeps the
 8 KiB expansion cap at eight travellers,
 18 projectile lanes, eight fields, four targets and 12 events; overflow is explicit in the
-guest HUD. Snapshots are validated, FastLZ-packed into a bounded protocol-27
+guest HUD. Snapshots are validated, FastLZ-packed into a bounded protocol-32
 wire envelope, and validated again after bounded expansion. The maximum
 eight-player fixture and live three-player court stay within one 1,392-byte
 ENet MTU. Each participating guest also predicts
@@ -186,7 +192,8 @@ containing a display name and SHA-256 compatibility identity derived from:
 - campus/map content hash;
 - ability catalog hash;
 - champion catalog hash;
-- Farflow Charter catalog hash.
+- Farflow Charter catalog hash;
+- first-eight reaction-definition hash.
 
 Mismatches fail before the peer enters the session roster. Incoming variants
 are decoded without object construction, capped at 8 KiB, processed under a
@@ -200,9 +207,11 @@ queue. The host stamps the peer's trusted entity ID, checks action type,
 typed bounded value, authoritative station distance and emote cooldown,
 performs the mutation, then
 publishes a semantic confirmation or refusal. Guests never reset the court or
-change a champion or spell order speculatively. A spell-placement value can
-encode only one of five rows and one of the two proven roles; smuggled values,
-duplicates and out-of-range requests fail closed.
+change a champion or spell order speculatively. A spell-placement value encodes
+exactly one of twelve weave positions and one bounded index in the 48-entry
+library lane; the host resolves it against the current proven runtime order,
+enforces uniqueness and station proximity, and rejects smuggled or out-of-range
+values.
 
 ## Implementation order from here
 
@@ -210,7 +219,7 @@ duplicates and out-of-range requests fail closed.
 | --- | --- |
 | Transport/handshake | Implemented: real ENet loopback, match/refusal, bounded input and disconnect cleanup |
 | Authoritative presence | Implemented: host registers/removes named peer actors and maps network peers to stable entities 2-8 |
-| Movement snapshots | Implemented: host stamps inputs to its tick, simulates all actors, bounds stale input and sends 60 Hz snapshots; guest interpolates presentation |
+| Movement snapshots | Implemented: host stamps inputs into the 120 Hz simulation, bounds stale input and sends intentional 60 Hz transport snapshots; guest interpolates presentation without creating a second gameplay rate |
 | Shared projectiles | Implemented: compact projectile lanes and bounded cast/hit/graze events render on guests while outcomes remain host-owned |
 | Shared Wellspring interaction | Implemented: host authorizes HELLO, Practice Bell, Champion Loom and bounded Spell Loom requests; confirmations/refusals, target state and canonical spell order replicate |
 | Prediction/reconciliation | Implemented: 48-input movement-only history, peer-scoped processed-sequence acknowledgement, deterministic replay, bounded correction and ACK/correction HUD without client outcome authority |
@@ -218,11 +227,11 @@ duplicates and out-of-range requests fail closed.
 | Diegetic session charter | Implemented: three in-world profiles, 2/4/8 capacity, host-authoritative traveller damage teams, Bell-reset policy, handshake assignment and explicit full/incompatible refusal |
 | Session Hearth | Implemented: compact connected/returning roster, per-traveller readiness, host-owned countdown, roster-change cancellation and monotonic shared reset events/ticks |
 | First arena round | Playable foundation: one authored bounded court with individual combat teams, spawn wards, first-to-three/90-second scoring, authoritative knockout/respawn, result freeze and automatic Hearth return |
-| Court readability/rematch | Complete foundation: persistent rules/countdown, eight validated gather positions, reset readiness, monotonic serial and same-roster Round 2 pass 60/120 Hz process journeys |
+| Court readability/rematch | Complete foundation: persistent rules/countdown, eight validated gather positions, reset readiness, monotonic serial and same-roster Round 2 pass authoritative 120 Hz process journeys |
 | Host stewardship | Complete foundation: stable host-only Ledger selection, separate double-confirm Parting Bell, double-confirm company close, bounded reliable reasons, revoked return capability, forged-packet refusal and live process proof |
-| Late-join observer | Complete foundation: host input lock, stable participant camera cycling, explicit HUD, no prediction/reconciliation stream, automatic Hearth handoff and Round-2 participation pass 60/120 Hz three-process journeys |
+| Late-join observer | Complete foundation: host input lock, stable participant camera cycling, explicit HUD, no prediction/reconciliation stream, automatic Hearth handoff and Round-2 participation pass authoritative 120 Hz three-process journeys |
 | Per-peer visibility | Next: host-owned interest/LOS filtering and omission tests before any limited-information competitive mode |
-| Remote platform smoke | Windows and Garuda Linux direct-IP packages connect, move, leave and reconnect with diagnostics |
+| Remote platform smoke | Windows localhost proof is maintained; physical two-PC Windows direct-IP remains a release gate. Older Linux evidence is retained but Linux release acceptance is frozen. |
 | Later continuity | Client-process persistence, host restart, richer moderation and eventual host migration |
 
 The public lobby cap remains eight while the architecture reserves a later

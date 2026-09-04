@@ -16,19 +16,19 @@ func run() -> int:
 func _test_repository_layout() -> void:
 	var layout := SanctumCampusLayout.new()
 	check(layout.load_from_file(CAMPUS_PATH), "repository campus layout validates: %s" % layout.last_error)
-	equal(String(layout.data.get("id")), "sanctum-campus-g2-v1", "campus layout id is stable")
-	equal(layout.canvas_size, Vector2i(2560, 1440), "campus is larger than the gameplay viewport")
+	equal(String(layout.data.get("id")), "wellspring-campus-loop-v2", "campus layout id is stable")
+	equal(layout.canvas_size, Vector2i(3072, 1728), "campus is larger than the gameplay viewport")
 	equal(layout.viewport_size, Vector2i(1280, 720), "campus preserves the supported gameplay viewport")
-	equal(layout.spawn, Vector2i(1280, 720), "campus spawn anchors the combined Nexus commons")
+	equal(layout.spawn, Vector2i(1536, 880), "campus spawn anchors the combined Nexus commons")
 	check(layout.content_hash.length() == 64, "campus layout has a canonical content hash")
 	equal(layout.districts_by_id.size(), 3, "related Sanctum functions are combined into three large quarters")
 	for district_id: String in SanctumCampusLayout.REQUIRED_DISTRICTS:
 		check(layout.districts_by_id.has(district_id), "required visible district exists: %s" % district_id)
-	equal(layout.buildings_by_id.size(), 10, "authored buildings and low cover are registered")
+	equal(layout.buildings_by_id.size(), 14, "authored buildings and low cover are registered")
 	equal(layout.landmarks_by_id.size(), 6, "combined quarters retain multiple memorable landmarks")
 	equal(layout.reset_zones_by_id.size(), 2, "movement and proving reset zones are explicit")
 	equal(layout.stations_by_id.size(), 12, "play, movement practice, controls, spells, Farflow and host-stewardship stations are explicit")
-	equal(layout.practice_targets_by_id.size(), 1, "the Nexus sparring effigy is explicit")
+	equal(layout.practice_targets_by_id.size(), 3, "the Nexus sparring effigy is explicit")
 	equal(String(layout.arena_definition.get("id", "")), "proving-court-v1", "the first bounded arena has a stable authored identity")
 	equal((layout.arena_definition.get("spawns", []) as Array).size(), 8, "arena reserves eight ordered spawn anchors")
 	var hearth_station: Dictionary = layout.stations_by_id["session-hearth"]
@@ -54,31 +54,24 @@ func _test_collision_compilation() -> void:
 	var layout := SanctumCampusLayout.new()
 	check(layout.load_from_file(CAMPUS_PATH), "campus loads for collision compilation")
 	var collision: CollisionWorld = layout.build_collision_world()
-	equal(collision.width, 2_560_000, "campus collision width uses fixed-point units")
-	equal(collision.height, 1_440_000, "campus collision height uses fixed-point units")
-	equal(collision.obstacles.size(), 10, "every authored building compiles to ordered collision")
+	equal(collision.width, 3_072_000, "campus collision width uses fixed-point units")
+	equal(collision.height, 1_728_000, "campus collision height uses fixed-point units")
+	equal(collision.obstacles.size(), 14, "every authored building compiles to ordered collision")
 	for index: int in range(collision.obstacles.size() - 1):
 		check(collision.obstacles[index].obstacle_id < collision.obstacles[index + 1].obstacle_id, "campus obstacle ids are canonical")
 	check(collision.can_occupy(layout.spawn * SimConfig.FIXED_SCALE, MovementTuning.PLAYER_RADIUS), "authored spawn has player clearance")
-	var target: Dictionary = layout.practice_targets_by_id["nexus-sparring-effigy"]
-	check(collision.can_occupy(Vector2i(1_500_000, 720_000), int(target.get("radius", 0)) * SimConfig.FIXED_SCALE), "sparring effigy has authored collision clearance")
-	check(collision.can_occupy(Vector2i(1_980_000, 800_000), MovementTuning.PLAYER_RADIUS), "Farflow host station has authored collision clearance")
-	check(collision.can_occupy(Vector2i(2_180_000, 800_000), MovementTuning.PLAYER_RADIUS), "Farflow join station has authored collision clearance")
-	check(collision.can_occupy(Vector2i(2_380_000, 800_000), MovementTuning.PLAYER_RADIUS), "Farflow Charter has authored collision clearance")
-	check(collision.can_occupy(Vector2i(2_080_000, 620_000), MovementTuning.PLAYER_RADIUS), "Session Hearth has authored collision clearance")
-	check(collision.can_occupy(Vector2i(2_300_000, 620_000), MovementTuning.PLAYER_RADIUS), "Company Ledger has authored collision clearance")
-	check(collision.can_occupy(Vector2i(2_460_000, 620_000), MovementTuning.PLAYER_RADIUS), "Parting Bell has authored collision clearance")
-	check(collision.can_occupy(Vector2i(1_080_000, 900_000), MovementTuning.PLAYER_RADIUS), "Controls Lectern has authored collision clearance")
-	check(collision.can_occupy(Vector2i(1_480_000, 900_000), MovementTuning.PLAYER_RADIUS), "Spell Loom has authored collision clearance")
-	check(collision.can_occupy(Vector2i(720_000, 720_000), MovementTuning.PLAYER_RADIUS), "Momentum Chime has authored collision clearance")
+	for station_id: String in layout.stations_by_id:
+		var station: Dictionary = layout.stations_by_id[station_id]
+		check(collision.can_occupy(SanctumCampusLayout._parse_point(station["position"]) * SimConfig.FIXED_SCALE, MovementTuning.PLAYER_RADIUS), "station clearance: %s" % station_id)
+	for target_id: String in layout.practice_targets_by_id:
+		var target: Dictionary = layout.practice_targets_by_id[target_id]
+		check(collision.can_occupy(SanctumCampusLayout._parse_point(target["position"]) * SimConfig.FIXED_SCALE, MovementTuning.PLAYER_RADIUS), "target clearance: %s" % target_id)
 	for gather_value: Variant in (layout.stations_by_id["session-hearth"] as Dictionary).get("gather_spawns", []):
 		var gather_values: Array = gather_value
 		check(collision.can_occupy(Vector2i(int(gather_values[0]), int(gather_values[1])) * SimConfig.FIXED_SCALE, MovementTuning.PLAYER_RADIUS), "Hearth gather spawn has authored collision clearance")
-	check(not collision.can_occupy(Vector2i(180_000, 360_000), MovementTuning.PLAYER_RADIUS), "routekeeper lodge collision matches presentation bounds")
-	var vault: CollisionWorld.Obstacle = collision.find_vault_candidate(Vector2i(1_520_000, 720_000), Vector2i(1000, 0), MovementTuning.PLAYER_RADIUS)
-	check(vault != null, "marked campus vault rail is discoverable")
-	if vault != null:
-		equal(vault.obstacle_id, 110, "marked campus vault rail preserves stable obstacle id")
+	check(not collision.can_occupy(Vector2i(300_000, 240_000), MovementTuning.PLAYER_RADIUS), "lodge collision matches visible bounds")
+	for obstacle: CollisionWorld.Obstacle in collision.obstacles:
+		check(not obstacle.vaultable, "no campus obstacle offers vaulting")
 
 
 func _test_invalid_layouts_fail_closed() -> void:
@@ -91,7 +84,7 @@ func _test_invalid_layouts_fail_closed() -> void:
 		func(data: Dictionary) -> void: (data["connections"][0] as Dictionary)["to"] = "missing-district",
 		func(data: Dictionary) -> void: (data["routes"][0] as Dictionary)["points"] = [[-1, 200], [20, 200]],
 		func(data: Dictionary) -> void: (data["routes"][0] as Dictionary)["kind"] = "teleport",
-		func(data: Dictionary) -> void: (data["routes"][1] as Dictionary)["accessible"] = false,
+		func(data: Dictionary) -> void: (data["routes"][1] as Dictionary)["width"] = 400,
 		func(data: Dictionary) -> void: (data["routes"][1] as Dictionary)["points"] = [[82, 720], [1500, 720]],
 		func(data: Dictionary) -> void: (data["reset_zones"][0] as Dictionary)["bounds"] = [800, 1200, 300, 300],
 		func(data: Dictionary) -> void: (data["arena"] as Dictionary)["score_limit"] = 99,
@@ -100,18 +93,18 @@ func _test_invalid_layouts_fail_closed() -> void:
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["command"] = "open_detached_menu",
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["interaction_radius"] = 900,
 		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["lines"] = "too vague",
-		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["position"] = [1200, 500],
+		func(data: Dictionary) -> void: (data["stations"][0] as Dictionary)["position"] = [1400, 240],
 		func(data: Dictionary) -> void: (data["stations"][8] as Dictionary)["gather_spawns"] = [[2080, 620]],
 		func(data: Dictionary) -> void: ((data["stations"][8] as Dictionary)["gather_spawns"] as Array)[0] = [2300, 620],
 		func(data: Dictionary) -> void: ((data["stations"][8] as Dictionary)["gather_spawns"] as Array)[1] = [2144, 620],
 		func(data: Dictionary) -> void: (data["practice_targets"][0] as Dictionary)["health"] = 0,
 		func(data: Dictionary) -> void: (data["practice_targets"][0] as Dictionary)["entity_id"] = 1,
-		func(data: Dictionary) -> void: (data["practice_targets"][0] as Dictionary)["position"] = [1200, 500],
+		func(data: Dictionary) -> void: (data["practice_targets"][0] as Dictionary)["position"] = [2400, 240],
 		func(data: Dictionary) -> void: (data["buildings"][0] as Dictionary)["occlusion_policy"] = "always_xray",
 		func(data: Dictionary) -> void: (data["buildings"][0] as Dictionary)["worldbone"] = false,
-		func(data: Dictionary) -> void: (data["buildings"][9] as Dictionary)["vaultable"] = false,
+		func(data: Dictionary) -> void: (data["buildings"][9] as Dictionary)["vaultable"] = true,
 		func(data: Dictionary) -> void: (data["landmarks"][0] as Dictionary)["position"] = [2550, 1430],
-		func(data: Dictionary) -> void: (data["buildings"][4] as Dictionary)["bounds"] = [1250, 690, 60, 60],
+		func(data: Dictionary) -> void: (data["buildings"][4] as Dictionary)["bounds"] = [1520, 864, 60, 60],
 	]
 	for mutation: Callable in mutations:
 		var candidate := SanctumCampusLayout.new()
@@ -126,10 +119,11 @@ func _test_disconnected_graph_fails_closed() -> void:
 	check(source.load_from_file(CAMPUS_PATH), "campus loads as disconnected-graph source")
 	var candidate := SanctumCampusLayout.new()
 	candidate.data = source.data.duplicate(true)
-	var reverse_duplicate: Dictionary = candidate.data["connections"][1]
-	reverse_duplicate["from"] = "nexus-commons"
-	reverse_duplicate["to"] = "conservatory-gardens"
-	reverse_duplicate["points"] = [[1020, 720], [880, 720]]
+	for value: Variant in candidate.data["connections"]:
+		var connection: Dictionary = value
+		if connection["to"] == "wayfarer-proving-quarter":
+			connection["to"] = "conservatory-gardens"
+			connection["points"] = [[1104, 832], [848, 832]]
 	check(not candidate.validate(), "duplicate bridge count cannot hide a disconnected district")
 	check("connected district graph" in candidate.last_error, "disconnected district failure is actionable")
 
@@ -139,6 +133,6 @@ func _test_custom_world_identity() -> void:
 	check(layout.load_from_file(CAMPUS_PATH), "campus loads for world identity")
 	var campus_world := SimWorld.new(120, 99, layout.build_collision_world(), String(layout.data.get("id")), layout.content_hash)
 	var foundation_world := SimWorld.new(120, 99)
-	equal(campus_world.map_id, "sanctum-campus-g2-v1", "world owns the authored map id")
+	equal(campus_world.map_id, "wellspring-campus-loop-v2", "world owns the authored map id")
 	equal(campus_world.map_hash, layout.content_hash, "world owns the authored map hash")
 	check(campus_world.state_hash() != foundation_world.state_hash(), "authored map identity changes canonical world state")

@@ -62,17 +62,24 @@ function Invoke-FluxGodotChecked {
     # Start-Process joins ArgumentList values into one command line on Windows.
     # Quote every value so clones living below a path with spaces remain valid.
     $quotedArguments = $Arguments | ForEach-Object { '"' + $_.Replace('"', '\"') + '"' }
-    $process = Start-Process -FilePath $GodotBin -ArgumentList $quotedArguments -RedirectStandardOutput $LogPath -RedirectStandardError $errorPath -WindowStyle Hidden -PassThru -Wait
+    $process = Start-Process -FilePath $GodotBin -ArgumentList $quotedArguments -RedirectStandardOutput $LogPath -RedirectStandardError $errorPath -WindowStyle Hidden -PassThru
+    # Failed test scripts may never exit their own loops. Bound this owned child.
+    if (-not $process.WaitForExit(180000)) {
+        $process.Kill()
+        $process.WaitForExit()
+        throw "Godot check timed out after 180 seconds; inspect $LogPath and $errorPath"
+    }
     $combined = @()
-    if (Test-Path -LiteralPath $LogPath) { $combined += Get-Content -LiteralPath $LogPath }
-    if (Test-Path -LiteralPath $errorPath) { $combined += Get-Content -LiteralPath $errorPath }
+    if (Test-Path -LiteralPath $LogPath) { $combined += Get-Content -LiteralPath $LogPath -Tail 2000 }
+    if (Test-Path -LiteralPath $errorPath) { $combined += Get-Content -LiteralPath $errorPath -Tail 2000 }
     $combined | Write-Output
     if ($process.ExitCode -ne 0) { throw "Godot exited with code $($process.ExitCode)" }
-    $bad = $combined | Select-String -Pattern 'SCRIPT ERROR|Parse Error|Compile Error|Failed to load script|Invalid call'
-    if ($bad) { throw 'Godot emitted a script/import/runtime error.' }
+    $existingLogs = @($LogPath, $errorPath) | Where-Object { Test-Path -LiteralPath $_ }
+    $bad = Select-String -LiteralPath $existingLogs -Pattern 'SCRIPT ERROR|Parse Error|Compile Error|Failed to load script|Invalid call' -Quiet
+    if ($true -in @($bad)) { throw 'Godot emitted a script/import/runtime error.' }
     if ($RejectWarnings) {
-        $warnings = $combined | Select-String -Pattern '^(WARNING|ERROR):'
-        if ($warnings) { throw "Godot emitted $($warnings.Count) unexpected warning/error line(s)." }
+        $warnings = Select-String -LiteralPath $existingLogs -Pattern '^(WARNING|ERROR):' -Quiet
+        if ($true -in @($warnings)) { throw 'Godot emitted an unexpected warning/error; inspect the complete logs.' }
     }
 }
 

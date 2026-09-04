@@ -4042,3 +4042,32 @@ Commit: pending at pre-commit record time. Push: pending.
 - README, backlog and standing prompts now mark C5/C5.5 complete and identify
   C6 → C7 → C8 → C9 as the next source path. Signing/trust remains a separate
   external release-acceptance requirement; this request adds no live mechanics.
+
+## 2026-09-04 -- expanded campus and intentional movement checkpoint
+
+- Implemented the user-promoted map first: 3072x1728 connected campus, six
+  activity areas, full-width ordinary-route validation, practice walls, three
+  targets, expanded duel cover/spawns and relocated shared services.
+- Implemented M0-M2: no vault/crest activation, distinct Q/LT Evade and V/B
+  wall/air turn, Sprint+Jump intent, 50 ms slide protection/brake, independent
+  jump protection, finite air-wall budget, continuous wall contact/detach,
+  landing-direction buffer and optional local F2/F3 practice trace/echo.
+- Kept material movement strictly neutral and landing burst absent. Numeric
+  legacy adapters remain reserved; protocol/snapshot/preferences are 33/12/10.
+- Full source gate: 66 suites / 19,076 assertions, zero failures/stderr,
+  import/120 Hz boot successful in 36,068 ms. Receipt:
+  .godot/receipts/campus-movement-validated.json.
+- Real-process local Farflow with a 60-second budget passed join, greeting,
+  prediction/reconnect, late spectator/Hearth handoff, rematch and host removal.
+  The first 40-second attempt timed out before second-round completion.
+- Inspected real 1080p/50% overview and 720p/75% movement/practice captures;
+  corrected a misplaced trace caption and overview/background/path layering.
+- Human visual/feel acceptance, independent concurrent activities, zone-local
+  reset, chemistry and current Windows packaging remain explicit follow-ups.
+  The saved painted proposal is not shipped map art. Existing exports predate
+  this protocol-33 source checkpoint; installer trust policy is still unresolved.
+- Resume with C6 contact/exposure, then C7-C9 and the required playtest pause.
+- Repeated Farflow against the final campus hash successfully. The actual
+  flux.cmd play -SmokeTest front door, current-state check and staged whitespace
+  check passed. Reviewed 64 project files; personal scripts, shortcut,
+  node_modules and ignored reports/builds remain outside the checkpoint.

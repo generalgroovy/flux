@@ -2,7 +2,7 @@ class_name PlayerPreferences
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 9
+const SCHEMA_VERSION: int = 10
 const DEFAULT_PATH: String = "user://player_preferences_v1.json"
 const DEFAULT_FARFLOW_JOIN_ADDRESS: String = "127.0.0.1"
 const MOVEMENT_WORLD_RELATIVE: String = "world_relative"
@@ -74,6 +74,9 @@ const SCHEMA_V3_DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"adjust_pov_range": KEY_F10,
 }
 const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
+	&"practice_trace": KEY_F2,
+	&"practice_retry": KEY_F3,
+	&"evade": KEY_Q,
 	&"move_left": KEY_A,
 	&"move_right": KEY_D,
 	&"move_up": KEY_W,
@@ -107,6 +110,9 @@ const SCHEMA_V4_DEFAULT_MOUSE_BINDINGS: Dictionary[StringName, int] = {
 	&"slide": MOUSE_BUTTON_WHEEL_DOWN,
 }
 const DEFAULT_MOUSE_BINDINGS: Dictionary[StringName, int] = {
+	&"practice_trace": 0,
+	&"practice_retry": 0,
+	&"evade": 0,
 	&"move_left": 0,
 	&"move_right": 0,
 	&"move_up": 0,
@@ -127,6 +133,9 @@ const DEFAULT_MOUSE_BINDINGS: Dictionary[StringName, int] = {
 	&"spell_layer_alt": 0,
 }
 const DEFAULT_CONTROLLER_BINDINGS: Dictionary = {
+	&"practice_trace": {"kind": "none", "index": -1, "direction": 0},
+	&"practice_retry": {"kind": "none", "index": -1, "direction": 0},
+	&"evade": {"kind": "axis", "index": JOY_AXIS_TRIGGER_LEFT, "direction": 1},
 	&"move_left": {"kind": "axis", "index": JOY_AXIS_LEFT_X, "direction": -1},
 	&"move_right": {"kind": "axis", "index": JOY_AXIS_LEFT_X, "direction": 1},
 	&"move_up": {"kind": "axis", "index": JOY_AXIS_LEFT_Y, "direction": -1},
@@ -192,11 +201,11 @@ func apply_control_preset(preset_id: String) -> bool:
 func apply_dictionary(data: Dictionary) -> bool:
 	var raw_schema: Variant = data.get("schema_version", -1)
 	if not _is_whole_number(raw_schema):
-		last_error = "Player preferences require schema_version 1 through 9"
+		last_error = "Player preferences require schema_version 1 through 10"
 		return false
 	var requested_schema: int = int(raw_schema)
 	if requested_schema < 1 or requested_schema > SCHEMA_VERSION:
-		last_error = "Player preferences require schema_version 1 through 9"
+		last_error = "Player preferences require schema_version 1 through 10"
 		return false
 	var requested_movement: String = str(data.get("movement_reference", ""))
 	var requested_pov_mode: String = str(data.get("pov_mode", ""))
@@ -300,6 +309,12 @@ func apply_dictionary(data: Dictionary) -> bool:
 	if requested_schema <= 6:
 		_preserve_legacy_modifier_binding(requested_bindings, &"spell_layer_ctrl", KEY_CTRL)
 		_preserve_legacy_modifier_binding(requested_bindings, &"spell_layer_alt", KEY_ALT)
+	if requested_schema < 10:
+		# Never steal a player's existing custom key when adding a new intent.
+		for added_action: StringName in [&"evade", &"practice_trace", &"practice_retry"]:
+			for action: StringName in requested_bindings:
+				if action != added_action and requested_bindings[action] == requested_bindings[added_action]:
+					requested_bindings[added_action] = 0
 	var binding_error: String = validate_keyboard_bindings(requested_bindings)
 	if not binding_error.is_empty():
 		last_error = binding_error
@@ -348,6 +363,10 @@ func apply_dictionary(data: Dictionary) -> bool:
 			"index": int(raw_descriptor.get("index", -1)),
 			"direction": int(raw_descriptor.get("direction", 0)),
 		}
+	if requested_schema < 10:
+		for action: StringName in requested_controller_bindings:
+			if action != &"evade" and requested_controller_bindings[action] == requested_controller_bindings[&"evade"]:
+				requested_controller_bindings[&"evade"] = {"kind": "none", "index": -1, "direction": 0}
 	var controller_binding_error: String = validate_controller_bindings(requested_controller_bindings)
 	if not controller_binding_error.is_empty():
 		last_error = controller_binding_error

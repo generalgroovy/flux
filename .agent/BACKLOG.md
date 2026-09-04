@@ -4,6 +4,14 @@ This queue reflects the current user-ordered path to the first-eight chemistry
 playtest. Completed detail belongs in `WORKLOG.md`; this file stays short,
 playable, and acceptance-driven.
 
+**2026-09-04 execution override:** the movement-led campus and subsequent M0-M2
+movement retirement/refinement are implemented source candidates. Resume C6-C9
+chemistry from this green checkpoint; preserve human visual/feel acceptance.
+Material-assisted drift/grip stays disabled with an inert chemistry seam;
+non-vault landing burst is excluded. Concurrent activity ownership is a separate
+acceptance task, not implied by six physical practice areas. See the
+[movement revision](../docs/PLAYER-CONTROLS-AND-POV.md#movement-revision-no-vaulting-2026-09-04).
+
 **Active platform scope:** Windows only. Existing Linux compatibility is
 preserved but receives no new packaging or acceptance work until the user
 reopens that scope. Automatic Linux CI is disabled; the source-controlled
@@ -19,7 +27,8 @@ runs cannot generate notification floods.
 | 4 | **Readable bullet-pattern pressure — complete in source** | Cinder Fan deterministically emits `-24,-12,0,+12,+24` lanes with ordered IDs, one cost, single-hit protection, bounded collision/snapshot work, a readable 28–46 px projectile envelope and clean evasion lanes at 120 Hz; the Proving Court floor now exposes quiet lanes and four response pockets. |
 | 5 | **Eight elemental bursts + one combat authority — complete in source** | Fire, Water, Earth, Wind, Charge, Ice, Light, and Dark provide positive-Flux global Bursts with identical five-lane geometry/economy; all 16 live spell definitions now compile exclusively from the validated catalog, with 61 suites / 17,781 assertions and eight truthful 120 Hz captures proving simulation and presentation. |
 | 6 | **Reaction catalog — complete in this checkpoint** | All 36 symmetric pairs compile from one validated bounded catalog, resolve identically in either order, contribute to compatibility and enable no mutation. |
-| 7 | **Current truth + faster feedback — complete in this checkpoint** | Generated state/drift checks, 64 stable suite IDs, focused execution, receipts, `.\flux.cmd`, document statuses, 911-asset inventory and canonical roster adapters are implemented. Derived Loom status passes 720p/1080p review; exported-pack content matches source; actual export boots. C6 is next; installer trust remains a separate release blocker. |
+| 7 | **Current truth + faster feedback — complete in this checkpoint** | Generated state/drift checks, 64 stable suite IDs, focused execution, receipts, `.\flux.cmd`, document statuses, 911-asset inventory and canonical roster adapters are implemented. Derived Loom status passes 720p/1080p review; exported-pack content matches source; actual export boots. Map and M0-M2 are now implemented before C6; installer trust remains a separate release blocker. |
+| 7.1 | **Campus + M0-M2 — implemented source candidate** | 3072x1728 loop, six areas, wide validated bypasses, explicit Evade, no vault/crest, 50 ms slide protection/brake, contact wallrun/air-kick budget and local practice trace/echo. See docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md for evidence and limits; human balance/visual acceptance and concurrent activity isolation remain pending. |
 | 8 | **Complete first-eight chemistry** | All pairs form from bounded exposure, create readable spatial effects through shared primitives, decay/residue/reset deterministically, preserve worldbone and route budgets, replicate/replay, and can be tested/explained in the Elemental Crucible. |
 | 9 | **Playtest pause** | Package the exact green Windows build and run the named solo, movement, pressure, chemistry, friend, accessibility and recovery journeys through Wellspring → movement lane → pattern lane → Crucible → Farflow; record confusion and correction, then wait for feedback before roster expansion. |
 | 10 | **Measured feel + cohesion pass — after feedback** | Rank observed missed intent, unclear consequence, repetitive choices and visual competition; tune existing movement/action transitions and weak live areas while preserving universal techniques, three fair body roles, package integrity and 120 Hz authority. |

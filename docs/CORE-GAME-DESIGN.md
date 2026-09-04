@@ -96,7 +96,7 @@ Every meaningful region should support at least:
 | Route class | Purpose |
 | --- | --- |
 | Ordinary | Clear, safe-enough route available without advanced movement. |
-| Advanced | Faster or more expressive line using slide, jump, wall, vault or momentum techniques. |
+| Advanced | Faster or more expressive line using slide, jump, wallrun/kick, aerial turn or momentum techniques; never mandatory vaulting. |
 | Systemic | Route created, closed or transformed by elements, structures, devices or other players. |
 | Recovery | Readable escape/reset path so one failed technique does not strand a player. |
 
@@ -193,10 +193,16 @@ FLUX answers that geometry with a much richer traversal system.
 | Hop / jump / double jump | Vertical/aerial commitment | Change timing/elevation, clear ground pressure or route geometry. |
 | Air redirect / air dodge | Expensive correction | Escape a bad aerial line or cross a projectile topology break. |
 | Wall kick / wall skim | Geometry dependent | Convert map edges into route changes. |
-| Wavedash / slide jump / vault / superglide | Technique dependent | Preserve or convert momentum through authored openings. |
+| Wavedash / slide jump / landing reversal | Technique dependent | Preserve or convert momentum through authored openings; vault and its dependent crest activation are retired. |
 | Element-created traversal | State dependent | Use ice, wind, water, structures or reactions as temporary movement infrastructure. |
 
 ### 5.2 Roll and jump readability
+
+The [2026-09-04 movement revision](PLAYER-CONTROLS-AND-POV.md#movement-revision-no-vaulting-2026-09-04)
+is authoritative for target/current distinctions: vaulting is removed from the
+runtime; six-tick slide protection and contact-based wallrun are now implemented
+candidates. Protection never grants geometry clearance. See the
+[acceptance ledger](WELLSPRING-MOVEMENT-ACCEPTANCE.md) for evidence and remaining work.
 
 Evasion presentation must communicate actual state:
 

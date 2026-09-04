@@ -102,11 +102,13 @@ func draw(
 		_draw_district(canvas, district, district_index)
 		natural_kit.draw_district_details(canvas, district, district_index, presentation_tick, reduced_effects)
 		_draw_district_identity(canvas, district, presentation_tick, reduced_effects)
-		if architecture_kit != null:
-			architecture_kit.draw_district_court(canvas, district, reduced_effects)
 		district_index += 1
 	for route_value: Variant in layout.data.get("routes", []):
 		_draw_route(canvas, route_value as Dictionary)
+	if architecture_kit != null:
+		for district_value: Variant in layout.data.get("districts", []):
+			architecture_kit.draw_district_court(canvas, district_value, reduced_effects)
+	_draw_activity_areas(canvas, layout)
 	_draw_arena(canvas, layout.arena_definition, presentation_tick, reduced_effects)
 	for building_value: Variant in layout.data.get("buildings", []):
 		_draw_building(canvas, building_value as Dictionary, focus_world_position)
@@ -148,7 +150,7 @@ func _draw_arena(canvas: CanvasItem, definition: Dictionary, tick: int, reduced_
 func _draw_water(canvas: CanvasItem, size: Vector2i, _reserved_top: int, tick: int) -> void:
 	# The reserved top band remains non-playable, but belongs visually to the
 	# Wellspring now that the legacy full-width HUD has been removed.
-	canvas.draw_rect(Rect2(0, 0, size.x, size.y), WATER, true)
+	canvas.draw_rect(Rect2(-4096, -4096, 12288, 12288), WATER, true)
 	var phase: int = (tick / 8) % 64
 	for y: int in range(14, size.y, 32):
 		for x: int in range(-32, size.x + 32, 80):
@@ -331,15 +333,17 @@ func _draw_route_seams(canvas: CanvasItem, points: PackedVector2Array, width: fl
 		var distance := 18.0
 		while distance < length - 8.0:
 			var center := start + direction * distance
-			canvas.draw_line(center - side * width * 0.34, center + side * width * 0.34, Color(STONE_LIGHT if kind != "advanced" else BRASS_LIGHT, 0.16), 1.0)
+			for lane: float in [-0.28, 0.0, 0.28]:
+				var mark := center + side * width * lane
+				canvas.draw_line(mark - side * 9, mark + side * 9, Color(STONE_LIGHT, 0.12), 1.0)
 			distance += 28.0
 
 
 func _draw_building(canvas: CanvasItem, building: Dictionary, focus_world_position: Vector2) -> void:
 	var bounds := SanctumCampusLayout._parse_bounds(building.get("bounds", []))
 	var style := String(building.get("style", "timber_hall"))
-	if style == "vault_rail":
-		_draw_vault_rail(canvas, bounds)
+	if style == "practice_wall":
+		_draw_practice_wall(canvas, bounds)
 		return
 	var footprint := Rect2(bounds)
 	if architecture_kit != null and architecture_kit.draw_building(canvas, building):
@@ -427,13 +431,13 @@ static func cutaway_amount(footprint: Rect2, focus_world_position: Vector2) -> f
 	)
 
 
-func _draw_vault_rail(canvas: CanvasItem, bounds: Rect2i) -> void:
+func _draw_practice_wall(canvas: CanvasItem, bounds: Rect2i) -> void:
 	canvas.draw_rect(Rect2(bounds.position + Vector2i(4, 6), bounds.size), Color(DEEP_FOREST, 0.75), true)
-	canvas.draw_rect(Rect2(bounds), Color("554532"), true)
-	canvas.draw_rect(Rect2(bounds), BRASS, false, 3.0)
+	canvas.draw_rect(Rect2(bounds), CLIFF_LIGHT, true)
+	canvas.draw_rect(Rect2(bounds), STONE, false, 3.0)
 	for x: int in range(bounds.position.x + 8, bounds.end.x, 16):
-		canvas.draw_line(Vector2(x, bounds.position.y + 4), Vector2(x, bounds.end.y - 4), Color(BRASS_LIGHT, 0.65), 2.0)
-	canvas.draw_string(ThemeDB.fallback_font, Vector2(bounds.position.x + 7, bounds.get_center().y + 4), "VAULT", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 10, PARCHMENT)
+		canvas.draw_line(Vector2(x, bounds.position.y + 4), Vector2(x, bounds.position.y + 10), Color(BRASS_LIGHT, 0.65), 2.0)
+	# No embedded action label: these are solid walls, not traversal prompts.
 
 
 func _draw_landmark(canvas: CanvasItem, landmark: Dictionary, tick: int, reduced_effects: bool) -> void:
@@ -652,3 +656,22 @@ static func _closed(points: PackedVector2Array) -> PackedVector2Array:
 	if not points.is_empty():
 		output.append(points[0])
 	return output
+
+# Geometry and collision stay in the layout; these quiet floor cues only teach purpose.
+func _draw_activity_areas(canvas: CanvasItem, layout: SanctumCampusLayout) -> void:
+	for value: Variant in layout.data.get("activity_areas", []):
+		var area: Dictionary = value
+		var bounds := Rect2(SanctumCampusLayout._parse_bounds(area["bounds"]))
+		canvas.draw_rect(bounds, Color(PARCHMENT, 0.05), true)
+		canvas.draw_rect(bounds.grow(-8), Color(BRASS, 0.22), false, 2.0)
+		canvas.draw_string(ThemeDB.fallback_font, bounds.position + Vector2(16, 24),
+			String(area["label"]), HORIZONTAL_ALIGNMENT_LEFT, bounds.size.x - 32, 16, Color(PARCHMENT, 0.68))
+		if String(area["id"]) == "pattern-range":
+			for x: int in [2368, 2560, 2752]:
+				canvas.draw_dashed_line(Vector2(x, 400), Vector2(x, 592), Color(PARCHMENT, 0.3), 2.0, 12.0)
+		elif String(area["id"]) == "movement-garden":
+			var center := Vector2(488, 656)
+			canvas.draw_arc(center, 76, 0, TAU, 32, Color(BRASS, 0.32), 2)
+			for index: int in range(8):
+				var direction := Vector2.RIGHT.rotated(index * TAU / 8.0)
+				canvas.draw_line(center + direction * 40, center + direction * 92, Color(PARCHMENT, 0.42), 2)

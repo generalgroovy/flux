@@ -15,6 +15,7 @@ const ACTIONS: Array[StringName] = [
 	&"slide",
 	&"jump",
 	&"technique",
+	&"evade",
 	&"primary",
 	&"active_1",
 	&"interact",
@@ -25,6 +26,8 @@ const ACTIONS: Array[StringName] = [
 	&"spell_4",
 	&"spell_layer_ctrl",
 	&"spell_layer_alt",
+	&"practice_trace",
+	&"practice_retry",
 ]
 const ACTION_LABELS: Dictionary[StringName, String] = {
 	&"move_left": "MOVE LEFT",
@@ -34,7 +37,8 @@ const ACTION_LABELS: Dictionary[StringName, String] = {
 	&"sprint": "SPRINT",
 	&"slide": "SLIDE / FAST-FALL",
 	&"jump": "JUMP",
-	&"technique": "TECHNIQUE",
+	&"technique": "WALL / AIR TURN / TECH",
+	&"evade": "EVADE (ROLL / AIR DODGE)",
 	&"primary": "PRIMARY SPELL",
 	&"active_1": "ACTIVE SPELL",
 	&"interact": "INTERACT",
@@ -45,6 +49,8 @@ const ACTION_LABELS: Dictionary[StringName, String] = {
 	&"spell_4": "SPELL BUTTON 4",
 	&"spell_layer_ctrl": "SPELL CTRL LAYER",
 	&"spell_layer_alt": "SPELL ALT LAYER",
+	&"practice_trace": "PRACTICE TRACE ON / OFF",
+	&"practice_retry": "RECORD NEXT PRACTICE RUN",
 }
 const DEVICE_LABELS: Array[String] = ["KEYBOARD", "MOUSE", "CONTROLLER"]
 const VISIBLE_ROWS: int = 12

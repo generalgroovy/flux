@@ -4,7 +4,7 @@ extends RefCounted
 
 # Authoritative values are fixed-point world units, resource milli-units,
 # milliseconds, or scale-1000 ratios. They preserve the proven FLUX grammar.
-const COMPATIBILITY_ID: String = "movement-tuning-v5-active-air-control"
+const COMPATIBILITY_ID: String = "movement-tuning-v6-no-vault-wall-control"
 const PLAYER_RADIUS: int = 18_000
 const BASE_SPEED: int = 324_000
 const ACCELERATION: int = 1_980_000
@@ -78,6 +78,10 @@ const IMPACT_RECOVERY_DECELERATION: int = 2_400_000
 const IMPACT_RECOVERY_TECH_COST: int = 18_000
 const IMPACT_RECOVERY_TECH_SPEED: int = 360_000
 const IMPACT_RECOVERY_INTENSITY: int = 960
+const SLIDE_INVULNERABILITY_MS: int = 50
+const LANDING_INPUT_BUFFER_MS: int = 80
+const WALL_CONTACT_TOLERANCE: int = 3000
+const MATERIAL_MOTION_ENABLED: bool = false
 const SLIDE_COST: int = 22_000
 const SLIDE_ENTRY_SPEED: int = 250_000
 const SLIDE_SPEED: int = 720_000
@@ -148,6 +152,7 @@ static func compatibility_hash() -> String:
 			IMPACT_RECOVERY_TECH_COST, IMPACT_RECOVERY_TECH_SPEED,
 			IMPACT_RECOVERY_INTENSITY,
 		],
+		"movement_revision": [SLIDE_INVULNERABILITY_MS, LANDING_INPUT_BUFFER_MS, WALL_CONTACT_TOLERANCE, MATERIAL_MOTION_ENABLED, SurfaceMotionPolicy.COMPATIBILITY_ID],
 		"slide": [
 			SLIDE_COST, SLIDE_ENTRY_SPEED, SLIDE_SPEED, SLIDE_DURATION_MS,
 			SLIDE_COOLDOWN_MS, SLIDE_STEERING, SLIDE_JUMP_COST,

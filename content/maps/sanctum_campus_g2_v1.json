@@ -1,82 +1,91 @@
 {
-  "schema_version": 4,
-  "id": "sanctum-campus-g2-v1",
-  "display_name": "Living Sanctum — First Combined Campus",
-  "canvas_size": [2560, 1440],
-  "viewport_size": [1280, 720],
+  "schema_version": 5,
+  "id": "wellspring-campus-loop-v2",
+  "display_name": "Wellspring Academy - Commons and Practice Loop",
+  "canvas_size": [3072,1728],
+  "viewport_size": [1280,720],
   "reserved_ui_top": 112,
-  "spawn": [1280, 720],
-  "required_districts": ["conservatory-gardens", "nexus-commons", "wayfarer-proving-quarter"],
-  "required_source_districts": ["nexus-court", "movement-conservatory", "living-archive", "wayfarer-concourse", "alchemical-proving-grounds", "verdant-recovery", "crown-observatory"],
+  "spawn": [1536,880],
+  "required_districts": ["conservatory-gardens","nexus-commons","wayfarer-proving-quarter"],
+  "required_source_districts": ["nexus-court","movement-conservatory","living-archive","wayfarer-concourse","alchemical-proving-grounds","verdant-recovery","crown-observatory"],
   "districts": [
-    {"id": "conservatory-gardens", "label": "CONSERVATORY GARDENS", "combines": ["movement-conservatory", "verdant-recovery"], "bounds": [40, 220, 900, 1140], "style": "garden", "elevation": 1, "label_anchor": [76, 258]},
-    {"id": "nexus-commons", "label": "NEXUS COMMONS", "combines": ["nexus-court", "living-archive", "crown-observatory"], "bounds": [820, 112, 980, 1268], "style": "nexus", "elevation": 2, "label_anchor": [862, 142]},
-    {"id": "wayfarer-proving-quarter", "label": "WAYFARER & PROVING QUARTER", "combines": ["wayfarer-concourse", "alchemical-proving-grounds"], "bounds": [1740, 180, 780, 1180], "style": "proving", "elevation": 1, "label_anchor": [1782, 222]}
+    {"id":"conservatory-gardens","label":"MOVEMENT & RECOVERY","combines":["movement-conservatory","verdant-recovery"],"bounds":[64,128,912,1504],"style":"garden","elevation":1,"label_anchor":[96,168]},
+    {"id":"nexus-commons","label":"WELLSPRING ACADEMY","combines":["nexus-court","living-archive","crown-observatory"],"bounds":[864,128,1344,1504],"style":"nexus","elevation":2,"label_anchor":[896,168]},
+    {"id":"wayfarer-proving-quarter","label":"PATTERNS & DUELS","combines":["wayfarer-concourse","alchemical-proving-grounds"],"bounds":[2096,128,912,1504],"style":"proving","elevation":1,"label_anchor":[2128,168]}
   ],
   "connections": [
-    {"id": "garden-commons-grand-walk", "from": "conservatory-gardens", "to": "nexus-commons", "kind": "garden_bridge", "width": 64, "points": [[880, 720], [1020, 720]]},
-    {"id": "commons-wayfarer-processional", "from": "nexus-commons", "to": "wayfarer-proving-quarter", "kind": "brass_bridge", "width": 68, "points": [[1740, 720], [1880, 720]]}
+    {"id":"garden-commons-grand-walk","from":"conservatory-gardens","to":"nexus-commons","kind":"garden_bridge","width":192,"points":[[848,832],[1104,832]]},
+    {"id":"commons-wayfarer-processional","from":"nexus-commons","to":"wayfarer-proving-quarter","kind":"brass_bridge","width":192,"points":[[1968,832],[2256,832]]},
+    {"id":"north-garden-loop","from":"conservatory-gardens","to":"nexus-commons","kind":"garden_bridge","width":160,"points":[[864,512],[1120,512]]},
+    {"id":"north-range-loop","from":"nexus-commons","to":"wayfarer-proving-quarter","kind":"brass_bridge","width":160,"points":[[1920,512],[2304,512]]},
+    {"id":"south-garden-loop","from":"conservatory-gardens","to":"nexus-commons","kind":"garden_bridge","width":160,"points":[[800,1408],[1120,1408]]},
+    {"id":"south-duel-loop","from":"nexus-commons","to":"wayfarer-proving-quarter","kind":"brass_bridge","width":160,"points":[[1920,1408],[2256,1408]]}
   ],
   "routes": [
-    {"id": "conservatory-circuit", "district": "conservatory-gardens", "kind": "advanced", "width": 34, "points": [[126, 694], [188, 388], [560, 336], [820, 500], [838, 1010], [646, 1230], [260, 1190], [112, 934], [126, 694]]},
-    {"id": "conservatory-ordinary", "district": "conservatory-gardens", "kind": "ordinary", "accessible": true, "width": 72, "points": [[82, 720], [430, 720], [880, 720]]},
-    {"id": "verdant-canopy-walk", "district": "conservatory-gardens", "kind": "garden", "width": 46, "points": [[306, 914], [496, 1050], [700, 1120], [814, 1000]]},
-    {"id": "nexus-processional", "district": "nexus-commons", "kind": "ordinary", "accessible": true, "width": 82, "points": [[1020, 720], [1280, 720], [1740, 720]]},
-    {"id": "nexus-fountain-loop", "district": "nexus-commons", "kind": "garden", "width": 54, "points": [[1050, 790], [1120, 1020], [1380, 1120], [1610, 1010], [1660, 790], [1530, 610], [1200, 600], [1050, 790]]},
-    {"id": "archive-crown-stair", "district": "nexus-commons", "kind": "advanced", "width": 42, "points": [[1280, 560], [1280, 410], [1280, 320]]},
-    {"id": "wayfarer-ordinary", "district": "wayfarer-proving-quarter", "kind": "ordinary", "accessible": true, "width": 72, "points": [[1880, 720], [2120, 720], [2460, 720]]},
-    {"id": "proving-basin-run", "district": "wayfarer-proving-quarter", "kind": "advanced", "width": 38, "points": [[1888, 890], [1990, 1160], [2320, 1240], [2450, 1060], [2410, 850]]}
+    {"id":"conservatory-circuit","district":"conservatory-gardens","kind":"advanced","width":96,"points":[[256,544],[640,544],[640,720],[384,720]]},
+    {"id":"conservatory-ordinary","district":"conservatory-gardens","kind":"ordinary","accessible":true,"width":192,"points":[[208,832],[848,832]]},
+    {"id":"verdant-canopy-walk","district":"conservatory-gardens","kind":"ordinary","accessible":true,"width":160,"points":[[864,512],[848,832],[800,1408],[560,1408],[560,1008],[208,1008],[208,832]]},
+    {"id":"nexus-processional","district":"nexus-commons","kind":"ordinary","accessible":true,"width":192,"points":[[1008,832],[1968,832]]},
+    {"id":"nexus-fountain-loop","district":"nexus-commons","kind":"ordinary","accessible":true,"width":160,"points":[[1120,512],[1920,512],[1968,832],[1920,1408],[1120,1408],[1104,832],[1120,512]]},
+    {"id":"archive-crown-stair","district":"nexus-commons","kind":"advanced","width":160,"points":[[1264,1216],[1808,1216]]},
+    {"id":"wayfarer-ordinary","district":"wayfarer-proving-quarter","kind":"ordinary","accessible":true,"width":192,"points":[[2256,832],[2864,832]]},
+    {"id":"proving-basin-run","district":"wayfarer-proving-quarter","kind":"advanced","width":144,"points":[[2256,984],[2400,984],[2544,1216],[2752,984],[2864,1216],[2752,1408],[2400,1408],[2256,1248],[2256,984]]},
+    {"id":"eastern-outer-walk","district":"wayfarer-proving-quarter","kind":"ordinary","accessible":true,"width":160,"points":[[2304,512],[2304,672],[2896,672],[2896,1536],[2256,1536],[2256,832]]}
   ],
   "reset_zones": [
-    {"id": "conservatory-route-reset", "district": "conservatory-gardens", "kind": "movement", "reset_group": "g2-conservatory", "bounds": [360, 560, 300, 260]},
-    {"id": "proving-basin-reset", "district": "wayfarer-proving-quarter", "kind": "practice", "reset_group": "g2-proving", "bounds": [2180, 1130, 250, 170]}
+    {"id":"conservatory-route-reset","district":"conservatory-gardens","kind":"movement","reset_group":"g2-conservatory","bounds":[352,560,288,208]},
+    {"id":"proving-basin-reset","district":"wayfarer-proving-quarter","kind":"practice","reset_group":"g2-proving","bounds":[2672,1376,208,176]}
   ],
-  "arena": {
-    "id": "proving-court-v1",
-    "district": "wayfarer-proving-quarter",
-    "bounds": [1820, 830, 660, 480],
-    "score_limit": 3,
-    "round_seconds": 90,
-    "result_seconds": 6,
-    "respawn_ms": 1800,
-    "spawn_protection_ms": 1200,
-    "spawns": [[1900, 860], [2420, 860], [1900, 1260], [2420, 1260], [1960, 1040], [2460, 1040], [1980, 1160], [2440, 1160]]
-  },
+  "arena": {"id":"proving-court-v1","district":"wayfarer-proving-quarter","bounds":[2184,912,720,600],"score_limit":3,"round_seconds":90,"result_seconds":6,"respawn_ms":1800,"spawn_protection_ms":1200,"spawns":[[2256,984],[2832,984],[2256,1440],[2832,1440],[2256,1216],[2832,1216],[2544,984],[2544,1440]]},
   "stations": [
-    {"id": "movement-guide", "district": "nexus-commons", "kind": "guide", "command": "movement_guide", "authority": "local", "position": [1180, 780], "interaction_radius": 96, "title": "MOVEMENT GUIDE", "prompt": "F  STUDY THE ROUTES", "lines": ["SHIFT sprint  ·  C / wheel-down slide", "SPACE / wheel-up hop  ·  hold or release", "V vault, wall skim, air turn, or impact tech", "F closes this field note"]},
-    {"id": "training-reset", "district": "nexus-commons", "kind": "training", "command": "training_reset", "authority": "host", "position": [1380, 780], "interaction_radius": 96, "title": "PRACTICE BELL", "prompt": "F  RESTORE THE COURT", "lines": ["Restores Health, Flux and Stamina", "Returns every local trial to its seed"]},
-    {"id": "momentum-chime", "district": "conservatory-gardens", "kind": "training", "command": "impact_practice", "authority": "host", "position": [720, 720], "interaction_radius": 72, "title": "MOMENTUM CHIME", "prompt": "F  PRACTICE IMPACT TECH", "lines": ["Hold a direction to bend the launch", "Press V near landing to spend 18 Stamina", "No V: read the full 220 ms brace"]},
-    {"id": "champion-loom", "district": "nexus-commons", "kind": "champion", "command": "champion_switch", "authority": "local", "position": [1280, 900], "interaction_radius": 96, "title": "CHAMPION LOOM", "prompt": "F  CHANGE CHAMPION", "lines": ["Attunes body, reserves and silhouette", "Each champion keeps every movement technique"]},
-    {"id": "spell-loom", "district": "nexus-commons", "kind": "spell", "command": "configure_spells", "authority": "host", "position": [1480, 900], "interaction_radius": 96, "title": "SPELL LOOM", "prompt": "F  WEAVE SPELLS", "lines": ["Arrange spells across Plain, Ctrl and Alt 1–4", "The host seals every traveller's weave", "Catalog-only spells remain safely locked"]},
-    {"id": "farflow-host", "district": "wayfarer-proving-quarter", "kind": "farflow", "command": "host_session", "authority": "local", "position": [1980, 800], "interaction_radius": 88, "title": "HOST FARFLOW", "prompt": "F  OPEN A FRIEND GATE", "lines": ["Hosts UDP 24872 for up to eight", "Share your address with trusted friends", "F closes the gate"]},
-    {"id": "farflow-join", "district": "wayfarer-proving-quarter", "kind": "farflow", "command": "join_session", "authority": "local", "position": [2180, 800], "interaction_radius": 88, "title": "JOIN FARFLOW", "prompt": "F  ENTER A FRIEND GATE", "lines": ["Type or paste the host address", "The last valid address is saved here", "F leaves an open gate"]},
-    {"id": "farflow-charter", "district": "wayfarer-proving-quarter", "kind": "charter", "command": "session_charter", "authority": "local", "position": [2380, 800], "interaction_radius": 88, "title": "FARFLOW CHARTER", "prompt": "F  TURN THE CHARTER", "lines": ["Choose social, sparring, or duel rules", "The host seals the charter when opening Farflow"]},
-    {"id": "session-hearth", "district": "wayfarer-proving-quarter", "kind": "hearth", "command": "session_hearth", "authority": "host", "position": [2080, 620], "interaction_radius": 92, "gather_spawns": [[2144, 620], [2125, 665], [2080, 684], [2035, 665], [2016, 620], [2035, 575], [2080, 556], [2125, 575]], "title": "SESSION HEARTH", "prompt": "F  READY FOR THE COURT", "lines": ["Gather connected travellers here", "Everyone readies; the host begins the round"]},
-    {"id": "company-ledger", "district": "wayfarer-proving-quarter", "kind": "ledger", "command": "session_ledger", "authority": "host", "position": [2300, 620], "interaction_radius": 72, "title": "COMPANY LEDGER", "prompt": "F  SELECT A TRAVELLER", "lines": ["Host-only connected traveller selection", "Selection alone never dismisses anyone"]},
-    {"id": "parting-bell", "district": "wayfarer-proving-quarter", "kind": "parting", "command": "session_parting", "authority": "host", "position": [2460, 620], "interaction_radius": 72, "title": "PARTING BELL", "prompt": "F  ARM A PARTING", "lines": ["Uses the traveller named by the Ledger", "A second press confirms within three seconds"]},
-    {"id": "controls-lectern", "district": "nexus-commons", "kind": "controls", "command": "configure_controls", "authority": "local", "position": [1080, 900], "interaction_radius": 96, "title": "CONTROLS LECTERN", "prompt": "F  REBIND CONTROLS", "lines": ["Keyboard, mouse, wheel and controller", "Conflicts swap safely; every change persists", "Escape returns to the Wellspring"]}
+    {"id":"movement-guide","district":"nexus-commons","kind":"guide","command":"movement_guide","authority":"local","position":[1216,640],"interaction_radius":96,"title":"MOVEMENT GUIDE","prompt":"F  STUDY THE ROUTES","lines":["Jump stays Jump while sprinting","Slide again to brake; Evade rolls or air-dodges","Wall / Turn follows contact; away input detaches","F2 trace on/off; F3 next run with previous echo","Rebind any action at the Controls Lectern","Every ordinary path is open without techniques"]},
+    {"id":"training-reset","district":"nexus-commons","kind":"training","command":"training_reset","authority":"host","position":[1888,1376],"interaction_radius":96,"title":"PRACTICE BELL","prompt":"F  RESTORE THE COURT","lines":["Restores Health, Flux and Stamina","Returns every local trial to its seed"]},
+    {"id":"momentum-chime","district":"conservatory-gardens","kind":"training","command":"impact_practice","authority":"host","position":[832,928],"interaction_radius":72,"title":"MOMENTUM CHIME","prompt":"F  PRACTICE IMPACT TECH","lines":["Hold a direction to bend the launch","Press V near landing to spend 18 Stamina","No V: read the full 220 ms brace"]},
+    {"id":"champion-loom","district":"nexus-commons","kind":"champion","command":"champion_switch","authority":"local","position":[1568,640],"interaction_radius":96,"title":"CHAMPION LOOM","prompt":"F  CHANGE CHAMPION","lines":["Attunes body, reserves and silhouette","Each champion keeps every movement technique"]},
+    {"id":"spell-loom","district":"nexus-commons","kind":"spell","command":"configure_spells","authority":"host","position":[1744,640],"interaction_radius":96,"title":"SPELL LOOM","prompt":"F  WEAVE SPELLS","lines":["Arrange spells across Plain, Ctrl and Alt 1–4","The host seals every traveller's weave","Catalog-only spells remain safely locked"]},
+    {"id":"farflow-host","district":"nexus-commons","kind":"farflow","command":"host_session","authority":"local","position":[1216,1008],"interaction_radius":88,"title":"HOST FARFLOW","prompt":"F  OPEN A FRIEND GATE","lines":["Hosts UDP 24872 for up to eight","Share your address with trusted friends","F closes the gate"]},
+    {"id":"farflow-join","district":"nexus-commons","kind":"farflow","command":"join_session","authority":"local","position":[1392,1008],"interaction_radius":88,"title":"JOIN FARFLOW","prompt":"F  ENTER A FRIEND GATE","lines":["Type or paste the host address","The last valid address is saved here","F leaves an open gate"]},
+    {"id":"farflow-charter","district":"nexus-commons","kind":"charter","command":"session_charter","authority":"local","position":[1568,1008],"interaction_radius":88,"title":"FARFLOW CHARTER","prompt":"F  TURN THE CHARTER","lines":["Choose social, sparring, or duel rules","The host seals the charter when opening Farflow"]},
+    {"id":"session-hearth","district":"nexus-commons","kind":"hearth","command":"session_hearth","authority":"host","position":[1744,1008],"interaction_radius":92,"gather_spawns":[[1808,1008],[1789,1053],[1744,1072],[1699,1053],[1680,1008],[1699,963],[1744,944],[1789,963]],"title":"SESSION HEARTH","prompt":"F  READY FOR THE COURT","lines":["Gather connected travellers here","Everyone readies; the host begins the round"]},
+    {"id":"company-ledger","district":"nexus-commons","kind":"ledger","command":"session_ledger","authority":"host","position":[2016,896],"interaction_radius":72,"title":"COMPANY LEDGER","prompt":"F  SELECT A TRAVELLER","lines":["Host-only connected traveller selection","Selection alone never dismisses anyone"]},
+    {"id":"parting-bell","district":"nexus-commons","kind":"parting","command":"session_parting","authority":"host","position":[2016,1056],"interaction_radius":72,"title":"PARTING BELL","prompt":"F  ARM A PARTING","lines":["Uses the traveller named by the Ledger","A second press confirms within three seconds"]},
+    {"id":"controls-lectern","district":"nexus-commons","kind":"controls","command":"configure_controls","authority":"local","position":[1392,640],"interaction_radius":96,"title":"CONTROLS LECTERN","prompt":"F  REBIND CONTROLS","lines":["Keyboard, mouse, wheel and controller","Conflicts swap safely; every change persists","Escape returns to the Wellspring"]}
   ],
   "practice_targets": [
-    {"id": "nexus-sparring-effigy", "entity_id": 900, "district": "nexus-commons", "position": [1500, 720], "radius": 18, "health": 80000, "label": "SPARRING EFFIGY", "reset_policy": "practice_bell"}
+    {"id":"nexus-sparring-effigy","entity_id":900,"district":"wayfarer-proving-quarter","position":[2368,352],"radius":18,"health":80000,"label":"SPARRING EFFIGY","reset_policy":"practice_bell"},
+    {"id":"range-effigy-center","entity_id":901,"district":"wayfarer-proving-quarter","position":[2560,352],"radius":18,"health":80000,"label":"SPARRING EFFIGY","reset_policy":"practice_bell"},
+    {"id":"range-effigy-east","entity_id":902,"district":"wayfarer-proving-quarter","position":[2752,352],"radius":18,"health":80000,"label":"SPARRING EFFIGY","reset_policy":"practice_bell"}
   ],
   "buildings": [
-    {"id": 101, "district": "conservatory-gardens", "name": "Routekeeper Lodge", "bounds": [96, 300, 244, 154], "style": "timber_hall", "worldbone": true, "vaultable": false, "occlusion_policy": "los_cutaway"},
-    {"id": 102, "district": "conservatory-gardens", "name": "Circuit Gatehouse", "bounds": [642, 330, 176, 138], "style": "garden_gate", "worldbone": true, "vaultable": false, "occlusion_policy": "los_cutaway"},
-    {"id": 103, "district": "conservatory-gardens", "name": "Verdant Rest Pavilion", "bounds": [430, 1082, 272, 154], "style": "garden_gate", "worldbone": true, "vaultable": false, "occlusion_policy": "los_cutaway"},
-    {"id": 104, "district": "nexus-commons", "name": "Oracular Archive", "bounds": [1040, 180, 480, 222], "style": "archive_hall", "worldbone": true, "vaultable": false, "occlusion_policy": "los_cutaway"},
-    {"id": 105, "district": "nexus-commons", "name": "Attunement Hall", "bounds": [1128, 466, 254, 202], "style": "spire", "worldbone": true, "vaultable": false, "occlusion_policy": "los_cutaway"},
-    {"id": 106, "district": "nexus-commons", "name": "Muster and Settings House", "bounds": [900, 1120, 340, 174], "style": "service_tower", "worldbone": true, "vaultable": false, "occlusion_policy": "los_cutaway"},
-    {"id": 107, "district": "wayfarer-proving-quarter", "name": "Four-Gate Rotunda", "bounds": [1860, 270, 384, 232], "style": "portal_rotunda", "worldbone": true, "vaultable": false, "occlusion_policy": "los_cutaway"},
-    {"id": 108, "district": "wayfarer-proving-quarter", "name": "Crown Service Tower", "bounds": [2318, 292, 146, 220], "style": "service_tower", "worldbone": true, "vaultable": false, "occlusion_policy": "los_cutaway"},
-    {"id": 109, "district": "wayfarer-proving-quarter", "name": "Crucible Workshop", "bounds": [2040, 918, 352, 208], "style": "foundry_hall", "worldbone": true, "vaultable": false, "occlusion_policy": "los_cutaway"},
-    {"id": 110, "district": "nexus-commons", "name": "Marked Vault Arcade", "bounds": [1570, 680, 96, 76], "style": "vault_rail", "worldbone": true, "vaultable": true, "occlusion_policy": "low_never_occludes"}
+    {"id":101,"district":"conservatory-gardens","name":"Routekeeper Lodge","bounds":[192,192,272,112],"style":"timber_hall","worldbone":true,"vaultable":false,"occlusion_policy":"los_cutaway"},
+    {"id":102,"district":"conservatory-gardens","name":"North Practice Wall","bounds":[280,368,320,28],"style":"practice_wall","worldbone":true,"vaultable":false,"occlusion_policy":"low_never_occludes"},
+    {"id":103,"district":"conservatory-gardens","name":"Verdant Rest Pavilion","bounds":[240,1136,240,128],"style":"garden_gate","worldbone":true,"vaultable":false,"occlusion_policy":"los_cutaway"},
+    {"id":104,"district":"nexus-commons","name":"Wellspring Academy","bounds":[1248,192,576,176],"style":"archive_hall","worldbone":true,"vaultable":false,"occlusion_policy":"los_cutaway"},
+    {"id":105,"district":"nexus-commons","name":"Archive Annex","bounds":[960,192,192,160],"style":"spire","worldbone":true,"vaultable":false,"occlusion_policy":"los_cutaway"},
+    {"id":106,"district":"nexus-commons","name":"Crucible Workshop","bounds":[1264,1504,384,112],"style":"foundry_hall","worldbone":true,"vaultable":false,"occlusion_policy":"los_cutaway"},
+    {"id":107,"district":"wayfarer-proving-quarter","name":"Range Gallery","bounds":[2304,176,448,112],"style":"portal_rotunda","worldbone":true,"vaultable":false,"occlusion_policy":"los_cutaway"},
+    {"id":108,"district":"wayfarer-proving-quarter","name":"Service Tower","bounds":[2816,192,144,144],"style":"service_tower","worldbone":true,"vaultable":false,"occlusion_policy":"los_cutaway"},
+    {"id":109,"district":"nexus-commons","name":"Workshop Store","bounds":[1872,192,224,128],"style":"service_tower","worldbone":true,"vaultable":false,"occlusion_policy":"los_cutaway"},
+    {"id":110,"district":"conservatory-gardens","name":"East Practice Wall","bounds":[736,352,28,320],"style":"practice_wall","worldbone":true,"vaultable":false,"occlusion_policy":"low_never_occludes"},
+    {"id":111,"district":"wayfarer-proving-quarter","name":"Duel Northwest Cover","bounds":[2384,1104,72,72],"style":"practice_wall","worldbone":true,"vaultable":false,"occlusion_policy":"low_never_occludes"},
+    {"id":112,"district":"wayfarer-proving-quarter","name":"Duel Northeast Cover","bounds":[2632,1104,72,72],"style":"practice_wall","worldbone":true,"vaultable":false,"occlusion_policy":"low_never_occludes"},
+    {"id":113,"district":"wayfarer-proving-quarter","name":"Duel Southwest Cover","bounds":[2384,1296,72,72],"style":"practice_wall","worldbone":true,"vaultable":false,"occlusion_policy":"low_never_occludes"},
+    {"id":114,"district":"wayfarer-proving-quarter","name":"Duel Southeast Cover","bounds":[2632,1296,72,72],"style":"practice_wall","worldbone":true,"vaultable":false,"occlusion_policy":"low_never_occludes"}
   ],
   "landmarks": [
-    {"id": "conservatory-spire", "district": "conservatory-gardens", "kind": "attunement_spire", "position": [460, 688], "fast_travel": true},
-    {"id": "verdant-well", "district": "conservatory-gardens", "kind": "grand_fountain", "position": [708, 1030], "fast_travel": true},
-    {"id": "nexus-fountain", "district": "nexus-commons", "kind": "grand_fountain", "position": [1450, 880], "fast_travel": true},
-    {"id": "archive-orrey", "district": "nexus-commons", "kind": "archive_orrey", "position": [1280, 430], "fast_travel": true},
-    {"id": "wayfarer-gate", "district": "wayfarer-proving-quarter", "kind": "portal_ring", "position": [2200, 650], "fast_travel": true},
-    {"id": "proving-crucible", "district": "wayfarer-proving-quarter", "kind": "attunement_crucible", "position": [2390, 1090], "fast_travel": true}
+    {"id":"conservatory-spire","district":"conservatory-gardens","kind":"attunement_spire","position":[208,672],"fast_travel":true},
+    {"id":"verdant-well","district":"conservatory-gardens","kind":"grand_fountain","position":[672,1232],"fast_travel":true},
+    {"id":"nexus-fountain","district":"nexus-commons","kind":"grand_fountain","position":[1536,800],"fast_travel":true},
+    {"id":"archive-orrey","district":"nexus-commons","kind":"archive_orrey","position":[1120,416],"fast_travel":true},
+    {"id":"wayfarer-gate","district":"nexus-commons","kind":"portal_ring","position":[1920,640],"fast_travel":true},
+    {"id":"proving-crucible","district":"nexus-commons","kind":"attunement_crucible","position":[1536,1328],"fast_travel":true}
+  ],
+  "activity_areas": [
+    {"id":"source-court","district":"nexus-commons","label":"SOURCE COURT","purpose":"Meet, attune, host and join","bounds":[1056,576,960,512]},
+    {"id":"movement-garden","district":"conservatory-gardens","label":"MOVEMENT GARDEN","purpose":"Wall routes, reversals and chains","bounds":[192,272,688,496]},
+    {"id":"pattern-range","district":"wayfarer-proving-quarter","label":"PATTERN RANGE","purpose":"Readable firing lanes and targets","bounds":[2208,224,704,416]},
+    {"id":"duel-court","district":"wayfarer-proving-quarter","label":"DUEL COURT","purpose":"Cover, flanks and shared rounds","bounds":[2168,896,736,656]},
+    {"id":"crucible","district":"nexus-commons","label":"CRUCIBLE","purpose":"Spell trials; chemistry integration pending","bounds":[1056,1152,960,448]},
+    {"id":"recovery-grove","district":"conservatory-gardens","label":"RECOVERY GROVE","purpose":"Quiet routes and regrouping","bounds":[192,1056,688,496]}
   ]
 }

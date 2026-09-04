@@ -50,9 +50,11 @@ func _test_evasive_intangibility(tick_rate: int) -> void:
 	target.air_dodge_ticks = 0
 	target.hop_mode = PlayerState.MovementMode.HOP
 	target.hop_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS)
+	target.jump_protection_ticks = config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS)
 	check(not PlayerResourcesSystem.damage(target, 10_000, config), "%d Hz opening jump frames reject direct combat damage" % tick_rate)
 	equal(target.health, target.health_maximum, "%d Hz opening jump frames preserve health" % tick_rate)
 	target.hop_ticks = 1
+	target.jump_protection_ticks = 0
 	check(PlayerResourcesSystem.damage(target, 10_000, config), "%d Hz jump recovery is vulnerable" % tick_rate)
 	equal(target.health, target.health_maximum - 10_000, "%d Hz vulnerable jump recovery takes exact damage" % tick_rate)
 

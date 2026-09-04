@@ -16,62 +16,62 @@ func _test_repository_stations() -> void:
 	check(layout.load_from_file(CAMPUS_PATH), "campus loads for station focus")
 	equal(layout.stations_by_id.size(), 12, "walk-up slice exposes movement practice, controls, spells, Farflow and host-stewardship stations")
 	equal(
-		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(1_180_000, 780_000)),
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, SanctumCampusLayout._parse_point(layout.stations_by_id["movement-guide"]["position"]) * SimConfig.FIXED_SCALE),
 		"movement-guide",
 		"movement guide focuses at its world anchor",
 	)
 	equal(
-		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(1_080_000, 900_000)),
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, SanctumCampusLayout._parse_point(layout.stations_by_id["controls-lectern"]["position"]) * SimConfig.FIXED_SCALE),
 		"controls-lectern",
 		"Controls Lectern focuses at its world anchor",
 	)
 	equal(
-		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(1_380_000, 780_000)),
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, SanctumCampusLayout._parse_point(layout.stations_by_id["training-reset"]["position"]) * SimConfig.FIXED_SCALE),
 		"training-reset",
 		"practice bell focuses at its world anchor",
 	)
 	equal(
-		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(720_000, 720_000)),
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, SanctumCampusLayout._parse_point(layout.stations_by_id["momentum-chime"]["position"]) * SimConfig.FIXED_SCALE),
 		"momentum-chime",
 		"Momentum Chime focuses at its collision-cleared Conservatory anchor",
 	)
 	equal(
-		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(1_280_000, 900_000)),
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, SanctumCampusLayout._parse_point(layout.stations_by_id["champion-loom"]["position"]) * SimConfig.FIXED_SCALE),
 		"champion-loom",
 		"champion loom focuses at its world anchor",
 	)
 	equal(
-		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(1_480_000, 900_000)),
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, SanctumCampusLayout._parse_point(layout.stations_by_id["spell-loom"]["position"]) * SimConfig.FIXED_SCALE),
 		"spell-loom",
 		"Spell Loom focuses at its world anchor",
 	)
 	equal(
-		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(1_980_000, 800_000)),
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, SanctumCampusLayout._parse_point(layout.stations_by_id["farflow-host"]["position"]) * SimConfig.FIXED_SCALE),
 		"farflow-host",
 		"Farflow host focuses at its world anchor",
 	)
 	equal(
-		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(2_180_000, 800_000)),
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, SanctumCampusLayout._parse_point(layout.stations_by_id["farflow-join"]["position"]) * SimConfig.FIXED_SCALE),
 		"farflow-join",
 		"Farflow join focuses at its world anchor",
 	)
 	equal(
-		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(2_380_000, 800_000)),
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, SanctumCampusLayout._parse_point(layout.stations_by_id["farflow-charter"]["position"]) * SimConfig.FIXED_SCALE),
 		"farflow-charter",
 		"Farflow Charter focuses at its world anchor",
 	)
 	equal(
-		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(2_080_000, 620_000)),
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, SanctumCampusLayout._parse_point(layout.stations_by_id["session-hearth"]["position"]) * SimConfig.FIXED_SCALE),
 		"session-hearth",
 		"Session Hearth focuses at its world anchor",
 	)
 	equal(
-		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(2_300_000, 620_000)),
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, SanctumCampusLayout._parse_point(layout.stations_by_id["company-ledger"]["position"]) * SimConfig.FIXED_SCALE),
 		"company-ledger",
 		"Company Ledger focuses at its world anchor",
 	)
 	equal(
-		SanctumStationModel.nearest_station_id(layout.stations_by_id, Vector2i(2_460_000, 620_000)),
+		SanctumStationModel.nearest_station_id(layout.stations_by_id, SanctumCampusLayout._parse_point(layout.stations_by_id["parting-bell"]["position"]) * SimConfig.FIXED_SCALE),
 		"parting-bell",
 		"Parting Bell focuses at its world anchor",
 	)

@@ -1,5 +1,16 @@
 # FLUX visual overhaul gate
 
+2026-09-04 user override: map first, then the authorized M0-M2 movement revision.
+Both are now implemented source candidates; vault and crest-superglide runtime
+activation is retired. Historical captures/enum adapters are not requirements
+to reintroduce them. The prior visual gate is accepted; preserve its clarity
+bar while validating the new map and movement. Follow the
+[current/target movement revision](../docs/PLAYER-CONTROLS-AND-POV.md#movement-revision-no-vaulting-2026-09-04)
+for slide protection, wallrun and movement-space acceptance, and the
+[current acceptance ledger](../docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md) for evidence
+and remaining human visual/feel acceptance. The original gate below is retained
+as the visual baseline, not a renewed freeze on this authorized revision.
+
 This is the mandatory first gate for all new FLUX work. Until the integrated
 acceptance section below passes, do not change movement tuning, action chaining,
 spell economy, spell availability, combat balance, networking rules, or roster

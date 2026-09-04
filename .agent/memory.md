@@ -1117,3 +1117,66 @@ user-owned untracked paths throughout.
 - Publish main without rewriting history; the ancestor-only compatibility
   branch may mirror this checkpoint. No new chemistry implementation is part
   of this publication-only request.
+
+## 2026-09-04 -- movement-led map and no-vault design revision
+
+- User requested vault removal from the design, movement-aware map/plan
+  optimization and an implemented/planned movement overview. This turn edits
+  documentation/plans only; the source at 430b5e6 still implements vault and
+  its dependent crest-superglide activation. M0 tested retirement now precedes
+  C6 in backlog and handoff prompts; M1-M3 remain planned C10 improvements.
+- Current/target truth lives in docs/PLAYER-CONTROLS-AND-POV.md. Slide has no
+  i-frames yet; jump/roll/air dodge have authored opening windows. Full attached
+  wallrun is not implied by the 420 ms ground-triggered wall skim. Sprint+Jump
+  currently slides; airborne Jump currently chooses double jump before any
+  wall-contact kick. Those input decisions need explicit future tests.
+- The saved docs/proposals/wellspring-campus-v2 reference now has movement-led
+  dimensions, no-vault ordinary paths, run faces, reversal/landing pockets,
+  per-area changes and containment acceptance. Its PNG/prompt remain reference
+  artifacts, not runtime collision or proof of working activities.
+- Ran scripts/test.ps1 -Tier Focused -Suite movement,movement-response,
+  action-transition-policy,combat with a dedicated receipt: 4 suites / 3,781
+  assertions, zero failures/stderr, 6,249 ms. This proves existing behavior,
+  including legacy vault tests, NOT implementation of the proposed changes.
+- No runtime tuning, code, network, package or user files changed; no new
+  interactive playtest. Next implementation begins with atomic M0 retirement,
+  not another vault-bearing map or a silent collision/iframe rewrite.
+
+## 2026-09-04 -- map-first implementation and M0-M2 checkpoint
+
+- User promoted actual map implementation before movement, including accepted
+  additions but excluding material-assisted drift/grip and non-vault landing
+  burst. Implemented in that order in C:/Users/sende/Projects/flux on main.
+- Campus schema 5: 3072x1728, six named activity pockets, wide connected bypasses,
+  practice walls, three targets, larger duel court, relocated services. Original
+  editable runtime kits remain authoritative; painted proposal stays reference
+  only. Added full-width public-route checks; corrected two blocked draft routes.
+- Retired vault/crest activation without renumbering reserved modes/fields.
+  Sprint+Jump stays Jump; Q/LT Evade separates roll/dodge from V/B wall/air turn.
+  Slide has 50 ms protection and second-press brake; independent jump-protection
+  clock survives short hop/fast fall correctly. Air-wall kick spends stage two;
+  wallrun maintains authored contact and deliberately detaches. Landing input
+  gets an 80 ms buffer. Neutral SurfaceMotionPolicy is future chemistry-only.
+- Local F2 trace/F3 retry adds bounded input/path feedback and same-start,
+  same-champion previous-run echo, without simulation/network/file writes.
+  Corrected its caption anchor through actual 720p runtime capture inspection.
+- Protocol 33, snapshot 12, preferences 10; old custom bindings are preserved.
+  Added movement/trace suites and invalid prediction-timer bounds. Updated old
+  vault/control/map fixtures, not assertions to conceal active failures.
+- An intermediate compile failure exposed an unbounded test process/log loop.
+  Fixed the call and bounded owned Godot checks to 180 seconds, scanning full
+  logs but returning only a tail. Only verified owned test processes were stopped.
+- Final scripts/test.ps1 -Tier Full -ReceiptPath
+  .godot/receipts/campus-movement-validated.json: 66 suites / 19,076 assertions,
+  zero failures/stderr; clean import/120 Hz boot, 36,068 ms.
+- scripts/smoke-farflow.ps1 -TickRate 120 -TimeoutSeconds 60 passed join,
+  greeting, reconciliation, reconnect, late-player handoff, rematch and removal.
+  Initial 40-second run timed out before round two; no internet/physical-PC claim.
+- Inspected actual 1080p/50% campus overview and 720p/75% movement/trace frames
+  under ignored .godot/visual-captures. Human art/feel acceptance is pending.
+- README, controls, backlog, prompts and acceptance ledger separate physical
+  areas from unimplemented concurrent activity isolation/zone-local resets.
+  No new chemistry, Linux scope, material movement or landing burst. Existing
+  exports predate this source revision; no installer/security acceptance claim.
+- Next: C6 bounded contact/exposure, then C7-C9 reactions/lifecycle/Crucible and
+  the required playtest pause. Keep current source runnable with flux.cmd play.

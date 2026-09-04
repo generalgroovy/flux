@@ -99,7 +99,7 @@ func validate(layout: SanctumCampusLayout) -> bool:
 		return false
 	for building: Dictionary in layout.buildings_by_id.values():
 		var style := String(building.get("style", ""))
-		if style != "vault_rail" and not building_profiles.has(style):
+		if style != "practice_wall" and not building_profiles.has(style):
 			return _fail("Live building style has no architecture profile: %s" % style)
 	for station: Dictionary in layout.stations_by_id.values():
 		var kind := String(station.get("kind", ""))

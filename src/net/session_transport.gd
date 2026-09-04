@@ -878,7 +878,7 @@ static func _valid_input_packet(packet: Dictionary) -> bool:
 			return false
 	var held: int = int(packet["held"])
 	var pressed: int = int(packet["pressed"])
-	return held >= 0 and held <= 0xffff and pressed >= 0 and pressed <= 0xffff
+	return held >= 0 and held <= 0xffff and pressed >= 0 and pressed <= 0x1ffff
 
 
 static func _valid_request_packet(packet: Dictionary) -> bool:

@@ -19,6 +19,13 @@ physical places rather than a detached menu.
 > compiler are working; bounded exposure/contact is the active chemistry goal,
 > and world mutation remains deliberately gated until that slice passes.
 
+**Newest source checkpoint:** the 3072x1728 six-area campus and no-vault movement
+revision are implemented; run `.\flux.cmd play` to test them. The existing local
+Windows exports predate this protocol-33 checkpoint and must be rebuilt before
+sharing this revision. Do not mix old packages with new-source hosts. See the
+[map/movement acceptance ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md) for
+controls, verification and remaining visual/feel acceptance.
+
 Current counts deliberately distinguish authored inventory from promoted play:
 
 | Dimension | Authoritative current meaning |
@@ -35,7 +42,7 @@ Current counts deliberately distinguish authored inventory from promoted play:
 |---|---|---|
 | Windows player | Download and double-click `FLUX.exe` | One hash-verified file installs or updates per-user, repairs if needed, then starts the game |
 | Windows developer | Run `.\flux.cmd play` | One thin task front door dispatches to the pinned Godot source launch at 120 Hz |
-| Host | Walk east to **Host Farflow**, press interact | Opens authoritative UDP session on port `24872` |
+| Host | Use **Host Farflow** on the southern edge of Source Court | Opens authoritative UDP session on port `24872` |
 | Friend on the same LAN | Walk to the Farflow stations and choose **Join** | Compatible hosts appear automatically through bounded UDP discovery; different builds remain visible but cannot be joined |
 | Internet friend | Walk to **Join Farflow**, press interact, type/paste the host address, press Enter | Address is saved locally; join is compatibility-checked with clear refusal on mismatch/full session |
 | Everyone | Use the **Session Hearth** | Ready, synchronized start, results, and rematch without reopening the company |
@@ -71,7 +78,7 @@ signing pipeline exist. The portable `exports\release\FLUX2-Windows-x86_64.zip`
 bundle is the fallback for managed test machines; its checksum is listed in
 `exports\release\SHA256SUMS.txt`.
 
-The current unified Windows package is built from `main`; verify the supplied
+Build the Windows package from the intended unified `main` checkpoint; verify the supplied
 `FLUX.exe` or the portable ZIP against `exports\release\SHA256SUMS.txt` before
 sharing it.
 
@@ -94,7 +101,7 @@ direct-IP internet builds only with trusted friends.
 
 | Area | Now | Next acceptance |
 |---|---|---|
-| Repository | One authoritative Godot runtime; generated state/drift checks, selectable suites, receipts, developer front door, asset inventory, canonical roster adapters and exact-package content evidence are verified | C6 bounded exposure/contact is next; unsigned installer trust remains independently blocked |
+| Repository | One authoritative Godot runtime; generated state/drift checks, selectable suites, receipts, developer front door, asset inventory, canonical roster adapters and exact-package content evidence are verified | Campus + no-vault movement are implemented; next C6 exposure/contact; unsigned installer trust remains independently blocked |
 | Lifecycle | Source launch, portable archives, checksums, one-file Windows install/update/run | Signed releases, clean uninstall UI, public update channel |
 | Wellspring | Nine districts, walk-up stations, practice actors, movement routes | Stronger authored landmarks and compact onboarding |
 | Movement | Full universal foundation at deterministic 120 Hz; normalized eight-way commands, active directional air control/facing, alternating gait contacts, native eight-way jump/slide/roll art, relative gait, and directional evasion cues | Measure response/braking/reversal/chains during chemistry, then tune the existing grammar from the packaged playtest before adding techniques |
@@ -163,24 +170,31 @@ Lectern remap is the equivalent slide input.
 
 ## Movement grammar
 
+**2026-09-04 playable revision:** the larger Wellspring loop and no-vault
+movement update are implemented in source. Sprint+Jump stays Jump; Q / left
+trigger is Evade, V / B is Wall/Air Turn/Tech. Slide has a brief 50 ms opening
+protection window and second-press brake. [Current map, controls and acceptance
+ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md) separates tested behavior from
+pending human balance/visual acceptance and independent activity isolation.
+
 | Technique | Purpose | Bound / counterplay | State |
 |---|---|---|---|
 | Strafe + independent aim | Crossfire, retreat, prediction | Acceleration, brake, counter-strafe timing | Playable |
 | Sprint | Rotate, pursue, disengage | Continuous Stamina drain and delayed recovery | Playable |
 | Hop / double jump | Take off along held movement, steer and face through all eight directions in air | Steering trades momentum during a hard reversal; paid redirect remains stronger; vulnerable landing; 90 ms opening attack intangibility | Playable |
-| Slide / slide jump | Low committed burst into long route | Entry-speed gate, weak steering, Stamina, hard-cover stop | Playable |
+| Slide / slide jump | Low committed burst into long route | Entry-speed gate; 50 ms opening protection; vulnerable tail; second C brakes; world stays solid | Playable |
 | Air redirect / air dodge | Strong snap correction or committed escape beyond ordinary air steering | Limited use, cost, fixed duration, safe collision recovery | Playable |
 | Ground roll | Evade a predicted lane while grounded | 24 Stamina; 130 ms opening attack intangibility inside 240 ms action | Playable |
 | Wavedash | Convert angled air dodge into ground momentum | Exact landing geometry; no free stacking | Playable |
 | Wall contact / wall kick | Rebound through authored wall routes | 220 ms same-wall lockout | Playable |
-| Vault / superglide | Cross marked low cover and crest routes | Authored surfaces, clearance, narrow conversion window | Playable |
-| Wall skim | Brief run along an authored wall | One Stamina purchase, 420 ms maximum, recovery and surface lockout | Playable |
+| Vault / crest superglide | Retired | Serialized IDs remain reserved, no action activates either | Removed |
+| Wallrun | Contact-following run along authored practice walls | 18 Stamina; 420 ms maximum; detach at wall end, away input or second V; no i-frames | Playable |
 | Variable hop / fast fall | Change aerial rhythm | Bounded height and committed descent | Playable |
 | Landing cut | Trade timing for reduced landing recovery | Never cancels attack/status commitment | Playable |
 | Impact influence / tech | Bend launch; regain control near impact | Gradual influence; V tech costs 18 Stamina | Playable |
 | Edgeweave | Skim a hostile projectile to recover Stamina | No reward on hit/full Stamina/repeat contact | Playable |
 
-Roll, jump, and air dodge intangibility applies only to attack contact during
+Slide, roll, jump, and air dodge intangibility applies only to attack contact during
 the authored opening windows. Solid world geometry remains solid.
 
 Movement polish is measured rather than guessed: legal input should affect
@@ -416,7 +430,7 @@ default in gameplay while the Wellspring does not force limited information.
 | Capacity | Public cap 8; charters provide 2/4/8; later 32 only after measured architecture gate |
 | Transport | Godot ENet over UDP 24872, direct IP |
 | Authority | Host owns movement validation, resources, casts, hits, cooldowns, stations, roster, score, reset |
-| Compatibility | Protocol 32, snapshot 11, tick/tuning/map/content hashes |
+| Compatibility | Protocol 33, snapshot 12, tick/tuning/map/content hashes |
 | Client feel | Local movement prediction and bounded reconciliation; combat stays authoritative |
 | Join in progress | Observer until next gathering, then normal Hearth readiness |
 | Disconnect | 15-second in-memory exact-actor reservation and capability rotation |
@@ -711,6 +725,7 @@ claim.
 | 3 | **Complete:** burst data contract → deterministic fan → projectile capacity → movement pressure room | Five-shot patterns stay readable and evadeable while every universal technique chains legally at 120 Hz |
 | 4 | **Complete:** eight bursts → bounded reaction catalog | Every unordered pair has one symmetric, fail-closed, compatibility-hashed recipe while live mutation remains off |
 | 4.5 | **Complete in this checkpoint:** generated truth/tooling → canonical roster adapters → in-game/package state | Protocol/platform/tick/roster/body/content truth agrees before persistent reaction state is added; archival pixels remain separate and compatibility is preserved |
+| 4.6 | **Implemented: campus + M0-M2 movement** — wide loop, solid practice walls, dedicated Evade, slide protection/brake, air-wall kicks and local practice echo | Human movement/visual playtest and concurrent activity isolation remain pending |
 | 5 | Exposure/contact → shared primitives → lifecycle/readability → Crucible/reset/codex | Every pair forms, acts, decays, explains itself, replicates and resets at 120 Hz |
 | 6 | **Playtest pause** | The exact packaged green build passes named solo, movement, pressure, chemistry, friend, accessibility and recovery journeys before broad retuning or scope expansion |
 | 7 | Measured movement feel → action clarity → projectile/map hierarchy → visual cohesion | Existing techniques become crisp and distinct, failures teach one correction and the Wellspring reads as one inhabited world before growth |

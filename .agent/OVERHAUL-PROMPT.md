@@ -29,9 +29,12 @@ acceptance, and all three champions share a cell-bounded exterior ink derived
 from The Red Baron's material language without palette or scale replacement.
 The eight mechanically comparable first-eight Bursts are source-green and have
 truthful 120 Hz comparison evidence. C5 reaction definitions and C5.5 current
-truth/tooling/roster adapters are complete in the current checkpoint, with
-64 suites / 18,281 assertions passing. Next implement C6 bounded exposure/contact,
-then shared reaction primitives and lifecycle. Unsigned Windows installer trust
+truth/tooling/roster adapters are complete. The current map/movement source
+acceptance ledger is docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md.
+The map-first campus/M0-M2 revision is implemented: explicit Evade, no vault,
+slide protection/brake and contact wallrun/finite air-wall jumps. Next C6
+exposure/contact; material motion is neutral and landing burst excluded. Do not
+restore vaulting through a new map, context action or character. Unsigned Windows installer trust
 remains a separate release blocker; do not weaken security or claim install
 acceptance. Apply the explicit O0–O14 design,
 architecture, release, asset, testing, measured-feel and visual-cohesion rules
@@ -88,7 +91,7 @@ V0–V10, universal non-ability movement, natural reusable motion/environment,
 the explicit transition matrix and positive-Flux cadence foundation are green.
 Continue in the authoritative order from `.agent/BACKLOG.md`: five-shot pattern
 simulation and eight first-element burst entries (complete), strict reaction
-catalog, current-truth/live-manifest migration, exposure/contact, shared
+catalog and current-truth/live-manifest migration (complete), map + M0-M2 (implemented candidate), exposure/contact, shared
 reaction primitives, lifecycle/presentation, and the Crucible playtest package.
 At the required playtest pause, use measured feedback for the existing movement
 grammar and maintained visual hierarchy, then execute F0–F7 from

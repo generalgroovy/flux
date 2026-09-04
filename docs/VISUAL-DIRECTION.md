@@ -150,7 +150,7 @@ quietly become the source of a spell.
 The first original modular kit should cover:
 
 - worldbone cliff/foundation masks with stone, root, and runic-metal skins;
-- warm path, plaza, stair, ramp, bridge, low wall, full wall, vault edge, rail,
+- warm path, plaza, stair, ramp, bridge, low wall, full wall, runnable face, rail,
   gap, roof, doorway, canal, and shoreline modules;
 - grass, garden, forest-edge, water, undercroft, foundry, archive, observatory,
   and portal-room overlays;

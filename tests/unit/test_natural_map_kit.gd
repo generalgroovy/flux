@@ -36,7 +36,7 @@ func _test_surface_resolution() -> void:
 	check(layout.load_from_file("res://content/maps/sanctum_campus_g2_v1.json"), "campus loads for surface test")
 	equal(kit.surface_style_at(layout, Vector2(300, 720)), "garden", "conservatory resolves garden contact")
 	equal(kit.surface_style_at(layout, Vector2(1280, 720)), "nexus", "commons resolves masonry contact")
-	equal(kit.surface_style_at(layout, Vector2(2200, 720)), "proving", "wayfarer quarter resolves proving contact")
+	equal(kit.surface_style_at(layout, Vector2(2560, 720)), "proving", "wayfarer quarter resolves proving contact")
 	equal(kit.surface_style_at(layout, Vector2(10, 10)), "nexus", "water/outside fails to conservative quiet contact")
 	var water_shadow := kit.receiving_shadow_sample(layout, Vector2(10, 10))
 	var garden_shadow := kit.receiving_shadow_sample(layout, Vector2(300, 720))

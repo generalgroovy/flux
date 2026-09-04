@@ -243,7 +243,7 @@ func _test_capture_pointer_parser() -> void:
 	equal(Vector2i(grounded_hold.move_x, grounded_hold.move_y), Vector2i.ZERO, "grounded capture releases movement after establishing facing")
 	equal(Vector2i(grounded_hold.aim_x, grounded_hold.aim_y), Vector2i(707, 707), "grounded capture keeps diagonal review aim")
 	var air_capture: SimCommand = BootstrapScript.capture_movement_command("air_dodge", 12, 1)
-	check(air_capture.has_held(SimCommand.HELD_JUMP) and air_capture.has_pressed(SimCommand.PRESSED_TECHNIQUE), "air capture uses the ordinary semantic airborne-technique command")
+	check(air_capture.has_held(SimCommand.HELD_JUMP) and air_capture.has_pressed(SimCommand.PRESSED_EVADE), "air capture uses the explicit Evade command")
 	var brake_capture: SimCommand = BootstrapScript.capture_movement_command("brake", 30, 1)
 	equal(brake_capture.move_x, 0, "brake capture releases ordinary movement at its exact review tick")
 	var reverse_capture: SimCommand = BootstrapScript.capture_movement_command("reverse", 30, 1)

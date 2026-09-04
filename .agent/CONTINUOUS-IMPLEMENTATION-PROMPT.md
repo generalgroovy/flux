@@ -13,8 +13,9 @@ slice without rewriting historical evidence.
 
 ## Current frontier and hard order
 
-V0–V10 pass in the live game. Preserve protocol 32, snapshot schema 11, the
-published green checkpoint and all accepted visual/gameplay behavior. Continue
+V0–V10 pass in the live game. The current source uses protocol 33, snapshot
+schema 12 and preferences 10; preserve the published green checkpoint and all
+accepted visual/gameplay behavior. Continue
 in this strict player-facing order; do not skip ahead because a later catalog is
 easier to enumerate:
 
@@ -25,10 +26,16 @@ easier to enumerate:
    positive-Flux burst for Earth, Fire, Water, Wind, Ice, Charge, Light and Dark
    exists through the global 3×4 Loom with truthful 120 Hz comparison evidence;
    preserve its geometry/economy baseline while chemistry is implemented.
-3. **Element chemistry.** Promote all 36 symmetric first-eight reactions through
+3. **Campus + M0-M2 -- implemented candidate.** Preserve the larger loop,
+   dedicated Evade and Wall/Air Turn, no-vault dispatch, six-tick slide
+   protection/brake, independent jump protection and finite air-wall budget.
+   Read docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md before continuing. Keep material
+   motion neutral and exclude non-vault landing burst. Independent activity
+   isolation and human acceptance remain explicit follow-ups.
+4. **Element chemistry.** Promote all 36 symmetric first-eight reactions through
    a fail-closed catalog, bounded exposure/contact, shared spatial primitives,
    readable lifecycle, reset, replay, replication and route-safety evidence.
-4. **Crucible acceptance.** Make every pair deliberately reproducible and
+5. **Crucible acceptance.** Make every pair deliberately reproducible and
    understandable in-world, package the exact green Windows build, and pause for
    the requested playtest before another roster expansion.
 
@@ -52,7 +59,7 @@ slices, checkpoint each green result, and immediately start the next accepted
 slice. Do not stop at plans, scaffolds, catalogs, generated images or passing
 unit tests when the player-facing outcome is still absent.
 
-The current green frontier is protocol 32 / snapshot schema 11: Oh Tipi, S. Wayne
+The current source frontier is protocol 33 / snapshot schema 12: Oh Tipi, S. Wayne
 and The Red Baron exercise middle, small and large equal-budget roles; the complete
 non-ability movement grammar, bounded launch steering plus a timed impact-recovery/tech decision, full/cone POV with building cutaways, twelve
 Wellspring stations including a host-authoritative 3×4 Spell Loom,

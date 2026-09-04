@@ -49,7 +49,7 @@
       "landmark": "suspended rail causeway",
       "functions": ["movement_fundamentals", "advanced_tech", "races", "time_trials"],
       "entrances": ["nexus_west_walk", "garden_bridge", "undercroft_lift"],
-      "movement_routes": ["rail_causeway", "wall_kick_wells", "vault_slide_loop", "island_leaps"],
+      "movement_routes": ["rail_causeway", "wall_kick_wells", "slide_jump_loop", "island_leaps"],
       "connections": ["nexus-court", "verdant-recovery", "foundry-deep"],
       "travel_node": {"id": "conservatory-spire", "kind": "attunement_spire", "enabled": true}
     },
@@ -61,7 +61,7 @@
       "landmark": "seven-basin transmutation crater",
       "functions": ["firing_range", "bot_arena", "destructibles", "chemistry_labs", "combat_trials"],
       "entrances": ["nexus_south_east", "foundry_causeway", "observatory_drop"],
-      "movement_routes": ["basin_rim_run", "crater_superglide", "target_tower_redirects"],
+      "movement_routes": ["basin_rim_run", "basin_landing_turn", "target_tower_redirects"],
       "connections": ["nexus-court", "foundry-deep", "crown-observatory"],
       "travel_node": {"id": "proving-crucible", "kind": "attunement_crucible", "enabled": true}
     },
@@ -73,7 +73,7 @@
       "landmark": "oracular library dome",
       "functions": ["codex", "lore", "build_library", "replays", "analytics", "research"],
       "entrances": ["nexus_colonnade", "observatory_bridge", "archive_lift"],
-      "movement_routes": ["book_stack_vaults", "archive_roofline", "observatory_lift"],
+      "movement_routes": ["archive_circulation", "archive_roofline", "observatory_lift"],
       "connections": ["nexus-court", "crown-observatory", "foundry-deep"],
       "travel_node": {"id": "archive-orrey", "kind": "attunement_orrey", "enabled": true}
     },

@@ -34,7 +34,7 @@ work, but players experience a coherent connected world.
 | --- | --- | --- |
 | Nexus Court | arrival, onboarding, attunement and central orientation | radial routes, safe social core, world overview |
 | Wayfarer Concourse | social, appearance, host/join, teams and travel | balconies, gatehouse routes, shared lobby visibility |
-| Movement Conservatory | movement fundamentals, advanced routes, races | wall/slide/vault/wavedash/superglide lines |
+| Movement Conservatory | movement fundamentals, advanced routes, races | wallrun/kick, slide/jump, aerial reversal and wavedash lines; no vault requirement |
 | Alchemical Proving Grounds | aiming, spell geometry, bots, chemistry and destructibles | reaction basins, resettable terrain, projectile-pattern drills |
 | Living Archive | codex, builds, replays, analytics and discoveries | traversal through stacks/observatory, replay/training analysis |
 | Verdant Recovery | recovery, interaction, low-pressure crafting and growth systems | vegetation/growth/material experimentation |
@@ -77,6 +77,14 @@ must not pause, unload or force unrelated players elsewhere into that activity.
 Rules are simulation data. A visual sign alone never defines safety.
 
 ## 5. Route model
+
+The 2026-09-04 [movement revision](PLAYER-CONTROLS-AND-POV.md#movement-revision-no-vaulting-2026-09-04)
+removes vaulting from runtime activation; no route requires it. Use ordinary openings around solid
+cover, long runnable wall faces and broad reversal/landing pockets. A visual
+jump does not grant general solid-obstacle clearance. The
+[campus movement dimensions](proposals/wellspring-campus-v2/README.md#movement-led-layout-revision-2026-09-04)
+now inform the validated 3072x1728 source layout. [Current acceptance](WELLSPRING-MOVEMENT-ACCEPTANCE.md)
+distinguishes implemented geography from pending independent activity isolation.
 
 Every major region provides:
 

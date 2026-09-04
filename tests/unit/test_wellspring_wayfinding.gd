@@ -14,7 +14,7 @@ func _test_repository_wayfinding() -> void:
 	check(layout.load_from_file("res://content/maps/sanctum_campus_g2_v1.json"), "campus loads for wayfinding")
 	var wayfinding := WellspringWayfinding.new()
 	check(wayfinding.configure(language, layout), "wayfinding validates: %s" % wayfinding.last_error)
-	equal(wayfinding.points.size(), 8, "campus exposes eight purposeful points of interest")
+	equal(wayfinding.points.size(), 9, "campus exposes nine purposeful points of interest")
 	check(wayfinding.content_hash.length() == 64, "wayfinding has a stable content hash")
 	check(int((wayfinding.data["budgets"] as Dictionary).get("label_exclusion_radius", 0)) >= 48, "nearby wayfinding labels yield the actor-readable lane")
 	var kinds: Dictionary[String, bool] = {}

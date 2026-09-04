@@ -2,9 +2,9 @@ class_name SessionSnapshot
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 11
+const SCHEMA_VERSION: int = 12
 const MAX_PLAYERS: int = 8
-const PLAYER_VALUE_COUNT: int = 73
+const PLAYER_VALUE_COUNT: int = 74
 const PROJECTILE_VALUE_COUNT: int = 12
 const FIELD_VALUE_COUNT: int = 7
 const EVENT_VALUE_COUNT: int = 6
@@ -66,6 +66,7 @@ static func capture(
 		])
 		player_values.append_array(state.spell_wire_ids)
 		player_values.append_array(state.spell_cooldown_ticks)
+		player_values.append(state.jump_protection_ticks)
 		players.append([
 			state.entity_id,
 			_safe_name(String(names_by_entity.get(state.entity_id, "Traveller %d" % state.entity_id))),
@@ -381,7 +382,8 @@ static func _apply_values(state: PlayerState, values: PackedInt32Array) -> void:
 	state.active_2_wire_id = values[47]
 	state.active_2_cooldown_ticks = values[48]
 	state.spell_wire_ids = values.slice(49, 49 + PlayerState.SPELL_SLOT_COUNT)
-	state.spell_cooldown_ticks = values.slice(49 + PlayerState.SPELL_SLOT_COUNT, PLAYER_VALUE_COUNT)
+	state.spell_cooldown_ticks = values.slice(49 + PlayerState.SPELL_SLOT_COUNT, 49 + 2 * PlayerState.SPELL_SLOT_COUNT)
+	state.jump_protection_ticks = values[73]
 	state._sync_legacy_spell_cooldowns()
 
 
@@ -404,7 +406,7 @@ static func _valid_player_values(values: PackedInt32Array) -> bool:
 	for pair: Vector2i in [Vector2i(11, 12), Vector2i(13, 14), Vector2i(15, 16)]:
 		if values[pair.x] < 0 or values[pair.x] > 1_000_000 or values[pair.y] < 0 or values[pair.y] > values[pair.x]:
 			return false
-	for index: int in [17, 19, 20, 21, 22, 23, 24, 27, 34, 36, 37, 38, 39, 43, 48]:
+	for index: int in [17, 19, 20, 21, 22, 23, 24, 27, 34, 36, 37, 38, 39, 43, 48, 73]:
 		if values[index] < 0 or values[index] > MAX_TIMER_TICKS:
 			return false
 	if values[18] < 0 or values[18] >= PlayerState.MovementMode.size():
@@ -437,7 +439,7 @@ static func _valid_player_values(values: PackedInt32Array) -> bool:
 	if values[47] > 0 and (active_2_slot < -1 or active_2_slot >= PlayerState.SPELL_SLOT_COUNT or (active_2_slot >= 0 and active_2_slot in [primary_slot, active_slot])):
 		return false
 	var spell_wires: PackedInt32Array = values.slice(49, 49 + PlayerState.SPELL_SLOT_COUNT)
-	var spell_cooldowns: PackedInt32Array = values.slice(49 + PlayerState.SPELL_SLOT_COUNT, PLAYER_VALUE_COUNT)
+	var spell_cooldowns: PackedInt32Array = values.slice(49 + PlayerState.SPELL_SLOT_COUNT, 49 + 2 * PlayerState.SPELL_SLOT_COUNT)
 	var seen_spell_wires: Dictionary[int, bool] = {}
 	for slot_index: int in range(PlayerState.SPELL_SLOT_COUNT):
 		var wire_id: int = spell_wires[slot_index]

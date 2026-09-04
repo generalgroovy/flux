@@ -17,6 +17,7 @@ const SPELL_ALT_LAYER_ACTION: StringName = &"spell_layer_alt"
 const AIM_DEADZONE: float = 0.25
 
 var entity_id: int
+var evade_was_down: bool = false
 var jump_was_down: bool = false
 var technique_was_down: bool = false
 var active_1_was_down: bool = false
@@ -120,6 +121,9 @@ func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> S
 		held |= SimCommand.HELD_SPRINT
 	if Input.is_action_pressed(PRIMARY_ACTION):
 		held |= SimCommand.HELD_PRIMARY
+	var evade_down: bool = Input.is_action_pressed(&"evade")
+	var evade_pressed: bool = _action_pressed_edge(&"evade", evade_down, evade_was_down)
+	evade_was_down = evade_down
 	var jump_down: bool = Input.is_action_pressed(&"jump")
 	var technique_down: bool = Input.is_action_pressed(&"technique")
 	var active_1_down: bool = Input.is_action_pressed(ACTIVE_1_ACTION)
@@ -132,7 +136,7 @@ func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> S
 		held |= SimCommand.HELD_JUMP
 	if slide_down:
 		held |= SimCommand.HELD_FAST_FALL
-	var pressed: int = 0
+	var pressed: int = SimCommand.PRESSED_EVADE if evade_pressed else 0
 	if jump_pressed:
 		pressed |= SimCommand.PRESSED_JUMP
 	if technique_pressed:

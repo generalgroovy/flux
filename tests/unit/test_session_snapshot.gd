@@ -12,7 +12,7 @@ func run() -> int:
 
 
 func _test_snapshot_round_trip() -> void:
-	equal(SessionSnapshot.SCHEMA_VERSION, 11, "global-weave host snapshot schema is explicit")
+	equal(SessionSnapshot.SCHEMA_VERSION, 12, "jump protection snapshot schema is explicit")
 	var source := SimWorld.new(120, 7, CollisionWorld.new(3_000_000, 2_000_000))
 	var host: PlayerState = source.player()
 	host.champion_wire_id = 1

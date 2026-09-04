@@ -9,13 +9,104 @@
     "marker_radius": 18
   },
   "points": [
-    {"id": "movement-conservatory", "district": "conservatory-gardens", "kind": "movement", "position": [460, 688], "title": "MOVEMENT CONSERVATORY", "subtitle": "JUMP · SLIDE · VAULT"},
-    {"id": "recovery-grove", "district": "conservatory-gardens", "kind": "rest", "position": [708, 1030], "title": "RECOVERY GROVE", "subtitle": "RESTORE · REHEARSE"},
-    {"id": "archive-codex", "district": "nexus-commons", "kind": "archive", "position": [1280, 430], "title": "LIVING ARCHIVE", "subtitle": "CONTROLS · CHRONICLE"},
-    {"id": "wellspring-loom", "district": "nexus-commons", "kind": "spell", "position": [1450, 880], "title": "WELLSPRING LOOMS", "subtitle": "CHAMPION · SPELLS"},
-    {"id": "settings-house", "district": "nexus-commons", "kind": "build", "position": [1080, 1120], "title": "SETTINGS HOUSE", "subtitle": "BINDINGS · ACCESSIBILITY"},
-    {"id": "farflow-gates", "district": "wayfarer-proving-quarter", "kind": "farflow", "position": [2200, 650], "title": "FARFLOW GATES", "subtitle": "HOST · JOIN · CHARTER"},
-    {"id": "dueling-court", "district": "wayfarer-proving-quarter", "kind": "duel", "position": [2180, 1030], "title": "DUELING COURT", "subtitle": "ROUNDS · REMATCH"},
-    {"id": "elemental-crucible", "district": "wayfarer-proving-quarter", "kind": "alchemy", "position": [2390, 1090], "title": "ELEMENTAL CRUCIBLE", "subtitle": "SPELL · MATERIAL TRIALS"}
+    {
+      "id": "movement-conservatory",
+      "district": "conservatory-gardens",
+      "kind": "movement",
+      "position": [
+        208,
+        672
+      ],
+      "title": "MOVEMENT CONSERVATORY",
+      "subtitle": "JUMP · SLIDE · WALL RUN"
+    },
+    {
+      "id": "recovery-grove",
+      "district": "conservatory-gardens",
+      "kind": "rest",
+      "position": [
+        672,
+        1232
+      ],
+      "title": "RECOVERY GROVE",
+      "subtitle": "RESTORE · REHEARSE"
+    },
+    {
+      "id": "archive-codex",
+      "district": "nexus-commons",
+      "kind": "archive",
+      "position": [
+        1120,
+        416
+      ],
+      "title": "LIVING ARCHIVE",
+      "subtitle": "CONTROLS · CHRONICLE"
+    },
+    {
+      "id": "wellspring-loom",
+      "district": "nexus-commons",
+      "kind": "spell",
+      "position": [
+        1536,
+        720
+      ],
+      "title": "WELLSPRING LOOMS",
+      "subtitle": "CHAMPION · SPELLS"
+    },
+    {
+      "id": "settings-house",
+      "district": "nexus-commons",
+      "kind": "build",
+      "position": [
+        1392,
+        576
+      ],
+      "title": "CONTROLS LECTERN",
+      "subtitle": "BINDINGS · ACCESSIBILITY"
+    },
+    {
+      "id": "farflow-gates",
+      "district": "nexus-commons",
+      "kind": "farflow",
+      "position": [
+        1304,
+        1088
+      ],
+      "title": "FARFLOW GATES",
+      "subtitle": "HOST · JOIN · CHARTER"
+    },
+    {
+      "id": "dueling-court",
+      "district": "wayfarer-proving-quarter",
+      "kind": "duel",
+      "position": [
+        2544,
+        1216
+      ],
+      "title": "DUELING COURT",
+      "subtitle": "ROUNDS · REMATCH"
+    },
+    {
+      "id": "elemental-crucible",
+      "district": "nexus-commons",
+      "kind": "alchemy",
+      "position": [
+        1536,
+        1328
+      ],
+      "title": "ELEMENTAL CRUCIBLE",
+      "subtitle": "SPELL TRIALS · CHEMISTRY SOON"
+    },
+    {
+      "id": "pattern-range",
+      "district": "wayfarer-proving-quarter",
+      "kind": "duel",
+      "position": [
+        2560,
+        592
+      ],
+      "title": "PATTERN RANGE",
+      "subtitle": "AIM · DODGE · REPEAT"
+    }
   ]
 }

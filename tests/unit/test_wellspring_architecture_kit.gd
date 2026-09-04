@@ -38,7 +38,7 @@ func _test_live_coverage() -> void:
 	check(kit.configure(language, layout), "architecture kit loads for live coverage")
 	for building: Dictionary in layout.buildings_by_id.values():
 		var style := String(building.get("style", ""))
-		check(style == "vault_rail" or kit.building_profiles.has(style), "live building style %s has modular art" % style)
+		check(style == "practice_wall" or kit.building_profiles.has(style), "live building style %s has modular art" % style)
 	for station: Dictionary in layout.stations_by_id.values():
 		var kind := String(station.get("kind", ""))
 		check(kit.station_profiles.has(kind), "live station kind %s has furniture" % kind)

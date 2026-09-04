@@ -6,7 +6,7 @@ const MAX_PENDING_INPUTS: int = 48
 const SOFT_CORRECTION_LIMIT_PIXELS: float = 72.0
 const CORRECTION_RECOVERY_PIXELS_PER_SECOND: float = 720.0
 const MOVEMENT_HELD_MASK: int = SimCommand.HELD_SPRINT | SimCommand.HELD_JUMP | SimCommand.HELD_FAST_FALL
-const MOVEMENT_PRESSED_MASK: int = SimCommand.PRESSED_JUMP | SimCommand.PRESSED_TECHNIQUE | SimCommand.PRESSED_SLIDE
+const MOVEMENT_PRESSED_MASK: int = SimCommand.PRESSED_EVADE | SimCommand.PRESSED_JUMP | SimCommand.PRESSED_TECHNIQUE | SimCommand.PRESSED_SLIDE
 const STATE_FIELDS: Array[StringName] = [
 	&"entity_id",
 	&"position_x", &"position_y", &"position_remainder_x", &"position_remainder_y",
@@ -17,8 +17,8 @@ const STATE_FIELDS: Array[StringName] = [
 	&"stamina", &"stamina_remainder", &"stamina_recovery_delay_ticks",
 	&"jump_buffer_ticks", &"technique_buffer_ticks", &"slide_buffer_ticks",
 	&"fast_falling", &"variable_jump_grace_ticks",
-	&"hop_ticks", &"hop_cooldown_ticks", &"hop_stage", &"hop_mode",
-	&"hop_speed", &"hop_x", &"hop_y", &"air_redirects_remaining",
+	&"jump_protection_ticks", &"evade_buffer_ticks", &"landing_input_ticks", &"hop_ticks", &"hop_cooldown_ticks", &"hop_stage", &"hop_mode",
+	&"landing_input_x", &"landing_input_y", &"hop_speed", &"hop_x", &"hop_y", &"air_redirects_remaining",
 	&"air_dodge_ticks", &"air_dodge_cooldown_ticks", &"air_dodge_x", &"air_dodge_y",
 	&"wave_dash_queued", &"wave_dash_ticks", &"wave_dash_x", &"wave_dash_y",
 	&"slide_ticks", &"slide_cooldown_ticks", &"slide_x", &"slide_y",
@@ -34,7 +34,7 @@ const STATE_FIELDS: Array[StringName] = [
 const BOOLEAN_FIELDS: Array[StringName] = [&"fast_falling", &"wave_dash_queued", &"sprinting"]
 const DIRECTION_FIELDS: Array[StringName] = [
 	&"facing_x", &"facing_y", &"aim_x", &"aim_y",
-	&"hop_x", &"hop_y", &"air_dodge_x", &"air_dodge_y",
+	&"landing_input_x", &"landing_input_y", &"hop_x", &"hop_y", &"air_dodge_x", &"air_dodge_y",
 	&"wave_dash_x", &"wave_dash_y", &"slide_x", &"slide_y",
 	&"vault_x", &"vault_y", &"superglide_x", &"superglide_y",
 	&"wall_x", &"wall_y", &"wall_skim_x", &"wall_skim_y",
@@ -42,6 +42,7 @@ const DIRECTION_FIELDS: Array[StringName] = [
 ]
 const TIMER_FIELDS: Array[StringName] = [
 	&"stamina_recovery_delay_ticks", &"jump_buffer_ticks", &"technique_buffer_ticks", &"slide_buffer_ticks",
+	&"jump_protection_ticks", &"evade_buffer_ticks", &"landing_input_ticks",
 	&"variable_jump_grace_ticks", &"hop_ticks", &"hop_cooldown_ticks",
 	&"air_dodge_ticks", &"air_dodge_cooldown_ticks", &"wave_dash_ticks",
 	&"slide_ticks", &"slide_cooldown_ticks", &"vault_ticks", &"vault_cooldown_ticks",

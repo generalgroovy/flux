@@ -110,6 +110,11 @@ var slide_buffer_ticks: int = 0
 var fast_falling: bool = false
 var variable_jump_grace_ticks: int = 0
 
+var jump_protection_ticks: int = 0
+var evade_buffer_ticks: int = 0
+var landing_input_ticks: int = 0
+var landing_input_x: int = 1000
+var landing_input_y: int = 0
 var hop_ticks: int = 0
 var hop_cooldown_ticks: int = 0
 var hop_stage: int = 0
@@ -348,6 +353,9 @@ func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> voi
 	slide_buffer_ticks = 0
 	fast_falling = false
 	variable_jump_grace_ticks = 0
+	jump_protection_ticks = 0
+	evade_buffer_ticks = 0
+	landing_input_ticks = 0
 	hop_ticks = 0
 	hop_cooldown_ticks = 0
 	hop_stage = 0
@@ -408,6 +416,7 @@ func canonical_values() -> PackedInt64Array:
 		stamina_maximum, stamina_recovery_per_second, movement_speed_ratio,
 		stamina, stamina_remainder, stamina_recovery_delay_ticks,
 		jump_buffer_ticks, technique_buffer_ticks, slide_buffer_ticks, int(fast_falling), variable_jump_grace_ticks,
+		jump_protection_ticks, evade_buffer_ticks, landing_input_ticks, landing_input_x, landing_input_y,
 		hop_ticks, hop_cooldown_ticks, hop_stage, hop_mode, hop_speed, hop_x, hop_y,
 		air_redirects_remaining,
 		air_dodge_ticks, air_dodge_cooldown_ticks, air_dodge_x, air_dodge_y,

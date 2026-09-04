@@ -18,7 +18,7 @@ func _test_defaults_and_presets() -> void:
 	equal(preferences.pov_angle_degrees, 120, "cone angle remains ready when cone view is selected")
 	equal(preferences.pov_range, 720, "cone range remains ready when cone view is selected")
 	equal(preferences.camera_zoom_percent, 75, "the default camera exposes more connected movement space")
-	equal(PlayerPreferences.SCHEMA_VERSION, 9, "player preferences save schema v9")
+	equal(PlayerPreferences.SCHEMA_VERSION, 10, "player preferences save schema v10")
 	equal(preferences.farflow_join_address, "127.0.0.1", "local Farflow is the safe address default")
 	equal(preferences.keyboard_bindings[&"sprint"], KEY_SHIFT, "Shift is the production-default sprint key")
 	equal(preferences.keyboard_bindings[&"slide"], KEY_C, "C is the persisted slide key")
@@ -58,7 +58,7 @@ func _test_validation() -> void:
 	equal(preferences.pov_range, 2048, "custom view length is legal")
 	equal(preferences.farflow_join_address, "friend.example.test", "valid Farflow address loads")
 	for mutation: Dictionary in [
-		{"schema_version": 10},
+		{"schema_version": 11},
 		{"movement_reference": "camera_relative"},
 		{"pov_mode": "wallhack"},
 		{"pov_angle_degrees": 14},

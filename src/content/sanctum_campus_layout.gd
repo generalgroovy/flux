@@ -2,8 +2,8 @@ class_name SanctumCampusLayout
 extends RefCounted
 
 
-const SUPPORTED_SCHEMA_VERSION: int = 4
-const REQUIRED_CANVAS := Vector2i(2560, 1440)
+const SUPPORTED_SCHEMA_VERSION: int = 5
+const REQUIRED_CANVAS := Vector2i(3072, 1728)
 const REQUIRED_VIEWPORT := Vector2i(1280, 720)
 const REQUIRED_DISTRICTS: Array[String] = [
 	"conservatory-gardens",
@@ -135,6 +135,25 @@ func validate() -> bool:
 		if not combined_source_districts.has(source_district_id):
 			return _fail("Sanctum source area is not represented in a combined district: %s" % source_district_id)
 
+	var activity_ids: Dictionary[String, bool] = {}
+	for value: Variant in data.get("activity_areas", []):
+		if not value is Dictionary:
+			return _fail("Every campus activity must be an object")
+		var activity: Dictionary = value
+		var activity_id := String(activity.get("id", ""))
+		var district_id := String(activity.get("district", ""))
+		if activity_id.is_empty() or activity_ids.has(activity_id) or not districts_by_id.has(district_id):
+			return _fail("Campus activity identity or district is invalid")
+		var bounds := _parse_bounds(activity.get("bounds", []))
+		if bounds.size.x < 288 or bounds.size.y < 288 or not _parse_bounds(districts_by_id[district_id]["bounds"]).encloses(bounds):
+			return _fail("Campus activity needs a bounded, readable practice pocket")
+		if String(activity.get("label", "")).is_empty() or String(activity.get("purpose", "")).is_empty():
+			return _fail("Campus activities must explain their purpose")
+		activity_ids[activity_id] = true
+	for required_id: String in ["source-court", "movement-garden", "pattern-range", "duel-court", "crucible", "recovery-grove"]:
+		if not activity_ids.has(required_id):
+			return _fail("Campus activity missing: %s" % required_id)
+
 	var connection_ids: Dictionary[String, bool] = {}
 	var connection_graph: Dictionary[String, Array] = {}
 	for district_id: String in districts_by_id:
@@ -152,7 +171,7 @@ func validate() -> bool:
 			return _fail("Sanctum connection references an unknown district: %s" % connection_id)
 		if from_id == to_id:
 			return _fail("Sanctum connection cannot link a district to itself: %s" % connection_id)
-		if int(connection.get("width", 0)) < 12 or int(connection.get("width", 0)) > 96:
+		if int(connection.get("width", 0)) < 144 or int(connection.get("width", 0)) > 288:
 			return _fail("Sanctum connection width is outside bounds: %s" % connection_id)
 		var connection_points: Array = connection.get("points", [])
 		if not _validate_points(connection_points, 2):
@@ -197,7 +216,7 @@ func validate() -> bool:
 		var route_kind := String(route.get("kind", ""))
 		if not ALLOWED_ROUTE_KINDS.has(route_kind):
 			return _fail("Sanctum route has unsupported kind: %s" % route_id)
-		if int(route.get("width", 0)) < 8 or int(route.get("width", 0)) > 96:
+		if int(route.get("width", 0)) < 48 or int(route.get("width", 0)) > 288:
 			return _fail("Sanctum route width is outside bounds: %s" % route_id)
 		var route_points: Array = route.get("points", [])
 		if not _validate_points(route_points, 2):
@@ -358,7 +377,6 @@ func validate() -> bool:
 	if not practice_targets_by_id.has("nexus-sparring-effigy"):
 		return _fail("Sanctum campus is missing its sparring effigy")
 
-	var vaultable_count: int = 0
 	for value: Variant in data.get("buildings", []):
 		if not value is Dictionary:
 			return _fail("Every Sanctum building must be an object")
@@ -382,10 +400,8 @@ func validate() -> bool:
 		if not bool(building.get("worldbone", false)):
 			return _fail("Sanctum topology building must be immutable worldbone: %d" % building_id)
 		if bool(building.get("vaultable", false)):
-			vaultable_count += 1
+			return _fail("Vault surfaces are retired; use solid practice walls")
 		buildings_by_id[building_id] = building
-	if vaultable_count < 1:
-		return _fail("Sanctum campus requires at least one marked vault surface")
 
 	var fast_travel_count: int = 0
 	for value: Variant in data.get("landmarks", []):
@@ -409,6 +425,21 @@ func validate() -> bool:
 		return _fail("Every visible district requires a fast-travel context marker")
 
 	var collision := build_collision_world()
+	# Ordinary routes and bridges promise full-width, obstacle-free passage.
+	for value: Variant in (data.get("routes", []) as Array) + (data.get("connections", []) as Array):
+		var route: Dictionary = value
+		if String(route.get("kind", "")) in ["advanced", "garden"]:
+			continue
+		var points: Array = route["points"]
+		var clearance: int = int(route["width"]) / 2 * SimConfig.FIXED_SCALE
+		for index: int in range(points.size() - 1):
+			var start := _parse_point(points[index]) * SimConfig.FIXED_SCALE
+			var end := _parse_point(points[index + 1]) * SimConfig.FIXED_SCALE
+			var steps := maxi(1, ceili(Vector2(end - start).length() / (16 * SimConfig.FIXED_SCALE)))
+			for sample: int in range(steps + 1):
+				var point := Vector2i(Vector2(start).lerp(Vector2(end), float(sample) / steps))
+				if not collision.can_occupy(point, clearance):
+					return _fail("Ordinary route lacks promised clearance: %s" % route["id"])
 	var spawn_fixed := spawn * SimConfig.FIXED_SCALE
 	if not collision.can_occupy(spawn_fixed, MovementTuning.PLAYER_RADIUS):
 		return _fail("Sanctum campus spawn overlaps authored collision")
@@ -448,7 +479,8 @@ func build_collision_world() -> CollisionWorld:
 			bounds.position.y * SimConfig.FIXED_SCALE,
 			bounds.end.x * SimConfig.FIXED_SCALE,
 			bounds.end.y * SimConfig.FIXED_SCALE,
-			bool(building.get("vaultable", false)),
+			false,
+			String(building.get("style", "")) == "practice_wall",
 		))
 	return collision
 

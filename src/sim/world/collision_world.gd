@@ -9,7 +9,8 @@ class Obstacle:
 	var minimum_y: int
 	var maximum_x: int
 	var maximum_y: int
-	var vaultable: bool
+	var vaultable: bool # Reserved legacy geometry metadata; no traversal activation.
+	var wall_runnable: bool
 
 	func _init(
 		requested_id: int,
@@ -18,6 +19,7 @@ class Obstacle:
 		requested_maximum_x: int,
 		requested_maximum_y: int,
 		requested_vaultable: bool = false,
+		requested_wall_runnable: bool = true,
 	) -> void:
 		obstacle_id = requested_id
 		minimum_x = requested_minimum_x
@@ -25,6 +27,7 @@ class Obstacle:
 		maximum_x = requested_maximum_x
 		maximum_y = requested_maximum_y
 		vaultable = requested_vaultable
+		wall_runnable = requested_wall_runnable
 
 	func projected_depth(direction: Vector2i) -> int:
 		@warning_ignore("integer_division")

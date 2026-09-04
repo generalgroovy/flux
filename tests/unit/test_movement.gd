@@ -154,8 +154,8 @@ func _test_slide_and_slide_jump(tick_rate: int) -> void:
 	@warning_ignore("integer_division")
 	for _index: int in range(tick_rate / 2):
 		_step(world, 1000, 0, SimCommand.HELD_SPRINT)
-	_step(world, 1000, 0, SimCommand.HELD_SPRINT, SimCommand.PRESSED_JUMP)
-	equal(state.last_event, "slide", "%d Hz sprint+jump enters slide" % tick_rate)
+	_step(world, 1000, 0, SimCommand.HELD_SPRINT, SimCommand.PRESSED_SLIDE)
+	equal(state.last_event, "slide", "%d Hz dedicated slide enters from sprint" % tick_rate)
 	var late_window: int = world.config.milliseconds_to_ticks(MovementTuning.SLIDE_JUMP_WINDOW_MS)
 	while state.slide_ticks > late_window:
 		_step(world, 1000, 0)
@@ -186,7 +186,7 @@ func _test_air_dodge_and_wavedash(tick_rate: int) -> void:
 	var window: int = world.config.milliseconds_to_ticks(MovementTuning.WAVE_DASH_INPUT_WINDOW_MS)
 	while state.hop_ticks > window:
 		_step(world, 1000, 0)
-	_step(world, 0, 1000, SimCommand.HELD_SPRINT, SimCommand.PRESSED_TECHNIQUE)
+	_step(world, 0, 1000, SimCommand.HELD_SPRINT, SimCommand.PRESSED_EVADE)
 	equal(state.last_event, "air_dodge", "%d Hz late angled dodge starts" % tick_rate)
 	check(state.wave_dash_queued, "%d Hz late angle queues wavedash" % tick_rate)
 	while state.air_dodge_ticks > 0:
@@ -199,7 +199,7 @@ func _test_ground_roll_and_evasion_windows(tick_rate: int) -> void:
 	var roll_world := SimWorld.new(tick_rate)
 	var roller: PlayerState = roll_world.player()
 	var initial_stamina := roller.stamina
-	_step(roll_world, 1000, 0, 0, SimCommand.PRESSED_TECHNIQUE)
+	_step(roll_world, 1000, 0, 0, SimCommand.PRESSED_EVADE)
 	equal(roller.last_event, "roll", "%d Hz open-ground technique starts a roll" % tick_rate)
 	equal(roller.movement_mode, PlayerState.MovementMode.ROLL, "%d Hz roll owns an explicit movement mode" % tick_rate)
 	check(roller.is_rolling() and not roller.is_airborne(), "%d Hz roll remains grounded" % tick_rate)
@@ -343,7 +343,7 @@ func _test_wall_skim(tick_rate: int) -> void:
 	var skim_surface: int = state.wall_skim_surface_id
 	while state.wall_skim_ticks > 0:
 		_step(world, 0, 1000)
-	equal(state.last_event, "wall_skim_end", "%d Hz wall skim emits an explicit recovery event" % tick_rate)
+	equal(state.last_event, "wall_end", "%d Hz wall skim emits an explicit recovery event" % tick_rate)
 	check(state.landing_ticks > 0, "%d Hz wall skim exposes its readable recovery window" % tick_rate)
 	equal(state.landing_intensity, MovementTuning.LANDING_WALL_SKIM_INTENSITY, "%d Hz wall skim exit uses its lighter authored pulse" % tick_rate)
 	state.wall_memory_ticks = world.config.milliseconds_to_ticks(MovementTuning.WALL_MEMORY_MS)
@@ -354,8 +354,8 @@ func _test_wall_skim(tick_rate: int) -> void:
 	var after_first_skim: int = state.stamina
 	_step(world, 0, -1000, 0, SimCommand.PRESSED_TECHNIQUE)
 	equal(state.wall_skim_ticks, 0, "%d Hz same surface cannot immediately chain another skim" % tick_rate)
-	equal(state.last_event, "roll", "%d Hz same-surface lockout falls back to the open-ground roll" % tick_rate)
-	equal(state.stamina, after_first_skim - MovementTuning.ROLL_COST, "%d Hz same-surface roll pays only its own Stamina" % tick_rate)
+	check(not state.is_rolling(), "%d Hz wall intent never silently becomes an evade" % tick_rate)
+	equal(state.stamina, after_first_skim, "%d Hz same-surface roll pays only its own Stamina" % tick_rate)
 
 	var boundary_world := SimWorld.new(tick_rate)
 	var boundary: PlayerState = boundary_world.player()
@@ -366,8 +366,8 @@ func _test_wall_skim(tick_rate: int) -> void:
 	var boundary_stamina: int = boundary.stamina
 	_step(boundary_world, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE)
 	equal(boundary.wall_skim_ticks, 0, "%d Hz outer world boundary cannot be skimmed" % tick_rate)
-	equal(boundary.last_event, "roll", "%d Hz reserved world boundary falls back to a solid-world roll" % tick_rate)
-	equal(boundary.stamina, boundary_stamina - MovementTuning.ROLL_COST, "%d Hz boundary roll pays only its own Stamina" % tick_rate)
+	equal(boundary.last_event, "spawn", "%d Hz reserved boundary cannot hijack wall intent" % tick_rate)
+	equal(boundary.stamina, boundary_stamina, "%d Hz boundary roll pays only its own Stamina" % tick_rate)
 
 
 func _test_vault_and_superglide(tick_rate: int) -> void:
@@ -376,15 +376,11 @@ func _test_vault_and_superglide(tick_rate: int) -> void:
 	state.position_x = 760_000
 	state.position_y = 340_000
 	_step(world, 1000, 0, 0, SimCommand.PRESSED_TECHNIQUE)
-	equal(state.last_event, "vault", "%d Hz marked rail vaults" % tick_rate)
-	check(state.position_x > 900_000 + state.radius, "%d Hz vault lands fully beyond the rail" % tick_rate)
-	var crest_end: int = world.config.milliseconds_to_ticks(MovementTuning.VAULT_CREST_END_MS)
-	while state.vault_ticks > crest_end:
-		_step(world, 1000, 0)
-	_step(world, 1000, 0, 0, SimCommand.PRESSED_JUMP)
-	equal(state.last_event, "superglide", "%d Hz crest jump converts" % tick_rate)
-	check(state.superglide_ticks > 0, "%d Hz superglide is active" % tick_rate)
-	check(absi(state.velocity_x) <= MovementTuning.MAX_AUTHORED_SPEED, "%d Hz speed stays bounded" % tick_rate)
+	equal(state.vault_ticks, 0, "legacy rail cannot activate vault")
+	check(state.position_x < 800_000, "technique cannot teleport across solid cover")
+	_step(world, 1000, 0, SimCommand.HELD_SPRINT, SimCommand.PRESSED_JUMP)
+	equal(state.hop_mode, PlayerState.MovementMode.HOP, "Sprint + Jump still jumps")
+	equal(state.superglide_ticks, 0, "retired vault crest cannot activate superglide")
 
 
 func _test_control_states(tick_rate: int) -> void:

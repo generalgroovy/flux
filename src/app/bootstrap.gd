@@ -80,6 +80,7 @@ var previous_position := Vector2.ZERO
 var current_position := Vector2.ZERO
 var dropped_time_seconds: float = 0.0
 var show_debug_overlay: bool = false
+var movement_trace := MovementPracticeTrace.new()
 var capture_pointer_world := Vector2i(-1, -1)
 var capture_spawn_world := Vector2i(-1, -1)
 var capture_expanded_station_id: String = ""
@@ -319,6 +320,8 @@ func _ready() -> void:
 	if not _start_match(tick_rate):
 		get_tree().quit(1)
 		return
+	if OS.get_cmdline_user_args().has("--capture-practice-trace"):
+		movement_trace.begin(world.tick, _player_position(), _local_player_state().champion_wire_id)
 	if not requested_capture_spell_wires.is_empty() and not apply_capture_spell_wires(_local_player_state(), requested_capture_spell_wires):
 		push_error("Capture-only spell weave could not be applied")
 		get_tree().quit(1)
@@ -600,6 +603,10 @@ func _process(delta: float) -> void:
 		controls_input_guard_frames -= 1
 	if not controls_blocking:
 		_handle_preference_actions()
+		if Input.is_action_just_pressed(&"practice_trace"):
+			movement_trace.toggle(world.tick, _player_position(), _local_player_state().champion_wire_id)
+		if Input.is_action_just_pressed(&"practice_retry"):
+			movement_trace.begin(world.tick, _player_position(), _local_player_state().champion_wire_id)
 	if not controls_blocking and Input.is_action_just_pressed(&"toggle_debug_overlay"):
 		show_debug_overlay = not show_debug_overlay
 	if not controls_blocking and Input.is_action_just_pressed(&"reset_match"):
@@ -771,6 +778,7 @@ func _process(delta: float) -> void:
 			elif session_transport.is_host():
 				authoritative_session.record_combat_events(world.combat_events)
 			current_position = _player_position()
+		movement_trace.record(world.tick, current_position, command, _local_player_state().champion_wire_id)
 		accumulator_seconds -= fixed_delta
 		steps += 1
 	if accumulator_seconds >= fixed_delta:
@@ -800,6 +808,7 @@ func _draw() -> void:
 	var visual_tick := MinimalChampionMotion.tick_at_visual_rate(world.tick, tick_rate, alpha)
 	_set_world_transform(camera_origin)
 	campus_renderer.draw(self, campus_layout, roundi(visual_tick), camera_focus_position, _reduced_effects_enabled())
+	movement_trace.draw(self, rendered_position, _reduced_effects_enabled())
 	if show_debug_overlay:
 		for obstacle: CollisionWorld.Obstacle in world.collision.obstacles:
 			var rectangle := Rect2(
@@ -3084,7 +3093,7 @@ static func capture_movement_command(mode: String, tick: int, entity_id: int, di
 	if mode == "slide" and tick == 6:
 		pressed |= SimCommand.PRESSED_SLIDE
 	if mode == "air_dodge" and tick == 12:
-		pressed |= SimCommand.PRESSED_TECHNIQUE
+		pressed |= SimCommand.PRESSED_EVADE
 	if mode == "technique" and tick == 6:
 		pressed |= SimCommand.PRESSED_TECHNIQUE
 	return SimCommand.new(tick, entity_id, move_x, move_y, held, pressed, normalized_direction.x, normalized_direction.y)
@@ -3438,8 +3447,8 @@ static func camera_origin_for(focus_position: Vector2, viewport: Vector2i, canva
 	var focus_screen := Vector2(viewport_size.x * 0.5, (float(reserved_ui_top) + viewport_size.y) * 0.5) / zoom
 	var maximum_origin := (Vector2(canvas) - visible_world_size).max(Vector2.ZERO)
 	return Vector2(
-		clampf(focus_position.x - focus_screen.x, 0.0, maximum_origin.x),
-		clampf(focus_position.y - focus_screen.y, 0.0, maximum_origin.y),
+		(float(canvas.x) - visible_world_size.x) * 0.5 if visible_world_size.x > canvas.x else clampf(focus_position.x - focus_screen.x, 0.0, maximum_origin.x),
+		(float(canvas.y) - visible_world_size.y) * 0.5 if visible_world_size.y > canvas.y else clampf(focus_position.y - focus_screen.y, 0.0, maximum_origin.y),
 	)
 
 

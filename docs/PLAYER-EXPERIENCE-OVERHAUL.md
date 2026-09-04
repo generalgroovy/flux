@@ -65,7 +65,7 @@ unnecessary; the simplest complete feedback path is usually
 
 | Axis | Beginner expression | Mastery expression | Integrity bound |
 | --- | --- | --- | --- |
-| Movement | Walk, sprint, jump, slide and roll out of danger | Momentum conversion, air steering, wall routes, wavedash/vault/superglide chains and landing choices | Existing grammar first; no hidden speed or direction exception |
+| Movement | Walk, sprint, jump, slide and roll out of danger | Momentum conversion, aerial turnarounds, wallrun/kick routes, wavedash/slide-jump chains and landing choices | No vault requirement; planned wallrun/slide-protection refinements follow the current/target movement contract, not an implied implementation claim |
 | Aim/spacing | Point at a target and lead a projectile | Control gaps, crossfire, ricochets, corners, height and future escape lanes | Continuous aim; clear collision and cover |
 | Spell weave | Use four visible default spells | Arrange twelve Plain/Ctrl/Alt positions around execution comfort and tactical role | Every attack costs Flux; no illegal duplicate/hidden slot |
 | Delivery geometry | Choose bolt, burst, beam, spray or field by obvious shape | Layer timings, trajectories and commitments to constrain future movement | Geometry is readable without element color |

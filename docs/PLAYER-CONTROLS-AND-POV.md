@@ -2,9 +2,106 @@
 
 Status: **canonical current input, movement-facing and POV contract**.
 
+## Movement revision: no vaulting (2026-09-04)
+
+**Implemented source revision:** the movement-led 3072 x 1728 campus now precedes
+the movement update, as requested. Vault entry and vault-crest superglide are
+retired; their serialized IDs/fields remain reserved compatibility slots.
+Sprint + Jump always jumps. Q / left trigger is explicit Evade, V / B is
+Wall / Air Turn / Impact Tech. C / wheel-down slides, and a second press brakes.
+Slide has a 6-tick (50 ms) opening attack-protection window. Jump protection
+uses its own authoritative timer, independent of shortened animation/airtime.
+Material-assisted drift/grip is neutral-only preparation; non-vault landing
+burst is excluded. See [current slice and acceptance](WELLSPRING-MOVEMENT-ACCEPTANCE.md).
+
+### Current movement and continuing acceptance
+
+Times below are authored milliseconds, rounded up to 120 Hz simulation ticks.
+I-frames mean protection from hostile attack contact, not passage through walls.
+
+| Option | Current implementation | Intended treatment |
+|---|---|---|
+| Eight-way walk / strafe / counter-strafe | Normalized digital directions, continuous analog magnitude, separate aim, acceleration/braking | Keep; reduce unintended input interpretation before changing speed |
+| Sprint | Held Shift, Stamina drain; Sprint+Jump stays Jump | Keep; measure control clarity in playtests |
+| Jump / hop | Directional takeoff, active air steering, 28 Stamina, 160 ms maximum authored arc; 90 ms opening attack i-frames | Keep launch/landing mindgames and improve phase clarity; audit short-hop/fast-fall interaction with protection timing |
+| Double jump | Second paid stage, 24 Stamina, 200 ms arc; jump-family opening protection | Outward recent air-wall contact deliberately chooses wall kick instead; both spend stage two |
+| Slide | C/wheel down; entry-speed gate, 22 Stamina, 300 ms duration, 780 ms cooldown; **6 protected ticks (50 ms)** | Implemented candidate; retain vulnerable tail, cost and cooldown; second press brakes |
+| Slide jump | Late slide conversion, 20 additional Stamina, 230 ms arc; jump-family opening protection | Keep; distinguish early buffered intent from successful conversion and avoid inherited/duplicated i-frames |
+| Ordinary air steering / turnaround | Held direction continuously bends travel; body follows input; release preserves momentum | Keep as the default aerial tool; provide broad reversal pockets and honest momentum loss |
+| Paid air redirect | V while hopping, 10 Stamina, one redirect per jump stage | Keep a stronger correction than ordinary steering; no new i-frames from direction change |
+| Air dodge | Q / left trigger while hopping, 28 Stamina, 180 ms action, 120 ms opening i-frames | Keep as committed evasion; test clearer explicit Evade binding |
+| Ground roll | Q / left trigger on ground, 24 Stamina, 240 ms action, 130 ms opening i-frames | Keep as deliberate ground defense, distinct from travel-focused slide |
+| Wavedash | Late angled air dodge queues a ground momentum conversion | Keep; ground conversion does not grant a new free protection window |
+| Wall jump / kick | Jump consumes recent wall contact; 28 Stamina, 220 ms same-wall lockout | Outward recent airborne wall contact selects kick and spends the second air-action budget; otherwise double jump |
+| Wallrun (wall-skim kernel) | V + tangent at a runnable practice wall; 18 Stamina, 420 ms maximum, 900 ms same-surface lockout | Continuous contact, immediate end/away/V detach; no corner magnetism or i-frames; not roof climbing |
+| Variable jump / fast fall | Release Jump cuts the arc; airborne C accelerates descent | Keep separate timing choices; do not confuse either with a fresh evade |
+| Landing cut | Counter-steer during a 110 ms landing window boosts braking response | Keep; explain as landing reversal, not attack-cancel or free speed generation |
+| Launch influence / impact tech | Direction bends launch; buffered V recovers from impact for 18 Stamina | Keep; teach one recovery cause and correction, no automatic escape from all control |
+| Edgeweave | Hostile projectile near-miss can recover Stamina under bounded eligibility | Keep; audit reward once per source/contact so dense patterns cannot fund perpetual evasion |
+| Vault / vault-crest superglide | Runtime activation removed; old numeric IDs/state slots reserved | Do not restore; non-vault landing burst excluded |
+
+### Input and evasion decisions
+
+| Concern | Proposed rule / test |
+|---|---|
+| Sprint + Jump | Implemented: Space requests Jump even with Shift; C is Slide; the old chord is retired. |
+| Separate intent | Implemented: Q / left trigger Evade; V / B Wall/Air Turn/Tech. Near-wall Evade remains a roll. Both actions are remappable. |
+| Slide protection | Implemented candidate: 6 ticks (50 ms). Vulnerable tail, original slide cost/speed/cooldown; brake ends protection. Balance still needs player feedback. |
+| Distinct defense roles | Walking wins by positioning; slide buys a short protected lane crossing at speed; roll gives a longer committed ground evade; jump changes trajectory/timing; wallrun gives routing, not automatic protection. |
+| Honest timing | Track accepted action age independently from a shortened jump arc where necessary. Never reset protection on facing changes, held input, wall-contact refresh, animation loops or presentation correction. |
+| Chaining | Permit legal paid transitions with their authored cooldowns/Stamina; do not add a hidden global combo lock. A converted state cannot inherit and restart the same protection purchase. New paid actions remain independently testable. |
+| World remains solid | I-frames do not bypass collision, grant wall crossing, remove existing status effects or alter material authority. Jump currently has no general solid-cover clearance; map authors cannot assume it replaces vault teleportation. |
+| Resource counterplay | Test maximum-uptime chains plus Edgeweave rewards with every body role. If a renewable loop erases counterplay, adjust the visible cost/cooldown/refund rule, not a silent exception. |
+
+### Wall movement acceptance
+
+Extend the existing wall-skim kernel rather than inventing a parallel wallrun
+system. Require an authored runnable face, intentional approach/entry, valid
+contact throughout the run, a finite duration/Stamina cost, and immediate
+readable detachment at a wall end. No magnetic corner wrapping, outer-boundary
+surfing, roof climbing or same-wall infinite refresh. Wallrun itself grants no
+i-frames. A separately accepted wall jump may use the jump family's authored
+window; it must not reset the remaining air-action budget for free.
+
+Space at fresh airborne wall contact needs an explicit, tested choice between
+wall jump and double jump. Prefer outward input + valid wall contact for a kick;
+otherwise preserve the requested double jump. Check all eight approach/exit
+directions and repeated same/opposite wall cases. This priority is implemented; wall kicks consume stage two and preserve the
+remaining redirect budget. Repeated kicks cannot refill it.
+
+### Accepted additions and explicit exclusions
+
+| Candidate | Benefit | Limit / decision |
+|---|---|---|
+| Slide release / controlled brake | Stop short, bait aim and change commitment without another button | Implemented: second Slide press; ends protection, retains original cost/cooldown and gives no launch boost |
+| Deliberate wall detach | Fake a wall jump or choose an ordinary fall/exit | Implemented: outward input or a second Wall press; no new protection |
+| Landing-direction buffer | Make intended landing turns reliable during fast combinations | Implemented: 80 ms remembered direction supplies an otherwise empty first landing tick; live input wins |
+| Material-assisted drift / grip | Ice-like surfaces preserve a slide; mud-like surfaces change braking and route choice | After first-eight chemistry acceptance; authored friction/steering modifiers with obvious boundaries, no universal free boost or extra element |
+| Training input trail and race ghost | Make timing, reversal and route improvement understandable | Implemented local F2 trace / F3 next recording with same-start, same-character previous-run echo; 60-second cap |
+| Non-vault landing burst | Potential replacement for superglide expression | Excluded by the current user request; do not implement |
+
+Reject unlimited bunnyhop acceleration, repeated free wall-jump refresh, passive
+wallrun invulnerability and mandatory precision traversal to services. These
+remove meaningful decisions or accessibility rather than creating useful depth.
+
+### Implementation sequence
+
+| Slice | Outcome | Required proof |
+|---|---|---|
+| M3a -- campus foundation implemented first | Six physical practice areas, ordinary loop, runnable walls, duel cover, three targets and moved stations | Full-width public-route clearance, spawn/station/target validation; visual playtest still pending |
+| M0 -- implemented | Vault entry and dependent crest activation retired; old fields reserved | Protocol 33, snapshot 12; command/replay/prediction tests |
+| M1 -- implemented candidate | Consistent Jump, separate Evade, six-tick slide protection, brake, independent jump protection timer | Eight-way tests and unchanged Stamina/cooldown limits |
+| M2 -- implemented candidate | Contact-based wallrun, outward airborne wall kick and deliberate detach | Finite air budget, contact/end/lockout checks |
+| M3b -- pending | Independent concurrent activities, local reset isolation, additional pattern challenge tools | 2/4/8-player pressure and human movement/visual acceptance |
+
+Next resume C6-C9 chemistry, keeping material movement neutral until separately
+accepted. Do not claim this physical campus supplies independent concurrent
+rounds or material chemistry already. Updated evidence is recorded in
+[the acceptance ledger](WELLSPRING-MOVEMENT-ACCEPTANCE.md).
+
 ## Implemented checkpoint
 
-FLUX 2 now loads schema-v9 preferences from the stable offline profile
+FLUX 2 now loads schema-v10 preferences from the stable offline profile
 `user://player_preferences_v1.json`. The legacy filename is retained so existing
 schema-v1 installations are discovered and migrated in place. Godot stores it
 in the current Windows user's application-data area. The file is created with
@@ -96,15 +193,15 @@ While airborne, each non-zero movement vector immediately updates body facing
 and continuously bends jump momentum at the authoritative 120 Hz rate.
 Releasing movement preserves the current airborne momentum. A hard
 reversal briefly trades speed for turning instead of snapping through the
-player; contextual V remains the faster, Stamina-priced air redirect and sprint+V
+player; contextual V remains the faster, Stamina-priced air redirect and Q / left trigger
 remains the committed air dodge. Spell aim stays independent and exact.
 
-V after recent contact with an authored obstacle starts a 420 ms wall skim
+V at a runnable practice-wall face starts an at-most-420 ms contact wallrun
 along the requested tangent for one 18-Stamina purchase. Stable positive wall
 identity excludes outer world boundaries, a 900 ms same-surface lockout prevents
 loops, and the end exposes a short recovery cue. The same semantic V press keeps
-its existing vault, aerial redirect and sprint-held air-dodge roles; on open
-ground it starts a 24-Stamina roll. Roll remains solid against world collision
+its wall/air-turn and impact-tech roles; explicit Evade on open
+ground starts a 24-Stamina roll. Roll remains solid against world collision
 for 240 ms and ignores hostile damage/control only during its opening 130 ms.
 Jump-family actions likewise ignore hostile damage/control during their opening
 90 ms, then become vulnerable before landing. A bright broken contour exposes
@@ -128,7 +225,7 @@ aim-facing angle inside the selected range:
 
 The current checkpoint is a local presentation/accessibility policy in the
 offline Wellspring. In cone mode every authored `los_cutaway` building projects a
-bounded presentation shadow through its silhouette corners; low traversal rails
+bounded presentation shadow through its silhouette corners; low practice walls
 remain explicitly non-occluding. It does not yet conceal networked entities. A
 competitive or PvPvE mode that restricts information must enforce
 visibility on the authoritative host and replicate no hidden actor state; a
@@ -150,7 +247,9 @@ cue, or diagnostic leak.
 | `Shift` | Sprint while held |
 | `C` / wheel down | Dedicated grounded slide press; airborne input commits fast fall |
 | `Space` / wheel up | Semantic jump / movement-chain press |
-| `V` | Contextual vault, recent-contact wall skim, open-ground roll, air redirect, sprint-held air dodge, or buffered 18-Stamina impact tech |
+| `Q` / left trigger | Explicit grounded roll / airborne dodge; late angled dodge can wavedash |
+| `V` / B | Recent-contact wallrun, air redirect, or buffered 18-Stamina impact tech |
+| `F2` / `F3` | Local practice trace toggle / next recording and same-start previous-run echo |
 | `F` | Activate the nearest walk-up Wellspring station; controller north-face is equivalent |
 | Left mouse | Arc Primary; no default Space alias |
 | `E` / right mouse | Vector Lance |

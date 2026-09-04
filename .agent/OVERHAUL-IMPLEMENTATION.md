@@ -1,6 +1,6 @@
 # FLUX 2 implementation path to first-eight playtest
 
-Current frontier: protocol 32, snapshot 11, preferences 9, Godot 4.7.1,
+Current frontier: protocol 33, snapshot 12, preferences 10, Godot 4.7.1,
 canonical `main` (the remote compatibility ref mirrors its published checkpoint;
 the non-authoritative local compatibility ref may lag until a safe
 fast-forward). V0–V6 visual engineering, the exact
@@ -41,6 +41,16 @@ commitment, ownership, consequence, counter and recovery are readable.
 
 ## Slice sequence
 
+### 2026-09-04 movement/map revision
+
+The user promoted the map before M0-M2. The 3072 x 1728 loop is now
+implemented, followed by no-vault input, evasion and contact-wall refinement.
+The executable source contract and continuing acceptance are recorded in
+[Wellspring movement acceptance](../docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md).
+Material drift/grip remains a neutral-only seam; non-vault landing burst is
+excluded. Independent activity isolation is not implied by physical areas.
+Continue C6-C9 only from a verified green checkpoint; preserve the playtest pause.
+
 | Slice | Engineering work | Observable exit |
 |---:|---|---|
 | C0 authority | Remove duplicate browser runtime; preserve recovery commit and reusable principles; reconcile README, focused docs, roster names/ancestries/affinities; validate links/assets. | A newcomer finds one runtime, one command set, one state table, and no conflicting current roster truth. |
@@ -50,8 +60,9 @@ commitment, ownership, consequence, counter and recovery are readable.
 | C3 burst simulation — complete | Cinder Fan uses one reusable burst specification; deterministically rotates a normalized aim vector by five fixed offsets; allocates stable left-to-right projectile IDs; bounds capacity/events/snapshot representation; prevents one fan multiplying damage on one target. | Repeatable 120 Hz fixtures prove exact fan ordering, cost, cooldown, hit, cover, cleanup and overflow behavior; the Proving Court supplies quiet crossed lanes and four response pockets. |
 | C4 eight spells — complete | Instantiate Earth/Fire/Water/Wind/Ice/Charge/Light/Dark burst entries with stable IDs, positive costs, shared geometry, element presentation, and global Loom availability. | Every champion can weave and cast every first-eight burst; all eight remain mechanically comparable and visually distinct in truthful 120 Hz captures. |
 | C5 reaction catalog — complete in this checkpoint | The fail-closed loader requires exactly 36 unordered-with-repetition pairs, symmetric lookup, unique IDs, lifecycle, counters, bounds and worldbone policy; recipes compile onto bounded shared primitives while mutation remains disabled. | Missing/duplicate/asymmetric/unbounded content fails tests and boot clearly; pair order cannot affect lookup or compatibility hash. |
-| C5.5 authority cleanup — complete in this checkpoint | Generated state/drift checks, stable suite selection, truthful receipts, `.\flux.cmd`, document statuses and conservative asset classification are green. Canonical roster adapters reconcile metadata without certifying archived pixels; derived Loom and exported-pack summaries are tested. The actual Windows export boots; unsigned installer trust remains independently blocked. | Protocol 32, Windows-only acceptance, 120 Hz, three body types and canonical names agree across runtime and docs; the exported payload boots and reports matching live content; C6 is the next source slice. |
-| C6 exposure/contact | Add fixed-capacity element exposure cells keyed to the material grid; burst impact deposits one bounded source with owner/team/tick/strength; second source resolves one canonical recipe. | Repeated contact is deterministic, rate-bounded, authority-owned, and cannot mutate immutable worldbone. |
+| C5.5 authority cleanup — complete in this checkpoint | Generated state/drift checks, stable suite selection, truthful receipts, `.\flux.cmd`, document statuses and conservative asset classification are green. Canonical roster adapters reconcile metadata without certifying archived pixels; derived Loom and exported-pack summaries are tested. The actual Windows export boots; unsigned installer trust remains independently blocked. | Protocol 33, Windows-only acceptance, 120 Hz, three body types and canonical names agree across runtime and docs; the exported payload boots and reports matching live content; The promoted map/M0-M2 implementation precedes C6. |
+| Map + M0-M2 — implemented candidate | Six-area campus, no-vault dispatch, explicit Evade, 50 ms slide protection/brake, independent jump protection, air-wall budget, contact-run detach and local practice trace/echo | Focused/full source checks; visual/network evidence in acceptance ledger; human balance/visual acceptance and concurrent-activity isolation remain pending |
+| C6 exposure/contact -- next | Add fixed-capacity element exposure cells keyed to the material grid; burst impact deposits one bounded source with owner/team/tick/strength; second source resolves one canonical recipe. | Repeated contact is deterministic, rate-bounded, authority-owned, and cannot mutate immutable worldbone. |
 | C7 shared reaction primitives | Implement reusable `surface`, `flow`, `cover`, `field`, `conduction`, `visibility`, `hazard`, `reveal/refraction`, and `fracture` effect families; map all recipes to bounded parameter sets. | Every pair has a live spatial effect and counter even when several recipes share safe physics primitives. |
 | C8 lifecycle/presentation | Formation telegraph, active state, residue/decay, compact label/icon, reduced/high-contrast cues, reset group, replay event, snapshot state and overflow diagnostics. | A player can identify the pair, boundary, danger/benefit, remaining phase, owner, and counter without reading source. |
 | C9 Crucible acceptance | Eight attunement plinths, two-source test basin, recipe codex, reset, route-safety checks, 120 Hz full tests, source/import boots, packaged boot, Farflow pair, installer rebuild and named solo/friend/accessibility/recovery journeys. | All 36 reactions are deliberately reproducible in-game; a newcomer can reach, create, read, counter and reset them; the exact green Windows build is ready for user playtest. |

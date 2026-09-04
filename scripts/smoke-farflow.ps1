@@ -3,6 +3,8 @@ param(
     [ValidateRange(1024, 65535)][int]$Port = 24892,
     [ValidateSet(60, 120)][int]$TickRate = 120,
     [ValidateSet('open_commons', 'sparring_circle', 'duel_knot')][string]$Charter = 'open_commons',
+    [ValidatePattern('^[a-z_]+$')][string]$HostChampion = 'oh_tipi',
+    [ValidatePattern('^[a-z_]+$')][string]$GuestChampion = 's_wayne',
     [ValidateRange(5, 60)][int]$TimeoutSeconds = 30
 )
 . (Join-Path $PSScriptRoot 'flux2-common.ps1')
@@ -69,11 +71,13 @@ try {
         duel_knot = 'DUEL KNOT'
     }[$Charter]
     $hostArguments = $baseArguments + @("--tick-rate=$TickRate", '--farflow=host', "--session-port=$Port", "--session-charter=$Charter", '--player-name=Lantern Host', '--farflow-smoke-hearth', '--farflow-smoke-round', '--farflow-smoke-rematch', '--farflow-smoke-steward')
+    $hostArguments += "--champion=$HostChampion"
     $hostProcess = Start-FluxSmokeProcess $hostArguments $hostLog $hostError
     $deadline = [datetime]::UtcNow.AddSeconds($TimeoutSeconds)
     Wait-FluxSmokePattern $hostProcess $hostLog $hostError @("FLUX2 farflow host: listening on UDP $Port", $charterDisplay) $deadline
 
     $guestArguments = $baseArguments + @("--tick-rate=$TickRate", '--farflow=join', '--join-address=127.0.0.1', "--session-port=$Port", '--player-name=River Guest', '--farflow-smoke-emote', '--farflow-smoke-prediction', '--farflow-smoke-hearth', '--farflow-smoke-round', '--farflow-smoke-rematch', '--farflow-smoke-reconnect', '--farflow-smoke-steward')
+    $guestArguments += "--champion=$GuestChampion"
     $guestProcess = Start-FluxSmokeProcess $guestArguments $guestLog $guestError
     Wait-FluxSmokePattern $hostProcess $hostLog $hostError @(
         'FLUX2 farflow hearth: Proving Court round started'

@@ -24,7 +24,7 @@ changing authoritative footprints. Keep chemistry/hybrid gates closed.
 
 The user reopened visual acceptance: finish R1-R4 in
 `docs/VISUAL-REFINEMENT-ACCEPTANCE.md` before new chemistry. Illustrated terrain,
-low elevated facades, cutout props and v14 small/middle/large eight-way body art
+low elevated facades, cutout props and v15 small/middle/large eight-way body art
 are integrated candidates. Earlier V0–V10 scores describe the previous artwork,
 not approval of this replacement. The current source uses protocol 34, snapshot
 schema 12 and preferences 10; preserve the published green checkpoint and all

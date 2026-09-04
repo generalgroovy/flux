@@ -73,6 +73,70 @@
         "active_1": "rimewake",
         "active_2": "cinder-fan"
       }
+    },
+    {
+      "id": "grace_reava",
+      "wire_id": 4,
+      "display_name": "Grace Riva",
+      "ancestry": "sylph",
+      "body_type": "small",
+      "affinities": [
+        "wind",
+        "water",
+        "light"
+      ],
+      "affinity_points": {
+        "wind": 1,
+        "water": 1,
+        "light": 1
+      },
+      "playstyle": "Nimble stream dancer with broad spell choice and strong Flux reserves, but modest Health.",
+      "stats": {
+        "health_maximum": 92000,
+        "health_recovery_per_second": 1800,
+        "flux_maximum": 120000,
+        "flux_recovery_per_second": 21000,
+        "stamina_maximum": 100000,
+        "stamina_recovery_per_second": 29000,
+        "movement_speed_ratio": 1030
+      },
+      "foundation_kit": {
+        "primary": "rillshot",
+        "active_1": "gale-burst",
+        "active_2": "pocket-eclipse"
+      }
+    },
+    {
+      "id": "wa_bidi",
+      "wire_id": 5,
+      "display_name": "Wa Bidi",
+      "ancestry": "goblin",
+      "body_type": "small",
+      "affinities": [
+        "charge",
+        "wind",
+        "fire"
+      ],
+      "affinity_points": {
+        "charge": 1,
+        "wind": 1,
+        "fire": 1
+      },
+      "playstyle": "Quick pressure skirmisher with rapid Flux recovery and short, readable burst lanes.",
+      "stats": {
+        "health_maximum": 98000,
+        "health_recovery_per_second": 1800,
+        "flux_maximum": 106000,
+        "flux_recovery_per_second": 25000,
+        "stamina_maximum": 104000,
+        "stamina_recovery_per_second": 32000,
+        "movement_speed_ratio": 1050
+      },
+      "foundation_kit": {
+        "primary": "arc-primary",
+        "active_1": "gale-burst",
+        "active_2": "cinder-fan"
+      }
     }
   ]
 }

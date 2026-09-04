@@ -133,7 +133,7 @@ Add-FluxIssue (@($runtimeWireIds | Sort-Object -Unique).Count -eq $runtimeWireId
 Add-FluxIssue (@($runtimeWireIds | Where-Object { $abilityWireIds -notcontains $_ }).Count -eq 0) 'Runtime spell order references a missing authored ability wire ID'
 Add-FluxIssue (@($reactions.reactions).Count -eq 36) "Reaction definition count is $(@($reactions.reactions).Count); first-eight coverage requires 36"
 Add-FluxIssue (-not [bool]$reactions.runtime_enabled) 'Reaction mutation became enabled before the C6-C9 acceptance path'
-Add-FluxIssue ($playableIds.Count -eq 3) "Playable champion count is $($playableIds.Count); current foundation requires 3"
+Add-FluxIssue ($playableIds.Count -eq 5) "Playable champion count is $($playableIds.Count); current foundation requires 5"
 Add-FluxIssue ($plannedIds.Count -eq 24) "Planned champion count is $($plannedIds.Count); current roster plan requires 24"
 Add-FluxIssue (($plannedIds -join ',') -eq ($affinityIds -join ',')) 'Planned roster and affinity catalogs have different identity/order sets'
 Add-FluxIssue (($bodyRoleIds -join ',') -eq 'small,middle,large') "Body-role IDs are $($bodyRoleIds -join ','); expected small,middle,large"
@@ -162,7 +162,7 @@ foreach ($champion in $rosterPlan.champions) {
 $readme = Read-FluxText 'README.md'
 Add-FluxIssue ($readme -match '21 validated authored records; 16 have runtime wire IDs') 'README does not distinguish 21 authored abilities from 16 runtime spells'
 Add-FluxIssue ($readme -match '36 symmetric definitions compile and hash; `runtime_enabled` remains false') 'README does not report compiled reactions separately from disabled mutation'
-Add-FluxIssue ($readme -match '3 playable entries; 24 identities') 'README does not distinguish the playable and planned rosters'
+Add-FluxIssue ($readme -match '5 playable entries; 24 identities') 'README does not distinguish the playable and planned rosters'
 Add-FluxIssue ($readme -match '120 Hz authoritative simulation; 60 Hz transport snapshots') 'README does not distinguish simulation and snapshot cadences'
 
 $branch = Get-FluxGitValue @('branch', '--show-current')

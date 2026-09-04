@@ -10,7 +10,7 @@ func run() -> int:
 	if roster.ordered_ids.is_empty():
 		return finish("champion-roster-plan")
 	equal(roster.ordered_ids.size(), 24, "roster plan contains exactly 24 identities")
-	equal(roster.ids_by_availability("playable"), ["oh_tipi", "s_wayne", "red_baron"], "only the three foundation champions are promoted")
+	equal(roster.ids_by_availability("playable"), ["oh_tipi", "s_wayne", "red_baron", "wa_bidi", "grace_reava"], "only promoted champions are playable")
 	equal(roster.ids_by_availability("placeholder"), ["unnamed_angel"], "the angel remains visibly non-selectable")
 	equal(String(roster.entry("s_wayne").get("ancestry", "")), "hobbit", "S. Wayne remains a Hobbit")
 	equal(String(roster.entry("haara").get("ancestry", "")), "nymph", "Haara remains a Nymph")

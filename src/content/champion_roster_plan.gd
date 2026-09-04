@@ -7,7 +7,7 @@ const EXPECTED_ID := "champion-roster-plan-v1"
 const EXPECTED_STATUS := "design_locked_nonselectable_registry"
 const EXPECTED_AUTHORITY := "canonical planned identity, ancestry, body role and availability; playable promotion remains owned by foundation_champions_v1"
 const EXPECTED_CHAMPION_COUNT := 24
-const EXPECTED_PLAYABLE_COUNT := 3
+const EXPECTED_PLAYABLE_COUNT := 5
 const ALLOWED_AVAILABILITY: Array[String] = ["playable", "planned", "placeholder"]
 const EXPECTED_BODY_ROLES: Array[String] = ["small", "middle", "large"]
 
@@ -95,7 +95,7 @@ func validate() -> bool:
 		ordered_ids.append(champion_id)
 		display_names[display_name.to_lower()] = true
 	if playable_count != EXPECTED_PLAYABLE_COUNT or placeholder_count != 1:
-		return _fail("champion roster must distinguish three playable entries and one placeholder")
+		return _fail("champion roster must distinguish %d playable entries and one placeholder" % EXPECTED_PLAYABLE_COUNT)
 	return _validate_linked_catalogs()
 
 

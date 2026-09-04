@@ -229,6 +229,7 @@ func _ready() -> void:
 		push_error(cartoon_champion_presenter.last_error)
 		get_tree().quit(1)
 		return
+	compact_hud.champion_art = cartoon_champion_presenter
 	show_visual_specimen = OS.get_cmdline_user_args().has("--visual-specimen")
 	show_debug_overlay = OS.get_cmdline_user_args().has("--debug-overlay")
 	capture_pointer_world = _requested_capture_pointer()
@@ -1349,6 +1350,10 @@ func _draw_station_bubble(camera_origin: Vector2) -> void:
 	var expanded: bool = expanded_station_id == focused_station_id
 	var lines: Array = _station_lines(station) if expanded else [String(station.get("prompt", "F  INTERACT"))]
 	var ui_scale := _ui_scale()
+	var actor_feet := PixelPresentation.world_to_screen(current_position, camera_origin, player_preferences.camera_zoom_percent) / ui_scale
+	var actor_scale := float(player_preferences.camera_zoom_percent) / 100.0 / ui_scale
+	# Reserve all three body sizes plus jump lift, in the same UI coordinates.
+	var actor_bounds := Rect2(actor_feet - Vector2(48, 160) * actor_scale, Vector2(96, 176) * actor_scale)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * ui_scale)
 	interaction_presenter.draw_station(
 		self,
@@ -1358,6 +1363,7 @@ func _draw_station_bubble(camera_origin: Vector2) -> void:
 		lines,
 		expanded,
 		controls_editor.binding_label(&"interact", ControlBindingEditor.DEVICE_KEYBOARD, player_preferences),
+		actor_bounds,
 	)
 
 

@@ -1,11 +1,11 @@
 # FLUX 2 implementation path to first-eight playtest
 
-Current frontier: protocol 33, snapshot 12, preferences 10, Godot 4.7.1,
+Current frontier: protocol 34, snapshot 12, preferences 10, Godot 4.7.1,
 canonical `main` (the remote compatibility ref mirrors its published checkpoint;
 the non-authoritative local compatibility ref may lag until a safe
 fast-forward). V0–V6 visual engineering, the exact
 `small`/`middle`/`large` body contract, universal movement,
-positive-Flux combat, three champions, Wellspring, direct-IP Farflow, and the
+positive-Flux combat, five basic champions, Wellspring, direct-IP Farflow, and the
 one-file Windows bootstrap are green foundations. All live spell balance and
 Loom ordering now compile from one validated catalog while stable wire IDs
 remain protocol adapters—not permission to claim final
@@ -40,6 +40,11 @@ composable mastery. A technically complete slice is not product-complete until
 commitment, ownership, consequence, counter and recovery are readable.
 
 ## Slice sequence
+
+Current follow-on A-E: `docs/CAST-MOTION-ACCEPTANCE.md`. Grace Riva and Wa Bidi
+are explicitly authorized promotions with existing single-element kits, after
+the green U1-U5 checkpoint. Motion artwork faces physical travel; hands/aim stay
+independent. Complete opposite-foot review before claiming every walk finished.
 
 Newest priority: execute U1-U5 in `docs/CLARITY-AND-CONTROL-ITERATION.md`.
 The user accepts the illustrated direction as improved and explicitly requests

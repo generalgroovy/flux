@@ -56,7 +56,8 @@ func _test_champion_packages() -> void:
 	equal(catalog.champion("donnok").get("display_name"), "Don Doko Don", "Don Doko Don preserves the asset compatibility ID")
 	equal(catalog.champion("s_wayne").get("body_type"), "small", "current authoring exposes a canonical body role")
 	equal(catalog.champion("wa_bidi").get("archive_ancestry"), "sylph", "archived pixels retain their original provenance")
-	equal(catalog.champion("wa_bidi").get("availability"), "planned", "archive existence does not promote a champion")
+	equal(catalog.champion("wa_bidi").get("availability"), "playable", "validated goblin kit promotes Wa Bidi independently of archived sylph pixels")
+	equal(catalog.champion("grimm_bow").get("availability"), "planned", "archive existence alone does not promote a champion")
 	equal(catalog.champion("grimm_bow").get("elements"), ["earth", "water"], "reserved Chaos is not silently replaced by Dark")
 	equal(str(catalog.champion("unnamed_angel").get("status", "")), "placeholder_unapproved", "legacy unnamed Angel slot remains explicitly unapproved")
 

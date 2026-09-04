@@ -96,6 +96,7 @@ func draw_station(
 	lines: Array,
 	expanded: bool,
 	interact_label: String,
+	protected_actor: Rect2 = Rect2(),
 ) -> void:
 	if canvas == null or not styles_by_kind.has(String(station.get("kind", ""))):
 		return
@@ -108,6 +109,8 @@ func draw_station(
 	var height := float(layout.get("expanded_header_height", 46)) + line_height * float(mini(lines.size(), int(budgets.get("maximum_station_lines", 6)))) if expanded else float(layout.get("prompt_height", 52))
 	var desired := Rect2(source_anchor.x - width * 0.5, source_anchor.y - float(layout.get("station_anchor_lift", 58)) - height, width, height)
 	var rectangle := clamped_panel_rect(desired, viewport_size, float(budgets.get("screen_margin", 16)), 126.0)
+	if not expanded:
+		rectangle = avoid_actor_rect(rectangle, protected_actor, viewport_size, float(budgets.get("screen_margin", 16)))
 	_draw_tether(canvas, source_anchor, rectangle, accent)
 	_draw_parchment_panel(canvas, rectangle, accent, 0.90 if expanded else 0.86)
 	var glyph_center := rectangle.position + Vector2(24, 24)
@@ -128,6 +131,22 @@ func draw_station(
 			canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(14, 50 + float(index) * line_height), localized_interaction_line(String(lines[index]), key_label), HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 28.0, 10, language.ramp_color("worldbone", 0))
 	else:
 		canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(46, 42), station_action_text(station), HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 58.0, 10, language.ramp_color("parchment", 0))
+
+
+static func avoid_actor_rect(panel: Rect2, actor: Rect2, viewport_size: Vector2, margin: float = 16.0) -> Rect2:
+	if not actor.has_area() or not panel.intersects(actor):
+		return panel
+	var positions := [
+		Vector2(panel.position.x, actor.position.y - panel.size.y - 10.0),
+		Vector2(actor.end.x + 10.0, panel.position.y),
+		Vector2(actor.position.x - panel.size.x - 10.0, panel.position.y),
+		Vector2(panel.position.x, actor.end.y + 10.0),
+	]
+	for position: Vector2 in positions:
+		var candidate := clamped_panel_rect(Rect2(position, panel.size), viewport_size, margin, 126.0)
+		if not candidate.intersects(actor):
+			return candidate
+	return panel
 
 
 func draw_notice(canvas: CanvasItem, viewport_size: Vector2, title: String, message: String) -> void:

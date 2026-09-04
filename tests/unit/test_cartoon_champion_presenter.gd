@@ -9,7 +9,68 @@ func run() -> int:
 	_test_diagonal_evasion_contract_and_direction()
 	_test_relative_locomotion_gaits()
 	_test_locomotion_contact_regions()
+	_test_extension_pages_and_motion_facing()
 	return finish("cartoon-champion-presenter")
+
+
+func _test_extension_pages_and_motion_facing() -> void:
+	var language := VisualLanguage.new()
+	check(language.load_from_file(), "motion-facing language loads")
+	var presenter := CartoonChampionPresenter.new()
+	check(presenter.configure(language), "paged champion art validates")
+	for champion_id: String in presenter.champions:
+		var pixels := presenter.texture_for_champion(champion_id).get_image()
+		var portrait := presenter.portrait_region(champion_id)
+		check(Rect2(Vector2.ZERO, pixels.get_size()).encloses(portrait), "portrait stays in the character's own atlas")
+		check(pixels.get_region(Rect2i(portrait)).get_used_rect().has_area(), "every playable champion has a current portrait")
+		var row := int(presenter.recipe(champion_id).get("atlas_row", 0)) * 960
+		for direction: int in range(8):
+			var first := pixels.get_region(Rect2i(direction * 96, row + 384, 96, 96))
+			var second := pixels.get_region(Rect2i(direction * 96, row + 768, 96, 96))
+			check(first.get_data() != second.get_data(), "walk contacts cannot be duplicate cells; anatomical quality requires separate review")
+	equal(presenter.portrait_region("unknown"), Rect2(), "unknown portrait fails closed")
+	for champion_id: String in presenter.extension_atlases:
+		var pixels := presenter.texture_for_champion(champion_id).get_image()
+		for row: int in range(10):
+			for direction: int in range(8):
+				var used := pixels.get_region(Rect2i(direction * 96, row * 96, 96, 96)).get_used_rect()
+				check(used.size.x > 16 and used.position.x > 0 and used.end.x < 96, "extension pose remains inside its cell")
+				equal(used.end.y, 85, "extension pose shares the same feet baseline")
+				check(used.size.y >= 29 and used.size.y <= 60, "small extension keeps fixed anatomy envelope")
+	var state := PlayerState.new()
+	state.primary_held = true
+	state.aim_x = -1000
+	state.facing_x = -707
+	state.facing_y = 707
+	for pose: String in ["walk", "sprint", "jump", "slide", "roll"]:
+		for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+			state.velocity_x = direction.x
+			state.velocity_y = direction.y
+			equal(CartoonChampionPresenter.presentation_facing_vector(state, pose), direction, pose + " follows real travel in every direction")
+	state.velocity_x = 0
+	state.velocity_y = 1000
+	equal(presenter.source_region_for_animation_state("oh_tipi", state, "slide"), Rect2(0, 576, 96, 96), "south slide chooses frontal art even with stale diagonal facing")
+	state.pending_cast_wire_id = 1
+	state.pending_cast_aim_x = -1000
+	state.pending_cast_aim_y = 0
+	for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+		state.velocity_x = direction.x
+		state.velocity_y = direction.y
+		for mode: int in [PlayerState.MovementMode.WALK, PlayerState.MovementMode.SPRINT, PlayerState.MovementMode.SLIDE]:
+			state.movement_mode = mode
+			var pose := String(PlayerState.MovementMode.keys()[mode]).to_lower()
+			equal(presenter.silhouette_state(state), pose, "moving casts preserve " + pose + " contacts")
+			equal(CartoonChampionPresenter.presentation_facing_vector(state, presenter.silhouette_state(state)), direction, "moving casts keep feet facing travel independently of spell aim")
+	state.velocity_x = 0
+	state.velocity_y = 0
+	state.movement_mode = PlayerState.MovementMode.IDLE
+	equal(presenter.silhouette_state(state), "cast", "stationary casts retain the authored bare-hand pose")
+	equal(CartoonChampionPresenter.presentation_facing_vector(state, "cast"), Vector2i(-1000, 0), "stationary casting follows spell aim")
+	state.movement_mode = PlayerState.MovementMode.HOP
+	state.hop_ticks = 2
+	equal(presenter.silhouette_state(state), "jump", "air casting never substitutes standing legs")
+	state.control_state = PlayerState.ControlState.STUNNED
+	equal(presenter.silhouette_state(state), "hit", "loss of control keeps precedence over cast locomotion")
 
 
 func _test_repository_recipes() -> void:
@@ -21,7 +82,7 @@ func _test_repository_recipes() -> void:
 	check(presenter.atlas != null, "reviewed foundation runtime atlas loads")
 	check(presenter.motion != null and presenter.motion.content_hash.length() == 64, "editable minimal-motion recipes load with champion art")
 	check(presenter.content_hash.length() == 64, "champion presentation content has a stable hash")
-	equal(presenter.atlas_hash, "b653d08a2684416aa3b5407b63d07f2e8f0ce6bfcc23be01fd45b24f399ae847", "elevated three-champion eight-way action atlas hash is pinned")
+	equal(presenter.atlas_hash, "3a0f8bb6187b360f8de1e93809447b809503af6c4ae79c3b12046dc2df273e7b", "elevated three-champion eight-way action atlas hash is pinned")
 	equal(String(presenter.shared_style_contract.get("reference_champion", "")), "red_baron", "Red Baron defines the shared compact material and outline grammar")
 	equal(int(presenter.shared_style_contract.get("outline_radius_pixels", 0)), 1, "shared character ink remains a bounded one-pixel treatment")
 	equal(presenter.body_templates.keys(), ["small", "middle", "large"], "three reusable body-size templates load in canonical order")
@@ -352,14 +413,14 @@ func _test_relative_locomotion_gaits() -> void:
 	state.primary_held = true
 	state.aim_x = -707
 	state.aim_y = -707
-	equal(CartoonChampionPresenter.presentation_facing_vector(state, "walk"), Vector2i(-707, -707), "combat intent faces independent aim")
-	equal(CartoonChampionPresenter.locomotion_gait(state), "backward", "opposed aim and travel select backward gait")
+	equal(CartoonChampionPresenter.presentation_facing_vector(state, "walk"), Vector2i(707, 707), "movement art follows travel even while independent aim opposes it")
+	equal(CartoonChampionPresenter.locomotion_gait(state), "forward", "opposed aim does not rotate movement artwork")
 	state.aim_x = -707
 	state.aim_y = 707
-	equal(CartoonChampionPresenter.locomotion_gait(state), "strafe_left", "quarter-turn combat travel selects left strafe")
+	equal(CartoonChampionPresenter.locomotion_gait(state), "forward", "quarter-turn aim does not rotate movement artwork")
 	state.aim_x = 707
 	state.aim_y = -707
-	equal(CartoonChampionPresenter.locomotion_gait(state), "strafe_right", "opposite quarter-turn selects right strafe")
+	equal(CartoonChampionPresenter.locomotion_gait(state), "forward", "opposite quarter-turn still faces travel")
 	var backward_sample := MinimalChampionMotion.Sample.new()
 	backward_sample.offset = Vector2(2.0, -2.0)
 	backward_sample.scale = Vector2(1.04, 0.96)

@@ -14,6 +14,14 @@ and alternating walk contacts; Grace Riva then Wa Bidi with existing single-elem
 spells and reusable size templates; map-object refinement. Keep each promotion
 independently green and retain human visual acceptance as a separate gate.
 
+In progress now: A-C source integrated, Grace then Wa Bidi; focused tests and
+new-champion local Farflow passed. All five south walk/sprint contact pairs and
+south slides are corrected; moving casts no longer freeze legs. HUD portraits
+reuse live body pixels. Finish Full/render gate, then D remaining side/back
+contacts (especially Grace E/NE/N) and time-sequence review; E broader prop
+simplification. Fountains fade near the player and props share ground contact.
+Complete cells and different pixel hashes are not full animation acceptance.
+
 **Previous checkpoint:** user-requested illustrated map/camera overhaul and all-size,
 all-direction/action body refinement; R1-R4 in
 `docs/VISUAL-REFINEMENT-ACCEPTANCE.md` precede C6. Earlier visual approval is

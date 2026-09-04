@@ -112,7 +112,7 @@ func draw(
 	for building_value: Variant in layout.data.get("buildings", []):
 		_draw_building(canvas, building_value as Dictionary, focus_world_position)
 	for landmark_value: Variant in layout.data.get("landmarks", []):
-		_draw_landmark(canvas, landmark_value as Dictionary, presentation_tick, reduced_effects)
+		_draw_landmark(canvas, landmark_value as Dictionary, presentation_tick, reduced_effects, focus_world_position)
 	if wayfinding != null and (illustrated_kit == null or illustrated_kit.ground == null):
 		wayfinding.draw(canvas, focus_world_position, presentation_tick, reduced_effects)
 	for station_value: Variant in layout.data.get("stations", []):
@@ -442,9 +442,9 @@ func _draw_practice_wall(canvas: CanvasItem, bounds: Rect2i) -> void:
 	# No embedded action label: these are solid walls, not traversal prompts.
 
 
-func _draw_landmark(canvas: CanvasItem, landmark: Dictionary, tick: int, reduced_effects: bool) -> void:
+func _draw_landmark(canvas: CanvasItem, landmark: Dictionary, tick: int, reduced_effects: bool, focus: Vector2 = Vector2(-1000000, -1000000)) -> void:
 	if illustrated_kit != null and illustrated_kit.ground != null:
-		illustrated_kit.draw_landmark(canvas, landmark)
+		illustrated_kit.draw_landmark(canvas, landmark, focus)
 		return
 	if architecture_kit != null:
 		architecture_kit.draw_landmark_frame(canvas, landmark, tick, reduced_effects)

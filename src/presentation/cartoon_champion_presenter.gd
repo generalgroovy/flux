@@ -3,10 +3,10 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_champion_visuals_v1.json"
-const EXPECTED_ID := "foundation-champion-visuals-v14-baron-proportions"
+const EXPECTED_ID := "foundation-champion-visuals-v15-motion-facing"
 const EXPECTED_AUTHORITY := "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere"
 const REQUIRED_FOUNDATION := ["oh_tipi", "s_wayne", "red_baron"]
-const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v14.png"
+const ATLAS_PATH := "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v15.png"
 const PROPORTION_REFERENCE_PATH := "res://assets/concept/foundation-proportion-reference-small-to-large-v3.png"
 const EXPECTED_BODY_TYPES: Array[String] = ["small", "middle", "large"]
 const EXPECTED_CARDINAL_DIRECTIONS: Array[String] = ["south", "east", "north", "west"]
@@ -54,6 +54,7 @@ var diagonal_locomotion_contract: Dictionary = {}
 var diagonal_evasion_contract: Dictionary = {}
 var locomotion_phase_contract: Dictionary = {}
 var atlas_directions: Array = []
+var extension_atlases: Dictionary[String, Texture2D] = {}
 var atlas_states: Array = []
 var semantic_state_aliases: Dictionary = {}
 var body_templates: Dictionary = {}
@@ -73,6 +74,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	diagonal_evasion_contract.clear()
 	locomotion_phase_contract.clear()
 	atlas_directions.clear()
+	extension_atlases.clear()
 	atlas_states.clear()
 	semantic_state_aliases.clear()
 	body_templates.clear()
@@ -92,7 +94,7 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	if not parsed is Dictionary:
 		return _fail("Cartoon champion recipe root must be an object")
 	var data: Dictionary = parsed
-	if int(data.get("schema_version", -1)) != 14 or String(data.get("id", "")) != EXPECTED_ID:
+	if int(data.get("schema_version", -1)) != 15 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("Cartoon champion recipe identity is unsupported")
 	var art_camera: Dictionary = data.get("art_camera", {})
 	if int(art_camera.get("elevation_degrees", 0)) != 55 or String(art_camera.get("ground_axes", "")) != "screen_cardinal":
@@ -147,6 +149,33 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 		if not champions.has(champion_id) or not _validate_recipe(champion_id, champions[champion_id]):
 			champions.clear()
 			return false
+	# Additional champions get bounded per-character pages instead of growing a
+	# single texture beyond device limits. Base three-template IDs stay stable.
+	var extension_data: Variant = data.get("extension_atlases", {})
+	if not extension_data is Dictionary or (extension_data as Dictionary).size() > 21:
+		return _fail("Additional champion pages require a bounded dictionary")
+	var extensions: Dictionary = extension_data
+	for champion_id: String in champions:
+		if champion_id in REQUIRED_FOUNDATION:
+			continue
+		if not _validate_recipe(champion_id, champions[champion_id]) or not extensions.has(champion_id):
+			return _fail("Additional champion lacks a validated recipe/page: " + champion_id)
+		if not extensions[champion_id] is Dictionary:
+			return _fail("Additional champion page must be an object")
+		var page: Dictionary = extensions[champion_id]
+		var page_path := String(page.get("path", ""))
+		if not page_path.begins_with("res://assets/sprites/champions_v3/") or not ResourceLoader.exists(page_path):
+			return _fail("Additional champion page path is invalid: " + champion_id)
+		if OS.has_feature("editor") and FileAccess.get_sha256(page_path) != String(page.get("sha256", "")):
+			return _fail("Additional champion page source hash changed: " + champion_id)
+		var texture := load(page_path) as Texture2D
+		if texture == null or texture.get_size() != Vector2(768, 960):
+			return _fail("Additional champion page must contain ten eight-direction rows")
+		var decoded_page := texture.get_image()
+		decoded_page.convert(Image.FORMAT_RGBA8)
+		if _bytes_sha256(decoded_page.get_data()) != String(page.get("imported_rgba_sha256", "")):
+			return _fail("Additional champion decoded page hash changed: " + champion_id)
+		extension_atlases[champion_id] = texture
 	var atlas_resource: Resource = load(ATLAS_PATH)
 	if not atlas_resource is Texture2D:
 		champions.clear()
@@ -207,7 +236,16 @@ func draw(
 	if canvas == null or state == null or not champions.has(champion_id):
 		return false
 	var definition: Dictionary = champions[champion_id]
+	var animation_state := silhouette_state(state)
 	var motion_id := MinimalChampionMotion.motion_id(state)
+	# Bare-hand cast effects remain separate. Moving casts must not freeze the
+	# legs or replace an airborne/low silhouette with an upright aiming body.
+	if animation_state in ["walk", "sprint"]:
+		motion_id = animation_state
+	elif animation_state in ["slide", "roll"]:
+		motion_id = "low"
+	elif animation_state == "jump":
+		motion_id = "air"
 	var motion_elapsed := MinimalChampionMotion.elapsed_for_state(state, motion_id, float(presentation_tick), config)
 	var motion_sample := motion.sample(String(definition.get("motion_profile", "")), motion_id, motion_elapsed, reduced_effects)
 	if motion_id in ["walk", "sprint"]:
@@ -221,7 +259,6 @@ func draw(
 	_draw_aura(canvas, definition, anchor, presentation_tick, reduced_effects, motion_sample.aura_scale)
 	if atlas == null:
 		return false
-	var animation_state := silhouette_state(state)
 	if animation_state in EXPECTED_PHASE_STATES:
 		var phase_seed := maxi(0, state.entity_id) * 3
 		if motion.locomotion_contact_frame(String(definition.get("motion_profile", "")), motion_id, motion_elapsed, phase_seed) == 1:
@@ -233,11 +270,36 @@ func draw(
 
 func _draw_atlas_candidate(canvas: CanvasItem, state: PlayerState, champion_id: String, animation_state: String, anchor: Vector2) -> void:
 	var source := source_region_for_animation_state(champion_id, state, animation_state)
-	canvas.draw_texture_rect_region(atlas, Rect2(anchor - PIVOT, CELL_SIZE), source)
+	canvas.draw_texture_rect_region(texture_for_champion(champion_id), Rect2(anchor - PIVOT, CELL_SIZE), source)
+
+
+func texture_for_champion(champion_id: String) -> Texture2D:
+	return extension_atlases.get(champion_id, atlas)
+
+
+func portrait_region(champion_id: String) -> Rect2:
+	if not can_present(champion_id):
+		return Rect2()
+	var definition: Dictionary = champions[champion_id]
+	var row := int(definition.get("atlas_row", 0)) * atlas_states.size()
+	return Rect2(32, row * 96 + 83 - int(definition.get("height", 68)), 32, 32)
 
 
 func silhouette_state(state: PlayerState) -> String:
-	return atlas_state_for_action(semantic_action(state))
+	var action := semantic_action(state)
+	if state != null and action in ["cast", "cast_recovery"] and state.control_state == PlayerState.ControlState.FREE:
+		if state.is_rolling():
+			return "roll"
+		if state.is_airborne():
+			return "jump"
+		if state.movement_mode in [PlayerState.MovementMode.SLIDE, PlayerState.MovementMode.WAVE_DASH, PlayerState.MovementMode.WALL_SKIM]:
+			return "slide"
+		if state.velocity_x != 0 or state.velocity_y != 0:
+			if state.movement_mode == PlayerState.MovementMode.WALK:
+				return "walk"
+			if state.movement_mode == PlayerState.MovementMode.SPRINT:
+				return "sprint"
+	return atlas_state_for_action(action)
 
 
 func atlas_state_for_action(action_id: String) -> String:
@@ -334,9 +396,9 @@ static func presentation_facing_vector(state: PlayerState, state_id: String = ""
 		if state.pending_cast_wire_id > 0:
 			return Vector2i(state.pending_cast_aim_x, state.pending_cast_aim_y)
 		return Vector2i(state.aim_x, state.aim_y)
-	if resolved_state in EXPECTED_DIAGONAL_LOCOMOTION_STATES:
-		if has_combat_facing_intent(state):
-			return Vector2i(state.aim_x, state.aim_y)
+	if resolved_state in ["walk", "sprint", "slide", "roll", "jump"]:
+		# Motion poses always face travel. Aiming remains independent and is
+		# expressed by the hand/channel cue, never by walking sideways artwork.
 		var travel := Vector2i(state.velocity_x, state.velocity_y)
 		if travel != Vector2i.ZERO:
 			return travel
@@ -612,10 +674,12 @@ func _validate_recipe(champion_id: String, value: Variant) -> bool:
 	if body_type not in EXPECTED_BODY_TYPES:
 		return _fail("Cartoon champion body type is unsupported: %s" % champion_id)
 	var body_template: Dictionary = body_templates.get(body_type, {})
-	if body_template.is_empty() or String(body_template.get("exemplar", "")) != champion_id \
+	if body_template.is_empty() or (champion_id in REQUIRED_FOUNDATION and String(body_template.get("exemplar", "")) != champion_id) \
 		or int(body_template.get("reference_height", 0)) != int(definition.get("height", 0)):
 		return _fail("Cartoon champion does not match its reusable body template: %s" % champion_id)
 	var atlas_row := int(definition.get("atlas_row", -1))
+	if champion_id not in REQUIRED_FOUNDATION and atlas_row != 0:
+		return _fail("Additional champion page rows must start at zero: " + champion_id)
 	if atlas_row < 0 or atlas_row >= REQUIRED_FOUNDATION.size():
 		return _fail("Cartoon champion atlas row is unsupported: %s" % champion_id)
 	var height := int(definition.get("height", 0))

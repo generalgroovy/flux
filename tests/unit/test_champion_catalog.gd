@@ -7,6 +7,7 @@ const CHAMPION_PATH: String = "res://content/champions/foundation_champions_v1.j
 
 func run() -> int:
 	_test_repository_catalog()
+	_test_all_promoted_kits_execute()
 	_test_affinity_point_budget_and_treevor_exception()
 	_test_unique_affinity_pairs()
 	_test_profiles_are_authoritative()
@@ -24,13 +25,31 @@ func _catalog() -> ChampionCatalog:
 	return catalog
 
 
+func _test_all_promoted_kits_execute() -> void:
+	var catalog := _catalog()
+	for champion_id: String in catalog.ordered_champion_ids():
+		for slot: int in range(3):
+			var world := SimWorld.new(120)
+			check(catalog.apply_to_player(world.player(), champion_id), champion_id + " applies before casting")
+			var state := world.player()
+			var wire := state.spell_wire_id(slot + 1)
+			check(CombatTuning.runtime_wire_ids().has(wire), champion_id + " starts with executable spells")
+			var before_flux := state.flux
+			var bits: int = [SimCommand.PRESSED_SPELL_1, SimCommand.PRESSED_SPELL_2, SimCommand.PRESSED_SPELL_3][slot]
+			check(world.step([SimCommand.new(0, 1, 0, 0, 0, bits, 1000, 0)]), champion_id + " accepts configured spell input")
+			check(state.flux < before_flux, champion_id + " pays positive Flux for every attack")
+			for _tick: int in range(24):
+				check(world.step([SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000, 0)]), "kit completes simulation without error")
+			check(state.has_valid_spell_slots(), "kit casting preserves valid global slots")
+
+
 func _test_repository_catalog() -> void:
 	var catalog := _catalog()
 	equal(catalog.default_champion_id, "oh_tipi", "Oh Tipi is the safe first-run champion")
-	equal(catalog.ordered_champion_ids(), ["oh_tipi", "s_wayne", "red_baron"], "wire order produces stable champion cycling")
+	equal(catalog.ordered_champion_ids(), ["oh_tipi", "s_wayne", "red_baron", "grace_reava", "wa_bidi"], "wire order produces stable champion cycling")
 	equal(catalog.next_champion_id("oh_tipi"), "s_wayne", "champion cycle advances")
 	equal(catalog.next_champion_id("s_wayne"), "red_baron", "champion cycle reaches the large foundation champion")
-	equal(catalog.next_champion_id("red_baron"), "oh_tipi", "champion cycle wraps")
+	equal(catalog.next_champion_id("wa_bidi"), "oh_tipi", "champion cycle wraps")
 	equal(String(catalog.champion("oh_tipi").get("ancestry")), "seakin", "Oh Tipi is a Seakin")
 	equal(String(catalog.champion("s_wayne").get("ancestry")), "hobbit", "S. Wayne is a Hobbit")
 	equal(String(catalog.champion("red_baron").get("ancestry")), "undead", "The Red Baron is Undead")
@@ -60,7 +79,7 @@ func _test_affinity_point_budget_and_treevor_exception() -> void:
 	ordinary.data = source.data.duplicate(true)
 	(ordinary.data["champions"][0] as Dictionary)["affinities"] = ["water", "charge", "ice"]
 	(ordinary.data["champions"][0] as Dictionary)["affinity_points"] = {"water": 1, "charge": 1, "ice": 1}
-	check(not ordinary.validate(abilities), "ordinary champion cannot spread the three-point budget across three affinities")
+	check(ordinary.validate(abilities), "any champion may split the same three-point budget across three affinities")
 
 	var bad_total := ChampionCatalog.new()
 	bad_total.data = source.data.duplicate(true)

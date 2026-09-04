@@ -29,6 +29,14 @@ func _test_prompt_copy_and_safe_area() -> void:
 	equal(clamped.position, Vector2(16, 58), "world prompt clamps below the compact top HUD")
 	var lower := WellspringInteractionPresenter.clamped_panel_rect(Rect2(1200, 690, 232, 52), Vector2(1280, 720), 16, 126)
 	equal(lower.position, Vector2(1032, 542), "world prompt clamps clear of bottom combat HUD lanes")
+	for center: Vector2 in [Vector2(640, 360), Vector2(80, 180), Vector2(1200, 180), Vector2(640, 540)]:
+		var actor := Rect2(center - Vector2(48, 160), Vector2(96, 176))
+		var overlap := Rect2(center - Vector2(116, 40), Vector2(232, 52))
+		var readable := WellspringInteractionPresenter.avoid_actor_rect(overlap, actor, Vector2(1280, 720))
+		check(not readable.intersects(actor), "compact station prompt leaves body and feet visible")
+		equal(readable.size, overlap.size, "avoiding actors never shrinks prompt text")
+	var clear := Rect2(16, 100, 232, 52)
+	equal(WellspringInteractionPresenter.avoid_actor_rect(clear, Rect2(600, 200, 96, 176), Vector2(1280, 720)), clear, "non-overlapping prompts retain their stable station position")
 
 
 func _test_fail_closed_station_coverage() -> void:

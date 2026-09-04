@@ -1,5 +1,11 @@
 # FLUX visual overhaul gate
 
+Current override: five playable basics include Grace Riva and Wa Bidi. Follow
+`docs/CAST-MOTION-ACCEPTANCE.md` for travel-facing bodies, alternating contacts
+and object grounding. The ordinary cranium target is now 20–23% (excluding
+hair/fins/crowns), with unchanged 58/68/76 envelopes. This supersedes the older
+24–30% figure below. New art is a review candidate, not inherited acceptance.
+
 Newest user override: continue the improved illustrated direction through U1-U5
 in `docs/CLARITY-AND-CONTROL-ITERATION.md`. The named menu/jump changes are
 authorized despite the older blanket freeze. No mixed-element attacks before
@@ -91,14 +97,14 @@ defeat—must expose a bounded frame region for every direction. Side and diagon
 mirrors are allowed only when ancestry/clothing asymmetry is corrected and the
 result is reviewed.
 
-Movement and facing are distinct inputs to presentation. Keyboard movement
-supports all eight normalized combinations; analog movement and aim stay
-continuous. A shared resolver classifies travel and facing with 45-degree
-sectors centered on each compass direction, 22.5-degree boundaries and bounded
-hysteresis to prevent edge flicker. When not actively aiming, locomotion may
-face travel; while aiming/casting, body facing follows aim and gait communicates
-forward, backward or lateral travel. This resolver changes no fixed-point
-position, speed, collision, timing, invulnerability, network value or outcome.
+Movement and aim are distinct inputs to presentation. Keyboard movement supports
+all eight normalized combinations; analog travel and spell aim stay continuous.
+The shared eight-sector resolver selects art without snapping simulation.
+Moving bodies always face physical travel, including during casting; separate
+bare-hand effects communicate spell aim. Stationary casting faces aim. Walk and
+sprint keep alternating contacts while casting; air/low poses remain air/low.
+This changes no fixed-point position, speed, collision, timing, invulnerability,
+network value or outcome. Artwork must independently pass direction review.
 
 The current integrated candidate supplies authored eight-way grounded,
 empty-hand cast, hit/recovery, jump, slide and roll art for both foundation

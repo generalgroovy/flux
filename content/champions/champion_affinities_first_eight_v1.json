@@ -20,7 +20,7 @@
     {"id":"oll_i","display_name":"Oll' I","affinities":["earth","fire","light"],"affinity_points":{"earth":1,"fire":1,"light":1}},
     {"id":"fluup","display_name":"Fluup","affinities":["wind","charge","ice"],"affinity_points":{"wind":1,"charge":1,"ice":1}},
     {"id":"wa_bidi","display_name":"Wa Bidi","affinities":["charge","wind","fire"],"affinity_points":{"charge":1,"wind":1,"fire":1}},
-    {"id":"grace_reava","display_name":"Grace Reava","affinities":["wind","water","light"],"affinity_points":{"wind":1,"water":1,"light":1}},
+    {"id":"grace_reava","display_name":"Grace Riva","affinities":["wind","water","light"],"affinity_points":{"wind":1,"water":1,"light":1}},
     {"id":"nico_lai","display_name":"Waka Aren Si","affinities":["charge","light"],"affinity_points":{"charge":2,"light":1},"migration_note":"Character formerly displayed as Nico Lai; technical id is retained during asset/runtime migration."},
     {"id":"spai_si","display_name":"Spai Si","affinities":["wind","earth","light"],"affinity_points":{"wind":1,"earth":1,"light":1}},
     {"id":"leaf_hidden","display_name":"Leaf the Hidden","affinities":["water","earth","light"],"affinity_points":{"water":1,"earth":1,"light":1}},

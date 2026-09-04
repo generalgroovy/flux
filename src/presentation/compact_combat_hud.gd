@@ -12,6 +12,7 @@ const REQUIRED_LAYOUT_KEYS := [
 ]
 
 var language: VisualLanguage
+var champion_art: CartoonChampionPresenter
 var data: Dictionary = {}
 var content_hash := ""
 var last_error := ""
@@ -201,44 +202,10 @@ func _draw_panel(canvas: CanvasItem, rectangle: Rect2, opacity: float) -> void:
 
 func _draw_portrait(canvas: CanvasItem, center: Vector2, champion_id: String) -> void:
 	canvas.draw_circle(center, 14.0, language.ramp_color("worldbone", 0))
-	if champion_id == "oh_tipi":
-		var water := language.element_color("water", "base")
-		var ice := language.element_color("ice", "bright")
-		canvas.draw_colored_polygon(PackedVector2Array([center + Vector2(-13, -2), center + Vector2(-18, -9), center + Vector2(-17, 3)]), water)
-		canvas.draw_colored_polygon(PackedVector2Array([center + Vector2(13, -2), center + Vector2(18, -9), center + Vector2(17, 3)]), water)
-		canvas.draw_circle(center, 11.0, water)
-		for crest_x: float in [-6.0, 0.0, 6.0]:
-			canvas.draw_colored_polygon(PackedVector2Array([center + Vector2(crest_x - 3, -8), center + Vector2(crest_x, -17), center + Vector2(crest_x + 3, -8)]), ice)
-		canvas.draw_circle(center + Vector2(-4, 0), 2.0, language.ramp_color("worldbone", 0))
-		canvas.draw_circle(center + Vector2(4, 0), 2.0, language.ramp_color("worldbone", 0))
-		canvas.draw_line(center + Vector2(-4, 7), center + Vector2(4, 7), ice, 1.0)
-	elif champion_id == "s_wayne":
-		var skin := language.ramp_color("warm_stone", 3)
-		var hair := language.ramp_color("timber", 0)
-		canvas.draw_circle(center, 11.0, skin)
-		canvas.draw_colored_polygon(PackedVector2Array([center + Vector2(-12, -3), center + Vector2(-17, 0), center + Vector2(-11, 4)]), skin)
-		canvas.draw_colored_polygon(PackedVector2Array([center + Vector2(12, -3), center + Vector2(17, 0), center + Vector2(11, 4)]), skin)
-		canvas.draw_arc(center + Vector2(0, -2), 11.0, PI, TAU, 14, hair, 6.0)
-		canvas.draw_circle(center + Vector2(-4, 1), 1.7, language.element_color("dark", "bright"))
-		canvas.draw_circle(center + Vector2(4, 1), 1.7, language.element_color("light", "bright"))
-		canvas.draw_arc(center + Vector2(0, 4), 5.0, 0.2, PI - 0.2, 8, hair, 1.0)
-	elif champion_id == "red_baron":
-		var bone := language.ramp_color("parchment", 3)
-		var ink := language.ramp_color("worldbone", 0)
-		var crown := language.ramp_color("aged_brass", 2)
-		var mantle := language.element_color("fire", "dark")
-		canvas.draw_colored_polygon(PackedVector2Array([center + Vector2(-13, 11), center + Vector2(-11, -2), center + Vector2(0, -8), center + Vector2(11, -2), center + Vector2(13, 11)]), mantle)
-		canvas.draw_circle(center, 10.0, bone)
-		canvas.draw_circle(center + Vector2(-4, -1), 3.2, ink)
-		canvas.draw_circle(center + Vector2(4, -1), 3.2, ink)
-		canvas.draw_colored_polygon(PackedVector2Array([center + Vector2(-2, 3), center + Vector2(0, 0), center + Vector2(2, 3)]), ink)
-		canvas.draw_line(center + Vector2(-4, 6), center + Vector2(4, 6), ink, 2.0)
-		canvas.draw_line(center + Vector2(-9, -9), center + Vector2(9, -9), crown, 3.0)
-		canvas.draw_colored_polygon(PackedVector2Array([center + Vector2(-9, -9), center + Vector2(-14, -17), center + Vector2(-5, -12)]), crown)
-		canvas.draw_colored_polygon(PackedVector2Array([center + Vector2(9, -9), center + Vector2(14, -17), center + Vector2(5, -12)]), crown)
-	else:
-		canvas.draw_circle(center, 11.0, language.ramp_color("warm_stone", 3))
-		canvas.draw_arc(center, 11.0, PI, TAU, 14, language.ramp_color("timber", 0), 5.0)
+	if champion_art != null and champion_art.can_present(champion_id):
+		# The same body page supplies portraits; no second skin/design catalog
+		# can become stale when a character is added or its artwork changes.
+		canvas.draw_texture_rect_region(champion_art.texture_for_champion(champion_id), Rect2(center - Vector2(16, 16), Vector2(32, 32)), champion_art.portrait_region(champion_id))
 
 
 func _draw_element_glyph(canvas: CanvasItem, center: Vector2, element: String, accent: Color, empty: bool) -> void:

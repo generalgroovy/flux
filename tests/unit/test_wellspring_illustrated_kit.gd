@@ -22,6 +22,8 @@ func run() -> int:
 	check(is_equal_approx(kit.cover_opacity(building, Vector2(200, 100)), 0.30), "near roof reveals the player without a schematic replacement panel")
 	check(is_equal_approx(kit.cover_opacity(building, Vector2(200, 72)), 0.65), "roof fade changes continuously across the approach band")
 	equal(kit.cover_opacity(building, Vector2(200, 0)), 1.0, "distant architecture remains fully visible")
+	equal(kit.landmark_opacity(Vector2(400, 400), Vector2(400, 400)), 0.30, "decorative fountain stays quiet when the player crosses its footprint")
+	equal(kit.landmark_opacity(Vector2(400, 400), Vector2(600, 600)), 1.0, "distant fountain retains its full artwork")
 	check(kit.surface_at(Vector2(1536, 900)) in [0, 1], "source court reads as stone")
 	equal(kit.surface_at(Vector2(10, 10)), 8, "outer shore reads as water")
 	for decoration: Dictionary in kit.decorations:

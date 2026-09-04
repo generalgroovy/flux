@@ -11,8 +11,8 @@ physical places rather than a detached menu.
 
 ![Wellspring gameplay target](assets/concept/wellspring-gameplay-specimen-v3.png)
 
-> **Current playable state:** Windows is the active release target. Three distinct champions,
-> full universal movement foundation, sixteen playable foundation spells, the
+> **Current playable state:** Windows is the active release target. Five distinct champions,
+> Grace Riva (Wind/Water/Light) and Wa Bidi (Charge/Wind/Fire), the full movement foundation, sixteen playable foundation spells, the
 > Wellspring campus, an authoritative 2–8 player direct-IP Farflow loop, and a
 > packaged one-file Windows player app are working. Comparable bursts for all
 > eight first-phase elements and the strict, symmetric 36-reaction definition
@@ -39,14 +39,27 @@ these changes and must be rebuilt before sharing; do not mix old packages and
 new-source hosts. The [map/movement ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md)
 records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current air control uses protocol 34.
 
-![Current body templates, extracted from gameplay art](assets/concept/foundation-proportion-reference-small-to-large-v3.png)
+![Current five-champion motion contact sheet](assets/concept/five-champion-motion-reference-v1.png)
 
-Rows: small S. Wayne, middle Oh Tipi, large Red Baron. Columns: front, side,
-back, walk A/B, jump, slide, roll. All ten runtime pose rows cover eight directions;
+Rows: Oh Tipi, S. Wayne, Red Baron, Grace Riva, Wa Bidi. Columns: front, south
+walk A/B, south slide, jump, roll, east walk A/B. All ten runtime rows cover eight directions;
 hit/recovery derives from grounded recoil and sprint B reuses walk B. The 29
 semantic actions use explicit aliases, not 29 independently drawn animations.
 Spells, auras and ground shadows remain separate from body/clothing artwork.
-See [editable sources and prompt specifications](reference/art/wellspring_v3/README.md).
+See [editable cast sources and prompt specifications](reference/art/cast_expansion_v1/README.md)
+and the [motion acceptance ledger](docs/CAST-MOTION-ACCEPTANCE.md). New champions use
+separate reusable atlas pages; all movement poses face actual travel. South slides
+use frontal replacements. Complete clean alternating contact review in every
+direction remains in progress; frame coverage is not proof of animation quality.
+All five front walk/sprint pairs now exchange foot contacts. Moving casts keep
+their movement pose and travel direction; HUD portraits use the same live art.
+
+| New basic character | Health / Flux / Stamina | Ground speed | Initial single-element spells |
+|---|---|---|---|
+| Grace Riva, small Sylph | 92 / 120 / 100 | 103% | Rillshot, Gale Burst, Pocket Eclipse |
+| Wa Bidi, small Goblin | 98 / 106 / 104 | 105% | Arc Primary, Gale Burst, Cinder Fan |
+
+These are usable foundation kits; unique racial abilities are not claimed.
 
 Current counts deliberately distinguish authored inventory from promoted play:
 
@@ -54,7 +67,7 @@ Current counts deliberately distinguish authored inventory from promoted play:
 |---|---|
 | Abilities | 21 validated authored records; 16 have runtime wire IDs and are globally weaveable, while five passive/gated kit records are not selectable spells |
 | Chemistry | 36 symmetric definitions compile and hash; `runtime_enabled` remains false until bounded exposure/contact, execution and reset pass |
-| Champions | 3 playable entries; 24 identities in the non-selectable roster/affinity plan |
+| Champions | 5 playable entries; 24 identities in the non-selectable roster/affinity plan |
 | Bodies | 3 authored gameplay roles: small, middle and large; five-size paths are legacy source/archive adapters only |
 | Cadence | 120 Hz authoritative simulation; 60 Hz transport snapshots and a 60-sample presentation clock are distinct non-gameplay cadences |
 
@@ -129,7 +142,7 @@ direct-IP internet builds only with trusted friends.
 | Movement | Full universal foundation at deterministic 120 Hz; normalized eight-way commands, active directional air control/facing, alternating gait contacts, native eight-way jump/slide/roll art, relative gait, and directional evasion cues | Measure response/braking/reversal/chains during chemistry, then tune the existing grammar from the packaged playtest before adding techniques |
 | Combat | Sixteen runtime spells cover projectile, five-shot burst, beam, spray, field, ricochet, launch and slow; one validated catalog exclusively owns their economy, timing, geometry, damage, control and Loom order; all eight elemental Bursts share exact geometry/economy while retaining distinct art and chemistry payloads | Keep the Burst baseline fixed while chemistry supplies the first systemic differences |
 | Chemistry | Material grid, eight element-bearing Bursts, and 36 compiled symmetric recipes mapped to nine bounded spatial primitives and seven integer channels; mutation is off | Bounded exposure/contact, shared effect execution, lifecycle/presentation, reset, replay and Farflow proof |
-| Champions | Oh Tipi (middle), S. Wayne (small), and The Red Baron (large) playable | Validate the three roles under bullet-pattern pressure before another champion |
+| Champions | Five playable: Oh Tipi, S. Wayne, Red Baron, Grace Riva, Wa Bidi | Refine motion contacts and verify visual readability before more roster expansion |
 | Farflow | Host-authoritative 2/4/8-player loop with contextual zero-config LAN discovery and direct-IP internet joining | Physical two-PC LAN/internet proof, then per-peer LOS filtering; measured 32-player work remains deferred |
 | Visuals | Integrated Wellspring gate accepted at 4.64/5; the foundation champions share The Red Baron's cell-bounded dark-ink language, and the Proving Court uses quiet room lanes, response pockets and bounded markers | Maintain one world/body/shadow/spell/projectile/interface hierarchy and improve weak live areas from gameplay captures, not isolated concept art |
 
@@ -235,7 +248,7 @@ distinct use, readable transition, deterministic test and counterplay.
 | Health | Defeat resource with authored recovery timing |
 | Flux | Every attack costs Flux; casting delays recovery and insufficient Flux refuses before creating an outcome |
 | Stamina | Movement resource for sprint, aerial actions, slides, wall routes, roll, and tech |
-| Affinity | 3 innate points normally split 2+1; bounded build discount only, never automatic damage advantage |
+| Affinity | 3 innate points split 2+1 or 1+1+1; bounded build discount only, never automatic damage advantage |
 | Primary | Reliable independent-aim pressure with positive Flux cost |
 | Spell weave | Twelve configurable positions over four buttons and three modifier layers |
 | Authority | Startup, collision, cost, cooldown, damage, reaction, score, and reset are simulation/host owned |
@@ -328,7 +341,8 @@ bounded exposure/contact. The machine truth is
 
 ## Champions
 
-Oh Tipi, S. Wayne, and The Red Baron are currently selectable. Every other entry is a
+Oh Tipi, S. Wayne, The Red Baron, Grace Riva, and Wa Bidi are currently selectable.
+Every other entry is a
 design/migration target, not a claim of playable content. Every champion spends
 the same three affinity points: two-element specialists use `2+1`, while
 three-element generalists use `1+1+1` and gain breadth without a strength-2
@@ -343,8 +357,8 @@ discount. Duplicate combinations are legal when their full play patterns differ.
 | Treevor the Mason | Treefolk | Large | Earth 1 · Wind 1 · Fire 1 | Planned |
 | Oll' I | Werewolf | Large | Earth 1 · Fire 1 · Light 1 | Planned |
 | Fluup | Orc | Large | Wind 1 · Charge 1 · Ice 1 | Planned |
-| Wa Bidi | Goblin | Small | Charge 1 · Wind 1 · Fire 1 | Planned |
-| Grace Reava | Sylph | Small | Wind 1 · Water 1 · Light 1 | Planned |
+| Wa Bidi | Goblin | Small | Charge 1 · Wind 1 · Fire 1 | **Playable** |
+| Grace Riva | Sylph | Small | Wind 1 · Water 1 · Light 1 | **Playable**; `grace_reava` stable ID |
 | Waka Aren Si | Gnome | Small | Charge 2 · Light 1 | Planned; `nico_lai` compatibility ID |
 | Spai Si | Demon | Middle | Wind 1 · Earth 1 · Light 1 | Planned |
 | Leaf the Hidden | Treefolk | Middle | Water 1 · Earth 1 · Light 1 | Planned |

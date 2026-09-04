@@ -1,5 +1,23 @@
 # Active implementation memory
 
+## 2026-09-04 current checkpoint: five-character cast and travel-facing motion
+
+- Grace Riva and Wa Bidi are selectable small-template basics with three-point
+  affinities and existing single-element kits; no chemistry or hybrids enabled.
+- Runtime atlas v15 and bounded extension pages cover ten states x eight
+  directions. All five south walk/sprint contacts exchange feet and south slide
+  is frontal. Moving casts retain walk/sprint/air/low bodies facing travel while
+  the separate effect aims independently; stationary casts face aim.
+- HUD portraits reuse the live sprite pages. Prompts move clear of the local
+  actor. Props share a contact cue and the decorative fountain fades nearby.
+- Full gate: 67 suites / 22,623 assertions / zero failures or stderr, 50,721 ms.
+  Receipt `.godot/receipts/five-cast-release-full.json`. Grace/Wa local Farflow
+  host/join/reconcile/round/rematch/stewardship passed at 120 Hz. Actual Grace
+  walk capture reviewed at `.godot/visual-captures/grace-safe-prompt-v1`.
+- Remaining visual work is explicit: strengthen weak side/back A/B contacts,
+  especially Grace E/NE/N, and review gait sequences in motion. Different cells
+  prove coverage, not correct anatomy or human art acceptance.
+
 ## 2026-09-04 current checkpoint: clarity/control U1-U5
 
 - Dark-skinned S. Wayne and Oh Tipi use versioned Baron-led proportion artwork;

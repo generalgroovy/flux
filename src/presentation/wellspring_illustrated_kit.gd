@@ -170,6 +170,8 @@ func draw_prop(canvas: CanvasItem, kind: String, feet: Vector2, size: float, mod
 	var index := PROP_IDS.find(kind)
 	if index < 0:
 		return
+	# A restrained ground contact ties every reusable cutout to the same plane.
+	canvas.draw_line(feet - Vector2(size * 0.22, 1), feet + Vector2(size * 0.22, -1), Color(0.04, 0.07, 0.06, 0.20 * modulation.a), maxf(2, size * 0.06), true)
 	canvas.draw_texture_rect_region(props, Rect2(feet - Vector2(size * 0.5, size * 124.0 / 128.0), Vector2(size, size)), Rect2(index % 4 * 128, index / 4 * 128, 128, 128), modulation)
 
 
@@ -214,15 +216,22 @@ static func cover_opacity(bounds: Rect2, focus: Vector2, clearance: float = 56.0
 	return lerpf(0.30, 1.0, clampf(focus.distance_to(nearest) / maxf(1.0, clearance), 0.0, 1.0))
 
 
-func draw_landmark(canvas: CanvasItem, landmark: Dictionary) -> void:
+func draw_landmark(canvas: CanvasItem, landmark: Dictionary, focus: Vector2 = Vector2(-1000000, -1000000)) -> void:
 	var point := Vector2(landmark["position"][0], landmark["position"][1])
 	var kind := String(landmark["kind"])
 	if kind == "grand_fountain":
 		for radius: int in [92, 104]:
 			canvas.draw_arc(point, radius, 0, TAU, 64, Color("a28a59"), 3)
-		draw_prop(canvas, "fountain", point + Vector2(0, 38), 154)
+		var alpha := landmark_opacity(point, focus)
+		draw_prop(canvas, "fountain", point + Vector2(0, 38), 154, Color(1, 1, 1, alpha))
 	else:
 		draw_prop(canvas, "banner" if kind == "portal_ring" else "lantern", point + Vector2(0, 14), 74)
+
+
+static func landmark_opacity(point: Vector2, focus: Vector2) -> float:
+	# Cosmetic landmark may overlap a legal route: reduce its visual density
+	# around the player, never invent a collision obstacle to match the art.
+	return cover_opacity(Rect2(point - Vector2(48, 84), Vector2(96, 122)), focus, 56)
 
 
 func draw_station(canvas: CanvasItem, station: Dictionary) -> void:

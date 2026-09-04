@@ -85,9 +85,8 @@ func validate(abilities: AbilityCatalog) -> bool:
 			return _fail("champion needs a concise playstyle: %s" % champion_id)
 
 		var affinities: Array = champion.get("affinities", [])
-		var max_affinities := 3 if champion_id == TREEVOR_CHAMPION_ID else 2
-		if affinities.size() < 2 or affinities.size() > max_affinities:
-			return _fail("champion requires two affinities; Treevor may have three: %s" % champion_id)
+		if affinities.size() < 2 or affinities.size() > 3:
+			return _fail("champion requires two or three affinities within the same three-point budget: %s" % champion_id)
 		var affinity_set: Dictionary = {}
 		for affinity_value: Variant in affinities:
 			var affinity := String(affinity_value)

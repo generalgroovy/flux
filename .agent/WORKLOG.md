@@ -1,5 +1,25 @@
 # FLUX2 agent worklog
 
+## 2026-09-04 - Grace Riva, Wa Bidi and travel-facing body slice
+
+- Promoted Grace Riva (Sylph, Wind/Water/Light) then Wa Bidi (Goblin,
+  Charge/Wind/Fire) through stable wire IDs, bounded small-template stats and
+  existing globally configurable single-element spells.
+- Added deterministic bounded page compiler/audit and original generated source
+  art with exact prompts/provenance. Built-in image mode supplied the raster
+  candidates; only the reviewed Oh Tipi correction cell is consumed.
+- Added frontal south slides and opposite front walk/sprint contacts. Moving
+  casts preserve movement silhouettes and physical travel facing; spell aim is
+  still continuous and independent. Atlas body dimensions never scale in motion.
+- Removed five stale code-drawn portrait variants; the HUD crops current live
+  character pages. Compact station prompts avoid the actor; prop contact and
+  fountain proximity fade improve map grounding without collision changes.
+- Focused catalog/kit/motion/HUD/prompt suites passed throughout. Final Full
+  passed 67 suites / 22,623 assertions, stderr zero, 50,721 ms; source Farflow
+  with Grace hosting and Wa joining passed all current diagnostics at 120 Hz.
+- Visual audit honestly keeps D open for weak side/back leg separation and human
+  sequence review. E broader prop simplification is also still open.
+
 ## 2026-09-04 - clarity/control U1-U5 green checkpoint
 
 - Shared Baron-led body proportions; S. Wayne dark-skinned throughout eight

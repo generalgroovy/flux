@@ -1,6 +1,6 @@
 {
-  "schema_version": 14,
-  "id": "foundation-champion-visuals-v14-baron-proportions",
+  "schema_version": 15,
+  "id": "foundation-champion-visuals-v15-motion-facing",
   "art_camera": {"elevation_degrees": 55, "ground_axes": "screen_cardinal"},
   "derived_pose_sources": {"hit": "grounded_with_bounded_recoil", "sprint_b": "walk_b_with_sprint_timing"},
   "authority": "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere",
@@ -51,9 +51,9 @@
     "authority": "presentation_only"
   },
   "atlas": {
-    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v14.png",
-    "sha256": "b653d08a2684416aa3b5407b63d07f2e8f0ce6bfcc23be01fd45b24f399ae847",
-    "imported_rgba_sha256": "ac411d9e7c55fcb374b92ba9f1e337378879f73be457f103b9b9d6652efaea3f",
+    "path": "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v15.png",
+    "sha256": "3a0f8bb6187b360f8de1e93809447b809503af6c4ae79c3b12046dc2df273e7b",
+    "imported_rgba_sha256": "ee7ce98f8b78676d7289d8245714c4844984b7713ceb6e70608a666a287a15e4",
     "dimensions": [768, 2880],
     "champions": ["oh_tipi", "s_wayne", "red_baron"],
     "states": ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll", "walk_b", "sprint_b"],
@@ -130,6 +130,18 @@
     "taunt": "grounded",
     "defeated": "hit"
   },
+  "extension_atlases": {
+    "wa_bidi": {
+      "path": "res://assets/sprites/champions_v3/expansion_v1/wa_bidi.png",
+      "sha256": "30746b5a7b3a059e945ef5e3cd8986cf881d29728ae44c43a330590c1dc54b7d",
+      "imported_rgba_sha256": "3f8bea62f64cc60080f4c4774cfc5d30188ed82cd8016a2f8e777cfe6fd134d7"
+    },
+    "grace_reava": {
+      "path": "res://assets/sprites/champions_v3/expansion_v1/grace_reava.png",
+      "sha256": "45503ae437872ccabbd80ffa19c793cf01808c805844576c08e1ab27987cf12c",
+      "imported_rgba_sha256": "78e3848fed3d3bde61796599024f948a5864f345d6aecb5df81295707126d62e"
+    }
+  },
   "champions": {
     "oh_tipi": {
       "display_name": "Oh Tipi",
@@ -197,6 +209,104 @@
         "armor": ["health", 1],
         "trim": ["aged_brass", 3],
         "eye": ["parchment", 4]
+      }
+    },
+    "grace_reava": {
+      "display_name": "Grace Riva",
+      "ancestry": "sylph",
+      "body_type": "small",
+      "atlas_row": 0,
+      "height": 58,
+      "head_ratio": 0.22,
+      "build": "small_stream_dancer",
+      "motion_profile": "buoyant_keeper",
+      "equipment": "body_clothing_only",
+      "casting_origin": "hands",
+      "silhouette_features": [
+        "tied_teal_hair",
+        "compact_wings",
+        "practical_tunic",
+        "closed_boots"
+      ],
+      "affinities": [
+        "wind",
+        "water",
+        "light"
+      ],
+      "materials": {
+        "outline": [
+          "worldbone",
+          0
+        ],
+        "skin_dark": [
+          "warm_stone",
+          1
+        ],
+        "skin": [
+          "warm_stone",
+          3
+        ],
+        "armor": [
+          "garden",
+          2
+        ],
+        "trim": [
+          "aged_brass",
+          3
+        ],
+        "eye": [
+          "parchment",
+          4
+        ]
+      }
+    },
+    "wa_bidi": {
+      "display_name": "Wa Bidi",
+      "ancestry": "goblin",
+      "body_type": "small",
+      "atlas_row": 0,
+      "height": 58,
+      "head_ratio": 0.22,
+      "build": "small_pressure_skirmisher",
+      "motion_profile": "grounded_weaver",
+      "equipment": "body_clothing_only",
+      "casting_origin": "hands",
+      "silhouette_features": [
+        "wide_pointed_ears",
+        "short_charcoal_hair",
+        "orange_scarf",
+        "stout_boots"
+      ],
+      "affinities": [
+        "charge",
+        "wind",
+        "fire"
+      ],
+      "materials": {
+        "outline": [
+          "worldbone",
+          0
+        ],
+        "skin_dark": [
+          "garden",
+          1
+        ],
+        "skin": [
+          "garden",
+          3
+        ],
+        "armor": [
+          "timber",
+          1
+        ],
+        "trim": [
+          "aged_brass",
+          3
+        ],
+        "eye": [
+          "parchment",
+          4
+        ]
       }
     }
   }

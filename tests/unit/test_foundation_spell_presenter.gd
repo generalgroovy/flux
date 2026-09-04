@@ -17,7 +17,8 @@ func _test_repository_profiles() -> void:
 	check(catalog.load_from_file("res://content/abilities/foundation_abilities_v1.json"), "ability catalog loads for spell presentation")
 	var presenter := FoundationSpellPresenter.new()
 	check(presenter.configure(language, catalog), "foundation spell presentation validates: %s" % presenter.last_error)
-	equal(presenter.profiles_by_id.size(), 14, "every promoted champion spell and first-eight Burst has one visual profile")
+	equal(presenter.profiles_by_id.size(), 41, "every runtime spell has an authored or reusable family visual profile")
+	equal(presenter.profiles_by_wire.size(), catalog.runtime_wire_ids.size(), "no runtime spell can fall through to invisible presentation")
 	equal(presenter.animation_skeletons.skeletons.size(), 4, "foundation spells share four reusable delivery skeletons")
 	check(presenter.animation_skeleton_hash.length() == 64, "foundation spell presentation exposes the skeleton content hash")
 	check(presenter.direction_contract_hash.length() == 64, "foundation spell presentation exposes the shared direction content hash")
@@ -38,6 +39,11 @@ func _test_repository_profiles() -> void:
 		var burst_profile: Dictionary = presenter.profiles_by_id[burst_id]
 		equal(String(burst_profile.get("startup", "")), "elemental_burst", "%s reuses the same five-lane startup geometry" % burst_id)
 		equal(String(burst_profile.get("silhouette", "")), "burst_mote", "%s reuses the same Burst silhouette contract" % burst_id)
+	for wire_id: int in catalog.runtime_wire_ids:
+		check(presenter.profiles_by_wire.has(wire_id), "runtime wire %d has a presentation profile" % wire_id)
+	var generated: Dictionary = presenter.profiles_by_id["flintshot"]
+	equal(String(generated.get("generated_from_family", "")), "bolt", "new spells reuse their attack-family presentation skeleton")
+	equal(String(generated.get("element", "")), "earth", "reused family visuals retain distinct element coding")
 
 
 func _test_shared_direction_contract() -> void:

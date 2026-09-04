@@ -7,6 +7,7 @@ const LOADOUT_PATH: String = "res://content/loadouts/foundation_practitioner_v1.
 
 func run() -> int:
 	_test_catalog()
+	_test_spell_matrix()
 	_test_loadout()
 	_test_invalid_content_fails_closed()
 	_test_single_element_gate()
@@ -39,7 +40,8 @@ func _test_catalog() -> void:
 	equal(first.content_hash, second.content_hash, "catalog hash is stable across reloads")
 	equal(first.elements_by_id.size(), 12, "all twelve thematic element families are declared")
 	equal(first.active_element_ids(), ["charge", "dark", "earth", "fire", "ice", "light", "water", "wind"], "only the first eight families are runtime-enabled")
-	equal(first.playable_spell_ids(), ["arc-burst", "arc-primary", "cinder-fan", "cinderbolt", "eclipse-burst", "eclipse-disc", "gale-burst", "pocket-eclipse", "prism-burst", "rill-burst", "rillshot", "rime-burst", "rimewake", "stone-burst", "tideline", "vector-lance"], "only end-to-end spells enter the playable selector")
+	equal(first.playable_spell_ids().size(), 41, "forty matrix cells and one proven variant enter the playable selector")
+	check(first.playable_spell_ids().has("vector-lance"), "the proven Vector Lance variant remains globally weaveable")
 	for gated_id: String in ["spirit", "chaos", "gravity", "time"]:
 		check(not bool((first.elements_by_id[gated_id] as Dictionary)["runtime_enabled"]), "%s remains explicitly gated" % gated_id)
 	equal(String(first.data.get("affinity_rule", "")), "aligned_active_cost_discount_capped_by_affinity_strength", "ability catalog declares weighted affinity discount rule")
@@ -109,6 +111,32 @@ func _test_catalog() -> void:
 		check(int(active["points"]) > 0, "%s has positive build cost" % active_id)
 		check(int(active["flux_cost"]) > 0, "%s has positive Flux cost" % active_id)
 		check(not (active["counterplay"] as Array).is_empty(), "%s declares counterplay" % active_id)
+
+
+func _test_spell_matrix() -> void:
+	var catalog := _catalog()
+	equal(catalog.spell_matrix_ids.size(), 40, "spell matrix has exactly eight rows by five columns")
+	equal(catalog.spell_matrix_wire_ids, catalog.runtime_wire_ids.slice(0, 40), "runtime order begins row-major for stable Loom navigation")
+	var claimed: Dictionary = {}
+	for element_id: String in AbilityCatalog.FIRST_EIGHT_ELEMENTS:
+		for family_id: String in AbilityCatalog.SPELL_MATRIX_FAMILIES:
+			var ability_id := catalog.spell_id_at(element_id, family_id)
+			check(not ability_id.is_empty(), "%s/%s matrix cell resolves" % [element_id, family_id])
+			check(not claimed.has(ability_id), "%s/%s matrix cell is unique" % [element_id, family_id])
+			claimed[ability_id] = true
+			var ability := catalog.ability(ability_id)
+			equal(String(ability.get("element", "")), element_id, "%s remains in its element row" % ability_id)
+			check(int(ability.get("flux_cost", 0)) > 0, "%s remains a paid attack" % ability_id)
+	var missing := AbilityCatalog.new()
+	missing.data = catalog.data.duplicate(true)
+	missing.data["spell_matrix"]["cells"]["fire"].pop_back()
+	check(not missing.validate(), "incomplete matrix row fails closed")
+	check(missing.last_error.contains("every attack family"), "incomplete row failure is diagnosable")
+	var crossed := AbilityCatalog.new()
+	crossed.data = catalog.data.duplicate(true)
+	crossed.data["spell_matrix"]["cells"]["fire"][0] = "rillshot"
+	check(not crossed.validate(), "cross-element matrix cell fails closed")
+	check(crossed.last_error.contains("row or column"), "cross-element failure is diagnosable")
 
 
 func _test_loadout() -> void:

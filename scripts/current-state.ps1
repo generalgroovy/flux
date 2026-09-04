@@ -110,7 +110,9 @@ $projectPhysicsHz = Get-FluxProjectInteger 'common/physics_ticks_per_second'
 $projectMaximumFps = Get-FluxProjectInteger 'run/max_fps'
 $presentationBaseHz = [int]$motion.base_hz
 $runtimeWireIds = @($abilities.runtime_wire_ids | ForEach-Object { [int]$_ })
-$abilityWireIds = @($abilities.abilities | ForEach-Object { [int]$_.wire_id })
+$matrixExtensions = @($abilities.spell_matrix.extensions)
+$abilityCount = @($abilities.abilities).Count + $matrixExtensions.Count
+$abilityWireIds = @($abilities.abilities | ForEach-Object { [int]$_.wire_id }) + @($matrixExtensions | ForEach-Object { [int]$_.wire_id })
 $bodyRoleIds = @($bodyProfiles.profiles.PSObject.Properties.Name)
 $playableIds = @($playableChampions.champions | ForEach-Object { [string]$_.id })
 $plannedIds = @($rosterPlan.champions | ForEach-Object { [string]$_.id })
@@ -121,14 +123,14 @@ Add-FluxIssue ($simulationHz -eq 120) "Simulation rate is $simulationHz Hz; curr
 Add-FluxIssue ($projectPhysicsHz -eq $simulationHz) "Project physics rate $projectPhysicsHz disagrees with simulation rate $simulationHz"
 Add-FluxIssue ($projectMaximumFps -eq 120) "Project frame cap is $projectMaximumFps; current Windows target requires 120"
 Add-FluxIssue ($projectText -match 'simulation/supported_tick_rates=PackedInt32Array\(120\)') 'Project exposes a gameplay tick rate other than the single supported 120 Hz cadence'
-Add-FluxIssue ($protocolVersion -eq 36) "Protocol is $protocolVersion; current documentation requires 36"
+Add-FluxIssue ($protocolVersion -eq 37) "Protocol is $protocolVersion; current documentation requires 37"
 Add-FluxIssue ($snapshotSchema -eq 13) "Snapshot schema is $snapshotSchema; current documentation requires 13"
 Add-FluxIssue ($preferencesSchema -eq 10) "Preferences schema is $preferencesSchema; current documentation requires 10"
 Add-FluxIssue ($snapshotHz -eq 60) "Transport snapshot cadence is $snapshotHz Hz; current contract requires 60 Hz"
 Add-FluxIssue ($presentationBaseHz -eq 60) "Presentation sample base is $presentationBaseHz Hz; current contract requires 60"
 Add-FluxIssue ($maximumPlayers -eq 8) "Session capacity is $maximumPlayers; current tested cap requires 8"
-Add-FluxIssue (@($abilities.abilities).Count -eq 21) "Authored ability count is $(@($abilities.abilities).Count); current contract requires 21"
-Add-FluxIssue ($runtimeWireIds.Count -eq 16) "Runtime-selectable spell count is $($runtimeWireIds.Count); current contract requires 16"
+Add-FluxIssue ($abilityCount -eq 46) "Effective authored ability count is $abilityCount; current contract requires 46"
+Add-FluxIssue ($runtimeWireIds.Count -eq 41) "Runtime-selectable spell count is $($runtimeWireIds.Count); current contract requires 41"
 Add-FluxIssue (@($runtimeWireIds | Sort-Object -Unique).Count -eq $runtimeWireIds.Count) 'Runtime spell wire IDs are not unique'
 Add-FluxIssue (@($runtimeWireIds | Where-Object { $abilityWireIds -notcontains $_ }).Count -eq 0) 'Runtime spell order references a missing authored ability wire ID'
 Add-FluxIssue (@($reactions.reactions).Count -eq 36) "Reaction definition count is $(@($reactions.reactions).Count); first-eight coverage requires 36"
@@ -160,7 +162,7 @@ foreach ($champion in $rosterPlan.champions) {
 }
 
 $readme = Read-FluxText 'README.md'
-Add-FluxIssue ($readme -match '21 validated authored records; 16 have runtime wire IDs') 'README does not distinguish 21 authored abilities from 16 runtime spells'
+Add-FluxIssue ($readme -match '46 validated effective records; 41 have runtime wire IDs') 'README does not distinguish 46 effective abilities from 41 runtime spells'
 Add-FluxIssue ($readme -match '36 symmetric definitions compile and hash; `runtime_enabled` remains false') 'README does not report compiled reactions separately from disabled mutation'
 Add-FluxIssue ($readme -match '5 playable entries; 24 identities') 'README does not distinguish the playable and planned rosters'
 Add-FluxIssue ($readme -match '120 Hz authoritative simulation; 60 Hz transport snapshots') 'README does not distinguish simulation and snapshot cadences'
@@ -202,7 +204,7 @@ $state = [ordered]@{
         maximum_players = $maximumPlayers
     }
     content = [ordered]@{
-        abilities_authored = @($abilities.abilities).Count
+        abilities_authored = $abilityCount
         spells_runtime_selectable = $runtimeWireIds.Count
         runtime_spell_wire_ids = $runtimeWireIds
         reactions_defined = @($reactions.reactions).Count
@@ -247,7 +249,7 @@ $stateJson = $state | ConvertTo-Json -Depth 12
 if ($Json) {
     Write-Output $stateJson
 } elseif (-not $Quiet) {
-    Write-Output ("FLUX state: protocol {0}, 120 Hz, {1}/{2} runtime/authored abilities, {3} reactions ({4}), {5}/{6} playable/planned champions, {7} players." -f $protocolVersion, $runtimeWireIds.Count, @($abilities.abilities).Count, @($reactions.reactions).Count, $(if ($reactions.runtime_enabled) { 'enabled' } else { 'gated' }), $playableIds.Count, $plannedIds.Count, $maximumPlayers)
+    Write-Output ("FLUX state: protocol {0}, 120 Hz, {1}/{2} runtime/authored abilities, {3} reactions ({4}), {5}/{6} playable/planned champions, {7} players." -f $protocolVersion, $runtimeWireIds.Count, $abilityCount, @($reactions.reactions).Count, $(if ($reactions.runtime_enabled) { 'enabled' } else { 'gated' }), $playableIds.Count, $plannedIds.Count, $maximumPlayers)
     Write-Output "Report: $OutputPath"
 }
 

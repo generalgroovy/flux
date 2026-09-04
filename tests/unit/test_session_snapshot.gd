@@ -24,7 +24,7 @@ func _test_snapshot_round_trip() -> void:
 	host.active_2_wire_id = CombatTuning.RIMEWAKE_WIRE_ID
 	host.reset_spell_slots_to_kit()
 	check(host.place_proven_spell(11, host.primary_wire_id), "host rewoves primary to Alt+4 before snapshot")
-	check(host.set_spell_cooldown(CombatTuning.ECLIPSE_DISC_WIRE_ID, 17), "host owns a cooldown for a non-champion global spell")
+	check(host.set_spell_cooldown(CombatTuning.CINDERBOLT_WIRE_ID, 17), "host owns a cooldown for a non-champion global spell")
 	var guest := PlayerState.new(2)
 	guest.champion_wire_id = 2
 	guest.position_x = 1_352_000
@@ -73,7 +73,7 @@ func _test_snapshot_round_trip() -> void:
 	equal(replica.player(2).primary_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "guest kit identity round-trips")
 	equal(Array(replica.player().spell_wire_ids), Array(source.player().spell_wire_ids), "host ordered spell slots round-trip")
 	equal(Array(replica.player().spell_cooldown_ticks), Array(source.player().spell_cooldown_ticks), "all independent spell cooldowns round-trip")
-	equal(replica.player().spell_cooldown_for_wire(CombatTuning.ECLIPSE_DISC_WIRE_ID), 16, "non-champion global cooldown survives one source tick and replication")
+	equal(replica.player().spell_cooldown_for_wire(CombatTuning.CINDERBOLT_WIRE_ID), 16, "non-champion global cooldown survives one source tick and replication")
 	equal(replica.player().active_2_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "host third proven spell identity round-trips")
 	equal(replica.player(2).spawn_protection_ticks, source.player(2).spawn_protection_ticks, "guest spawn protection round-trips")
 	equal(replica.player(2).jump_sustain_ticks, source.player(2).jump_sustain_ticks, "paid jump height context round-trips")

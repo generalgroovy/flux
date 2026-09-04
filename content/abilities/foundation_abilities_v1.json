@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "id": "foundation-abilities-v1",
   "affinity_rule": "aligned_active_cost_discount_capped_by_affinity_strength",
   "economy": {
@@ -12,7 +12,81 @@
       "control": {"minimum": 1500, "maximum": 2200}
     }
   },
-  "runtime_wire_ids": [101, 110, 140, 141, 144, 142, 143, 145, 146, 147, 149, 148, 150, 151, 152, 153],
+  "runtime_wire_ids": [145, 146, 154, 155, 156, 140, 148, 141, 157, 158, 159, 147, 160, 161, 162, 163, 149, 164, 165, 166, 101, 151, 167, 168, 169, 170, 150, 171, 172, 144, 173, 152, 174, 143, 175, 142, 153, 176, 177, 178, 110],
+  "spell_matrix": {
+    "row_order": ["fire", "water", "earth", "wind", "charge", "ice", "light", "dark"],
+    "column_order": ["bolt", "burst", "spray", "beam", "field"],
+    "cells": {
+      "fire": ["cinderbolt", "cinder-fan", "ember-sweep", "cinderline", "hearthring"],
+      "water": ["rillshot", "rill-burst", "tideline", "undertow-line", "springwell"],
+      "earth": ["flintshot", "stone-burst", "shard-gale", "faultline", "stonehold"],
+      "wind": ["gale-needle", "gale-burst", "squall", "pressure-line", "updraft"],
+      "charge": ["arc-primary", "arc-burst", "spark-shower", "voltline", "static-snare"],
+      "ice": ["rimeshard", "rime-burst", "sleet", "frostline", "rimewake"],
+      "light": ["dawn-needle", "prism-burst", "radiant-veil", "pocket-eclipse", "halo-ground"],
+      "dark": ["eclipse-disc", "eclipse-burst", "gloam-breath", "nightline", "umbral-pool"]
+    },
+    "element_operations": {
+      "fire": "heat", "water": "wet", "earth": "fracture", "wind": "push",
+      "charge": "charge", "ice": "cool", "light": "reveal", "dark": "decay"
+    },
+    "family_templates": {
+      "bolt": {
+        "family": "bolt", "shape": "projectile", "delivery": "aimed", "impact": "damage", "residue": "none",
+        "points": 3, "affinity_discount": 1, "flux_cost": 6, "cooldown_ms": 240, "startup_ms": 70, "recovery_ms": 90,
+        "cadence_tier": "pressure", "speed": 720000, "radius": 9000, "damage": 9000, "lifetime_ms": 1600,
+        "projectile_angles_degrees": [0], "roles": ["aimed_pressure"], "counterplay": ["dodge", "cover", "projectile_clash"]
+      },
+      "spray": {
+        "family": "spray", "shape": "spray", "delivery": "aimed", "impact": "damage", "residue": "none",
+        "points": 4, "affinity_discount": 1, "flux_cost": 12, "cooldown_ms": 820, "startup_ms": 150, "recovery_ms": 160,
+        "cadence_tier": "tempo", "range": 380000, "radius": 9000, "damage": 7000, "cone_cosine_squared_per_million": 820000,
+        "hit_control_state": 0, "hit_control_duration_ms": 0, "hit_control_speed": 0, "hit_control_slow_ratio": 1000,
+        "roles": ["close_pressure"], "counterplay": ["read_fan", "leave_cone", "cover"]
+      },
+      "beam": {
+        "family": "beam", "shape": "beam", "delivery": "aimed", "impact": "damage", "residue": "none",
+        "points": 4, "affinity_discount": 1, "flux_cost": 13, "cooldown_ms": 880, "startup_ms": 170, "recovery_ms": 170,
+        "cadence_tier": "tempo", "range": 600000, "radius": 8000, "damage": 12000,
+        "hit_control_state": 0, "hit_control_duration_ms": 0, "hit_control_speed": 0, "hit_control_slow_ratio": 1000,
+        "roles": ["lane_pressure"], "counterplay": ["read_line", "sidestep", "cover"]
+      },
+      "field": {
+        "family": "field", "shape": "field", "delivery": "placed", "impact": "control_slow", "residue": "field",
+        "points": 5, "affinity_discount": 1, "flux_cost": 18, "cooldown_ms": 1600, "startup_ms": 210, "recovery_ms": 200,
+        "cadence_tier": "control", "range": 220000, "radius": 85000, "lifetime_ms": 1600,
+        "hit_control_state": 6, "hit_control_duration_ms": 650, "hit_control_speed": 0, "hit_control_slow_ratio": 700,
+        "roles": ["area_control"], "counterplay": ["read_placement", "leave_circle", "wait_out_slow"]
+      }
+    },
+    "extensions": [
+      {"id":"ember-sweep","wire_id":154,"display_name":"Ember Sweep","element":"fire","family":"spray"},
+      {"id":"cinderline","wire_id":155,"display_name":"Cinderline","element":"fire","family":"beam"},
+      {"id":"hearthring","wire_id":156,"display_name":"Hearthring","element":"fire","family":"field"},
+      {"id":"undertow-line","wire_id":157,"display_name":"Undertow Line","element":"water","family":"beam"},
+      {"id":"springwell","wire_id":158,"display_name":"Springwell","element":"water","family":"field"},
+      {"id":"flintshot","wire_id":159,"display_name":"Flintshot","element":"earth","family":"bolt"},
+      {"id":"shard-gale","wire_id":160,"display_name":"Shard Gale","element":"earth","family":"spray"},
+      {"id":"faultline","wire_id":161,"display_name":"Faultline","element":"earth","family":"beam"},
+      {"id":"stonehold","wire_id":162,"display_name":"Stonehold","element":"earth","family":"field"},
+      {"id":"gale-needle","wire_id":163,"display_name":"Gale Needle","element":"wind","family":"bolt"},
+      {"id":"squall","wire_id":164,"display_name":"Squall","element":"wind","family":"spray"},
+      {"id":"pressure-line","wire_id":165,"display_name":"Pressure Line","element":"wind","family":"beam"},
+      {"id":"updraft","wire_id":166,"display_name":"Updraft","element":"wind","family":"field"},
+      {"id":"spark-shower","wire_id":167,"display_name":"Spark Shower","element":"charge","family":"spray"},
+      {"id":"voltline","wire_id":168,"display_name":"Voltline","element":"charge","family":"beam"},
+      {"id":"static-snare","wire_id":169,"display_name":"Static Snare","element":"charge","family":"field"},
+      {"id":"rimeshard","wire_id":170,"display_name":"Rimeshard","element":"ice","family":"bolt"},
+      {"id":"sleet","wire_id":171,"display_name":"Sleet","element":"ice","family":"spray"},
+      {"id":"frostline","wire_id":172,"display_name":"Frostline","element":"ice","family":"beam"},
+      {"id":"dawn-needle","wire_id":173,"display_name":"Dawn Needle","element":"light","family":"bolt"},
+      {"id":"radiant-veil","wire_id":174,"display_name":"Radiant Veil","element":"light","family":"spray"},
+      {"id":"halo-ground","wire_id":175,"display_name":"Halo Ground","element":"light","family":"field"},
+      {"id":"gloam-breath","wire_id":176,"display_name":"Gloam Breath","element":"dark","family":"spray"},
+      {"id":"nightline","wire_id":177,"display_name":"Nightline","element":"dark","family":"beam"},
+      {"id":"umbral-pool","wire_id":178,"display_name":"Umbral Pool","element":"dark","family":"field"}
+    ]
+  },
   "elements": [
     {"id": "earth", "wire_id": 1, "runtime_enabled": true, "identity": "mass structures growth fracture"},
     {"id": "fire", "wire_id": 2, "runtime_enabled": true, "identity": "heat ignition smoke pressure"},

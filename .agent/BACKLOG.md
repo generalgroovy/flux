@@ -4,12 +4,12 @@ This queue reflects the current user-ordered path to the first-eight chemistry
 playtest. Completed detail belongs in `WORKLOG.md`; this file stays short,
 playable, and acceptance-driven.
 
-**Newest user priority:** Q0-Q1.2 in `docs/QUALITY-EXPANSION-ACCEPTANCE.md` are
+**Newest user priority:** Q0-Q2 in `docs/QUALITY-EXPANSION-ACCEPTANCE.md` are
 green source slices: honest worldbone-only scenery, higher/longer paid holds,
 momentum-preserving transitions, airborne wallrun chains, explicit 10–40%
 continuation cost with a 333 ms reset, larger Stamina pools and lower positive
-spell costs. Q2 now builds the complete element-row × delivery-column Loom;
-Q3-Q5 then finish spell readability, crisp character motion and integration.
+spell costs, and a complete element-row × delivery-column Loom with forty cells.
+Q3-Q5 now finish spell readability, crisp character motion and integration.
 
 U1-U5 source gate passed (67 suites / 21,548 assertions). Then: exact motion-facing
 and alternating walk contacts; Grace Riva then Wa Bidi with existing single-element
@@ -20,8 +20,8 @@ In progress now: A-C source integrated, Grace then Wa Bidi; focused tests and
 new-champion local Farflow passed. All five south walk/sprint contact pairs and
 south slides are corrected; moving casts no longer freeze legs. HUD portraits
 reuse live body pixels. Finish Full/render gate, then D remaining side/back
-contacts (especially Grace E/NE/N) and time-sequence review; E broader prop
-simplification. Fountains fade near the player and props share ground contact.
+contacts (especially Grace E/NE/N) and time-sequence review. Collision-backed
+worldbone stays opaque; collisionless props and landmarks are withheld.
 Complete cells and different pixel hashes are not full animation acceptance.
 
 **Previous checkpoint:** user-requested illustrated map/camera overhaul and all-size,
@@ -50,7 +50,7 @@ runs cannot generate notification floods.
 | 2 | **Whole-scene visual cohesion — reopened** | Earlier 4.64/5 evidence is historical. R1-R4 replaces campus textures/props and all three eight-way body templates; current captures, geometry checks and human charm/readability review must judge the replacement. |
 | 3 | **Three viable body roles + Red Baron — complete in source** | Small skirmisher, middle adapter and large anchor use direction-invariant 58/68/76px body templates, shared collision, runtime scale `1.0` and universal movement on equal budget; Red Baron is selectable with eight-way body/clothing art, identity HUD portrait, Cinderbolt/Rimewake and 120 Hz combat tests. Exact interactive capture remains part of the checkpoint. |
 | 4 | **Readable bullet-pattern pressure — complete in source** | Cinder Fan deterministically emits `-24,-12,0,+12,+24` lanes with ordered IDs, one cost, single-hit protection, bounded collision/snapshot work, a readable 28–46 px projectile envelope and clean evasion lanes at 120 Hz; the Proving Court floor now exposes quiet lanes and four response pockets. |
-| 5 | **Eight elemental bursts + one combat authority — complete in source** | Fire, Water, Earth, Wind, Charge, Ice, Light, and Dark provide positive-Flux global Bursts with identical five-lane geometry/economy; all 16 live spell definitions now compile exclusively from the validated catalog, with 61 suites / 17,781 assertions and eight truthful 120 Hz captures proving simulation and presentation. |
+| 5 | **Complete first-eight spell matrix — complete in source** | Fire, Water, Earth, Wind, Charge, Ice, Light, and Dark each expose Bolt/Burst/Spray/Beam/Field in one row-major validated grid; all 40 cells plus Vector Lance compile through shared resolvers, remain globally weaveable and positively priced, and execute at 120 Hz. |
 | 6 | **Reaction catalog — complete in this checkpoint** | All 36 symmetric pairs compile from one validated bounded catalog, resolve identically in either order, contribute to compatibility and enable no mutation. |
 | 7 | **Current truth + faster feedback — complete in this checkpoint** | Generated state/drift checks, 64 stable suite IDs, focused execution, receipts, `.\flux.cmd`, document statuses, 911-asset inventory and canonical roster adapters are implemented. Derived Loom status passes 720p/1080p review; exported-pack content matches source; actual export boots. Map and M0-M2 are now implemented before C6; installer trust remains a separate release blocker. |
 | 7.1 | **Campus + M0-M2 — implemented source candidate** | 3072x1728 loop, six areas, wide validated bypasses, explicit Evade, no vault/crest, 50 ms slide protection/brake, contact wallrun/air-kick budget and local practice trace/echo. See docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md for evidence and limits; human balance/visual acceptance and concurrent activity isolation remain pending. |

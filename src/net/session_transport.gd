@@ -19,7 +19,7 @@ const MAX_PACKETS_PER_POLL: int = 64
 const MAX_QUEUED_INPUTS: int = MAX_REMOTE_CLIENTS * 4
 # Display names travel in every bounded snapshot; sixteen Unicode codepoints keep
 # the eight-player one-MTU envelope while remaining generous in the compact HUD.
-const MAX_PLAYER_NAME_LENGTH: int = 16
+const MAX_PLAYER_NAME_LENGTH: int = 15
 const CONNECT_TIMEOUT_MS: int = 5_000
 const RECONNECT_WINDOW_MS: int = 15_000
 const ADMIN_DISCONNECT_GRACE_MS: int = 250

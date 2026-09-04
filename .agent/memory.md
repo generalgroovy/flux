@@ -1,11 +1,34 @@
 # Active implementation memory
 
+## 2026-09-05 current checkpoint: complete first-eight spell matrix
+
+- Protocol 37 promotes a schema-4 row-major Spell Loom: Fire, Water, Earth,
+  Wind, Charge, Ice, Light and Dark rows each contain Bolt, Burst, Spray, Beam
+  and Field. All forty cells are globally configurable and Vector Lance remains
+  the explicit forty-first variant; every attack retains a positive Flux cost.
+- Twenty-five compact content extensions (wires 154-178) expand through four
+  validated family templates. Catalog validation rejects incomplete, duplicate,
+  cross-element or cross-family cells; simulation compiles all 41 spells through
+  the existing projectile/spray/beam/field authorities rather than bespoke code.
+- The Wellspring Loom fits all rows, columns, names and costs at 1280x720 with
+  drag/drop and keyboard/controller assignment intact. Reusable generated visual
+  profiles give every live spell an element-coded startup, silhouette, travel or
+  boundary, and impact path while retaining the 14 authored signature profiles.
+- Maximum player display names are 15 codepoints so the changed 12-slot default
+  weave remains within the one-MTU eight-player snapshot envelope.
+- Focused catalog/Loom/compiler/summary proof passed 4,647 assertions; all forty
+  cells released through their authoritative resolver; champion/Burst/snapshot
+  proof passed 1,325 assertions. The final Full gate passed 67 suites / 26,619
+  assertions plus source import and protocol-37 120 Hz boot in 36,699 ms with
+  zero failures/stderr; receipt `.godot/receipts/spell-matrix-full-v2.json`.
+  Truthful visual evidence: `.godot/visual-captures/spell-matrix-v1`.
+
 ## 2026-09-05 current source candidate: honest world + momentum-chain economy
 
 - Non-colliding campus decoration is withheld and collision-backed worldbone is
   fully opaque: all 14 visible buildings match authoritative collision; 91
   walk-through decorations and six collisionless landmarks no longer render.
-- Protocol 36 / snapshot 13 adds no packet-width regression: jump height,
+- Protocol 36 / snapshot 13 was the preceding movement checkpoint: jump height,
   movement-chain count/reset and action momentum are authoritative/predicted;
   bounded movement context shares one packed word and the maximum eight-player
   snapshot remains below the 1392-byte MTU.

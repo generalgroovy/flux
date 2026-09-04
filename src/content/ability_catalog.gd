@@ -2,7 +2,7 @@ class_name AbilityCatalog
 extends RefCounted
 
 
-const SUPPORTED_SCHEMA_VERSION: int = 3
+const SUPPORTED_SCHEMA_VERSION: int = 4
 const SLOT_KINDS: Array[String] = ["passive", "primary", "active", "mobility", "ultimate"]
 const SHAPES: Array[String] = ["passive", "projectile", "beam", "spray", "field", "defense", "movement", "ultimate"]
 const DELIVERIES: Array[String] = ["self", "aimed", "placed"]
@@ -12,7 +12,8 @@ const MATERIAL_OPERATIONS: Array[String] = ["none", "heat", "cool", "wet", "char
 const RUNTIME_STATUSES: Array[String] = ["playable", "catalog_only"]
 const CADENCE_TIER_IDS: Array[String] = ["pressure", "tempo", "control"]
 const MAX_PROJECTILE_PATTERN_LANES: int = 9
-const FIRST_EIGHT_ELEMENTS: Array[String] = ["earth", "fire", "water", "wind", "ice", "charge", "light", "dark"]
+const FIRST_EIGHT_ELEMENTS: Array[String] = ["fire", "water", "earth", "wind", "charge", "ice", "light", "dark"]
+const SPELL_MATRIX_FAMILIES: Array[String] = ["bolt", "burst", "spray", "beam", "field"]
 const BURST_ANGLES: Array[int] = [-24, -12, 0, 12, 24]
 
 var data: Dictionary = {}
@@ -23,6 +24,8 @@ var abilities_by_id: Dictionary = {}
 var ability_ids_by_wire: Dictionary = {}
 var economy: Dictionary = {}
 var runtime_wire_ids: Array[int] = []
+var spell_matrix_ids: Array[String] = []
+var spell_matrix_wire_ids: Array[int] = []
 
 
 func load_from_file(path: String) -> bool:
@@ -47,6 +50,8 @@ func validate() -> bool:
 	ability_ids_by_wire = {}
 	economy = {}
 	runtime_wire_ids = []
+	spell_matrix_ids = []
+	spell_matrix_wire_ids = []
 	if int(data.get("schema_version", 0)) != SUPPORTED_SCHEMA_VERSION:
 		return _fail("unsupported ability catalog schema")
 	if String(data.get("id", "")).is_empty():
@@ -96,7 +101,10 @@ func validate() -> bool:
 	if elements_by_id.size() != 12:
 		return _fail("the thematic catalog must declare exactly twelve element families")
 
-	for value: Variant in data.get("abilities", []):
+	var authored_abilities := _expanded_abilities()
+	if authored_abilities.is_empty():
+		return false
+	for value: Variant in authored_abilities:
 		if not value is Dictionary:
 			return _fail("every ability must be an object")
 		var ability: Dictionary = value
@@ -179,6 +187,8 @@ func validate() -> bool:
 		ability_ids_by_wire[wire_id] = ability_id
 	if abilities_by_id.is_empty():
 		return _fail("ability catalog must not be empty")
+	if not _validate_spell_matrix():
+		return false
 	if not _validate_runtime_wire_order():
 		return false
 	if not _validate_first_eight_bursts():
@@ -187,6 +197,99 @@ func validate() -> bool:
 	if content_hash.length() != 64:
 		return _fail("ability catalog hash failed")
 	return true
+
+
+func _expanded_abilities() -> Array:
+	var authored_value: Variant = data.get("abilities", [])
+	if not authored_value is Array:
+		_fail("ability catalog abilities must be an array")
+		return []
+	var result: Array = (authored_value as Array).duplicate(true)
+	var matrix_value: Variant = data.get("spell_matrix", {})
+	if not matrix_value is Dictionary:
+		_fail("spell matrix must be an object")
+		return []
+	var matrix: Dictionary = matrix_value
+	var templates_value: Variant = matrix.get("family_templates", {})
+	var operations_value: Variant = matrix.get("element_operations", {})
+	var extensions_value: Variant = matrix.get("extensions", [])
+	if not templates_value is Dictionary or not operations_value is Dictionary or not extensions_value is Array:
+		_fail("spell matrix templates, operations and extensions are required")
+		return []
+	var templates: Dictionary = templates_value
+	var operations: Dictionary = operations_value
+	for value: Variant in extensions_value:
+		if not value is Dictionary:
+			_fail("spell matrix extension must be an object")
+			return []
+		var extension: Dictionary = value
+		var family := String(extension.get("family", ""))
+		var element_id := String(extension.get("element", ""))
+		if family not in SPELL_MATRIX_FAMILIES or not templates.has(family):
+			_fail("spell matrix extension has no valid family template")
+			return []
+		if element_id not in FIRST_EIGHT_ELEMENTS or not operations.has(element_id):
+			_fail("spell matrix extension has no valid element operation")
+			return []
+		var template_value: Variant = templates[family]
+		if not template_value is Dictionary:
+			_fail("spell matrix family template must be an object: %s" % family)
+			return []
+		var ability: Dictionary = (template_value as Dictionary).duplicate(true)
+		for key: Variant in extension:
+			ability[key] = extension[key]
+		ability["material_operation"] = String(operations[element_id])
+		ability["material_runtime_enabled"] = false
+		ability["runtime_status"] = "playable"
+		ability["slot_kind"] = "active"
+		ability["authority"] = "simulation"
+		result.append(ability)
+	return result
+
+
+func _validate_spell_matrix() -> bool:
+	var matrix_value: Variant = data.get("spell_matrix", {})
+	if not matrix_value is Dictionary:
+		return _fail("spell matrix must be an object")
+	var matrix: Dictionary = matrix_value
+	if matrix.get("row_order", []) != FIRST_EIGHT_ELEMENTS:
+		return _fail("spell matrix rows must use the canonical first-eight element order")
+	if matrix.get("column_order", []) != SPELL_MATRIX_FAMILIES:
+		return _fail("spell matrix columns must use the canonical attack-family order")
+	var cells_value: Variant = matrix.get("cells", {})
+	if not cells_value is Dictionary:
+		return _fail("spell matrix cells must be an object")
+	var cells: Dictionary = cells_value
+	var claimed: Dictionary = {}
+	for element_id: String in FIRST_EIGHT_ELEMENTS:
+		var row_value: Variant = cells.get(element_id, [])
+		if not row_value is Array or (row_value as Array).size() != SPELL_MATRIX_FAMILIES.size():
+			return _fail("spell matrix row must contain every attack family: %s" % element_id)
+		var row: Array = row_value
+		for column: int in range(SPELL_MATRIX_FAMILIES.size()):
+			var ability_id := String(row[column])
+			if ability_id.is_empty() or claimed.has(ability_id) or not abilities_by_id.has(ability_id):
+				return _fail("spell matrix cell must name one unique known spell: %s/%s" % [element_id, SPELL_MATRIX_FAMILIES[column]])
+			var ability: Dictionary = abilities_by_id[ability_id]
+			if String(ability.get("runtime_status", "")) != "playable" \
+				or String(ability.get("element", "")) != element_id \
+				or _spell_family(ability) != SPELL_MATRIX_FAMILIES[column]:
+				return _fail("spell matrix cell contradicts its row or column: %s" % ability_id)
+			claimed[ability_id] = true
+			spell_matrix_ids.append(ability_id)
+			spell_matrix_wire_ids.append(int(ability.get("wire_id", 0)))
+	if claimed.size() != FIRST_EIGHT_ELEMENTS.size() * SPELL_MATRIX_FAMILIES.size():
+		return _fail("spell matrix must contain exactly forty unique cells")
+	return true
+
+
+static func _spell_family(ability: Dictionary) -> String:
+	if String(ability.get("delivery_kernel", "")) == "burst":
+		return "burst"
+	var declared := String(ability.get("family", ""))
+	if declared in SPELL_MATRIX_FAMILIES:
+		return declared
+	return "bolt" if String(ability.get("shape", "")) == "projectile" else String(ability.get("shape", ""))
 
 
 static func _valid_projectile_angles(value: Variant) -> bool:
@@ -275,6 +378,8 @@ func _validate_runtime_wire_order() -> bool:
 		runtime_wire_ids.append(wire_id)
 	if runtime_wire_ids.size() != playable_spell_ids().size():
 		return _fail("runtime wire order must contain every playable spell exactly once")
+	if runtime_wire_ids.slice(0, spell_matrix_wire_ids.size()) != spell_matrix_wire_ids:
+		return _fail("runtime wire order must begin with the row-major spell matrix")
 	return true
 
 
@@ -345,6 +450,13 @@ func playable_spell_ids() -> Array[String]:
 			result.append(ability_id)
 	result.sort()
 	return result
+
+
+func spell_id_at(element_id: String, family_id: String) -> String:
+	var row := FIRST_EIGHT_ELEMENTS.find(element_id)
+	var column := SPELL_MATRIX_FAMILIES.find(family_id)
+	var index := row * SPELL_MATRIX_FAMILIES.size() + column
+	return spell_matrix_ids[index] if row >= 0 and column >= 0 and index < spell_matrix_ids.size() else ""
 
 
 func _fail(message: String) -> bool:

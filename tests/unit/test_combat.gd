@@ -3,6 +3,7 @@ extends FluxTestSuite
 
 func run() -> int:
 	for tick_rate: int in [120]:
+		_test_complete_matrix_executes(tick_rate)
 		_test_semantic_spell_slots(tick_rate)
 		_test_positive_flux_primary(tick_rate)
 		_test_vector_lance_flux_and_hit(tick_rate)
@@ -19,6 +20,34 @@ func run() -> int:
 		_test_edgeweave(tick_rate)
 		_test_evasive_intangibility(tick_rate)
 	return finish("combat")
+
+
+func _test_complete_matrix_executes(tick_rate: int) -> void:
+	var catalog := AbilityCatalog.new()
+	check(catalog.load_from_file("res://content/abilities/foundation_abilities_v1.json"), "matrix execution catalog validates")
+	var event_by_shape := {
+		"projectile": "projectile_spawned",
+		"spray": "spray_fired",
+		"beam": "beam_fired",
+		"field": "field_spawned",
+	}
+	for wire_id: int in catalog.spell_matrix_wire_ids:
+		var ability := catalog.ability_from_wire(wire_id)
+		var shape := String(ability.get("shape", ""))
+		var world := SimWorld.new(tick_rate)
+		var caster: PlayerState = world.player()
+		check(caster.place_proven_spell(0, wire_id), "%s equips through the canonical weave" % ability.get("display_name", "spell"))
+		var initial_flux := caster.flux
+		check(_step(world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_1, 1000, 0)), "%s begins through semantic slot 1" % ability.get("display_name", "spell"))
+		equal(caster.flux, initial_flux - int(CombatTuning.cast_definition(wire_id).get("flux_cost", 0)), "%s pays its exact positive Flux cost" % ability.get("display_name", "spell"))
+		var expected_event := String(event_by_shape.get(shape, ""))
+		var released := false
+		for _release_tick: int in range(60):
+			check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000, 0)), "%s release tick remains deterministic" % ability.get("display_name", "spell"))
+			if world.combat_events.any(func(event: Dictionary) -> bool: return String(event.get("type", "")) == expected_event and int(event.get("source_wire_id", event.get("wire_id", 0))) == wire_id):
+				released = true
+				break
+		check(released, "%s releases through its %s resolver" % [ability.get("display_name", "spell"), shape])
 
 
 func _test_evasive_intangibility(tick_rate: int) -> void:
@@ -73,9 +102,10 @@ func _test_semantic_spell_slots(tick_rate: int) -> void:
 
 	var global_world := SimWorld.new(tick_rate)
 	var global_spell: PlayerState = global_world.player()
+	var global_wire := global_spell.spell_wire_id(4)
 	check(_step(global_world, SimCommand.new(0, 1, 0, 0, 0, SimCommand.PRESSED_SPELL_4, 1000, 0)), "%d Hz global non-kit spell command steps" % tick_rate)
-	equal(global_spell.pending_cast_wire_id, CombatTuning.TIDELINE_WIRE_ID, "%d Hz globally woven Tideline starts for the default Arc kit" % tick_rate)
-	equal(global_spell.flux, global_spell.flux_maximum - int(CombatTuning.cast_definition(CombatTuning.TIDELINE_WIRE_ID)["flux_cost"]), "%d Hz globally woven spell pays its canonical Flux cost" % tick_rate)
+	equal(global_spell.pending_cast_wire_id, global_wire, "%d Hz globally woven row-major spell starts for the default Arc kit" % tick_rate)
+	equal(global_spell.flux, global_spell.flux_maximum - int(CombatTuning.cast_definition(global_wire)["flux_cost"]), "%d Hz globally woven spell pays its canonical Flux cost" % tick_rate)
 
 	var empty_world := SimWorld.new(tick_rate)
 	var empty: PlayerState = empty_world.player()

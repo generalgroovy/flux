@@ -8,9 +8,9 @@ const EXPECTED_AUTHORITY := "presentation only; simulation owns spell membership
 const REQUIRED_IDS := ["rillshot", "cinderbolt", "cinder-fan", "stone-burst", "rill-burst", "gale-burst", "rime-burst", "arc-burst", "prism-burst", "eclipse-burst", "tideline", "rimewake", "eclipse-disc", "pocket-eclipse"]
 const BURST_IDS := ["stone-burst", "cinder-fan", "rill-burst", "gale-burst", "rime-burst", "arc-burst", "prism-burst", "eclipse-burst"]
 const STARTUPS := ["gathered_drop", "banked_coal", "elemental_burst", "rising_fan", "frost_sigil", "orbiting_crescents", "paired_focus"]
-const SILHOUETTES := ["droplet", "ember_spear", "burst_mote", "wave_fan", "crystal_wake", "eclipse_disc", "eclipse_beam"]
-const TRAILS := ["none", "split_rill", "cinder_forks", "burst_wake", "curling_lanes", "orbit_echo", "paired_boundary"]
-const IMPACTS := ["splash_ring", "ash_burst", "burst_break", "breaker_arc", "freeze_star", "crescent_break", "revealed_diamond"]
+const SILHOUETTES := ["droplet", "ember_spear", "burst_mote", "wave_fan", "crystal_wake", "eclipse_disc", "eclipse_beam", "elemental_bolt", "elemental_spray", "elemental_beam", "elemental_field"]
+const TRAILS := ["none", "split_rill", "cinder_forks", "burst_wake", "curling_lanes", "orbit_echo", "paired_boundary", "elemental_streak", "elemental_lanes", "elemental_boundary"]
+const IMPACTS := ["splash_ring", "ash_burst", "burst_break", "breaker_arc", "freeze_star", "crescent_break", "revealed_diamond", "elemental_break", "elemental_field_break"]
 
 var language: VisualLanguage
 var data: Dictionary = {}
@@ -53,8 +53,43 @@ func configure(visual_language: VisualLanguage, catalog: AbilityCatalog, path: S
 	if not validate(catalog):
 		data.clear()
 		return false
-	content_hash = source.sha256_text()
+	_add_inferred_profiles(catalog)
+	content_hash = CanonicalContent.sha256({"authored": data, "effective_profiles": profiles_by_id})
 	return true
+
+
+func _add_inferred_profiles(catalog: AbilityCatalog) -> void:
+	for wire_id: int in catalog.runtime_wire_ids:
+		if profiles_by_wire.has(wire_id):
+			continue
+		var ability := catalog.ability_from_wire(wire_id)
+		var family := String(ability.get("family", ""))
+		if family.is_empty():
+			family = "bolt" if String(ability.get("shape", "")) == "projectile" else String(ability.get("shape", ""))
+		var vocabulary: Dictionary = {
+			"bolt": ["projectile", "paired_focus", "elemental_bolt", "elemental_streak", "elemental_break"],
+			"spray": ["spray", "rising_fan", "elemental_spray", "elemental_lanes", "elemental_break"],
+			"beam": ["beam", "paired_focus", "elemental_beam", "elemental_boundary", "elemental_break"],
+			"field": ["field", "frost_sigil", "elemental_field", "none", "elemental_field_break"],
+		}
+		if not vocabulary.has(family):
+			continue
+		var values: Array = vocabulary[family]
+		var profile := {
+			"id": String(ability.get("id", "")),
+			"wire_id": wire_id,
+			"shape": String(values[0]),
+			"skeleton_id": String(values[0]),
+			"element": String(ability.get("element", "")),
+			"startup": String(values[1]),
+			"silhouette": String(values[2]),
+			"trail": String(values[3]),
+			"impact": String(values[4]),
+			"residue": String(ability.get("residue", "none")),
+			"generated_from_family": family,
+		}
+		profiles_by_id[profile["id"]] = profile
+		profiles_by_wire[wire_id] = profile
 
 
 func validate(catalog: AbilityCatalog) -> bool:
@@ -299,6 +334,15 @@ func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int,
 			canvas.draw_colored_polygon(mote, base)
 			canvas.draw_polyline(_closed(mote), bright, 2.0, false)
 			canvas.draw_circle(position, maxf(2.0, radius * 0.34), Color(bright, 0.90))
+		"elemental_bolt":
+			var wake_length := ProjectilePresentationMotion.trail_length(projectile, reduced_effects)
+			var tip := position + direction * (radius + 5.0)
+			var tail := position - direction * (radius + wake_length)
+			var bolt := PackedVector2Array([tip, position + side * radius, tail, position - side * radius])
+			canvas.draw_colored_polygon(bolt, Color(base, 0.94))
+			canvas.draw_polyline(_closed(bolt), bright, 2.0, false)
+			canvas.draw_line(position - direction * 3.0, tail, Color(dark, 0.62), 3.0)
+			_draw_element_mark(canvas, position, direction, element, maxf(3.0, radius * 0.42), bright)
 		_:
 			return false
 	canvas.draw_arc(position, radius, 0.0, TAU, 16, Color(bright, 0.58 if not reduced_effects else 0.70), 1.5)
@@ -310,19 +354,21 @@ func draw_field(canvas: CanvasItem, field: FieldState, life_ratio: float, tick: 
 	if canvas == null or field == null or not profiles_by_wire.has(field.source_wire_id):
 		return false
 	var profile: Dictionary = profiles_by_wire[field.source_wire_id]
-	if String(profile.get("silhouette", "")) != "crystal_wake":
+	if String(profile.get("silhouette", "")) not in ["crystal_wake", "elemental_field"]:
 		return false
 	var center := Vector2(float(field.position_x), float(field.position_y)) / SimConfig.FIXED_SCALE
 	var radius := float(field.radius) / SimConfig.FIXED_SCALE
-	var dark := language.element_color("ice", "dark")
-	var base := language.element_color("ice", "base")
-	var bright := language.element_color("ice", "bright")
+	var element := String(profile.get("element", "ice"))
+	var dark := language.element_color(element, "dark")
+	var base := language.element_color(element, "base")
+	var bright := language.element_color(element, "bright")
 	var breath := 0.0 if reduced_effects else sin(float(tick + field.entity_id) * 0.08) * 2.0
 	canvas.draw_circle(center, radius, Color(dark, 0.16 + life_ratio * 0.05))
 	canvas.draw_arc(center, radius + breath, 0.0, TAU, 32, Color(base, 0.72), 3.0)
 	canvas.draw_arc(center, radius * 0.72, 0.0, TAU, 24, Color(bright, 0.34), 1.0)
-	for index: int in range(6):
-		var direction := Vector2.from_angle(TAU * float(index) / 6.0)
+	var spoke_count := 6 if String(profile.get("silhouette", "")) == "crystal_wake" else 4
+	for index: int in range(spoke_count):
+		var direction := Vector2.from_angle(TAU * float(index) / float(spoke_count))
 		canvas.draw_line(center + direction * 14.0, center + direction * radius * 0.82, Color(bright, 0.52), 2.0)
 		var branch := center + direction * radius * 0.58
 		canvas.draw_line(branch, branch - direction.rotated(0.72) * 8.0, Color(base, 0.58), 2.0)
@@ -330,6 +376,7 @@ func draw_field(canvas: CanvasItem, field: FieldState, life_ratio: float, tick: 
 	for affected_index: int in range(mini(field.affected_entity_ids.size(), 8)):
 		var angle := TAU * float(affected_index) / 8.0
 		canvas.draw_rect(Rect2(center + Vector2.from_angle(angle) * radius * 0.90 - Vector2(2, 2), Vector2(4, 4)), bright, true)
+	_draw_element_mark(canvas, center, Vector2.UP, element, 7.0, bright)
 	return true
 
 
@@ -355,7 +402,7 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 		canvas.draw_line(position + Vector2(-7.0, -7.0), position + Vector2(7.0, 7.0), Color(bright, opacity * 0.88), 2.0)
 		canvas.draw_line(position + Vector2(-7.0, 7.0), position + Vector2(7.0, -7.0), Color(bright, opacity * 0.88), 2.0)
 		return true
-	if event_type == "beam_fired" and String(profile.get("silhouette", "")) == "eclipse_beam":
+	if event_type == "beam_fired" and String(profile.get("silhouette", "")) in ["eclipse_beam", "elemental_beam"]:
 			var lane := endpoint - start
 			var side := lane.normalized().orthogonal() if lane.length_squared() > 0.0 else Vector2.UP
 			canvas.draw_line(start, endpoint, Color(dark, opacity * 0.42), 14.0)
@@ -364,7 +411,7 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 			canvas.draw_line(start, endpoint, Color(bright, opacity * 0.92), 1.0)
 			_draw_diamond(canvas, endpoint, 10.0 + phase * 8.0, Color(bright, opacity), Color(dark, opacity * 0.28))
 			return true
-	if event_type == "spray_fired" and String(profile.get("silhouette", "")) == "wave_fan":
+	if event_type == "spray_fired" and String(profile.get("silhouette", "")) in ["wave_fan", "elemental_spray"]:
 			var lane := endpoint - start
 			if lane.length_squared() <= 0.0:
 				return true
@@ -379,7 +426,7 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 				canvas.draw_polyline(PackedVector2Array([start, midpoint, target]), Color(bright if absf(offset) < 0.1 else base, opacity * (0.78 if absf(offset) < 0.1 else 0.42)), 2.0 if not reduced_effects else 1.0, false)
 			canvas.draw_arc(start, minf(90.0, lane.length() * 0.34), lane.angle() - 0.43, lane.angle() + 0.43, 18, Color(bright, opacity * 0.82), 3.0)
 			return true
-	if event_type == "field_triggered" and String(profile.get("impact", "")) == "freeze_star":
+	if event_type == "field_triggered" and String(profile.get("impact", "")) in ["freeze_star", "elemental_field_break"]:
 		for index: int in range(6):
 			var direction := Vector2.from_angle(TAU * float(index) / 6.0)
 			canvas.draw_line(position, position + direction * (12.0 + phase * 20.0), Color(bright, opacity), 2.0)
@@ -414,6 +461,36 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 			canvas.draw_arc(position, 9.0 + phase * 20.0, 0.7, 3.84, 18, Color(bright, opacity * 0.72), 2.0)
 		return true
 	return false
+
+
+static func _draw_element_mark(canvas: CanvasItem, center: Vector2, direction: Vector2, element: String, radius: float, color: Color) -> void:
+	var side := direction.orthogonal()
+	match element:
+		"fire":
+			canvas.draw_polyline(_closed(PackedVector2Array([center + direction * radius, center + side * radius * 0.72, center - direction * radius, center - side * radius * 0.72])), color, 1.5, false)
+		"water":
+			canvas.draw_arc(center, radius, 0.0, TAU, 10, color, 1.5)
+		"earth":
+			canvas.draw_rect(Rect2(center - Vector2.ONE * radius * 0.68, Vector2.ONE * radius * 1.36), color, false, 1.5)
+		"wind":
+			canvas.draw_arc(center, radius, -2.6, 0.45, 9, color, 1.5)
+		"charge":
+			canvas.draw_polyline(PackedVector2Array([center - side * radius, center + direction * radius * 0.25, center - direction * radius * 0.15, center + side * radius]), color, 1.5, false)
+		"ice":
+			canvas.draw_line(center - direction * radius, center + direction * radius, color, 1.5)
+			canvas.draw_line(center - side * radius, center + side * radius, color, 1.5)
+		"light":
+			canvas.draw_line(center - direction * radius, center + direction * radius, color, 1.5)
+			canvas.draw_line(center - side * radius, center + side * radius, color, 1.5)
+			draw_circle_safe(canvas, center, radius * 0.32, color)
+		"dark":
+			canvas.draw_arc(center + side * radius * 0.18, radius, -2.35, 0.80, 10, color, 1.5)
+		_:
+			draw_circle_safe(canvas, center, radius * 0.42, color)
+
+
+static func draw_circle_safe(canvas: CanvasItem, center: Vector2, radius: float, color: Color) -> void:
+	canvas.draw_circle(center, radius, color)
 
 
 static func _draw_diamond(canvas: CanvasItem, center: Vector2, radius: float, outline: Color, fill: Color) -> void:

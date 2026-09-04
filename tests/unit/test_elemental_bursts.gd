@@ -20,7 +20,7 @@ func _catalog() -> AbilityCatalog:
 
 func _test_shared_first_eight_contract() -> void:
 	var catalog := _catalog()
-	var expected_ids := ["stone-burst", "cinder-fan", "rill-burst", "gale-burst", "rime-burst", "arc-burst", "prism-burst", "eclipse-burst"]
+	var expected_ids := ["cinder-fan", "rill-burst", "stone-burst", "gale-burst", "arc-burst", "rime-burst", "prism-burst", "eclipse-burst"]
 	equal(CombatTuning.ELEMENTAL_BURST_WIRE_IDS.size(), 8, "first-eight Burst library has exactly eight stable wires")
 	for index: int in range(AbilityCatalog.FIRST_EIGHT_ELEMENTS.size()):
 		var element_id := AbilityCatalog.FIRST_EIGHT_ELEMENTS[index]
@@ -29,7 +29,7 @@ func _test_shared_first_eight_contract() -> void:
 		var definition := CombatTuning.cast_definition(wire_id)
 		equal(int(ability.get("wire_id", 0)), wire_id, "%s Burst content and compiled wire agree" % element_id)
 		equal(String(ability.get("element", "")), element_id, "%s Burst owns the expected payload identity" % element_id)
-		equal(int(definition.get("element_wire_id", 0)), index + 1, "%s Burst owns the expected element wire" % element_id)
+		equal(int(definition.get("element_wire_id", 0)), int((catalog.elements_by_id[element_id] as Dictionary).get("wire_id", 0)), "%s Burst owns the expected element wire" % element_id)
 		equal(String(definition.get("delivery_kernel", "")), "burst", "%s Burst resolves through the shared kernel" % element_id)
 		equal(definition.get("projectile_angles_degrees", []), CombatTuning.cast_definition(CombatTuning.CINDERFAN_WIRE_ID)["projectile_angles_degrees"], "%s Burst keeps the common five-lane angles" % element_id)
 		equal(int(definition.get("damage", 0)), int(CombatTuning.cast_definition(CombatTuning.CINDERFAN_WIRE_ID)["damage"]), "%s gains no hidden elemental damage advantage" % element_id)

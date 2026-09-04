@@ -3,17 +3,20 @@ extends RefCounted
 
 
 const LIBRARY_CAPACITY: int = SessionTransport.MAX_SPELL_LIBRARY_SIZE
-const VISIBLE_SPELL_COUNT: int = 16
-const PANEL_RECT := Rect2(42, 38, 1196, 644)
-const GRID_X: float = 72.0
-const GRID_Y: float = 178.0
-const GRID_CELL_WIDTH: float = 132.0
-const GRID_CELL_HEIGHT: float = 92.0
-const SPELL_PICKER_X: float = 636.0
-const SPELL_PICKER_WIDTH: float = 138.0
-const SPELL_PICKER_HEIGHT: float = 70.0
-const ASSIGN_RECT := Rect2(980, 590, 214, 40)
-const CLOSE_RECT := Rect2(1178, 54, 38, 34)
+const VISIBLE_SPELL_COUNT: int = 48
+const PANEL_RECT := Rect2(24, 20, 1232, 680)
+const GRID_X: float = 48.0
+const GRID_Y: float = 154.0
+const GRID_CELL_WIDTH: float = 142.0
+const GRID_CELL_HEIGHT: float = 86.0
+const MATRIX_LABEL_X: float = 644.0
+const SPELL_PICKER_X: float = 710.0
+const SPELL_PICKER_WIDTH: float = 104.0
+const SPELL_PICKER_HEIGHT: float = 43.0
+const MATRIX_CELL_COUNT: int = 40
+const MATRIX_COLUMNS: int = 5
+const ASSIGN_RECT := Rect2(1018, 624, 210, 38)
+const CLOSE_RECT := Rect2(1200, 34, 34, 32)
 
 var is_open: bool = false
 var selected_slot_index: int = 0
@@ -63,8 +66,13 @@ static func slot_rect(index: int) -> Rect2:
 
 
 func spell_rect(index: int) -> Rect2:
-	var offset := visible_spell_indices().find(index)
-	return Rect2(SPELL_PICKER_X + (offset % 4) * SPELL_PICKER_WIDTH, GRID_Y + (offset / 4) * SPELL_PICKER_HEIGHT, SPELL_PICKER_WIDTH - 8, SPELL_PICKER_HEIGHT - 8)
+	if index < 0:
+		return Rect2()
+	var row := index / MATRIX_COLUMNS
+	var column := index % MATRIX_COLUMNS
+	if index >= MATRIX_CELL_COUNT:
+		row += 1
+	return Rect2(SPELL_PICKER_X + column * SPELL_PICKER_WIDTH, GRID_Y + row * SPELL_PICKER_HEIGHT, SPELL_PICKER_WIDTH - 6, SPELL_PICKER_HEIGHT - 5)
 
 
 static func slot_at(position: Vector2) -> int:
@@ -137,10 +145,7 @@ func configure_for_catalog(catalog: AbilityCatalog) -> void:
 
 func visible_spell_indices() -> PackedInt32Array:
 	var result := PackedInt32Array()
-	var count := mini(VISIBLE_SPELL_COUNT, available_wire_ids.size())
-	var start := (selected_spell_index / VISIBLE_SPELL_COUNT) * VISIBLE_SPELL_COUNT
-	count = mini(count, available_wire_ids.size() - start)
-	for index: int in range(start, start + count):
+	for index: int in range(mini(VISIBLE_SPELL_COUNT, available_wire_ids.size())):
 		result.append(index)
 	return result
 

@@ -12,7 +12,7 @@ physical places rather than a detached menu.
 ![Wellspring gameplay target](assets/concept/wellspring-gameplay-specimen-v3.png)
 
 > **Current playable state:** Windows is the active release target. Five distinct champions,
-> Grace Riva (Wind/Water/Light) and Wa Bidi (Charge/Wind/Fire), the full movement foundation, sixteen playable foundation spells, the
+> including Grace Riva (Wind/Water/Light) and Wa Bidi (Charge/Wind/Fire), the full movement foundation, 41 playable foundation spells, the
 > Wellspring campus, an authoritative 2–8 player direct-IP Farflow loop, and a
 > packaged one-file Windows player app are working. Comparable bursts for all
 > eight first-phase elements and the strict, symmetric 36-reaction definition
@@ -23,7 +23,7 @@ physical places rather than a detached menu.
 held Slide buys a longer lane, earned planar speed survives legal movement
 conversions, and airborne wallrun/air-dodge chains are live. Successive movement
 actions cost 10% more up to 40% and reset after 333 ms; every champion has more
-Stamina and every attack remains paid despite lower Flux costs. Protocol 36 and
+Stamina and every attack remains paid despite lower Flux costs. Protocol 37 and
 snapshot schema 13 carry the same state through Farflow. See the
 [quality expansion ledger](docs/QUALITY-EXPANSION-ACCEPTANCE.md).
 
@@ -41,7 +41,7 @@ from the earlier artwork. See the [visual acceptance ledger](docs/VISUAL-REFINEM
 Run `.\flux.cmd play` for this source revision. Existing Windows exports predate
 these changes and must be rebuilt before sharing; do not mix old packages and
 new-source hosts. The [map/movement ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md)
-records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current momentum-chain movement uses protocol 36.
+records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current momentum-chain movement uses protocol 37.
 
 ![Current five-champion motion contact sheet](assets/concept/five-champion-motion-reference-v1.png)
 
@@ -69,7 +69,7 @@ Current counts deliberately distinguish authored inventory from promoted play:
 
 | Dimension | Authoritative current meaning |
 |---|---|
-| Abilities | 21 validated authored records; 16 have runtime wire IDs and are globally weaveable, while five passive/gated kit records are not selectable spells |
+| Abilities | 46 validated effective records; 41 have runtime wire IDs: a complete row-major 8-element × 5-family Loom plus Vector Lance; five passive/gated kit records are not selectable spells |
 | Chemistry | 36 symmetric definitions compile and hash; `runtime_enabled` remains false until bounded exposure/contact, execution and reset pass |
 | Champions | 5 playable entries; 24 identities in the non-selectable roster/affinity plan |
 | Bodies | 3 authored gameplay roles: small, middle and large; five-size paths are legacy source/archive adapters only |
@@ -144,7 +144,7 @@ direct-IP internet builds only with trusted friends.
 | Lifecycle | Source launch, portable archives, checksums, one-file Windows install/update/run | Signed releases, clean uninstall UI, public update channel |
 | Wellspring | Nine districts, walk-up stations, practice actors, movement routes | Stronger authored landmarks and compact onboarding |
 | Movement | Full universal foundation at deterministic 120 Hz; normalized eight-way commands, active directional air control/facing, alternating gait contacts, native eight-way jump/slide/roll art, relative gait, and directional evasion cues | Measure response/braking/reversal/chains during chemistry, then tune the existing grammar from the packaged playtest before adding techniques |
-| Combat | Sixteen runtime spells cover projectile, five-shot burst, beam, spray, field, ricochet, launch and slow; one validated catalog exclusively owns their economy, timing, geometry, damage, control and Loom order; all eight elemental Bursts share exact geometry/economy while retaining distinct art and chemistry payloads | Keep the Burst baseline fixed while chemistry supplies the first systemic differences |
+| Combat | Forty row-major matrix spells cover Bolt, Burst, Spray, Beam and Field for every first-eight element; Vector Lance remains a proven extra variant; one validated catalog owns economy, timing, geometry, damage, control, Loom order and reusable presentation | Finish visual-family acceptance, then let chemistry supply systemic differences without dual-element attacks |
 | Chemistry | Material grid, eight element-bearing Bursts, and 36 compiled symmetric recipes mapped to nine bounded spatial primitives and seven integer channels; mutation is off | Bounded exposure/contact, shared effect execution, lifecycle/presentation, reset, replay and Farflow proof |
 | Champions | Five playable: Oh Tipi, S. Wayne, Red Baron, Grace Riva, Wa Bidi | Refine motion contacts and verify visual readability before more roster expansion |
 | Farflow | Host-authoritative 2/4/8-player loop with contextual zero-config LAN discovery and direct-IP internet joining | Physical two-PC LAN/internet proof, then per-peer LOS filtering; measured 32-player work remains deferred |
@@ -259,35 +259,33 @@ distinct use, readable transition, deterministic test and counterplay.
 | Spell weave | Twelve configurable positions over four buttons and three modifier layers |
 | Authority | Startup, collision, cost, cooldown, damage, reaction, score, and reset are simulation/host owned |
 
-| Delivery family | Player decision | Required read |
+| Current delivery family | Player decision | Required read |
 |---|---|---|
 | Bolt/projectile | Lead, weave, clash, ricochet, use cover | Origin, direction, radius, owner, element, impact |
 | Burst/fan | Occupy several lanes or leave a deliberate gap | Ordered fan angles and common timing |
 | Beam/ray | Hold or sweep a lane | Startup line, obstruction, active time, recovery |
 | Spray/cone | Commit close or displace a flank | Facing, boundary, count, escape edge |
-| Wave/arc | Shape a broad moving front | Curvature, travel direction, expiry |
-| Orb/orbit | Delay, zone, intercept | Owner, orbit rule, release tell |
 | Field/volume | Deny, reveal, slow, prime terrain | Exact boundary, delay, duration, counter |
-| Construct/tether | Change cover or sustain a relation | Health/support, sever rule, cleanup |
 
-| Playable spell | Element · shape | Foundation owner / decision |
-|---|---|---|
-| Rillshot | Water · projectile | Oh Tipi; quick flowing pressure |
-| Tideline | Water · spray | Oh Tipi; close fan displacement |
-| Rimewake | Ice · field | Oh Tipi / Red Baron; visible pursuit break |
-| Eclipse Disc | Dark · ricochet projectile | S. Wayne; one readable rebound |
-| Pocket Eclipse | Light · beam | S. Wayne; committed line control |
-| Cinderbolt | Fire · projectile | Red Baron; measured lane pressure |
-| Cinder Fan | Fire · five-shot fan | Red Baron; ordered lane pressure with deliberate gaps |
-| Stone Burst | Earth · five-shot burst | Global comparison spell; structure/fracture payload |
-| Rill Burst | Water · five-shot burst | Global comparison spell; flow/wetness payload |
-| Gale Burst | Wind · five-shot burst | Global comparison spell; pressure/redirection payload |
-| Rime Burst | Ice · five-shot burst | Global comparison spell; cold/friction payload |
-| Arc Burst | Charge · five-shot burst | Global comparison spell; conduction payload |
-| Prism Burst | Light · five-shot burst | Global comparison spell; reveal/refraction payload |
-| Eclipse Burst | Dark · five-shot burst | Global comparison spell; decay/concealment payload |
-| Arc Primary | Charge · projectile | Global proven spell |
-| Vector Lance | Charge · projectile | Global proven active |
+The Spell Loom presents the complete current catalog in the same row-major grid
+used by validation, simulation and networking. Every cell is single-element,
+globally configurable, positively priced, and executable through one of five
+shared attack-family resolvers.
+
+| Element | Bolt | Burst | Spray | Beam | Field |
+|---|---|---|---|---|---|
+| Fire | Cinderbolt | Cinder Fan | Ember Sweep | Cinderline | Hearthring |
+| Water | Rillshot | Rill Burst | Tideline | Undertow Line | Springwell |
+| Earth | Flintshot | Stone Burst | Shard Gale | Faultline | Stonehold |
+| Wind | Gale Needle | Gale Burst | Squall | Pressure Line | Updraft |
+| Charge | Arc Primary | Arc Burst | Spark Shower | Voltline | Static Snare |
+| Ice | Rimeshard | Rime Burst | Sleet | Frostline | Rimewake |
+| Light | Dawn Needle | Prism Burst | Radiant Veil | Pocket Eclipse | Halo Ground |
+| Dark | Eclipse Disc | Eclipse Burst | Gloam Breath | Nightline | Umbral Pool |
+
+Vector Lance remains a globally configurable Charge Bolt variant outside the
+comparison grid. Wave, orbit, construct and tether families remain planned,
+not selectable claims.
 
 The first-eight bullet-pattern baseline is playable: each element emits five projectiles at
 `-24°, -12°, 0°, +12°, +24°`, ordered negative-to-positive for deterministic
@@ -472,7 +470,7 @@ default in gameplay while the Wellspring does not force limited information.
 | Capacity | Public cap 8; charters provide 2/4/8; later 32 only after measured architecture gate |
 | Transport | Godot ENet over UDP 24872, direct IP |
 | Authority | Host owns movement validation, resources, casts, hits, cooldowns, stations, roster, score, reset |
-| Compatibility | Protocol 36, snapshot 13, tick/tuning/map/content hashes |
+| Compatibility | Protocol 37, snapshot 13, tick/tuning/map/content hashes |
 | Client feel | Local movement prediction and bounded reconciliation; combat stays authoritative |
 | Join in progress | Observer until next gathering, then normal Hearth readiness |
 | Disconnect | 15-second in-memory exact-actor reservation and capability rotation |
@@ -729,11 +727,11 @@ cannot accept a filter and therefore cannot silently become partial. Use
 ignored, hash-bearing JSON receipt under `.godot/receipts/` containing only the
 steps and suites that actually ran.
 
-The Spell Loom displays the full sixteen-spell catalog next to twelve slots.
+The Spell Loom displays the full 8×5 element/family matrix and Vector Lance next to twelve slots.
 Drag from the catalog or another slot; click both selections then Assign, or use
 the keyboard/controller. Equipped spells swap without resetting cooldowns.
 The diagnostics (not the player-facing setup panel) retain the loaded counts:
-16 selectable spells, 12 positions, 3 playable champions and 36 sealed recipes.
+41 selectable spells, 12 positions, 5 playable champions and 36 sealed recipes.
 `scripts/runtime-state.ps1` emits the same validated runtime content summary;
 with `-PackPath <file.pck>` it executes the exported payload from its own
 directory, without checkout fallback. Windows packaging includes that result

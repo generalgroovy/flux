@@ -121,8 +121,8 @@ Add-FluxIssue ($simulationHz -eq 120) "Simulation rate is $simulationHz Hz; curr
 Add-FluxIssue ($projectPhysicsHz -eq $simulationHz) "Project physics rate $projectPhysicsHz disagrees with simulation rate $simulationHz"
 Add-FluxIssue ($projectMaximumFps -eq 120) "Project frame cap is $projectMaximumFps; current Windows target requires 120"
 Add-FluxIssue ($projectText -match 'simulation/supported_tick_rates=PackedInt32Array\(120\)') 'Project exposes a gameplay tick rate other than the single supported 120 Hz cadence'
-Add-FluxIssue ($protocolVersion -eq 35) "Protocol is $protocolVersion; current documentation requires 35"
-Add-FluxIssue ($snapshotSchema -eq 12) "Snapshot schema is $snapshotSchema; current documentation requires 12"
+Add-FluxIssue ($protocolVersion -eq 36) "Protocol is $protocolVersion; current documentation requires 36"
+Add-FluxIssue ($snapshotSchema -eq 13) "Snapshot schema is $snapshotSchema; current documentation requires 13"
 Add-FluxIssue ($preferencesSchema -eq 10) "Preferences schema is $preferencesSchema; current documentation requires 10"
 Add-FluxIssue ($snapshotHz -eq 60) "Transport snapshot cadence is $snapshotHz Hz; current contract requires 60 Hz"
 Add-FluxIssue ($presentationBaseHz -eq 60) "Presentation sample base is $presentationBaseHz Hz; current contract requires 60"

@@ -15,6 +15,7 @@ const PRESENTED_MODES: Array[int] = [
 func run() -> int:
 	_test_ground_and_arc_contract()
 	_test_reduced_motion_equivalent()
+	_test_paid_height_range()
 	_test_supported_movement_modes()
 	_test_120hz_phase_integrity()
 	_test_sampler_does_not_mutate_authority()
@@ -57,6 +58,19 @@ func _test_reduced_motion_equivalent() -> void:
 	equal(reduced.body_lift_pixels, JumpPresentation.REDUCED_MAXIMUM_LIFT_PIXELS, "reduced apex uses bounded lift")
 	check(reduced.shadow_scale.x > JumpPresentation.GROUND_SHADOW_SCALE.x, "reduced-motion shadow still broadens")
 	check(reduced.shadow_opacity > JumpPresentation.GROUND_SHADOW_OPACITY, "reduced-motion shadow still darkens")
+
+
+func _test_paid_height_range() -> void:
+	var config := SimConfig.new(120)
+	var state := PlayerState.new()
+	state.hop_mode = PlayerState.MovementMode.HOP
+	state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS) / 2
+	var tap_apex := JumpPresentation.sample(state, config)
+	equal(tap_apex.body_lift_pixels, JumpPresentation.NORMAL_MINIMUM_LIFT_PIXELS, "tap jump keeps the compact readable apex")
+	state.jump_sustain_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS - MovementTuning.VARIABLE_JUMP_MINIMUM_MS)
+	var held_apex := JumpPresentation.sample(state, config)
+	equal(held_apex.body_lift_pixels, JumpPresentation.NORMAL_MAXIMUM_LIFT_PIXELS, "fully sustained jump reaches the much higher apex")
+	check(held_apex.body_lift_pixels > tap_apex.body_lift_pixels, "paid sustain increases height, not only airtime")
 
 
 func _test_supported_movement_modes() -> void:
@@ -104,6 +118,7 @@ func _sample_at_phase(tick_rate: int, mode: int, phase: float, reduced_motion: b
 		PlayerState.MovementMode.HOP, PlayerState.MovementMode.WALL_KICK, PlayerState.MovementMode.DOUBLE_JUMP, PlayerState.MovementMode.SLIDE_JUMP:
 			state.hop_mode = mode
 			state.hop_ticks = remaining_ticks
+			state.jump_sustain_ticks = config.milliseconds_to_ticks(maxi(1, duration_ms - MovementTuning.VARIABLE_JUMP_MINIMUM_MS))
 		PlayerState.MovementMode.AIR_DODGE:
 			state.air_dodge_ticks = remaining_ticks
 		PlayerState.MovementMode.VAULT:

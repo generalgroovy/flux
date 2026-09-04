@@ -299,7 +299,7 @@ func _validate_first_eight_bursts() -> bool:
 			or bool(ability.get("material_runtime_enabled", true)):
 			return _fail("first-eight Burst delivery contract drifted: %s" % ability_id)
 		for field: String in ["points", "affinity_discount", "flux_cost", "cooldown_ms", "startup_ms", "recovery_ms"]:
-			var expected: int = int({"points": 5, "affinity_discount": 1, "flux_cost": 20, "cooldown_ms": 900, "startup_ms": 150, "recovery_ms": 160}[field])
+			var expected: int = int({"points": 5, "affinity_discount": 1, "flux_cost": 16, "cooldown_ms": 900, "startup_ms": 150, "recovery_ms": 160}[field])
 			if int(ability.get(field, -1)) != expected:
 				return _fail("first-eight Burst economy must remain comparable: %s/%s" % [ability_id, field])
 		var angles: Array[int] = []

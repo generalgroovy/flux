@@ -19,9 +19,9 @@ func run() -> int:
 	var movement: Array = catalog.shared_rules.get("universal_movement", [])
 	for action_id: String in ["jump", "slide", "roll", "air_dodge", "wave_dash", "wall_kick"]:
 		check(movement.has(action_id), "%s remains available to every size" % action_id)
-	check(catalog.accepts("small", {"health_maximum": 90000, "health_recovery_per_second": 2200, "flux_maximum": 112000, "flux_recovery_per_second": 23000, "stamina_maximum": 96000, "stamina_recovery_per_second": 28000, "movement_speed_ratio": 1060}), "S. Wayne fits the small skirmisher envelope")
-	check(catalog.accepts("middle", {"health_maximum": 108000, "health_recovery_per_second": 1800, "flux_maximum": 104000, "flux_recovery_per_second": 19000, "stamina_maximum": 108000, "stamina_recovery_per_second": 30000, "movement_speed_ratio": 980}), "Oh Tipi fits the middle adapter envelope")
-	check(catalog.accepts("large", {"health_maximum": 132000, "health_recovery_per_second": 1200, "flux_maximum": 96000, "flux_recovery_per_second": 17000, "stamina_maximum": 128000, "stamina_recovery_per_second": 32000, "movement_speed_ratio": 910}), "The Red Baron fits the large anchor envelope")
+	check(catalog.accepts("small", {"health_maximum": 90000, "health_recovery_per_second": 2200, "flux_maximum": 112000, "flux_recovery_per_second": 23000, "stamina_maximum": 108000, "stamina_recovery_per_second": 28000, "movement_speed_ratio": 1060}), "S. Wayne fits the small skirmisher envelope")
+	check(catalog.accepts("middle", {"health_maximum": 108000, "health_recovery_per_second": 1800, "flux_maximum": 104000, "flux_recovery_per_second": 19000, "stamina_maximum": 120000, "stamina_recovery_per_second": 30000, "movement_speed_ratio": 980}), "Oh Tipi fits the middle adapter envelope")
+	check(catalog.accepts("large", {"health_maximum": 132000, "health_recovery_per_second": 1200, "flux_maximum": 96000, "flux_recovery_per_second": 17000, "stamina_maximum": 144000, "stamina_recovery_per_second": 32000, "movement_speed_ratio": 910}), "The Red Baron fits the large anchor envelope")
 	var invalid := catalog.data.duplicate(true)
 	((invalid["profiles"] as Dictionary)["large"] as Dictionary)["role"] = ""
 	var rejected := BodyTypeProfileCatalog.new()

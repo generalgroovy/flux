@@ -5,6 +5,7 @@ func run() -> int:
 	_test_eight_way_windows_and_brake()
 	_test_air_wall_budget()
 	_test_explicit_intents_and_attachment()
+	_test_airborne_wallrun_chain()
 	_test_snapshot_and_surface_seam()
 	_test_controls_migration_and_landing_buffer()
 	return finish("movement-revision")
@@ -107,6 +108,25 @@ func _test_explicit_intents_and_attachment() -> void:
 	MovementSystem.step(state, SimCommand.new(0, 1, -1000, 0, 0, SimCommand.PRESSED_EVADE | SimCommand.PRESSED_SLIDE | SimCommand.PRESSED_TECHNIQUE), config, arena)
 	check(state.is_rolling() and state.slide_ticks == 0 and state.wall_skim_ticks == 0, "simultaneous intents have one explicit evasion owner")
 	equal(state.stamina, state.stamina_maximum - MovementTuning.ROLL_COST, "simultaneous intents cannot double-charge hidden actions")
+
+
+func _test_airborne_wallrun_chain() -> void:
+	var config := SimConfig.new(120)
+	var arena := CollisionWorld.new(4_000_000, 4_000_000)
+	arena.add_obstacle(CollisionWorld.Obstacle.new(9, 2_020_000, 1_800_000, 2_048_000, 2_200_000))
+	var state := _state()
+	state.position_x = 2_002_000
+	MovementSystem.step(state, SimCommand.new(0, 1, 0, 1000, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP), config, arena)
+	state.wall_contact_id = 9
+	state.wall_memory_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_MEMORY_MS)
+	state.wall_x = -1000
+	MovementSystem.step(state, SimCommand.new(1, 1, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE), config, arena)
+	equal(state.last_event, "wall_skim", "airborne wall contact can chain into wallrun before air redirect")
+	check(state.wall_skim_ticks > 0 and state.hop_ticks == 0, "wallrun cleanly owns the airborne transition")
+	equal(state.movement_chain_count, 2, "jump-to-wallrun is charged as a two-action chain")
+	MovementSystem.step(state, SimCommand.new(2, 1, 0, 1000, 0, SimCommand.PRESSED_EVADE), config, arena)
+	equal(state.last_event, "air_dodge", "wallrun can chain directly into the universal air dodge")
+	check(state.air_dodge_ticks > 0 and state.wall_skim_ticks == 0, "air dodge cleanly owns the wallrun exit")
 
 
 func _test_controls_migration_and_landing_buffer() -> void:

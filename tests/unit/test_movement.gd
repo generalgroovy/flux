@@ -14,6 +14,7 @@ func run() -> int:
 		_test_action_buffers(tick_rate)
 		_test_variable_jump_and_fast_fall(tick_rate)
 		_test_paid_jump_and_slide_sustain(tick_rate)
+		_test_movement_chain_economy_and_momentum(tick_rate)
 		_test_air_dodge_and_wavedash(tick_rate)
 		_test_ground_roll_and_evasion_windows(tick_rate)
 		_test_wall_contact_and_wall_kick(tick_rate)
@@ -109,7 +110,7 @@ func _test_directional_hop_control(tick_rate: int) -> void:
 	var prior_speed := Vector2(state.velocity_x, state.velocity_y).length()
 	_step(world, 0, 0, SimCommand.HELD_JUMP)
 	equal(Vector2i(state.hop_x, state.hop_y), retained_direction, "%d Hz releasing direction retains the last facing reference" % tick_rate)
-	check(Vector2(state.velocity_x, state.velocity_y).length() < prior_speed, "%d Hz releasing direction brakes in air" % tick_rate)
+	check(is_equal_approx(Vector2(state.velocity_x, state.velocity_y).length(), prior_speed), "%d Hz releasing direction preserves earned air speed" % tick_rate)
 	var facing_world := SimWorld.new(tick_rate)
 	var facing_state: PlayerState = facing_world.player()
 	_step(facing_world, 1000, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
@@ -138,12 +139,13 @@ func _test_vertical_jump_live_control(tick_rate: int) -> void:
 		for _tick: int in range(7):
 			_step(world, -input.x, -input.y, SimCommand.HELD_JUMP)
 		check(state.velocity_x * input.x + state.velocity_y * input.y < 0, "air input reverses without a paid technique")
+		var retained_velocity := Vector2i(state.velocity_x, state.velocity_y)
 		for _tick: int in range(7):
 			_step(world, 0, 0, SimCommand.HELD_JUMP)
-		equal(Vector2i(state.velocity_x, state.velocity_y), Vector2i.ZERO, "releasing direction settles without forced glide")
-		var before_double := Vector2i(state.position_x, state.position_y)
+		equal(Vector2i(state.velocity_x, state.velocity_y), retained_velocity, "releasing direction preserves earned momentum without adding thrust")
+		var before_double_velocity := Vector2i(state.velocity_x, state.velocity_y)
 		_step(world, 0, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
-		equal(Vector2i(state.position_x, state.position_y), before_double, "neutral double jump adds no horizontal impulse")
+		equal(Vector2i(state.velocity_x, state.velocity_y), before_double_velocity, "neutral double jump retains momentum without adding horizontal impulse")
 
 
 func _test_air_control_tick_rate_parity() -> void:
@@ -164,7 +166,7 @@ func _test_double_jump(tick_rate: int) -> void:
 	var after_hop: int = state.stamina
 	_step(world, 0, -1000, 0, SimCommand.PRESSED_JUMP)
 	equal(state.last_event, "double_jump", "%d Hz second edge triggers double jump" % tick_rate)
-	equal(state.stamina, after_hop - MovementTuning.DOUBLE_JUMP_COST, "%d Hz double jump Stamina cost is exact" % tick_rate)
+	equal(state.stamina, after_hop - MovementTuning.DOUBLE_JUMP_COST * 1100 / 1000, "%d Hz second chained movement pays the explicit ten-percent continuation premium" % tick_rate)
 	equal(state.hop_stage, 2, "%d Hz double jump is bounded to stage two" % tick_rate)
 	var after_double: int = state.stamina
 	_step(world, -1000, 0, 0, SimCommand.PRESSED_JUMP)
@@ -385,6 +387,37 @@ func _test_paid_jump_and_slide_sustain(tick_rate: int) -> void:
 	_step(exhausted_slide, 1000, 0, SimCommand.HELD_SLIDE, SimCommand.PRESSED_SLIDE)
 	equal(exhausted_slide.player().last_event, "slide_sustain_empty", "a partial tick of Stamina cannot buy a full slide-sustain tick")
 	equal(exhausted_slide.player().slide_ticks, exhausted_slide.config.milliseconds_to_ticks(MovementTuning.SLIDE_MINIMUM_MS), "exhausted slide retains its guaranteed tap duration")
+
+
+func _test_movement_chain_economy_and_momentum(tick_rate: int) -> void:
+	var world := SimWorld.new(tick_rate)
+	var state := world.player()
+	state.velocity_x = 840_000
+	var before := state.stamina
+	_step(world, 1000, 0, SimCommand.HELD_SLIDE, SimCommand.PRESSED_SLIDE)
+	equal(state.movement_chain_count, 1, "first movement action starts one explicit chain")
+	equal(state.stamina, before - MovementTuning.SLIDE_COST - world.config.per_tick(MovementTuning.SLIDE_SUSTAIN_DRAIN_PER_SECOND), "first movement action pays base cost plus its requested sustain tick")
+	check(state.velocity_x >= 840_000, "slide preserves earned planar entry speed above its minimum impulse")
+	state.slide_ticks = world.config.milliseconds_to_ticks(MovementTuning.SLIDE_JUMP_WINDOW_MS)
+	before = state.stamina
+	_step(world, 1000, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+	equal(state.movement_chain_count, 2, "slide jump extends the same movement chain")
+	equal(state.stamina, before - MovementTuning.SLIDE_JUMP_COST * 1100 / 1000, "second movement action pays a ten-percent premium")
+	check(state.hop_speed >= 840_000, "slide jump carries earned slide momentum")
+	before = state.stamina
+	_step(world, 1000, 0, 0, SimCommand.PRESSED_EVADE)
+	equal(state.movement_chain_count, 3, "air dodge is reachable as the third chained movement")
+	equal(state.stamina, before - MovementTuning.AIR_DODGE_COST * 1200 / 1000, "third movement action pays a twenty-percent premium")
+	check(state.movement_action_speed >= 840_000, "air dodge preserves faster legal chain momentum")
+	for _tick: int in range(world.config.milliseconds_to_ticks(MovementTuning.MOVEMENT_CHAIN_RESET_MS)):
+		_step(world)
+	equal(state.movement_chain_count, 0, "movement chain cost resets after one third of a second")
+	equal(state.movement_chain_reset_ticks, 0, "movement chain reset timer is bounded and observable")
+
+	var refused := SimWorld.new(tick_rate)
+	refused.player().stamina = 0
+	_step(refused, 1000, 0, 0, SimCommand.PRESSED_JUMP)
+	equal(refused.player().movement_chain_count, 0, "refused movement never increments chain cost")
 
 
 func _test_same_wall_lockout(tick_rate: int) -> void:

@@ -155,6 +155,8 @@ static func stamina_status_label(state: PlayerState, tick_rate: int) -> String:
 		return "STAMINA  JUMP -%d/s" % (MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND / 1000)
 	if state.slide_ticks > slide_minimum:
 		return "STAMINA  SLIDE -%d/s" % (MovementTuning.SLIDE_SUSTAIN_DRAIN_PER_SECOND / 1000)
+	if state.movement_chain_reset_ticks > 0 and state.movement_chain_count > 0:
+		return "STAMINA  NEXT +%d%%" % (mini(state.movement_chain_count, MovementTuning.MOVEMENT_CHAIN_MAXIMUM_STEPS) * MovementTuning.MOVEMENT_CHAIN_COST_STEP_RATIO / 10)
 	return "STAMINA"
 
 

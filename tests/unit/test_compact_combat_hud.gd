@@ -31,11 +31,15 @@ func _test_repository_hud() -> void:
 	state = PlayerState.new()
 	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "neutral Stamina keeps the compact label")
 	state.hop_ticks = SimConfig.new(120).milliseconds_to_ticks(MovementTuning.VARIABLE_JUMP_MINIMUM_MS) + 1
-	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA  JUMP -120/s", "paid jump sustain is explicit without relying on color")
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA  JUMP -80/s", "paid jump sustain is explicit without relying on color")
 	state.hop_ticks -= 1
 	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "tap jump does not claim a sustain drain")
 	state.slide_ticks = SimConfig.new(120).milliseconds_to_ticks(MovementTuning.SLIDE_MINIMUM_MS) + 1
-	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA  SLIDE -60/s", "paid slide sustain is explicit without relying on color")
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA  SLIDE -45/s", "paid slide sustain is explicit without relying on color")
+	state.slide_ticks = 0
+	state.movement_chain_count = 2
+	state.movement_chain_reset_ticks = 20
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA  NEXT +20%", "active movement-chain escalation is explicit without relying on color")
 
 
 func _test_fail_closed_contract() -> void:

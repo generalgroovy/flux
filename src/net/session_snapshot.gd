@@ -2,7 +2,7 @@ class_name SessionSnapshot
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 12
+const SCHEMA_VERSION: int = 13
 const MAX_PLAYERS: int = 8
 const PLAYER_VALUE_COUNT: int = 74
 const PROJECTILE_VALUE_COUNT: int = 12
@@ -19,6 +19,13 @@ const MAX_ABSOLUTE_POSITION: int = 100_000_000
 const MAX_TIMER_TICKS: int = 1_000_000
 const EVENT_KIND_MASK: int = 0xff
 const MAX_EVENT_ID: int = 0x7fffffff
+const MOVEMENT_CONTEXT_PROTECTION_MASK: int = 0x7f
+const MOVEMENT_CONTEXT_SUSTAIN_SHIFT: int = 7
+const MOVEMENT_CONTEXT_SUSTAIN_MASK: int = 0x7f
+const MOVEMENT_CONTEXT_CHAIN_SHIFT: int = 14
+const MOVEMENT_CONTEXT_CHAIN_MASK: int = 0x7
+const MOVEMENT_CONTEXT_RESET_SHIFT: int = 17
+const MOVEMENT_CONTEXT_RESET_MASK: int = 0x7f
 
 
 static func capture(
@@ -66,7 +73,7 @@ static func capture(
 		])
 		player_values.append_array(state.spell_wire_ids)
 		player_values.append_array(state.spell_cooldown_ticks)
-		player_values.append(state.jump_protection_ticks)
+		player_values.append(_encode_movement_context(state))
 		players.append([
 			state.entity_id,
 			_safe_name(String(names_by_entity.get(state.entity_id, "Traveller %d" % state.entity_id))),
@@ -383,8 +390,31 @@ static func _apply_values(state: PlayerState, values: PackedInt32Array) -> void:
 	state.active_2_cooldown_ticks = values[48]
 	state.spell_wire_ids = values.slice(49, 49 + PlayerState.SPELL_SLOT_COUNT)
 	state.spell_cooldown_ticks = values.slice(49 + PlayerState.SPELL_SLOT_COUNT, 49 + 2 * PlayerState.SPELL_SLOT_COUNT)
-	state.jump_protection_ticks = values[73]
+	_decode_movement_context(state, values[73])
+	state.movement_action_speed = MovementSystem._planar_speed(state)
 	state._sync_legacy_spell_cooldowns()
+
+
+static func _encode_movement_context(state: PlayerState) -> int:
+	var protection := clampi(state.jump_protection_ticks, 0, MOVEMENT_CONTEXT_PROTECTION_MASK)
+	var sustain := clampi(state.jump_sustain_ticks, 0, MOVEMENT_CONTEXT_SUSTAIN_MASK)
+	var chain := clampi(state.movement_chain_count, 0, MOVEMENT_CONTEXT_CHAIN_MASK)
+	var reset := clampi(state.movement_chain_reset_ticks, 0, MOVEMENT_CONTEXT_RESET_MASK)
+	return protection | (sustain << MOVEMENT_CONTEXT_SUSTAIN_SHIFT) | (chain << MOVEMENT_CONTEXT_CHAIN_SHIFT) | (reset << MOVEMENT_CONTEXT_RESET_SHIFT)
+
+
+static func _decode_movement_context(state: PlayerState, encoded: int) -> void:
+	state.jump_protection_ticks = encoded & MOVEMENT_CONTEXT_PROTECTION_MASK
+	state.jump_sustain_ticks = (encoded >> MOVEMENT_CONTEXT_SUSTAIN_SHIFT) & MOVEMENT_CONTEXT_SUSTAIN_MASK
+	state.movement_chain_count = (encoded >> MOVEMENT_CONTEXT_CHAIN_SHIFT) & MOVEMENT_CONTEXT_CHAIN_MASK
+	state.movement_chain_reset_ticks = (encoded >> MOVEMENT_CONTEXT_RESET_SHIFT) & MOVEMENT_CONTEXT_RESET_MASK
+
+
+static func _valid_movement_context(encoded: int) -> bool:
+	if encoded < 0 or encoded > 0xffffff:
+		return false
+	var chain := (encoded >> MOVEMENT_CONTEXT_CHAIN_SHIFT) & MOVEMENT_CONTEXT_CHAIN_MASK
+	return chain <= MovementTuning.MOVEMENT_CHAIN_MAXIMUM_STEPS
 
 
 static func _valid_player_values(values: PackedInt32Array) -> bool:
@@ -406,9 +436,11 @@ static func _valid_player_values(values: PackedInt32Array) -> bool:
 	for pair: Vector2i in [Vector2i(11, 12), Vector2i(13, 14), Vector2i(15, 16)]:
 		if values[pair.x] < 0 or values[pair.x] > 1_000_000 or values[pair.y] < 0 or values[pair.y] > values[pair.x]:
 			return false
-	for index: int in [17, 19, 20, 21, 22, 23, 24, 27, 34, 36, 37, 38, 39, 43, 48, 73]:
+	for index: int in [17, 19, 20, 21, 22, 23, 24, 27, 34, 36, 37, 38, 39, 43, 48]:
 		if values[index] < 0 or values[index] > MAX_TIMER_TICKS:
 			return false
+	if not _valid_movement_context(values[73]):
+		return false
 	if values[18] < 0 or values[18] >= PlayerState.MovementMode.size():
 		return false
 	if values[25] < 0 or values[25] > 1000:
@@ -760,8 +792,8 @@ static func _safe_event_name(requested_name: String) -> String:
 
 
 static func _safe_name(requested_name: String) -> String:
-	var safe_name := requested_name.strip_edges()
-	if safe_name.is_empty() or safe_name.length() > 24:
+	var safe_name := requested_name.strip_edges().left(SessionTransport.MAX_PLAYER_NAME_LENGTH)
+	if safe_name.is_empty():
 		return ""
 	for character: String in safe_name:
 		var codepoint := character.unicode_at(0)

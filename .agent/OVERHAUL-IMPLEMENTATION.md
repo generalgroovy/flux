@@ -1,6 +1,6 @@
 # FLUX 2 implementation path to first-eight playtest
 
-Current frontier: protocol 35, snapshot 12, preferences 10, Godot 4.7.1,
+Current frontier: protocol 36, snapshot 13, preferences 10, Godot 4.7.1,
 canonical `main` (the remote compatibility ref mirrors its published checkpoint;
 the non-authoritative local compatibility ref may lag until a safe
 fast-forward). V0–V6 visual engineering, the exact

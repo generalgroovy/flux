@@ -131,7 +131,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.active_2_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "Oh Tipi equips Rimewake as the third proven spell")
 	equal(Array(state.spell_wire_ids), [140, 141, 144, 101, 110, 142, 143, 145, 146, 147, 149, 148], "Oh Tipi leads a representative twelve-spell weave with champion spells")
 	equal(state.health, 108_000, "Oh Tipi starts at authored maximum Health")
-	equal(state.stamina_maximum, 108_000, "Oh Tipi has the larger Stamina reserve")
+	equal(state.stamina_maximum, 120_000, "Oh Tipi has the larger Stamina reserve")
 	state.health = 54_000
 	state.flux = 52_000
 	state.stamina = 54_000
@@ -143,7 +143,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(Array(state.spell_wire_ids), [142, 143, 101, 110, 140, 141, 144, 145, 146, 147, 149, 148], "champion switch keeps a representative global weave and leads with the new champion kit")
 	equal(state.health, 45_000, "Health ratio survives an in-world champion switch")
 	equal(state.flux, 56_000, "Flux ratio survives an in-world champion switch")
-	equal(state.stamina, 48_000, "Stamina ratio survives an in-world champion switch")
+	equal(state.stamina, 48_600, "Stamina ratio survives an in-world champion switch")
 	equal(state.movement_speed_ratio, 1060, "S. Wayne owns the faster ground profile")
 	check(catalog.apply_to_player(state, "red_baron"), "The Red Baron profile applies")
 	equal(state.champion_wire_id, 3, "The Red Baron owns stable wire id 3")
@@ -152,7 +152,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.active_2_wire_id, CombatTuning.CINDERFAN_WIRE_ID, "The Red Baron equips Cinder Fan as readable lane pressure")
 	equal(Array(state.spell_wire_ids), [145, 144, 146, 101, 110, 140, 141, 142, 143, 147, 149, 148], "The Red Baron leads the weave with Fire/Ice spells")
 	equal(state.health_maximum, 132_000, "large body owns the deepest Health reserve")
-	equal(state.stamina_maximum, 128_000, "large body owns the deepest Stamina reserve")
+	equal(state.stamina_maximum, 144_000, "large body owns the deepest Stamina reserve")
 	equal(state.movement_speed_ratio, 910, "large body pays for staying power with deliberate ground speed")
 
 

@@ -4,7 +4,7 @@ extends RefCounted
 
 # Authoritative values are fixed-point world units, resource milli-units,
 # milliseconds, or scale-1000 ratios. They preserve the proven FLUX grammar.
-const COMPATIBILITY_ID: String = "movement-tuning-v7-paid-sustain"
+const COMPATIBILITY_ID: String = "movement-tuning-v8-momentum-chains"
 const PLAYER_RADIUS: int = 18_000
 const BASE_SPEED: int = 324_000
 const ACCELERATION: int = 1_980_000
@@ -14,19 +14,22 @@ const COUNTER_STRAFE_MULTIPLIER: int = 1900
 const COUNTER_STRAFE_DOT_THRESHOLD: int = -24_000_000
 const MOVING_MODE_MINIMUM_SPEED: int = 20_000
 const INPUT_BUFFER_MS: int = 180
-const VARIABLE_JUMP_MINIMUM_MS: int = 90
+const VARIABLE_JUMP_MINIMUM_MS: int = 160
 const FAST_FALL_EXTRA_TICKS: int = 1
+const MOVEMENT_CHAIN_RESET_MS: int = 333
+const MOVEMENT_CHAIN_COST_STEP_RATIO: int = 100
+const MOVEMENT_CHAIN_MAXIMUM_STEPS: int = 4
 
-const STAMINA_MAXIMUM: int = 100_000
+const STAMINA_MAXIMUM: int = 112_000
 const SPRINT_DRAIN_PER_SECOND: int = 34_000
 const STAMINA_RECOVERY_PER_SECOND: int = 27_000
 const STAMINA_RECOVERY_DELAY_MS: int = 380
 
 const HOP_COST: int = 28_000
 const HOP_SPEED: int = 650_000
-const HOP_DURATION_MS: int = 160
+const HOP_DURATION_MS: int = 320
 const HOP_COOLDOWN_MS: int = 500
-const JUMP_SUSTAIN_DRAIN_PER_SECOND: int = 120_000
+const JUMP_SUSTAIN_DRAIN_PER_SECOND: int = 80_000
 const HOP_STEERING_PER_SECOND: int = 6_000
 const JUMP_INVULNERABILITY_MS: int = 90
 const WALL_KICK_SPEED: int = 780_000
@@ -86,9 +89,9 @@ const MATERIAL_MOTION_ENABLED: bool = false
 const SLIDE_COST: int = 22_000
 const SLIDE_ENTRY_SPEED: int = 250_000
 const SLIDE_SPEED: int = 720_000
-const SLIDE_DURATION_MS: int = 300
+const SLIDE_DURATION_MS: int = 480
 const SLIDE_MINIMUM_MS: int = 150
-const SLIDE_SUSTAIN_DRAIN_PER_SECOND: int = 60_000
+const SLIDE_SUSTAIN_DRAIN_PER_SECOND: int = 45_000
 const SLIDE_COOLDOWN_MS: int = 780
 const SLIDE_STEERING: int = 320
 const SLIDE_JUMP_COST: int = 20_000
@@ -119,6 +122,8 @@ static func compatibility_hash() -> String:
 			SPRINT_MULTIPLIER, COUNTER_STRAFE_MULTIPLIER,
 			COUNTER_STRAFE_DOT_THRESHOLD, MOVING_MODE_MINIMUM_SPEED,
 			INPUT_BUFFER_MS, VARIABLE_JUMP_MINIMUM_MS, FAST_FALL_EXTRA_TICKS,
+			MOVEMENT_CHAIN_RESET_MS, MOVEMENT_CHAIN_COST_STEP_RATIO,
+			MOVEMENT_CHAIN_MAXIMUM_STEPS,
 		],
 		"stamina": [
 			STAMINA_MAXIMUM, SPRINT_DRAIN_PER_SECOND,

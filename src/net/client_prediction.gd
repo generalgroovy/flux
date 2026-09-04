@@ -17,6 +17,7 @@ const STATE_FIELDS: Array[StringName] = [
 	&"stamina", &"stamina_remainder", &"stamina_recovery_delay_ticks",
 	&"jump_buffer_ticks", &"technique_buffer_ticks", &"slide_buffer_ticks",
 	&"fast_falling", &"variable_jump_grace_ticks",
+	&"jump_sustain_ticks", &"movement_chain_count", &"movement_chain_reset_ticks", &"movement_action_speed",
 	&"jump_protection_ticks", &"evade_buffer_ticks", &"landing_input_ticks", &"hop_ticks", &"hop_cooldown_ticks", &"hop_stage", &"hop_mode",
 	&"landing_input_x", &"landing_input_y", &"hop_speed", &"hop_x", &"hop_y", &"air_redirects_remaining",
 	&"air_dodge_ticks", &"air_dodge_cooldown_ticks", &"air_dodge_x", &"air_dodge_y",
@@ -43,6 +44,7 @@ const DIRECTION_FIELDS: Array[StringName] = [
 const TIMER_FIELDS: Array[StringName] = [
 	&"stamina_recovery_delay_ticks", &"jump_buffer_ticks", &"technique_buffer_ticks", &"slide_buffer_ticks",
 	&"jump_protection_ticks", &"evade_buffer_ticks", &"landing_input_ticks",
+	&"movement_chain_reset_ticks",
 	&"variable_jump_grace_ticks", &"hop_ticks", &"hop_cooldown_ticks",
 	&"air_dodge_ticks", &"air_dodge_cooldown_ticks", &"wave_dash_ticks",
 	&"slide_ticks", &"slide_cooldown_ticks", &"vault_ticks", &"vault_cooldown_ticks",

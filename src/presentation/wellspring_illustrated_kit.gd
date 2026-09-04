@@ -79,7 +79,9 @@ func configure(layout: SanctumCampusLayout, path: String = PATH) -> bool:
 		paths.append({"points": points, "width": float(definition["width"]), "advanced": String(definition.get("kind", "")) == "advanced"})
 	var started := Time.get_ticks_msec()
 	_compile_ground()
-	_compile_decorations()
+	# Decorative cutouts are withheld until each one has an authoritative
+	# worldbone/clearance contract. A visible tree or fountain must never invite
+	# the player to collide with geometry that the simulation does not own.
 	ground_generation_ms = Time.get_ticks_msec() - started
 	# Decoded pixel hashes also work in exported builds where PNGs are remapped.
 	content_hash = (source + layout.content_hash).sha256_text()
@@ -183,7 +185,7 @@ func draw_surface(canvas: CanvasItem, bounds: Rect2, material: int, tint: Color 
 			canvas.draw_texture_rect_region(surfaces, Rect2(bounds.position + Vector2(x, y), size), Rect2(origin, size), tint)
 
 
-func draw_building(canvas: CanvasItem, building: Dictionary, focus: Vector2) -> void:
+func draw_building(canvas: CanvasItem, building: Dictionary, _focus: Vector2) -> void:
 	var bounds := Rect2(SanctumCampusLayout._parse_bounds(building["bounds"]))
 	if String(building.get("style", "")) == "practice_wall":
 		draw_surface(canvas, bounds, 14)
@@ -200,9 +202,10 @@ func draw_building(canvas: CanvasItem, building: Dictionary, focus: Vector2) -> 
 		if absf(x - bounds.get_center().x) > 50:
 			canvas.draw_rect(Rect2(x + 15, facade.position.y + 12, 15, 21), Color("3d382d"))
 			canvas.draw_rect(Rect2(x + 17, facade.position.y + 14, 11, 16), Color("b69754"))
-	var fade := cover_opacity(bounds, focus)
-	draw_surface(canvas, roof, 10, Color(1, 1, 1, fade))
-	canvas.draw_rect(roof, Color(0.20, 0.15, 0.11, fade), false, 5)
+	# Buildings are validated worldbone and actors render above the map layer.
+	# Keep the structure opaque and stable instead of fading on approach.
+	draw_surface(canvas, roof, 10, Color.WHITE)
+	canvas.draw_rect(roof, Color(0.20, 0.15, 0.11, 1.0), false, 5)
 	canvas.draw_line(roof.position + Vector2(0, roof.size.y * 0.32), roof.position + Vector2(roof.size.x, roof.size.y * 0.32), Color("aa8650"), 4)
 	canvas.draw_line(Vector2(bounds.position.x, facade.position.y), Vector2(bounds.end.x, facade.position.y), Color("4b3025"), 6)
 	draw_prop(canvas, "doorway", Vector2(bounds.get_center().x, bounds.end.y + 4), minf(110, bounds.size.y * 0.8))

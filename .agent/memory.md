@@ -1,5 +1,28 @@
 # Active implementation memory
 
+## 2026-09-05 current source candidate: honest world + momentum-chain economy
+
+- Non-colliding campus decoration is withheld and collision-backed worldbone is
+  fully opaque: all 14 visible buildings match authoritative collision; 91
+  walk-through decorations and six collisionless landmarks no longer render.
+- Protocol 36 / snapshot 13 adds no packet-width regression: jump height,
+  movement-chain count/reset and action momentum are authoritative/predicted;
+  bounded movement context shares one packed word and the maximum eight-player
+  snapshot remains below the 1392-byte MTU.
+- Tap/hold Jump spans 28–54 px and 160–320 ms at 80 Stamina/s sustain; Slide
+  spans 150–480 ms at 45/s. Earned planar speed survives legal conversions;
+  airborne wall contact can enter wallrun and wallrun can enter air dodge.
+- Each accepted paid movement action within 333 ms raises the next cost by 10%
+  up to 40%; refused actions and sustain ticks do not increment it. The HUD
+  exposes the next premium. All five champions gained bounded Stamina reserves;
+  live spell costs fell 14–20% while every attack stayed positive.
+- Focused movement/network/HUD proof: 3 suites / 2,170 assertions and the wider
+  8-suite set all pass at 120 Hz; resource/combat proof: 6 suites / 4,210
+  assertions, zero failures/stderr. Full gate then passed 67 suites / 22,906
+  assertions plus source import and protocol-36 120 Hz boot in 36,885 ms, zero
+  failures/stderr; receipt `.godot/receipts/honest-world-momentum-full.json`.
+  Q2 spell matrix follows.
+
 ## 2026-09-04 current checkpoint: paid movement sustain and quiet arena motion
 
 - Protocol 35 adds no wire bit or snapshot field: held Jump sustains beyond the

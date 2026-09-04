@@ -19,16 +19,20 @@ physical places rather than a detached menu.
 > compiler are working; bounded exposure/contact is the next chemistry goal,
 > and world mutation remains deliberately gated until that slice passes.
 
-**Latest clarity/control update:** shared Baron-led proportions with dark-skinned
-S. Wayne, simple one-color projectiles, a full sixteen-spell drag/drop panel and
-vertical-lift jumps with live air steering/braking. Each attack has one element;
-chemistry and hybrids stay gated. See [controls and clarity](docs/CLARITY-AND-CONTROL-ITERATION.md).
+**Latest movement/resource update:** held Jump now buys a visibly higher arc,
+held Slide buys a longer lane, earned planar speed survives legal movement
+conversions, and airborne wallrun/air-dodge chains are live. Successive movement
+actions cost 10% more up to 40% and reset after 333 ms; every champion has more
+Stamina and every attack remains paid despite lower Flux costs. Protocol 36 and
+snapshot schema 13 carry the same state through Farflow. See the
+[quality expansion ledger](docs/QUALITY-EXPANSION-ACCEPTANCE.md).
 
 **Illustrated source revision:** illustrated stone/grass/water terrain, slate-and-timber
 buildings, reusable props and renewed small/middle/large eight-way body templates
 are integrated into the 3072x1728 six-area campus. The art uses an elevated
 approximately 55-degree view, while floors, movement, aiming and collisions
-remain screen-aligned. Roof/canopy fading preserves nearby character visibility;
+remain screen-aligned. Visible buildings are fully opaque collision-backed
+worldbone; collisionless decorations and landmarks are withheld for now.
 50/75/100% zoom remains available. Visual acceptance is reopened, not inherited
 from the earlier artwork. See the [visual acceptance ledger](docs/VISUAL-REFINEMENT-ACCEPTANCE.md).
 
@@ -37,7 +41,7 @@ from the earlier artwork. See the [visual acceptance ledger](docs/VISUAL-REFINEM
 Run `.\flux.cmd play` for this source revision. Existing Windows exports predate
 these changes and must be rebuilt before sharing; do not mix old packages and
 new-source hosts. The [map/movement ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md)
-records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current paid-sustain movement uses protocol 35.
+records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current momentum-chain movement uses protocol 36.
 
 ![Current five-champion motion contact sheet](assets/concept/five-champion-motion-reference-v1.png)
 
@@ -56,8 +60,8 @@ their movement pose and travel direction; HUD portraits use the same live art.
 
 | New basic character | Health / Flux / Stamina | Ground speed | Initial single-element spells |
 |---|---|---|---|
-| Grace Riva, small Sylph | 92 / 120 / 100 | 103% | Rillshot, Gale Burst, Pocket Eclipse |
-| Wa Bidi, small Goblin | 98 / 106 / 104 | 105% | Arc Primary, Gale Burst, Cinder Fan |
+| Grace Riva, small Sylph | 92 / 120 / 112 | 103% | Rillshot, Gale Burst, Pocket Eclipse |
+| Wa Bidi, small Goblin | 98 / 106 / 116 | 105% | Arc Primary, Gale Burst, Cinder Fan |
 
 These are usable foundation kits; unique racial abilities are not claimed.
 
@@ -217,8 +221,9 @@ pending human balance/visual acceptance and independent activity isolation.
 |---|---|---|---|
 | Strafe + independent aim | Crossfire, retreat, prediction | Acceleration, brake, counter-strafe timing | Playable |
 | Sprint | Rotate, pursue, disengage | Continuous Stamina drain and delayed recovery | Playable |
-| Hop / double jump | Take off along held movement, steer and face through all eight directions in air | Tap is reliable; holding pays 120 Stamina/s for the longer arc; release/exhaustion short-hops; protection remains the 90 ms opening | Playable |
-| Slide / slide jump | Tap gives a 150 ms committed burst; hold pays 60 Stamina/s to travel toward the 300 ms cap | Entry-speed gate; 50 ms opening protection; vulnerable paid tail; release/exhaustion shortens it; second C brakes; world stays solid | Playable |
+| Hop / double jump | Vertical lift with eight-way live air control; preserves earned planar speed | Tap reaches a compact 28 px apex; holding pays 80 Stamina/s toward a 54 px / 320 ms arc; protection remains only the 90 ms opening | Playable |
+| Slide / slide jump | Tap gives a 150 ms committed burst; hold pays 45 Stamina/s toward 480 ms; slide-jump preserves legal entry speed | Entry-speed gate; 50 ms opening protection; vulnerable paid tail; release/exhaustion shortens it; second C brakes; world stays solid | Playable |
+| Movement chain economy | Makes repeated evasive conversion expressive but progressively costly | Every paid continuation within 333 ms adds 10% cost up to 40%; refused actions and held tails never add a step; HUD shows the next premium | Playable |
 | Air redirect / air dodge | Strong snap correction or committed escape beyond ordinary air steering | Limited use, cost, fixed duration, safe collision recovery | Playable |
 | Ground roll | Evade a predicted lane while grounded | 24 Stamina; 130 ms opening attack intangibility inside 240 ms action | Playable |
 | Wavedash | Convert angled air dodge into ground momentum | Exact landing geometry; no free stacking | Playable |
@@ -467,7 +472,7 @@ default in gameplay while the Wellspring does not force limited information.
 | Capacity | Public cap 8; charters provide 2/4/8; later 32 only after measured architecture gate |
 | Transport | Godot ENet over UDP 24872, direct IP |
 | Authority | Host owns movement validation, resources, casts, hits, cooldowns, stations, roster, score, reset |
-| Compatibility | Protocol 35, snapshot 12, tick/tuning/map/content hashes |
+| Compatibility | Protocol 36, snapshot 13, tick/tuning/map/content hashes |
 | Client feel | Local movement prediction and bounded reconciliation; combat stays authoritative |
 | Join in progress | Observer until next gathering, then normal Hearth readiness |
 | Disconnect | 15-second in-memory exact-actor reservation and capability rotation |

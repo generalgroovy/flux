@@ -17,7 +17,7 @@
         "health_recovery_per_second": 1800,
         "flux_maximum": 104000,
         "flux_recovery_per_second": 19000,
-        "stamina_maximum": 108000,
+        "stamina_maximum": 120000,
         "stamina_recovery_per_second": 30000,
         "movement_speed_ratio": 980
       },
@@ -41,7 +41,7 @@
         "health_recovery_per_second": 2200,
         "flux_maximum": 112000,
         "flux_recovery_per_second": 23000,
-        "stamina_maximum": 96000,
+        "stamina_maximum": 108000,
         "stamina_recovery_per_second": 28000,
         "movement_speed_ratio": 1060
       },
@@ -64,7 +64,7 @@
         "health_recovery_per_second": 1200,
         "flux_maximum": 96000,
         "flux_recovery_per_second": 17000,
-        "stamina_maximum": 128000,
+        "stamina_maximum": 144000,
         "stamina_recovery_per_second": 32000,
         "movement_speed_ratio": 910
       },
@@ -96,7 +96,7 @@
         "health_recovery_per_second": 1800,
         "flux_maximum": 120000,
         "flux_recovery_per_second": 21000,
-        "stamina_maximum": 100000,
+        "stamina_maximum": 112000,
         "stamina_recovery_per_second": 29000,
         "movement_speed_ratio": 1030
       },
@@ -128,7 +128,7 @@
         "health_recovery_per_second": 1800,
         "flux_maximum": 106000,
         "flux_recovery_per_second": 25000,
-        "stamina_maximum": 104000,
+        "stamina_maximum": 116000,
         "stamina_recovery_per_second": 32000,
         "movement_speed_ratio": 1050
       },

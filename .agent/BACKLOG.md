@@ -4,11 +4,12 @@ This queue reflects the current user-ordered path to the first-eight chemistry
 playtest. Completed detail belongs in `WORKLOG.md`; this file stays short,
 playable, and acceptance-driven.
 
-**Newest user priority:** T0-T4 in `docs/TACTILE-ARENA-ACCEPTANCE.md` is a green
-source candidate: paid jump/slide sustain, explicit Stamina feedback, quiet
-animated landmarks, proximity-relevant station labels and 50/75/100% review.
-Human movement/charm acceptance is now the gate; after feedback, correct the
-observed feel issue or resume the prior travel-motion/prop refinement frontier.
+**Newest user priority:** Q0-Q1.2 in `docs/QUALITY-EXPANSION-ACCEPTANCE.md` are
+green source slices: honest worldbone-only scenery, higher/longer paid holds,
+momentum-preserving transitions, airborne wallrun chains, explicit 10–40%
+continuation cost with a 333 ms reset, larger Stamina pools and lower positive
+spell costs. Q2 now builds the complete element-row × delivery-column Loom;
+Q3-Q5 then finish spell readability, crisp character motion and integration.
 
 U1-U5 source gate passed (67 suites / 21,548 assertions). Then: exact motion-facing
 and alternating walk contacts; Grace Riva then Wa Bidi with existing single-element

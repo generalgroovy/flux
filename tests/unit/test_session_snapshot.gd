@@ -12,7 +12,7 @@ func run() -> int:
 
 
 func _test_snapshot_round_trip() -> void:
-	equal(SessionSnapshot.SCHEMA_VERSION, 12, "jump protection snapshot schema is explicit")
+	equal(SessionSnapshot.SCHEMA_VERSION, 13, "movement chain snapshot schema is explicit")
 	var source := SimWorld.new(120, 7, CollisionWorld.new(3_000_000, 2_000_000))
 	var host: PlayerState = source.player()
 	host.champion_wire_id = 1
@@ -37,6 +37,10 @@ func _test_snapshot_round_trip() -> void:
 	guest.flux = 54_000
 	guest.stamina_maximum = 96_000
 	guest.stamina = 33_000
+	guest.jump_sustain_ticks = 12
+	guest.movement_chain_count = 3
+	guest.movement_chain_reset_ticks = 31
+	guest.movement_action_speed = 777_000
 	guest.spawn_protection_ticks = 77
 	guest.primary_wire_id = CombatTuning.ECLIPSE_DISC_WIRE_ID
 	guest.active_1_wire_id = CombatTuning.POCKET_ECLIPSE_WIRE_ID
@@ -72,6 +76,10 @@ func _test_snapshot_round_trip() -> void:
 	equal(replica.player().spell_cooldown_for_wire(CombatTuning.ECLIPSE_DISC_WIRE_ID), 16, "non-champion global cooldown survives one source tick and replication")
 	equal(replica.player().active_2_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "host third proven spell identity round-trips")
 	equal(replica.player(2).spawn_protection_ticks, source.player(2).spawn_protection_ticks, "guest spawn protection round-trips")
+	equal(replica.player(2).jump_sustain_ticks, source.player(2).jump_sustain_ticks, "paid jump height context round-trips")
+	equal(replica.player(2).movement_chain_count, source.player(2).movement_chain_count, "movement chain count round-trips")
+	equal(replica.player(2).movement_chain_reset_ticks, source.player(2).movement_chain_reset_ticks, "movement chain reset round-trips")
+	equal(replica.player(2).movement_action_speed, MovementSystem._planar_speed(replica.player(2)), "action momentum is reconstructed from authoritative velocity")
 	check(replica.player(900) != null, "authoritative practice actor is reconstructed")
 	equal(replica.player(900).health, 51_000, "practice actor health round-trips")
 	equal(replica.player(900).team_id, 900, "practice actor has a distinct non-champion team after replication")

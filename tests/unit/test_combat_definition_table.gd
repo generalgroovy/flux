@@ -3,22 +3,22 @@ extends FluxTestSuite
 
 const CATALOG_PATH: String = "res://content/abilities/foundation_abilities_v1.json"
 const SHIPPED_DEFINITION_SIGNATURES: Dictionary = {
-	101: "6bf92d9ba4fbe42fe39b3d6e360fd9f39dbf92be71511dda47d3af7e1130f215",
-	110: "2ef3a3c60e9b77170f54e02e7b87c12f0bfc4e639e80f5b428734f61ff65f77f",
+	101: "5c956e042c6b549de204bb9ec4d60f1f32f82183382ec8b471c7bec8c8ef80a6",
+	110: "4e1a757935a2bb0ad33ee95c6ef7766d0f3f6b17991024c07b8011a247f33195",
 	140: "da4388eabda5ccac09ac4eff46b09cd8c31430ab8edaa7b9bd0deba138007338",
-	141: "ecebb5905a7060740362f2b55cc3056a25a03510e0c3336a1ba96db79f315e23",
-	144: "a603372f514f1a14182321480ab72e7648b48d775ef84b4ac1bde05864fb207e",
-	142: "f4f9875885d52c3ecc1c898a9fe57404edb20d7a0d2538e3536ad0627ec539b5",
-	143: "eadf31af5c8deababf4559e5e4e7fec4bb46f99b2ad0d137c64d22b1738e5c80",
-	145: "741ecbea05e91489677f08685eebb8acb343b696002cba0b9044f22c92b048f3",
-	146: "1ae5a6215f58645d5a274f4b4a064672a9d49d682328b32f071c41761df84995",
-	147: "8df86b7def06ff7d76cb61ac628b9e2e630f66592caa6614984004e1f4e6c866",
-	149: "1704ec056fecf54b79c4c299da2c9033c54b58ad54e6b2791cd068b68725bb53",
-	148: "60908bcb5ae65b96c0d7f83d72d180d3b199dac4f2e7b39ad29f63c7a4630599",
-	150: "8df96833135b56d55baca0710643faa001b6b5e7e3abe79d34cd502891b6a136",
-	151: "2a5db5d4fd85188c4adcf2fe8c1e7dd191e95caddba3b93726b8701baa7ff6db",
-	152: "32dd038dbdb3a1c07845638f5206d015f51b03cfe83228da84bf68cdcc803992",
-	153: "84a5c6e9d4b5f34223fa74c7204c4ad826fd717fb6cdc81067b57241611a1d4b",
+	141: "d94cc312d3e1b5c5d2494dfdaa64920d7e15a6b06bcbb91a1e928c7c7afb4b0c",
+	144: "10069e98045e5fb89c0bb5ff758f47a77a5b2517b43ac20670144bf5d943b407",
+	142: "b2e4d388f3fce02eace7c4346c78fb0ee035f1740bd9f0fe948730c226d27c84",
+	143: "14bb8db9663ed3dbbc7b30be7e0bb7a0bbd3fac6d156481ec07bf0bf97446195",
+	145: "1442de4eac91be519e608f0598d1495083a736a53f288e11d2f1daa642221c5a",
+	146: "7e10aaa4dedcb194276e5642ef1a2a0968a47b0a1a8aebfc1c2cb9fa3e210349",
+	147: "ccfa71d5e6ae81f0340c295a1b4ea6980ffafd2626284833791723fa53f81fba",
+	149: "61cece2dd40f2c8c280016cca906ad15f43ffdee0980bac05711e320cd0d7f93",
+	148: "fdf4e36f05a26da745b7b8a49a4ba04dd6e579f24b00591aade037098e87eea9",
+	150: "2caeba2fa3545cdcd3b9f5402484b54a847ded0defff963123bd6f310fbeaf34",
+	151: "83c84f682e6cee12c128b4d25c57ea98219bf3b504d55e1d5955c9c973a887ab",
+	152: "2fa77af185393f25f83224f9cb7402b25f2adc86cae7b4ce0f463e3cba4b4a69",
+	153: "84b51156763216e09ce33cdb73335b48a7914c5761f5f554aac683b02cd5fd30",
 }
 
 
@@ -44,7 +44,7 @@ func _test_exact_legacy_parity() -> void:
 	for wire_id: int in CombatTuning.runtime_wire_ids():
 		check(table.is_runtime_wire_id(wire_id), "compiled table contains live wire %d" % wire_id)
 		equal(table.definition(wire_id), CombatTuning.cast_definition(wire_id), "wire %d compiles byte-for-byte equivalent simulation data" % wire_id)
-		equal(_definition_signature(table.definition(wire_id)), SHIPPED_DEFINITION_SIGNATURES[wire_id], "wire %d preserves the pre-migration command outcome fixture" % wire_id)
+		equal(_definition_signature(table.definition(wire_id)), SHIPPED_DEFINITION_SIGNATURES[wire_id], "wire %d matches the accepted resource-retune outcome fixture" % wire_id)
 	check(table.definition(65_535).is_empty(), "unknown wire fails closed")
 	check(table.projectile_definition(CombatTuning.TIDELINE_WIRE_ID).is_empty(), "compiled spray cannot enter projectile simulation")
 

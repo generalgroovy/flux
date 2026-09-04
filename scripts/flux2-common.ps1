@@ -69,14 +69,23 @@ function Invoke-FluxGodotChecked {
         $process.WaitForExit()
         throw "Godot check timed out after 180 seconds; inspect $LogPath and $errorPath"
     }
+    # The timed overload can return before redirected stream bookkeeping has
+    # populated ExitCode on some Windows/.NET combinations. Drain once and
+    # refresh so a successful check can never be reported as a blank failure.
+    $process.WaitForExit()
+    $process.Refresh()
     $combined = @()
     if (Test-Path -LiteralPath $LogPath) { $combined += Get-Content -LiteralPath $LogPath -Tail 2000 }
     if (Test-Path -LiteralPath $errorPath) { $combined += Get-Content -LiteralPath $errorPath -Tail 2000 }
     $combined | Write-Output
-    if ($process.ExitCode -ne 0) { throw "Godot exited with code $($process.ExitCode)" }
     $existingLogs = @($LogPath, $errorPath) | Where-Object { Test-Path -LiteralPath $_ }
-    $bad = Select-String -LiteralPath $existingLogs -Pattern 'SCRIPT ERROR|Parse Error|Compile Error|Failed to load script|Invalid call' -Quiet
+    $bad = Select-String -LiteralPath $existingLogs -Pattern '^(FAIL:|ERROR:)|SCRIPT ERROR|Parse Error|Compile Error|Failed to load script|Invalid call' -Quiet
     if ($true -in @($bad)) { throw 'Godot emitted a script/import/runtime error.' }
+    # Some Godot/Windows combinations leave ExitCode unset despite HasExited;
+    # clean non-empty logs are still inspectable, while an absent log is never
+    # accepted. A populated non-zero code remains authoritative.
+    if ($null -ne $process.ExitCode -and [int]$process.ExitCode -ne 0) { throw "Godot exited with code $($process.ExitCode)" }
+    if ($null -eq $process.ExitCode -and $combined.Count -eq 0) { throw 'Godot exited without an inspectable result.' }
     if ($RejectWarnings) {
         $warnings = Select-String -LiteralPath $existingLogs -Pattern '^(WARNING|ERROR):' -Quiet
         if ($true -in @($warnings)) { throw 'Godot emitted an unexpected warning/error; inspect the complete logs.' }

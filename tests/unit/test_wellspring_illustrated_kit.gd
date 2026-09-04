@@ -13,7 +13,7 @@ func run() -> int:
 	equal(kit.cached_terrain_builds, 1, "terrain is composed once at setup")
 	equal(kit.tiles.size(), 16, "sixteen reusable material tiles load")
 	equal(kit.PROP_IDS.size(), 16, "sixteen reusable props load")
-	check(kit.decorations.size() > 20 and kit.decorations.size() <= 340, "gardens are populated within the fixed decoration budget")
+	equal(kit.decorations.size(), 0, "non-worldbone decoration is withheld from the live campus")
 	equal(String(kit.data["camera"]["ground_axes"]), "screen_cardinal", "painted elevation never skews input or aim")
 	equal(int(kit.data["camera"]["art_elevation_degrees"]), 55, "characters and environment share the elevated art camera")
 	check(int(kit.data["camera"]["maximum_facade_pixels"]) <= 64, "facades cannot steal large sections of play space")
@@ -35,8 +35,6 @@ func run() -> int:
 	check(fading_label > 0.0 and fading_label < 1.0, "station title fades continuously across the relevance band")
 	check(kit.surface_at(Vector2(1536, 900)) in [0, 1], "source court reads as stone")
 	equal(kit.surface_at(Vector2(10, 10)), 8, "outer shore reads as water")
-	for decoration: Dictionary in kit.decorations:
-		check(not kit._near_service_or_building(decoration["point"]), "plant placement preserves service and collision approaches")
 	# Transparent borders prohibit paper/checkerboard backing in live cutouts.
 	var props := kit.props.get_image()
 	for index: int in range(16):

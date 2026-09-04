@@ -99,7 +99,6 @@ func draw(
 ) -> void:
 	if illustrated_kit != null and illustrated_kit.ground != null:
 		illustrated_kit.draw_ground(canvas)
-		illustrated_kit.draw_gardens(canvas, focus_world_position)
 	else:
 		# Development previews without campus setup retain a readable fallback.
 		_draw_water(canvas, layout.canvas_size, layout.reserved_ui_top, presentation_tick)
@@ -112,7 +111,9 @@ func draw(
 	for building_value: Variant in layout.data.get("buildings", []):
 		_draw_building(canvas, building_value as Dictionary, focus_world_position)
 	for landmark_value: Variant in layout.data.get("landmarks", []):
-		_draw_landmark(canvas, landmark_value as Dictionary, presentation_tick, reduced_effects, focus_world_position)
+		var landmark: Dictionary = landmark_value
+		if bool(landmark.get("worldbone", false)):
+			_draw_landmark(canvas, landmark, presentation_tick, reduced_effects, focus_world_position)
 	if wayfinding != null and (illustrated_kit == null or illustrated_kit.ground == null):
 		wayfinding.draw(canvas, focus_world_position, presentation_tick, reduced_effects)
 	for station_value: Variant in layout.data.get("stations", []):

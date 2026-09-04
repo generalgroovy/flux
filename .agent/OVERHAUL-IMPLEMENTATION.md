@@ -41,6 +41,11 @@ commitment, ownership, consequence, counter and recovery are readable.
 
 ## Slice sequence
 
+Newest priority: execute U1-U5 in `docs/CLARITY-AND-CONTROL-ITERATION.md`.
+The user accepts the illustrated direction as improved and explicitly requests
+body ratios, element/projectile clarity, drag/drop menus and lift-only jumps.
+Keep hybrids disabled until complete chemistry implementation and acceptance.
+
 Latest user override: R1-R4 in `docs/VISUAL-REFINEMENT-ACCEPTANCE.md` now precede
 C6: illustrated tile/prop campus, coherent camera angle, small-to-large body
 refinement across all action/direction families, then integrated acceptance.

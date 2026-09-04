@@ -362,6 +362,9 @@ static func _try_air_redirect(state: PlayerState, direction: Vector2i, config: S
 	var redirected: Vector2i = _direction(state.hop_x, state.hop_y, direction)
 	state.hop_x = redirected.x
 	state.hop_y = redirected.y
+	# Explicit aerial turn stays a paid, immediate redirect; ordinary steering
+	# below remains input-driven and adds no jump launch impulse.
+	_set_directional_velocity(state, redirected, state.hop_speed)
 	state.air_redirects_remaining = 0
 	state.last_event = "air_redirect"
 	return true
@@ -534,6 +537,14 @@ static func _apply_velocity(state: PlayerState, command: SimCommand, direction: 
 		state.slide_y = slide_direction.y
 		_set_directional_velocity(state, slide_direction, MovementTuning.SLIDE_SPEED)
 	elif state.hop_ticks > 0:
+		if state.hop_mode in [PlayerState.MovementMode.HOP, PlayerState.MovementMode.DOUBLE_JUMP]:
+			# Lift is vertical presentation. Horizontal acceleration/braking follows
+			# live input, never the facing direction cached when Jump was pressed.
+			_apply_ground_velocity(state, command, direction, config, false)
+			if command.move_x != 0 or command.move_y != 0:
+				state.hop_x = direction.x
+				state.hop_y = direction.y
+			return
 		var hop_direction := _steer_hop(
 			Vector2i(state.hop_x, state.hop_y),
 			direction,
@@ -563,7 +574,7 @@ static func _apply_control_velocity(state: PlayerState, config: SimConfig) -> vo
 			state.velocity_y = 0
 
 
-static func _apply_ground_velocity(state: PlayerState, command: SimCommand, direction: Vector2i, config: SimConfig) -> void:
+static func _apply_ground_velocity(state: PlayerState, command: SimCommand, direction: Vector2i, config: SimConfig, allow_recovery: bool = true) -> void:
 	var moving: bool = command.move_x != 0 or command.move_y != 0
 	var sprinting: bool = moving and command.has_held(SimCommand.HELD_SPRINT) and state.stamina > 0
 	@warning_ignore("integer_division")
@@ -605,7 +616,7 @@ static func _apply_ground_velocity(state: PlayerState, command: SimCommand, dire
 	if sprinting:
 		_apply_stamina_rate(state, -MovementTuning.SPRINT_DRAIN_PER_SECOND, config)
 		state.stamina_recovery_delay_ticks = config.milliseconds_to_ticks(MovementTuning.STAMINA_RECOVERY_DELAY_MS)
-	elif state.stamina_recovery_delay_ticks == 0:
+	elif allow_recovery and state.stamina_recovery_delay_ticks == 0:
 		_apply_stamina_rate(state, state.stamina_recovery_per_second, config)
 
 

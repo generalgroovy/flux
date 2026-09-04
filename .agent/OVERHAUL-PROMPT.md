@@ -12,6 +12,11 @@ prose; correct stale prose in the same slice.
 
 ## Hard priority
 
+Newest user override: U1-U5 in `docs/CLARITY-AND-CONTROL-ITERATION.md` takes
+priority: shared Baron anatomy, single-element clarity, drag/drop spell catalog,
+clean guidance and lift-only/input-steered jumps. This authorizes those named
+mechanical changes; no hybrids or chemistry mutation is implied.
+
 Latest user revision reopens the live visual gate: implement R1-R4 in
 `docs/VISUAL-REFINEMENT-ACCEPTANCE.md` before chemistry. Match concept material
 richness and a user-friendly elevated/cardinal camera across map and bodies.

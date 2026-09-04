@@ -87,7 +87,7 @@ func validate() -> bool:
 	var character: Dictionary = data.get("character_contract", {})
 	if String(character.get("style", "")) != "mature_compact_expressive_cartoon_pixel":
 		return _fail("Character style must remain mature compact expressive cartoon pixel art")
-	if not _numeric_array_equals(character.get("head_height_ratio", []), [0.24, 0.30]):
+	if not _numeric_array_equals(character.get("head_height_ratio", []), [0.20, 0.23]):
 		return _fail("Character head/body readability ratio changed")
 	if _vector2i(character.get("grounded_cell", [])) != Vector2i(96, 96) or _vector2i(character.get("grounded_pivot", [])) != Vector2i(48, 84):
 		return _fail("Character grounded cell/pivot changed outside migration")

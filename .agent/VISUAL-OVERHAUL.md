@@ -1,5 +1,10 @@
 # FLUX visual overhaul gate
 
+Newest user override: continue the improved illustrated direction through U1-U5
+in `docs/CLARITY-AND-CONTROL-ITERATION.md`. The named menu/jump changes are
+authorized despite the older blanket freeze. No mixed-element attacks before
+complete chemistry testing. Red Baron proportions define all three body sizes.
+
 Latest user override: reopen visual acceptance for the concept-matched map,
 camera angle and all three body/action/direction templates. Follow
 `docs/VISUAL-REFINEMENT-ACCEPTANCE.md`; the older score below is historical

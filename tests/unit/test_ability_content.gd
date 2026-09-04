@@ -9,7 +9,21 @@ func run() -> int:
 	_test_catalog()
 	_test_loadout()
 	_test_invalid_content_fails_closed()
+	_test_single_element_gate()
 	return finish("ability-content")
+
+
+func _test_single_element_gate() -> void:
+	for key: String in ["elements", "secondary_element", "dual_element", "element_combination", "hybrid_elements"]:
+		var catalog := _catalog()
+		(catalog.data["abilities"][1] as Dictionary)[key] = ["fire", "water"]
+		check(not catalog.validate(), "hybrid metadata fails closed: " + key)
+	var array_element := _catalog()
+	(array_element.data["abilities"][1] as Dictionary)["element"] = ["fire", "water"]
+	check(not array_element.validate(), "array cannot bypass one-element schema")
+	var empty_element := _catalog()
+	(empty_element.data["abilities"][1] as Dictionary)["element"] = ""
+	check(not empty_element.validate(), "playable spell needs one named element")
 
 
 func _catalog() -> AbilityCatalog:

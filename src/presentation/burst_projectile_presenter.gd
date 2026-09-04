@@ -74,37 +74,57 @@ func validate(load_textures: bool = true) -> bool:
 	return _validate_assets(load_textures)
 
 
-func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int, reduced_effects: bool, interpolation_alpha: float = 1.0) -> bool:
+func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, _tick: int, reduced_effects: bool, interpolation_alpha: float = 1.0) -> bool:
 	if canvas == null or projectile == null or catalog == null:
 		return false
 	var ability := catalog.ability_from_wire(projectile.source_wire_id)
 	if String(ability.get("shape", "")) != "projectile":
 		return false
 	var element := String(ability.get("element", "neutral"))
-	if not textures_by_element.has(element):
+	if not entries_by_element.has(element):
 		return false
 	var position := ProjectilePresentationMotion.interpolated_position(projectile, interpolation_alpha)
 	var direction := ProjectilePresentationMotion.travel_direction(projectile)
-	var row := direction_index(direction)
-	var column := travel_column(tick, projectile.entity_id, reduced_effects)
-	var source := Rect2(column * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE)
 	var radius := float(projectile.radius) / SimConfig.FIXED_SCALE
-	var visual_size := ProjectilePresentationMotion.visual_diameter(projectile)
-	var destination := Rect2(position - Vector2.ONE * visual_size * 0.5, Vector2.ONE * visual_size)
-	var dark := language.element_color(element, "dark")
-	var bright := language.element_color(element, "bright")
-	var trail_start := position - direction * ProjectilePresentationMotion.trail_length(projectile, reduced_effects)
-	canvas.draw_line(trail_start, position - direction * radius * 0.45, Color(dark, 0.62), maxf(3.0, radius * 0.72), true)
-	canvas.draw_line(trail_start + direction * 2.0, position - direction * radius * 0.45, Color(bright, 0.38), maxf(1.5, radius * 0.34), true)
-	canvas.draw_circle(position + Vector2(0.0, maxf(3.0, radius * 0.48)), maxf(3.0, visual_size * 0.30), Color(0.02, 0.03, 0.03, 0.32))
-	canvas.draw_circle(position, visual_size * 0.45, Color(dark, 0.46))
-	canvas.draw_texture_rect_region(textures_by_element[element], destination, source)
-	canvas.draw_arc(position, maxf(2.0, radius), 0.0, TAU, 16, Color(bright, 0.52 if not reduced_effects else 0.66), 1.5)
-	canvas.draw_circle(position + ProjectilePresentationMotion.leading_point(projectile), 2.0, Color(bright, 0.92))
-	for bounce_index: int in range(mini(projectile.remaining_bounces, 3)):
-		canvas.draw_circle(position + Vector2(radius + 4.0 + bounce_index * 4.0, -radius - 2.0), 1.5, bright)
+	var color := language.element_color(element, "base")
+	# One stable color, one bounded core, one short trail. The tiny dark rune
+	# distinguishes elements without color; no orbiting dots or blended hues.
+	if not reduced_effects:
+		var length := minf(ProjectilePresentationMotion.trail_length(projectile, false), radius * 1.8)
+		canvas.draw_line(position - direction * (radius + length), position, Color(color, 0.30), maxf(2.0, radius * 0.7), true)
+	canvas.draw_circle(position, radius + 2.0, Color("101a22"))
+	canvas.draw_circle(position, radius, color)
+	canvas.draw_arc(position, radius - 1.0, PI * 1.1, PI * 1.65, 8, Color(color.lightened(0.45), 0.8), 1.5, true)
+	draw_element_mark(canvas, position, maxf(3.0, radius * 0.50), element, Color("17202bdd"))
 	return true
 
+
+static func draw_element_mark(canvas: CanvasItem, center: Vector2, size: float, element: String, ink: Color) -> void:
+	var points := PackedVector2Array()
+	match element:
+		"fire":
+			points = PackedVector2Array([Vector2(0, -1), Vector2(0.9, 0.8), Vector2(-0.9, 0.8), Vector2(0, -1)])
+		"earth":
+			points = PackedVector2Array([Vector2(-0.8, -0.8), Vector2(0.8, -0.8), Vector2(0.8, 0.8), Vector2(-0.8, 0.8), Vector2(-0.8, -0.8)])
+		"charge":
+			points = PackedVector2Array([Vector2(0.5, -1), Vector2(-0.5, 0.1), Vector2(0.6, -0.1), Vector2(-0.5, 1)])
+		"light":
+			canvas.draw_line(center - Vector2(size, 0), center + Vector2(size, 0), ink, 1.5, true)
+			canvas.draw_line(center - Vector2(0, size), center + Vector2(0, size), ink, 1.5, true)
+		"ice":
+			canvas.draw_line(center - Vector2.ONE * size * 0.75, center + Vector2.ONE * size * 0.75, ink, 1.5, true)
+			canvas.draw_line(center + Vector2(-1, 1) * size * 0.75, center + Vector2(1, -1) * size * 0.75, ink, 1.5, true)
+		"dark":
+			canvas.draw_arc(center, size, PI * 0.25, PI * 1.75, 10, ink, 2.0, true)
+		"wind":
+			canvas.draw_arc(center, size, 0.2, PI * 1.6, 10, ink, 1.5, true)
+			canvas.draw_circle(center, 1.0, ink)
+		_:
+			canvas.draw_circle(center, maxf(1.5, size * 0.45), ink)
+	if not points.is_empty():
+		for index: int in points.size():
+			points[index] = center + points[index] * size
+		canvas.draw_polyline(points, ink, 1.5, true)
 
 func texture(element: String) -> Texture2D:
 	return textures_by_element.get(element)

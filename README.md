@@ -19,7 +19,12 @@ physical places rather than a detached menu.
 > compiler are working; bounded exposure/contact is the next chemistry goal,
 > and world mutation remains deliberately gated until that slice passes.
 
-**Newest source revision:** illustrated stone/grass/water terrain, slate-and-timber
+**Latest clarity/control update:** shared Baron-led proportions with dark-skinned
+S. Wayne, simple one-color projectiles, a full sixteen-spell drag/drop panel and
+vertical-lift jumps with live air steering/braking. Each attack has one element;
+chemistry and hybrids stay gated. See [controls and clarity](docs/CLARITY-AND-CONTROL-ITERATION.md).
+
+**Illustrated source revision:** illustrated stone/grass/water terrain, slate-and-timber
 buildings, reusable props and renewed small/middle/large eight-way body templates
 are integrated into the 3072x1728 six-area campus. The art uses an elevated
 approximately 55-degree view, while floors, movement, aiming and collisions
@@ -32,9 +37,9 @@ from the earlier artwork. See the [visual acceptance ledger](docs/VISUAL-REFINEM
 Run `.\flux.cmd play` for this source revision. Existing Windows exports predate
 these changes and must be rebuilt before sharing; do not mix old packages and
 new-source hosts. The [map/movement ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md)
-records the unchanged no-vault controls and protocol-33 movement checkpoint.
+records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current air control uses protocol 34.
 
-![Current body templates, extracted from gameplay art](assets/concept/foundation-proportion-reference-small-to-large-v2.png)
+![Current body templates, extracted from gameplay art](assets/concept/foundation-proportion-reference-small-to-large-v3.png)
 
 Rows: small S. Wayne, middle Oh Tipi, large Red Baron. Columns: front, side,
 back, walk A/B, jump, slide, roll. All ten runtime pose rows cover eight directions;
@@ -447,7 +452,7 @@ default in gameplay while the Wellspring does not force limited information.
 | Capacity | Public cap 8; charters provide 2/4/8; later 32 only after measured architecture gate |
 | Transport | Godot ENet over UDP 24872, direct IP |
 | Authority | Host owns movement validation, resources, casts, hits, cooldowns, stations, roster, score, reset |
-| Compatibility | Protocol 33, snapshot 12, tick/tuning/map/content hashes |
+| Compatibility | Protocol 34, snapshot 12, tick/tuning/map/content hashes |
 | Client feel | Local movement prediction and bounded reconciliation; combat stays authoritative |
 | Join in progress | Observer until next gathering, then normal Hearth readiness |
 | Disconnect | 15-second in-memory exact-actor reservation and capability rotation |
@@ -704,7 +709,10 @@ cannot accept a filter and therefore cannot silently become partial. Use
 ignored, hash-bearing JSON receipt under `.godot/receipts/` containing only the
 steps and suites that actually ran.
 
-The Spell Loom's compact status lines are derived from its loaded catalogs:
+The Spell Loom displays the full sixteen-spell catalog next to twelve slots.
+Drag from the catalog or another slot; click both selections then Assign, or use
+the keyboard/controller. Equipped spells swap without resetting cooldowns.
+The diagnostics (not the player-facing setup panel) retain the loaded counts:
 16 selectable spells, 12 positions, 3 playable champions and 36 sealed recipes.
 `scripts/runtime-state.ps1` emits the same validated runtime content summary;
 with `-PackPath <file.pck>` it executes the exported payload from its own

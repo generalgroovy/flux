@@ -101,6 +101,11 @@ func validate() -> bool:
 			return _fail("every ability must be an object")
 		var ability: Dictionary = value
 		var ability_id := String(ability.get("id", ""))
+		if not ability.get("element", "") is String:
+			return _fail("ability must declare one element string: %s" % ability_id)
+		for hybrid_key: String in ["elements", "secondary_element", "dual_element", "element_combination", "hybrid_elements"]:
+			if ability.has(hybrid_key):
+				return _fail("mixed-element attacks are gated until chemistry acceptance: %s" % ability_id)
 		var wire_id := int(ability.get("wire_id", 0))
 		var slot_kind := String(ability.get("slot_kind", ""))
 		var element_id := String(ability.get("element", ""))
@@ -152,6 +157,8 @@ func validate() -> bool:
 		if slot_kind == "active" and (points <= 0 or flux_cost <= 0 or cooldown_ms <= 0 or startup_ms <= 0 or recovery_ms <= 0):
 			return _fail("catalog actives require positive points, Flux, cooldown, startup, and recovery: %s" % ability_id)
 		if runtime_status == "playable":
+			if element_id.is_empty():
+				return _fail("every playable spell requires exactly one element: %s" % ability_id)
 			var cadence_tier_id := String(ability.get("cadence_tier", ""))
 			if not CADENCE_TIER_IDS.has(cadence_tier_id):
 				return _fail("runtime spell requires a cadence tier: %s" % ability_id)

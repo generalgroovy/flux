@@ -4,7 +4,17 @@ This queue reflects the current user-ordered path to the first-eight chemistry
 playtest. Completed detail belongs in `WORKLOG.md`; this file stays short,
 playable, and acceptance-driven.
 
-**Active now:** user-requested illustrated map/camera overhaul and all-size,
+**Newest user priority:** U1-U5 in `docs/CLARITY-AND-CONTROL-ITERATION.md`:
+Baron-led anatomy, single-element clarity, complete drag/drop spell desk, concise
+guidance, then lift-only/input-steered jump. These explicitly authorized changes
+precede chemistry; hybrids stay disabled until all chemistry acceptance passes.
+
+U1-U5 source gate passed (67 suites / 21,548 assertions). Next: exact motion-facing
+and alternating walk contacts; Grace Riva then Wa Bidi with existing single-element
+spells and reusable size templates; map-object refinement. Keep each promotion
+independently green and retain human visual acceptance as a separate gate.
+
+**Previous checkpoint:** user-requested illustrated map/camera overhaul and all-size,
 all-direction/action body refinement; R1-R4 in
 `docs/VISUAL-REFINEMENT-ACCEPTANCE.md` precede C6. Earlier visual approval is
 historical, not acceptance of the replacement.

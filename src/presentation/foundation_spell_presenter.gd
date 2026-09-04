@@ -213,12 +213,12 @@ func draw_startup(
 			for offset: float in [0.0, PI]:
 				var angle := progress * PI * 1.4 + offset
 				var center := position + Vector2.from_angle(angle) * (18.0 + pulse)
-				canvas.draw_arc(center, 6.0, angle - 1.9, angle + 1.1, 9, Color(bright if offset == 0.0 else language.element_color("light", "bright"), 0.78), 2.0)
+				canvas.draw_arc(center, 6.0, angle - 1.9, angle + 1.1, 9, Color(bright if offset == 0.0 else base, 0.78), 2.0)
 		"paired_focus":
 			var focus := position + direction * (28.0 + progress * 12.0)
 			var separation := 9.0 - progress * 5.0
 			canvas.draw_line(position + side * separation, focus + side * separation, Color(base, 0.64), 2.0)
-			canvas.draw_line(position - side * separation, focus - side * separation, Color(language.element_color("dark", "bright"), 0.64), 2.0)
+			canvas.draw_line(position - side * separation, focus - side * separation, Color(base, 0.64), 2.0)
 			_draw_diamond(canvas, focus, 4.0 + progress * 3.0, Color(bright, 0.82), Color(dark, 0.24))
 		_:
 			return false
@@ -274,7 +274,7 @@ func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int,
 			canvas.draw_circle(position, radius + 8.0 + pulse, Color(base, 0.14))
 			canvas.draw_circle(position, radius + 1.0, dark)
 			canvas.draw_arc(position, radius + 1.0, -2.45, 0.70, 18, bright, 3.0)
-			canvas.draw_arc(position, radius - 3.0, 0.70, 3.84, 18, Color(language.element_color("light", "bright"), 0.72), 2.0)
+			canvas.draw_arc(position, radius - 3.0, 0.70, 3.84, 18, Color(bright, 0.72), 2.0)
 			canvas.draw_line(position - direction * 8.0 + side * 5.0, position - direction * 19.0 + side * 10.0, Color(base, 0.42), 2.0)
 			for bounce_index: int in range(projectile.remaining_bounces):
 				canvas.draw_circle(position + side * (radius + 7.0) + direction * float(bounce_index * 4 - 2), 1.5, bright)
@@ -360,7 +360,7 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 			var side := lane.normalized().orthogonal() if lane.length_squared() > 0.0 else Vector2.UP
 			canvas.draw_line(start, endpoint, Color(dark, opacity * 0.42), 14.0)
 			canvas.draw_line(start + side * 3.0, endpoint + side * 3.0, Color(base, opacity * 0.72), 3.0)
-			canvas.draw_line(start - side * 3.0, endpoint - side * 3.0, Color(language.element_color("dark", "bright"), opacity * 0.66), 3.0)
+			canvas.draw_line(start - side * 3.0, endpoint - side * 3.0, Color(base, opacity * 0.66), 3.0)
 			canvas.draw_line(start, endpoint, Color(bright, opacity * 0.92), 1.0)
 			_draw_diamond(canvas, endpoint, 10.0 + phase * 8.0, Color(bright, opacity), Color(dark, opacity * 0.28))
 			return true
@@ -411,7 +411,7 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 			canvas.draw_circle(position, 7.0 + phase * 5.0, Color(dark, opacity * 0.48))
 		else:
 			canvas.draw_arc(position, 9.0 + phase * 20.0, -2.4, 0.7, 18, Color(base, opacity), 3.0)
-			canvas.draw_arc(position, 9.0 + phase * 20.0, 0.7, 3.84, 18, Color(language.element_color("light", "bright"), opacity * 0.72), 2.0)
+			canvas.draw_arc(position, 9.0 + phase * 20.0, 0.7, 3.84, 18, Color(bright, opacity * 0.72), 2.0)
 		return true
 	return false
 

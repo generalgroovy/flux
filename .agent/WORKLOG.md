@@ -1,5 +1,22 @@
 # FLUX2 agent worklog
 
+## 2026-09-04 - clarity/control U1-U5 green checkpoint
+
+- Shared Baron-led body proportions; S. Wayne dark-skinned throughout eight
+  source directions/poses. Built-in raster edits, immutable source/prompts in
+  reference/art/clarity_v1, deterministic matte import/packing in the existing
+  Godot compiler. Rejected seven-column draft never consumed.
+- Simple single-element travel core and mark, distinct Light/Charge and
+  Water/Ice values, no contrasting-element effect accents, hybrid schema guard.
+- Full 16-spell/12-slot setup, drag/drop and explicit Assign, keyboard/controller,
+  cancel and display-scale input mapping; movement guide now explains lift/steer.
+- Protocol 34 ordinary jumps use live acceleration/braking; advanced authored
+  momentum modes unchanged. Full gate 67 suites, 21,548 assertions, stderr zero,
+  45,817ms; local Farflow smoke passed. First full run correctly rejected an
+  overlong guide line; shortened copy, reran full successfully (not a test bypass).
+- Source candidate only; prior Windows exports are stale. New requested frontier:
+  Grace Riva, Wa Bidi, movement-facing art, alternating walks and map prop polish.
+
 ## 2026-09-02 - warning-clean validation and named gates
 
 Engineering outcome:

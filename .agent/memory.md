@@ -1,5 +1,27 @@
 # Active implementation memory
 
+## 2026-09-04 current checkpoint: clarity/control U1-U5
+
+- Dark-skinned S. Wayne and Oh Tipi use versioned Baron-led proportion artwork;
+  stable 58/68/76 envelopes, shared feet/hitbox and 240 eight-direction cells.
+- Spell Loom shows all 16 live spells beside 12 slots; drag from library/slot,
+  keyboard/controller fallback, outside/focus-loss cancellation and scaled input.
+- Single-element projectile cores/runes and palette; removed mixed Light/Dark
+  effect accents. Catalog rejects hybrid metadata. Chemistry stays disabled.
+- Ordinary jump/double-jump add vertical lift, with live horizontal input and
+  braking; slide-jump/wall-kick momentum remains. Protocol 34; snapshot 12.
+- Full gate: 67 suites / 21,548 assertions / zero failures or stderr, 45,817ms.
+  Receipt .godot/receipts/clarity-full-green.json. Farflow 120Hz host/join,
+  reconciliation, round/rematch and stewardship smoke passed. 720p Loom capture
+  inspected. Not a new installer build or human visual/feel approval.
+- New user priority AFTER this checkpoint: implement Grace Riva (existing stable
+  grace_reava identity, sylph Wind/Water/Light) and Wa Bidi (goblin Charge/Wind/Fire),
+  clean alternating legs, exact movement-facing all directions (especially Oh
+  Tipi south slide), then map-object polish. One character at a time, reuse live
+  single-element spells, preserve authoritative collision and safe remote play.
+  Grace art draft generated but not yet imported/promoted. Earlier no-roster
+  directive is superseded only for these explicitly requested two characters.
+
 This compact handoff complements the append-only `WORKLOG.md`; update it after
 each playable slice.
 

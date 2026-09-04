@@ -36,14 +36,21 @@ func _initialize() -> void:
 	var atlas := Image.create(768, 2880, false, Image.FORMAT_RGBA8)
 	# Author/template order is small -> middle -> large, runtime row IDs unchanged.
 	for champion_index: int in [1, 0, 2]:
-		var source := Image.load_from_file(SOURCE + NAMES[champion_index] + "-source.png")
+		var body_source := SOURCE if champion_index == 2 else "res://reference/art/clarity_v1/"
+		var source := Image.load_from_file(body_source + NAMES[champion_index] + "-source.png")
 		assert(source != null and not source.is_empty())
 		for direction: int in range(8):
-			var neutral := subject_crop(clean_alpha(grid_cell(source, direction, 0, 8)))
+			var neutral_cell := grid_cell(source, direction, 0, 8)
+			if champion_index != 2:
+				neutral_cell = import_cutout(neutral_cell, true)
+			var neutral := subject_crop(clean_alpha(neutral_cell))
 			var neutral_height := neutral.get_used_rect().size.y
 			assert(neutral_height > 40)
 			for state_index: int in range(STATES.size()):
-				var pose := subject_crop(clean_alpha(grid_cell(source, direction, STATES[state_index], 8)))
+				var pose_cell := grid_cell(source, direction, STATES[state_index], 8)
+				if champion_index != 2:
+					pose_cell = import_cutout(pose_cell, true)
+				var pose := subject_crop(clean_alpha(pose_cell))
 				# Upright direction references share the authored envelope. Crouched
 				# actions use that direction's neutral scale, never stretch to stand.
 				var target_height: int = HEIGHTS[champion_index]
@@ -58,7 +65,7 @@ func _initialize() -> void:
 					offset.x += 2 if direction < 4 else -2
 				atlas.blit_rect(pose, Rect2i(Vector2i.ZERO, pose.get_size()), Vector2i(direction * 96, (champion_index * 10 + state_index) * 96) + offset)
 	atlas = ink_and_palette(atlas)
-	write_image(atlas, "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v13.png")
+	write_image(atlas, "res://assets/sprites/champions_v3/foundation/runtime_atlas_eight_v14.png")
 	quit(0)
 
 
@@ -82,7 +89,7 @@ static func clean_alpha(source: Image) -> Image:
 	return source
 
 
-static func import_cutout(source: Image) -> Image:
+static func import_cutout(source: Image, black_matte: bool = false) -> Image:
 	# Generated prop sources can contain an opaque preview matte. Treat that as
 	# an explicit import format: remove only border-connected near-white neutral
 	# pixels. Interior highlights and the immutable source art stay untouched.
@@ -109,7 +116,8 @@ static func import_cutout(source: Image) -> Image:
 		var color := source.get_pixelv(point)
 		var low := minf(color.r, minf(color.g, color.b))
 		var high := maxf(color.r, maxf(color.g, color.b))
-		if color.a > 0.05 and (low < 0.78 or high - low > 0.065):
+		var matte := high < 0.035 if black_matte else (low >= 0.78 and high - low <= 0.065)
+		if color.a > 0.05 and not matte:
 			continue
 		source.set_pixelv(point, Color.TRANSPARENT)
 		for delta: Vector2i in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:

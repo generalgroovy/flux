@@ -13,11 +13,20 @@ slice without rewriting historical evidence.
 
 ## Current frontier and hard order
 
+Newest user-authorized slice: U1-U5 in `docs/CLARITY-AND-CONTROL-ITERATION.md`
+(head proportions/dark-skinned S. Wayne, single-element clarity, drag/drop spell
+setup, concise instructions, vertical jump/live steering). After its green gate,
+add Grace Riva (sylph Wind/Water/Light) and Wa Bidi (goblin Charge/Wind/Fire)
+one at a time, reusing validated single-element spells, and fix authored motion
+facings first. Every movement pose must face the actual movement direction;
+Oh Tipi south slide must be frontal, not southwest. Refine map objects without
+changing authoritative footprints. Keep chemistry/hybrid gates closed.
+
 The user reopened visual acceptance: finish R1-R4 in
 `docs/VISUAL-REFINEMENT-ACCEPTANCE.md` before new chemistry. Illustrated terrain,
-low elevated facades, cutout props and v13 small/middle/large eight-way body art
+low elevated facades, cutout props and v14 small/middle/large eight-way body art
 are integrated candidates. Earlier V0–V10 scores describe the previous artwork,
-not approval of this replacement. The current source uses protocol 33, snapshot
+not approval of this replacement. The current source uses protocol 34, snapshot
 schema 12 and preferences 10; preserve the published green checkpoint and all
 accepted visual/gameplay behavior. Continue
 in this strict player-facing order; do not skip ahead because a later catalog is
@@ -63,7 +72,7 @@ slices, checkpoint each green result, and immediately start the next accepted
 slice. Do not stop at plans, scaffolds, catalogs, generated images or passing
 unit tests when the player-facing outcome is still absent.
 
-The current source frontier is protocol 33 / snapshot schema 12: Oh Tipi, S. Wayne
+The current source frontier is protocol 34 / snapshot schema 12: Oh Tipi, S. Wayne
 and The Red Baron exercise middle, small and large equal-budget roles; the complete
 non-ability movement grammar, bounded launch steering plus a timed impact-recovery/tech decision, full/cone POV with building cutaways, twelve
 Wellspring stations including a host-authoritative 3×4 Spell Loom,

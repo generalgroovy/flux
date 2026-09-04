@@ -5,7 +5,42 @@ func run() -> int:
 	_test_canonical_slot_weaving()
 	_test_three_spell_kit_weaving()
 	_test_editor_navigation_and_encoding()
+	_test_drag_and_drop()
 	return finish("spell-loom-editor")
+
+
+func _test_drag_and_drop() -> void:
+	var editor := SpellLoomEditor.new()
+	var state := PlayerState.new()
+	editor.open_editor(state)
+	equal(editor.visible_spell_indices().size(), 16, "entire current spell catalog fits at once")
+	for index: int in range(editor.available_wire_ids.size()):
+		for slot: int in range(PlayerState.SPELL_SLOT_COUNT):
+			var before := Array(state.spell_wire_ids)
+			editor.pointer_down(editor.spell_rect(index).get_center(), state)
+			editor.pointer_move(SpellLoomEditor.slot_rect(slot).get_center())
+			check(editor.dragging, "catalog drag starts after pointer threshold")
+			check(editor.pointer_up(SpellLoomEditor.slot_rect(slot).get_center()), "each spell drops into every slot")
+			equal(editor.selected_slot_index, slot, "drop selects exact destination")
+			equal(editor.selected_wire_id(), editor.available_wire_ids[index], "drop retains source identity")
+			equal(Array(state.spell_wire_ids), before, "pointer cannot bypass simulation authority")
+			check(editor.apply_to_state(state), "canonical assignment accepts drop")
+			equal(state.spell_wire_id(slot + 1), editor.available_wire_ids[index], "destination receives requested spell")
+			check(state.has_valid_spell_slots(), "every drop preserves unique valid slots")
+	var before := Array(state.spell_wire_ids)
+	editor.pointer_down(editor.spell_rect(0).get_center(), state)
+	check(not editor.pointer_up(Vector2.ZERO), "outside drop cancels")
+	equal(Array(state.spell_wire_ids), before, "outside drop changes nothing")
+	editor.pointer_down(editor.spell_rect(0).get_center(), state)
+	check(not editor.pointer_up(editor.spell_rect(0).get_center()), "a click only selects")
+	editor.pointer_down(SpellLoomEditor.slot_rect(3).get_center(), state)
+	var source_wire := state.spell_wire_id(4)
+	check(editor.pointer_up(SpellLoomEditor.slot_rect(9).get_center()), "equipped spell can drag between slots")
+	equal(editor.selected_wire_id(), source_wire, "slot drag retains equipped identity")
+	editor.pointer_down(editor.spell_rect(0).get_center(), state)
+	editor.close_editor()
+	check(not editor.pointer_up(SpellLoomEditor.slot_rect(0).get_center()), "closing cancels a pending drag")
+	equal(SpellLoomEditor.slot_at(Vector2(SpellLoomEditor.GRID_X + 128, SpellLoomEditor.GRID_Y + 10)), -1, "gap is not a drop target")
 
 
 func _test_canonical_slot_weaving() -> void:

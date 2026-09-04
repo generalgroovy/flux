@@ -389,6 +389,8 @@ func _ready() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		_request_safe_quit("window")
+	elif what == NOTIFICATION_APPLICATION_FOCUS_OUT and spell_loom_editor != null:
+		spell_loom_editor.cancel_drag()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -447,7 +449,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 				controls_editor.move_selection(1, 0)
 			elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
-				controls_editor.select_cell(mouse_event.position)
+				controls_editor.select_cell(mouse_event.position / _ui_scale())
 			handled = true
 		elif event is InputEventJoypadButton and event.pressed:
 			var joy_event := event as InputEventJoypadButton
@@ -549,14 +551,28 @@ func _handle_spell_loom_input(event: InputEvent) -> void:
 			KEY_ENTER, KEY_KP_ENTER:
 				_submit_spell_loom_choice()
 		handled = true
-	elif event is InputEventMouseButton and event.pressed:
+	elif event is InputEventMouseMotion:
+		spell_loom_editor.pointer_move((event as InputEventMouseMotion).position / _ui_scale())
+		handled = true
+	elif event is InputEventMouseButton:
 		var mouse_event := event as InputEventMouseButton
-		if mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP:
+		var pointer := mouse_event.position / _ui_scale()
+		if mouse_event.button_index == MOUSE_BUTTON_WHEEL_UP and mouse_event.pressed:
 			spell_loom_editor.move_selection(-1, 0)
-		elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+		elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN and mouse_event.pressed:
 			spell_loom_editor.move_selection(1, 0)
 		elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
-			spell_loom_editor.select_at(mouse_event.position)
+			if mouse_event.pressed:
+				if SpellLoomEditor.CLOSE_RECT.has_point(pointer):
+					_close_spell_loom_editor()
+				elif SpellLoomEditor.ASSIGN_RECT.has_point(pointer):
+					_submit_spell_loom_choice()
+				else:
+					spell_loom_editor.pointer_down(pointer, _local_player_state())
+			elif spell_loom_editor.pointer_up(pointer):
+				_submit_spell_loom_choice()
+		elif mouse_event.button_index == MOUSE_BUTTON_RIGHT and mouse_event.pressed:
+			spell_loom_editor.cancel_drag()
 		handled = true
 	elif event is InputEventJoypadButton and event.pressed:
 		var joy_event := event as InputEventJoypadButton
@@ -981,65 +997,7 @@ func _draw_controls_editor() -> void:
 
 
 func _draw_spell_loom_editor() -> void:
-	var panel := SpellLoomEditor.PANEL_RECT
-	draw_rect(Rect2(Vector2.ZERO, Vector2(1280, 720)), Color("060907a8"), true)
-	draw_rect(panel, Color(PANEL_COLOR, 0.98), true)
-	draw_rect(panel, Color(FLUX_COLOR, 0.74), false, 3.0)
-	var state: PlayerState = _local_player_state()
-	if state == null:
-		return
-	var champion_id := champion_catalog.champion_id_from_wire(state.champion_wire_id)
-	var champion: Dictionary = champion_catalog.champion(champion_id)
-	draw_string(ThemeDB.fallback_font, panel.position + Vector2(40, 42), "SPELL LOOM · %s" % String(champion.get("display_name", champion_id)).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 650.0, 24, PARCHMENT_COLOR)
-	spell_loom_editor.configure_for_catalog(ability_catalog)
-	draw_string(ThemeDB.fallback_font, panel.position + Vector2(40, 68), "Weave any proven spell across Plain, Ctrl and Alt layers; each layer uses buttons 1–4.", HORIZONTAL_ALIGNMENT_LEFT, 720.0, 13, PALE_STONE_COLOR)
-	for library_index: int in spell_loom_editor.visible_spell_indices():
-		var visible_indices := spell_loom_editor.visible_spell_indices()
-		var visible_position: int = visible_indices.find(library_index)
-		var spell_rect := Rect2(SpellLoomEditor.SPELL_PICKER_X + float(visible_position) * SpellLoomEditor.SPELL_PICKER_WIDTH, SpellLoomEditor.GRID_Y - 54.0, SpellLoomEditor.SPELL_PICKER_WIDTH - 7.0, 40.0)
-		var selected_spell: bool = library_index == spell_loom_editor.selected_spell_index
-		var picker_wire_id: int = spell_loom_editor.available_wire_ids[library_index]
-		var picker_ability: Dictionary = ability_catalog.ability_from_wire(picker_wire_id)
-		var picker_name := String(picker_ability.get("display_name", "SPELL")).to_upper()
-		draw_rect(spell_rect, Color(FLUX_COLOR, 0.18 if selected_spell else 0.06), true)
-		draw_rect(spell_rect, FLUX_COLOR if selected_spell else Color(BRASS_COLOR, 0.45), false, 2.0 if selected_spell else 1.0)
-		draw_string(ThemeDB.fallback_font, spell_rect.position + Vector2(6, 24), picker_name, HORIZONTAL_ALIGNMENT_LEFT, spell_rect.size.x - 12.0, 9, PARCHMENT_COLOR if selected_spell else PALE_STONE_COLOR)
-	for slot_index: int in range(PlayerState.SPELL_SLOT_COUNT):
-		var layer_index: int = slot_index / PlayerState.SPELL_BUTTON_COUNT
-		var button_index: int = slot_index % PlayerState.SPELL_BUTTON_COUNT
-		var row := Rect2(
-			SpellLoomEditor.GRID_X + float(button_index) * SpellLoomEditor.GRID_CELL_WIDTH,
-			SpellLoomEditor.GRID_Y + float(layer_index) * SpellLoomEditor.GRID_CELL_HEIGHT,
-			SpellLoomEditor.GRID_CELL_WIDTH - 7.0,
-			SpellLoomEditor.GRID_CELL_HEIGHT - 7.0,
-		)
-		var selected_slot: bool = slot_index == spell_loom_editor.selected_slot_index
-		draw_rect(row, Color(PARCHMENT_COLOR, 0.075 if selected_slot else (0.035 if slot_index % 2 == 0 else 0.018)), true)
-		draw_rect(row, ATTUNEMENT_COLOR if selected_slot else Color(BRASS_COLOR, 0.35), false, 2.0 if selected_slot else 1.0)
-		var wire_id: int = state.spell_wire_id(slot_index + 1)
-		var ability: Dictionary = ability_catalog.ability_from_wire(wire_id)
-		var ability_name := "EMPTY" if ability.is_empty() else String(ability.get("display_name", "SPELL")).to_upper()
-		var role_name := "OPEN" if wire_id == 0 else ("CHAMPION" if state.kit_spell_wire_ids().has(wire_id) else "GLOBAL")
-		draw_string(ThemeDB.fallback_font, row.position + Vector2(9, 18), PlayerState.spell_slot_label(slot_index), HORIZONTAL_ALIGNMENT_LEFT, row.size.x - 18.0, 12, ATTUNEMENT_COLOR)
-		draw_string(ThemeDB.fallback_font, row.position + Vector2(9, 40), ability_name, HORIZONTAL_ALIGNMENT_LEFT, row.size.x - 18.0, 11, PARCHMENT_COLOR if not ability.is_empty() else PALE_STONE_COLOR)
-		draw_string(ThemeDB.fallback_font, row.position + Vector2(9, 56), role_name, HORIZONTAL_ALIGNMENT_LEFT, row.size.x - 18.0, 9, FLUX_COLOR if role_name != "OPEN" else Color(PALE_STONE_COLOR, 0.65))
-	var selected_wire_id: int = spell_loom_editor.selected_wire_id()
-	var selected_ability: Dictionary = ability_catalog.ability_from_wire(selected_wire_id)
-	var detail_x: float = SpellLoomEditor.SPELL_PICKER_X
-	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 276), String(selected_ability.get("display_name", "SPELL")).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 270.0, 18, PARCHMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 302), "%s · %s · %s" % [String(selected_ability.get("element", "")).to_upper(), String(selected_ability.get("shape", "")).to_upper(), String(selected_ability.get("delivery", "")).to_upper()], HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, ATTUNEMENT_COLOR)
-	var flux_cost: int = int(selected_ability.get("flux_cost", 0))
-	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 328), "%s · %dms cooldown" % ["FREE" if flux_cost == 0 else "%d FLUX" % flux_cost, int(selected_ability.get("cooldown_ms", 0))], HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, PALE_STONE_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 354), "IMPACT · %s" % String(selected_ability.get("impact", "")).replace("_", " ").to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, PALE_STONE_COLOR)
-	var material_operation := String(selected_ability.get("material_operation", "none")).to_upper()
-	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 380), "MATERIAL · %s · SEALED" % material_operation, HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, Color(BRASS_COLOR, 0.85))
-	draw_string(ThemeDB.fallback_font, Vector2(detail_x, 430), "HOST-SEALED IN FARFLOW" if session_transport.is_online() else "OFFLINE HOST AUTHORITY", HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, FLUX_COLOR)
-	for line_index: int in runtime_content_lines.size():
-		draw_string(ThemeDB.fallback_font, Vector2(detail_x, 456 + line_index * 20), runtime_content_lines[line_index], HORIZONTAL_ALIGNMENT_LEFT, 270.0, 11, PALE_STONE_COLOR)
-	var footer_y := panel.end.y - 58.0
-	draw_line(Vector2(panel.position.x + 28, footer_y - 20), Vector2(panel.end.x - 28, footer_y - 20), Color(FLUX_COLOR, 0.45), 1.0)
-	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 40, footer_y), spell_loom_editor.status_message, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 80.0, 13, PARCHMENT_COLOR)
-	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 40, footer_y + 27), "UP/DOWN OR WHEEL POSITION · LEFT/RIGHT SPELL · ENTER/A WEAVE · ESC/B CLOSE", HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 80.0, 12, PALE_STONE_COLOR)
+	SpellLoomPresenter.draw_panel(self, spell_loom_editor, _local_player_state(), ability_catalog, visual_language)
 
 
 func _ingest_combat_cues(events: Array[Dictionary]) -> void:
@@ -1930,7 +1888,7 @@ func _close_controls_editor() -> void:
 		return
 	controls_editor.close_editor()
 	controls_input_guard_frames = 2
-	station_notice = "Bindings sealed."
+	station_notice = "Controls saved."
 	station_notice_seconds = 1.5
 
 
@@ -1939,7 +1897,7 @@ func _submit_spell_loom_choice() -> void:
 		return
 	_submit_session_request(SessionTransport.REQUEST_SPELL_EQUIP, spell_loom_editor.request_value())
 	if session_transport.is_connected_client():
-		spell_loom_editor.status_message = "Weave sent to the host; the next seal confirms it."
+		spell_loom_editor.status_message = "Assignment sent. Waiting for the host to confirm."
 
 
 func _close_spell_loom_editor() -> void:
@@ -1947,7 +1905,7 @@ func _close_spell_loom_editor() -> void:
 		return
 	spell_loom_editor.close_editor()
 	controls_input_guard_frames = 2
-	station_notice = "Spell weave closed."
+	station_notice = "Spell setup closed."
 	station_notice_seconds = 1.5
 
 

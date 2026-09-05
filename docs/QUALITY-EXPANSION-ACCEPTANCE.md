@@ -2,6 +2,12 @@
 
 Status: **active; Q0-Q2 are green source slices, Q3 casting clarity is next**.
 
+Q3a is source-green: a shared symbol renderer now reaches actual live projectile
+cores, HUD, Loom and cast markers; old projectile smoothing/vocabulary is removed.
+Full validation passed 68 suites / 26,670 assertions and a 120 Hz boot. A 40-frame
+live capture (`q3-live-glyph-v2`) was produced and frame 30 inspected. Q3b still
+requires specimen/impact consistency, cadence and accessibility/density review.
+
 This program orders the current usability, movement, spell-grid and animation
 requests into independently playable checkpoints. The aim is a crisp,
 room-readable bullet-pattern action game with FLUX's own old-world identity—not

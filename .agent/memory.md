@@ -1,5 +1,20 @@
 # Active implementation memory
 
+## 2026-09-05 Q3a shared live element symbols
+
+- Added one token-driven glyph renderer for HUD, Loom, casting markers and the
+  actual BurstProjectilePresenter route used by live first-eight projectiles.
+  Removed the latter's separate incomplete vocabulary and antialiased edges.
+- Explicit preloads fix first-import class registration. Both new script UIDs
+  are tracked. Metadata checks cover all twelve declared symbol topologies.
+- Full gate: 68 suites, 26,670 assertions, editor import and protocol-37 120 Hz
+  boot; zero failures/stderr, 45,055 ms. Receipt: latest-full.json.
+- Captured 40 real frames at .godot/visual-captures/q3-live-glyph-v2; frame 30
+  inspected for Water projectile and Water/Earth/Light/Wind HUD distinctions.
+- Q3 remains open: unify the diagnostic specimen vocabulary, complete impact
+  marks and bounded cadence, then grayscale/reduced-effects and density review.
+  No new packaged installer or internet playtest is claimed by this slice.
+
 ## 2026-09-05 current checkpoint: complete first-eight spell matrix
 
 - Protocol 37 promotes a schema-4 row-major Spell Loom: Fire, Water, Earth,

@@ -177,6 +177,14 @@ func element_color(element_id: String, value: String = "base") -> Color:
 	return Color(String(element.get(value, "#ff00ff")))
 
 
+func element_shape(element_id: String) -> String:
+	return String((elements.get(element_id, {}) as Dictionary).get("shape", ""))
+
+
+func element_cadence(element_id: String) -> String:
+	return String((elements.get(element_id, {}) as Dictionary).get("cadence", ""))
+
+
 func content_hash() -> String:
 	var canonical := JSON.stringify(data, "", true)
 	return canonical.sha256_text()

@@ -2,6 +2,11 @@
 
 **Flow. Learn. Unleash. eXecute.**
 
+Latest visual checkpoint: live projectile cores, cast markers, combat HUD and
+Spell Loom now share element symbols. Projectile outlines use crisp sampling.
+The broader Q3 motion/accessibility review remains open; this is a tested source
+update, not a newly published installer.
+
 FLUX 2 is an original 2.5D top-down elemental arena game built in Godot 4.7.1.
 It combines crisp independent-aim combat, expressive chained movement, readable
 bullet patterns, and a bounded world-chemistry sandbox. The player always

@@ -11,6 +11,11 @@ continuation cost with a 333 ms reset, larger Stamina pools and lower positive
 spell costs, and a complete element-row × delivery-column Loom with forty cells.
 Q3-Q5 now finish spell readability, crisp character motion and integration.
 
+Q3a shared symbols are source-green (68 suites / 26,670 assertions): live
+projectiles, HUD, Loom and cast markers use a common renderer. Next Q3b closes
+specimen/impact consistency and bounded cadence, then accessibility/density
+captures before Q4. Q3 as a whole is not yet visually accepted.
+
 U1-U5 source gate passed (67 suites / 21,548 assertions). Then: exact motion-facing
 and alternating walk contacts; Grace Riva then Wa Bidi with existing single-element
 spells and reusable size templates; map-object refinement. Keep each promotion

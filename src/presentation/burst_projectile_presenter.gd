@@ -3,6 +3,7 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/burst_projectile_runtime_v3.json"
+const ElementGlyphRendererScript = preload("res://src/presentation/element_glyph_renderer.gd")
 const EXPECTED_ID := "burst-projectile-runtime-v3"
 const REQUIRED_ELEMENTS := ["neutral", "fire", "water", "wind", "earth", "charge", "ice", "light", "dark"]
 const DIRECTION_ORDER := ["north", "north_east", "east", "south_east", "south", "south_west", "west", "north_west"]
@@ -91,40 +92,14 @@ func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, _tick: int
 	# distinguishes elements without color; no orbiting dots or blended hues.
 	if not reduced_effects:
 		var length := minf(ProjectilePresentationMotion.trail_length(projectile, false), radius * 1.8)
-		canvas.draw_line(position - direction * (radius + length), position, Color(color, 0.30), maxf(2.0, radius * 0.7), true)
+		canvas.draw_line(position - direction * (radius + length), position, Color(color, 0.30), maxf(2.0, radius * 0.7), false)
 	canvas.draw_circle(position, radius + 2.0, Color("101a22"))
 	canvas.draw_circle(position, radius, color)
-	canvas.draw_arc(position, radius - 1.0, PI * 1.1, PI * 1.65, 8, Color(color.lightened(0.45), 0.8), 1.5, true)
-	draw_element_mark(canvas, position, maxf(3.0, radius * 0.50), element, Color("17202bdd"))
+	canvas.draw_arc(position, radius - 1.0, PI * 1.1, PI * 1.65, 8, Color(color.lightened(0.45), 0.8), 2.0, false)
+	if not ElementGlyphRendererScript.draw(canvas, language, position, element, maxf(3.0, radius * 0.50), Color("17202bdd")):
+		canvas.draw_circle(position, 1.5, Color("17202bdd"))
 	return true
 
-
-static func draw_element_mark(canvas: CanvasItem, center: Vector2, size: float, element: String, ink: Color) -> void:
-	var points := PackedVector2Array()
-	match element:
-		"fire":
-			points = PackedVector2Array([Vector2(0, -1), Vector2(0.9, 0.8), Vector2(-0.9, 0.8), Vector2(0, -1)])
-		"earth":
-			points = PackedVector2Array([Vector2(-0.8, -0.8), Vector2(0.8, -0.8), Vector2(0.8, 0.8), Vector2(-0.8, 0.8), Vector2(-0.8, -0.8)])
-		"charge":
-			points = PackedVector2Array([Vector2(0.5, -1), Vector2(-0.5, 0.1), Vector2(0.6, -0.1), Vector2(-0.5, 1)])
-		"light":
-			canvas.draw_line(center - Vector2(size, 0), center + Vector2(size, 0), ink, 1.5, true)
-			canvas.draw_line(center - Vector2(0, size), center + Vector2(0, size), ink, 1.5, true)
-		"ice":
-			canvas.draw_line(center - Vector2.ONE * size * 0.75, center + Vector2.ONE * size * 0.75, ink, 1.5, true)
-			canvas.draw_line(center + Vector2(-1, 1) * size * 0.75, center + Vector2(1, -1) * size * 0.75, ink, 1.5, true)
-		"dark":
-			canvas.draw_arc(center, size, PI * 0.25, PI * 1.75, 10, ink, 2.0, true)
-		"wind":
-			canvas.draw_arc(center, size, 0.2, PI * 1.6, 10, ink, 1.5, true)
-			canvas.draw_circle(center, 1.0, ink)
-		_:
-			canvas.draw_circle(center, maxf(1.5, size * 0.45), ink)
-	if not points.is_empty():
-		for index: int in points.size():
-			points[index] = center + points[index] * size
-		canvas.draw_polyline(points, ink, 1.5, true)
 
 func texture(element: String) -> Texture2D:
 	return textures_by_element.get(element)

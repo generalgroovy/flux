@@ -3,6 +3,7 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_spell_visuals_v1.json"
+const ElementGlyphRendererScript = preload("res://src/presentation/element_glyph_renderer.gd")
 const EXPECTED_ID := "foundation-spell-visuals-v4-first-eight-burst"
 const EXPECTED_AUTHORITY := "presentation only; simulation owns spell membership, geometry, timing, collision, resources, damage, control and outcomes"
 const REQUIRED_IDS := ["rillshot", "cinderbolt", "cinder-fan", "stone-burst", "rill-burst", "gale-burst", "rime-burst", "arc-burst", "prism-burst", "eclipse-burst", "tideline", "rimewake", "eclipse-disc", "pocket-eclipse"]
@@ -199,6 +200,7 @@ func draw_startup(
 		canvas.draw_circle(start, 2.0, Color(bright, 0.78))
 	canvas.draw_circle(brace_focus, 3.0 + progress * 2.0, Color(dark, 0.76))
 	canvas.draw_arc(brace_focus, 5.0 + progress * 3.0, 0.0, TAU, 12, Color(bright, 0.82), brace_thickness)
+	_draw_element_mark(canvas, brace_focus, direction, element, 3.5 + progress, bright)
 	var skeleton_phase := animation_skeletons.phase_for(String(profile.get("shape", "")), progress)
 	var phase_id := String(skeleton_phase.get("id", ""))
 	# The delivery skeleton contributes a small shared hand cue before the
@@ -410,6 +412,8 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 			canvas.draw_line(start - side * 3.0, endpoint - side * 3.0, Color(base, opacity * 0.66), 3.0)
 			canvas.draw_line(start, endpoint, Color(bright, opacity * 0.92), 1.0)
 			_draw_diamond(canvas, endpoint, 10.0 + phase * 8.0, Color(bright, opacity), Color(dark, opacity * 0.28))
+			if String(profile.get("silhouette", "")) == "elemental_beam":
+				_draw_element_mark(canvas, endpoint - lane.normalized() * 9.0, lane.normalized(), element, 4.5, Color(bright, opacity))
 			return true
 	if event_type == "spray_fired" and String(profile.get("silhouette", "")) in ["wave_fan", "elemental_spray"]:
 			var lane := endpoint - start
@@ -425,6 +429,8 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 				var midpoint := start.lerp(target, 0.58) + perpendicular * sin(offset * PI) * 9.0
 				canvas.draw_polyline(PackedVector2Array([start, midpoint, target]), Color(bright if absf(offset) < 0.1 else base, opacity * (0.78 if absf(offset) < 0.1 else 0.42)), 2.0 if not reduced_effects else 1.0, false)
 			canvas.draw_arc(start, minf(90.0, lane.length() * 0.34), lane.angle() - 0.43, lane.angle() + 0.43, 18, Color(bright, opacity * 0.82), 3.0)
+			if String(profile.get("silhouette", "")) == "elemental_spray":
+				_draw_element_mark(canvas, start + direction * 10.0, direction, element, 4.5, Color(bright, opacity))
 			return true
 	if event_type == "field_triggered" and String(profile.get("impact", "")) in ["freeze_star", "elemental_field_break"]:
 		for index: int in range(6):
@@ -463,34 +469,8 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 	return false
 
 
-static func _draw_element_mark(canvas: CanvasItem, center: Vector2, direction: Vector2, element: String, radius: float, color: Color) -> void:
-	var side := direction.orthogonal()
-	match element:
-		"fire":
-			canvas.draw_polyline(_closed(PackedVector2Array([center + direction * radius, center + side * radius * 0.72, center - direction * radius, center - side * radius * 0.72])), color, 1.5, false)
-		"water":
-			canvas.draw_arc(center, radius, 0.0, TAU, 10, color, 1.5)
-		"earth":
-			canvas.draw_rect(Rect2(center - Vector2.ONE * radius * 0.68, Vector2.ONE * radius * 1.36), color, false, 1.5)
-		"wind":
-			canvas.draw_arc(center, radius, -2.6, 0.45, 9, color, 1.5)
-		"charge":
-			canvas.draw_polyline(PackedVector2Array([center - side * radius, center + direction * radius * 0.25, center - direction * radius * 0.15, center + side * radius]), color, 1.5, false)
-		"ice":
-			canvas.draw_line(center - direction * radius, center + direction * radius, color, 1.5)
-			canvas.draw_line(center - side * radius, center + side * radius, color, 1.5)
-		"light":
-			canvas.draw_line(center - direction * radius, center + direction * radius, color, 1.5)
-			canvas.draw_line(center - side * radius, center + side * radius, color, 1.5)
-			draw_circle_safe(canvas, center, radius * 0.32, color)
-		"dark":
-			canvas.draw_arc(center + side * radius * 0.18, radius, -2.35, 0.80, 10, color, 1.5)
-		_:
-			draw_circle_safe(canvas, center, radius * 0.42, color)
-
-
-static func draw_circle_safe(canvas: CanvasItem, center: Vector2, radius: float, color: Color) -> void:
-	canvas.draw_circle(center, radius, color)
+func _draw_element_mark(canvas: CanvasItem, center: Vector2, direction: Vector2, element: String, radius: float, color: Color) -> void:
+	ElementGlyphRendererScript.draw(canvas, language, center, element, radius, color, direction)
 
 
 static func _draw_diamond(canvas: CanvasItem, center: Vector2, radius: float, outline: Color, fill: Color) -> void:

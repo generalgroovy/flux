@@ -3,6 +3,7 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/compact_hud_v1.json"
+const ElementGlyphRendererScript = preload("res://src/presentation/element_glyph_renderer.gd")
 const EXPECTED_ID := "compact-combat-hud-v1"
 const EXPECTED_AUTHORITY := "presentation only; simulation, input legality and resource ownership remain authoritative elsewhere"
 const REQUIRED_LAYOUT_KEYS := [
@@ -228,21 +229,7 @@ func _draw_element_glyph(canvas: CanvasItem, center: Vector2, element: String, a
 	if empty:
 		canvas.draw_arc(center, 5.0, 0.0, TAU, 12, accent, 1.0)
 		return
-	match element:
-		"water":
-			canvas.draw_arc(center + Vector2(-1, 1), 6.0, -2.6, 0.5, 12, accent, 2.0)
-			canvas.draw_circle(center + Vector2(3, 2), 2.0, accent)
-		"ice":
-			for index: int in range(6):
-				var ray := Vector2.from_angle(TAU * float(index) / 6.0)
-				canvas.draw_line(center, center + ray * 7.0, accent, 1.0)
-		"dark":
-			canvas.draw_arc(center, 7.0, -2.4, 0.7, 12, accent, 2.0)
-		"light":
-			var diamond := PackedVector2Array([center + Vector2(0, -7), center + Vector2(7, 0), center + Vector2(0, 7), center + Vector2(-7, 0), center + Vector2(0, -7)])
-			canvas.draw_polyline(diamond, accent, 2.0, false)
-		_:
-			canvas.draw_circle(center, 4.0, accent)
+	ElementGlyphRendererScript.draw(canvas, language, center, element, 6.0, accent)
 
 
 func _layer_label(active_layer: int, copy: Dictionary) -> String:

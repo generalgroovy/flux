@@ -1,6 +1,8 @@
 class_name SpellLoomPresenter
 extends RefCounted
 
+const ElementGlyphRendererScript = preload("res://src/presentation/element_glyph_renderer.gd")
+
 # One layout contract powers painting and hit testing; no gameplay mutation here.
 static func draw_panel(canvas: CanvasItem, editor: SpellLoomEditor, state: PlayerState, catalog: AbilityCatalog, language: VisualLanguage) -> void:
 	if state == null:
@@ -29,11 +31,13 @@ static func draw_panel(canvas: CanvasItem, editor: SpellLoomEditor, state: Playe
 		text(canvas, rect.position + Vector2(9, 22), PlayerState.spell_slot_label(slot), 15, focus)
 		text(canvas, rect.position + Vector2(9, 47), String(ability.get("display_name", "Empty")), 13, ink, rect.size.x - 18)
 		text(canvas, rect.position + Vector2(9, 68), element.capitalize(), 12, color)
+		ElementGlyphRendererScript.draw(canvas, language, rect.position + Vector2(rect.size.x - 16, 18), element, 6.0, color)
 	for column: int in range(AbilityCatalog.SPELL_MATRIX_FAMILIES.size()):
 		text(canvas, Vector2(SpellLoomEditor.SPELL_PICKER_X + column * SpellLoomEditor.SPELL_PICKER_WIDTH + 5, 140), AbilityCatalog.SPELL_MATRIX_FAMILIES[column].to_upper(), 11, muted)
 	for row: int in range(AbilityCatalog.FIRST_EIGHT_ELEMENTS.size()):
 		var row_element := AbilityCatalog.FIRST_EIGHT_ELEMENTS[row]
 		var row_color := language.element_color(row_element, "base")
+		ElementGlyphRendererScript.draw(canvas, language, Vector2(SpellLoomEditor.MATRIX_LABEL_X + 27, SpellLoomEditor.GRID_Y + row * SpellLoomEditor.SPELL_PICKER_HEIGHT + 8), row_element, 5.0, row_color)
 		text(canvas, Vector2(SpellLoomEditor.MATRIX_LABEL_X, SpellLoomEditor.GRID_Y + row * SpellLoomEditor.SPELL_PICKER_HEIGHT + 24), row_element.to_upper(), 11, row_color, 62)
 	for index: int in editor.visible_spell_indices():
 		var rect := editor.spell_rect(index)

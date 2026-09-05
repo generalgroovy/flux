@@ -1,5 +1,10 @@
 # FLUX 2 active backlog
 
+**Latest order:** [G0-G5](../docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md):
+control corrections/higher jumps -> complete spell presentation -> finite
+element deposits (2-5 s) -> Steam -> all 36 Level 1 pairs -> Windows/Farflow
+acceptance and playtest pause. Historical ordering below is subordinate to this.
+
 This queue reflects the current user-ordered path to the first-eight chemistry
 playtest. Completed detail belongs in `WORKLOG.md`; this file stays short,
 playable, and acceptance-driven.

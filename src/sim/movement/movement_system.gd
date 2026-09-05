@@ -50,11 +50,6 @@ static func step(state: PlayerState, command: SimCommand, config: SimConfig, wor
 			direction = Vector2i(state.landing_input_x, state.landing_input_y)
 			state.landing_input_ticks = 0
 		_apply_velocity(state, movement_command, direction, config)
-		if state.control_state == PlayerState.ControlState.SLOWED:
-			@warning_ignore("integer_division")
-			state.velocity_x = state.velocity_x * state.slow_ratio / 1000
-			@warning_ignore("integer_division")
-			state.velocity_y = state.velocity_y * state.slow_ratio / 1000
 	_integrate(state, config, world)
 	_update_wall_attachment(state, command, world, config)
 	_update_mode(state, command)
@@ -519,7 +514,10 @@ static func _try_slide(state: PlayerState, direction: Vector2i, config: SimConfi
 
 static func _try_slide_jump(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
 	var cost := _movement_action_cost(state, MovementTuning.SLIDE_JUMP_COST)
-	if state.slide_ticks > config.milliseconds_to_ticks(MovementTuning.SLIDE_JUMP_WINDOW_MS) or state.stamina < cost:
+	# Cooldown age is the accepted-action clock. Remaining slide time can be
+	# shortened by release/exhaustion and must not delay a held-slide conversion.
+	var slide_age := config.milliseconds_to_ticks(MovementTuning.SLIDE_COOLDOWN_MS) - state.slide_cooldown_ticks
+	if slide_age < config.milliseconds_to_ticks(MovementTuning.SLIDE_JUMP_MINIMUM_COMMITMENT_MS) or state.stamina < cost:
 		return false
 	var entry_speed := _planar_speed(state)
 	_spend_movement_action(state, cost, config)
@@ -628,6 +626,15 @@ static func _apply_velocity(state: PlayerState, command: SimCommand, direction: 
 		_set_directional_velocity(state, Vector2i(state.wall_skim_x, state.wall_skim_y), maxi(state.movement_action_speed, MovementTuning.WALL_SKIM_SPEED))
 	else:
 		_apply_ground_velocity(state, command, direction, config)
+		return
+	# Authored actions recreate velocity from their bounded impulse each tick,
+	# so they receive the ratio once. Input-driven movement applies it to its
+	# target/acceleration instead of repeatedly damping accumulated velocity.
+	if state.control_state == PlayerState.ControlState.SLOWED:
+		@warning_ignore("integer_division")
+		state.velocity_x = state.velocity_x * state.slow_ratio / 1000
+		@warning_ignore("integer_division")
+		state.velocity_y = state.velocity_y * state.slow_ratio / 1000
 
 
 static func _apply_control_velocity(state: PlayerState, config: SimConfig) -> void:
@@ -659,6 +666,9 @@ static func _apply_ground_velocity(state: PlayerState, command: SimCommand, dire
 		speed = speed * MovementTuning.SPRINT_MULTIPLIER / 1000
 	if moving:
 		speed = maxi(speed, minimum_speed)
+	var slow_ratio := state.slow_ratio if state.control_state == PlayerState.ControlState.SLOWED else 1000
+	@warning_ignore("integer_division")
+	speed = speed * slow_ratio / 1000
 	var desired_x: int = direction.x * speed / 1000 if moving else 0
 	var desired_y: int = direction.y * speed / 1000 if moving else 0
 	var opposing: bool = (
@@ -667,6 +677,9 @@ static func _apply_ground_velocity(state: PlayerState, command: SimCommand, dire
 		< MovementTuning.COUNTER_STRAFE_DOT_THRESHOLD
 	)
 	var rate: int = MovementTuning.ACCELERATION if moving else MovementTuning.DECELERATION
+	if moving:
+		@warning_ignore("integer_division")
+		rate = rate * slow_ratio / 1000
 	# Reserved chemistry seam remains exactly neutral; no per-frame allocation.
 	var surface_ratio := SurfaceMotionPolicy.acceleration_ratio() if moving else SurfaceMotionPolicy.braking_ratio()
 	rate = rate * surface_ratio / SurfaceMotionPolicy.NEUTRAL_RATIO

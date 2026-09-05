@@ -2,7 +2,7 @@ class_name SimConfig
 extends RefCounted
 
 
-const PROTOCOL_VERSION: int = 37
+const PROTOCOL_VERSION: int = 38
 const FIXED_SCALE: int = 1000
 const TICK_RATE: int = 120
 

@@ -398,7 +398,8 @@ func _test_movement_chain_economy_and_momentum(tick_rate: int) -> void:
 	equal(state.movement_chain_count, 1, "first movement action starts one explicit chain")
 	equal(state.stamina, before - MovementTuning.SLIDE_COST - world.config.per_tick(MovementTuning.SLIDE_SUSTAIN_DRAIN_PER_SECOND), "first movement action pays base cost plus its requested sustain tick")
 	check(state.velocity_x >= 840_000, "slide preserves earned planar entry speed above its minimum impulse")
-	state.slide_ticks = world.config.milliseconds_to_ticks(MovementTuning.SLIDE_JUMP_WINDOW_MS)
+	for _tick: int in range(world.config.milliseconds_to_ticks(MovementTuning.SLIDE_JUMP_MINIMUM_COMMITMENT_MS)):
+		_step(world, 1000, 0, SimCommand.HELD_SLIDE)
 	before = state.stamina
 	_step(world, 1000, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
 	equal(state.movement_chain_count, 2, "slide jump extends the same movement chain")

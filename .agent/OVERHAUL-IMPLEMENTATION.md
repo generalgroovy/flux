@@ -1,6 +1,6 @@
 # FLUX 2 implementation path to first-eight playtest
 
-Current frontier: protocol 37, snapshot 13, preferences 10, Godot 4.7.1,
+Current frontier: protocol 38, snapshot 13, preferences 10, Godot 4.7.1,
 canonical `main` (the remote compatibility ref mirrors its published checkpoint;
 the non-authoritative local compatibility ref may lag until a safe
 fast-forward). V0–V6 visual engineering, the exact
@@ -40,6 +40,14 @@ composable mastery. A technically complete slice is not product-complete until
 commitment, ownership, consequence, counter and recovery are readable.
 
 ## Slice sequence
+
+Latest user order: execute G0-G5 in
+[`CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md`](../docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md):
+measured control corrections and higher jumps, finish grid presentation,
+finite 2-5 second elemental deposits, Steam, all 36 Level 1 pairs, then the
+packaged playtest pause. This supersedes the older visual-only freeze for these
+named slices. New roster/forms, recursive chemistry and material drift/grip stay
+deferred. Small complete checkpoints must preserve launchability.
 
 Immediate tactile-arena slice: execute T0-T4 in
 [`docs/TACTILE-ARENA-ACCEPTANCE.md`](../docs/TACTILE-ARENA-ACCEPTANCE.md).

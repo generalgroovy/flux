@@ -2,8 +2,9 @@ class_name JumpPresentation
 extends RefCounted
 
 
-const NORMAL_MINIMUM_LIFT_PIXELS: int = 28
-const NORMAL_MAXIMUM_LIFT_PIXELS: int = 54
+const NORMAL_MINIMUM_LIFT_PIXELS: int = 34
+const NORMAL_MAXIMUM_LIFT_PIXELS: int = 84
+const NORMAL_EVASION_LIFT_PIXELS: int = 54
 const REDUCED_MINIMUM_LIFT_PIXELS: int = 7
 const REDUCED_MAXIMUM_LIFT_PIXELS: int = 13
 const GROUND_SHADOW_SCALE := Vector2(0.90, 0.32)
@@ -44,6 +45,8 @@ static func sample(
 	var sustain_ratio := _sustain_ratio(state, config)
 	var minimum_lift := REDUCED_MINIMUM_LIFT_PIXELS if reduced_motion else NORMAL_MINIMUM_LIFT_PIXELS
 	var maximum_lift := REDUCED_MAXIMUM_LIFT_PIXELS if reduced_motion else NORMAL_MAXIMUM_LIFT_PIXELS
+	if state.hop_ticks <= 0 and not reduced_motion:
+		maximum_lift = NORMAL_EVASION_LIFT_PIXELS
 	maximum_lift = roundi(lerpf(float(minimum_lift), float(maximum_lift), sustain_ratio))
 	result.body_lift_pixels = roundi(float(maximum_lift) * result.arc_ratio)
 	var apex_scale := REDUCED_APEX_SHADOW_SCALE if reduced_motion else NORMAL_APEX_SHADOW_SCALE
@@ -61,8 +64,11 @@ static func _sustain_ratio(state: PlayerState, config: SimConfig) -> float:
 		PlayerState.MovementMode.WALL_KICK,
 	]:
 		return 1.0
-	var sustain_window_ms := maxi(1, _hop_duration_ms(state.hop_mode) - MovementTuning.VARIABLE_JUMP_MINIMUM_MS)
-	var sustain_window_ticks := maxi(1, config.milliseconds_to_ticks(sustain_window_ms))
+	# The launch tick is free and the timer advances before paid sustain. Use
+	# the attainable number of paid ticks, not independently rounded ms.
+	var sustain_window_ticks := maxi(1,
+		config.milliseconds_to_ticks(_hop_duration_ms(state.hop_mode))
+		- config.milliseconds_to_ticks(MovementTuning.VARIABLE_JUMP_MINIMUM_MS) - 1)
 	return clampf(float(state.jump_sustain_ticks) / float(sustain_window_ticks), 0.0, 1.0)
 
 

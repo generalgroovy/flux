@@ -4,7 +4,7 @@ extends RefCounted
 
 # Authoritative values are fixed-point world units, resource milli-units,
 # milliseconds, or scale-1000 ratios. They preserve the proven FLUX grammar.
-const COMPATIBILITY_ID: String = "movement-tuning-v8-momentum-chains"
+const COMPATIBILITY_ID: String = "movement-tuning-v9-consistent-slow-slide-conversion"
 const PLAYER_RADIUS: int = 18_000
 const BASE_SPEED: int = 324_000
 const ACCELERATION: int = 1_980_000
@@ -97,6 +97,8 @@ const SLIDE_STEERING: int = 320
 const SLIDE_JUMP_COST: int = 20_000
 const SLIDE_JUMP_SPEED: int = 790_000
 const SLIDE_JUMP_DURATION_MS: int = 230
+const SLIDE_JUMP_MINIMUM_COMMITMENT_MS: int = 40
+# Retained for older route fixtures; conversion now uses elapsed commitment.
 const SLIDE_JUMP_WINDOW_MS: int = 110
 
 const VAULT_COST: int = 14_000
@@ -166,7 +168,8 @@ static func compatibility_hash() -> String:
 			SLIDE_COST, SLIDE_ENTRY_SPEED, SLIDE_SPEED, SLIDE_DURATION_MS,
 			SLIDE_MINIMUM_MS, SLIDE_SUSTAIN_DRAIN_PER_SECOND,
 			SLIDE_COOLDOWN_MS, SLIDE_STEERING, SLIDE_JUMP_COST,
-			SLIDE_JUMP_SPEED, SLIDE_JUMP_DURATION_MS, SLIDE_JUMP_WINDOW_MS,
+			SLIDE_JUMP_SPEED, SLIDE_JUMP_DURATION_MS,
+			SLIDE_JUMP_MINIMUM_COMMITMENT_MS, SLIDE_JUMP_WINDOW_MS,
 		],
 		"vault": [
 			VAULT_COST, VAULT_APPROACH, VAULT_LANDING, VAULT_MAXIMUM_DEPTH,

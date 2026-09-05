@@ -1,5 +1,23 @@
 # Active implementation memory
 
+## 2026-09-06 G0 control integrity and higher jump
+
+- Reproduced actual movement defects through SimWorld: 70% slow gave 38.497
+  instead of 226.8 units/s; held Slide discarded a Jump tap at 100 ms.
+- Slow now scales desired speed/acceleration once; special impulses retain one
+  multiplier. Held/released Slide can convert after 40 ms elapsed commitment.
+  Costs, momentum cap and opening protection remain intact.
+- Jump presentation now spans 34 to 84 px; corrected attainable sustain-tick
+  normalization so a real held jump reaches the height. Reduced-motion and
+  separate non-jump evasion lift are preserved. Protocol is 38, snapshot 13.
+- Full gate: 68 suites / 27,463 assertions; import and 120 Hz boot; no stderr,
+  50,285 ms; receipt `.godot/receipts/g0-controls-full.json`. Real local Farflow
+  host/join, reconciliation, late join, rematch and host stewardship passed.
+- Latest design is docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md. The user then
+  explicitly requested six implementation workers; their scope, file ownership
+  and checkpoint rules are in .agent/TEAM-ITERATION-PROMPT.md. Broader gameplay,
+  artwork, runtime, map, usability and character work is ongoing, not accepted.
+
 ## 2026-09-05 Q3a shared live element symbols
 
 - Added one token-driven glyph renderer for HUD, Loom, casting markers and the

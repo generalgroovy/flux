@@ -1,5 +1,11 @@
 # FLUX visual overhaul gate
 
+Latest override (2026-09-05): the user authorizes the G0-G5 order in
+`docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md`, including higher jumps,
+control corrections, elemental deposits and first-level pair effects.
+Visual proof remains required for every slice; the older mechanical freeze
+does not block these explicitly requested changes.
+
 Current override: five playable basics include Grace Riva and Wa Bidi. Follow
 `docs/CAST-MOTION-ACCEPTANCE.md` for travel-facing bodies, alternating contacts
 and object grounding. The ordinary cranium target is now 20–23% (excluding

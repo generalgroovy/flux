@@ -2,6 +2,13 @@
 
 **Flow. Learn. Unleash. eXecute.**
 
+Latest control checkpoint: proportional slows, reliable held-slide jump
+conversion and a higher 34/84 px tap/held jump arc are source-tested at 120 Hz.
+The [core revision](docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md) and
+[coordinated workstreams](.agent/TEAM-ITERATION-PROMPT.md) define the next work:
+reactable spells, reusable elemental art, temporary material, all first-level
+pairs, longer practice routes and clearer in-game guides/roster.
+
 Latest visual checkpoint: live projectile cores, cast markers, combat HUD and
 Spell Loom now share element symbols. Projectile outlines use crisp sampling.
 The broader Q3 motion/accessibility review remains open; this is a tested source
@@ -28,7 +35,7 @@ physical places rather than a detached menu.
 held Slide buys a longer lane, earned planar speed survives legal movement
 conversions, and airborne wallrun/air-dodge chains are live. Successive movement
 actions cost 10% more up to 40% and reset after 333 ms; every champion has more
-Stamina and every attack remains paid despite lower Flux costs. Protocol 37 and
+Stamina and every attack remains paid despite lower Flux costs. Protocol 38 and
 snapshot schema 13 carry the same state through Farflow. See the
 [quality expansion ledger](docs/QUALITY-EXPANSION-ACCEPTANCE.md).
 
@@ -46,7 +53,7 @@ from the earlier artwork. See the [visual acceptance ledger](docs/VISUAL-REFINEM
 Run `.\flux.cmd play` for this source revision. Existing Windows exports predate
 these changes and must be rebuilt before sharing; do not mix old packages and
 new-source hosts. The [map/movement ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md)
-records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current momentum-chain movement uses protocol 37.
+records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current momentum-chain movement uses protocol 38.
 
 ![Current five-champion motion contact sheet](assets/concept/five-champion-motion-reference-v1.png)
 
@@ -226,7 +233,7 @@ pending human balance/visual acceptance and independent activity isolation.
 |---|---|---|---|
 | Strafe + independent aim | Crossfire, retreat, prediction | Acceleration, brake, counter-strafe timing | Playable |
 | Sprint | Rotate, pursue, disengage | Continuous Stamina drain and delayed recovery | Playable |
-| Hop / double jump | Vertical lift with eight-way live air control; preserves earned planar speed | Tap reaches a compact 28 px apex; holding pays 80 Stamina/s toward a 54 px / 320 ms arc; protection remains only the 90 ms opening | Playable |
+| Hop / double jump | Vertical lift with eight-way live air control; preserves earned planar speed | Tap reaches a compact 34 px apex; holding pays 80 Stamina/s toward an 84 px / 320 ms arc; protection remains only the 90 ms opening | Playable |
 | Slide / slide jump | Tap gives a 150 ms committed burst; hold pays 45 Stamina/s toward 480 ms; slide-jump preserves legal entry speed | Entry-speed gate; 50 ms opening protection; vulnerable paid tail; release/exhaustion shortens it; second C brakes; world stays solid | Playable |
 | Movement chain economy | Makes repeated evasive conversion expressive but progressively costly | Every paid continuation within 333 ms adds 10% cost up to 40%; refused actions and held tails never add a step; HUD shows the next premium | Playable |
 | Air redirect / air dodge | Strong snap correction or committed escape beyond ordinary air steering | Limited use, cost, fixed duration, safe collision recovery | Playable |
@@ -475,7 +482,7 @@ default in gameplay while the Wellspring does not force limited information.
 | Capacity | Public cap 8; charters provide 2/4/8; later 32 only after measured architecture gate |
 | Transport | Godot ENet over UDP 24872, direct IP |
 | Authority | Host owns movement validation, resources, casts, hits, cooldowns, stations, roster, score, reset |
-| Compatibility | Protocol 37, snapshot 13, tick/tuning/map/content hashes |
+| Compatibility | Protocol 38, snapshot 13, tick/tuning/map/content hashes |
 | Client feel | Local movement prediction and bounded reconciliation; combat stays authoritative |
 | Join in progress | Observer until next gathering, then normal Hearth readiness |
 | Disconnect | 15-second in-memory exact-actor reservation and capability rotation |

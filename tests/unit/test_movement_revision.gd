@@ -6,6 +6,7 @@ func run() -> int:
 	_test_air_wall_budget()
 	_test_explicit_intents_and_attachment()
 	_test_airborne_wallrun_chain()
+	_test_slide_jump_commitment()
 	_test_snapshot_and_surface_seam()
 	_test_controls_migration_and_landing_buffer()
 	return finish("movement-revision")
@@ -152,6 +153,47 @@ func _test_controls_migration_and_landing_buffer() -> void:
 	MovementSystem.step(state, SimCommand.new(1, 1), config, arena)
 	check(state.velocity_x < before, "remembered landing direction keeps reversal intent across one empty tick")
 	equal(state.landing_input_ticks, 0, "landing input is consumed, not held forever")
+
+
+func _test_slide_jump_commitment() -> void:
+	var config := SimConfig.new(120)
+	var arena := CollisionWorld.new(10_000_000, 10_000_000)
+	var commitment_ticks := config.milliseconds_to_ticks(40)
+	for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+		for held: int in [0, SimCommand.HELD_SLIDE]:
+			for press_age: int in [1, commitment_ticks, commitment_ticks + 3]:
+				var state := _state()
+				state.velocity_x = direction.x * 840_000 / 1000
+				state.velocity_y = direction.y * 840_000 / 1000
+				MovementSystem.step(state, SimCommand.new(0, 1, direction.x, direction.y, held, SimCommand.PRESSED_SLIDE), config, arena)
+				var starting_cooldown := state.slide_cooldown_ticks
+				var converted_age := -1
+				for age: int in range(1, 24):
+					var pressed := SimCommand.PRESSED_JUMP if age == press_age else 0
+					var before := state.stamina
+					MovementSystem.step(state, SimCommand.new(age, 1, direction.x, direction.y, held, pressed), config, arena)
+					if state.hop_mode == PlayerState.MovementMode.SLIDE_JUMP and state.hop_ticks > 0:
+						converted_age = age
+						equal(state.stamina, before - MovementTuning.SLIDE_JUMP_COST * 1100 / 1000, "conversion pays the same continuation premium and stops paid slide sustain")
+						break
+					if age < commitment_ticks:
+						equal(state.hop_ticks, 0, "early Jump cannot skip the minimum slide commitment")
+				equal(converted_age, maxi(commitment_ticks, press_age), "tap and sustained Slide accept buffered or fresh Jump on the same legal tick")
+				equal(state.jump_buffer_ticks, 0, "slide conversion consumes exactly one buffered Jump")
+				equal(state.slide_ticks, 0, "Jump ends optional slide sustain")
+				equal(state.slide_cooldown_ticks, starting_cooldown - converted_age, "conversion never refreshes the slide cooldown")
+				equal(state.jump_protection_ticks, config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS), "conversion retains the original jump protection window")
+				check(state.hop_speed >= 839_000 and state.hop_speed <= MovementTuning.MAX_AUTHORED_SPEED, "all directions preserve legal earned momentum without exceeding the cap")
+				check(state.velocity_x * direction.x + state.velocity_y * direction.y > 0, "conversion follows the requested travel direction")
+	var refused := _state()
+	refused.velocity_x = MovementTuning.BASE_SPEED
+	MovementSystem.step(refused, SimCommand.new(0, 1, 1000, 0, SimCommand.HELD_SLIDE, SimCommand.PRESSED_SLIDE), config, arena)
+	refused.stamina = 0
+	for age: int in range(1, 24):
+		MovementSystem.step(refused, SimCommand.new(age, 1, 1000, 0, SimCommand.HELD_SLIDE, SimCommand.PRESSED_JUMP if age == 1 else 0), config, arena)
+	equal(refused.jump_buffer_ticks, 0, "unaffordable conversion expires rather than becoming a free jump")
+	equal(refused.hop_ticks, 0, "exhausted Slide never grants an unpaid conversion")
+	equal(refused.movement_chain_count, 1, "refused conversion does not advance the cost chain")
 
 
 func _test_snapshot_and_surface_seam() -> void:

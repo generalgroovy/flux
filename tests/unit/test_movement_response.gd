@@ -9,7 +9,74 @@ func run() -> int:
 	check(MovementTuning.compatibility_hash().length() == 64, "all movement tuning contributes a stable compatibility identity")
 	var metrics_120 := _response_metrics(120)
 	_test_bounds(metrics_120)
+	_test_slow_is_a_speed_ratio()
+	_test_slow_expiry_and_authored_motion()
 	return finish("movement-response")
+
+
+func _test_slow_is_a_speed_ratio() -> void:
+	var config := SimConfig.new(120)
+	var arena := CollisionWorld.new(10_000_000, 10_000_000)
+	for ratio: int in [250, 650, 700, 1000]:
+		for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+			for held: int in [0, SimCommand.HELD_SPRINT]:
+				var state := PlayerState.new(1)
+				state.position_x = 5_000_000
+				state.position_y = 5_000_000
+				check(MovementSystem.apply_control_state(state, PlayerState.ControlState.SLOWED, 2000, Vector2i.ZERO, 0, config, ratio), "authored slow is accepted")
+				for tick: int in range(120):
+					MovementSystem.step(state, SimCommand.new(tick, 1, direction.x, direction.y, held), config, arena)
+				var expected_speed: int = MovementTuning.BASE_SPEED
+				if held != 0:
+					expected_speed = expected_speed * MovementTuning.SPRINT_MULTIPLIER / 1000
+				expected_speed = expected_speed * ratio / 1000
+				# Diagonal command components are fixed-point approximations; compare
+				# the authored vector, not a floating-point length rounded to a circle.
+				var expected := Vector2i(direction.x * expected_speed / 1000, direction.y * expected_speed / 1000)
+				var actual := Vector2i(state.velocity_x, state.velocity_y)
+				check((actual - expected).length_squared() <= 400 * 400, "slow reaches its authored steady ratio in every walking/sprinting direction")
+				var stable := actual
+				for tick: int in range(120, 150):
+					MovementSystem.step(state, SimCommand.new(tick, 1, direction.x, direction.y, held), config, arena)
+				check((Vector2i(state.velocity_x, state.velocity_y) - stable).length_squared() <= 4, "continued slow never compounds into a root")
+
+
+func _test_slow_expiry_and_authored_motion() -> void:
+	var config := SimConfig.new(120)
+	var arena := CollisionWorld.new(10_000_000, 10_000_000)
+	var walker := PlayerState.new(1)
+	walker.position_x = 5_000_000
+	walker.position_y = 5_000_000
+	MovementSystem.apply_control_state(walker, PlayerState.ControlState.SLOWED, 1000, Vector2i.ZERO, 0, config, 700)
+	for tick: int in range(119):
+		MovementSystem.step(walker, SimCommand.new(tick, 1, 1000, 0), config, arena)
+	equal(walker.velocity_x, 226_800, "70 percent slow holds 226.8 units per second before expiry")
+	MovementSystem.step(walker, SimCommand.new(119, 1, 1000, 0), config, arena)
+	equal(walker.control_state, PlayerState.ControlState.FREE, "slow ends on its exact authoritative tick")
+	equal(walker.slow_ratio, 1000, "expired slow clears its modifier")
+	equal(walker.velocity_x, 243_300, "expiry resumes ordinary acceleration rather than snapping or retaining drag")
+	for tick: int in range(120, 140):
+		MovementSystem.step(walker, SimCommand.new(tick, 1, 1000, 0), config, arena)
+	equal(walker.velocity_x, MovementTuning.BASE_SPEED, "ordinary speed is fully recoverable after slow")
+	for tick: int in range(140, 160):
+		MovementSystem.step(walker, SimCommand.new(tick, 1), config, arena)
+	equal(walker.velocity_x, 0, "release still reaches exact rest without residual slow")
+	for pressed: int in [SimCommand.PRESSED_SLIDE, SimCommand.PRESSED_EVADE, SimCommand.PRESSED_JUMP]:
+		var state := PlayerState.new(1)
+		state.position_x = 5_000_000
+		state.position_y = 5_000_000
+		state.velocity_x = MovementTuning.BASE_SPEED
+		MovementSystem.apply_control_state(state, PlayerState.ControlState.SLOWED, 2000, Vector2i.ZERO, 0, config, 700)
+		var held := SimCommand.HELD_SLIDE if pressed == SimCommand.PRESSED_SLIDE else SimCommand.HELD_JUMP
+		MovementSystem.step(state, SimCommand.new(0, 1, 1000, 0, held, pressed), config, arena)
+		for tick: int in range(1, 16):
+			MovementSystem.step(state, SimCommand.new(tick, 1, 1000, 0, held), config, arena)
+		var expected: int = MovementTuning.BASE_SPEED * 700 / 1000
+		if pressed == SimCommand.PRESSED_SLIDE:
+			expected = MovementTuning.SLIDE_SPEED * 700 / 1000
+		elif pressed == SimCommand.PRESSED_EVADE:
+			expected = MovementTuning.ROLL_SPEED * 700 / 1000
+		equal(state.velocity_x, expected, "jump, slide and roll retain one authored slow multiplier instead of exponential damping")
 
 
 func _test_bounds(metrics: Dictionary) -> void:

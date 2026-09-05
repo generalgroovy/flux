@@ -1,5 +1,18 @@
 # FLUX2 agent worklog
 
+## 2026-09-06 - G0 control integrity and high jump
+
+- Actual SimWorld diagnostics reproduced compounded slows and lost Jump during
+  held Slide. Corrected proportional target/acceleration and 40 ms elapsed
+  slide conversion. Added all-direction steady-speed/expiry/hold regression
+  coverage. Jump lift is 34/84 px with attainable paid-tick normalization.
+- Protocol 38; no snapshot shape change. Full 68 suites / 27,463 assertions,
+  import/120 Hz boot green; `.godot/receipts/g0-controls-full.json`.
+- `.\scripts\smoke-farflow.ps1 -TickRate 120` passed host/join/social,
+  reconciliation, round/late-join/rematch and safe host stewardship.
+- The six-stream user request is now the active coordinated prompt, with
+  persistent deposits and 36 Level 1 recipes remaining the chemistry milestone.
+
 ## 2026-09-04 - tactile arena paid-sustain checkpoint
 
 - Advanced protocol to 35 and movement tuning to v7. Jump and slide now use a

@@ -12,6 +12,13 @@ prose; correct stale prose in the same slice.
 
 ## Hard priority
 
+Latest user override: G0-G5 in `docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md`
+now leads. Correct proven control defects, raise jump presentation, finish the
+element/form visual grid, implement finite 2-5 second replicated deposits, then
+Steam and the remaining first-level pairs. Keep every slice playable and tested.
+This named authorization supersedes older blanket freezes below. Preserve the
+chemistry playtest pause and do not treat a compiled recipe as a working effect.
+
 Newest user override: U1-U5 in `docs/CLARITY-AND-CONTROL-ITERATION.md` takes
 priority: shared Baron anatomy, single-element clarity, drag/drop spell catalog,
 clean guidance and lift-only/input-steered jumps. This authorizes those named

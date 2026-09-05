@@ -16,6 +16,7 @@ func run() -> int:
 	_test_ground_and_arc_contract()
 	_test_reduced_motion_equivalent()
 	_test_paid_height_range()
+	_test_real_tap_and_hold()
 	_test_supported_movement_modes()
 	_test_120hz_phase_integrity()
 	_test_sampler_does_not_mutate_authority()
@@ -71,6 +72,29 @@ func _test_paid_height_range() -> void:
 	var held_apex := JumpPresentation.sample(state, config)
 	equal(held_apex.body_lift_pixels, JumpPresentation.NORMAL_MAXIMUM_LIFT_PIXELS, "fully sustained jump reaches the much higher apex")
 	check(held_apex.body_lift_pixels > tap_apex.body_lift_pixels, "paid sustain increases height, not only airtime")
+
+
+func _test_real_tap_and_hold() -> void:
+	var peaks: Array[int] = []
+	for held: bool in [false, true]:
+		var world := SimWorld.new(120)
+		var peak := 0
+		var protected_ticks := 0
+		for index: int in range(90):
+			var command := SimCommand.new(world.tick, 1, 0, 0,
+				SimCommand.HELD_JUMP if held else 0,
+				SimCommand.PRESSED_JUMP if index == 0 else 0)
+			world.step([command])
+			var sample := JumpPresentation.sample(world.player(), world.config)
+			peak = maxi(peak, sample.body_lift_pixels)
+			if MovementSystem.is_combat_intangible(world.player(), world.config):
+				protected_ticks += 1
+		peaks.append(peak)
+		check(protected_ticks <= world.config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS), "higher arc cannot extend protection")
+		equal(JumpPresentation.sample(world.player(), world.config).body_lift_pixels, 0, "real jump returns to its ground anchor")
+	check(peaks[1] >= 80, "ordinary held Jump reaches the new high arc")
+	check(peaks[0] >= 32 and peaks[0] <= 35, "ordinary tap Jump retains a compact arc")
+	check(peaks[1] > peaks[0] * 2, "real input path clearly separates held and tap height")
 
 
 func _test_supported_movement_modes() -> void:

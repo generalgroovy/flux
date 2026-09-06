@@ -51,13 +51,22 @@ static func _draw_elements(canvas: CanvasItem, language: VisualLanguage, bounds:
 		var rectangle := Rect2(bounds.position + Vector2(float(index) * (size + gap), 34), Vector2(size, size))
 		canvas.draw_rect(rectangle, Color(language.element_color(element_id, "dark"), 0.92), true)
 		canvas.draw_rect(rectangle, language.element_color(element_id, "base"), false, 1.0)
-		PixelPrimitives.draw_element_glyph(canvas, rectangle.get_center(), size * 0.31, element_id, language.element_color(element_id, "bright"), float(tick) * 0.08 + float(index))
+		PixelPrimitives.draw_element_glyph(canvas, language, rectangle.get_center(), size * 0.31, element_id, language.element_color(element_id, "bright"))
 		var short_label: String = {"charge": "CHG", "chaos": "CHS", "spirit": "SPI", "gravity": "GRV"}.get(element_id, element_id.left(3).to_upper())
 		canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(1, size + 14), short_label, HORIZONTAL_ALIGNMENT_CENTER, size, 9, language.ui_color("text_secondary"))
-	canvas.draw_string(ThemeDB.fallback_font, bounds.position + Vector2(0, 112), "Color supports meaning; silhouette and cadence carry it when color cannot.", HORIZONTAL_ALIGNMENT_LEFT, bounds.size.x, 11, language.ui_color("text_muted"))
+	# The first-eight motion samples execute the same bounded field/impact path.
+	var live_elements := ["earth", "fire", "water", "wind", "ice", "charge", "light", "dark"]
+	var motion_spacing := bounds.size.x / float(live_elements.size())
+	for index: int in live_elements.size():
+		var element_id: String = live_elements[index]
+		var center := bounds.position + Vector2((float(index) + 0.5) * motion_spacing, 132.0)
+		var phase := ElementGlyphRenderer.material_phase(language, element_id, tick)
+		ElementGlyphRenderer.draw_material_motion(canvas, language, center, element_id, minf(25.0, motion_spacing * 0.45), phase, 0.8, false)
+		canvas.draw_string(ThemeDB.fallback_font, center + Vector2(-motion_spacing * 0.5, 29.0), element_id.left(3).to_upper(), HORIZONTAL_ALIGNMENT_CENTER, motion_spacing, 9, language.ui_color("text_muted"))
+	canvas.draw_string(ThemeDB.fallback_font, bounds.position + Vector2(0, 108), "SHARED FIELD / IMPACT MOTION", HORIZONTAL_ALIGNMENT_LEFT, bounds.size.x, 10, language.ui_color("text_muted"))
 
 
-static func _draw_ui_language(canvas: CanvasItem, language: VisualLanguage, bounds: Rect2, tick: int) -> void:
+static func _draw_ui_language(canvas: CanvasItem, language: VisualLanguage, bounds: Rect2, _tick: int) -> void:
 	canvas.draw_string(ThemeDB.fallback_font, bounds.position + Vector2(0, 16), "COMBAT + INTERACTION COMPONENTS", HORIZONTAL_ALIGNMENT_LEFT, bounds.size.x, 14, language.ui_color("text_primary"))
 	var card := Rect2(bounds.position + Vector2(0, 30), Vector2(bounds.size.x, 92))
 	PixelPrimitives.draw_panel(canvas, card, language, false, true)
@@ -73,7 +82,7 @@ static func _draw_ui_language(canvas: CanvasItem, language: VisualLanguage, boun
 		var spell_rect := Rect2(bounds.position + Vector2(float(index) * (spell_size + gap), spell_top - bounds.position.y), Vector2(spell_size, spell_size))
 		PixelPrimitives.draw_panel(canvas, spell_rect, language, false, index == 0)
 		var element_id: String = ["water", "dark", "ice", "light"][index]
-		PixelPrimitives.draw_element_glyph(canvas, spell_rect.get_center(), 15.0, element_id, language.element_color(element_id, "bright"), float(tick) * 0.08 + float(index))
+		PixelPrimitives.draw_element_glyph(canvas, language, spell_rect.get_center(), 15.0, element_id, language.element_color(element_id, "bright"))
 		canvas.draw_string(ThemeDB.fallback_font, spell_rect.position + Vector2(6, 14), str(index + 1), HORIZONTAL_ALIGNMENT_LEFT, spell_rect.size.x - 12, 10, language.ui_color("text_secondary"))
 
 	var prompt := Rect2(bounds.position + Vector2(18, 248), Vector2(bounds.size.x - 36, 66))

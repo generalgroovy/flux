@@ -7,12 +7,13 @@ func run() -> int:
 	_test_field_round_trip()
 	_test_event_inbox_deduplicates_redundancy()
 	_test_maximum_envelope_fits_transport()
+	_test_fragment_assembly_faults()
 	_test_snapshot_validation_fails_closed()
 	return finish("session-snapshot")
 
 
 func _test_snapshot_round_trip() -> void:
-	equal(SessionSnapshot.SCHEMA_VERSION, 13, "movement chain snapshot schema is explicit")
+	equal(SessionSnapshot.SCHEMA_VERSION, 14, "complete threat envelope snapshot schema is explicit")
 	var source := SimWorld.new(120, 7, CollisionWorld.new(3_000_000, 2_000_000))
 	var host: PlayerState = source.player()
 	host.champion_wire_id = 1
@@ -201,11 +202,11 @@ func _test_maximum_envelope_fits_transport() -> void:
 			1,
 			CombatTuning.RILLSHOT_WIRE_ID,
 			2,
-			Vector2i(500_000 + index * 10_000, 500_000),
-			Vector2i(480_000, 0),
+			Vector2i(500_000 + index * 7919, 500_000 + index * 6151),
+			Vector2i(480_000 - index * 187, index * 157),
 			12_000,
 			9_000,
-			90,
+			90 + index,
 		))
 	for index: int in range(SessionSnapshot.MAX_FIELDS):
 		var field := FieldState.new(
@@ -237,17 +238,89 @@ func _test_maximum_envelope_fits_transport() -> void:
 		world.players.append(target)
 	var snapshot := SessionSnapshot.capture(world, names_by_entity, events)
 	check(SessionSnapshot.validate(snapshot), "maximum public snapshot envelope validates")
-	var raw_snapshot := var_to_bytes(snapshot)
-	var unconstrained_packet := {
-		"kind": SessionTransport.PACKET_SNAPSHOT,
-		"raw_size": raw_snapshot.size(),
-		"payload": raw_snapshot.compress(FileAccess.COMPRESSION_FASTLZ),
-	}
-	var unconstrained_packet_size := var_to_bytes(unconstrained_packet).size()
-	var wire_packet := SessionTransport._snapshot_wire_packet(snapshot)
-	check(not wire_packet.is_empty(), "maximum public snapshot packs into a guarded wire envelope (%d/%d bytes)" % [unconstrained_packet_size, SessionTransport.ENET_MTU_BYTES])
-	check(unconstrained_packet_size <= SessionTransport.ENET_MTU_BYTES, "maximum snapshot fits one ENet MTU (%d/%d bytes)" % [unconstrained_packet_size, SessionTransport.ENET_MTU_BYTES])
-	check(SessionTransport._snapshot_from_wire_packet(wire_packet) == snapshot, "maximum compressed snapshot round-trips exactly")
+	var packets := SessionTransport._snapshot_wire_packets(snapshot)
+	check(packets.size() > 1 and packets.size() <= SessionTransport.MAX_SNAPSHOT_FRAGMENTS, "varied maximum threat load uses a bounded complete fragment set")
+	var receiver := SessionTransport.new()
+	receiver.mode = SessionTransport.Mode.CLIENT
+	packets.reverse()
+	for packet: Dictionary in packets:
+		check(var_to_bytes(packet).size() <= SessionTransport.ENET_MTU_BYTES, "each threat fragment fits one MTU")
+		receiver._handle_packet(SessionTransport.SERVER_PEER_ID, var_to_bytes(packet))
+	var received := receiver.take_snapshots()
+	equal(received.size(), 1, "reordered maximum snapshot is applied atomically once")
+	if not received.is_empty():
+		check(received[0] == snapshot, "all varied maximum-envelope values round-trip exactly")
+		equal((received[0]["projectiles"] as PackedInt64Array).size(), SimConfig.MAX_ACTIVE_PROJECTILES * SessionSnapshot.PROJECTILE_VALUE_COUNT, "no admitted projectile omitted")
+		equal((received[0]["fields"] as PackedInt32Array).size(), SimConfig.MAX_ACTIVE_FIELDS * SessionSnapshot.FIELD_VALUE_COUNT, "no admitted field omitted")
+	receiver.stop()
+
+
+func _fragment_fixture(tick: int = 10) -> Dictionary:
+	var world := SimWorld.new(120, 71, CollisionWorld.new(20_000_000, 20_000_000))
+	world.player().champion_wire_id = 1
+	world.tick = tick
+	for index: int in range(80):
+		world.projectiles.append(ProjectileState.new(
+			1000 + index, 1, 1, CombatTuning.RILLSHOT_WIRE_ID, 2,
+			Vector2i(500_000 + index * 7919, 500_000 + index * 6151),
+			Vector2i(480_000 - index * 187, index * 157), 12_000, 9_000, 90 + index,
+		))
+	return SessionSnapshot.capture(world, {1: "Fragment test"})
+
+
+func _test_fragment_assembly_faults() -> void:
+	var refused := SessionSnapshot.encode_event({"type": "cast_refused", "entity_id": 1, "wire_id": CombatTuning.RILLSHOT_WIRE_ID, "reason": "capacity"})
+	check(SessionSnapshot._valid_event_values(refused), "capacity refusal remains a valid network event")
+	equal(String(SessionSnapshot.decode_event(refused).get("reason", "")), "capacity", "remote refusal preserves the actionable cause")
+	var snapshot := _fragment_fixture()
+	var packets := SessionTransport._snapshot_wire_packets(snapshot)
+	check(packets.size() > 1, "fault fixture actually requires multiple MTUs")
+	if packets.size() < 2:
+		return
+	var receiver := SessionTransport.new()
+	receiver.mode = SessionTransport.Mode.CLIENT
+	var first := var_to_bytes(packets[0])
+	receiver._handle_packet(99, first)
+	equal(receiver._snapshot_assemblies.size(), 0, "non-host cannot allocate fragment state")
+	receiver._handle_packet(1, first)
+	receiver._handle_packet(1, first)
+	equal(receiver.take_snapshots().size(), 0, "duplicate/missing fragment never applies a partial frame")
+	equal(receiver._snapshot_assemblies.size(), 1, "duplicates do not allocate another assembly")
+	for index: int in range(1, packets.size()):
+		receiver._handle_packet(1, var_to_bytes(packets[index]))
+	equal(receiver.take_snapshots().size(), 1, "complete frame survives a duplicate")
+	for packet: Dictionary in packets:
+		receiver._handle_packet(1, var_to_bytes(packet))
+	equal(receiver.take_snapshots().size(), 0, "old fragments cannot replay after the inbox is drained")
+	for mutation: Callable in [
+		func(p: Dictionary) -> void: p["count"] = SessionTransport.MAX_SNAPSHOT_FRAGMENTS + 1,
+		func(p: Dictionary) -> void: p["index"] = -1,
+		func(p: Dictionary) -> void: p["raw_size"] = SessionTransport.MAX_SNAPSHOT_UNCOMPRESSED_BYTES + 1,
+		func(p: Dictionary) -> void: p["tick"] = "11",
+		func(p: Dictionary) -> void: p["payload"] = PackedByteArray([1]),
+	]:
+		var malformed: Dictionary = packets[0].duplicate(true)
+		malformed["tick"] = 11
+		mutation.call(malformed)
+		receiver._handle_packet(1, var_to_bytes(malformed))
+	equal(receiver._snapshot_assemblies.size(), 0, "invalid metadata/length rejected before allocation")
+	for tick: int in range(11, 18):
+		var pending: Dictionary = packets[0].duplicate(true)
+		pending["tick"] = tick
+		receiver._handle_packet(1, var_to_bytes(pending))
+	check(receiver._snapshot_assemblies.size() <= SessionTransport.MAX_PENDING_SNAPSHOT_ASSEMBLIES, "missing packets have a hard memory bound")
+	for tick: int in receiver._snapshot_assemblies.keys():
+		receiver._snapshot_assemblies[tick]["created_ms"] = Time.get_ticks_msec() - SessionTransport.SNAPSHOT_ASSEMBLY_TIMEOUT_MS - 1
+	var newer := _fragment_fixture(20)
+	for packet: Dictionary in SessionTransport._snapshot_wire_packets(newer):
+		receiver._handle_packet(1, var_to_bytes(packet))
+	var recovered := receiver.take_snapshots()
+	equal(recovered.size(), 1, "new complete snapshot recovers after loss/timeout")
+	if not recovered.is_empty():
+		check(recovered[0] == newer, "recovery does not combine data from different ticks")
+	equal(receiver._snapshot_assemblies.size(), 0, "expired and superseded partial frames are cleared")
+	receiver.stop()
+	equal(receiver._last_snapshot_tick, -1, "disconnect clears monotonic session tracking")
 
 
 func _test_snapshot_validation_fails_closed() -> void:

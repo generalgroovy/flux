@@ -4,6 +4,7 @@ extends RefCounted
 
 const MAP_ID: String = "foundation-arena-v1"
 const MAP_HASH: String = "worldbone:none;bounds:1280x720;rails:v1"
+const TrainingTargetSystemScript = preload("res://src/sim/combat/training_target_system.gd")
 
 var config: SimConfig
 var collision: CollisionWorld
@@ -62,52 +63,75 @@ func step(commands: Array[SimCommand]) -> bool:
 		return false
 	var ordered: Array[SimCommand] = commands.duplicate()
 	ordered.sort_custom(func(left: SimCommand, right: SimCommand) -> bool: return left.entity_id < right.entity_id)
-	var seen: Dictionary[int, bool] = {}
+	var commands_by_entity: Dictionary[int, SimCommand] = {}
 	combat_events = []
 	for command: SimCommand in ordered:
 		if command.tick != tick:
 			last_error = "command tick %d does not match world tick %d" % [command.tick, tick]
 			return false
-		if seen.has(command.entity_id):
+		if commands_by_entity.has(command.entity_id):
 			last_error = "duplicate command for entity %d at tick %d" % [command.entity_id, tick]
 			return false
-		seen[command.entity_id] = true
-		var state: PlayerState = player(command.entity_id)
-		if state == null:
+		if player(command.entity_id) == null:
 			last_error = "unknown entity %d" % command.entity_id
 			return false
+		commands_by_entity[command.entity_id] = command
+	var ordered_players: Array[PlayerState] = players.duplicate()
+	ordered_players.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
+	for state: PlayerState in ordered_players:
 		if state.health <= 0:
 			_idle_defeated(state)
 			continue
+		var command: SimCommand = commands_by_entity.get(state.entity_id, null)
+		if command == null:
+			command = SimCommand.new(tick, state.entity_id, 0, 0, 0, 0, state.aim_x, state.aim_y)
 		state.aim_x = command.aim_x
 		state.aim_y = command.aim_y
 		state.primary_held = command.has_held(SimCommand.HELD_PRIMARY)
 		PlayerResourcesSystem.step(state, config)
 		MovementSystem.step(state, command, config, collision)
+		var capacity := Vector2i.ZERO
+		if state.pending_cast_wire_id == 0 and (command.first_pressed_spell_slot() > 0 or command.has_pressed(SimCommand.PRESSED_ACTIVE_1) or command.has_held(SimCommand.HELD_PRIMARY)):
+			capacity = available_cast_capacity(state.entity_id)
 		var spawned: Variant = CombatSystem.step_player(
-			state, command, config, next_projectile_id, next_field_id, collision, combat_events, transition_policy
+			state, command, config, next_projectile_id, next_field_id, collision, combat_events, transition_policy, capacity.x, capacity.y
 		)
 		_store_combat_result(spawned)
-	for state: PlayerState in players:
-		if not seen.has(state.entity_id):
-			if state.health <= 0:
-				_idle_defeated(state)
-				continue
-			state.primary_held = false
-			PlayerResourcesSystem.step(state, config)
-			var idle_command := SimCommand.new(tick, state.entity_id, 0, 0, 0, 0, state.aim_x, state.aim_y)
-			MovementSystem.step(state, idle_command, config, collision)
-			var spawned: Variant = CombatSystem.step_player(
-				state, idle_command, config, next_projectile_id, next_field_id, collision, combat_events, transition_policy
-			)
-			_store_combat_result(spawned)
 	CombatSystem.resolve_instant_casts(players, config, collision, combat_events)
 	fields.sort_custom(func(left: FieldState, right: FieldState) -> bool: return left.entity_id < right.entity_id)
 	fields = CombatSystem.advance_fields(fields, players, config, combat_events)
 	projectiles.sort_custom(func(left: ProjectileState, right: ProjectileState) -> bool: return left.entity_id < right.entity_id)
 	projectiles = CombatSystem.advance_projectiles(projectiles, players, config, collision, combat_events)
+	for state: PlayerState in ordered_players:
+		TrainingTargetSystemScript.step_target(state, config)
 	tick += 1
 	return true
+
+
+func available_cast_capacity(owner_id: int) -> Vector2i:
+	var reserved_projectiles := projectiles.size()
+	var reserved_fields := fields.size()
+	var owner_projectiles := 0
+	var owner_fields := 0
+	for projectile: ProjectileState in projectiles:
+		if projectile.owner_id == owner_id:
+			owner_projectiles += 1
+	for field: FieldState in fields:
+		if field.owner_id == owner_id:
+			owner_fields += 1
+	for state: PlayerState in players:
+		if state.health <= 0 or state.pending_cast_wire_id == 0:
+			continue
+		var requirement := CombatSystem.cast_capacity_requirement(state.pending_cast_wire_id)
+		reserved_projectiles += requirement.x
+		reserved_fields += requirement.y
+		if state.entity_id == owner_id:
+			owner_projectiles += requirement.x
+			owner_fields += requirement.y
+	return Vector2i(
+		maxi(0, mini(SimConfig.MAX_ACTIVE_PROJECTILES - reserved_projectiles, SimConfig.MAX_PROJECTILES_PER_PLAYER - owner_projectiles)),
+		maxi(0, mini(SimConfig.MAX_ACTIVE_FIELDS - reserved_fields, SimConfig.MAX_FIELDS_PER_PLAYER - owner_fields)),
+	)
 
 
 func _store_combat_result(spawned: Variant) -> void:

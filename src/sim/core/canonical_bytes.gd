@@ -3,8 +3,11 @@ extends RefCounted
 
 
 static func append_i64(output: PackedByteArray, value: int) -> void:
-	for byte_index: int in range(8):
-		output.append((value >> (byte_index * 8)) & 0xff)
+	var offset := output.size()
+	output.resize(offset + 8)
+	# Godot encodes signed integers in little-endian order, matching the
+	# canonical wire/hash bytes without eight interpreted shifts/appends.
+	output.encode_s64(offset, value)
 
 
 static func append_string(output: PackedByteArray, value: String) -> void:

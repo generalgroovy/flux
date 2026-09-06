@@ -92,6 +92,9 @@ var health: int = health_maximum
 var health_recovery_remainder: int = 0
 var health_recovery_delay_ticks: int = 0
 var spawn_protection_ticks: int = 0
+var training_respawn_ticks: int = 0
+var training_spawn_x: int = 0
+var training_spawn_y: int = 0
 var flux_maximum: int = PlayerTuning.FLUX_MAXIMUM
 var flux_recovery_per_second: int = PlayerTuning.FLUX_RECOVERY_PER_SECOND
 var flux: int = flux_maximum
@@ -405,6 +408,7 @@ func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> voi
 	stamina_remainder = 0
 	stamina_recovery_delay_ticks = 0
 	spawn_protection_ticks = maxi(0, protection_ticks)
+	training_respawn_ticks = 0
 	last_event = "protected_spawn" if spawn_protection_ticks > 0 else "spawn"
 
 
@@ -439,6 +443,7 @@ func canonical_values() -> PackedInt64Array:
 		wall_skim_surface_id, wall_skim_lockout_id, wall_skim_lockout_ticks,
 		landing_ticks, landing_intensity, impact_recovery_ticks, int(sprinting),
 		control_state, control_ticks, control_x, control_y, control_speed, slow_ratio,
+		training_respawn_ticks, training_spawn_x, training_spawn_y,
 	])
 	for wire_id: int in spell_wire_ids:
 		values.append(wire_id)

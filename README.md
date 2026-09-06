@@ -2,6 +2,16 @@
 
 **Flow. Learn. Unleash. eXecute.**
 
+**Paused, source-verified checkpoint (2026-09-06).** Moving spells are **20% slower** with preserved reach;
+five playable champions have **10% more Flux and Stamina**. Multiplayer now
+represents every admitted projectile/field instead of silently omitting busy
+lanes. Training dummies return after three seconds. See the
+[six-stream acceptance ledger](docs/TEAM-FOUNDATION-ACCEPTANCE.md) for measured
+results and the explicit work still ahead. Full validation passed: **74 suites /
+60,230 assertions**, local host/join and the source launcher smoke test.
+Press **F4** (controller **Select/Back**) for the movement guide and alphabetical
+race/character compendium. This does not update an already-downloaded Windows installer.
+
 Latest control checkpoint: proportional slows, reliable held-slide jump
 conversion and a higher 34/84 px tap/held jump arc are source-tested at 120 Hz.
 The [core revision](docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md) and
@@ -35,8 +45,8 @@ physical places rather than a detached menu.
 held Slide buys a longer lane, earned planar speed survives legal movement
 conversions, and airborne wallrun/air-dodge chains are live. Successive movement
 actions cost 10% more up to 40% and reset after 333 ms; every champion has more
-Stamina and every attack remains paid despite lower Flux costs. Protocol 38 and
-snapshot schema 13 carry the same state through Farflow. See the
+Stamina and every attack remains paid despite lower Flux costs. Protocol 39 and
+snapshot schema 14 carry complete admitted threats and target respawn state through Farflow. See the
 [quality expansion ledger](docs/QUALITY-EXPANSION-ACCEPTANCE.md).
 
 **Illustrated source revision:** illustrated stone/grass/water terrain, slate-and-timber
@@ -53,7 +63,7 @@ from the earlier artwork. See the [visual acceptance ledger](docs/VISUAL-REFINEM
 Run `.\flux.cmd play` for this source revision. Existing Windows exports predate
 these changes and must be rebuilt before sharing; do not mix old packages and
 new-source hosts. The [map/movement ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md)
-records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current momentum-chain movement uses protocol 38.
+records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current source uses protocol 39; hosts and guests must use the same build.
 
 ![Current five-champion motion contact sheet](assets/concept/five-champion-motion-reference-v1.png)
 
@@ -72,8 +82,8 @@ their movement pose and travel direction; HUD portraits use the same live art.
 
 | New basic character | Health / Flux / Stamina | Ground speed | Initial single-element spells |
 |---|---|---|---|
-| Grace Riva, small Sylph | 92 / 120 / 112 | 103% | Rillshot, Gale Burst, Pocket Eclipse |
-| Wa Bidi, small Goblin | 98 / 106 / 116 | 105% | Arc Primary, Gale Burst, Cinder Fan |
+| Grace Riva, small Sylph | 92 / 132 / 123.2 | 103% | Rillshot, Gale Burst, Pocket Eclipse |
+| Wa Bidi, small Goblin | 98 / 116.6 / 127.6 | 105% | Arc Primary, Gale Burst, Cinder Fan |
 
 These are usable foundation kits; unique racial abilities are not claimed.
 
@@ -482,7 +492,7 @@ default in gameplay while the Wellspring does not force limited information.
 | Capacity | Public cap 8; charters provide 2/4/8; later 32 only after measured architecture gate |
 | Transport | Godot ENet over UDP 24872, direct IP |
 | Authority | Host owns movement validation, resources, casts, hits, cooldowns, stations, roster, score, reset |
-| Compatibility | Protocol 38, snapshot 13, tick/tuning/map/content hashes |
+| Compatibility | Protocol 39, snapshot 14, tick/tuning/map/content hashes |
 | Client feel | Local movement prediction and bounded reconciliation; combat stays authoritative |
 | Join in progress | Observer until next gathering, then normal Hearth readiness |
 | Disconnect | 15-second in-memory exact-actor reservation and capability rotation |

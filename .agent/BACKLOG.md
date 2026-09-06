@@ -1,5 +1,14 @@
 # FLUX 2 active backlog
 
+**PAUSED at the user's request (2026-09-06).** The six-stream checkpoint is tracked in
+[Team foundation acceptance](../docs/TEAM-FOUNDATION-ACCEPTANCE.md). The compendium,
+slower spells, larger reserves, complete bounded threat replication, runtime
+optimizations and respawning dummies passed 74 suites / 60,230 assertions,
+local Farflow, rendered compendium captures and the actual source launcher smoke test.
+Do not start another slice until asked. On resumption: visual acceptance, connected
+course expansion, finite deposits and the existing chemistry playtest order.
+Older status entries below are historical context, not competing active queues.
+
 **Latest order:** [G0-G5](../docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md):
 control corrections/higher jumps -> complete spell presentation -> finite
 element deposits (2-5 s) -> Steam -> all 36 Level 1 pairs -> Windows/Farflow

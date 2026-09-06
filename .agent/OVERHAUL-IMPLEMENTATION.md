@@ -1,6 +1,6 @@
 # FLUX 2 implementation path to first-eight playtest
 
-Current frontier: protocol 38, snapshot 13, preferences 10, Godot 4.7.1,
+Current frontier: protocol 39, snapshot 14, preferences 10, Godot 4.7.1,
 canonical `main` (the remote compatibility ref mirrors its published checkpoint;
 the non-authoritative local compatibility ref may lag until a safe
 fast-forward). V0–V6 visual engineering, the exact
@@ -40,6 +40,12 @@ composable mastery. A technically complete slice is not product-complete until
 commitment, ownership, consequence, counter and recovery are readable.
 
 ## Slice sequence
+
+The newest six-stream implementation and exact acceptance limits are in
+[`TEAM-FOUNDATION-ACCEPTANCE.md`](../docs/TEAM-FOUNDATION-ACCEPTANCE.md).
+Publish its integrated source checkpoint only after Full, Farflow and live UI
+captures. All admitted threats must replicate; compiled recipes and roster
+metadata are never evidence of implemented chemistry or promoted characters.
 
 Latest user order: execute G0-G5 in
 [`CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md`](../docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md):

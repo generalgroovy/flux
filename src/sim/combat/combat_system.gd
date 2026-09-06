@@ -11,6 +11,8 @@ static func step_player(
 	world: CollisionWorld,
 	events: Array[Dictionary],
 	transition_policy: ActionTransitionPolicy,
+	available_projectiles: int = -1,
+	available_fields: int = -1,
 ) -> Variant:
 	for property_name: StringName in [
 		&"cast_recovery_ticks", &"edgeweave_cooldown_ticks",
@@ -57,6 +59,11 @@ static func step_player(
 	if definition.is_empty():
 		_refuse_cast(state, requested_wire_id, requested_spell_slot, "kit", events)
 		return null
+	var required_capacity := cast_capacity_requirement(requested_wire_id)
+	if (available_projectiles >= 0 and required_capacity.x > available_projectiles) \
+		or (available_fields >= 0 and required_capacity.y > available_fields):
+		_refuse_cast(state, requested_wire_id, requested_spell_slot, "capacity", events)
+		return null
 	if not PlayerResourcesSystem.spend_flux(state, int(definition["flux_cost"]), config):
 		if pressed_cast_intent:
 			_refuse_cast(state, requested_wire_id, requested_spell_slot, "flux", events)
@@ -64,6 +71,16 @@ static func step_player(
 	_begin_cast(state, requested_wire_id, int(definition["startup_ms"]), config)
 	events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": requested_wire_id})
 	return null
+
+
+static func cast_capacity_requirement(wire_id: int) -> Vector2i:
+	var definition := CombatTuning.cast_definition(wire_id)
+	match String(definition.get("shape", "")):
+		"projectile":
+			return Vector2i((definition.get("projectile_rotations", [Vector2i(1000, 0)]) as Array).size(), 0)
+		"field":
+			return Vector2i(0, 1)
+	return Vector2i.ZERO
 
 
 static func _refuse_cast(

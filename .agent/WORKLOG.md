@@ -1,5 +1,18 @@
 # FLUX2 agent worklog
 
+## 2026-09-06 - verified foundation checkpoint; user-requested pause
+
+- Integrated slower projectiles, larger reserves, bounded whole-cast admission,
+  complete threat replication, collision/serialization optimizations, reusable
+  element motifs, respawning dummies and the in-game movement/character compendium.
+- Full: 74 suites / 60,230 assertions, import/120 Hz boot, zero stderr;
+  `.godot/receipts/team-pause-full.json`. Real local Farflow passed. Strict legal
+  eight-player probe: 6,319 assertions, no omitted threats/rejected snapshots.
+- Actual `flux.cmd play -SmokeTest` passed; two 720p compendium captures inspected.
+  No new installer, real-internet certification, complete roster or chemistry claim.
+- Paused before new work. Launch from `C:\Users\sende\Projects\flux\flux.cmd`.
+  Detailed limits and resumption order: docs/TEAM-FOUNDATION-ACCEPTANCE.md.
+
 ## 2026-09-06 - G0 control integrity and high jump
 
 - Actual SimWorld diagnostics reproduced compounded slows and lost Jump during

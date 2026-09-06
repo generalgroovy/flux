@@ -2,17 +2,17 @@ class_name SessionSnapshot
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 13
+const SCHEMA_VERSION: int = 14
 const MAX_PLAYERS: int = 8
 const PLAYER_VALUE_COUNT: int = 74
 const PROJECTILE_VALUE_COUNT: int = 12
 const FIELD_VALUE_COUNT: int = 7
 const EVENT_VALUE_COUNT: int = 6
-const TARGET_VALUE_COUNT: int = 6
-# Persistent fields share the one-MTU presentation envelope with projectiles.
-# Simulation authority remains uncapped; overflow is reported explicitly.
-const MAX_PROJECTILES: int = 18
-const MAX_FIELDS: int = 8
+const TARGET_VALUE_COUNT: int = 10
+# Every admitted threat must reach clients. Complete snapshots may use bounded
+# MTU-sized fragments; cast admission uses these same authority limits.
+const MAX_PROJECTILES: int = SimConfig.MAX_ACTIVE_PROJECTILES
+const MAX_FIELDS: int = SimConfig.MAX_ACTIVE_FIELDS
 const MAX_EVENTS: int = 12
 const MAX_TARGETS: int = 4
 const MAX_ABSOLUTE_POSITION: int = 100_000_000
@@ -136,6 +136,7 @@ static func capture(
 			target.position_x, target.position_y,
 			target.radius,
 			target.health_maximum, target.health,
+			target.training_respawn_ticks, target.training_spawn_x, target.training_spawn_y, target.spawn_protection_ticks,
 		]))
 	return {
 		"schema": SCHEMA_VERSION,
@@ -292,6 +293,10 @@ static func apply_to_world(snapshot: Dictionary, world: SimWorld) -> bool:
 		target.radius = values[3]
 		target.health_maximum = values[4]
 		target.health = values[5]
+		target.training_respawn_ticks = values[6]
+		target.training_spawn_x = values[7]
+		target.training_spawn_y = values[8]
+		target.spawn_protection_ticks = values[9]
 		target.health_recovery_per_second = 0
 		target.flux_maximum = 0
 		target.flux = 0
@@ -564,10 +569,14 @@ static func _valid_field_values(values: PackedInt32Array) -> bool:
 static func _valid_target_values(values: PackedInt64Array) -> bool:
 	if values[0] <= MAX_PLAYERS or values[0] > 0x7fffffff:
 		return false
-	for index: int in [1, 2]:
+	for index: int in [1, 2, 7, 8]:
 		if absi(values[index]) > MAX_ABSOLUTE_POSITION:
 			return false
 	if values[3] <= 0 or values[3] > 100_000:
+		return false
+	if values[6] < 0 or values[6] > MAX_TIMER_TICKS or values[9] < 0 or values[9] > MAX_TIMER_TICKS:
+		return false
+	if values[5] > 0 and values[6] != 0:
 		return false
 	return values[4] > 0 and values[4] <= 10_000_000 and values[5] >= 0 and values[5] <= values[4]
 
@@ -580,7 +589,7 @@ static func encode_event(event: Dictionary) -> PackedInt64Array:
 		"cast_started":
 			return PackedInt64Array([_event_header(1, event_id), int(event.get("entity_id", 0)), int(event.get("wire_id", 0)), 0, 0, 0])
 		"cast_refused":
-			var reason_code: int = {"kit": 1, "flux": 2}.get(String(event.get("reason", "")), 3)
+			var reason_code: int = {"kit": 1, "flux": 2, "capacity": 4}.get(String(event.get("reason", "")), 3)
 			return PackedInt64Array([_event_header(2, event_id), int(event.get("entity_id", 0)), int(event.get("wire_id", 0)), reason_code, 0, 0])
 		"cast_blocked":
 			return PackedInt64Array([_event_header(3, event_id), int(event.get("entity_id", 0)), int(event.get("wire_id", 0)), 0, 0, 0])
@@ -641,7 +650,7 @@ static func decode_event(values: PackedInt64Array) -> Dictionary:
 		1:
 			result = {"type": "cast_started", "entity_id": values[1], "wire_id": values[2]}
 		2:
-			var reason: String = {1: "kit", 2: "flux", 3: "other"}.get(values[3], "other")
+			var reason: String = {1: "kit", 2: "flux", 3: "other", 4: "capacity"}.get(values[3], "other")
 			result = {"type": "cast_refused", "entity_id": values[1], "wire_id": values[2], "reason": reason}
 		3:
 			result = {"type": "cast_blocked", "entity_id": values[1], "wire_id": values[2]}
@@ -707,7 +716,7 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 	if kind in [1, 2, 3]:
 		if values[1] < 1 or values[1] > MAX_PLAYERS or values[2] <= 0 or values[2] > 65_535:
 			return false
-		return kind != 2 or values[3] in [1, 2, 3]
+		return kind != 2 or values[3] in [1, 2, 3, 4]
 	if kind == 4:
 		return values[1] > 0 and values[2] >= 1 and values[2] <= MAX_PLAYERS and values[3] > 0 and values[3] <= 65_535
 	if kind == 5:

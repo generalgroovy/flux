@@ -951,7 +951,7 @@ static func _try_air_wall_kick(state: PlayerState, direction: Vector2i, config: 
 static func _has_wall_contact(state: PlayerState, world: CollisionWorld, surface_id: int) -> bool:
 	if surface_id <= 0:
 		return false
-	for obstacle: CollisionWorld.Obstacle in world.obstacles:
+	for obstacle: CollisionWorld.Obstacle in world.obstacle_view():
 		if obstacle.obstacle_id != surface_id or not obstacle.wall_runnable:
 			continue
 		var tolerance := state.radius + MovementTuning.WALL_CONTACT_TOLERANCE

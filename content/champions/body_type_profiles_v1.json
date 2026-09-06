@@ -8,7 +8,7 @@
     "visual_template_order": ["small", "middle", "large"],
     "visual_template_height_pixels": {"small": 58, "middle": 68, "large": 76},
     "visual_size_authority": "presentation_only_no_hidden_reach_evasion_or_damage",
-    "universal_movement": ["walk", "sprint", "jump", "double_jump", "slide", "slide_jump", "roll", "air_dodge", "wave_dash", "wall_kick", "vault", "superglide", "fast_fall", "wall_skim"]
+    "universal_movement": ["walk", "sprint", "jump", "double_jump", "slide", "slide_jump", "roll", "air_dodge", "wave_dash", "wall_kick", "fast_fall", "wall_skim"]
   },
   "profiles": {
     "small": {
@@ -18,9 +18,9 @@
       "stat_bounds": {
         "health_maximum": [82000, 98000],
         "health_recovery_per_second": [1800, 2800],
-        "flux_maximum": [106000, 120000],
+        "flux_maximum": [116600, 132000],
         "flux_recovery_per_second": [21000, 27000],
-        "stamina_maximum": [104000, 118000],
+        "stamina_maximum": [114400, 129800],
         "stamina_recovery_per_second": [25000, 33000],
         "movement_speed_ratio": [1030, 1100]
       }
@@ -32,9 +32,9 @@
       "stat_bounds": {
         "health_maximum": [100000, 118000],
         "health_recovery_per_second": [1400, 2200],
-        "flux_maximum": [98000, 112000],
+        "flux_maximum": [107800, 123200],
         "flux_recovery_per_second": [17000, 23000],
-        "stamina_maximum": [116000, 132000],
+        "stamina_maximum": [127600, 145200],
         "stamina_recovery_per_second": [27000, 35000],
         "movement_speed_ratio": [950, 1020]
       }
@@ -46,9 +46,9 @@
       "stat_bounds": {
         "health_maximum": [124000, 145000],
         "health_recovery_per_second": [900, 1700],
-        "flux_maximum": [88000, 104000],
+        "flux_maximum": [96800, 114400],
         "flux_recovery_per_second": [14000, 19000],
-        "stamina_maximum": [136000, 156000],
+        "stamina_maximum": [149600, 160000],
         "stamina_recovery_per_second": [29000, 37000],
         "movement_speed_ratio": [880, 940]
       }

@@ -19,7 +19,152 @@ func run() -> int:
 		_test_pressure_exhaustion_and_recovery(tick_rate)
 		_test_edgeweave(tick_rate)
 		_test_evasive_intangibility(tick_rate)
+	_test_whole_cast_admission()
+	_test_cast_capacity_refusal_and_reuse()
+	_test_global_cast_capacity()
+	_test_repeated_cast_owner_limit()
 	return finish("combat")
+
+
+func _admission_world(player_count: int, projectiles_per_owner: int = 0, fields_per_owner: int = 0) -> SimWorld:
+	var world := SimWorld.new(120, 77, CollisionWorld.new(4_000_000, 4_000_000))
+	world.players.clear()
+	for owner_id: int in range(1, player_count + 1):
+		var state := PlayerState.new(owner_id)
+		state.team_id = 1
+		state.position_x = 500_000
+		state.position_y = 500_000 + owner_id * 150_000
+		world.players.append(state)
+		check(state.place_proven_spell(0, CombatTuning.CINDERFAN_WIRE_ID), "admission actor equips a complete Burst")
+		check(state.place_proven_spell(1, CombatTuning.RIMEWAKE_WIRE_ID), "admission actor equips one persistent Field")
+		check(state.place_proven_spell(2, CombatTuning.PRIMARY_WIRE_ID), "admission actor equips one Bolt")
+		for _index: int in range(projectiles_per_owner):
+			world.projectiles.append(ProjectileState.new(world.next_projectile_id, owner_id, 1, CombatTuning.PRIMARY_WIRE_ID, 6, Vector2i(3_000_000, 3_000_000), Vector2i.ZERO, 7000, 10000, 600))
+			world.next_projectile_id += 1
+		for _index: int in range(fields_per_owner):
+			world.fields.append(FieldState.new(world.next_field_id, owner_id, 1, CombatTuning.RIMEWAKE_WIRE_ID, 5, Vector2i(3_000_000, 3_000_000), 72000, 600, PlayerState.ControlState.SLOWED, 700, 650))
+			world.next_field_id += 1
+	return world
+
+
+func _admission_commands(world: SimWorld, pressed: int = 0, reversed: bool = false) -> Array[SimCommand]:
+	var commands: Array[SimCommand] = []
+	for state: PlayerState in world.players:
+		commands.append(SimCommand.new(world.tick, state.entity_id, 0, 0, 0, pressed, 1000, 0))
+	if reversed:
+		commands.reverse()
+	return commands
+
+
+func _test_whole_cast_admission() -> void:
+	var first := _admission_world(8, 11, 3)
+	var reversed := _admission_world(8, 11, 3)
+	reversed.players.reverse()
+	check(first.step(_admission_commands(first, SimCommand.PRESSED_SPELL_1)), "eight simultaneous fans enter startup")
+	check(reversed.step(_admission_commands(reversed, SimCommand.PRESSED_SPELL_1, true)), "reversed actor/command order enters the same startups")
+	equal(first.projectiles.size(), 88, "pending fans do not fabricate live projectiles")
+	for state: PlayerState in first.players:
+		equal(state.pending_cast_wire_id, CombatTuning.CINDERFAN_WIRE_ID, "each of eight actors reserves all five lanes")
+		equal(state.flux, state.flux_maximum - int(CombatTuning.cast_definition(CombatTuning.CINDERFAN_WIRE_ID)["flux_cost"]), "each accepted whole fan pays exactly once")
+		equal(first.available_cast_capacity(state.entity_id).x, 0, "live plus pending reservations fill the entire 128-projectile capacity")
+	equal(first.state_hash(), reversed.state_hash(), "reservation state ignores incoming order")
+	for _tick: int in range(20):
+		check(first.step(_admission_commands(first)), "reserved eight-fan release advances")
+		check(reversed.step([]), "omitted idle commands preserve canonical release ordering")
+		equal(first.state_hash(), reversed.state_hash(), "paid release IDs and live state agree regardless of actor/input ordering")
+		check(first.projectiles.size() <= SimConfig.MAX_ACTIVE_PROJECTILES, "whole releases never exceed global projectile capacity")
+	equal(first.projectiles.size(), 128, "all eight paid fans release completely at the global limit")
+	check(first.step(_admission_commands(first, SimCommand.PRESSED_SPELL_2)), "eight Fields reserve the remaining field slots independently of projectiles")
+	for state: PlayerState in first.players:
+		equal(state.pending_cast_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "each actor reserves its fourth Field")
+		equal(first.available_cast_capacity(state.entity_id).y, 0, "pending Fields reserve the exact 32-field global capacity")
+	for _tick: int in range(30):
+		check(first.step([]), "paid Fields release from their reserved slots")
+		check(first.fields.size() <= SimConfig.MAX_ACTIVE_FIELDS, "Field releases never exceed global capacity")
+	equal(first.fields.size(), 32, "eight reserved Fields all release at capacity")
+
+
+func _test_cast_capacity_refusal_and_reuse() -> void:
+	var world := _admission_world(1, 12, 4)
+	var caster := world.player()
+	var initial_flux := caster.flux
+	var projectile_serial := world.next_projectile_id
+	var field_serial := world.next_field_id
+	check(world.step(_admission_commands(world, SimCommand.PRESSED_SPELL_1)), "fan capacity refusal remains a valid world tick")
+	equal(caster.pending_cast_wire_id, 0, "four free slots cannot admit a partial five-shot fan")
+	equal(caster.flux, initial_flux, "capacity refusal spends no Flux")
+	equal(caster.spell_cooldown_for_wire(CombatTuning.CINDERFAN_WIRE_ID), 0, "capacity refusal starts no cooldown")
+	equal(world.next_projectile_id, projectile_serial, "capacity refusal allocates no projectile IDs")
+	check(world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "capacity"), "capacity refusal explains the limiting state")
+	check(world.step(_admission_commands(world, SimCommand.PRESSED_SPELL_2)), "full owner Field capacity refuses cleanly")
+	equal(caster.pending_cast_wire_id, 0, "fifth owner Field cannot enter startup")
+	equal(caster.flux, initial_flux, "Field capacity refusal spends no Flux")
+	equal(caster.spell_cooldown_for_wire(CombatTuning.RIMEWAKE_WIRE_ID), 0, "Field capacity refusal starts no cooldown")
+	equal(world.next_field_id, field_serial, "Field refusal allocates no ID")
+	for projectile: ProjectileState in world.projectiles:
+		projectile.lifetime_ticks = 1
+	for field: FieldState in world.fields:
+		field.lifetime_ticks = 1
+	check(world.step([]), "ordinary lifecycle expiry releases capacity")
+	equal(world.available_cast_capacity(caster.entity_id), Vector2i(16, 4), "expiry restores both per-owner budgets")
+	check(world.step(_admission_commands(world, SimCommand.PRESSED_SPELL_1)), "the previously refused fan can reuse expired capacity")
+	equal(caster.pending_cast_wire_id, CombatTuning.CINDERFAN_WIRE_ID, "retry accepts exactly one whole fan")
+	equal(caster.flux, initial_flux - int(CombatTuning.cast_definition(CombatTuning.CINDERFAN_WIRE_ID)["flux_cost"]), "retry spends Flux only when accepted")
+	equal(world.available_cast_capacity(caster.entity_id).x, 11, "startup immediately reserves five owner slots")
+	caster.health = 0
+	check(world.step([]), "death clears the paid pending cast without leaking reservation")
+	equal(world.available_cast_capacity(caster.entity_id).x, 16, "dead pending casts release their reserved slots")
+	equal(world.projectiles.size(), 0, "a defeated pending caster emits no orphan fan")
+
+
+func _test_repeated_cast_owner_limit() -> void:
+	var world := _admission_world(1)
+	var caster := world.player()
+	check(caster.place_proven_spell(1, 148), "second distinct Burst enters the repeat-cast fixture")
+	check(caster.place_proven_spell(2, 147), "third distinct Burst enters the repeat-cast fixture")
+	check(caster.place_proven_spell(3, CombatTuning.PRIMARY_WIRE_ID), "one Bolt can use the final owner slot")
+	var expected_live := 0
+	for pressed: int in [SimCommand.PRESSED_SPELL_1, SimCommand.PRESSED_SPELL_2, SimCommand.PRESSED_SPELL_3]:
+		check(world.step(_admission_commands(world, pressed)), "successive distinct Burst pays for its own reservation")
+		for _tick: int in range(19):
+			check(world.step([]), "successive Burst releases through ordinary startup")
+		expected_live += 5
+		equal(world.projectiles.size(), expected_live, "each paid Burst adds all five lanes without expiry or truncation")
+	check(caster.place_proven_spell(0, 149), "a fourth ready Burst tests capacity independently of cooldown")
+	var flux_before := caster.flux
+	check(world.step(_admission_commands(world, SimCommand.PRESSED_SPELL_1)), "the fourth Burst refuses at fifteen live owner projectiles")
+	equal(caster.pending_cast_wire_id, 0, "one remaining slot cannot accept five more lanes")
+	equal(caster.flux, flux_before, "repeated-cast refusal never charges for partial pressure")
+	check(world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "capacity"), "repeat-cast limit is an explicit capacity refusal")
+	check(world.step(_admission_commands(world, SimCommand.PRESSED_SPELL_4)), "a paid Bolt can use the one remaining owner slot")
+	equal(world.available_cast_capacity(caster.entity_id).x, 0, "the Bolt reserves the final owner slot during startup")
+	for _tick: int in range(9):
+		check(world.step([]), "the admitted Bolt keeps its slot through release")
+	equal(world.projectiles.size(), SimConfig.MAX_PROJECTILES_PER_PLAYER, "repeated production casts stop exactly at the sixteen-projectile owner cap")
+
+
+func _test_global_cast_capacity() -> void:
+	var world := _admission_world(8, 16, 4)
+	var extra := PlayerState.new(9)
+	extra.team_id = 1
+	extra.position_x = 500_000
+	extra.position_y = 500_000
+	world.players.append(extra)
+	check(extra.place_proven_spell(0, CombatTuning.CINDERFAN_WIRE_ID), "offline overflow actor equips the same fan")
+	check(extra.place_proven_spell(1, CombatTuning.RIMEWAKE_WIRE_ID), "offline overflow actor equips the same Field")
+	var flux_before := extra.flux
+	equal(world.available_cast_capacity(9), Vector2i.ZERO, "global caps still apply to an owner with no live objects")
+	check(world.step([SimCommand.new(world.tick, 9, 0, 0, 0, SimCommand.PRESSED_SPELL_1, 1000, 0)]), "global projectile overflow refuses admission without rejecting the tick")
+	equal(extra.pending_cast_wire_id, 0, "global limit refuses another whole fan")
+	equal(extra.flux, flux_before, "global projectile refusal spends no Flux")
+	check(world.step([SimCommand.new(world.tick, 9, 0, 0, 0, SimCommand.PRESSED_SPELL_2, 1000, 0)]), "global Field overflow refuses admission")
+	equal(extra.pending_cast_wire_id, 0, "global limit refuses another Field")
+	equal(extra.flux, flux_before, "global Field refusal spends no Flux")
+	equal(world.projectiles.size(), SimConfig.MAX_ACTIVE_PROJECTILES, "refusal never drops existing dangerous projectile state")
+	equal(world.fields.size(), SimConfig.MAX_ACTIVE_FIELDS, "refusal never drops existing persistent Field state")
+	check(extra.place_proven_spell(0, CombatTuning.POCKET_ECLIPSE_WIRE_ID), "an instant Beam remains an independent geometry choice")
+	check(world.step([SimCommand.new(world.tick, 9, 0, 0, 0, SimCommand.PRESSED_SPELL_1, 1000, 0)]), "full persistent capacity does not reject an instant Beam")
+	equal(extra.pending_cast_wire_id, CombatTuning.POCKET_ECLIPSE_WIRE_ID, "instant delivery consumes no projectile or Field reservation")
 
 
 func _test_complete_matrix_executes(tick_rate: int) -> void:
@@ -594,22 +739,23 @@ func _test_movement_spell_chains(tick_rate: int) -> void:
 
 
 func _test_pressure_exhaustion_and_recovery(tick_rate: int) -> void:
-	for champion_id: String in ["oh_tipi", "s_wayne", "red_baron"]:
+	var abilities := AbilityCatalog.new()
+	check(abilities.load_from_file("res://content/abilities/foundation_abilities_v1.json"), "pressure candidate loads the canonical spells")
+	var champions := ChampionCatalog.new()
+	check(champions.load_from_file("res://content/champions/foundation_champions_v1.json", abilities), "pressure candidate loads all promoted champions")
+	for champion_id: String in champions.ordered_champion_ids():
 		var world := SimWorld.new(tick_rate)
 		var caster: PlayerState = world.player()
-		if champion_id == "oh_tipi":
-			_apply_oh_tipi(caster)
-		elif champion_id == "s_wayne":
-			_apply_s_wayne(caster)
-		else:
-			_apply_red_baron(caster)
+		check(champions.apply_to_player(caster, champion_id), champion_id + " pressure candidate applies")
 		var definition := CombatTuning.cast_definition(caster.primary_wire_id)
 		var primary_cost := int(definition["flux_cost"])
 		@warning_ignore("integer_division")
 		var expected_casts: int = caster.flux_maximum / primary_cost
 		var cast_count := 0
 		var exhausted_tick := -1
-		for _index: int in range(tick_rate * 5):
+		var cycle_bound := world.config.milliseconds_to_ticks(int(definition["startup_ms"])) + world.config.milliseconds_to_ticks(int(definition["cooldown_ms"])) + 2
+		var exhaustion_limit := expected_casts * cycle_bound
+		for _index: int in range(exhaustion_limit):
 			check(_step(world, SimCommand.new(world.tick, caster.entity_id, 0, 0, SimCommand.HELD_PRIMARY, 0, 1000, 0)), "%d Hz %s sustained-pressure tick steps" % [tick_rate, champion_id])
 			for event: Dictionary in world.combat_events:
 				if event.get("type") == "cast_started" and int(event.get("wire_id", 0)) == caster.primary_wire_id:
@@ -617,7 +763,8 @@ func _test_pressure_exhaustion_and_recovery(tick_rate: int) -> void:
 			if caster.pending_cast_wire_id == 0 and caster.primary_cooldown_ticks == 0 and caster.flux < primary_cost:
 				exhausted_tick = world.tick
 				break
-		check(exhausted_tick > 0 and exhausted_tick <= tick_rate * 5, "%d Hz %s sustained pressure exhausts inside five seconds" % [tick_rate, champion_id])
+		check(exhausted_tick > 0 and exhausted_tick <= exhaustion_limit, "%d Hz %s sustained pressure exhausts inside its authored cost/cadence bound" % [tick_rate, champion_id])
+		print("RESOURCE_TUNING %s: flux=%.1f; stamina=%.1f; paid_primary_casts=%d; exhaustion_ms=%.3f" % [champion_id, caster.flux_maximum / 1000.0, caster.stamina_maximum / 1000.0, cast_count, exhausted_tick * 1000.0 / tick_rate])
 		equal(cast_count, expected_casts, "%d Hz %s receives no free pressure casts" % [tick_rate, champion_id])
 		check(caster.flux < primary_cost, "%d Hz %s exhaustion is visible in canonical Flux" % [tick_rate, champion_id])
 

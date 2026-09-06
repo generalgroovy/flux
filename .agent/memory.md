@@ -1,5 +1,27 @@
 # Active implementation memory
 
+## 2026-09-06 source-verified team checkpoint; paused for playtest
+
+- User requested the next safe pause. Workers are stopped; no new feature slice.
+- All 17 moving spells are 20% slower with practically unchanged reach; all five
+  playable champions have 10% more Flux and Stamina. Damage and movement speed unchanged.
+- Protocol 39 / snapshot 14: whole-cast admission, complete bounded threat
+  replication, fragmented snapshots, and replicated three-second dummy respawn.
+- Collision indexing and byte-identical native integer packing reduce measured
+  runtime cost; no unconditional rendered 120 FPS claim.
+- Shared element motifs and F4 / controller Select-Back compendium are integrated.
+  Movement instructions use actual tuning/bindings; roster status remains honest.
+- Full: 74 suites / 60,230 assertions, import and 120 Hz boot, zero stderr,
+  49,650 ms; `.godot/receipts/team-pause-full.json`. Local Farflow passed.
+  Strict eight-player diagnostic: 6,319 assertions, no omitted threats or rejected
+  snapshots. Actual `flux.cmd play -SmokeTest` passed. Two 720p compendium captures
+  inspected; physical controller and internet/NAT play remain unverified.
+- Run `C:\Users\sende\Projects\flux\flux.cmd`, not the older Documents checkout.
+  No new installer was built. See docs/TEAM-FOUNDATION-ACCEPTANCE.md for details.
+- Preserve personal untracked node_modules, scripts/firewall.ps1 and
+  scripts/Downloads - Shortcut.lnk. Next work only after the user resumes:
+  visual acceptance, connected course, finite deposits, Steam, all 36 pairs.
+
 ## 2026-09-06 G0 control integrity and higher jump
 
 - Reproduced actual movement defects through SimWorld: 70% slow gave 38.497

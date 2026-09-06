@@ -19,9 +19,15 @@ func run() -> int:
 	var movement: Array = catalog.shared_rules.get("universal_movement", [])
 	for action_id: String in ["jump", "slide", "roll", "air_dodge", "wave_dash", "wall_kick"]:
 		check(movement.has(action_id), "%s remains available to every size" % action_id)
-	check(catalog.accepts("small", {"health_maximum": 90000, "health_recovery_per_second": 2200, "flux_maximum": 112000, "flux_recovery_per_second": 23000, "stamina_maximum": 108000, "stamina_recovery_per_second": 28000, "movement_speed_ratio": 1060}), "S. Wayne fits the small skirmisher envelope")
-	check(catalog.accepts("middle", {"health_maximum": 108000, "health_recovery_per_second": 1800, "flux_maximum": 104000, "flux_recovery_per_second": 19000, "stamina_maximum": 120000, "stamina_recovery_per_second": 30000, "movement_speed_ratio": 980}), "Oh Tipi fits the middle adapter envelope")
-	check(catalog.accepts("large", {"health_maximum": 132000, "health_recovery_per_second": 1200, "flux_maximum": 96000, "flux_recovery_per_second": 17000, "stamina_maximum": 144000, "stamina_recovery_per_second": 32000, "movement_speed_ratio": 910}), "The Red Baron fits the large anchor envelope")
+	check(catalog.accepts("small", {"health_maximum": 90000, "health_recovery_per_second": 2200, "flux_maximum": 123200, "flux_recovery_per_second": 23000, "stamina_maximum": 118800, "stamina_recovery_per_second": 28000, "movement_speed_ratio": 1060}), "S. Wayne fits the small skirmisher envelope")
+	check(catalog.accepts("middle", {"health_maximum": 108000, "health_recovery_per_second": 1800, "flux_maximum": 114400, "flux_recovery_per_second": 19000, "stamina_maximum": 132000, "stamina_recovery_per_second": 30000, "movement_speed_ratio": 980}), "Oh Tipi fits the middle adapter envelope")
+	check(catalog.accepts("large", {"health_maximum": 132000, "health_recovery_per_second": 1200, "flux_maximum": 105600, "flux_recovery_per_second": 17000, "stamina_maximum": 158400, "stamina_recovery_per_second": 32000, "movement_speed_ratio": 910}), "The Red Baron fits the large anchor envelope")
+	for body_type: String in BodyTypeProfileCatalog.BODY_TYPES:
+		var bounds: Dictionary = (catalog.profiles[body_type] as Dictionary)["stat_bounds"]
+		for stat_name: String in BodyTypeProfileCatalog.STAT_NAMES:
+			var interval: Array = bounds[stat_name]
+			var global_bounds: Vector2i = ChampionCatalog.STAT_BOUNDS[stat_name]
+			check(int(interval[0]) >= global_bounds.x and int(interval[1]) <= global_bounds.y, "%s %s stays inside the global champion safety envelope" % [body_type, stat_name])
 	var invalid := catalog.data.duplicate(true)
 	((invalid["profiles"] as Dictionary)["large"] as Dictionary)["role"] = ""
 	var rejected := BodyTypeProfileCatalog.new()

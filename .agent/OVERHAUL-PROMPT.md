@@ -12,6 +12,11 @@ prose; correct stale prose in the same slice.
 
 ## Hard priority
 
+Current coordinated checkpoint: follow `.agent/TEAM-ITERATION-PROMPT.md` and
+`docs/TEAM-FOUNDATION-ACCEPTANCE.md`; complete the Full/Farflow/compendium proof
+before further expansion. Preserve protocol-39 complete-threat admission and
+replication, source-derived player information and the chemistry playtest pause.
+
 Latest user override: G0-G5 in `docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md`
 now leads. Correct proven control defects, raise jump presentation, finish the
 element/form visual grid, implement finite 2-5 second replicated deposits, then

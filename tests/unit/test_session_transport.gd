@@ -198,6 +198,24 @@ func _test_enet_loopback_handshake_and_input() -> void:
 		equal((snapshots[0].get("projectiles", PackedInt64Array()) as PackedInt64Array).size() / SessionSnapshot.PROJECTILE_VALUE_COUNT, 1, "projectile lane survives unreliable-ordered transport")
 		equal((snapshots[0].get("events", []) as Array).size(), 1, "semantic combat event survives unreliable-ordered transport")
 
+	# Real ENet delivery, not just a codec test: varied simultaneous threats need
+	# several MTUs and must arrive as one complete authoritative frame.
+	source.tick += 1
+	for index: int in range(1, 80):
+		source.projectiles.append(ProjectileState.new(
+			1000 + index, 2, 2, CombatTuning.RILLSHOT_WIRE_ID, 2,
+			Vector2i(300_000 + index * 7919, 200_000 + index * 6151),
+			Vector2i(480_000 - index * 187, index * 157), 12_000, 9_000, 90 + index,
+		))
+	var dense_snapshot := SessionSnapshot.capture(source, {1: "Lantern Host", 2: "River Guest"})
+	check(SessionTransport._snapshot_wire_packets(dense_snapshot).size() > 1, "real network fixture spans several MTUs")
+	check(host.broadcast_snapshot(dense_snapshot), "host sends complete fragmented threat snapshot")
+	check(_poll_until(host, client, func() -> bool: return not client.incoming_snapshots.is_empty()), "real ENet receives every fragment")
+	var dense_received := client.take_snapshots()
+	equal(dense_received.size(), 1, "fragmented ENet frame is delivered once and atomically")
+	if not dense_received.is_empty():
+		check(dense_received[0] == dense_snapshot, "all eighty threats and player values survive real transport")
+
 	client.stop()
 	check(_poll_until(host, client, func() -> bool: return host.player_count() == 1), "host removes a disconnected accepted peer")
 	var disconnected := host.take_disconnected_peers()

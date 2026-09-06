@@ -14,7 +14,11 @@ const MAX_PLAYERS: int = 8
 const MAX_REMOTE_CLIENTS: int = MAX_PLAYERS - 1
 const MAX_PACKET_BYTES: int = 8_192
 const ENET_MTU_BYTES: int = 1_392
-const MAX_SNAPSHOT_UNCOMPRESSED_BYTES: int = MAX_PACKET_BYTES
+const MAX_SNAPSHOT_UNCOMPRESSED_BYTES: int = 32_768
+const SNAPSHOT_FRAGMENT_PAYLOAD_BYTES: int = 1_152
+const MAX_SNAPSHOT_FRAGMENTS: int = 32
+const MAX_PENDING_SNAPSHOT_ASSEMBLIES: int = 3
+const SNAPSHOT_ASSEMBLY_TIMEOUT_MS: int = 350
 const MAX_PACKETS_PER_POLL: int = 64
 const MAX_QUEUED_INPUTS: int = MAX_REMOTE_CLIENTS * 4
 # Display names travel in every bounded snapshot; sixteen Unicode codepoints keep
@@ -34,6 +38,7 @@ const PACKET_SNAPSHOT: int = 5
 const PACKET_REQUEST: int = 6
 const PACKET_RECONCILIATION: int = 7
 const PACKET_ADMIN_CLOSE: int = 8
+const PACKET_SNAPSHOT_FRAGMENT: int = 9
 const MAX_ADMIN_REASON_LENGTH: int = 80
 const MAX_QUEUED_SNAPSHOTS: int = 2
 const MAX_QUEUED_REQUESTS: int = MAX_REMOTE_CLIENTS * 4
@@ -87,6 +92,8 @@ var reconnect_port: int = 0
 var reconnect_signature: String = ""
 var _hello_sent: bool = false
 var _connect_started_ms: int = 0
+var _snapshot_assemblies: Dictionary[int, Dictionary] = {}
+var _last_snapshot_tick: int = -1
 
 
 static func compatibility_signature(
@@ -407,12 +414,15 @@ func host_remove_entity(entity_id: int, requested_reason: String) -> bool:
 func broadcast_snapshot(snapshot: Dictionary) -> bool:
 	if not is_host() or not SessionSnapshot.validate(snapshot):
 		return false
-	var packet := _snapshot_wire_packet(snapshot)
-	if packet.is_empty():
+	var packets := _snapshot_wire_packets(snapshot)
+	if packets.is_empty():
 		return false
 	var all_sent: bool = true
 	for peer_id: int in accepted_peer_ids:
-		all_sent = _send_to(peer_id, packet, MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED, SNAPSHOT_CHANNEL) and all_sent
+		for packet: Dictionary in packets:
+			# Ordering belongs to complete snapshot ticks, not individual fragments.
+			# Losing one fragment never blocks delivery of a newer complete frame.
+			all_sent = _send_to(peer_id, packet, MultiplayerPeer.TRANSFER_MODE_UNRELIABLE, SNAPSHOT_CHANNEL) and all_sent
 	return all_sent
 
 
@@ -511,12 +521,9 @@ func _handle_packet(sender_id: int, packet_bytes: PackedByteArray) -> void:
 			_disconnect_with_error(administration_reason)
 			return
 		if kind == PACKET_SNAPSHOT:
-			var snapshot := _snapshot_from_wire_packet(packet)
-			if not snapshot.is_empty():
-				if incoming_snapshots.is_empty() or int(snapshot["tick"]) > int(incoming_snapshots.back()["tick"]):
-					incoming_snapshots.append(snapshot)
-					while incoming_snapshots.size() > MAX_QUEUED_SNAPSHOTS:
-						incoming_snapshots.pop_front()
+			_accept_snapshot(_snapshot_from_wire_packet(packet))
+		elif kind == PACKET_SNAPSHOT_FRAGMENT:
+			_accept_snapshot(_snapshot_from_fragment(packet))
 		elif kind == PACKET_RECONCILIATION:
 			var reconciliation_value: Variant = packet.get("reconciliation")
 			if reconciliation_value is Dictionary and ClientPrediction.validate_packet(reconciliation_value):
@@ -626,6 +633,98 @@ static func _snapshot_wire_packet(snapshot: Dictionary) -> Dictionary:
 	return packet if var_to_bytes(packet).size() <= ENET_MTU_BYTES else {}
 
 
+static func _snapshot_wire_packets(snapshot: Dictionary) -> Array[Dictionary]:
+	if not SessionSnapshot.validate(snapshot):
+		return []
+	var raw := var_to_bytes(snapshot)
+	if raw.is_empty() or raw.size() > MAX_SNAPSHOT_UNCOMPRESSED_BYTES:
+		return []
+	var compressed := raw.compress(FileAccess.COMPRESSION_FASTLZ)
+	if compressed.is_empty():
+		return []
+	var single := {"kind": PACKET_SNAPSHOT, "raw_size": raw.size(), "payload": compressed}
+	if var_to_bytes(single).size() <= ENET_MTU_BYTES:
+		return [single]
+	@warning_ignore("integer_division")
+	var count := (compressed.size() + SNAPSHOT_FRAGMENT_PAYLOAD_BYTES - 1) / SNAPSHOT_FRAGMENT_PAYLOAD_BYTES
+	if count > MAX_SNAPSHOT_FRAGMENTS:
+		return []
+	var packets: Array[Dictionary] = []
+	for index: int in range(count):
+		var packet := {
+			"kind": PACKET_SNAPSHOT_FRAGMENT, "tick": int(snapshot["tick"]),
+			"raw_size": raw.size(), "count": count, "index": index,
+			"payload": compressed.slice(index * SNAPSHOT_FRAGMENT_PAYLOAD_BYTES, (index + 1) * SNAPSHOT_FRAGMENT_PAYLOAD_BYTES),
+		}
+		if var_to_bytes(packet).size() > ENET_MTU_BYTES:
+			return []
+		packets.append(packet)
+	return packets
+
+
+func _accept_snapshot(snapshot: Dictionary) -> void:
+	if snapshot.is_empty() or int(snapshot["tick"]) <= _last_snapshot_tick:
+		return
+	_last_snapshot_tick = int(snapshot["tick"])
+	for pending_tick: int in _snapshot_assemblies.keys():
+		if pending_tick <= _last_snapshot_tick:
+			_snapshot_assemblies.erase(pending_tick)
+	incoming_snapshots.append(snapshot)
+	while incoming_snapshots.size() > MAX_QUEUED_SNAPSHOTS:
+		incoming_snapshots.pop_front()
+
+
+func _snapshot_from_fragment(packet: Dictionary) -> Dictionary:
+	for key: String in ["kind", "tick", "raw_size", "count", "index"]:
+		if typeof(packet.get(key)) != TYPE_INT:
+			return {}
+	var snapshot_tick := int(packet["tick"])
+	var count := int(packet["count"])
+	var index := int(packet["index"])
+	var raw_size := int(packet["raw_size"])
+	if (
+		int(packet["kind"]) != PACKET_SNAPSHOT_FRAGMENT
+		or snapshot_tick < 0 or snapshot_tick > 0x7fffffff or snapshot_tick <= _last_snapshot_tick
+		or count < 2 or count > MAX_SNAPSHOT_FRAGMENTS or index < 0 or index >= count
+		or raw_size < 1 or raw_size > MAX_SNAPSHOT_UNCOMPRESSED_BYTES
+		or typeof(packet.get("payload")) != TYPE_PACKED_BYTE_ARRAY
+	):
+		return {}
+	var payload: PackedByteArray = packet["payload"]
+	if payload.is_empty() or payload.size() > SNAPSHOT_FRAGMENT_PAYLOAD_BYTES:
+		return {}
+	if index < count - 1 and payload.size() != SNAPSHOT_FRAGMENT_PAYLOAD_BYTES:
+		return {}
+	var now := Time.get_ticks_msec()
+	for pending_tick: int in _snapshot_assemblies.keys():
+		if now - int(_snapshot_assemblies[pending_tick]["created_ms"]) > SNAPSHOT_ASSEMBLY_TIMEOUT_MS:
+			_snapshot_assemblies.erase(pending_tick)
+	if not _snapshot_assemblies.has(snapshot_tick):
+		if _snapshot_assemblies.size() >= MAX_PENDING_SNAPSHOT_ASSEMBLIES:
+			var oldest_tick: int = _snapshot_assemblies.keys().min()
+			if snapshot_tick < oldest_tick:
+				return {}
+			_snapshot_assemblies.erase(oldest_tick)
+		_snapshot_assemblies[snapshot_tick] = {"count": count, "raw_size": raw_size, "created_ms": now, "parts": {}}
+	var assembly: Dictionary = _snapshot_assemblies[snapshot_tick]
+	if int(assembly["count"]) != count or int(assembly["raw_size"]) != raw_size:
+		_snapshot_assemblies.erase(snapshot_tick)
+		return {}
+	var parts: Dictionary = assembly["parts"]
+	if parts.has(index) and parts[index] != payload:
+		_snapshot_assemblies.erase(snapshot_tick)
+		return {}
+	parts[index] = payload
+	if parts.size() != count:
+		return {}
+	var compressed := PackedByteArray()
+	for part_index: int in range(count):
+		compressed.append_array(parts[part_index])
+	_snapshot_assemblies.erase(snapshot_tick)
+	var snapshot := _snapshot_from_wire_packet({"kind": PACKET_SNAPSHOT, "raw_size": raw_size, "payload": compressed})
+	return snapshot if not snapshot.is_empty() and int(snapshot["tick"]) == snapshot_tick else {}
+
+
 static func _snapshot_from_wire_packet(packet: Dictionary) -> Dictionary:
 	if typeof(packet.get("kind")) != TYPE_INT or int(packet["kind"]) != PACKET_SNAPSHOT or typeof(packet.get("raw_size")) != TYPE_INT:
 		return {}
@@ -638,7 +737,7 @@ static func _snapshot_from_wire_packet(packet: Dictionary) -> Dictionary:
 	):
 		return {}
 	var payload: PackedByteArray = payload_value
-	if payload.is_empty() or payload.size() > MAX_PACKET_BYTES:
+	if payload.is_empty() or payload.size() > MAX_SNAPSHOT_FRAGMENTS * SNAPSHOT_FRAGMENT_PAYLOAD_BYTES:
 		return {}
 	var raw := payload.decompress(raw_size, FileAccess.COMPRESSION_FASTLZ)
 	if raw.size() != raw_size:
@@ -711,6 +810,8 @@ func _close_peer() -> void:
 	accepted_peer_ids = PackedInt32Array()
 	incoming_inputs = []
 	incoming_snapshots = []
+	_snapshot_assemblies = {}
+	_last_snapshot_tick = -1
 	incoming_requests = []
 	incoming_reconciliations = []
 	joined_peers = []

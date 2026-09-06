@@ -243,9 +243,8 @@ func draw_startup(
 		"frost_sigil":
 			var sigil_radius := 15.0 + progress * 8.0
 			canvas.draw_arc(position, sigil_radius, 0.0, TAU, 18, Color(base, 0.48 + progress * 0.28), 2.0)
-			for index: int in range(6):
-				var ray := Vector2.from_angle(TAU * float(index) / 6.0)
-				canvas.draw_line(position + ray * 8.0, position + ray * sigil_radius, Color(bright, 0.72), 2.0)
+			ElementGlyphRendererScript.draw_material_motion(canvas, language, position, element, sigil_radius, progress, 1.0 - progress * 0.2, reduced_effects)
+			_draw_element_mark(canvas, position, Vector2.UP, element, 5.0, Color(bright, 0.82))
 		"orbiting_crescents":
 			for offset: float in [0.0, PI]:
 				var angle := progress * PI * 1.4 + offset
@@ -364,17 +363,14 @@ func draw_field(canvas: CanvasItem, field: FieldState, life_ratio: float, tick: 
 	var dark := language.element_color(element, "dark")
 	var base := language.element_color(element, "base")
 	var bright := language.element_color(element, "bright")
-	var breath := 0.0 if reduced_effects else sin(float(tick + field.entity_id) * 0.08) * 2.0
-	canvas.draw_circle(center, radius, Color(dark, 0.16 + life_ratio * 0.05))
-	canvas.draw_arc(center, radius + breath, 0.0, TAU, 32, Color(base, 0.72), 3.0)
-	canvas.draw_arc(center, radius * 0.72, 0.0, TAU, 24, Color(bright, 0.34), 1.0)
-	var spoke_count := 6 if String(profile.get("silhouette", "")) == "crystal_wake" else 4
-	for index: int in range(spoke_count):
-		var direction := Vector2.from_angle(TAU * float(index) / float(spoke_count))
-		canvas.draw_line(center + direction * 14.0, center + direction * radius * 0.82, Color(bright, 0.52), 2.0)
-		var branch := center + direction * radius * 0.58
-		canvas.draw_line(branch, branch - direction.rotated(0.72) * 8.0, Color(base, 0.58), 2.0)
-		canvas.draw_line(branch, branch - direction.rotated(-0.72) * 8.0, Color(base, 0.58), 2.0)
+	var remaining := clampf(life_ratio, 0.0, 1.0)
+	var phase := ElementGlyphRendererScript.material_phase(language, element, tick, field.entity_id)
+	canvas.draw_circle(center, radius, Color(dark, 0.12 + remaining * 0.05))
+	# Only the interior moves. The unbroken outer edge always marks the exact
+	# authoritative footprint, including in reduced-effects and decay frames.
+	canvas.draw_arc(center, radius, 0.0, TAU, 32, Color(dark, 0.80), 4.0)
+	canvas.draw_arc(center, radius, 0.0, TAU, 32, Color(base, 0.72), 2.0)
+	ElementGlyphRendererScript.draw_material_motion(canvas, language, center, element, radius, phase, remaining, reduced_effects)
 	for affected_index: int in range(mini(field.affected_entity_ids.size(), 8)):
 		var angle := TAU * float(affected_index) / 8.0
 		canvas.draw_rect(Rect2(center + Vector2.from_angle(angle) * radius * 0.90 - Vector2(2, 2), Vector2(4, 4)), bright, true)
@@ -392,6 +388,7 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 	var position: Vector2 = cue.get("position", Vector2.ZERO)
 	var start: Vector2 = cue.get("start", position)
 	var endpoint: Vector2 = cue.get("end", position)
+	phase = clampf(phase, 0.0, 1.0)
 	var opacity := 1.0 - phase
 	var element := String(profile.get("element", "water"))
 	var dark := language.element_color(element, "dark")
@@ -411,9 +408,10 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 			canvas.draw_line(start + side * 3.0, endpoint + side * 3.0, Color(base, opacity * 0.72), 3.0)
 			canvas.draw_line(start - side * 3.0, endpoint - side * 3.0, Color(base, opacity * 0.66), 3.0)
 			canvas.draw_line(start, endpoint, Color(bright, opacity * 0.92), 1.0)
-			_draw_diamond(canvas, endpoint, 10.0 + phase * 8.0, Color(bright, opacity), Color(dark, opacity * 0.28))
 			if String(profile.get("silhouette", "")) == "elemental_beam":
-				_draw_element_mark(canvas, endpoint - lane.normalized() * 9.0, lane.normalized(), element, 4.5, Color(bright, opacity))
+				_draw_element_impact(canvas, endpoint, element, phase, reduced_effects)
+			else:
+				_draw_diamond(canvas, endpoint, 10.0 + phase * 8.0, Color(bright, opacity), Color(dark, opacity * 0.28))
 			return true
 	if event_type == "spray_fired" and String(profile.get("silhouette", "")) in ["wave_fan", "elemental_spray"]:
 			var lane := endpoint - start
@@ -433,9 +431,10 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 				_draw_element_mark(canvas, start + direction * 10.0, direction, element, 4.5, Color(bright, opacity))
 			return true
 	if event_type == "field_triggered" and String(profile.get("impact", "")) in ["freeze_star", "elemental_field_break"]:
-		for index: int in range(6):
-			var direction := Vector2.from_angle(TAU * float(index) / 6.0)
-			canvas.draw_line(position, position + direction * (12.0 + phase * 20.0), Color(bright, opacity), 2.0)
+		_draw_element_impact(canvas, position, element, phase, reduced_effects)
+		return true
+	if event_type == "spray_hit" and String(profile.get("impact", "")) == "elemental_break":
+		_draw_element_impact(canvas, position, element, phase, reduced_effects)
 		return true
 	if event_type == "spray_hit" and String(profile.get("impact", "")) == "breaker_arc":
 		var breaker_radius := 11.0 + phase * 28.0
@@ -445,11 +444,8 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 		canvas.draw_line(position + Vector2(10.0, 2.0), position + Vector2(17.0 + phase * 8.0, -7.0), Color(base, opacity * 0.72), 2.0)
 		return true
 	if event_type == "projectile_hit":
-		if String(profile.get("impact", "")) == "burst_break":
-			for index: int in range(5):
-				var burst_direction := Vector2.from_angle(TAU * float(index) / 5.0 - PI * 0.5)
-				canvas.draw_line(position + burst_direction * 4.0, position + burst_direction * (12.0 + phase * 20.0), Color(bright if index % 2 == 0 else base, opacity), 2.0)
-			canvas.draw_arc(position, 7.0 + phase * 10.0, 0.0, TAU, 16, Color(dark, opacity * 0.62), 2.0)
+		if String(profile.get("impact", "")) in ["burst_break", "elemental_break"]:
+			_draw_element_impact(canvas, position, element, phase, reduced_effects)
 		elif String(profile.get("impact", "")) == "splash_ring":
 			var splash_radius := 10.0 + phase * 30.0
 			canvas.draw_arc(position, splash_radius, 0.0, TAU, 24, Color(base, opacity * 0.78), 2.0)
@@ -467,6 +463,13 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 			canvas.draw_arc(position, 9.0 + phase * 20.0, 0.7, 3.84, 18, Color(bright, opacity * 0.72), 2.0)
 		return true
 	return false
+
+
+func _draw_element_impact(canvas: CanvasItem, position: Vector2, element: String, phase: float, reduced_effects: bool) -> void:
+	var opacity := 1.0 - phase
+	var extent := 18.0 + phase * (14.0 if reduced_effects else 22.0)
+	ElementGlyphRendererScript.draw_material_motion(canvas, language, position, element, extent, phase, opacity, reduced_effects, opacity)
+	_draw_element_mark(canvas, position, Vector2.UP, element, 4.0 + phase * 3.0, Color(language.element_color(element, "bright"), opacity * 0.80))
 
 
 func _draw_element_mark(canvas: CanvasItem, center: Vector2, direction: Vector2, element: String, radius: float, color: Color) -> void:

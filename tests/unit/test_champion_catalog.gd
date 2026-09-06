@@ -11,6 +11,7 @@ func run() -> int:
 	_test_affinity_point_budget_and_treevor_exception()
 	_test_unique_affinity_pairs()
 	_test_profiles_are_authoritative()
+	_test_resource_reserve_candidate()
 	for tick_rate: int in [120]:
 		_test_profiles_execute_at_rate(tick_rate)
 	_test_invalid_profiles_fail_closed()
@@ -131,7 +132,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.active_2_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "Oh Tipi equips Rimewake as the third proven spell")
 	equal(Array(state.spell_wire_ids), [140, 141, 144, 145, 146, 154, 155, 156, 148, 157, 158, 159], "Oh Tipi leads a representative row-major twelve-spell weave with champion spells")
 	equal(state.health, 108_000, "Oh Tipi starts at authored maximum Health")
-	equal(state.stamina_maximum, 120_000, "Oh Tipi has the larger Stamina reserve")
+	equal(state.stamina_maximum, 132_000, "Oh Tipi has the larger Stamina reserve")
 	state.health = 54_000
 	state.flux = 52_000
 	state.stamina = 54_000
@@ -152,8 +153,35 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.active_2_wire_id, CombatTuning.CINDERFAN_WIRE_ID, "The Red Baron equips Cinder Fan as readable lane pressure")
 	equal(Array(state.spell_wire_ids), [145, 144, 146, 154, 155, 156, 140, 148, 141, 157, 158, 159], "The Red Baron leads the row-major weave with Fire/Ice spells")
 	equal(state.health_maximum, 132_000, "large body owns the deepest Health reserve")
-	equal(state.stamina_maximum, 144_000, "large body owns the deepest Stamina reserve")
+	equal(state.stamina_maximum, 158_400, "large body owns the deepest Stamina reserve")
 	equal(state.movement_speed_ratio, 910, "large body pays for staying power with deliberate ground speed")
+
+
+func _test_resource_reserve_candidate() -> void:
+	var catalog := _catalog()
+	var baselines := {
+		"oh_tipi": [104_000, 120_000, 19_000, 30_000, 108_000, 980],
+		"s_wayne": [112_000, 108_000, 23_000, 28_000, 90_000, 1060],
+		"red_baron": [96_000, 144_000, 17_000, 32_000, 132_000, 910],
+		"grace_reava": [120_000, 112_000, 21_000, 29_000, 92_000, 1030],
+		"wa_bidi": [106_000, 116_000, 25_000, 32_000, 98_000, 1050],
+	}
+	for champion_id: String in baselines:
+		var before: Array = baselines[champion_id]
+		var state := PlayerState.new()
+		check(catalog.apply_to_player(state, champion_id), champion_id + " applies the readability reserve candidate")
+		equal(state.flux_maximum * 10, int(before[0]) * 11, champion_id + " receives exactly 10% more Flux reserve")
+		equal(state.stamina_maximum * 10, int(before[1]) * 11, champion_id + " receives exactly 10% more Stamina reserve")
+		equal(state.flux_recovery_per_second, int(before[2]), champion_id + " keeps the same Flux recovery commitment")
+		equal(state.stamina_recovery_per_second, int(before[3]), champion_id + " keeps the same Stamina recovery commitment")
+		equal(state.health_maximum, int(before[4]), champion_id + " gains no Health advantage from reserve tuning")
+		equal(state.movement_speed_ratio, int(before[5]), champion_id + " preserves body movement tempo")
+		state.flux = state.flux_maximum - 1
+		state.stamina = state.stamina_maximum - 1
+		PlayerResourcesSystem.step(state, SimConfig.new(120))
+		MovementSystem.step(state, SimCommand.new(0, state.entity_id), SimConfig.new(120), CollisionWorld.new(2_000_000, 2_000_000))
+		equal(state.flux, state.flux_maximum, champion_id + " clamps Flux at the new authoritative maximum")
+		equal(state.stamina, state.stamina_maximum, champion_id + " clamps Stamina at the new authoritative maximum")
 
 
 func _test_profiles_execute_at_rate(tick_rate: int) -> void:

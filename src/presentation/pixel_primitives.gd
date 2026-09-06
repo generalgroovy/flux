@@ -61,57 +61,9 @@ static func draw_rune_diamond(canvas: CanvasItem, center: Vector2, radius: float
 	canvas.draw_circle(center, maxf(1.0, radius * 0.22), color)
 
 
-static func draw_element_glyph(canvas: CanvasItem, center: Vector2, radius: float, element_id: String, color: Color, phase: float = 0.0) -> void:
-	var pulse := 1.0 + 0.06 * sin(phase)
-	var r := radius * pulse
-	match element_id:
-		"earth":
-			var block := Rect2(center - Vector2(r * 0.58, r * 0.45), Vector2(r * 1.16, r * 0.9))
-			canvas.draw_rect(block, color, false, 2.0)
-			canvas.draw_line(center + Vector2(-r * 0.15, -r * 0.42), center + Vector2(r * 0.08, r * 0.42), color, 1.0)
-			canvas.draw_line(center + Vector2(r * 0.08, 0), center + Vector2(r * 0.43, -r * 0.23), color, 1.0)
-		"fire":
-			var flame := PackedVector2Array([center + Vector2(0, -r), center + Vector2(r * 0.56, -r * 0.06), center + Vector2(r * 0.22, r), center + Vector2(-r * 0.52, r * 0.38), center + Vector2(-r * 0.3, -r * 0.18), center + Vector2(0, -r)])
-			canvas.draw_polyline(flame, color, 2.0)
-		"water":
-			canvas.draw_arc(center + Vector2(-r * 0.1, r * 0.08), r * 0.66, -2.7, 1.0, 12, color, 2.0)
-			canvas.draw_arc(center + Vector2(r * 0.28, r * 0.2), r * 0.42, -2.8, 0.6, 10, color, 2.0)
-			canvas.draw_line(center + Vector2(-r, r * 0.55), center + Vector2(r, r * 0.55), color, 1.0)
-		"wind":
-			canvas.draw_arc(center, r * 0.72, -2.5, 2.2, 16, color, 2.0)
-			canvas.draw_arc(center + Vector2(r * 0.2, r * 0.1), r * 0.35, -2.2, 2.0, 10, color, 1.0)
-		"ice":
-			for index: int in 3:
-				var angle := float(index) * PI / 3.0
-				var direction := Vector2(cos(angle), sin(angle))
-				canvas.draw_line(center - direction * r, center + direction * r, color, 1.5)
-		"charge":
-			var bolt := PackedVector2Array([center + Vector2(r * 0.2, -r), center + Vector2(-r * 0.42, r * 0.05), center + Vector2(r * 0.05, r * 0.05), center + Vector2(-r * 0.18, r), center + Vector2(r * 0.5, -r * 0.18), center + Vector2(r * 0.02, -r * 0.18)])
-			canvas.draw_polyline(bolt, color, 2.0)
-		"light":
-			draw_rune_diamond(canvas, center, r * 0.58, color)
-			canvas.draw_line(center + Vector2(0, -r), center + Vector2(0, r), color, 1.0)
-			canvas.draw_line(center + Vector2(-r, 0), center + Vector2(r, 0), color, 1.0)
-		"dark":
-			canvas.draw_arc(center, r * 0.72, -1.75, 1.75, 16, color, 2.0)
-			canvas.draw_arc(center + Vector2(r * 0.34, 0), r * 0.55, -1.8, 1.8, 14, color, 1.0)
-		"spirit":
-			canvas.draw_arc(center + Vector2(-r * 0.2, 0), r * 0.5, -2.2, 2.2, 12, color, 1.5)
-			canvas.draw_arc(center + Vector2(r * 0.2, 0), r * 0.5, 0.95, 5.35, 12, color, 1.5)
-		"chaos":
-			canvas.draw_arc(center, r * 0.78, -2.8, -0.2, 9, color, 2.0)
-			canvas.draw_arc(center, r * 0.78, 0.35, 2.5, 8, color, 2.0)
-			canvas.draw_line(center + Vector2(-r * 0.75, -r * 0.1), center + Vector2(r * 0.68, r * 0.25), color, 1.0)
-		"gravity":
-			canvas.draw_arc(center, r * 0.82, 0.0, TAU, 18, color, 1.0)
-			canvas.draw_arc(center, r * 0.48, 0.0, TAU, 14, color, 1.0)
-			canvas.draw_circle(center, r * 0.18, color)
-		"time":
-			canvas.draw_arc(center, r * 0.78, 0.0, TAU, 18, color, 1.5)
-			canvas.draw_line(center, center + Vector2(0, -r * 0.54), color, 2.0)
-			canvas.draw_line(center, center + Vector2(r * 0.42, r * 0.16), color, 2.0)
-		_:
-			draw_rune_diamond(canvas, center, r * 0.65, color)
+static func draw_element_glyph(canvas: CanvasItem, language: VisualLanguage, center: Vector2, radius: float, element_id: String, color: Color) -> void:
+	# Specimen and interface glyphs use the exact runtime shape vocabulary.
+	ElementGlyphRenderer.draw(canvas, language, center, element_id, radius, color)
 
 
 static func draw_material_tile(canvas: CanvasItem, rectangle: Rect2, ramp: Array[Color], pattern_seed: int) -> void:

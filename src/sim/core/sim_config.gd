@@ -2,9 +2,15 @@ class_name SimConfig
 extends RefCounted
 
 
-const PROTOCOL_VERSION: int = 38
+const PROTOCOL_VERSION: int = 39
 const FIXED_SCALE: int = 1000
 const TICK_RATE: int = 120
+# Cast admission and replication share one finite authority envelope. Pending
+# casts reserve whole patterns before payment; presentation never hides a hit.
+const MAX_ACTIVE_PROJECTILES: int = 128
+const MAX_PROJECTILES_PER_PLAYER: int = 16
+const MAX_ACTIVE_FIELDS: int = 32
+const MAX_FIELDS_PER_PLAYER: int = 4
 
 var tick_rate: int
 

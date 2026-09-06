@@ -3,6 +3,7 @@ extends Node2D
 
 const MAX_CATCH_UP_STEPS: int = 8
 const RuntimeContentSummaryScript = preload("res://src/app/runtime_content_summary.gd")
+const PlayerCompendiumScript = preload("res://src/presentation/player_compendium.gd")
 const SNAPSHOT_RATE: int = 60
 const EMOTE_COOLDOWN_MS: int = 1200
 const STEWARD_CONFIRMATION_MS: int = 3000
@@ -65,6 +66,7 @@ var material_preview_texture: ImageTexture
 var player_preferences: PlayerPreferences
 var controls_editor: ControlBindingEditor
 var spell_loom_editor: SpellLoomEditor
+var player_compendium: PlayerCompendiumScript
 var player_sprite: WellspringCharacterSprite
 var session_transport: SessionTransport
 var session_steward: SessionSteward
@@ -171,6 +173,7 @@ func _ready() -> void:
 		push_warning(player_preferences.last_error)
 	controls_editor = ControlBindingEditor.new()
 	spell_loom_editor = SpellLoomEditor.new()
+	player_compendium = PlayerCompendiumScript.new()
 	_apply_preference_overrides()
 	hub_definition = HubDefinition.new()
 	if not hub_definition.load_from_file(HUB_DEFINITION_PATH):
@@ -278,6 +281,11 @@ func _ready() -> void:
 		push_error(champion_catalog.last_error)
 		get_tree().quit(1)
 		return
+	var compendium_roster := ChampionRosterPlan.new()
+	if not compendium_roster.load_from_files() or not player_compendium.configure(champion_catalog, compendium_roster):
+		push_error("Compendium catalog validation failed: %s / %s" % [compendium_roster.last_error, player_compendium.overview.get("error", "")])
+		get_tree().quit(1)
+		return
 	selected_champion_id = _requested_champion_id()
 	runtime_content_summary = RuntimeContentSummaryScript.build(ability_catalog, champion_catalog, reaction_catalog)
 	runtime_content_lines = RuntimeContentSummaryScript.spell_loom_lines(runtime_content_summary)
@@ -341,6 +349,9 @@ func _ready() -> void:
 			spell_loom_editor.open_editor(_local_player_state(), ability_catalog)
 		elif capture_expanded_station_id == "farflow-join":
 			_open_join_address_editor()
+	for argument: String in OS.get_cmdline_user_args():
+		if argument in ["--capture-compendium=movement", "--capture-compendium=characters"]:
+			_open_player_compendium(PlayerCompendiumScript.CHARACTERS if argument.ends_with("=characters") else PlayerCompendiumScript.MOVEMENT)
 	print(
 		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s/skeleton %s/directions %s, bursts %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, reactions %s/gated, champions %s, build %d/13, materials %s, yard %s"
 		% [
@@ -403,6 +414,20 @@ func _unhandled_input(event: InputEvent) -> void:
 	if spell_loom_editor != null and spell_loom_editor.is_open:
 		_handle_spell_loom_input(event)
 		return
+	# Binding capture and the other editors retain priority over fixed UI keys.
+	if controls_editor != null and not controls_editor.is_open:
+		if player_compendium.is_open:
+			player_compendium.handle_event(event, ThemeDB.fallback_font, get_viewport().get_mouse_position() / _compendium_scale())
+			controls_input_guard_frames = 2
+			get_viewport().set_input_as_handled()
+			queue_redraw()
+			return
+		var open_keyboard: bool = event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F4
+		var open_controller: bool = event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_BACK
+		if open_keyboard or open_controller:
+			_open_player_compendium(PlayerCompendiumScript.MOVEMENT, ControlBindingEditor.DEVICE_CONTROLLER if open_controller else ControlBindingEditor.DEVICE_KEYBOARD)
+			get_viewport().set_input_as_handled()
+			return
 	if controls_editor == null or not controls_editor.is_open:
 		return
 	var handled := false
@@ -620,7 +645,9 @@ func _process(delta: float) -> void:
 		_advance_safe_quit()
 		return
 	_update_reconnect_smoke(delta)
-	var controls_blocking: bool = join_address_editor_open or (controls_editor != null and controls_editor.is_open) or (spell_loom_editor != null and spell_loom_editor.is_open) or controls_input_guard_frames > 0
+	if player_compendium != null and player_compendium.is_open:
+		player_compendium.refresh_status(_local_player_state())
+	var controls_blocking: bool = join_address_editor_open or (controls_editor != null and controls_editor.is_open) or (spell_loom_editor != null and spell_loom_editor.is_open) or (player_compendium != null and player_compendium.is_open) or controls_input_guard_frames > 0
 	if controls_input_guard_frames > 0:
 		controls_input_guard_frames -= 1
 	if not controls_blocking:
@@ -658,6 +685,9 @@ func _process(delta: float) -> void:
 			station_notice_seconds = 1.5
 	if not controls_blocking and Input.is_action_just_pressed(InputRouter.INTERACT_ACTION) and not _is_spectating():
 		_activate_focused_station()
+		# A station can open a modal during this frame; never sample the same
+		# interaction press as a movement or spell command afterwards.
+		controls_blocking = controls_blocking or controls_editor.is_open or spell_loom_editor.is_open or player_compendium.is_open or join_address_editor_open
 	if not controls_blocking and Input.is_action_just_pressed(InputRouter.EMOTE_ACTION):
 		_submit_session_request(SessionTransport.REQUEST_EMOTE)
 
@@ -832,7 +862,7 @@ func _draw() -> void:
 	campus_renderer.draw(self, campus_layout, roundi(visual_tick), camera_focus_position, _reduced_effects_enabled())
 	movement_trace.draw(self, rendered_position, _reduced_effects_enabled())
 	if show_debug_overlay:
-		for obstacle: CollisionWorld.Obstacle in world.collision.obstacles:
+		for obstacle: CollisionWorld.Obstacle in world.collision.obstacle_view():
 			var rectangle := Rect2(
 				Vector2(float(obstacle.minimum_x) / 1000.0, float(obstacle.minimum_y) / 1000.0),
 				Vector2(float(obstacle.maximum_x - obstacle.minimum_x) / 1000.0, float(obstacle.maximum_y - obstacle.minimum_y) / 1000.0),
@@ -940,6 +970,10 @@ func _draw() -> void:
 		draw_string(ThemeDB.fallback_font, Vector2(32, 132), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
 	if show_debug_overlay:
 		_draw_material_yard_preview()
+	if player_compendium != null and not player_compendium.is_open and not controls_editor.is_open and not spell_loom_editor.is_open and not join_address_editor_open:
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * _ui_scale())
+		draw_string(ThemeDB.fallback_font, Vector2(20, 68), "F4 / Back  COMPENDIUM", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 13, PARCHMENT_COLOR)
+		draw_set_transform(Vector2.ZERO)
 	if controls_editor != null and controls_editor.is_open:
 		var controls_ui_scale := _ui_scale()
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * controls_ui_scale)
@@ -952,6 +986,10 @@ func _draw() -> void:
 		draw_set_transform(Vector2.ZERO)
 	if show_visual_specimen:
 		VisualSpecimen.draw(self, visual_language, get_viewport_rect().size, world.tick)
+	if player_compendium != null and player_compendium.is_open:
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * _compendium_scale())
+		player_compendium.draw(self, ThemeDB.fallback_font)
+		draw_set_transform(Vector2.ZERO)
 
 
 func _draw_controls_editor() -> void:
@@ -1039,6 +1077,8 @@ func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 					label = "SLOT %d EMPTY" % int(event.get("slot", 0))
 				elif refusal_reason == "cooldown":
 					label = "COOLDOWN"
+				elif refusal_reason == "capacity":
+					label = "SPELL LIMIT · LET ONE FADE"
 				elif refusal_reason == "startup_commitment":
 					label = "FINISH WEAVE"
 				elif refusal_reason.begins_with("control_"):
@@ -1862,7 +1902,7 @@ func _activate_focused_station() -> void:
 	var station: Dictionary = campus_layout.stations_by_id[focused_station_id]
 	match String(station.get("command", "")):
 		"movement_guide":
-			expanded_station_id = "" if expanded_station_id == focused_station_id else focused_station_id
+			_open_player_compendium(PlayerCompendiumScript.MOVEMENT)
 		"configure_controls":
 			controls_editor.open_editor()
 			expanded_station_id = focused_station_id
@@ -1887,6 +1927,22 @@ func _activate_focused_station() -> void:
 			_activate_session_ledger()
 		"session_parting":
 			_activate_session_parting()
+
+
+func _open_player_compendium(selected_tab: int, device: int = ControlBindingEditor.DEVICE_KEYBOARD) -> void:
+	if player_compendium == null or join_address_editor_open or controls_editor.is_open or spell_loom_editor.is_open:
+		return
+	player_compendium.open_panel(selected_tab, player_preferences, _local_player_state(), device)
+	expanded_station_id = ""
+	controls_input_guard_frames = 2
+	queue_redraw()
+
+
+func _compendium_scale() -> float:
+	# A small window still fits the full reading page; the gameplay HUD keeps
+	# its independent scaling policy.
+	var viewport_size := get_viewport_rect().size
+	return maxf(0.25, minf(viewport_size.x / 1280.0, viewport_size.y / 720.0))
 
 
 func _close_controls_editor() -> void:
@@ -2628,6 +2684,8 @@ func _spawn_practice_targets() -> void:
 		var position_values: Array = definition.get("position", [])
 		target.position_x = int(position_values[0]) * SimConfig.FIXED_SCALE
 		target.position_y = int(position_values[1]) * SimConfig.FIXED_SCALE
+		target.training_spawn_x = target.position_x
+		target.training_spawn_y = target.position_y
 		target.radius = int(definition.get("radius", 18)) * SimConfig.FIXED_SCALE
 		target.health_maximum = int(definition.get("health", 80_000))
 		target.health = target.health_maximum
@@ -2671,6 +2729,10 @@ func _draw_practice_targets(camera_origin: Vector2) -> void:
 		var health_ratio: float = clampf(float(state.health) / float(state.health_maximum), 0.0, 1.0)
 		draw_rect(Rect2(bar.position + Vector2.ONE, Vector2((bar.size.x - 2.0) * health_ratio, bar.size.y - 2.0)), Color("d9634f"), true)
 		var label := String(definition.get("label", "TARGET"))
+		if not alive and state.training_respawn_ticks > 0:
+			label = "RETURNS %.1fs" % (float(state.training_respawn_ticks) / float(world.config.tick_rate))
+		elif state.spawn_protection_ticks > 0:
+			label = "READYING"
 		var label_width: float = ThemeDB.fallback_font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 9).x
 		draw_string(ThemeDB.fallback_font, Vector2(position.x - label_width * 0.5, position.y + 22), label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 9, PARCHMENT_COLOR if alive else Color("9b8a73"))
 	_set_world_transform(camera_origin)
@@ -2740,8 +2802,8 @@ func _material_color(material_id: String) -> Color:
 func _draw_field(field: FieldState) -> void:
 	var center := Vector2(float(field.position_x) / SimConfig.FIXED_SCALE, float(field.position_y) / SimConfig.FIXED_SCALE)
 	var radius := float(field.radius) / SimConfig.FIXED_SCALE
-	var rimewake := CombatTuning.cast_definition(CombatTuning.RIMEWAKE_WIRE_ID)
-	var full_lifetime := maxi(1, world.config.milliseconds_to_ticks(int(rimewake.get("lifetime_ms", 1))))
+	var definition := CombatTuning.cast_definition(field.source_wire_id)
+	var full_lifetime := maxi(1, world.config.milliseconds_to_ticks(int(definition.get("lifetime_ms", 1))))
 	var life_ratio := clampf(float(field.lifetime_ticks) / float(full_lifetime), 0.0, 1.0)
 	if foundation_spell_presenter != null and foundation_spell_presenter.draw_field(self, field, life_ratio, world.tick, _reduced_effects_enabled()):
 		return

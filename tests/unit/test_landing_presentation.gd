@@ -6,6 +6,7 @@ func run() -> int:
 	_test_phase_and_reduced_motion()
 	_test_120hz_phase_integrity()
 	_test_sampler_does_not_mutate_authority()
+	_test_directional_puffs()
 	return finish("landing-presentation")
 
 
@@ -76,3 +77,25 @@ func _sample_at_phase(
 
 func _near(actual: float, expected: float, message: String) -> void:
 	check(is_equal_approx(actual, expected), "%s (expected=%s actual=%s)" % [message, expected, actual])
+
+
+func _test_directional_puffs() -> void:
+	var config := SimConfig.new(120)
+	for fixed: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+		var state := PlayerState.new()
+		state.velocity_x = fixed.x * 400
+		state.velocity_y = fixed.y * 400
+		state.facing_x = -fixed.x
+		state.facing_y = -fixed.y
+		state.landing_ticks = 7
+		state.landing_intensity = 900
+		var sample := LandingPresentation.sample(state, config)
+		var reduced := LandingPresentation.sample(state, config, 0.0, true)
+		check(sample.travel_direction.is_equal_approx(Vector2(fixed).normalized()), "landing dust follows real coast even when body input reverses")
+		equal(sample.puff_offsets.size(), 3, "normal landing has exactly three restrained puffs")
+		equal(reduced.puff_offsets.size(), 1, "reduced landing preserves one contact puff")
+		for offset: Vector2 in sample.puff_offsets:
+			check(offset.dot(sample.travel_direction) < 0.0, "landing cloud stays behind the escape direction")
+			check(offset.length() < 30.0, "landing cloud cannot fill neighboring lanes")
+		check(sample.puff_opacity <= LandingPresentation.NORMAL_MAXIMUM_OPACITY * 0.62, "landing puff stays subordinate to active threats")
+	check(not LandingPresentation.sample(null, config).active, "missing landing actor fails closed")

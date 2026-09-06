@@ -20,6 +20,8 @@ func run() -> int:
 	_test_supported_movement_modes()
 	_test_120hz_phase_integrity()
 	_test_sampler_does_not_mutate_authority()
+	_test_protection_separate_from_height()
+	_test_attached_wall_and_finite_descent()
 	return finish("jump-presentation")
 
 
@@ -48,6 +50,54 @@ func _test_ground_and_arc_contract() -> void:
 	check(apex.shadow_opacity > ascent.shadow_opacity, "shadow is darkest at apex")
 	check(descent.shadow_opacity < apex.shadow_opacity, "shadow lightens during descent")
 	equal(apex.body_lift_pixels, JumpPresentation.NORMAL_MAXIMUM_LIFT_PIXELS, "normal apex uses full readable lift")
+
+
+func _test_protection_separate_from_height() -> void:
+	var config := SimConfig.new(120)
+	var state := PlayerState.new()
+	state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS) / 2
+	state.jump_sustain_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS)
+	state.jump_protection_ticks = 0
+	var high := JumpPresentation.sample(state, config)
+	check(high.body_lift_pixels >= 80, "held high arc remains visually tall")
+	check(not high.protection_active, "tall arc cannot imply ongoing immunity")
+	equal(high.protection_remaining_ratio, 0.0, "protection contour is absent after its authoritative opening")
+	state.jump_protection_ticks = config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS)
+	equal(JumpPresentation.protection_ratio(state, config), 1.0, "new legal opening starts a full single-shot cue")
+	state.jump_protection_ticks = 1
+	check(JumpPresentation.protection_ratio(state, config) < 0.1, "last protected tick is almost spent, not a repeating pulse")
+	state.hop_ticks = 0
+	state.hop_mode = PlayerState.MovementMode.ROLL
+	state.air_dodge_ticks = config.milliseconds_to_ticks(MovementTuning.ROLL_DURATION_MS)
+	var roll := JumpPresentation.sample(state, config)
+	check(not roll.active and roll.protection_active, "ground roll has protection without fabricated jump height")
+	check(not JumpPresentation.sample(null, config).active, "missing jump actor fails closed")
+
+
+func _test_attached_wall_and_finite_descent() -> void:
+	var config := SimConfig.new(120)
+	var state := PlayerState.new()
+	state.hop_mode = PlayerState.MovementMode.WALL_SKIM
+	state.wall_skim_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_SKIM_DURATION_MS)
+	var attached := JumpPresentation.sample(state, config)
+	check(attached.active, "attached airborne wallrun remains lifted")
+	check(attached.body_lift_pixels >= 28 and attached.body_lift_pixels <= 34, "wallrun uses a restrained suspended pose")
+	check(not attached.protection_active, "wall attachment never fabricates protection")
+	check(JumpPresentation.sample(state, config, 0.0, true).body_lift_pixels <= 8, "reduced wallrun lift stays quiet")
+	state.wall_skim_ticks = 1
+	var final_attached := JumpPresentation.sample(state, config)
+	state.wall_skim_ticks = 0
+	state.hop_mode = PlayerState.MovementMode.HOP
+	state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_EXIT_AIR_MS)
+	check(JumpPresentation.sample(state, config).body_lift_pixels <= final_attached.body_lift_pixels, "wall detachment does not pop upward between the two clocks")
+	var last_lift := 34
+	while state.hop_ticks > 0:
+		var descending := JumpPresentation.sample(state, config)
+		check(descending.body_lift_pixels <= last_lift, "finite wall exit only descends, never plays a fresh takeoff")
+		check(not descending.protection_active, "wall exit does not gain a visual protection opening")
+		last_lift = descending.body_lift_pixels
+		state.hop_ticks -= 1
+	equal(JumpPresentation.sample(state, config).body_lift_pixels, 0, "wall exit returns to the exact ground anchor")
 
 
 func _test_reduced_motion_equivalent() -> void:

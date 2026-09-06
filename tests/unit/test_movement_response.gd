@@ -73,7 +73,7 @@ func _test_slow_expiry_and_authored_motion() -> void:
 			MovementSystem.step(state, SimCommand.new(tick, 1, 1000, 0, held), config, arena)
 		var expected: int = MovementTuning.BASE_SPEED * 700 / 1000
 		if pressed == SimCommand.PRESSED_SLIDE:
-			expected = MovementTuning.SLIDE_SPEED * 700 / 1000
+			expected = (MovementTuning.BASE_SPEED - 16 * config.per_tick(MovementTuning.SLIDE_DRAG_PER_SECOND)) * 700 / 1000
 		elif pressed == SimCommand.PRESSED_EVADE:
 			expected = MovementTuning.ROLL_SPEED * 700 / 1000
 		equal(state.velocity_x, expected, "jump, slide and roll retain one authored slow multiplier instead of exponential damping")

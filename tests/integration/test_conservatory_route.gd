@@ -32,6 +32,13 @@ func _test_advanced_route(tick_rate: int) -> void:
 	all_steps_succeeded = _step(world, 1000, 0, 0, SimCommand.PRESSED_JUMP) and all_steps_succeeded
 	route_events.append(state.last_event)
 	all_steps_succeeded = _step(world, 0, -1000, 0, SimCommand.PRESSED_TECHNIQUE) and all_steps_succeeded
+	# The technique is queued during the jump's explicit opening commitment.
+	# Prove it executes on the live route rather than weakening the event check
+	# or requiring a second press after the buffer has already accepted intent.
+	for _index: int in range(world.config.milliseconds_to_ticks(MovementTuning.INPUT_BUFFER_MS)):
+		if state.technique_buffer_ticks == 0:
+			break
+		all_steps_succeeded = _step(world, 0, -1000) and all_steps_succeeded
 	route_events.append(state.last_event)
 
 	# An explicit local trial reset starts the contact drill at the authored east wall.

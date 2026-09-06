@@ -41,6 +41,7 @@ func run() -> int:
 	_test_eight_direction_command_vectors()
 	_test_absolute_keyboard_chords()
 	_test_eight_direction_slide_chords()
+	_test_wheel_gesture_safety()
 	check(_has_joy_button(&"emote", JOY_BUTTON_DPAD_UP), "social speech retains a controller d-pad shortcut")
 	check(not _keycodes(&"primary").has(KEY_SPACE), "primary has no Space keyboard alias")
 	check(_has_mouse_button(&"primary", MOUSE_BUTTON_LEFT), "primary retains left mouse")
@@ -117,7 +118,11 @@ func _test_eight_direction_slide_chords() -> void:
 		Input.action_press(InputRouter.SLIDE_ACTION)
 		var router := InputRouter.new(1)
 		var world := SimWorld.new(120)
-		var first_command: SimCommand = router.sample(0, Vector2.ZERO, Vector2.RIGHT)
+		# Slide requires earned ground speed. The explicit100ms intent buffer
+		# must not wait until126ms of acceleration to become a late action.
+		for warmup: int in range(20):
+			check(world.step([SimCommand.new(world.tick, 1, fixed.x, fixed.y, 0, 0, 1000, 0)]), "%s ordinary movement builds slide-entry speed" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
+		var first_command: SimCommand = router.sample(world.tick, Vector2.ZERO, Vector2.RIGHT)
 		equal(Vector2i(first_command.move_x, first_command.move_y), fixed, "%s movement chord reaches the command unchanged" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
 		check(first_command.has_pressed(SimCommand.PRESSED_SLIDE), "%s movement + slide emits the slide edge" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
 		check(first_command.has_held(SimCommand.HELD_FAST_FALL), "%s movement + slide retains the shared held intent" % EightDirectionResolver.DIRECTION_ORDER[direction_index])
@@ -131,6 +136,96 @@ func _test_eight_direction_slide_chords() -> void:
 	for action: StringName in movement_actions:
 		Input.action_release(action)
 	Input.action_release(InputRouter.SLIDE_ACTION)
+
+
+func _test_wheel_gesture_safety() -> void:
+	var router := InputRouter.new(1)
+	check(router.accept_wheel_pulse(&"jump", 0), "first wheel gesture is accepted immediately")
+	check(not router.accept_wheel_pulse(&"jump", 30), "nearby wheel notch remains part of the same gesture")
+	check(not router.accept_wheel_pulse(&"jump", 140), "each notch extends quiet time instead of scheduling auto-repeat")
+	check(router.accept_wheel_pulse(&"jump", 260), "a deliberate gesture after120ms quiet is accepted")
+	check(router.accept_wheel_pulse(&"slide", 260), "opposite wheel action is independent for deliberate chains")
+	check(not router.accept_wheel_pulse(&"primary", 260), "wheel movement filtering cannot change spell cadence")
+	router = InputRouter.new(1)
+	for action: StringName in [&"jump", &"slide"]:
+		Input.action_release(action)
+	var wheel_down := _wheel_event(MOUSE_BUTTON_WHEEL_DOWN, true)
+	Input.action_press(&"move_right")
+	Input.action_press(&"move_down")
+	_deliver_movement_event(router, wheel_down)
+	var command := router.sample(0, Vector2.ZERO, Vector2.RIGHT)
+	check(command.has_pressed(SimCommand.PRESSED_SLIDE), "first live wheel-down emits one slide intent")
+	check(not command.has_held(SimCommand.HELD_SLIDE), "wheel-down never fabricates a sustained slide or fast-fall hold")
+	equal(Vector2i(command.move_x, command.move_y), Vector2i(707, 707), "wheel filtering preserves simultaneous down-right directional input")
+	Input.action_release(&"move_right")
+	Input.action_release(&"move_down")
+	_deliver_movement_event(router, _wheel_event(MOUSE_BUTTON_WHEEL_DOWN, false))
+	_deliver_movement_event(router, wheel_down)
+	command = router.sample(1, Vector2.ZERO, Vector2.RIGHT)
+	check(not command.has_pressed(SimCommand.PRESSED_SLIDE), "second notch cannot accidentally brake the first slide")
+	check(not command.has_held(SimCommand.HELD_SLIDE), "suppressed notch cannot sustain an action")
+	var key_slide := _physical_key_event(KEY_C, true)
+	_deliver_movement_event(router, key_slide)
+	command = router.sample(2, Vector2.ZERO, Vector2.RIGHT)
+	check(command.has_pressed(SimCommand.PRESSED_SLIDE), "deliberate keyboard Slide bypasses wheel gesture filtering")
+	check(command.has_held(SimCommand.HELD_SLIDE), "keyboard Slide still holds even with a wheel pulse in the same frame")
+	Input.action_press(InputRouter.SPELL_CTRL_LAYER_ACTION)
+	Input.action_press(&"spell_1")
+	command = router.sample(2, Vector2.ZERO, Vector2.RIGHT)
+	check(command.has_pressed(SimCommand.SPELL_PRESSED_BITS[4]), "wheel filtering leaves Ctrl+1 spell intent untouched")
+	Input.action_release(&"spell_1")
+	Input.action_release(InputRouter.SPELL_CTRL_LAYER_ACTION)
+	_deliver_movement_event(router, _physical_key_event(KEY_C, false))
+	_deliver_movement_event(router, _wheel_event(MOUSE_BUTTON_WHEEL_DOWN, false))
+	_deliver_movement_event(router, _wheel_event(MOUSE_BUTTON_WHEEL_UP, true))
+	_deliver_movement_event(router, _wheel_event(MOUSE_BUTTON_WHEEL_UP, false))
+	command = router.sample(3, Vector2.ZERO, Vector2.RIGHT)
+	check(command.has_pressed(SimCommand.PRESSED_JUMP), "wheel release does not lose the accepted short jump before sampling")
+	check(not command.has_held(SimCommand.HELD_JUMP), "wheel jump is short rather than a simulated hold")
+	_deliver_movement_event(router, _wheel_event(MOUSE_BUTTON_WHEEL_UP, true))
+	command = router.sample(4, Vector2.ZERO, Vector2.RIGHT)
+	check(not command.has_pressed(SimCommand.PRESSED_JUMP), "same scrolling gesture cannot buy an accidental second jump")
+	_deliver_movement_event(router, _wheel_event(MOUSE_BUTTON_WHEEL_UP, false))
+	for index: int in range(4):
+		command = router.sample(5 + index, Vector2.ZERO, Vector2.RIGHT)
+		check(not command.has_pressed(SimCommand.PRESSED_JUMP) and not command.has_pressed(SimCommand.PRESSED_SLIDE), "catch-up ticks never replay a wheel pulse")
+	router.wheel_last_pulse_ms[&"jump"] = Time.get_ticks_msec() - InputRouter.WHEEL_GESTURE_QUIET_MS
+	_deliver_movement_event(router, _wheel_event(MOUSE_BUTTON_WHEEL_UP, true))
+	router.discard_transient_movement_input()
+	command = router.sample(9, Vector2.ZERO, Vector2.RIGHT)
+	check(not command.has_pressed(SimCommand.PRESSED_JUMP), "opening a modal discards an unconsumed wheel pulse")
+	_deliver_movement_event(router, _wheel_event(MOUSE_BUTTON_WHEEL_UP, false))
+	# The production consumer uses elapsed time, not a render-frame identity.
+	# Test it with explicit time instead of sleeping or faking an engine frame.
+	router.pending_wheel_pulses[&"jump"] = 5000
+	check(router.consume_wheel_pulse(&"jump", 5017), "pending short input remains available across a17ms sampling gap")
+	check(not router.consume_wheel_pulse(&"jump", 5018), "accepted wheel intent is consumed exactly once")
+	router.pending_wheel_pulses[&"jump"] = 6000
+	check(not router.consume_wheel_pulse(&"jump", 6001 + InputRouter.WHEEL_GESTURE_QUIET_MS), "stale wheel pulse expires instead of becoming delayed movement")
+	for action: StringName in [&"jump", &"slide"]:
+		Input.action_release(action)
+
+
+func _deliver_movement_event(router: InputRouter, event: InputEvent) -> void:
+	var fresh_event := event.duplicate() as InputEvent
+	Input.parse_input_event(fresh_event)
+	Input.flush_buffered_events()
+	router.observe_input_event(fresh_event)
+
+
+func _wheel_event(button: int, pressed: bool) -> InputEventMouseButton:
+	var event := InputEventMouseButton.new()
+	event.button_index = button
+	event.pressed = pressed
+	return event
+
+
+func _physical_key_event(key: int, pressed: bool) -> InputEventKey:
+	var event := InputEventKey.new()
+	event.physical_keycode = key
+	event.keycode = key
+	event.pressed = pressed
+	return event
 
 
 func _keycodes(action: StringName) -> Array[int]:

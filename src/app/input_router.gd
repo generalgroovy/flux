@@ -15,6 +15,8 @@ const SPELL_ACTIONS: Array[StringName] = [&"spell_1", &"spell_2", &"spell_3", &"
 const SPELL_CTRL_LAYER_ACTION: StringName = &"spell_layer_ctrl"
 const SPELL_ALT_LAYER_ACTION: StringName = &"spell_layer_alt"
 const AIM_DEADZONE: float = 0.25
+const WHEEL_GESTURE_QUIET_MS: int = 120
+const WHEEL_MOVEMENT_ACTIONS: Array[StringName] = [&"jump", &"slide"]
 
 var entity_id: int
 var evade_was_down: bool = false
@@ -26,6 +28,13 @@ var spell_was_down: Array[bool] = [false, false, false, false]
 var movement_reference: String = PlayerPreferences.MOVEMENT_WORLD_RELATIVE
 var last_quantized_aim := Vector2i(1000, 0)
 var consumed_engine_edge_frames: Dictionary[StringName, int] = {}
+var wheel_last_pulse_ms: Dictionary[StringName, int] = {}
+var wheel_origin_actions: Dictionary[StringName, bool] = {}
+var pending_wheel_pulses: Dictionary[StringName, int] = {}
+var physical_press_frames: Dictionary[StringName, int] = {}
+var consumed_physical_frames: Dictionary[StringName, int] = {}
+var physical_hold_frames: Dictionary[StringName, int] = {}
+var physical_holds: Dictionary[StringName, bool] = {}
 
 
 func _init(requested_entity_id: int = 1) -> void:
@@ -109,6 +118,106 @@ static func _add_event_once(action: StringName, event: InputEvent) -> void:
 	InputMap.action_add_event(action, event)
 
 
+func observe_input_event(event: InputEvent) -> void:
+	# Called only for gameplay input, after modal editors have had priority.
+	# Keep wheel origin until sampling: Godot's aggregate action state otherwise
+	# makes a wheel notch indistinguishable from a deliberately held button.
+	if event is InputEventKey and event.echo:
+		return
+	if not event is InputEventKey and not event is InputEventMouseButton and not event is InputEventJoypadButton and not event is InputEventJoypadMotion:
+		return
+	var frame := Engine.get_process_frames()
+	var wheel: bool = event is InputEventMouseButton and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN, MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT]
+	for action: StringName in WHEEL_MOVEMENT_ACTIONS:
+		if wheel and event.is_action(action):
+			wheel_origin_actions[action] = true
+			# Wheel releases finish the engine pulse; they neither rearm the
+			# gesture nor erase a press that has not reached a simulation tick.
+			if event.is_pressed() and accept_wheel_pulse(action, Time.get_ticks_msec()):
+				pending_wheel_pulses[action] = Time.get_ticks_msec()
+		elif event.is_action(action):
+			physical_hold_frames[action] = frame
+			physical_holds[action] = event.is_action_pressed(action)
+			if event.is_action_pressed(action):
+				physical_press_frames[action] = frame
+
+
+func accept_wheel_pulse(action: StringName, timestamp_ms: int) -> bool:
+	if action not in WHEEL_MOVEMENT_ACTIONS:
+		return false
+	var previous := int(wheel_last_pulse_ms.get(action, -WHEEL_GESTURE_QUIET_MS))
+	wheel_last_pulse_ms[action] = timestamp_ms
+	# Every observed notch extends the same gesture, not a scheduled repeat.
+	# The next gesture requires a quiet gap; other movement buttons bypass it.
+	return timestamp_ms - previous >= WHEEL_GESTURE_QUIET_MS
+
+
+func _movement_action_down(action: StringName) -> bool:
+	if not wheel_origin_actions.has(action):
+		return Input.is_action_pressed(action)
+	if not Input.is_action_pressed(action) and not Input.is_action_just_pressed(action):
+		wheel_origin_actions.erase(action)
+		return false
+	return _nonwheel_action_down(action)
+
+
+func _nonwheel_action_down(action: StringName) -> bool:
+	# This short scan runs only while the aggregate action still contains a
+	# wheel-origin pulse. It also tolerates devices without an explicit wheel
+	# release; a wheel can never become a hold on the following render frame.
+	if int(physical_hold_frames.get(action, -1)) == Engine.get_process_frames() and bool(physical_holds.get(action, false)):
+		return true
+	for binding: InputEvent in InputMap.action_get_events(action):
+		if binding is InputEventKey:
+			if binding.physical_keycode != 0 and Input.is_physical_key_pressed(binding.physical_keycode):
+				return true
+			if binding.physical_keycode == 0 and Input.is_key_pressed(binding.keycode):
+				return true
+		elif binding is InputEventMouseButton and binding.button_index not in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN, MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT]:
+			if Input.is_mouse_button_pressed(binding.button_index):
+				return true
+		elif binding is InputEventJoypadButton or binding is InputEventJoypadMotion:
+			for device_id: int in Input.get_connected_joypads():
+				if binding.device >= 0 and binding.device != device_id:
+					continue
+				if binding is InputEventJoypadButton and Input.is_joy_button_pressed(device_id, binding.button_index):
+					return true
+				if binding is InputEventJoypadMotion and Input.get_joy_axis(device_id, binding.axis) * signf(binding.axis_value) > InputMap.action_get_deadzone(action):
+					return true
+	return false
+
+
+func _movement_pressed_edge(action: StringName, down: bool, was_down: bool) -> bool:
+	var frame := Engine.get_process_frames()
+	var wheel_pressed := consume_wheel_pulse(action, Time.get_ticks_msec())
+	if not wheel_origin_actions.has(action):
+		return _action_pressed_edge(action, down, was_down) or wheel_pressed
+	# Consume the engine edge even when the wheel gesture was rejected, so a
+	# later catch-up tick cannot turn that rejected pulse into a paid action.
+	_consume_engine_edge(action)
+	var physical_pressed := int(physical_press_frames.get(action, -1)) == frame and int(consumed_physical_frames.get(action, -1)) != frame
+	if physical_pressed:
+		consumed_physical_frames[action] = frame
+	return pressed_edge(down, was_down, physical_pressed) or wheel_pressed
+
+
+func consume_wheel_pulse(action: StringName, timestamp_ms: int) -> bool:
+	if not pending_wheel_pulses.has(action):
+		return false
+	var age := timestamp_ms - int(pending_wheel_pulses[action])
+	pending_wheel_pulses.erase(action)
+	return age >= 0 and age <= WHEEL_GESTURE_QUIET_MS
+
+
+func discard_transient_movement_input() -> void:
+	# Modal readers may run for many simulation ticks. Do not replay a wheel
+	# pulse accepted immediately before opening one when the reader closes.
+	pending_wheel_pulses.clear()
+	for action: StringName in WHEEL_MOVEMENT_ACTIONS:
+		_consume_engine_edge(action)
+		consumed_physical_frames[action] = Engine.get_process_frames()
+
+
 func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> SimCommand:
 	var movement_input := Input.get_vector(
 		&"move_left", &"move_right", &"move_up", &"move_down", AIM_DEADZONE,
@@ -124,14 +233,14 @@ func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> S
 	var evade_down: bool = Input.is_action_pressed(&"evade")
 	var evade_pressed: bool = _action_pressed_edge(&"evade", evade_down, evade_was_down)
 	evade_was_down = evade_down
-	var jump_down: bool = Input.is_action_pressed(&"jump")
+	var jump_down: bool = _movement_action_down(&"jump")
 	var technique_down: bool = Input.is_action_pressed(&"technique")
 	var active_1_down: bool = Input.is_action_pressed(ACTIVE_1_ACTION)
-	var slide_down: bool = Input.is_action_pressed(SLIDE_ACTION)
-	var jump_pressed: bool = _action_pressed_edge(&"jump", jump_down, jump_was_down)
+	var slide_down: bool = _movement_action_down(SLIDE_ACTION)
+	var jump_pressed: bool = _movement_pressed_edge(&"jump", jump_down, jump_was_down)
 	var technique_pressed: bool = _action_pressed_edge(&"technique", technique_down, technique_was_down)
 	var active_1_pressed: bool = _action_pressed_edge(ACTIVE_1_ACTION, active_1_down, active_1_was_down)
-	var slide_pressed: bool = _action_pressed_edge(SLIDE_ACTION, slide_down, slide_was_down)
+	var slide_pressed: bool = _movement_pressed_edge(SLIDE_ACTION, slide_down, slide_was_down)
 	if jump_down:
 		held |= SimCommand.HELD_JUMP
 	if slide_down:

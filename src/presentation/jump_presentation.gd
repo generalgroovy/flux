@@ -24,6 +24,8 @@ class Sample:
 	var body_lift_pixels: int = 0
 	var shadow_scale: Vector2 = GROUND_SHADOW_SCALE
 	var shadow_opacity: float = GROUND_SHADOW_OPACITY
+	var protection_active: bool = false
+	var protection_remaining_ratio: float = 0.0
 
 
 static func sample(
@@ -33,6 +35,25 @@ static func sample(
 	reduced_motion: bool = false,
 ) -> Sample:
 	var result := Sample.new()
+	if state == null or config == null:
+		return result
+	result.protection_remaining_ratio = protection_ratio(state, config)
+	result.protection_active = result.protection_remaining_ratio > 0.0
+	if state.wall_skim_ticks > 0:
+		# Attachment is airborne but has its own finite clock. A restrained
+		# suspended pose must not replay the high-jump arc or imply protection.
+		var wall_total := maxi(1, config.milliseconds_to_ticks(MovementTuning.WALL_SKIM_DURATION_MS))
+		result.active = true
+		result.normalized_phase = clampf((float(wall_total - state.wall_skim_ticks) + clampf(interpolation_alpha, 0.0, 1.0)) / float(wall_total), 0.0, 1.0)
+		var hop_total := maxi(1, config.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS))
+		var exit_phase := 1.0 - float(config.milliseconds_to_ticks(MovementTuning.WALL_EXIT_AIR_MS)) / float(hop_total)
+		var compact_lift := float(REDUCED_MINIMUM_LIFT_PIXELS if reduced_motion else NORMAL_MINIMUM_LIFT_PIXELS)
+		var wall_lift := lerpf(compact_lift, compact_lift * sin(PI * exit_phase), result.normalized_phase)
+		result.body_lift_pixels = roundi(wall_lift)
+		result.arc_ratio = float(result.body_lift_pixels) / float(NORMAL_MAXIMUM_LIFT_PIXELS)
+		result.shadow_scale = GROUND_SHADOW_SCALE.lerp(NORMAL_APEX_SHADOW_SCALE, result.arc_ratio)
+		result.shadow_opacity = lerpf(GROUND_SHADOW_OPACITY, NORMAL_APEX_SHADOW_OPACITY, result.arc_ratio)
+		return result
 	var timer := _active_timer(state, config)
 	if timer.y <= 0:
 		return result
@@ -54,6 +75,25 @@ static func sample(
 	result.shadow_scale = GROUND_SHADOW_SCALE.lerp(apex_scale, result.arc_ratio)
 	result.shadow_opacity = lerpf(GROUND_SHADOW_OPACITY, apex_opacity, result.arc_ratio)
 	return result
+
+
+static func protection_ratio(state: PlayerState, config: SimConfig) -> float:
+	if state == null or config == null or not MovementSystem.is_combat_intangible(state, config):
+		return 0.0
+	var total := 0
+	var remaining := 0
+	if state.hop_ticks > 0:
+		total = config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS)
+		remaining = state.jump_protection_ticks
+	elif state.slide_ticks > 0:
+		total = config.milliseconds_to_ticks(MovementTuning.SLIDE_INVULNERABILITY_MS)
+		remaining = total - (config.milliseconds_to_ticks(MovementTuning.SLIDE_COOLDOWN_MS) - state.slide_cooldown_ticks)
+	elif state.air_dodge_ticks > 0:
+		var duration := MovementTuning.ROLL_DURATION_MS if state.is_rolling() else MovementTuning.AIR_DODGE_DURATION_MS
+		var protection := MovementTuning.ROLL_INVULNERABILITY_MS if state.is_rolling() else MovementTuning.AIR_DODGE_INVULNERABILITY_MS
+		total = config.milliseconds_to_ticks(protection)
+		remaining = total - (config.milliseconds_to_ticks(duration) - state.air_dodge_ticks)
+	return clampf(float(remaining) / float(maxi(1, total)), 0.0, 1.0)
 
 
 static func _sustain_ratio(state: PlayerState, config: SimConfig) -> float:

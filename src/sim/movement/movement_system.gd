@@ -25,13 +25,19 @@ static func step(state: PlayerState, command: SimCommand, config: SimConfig, wor
 		PlayerState.ControlState.STUNNED,
 		PlayerState.ControlState.ROOTED,
 	]
+	if not control_locked and not impact_tech_started and state.movement_commitment_ticks == 0:
+		# Exactly one newest movement intent owns this tick, including free brakes.
+		if state.evade_buffer_ticks > 0:
+			_consume_evade_buffer(state, direction, config)
+		elif state.jump_buffer_ticks > 0:
+			_consume_jump_buffer(state, command, direction, config)
+		elif state.slide_buffer_ticks > 0:
+			_consume_slide_buffer(state, direction, config)
+		elif state.technique_buffer_ticks > 0:
+			_consume_technique_buffer(state, command, direction, config, world)
 	if not control_locked:
-		_consume_evade_buffer(state, direction, config)
-		_consume_slide_buffer(state, direction, config)
-		_consume_jump_buffer(state, command, direction, config)
-		_consume_technique_buffer(state, command, direction, config, world)
-	_apply_variable_air_time(state, command, config)
-	_apply_variable_slide_time(state, command, config)
+		_apply_variable_air_time(state, command, config)
+		_apply_variable_slide_time(state, command, config)
 
 	if impact_tech_started:
 		pass # The technique owns this tick's velocity; ordinary control resumes next tick.
@@ -53,18 +59,32 @@ static func step(state: PlayerState, command: SimCommand, config: SimConfig, wor
 	_integrate(state, config, world)
 	_update_wall_attachment(state, command, world, config)
 	_update_mode(state, command)
+	state.slide_held_last_tick = command.has_held(SimCommand.HELD_FAST_FALL)
 
 
 static func _capture_action_buffers(state: PlayerState, command: SimCommand, config: SimConfig) -> void:
 	var buffer_ticks: int = config.milliseconds_to_ticks(MovementTuning.INPUT_BUFFER_MS)
+	var movement_pressed: int = command.pressed_actions & (SimCommand.PRESSED_EVADE | SimCommand.PRESSED_JUMP | SimCommand.PRESSED_SLIDE | SimCommand.PRESSED_TECHNIQUE)
+	if movement_pressed == 0:
+		return
+	_clear_action_buffers(state)
 	if command.has_pressed(SimCommand.PRESSED_EVADE):
 		state.evade_buffer_ticks = buffer_ticks
-	if command.has_pressed(SimCommand.PRESSED_JUMP):
+		state.evade_buffer_airborne = state.is_airborne()
+	elif command.has_pressed(SimCommand.PRESSED_JUMP):
 		state.jump_buffer_ticks = buffer_ticks
-	if command.has_pressed(SimCommand.PRESSED_TECHNIQUE):
-		state.technique_buffer_ticks = buffer_ticks
-	if command.has_pressed(SimCommand.PRESSED_SLIDE):
+	elif command.has_pressed(SimCommand.PRESSED_SLIDE) and not state.is_airborne():
 		state.slide_buffer_ticks = buffer_ticks
+	elif command.has_pressed(SimCommand.PRESSED_TECHNIQUE):
+		state.technique_buffer_ticks = buffer_ticks
+
+
+static func _clear_action_buffers(state: PlayerState) -> void:
+	state.evade_buffer_ticks = 0
+	state.evade_buffer_airborne = false
+	state.jump_buffer_ticks = 0
+	state.slide_buffer_ticks = 0
+	state.technique_buffer_ticks = 0
 
 
 static func _consume_slide_buffer(state: PlayerState, direction: Vector2i, config: SimConfig) -> void:
@@ -85,13 +105,18 @@ static func _consume_jump_buffer(state: PlayerState, _command: SimCommand, direc
 	var consumed := false
 	if state.slide_ticks > 0:
 		consumed = _try_slide_jump(state, direction, config)
+	elif state.wall_skim_ticks > 0:
+		if state.hop_stage < 2:
+			consumed = _try_air_wall_kick(state, direction, config)
 	elif state.hop_ticks > 0:
 		var outward := direction.x * state.wall_x + direction.y * state.wall_y > 0
 		if state.wall_memory_ticks > 0 and state.wall_contact_id > 0 and outward and state.hop_stage == 1:
 			consumed = _try_air_wall_kick(state, direction, config)
 		else:
 			consumed = _try_double_jump(state, direction, config)
-	elif state.air_dodge_ticks <= 0:
+	elif state.air_dodge_ticks > 0 and not state.is_rolling():
+		consumed = _try_double_jump(state, direction, config)
+	elif state.air_dodge_ticks <= 0 or state.is_rolling():
 		consumed = _try_hop(state, direction, config)
 	if consumed:
 		state.jump_buffer_ticks = 0
@@ -100,13 +125,20 @@ static func _consume_jump_buffer(state: PlayerState, _command: SimCommand, direc
 static func _consume_evade_buffer(state: PlayerState, direction: Vector2i, config: SimConfig) -> void:
 	if state.evade_buffer_ticks <= 0:
 		return
+	if state.evade_buffer_airborne != state.is_airborne():
+		state.evade_buffer_ticks = 0
+		state.evade_buffer_airborne = false
+		return
 	var consumed := _try_air_dodge(state, direction, config) if state.is_airborne() or state.wall_skim_ticks > 0 else _try_roll(state, direction, config)
 	if consumed:
 		state.evade_buffer_ticks = 0
 
 
-static func _consume_technique_buffer(state: PlayerState, _command: SimCommand, direction: Vector2i, config: SimConfig, world: CollisionWorld) -> void:
+static func _consume_technique_buffer(state: PlayerState, command: SimCommand, direction: Vector2i, config: SimConfig, world: CollisionWorld) -> void:
 	if state.technique_buffer_ticks <= 0:
+		return
+	if state.wall_skim_ticks <= 0 and command.move_x == 0 and command.move_y == 0:
+		state.technique_buffer_ticks = 0
 		return
 	var consumed := false
 	if state.wall_skim_ticks > 0:
@@ -114,10 +146,15 @@ static func _consume_technique_buffer(state: PlayerState, _command: SimCommand, 
 		consumed = true
 	elif state.is_airborne() and _has_wall_contact(state, world, state.wall_contact_id):
 		consumed = _try_wall_skim(state, direction, config)
+		if not consumed:
+			consumed = _try_air_redirect(state, direction, config)
 	elif state.is_airborne():
 		consumed = _try_air_redirect(state, direction, config)
 	elif _has_wall_contact(state, world, state.wall_contact_id):
 		consumed = _try_wall_skim(state, direction, config)
+	else:
+		# An empty ground technique cannot later turn into a paid air action.
+		state.technique_buffer_ticks = 0
 	if consumed:
 		state.technique_buffer_ticks = 0
 		if state.is_airborne():
@@ -128,7 +165,11 @@ static func _apply_variable_air_time(state: PlayerState, command: SimCommand, co
 	if state.hop_ticks <= 0:
 		state.fast_falling = false
 		return
-	if command.has_held(SimCommand.HELD_FAST_FALL):
+	var fresh_air_slide := command.has_pressed(SimCommand.PRESSED_SLIDE) or (command.has_held(SimCommand.HELD_FAST_FALL) and not state.slide_held_last_tick)
+	# A takeoff grace tick excludes the C edge used for the preceding slide.
+	if fresh_air_slide and state.variable_jump_grace_ticks == 0:
+		state.fast_fall_armed = true
+	if state.fast_fall_armed:
 		state.hop_ticks = maxi(1, state.hop_ticks - MovementTuning.FAST_FALL_EXTRA_TICKS)
 		if not state.fast_falling:
 			state.last_event = "fast_fall"
@@ -190,6 +231,12 @@ static func apply_control_state(
 		return true
 	if duration_ms <= 0:
 		return false
+	if requested_state == PlayerState.ControlState.SLOWED:
+		var previous_ratio := state.slow_ratio if state.control_state == PlayerState.ControlState.SLOWED else 1000
+		var next_ratio := clampi(slow_ratio, MovementTuning.SLOW_MINIMUM_RATIO, MovementTuning.SLOW_MAXIMUM_RATIO)
+		# Applying/reapplying a slow changes the scale once, not the stored momentum.
+		state.velocity_x = state.velocity_x * next_ratio / previous_ratio
+		state.velocity_y = state.velocity_y * next_ratio / previous_ratio
 	var normalized := _direction(direction.x, direction.y, Vector2i(state.facing_x, state.facing_y))
 	state.control_state = requested_state
 	state.control_ticks = config.milliseconds_to_ticks(duration_ms)
@@ -223,7 +270,7 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 		&"landing_ticks", &"impact_recovery_ticks", &"wall_lockout_ticks", &"control_ticks",
 		&"jump_buffer_ticks", &"technique_buffer_ticks", &"slide_buffer_ticks",
 		&"variable_jump_grace_ticks", &"jump_protection_ticks", &"evade_buffer_ticks", &"landing_input_ticks",
-		&"movement_chain_reset_ticks",
+		&"movement_chain_reset_ticks", &"movement_commitment_ticks", &"wall_air_ticks",
 	]:
 		state.set(property_name, maxi(0, int(state.get(property_name)) - 1))
 	if was_landing and state.landing_ticks == 0:
@@ -237,18 +284,24 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 		state.jump_protection_ticks = 0
 		state.air_redirects_remaining = 0
 		state.fast_falling = false
+		state.fast_fall_armed = false
+		state.air_velocity_x = 0
+		state.air_velocity_y = 0
 		state.jump_sustain_ticks = 0
 		state.landing_ticks = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
 		state.last_event = "land"
 	if had_movement_chain and state.movement_chain_reset_ticks == 0:
 		state.movement_chain_count = 0
 	if was_air_dodging and state.air_dodge_ticks == 0:
+		state.hop_stage = 0
+		state.air_redirects_remaining = 0
 		if was_rolling:
 			state.landing_ticks = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
 			state.landing_intensity = MovementTuning.LANDING_WALL_SKIM_INTENSITY
 			state.last_event = "roll_end"
 		elif state.wave_dash_queued:
 			state.wave_dash_ticks = config.milliseconds_to_ticks(MovementTuning.WAVE_DASH_DURATION_MS)
+			state.movement_commitment_ticks = config.milliseconds_to_ticks(MovementTuning.WAVE_DASH_COMMITMENT_MS)
 			state.wave_dash_x = state.air_dodge_x
 			state.wave_dash_y = state.air_dodge_y
 			state.movement_action_speed = _retained_speed(state, MovementTuning.WAVE_DASH_SPEED)
@@ -258,10 +311,7 @@ static func _advance_timers(state: PlayerState, config: SimConfig) -> void:
 			state.landing_intensity = MovementTuning.LANDING_AIR_DODGE_INTENSITY
 		state.wave_dash_queued = false
 	if was_wall_skimming and state.wall_skim_ticks == 0:
-		state.wall_skim_surface_id = 0
-		state.landing_ticks = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
-		state.landing_intensity = MovementTuning.LANDING_WALL_SKIM_INTENSITY
-		state.last_event = "wall_skim_end"
+		_end_wall_run(state, "wall_skim_end", config)
 	if previous_control_state == PlayerState.ControlState.LAUNCHED and state.control_ticks == 0:
 		_begin_impact_recovery(state, config)
 	elif previous_control_state != PlayerState.ControlState.FREE and state.control_ticks == 0:
@@ -322,6 +372,12 @@ static func _apply_impact_recovery_velocity(state: PlayerState, config: SimConfi
 
 
 static func _cancel_authored_movement(state: PlayerState) -> void:
+	_clear_action_buffers(state)
+	state.movement_commitment_ticks = 0
+	state.wall_air_ticks = 0
+	state.air_velocity_x = 0
+	state.air_velocity_y = 0
+	state.fast_fall_armed = false
 	state.hop_ticks = 0
 	state.hop_stage = 0
 	state.hop_mode = PlayerState.MovementMode.AIR_DODGE
@@ -350,6 +406,11 @@ static func _try_hop(state: PlayerState, direction: Vector2i, config: SimConfig)
 	var entry_speed := _planar_speed(state)
 	_spend_movement_action(state, cost, config)
 	state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS)
+	state.air_dodge_ticks = 0
+	state.wave_dash_ticks = 0
+	state.wave_dash_queued = false
+	state.wall_air_ticks = 0
+	state.fast_fall_armed = false
 	state.jump_protection_ticks = config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS)
 	state.wall_skim_ticks = 0
 	state.wall_skim_surface_id = 0
@@ -359,9 +420,14 @@ static func _try_hop(state: PlayerState, direction: Vector2i, config: SimConfig)
 	state.hop_stage = 1
 	state.hop_mode = PlayerState.MovementMode.WALL_KICK if wall_kick else PlayerState.MovementMode.HOP
 	state.hop_speed = mini(MovementTuning.MAX_AUTHORED_SPEED, maxi(entry_speed, MovementTuning.WALL_KICK_SPEED)) if wall_kick else entry_speed
+	var launch_speed := state.hop_speed
 	state.hop_x = direction.x
 	state.hop_y = direction.y
 	state.air_redirects_remaining = 1
+	_capture_air_velocity(state)
+	if wall_kick:
+		state.hop_speed = launch_speed
+		_set_air_velocity(state, direction, launch_speed)
 	_clear_landing_cue(state)
 	state.wall_memory_ticks = 0
 	if wall_kick:
@@ -381,6 +447,9 @@ static func _try_double_jump(state: PlayerState, direction: Vector2i, config: Si
 	_spend_movement_action(state, cost, config)
 	state.hop_stage = 2
 	state.hop_mode = PlayerState.MovementMode.DOUBLE_JUMP
+	state.air_dodge_ticks = 0
+	state.wave_dash_queued = false
+	state.fast_fall_armed = false
 	state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.DOUBLE_JUMP_DURATION_MS)
 	state.jump_protection_ticks = config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS)
 	state.variable_jump_grace_ticks = 1
@@ -390,6 +459,7 @@ static func _try_double_jump(state: PlayerState, direction: Vector2i, config: Si
 	state.hop_y = direction.y
 	state.air_redirects_remaining = 1
 	state.last_event = "double_jump"
+	_capture_air_velocity(state)
 	return true
 
 
@@ -397,16 +467,20 @@ static func _try_air_redirect(state: PlayerState, direction: Vector2i, config: S
 	var cost := _movement_action_cost(state, MovementTuning.AIR_REDIRECT_COST)
 	if state.hop_ticks <= 0 or state.air_redirects_remaining <= 0 or state.stamina < cost:
 		return false
+	var current := _normalized_fixed(state.air_velocity_x, state.air_velocity_y, Vector2i(state.hop_x, state.hop_y))
+	if _integer_sqrt(_speed_squared(state.air_velocity_x, state.air_velocity_y)) == 0 or current.x * direction.x + current.y * direction.y >= MovementTuning.AIR_REDIRECT_MINIMUM_TURN_DOT:
+		state.technique_buffer_ticks = 0
+		return false
 	_spend_movement_action(state, cost, config)
-	state.hop_x = _blend_axis(state.hop_x, direction.x, MovementTuning.AIR_REDIRECT_BLEND)
-	state.hop_y = _blend_axis(state.hop_y, direction.y, MovementTuning.AIR_REDIRECT_BLEND)
+	state.hop_x = _blend_axis(current.x, direction.x, MovementTuning.AIR_REDIRECT_BLEND)
+	state.hop_y = _blend_axis(current.y, direction.y, MovementTuning.AIR_REDIRECT_BLEND)
 	var redirected: Vector2i = _direction(state.hop_x, state.hop_y, direction)
 	state.hop_x = redirected.x
 	state.hop_y = redirected.y
 	# Explicit aerial turn stays a paid, immediate redirect; ordinary steering
 	# below remains input-driven and adds no jump launch impulse.
-	state.hop_speed = _retained_speed(state, state.hop_speed)
-	_set_directional_velocity(state, redirected, state.hop_speed)
+	state.hop_speed = mini(MovementTuning.MAX_AUTHORED_SPEED, _integer_sqrt(_speed_squared(state.air_velocity_x, state.air_velocity_y)))
+	_set_air_velocity(state, redirected, state.hop_speed)
 	state.air_redirects_remaining = 0
 	state.last_event = "air_redirect"
 	return true
@@ -416,18 +490,18 @@ static func _try_air_dodge(state: PlayerState, direction: Vector2i, config: SimC
 	var cost := _movement_action_cost(state, MovementTuning.AIR_DODGE_COST)
 	if state.hop_ticks <= 0 and state.wall_skim_ticks <= 0 or state.air_dodge_cooldown_ticks > 0 or state.stamina < cost:
 		return false
-	var dot: int = state.hop_x * direction.x + state.hop_y * direction.y
-	var turn: int = 1_000_000 - dot
 	state.wave_dash_queued = (
-		state.hop_ticks <= config.milliseconds_to_ticks(MovementTuning.WAVE_DASH_INPUT_WINDOW_MS)
-		and turn >= MovementTuning.WAVE_DASH_MINIMUM_TURN
+		state.hop_ticks > 0 and state.hop_ticks <= config.milliseconds_to_ticks(MovementTuning.WAVE_DASH_INPUT_WINDOW_MS)
 	)
 	state.movement_action_speed = _retained_speed(state, MovementTuning.AIR_DODGE_SPEED)
 	_spend_movement_action(state, cost, config)
 	state.hop_ticks = 0
-	state.hop_stage = 0
 	state.jump_sustain_ticks = 0
-	state.air_redirects_remaining = 0
+	state.hop_mode = PlayerState.MovementMode.AIR_DODGE
+	state.jump_protection_ticks = 0
+	state.wall_air_ticks = 0
+	state.fast_fall_armed = false
+	state.movement_commitment_ticks = config.milliseconds_to_ticks(MovementTuning.AIR_DODGE_COMMITMENT_MS)
 	state.wall_skim_ticks = 0
 	state.wall_skim_surface_id = 0
 	state.air_dodge_ticks = config.milliseconds_to_ticks(MovementTuning.AIR_DODGE_DURATION_MS)
@@ -443,7 +517,6 @@ static func _try_roll(state: PlayerState, direction: Vector2i, config: SimConfig
 	var cost := _movement_action_cost(state, MovementTuning.ROLL_COST)
 	if (
 		state.air_dodge_cooldown_ticks > 0 or state.air_dodge_ticks > 0
-		or state.slide_ticks > 0 or state.wave_dash_ticks > 0
 		or state.vault_ticks > 0 or state.superglide_ticks > 0
 		or state.stamina < cost
 	):
@@ -453,6 +526,9 @@ static func _try_roll(state: PlayerState, direction: Vector2i, config: SimConfig
 	state.wall_skim_ticks = 0
 	state.wall_skim_surface_id = 0
 	state.hop_mode = PlayerState.MovementMode.ROLL
+	state.slide_ticks = 0
+	state.wave_dash_ticks = 0
+	state.movement_commitment_ticks = config.milliseconds_to_ticks(MovementTuning.ROLL_COMMITMENT_MS)
 	state.air_dodge_ticks = config.milliseconds_to_ticks(MovementTuning.ROLL_DURATION_MS)
 	state.air_dodge_cooldown_ticks = config.milliseconds_to_ticks(MovementTuning.ROLL_COOLDOWN_MS)
 	state.air_dodge_x = direction.x
@@ -495,14 +571,18 @@ static func _try_slide(state: PlayerState, direction: Vector2i, config: SimConfi
 	var cost := _movement_action_cost(state, MovementTuning.SLIDE_COST)
 	if (
 		state.slide_cooldown_ticks > 0 or state.slide_ticks > 0 or state.is_airborne()
-		or state.air_dodge_ticks > 0
-		or state.wave_dash_ticks > 0 or state.vault_ticks > 0 or state.superglide_ticks > 0
+		or (state.air_dodge_ticks > 0 and not state.is_rolling())
+		or state.vault_ticks > 0 or state.superglide_ticks > 0
 		or state.stamina < cost
-		or _speed_squared(state.velocity_x, state.velocity_y) < MovementTuning.SLIDE_ENTRY_SPEED * MovementTuning.SLIDE_ENTRY_SPEED
+		or _retained_speed(state, 0) < MovementTuning.SLIDE_ENTRY_SPEED
 	):
 		return false
-	state.movement_action_speed = _retained_speed(state, MovementTuning.SLIDE_SPEED)
+	state.movement_action_speed = _retained_speed(state, 0)
 	_spend_movement_action(state, cost, config)
+	state.air_dodge_ticks = 0
+	state.wave_dash_ticks = 0
+	state.wave_dash_queued = false
+	state.movement_commitment_ticks = config.milliseconds_to_ticks(MovementTuning.SLIDE_JUMP_MINIMUM_COMMITMENT_MS)
 	state.slide_ticks = config.milliseconds_to_ticks(MovementTuning.SLIDE_DURATION_MS)
 	state.slide_cooldown_ticks = config.milliseconds_to_ticks(MovementTuning.SLIDE_COOLDOWN_MS)
 	state.slide_x = direction.x
@@ -528,12 +608,14 @@ static func _try_slide_jump(state: PlayerState, direction: Vector2i, config: Sim
 	state.jump_sustain_ticks = 0
 	state.hop_stage = 1
 	state.hop_mode = PlayerState.MovementMode.SLIDE_JUMP
-	state.hop_speed = mini(MovementTuning.MAX_AUTHORED_SPEED, maxi(entry_speed, MovementTuning.SLIDE_JUMP_SPEED))
+	state.hop_speed = entry_speed
 	state.hop_x = direction.x
 	state.hop_y = direction.y
 	state.air_redirects_remaining = 1
 	_clear_landing_cue(state)
 	state.last_event = "slide_jump"
+	state.fast_fall_armed = false
+	_capture_air_velocity(state)
 	return true
 
 
@@ -564,11 +646,14 @@ static func _try_wall_skim(state: PlayerState, direction: Vector2i, config: SimC
 	tangent = _direction(tangent.x, tangent.y, clockwise)
 	state.movement_action_speed = _retained_speed(state, MovementTuning.WALL_SKIM_SPEED)
 	_spend_movement_action(state, cost, config)
+	state.wall_air_ticks = state.hop_ticks
 	state.hop_ticks = 0
-	state.hop_stage = 0
+	state.hop_stage = maxi(1, state.hop_stage)
+	state.hop_mode = PlayerState.MovementMode.WALL_SKIM
+	state.fast_fall_armed = false
+	state.movement_commitment_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_RUN_COMMITMENT_MS)
 	state.jump_sustain_ticks = 0
 	state.jump_protection_ticks = 0
-	state.air_redirects_remaining = 0
 	state.wall_skim_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_SKIM_DURATION_MS)
 	state.wall_skim_cooldown_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_SKIM_COOLDOWN_MS)
 	state.wall_skim_x = tangent.x
@@ -599,29 +684,14 @@ static func _apply_velocity(state: PlayerState, command: SimCommand, direction: 
 		state.velocity_x = 0
 		state.velocity_y = 0
 	elif state.slide_ticks > 0:
+		state.movement_action_speed = maxi(0, state.movement_action_speed - config.per_tick(MovementTuning.SLIDE_DRAG_PER_SECOND))
 		var slide_direction := _steer(Vector2i(state.slide_x, state.slide_y), direction, command, MovementTuning.SLIDE_STEERING)
 		state.slide_x = slide_direction.x
 		state.slide_y = slide_direction.y
-		_set_directional_velocity(state, slide_direction, maxi(state.movement_action_speed, MovementTuning.SLIDE_SPEED))
+		_set_directional_velocity(state, slide_direction, state.movement_action_speed)
 	elif state.hop_ticks > 0:
-		if state.hop_mode in [PlayerState.MovementMode.HOP, PlayerState.MovementMode.DOUBLE_JUMP]:
-			# Lift is vertical presentation. Horizontal acceleration/braking follows
-			# live input, never the facing direction cached when Jump was pressed.
-			_apply_ground_velocity(state, command, direction, config, false, state.hop_speed, true)
-			state.hop_speed = maxi(state.hop_speed, _planar_speed(state))
-			if command.move_x != 0 or command.move_y != 0:
-				state.hop_x = direction.x
-				state.hop_y = direction.y
-			return
-		var hop_direction := _steer_hop(
-			Vector2i(state.hop_x, state.hop_y),
-			direction,
-			command,
-			config,
-		)
-		state.hop_x = hop_direction.x
-		state.hop_y = hop_direction.y
-		_set_directional_velocity(state, hop_direction, state.hop_speed)
+		_apply_air_velocity(state, command, direction, config)
+		return
 	elif state.wall_skim_ticks > 0:
 		_set_directional_velocity(state, Vector2i(state.wall_skim_x, state.wall_skim_y), maxi(state.movement_action_speed, MovementTuning.WALL_SKIM_SPEED))
 	else:
@@ -649,6 +719,43 @@ static func _apply_control_velocity(state: PlayerState, config: SimConfig) -> vo
 		PlayerState.ControlState.ROOTED:
 			state.velocity_x = 0
 			state.velocity_y = 0
+	if state.hop_ticks > 0:
+		state.air_velocity_x = state.velocity_x
+		state.air_velocity_y = state.velocity_y
+
+
+static func _capture_air_velocity(state: PlayerState) -> void:
+	var ratio := state.slow_ratio if state.control_state == PlayerState.ControlState.SLOWED else 1000
+	state.air_velocity_x = clampi(state.velocity_x * 1000 / ratio, -MovementTuning.MAX_AUTHORED_SPEED, MovementTuning.MAX_AUTHORED_SPEED)
+	state.air_velocity_y = clampi(state.velocity_y * 1000 / ratio, -MovementTuning.MAX_AUTHORED_SPEED, MovementTuning.MAX_AUTHORED_SPEED)
+	state.hop_speed = mini(MovementTuning.MAX_AUTHORED_SPEED, _integer_sqrt(_speed_squared(state.air_velocity_x, state.air_velocity_y)))
+
+
+static func _set_air_velocity(state: PlayerState, direction: Vector2i, speed: int) -> void:
+	state.air_velocity_x = direction.x * speed / 1000
+	state.air_velocity_y = direction.y * speed / 1000
+
+
+static func _apply_air_velocity(state: PlayerState, command: SimCommand, direction: Vector2i, config: SimConfig) -> void:
+	# Every lift family uses one accumulated unslowed vector. Neutral coasts;
+	# opposition brakes before reversing. Slows scale output exactly once.
+	if command.move_x != 0 or command.move_y != 0:
+		var speed := maxi(MovementTuning.BASE_SPEED * state.movement_speed_ratio / 1000, state.hop_speed)
+		speed = speed * _input_magnitude(command.move_x, command.move_y) / 1000
+		var current := Vector2i(state.air_velocity_x, state.air_velocity_y)
+		var rate := MovementTuning.ACCELERATION
+		if current.x * direction.x + current.y * direction.y < MovementTuning.COUNTER_STRAFE_DOT_THRESHOLD:
+			rate = rate * MovementTuning.COUNTER_STRAFE_MULTIPLIER / 1000
+		var next := _approach_vector(current, Vector2i(direction.x * speed / 1000, direction.y * speed / 1000), config.per_tick(rate))
+		state.air_velocity_x = next.x
+		state.air_velocity_y = next.y
+		state.hop_x = direction.x
+		state.hop_y = direction.y
+		state.hop_speed = maxi(state.hop_speed, _integer_sqrt(_speed_squared(next.x, next.y)))
+	var ratio := state.slow_ratio if state.control_state == PlayerState.ControlState.SLOWED else 1000
+	state.velocity_x = state.air_velocity_x * ratio / 1000
+	state.velocity_y = state.air_velocity_y * ratio / 1000
+	state.sprinting = false
 
 
 static func _apply_ground_velocity(state: PlayerState, command: SimCommand, direction: Vector2i, config: SimConfig, allow_recovery: bool = true, minimum_speed: int = 0, preserve_idle: bool = false) -> void:
@@ -729,8 +836,10 @@ static func _integrate(state: PlayerState, config: SimConfig, world: CollisionWo
 		state.position_remainder_y = 0 if result.wall_normal.y != 0 else state.position_remainder_y
 		if result.wall_normal.x != 0:
 			state.velocity_x = 0
+			state.air_velocity_x = 0
 		if result.wall_normal.y != 0:
 			state.velocity_y = 0
+			state.air_velocity_y = 0
 		if state.air_dodge_ticks > 0 or state.wave_dash_ticks > 0 or state.slide_ticks > 0 or state.superglide_ticks > 0:
 			state.air_dodge_ticks = 0
 			state.wave_dash_ticks = 0
@@ -789,6 +898,8 @@ static func _movement_action_cost(state: PlayerState, base_cost: int) -> int:
 
 static func _spend_movement_action(state: PlayerState, adjusted_cost: int, config: SimConfig) -> void:
 	_spend_stamina(state, adjusted_cost, config)
+	_clear_action_buffers(state)
+	state.movement_commitment_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_COMMITMENT_MS)
 	if state.movement_chain_reset_ticks <= 0:
 		state.movement_chain_count = 0
 	state.movement_chain_count = mini(
@@ -826,25 +937,28 @@ static func _apply_stamina_rate(state: PlayerState, rate_per_second: int, config
 
 
 static func _direction(input_x: int, input_y: int, fallback: Vector2i) -> Vector2i:
-	var x: int = signi(input_x)
-	var y: int = signi(input_y)
-	if x == 0 and y == 0:
-		return fallback if fallback != Vector2i.ZERO else Vector2i(1000, 0)
-	if x != 0 and y != 0:
-		return Vector2i(x * 707, y * 707)
-	return Vector2i(x * 1000, y * 1000)
+	return _normalized_fixed(input_x, input_y, fallback)
 
 
 static func _normalized_fixed(x: int, y: int, fallback: Vector2i) -> Vector2i:
 	if x == 0 and y == 0:
 		return fallback if fallback != Vector2i.ZERO else Vector2i(1000, 0)
-	var magnitude := _integer_sqrt(x * x + y * y)
+	# Extra integer precision avoids normalizing tiny(1,1) into(1000,1000).
+	# All callers are bounded planar/input vectors, so scaled squares fit i64.
+	var magnitude := _integer_sqrt((x * x + y * y) * 1_000_000)
 	if magnitude <= 0:
 		return fallback
 	@warning_ignore("integer_division")
-	var normalized_x: int = x * 1000 / magnitude
+	var normalized_x: int = x * 1_000_000 / magnitude
 	@warning_ignore("integer_division")
-	var normalized_y: int = y * 1000 / magnitude
+	var normalized_y: int = y * 1_000_000 / magnitude
+	# A floored square root can leave a one-unit radial overshoot at(1000,1).
+	# Round the dominant component inward, preserving the strict speed ceiling.
+	if normalized_x * normalized_x + normalized_y * normalized_y > 1_000_000:
+		if absi(normalized_x) >= absi(normalized_y):
+			normalized_x -= signi(normalized_x)
+		else:
+			normalized_y -= signi(normalized_y)
 	return Vector2i(clampi(normalized_x, -1000, 1000), clampi(normalized_y, -1000, 1000))
 
 
@@ -876,7 +990,7 @@ static func _wall_kick_direction(requested: Vector2i, wall_normal: Vector2i) -> 
 static func _steer(current: Vector2i, requested: Vector2i, command: SimCommand, ratio: int) -> Vector2i:
 	if command.move_x == 0 and command.move_y == 0:
 		return current
-	return _direction(_blend_axis(current.x, requested.x, ratio), _blend_axis(current.y, requested.y, ratio), current)
+	return Vector2i(_blend_axis(current.x, requested.x, ratio), _blend_axis(current.y, requested.y, ratio))
 
 
 static func _steer_hop(current: Vector2i, requested: Vector2i, command: SimCommand, config: SimConfig) -> Vector2i:
@@ -931,7 +1045,8 @@ static func _planar_speed(state: PlayerState) -> int:
 
 
 static func _retained_speed(state: PlayerState, minimum_speed: int) -> int:
-	return clampi(maxi(_planar_speed(state), minimum_speed), 0, MovementTuning.MAX_AUTHORED_SPEED)
+	var ratio := state.slow_ratio if state.control_state == PlayerState.ControlState.SLOWED else 1000
+	return clampi(maxi(_planar_speed(state) * 1000 / ratio, minimum_speed), 0, MovementTuning.MAX_AUTHORED_SPEED)
 
 static func _try_air_wall_kick(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
 	if state.wall_lockout_id == state.wall_contact_id and state.wall_lockout_ticks > 0:
@@ -978,6 +1093,15 @@ static func _update_wall_attachment(state: PlayerState, command: SimCommand, wor
 static func _end_wall_run(state: PlayerState, event_name: String, config: SimConfig) -> void:
 	state.wall_skim_ticks = 0
 	state.wall_skim_surface_id = 0
-	state.landing_ticks = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
-	state.landing_intensity = MovementTuning.LANDING_WALL_SKIM_INTENSITY
+	state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_EXIT_AIR_MS)
+	state.hop_stage = maxi(1, state.hop_stage)
+	state.hop_mode = PlayerState.MovementMode.HOP
+	state.jump_protection_ticks = 0
+	state.variable_jump_grace_ticks = 1
+	state.jump_sustain_ticks = 0
+	state.fast_fall_armed = false
+	state.fast_falling = false
+	state.wall_air_ticks = 0
+	_capture_air_velocity(state)
+	_clear_landing_cue(state)
 	state.last_event = event_name

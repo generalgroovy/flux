@@ -11,6 +11,8 @@ const STATE_FIELDS: Array[StringName] = [
 	&"entity_id",
 	&"position_x", &"position_y", &"position_remainder_x", &"position_remainder_y",
 	&"velocity_x", &"velocity_y",
+	&"air_velocity_x", &"air_velocity_y", &"movement_commitment_ticks", &"wall_air_ticks",
+	&"slide_held_last_tick", &"fast_fall_armed", &"evade_buffer_airborne",
 	&"facing_x", &"facing_y", &"aim_x", &"aim_y",
 	&"radius", &"movement_mode",
 	&"stamina_maximum", &"stamina_recovery_per_second", &"movement_speed_ratio",
@@ -32,7 +34,7 @@ const STATE_FIELDS: Array[StringName] = [
 	&"landing_ticks", &"landing_intensity", &"impact_recovery_ticks", &"sprinting",
 	&"control_state", &"control_ticks", &"control_x", &"control_y", &"control_speed", &"slow_ratio",
 ]
-const BOOLEAN_FIELDS: Array[StringName] = [&"fast_falling", &"wave_dash_queued", &"sprinting"]
+const BOOLEAN_FIELDS: Array[StringName] = [&"fast_falling", &"wave_dash_queued", &"sprinting", &"slide_held_last_tick", &"fast_fall_armed", &"evade_buffer_airborne"]
 const DIRECTION_FIELDS: Array[StringName] = [
 	&"facing_x", &"facing_y", &"aim_x", &"aim_y",
 	&"landing_input_x", &"landing_input_y", &"hop_x", &"hop_y", &"air_dodge_x", &"air_dodge_y",
@@ -42,6 +44,7 @@ const DIRECTION_FIELDS: Array[StringName] = [
 	&"control_x", &"control_y",
 ]
 const TIMER_FIELDS: Array[StringName] = [
+	&"movement_commitment_ticks", &"wall_air_ticks",
 	&"stamina_recovery_delay_ticks", &"jump_buffer_ticks", &"technique_buffer_ticks", &"slide_buffer_ticks",
 	&"jump_protection_ticks", &"evade_buffer_ticks", &"landing_input_ticks",
 	&"movement_chain_reset_ticks",
@@ -248,8 +251,11 @@ static func validate_values(values: PackedInt64Array) -> bool:
 	for property_name: StringName in [&"position_remainder_x", &"position_remainder_y"]:
 		if absi(_value(values, property_name)) > 1000:
 			return false
-	for property_name: StringName in [&"velocity_x", &"velocity_y", &"hop_speed", &"control_speed"]:
+	for property_name: StringName in [&"velocity_x", &"velocity_y", &"air_velocity_x", &"air_velocity_y", &"hop_speed", &"control_speed"]:
 		if absi(_value(values, property_name)) > 10_000_000:
+			return false
+	for property_name: StringName in [&"air_velocity_x", &"air_velocity_y"]:
+		if absi(_value(values, property_name)) > MovementTuning.MAX_AUTHORED_SPEED:
 			return false
 	for property_name: StringName in DIRECTION_FIELDS:
 		if _value(values, property_name) < -1000 or _value(values, property_name) > 1000:
@@ -281,7 +287,7 @@ static func validate_values(values: PackedInt64Array) -> bool:
 		return false
 	if _value(values, &"landing_intensity") < 0 or _value(values, &"landing_intensity") > 1000:
 		return false
-	if _value(values, &"slow_ratio") < 0 or _value(values, &"slow_ratio") > 1000:
+	if _value(values, &"slow_ratio") < MovementTuning.SLOW_MINIMUM_RATIO or _value(values, &"slow_ratio") > 1000:
 		return false
 	for property_name: StringName in [&"hop_stage", &"air_redirects_remaining", &"wall_contact_id", &"wall_lockout_id", &"wall_skim_surface_id", &"wall_skim_lockout_id"]:
 		if _value(values, property_name) < 0 or _value(values, property_name) > 0x7fffffff:

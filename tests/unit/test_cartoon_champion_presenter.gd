@@ -10,6 +10,8 @@ func run() -> int:
 	_test_relative_locomotion_gaits()
 	_test_locomotion_contact_regions()
 	_test_extension_pages_and_motion_facing()
+	_test_movement_template_direction_matrix()
+	_test_wall_contact_side()
 	return finish("cartoon-champion-presenter")
 
 
@@ -44,18 +46,24 @@ func _test_extension_pages_and_motion_facing() -> void:
 	state.facing_y = 707
 	for pose: String in ["walk", "sprint", "jump", "slide", "roll"]:
 		for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
-			state.velocity_x = direction.x
-			state.velocity_y = direction.y
-			equal(CartoonChampionPresenter.presentation_facing_vector(state, pose), direction, pose + " follows real travel in every direction")
+			state.facing_x = direction.x
+			state.facing_y = direction.y
+			state.velocity_x = -direction.x
+			state.velocity_y = -direction.y
+			equal(CartoonChampionPresenter.presentation_facing_vector(state, pose), direction, pose + " immediately follows input intent while physical coast remains independent")
 	state.velocity_x = 0
 	state.velocity_y = 1000
-	equal(presenter.source_region_for_animation_state("oh_tipi", state, "slide"), Rect2(0, 576, 96, 96), "south slide chooses frontal art even with stale diagonal facing")
+	state.facing_x = 0
+	state.facing_y = -1000
+	equal(presenter.source_region_for_animation_state("oh_tipi", state, "slide"), Rect2(384, 576, 96, 96), "slide body faces new north intent while south momentum remains visible through its wake")
 	state.pending_cast_wire_id = 1
 	state.pending_cast_aim_x = -1000
 	state.pending_cast_aim_y = 0
 	for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
 		state.velocity_x = direction.x
 		state.velocity_y = direction.y
+		state.facing_x = direction.x
+		state.facing_y = direction.y
 		for mode: int in [PlayerState.MovementMode.WALK, PlayerState.MovementMode.SPRINT, PlayerState.MovementMode.SLIDE]:
 			state.movement_mode = mode
 			var pose := String(PlayerState.MovementMode.keys()[mode]).to_lower()
@@ -451,3 +459,72 @@ func _test_locomotion_contact_regions() -> void:
 	state.movement_mode = PlayerState.MovementMode.SPRINT
 	equal(presenter.source_region_for_animation_state("s_wayne", state, "sprint"), Rect2(288, 1440, 96, 96), "S. Wayne sprint contact A owns north-east art")
 	equal(presenter.source_region_for_animation_state("s_wayne", state, "sprint_b"), Rect2(288, 1824, 96, 96), "S. Wayne sprint contact B owns north-east art")
+
+
+func _test_movement_template_direction_matrix() -> void:
+	var language := VisualLanguage.new()
+	check(language.load_from_file(), "movement matrix language loads")
+	var presenter := CartoonChampionPresenter.new()
+	check(presenter.configure(language), "movement matrix uses the live champion presenter")
+	var config := SimConfig.new(120)
+	var actions := {"idle": PlayerState.MovementMode.IDLE, "walk": PlayerState.MovementMode.WALK, "sprint": PlayerState.MovementMode.SPRINT, "jump": PlayerState.MovementMode.HOP, "slide": PlayerState.MovementMode.SLIDE, "roll": PlayerState.MovementMode.ROLL, "air_turn": PlayerState.MovementMode.HOP, "wallrun": PlayerState.MovementMode.WALL_SKIM, "landing": PlayerState.MovementMode.IDLE}
+	for champion_id: String in ["s_wayne", "oh_tipi", "red_baron"]:
+		var profile_id := String(presenter.recipe(champion_id)["motion_profile"])
+		for direction_index: int in range(8):
+			var direction: Vector2i = EightDirectionResolver.FIXED_VECTORS[direction_index]
+			for action: String in actions:
+				var state := PlayerState.new(1)
+				state.movement_mode = int(actions[action])
+				state.facing_x = direction.x
+				state.facing_y = direction.y
+				state.velocity_x = direction.x * 300
+				state.velocity_y = direction.y * 300
+				state.aim_x = -direction.x
+				state.aim_y = -direction.y
+				if action in ["idle", "landing"]:
+					state.velocity_x = 0
+					state.velocity_y = 0
+				if action in ["jump", "air_turn"]:
+					state.hop_ticks = 12
+					state.hop_mode = PlayerState.MovementMode.HOP
+				if action == "roll":
+					state.air_dodge_ticks = 12
+					state.hop_mode = PlayerState.MovementMode.ROLL
+				if action == "wallrun":
+					state.wall_skim_ticks = 18
+					state.wall_skim_surface_id = 7
+				if action == "landing":
+					state.landing_ticks = 6
+					state.landing_intensity = 800
+				var before := state.canonical_values()
+				for reduced: bool in [false, true]:
+					var frame := presenter.movement_frame(champion_id, state, 19.0, config, reduced)
+					var region: Rect2 = frame["source_region"]
+					equal(region.position.x, float(direction_index * 96), "%s/%s keeps input-facing direction %d" % [champion_id, action, direction_index])
+					equal(region.size, CartoonChampionPresenter.CELL_SIZE, "%s/%s uses the same source-cell dimensions" % [champion_id, action])
+					equal(frame["scale"], Vector2.ONE, "%s/%s never rescales its template" % [champion_id, action])
+					equal(frame["offset"], Vector2.ZERO, "%s/%s keeps its feet pivot pinned" % [champion_id, action])
+					check(presenter.texture_for_champion(champion_id).get_image().get_region(Rect2i(region)).get_used_rect().has_area(), "%s/%s resolves actual body pixels" % [champion_id, action])
+				if action in ["walk", "sprint"]:
+					var duration := float((presenter.motion.profiles[profile_id][action] as Dictionary)["duration_ticks"])
+					var first := presenter.movement_frame(champion_id, state, duration - 3.0, config)
+					var second := presenter.movement_frame(champion_id, state, duration * 1.5 - 3.0, config)
+					equal(int(first["contact_frame"]), 0, "all templates/directions visibly plant contact A")
+					equal(int(second["contact_frame"]), 1, "all templates/directions visibly plant opposite contact B")
+					check(first["source_region"] != second["source_region"], "opposite contacts use distinct atlas cells")
+				equal(state.canonical_values(), before, "full movement rendering contract is read-only")
+	check(presenter.movement_frame("unknown", PlayerState.new(), 0, config).is_empty(), "unpromoted movement art fails closed")
+
+
+func _test_wall_contact_side() -> void:
+	for normal: Vector2i in [Vector2i.LEFT, Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN]:
+		var state := PlayerState.new()
+		state.wall_skim_ticks = 12
+		state.wall_skim_surface_id = 7
+		state.wall_x = normal.x * 1000
+		state.wall_y = normal.y * 1000
+		var geometry := CartoonChampionPresenter.wall_contact_geometry(state)
+		var offset: Vector2 = geometry["offset"]
+		check(offset.dot(Vector2(normal)) < 0.0, "wall sparks originate toward the wall, not away from it")
+		equal(offset.length(), float(state.radius) / SimConfig.FIXED_SCALE, "wall contact uses the real body radius")
+	check(CartoonChampionPresenter.wall_contact_geometry(PlayerState.new()).is_empty(), "no wall contact cannot fabricate sparks")

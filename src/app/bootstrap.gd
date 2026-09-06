@@ -429,6 +429,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 	if controls_editor == null or not controls_editor.is_open:
+		if input_router != null and controls_input_guard_frames <= 0:
+			input_router.observe_input_event(event)
 		return
 	var handled := false
 	var bindings_changed := false
@@ -688,6 +690,8 @@ func _process(delta: float) -> void:
 		# A station can open a modal during this frame; never sample the same
 		# interaction press as a movement or spell command afterwards.
 		controls_blocking = controls_blocking or controls_editor.is_open or spell_loom_editor.is_open or player_compendium.is_open or join_address_editor_open
+	if controls_blocking:
+		input_router.discard_transient_movement_input()
 	if not controls_blocking and Input.is_action_just_pressed(InputRouter.EMOTE_ACTION):
 		_submit_session_request(SessionTransport.REQUEST_EMOTE)
 
@@ -830,7 +834,7 @@ func _process(delta: float) -> void:
 			elif session_transport.is_host():
 				authoritative_session.record_combat_events(world.combat_events)
 			current_position = _player_position()
-		movement_trace.record(world.tick, current_position, command, _local_player_state().champion_wire_id)
+		movement_trace.record(world.tick, current_position, command, _local_player_state().champion_wire_id, _local_player_state())
 		accumulator_seconds -= fixed_delta
 		steps += 1
 	if accumulator_seconds >= fixed_delta:
@@ -914,6 +918,7 @@ func _draw() -> void:
 			roundi(visual_tick),
 			world.config,
 			_reduced_effects_enabled(),
+			shadow_center,
 		)
 	if not sprite_drawn and player_sprite != null:
 		if player_sprite.sync_from_player(presentation_state, world.config, world.tick, alpha):
@@ -1227,6 +1232,7 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visua
 				visual_tick,
 				world.config,
 				_reduced_effects_enabled(),
+				shadow_center,
 			)
 		var sprite := _remote_player_sprite(remote_state) if not sprite_drawn else null
 		if not sprite_drawn and sprite != null and sprite.sync_from_player(remote_state, world.config, world.tick, 0.0):
@@ -1369,12 +1375,7 @@ func _active_hint(state: PlayerState, ability_name: String, ability: Dictionary)
 
 
 func _draw_landing_cue(center: Vector2, landing: LandingPresentation.Sample) -> void:
-	var color := Color(ATTUNEMENT_COLOR, landing.ring_opacity)
-	draw_arc(center, landing.ring_radius, 0.0, TAU, 20, color, landing.ring_width)
-	for direction: Vector2 in [Vector2.UP, Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT]:
-		var inner := center + direction * (landing.ring_radius - 2.0)
-		var outer := center + direction * (landing.ring_radius + 2.0)
-		draw_line(inner, outer, color, landing.ring_width)
+	LandingPresentation.draw(self, center, landing, visual_language)
 
 
 func _draw_station_bubble(camera_origin: Vector2) -> void:

@@ -232,9 +232,29 @@ func draw(
 	presentation_tick: int,
 	config: SimConfig,
 	reduced_effects: bool = false,
+	ground_anchor: Vector2 = Vector2.INF,
 ) -> bool:
 	if canvas == null or state == null or not champions.has(champion_id):
 		return false
+	var frame := movement_frame(champion_id, state, presentation_tick, config, reduced_effects)
+	if frame.is_empty():
+		return false
+	var definition: Dictionary = champions[champion_id]
+	var anchor := body_anchor + (frame["offset"] as Vector2)
+	var floor_anchor := ground_anchor if ground_anchor.is_finite() else body_anchor
+	_draw_counter_strafe_accent(canvas, state, floor_anchor, reduced_effects)
+	_draw_movement_accent(canvas, state, floor_anchor, presentation_tick, reduced_effects, body_anchor)
+	_draw_aura(canvas, definition, anchor, presentation_tick, reduced_effects, float(frame["aura_scale"]))
+	if atlas == null:
+		return false
+	_draw_atlas_candidate(canvas, state, champion_id, String(frame["animation_state"]), anchor)
+	_draw_evasion_contour(canvas, state, body_anchor, presentation_tick, config, reduced_effects)
+	return true
+
+
+func movement_frame(champion_id: String, state: PlayerState, presentation_tick: float, config: SimConfig, reduced_effects: bool = false) -> Dictionary:
+	if state == null or config == null or not champions.has(champion_id):
+		return {}
 	var definition: Dictionary = champions[champion_id]
 	var animation_state := silhouette_state(state)
 	var motion_id := MinimalChampionMotion.motion_id(state)
@@ -246,26 +266,26 @@ func draw(
 		motion_id = "low"
 	elif animation_state == "jump":
 		motion_id = "air"
-	var motion_elapsed := MinimalChampionMotion.elapsed_for_state(state, motion_id, float(presentation_tick), config)
+	var motion_elapsed := MinimalChampionMotion.elapsed_for_state(state, motion_id, presentation_tick, config)
+	# Contact pose and secondary motion share one seeded phase. Previously the
+	# opposite foot could be selected while the torso was still on contact A.
+	if motion_id in ["walk", "sprint"]:
+		motion_elapsed += float(maxi(0, state.entity_id) * 3)
 	var motion_sample := motion.sample(String(definition.get("motion_profile", "")), motion_id, motion_elapsed, reduced_effects)
 	if motion_id in ["walk", "sprint"]:
 		var response := movement_response_scale(state)
 		motion_sample.offset *= response
 		motion_sample.aura_scale = lerpf(1.0, motion_sample.aura_scale, response)
 		_apply_relative_gait_motion(motion_sample, locomotion_gait(state), reduced_effects)
-	var anchor := body_anchor + motion_sample.offset + _directional_lean(state, motion_id, reduced_effects)
-	_draw_counter_strafe_accent(canvas, state, body_anchor, reduced_effects)
-	_draw_movement_accent(canvas, state, body_anchor, presentation_tick, reduced_effects)
-	_draw_aura(canvas, definition, anchor, presentation_tick, reduced_effects, motion_sample.aura_scale)
-	if atlas == null:
-		return false
+	# Ground contact already exists in the authored A/B poses. Translating the
+	# whole sprite to fake a gait slides planted feet and doubles jump lift.
+	var pose_offset := motion_sample.offset.round() if motion_id in ["cast", "hit"] else Vector2.ZERO
+	var contact_frame := 0
 	if animation_state in EXPECTED_PHASE_STATES:
-		var phase_seed := maxi(0, state.entity_id) * 3
-		if motion.locomotion_contact_frame(String(definition.get("motion_profile", "")), motion_id, motion_elapsed, phase_seed) == 1:
+		contact_frame = motion.locomotion_contact_frame(String(definition.get("motion_profile", "")), motion_id, motion_elapsed)
+		if contact_frame == 1:
 			animation_state += "_b"
-	_draw_atlas_candidate(canvas, state, champion_id, animation_state, anchor)
-	_draw_evasion_contour(canvas, state, body_anchor, presentation_tick, config, reduced_effects)
-	return true
+	return {"animation_state": animation_state, "motion_id": motion_id, "contact_frame": contact_frame, "offset": pose_offset, "scale": Vector2.ONE, "aura_scale": motion_sample.aura_scale, "source_region": source_region_for_animation_state(champion_id, state, animation_state)}
 
 
 func _draw_atlas_candidate(canvas: CanvasItem, state: PlayerState, champion_id: String, animation_state: String, anchor: Vector2) -> void:
@@ -287,15 +307,15 @@ func portrait_region(champion_id: String) -> Rect2:
 
 func silhouette_state(state: PlayerState) -> String:
 	var action := semantic_action(state)
-	if state != null and action in ["cast", "cast_recovery"] and state.control_state == PlayerState.ControlState.FREE:
+	if state != null and state.health > 0 and state.control_state in [PlayerState.ControlState.FREE, PlayerState.ControlState.SLOWED]:
 		if state.is_rolling():
 			return "roll"
-		if state.is_airborne():
-			return "jump"
 		if state.movement_mode in [PlayerState.MovementMode.SLIDE, PlayerState.MovementMode.WAVE_DASH, PlayerState.MovementMode.WALL_SKIM]:
 			return "slide"
+		if state.is_airborne():
+			return "jump"
 		if state.velocity_x != 0 or state.velocity_y != 0:
-			if state.movement_mode == PlayerState.MovementMode.WALK:
+			if state.movement_mode in [PlayerState.MovementMode.WALK, PlayerState.MovementMode.SLOWED]:
 				return "walk"
 			if state.movement_mode == PlayerState.MovementMode.SPRINT:
 				return "sprint"
@@ -397,8 +417,11 @@ static func presentation_facing_vector(state: PlayerState, state_id: String = ""
 			return Vector2i(state.pending_cast_aim_x, state.pending_cast_aim_y)
 		return Vector2i(state.aim_x, state.aim_y)
 	if resolved_state in ["walk", "sprint", "slide", "roll", "jump"]:
-		# Motion poses always face travel. Aiming remains independent and is
-		# expressed by the hand/channel cue, never by walking sideways artwork.
+		# Body intent follows the accepted movement input, including reversal;
+		# physical coast remains legible through separate travel-facing dust.
+		var intended := Vector2i(state.facing_x, state.facing_y)
+		if intended != Vector2i.ZERO:
+			return intended
 		var travel := Vector2i(state.velocity_x, state.velocity_y)
 		if travel != Vector2i.ZERO:
 			return travel
@@ -562,11 +585,13 @@ func _draw_counter_strafe_accent(canvas: CanvasItem, state: PlayerState, ground_
 		canvas.draw_rect(Rect2(heel - travel * 11.0 - Vector2.ONE, Vector2(2.0, 2.0)), Color(color, opacity * 0.75), true)
 
 
-func _draw_movement_accent(canvas: CanvasItem, state: PlayerState, ground_anchor: Vector2, tick: int, reduced: bool) -> void:
+func _draw_movement_accent(canvas: CanvasItem, state: PlayerState, ground_anchor: Vector2, tick: int, reduced: bool, body_anchor: Vector2 = Vector2.INF) -> void:
 	var definition := motion.accent(state)
 	if definition.is_empty():
 		return
 	var kind := String(definition.get("kind", ""))
+	if kind in ["speed_fins", "fall_lines", "recovery_brace"] and body_anchor.is_finite():
+		ground_anchor = body_anchor
 	var color := language.ramp_color(String(definition.get("ramp", "aged_brass")), int(definition.get("index", 3)))
 	var opacity := float(definition.get("opacity", 0.4)) * (0.55 if reduced else 1.0)
 	var velocity := Vector2(float(state.velocity_x), float(state.velocity_y))
@@ -599,13 +624,15 @@ func _draw_movement_accent(canvas: CanvasItem, state: PlayerState, ground_anchor
 			for x_offset: float in [-8.0, 0.0, 8.0]:
 				canvas.draw_line(ground_anchor + Vector2(x_offset, -28.0), ground_anchor + Vector2(x_offset, -16.0 + phase * 5.0), Color(color, opacity), 2.0)
 		"wall_sparks":
-			var wall_side := Vector2(float(state.wall_x), float(state.wall_y)).normalized()
-			if wall_side == Vector2.ZERO:
-				wall_side = side
-			var contact := ground_anchor + wall_side * 14.0
-			for index: int in range(3):
-				var spark_direction := (-wall_side).rotated(-0.5 + float(index) * 0.5)
-				canvas.draw_line(contact, contact + spark_direction * (5.0 + float(index) * 2.0), Color(color, opacity), 1.0)
+			var contact_geometry := wall_contact_geometry(state)
+			if contact_geometry.is_empty():
+				return
+			var wall_normal: Vector2 = contact_geometry["normal"]
+			var contact := ground_anchor + (contact_geometry["offset"] as Vector2)
+			var count := 1 if reduced else 3
+			for index: int in range(count):
+				var spark_direction := wall_normal.rotated(-0.5 + float(index) * 0.5 if count > 1 else 0.0)
+				canvas.draw_line(contact, contact + spark_direction * (4.0 + phase * 3.0), Color(color, opacity * (0.7 + phase * 0.3)), 1.0)
 		"recovery_brace":
 			var contraction := 1.0 - phase
 			var impact_center := ground_anchor + Vector2(0, -21) - direction * (6.0 + contraction * 3.0)
@@ -619,19 +646,28 @@ func _draw_movement_accent(canvas: CanvasItem, state: PlayerState, ground_anchor
 			canvas.draw_line(ground_anchor - direction * 10.0, ground_anchor - direction * (19.0 + contraction * 6.0), Color(color, opacity * 0.9), 3.0 if not reduced else 2.0)
 
 
+static func wall_contact_geometry(state: PlayerState) -> Dictionary:
+	if state == null or state.wall_skim_ticks <= 0 or state.wall_skim_surface_id <= 0:
+		return {}
+	var normal := Vector2(state.wall_x, state.wall_y).normalized()
+	if normal == Vector2.ZERO:
+		return {}
+	return {"normal": normal, "offset": -normal * float(state.radius) / SimConfig.FIXED_SCALE}
+
+
 func _draw_evasion_contour(
 	canvas: CanvasItem,
 	state: PlayerState,
 	ground_anchor: Vector2,
-	tick: int,
+	_tick: int,
 	config: SimConfig,
 	reduced: bool,
 ) -> void:
 	if not MovementSystem.is_combat_intangible(state, config):
 		return
 	var color := language.ramp_color("parchment", 4)
-	var phase := float(tick % 12) / 12.0
-	var radius := 20.0 + phase * 3.0
+	var phase := 1.0 - JumpPresentation.protection_ratio(state, config)
+	var radius := 21.0
 	var opacity := 0.62 if not reduced else 0.48
 	var center := ground_anchor + Vector2(0.0, -22.0)
 	canvas.draw_arc(center, radius, -1.35 + phase, 0.25 + phase, 10, Color(color, opacity), 2.0)

@@ -7,6 +7,7 @@ func run() -> int:
 		_test_eight_direction_parity(tick_rate)
 	_test_soft_and_hard_correction()
 	_test_history_and_validation_bounds()
+	_test_movement_intent_state_round_trip()
 	return finish("client-prediction")
 
 
@@ -111,6 +112,40 @@ func _test_history_and_validation_bounds() -> void:
 	values[0] = 9
 	malformed["values"] = values
 	check(not ClientPrediction.validate_packet(malformed), "out-of-roster prediction entity fails closed")
+
+
+func _test_movement_intent_state_round_trip() -> void:
+	var authority := _state()
+	authority.air_velocity_x = -333_000
+	authority.air_velocity_y = 444_000
+	authority.movement_commitment_ticks = 9
+	authority.wall_air_ticks = 27
+	authority.slide_held_last_tick = true
+	authority.fast_fall_armed = true
+	authority.evade_buffer_airborne = true
+	var packet := ClientPrediction.capture_packet(authority, 1, -1)
+	check(not packet.is_empty(), "new movement intent state is admitted for prediction")
+	var restored := ClientPrediction.restore_state(packet["values"])
+	for property_name: StringName in ClientPrediction.STATE_FIELDS:
+		equal(restored.get(property_name), authority.get(property_name), "prediction round-trips %s" % property_name)
+	for property_name: StringName in [&"slide_held_last_tick", &"fast_fall_armed", &"evade_buffer_airborne", &"movement_commitment_ticks", &"wall_air_ticks"]:
+		var malformed: PackedInt64Array = packet["values"].duplicate()
+		malformed[ClientPrediction.STATE_FIELDS.find(property_name)] = -1
+		check(not ClientPrediction.validate_values(malformed), "invalid movement intent rejected: %s" % property_name)
+	var collision := CollisionWorld.new(3_000_000, 2_000_000)
+	var config := SimConfig.new(120)
+	for unsafe_ratio: int in [0, MovementTuning.SLOW_MINIMUM_RATIO - 1, 1001]:
+		var malformed: PackedInt64Array = packet["values"].duplicate()
+		malformed[ClientPrediction.STATE_FIELDS.find(&"slow_ratio")] = unsafe_ratio
+		check(not ClientPrediction.validate_values(malformed), "unsafe slow ratio cannot reach momentum restoration")
+	for tick: int in range(90):
+		var direction := Vector2i(600, -800) if tick < 45 else Vector2i(-800, 600)
+		var pressed := SimCommand.PRESSED_JUMP if tick in [0, 22] else 0
+		var command := SimCommand.new(tick, 2, direction.x, direction.y, SimCommand.HELD_JUMP, pressed)
+		MovementSystem.step(authority, command, config, collision)
+		MovementSystem.step(restored, command, config, collision)
+		for property_name: StringName in ClientPrediction.STATE_FIELDS:
+			equal(restored.get(property_name), authority.get(property_name), "restored movement remains deterministic: tick %d / %s" % [tick, property_name])
 
 
 func _state() -> PlayerState:

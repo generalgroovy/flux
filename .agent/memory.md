@@ -1,5 +1,31 @@
 # Active implementation memory
 
+## 2026-09-06 M1-M5 movement-only playtest checkpoint
+
+- User authorized M1-M5 plus visual clarity for all body types/directions.
+  Implemented and paused for playtest; no map/spell/chemistry/roster expansion.
+- Continuous fixed-point steering; 100 ms newest-intent buffer; one activation
+  per tick; air-context Evade; 120 ms wheel-gesture grouping; fresh airborne C.
+- Unified unslowed air momentum, coast/brake/turn, finite wall budgets/descent,
+  no stale roll classification or locked optional-sustain charges. Slides use
+  actual entry momentum with 1 unit/tick drag; low straight dodges can wavedash.
+- Seven canonical fields are reset and reconciled. Protocol 40, snapshot 15;
+  remote action clocks, wall contact and momentum now round-trip explicitly.
+- Three stable 58/68/76 px body templates, eight-way input-facing frames,
+  alternating contacts, separate floor/body effects, one-shot protection cue.
+  Fourteen renderer sheets/336 fixtures and 64 real jump frames were inspected.
+- Full 75 suites / 102,863 assertions; zero stderr, import/120 Hz boot;
+  49,255 ms. Receipt `.godot/receipts/movement-m1-m5-full.json`. Local Farflow
+  and actual `flux.cmd play -SmokeTest` passed. Eight-player probe 6,359
+  assertions; no missing threats/rejected frames. Timing outliers remain, not
+  an unconditional 120 FPS or internet certification.
+- Real small/middle/large Slide-Jump-Evade routes leave 29.867/43.067/69.467
+  Stamina minimum; preserve current speed, reserves and 10-40% chain premium.
+- Launch `C:\Users\sende\Projects\flux\flux.cmd`; F4 guide, F2 trace/F3 retry.
+  Full controls/evidence/limitations in docs/MOVEMENT-M1-M5-ACCEPTANCE.md.
+  No new installer or hand-drawn atlas replacement. Human controller/feel review
+  open. Keep personal untracked node_modules and the two scripts files untouched.
+
 ## 2026-09-06 source-verified team checkpoint; paused for playtest
 
 - User requested the next safe pause. Workers are stopped; no new feature slice.

@@ -55,6 +55,8 @@ func _test_air_wall_budget() -> void:
 	for normal: Vector2i in [Vector2i(1000, 0), Vector2i(-1000, 0), Vector2i(0, 1000), Vector2i(0, -1000)]:
 		var state := _state()
 		MovementSystem.step(state, SimCommand.new(0, 1, 1000, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP), config, arena)
+		for tick: int in range(1, config.milliseconds_to_ticks(MovementTuning.HOP_COMMITMENT_MS)):
+			MovementSystem.step(state, SimCommand.new(tick, 1, 1000, 0), config, arena)
 		state.wall_memory_ticks = 12
 		state.wall_contact_id = 3
 		state.wall_x = normal.x
@@ -101,6 +103,8 @@ func _test_explicit_intents_and_attachment() -> void:
 	state.wall_memory_ticks = 12
 	state.wall_x = -1000
 	MovementSystem.step(state, SimCommand.new(0, 1, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE), config, arena)
+	for tick: int in range(1, config.milliseconds_to_ticks(MovementTuning.WALL_RUN_COMMITMENT_MS)):
+		MovementSystem.step(state, SimCommand.new(tick, 1, 0, 1000), config, arena)
 	MovementSystem.step(state, SimCommand.new(1, 1, 0, 1000, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP), config, arena)
 	equal(state.hop_mode, PlayerState.MovementMode.WALL_KICK, "Jump exits attached wallrun as a wall kick")
 	equal(state.wall_skim_ticks, 0, "wall jump cleanly ends wallrun")
@@ -118,6 +122,8 @@ func _test_airborne_wallrun_chain() -> void:
 	var state := _state()
 	state.position_x = 2_002_000
 	MovementSystem.step(state, SimCommand.new(0, 1, 0, 1000, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP), config, arena)
+	for tick: int in range(1, config.milliseconds_to_ticks(MovementTuning.HOP_COMMITMENT_MS)):
+		MovementSystem.step(state, SimCommand.new(tick, 1, 0, 1000), config, arena)
 	state.wall_contact_id = 9
 	state.wall_memory_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_MEMORY_MS)
 	state.wall_x = -1000
@@ -125,6 +131,8 @@ func _test_airborne_wallrun_chain() -> void:
 	equal(state.last_event, "wall_skim", "airborne wall contact can chain into wallrun before air redirect")
 	check(state.wall_skim_ticks > 0 and state.hop_ticks == 0, "wallrun cleanly owns the airborne transition")
 	equal(state.movement_chain_count, 2, "jump-to-wallrun is charged as a two-action chain")
+	for tick: int in range(1, config.milliseconds_to_ticks(MovementTuning.WALL_RUN_COMMITMENT_MS)):
+		MovementSystem.step(state, SimCommand.new(tick, 1, 0, 1000), config, arena)
 	MovementSystem.step(state, SimCommand.new(2, 1, 0, 1000, 0, SimCommand.PRESSED_EVADE), config, arena)
 	equal(state.last_event, "air_dodge", "wallrun can chain directly into the universal air dodge")
 	check(state.air_dodge_ticks > 0 and state.wall_skim_ticks == 0, "air dodge cleanly owns the wallrun exit")
@@ -168,9 +176,11 @@ func _test_slide_jump_commitment() -> void:
 				MovementSystem.step(state, SimCommand.new(0, 1, direction.x, direction.y, held, SimCommand.PRESSED_SLIDE), config, arena)
 				var starting_cooldown := state.slide_cooldown_ticks
 				var converted_age := -1
+				var retained_entry := 0
 				for age: int in range(1, 24):
 					var pressed := SimCommand.PRESSED_JUMP if age == press_age else 0
 					var before := state.stamina
+					retained_entry = MovementSystem._planar_speed(state)
 					MovementSystem.step(state, SimCommand.new(age, 1, direction.x, direction.y, held, pressed), config, arena)
 					if state.hop_mode == PlayerState.MovementMode.SLIDE_JUMP and state.hop_ticks > 0:
 						converted_age = age
@@ -183,7 +193,7 @@ func _test_slide_jump_commitment() -> void:
 				equal(state.slide_ticks, 0, "Jump ends optional slide sustain")
 				equal(state.slide_cooldown_ticks, starting_cooldown - converted_age, "conversion never refreshes the slide cooldown")
 				equal(state.jump_protection_ticks, config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS), "conversion retains the original jump protection window")
-				check(state.hop_speed >= 839_000 and state.hop_speed <= MovementTuning.MAX_AUTHORED_SPEED, "all directions preserve legal earned momentum without exceeding the cap")
+				equal(state.hop_speed, retained_entry, "all directions preserve actual post-drag momentum without exceeding the cap")
 				check(state.velocity_x * direction.x + state.velocity_y * direction.y > 0, "conversion follows the requested travel direction")
 	var refused := _state()
 	refused.velocity_x = MovementTuning.BASE_SPEED

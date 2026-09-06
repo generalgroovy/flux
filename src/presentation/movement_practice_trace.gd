@@ -17,6 +17,7 @@ var elapsed_ticks := 0
 var compare_previous := false
 var last_input := ""
 var pending_pressed := 0
+var last_status := ""
 
 
 func toggle(tick: int, position: Vector2, champion_id: int) -> void:
@@ -39,9 +40,10 @@ func begin(tick: int, position: Vector2, champion_id: int) -> void:
 	samples = PackedVector2Array([position])
 	last_input = "MOVE TO TRACE"
 	pending_pressed = 0
+	last_status = ""
 
 
-func record(tick: int, position: Vector2, command: SimCommand, champion_id: int = -1) -> void:
+func record(tick: int, position: Vector2, command: SimCommand, champion_id: int = -1, state: PlayerState = null) -> void:
 	if not enabled or command == null:
 		return
 	if tick < start_tick or samples.size() >= MAX_SAMPLES or (champion_id >= 0 and champion_id != champion):
@@ -53,6 +55,12 @@ func record(tick: int, position: Vector2, command: SimCommand, champion_id: int 
 		return
 	last_sample_tick = tick
 	samples.append(position)
+	if state != null:
+		var mode: String = PlayerState.MovementMode.keys()[state.movement_mode]
+		mode = {"HOP": "JUMP", "WALL_SKIM": "WALLRUN", "WAVE_DASH": "WAVEDASH"}.get(mode, mode.replace("_", " "))
+		var speed := roundi(Vector2(state.velocity_x, state.velocity_y).length() / SimConfig.FIXED_SCALE)
+		var premium := mini(state.movement_chain_count, MovementTuning.MOVEMENT_CHAIN_MAXIMUM_STEPS) * MovementTuning.MOVEMENT_CHAIN_COST_STEP_RATIO / 10 if state.movement_chain_reset_ticks > 0 else 0
+		last_status = "%s  %du/s  |  STAMINA %.1f/%.1f  |  NEXT +%d%%" % [mode, speed, float(state.stamina) / 1000.0, float(state.stamina_maximum) / 1000.0, premium]
 	var actions: Array[String] = []
 	if command.move_x != 0 or command.move_y != 0:
 		actions.append("MOVE")
@@ -91,3 +99,5 @@ func draw(canvas: CanvasItem, position: Vector2, reduced_effects: bool) -> void:
 	# Quiet text follows the feet, never the crosshair or projectile lanes.
 	var label := "PRACTICE %.1fs  %s" % [float(elapsed_ticks) / 120.0, last_input]
 	canvas.draw_string(ThemeDB.fallback_font, position + Vector2(-96, 44), label, HORIZONTAL_ALIGNMENT_LEFT, 280, 12, Color(0.88, 0.86, 0.68, 0.9 if reduced_effects else 0.75))
+	if not last_status.is_empty():
+		canvas.draw_string(ThemeDB.fallback_font, position + Vector2(-160, 60), last_status, HORIZONTAL_ALIGNMENT_LEFT, 420, 12, Color(0.9, 0.89, 0.78, 0.9))

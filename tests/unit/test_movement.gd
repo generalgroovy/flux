@@ -163,6 +163,8 @@ func _test_double_jump(tick_rate: int) -> void:
 	var world := SimWorld.new(tick_rate)
 	var state: PlayerState = world.player()
 	_step(world, 1000, 0, 0, SimCommand.PRESSED_JUMP)
+	while state.movement_commitment_ticks > 1:
+		_step(world, 1000, 0)
 	var after_hop: int = state.stamina
 	_step(world, 0, -1000, 0, SimCommand.PRESSED_JUMP)
 	equal(state.last_event, "double_jump", "%d Hz second edge triggers double jump" % tick_rate)
@@ -193,9 +195,10 @@ func _test_slide_and_slide_jump(tick_rate: int) -> void:
 	var late_window: int = world.config.milliseconds_to_ticks(MovementTuning.SLIDE_JUMP_WINDOW_MS)
 	while state.slide_ticks > late_window:
 		_step(world, 1000, 0)
+	var entry_speed := state.velocity_x
 	_step(world, 1000, 0, 0, SimCommand.PRESSED_JUMP)
 	equal(state.last_event, "slide_jump", "%d Hz late slide converts" % tick_rate)
-	check(state.hop_speed == MovementTuning.SLIDE_JUMP_SPEED, "%d Hz slide jump speed is authored" % tick_rate)
+	equal(state.hop_speed, entry_speed, "%d Hz slide jump retains actual post-drag momentum without a fixed boost" % tick_rate)
 
 
 func _test_eight_direction_slide_integrity(tick_rate: int) -> void:
@@ -255,6 +258,9 @@ func _test_ground_roll_and_evasion_windows(tick_rate: int) -> void:
 func _test_action_buffers(tick_rate: int) -> void:
 	var slide_world := SimWorld.new(tick_rate)
 	var slider: PlayerState = slide_world.player()
+	# A100ms contextual buffer bridges nearby eligibility, not acceleration from rest.
+	for _index: int in range(8):
+		_step(slide_world, 1000, 0)
 	_step(slide_world, 1000, 0, 0, SimCommand.PRESSED_SLIDE)
 	check(slider.slide_buffer_ticks > 0, "%d Hz early slide intent is buffered" % tick_rate)
 	while slider.slide_ticks == 0 and slider.slide_buffer_ticks > 0:
@@ -397,14 +403,17 @@ func _test_movement_chain_economy_and_momentum(tick_rate: int) -> void:
 	_step(world, 1000, 0, SimCommand.HELD_SLIDE, SimCommand.PRESSED_SLIDE)
 	equal(state.movement_chain_count, 1, "first movement action starts one explicit chain")
 	equal(state.stamina, before - MovementTuning.SLIDE_COST - world.config.per_tick(MovementTuning.SLIDE_SUSTAIN_DRAIN_PER_SECOND), "first movement action pays base cost plus its requested sustain tick")
-	check(state.velocity_x >= 840_000, "slide preserves earned planar entry speed above its minimum impulse")
+	equal(state.velocity_x, 840_000 - world.config.per_tick(MovementTuning.SLIDE_DRAG_PER_SECOND), "slide preserves earned entry momentum minus explicit friction")
 	for _tick: int in range(world.config.milliseconds_to_ticks(MovementTuning.SLIDE_JUMP_MINIMUM_COMMITMENT_MS)):
 		_step(world, 1000, 0, SimCommand.HELD_SLIDE)
 	before = state.stamina
+	var entry_speed := state.velocity_x
 	_step(world, 1000, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
 	equal(state.movement_chain_count, 2, "slide jump extends the same movement chain")
 	equal(state.stamina, before - MovementTuning.SLIDE_JUMP_COST * 1100 / 1000, "second movement action pays a ten-percent premium")
-	check(state.hop_speed >= 840_000, "slide jump carries earned slide momentum")
+	equal(state.hop_speed, entry_speed, "slide jump carries actual earned slide momentum")
+	while state.movement_commitment_ticks > 1:
+		_step(world, 1000, 0)
 	before = state.stamina
 	_step(world, 1000, 0, 0, SimCommand.PRESSED_EVADE)
 	equal(state.movement_chain_count, 3, "air dodge is reachable as the third chained movement")
@@ -460,8 +469,8 @@ func _test_wall_skim(tick_rate: int) -> void:
 	while state.wall_skim_ticks > 0:
 		_step(world, 0, 1000)
 	equal(state.last_event, "wall_end", "%d Hz wall skim emits an explicit recovery event" % tick_rate)
-	check(state.landing_ticks > 0, "%d Hz wall skim exposes its readable recovery window" % tick_rate)
-	equal(state.landing_intensity, MovementTuning.LANDING_WALL_SKIM_INTENSITY, "%d Hz wall skim exit uses its lighter authored pulse" % tick_rate)
+	check(state.hop_ticks > 0 and state.is_airborne(), "%d Hz wall edge exits into finite airborne descent" % tick_rate)
+	equal(state.jump_protection_ticks, 0, "%d Hz wall exit never buys fresh protection" % tick_rate)
 	state.wall_memory_ticks = world.config.milliseconds_to_ticks(MovementTuning.WALL_MEMORY_MS)
 	state.wall_contact_id = skim_surface
 	state.wall_x = -1000

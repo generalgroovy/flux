@@ -1,6 +1,6 @@
 # FLUX 2 implementation path to first-eight playtest
 
-Current frontier: protocol 39, snapshot 14, preferences 10, Godot 4.7.1,
+Current frontier: protocol 40, snapshot 15, preferences 10, Godot 4.7.1,
 canonical `main` (the remote compatibility ref mirrors its published checkpoint;
 the non-authoritative local compatibility ref may lag until a safe
 fast-forward). V0–V6 visual engineering, the exact
@@ -40,6 +40,14 @@ composable mastery. A technically complete slice is not product-complete until
 commitment, ownership, consequence, counter and recovery are readable.
 
 ## Slice sequence
+
+Newest user order (2026-09-06): movement M1-M5 only, including clear live
+animation for every body size and eight facing directions. Follow
+[`MOVEMENT-M1-M5-ACCEPTANCE.md`](../docs/MOVEMENT-M1-M5-ACCEPTANCE.md).
+Finish input/steering integrity, unified air/wall state, ground/landing
+expression, paid-chain balance, then all-size visual/network acceptance.
+Pause for the user's playtest after the integrated checkpoint. No chemistry,
+map expansion or roster promotion in this batch.
 
 The newest six-stream implementation and exact acceptance limits are in
 [`TEAM-FOUNDATION-ACCEPTANCE.md`](../docs/TEAM-FOUNDATION-ACCEPTANCE.md).

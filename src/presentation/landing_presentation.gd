@@ -22,6 +22,10 @@ class Sample:
 	var ring_opacity: float = 0.0
 	var ring_width: float = NORMAL_RING_WIDTH
 	var shadow_scale: Vector2 = BASE_SHADOW_SCALE
+	var travel_direction := Vector2.DOWN
+	var puff_offsets: Array[Vector2] = []
+	var puff_radius: float = 0.0
+	var puff_opacity: float = 0.0
 
 
 static func sample(
@@ -31,7 +35,7 @@ static func sample(
 	reduced_motion: bool = false,
 ) -> Sample:
 	var result := Sample.new()
-	if state.landing_ticks <= 0 or state.landing_intensity <= 0:
+	if state == null or config == null or state.landing_ticks <= 0 or state.landing_intensity <= 0:
 		return result
 	var total_ticks: int = config.milliseconds_to_ticks(MovementTuning.LANDING_WINDOW_MS)
 	if total_ticks <= 0:
@@ -52,4 +56,39 @@ static func sample(
 	result.ring_opacity = maximum_opacity * result.intensity_ratio * (1.0 - result.normalized_phase)
 	result.ring_width = REDUCED_RING_WIDTH if reduced_motion else NORMAL_RING_WIDTH
 	result.shadow_scale = BASE_SHADOW_SCALE.lerp(MAXIMUM_SHADOW_SCALE, pulse)
+	result.travel_direction = motion_direction(state)
+	var side := result.travel_direction.orthogonal()
+	var distance := 5.0 + result.normalized_phase * (7.0 if reduced_motion else 14.0)
+	var spread := 4.0 + result.normalized_phase * 7.0
+	var count := 1 if reduced_motion else 3
+	for index: int in range(count):
+		var side_sign := float(index - 1) if count == 3 else 0.0
+		result.puff_offsets.append(-result.travel_direction * distance + side * side_sign * spread)
+	result.puff_radius = (2.5 + result.normalized_phase * 3.0) * (0.65 + result.intensity_ratio * 0.35)
+	result.puff_opacity = result.ring_opacity * 0.62
 	return result
+
+
+static func motion_direction(state: PlayerState) -> Vector2:
+	if state == null:
+		return Vector2.DOWN
+	var direction := Vector2(state.velocity_x, state.velocity_y)
+	if direction.length_squared() <= 1.0:
+		direction = Vector2(state.facing_x, state.facing_y)
+	return direction.normalized() if direction.length_squared() > 0.0 else Vector2.DOWN
+
+
+static func draw(canvas: CanvasItem, center: Vector2, landing: Sample, language: VisualLanguage) -> void:
+	if canvas == null or landing == null or language == null or not landing.active:
+		return
+	var color := language.ramp_color("warm_stone", 4)
+	var angle := landing.travel_direction.angle()
+	# Open contact arcs and sparse backward puffs leave the feet and forward
+	# escape lane clear; this draws no new collision or protection boundary.
+	for side_sign: float in [-1.0, 1.0]:
+		var start := angle + side_sign * 0.85
+		canvas.draw_arc(center, landing.ring_radius, start, start + side_sign * 0.75, 7, Color(color, landing.ring_opacity * 0.54), landing.ring_width)
+	for offset: Vector2 in landing.puff_offsets:
+		var puff := center + offset
+		canvas.draw_arc(puff, landing.puff_radius, angle + 0.8, angle + 5.4, 8, Color(color, landing.puff_opacity), landing.ring_width)
+		canvas.draw_line(puff - landing.travel_direction * landing.puff_radius, puff - landing.travel_direction * (landing.puff_radius + 3.0), Color(color, landing.puff_opacity * 0.65), landing.ring_width)

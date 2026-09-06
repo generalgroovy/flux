@@ -1,5 +1,23 @@
 # FLUX2 agent worklog
 
+## 2026-09-06 - M1-M5 movement overhaul, source verified
+
+- Implemented continuous vectors and buffered intent, safe wheel/held controls,
+  unified air/wall state, retained-momentum slides, finite paid chains and the
+  all-body/eight-direction live movement presentation. F4 guide and F2/F3
+  practice feedback explain actual tuning. Protocol 40 / snapshot 15.
+- Full 75 suites / 102,863 assertions, zero stderr; import/120 Hz boot;
+  `.godot/receipts/movement-m1-m5-full.json`. Farflow and actual launcher smoke
+  passed. Eight-player probe 6,359 assertions, no lost threats/rejected frames.
+- The only first-Full failure was an obsolete immediate-air-turn assumption in
+  the Conservatory route; it now proves the buffered action at legal commitment
+  without weakening its expected transition. Full then passed.
+- 14 real renderer sheets and 64 actual jump-sequence frames; selected evidence
+  committed under docs/evidence/movement-m1-m5. Assets are reused, not a new
+  hand-drawn atlas set. Physical controller/feel and universal FPS unproven.
+- Paused for user test. Launch Projects\flux\flux.cmd; see
+  docs/MOVEMENT-M1-M5-ACCEPTANCE.md for complete scope and outstanding acceptance.
+
 ## 2026-09-06 - verified foundation checkpoint; user-requested pause
 
 - Integrated slower projectiles, larger reserves, bounded whole-cast admission,

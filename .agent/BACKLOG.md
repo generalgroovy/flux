@@ -1,12 +1,18 @@
 # FLUX 2 active backlog
 
-**PAUSED at the user's request (2026-09-06).** The six-stream checkpoint is tracked in
+**PAUSED: movement M1-M5 source-verified (2026-09-06).**
+[Movement acceptance](../docs/MOVEMENT-M1-M5-ACCEPTANCE.md) covers all three
+body sizes/eight facing directions, 75 suites / 102,863 assertions, rendered
+evidence, local Farflow and source launch. Wait for the user's movement playtest;
+do not begin another slice. Human controller/feel review remains open.
+The previously paused six-stream checkpoint is tracked in
 [Team foundation acceptance](../docs/TEAM-FOUNDATION-ACCEPTANCE.md). The compendium,
 slower spells, larger reserves, complete bounded threat replication, runtime
 optimizations and respawning dummies passed 74 suites / 60,230 assertions,
 local Farflow, rendered compendium captures and the actual source launcher smoke test.
-Do not start another slice until asked. On resumption: visual acceptance, connected
-course expansion, finite deposits and the existing chemistry playtest order.
+Its green receipt is a baseline, not proof of the current movement changes.
+After the requested movement playtest: connected course expansion, finite
+deposits and the existing chemistry playtest order, only when authorized.
 Older status entries below are historical context, not competing active queues.
 
 **Latest order:** [G0-G5](../docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md):

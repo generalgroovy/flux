@@ -4,7 +4,7 @@ extends RefCounted
 
 # Authoritative values are fixed-point world units, resource milli-units,
 # milliseconds, or scale-1000 ratios. They preserve the proven FLUX grammar.
-const COMPATIBILITY_ID: String = "movement-tuning-v9-consistent-slow-slide-conversion"
+const COMPATIBILITY_ID: String = "movement-tuning-v10-continuous-committed-air-control"
 const PLAYER_RADIUS: int = 18_000
 const BASE_SPEED: int = 324_000
 const ACCELERATION: int = 1_980_000
@@ -13,7 +13,14 @@ const SPRINT_MULTIPLIER: int = 1280
 const COUNTER_STRAFE_MULTIPLIER: int = 1900
 const COUNTER_STRAFE_DOT_THRESHOLD: int = -24_000_000
 const MOVING_MODE_MINIMUM_SPEED: int = 20_000
-const INPUT_BUFFER_MS: int = 180
+const INPUT_BUFFER_MS: int = 100
+const HOP_COMMITMENT_MS: int = 80
+const ROLL_COMMITMENT_MS: int = 130
+const AIR_DODGE_COMMITMENT_MS: int = 120
+const WALL_RUN_COMMITMENT_MS: int = 80
+const WALL_EXIT_AIR_MS: int = 140
+const WAVE_DASH_COMMITMENT_MS: int = 50
+const AIR_REDIRECT_MINIMUM_TURN_DOT: int = 990_000
 const VARIABLE_JUMP_MINIMUM_MS: int = 160
 const FAST_FALL_EXTRA_TICKS: int = 1
 const MOVEMENT_CHAIN_RESET_MS: int = 333
@@ -94,6 +101,7 @@ const SLIDE_MINIMUM_MS: int = 150
 const SLIDE_SUSTAIN_DRAIN_PER_SECOND: int = 45_000
 const SLIDE_COOLDOWN_MS: int = 780
 const SLIDE_STEERING: int = 320
+const SLIDE_DRAG_PER_SECOND: int = 120_000
 const SLIDE_JUMP_COST: int = 20_000
 const SLIDE_JUMP_SPEED: int = 790_000
 const SLIDE_JUMP_DURATION_MS: int = 230
@@ -120,6 +128,9 @@ static func compatibility_hash() -> String:
 	return CanonicalContent.sha256({
 		"id": COMPATIBILITY_ID,
 		"ordinary": [
+			HOP_COMMITMENT_MS, ROLL_COMMITMENT_MS, AIR_DODGE_COMMITMENT_MS,
+			WALL_RUN_COMMITMENT_MS, WALL_EXIT_AIR_MS, WAVE_DASH_COMMITMENT_MS,
+			AIR_REDIRECT_MINIMUM_TURN_DOT,
 			PLAYER_RADIUS, BASE_SPEED, ACCELERATION, DECELERATION,
 			SPRINT_MULTIPLIER, COUNTER_STRAFE_MULTIPLIER,
 			COUNTER_STRAFE_DOT_THRESHOLD, MOVING_MODE_MINIMUM_SPEED,
@@ -167,7 +178,7 @@ static func compatibility_hash() -> String:
 		"slide": [
 			SLIDE_COST, SLIDE_ENTRY_SPEED, SLIDE_SPEED, SLIDE_DURATION_MS,
 			SLIDE_MINIMUM_MS, SLIDE_SUSTAIN_DRAIN_PER_SECOND,
-			SLIDE_COOLDOWN_MS, SLIDE_STEERING, SLIDE_JUMP_COST,
+			SLIDE_COOLDOWN_MS, SLIDE_STEERING, SLIDE_DRAG_PER_SECOND, SLIDE_JUMP_COST,
 			SLIDE_JUMP_SPEED, SLIDE_JUMP_DURATION_MS,
 			SLIDE_JUMP_MINIMUM_COMMITMENT_MS, SLIDE_JUMP_WINDOW_MS,
 		],

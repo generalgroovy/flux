@@ -21,4 +21,21 @@ func run() -> int:
 	trace.begin(9000, Vector2.ZERO, 2)
 	trace.record(0, Vector2.ZERO, SimCommand.new())
 	check(not trace.enabled, "world restart safely clears active recording")
+	var actor := PlayerState.new(1)
+	actor.movement_mode = PlayerState.MovementMode.SLIDE
+	actor.velocity_x = 300_000
+	actor.velocity_y = 400_000
+	actor.stamina = 80_000
+	actor.stamina_maximum = 132_000
+	actor.movement_chain_count = 2
+	actor.movement_chain_reset_ticks = 20
+	var before := actor.canonical_values()
+	trace.begin(0, Vector2.ZERO, 1)
+	trace.record(4, Vector2.ZERO, SimCommand.new(), 1, actor)
+	check(trace.last_status.contains("SLIDE  500u/s"), "practice reports actual mode and radial speed")
+	check(trace.last_status.contains("80.0/132.0"), "practice shows actual champion reserve")
+	check(trace.last_status.contains("NEXT +%d%%" % (2 * MovementTuning.MOVEMENT_CHAIN_COST_STEP_RATIO / 10)), "practice explains live next-action premium")
+	equal(actor.canonical_values(), before, "practice observation never mutates authority")
+	trace.begin(5, Vector2.ZERO, 1)
+	equal(trace.last_status, "", "new practice run clears old status")
 	return finish("movement-practice-trace")

@@ -12,6 +12,13 @@ prose; correct stale prose in the same slice.
 
 ## Hard priority
 
+Latest explicit authorization (2026-09-06): implement movement M1-M5 and its
+all-body/eight-direction visual clarity, then return a verified playable
+checkpoint to the user. The canonical ledger is
+`docs/MOVEMENT-M1-M5-ACCEPTANCE.md`. Protocol 40 / snapshot 15 preserve the new
+movement state. This movement-only request supersedes all continuing queues
+below for this batch; do not expand chemistry, maps, spells or the roster.
+
 Current coordinated checkpoint: follow `.agent/TEAM-ITERATION-PROMPT.md` and
 `docs/TEAM-FOUNDATION-ACCEPTANCE.md`; complete the Full/Farflow/compendium proof
 before further expansion. Preserve protocol-39 complete-threat admission and

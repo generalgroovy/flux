@@ -2,7 +2,20 @@
 
 **Flow. Learn. Unleash. eXecute.**
 
-**Paused, source-verified checkpoint (2026-09-06).** Moving spells are **20% slower** with preserved reach;
+**Ready for movement playtest: M1-M5 (2026-09-06).** Continuous steering, safer
+wheel/button intent, unified air/wall transitions, momentum-based slides and
+all-body/eight-direction motion passed **75 suites / 102,863 assertions**,
+local host/join and source launch. **F4** opens the movement guide; **F2/F3**
+trace/retry shows actual speed, Stamina and chain cost. Start `flux.cmd` in this
+checkout. See [movement acceptance, controls and actual images](docs/MOVEMENT-M1-M5-ACCEPTANCE.md)
+for exact evidence and human-playtest limits. No new installer was produced.
+
+![Actual movement renderer: three body templates, eight slide directions](docs/evidence/movement-m1-m5/three-body-slide-directions.png)
+
+The sheet is an actual renderer state fixture, not a gameplay sequence. The
+following six-stream receipt describes the preceding green checkpoint.
+
+Moving spells are **20% slower** with preserved reach;
 five playable champions have **10% more Flux and Stamina**. Multiplayer now
 represents every admitted projectile/field instead of silently omitting busy
 lanes. Training dummies return after three seconds. See the
@@ -45,8 +58,8 @@ physical places rather than a detached menu.
 held Slide buys a longer lane, earned planar speed survives legal movement
 conversions, and airborne wallrun/air-dodge chains are live. Successive movement
 actions cost 10% more up to 40% and reset after 333 ms; every champion has more
-Stamina and every attack remains paid despite lower Flux costs. Protocol 39 and
-snapshot schema 14 carry complete admitted threats and target respawn state through Farflow. See the
+Stamina and every attack remains paid despite lower Flux costs. Protocol 40 and
+snapshot schema 15 carry complete threats, target respawn and movement state through Farflow. See the
 [quality expansion ledger](docs/QUALITY-EXPANSION-ACCEPTANCE.md).
 
 **Illustrated source revision:** illustrated stone/grass/water terrain, slate-and-timber
@@ -63,7 +76,7 @@ from the earlier artwork. See the [visual acceptance ledger](docs/VISUAL-REFINEM
 Run `.\flux.cmd play` for this source revision. Existing Windows exports predate
 these changes and must be rebuilt before sharing; do not mix old packages and
 new-source hosts. The [map/movement ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md)
-records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current source uses protocol 39; hosts and guests must use the same build.
+records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current source uses protocol 40; hosts and guests must use the same build.
 
 ![Current five-champion motion contact sheet](assets/concept/five-champion-motion-reference-v1.png)
 
@@ -492,7 +505,7 @@ default in gameplay while the Wellspring does not force limited information.
 | Capacity | Public cap 8; charters provide 2/4/8; later 32 only after measured architecture gate |
 | Transport | Godot ENet over UDP 24872, direct IP |
 | Authority | Host owns movement validation, resources, casts, hits, cooldowns, stations, roster, score, reset |
-| Compatibility | Protocol 39, snapshot 14, tick/tuning/map/content hashes |
+| Compatibility | Protocol 40, snapshot 15, tick/tuning/map/content hashes |
 | Client feel | Local movement prediction and bounded reconciliation; combat stays authoritative |
 | Join in progress | Observer until next gathering, then normal Hearth readiness |
 | Disconnect | 15-second in-memory exact-actor reservation and capability rotation |

@@ -2,9 +2,17 @@ class_name SessionSnapshot
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 14
+const SCHEMA_VERSION: int = 15
 const MAX_PLAYERS: int = 8
-const PLAYER_VALUE_COUNT: int = 74
+# Remote movement presentation requires the actual action clocks/contact, not
+# a reconstruction from speed. Local reconciliation carries complete intent.
+const MOVEMENT_PRESENTATION_FIELDS: Array[StringName] = [
+	&"wall_skim_ticks", &"wall_air_ticks", &"movement_commitment_ticks",
+	&"wall_x", &"wall_y", &"hop_x", &"hop_y", &"air_dodge_x", &"air_dodge_y",
+	&"hop_stage", &"air_redirects_remaining", &"slide_cooldown_ticks",
+	&"air_dodge_cooldown_ticks", &"movement_action_speed", &"hop_speed",
+]
+const PLAYER_VALUE_COUNT: int = 89 # 74 base values + 15 validated movement values.
 const PROJECTILE_VALUE_COUNT: int = 12
 const FIELD_VALUE_COUNT: int = 7
 const EVENT_VALUE_COUNT: int = 6
@@ -74,6 +82,8 @@ static func capture(
 		player_values.append_array(state.spell_wire_ids)
 		player_values.append_array(state.spell_cooldown_ticks)
 		player_values.append(_encode_movement_context(state))
+		for property_name: StringName in MOVEMENT_PRESENTATION_FIELDS:
+			player_values.append(int(state.get(property_name)))
 		players.append([
 			state.entity_id,
 			_safe_name(String(names_by_entity.get(state.entity_id, "Traveller %d" % state.entity_id))),
@@ -396,7 +406,8 @@ static func _apply_values(state: PlayerState, values: PackedInt32Array) -> void:
 	state.spell_wire_ids = values.slice(49, 49 + PlayerState.SPELL_SLOT_COUNT)
 	state.spell_cooldown_ticks = values.slice(49 + PlayerState.SPELL_SLOT_COUNT, 49 + 2 * PlayerState.SPELL_SLOT_COUNT)
 	_decode_movement_context(state, values[73])
-	state.movement_action_speed = MovementSystem._planar_speed(state)
+	for index: int in range(MOVEMENT_PRESENTATION_FIELDS.size()):
+		state.set(MOVEMENT_PRESENTATION_FIELDS[index], int(values[74 + index]))
 	state._sync_legacy_spell_cooldowns()
 
 
@@ -423,6 +434,20 @@ static func _valid_movement_context(encoded: int) -> bool:
 
 
 static func _valid_player_values(values: PackedInt32Array) -> bool:
+	for index: int in range(MOVEMENT_PRESENTATION_FIELDS.size()):
+		var value: int = values[74 + index]
+		var property_name := MOVEMENT_PRESENTATION_FIELDS[index]
+		if property_name in [&"wall_x", &"wall_y", &"hop_x", &"hop_y", &"air_dodge_x", &"air_dodge_y"]:
+			if value < -1000 or value > 1000:
+				return false
+		elif property_name in [&"hop_stage", &"air_redirects_remaining"]:
+			if value < 0 or value > 2:
+				return false
+		elif property_name in [&"movement_action_speed", &"hop_speed"]:
+			if value < 0 or value > MovementTuning.MAX_AUTHORED_SPEED:
+				return false
+		elif value < 0 or value > MAX_TIMER_TICKS:
+			return false
 	if values[0] <= 0 or values[0] > 4096:
 		return false
 	for index: int in [1, 2]:
@@ -455,7 +480,7 @@ static func _valid_player_values(values: PackedInt32Array) -> bool:
 	for index: int in [28, 29]:
 		if values[index] <= 0 or values[index] > 65_535:
 			return false
-	if values[30] < 0 or values[30] > 1000 or values[31] < 0 or values[31] > 32:
+	if values[30] < MovementTuning.SLOW_MINIMUM_RATIO or values[30] > 1000 or values[31] < 0 or values[31] > 32:
 		return false
 	if values[35] < 0 or values[35] > 65_535 or values[40] not in [0, 1]:
 		return false

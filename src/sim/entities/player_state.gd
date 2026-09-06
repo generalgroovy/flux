@@ -116,6 +116,13 @@ var jump_sustain_ticks: int = 0
 var movement_chain_count: int = 0
 var movement_chain_reset_ticks: int = 0
 var movement_action_speed: int = 0
+var air_velocity_x: int = 0
+var air_velocity_y: int = 0
+var movement_commitment_ticks: int = 0
+var wall_air_ticks: int = 0
+var slide_held_last_tick: bool = false
+var fast_fall_armed: bool = false
+var evade_buffer_airborne: bool = false
 
 var jump_protection_ticks: int = 0
 var evade_buffer_ticks: int = 0
@@ -185,7 +192,7 @@ func _init(requested_entity_id: int = 1) -> void:
 
 
 func is_airborne() -> bool:
-	return hop_ticks > 0 or (air_dodge_ticks > 0 and hop_mode != MovementMode.ROLL) or superglide_ticks > 0
+	return hop_ticks > 0 or wall_skim_ticks > 0 or (air_dodge_ticks > 0 and hop_mode != MovementMode.ROLL) or superglide_ticks > 0
 
 
 func is_rolling() -> bool:
@@ -364,6 +371,13 @@ func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> voi
 	movement_chain_count = 0
 	movement_chain_reset_ticks = 0
 	movement_action_speed = 0
+	air_velocity_x = 0
+	air_velocity_y = 0
+	movement_commitment_ticks = 0
+	wall_air_ticks = 0
+	slide_held_last_tick = false
+	fast_fall_armed = false
+	evade_buffer_airborne = false
 	jump_protection_ticks = 0
 	evade_buffer_ticks = 0
 	landing_input_ticks = 0
@@ -429,6 +443,8 @@ func canonical_values() -> PackedInt64Array:
 		stamina, stamina_remainder, stamina_recovery_delay_ticks,
 		jump_buffer_ticks, technique_buffer_ticks, slide_buffer_ticks, int(fast_falling), variable_jump_grace_ticks,
 		jump_sustain_ticks, movement_chain_count, movement_chain_reset_ticks, movement_action_speed,
+		air_velocity_x, air_velocity_y, movement_commitment_ticks, wall_air_ticks,
+		int(slide_held_last_tick), int(fast_fall_armed), int(evade_buffer_airborne),
 		jump_protection_ticks, evade_buffer_ticks, landing_input_ticks, landing_input_x, landing_input_y,
 		hop_ticks, hop_cooldown_ticks, hop_stage, hop_mode, hop_speed, hop_x, hop_y,
 		air_redirects_remaining,

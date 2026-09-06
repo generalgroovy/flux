@@ -3,6 +3,7 @@ extends FluxTestSuite
 
 func run() -> int:
 	_test_snapshot_round_trip()
+	_test_movement_presentation_round_trip()
 	_test_projectile_and_event_round_trip()
 	_test_field_round_trip()
 	_test_event_inbox_deduplicates_redundancy()
@@ -13,7 +14,7 @@ func run() -> int:
 
 
 func _test_snapshot_round_trip() -> void:
-	equal(SessionSnapshot.SCHEMA_VERSION, 14, "complete threat envelope snapshot schema is explicit")
+	equal(SessionSnapshot.SCHEMA_VERSION, 15, "complete threat and movement presentation snapshot schema is explicit")
 	var source := SimWorld.new(120, 7, CollisionWorld.new(3_000_000, 2_000_000))
 	var host: PlayerState = source.player()
 	host.champion_wire_id = 1
@@ -80,7 +81,7 @@ func _test_snapshot_round_trip() -> void:
 	equal(replica.player(2).jump_sustain_ticks, source.player(2).jump_sustain_ticks, "paid jump height context round-trips")
 	equal(replica.player(2).movement_chain_count, source.player(2).movement_chain_count, "movement chain count round-trips")
 	equal(replica.player(2).movement_chain_reset_ticks, source.player(2).movement_chain_reset_ticks, "movement chain reset round-trips")
-	equal(replica.player(2).movement_action_speed, MovementSystem._planar_speed(replica.player(2)), "action momentum is reconstructed from authoritative velocity")
+	equal(replica.player(2).movement_action_speed, source.player(2).movement_action_speed, "action momentum survives independently of current presentation velocity")
 	check(replica.player(900) != null, "authoritative practice actor is reconstructed")
 	equal(replica.player(900).health, 51_000, "practice actor health round-trips")
 	equal(replica.player(900).team_id, 900, "practice actor has a distinct non-champion team after replication")
@@ -89,6 +90,36 @@ func _test_snapshot_round_trip() -> void:
 	equal(int(hearth_state.get("maximum_players", 0)), 8, "snapshot carries Hearth capacity")
 	equal((hearth_state.get("entries", []) as Array).size(), 2, "snapshot carries sorted Hearth roster")
 	equal(int(SessionSnapshot.round_state(snapshot).get("phase", -1)), SessionRound.Phase.HEARTH, "snapshot carries explicit Hearth round phase")
+
+
+func _test_movement_presentation_round_trip() -> void:
+	equal(SessionSnapshot.PLAYER_VALUE_COUNT, 74 + SessionSnapshot.MOVEMENT_PRESENTATION_FIELDS.size(), "movement extension has an exact fixed packet shape")
+	var source := SimWorld.new(120, 61, CollisionWorld.new(3_000_000, 2_000_000))
+	var actor := source.player()
+	actor.champion_wire_id = 1
+	for property_name: StringName in SessionSnapshot.MOVEMENT_PRESENTATION_FIELDS:
+		var value := 13
+		if property_name in [&"wall_x", &"hop_x", &"air_dodge_x"]:
+			value = -600
+		elif property_name in [&"wall_y", &"hop_y", &"air_dodge_y"]:
+			value = 800
+		elif property_name in [&"hop_stage", &"air_redirects_remaining"]:
+			value = 1
+		elif property_name in [&"movement_action_speed", &"hop_speed"]:
+			value = 456_000
+		actor.set(property_name, value)
+	var snapshot := SessionSnapshot.capture(source, {1: "Motion"})
+	check(SessionSnapshot.validate(snapshot), "wall/air contact and protection clocks validate")
+	var replica := SimWorld.new(120, 61, CollisionWorld.new(3_000_000, 2_000_000))
+	check(SessionSnapshot.apply_to_world(snapshot, replica), "movement presentation applies atomically")
+	for property_name: StringName in SessionSnapshot.MOVEMENT_PRESENTATION_FIELDS:
+		equal(replica.player().get(property_name), actor.get(property_name), "remote movement preserves %s" % property_name)
+	for index: int in range(SessionSnapshot.MOVEMENT_PRESENTATION_FIELDS.size()):
+		var malformed := snapshot.duplicate(true)
+		var values: PackedInt32Array = malformed["players"][0][3]
+		values[74 + index] = 2_000_000_000
+		malformed["players"][0][3] = values
+		check(not SessionSnapshot.validate(malformed), "out-of-range movement field fails closed: %s" % SessionSnapshot.MOVEMENT_PRESENTATION_FIELDS[index])
 
 
 func _test_projectile_and_event_round_trip() -> void:

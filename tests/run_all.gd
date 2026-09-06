@@ -67,6 +67,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/unit/test_movement_response.gd"),
 	preload("res://tests/unit/test_movement.gd"),
 	preload("res://tests/unit/test_movement_revision.gd"),
+	preload("res://tests/unit/test_movement_overhaul.gd"),
 	preload("res://tests/unit/test_movement_practice_trace.gd"),
 	preload("res://tests/unit/test_player_resources.gd"),
 	preload("res://tests/unit/test_skeleton_animation_library.gd"),

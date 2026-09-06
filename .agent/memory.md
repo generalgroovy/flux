@@ -1,5 +1,23 @@
 # Active implementation memory
 
+## 2026-09-06 pixel asset integration playtest checkpoint
+
+- Latest user supplies map ZIP and selects Oh Tipi illustration as character-style
+  authority. Original preserved at `reference/art/oh_tipi_authority_v1/`; no new
+  character atlas claimed, existing five champions/three bodies/eight-way motion intact.
+- Magic474sequences/1960frames and map250IDs/274frames integrated via cached,
+  hash-checked libraries. New terrain/lecterns/banners/planters; existing building
+  facades/roofs/bells remain. Original map palette is a provisional test candidate.
+- Full85suites/270135assertions, stderr0; localFarflow, actualpaidSteam standard/
+  reduced captures, isolatedrealWindows exportboot and exactPCK loader audit pass.
+  Details: `docs/PIXEL-ASSET-INTEGRATION.md`. Not new installer or human approval.
+- Godot drops importedrawPNGs despiteinclude_filter; tested editor exportaddon
+  explicitly adds7allowlisted SHA/size-verified originals (118849bytes), keeping
+  importedtextures. Do not remove this addon or relax loaders tofix packaging.
+- No simulation/content changes, remote push, roster promotion or newmechanics.
+  Nextsafeartwork: OhTipi body-only middlepilot then approvedeight-way set;
+  worldbone-facade composition and measuredperformance remain separate work.
+
 ## 2026-09-06 final low-hop chemistry source checkpoint and pause
 
 - User explicitly requested pause at checkpoint and launch. No next slice until

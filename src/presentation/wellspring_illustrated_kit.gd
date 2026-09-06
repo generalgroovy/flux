@@ -4,6 +4,7 @@ extends RefCounted
 # One cached terrain texture plus shared object atlases. Map data remains the
 # only authority for walkability, walls, targets and station commands.
 const PATH := "res://content/visual/wellspring_illustrated_v1.json"
+const MapLibrary = preload("res://src/presentation/pixel_map_library.gd")
 const PROP_IDS := ["oak", "small_tree", "flowers", "ferns", "wall_horizontal", "wall_vertical", "rocks", "planter", "fountain", "lectern", "target", "bell", "doorway", "bench", "lantern", "banner"]
 var data: Dictionary = {}
 var content_hash := ""
@@ -18,6 +19,7 @@ var decorations: Array[Dictionary] = []
 var campus: SanctumCampusLayout
 var cached_terrain_builds := 0
 var ground_generation_ms := 0
+var pixel_map: RefCounted
 
 
 func configure(layout: SanctumCampusLayout, path: String = PATH) -> bool:
@@ -78,17 +80,31 @@ func configure(layout: SanctumCampusLayout, path: String = PATH) -> bool:
 			points.append(Vector2(point[0], point[1]))
 		paths.append({"points": points, "width": float(definition["width"]), "advanced": String(definition.get("kind", "")) == "advanced"})
 	var started := Time.get_ticks_msec()
+	pixel_map = MapLibrary.default_library()
+	if pixel_map.content_hash.is_empty():
+		return _fail(pixel_map.last_error)
 	_compile_ground()
 	# Decorative cutouts are withheld until each one has an authoritative
 	# worldbone/clearance contract. A visible tree or fountain must never invite
 	# the player to collide with geometry that the simulation does not own.
 	ground_generation_ms = Time.get_ticks_msec() - started
 	# Decoded pixel hashes also work in exported builds where PNGs are remapped.
-	content_hash = (source + layout.content_hash).sha256_text()
+	content_hash = (source + layout.content_hash + pixel_map.content_hash).sha256_text()
 	return true
 
 
 func _compile_ground() -> void:
+	if pixel_map != null:
+		var families: Array[String] = []
+		for y: int in range(0, campus.canvas_size.y, 32):
+			for x: int in range(0, campus.canvas_size.x, 32):
+				families.append(pixel_family(surface_at(Vector2(x + 16, y + 16))))
+		@warning_ignore("integer_division")
+		var composed: Image = pixel_map.compose_ground(families, campus.canvas_size.x / 32, campus.canvas_size.y / 32)
+		if composed != null:
+			ground = ImageTexture.create_from_image(composed)
+			cached_terrain_builds += 1
+			return
 	var image := Image.create(campus.canvas_size.x, campus.canvas_size.y, false, Image.FORMAT_RGBA8)
 	for y: int in range(0, campus.canvas_size.y, 32):
 		for x: int in range(0, campus.canvas_size.x, 32):
@@ -97,6 +113,18 @@ func _compile_ground() -> void:
 			image.blit_rect(tile, Rect2i(posmod(x, 128), posmod(y, 128), 32, 32), Vector2i(x, y))
 	ground = ImageTexture.create_from_image(image)
 	cached_terrain_builds += 1
+
+
+static func pixel_family(material: int) -> String:
+	if material in [4, 5]:
+		return "grass"
+	if material in [1, 6, 7]:
+		return "earth"
+	if material in [8, 9]:
+		return "water"
+	if material in [13, 14]:
+		return "worldbone"
+	return "paving"
 
 
 func surface_at(point: Vector2) -> int:
@@ -168,13 +196,33 @@ func draw_gardens(canvas: CanvasItem, focus: Vector2) -> void:
 		draw_prop(canvas, String(decoration["kind"]), point, float(decoration["size"]), Color(1, 1, 1, alpha))
 
 
-func draw_prop(canvas: CanvasItem, kind: String, feet: Vector2, size: float, modulation: Color = Color.WHITE) -> void:
+func draw_prop(canvas: CanvasItem, kind: String, feet: Vector2, size: float, modulation: Color = Color.WHITE, tick: int = 0, reduced_effects: bool = false) -> void:
+	if pixel_map != null and _draw_pixel_prop(canvas, kind, feet, modulation, tick, reduced_effects):
+		return
 	var index := PROP_IDS.find(kind)
 	if index < 0:
 		return
 	# A restrained ground contact ties every reusable cutout to the same plane.
 	canvas.draw_line(feet - Vector2(size * 0.22, 1), feet + Vector2(size * 0.22, -1), Color(0.04, 0.07, 0.06, 0.20 * modulation.a), maxf(2, size * 0.06), true)
 	canvas.draw_texture_rect_region(props, Rect2(feet - Vector2(size * 0.5, size * 124.0 / 128.0), Vector2(size, size)), Rect2(index % 4 * 128, index / 4 * 128, 128, 128), modulation)
+
+
+func _draw_pixel_prop(canvas: CanvasItem, kind: String, anchor: Vector2, modulation: Color, tick: int, reduced_effects: bool) -> bool:
+	# Existing placements only, at the pack's authored1px scale and pivots.
+	# No new planters, poles, furniture or implied colliders are introduced.
+	var layers: Array[String] = []
+	match kind:
+		"lectern": layers = ["map.prop.lectern"]
+		"bench": layers = ["map.prop.bench"]
+		"planter": layers = ["map.prop.planter.planted"]
+		"target": layers = ["map.prop.training_dummy"]
+		"lantern": layers = ["map.ambient.lantern.flame", "map.prop.lantern.housing"]
+		"banner": layers = ["map.prop.banner.pole", "map.ambient.banner.indigo"]
+		"fountain": layers = ["map.prop.fountain.basin", "map.ambient.fountain.water", "map.prop.fountain.spout", "map.ambient.fountain.overflow"]
+		_: return false
+	for id: String in layers:
+		pixel_map.draw(canvas, id, anchor, tick, reduced_effects, modulation)
+	return true
 
 
 func draw_surface(canvas: CanvasItem, bounds: Rect2, material: int, tint: Color = Color.WHITE) -> void:
@@ -232,14 +280,14 @@ func draw_landmark(canvas: CanvasItem, landmark: Dictionary, focus: Vector2 = Ve
 			var ripple := fmod(phase + offset, 1.0)
 			canvas.draw_arc(point + Vector2(0, 24), 58.0 + ripple * 25.0, 0, TAU, 48, Color(0.31, 0.79, 0.85, (1.0 - ripple) * 0.18), 2.0)
 		var alpha := landmark_opacity(point, focus)
-		draw_prop(canvas, "fountain", point + Vector2(0, 38), 154, Color(1, 1, 1, alpha))
+		draw_prop(canvas, "fountain", point + Vector2(0, 38), 154, Color(1, 1, 1, alpha), tick, reduced_effects)
 	else:
 		if kind == "portal_ring":
 			canvas.draw_circle(point + Vector2(0, 8), 27.0 + phase * 3.0, Color(0.38, 0.65, 0.86, 0.07 + phase * 0.05))
 			canvas.draw_arc(point + Vector2(0, 8), 31.0, -2.7 + phase * 0.35, 0.45 + phase * 0.35, 28, Color(0.72, 0.62, 0.91, 0.42), 2.0)
 		else:
 			canvas.draw_circle(point + Vector2(0, 2), 13.0 + phase * 2.0, Color(0.95, 0.72, 0.31, 0.08 + phase * 0.05))
-		draw_prop(canvas, "banner" if kind == "portal_ring" else "lantern", point + Vector2(0, 14), 74)
+		draw_prop(canvas, "banner" if kind == "portal_ring" else "lantern", point + Vector2(0, 14), 74, Color.WHITE, tick, reduced_effects)
 
 
 static func landmark_opacity(point: Vector2, focus: Vector2) -> float:
@@ -270,7 +318,7 @@ func draw_station(canvas: CanvasItem, station: Dictionary, tick: int = 0, reduce
 	var phase := ambient_phase(tick + absi(String(station.get("id", "")).hash()) % 90, 180, reduced_effects)
 	var accent := Color("78ced3") if kind in ["guide", "controls", "farflow"] else (Color("ab83d8") if kind in ["champion", "spell"] else Color("d5ae5b"))
 	canvas.draw_arc(point + Vector2(0, 7), 22.0 + phase * 3.0, 0, TAU, 24, Color(accent, 0.18 + phase * 0.10), 2.0)
-	draw_prop(canvas, prop, point + Vector2(0, 14), 72)
+	draw_prop(canvas, prop, point + Vector2(0, 14), 72, Color.WHITE, tick, reduced_effects)
 	var title := String(station["title"])
 	var font := ThemeDB.fallback_font
 	var width := font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x

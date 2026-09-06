@@ -2,12 +2,27 @@
 
 **Flow. Learn. Unleash. eXecute.**
 
-**Current source revision (2026-09-06): low jumps, finite Float and first-eight chemistry.**
-**Paused for the requested playtest.** The Windows Full source gate passed
-**81 suites / 165,441 assertions**, zero failures and clean stderr, plus local
-Farflow host/join and real paid-cast chemistry tests. This is not a new installer.
-See the [checkpoint and test guide](docs/LOW-HOP-CHEMISTRY-CHECKPOINT.md).
+**Current testable source (2026-09-06): pixel magic + Wellspring asset integration.**
+The finished magic/map packs are integrated over the verified low-hop,
+finite Float and first-eight chemistry checkpoint. Oh Tipi's newly supplied art
+is now the [authoritative character-style reference](reference/art/oh_tipi_authority_v1/README.md).
+It is a reference illustration, not a replacement animation atlas.
+See the [asset integration and acceptance record](docs/PIXEL-ASSET-INTEGRATION.md).
+Combined Windows verification passed **85 suites / 270,135 assertions**, zero
+failures, warnings or stderr; local host/join and isolated Windows export boot
+also passed. This is a source playtest checkpoint, not a newly published installer.
 Heavy-load timing spikes remain: sustained 120 FPS is **not** accepted yet.
+
+| Visual slice | Current integration | Preserved contract |
+|---|---|---|
+| Magic | Native pixel projectiles, impacts, casting/movement accents and temporary reaction material; normal/reduced variants | Actual paid admission, geometry, links, lifetimes and protection |
+| Wellspring | Map-kit terrain transitions and supported prop slots on the existing campus | Walkable routes, buildings/colliders and movement practice layout; facade rework remains separate |
+| Characters | New Oh Tipi style authority: teal scales, dark layered cloth, restrained trim and crisp silhouettes | Five live champions; three sizes, eight directions and hand casting; complete sheets remain until replacements are ready |
+
+![Actual Wellspring source integration at 75% zoom](docs/evidence/pixel-assets-v1/wellspring-source.png)
+
+Actual game capture, not a concept mockup. Terrain, lecterns, banners and planters
+use the new kit; existing roofs/facades and live character sheets remain visible.
 
 | Immediate change | Current source behavior | Acceptance boundary |
 |---|---|---|
@@ -84,8 +99,9 @@ physical places rather than a detached menu.
 > Wellspring campus, an authoritative 2–8 player direct-IP Farflow loop, and a
 > packaged one-file Windows player app are working. Comparable bursts for all
 > eight first-phase elements and the strict, symmetric 36-reaction definition
-> compiler are working. Finite deposits and live spatial reactions are now
-> being integrated; their all-pair, reset, replay and network gate is not yet accepted.
+> compiler are working. Finite deposits and live spatial reactions passed their
+> all-pair, reset, replay and local-network source gate; pixel presentation is the
+> current integration slice. Human readability and internet play remain open.
 
 **Latest movement/resource update:** held Jump now buys a visibly higher arc,
 held Slide buys a longer lane, earned planar speed survives legal movement
@@ -93,7 +109,7 @@ conversions, and airborne wallrun/air-dodge chains are live. Successive movement
 actions cost 10% more up to 40% and reset after 333 ms; every champion has more
 Stamina and every attack remains paid despite lower Flux costs. Protocol 43 and
 snapshot schema 18 add finite Float budgets and chemistry state to complete threats,
-target respawn and resource recovery through Farflow; their integration gate is pending. See the
+target respawn and resource recovery through Farflow; their source gate passed. See the
 [quality expansion ledger](docs/QUALITY-EXPANSION-ACCEPTANCE.md).
 
 **Illustrated source revision:** illustrated stone/grass/water terrain, slate-and-timber

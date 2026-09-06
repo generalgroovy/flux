@@ -1,5 +1,14 @@
 # FLUX 2 implementation path to first-eight playtest
 
+**Verified asset-integration checkpoint, 2026-09-06:** user resumed with finished magic
+and Wellspring map packs, and selected a new Oh Tipi character-style authority.
+See `docs/PIXEL-ASSET-INTEGRATION.md` and
+`reference/art/oh_tipi_authority_v1/README.md`. Full85/270135, localFarflow,
+exactPCK loader audit and isolated Windows release boot passed. Launch for
+playtest. Do not broaden movement/balance, replace eight-way
+body atlases with one pose, publish remotely, or claim a new installer. The
+checkpoint-pause instruction below is superseded by this explicit resumption.
+
 **Checkpoint pause, 2026-09-06:** low-hop/finiteFloat and all36 first-grade
 chemistry source gate is verified (81suites/165,441assertions, localFarflow,
 paidcast integration). User requested launch and no more iteration. Follow

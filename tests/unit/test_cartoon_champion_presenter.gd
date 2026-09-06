@@ -14,7 +14,59 @@ func run() -> int:
 	_test_wall_contact_side()
 	_test_immediate_protection_contract()
 	_test_directional_movement_trails()
+	_test_pixel_movement_layers()
 	return finish("cartoon-champion-presenter")
+
+
+func _test_pixel_movement_layers() -> void:
+	var pixels := preload("res://src/presentation/pixel_movement_effects.gd").new()
+	check(pixels.ready(), "movement reads the supplied immutable pixel registry")
+	var state := PlayerState.new()
+	var config := SimConfig.new()
+	state.air_height = 22000
+	state.velocity_x = 700000
+	state.air_dodge_ticks = config.milliseconds_to_ticks(MovementTuning.AIR_DODGE_DURATION_MS)
+	equal(pixels.afterimage_offsets(state,config,false).size(),0,"dash afterimage cannot predate accepted dash")
+	state.air_dodge_ticks -= 4
+	equal(pixels.afterimage_offsets(state,config,false).size(),2,"normal dash uses two bounded body-only copies")
+	equal(pixels.afterimage_offsets(state,config,true).size(),1,"reduced dash keeps one body-only copy")
+	for point: Vector2 in pixels.afterimage_offsets(state,config,false):
+		check(point.x < 0 and point.y == 0,"continuous velocity controls afterimage displacement")
+	state.air_dodge_ticks = 0
+	equal(pixels.afterimage_offsets(state,config,false).size(),0,"dash exit removes all afterimages without fade")
+	var body_image := Image.create(96,96,false,Image.FORMAT_RGBA8)
+	body_image.fill(Color.TRANSPARENT)
+	body_image.fill_rect(Rect2i(20,18,56,66),Color("718e43"))
+	var body_texture := ImageTexture.create_from_image(body_image)
+	var frame: Dictionary = pixels.library.sample("magic.movement.air_dash_afterimage_mask.normal",0)
+	for height: int in [58,68,76]:
+		var masked: Texture2D = pixels.masked_body(body_texture,Rect2(0,0,96,96),frame,height)
+		check(masked != null,"body stencil is reusable for each size")
+		if masked == null:
+			continue
+		var result := masked.get_image()
+		check(result.get_used_rect().has_area(),"body-only afterimage is visible")
+		for y: int in range(0,96,3):
+			for x: int in range(0,96,3):
+				var color := result.get_pixel(x,y)
+				if color.a > 0.0:
+					equal(color,body_image.get_pixel(x,y),"stencil never paints a new body, hand or protection pixel")
+		check(pixels.masked_body(body_texture,Rect2(0,0,96,96),frame,height) == masked,"cached afterimage reuses texture without rebuild")
+	check(pixels.cache_size() <= pixels.CACHE_LIMIT,"afterimage texture cache is bounded")
+	state.entity_id = 5
+	state.hop_mode = PlayerState.MovementMode.WALL_KICK
+	state.jump_protection_ticks = config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS)
+	check(pixels.walljump_contact(state,config,10,Vector2(100,100)).is_empty(),"unobserved wall contact never manufactures sparks beside the moving body")
+	state.wall_x = 1000
+	state.wall_y = 0
+	state.wall_contact_id = 1
+	state.wall_memory_ticks = config.milliseconds_to_ticks(MovementTuning.WALL_MEMORY_MS)
+	var contact: Dictionary = pixels.walljump_contact(state,config,10,Vector2(100,100))
+	check(not contact.is_empty(),"actual current contact can anchor a walljump burst")
+	state.wall_memory_ticks = 0
+	var moved: Dictionary = pixels.walljump_contact(state,config,12,Vector2(130,130))
+	equal(moved.get("anchor"),contact.get("anchor"),"walljump dust stays fixed at the real old contact")
+	check(pixels.walljump_contact(state,config,100,Vector2(130,130)).is_empty(),"old wall contact cannot be reused by a future airtime")
 
 
 func _test_extension_pages_and_motion_facing() -> void:

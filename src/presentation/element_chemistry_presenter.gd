@@ -1,17 +1,66 @@
 class_name ElementChemistryPresenter
 extends RefCounted
 
-# A bounded immediate-mode kit: no particles, textures, nodes or game rules.
-# All occupied geometry comes from authority, including growing/moving shapes.
+# Shared native-size material, with authority-owned occupied masks. Exact edges
+# and one identity core never compete with optional decorative density.
 const ELEMENTS: Array[String] = ["", "earth", "fire", "water", "wind", "ice", "charge", "light", "dark"]
-const Glyph = preload("res://src/presentation/element_glyph_renderer.gd")
-const INK := Color("16212a")
 const LINE_SHAPES: Array[String] = ["corridor", "front", "growing_strip", "pulse_lane", "bands", "reveal_line", "water_path", "frost_path", "branch"]
+const LINK_SHAPES := ["water_path", "frost_path", "branch"]
+const Library = preload("res://src/presentation/pixel_magic_library.gd")
+const Mask = preload("res://src/presentation/pixel_effect_geometry.gd")
+const Reaction = preload("res://src/sim/chemistry/element_reaction_state.gd")
+const INK := Color("16212a")
+const CELL_SIZE := 32.0
 var language: VisualLanguage
+var library: PixelMagicLibrary
+var last_error := ""
+var _masks := Mask.new()
+var _config := SimConfig.new(120)
+var _collision: CollisionWorld
+var _viewport := Rect2()
+var _deposits_by_id: Dictionary = {}
+var _reduced := false
+var _optional_limit := 192
+var _unlinked_proxy := Reaction.new()
+var _stats := {"optional_stamps": 0, "core_stamps": 0, "boundary_loops": 0, "boundary_markers": 0, "clipped_parts": 0, "culled": 0}
 
-func configure(visual_language: VisualLanguage) -> bool:
+
+func configure(visual_language: VisualLanguage, shared_library: PixelMagicLibrary = null) -> bool:
+	last_error = ""
+	language = null
+	library = null
+	if visual_language == null or visual_language.elements.is_empty():
+		last_error = "Element chemistry requires validated visual tokens"
+		return false
+	var candidate := shared_library if shared_library != null else Library.default_library()
+	if candidate.asset_count() != 474 or candidate.page_count() != 3:
+		last_error = "Element chemistry pixel pack is unavailable: %s" % candidate.last_error
+		return false
 	language = visual_language
-	return language != null and not language.elements.is_empty()
+	library = candidate
+	return true
+
+
+func begin_frame(config: SimConfig, collision: CollisionWorld, viewport_world: Rect2, deposits: Array, reduced: bool = false) -> void:
+	_config = config if config != null else _config
+	_collision = collision
+	_viewport = viewport_world if viewport_world.position.is_finite() and viewport_world.size.is_finite() else Rect2()
+	_reduced = reduced
+	_optional_limit = 96 if reduced else 192
+	_deposits_by_id.clear()
+	for deposit: RefCounted in deposits:
+		if deposit != null and int(deposit.strength) > 0:
+			_deposits_by_id[int(deposit.entity_id)] = deposit
+	for key: String in _stats:
+		_stats[key] = 0
+
+
+func stats() -> Dictionary:
+	var result := _stats.duplicate()
+	result["optional_limit"] = _optional_limit
+	result["geometry"] = _masks.stats()
+	return result
+
 
 static func phase_at(state: RefCounted, tick: float) -> String:
 	if state == null or not is_finite(tick) or tick < state.created_tick or tick >= state.expiry_tick:
@@ -19,6 +68,7 @@ static func phase_at(state: RefCounted, tick: float) -> String:
 	if tick < state.active_tick:
 		return "forming"
 	return "active" if tick < state.decay_tick else "decaying"
+
 
 static func phase_opacity(state: RefCounted, tick: float) -> float:
 	var phase := phase_at(state, tick)
@@ -30,6 +80,7 @@ static func phase_opacity(state: RefCounted, tick: float) -> float:
 		return clampf((float(state.expiry_tick) - tick) / maxf(1.0, float(state.expiry_tick - state.decay_tick)), 0.0, 1.0)
 	return 1.0
 
+
 static func geometry(state: RefCounted, recipe: Dictionary) -> Dictionary:
 	if state == null or recipe.is_empty() or int(recipe.get("wire_id", -1)) != state.recipe_wire_id:
 		return {}
@@ -40,299 +91,204 @@ static func geometry(state: RefCounted, recipe: Dictionary) -> Dictionary:
 	var endpoint := Vector2(state.endpoint_x, state.endpoint_y) / 1000.0
 	var radius := maxf(0.0, float(state.radius) / 1000.0)
 	var length := maxf(0.0, float(state.length) / 1000.0)
-	return {"position": position, "endpoint": endpoint, "direction": direction, "normal": direction.orthogonal(), "radius": radius, "length": length, "inner_radius": length if String(recipe.get("shape", "")) in ["ring","annulus"] else 0.0, "shape": String(recipe.get("shape", "")), "id": String(recipe.get("id", ""))}
+	return {"position": position, "endpoint": endpoint, "direction": direction, "normal": direction.orthogonal(), "radius": radius, "length": length, "inner_radius": length if String(recipe.get("shape", "")) in ["ring", "annulus"] else 0.0, "shape": String(recipe.get("shape", "")), "id": String(recipe.get("id", ""))}
+
 
 static func hail_position(state: RefCounted, tick: float) -> Vector2:
-	var start := Vector2(state.position_x,state.position_y)/1000.0
-	var end := Vector2(state.endpoint_x,state.endpoint_y)/1000.0
-	# One real pulse travels in 450ms, not a decorative string of projectiles.
-	var progress := fposmod(maxf(0.0,tick-float(state.active_tick)),54.0)/54.0
-	return start.lerp(end,progress)
+	if state == null or not is_finite(tick):
+		return Vector2.ZERO
+	# Source pulse uses direction * length, never a decorative endpoint lerp.
+	var age := maxi(0, int(floor(tick)) - int(state.active_tick)) % 54
+	@warning_ignore("integer_division")
+	var distance: int = int(state.length) * age / 54
+	@warning_ignore("integer_division")
+	var delta := Vector2i(int(state.direction_x) * distance / 1000, int(state.direction_y) * distance / 1000)
+	return Vector2(state.position_x, state.position_y) / 1000.0 + Vector2(delta) / 1000.0
+
+
+func deposit_model(deposit: RefCounted, tick: float, reduced_effects: bool = false) -> Dictionary:
+	if library == null or deposit == null or not is_finite(tick) or tick < deposit.created_tick or tick >= deposit.expiry_tick or int(deposit.strength) <= 0:
+		return {}
+	var element := int(deposit.element_wire_id)
+	if element < 1 or element > 8:
+		return {}
+	var position := Vector2(deposit.position_x, deposit.position_y) / 1000.0
+	var radius := maxf(0.0, float(deposit.radius) / 1000.0)
+	if not _visible(Rect2(position - Vector2.ONE * radius, Vector2.ONE * radius * 2.0)):
+		return {}
+	var reduced := reduced_effects or _reduced
+	var formation_id := Library.element_asset_id(element, "deposit_formation", reduced)
+	var decay_id := Library.element_asset_id(element, "deposit_decay", reduced)
+	var quarter_life := floori(float(int(deposit.expiry_tick) - int(deposit.created_tick)) * 0.25)
+	var formation_ticks := mini(int(library.asset(formation_id)["total_ticks"]), quarter_life)
+	var decay_ticks := mini(int(library.asset(decay_id)["total_ticks"]), quarter_life)
+	var now := int(floor(tick))
+	var phase := "formation" if now < int(deposit.created_tick) + formation_ticks else "decay" if now >= int(deposit.expiry_tick) - decay_ticks else "active"
+	var start := int(deposit.created_tick) if phase == "formation" else int(deposit.expiry_tick) - decay_ticks if phase == "decay" else int(deposit.created_tick) + formation_ticks
+	var asset_id := Library.element_asset_id(element, "deposit_" + phase, reduced)
+	var mask := _masks.disk_mask(position, radius, _collision)
+	if mask.is_empty() or (mask["polygons"] as Array).is_empty():
+		return {}
+	var opacity := clampf((float(deposit.expiry_tick) - tick) / maxf(1.0, float(decay_ticks)), 0.0, 1.0)
+	return {"kind": "deposit", "asset_id": asset_id, "frame": library.sample(asset_id, now - start), "phase": phase, "age_ticks": now - start, "mask": mask, "core_anchor": _core_anchor(mask, position), "opacity": opacity, "material_opacity": opacity * (0.48 if reduced else 0.68), "edge_color": language.element_color(ELEMENTS[element]), "reduced": reduced, "unlinked": false, "socket": false}
+
+
+func reaction_model(state: RefCounted, recipe: Dictionary, tick: float, reduced_effects: bool = false) -> Dictionary:
+	if library == null or geometry(state, recipe).is_empty():
+		return {}
+	var phase_label := phase_at(state, tick)
+	if phase_label == "expired":
+		return {}
+	var now := int(floor(tick))
+	var phase := "formation" if phase_label == "forming" else "decay" if phase_label == "decaying" else "active"
+	var start := int(state.created_tick) if phase == "formation" else int(state.active_tick) if phase == "active" else int(state.decay_tick)
+	var reduced := reduced_effects or _reduced
+	var position := Vector2(state.position_x, state.position_y) / 1000.0
+	var shape := String(recipe.get("shape", ""))
+	var unlinked := shape in LINK_SHAPES and not _links_live(state, now)
+	var effective := _without_path(state) if unlinked else state
+	if not _visible(Mask._extent(effective, shape, position, float(state.radius) / 1000.0)):
+		return {}
+	var mask := _masks.reaction_mask(effective, recipe, now, _config, _collision)
+	if mask.is_empty():
+		return {}
+	var socket := unlinked and (mask["polygons"] as Array).is_empty()
+	if (mask["polygons"] as Array).is_empty() and not socket:
+		return {}
+	if socket and _collision != null and not _collision.can_occupy(Vector2i(position * 1000.0), 0):
+		return {}
+	var asset_id := library.reaction_asset_id(state.recipe_wire_id, phase, reduced)
+	var metadata := library.reaction(state.recipe_wire_id)
+	var composition: Dictionary = metadata["composition"]
+	var elements: Array = recipe.get("elements", [])
+	if elements.size() != 2 or int(elements[0]) < 1 or int(elements[0]) > 8:
+		return {}
+	var edge := language.element_color(ELEMENTS[int(elements[0])])
+	if int(state.recipe_wire_id) == 310:
+		edge = Color("becfc7")
+	var opacity := phase_opacity(state, tick)
+	return {"kind": "reaction", "asset_id": asset_id, "frame": library.sample(asset_id, now - start), "phase": phase, "age_ticks": now - start, "mask": mask, "core_anchor": position if socket else _core_anchor(mask, mask["hail_position"] if shape == "pulse_lane" else position), "opacity": opacity, "material_opacity": opacity * float(composition["opacity_cap_reduced" if reduced else "opacity_cap_normal"]), "edge_color": edge, "reduced": reduced, "unlinked": unlinked, "socket": socket}
+
 
 func draw_deposit(canvas: CanvasItem, deposit: RefCounted, tick: float, reduced_effects: bool = false) -> bool:
-	if canvas == null or language == null or deposit == null or not is_finite(tick):
-		return false
-	var element_wire := int(deposit.element_wire_id)
-	if element_wire < 1 or element_wire > 8 or tick < deposit.created_tick or tick >= deposit.expiry_tick:
-		return false
-	var position := Vector2(deposit.position_x, deposit.position_y) / 1000.0
-	var radius := maxf(1.0, float(deposit.radius) / 1000.0)
-	var age := (tick - float(deposit.created_tick)) / 120.0
-	var remaining := float(deposit.expiry_tick) - tick
-	var alpha := clampf(remaining / 36.0, 0.0, 1.0)
-	var color := language.element_color(ELEMENTS[element_wire])
-	canvas.draw_circle(position, radius, Color(color, 0.09 * alpha))
-	canvas.draw_arc(position, radius, 0.0, TAU, 24, Color(color, 0.38 * alpha), 1.0, false)
-	var motion := 0.0 if reduced_effects else age
-	match element_wire:
-		1: # Grounded, stepped stone pillar; no camera-height collision fiction.
-			var rock := PackedVector2Array([position+Vector2(-10,6),position+Vector2(-11,-5),position+Vector2(-5,-12),position+Vector2(7,-12),position+Vector2(12,-4),position+Vector2(10,6)])
-			canvas.draw_colored_polygon(rock, Color(color, 0.84 * alpha))
-			_closed(canvas, rock, Color(INK, alpha), 2.0)
-			canvas.draw_line(position+Vector2(-5,-10), position+Vector2(-5,4), Color(color.lightened(0.4),alpha), 2.0)
-		2:
-			for i: int in range(3):
-				var p := position + Vector2(float(i-1)*9.0, sin(motion*6.0+float(i))*2.0)
-				var flame := PackedVector2Array([p+Vector2(-5,5),p+Vector2(-3,-4),p+Vector2(0,-12-float(i%2)*5),p+Vector2(5,5)])
-				canvas.draw_colored_polygon(flame, Color(color,alpha*0.85))
-		3:
-			for i: int in range(2):
-				var r := 6.0+fposmod(motion*7.0+float(i)*10.0,18.0)
-				canvas.draw_arc(position,r,0,TAU,20,Color(color,alpha*0.65),2.0,false)
-		4:
-			for i: int in range(3):
-				canvas.draw_arc(position+Vector2(float(i-1)*3,0),8.0+float(i)*6.0,motion+float(i),motion+float(i)+PI*1.25,12,Color(color,alpha*0.7),2.0,false)
-		5:
-			for i: int in range(3):
-				var p := position+Vector2(float(i-1)*9, float(i%2)*4)
-				_diamond(canvas,p,5.0,11.0,Color(color,alpha*0.8))
-		6:
-			canvas.draw_arc(position,15.0,0,TAU,12,Color(color,alpha*0.4),1.0,false)
-			_zigzag(canvas,position+Vector2(-16,0),position+Vector2(16,0),5.0,Color(color,alpha),int(motion*5.0)%2)
-		7:
-			_star(canvas,position,12.0,Color(color,alpha*0.85),4)
-			canvas.draw_arc(position,20.0,0,TAU,24,Color(color,alpha*0.35),1.0,false)
-		8:
-			canvas.draw_circle(position,12.0,Color(INK,alpha*0.45))
-			for i: int in range(2):
-				canvas.draw_arc(position,10.0+float(i)*7.0,-motion+float(i)*PI,-motion+float(i)*PI+PI*1.4,16,Color(color,alpha*0.7),2.0,false)
-	# One fixed identity rune remains readable in the reduced-effects path.
-	Glyph.draw(canvas,language,position+Vector2(0,radius-5.0),ELEMENTS[element_wire],4.0,Color(color,alpha))
-	return true
+	return _draw_model(canvas, deposit_model(deposit, tick, reduced_effects)) if canvas != null else false
+
 
 func draw_reaction(canvas: CanvasItem, reaction: RefCounted, recipe: Dictionary, tick: float, reduced_effects: bool = false) -> bool:
-	if canvas == null or language == null:
+	return _draw_model(canvas, reaction_model(reaction, recipe, tick, reduced_effects)) if canvas != null else false
+
+
+func _draw_model(canvas: CanvasItem, model: Dictionary) -> bool:
+	if canvas == null or model.is_empty():
 		return false
-	var g := geometry(reaction,recipe)
-	var opacity := phase_opacity(reaction,tick)
-	if g.is_empty() or opacity <= 0.0:
-		return false
-	var p: Vector2 = g.position
-	var end: Vector2 = g.endpoint
-	var d: Vector2 = g.direction
-	var n: Vector2 = g.normal
-	var radius: float = g.radius
-	var length: float = g.length
-	var shape: String = g.shape
-	var id: String = g.id
-	var elements: Array = recipe.get("elements", [1,1])
-	if elements.size() != 2 or int(elements[0]) not in range(1,9) or int(elements[1]) not in range(1,9):
-		return false
-	var first := language.element_color(ELEMENTS[int(elements[0])])
-	var second := language.element_color(ELEMENTS[int(elements[1])])
-	if id == "steam":
-		first = Color("becfc7")
-		second = Color("dfebdf")
-	elif id == "magma":
-		first = language.element_color("fire")
-		second = first.lightened(0.15)
-	var edge := Color(first, opacity*0.88)
-	var accent := Color(second, opacity*0.82)
-	var fill := Color(first, opacity*0.10)
-	var time := 0.0 if reduced_effects else (tick-float(reaction.created_tick))/120.0
-	var forming := phase_at(reaction,tick) == "forming"
-	# Occupied boundary is always present. Formation uses broken preview edges.
-	if shape in ["cover", "plane", "lens"]:
-		var a := p-n*length*0.5
-		var b := p+n*length*0.5
-		canvas.draw_line(a,b,Color(INK,opacity*0.6),radius*2.0+3.0,false)
-		canvas.draw_line(a,b,Color(first,opacity*(0.25 if forming else 0.65)),maxf(2.0,radius*2.0),false)
-		for i: int in range(5):
-			var point := a.lerp(b,float(i)/4.0)
-			if id == "fortify":
-				canvas.draw_rect(Rect2(point-Vector2(6,7),Vector2(12,14)),accent,false,2.0)
-			else:
-				_diamond(canvas,point,5.0 if id=="permafrost" else 8.0,radius,accent)
-		if id == "permafrost":
-			_zigzag(canvas,a,b,5.0,Color(INK,opacity),0)
-		elif id == "glacier":
-			canvas.draw_line(a-d*radius*0.5,b-d*radius*0.5,edge,3.0,false)
-		elif id == "crystal_prism":
-			_arrow(canvas,p,d,18.0,accent)
-		elif id == "crystal_lens":
-			for branch_sign: float in [-1.0,1.0]:
-				canvas.draw_line(p,p+d.rotated(branch_sign*PI/12.0)*length,accent,1,false)
-	elif shape in ["water_path","frost_path","branch"] and reaction.path_points.size() < 4:
-		# No linked source means no invisible imaginary connection. Conductive
-		# Flood retains its real local disk; the other two await a linked node.
-		if shape == "water_path":
-			canvas.draw_circle(p,radius,fill)
-			canvas.draw_arc(p,radius,0,TAU,24,edge,2,false)
-		Glyph.draw(canvas,language,p,ELEMENTS[int(elements[1])],6.0,accent)
-	elif shape in LINE_SHAPES:
-		var path := PackedVector2Array([p,end])
-		if shape in ["water_path","frost_path","branch"] and reaction.path_points.size() >= 4:
-			path = PackedVector2Array()
-			for i: int in range(0,reaction.path_points.size()-1,2):
-				path.append(Vector2(reaction.path_points[i],reaction.path_points[i+1])/1000.0)
-		canvas.draw_polyline(path,fill,maxf(1.0,radius*2.0),false)
-		for i: int in range(path.size()-1):
-			var a: Vector2 = path[i]
-			var b: Vector2 = path[i+1]
-			var side := (b-a).normalized().orthogonal()*radius
-			canvas.draw_line(a+side,b+side,edge,1.0,false)
-			canvas.draw_line(a-side,b-side,edge,1.0,false)
-			if id != "hailstream":
-				_line_identity(canvas,id,a,b,d,n,radius,time,edge if id == "firestorm" else accent,forming,reduced_effects)
-		if id == "hailstream":
-			var pulse := hail_position(reaction,tick)
-			_diamond(canvas,pulse,6.0,minf(radius,10.0),accent)
-			canvas.draw_arc(pulse,minf(radius,14.0),0,TAU,16,accent,1.0,false)
-	else:
-		if shape in ["ring","annulus"]:
-			canvas.draw_arc(p,(radius+length)*0.5,0,TAU,32,fill,maxf(1.0,radius-length),false)
-		else:
-			canvas.draw_circle(p,radius,fill)
-		canvas.draw_arc(p,radius,0,TAU,32,edge,1.0 if forming else 2.0,false)
-		_area_identity(canvas,id,p,d,n,radius,length,time,accent,edge,forming,reduced_effects)
-	if forming:
-		# Four nonflashing ticks separate preview from active matter.
-		for axis: Vector2 in [d,n,-d,-n]:
-			canvas.draw_line(p+axis*(radius+3.0),p+axis*(radius+7.0),Color(first,opacity),2.0,false)
+	canvas.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	var mask: Dictionary = model["mask"]
+	var polygons: Array = mask["polygons"]
+	var core: Vector2 = model["core_anchor"]
+	if bool(model["socket"]):
+		var socket_id := "magic.geometry.unconnected_node.%s" % ("reduced" if model["reduced"] else "normal")
+		if library.draw_stamp(canvas, socket_id, core, 0, 0.0, float(model["opacity"])):
+			_stats.core_stamps += 1
+		return true
+	var frame: Dictionary = model["frame"]
+	if not frame.is_empty():
+		_stats.clipped_parts += Mask.draw_clipped_frame(canvas, frame, core, polygons, float(model["material_opacity"]))
+		_stats.core_stamps += 1
+		var remaining := mini(library.decoration_remaining(), maxi(0, (96 if model["reduced"] else _optional_limit) - int(_stats.optional_stamps)))
+		for anchor: Vector2 in tile_anchors(mask, core, bool(model["reduced"]), remaining):
+			if not _take_optional(String(model["asset_id"]), bool(model["reduced"])):
+				break
+			_stats.clipped_parts += Mask.draw_clipped_frame(canvas, frame, anchor, polygons, float(model["material_opacity"]))
+	_draw_boundaries(canvas, model)
 	return true
 
-func _line_identity(canvas: CanvasItem,id: String,a: Vector2,b: Vector2,d: Vector2,n: Vector2,radius: float,time: float,color: Color,_forming: bool,reduced: bool) -> void:
-	var count := 3 if reduced else 5
-	for i: int in range(count):
-		var progress := float(i+1)/float(count+1)
-		var p := a.lerp(b,progress)
-		match id:
-			"magma":
-				_zigzag(canvas,p-n*radius*0.75,p+n*radius*0.75,4.0,color,0)
-				_arrow(canvas,p,d,10.0,color)
-			"dustfront":
-				canvas.draw_arc(p,7, time+float(i),time+float(i)+PI,8,color,2,false)
-			"firestorm":
-				canvas.draw_colored_polygon(PackedVector2Array([p-n*6,p+d*(11+sin(time*4+float(i))*3),p+n*6]),color)
-			"mistcurrent":
-				canvas.draw_arc(p,10.0,0,PI,10,Color(color,color.a*0.6),2,false)
-			"freeze":
-				_diamond(canvas,p,6,10,color)
-			"conductive_flood":
-				canvas.draw_arc(p,8,0,TAU,12,Color(color,color.a*0.5),1,false)
-				_zigzag(canvas,p-d*9,p+d*9,4,color,0)
-			"superconduct":
-				canvas.draw_line(p-n*radius,p+n*radius,color,2,false)
-				canvas.draw_line(a,b,Color(color,color.a*0.6),1,false)
-			"plasma_arc":
-				_zigzag(canvas,p-d*12,p+d*12,5,color,1)
-				canvas.draw_line(p,p+n*14,color,1,false)
-			"shadowdraft":
-				var offset := sin(time*2+float(i))*radius*0.25
-				canvas.draw_line(p+n*(radius+offset),p-n*(radius-offset),Color(color,color.a*0.5),4,false)
-			"arcflash":
-				_star(canvas,p,5,color,4)
-				canvas.draw_line(a,b,color,2,false)
 
-func _area_identity(canvas: CanvasItem,id: String,p: Vector2,d: Vector2,n: Vector2,r: float,length: float,time: float,color: Color,edge: Color,forming: bool,reduced: bool) -> void:
-	var count := 3 if reduced else 6
-	match id:
-		"mud":
-			for i: int in range(3):
-				canvas.draw_arc(p+n*float(i-1)*r*0.3,r*0.32,0.3,PI*1.3,12,color,2,false)
-		"grounding_network":
-			for axis: Vector2 in [d,n,-d,-n]:
-				canvas.draw_line(p,p+axis*r*0.7,color,2,false)
-				canvas.draw_rect(Rect2(p+axis*r*0.7-Vector2(3,3),Vector2(6,6)),color,true)
-			canvas.draw_circle(p,5,edge)
-		"blightsoil":
-			for i: int in range(5):
-				var axis := Vector2.from_angle(float(i)*TAU/5.0)
-				_zigzag(canvas,p,p+axis*r*0.85,5,color,i%2)
-		"conflagration":
-			canvas.draw_arc(p,length,0,TAU,32,color,2,false)
-			for i: int in range(count):
-				var axis := Vector2.from_angle(float(i)*TAU/float(count))
-				_arrow(canvas,p+axis*r*0.85,axis,7+sin(time*5)*2,color)
-		"steam":
-			for i: int in range(count):
-				var axis := Vector2.from_angle(float(i)*TAU/float(count)+time*0.12)
-				canvas.draw_arc(p+axis*r*0.42,r*0.28,PI,TAU,12,Color("dfebdf",color.a*0.48),2,false)
-		"thermal_shock":
-			for i: int in range(count):
-				var axis := Vector2.from_angle(float(i)*TAU/float(count))
-				_zigzag(canvas,p+axis*r*0.2,p+axis*r,5,color,i%2)
-		"solar_flare":
-			_star(canvas,p,r*(0.35 if forming else 0.7),color,8)
-		"cinderveil":
-			for i: int in range(count):
-				var ember := p+Vector2.from_angle(float(i)*TAU/float(count))*r*0.58
-				canvas.draw_rect(Rect2(ember-Vector2(2,2+sin(time*4+float(i))*2),Vector2(4,4)),edge,true)
-		"flood":
-			for i: int in range(3):
-				_arrow(canvas,p+n*float(i-1)*r*0.35+d*sin(time*2)*4,d,r*0.25,color)
-		"mirrorwater":
-			canvas.draw_arc(p,r*0.65,0,TAU,24,color,1,false)
-			_diamond(canvas,p,12,7,color)
-			canvas.draw_circle(p,3,edge)
-		"blackwater":
-			for i: int in range(3):
-				canvas.draw_arc(p-d*float(i)*8,r*(0.2+float(i)*0.14),-0.8,0.8,10,color,2,false)
-		"vortex":
-			canvas.draw_arc(p,length,0,TAU,24,color,1,false)
-			for i: int in range(3):
-				var angle := time+float(i)*TAU/3.0
-				canvas.draw_arc(p,(length+r)*0.5,angle,angle+PI*0.45,12,color,2,false)
-				_arrow(canvas,p+Vector2.from_angle(angle+PI*0.45)*(length+r)*0.5,Vector2.from_angle(angle+PI*0.95),7,color)
-		"ion_storm":
-			for i: int in range(3):
-				var point := p+Vector2.from_angle(time*0.3+float(i)*TAU/3.0)*r*0.55
-				canvas.draw_circle(point,4,color)
-				_zigzag(canvas,p,point,3,edge,i%2)
-		"lightbend":
-			canvas.draw_polyline(PackedVector2Array([p-d*r,p,p+d.rotated(PI/12.0)*r]),color,2,false)
-			canvas.draw_arc(p,r*0.45,d.angle(),d.angle()+PI/12.0,10,edge,2,false)
-		"crystal_lens":
-			_diamond(canvas,p,6,r,color)
-			for sign_value: float in [-1.0,1.0]:
-				canvas.draw_line(p,p+d.rotated(sign_value*PI/12.0)*length,edge,1,false)
-		"black_ice":
-			_diamond(canvas,p,r*0.65,r*0.65,color)
-			canvas.draw_line(p-d*r*0.4,p+d*r*0.4,edge,2,false)
-			canvas.draw_circle(p-d*r*0.75,4,edge)
-		"overload":
-			canvas.draw_arc(p,r*(0.2 if forming else 0.75),0,TAU,24,color,3,false)
-			for axis: Vector2 in [d,n,-d,-n]:
-				_arrow(canvas,p+axis*r*0.7,axis,9,edge)
-		"static_shroud":
-			for i: int in range(count):
-				var axis := Vector2.from_angle(float(i)*TAU/float(count))
-				_zigzag(canvas,p+axis*r*0.72,p+axis*r,3,color,i%2)
-		"radiance":
-			_star(canvas,p,12,color,4)
-			canvas.draw_arc(p,r*0.7,0,TAU,32,color,1,false)
-		"penumbra":
-			canvas.draw_arc(p,r*0.82,-PI*0.5,PI*0.5,20,color,3,false)
-			canvas.draw_arc(p,r*0.82,PI*0.5,PI*1.5,20,edge,3,false)
-			canvas.draw_line(p-n*r,p+n*r,Color(color,color.a*0.5),1,false)
-		"umbral_field":
-			for i: int in range(3):
-				var rr := r*(0.25+fposmod(time*0.18+float(i)*0.2,0.65))
-				canvas.draw_arc(p,rr,0,TAU,24,Color(color,color.a*0.6),1,false)
+func _draw_boundaries(canvas: CanvasItem, model: Dictionary) -> void:
+	var mask: Dictionary = model["mask"]
+	var color: Color = model["edge_color"]
+	var opacity := float(model["opacity"])
+	var marker_id := "magic.geometry.boundary_%s.%s" % [model["phase"], "reduced" if model["reduced"] else "normal"]
+	var frame := library.sample(marker_id, int(model["age_ticks"]))
+	for boundary: PackedVector2Array in mask["boundaries"]:
+		# Thin source geometry is essential information, never optional material
+		# or an invented optical ray. Both safe-annulus edges remain visible.
+		canvas.draw_polyline(boundary, Color(INK, opacity * 0.8), 2.0, false)
+		canvas.draw_polyline(boundary, Color(color, opacity * 0.9), 1.0, false)
+		_stats.boundary_loops += 1
+		if not frame.is_empty() and boundary.size() >= 2:
+			_stats.clipped_parts += Mask.draw_clipped_frame(canvas, frame, boundary[0], mask["polygons"], opacity, (boundary[1] - boundary[0]).angle())
+			_stats.boundary_markers += 1
 
-static func _closed(canvas: CanvasItem,points: PackedVector2Array,color: Color,width: float) -> void:
-	var outline := points.duplicate()
-	outline.append(points[0])
-	canvas.draw_polyline(outline,color,width,false)
 
-static func _diamond(canvas: CanvasItem,p: Vector2,width: float,height: float,color: Color) -> void:
-	var points := PackedVector2Array([p+Vector2(0,-height),p+Vector2(width,0),p+Vector2(0,height),p+Vector2(-width,0)])
-	canvas.draw_colored_polygon(points,Color(color,color.a*0.25))
-	_closed(canvas,points,color,2.0)
+func tile_anchors(mask: Dictionary, core: Vector2, reduced: bool, maximum: int) -> PackedVector2Array:
+	var result := PackedVector2Array()
+	if mask.is_empty() or maximum <= 0:
+		return result
+	var bounds: Rect2 = mask["bounds"]
+	if _viewport.has_area():
+		bounds = bounds.intersection(_viewport)
+	var first := Vector2i(floor(bounds.position.x / CELL_SIZE), floor(bounds.position.y / CELL_SIZE))
+	var last := Vector2i(ceil(bounds.end.x / CELL_SIZE), ceil(bounds.end.y / CELL_SIZE))
+	var examined := 0
+	for y: int in range(first.y, last.y):
+		for x: int in range(first.x, last.x):
+			examined += 1
+			if examined > 1024 or result.size() >= mini(maximum, 192):
+				return result
+			if reduced and posmod(x + y, 2) != 0:
+				continue
+			var anchor := Vector2(float(x) + 0.5, float(y) + 0.5) * CELL_SIZE
+			if anchor.distance_squared_to(core) < CELL_SIZE * CELL_SIZE or not Mask.contains_point(mask["polygons"], anchor):
+				continue
+			result.append(anchor)
+	return result
 
-static func _arrow(canvas: CanvasItem,p: Vector2,d: Vector2,size: float,color: Color) -> void:
-	var n := d.orthogonal()
-	canvas.draw_polyline(PackedVector2Array([p-d*size*0.4+n*size*0.45,p+d*size*0.6,p-d*size*0.4-n*size*0.45]),color,2.0,false)
 
-static func _star(canvas: CanvasItem,p: Vector2,radius: float,color: Color,rays: int) -> void:
-	for i: int in range(rays):
-		var axis := Vector2.from_angle(float(i)*TAU/float(rays))
-		canvas.draw_line(p+axis*radius*0.25,p+axis*radius,color,2.0,false)
+func _take_optional(asset_id: String, reduced: bool) -> bool:
+	_optional_limit = mini(_optional_limit, 96 if reduced else 192)
+	if int(_stats.optional_stamps) >= _optional_limit or not library.take_decoration(asset_id):
+		return false
+	_stats.optional_stamps += 1
+	return true
 
-static func _zigzag(canvas: CanvasItem,a: Vector2,b: Vector2,width: float,color: Color,parity: int) -> void:
-	var normal := (b-a).normalized().orthogonal()
-	var points := PackedVector2Array([a])
-	for i: int in range(1,5):
-		points.append(a.lerp(b,float(i)/5.0)+normal*width*(1.0 if (i+parity)%2==0 else -1.0))
-	points.append(b)
-	canvas.draw_polyline(points,color,2.0,false)
+
+func _links_live(state: RefCounted, tick: int) -> bool:
+	if state.path_points.size() < 4 or state.linked_deposit_ids.is_empty():
+		return false
+	for identifier: int in state.linked_deposit_ids:
+		var deposit: RefCounted = _deposits_by_id.get(identifier)
+		if deposit == null or int(deposit.strength) <= 0 or tick < deposit.created_tick or tick >= deposit.expiry_tick:
+			return false
+	return true
+
+
+func _without_path(state: RefCounted) -> RefCounted:
+	for field: String in ["recipe_wire_id", "position_x", "position_y", "direction_x", "direction_y", "radius", "length", "endpoint_x", "endpoint_y", "created_tick", "active_tick", "decay_tick", "expiry_tick"]:
+		_unlinked_proxy.set(field, state.get(field))
+	_unlinked_proxy.path_points = PackedInt64Array()
+	return _unlinked_proxy
+
+
+func _visible(bounds: Rect2) -> bool:
+	var visible := not _viewport.has_area() or _viewport.intersects(bounds, true)
+	if not visible:
+		_stats.culled += 1
+	return visible
+
+
+func _core_anchor(mask: Dictionary, preferred: Vector2) -> Vector2:
+	var polygons: Array = mask["polygons"]
+	if (not _viewport.has_area() or _viewport.has_point(preferred)) and Mask.contains_point(polygons, preferred):
+		return preferred
+	for polygon: PackedVector2Array in polygons:
+		var candidates: Array = [polygon]
+		if _viewport.has_area():
+			candidates = Geometry2D.intersect_polygons(polygon, Mask.rectangle_polygon(_viewport))
+		for candidate: PackedVector2Array in candidates:
+			if candidate.size() < 3:
+				continue
+			var center := Vector2.ZERO
+			for point: Vector2 in candidate:
+				center += point
+			return center / float(candidate.size())
+	return preferred

@@ -3,6 +3,11 @@
 Status: **canonical identity/roster plan**. The availability column and live
 champion catalog distinguish playable entries from gated concepts/placeholders.
 
+Character styling now follows the user-selected
+[Oh Tipi reference](../reference/art/oh_tipi_authority_v1/README.md), ahead of the
+older board below. Existing runtime frames remain until a complete tested
+replacement is ready; this does not alter roster, sizes, affinities or hand casting.
+
 ![Hands-only current cast concept board](../assets/concept/current-cast-hands-only-v1.png)
 
 The board is an original concept reference in the exact row-major order below;

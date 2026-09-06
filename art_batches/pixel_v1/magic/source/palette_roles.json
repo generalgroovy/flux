@@ -1,0 +1,70 @@
+{
+  "element_ramps": {
+    "earth": [
+      "44321f",
+      "936f3f",
+      "d4b06b"
+    ],
+    "fire": [
+      "5b1d12",
+      "dd5930",
+      "ffd169"
+    ],
+    "water": [
+      "0c3d57",
+      "368cf0",
+      "7de2ef"
+    ],
+    "wind": [
+      "25524d",
+      "67cf92",
+      "c8f2d4"
+    ],
+    "ice": [
+      "214d74",
+      "91e6ef",
+      "d5f4ff"
+    ],
+    "charge": [
+      "70550f",
+      "e2b82f",
+      "fff19a"
+    ],
+    "light": [
+      "777353",
+      "fff1c7",
+      "fff7c2"
+    ],
+    "dark": [
+      "160d24",
+      "9450c9",
+      "ad6dd1"
+    ],
+    "steam": [
+      "7c999a",
+      "becfc7",
+      "dfebdf"
+    ],
+    "dust": [
+      "403424",
+      "98805a",
+      "e2d4a7"
+    ],
+    "protection": [
+      "07171d",
+      "258298",
+      "58d8dd"
+    ]
+  },
+  "ink": "16212a",
+  "steam": "neutral material ramp only; does not redefine Fire or Water",
+  "dust": "neutral movement dust",
+  "protection": "separate non-element authority information",
+  "logical_pixel_world_px": 1,
+  "terrain_reference_px": 32,
+  "body_reference_heights_px": [
+    58,
+    68,
+    76
+  ]
+}

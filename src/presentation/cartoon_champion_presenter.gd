@@ -3,6 +3,7 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_champion_visuals_v1.json"
+const PixelMovement = preload("res://src/presentation/pixel_movement_effects.gd")
 const EXPECTED_ID := "foundation-champion-visuals-v15-motion-facing"
 const EXPECTED_AUTHORITY := "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere"
 const REQUIRED_FOUNDATION := ["oh_tipi", "s_wayne", "red_baron"]
@@ -59,6 +60,7 @@ var atlas_states: Array = []
 var semantic_state_aliases: Dictionary = {}
 var body_templates: Dictionary = {}
 var shared_style_contract: Dictionary = {}
+var pixel_movement := PixelMovement.new()
 
 
 func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> bool:
@@ -242,6 +244,8 @@ func draw(
 	var definition: Dictionary = champions[champion_id]
 	var anchor := body_anchor + (frame["offset"] as Vector2)
 	var floor_anchor := ground_anchor if ground_anchor.is_finite() else body_anchor
+	if pixel_movement.ready() and atlas != null:
+		pixel_movement.draw_afterimages(canvas, state, config, texture_for_champion(champion_id), frame["source_region"], anchor, float(definition.get("height",68)), reduced_effects)
 	_draw_counter_strafe_accent(canvas, state, floor_anchor, reduced_effects)
 	_draw_takeoff_accent(canvas, state, floor_anchor, config, reduced_effects)
 	_draw_movement_accent(canvas, state, floor_anchor, roundi(presentation_tick), reduced_effects, body_anchor, config)
@@ -573,6 +577,8 @@ func _draw_counter_strafe_accent(canvas: CanvasItem, state: PlayerState, ground_
 	var facing := Vector2(float(state.facing_x), float(state.facing_y))
 	if velocity.dot(facing) >= float(MovementTuning.COUNTER_STRAFE_DOT_THRESHOLD):
 		return
+	if pixel_movement.stamp(canvas, "slide_trail", ground_anchor - velocity.normalized() * 8.0, 0, reduced, velocity.angle(), 0.50):
+		return
 	var definition := motion.accent_by_id("counter_strafe")
 	if definition.is_empty():
 		return
@@ -591,6 +597,9 @@ func _draw_counter_strafe_accent(canvas: CanvasItem, state: PlayerState, ground_
 func _draw_takeoff_accent(canvas: CanvasItem, state: PlayerState, ground_anchor: Vector2, config: SimConfig, reduced: bool) -> void:
 	var cue := JumpPresentation.takeoff_contract(state, config, reduced)
 	if not bool(cue["active"]):
+		return
+	var takeoff_age := maxi(0, config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS) - state.jump_protection_ticks)
+	if pixel_movement.stamp(canvas,"jump_takeoff",ground_anchor,takeoff_age,reduced):
 		return
 	var radius := float(cue["radius"])
 	var opacity := float(cue["opacity"])
@@ -642,6 +651,9 @@ static func movement_trail_contract(state: PlayerState, config: SimConfig, reduc
 
 
 func _draw_movement_accent(canvas: CanvasItem, state: PlayerState, ground_anchor: Vector2, tick: int, reduced: bool, body_anchor: Vector2 = Vector2.INF, config: SimConfig = null) -> void:
+	if pixel_movement.ready():
+		_draw_pixel_movement_accent(canvas,state,ground_anchor,tick * 2,reduced,config)
+		return
 	var trail := movement_trail_contract(state, config, reduced)
 	if bool(trail["active"]):
 		var trail_anchor := body_anchor if bool(trail["body_anchored"]) and body_anchor.is_finite() else ground_anchor
@@ -713,6 +725,22 @@ static func wall_contact_geometry(state: PlayerState) -> Dictionary:
 	return {"normal": normal, "offset": -normal * float(state.radius) / SimConfig.FIXED_SCALE}
 
 
+func _draw_pixel_movement_accent(canvas: CanvasItem, state: PlayerState, ground_anchor: Vector2, age: int, reduced: bool, config: SimConfig) -> void:
+	if state.health <= 0 or config == null:
+		return
+	var velocity := Vector2(state.velocity_x,state.velocity_y)
+	var walljump := pixel_movement.walljump_contact(state,config,age,ground_anchor)
+	if not walljump.is_empty():
+		pixel_movement.stamp(canvas,"walljump_burst",walljump.anchor,walljump.age,reduced)
+	if state.slide_ticks > 0 and not state.is_airborne() and velocity.length_squared() > 1000000.0:
+		pixel_movement.stamp(canvas,"slide_trail",ground_anchor - velocity.normalized() * 14,age,reduced,velocity.angle(),0.65)
+		var elapsed := maxi(0,config.milliseconds_to_ticks(MovementTuning.SLIDE_DURATION_MS) - state.slide_ticks)
+		pixel_movement.stamp(canvas,"slide_dust",ground_anchor - velocity.normalized() * 14,elapsed,reduced,0.0,0.65)
+	var contact := wall_contact_geometry(state)
+	if not contact.is_empty():
+		pixel_movement.stamp(canvas,"wallrun_sparks",ground_anchor + (contact.offset as Vector2),age,reduced)
+
+
 func _draw_evasion_contour(
 	canvas: CanvasItem,
 	state: PlayerState,
@@ -725,6 +753,8 @@ func _draw_evasion_contour(
 		return
 	var contract := protection_contract(state, config, reduced, body_height)
 	if not bool(contract["active"]):
+		return
+	if pixel_movement.protection(canvas,contract,ground_anchor,reduced):
 		return
 	var teal := language.ramp_color("deep_water", 4)
 	var ink := language.ramp_color("deep_water", 0)

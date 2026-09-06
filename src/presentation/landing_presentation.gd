@@ -1,5 +1,7 @@
 class_name LandingPresentation
 extends RefCounted
+const PixelMovement = preload("res://src/presentation/pixel_movement_effects.gd")
+static var pixel_movement: RefCounted
 
 
 const BASE_SHADOW_SCALE := Vector2(0.90, 0.32)
@@ -80,6 +82,14 @@ static func motion_direction(state: PlayerState) -> Vector2:
 
 static func draw(canvas: CanvasItem, center: Vector2, landing: Sample, language: VisualLanguage) -> void:
 	if canvas == null or landing == null or language == null or not landing.active:
+		return
+	if pixel_movement == null:
+		pixel_movement = PixelMovement.new()
+	if pixel_movement.ready():
+		var age := floori(landing.normalized_phase * ceilf(MovementTuning.LANDING_WINDOW_MS * 0.12))
+		var reduced := landing.ring_width == REDUCED_RING_WIDTH
+		pixel_movement.stamp(canvas,"landing_contact",center,age,reduced)
+		pixel_movement.stamp(canvas,"landing_dust",center,age,reduced,0.0,0.5 if reduced else 0.7)
 		return
 	var color := language.ramp_color("warm_stone", 4)
 	var angle := landing.travel_direction.angle()

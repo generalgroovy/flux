@@ -1,5 +1,12 @@
 # FLUX 2 active backlog
 
+**READY FOR PLAYTEST: pixel magic + Wellspring asset integration (2026-09-06).** User supplied
+the missing map ZIP and selected Oh Tipi as character-style authority. Complete
+`docs/PIXEL-ASSET-INTEGRATION.md`: Full85/270135, local Farflow, exactPCK audit and
+isolated Windows executable boot passed. Launch and return for playtest.
+Preserve mechanics and complete body-animation coverage. No remote
+publication or installer promotion. The previous pause below is historical.
+
 **PAUSED FOR PLAYTEST: low jump, finite Float and first-eight chemistry (2026-09-06).**
 
 Full81 suites/165,441 assertions green, empty stderr; local Farflow and actual

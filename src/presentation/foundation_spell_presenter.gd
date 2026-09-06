@@ -3,6 +3,7 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/foundation_spell_visuals_v1.json"
+const PixelEffects = preload("res://src/presentation/pixel_spell_effects.gd")
 const ElementGlyphRendererScript = preload("res://src/presentation/element_glyph_renderer.gd")
 const EXPECTED_ID := "foundation-spell-visuals-v4-first-eight-burst"
 const EXPECTED_AUTHORITY := "presentation only; simulation owns spell membership, geometry, timing, collision, resources, damage, control and outcomes"
@@ -23,10 +24,17 @@ var content_hash := ""
 var direction_contract_hash := ""
 var animation_skeleton_hash := ""
 var last_error := ""
+var pixel_effects := PixelEffects.new()
+var ability_catalog: AbilityCatalog
+
+
+func begin_frame(config: SimConfig, collision: CollisionWorld) -> void:
+	pixel_effects.begin_frame(config,collision)
 
 
 func configure(visual_language: VisualLanguage, catalog: AbilityCatalog, path: String = DEFAULT_PATH) -> bool:
 	language = visual_language
+	ability_catalog = catalog
 	data.clear()
 	profiles_by_wire.clear()
 	profiles_by_id.clear()
@@ -180,6 +188,10 @@ func draw_startup(
 	var visual_direction := SpellDeliveryDirectionContract.visual_vector(aim)
 	var progress := clampf(phase, 0.0, 1.0)
 	var element := String(profile.get("element", "water"))
+	var ability := ability_catalog.ability_from_wire(wire_id)
+	var preparation_age := floori(clampf(phase, 0.0, 1.0) * ceilf(float(ability.get("startup_ms", 0)) * 0.12))
+	if pixel_effects.hand(canvas, element, position, preparation_age, reduced_effects):
+		return true
 	var dark := language.element_color(element, "dark")
 	var base := language.element_color(element, "base")
 	var bright := language.element_color(element, "bright")
@@ -273,9 +285,20 @@ static func startup_readability_geometry(aim: Vector2, progress: float) -> Dicti
 	}
 
 
+func draw_release(canvas: CanvasItem, wire_id: int, hand_anchor: Vector2, age_ticks: int, reduced_effects: bool) -> bool:
+	if canvas == null or age_ticks < 0 or not profiles_by_wire.has(wire_id) or not pixel_effects.ready():
+		return false
+	var profile: Dictionary = profiles_by_wire[wire_id]
+	var effect := "burst_release" if String(profile.get("id","")) in BURST_IDS else "hand_release"
+	pixel_effects.hand(canvas,String(profile.get("element","")),hand_anchor,age_ticks,reduced_effects,effect)
+	return true
+
+
 func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int, reduced_effects: bool, interpolation_alpha: float = 1.0) -> bool:
 	if canvas == null or projectile == null or not profiles_by_wire.has(projectile.source_wire_id):
 		return false
+	if projectile.lifetime_ticks <= 0:
+		return true
 	var profile: Dictionary = profiles_by_wire[projectile.source_wire_id]
 	if String(profile.get("shape", "")) != "projectile":
 		return false
@@ -285,6 +308,10 @@ func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int,
 	var side := direction.orthogonal()
 	var radius := float(projectile.radius) / SimConfig.FIXED_SCALE
 	var element := String(profile.get("element", "water"))
+	var ability := ability_catalog.ability_from_wire(projectile.source_wire_id)
+	var projectile_age := PixelEffects.lifetime_age(int(ability.get("lifetime_ms", 0)), projectile.lifetime_ticks)
+	if pixel_effects.flight(canvas, element, position, travel_direction, radius, projectile_age, reduced_effects):
+		return true
 	var dark := language.element_color(element, "dark")
 	var base := language.element_color(element, "base")
 	var bright := language.element_color(element, "bright")
@@ -354,12 +381,18 @@ func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, tick: int,
 func draw_field(canvas: CanvasItem, field: FieldState, life_ratio: float, tick: int, reduced_effects: bool) -> bool:
 	if canvas == null or field == null or not profiles_by_wire.has(field.source_wire_id):
 		return false
+	if field.lifetime_ticks <= 0:
+		return true
 	var profile: Dictionary = profiles_by_wire[field.source_wire_id]
 	if String(profile.get("silhouette", "")) not in ["crystal_wake", "elemental_field"]:
 		return false
 	var center := Vector2(float(field.position_x), float(field.position_y)) / SimConfig.FIXED_SCALE
 	var radius := float(field.radius) / SimConfig.FIXED_SCALE
 	var element := String(profile.get("element", "ice"))
+	var ability := ability_catalog.ability_from_wire(field.source_wire_id)
+	var field_age := PixelEffects.lifetime_age(int(ability.get("lifetime_ms", 0)), field.lifetime_ticks)
+	if pixel_effects.field(canvas, element, center, radius, field_age, reduced_effects):
+		return true
 	var dark := language.element_color(element, "dark")
 	var base := language.element_color(element, "base")
 	var bright := language.element_color(element, "bright")
@@ -395,6 +428,17 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 	var base := language.element_color(element, "base")
 	var bright := language.element_color(element, "bright")
 	var event_type := String(cue.get("event_type", ""))
+	var age := int(cue.get("age_ticks", floori(phase * float(cue.get("duration", 0.55)) * 120.0)))
+	var ability := ability_catalog.ability_from_wire(wire_id)
+	if event_type == "beam_fired" and pixel_effects.beam(canvas, element, start, endpoint, float(ability.get("radius", 8000)) / 1000.0, age, reduced_effects, opacity):
+		return true
+	if event_type == "spray_fired":
+		# Centre-ray cover must not shorten the independently admitted side rays.
+		var full_endpoint := start + (endpoint-start).normalized() * float(ability.get("range",0)) / 1000.0
+		if pixel_effects.spray(canvas, element, start, full_endpoint, int(ability.get("cone_cosine_squared_per_million", 820000)), age, reduced_effects, opacity, float(ability.get("radius",0))/1000.0):
+			return true
+	if event_type in ["projectile_hit", "spray_hit", "field_triggered"] and pixel_effects.impact(canvas, element, position, age, reduced_effects):
+		return true
 	if event_type in ["cast_refused", "cast_blocked"]:
 		var refusal_radius := 12.0 + phase * 11.0
 		canvas.draw_arc(position, refusal_radius, 0.0, TAU, 20, Color(base, opacity * 0.74), 2.0)

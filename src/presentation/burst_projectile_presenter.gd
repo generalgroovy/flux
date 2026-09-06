@@ -3,8 +3,8 @@ extends RefCounted
 
 
 const DEFAULT_PATH := "res://content/visual/burst_projectile_runtime_v3.json"
+const PixelEffects = preload("res://src/presentation/pixel_spell_effects.gd")
 const ElementGlyphRendererScript = preload("res://src/presentation/element_glyph_renderer.gd")
-const ChemistryPrimitives = preload("res://src/presentation/element_chemistry_presenter.gd")
 const EXPECTED_ID := "burst-projectile-runtime-v3"
 const REQUIRED_ELEMENTS := ["neutral", "fire", "water", "wind", "earth", "charge", "ice", "light", "dark"]
 const DIRECTION_ORDER := ["north", "north_east", "east", "south_east", "south", "south_west", "west", "north_west"]
@@ -28,6 +28,7 @@ var entries_by_element: Dictionary[String, Dictionary] = {}
 var content_hash := ""
 var direction_contract_hash := ""
 var last_error := ""
+var pixel_effects := PixelEffects.new()
 
 
 func configure(visual_language: VisualLanguage, ability_catalog: AbilityCatalog, path: String = DEFAULT_PATH, load_textures: bool = true) -> bool:
@@ -79,6 +80,8 @@ func validate(load_textures: bool = true) -> bool:
 func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, _tick: int, reduced_effects: bool, interpolation_alpha: float = 1.0) -> bool:
 	if canvas == null or projectile == null or catalog == null:
 		return false
+	if projectile.lifetime_ticks <= 0:
+		return true
 	var ability := catalog.ability_from_wire(projectile.source_wire_id)
 	if String(ability.get("shape", "")) != "projectile":
 		return false
@@ -88,6 +91,9 @@ func draw_projectile(canvas: CanvasItem, projectile: ProjectileState, _tick: int
 	var position := ProjectilePresentationMotion.interpolated_position(projectile, interpolation_alpha)
 	var direction := ProjectilePresentationMotion.travel_direction(projectile)
 	var radius := float(projectile.radius) / SimConfig.FIXED_SCALE
+	var age := PixelEffects.lifetime_age(int(ability.get("lifetime_ms", 0)), projectile.lifetime_ticks)
+	if pixel_effects.flight(canvas, element, position, direction, radius, age, reduced_effects):
+		return true
 	var color := language.element_color(element, "base")
 	# One stable color, one bounded core, one short trail. The tiny dark rune
 	# distinguishes elements without color; no orbiting dots or blended hues.
@@ -119,40 +125,13 @@ func draw_impact(canvas: CanvasItem, element: String, position: Vector2, directi
 	var profile := impact_profile(element, age_ticks, duration_ticks)
 	if profile.is_empty():
 		return false
+	if pixel_effects.impact(canvas, element, position, age_ticks, reduced_effects):
+		return true
 	var radius: float = profile.radius
 	var color := Color(language.element_color(element), float(profile.opacity))
-	var aim := direction.normalized() if direction.length_squared() > 0.001 else Vector2.RIGHT
-	var count := 3 if reduced_effects else 5
-	match element:
-		"earth":
-			for i: int in range(count):
-				var p := position+Vector2.from_angle(float(i)*TAU/float(count))*radius
-				canvas.draw_rect(Rect2(p-Vector2(3,3),Vector2(6,6)),color,true)
-		"fire":
-			ChemistryPrimitives._star(canvas,position,radius,color,6)
-			canvas.draw_arc(position,radius*0.6,0,TAU,16,Color(color,color.a*0.6),2,false)
-		"water":
-			canvas.draw_arc(position,radius,0,TAU,24,color,2,false)
-			for i: int in range(count):
-				canvas.draw_circle(position+Vector2.from_angle(float(i)*TAU/float(count))*radius,2.0,color)
-		"wind":
-			canvas.draw_arc(position,radius,aim.angle(),aim.angle()+PI*1.5,20,color,2,false)
-			canvas.draw_arc(position,radius*0.65,aim.angle()+PI,aim.angle()+TAU,12,color,1,false)
-		"ice":
-			for i: int in range(count):
-				var p := position+Vector2.from_angle(float(i)*TAU/float(count))*radius*0.75
-				ChemistryPrimitives._diamond(canvas,p,3,6,color)
-		"charge":
-			for i: int in range(3):
-				ChemistryPrimitives._zigzag(canvas,position,position+Vector2.from_angle(float(i)*TAU/3.0)*radius,3,color,i%2)
-		"light":
-			ChemistryPrimitives._star(canvas,position,radius,color,4)
-			ChemistryPrimitives._diamond(canvas,position,radius*0.5,radius*0.5,color)
-		"dark":
-			canvas.draw_arc(position,30-radius,0,TAU,20,color,2,false)
-			canvas.draw_circle(position,maxf(1,8-radius*0.2),Color(color,color.a*0.3))
-		_:
-			canvas.draw_arc(position,radius,0,TAU,20,color,2,false)
+	# Emergency readability fallback only; pack failures are reported at startup.
+	canvas.draw_arc(position,radius,0,TAU,20,color,2,false)
+	ElementGlyphRendererScript.draw(canvas,language,position,element,4.0,color)
 	return true
 
 

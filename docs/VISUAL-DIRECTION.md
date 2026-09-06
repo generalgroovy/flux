@@ -2,11 +2,19 @@
 
 Status: **canonical art-direction contract**.
 
+**2026-09-06 authority update:** the user-selected
+[Oh Tipi illustration and production contract](../reference/art/oh_tipi_authority_v1/README.md)
+supersede earlier champion boards for character style. Crisp pixel clusters,
+articulated silhouettes, layered dark materials and restrained accents are the
+new target; existing three-body/eight-way coverage, hand casting and separate
+magic/shadow layers remain mandatory. A reference image is not an animation atlas.
+
 Current implementation: [illustrated camera/body acceptance](VISUAL-REFINEMENT-ACCEPTANCE.md).
 Map and champion artwork share approximately 55-degree elevation, short visible
 facades and readable shoulder/roof tops. Floors remain screen-cardinal: no
 isometric input rotation, collision skew or angle-dependent body scaling.
-Occluding roofs/canopies fade near the observed actor; zoom remains 50/75/100%.
+Worldbone buildings remain opaque; collisionless scenery remains withheld.
+Zoom remains 50/75/100%; old automatic roof-fade proposals are superseded.
 
 ## Intent
 
@@ -30,7 +38,7 @@ HUD atlas, collision source or acceptance proof.
 
 The user-passed
 [champion board](../assets/concept/flux-champions-visual-style-v1.png) is the
-mandatory minimum character-style target: compact expressive bodies, strong
+historical character-style target: compact expressive bodies, strong
 ancestry silhouettes, readable equipment/materials, and immediately legible
 elemental personality. Its labels are not gameplay authority and its pixels are
 not runtime frames.

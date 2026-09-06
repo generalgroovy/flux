@@ -7,7 +7,40 @@ func run() -> int:
 	_test_startup_readability_geometry()
 	_test_projectile_presentation_motion()
 	_test_fail_closed_catalog_alignment()
+	_test_pixel_material_contract()
 	return finish("foundation-spell-presenter")
+
+
+func _test_pixel_material_contract() -> void:
+	var pixels := preload("res://src/presentation/pixel_spell_effects.gd").new()
+	check(pixels.ready(), "supplied pixel magic registry is live in spell presentation")
+	for element: String in pixels.ELEMENTS:
+		for reduced: bool in [false,true]:
+			for effect: String in ["flight","flight_tail","hand_prepare","hand_release","burst_release","beam_body","beam_start","beam_end","spray_grain","field_tile","impact"]:
+				var id: String = pixels.asset_id(element,effect,reduced)
+				check(not pixels.library.sample(id,0).is_empty(), "%s %s supplies its own %s pixel sequence" % [element,str(reduced),effect])
+				check(pixels.library.sample(id,0,false).is_empty(), "authority exit hides every new pixel sequence immediately")
+	equal(pixels.lifetime_age(1600,180),12,"phase age is120 Hz lifetime age, never frame-count driven")
+	equal(pixels.lifetime_age(100,20),0,"late snapshot cannot create a negative phase")
+	for direction: Vector2 in [Vector2.RIGHT,Vector2(0.707,0.707),Vector2(0.91,-0.42),Vector2.LEFT]:
+		var origin := Vector2(230,140)
+		var end := origin + direction.normalized()*380.0
+		var polygon: PackedVector2Array = pixels.spray_polygon(origin,end,820000)
+		equal(polygon[0],origin,"spray begins at actual authority origin")
+		var forward := (end-origin).normalized()
+		for point: Vector2 in polygon:
+			var offset := point-origin
+			check(offset.length() <= 380.001,"pixel spray cannot exceed range")
+			if offset.length() > 0.001:
+				check(pow(offset.normalized().dot(forward),2) >= 0.81999,"spray uses catalog cosine, not old approximate triangle")
+	equal(pixels.spray_polygon(Vector2.ZERO,Vector2.ZERO,820000).size(),0,"zero-range spray draws no material")
+	for kind: String in ["cast_started","cast_refused","cast_blocked","projectile_hit"]:
+		check(pixels.accepted_release({"type":kind,"owner_id":1,"wire_id":3}).is_empty(),"unadmitted action is never a pixel release")
+	for kind: String in ["projectile_spawned","field_spawned","beam_fired","spray_fired"]:
+		var release: Dictionary = pixels.accepted_release({"type":kind,"owner_id":2,"source_wire_id":4,"lane_index":0})
+		equal(release.get("dedup_key"),"2:4","only accepted delivery events expose a stable per-tick release key")
+	check(pixels.accepted_release({"type":"projectile_spawned","owner_id":2,"wire_id":4,"lane_index":3}).is_empty(),"Burst secondary lanes do not duplicate hand releases")
+	check(pixels.accepted_release({"type":"beam_fired","owner_id":0,"source_wire_id":4}).is_empty(),"missing actor cannot invent a release hand")
 
 
 func _test_repository_profiles() -> void:

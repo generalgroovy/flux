@@ -282,7 +282,7 @@ func _ready() -> void:
 		return
 	element_chemistry_presenter = ElementChemistryPresenter.new()
 	if not element_chemistry_presenter.configure(visual_language):
-		push_error("Element chemistry presentation could not load the shared visual language")
+		push_error(element_chemistry_presenter.last_error)
 		get_tree().quit(1)
 		return
 	champion_catalog = ChampionCatalog.new()
@@ -883,8 +883,10 @@ func _draw() -> void:
 	var camera_focus_position := _camera_focus_position(rendered_position)
 	var camera_origin: Vector2 = _camera_origin(camera_focus_position)
 	var visual_tick := MinimalChampionMotion.tick_at_visual_rate(world.tick, tick_rate, alpha)
+	PixelMagicLibrary.default_library().begin_frame(_reduced_effects_enabled())
 	_set_world_transform(camera_origin)
 	campus_renderer.draw(self, campus_layout, roundi(visual_tick), camera_focus_position, _reduced_effects_enabled())
+	foundation_spell_presenter.begin_frame(world.config, world.collision)
 	movement_trace.draw(self, rendered_position, _reduced_effects_enabled())
 	if show_debug_overlay:
 		for obstacle: CollisionWorld.Obstacle in world.collision.obstacle_view():
@@ -896,7 +898,7 @@ func _draw() -> void:
 			draw_rect(rectangle, BRASS_COLOR if obstacle.vaultable else ATTUNEMENT_COLOR, false, 2.0)
 	for field: FieldState in world.fields:
 		_draw_field(field)
-	_draw_element_chemistry(float(world.tick) + alpha)
+	_draw_element_chemistry(float(world.tick) + alpha, camera_origin)
 	for projectile: ProjectileState in world.projectiles:
 		var projectile_position := ProjectilePresentationMotion.interpolated_position(projectile, alpha)
 		var projectile_color: Color = _projectile_color(projectile.element_wire_id)
@@ -1076,6 +1078,7 @@ func _draw_spell_loom_editor() -> void:
 
 func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 	for event: Dictionary in events:
+		_ingest_magic_release(event)
 		var kind := String(event.get("type", ""))
 		if kind not in ["projectile_hit", "beam_fired", "spray_fired", "spray_hit", "field_triggered", "edgeweave", "cast_refused", "cast_blocked", "projectile_bounced"]:
 			continue
@@ -1153,6 +1156,32 @@ func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 		combat_cues.pop_front()
 
 
+func _ingest_magic_release(event: Dictionary) -> void:
+	# Field snapshots already carry exact remaining lifetime on host and guest;
+	# their short release cue is drawn from that state instead of an absent RPC.
+	if String(event.get("type", "")) == "field_spawned":
+		return
+	var admission := PixelSpellEffects.accepted_release(event)
+	if admission.is_empty():
+		return
+	var actor := world.player(int(admission.owner_id))
+	if actor == null or not _chemistry_actor_visible(actor):
+		return
+	var key := "%d:%s" % [world.tick, String(admission.dedup_key)]
+	for existing: Dictionary in combat_cues:
+		if String(existing.get("release_key", "")) == key:
+			return
+	var lift := JumpPresentation.sample(actor, world.config, 0.0, _reduced_effects_enabled())
+	var body := Vector2(actor.position_x, actor.position_y) / 1000.0 - Vector2(0.0, float(lift.body_lift_pixels))
+	body.y += float(actor.radius) / 1000.0 * 0.58
+	combat_cues.append({
+		"kind": "pixel_release", "release_key": key,
+		"source_wire_id": int(admission.wire_id),
+		"position": CartoonChampionPresenter.hand_cast_origin(body, Vector2(actor.aim_x, actor.aim_y)),
+		"remaining": 0.20, "duration": 0.20,
+	})
+
+
 func _combat_event_anchor(event: Dictionary) -> Dictionary:
 	var kind := String(event.get("type", ""))
 	if kind == "beam_fired":
@@ -1190,6 +1219,10 @@ func _draw_combat_cues(camera_origin: Vector2) -> void:
 	for cue: Dictionary in combat_cues:
 		var remaining := float(cue.get("remaining", 0.0))
 		var duration := maxf(0.001, float(cue.get("duration", 0.55)))
+		cue["age_ticks"] = maxi(0, roundi((duration - remaining) * float(tick_rate)))
+		if String(cue.get("kind", "")) == "pixel_release":
+			foundation_spell_presenter.draw_release(self, int(cue.source_wire_id), cue.position, int(cue.age_ticks), _reduced_effects_enabled())
+			continue
 		var phase := clampf(1.0 - remaining / duration, 0.0, 1.0)
 		var position: Vector2 = cue.get("position", Vector2.ZERO)
 		var color: Color = cue.get("color", ATTUNEMENT_COLOR)
@@ -2855,9 +2888,10 @@ func _chemistry_actor_visible(target: PlayerState) -> bool:
 	return not ElementChemistrySystem.blocks_sight(Vector2i(observer.position_x, observer.position_y), Vector2i(target.position_x, target.position_y), world.reactions, world.tick)
 
 
-func _draw_element_chemistry(visual_tick: float) -> void:
+func _draw_element_chemistry(visual_tick: float, camera_origin: Vector2) -> void:
 	if element_chemistry_presenter == null:
 		return
+	element_chemistry_presenter.begin_frame(world.config, world.collision, Rect2(camera_origin, get_viewport_rect().size / _camera_zoom_scale()), world.deposits, _reduced_effects_enabled())
 	for deposit: ElementDepositState in world.deposits:
 		element_chemistry_presenter.draw_deposit(self, deposit, visual_tick, _reduced_effects_enabled())
 		var age := maxi(0, world.tick - deposit.created_tick)
@@ -2873,6 +2907,14 @@ func _draw_field(field: FieldState) -> void:
 	var definition := CombatTuning.cast_definition(field.source_wire_id)
 	var full_lifetime := maxi(1, world.config.milliseconds_to_ticks(int(definition.get("lifetime_ms", 1))))
 	var life_ratio := clampf(float(field.lifetime_ticks) / float(full_lifetime), 0.0, 1.0)
+	var release_age := full_lifetime - field.lifetime_ticks
+	if release_age >= 0 and release_age < 24 and field.lifetime_ticks > 0:
+		var owner := world.player(field.owner_id)
+		if owner != null and _chemistry_actor_visible(owner):
+			var lift := JumpPresentation.sample(owner, world.config, 0.0, _reduced_effects_enabled())
+			var body := Vector2(owner.position_x, owner.position_y) / 1000.0 + Vector2(0.0, float(owner.radius) / 1000.0 * 0.58 - float(lift.body_lift_pixels))
+			var hand := CartoonChampionPresenter.hand_cast_origin(body, Vector2(owner.aim_x, owner.aim_y))
+			foundation_spell_presenter.draw_release(self, field.source_wire_id, hand, release_age, _reduced_effects_enabled())
 	if foundation_spell_presenter != null and foundation_spell_presenter.draw_field(self, field, life_ratio, world.tick, _reduced_effects_enabled()):
 		return
 	var ice_color := WATER_HIGHLIGHT_COLOR.lightened(0.36)

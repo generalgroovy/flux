@@ -909,7 +909,7 @@ def main():
         movement_kit(reduced); boundary_kit(reduced)
     out=ROOT/"source/frames"; out.mkdir(parents=True,exist_ok=True)
     for asset in ASSETS:
-        (out/(asset["id"]+".json")).write_text(json.dumps(asset,indent=2)+"\n",encoding="utf-8")
+        (out/(asset["id"]+".json")).write_text(json.dumps(asset,indent=2)+"\n",encoding="utf-8",newline="\n")
     (ROOT/"source/authority_snapshot.json").write_text(json.dumps(dict(
         source_checkpoint="286bd8f",source_files=sources,recipes=recipes,deposit_lifetime_ticks=LIFE,
         source_not_modified=True,metadata_precedence="live GDScript > catalog legacy prose"),indent=2)+"\n")

@@ -8,7 +8,9 @@ func run() -> int:
 	_test_immediate_protection()
 	_test_protection_matches_authority_with_overlaps()
 	_test_real_tap_and_hold()
-	_test_real_double_jump_and_dodge_continuity()
+	_test_real_float_and_dodge_continuity()
+	_test_float_and_takeoff_contract()
+	_test_real_float_release_cue()
 	return finish("jump-presentation")
 
 
@@ -133,14 +135,14 @@ func _test_real_tap_and_hold() -> void:
 		peaks.append(peak)
 		check(protected_ticks <= world.config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS), "longer height cannot extend protection")
 		equal(JumpPresentation.sample(world.player(), world.config).body_lift_pixels, 0.0, "real jump returns to ground")
-	check(peaks[1] >= 85.0 and peaks[1] <= 95.0, "held jump reaches the physical ninety-pixel apex")
+	check(peaks[1] >= 74.0 and peaks[1] <= 77.0, "held jump reaches the lower physical seventy-six-pixel apex")
 	check(peaks[0] >= 28.0 and peaks[0] <= 42.0, "tap jump remains compact")
 	check(peaks[1] > peaks[0] * 2.0, "real tap and hold clearly differ")
 
 
-func _test_real_double_jump_and_dodge_continuity() -> void:
+func _test_real_float_and_dodge_continuity() -> void:
 	var world := SimWorld.new(120)
-	var double_seen := false
+	var float_seen := false
 	var dodge_seen := false
 	for index: int in range(150):
 		var before := world.player().air_height
@@ -150,12 +152,65 @@ func _test_real_double_jump_and_dodge_continuity() -> void:
 		var state := world.player()
 		if index in [20, 35]:
 			check(before > 30_000, "real transition occurs while visibly airborne")
-			check(absi(state.air_height - before) < 12_000, "double jump/dodge cannot snap the physical or visible height")
+			check(absi(state.air_height - before) < 12_000, "Float/dodge cannot snap the physical or visible height")
 			var sample := JumpPresentation.sample(state, world.config, 0.5, false, before)
 			check(sample.body_lift_pixels >= float(mini(before, state.air_height)) / 1000.0 and sample.body_lift_pixels <= float(maxi(before, state.air_height)) / 1000.0, "transition frame remains between its actual height endpoints")
-		if state.hop_mode == PlayerState.MovementMode.DOUBLE_JUMP:
-			double_seen = true
+		if state.air_floating:
+			float_seen = true
+			equal(state.air_height, before, "real Float preserves the height already earned")
+			equal(JumpPresentation.protection_ratio(state, world.config), 1.0, "Float protection is continuous while actively paid")
 		if state.air_dodge_ticks > 0 and not state.is_rolling():
 			dodge_seen = true
-	check(double_seen, "continuity test actually entered double jump")
+	check(float_seen, "continuity test actually entered Float")
 	check(dodge_seen, "continuity test actually entered airborne dodge")
+
+
+func _test_float_and_takeoff_contract() -> void:
+	var config := SimConfig.new(120)
+	var state := PlayerState.new()
+	state.air_height = 55_000
+	state.air_vertical_velocity = 250_000
+	state.hop_ticks = 40
+	var total := config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS)
+	for reduced: bool in [false, true]:
+		var last_radius := 0.0
+		for remaining: int in range(total, 0, -1):
+			state.jump_protection_ticks = remaining
+			var cue := JumpPresentation.takeoff_contract(state, config, reduced)
+			check(bool(cue["active"]), "accepted ascending takeoff has a short floor ring")
+			check(float(cue["radius"]) >= last_radius, "takeoff ring advances once, never loops")
+			check(float(cue["radius"]) <= (18.0 if reduced else 27.0), "takeoff ring has a strict spatial bound")
+			last_radius = float(cue["radius"])
+		state.jump_protection_ticks = 0
+		check(not bool(JumpPresentation.takeoff_contract(state, config, reduced)["active"]), "takeoff ring finishes with its accepted opening")
+		state.air_floating = true
+		for stale_timer: int in [0, 1, 100]:
+			state.jump_protection_ticks = stale_timer
+			equal(JumpPresentation.protection_ratio(state, config), 1.0, "active Float does not fade with stale jump protection clocks")
+			check(not bool(JumpPresentation.takeoff_contract(state, config, reduced)["active"]), "Float cannot replay takeoff ring")
+		state.jump_protection_ticks = 0
+		state.air_floating = false
+		equal(JumpPresentation.protection_ratio(state, config), 0.0, "Float release removes protection immediately")
+	state.jump_protection_ticks = total
+	state.air_vertical_velocity = -100_000
+	check(not bool(JumpPresentation.takeoff_contract(state, config)["active"]), "descent cannot replay takeoff accent")
+
+
+func _test_real_float_release_cue() -> void:
+	var world := SimWorld.new(120)
+	var float_ticks := 0
+	for index: int in range(100):
+		var before := world.player().air_height
+		var held := SimCommand.HELD_JUMP if index < 70 and index != 19 else 0
+		var pressed := SimCommand.PRESSED_JUMP if index in [0, 20] else 0
+		world.step([SimCommand.new(world.tick, 1, 1000 if index < 40 else 0, 0 if index < 40 else 1000, held, pressed)])
+		var state := world.player()
+		var sample := JumpPresentation.sample(state, world.config, 0.0, false, before)
+		if state.air_floating:
+			float_ticks += 1
+			check(sample.protection_active, "every actually paid Float tick keeps a steady shield")
+			equal(sample.body_lift_pixels, float(before) / 1000.0, "Float steering never changes the attained visual height")
+		if index == 70:
+			check(state.air_height > 30_000, "release test remains visibly airborne")
+			check(not state.air_floating and not sample.protection_active, "release cue ends immediately even when height interpolation is one sample behind")
+	check(float_ticks >= 45, "release test actually holds Float beyond the original jump opening")

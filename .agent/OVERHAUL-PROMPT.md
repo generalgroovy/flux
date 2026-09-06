@@ -12,6 +12,17 @@ prose; correct stale prose in the same slice.
 
 ## Hard priority
 
+Latest feedback (2026-09-06) replaces double-jump lift with a held, steerable,
+Stamina-limited invincible Float and lowers the ordinary jump slightly. Implement
+and verify independent 1x-to-3x quiet recovery, clear original movement effects
+and immediate protection exit. Current protocol 42 / snapshot 17; preserve
+fixed 120 Hz, existing speed/capacities, all body sizes/directions and worldbone.
+Canonical acceptance: `docs/MOVEMENT-M1-M5-ACCEPTANCE.md#held-float-and-recovery-feedback`.
+This explicitly authorizes held Float protection, not full-flight ordinary-jump
+immunity. Close this coherent source checkpoint with tests/captures/Farflow and
+let the user test; no map/chemistry/roster/installer expansion or remote push.
+The previous feedback and queues below are historical/subordinate.
+
 Newest feedback (2026-09-06) resumes one expressive-airborne slice after
 `fd1898d`: 5x Stamina capacities, 15% faster running, physical short/full/double
 jumps with continuous height, one air dodge per actual airtime, landing-ready

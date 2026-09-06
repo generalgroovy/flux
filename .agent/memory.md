@@ -1,5 +1,39 @@
 # Active implementation memory
 
+## 2026-09-06 held Float and progressive recovery, verified source
+
+- User feedback replaces second-jump lift with held steerable invincible Float,
+  lowers ordinary jump, accelerates unused-resource recovery and refines effects.
+  Built from 3a2ca16; no speed/capacity/map/spell/roster/installer expansion.
+- All 8 directions: full 75.6 px / 55 ticks, tap 31.8 px / 36 ticks. Float holds
+  current height, costs 24 Stamina + chain premium then 100/s, and uses a fresh
+  second airborne Jump. Release, exhaustion, fast fall, dodge, wallrun or forced
+  control ends it; no rearm until real landing. Air dodge has a separate allowance.
+- ResourceRecovery uses bounded integer math: each resource ramps 1x to 3x over
+  3 seconds after its own 380/700 ms delay. Positive spending resets only its
+  own quiet age; failed/free actions and gains do not. Stamina refill stays
+  ground-only; Health unchanged. HUD rates, Float guide and practice labels agree.
+- Protocol 42 / snapshot 17 carry Float and both quiet ages/delays/base rates;
+  prediction includes Stamina quiet age. Bounds 0..360, boolean admission, reset,
+  replay and authority checks pass. Long Float does not overflow the 7-bit age.
+- Final Full: 78 suites / 143,435 assertions, zero failures/stderr, import and
+  120 Hz boot in 54,803 ms; .godot/receipts/held-float-recovery-final-full.json.
+  Local Farflow and actual flux.cmd play -SmokeTest passed. Eight-player probe:
+  6,867 assertions, zero active-hazard omissions/rejections, max datagram 1,388 B
+  with 3 fragments. Simulation median 1.926/1.959 ms, p99 3.430/3.685 ms,
+  worst 5.299/5.268 ms; not rendered FPS or a combined frame-budget proof.
+- Original takeoff ring, landing dust, dodge flank streak and slide trail;
+  Float shield switches immediately. 34 renderer sheets / 816 fixtures,
+  336 real-input frames + 48 UI frames, standard/reduced. Unchanged selected
+  images: docs/evidence/held-float-recovery-v1. No new atlas or teleport mechanic.
+- Early scenario lacked enough quiet ticks; extended to 599 ticks and exact
+  prediction converges. Docs status heading corrected before final Full. UI v1
+  used invalid 'E'; final v2 uses 'east' with clean stderr. Prior c55-launch.err is an
+  unrelated 2026-09-04 protocol32 historical log, not the current launcher result.
+- Next: human movement, Float cost and clarity feedback. Source launcher remains
+  C:/Users/sende/Projects/flux/flux.cmd. Remote publication still pending explicit
+  approval; no push attempt. Preserve personal node_modules/firewall/shortcut files.
+
 ## 2026-09-06 expressive airborne feedback, verified source
 
 - Latest user requests exactly 5x Stamina, faster running, Melee-inspired

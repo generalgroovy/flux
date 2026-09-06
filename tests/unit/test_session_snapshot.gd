@@ -14,7 +14,7 @@ func run() -> int:
 
 
 func _test_snapshot_round_trip() -> void:
-	equal(SessionSnapshot.SCHEMA_VERSION, 16, "physical airborne movement snapshot schema is explicit")
+	equal(SessionSnapshot.SCHEMA_VERSION, 17, "held float and progressive recovery snapshot schema is explicit")
 	var source := SimWorld.new(120, 7, CollisionWorld.new(3_000_000, 2_000_000))
 	var host: PlayerState = source.player()
 	host.champion_wire_id = 1
@@ -107,7 +107,7 @@ func _test_movement_presentation_round_trip() -> void:
 			value = 1
 		elif property_name in [&"movement_action_speed", &"hop_speed"]:
 			value = 456_000
-		elif property_name in [&"air_dodge_used", &"jump_held_last_tick"]:
+		elif property_name in [&"air_dodge_used", &"jump_held_last_tick", &"air_floating"]:
 			value = 1
 		elif property_name == &"air_vertical_velocity":
 			value = -456_000

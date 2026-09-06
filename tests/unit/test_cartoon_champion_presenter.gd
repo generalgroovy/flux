@@ -13,6 +13,7 @@ func run() -> int:
 	_test_movement_template_direction_matrix()
 	_test_wall_contact_side()
 	_test_immediate_protection_contract()
+	_test_directional_movement_trails()
 	return finish("cartoon-champion-presenter")
 
 
@@ -469,7 +470,7 @@ func _test_movement_template_direction_matrix() -> void:
 	var presenter := CartoonChampionPresenter.new()
 	check(presenter.configure(language), "movement matrix uses the live champion presenter")
 	var config := SimConfig.new(120)
-	var actions := {"idle": PlayerState.MovementMode.IDLE, "walk": PlayerState.MovementMode.WALK, "sprint": PlayerState.MovementMode.SPRINT, "jump": PlayerState.MovementMode.HOP, "slide": PlayerState.MovementMode.SLIDE, "roll": PlayerState.MovementMode.ROLL, "air_turn": PlayerState.MovementMode.HOP, "wallrun": PlayerState.MovementMode.WALL_SKIM, "landing": PlayerState.MovementMode.IDLE}
+	var actions := {"idle": PlayerState.MovementMode.IDLE, "walk": PlayerState.MovementMode.WALK, "sprint": PlayerState.MovementMode.SPRINT, "jump": PlayerState.MovementMode.HOP, "float": PlayerState.MovementMode.DOUBLE_JUMP, "slide": PlayerState.MovementMode.SLIDE, "roll": PlayerState.MovementMode.ROLL, "air_turn": PlayerState.MovementMode.HOP, "wallrun": PlayerState.MovementMode.WALL_SKIM, "landing": PlayerState.MovementMode.IDLE}
 	for champion_id: String in presenter.champions:
 		var profile_id := String(presenter.recipe(champion_id)["motion_profile"])
 		for direction_index: int in range(8):
@@ -486,10 +487,13 @@ func _test_movement_template_direction_matrix() -> void:
 				if action in ["idle", "landing"]:
 					state.velocity_x = 0
 					state.velocity_y = 0
-				if action in ["jump", "air_turn"]:
+				if action in ["jump", "air_turn", "float"]:
 					state.air_height = 45_000
 					state.hop_ticks = 12
 					state.hop_mode = PlayerState.MovementMode.HOP
+					if action == "float":
+						state.air_floating = true
+						state.hop_mode = PlayerState.MovementMode.DOUBLE_JUMP
 				if action == "roll":
 					state.air_dodge_ticks = 12
 					state.hop_mode = PlayerState.MovementMode.ROLL
@@ -554,6 +558,48 @@ func _test_immediate_protection_contract() -> void:
 				var expired := CartoonChampionPresenter.protection_contract(state, config, reduced, height)
 				check(not bool(expired["active"]), "protection disappears on the exact authoritative off tick")
 				check((expired["brackets"] as Array).is_empty() and (expired["shield"] as PackedVector2Array).is_empty(), "no shield geometry remains to suggest protection")
+				state.air_height = 55_000
+				state.air_floating = true
+				var floating := CartoonChampionPresenter.protection_contract(state, config, reduced, height)
+				equal((floating["float_wings"] as Array).size(), 2, "active Float has a distinct steady winged shield in all sizes and effect profiles")
+				equal(floating["remaining_ratio"], 1.0, "Float does not visually fade while held")
+				state.air_floating = false
+				var released := CartoonChampionPresenter.protection_contract(state, config, reduced, height)
+				check(not bool(released["active"]) and (released["float_wings"] as Array).is_empty(), "Float release removes shield and wings on this exact frame")
+				state.air_floating = true
+				state.stamina = 0
+				check(not bool(CartoonChampionPresenter.protection_contract(state, config, reduced, height)["active"]), "exhausted Float cannot fabricate protection even with a stale flag")
+				state.air_floating = false
 				state.spawn_protection_ticks = 1
 				check(bool(CartoonChampionPresenter.protection_contract(state, config, reduced, height)["active"]), "spawn safety cannot look vulnerable")
 	check(not bool(CartoonChampionPresenter.protection_contract(null, config)["active"]), "missing protection state fails closed")
+
+
+func _test_directional_movement_trails() -> void:
+	var config := SimConfig.new(120)
+	for fixed: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+		for reduced: bool in [false, true]:
+			for airborne: bool in [false, true]:
+				var state := PlayerState.new()
+				state.velocity_x = fixed.x * 600
+				state.velocity_y = fixed.y * 600
+				state.facing_x = -fixed.x
+				state.facing_y = -fixed.y
+				state.air_height = 55_000 if airborne else 0
+				state.air_dodge_ticks = config.milliseconds_to_ticks(MovementTuning.AIR_DODGE_DURATION_MS) if airborne else 0
+				state.slide_ticks = 0 if airborne else 15
+				var before := state.canonical_values()
+				var trail := CartoonChampionPresenter.movement_trail_contract(state, config, reduced)
+				check(bool(trail["active"]), "moving dodge and slide have a bounded directional flourish")
+				equal(bool(trail["body_anchored"]), airborne, "only dodge streaks follow the lifted body")
+				equal((trail["lines"] as Array).size(), 4 if airborne and not reduced else 2, "trail count is strictly bounded")
+				var direction := Vector2(fixed).normalized()
+				for line: PackedVector2Array in trail["lines"]:
+					for point: Vector2 in line:
+						check(point.dot(direction) < 0.0, "trails follow actual travel behind the body even with reversed facing")
+						check(point.length() <= 52.0, "trails cannot reach an adjacent combat lane")
+					equal(line.size(), 2, "speed lines do not duplicate or blur sprite silhouettes")
+				equal(state.canonical_values(), before, "trail sampling never moves an actor")
+				state.air_dodge_ticks = 0
+				state.slide_ticks = 0
+				check(not bool(CartoonChampionPresenter.movement_trail_contract(state, config, reduced)["active"]), "trails stop immediately with their action")

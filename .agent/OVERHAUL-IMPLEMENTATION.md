@@ -1,6 +1,6 @@
 # FLUX 2 implementation path to first-eight playtest
 
-Current frontier: protocol 41, snapshot 16, preferences 10, Godot 4.7.1,
+Current frontier: protocol 42, snapshot 17, preferences 10, Godot 4.7.1,
 canonical `main` (the remote compatibility ref mirrors its published checkpoint;
 the non-authoritative local compatibility ref may lag until a safe
 fast-forward). V0–V6 visual engineering, the exact
@@ -40,6 +40,20 @@ composable mastery. A technically complete slice is not product-complete until
 commitment, ownership, consequence, counter and recovery are readable.
 
 ## Slice sequence
+
+Current user-authorized outcome (2026-09-06): slightly lower jump; replace the
+second jump with steerable paid invincible Float; independent progressive
+Stamina/Flux recovery; original takeoff ring, landing dust, dodge streak and slide
+trail. Float holds current height, spends its second-air-action allowance until
+actual landing, costs 24 Stamina plus chain premium and 100/s while held; release,
+exhaustion, dodge, wallrun, fast fall or forced control ends it immediately.
+Base recovery rises 1x to 3x over three quiet seconds after the resource's own
+delay. Health, speed, capacities, map, spells and roster remain unchanged.
+Protocol 42 / snapshot 17 carry Float and accurate remote resource recovery;
+all-size/eight-direction, replay, local Farflow, Full and live render evidence
+must pass before the source playtest checkpoint. Acceptance remains in
+`docs/MOVEMENT-M1-M5-ACCEPTANCE.md#held-float-and-recovery-feedback`.
+Older revision rows below are historical, not alternative active rules.
 
 Active feedback revision (2026-09-06): 5x Stamina capacities with unchanged
 costs/absolute recovery; 15% faster locomotion with proportional acceleration

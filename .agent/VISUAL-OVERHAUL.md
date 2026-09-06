@@ -1,5 +1,12 @@
 # FLUX visual overhaul gate
 
+Current named user authorization (2026-09-06): lower jump, held invincible Float,
+progressive recovery and corresponding original motion effects. Review all
+three body sizes/eight directions, standard/reduced effects and actual-input
+capture. Active protection must disappear on the exact authoritative exit tick;
+cosmetic dust/streaks never imply extra immunity or introduce teleportation.
+This scoped feedback supersedes the historical blanket freeze below.
+
 Latest override (2026-09-05): the user authorizes the G0-G5 order in
 `docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md`, including higher jumps,
 control corrections, elemental deposits and first-level pair effects.

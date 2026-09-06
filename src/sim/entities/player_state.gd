@@ -128,6 +128,9 @@ var air_vertical_velocity: int = 0
 var air_height_remainder: int = 0
 var air_dodge_used: bool = false
 var jump_held_last_tick: bool = false
+var air_floating: bool = false
+var flux_recovery_idle_ticks: int = 0
+var stamina_recovery_idle_ticks: int = 0
 
 var jump_protection_ticks: int = 0
 var evade_buffer_ticks: int = 0
@@ -388,6 +391,9 @@ func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> voi
 	air_height_remainder = 0
 	air_dodge_used = false
 	jump_held_last_tick = false
+	air_floating = false
+	flux_recovery_idle_ticks = 0
+	stamina_recovery_idle_ticks = 0
 	jump_protection_ticks = 0
 	evade_buffer_ticks = 0
 	landing_input_ticks = 0
@@ -457,6 +463,7 @@ func canonical_values() -> PackedInt64Array:
 		int(slide_held_last_tick), int(fast_fall_armed), int(evade_buffer_airborne),
 		air_height, air_vertical_velocity, air_height_remainder,
 		int(air_dodge_used), int(jump_held_last_tick),
+		int(air_floating), flux_recovery_idle_ticks, stamina_recovery_idle_ticks,
 		jump_protection_ticks, evade_buffer_ticks, landing_input_ticks, landing_input_x, landing_input_y,
 		hop_ticks, hop_cooldown_ticks, hop_stage, hop_mode, hop_speed, hop_x, hop_y,
 		air_redirects_remaining,

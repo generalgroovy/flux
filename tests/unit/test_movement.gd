@@ -167,12 +167,12 @@ func _test_double_jump(tick_rate: int) -> void:
 		_step(world, 1000, 0)
 	var after_hop: int = state.stamina
 	_step(world, 0, -1000, 0, SimCommand.PRESSED_JUMP)
-	equal(state.last_event, "double_jump", "%d Hz second edge triggers double jump" % tick_rate)
-	equal(state.stamina, after_hop - MovementTuning.DOUBLE_JUMP_COST * 1100 / 1000, "%d Hz second chained movement pays the explicit ten-percent continuation premium" % tick_rate)
+	equal(state.last_event, "air_float", "%d Hz second edge starts Float at current height" % tick_rate)
+	equal(state.stamina, after_hop - MovementTuning.FLOAT_COST * 1100 / 1000 - world.config.per_tick(MovementTuning.FLOAT_DRAIN_PER_SECOND), "%d Hz Float pays continuation cost and its first maintenance tick" % tick_rate)
 	equal(state.hop_stage, 2, "%d Hz double jump is bounded to stage two" % tick_rate)
 	var after_double: int = state.stamina
 	_step(world, -1000, 0, 0, SimCommand.PRESSED_JUMP)
-	equal(state.stamina, after_double - world.config.per_tick(MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND), "%d Hz third jump cannot stack; its held tick only sustains the existing arc" % tick_rate)
+	equal(state.stamina, after_double, "%d Hz released Float cannot be restarted by another pulse during the same airtime" % tick_rate)
 	equal(state.hop_stage, 2, "%d Hz denied third jump preserves stage two" % tick_rate)
 
 

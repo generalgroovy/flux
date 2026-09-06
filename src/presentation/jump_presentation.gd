@@ -2,7 +2,7 @@ class_name JumpPresentation
 extends RefCounted
 
 
-const NORMAL_REFERENCE_LIFT_PIXELS: float = 90.0
+const NORMAL_REFERENCE_LIFT_PIXELS: float = 76.0
 const REDUCED_HEIGHT_RATIO: float = 0.18
 const MAXIMUM_INTERPOLATION_STEP: int = 32_000
 const GROUND_SHADOW_SCALE := Vector2(0.90, 0.32)
@@ -41,7 +41,7 @@ static func sample(
 	if state.health <= 0 or state.air_height <= 0:
 		return result
 	result.active = true
-	# Physical height survives double-jump, dodge and wall-mode changes. Only
+	# Physical height survives Float, dodge and wall-mode changes. Only
 	# the previous accepted height is interpolated: never restart a timer arc,
 	# extrapolate a new position, smooth facing, or delay protection changes.
 	var physical_height := float(state.air_height)
@@ -65,6 +65,8 @@ static func protection_ratio(state: PlayerState, config: SimConfig) -> float:
 		return 1.0
 	if not MovementSystem.is_combat_intangible(state, config):
 		return 0.0
+	if state.air_floating:
+		return 1.0
 	var total := 0
 	var remaining := 0
 	if state.hop_ticks > 0 and state.air_dodge_ticks <= 0:
@@ -79,3 +81,18 @@ static func protection_ratio(state: PlayerState, config: SimConfig) -> float:
 		total = config.milliseconds_to_ticks(protection)
 		remaining = total - (config.milliseconds_to_ticks(duration) - state.air_dodge_ticks)
 	return clampf(float(remaining) / float(maxi(1, total)), 0.0, 1.0)
+
+
+static func takeoff_contract(state: PlayerState, config: SimConfig, reduced: bool = false) -> Dictionary:
+	var result := {"active": false, "phase": 0.0, "radius": 0.0, "opacity": 0.0}
+	# This short brass floor accent is not a protection boundary. It is sampled
+	# from the accepted takeoff opening, never a repeating animation clock.
+	if state == null or config == null or state.health <= 0 or state.air_floating or state.air_height <= 0 or state.air_vertical_velocity <= 0 or state.jump_protection_ticks <= 0 or state.air_dodge_ticks > 0 or state.wall_skim_ticks > 0:
+		return result
+	var total := config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS)
+	var phase := clampf(1.0 - float(state.jump_protection_ticks) / float(maxi(1, total)), 0.0, 1.0)
+	result["active"] = true
+	result["phase"] = phase
+	result["radius"] = lerpf(9.0, 18.0 if reduced else 27.0, phase)
+	result["opacity"] = (0.48 if reduced else 0.76) * (1.0 - phase * 0.8)
+	return result

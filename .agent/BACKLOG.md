@@ -1,5 +1,16 @@
 # FLUX 2 active backlog
 
+**READY FOR PLAYTEST: held Float + progressive recovery (2026-09-06).**
+Lower jump (75.6 px held), fresh second Jump becomes current-height steerable
+Float, 24 Stamina plus chain premium + 100/s held protection, immediate exit;
+independent 1x-to-3x quiet recovery; original takeoff/landing/dodge/slide cues.
+Keep speed, 5x reserves, spells, map and roster unchanged. Protocol 42/snapshot17.
+Exit passed: Full 78 suites / 143,435 assertions, Float/recovery replay,
+local Farflow, 3 sizes/8 directions, standard/reduced live captures, source
+launch and 6,867-assertion eight-player diagnostic. Next: user's movement test.
+Rollback checkpoint: `3a2ca16`. Remote publishing remains unapproved.
+Prior results below are historical evidence, not validation of this revision.
+
 **READY FOR PLAYTEST: expressive airborne movement revision (2026-09-06).**
 Latest user feedback explicitly resumes movement work: exactly 5x champion
 Stamina capacity, 15% faster running, continuous short/full/double-jump height,

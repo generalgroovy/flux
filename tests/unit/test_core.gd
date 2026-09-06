@@ -11,7 +11,7 @@ func run() -> int:
 
 
 func _test_supported_tick_rates() -> void:
-	equal(SimConfig.PROTOCOL_VERSION, 41, "current 120 Hz host-authoritative movement protocol is explicit")
+	equal(SimConfig.PROTOCOL_VERSION, 42, "current 120 Hz host-authoritative float/recovery protocol is explicit")
 	check(not SimConfig.new(60).is_valid(), "retired 60 Hz cadence fails closed")
 	check(SimConfig.new(120).is_valid(), "120 Hz is the sole supported cadence")
 	check(not SimConfig.new(90).is_valid(), "intermediate tick rates fail closed")

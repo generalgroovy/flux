@@ -4,6 +4,7 @@ extends RefCounted
 
 const DEFAULT_PATH := "res://content/visual/compact_hud_v1.json"
 const ElementGlyphRendererScript = preload("res://src/presentation/element_glyph_renderer.gd")
+const Recovery = preload("res://src/sim/entities/resource_recovery.gd")
 const EXPECTED_ID := "compact-combat-hud-v1"
 const EXPECTED_AUTHORITY := "presentation only; simulation, input legality and resource ownership remain authoritative elsewhere"
 const REQUIRED_LAYOUT_KEYS := [
@@ -143,7 +144,9 @@ static func flux_status_label(state: PlayerState, tick_rate: int) -> String:
 		return "FLUX"
 	if state.flux_recovery_delay_ticks > 0:
 		return "FLUX WAIT %.1fs" % (float(state.flux_recovery_delay_ticks) / float(maxi(1, tick_rate)))
-	return "FLUX RISING"
+	if state.health <= 0:
+		return "FLUX"
+	return "FLUX +%s/s" % _rate_points(Recovery.rate_per_second(state.flux_recovery_per_second, state.flux_recovery_idle_ticks, tick_rate))
 
 
 static func stamina_status_label(state: PlayerState, tick_rate: int) -> String:
@@ -152,6 +155,8 @@ static func stamina_status_label(state: PlayerState, tick_rate: int) -> String:
 	var safe_rate := maxi(1, tick_rate)
 	var slide_minimum := ceili(float(MovementTuning.SLIDE_MINIMUM_MS * safe_rate) / 1000.0)
 	var free_control := state.impact_recovery_ticks <= 0 and state.control_state in [PlayerState.ControlState.FREE, PlayerState.ControlState.SLOWED]
+	if free_control and state.air_floating and state.is_airborne() and state.stamina > 0:
+		return "STAMINA FLOAT -%d/s" % (MovementTuning.FLOAT_DRAIN_PER_SECOND / 1000)
 	# Airtime is not sustain: falling, dodging, wall attachment, released input
 	# and forced control all stop optional Jump spending in the simulation.
 	if free_control and state.is_airborne() and state.air_vertical_velocity > 0 \
@@ -162,9 +167,22 @@ static func stamina_status_label(state: PlayerState, tick_rate: int) -> String:
 	if free_control and state.slide_ticks > slide_minimum and state.slide_held_last_tick \
 		and state.stamina >= MovementTuning.SLIDE_SUSTAIN_DRAIN_PER_SECOND / safe_rate:
 		return "STAMINA  SLIDE -%d/s" % (MovementTuning.SLIDE_SUSTAIN_DRAIN_PER_SECOND / 1000)
+	if free_control and state.sprinting and state.stamina > 0:
+		return "STAMINA SPRINT -%d/s" % (MovementTuning.SPRINT_DRAIN_PER_SECOND / 1000)
 	if state.movement_chain_reset_ticks > 0 and state.movement_chain_count > 0:
 		return "STAMINA  NEXT +%d%%" % (mini(state.movement_chain_count, MovementTuning.MOVEMENT_CHAIN_MAXIMUM_STEPS) * MovementTuning.MOVEMENT_CHAIN_COST_STEP_RATIO / 10)
+	if state.stamina < state.stamina_maximum and state.health > 0:
+		if state.stamina_recovery_delay_ticks > 0:
+			return "STAMINA WAIT %.1fs" % (float(state.stamina_recovery_delay_ticks) / float(safe_rate))
+		if free_control and not state.is_airborne() and state.air_dodge_ticks <= 0 \
+			and state.slide_ticks <= 0 and state.wave_dash_ticks <= 0 and state.wall_skim_ticks <= 0 \
+			and state.vault_ticks <= 0 and state.superglide_ticks <= 0:
+			return "STAMINA +%s/s" % _rate_points(Recovery.rate_per_second(state.stamina_recovery_per_second, state.stamina_recovery_idle_ticks, tick_rate))
 	return "STAMINA"
+
+
+static func _rate_points(value: int) -> String:
+	return ("%.1f" % (float(value) / 1000.0)).trim_suffix(".0")
 
 
 func _draw_resource_bar(canvas: CanvasItem, rectangle: Rect2, label: String, value: int, maximum: int, color: Color) -> void:

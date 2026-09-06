@@ -8,6 +8,7 @@ func run() -> int:
 	_test_soft_and_hard_correction()
 	_test_history_and_validation_bounds()
 	_test_movement_intent_state_round_trip()
+	_test_float_recovery_live_prediction()
 	return finish("client-prediction")
 
 
@@ -128,6 +129,10 @@ func _test_movement_intent_state_round_trip() -> void:
 	authority.air_height_remainder = -119
 	authority.air_dodge_used = true
 	authority.jump_held_last_tick = true
+	authority.air_floating = true
+	authority.hop_stage = 2
+	authority.air_vertical_velocity = 0
+	authority.stamina_recovery_idle_ticks = 137
 	authority.stamina_maximum = 792_000
 	authority.stamina = 791_123
 	var packet := ClientPrediction.capture_packet(authority, 1, -1)
@@ -141,6 +146,8 @@ func _test_movement_intent_state_round_trip() -> void:
 		[&"air_vertical_velocity", MovementTuning.JUMP_VERTICAL_SPEED + 1],
 		[&"air_height_remainder", -240], [&"air_height_remainder", 240],
 		[&"air_dodge_used", 2], [&"jump_held_last_tick", -1],
+		[&"air_floating", 2], [&"air_floating", -1],
+		[&"stamina_recovery_idle_ticks", -1], [&"stamina_recovery_idle_ticks", 361],
 	]:
 		var malformed: PackedInt64Array = packet["values"].duplicate()
 		malformed[ClientPrediction.STATE_FIELDS.find(fixture[0])] = fixture[1]
@@ -163,6 +170,41 @@ func _test_movement_intent_state_round_trip() -> void:
 		MovementSystem.step(restored, command, config, collision)
 		for property_name: StringName in ClientPrediction.STATE_FIELDS:
 			equal(restored.get(property_name), authority.get(property_name), "restored movement remains deterministic: tick %d / %s" % [tick, property_name])
+
+
+func _test_float_recovery_live_prediction() -> void:
+	var config := SimConfig.new(120)
+	var collision := CollisionWorld.new(8_000_000, 8_000_000)
+	var authority := _state()
+	authority.position_x = 4_000_000
+	authority.position_y = 4_000_000
+	authority.stamina_maximum = 594_000
+	authority.stamina = 594_000
+	var prediction := ClientPrediction.new()
+	check(prediction.configure(config, collision, 2), "Float recovery prediction configures")
+	check(prediction.reconcile(ClientPrediction.capture_packet(authority, 0, -1)), "Float prediction seeds from authority")
+	var protected_ticks := 0
+	var peak_idle_ticks := 0
+	for tick: int in range(1, 600):
+		var held := SimCommand.HELD_JUMP if tick >= 4 and tick < 160 and tick != 23 else 0
+		var pressed := SimCommand.PRESSED_JUMP if tick in [4, 24] else 0
+		var direction := Vector2i(1000, 0) if tick < 70 else Vector2i(0, -1000)
+		var command := SimCommand.new(tick, 2, direction.x, direction.y, held, pressed)
+		check(prediction.queue_input(tick, command), "Float input %d accepted" % tick)
+		MovementSystem.step(authority, command, config, collision)
+		if authority.air_floating:
+			protected_ticks += 1
+		peak_idle_ticks = maxi(peak_idle_ticks, authority.stamina_recovery_idle_ticks)
+		var predicted_values: PackedInt64Array = ClientPrediction.capture_packet(prediction.predicted_state, tick, tick)["values"]
+		var authoritative_packet := ClientPrediction.capture_packet(authority, tick, tick)
+		equal(predicted_values, authoritative_packet["values"], "Float/protection/recovery match authority tick %d" % tick)
+		if tick % 6 == 0:
+			check(prediction.reconcile(authoritative_packet, authority.last_event), "Float snapshot %d reconciles" % tick)
+			_near(prediction.last_correction_pixels, 0.0, 0.001, "Float/recovery needs no correction at tick %d" % tick)
+	check(protected_ticks > 120, "production inputs hold protected Float beyond one second")
+	check(not authority.air_floating, "release clears protection after reconciliation")
+	equal(peak_idle_ticks, ResourceRecovery.maximum_idle_ticks(120), "post-float recovery reaches bounded full ramp")
+	check(authority.stamina > 500_000, "production float use refills through progressive recovery")
 
 
 func _state() -> PlayerState:

@@ -7,7 +7,7 @@ const OUTPUT_ARGUMENT := "--movement-specimen-output="
 const CHAMPIONS: Array[String] = ["s_wayne", "oh_tipi", "red_baron"]
 const BODY_LABELS: Array[String] = ["SMALL / 58 px", "MIDDLE / 68 px", "LARGE / 76 px"]
 const DIRECTIONS: Array[String] = ["S", "SE", "E", "NE", "N", "NW", "W", "SW"]
-const PAGES: Array[String] = ["idle", "walk_a", "walk_b", "sprint_a", "sprint_b", "jump_opening", "jump_apex", "double_jump", "air_dodge", "dodge_expired", "slide", "roll", "air_turn", "wallrun", "wall_exit", "landing"]
+const PAGES: Array[String] = ["idle", "walk_a", "walk_b", "sprint_a", "sprint_b", "jump_opening", "jump_apex", "float", "float_released", "air_dodge", "dodge_expired", "slide", "roll", "air_turn", "wallrun", "wall_exit", "landing"]
 const FRAME_SIZE := Vector2i(1280, 1024)
 
 var sheet: MovementSheet
@@ -57,7 +57,7 @@ func _run() -> void:
 				quit(1)
 				return
 			print("RENDERED movement state fixture: %s (3 templates x 8 input directions)" % filename)
-	print("PASS: 32 actual renderer sheets, 768 standard/reduced state-fixture cells; not a simulation or hand-drawn atlas replacement")
+	print("PASS: %d actual renderer sheets, %d standard/reduced state-fixture cells; not a simulation or hand-drawn atlas replacement" % [PAGES.size() * 2, PAGES.size() * 2 * CHAMPIONS.size() * DIRECTIONS.size()])
 	quit()
 
 
@@ -135,13 +135,14 @@ class MovementSheet:
 			state.movement_mode = PlayerState.MovementMode.WALK
 		elif action.begins_with("sprint"):
 			state.movement_mode = PlayerState.MovementMode.SPRINT
-		elif action in ["jump_opening", "jump_apex", "double_jump", "air_dodge", "dodge_expired", "air_turn", "wall_exit"]:
+		elif action in ["jump_opening", "jump_apex", "float", "float_released", "air_dodge", "dodge_expired", "air_turn", "wall_exit"]:
 			state.movement_mode = PlayerState.MovementMode.HOP
 			state.hop_mode = PlayerState.MovementMode.HOP
 			state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS) / 2
-			state.air_height = 90_000
+			state.air_height = 75_600
 			if action == "jump_opening":
 				state.air_height = 25_000
+				state.air_vertical_velocity = 480_000
 				state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.HOP_DURATION_MS) - 5
 				state.jump_sustain_ticks = 0
 				state.jump_protection_ticks = config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS) - 5
@@ -151,8 +152,11 @@ class MovementSheet:
 			elif action == "wall_exit":
 				state.air_height = 35_000
 				state.air_vertical_velocity = -150_000
-			elif action == "double_jump":
-				state.air_height = 165_000
+			elif action in ["float", "float_released"]:
+				state.air_height = 62_000
+				state.air_floating = action == "float"
+				state.air_vertical_velocity = 0 if state.air_floating else -100_000
+				state.hop_stage = 2
 				state.hop_mode = PlayerState.MovementMode.DOUBLE_JUMP
 				state.movement_mode = PlayerState.MovementMode.DOUBLE_JUMP
 			elif action in ["air_dodge", "dodge_expired"]:

@@ -243,7 +243,8 @@ func draw(
 	var anchor := body_anchor + (frame["offset"] as Vector2)
 	var floor_anchor := ground_anchor if ground_anchor.is_finite() else body_anchor
 	_draw_counter_strafe_accent(canvas, state, floor_anchor, reduced_effects)
-	_draw_movement_accent(canvas, state, floor_anchor, roundi(presentation_tick), reduced_effects, body_anchor)
+	_draw_takeoff_accent(canvas, state, floor_anchor, config, reduced_effects)
+	_draw_movement_accent(canvas, state, floor_anchor, roundi(presentation_tick), reduced_effects, body_anchor, config)
 	_draw_aura(canvas, definition, anchor, roundi(presentation_tick), reduced_effects, float(frame["aura_scale"]))
 	if atlas == null:
 		return false
@@ -587,11 +588,76 @@ func _draw_counter_strafe_accent(canvas: CanvasItem, state: PlayerState, ground_
 		canvas.draw_rect(Rect2(heel - travel * 11.0 - Vector2.ONE, Vector2(2.0, 2.0)), Color(color, opacity * 0.75), true)
 
 
-func _draw_movement_accent(canvas: CanvasItem, state: PlayerState, ground_anchor: Vector2, tick: int, reduced: bool, body_anchor: Vector2 = Vector2.INF) -> void:
+func _draw_takeoff_accent(canvas: CanvasItem, state: PlayerState, ground_anchor: Vector2, config: SimConfig, reduced: bool) -> void:
+	var cue := JumpPresentation.takeoff_contract(state, config, reduced)
+	if not bool(cue["active"]):
+		return
+	var radius := float(cue["radius"])
+	var opacity := float(cue["opacity"])
+	var color := language.ramp_color("aged_brass", 4)
+	for side: float in [-1.0, 1.0]:
+		canvas.draw_arc(ground_anchor, radius, side * 0.22, side * 2.86, 12, Color(color, opacity), 1.5)
+	if not reduced:
+		for direction: Vector2 in [Vector2.LEFT, Vector2.RIGHT]:
+			canvas.draw_line(ground_anchor + direction * (radius + 3.0), ground_anchor + direction * (radius + 6.0), Color(color, opacity * 0.7), 1.5)
+
+
+static func movement_trail_contract(state: PlayerState, config: SimConfig, reduced: bool = false) -> Dictionary:
+	var result := {"active": false, "body_anchored": false, "lines": [], "dust": [], "opacity": 0.0}
+	if state == null or config == null or state.health <= 0:
+		return result
+	var dodge := state.air_dodge_ticks > 0 and not state.is_rolling()
+	var slide := state.slide_ticks > 0 and not state.is_airborne()
+	if not dodge and not slide:
+		return result
+	var direction := LandingPresentation.motion_direction(state)
+	var speed := Vector2(state.velocity_x, state.velocity_y).length()
+	if speed <= float(SimConfig.FIXED_SCALE):
+		return result
+	var side := direction.orthogonal()
+	var phase := 0.0
+	if dodge:
+		var total := config.milliseconds_to_ticks(MovementTuning.AIR_DODGE_DURATION_MS)
+		phase = clampf(1.0 - float(state.air_dodge_ticks) / float(maxi(1, total)), 0.0, 1.0)
+	var length := (12.0 + (1.0 - phase) * 15.0) if dodge else clampf(speed / 25000.0, 12.0, 25.0)
+	length *= 0.6 if reduced else 1.0
+	var lines: Array[PackedVector2Array] = []
+	var dust: Array[Vector2] = []
+	for sign_value: float in [-1.0, 1.0]:
+		# Flank placement keeps southward trails outside the lifted/low body,
+		# instead of hiding every line behind its crisp opaque silhouette.
+		var start := -direction * (10.0 if dodge else 8.0) + side * (24.0 if dodge else 22.0) * sign_value
+		lines.append(PackedVector2Array([start - direction * length, start]))
+		if not reduced:
+			if dodge:
+				lines.append(PackedVector2Array([start - direction * (length + 5.0) + side * sign_value * 4.0, start - direction * 10.0 + side * sign_value * 4.0]))
+			else:
+				dust.append(start - direction * (length + 3.0))
+	result["active"] = true
+	result["body_anchored"] = dodge
+	result["lines"] = lines
+	result["dust"] = dust
+	result["opacity"] = (0.50 if reduced else 0.72) * (1.0 - phase * 0.42)
+	return result
+
+
+func _draw_movement_accent(canvas: CanvasItem, state: PlayerState, ground_anchor: Vector2, tick: int, reduced: bool, body_anchor: Vector2 = Vector2.INF, config: SimConfig = null) -> void:
+	var trail := movement_trail_contract(state, config, reduced)
+	if bool(trail["active"]):
+		var trail_anchor := body_anchor if bool(trail["body_anchored"]) and body_anchor.is_finite() else ground_anchor
+		var trail_color := language.ramp_color("aged_brass" if bool(trail["body_anchored"]) else "warm_stone", 4)
+		for line: PackedVector2Array in trail["lines"]:
+			canvas.draw_polyline(_offset(line, trail_anchor), Color(trail_color, float(trail["opacity"])), 1.5)
+		for dust: Vector2 in trail["dust"]:
+			canvas.draw_arc(trail_anchor + dust, 2.5, 0.2, 5.5, 6, Color(trail_color, float(trail["opacity"]) * 0.7), 1.5)
 	var definition := motion.accent(state)
 	if definition.is_empty():
 		return
 	var kind := String(definition.get("kind", ""))
+	# The legacy DOUBLE_JUMP adapter is Float, whose state is marked only by
+	# the immediate protection layer. Never loop a stale lift ring on release.
+	if kind in ["lift_ring", "ground_wake", "speed_fins"]:
+		return
 	if kind in ["speed_fins", "fall_lines", "recovery_brace"] and body_anchor.is_finite():
 		ground_anchor = body_anchor
 	var color := language.ramp_color(String(definition.get("ramp", "aged_brass")), int(definition.get("index", 3)))
@@ -601,16 +667,6 @@ func _draw_movement_accent(canvas: CanvasItem, state: PlayerState, ground_anchor
 	var side := Vector2(-direction.y, direction.x)
 	var phase := float(tick % 12) / 12.0
 	match kind:
-		"lift_ring":
-			canvas.draw_arc(ground_anchor + Vector2(0, 2), 15.0 + phase * 5.0, 0.0, TAU, 16, Color(color, opacity * (1.0 - phase)), 2.0)
-		"ground_wake":
-			for sign_value: float in [-1.0, 1.0]:
-				var start := ground_anchor - direction * 9.0 + side * 8.0 * sign_value
-				canvas.draw_line(start, start - direction * (14.0 + phase * 7.0), Color(color, opacity * (1.0 - phase * 0.5)), 2.0)
-		"speed_fins":
-			for sign_value: float in [-1.0, 1.0]:
-				var fin := ground_anchor - direction * 13.0 + side * 13.0 * sign_value
-				canvas.draw_polyline(PackedVector2Array([fin - direction * 12.0, fin, fin - direction * 7.0 + side * 5.0 * sign_value]), Color(color, opacity), 2.0)
 		"ground_chevron":
 			for index: int in range(2):
 				var center := ground_anchor - direction * (12.0 + float(index) * 9.0)
@@ -683,10 +739,15 @@ func _draw_evasion_contour(
 	canvas.draw_colored_polygon(shield, Color(ink, 0.98))
 	canvas.draw_polyline(shield, Color(teal, 1.0), 4.0)
 	canvas.draw_polyline(shield, Color.WHITE, 1.5)
+	for wing: PackedVector2Array in contract["float_wings"]:
+		var points := _offset(wing, ground_anchor)
+		canvas.draw_polyline(points, Color(ink, 0.98), 5.0)
+		canvas.draw_polyline(points, Color(teal, 1.0), 3.0)
+		canvas.draw_polyline(points, Color.WHITE, 1.25)
 
 
 static func protection_contract(state: PlayerState, config: SimConfig, _reduced: bool = false, body_height: float = 68.0) -> Dictionary:
-	var result := {"active": false, "brackets": [], "shield": PackedVector2Array(), "remaining_ratio": 0.0}
+	var result := {"active": false, "brackets": [], "shield": PackedVector2Array(), "float_wings": [], "remaining_ratio": 0.0}
 	var ratio := JumpPresentation.protection_ratio(state, config)
 	if ratio <= 0.0:
 		return result
@@ -702,6 +763,11 @@ static func protection_contract(state: PlayerState, config: SimConfig, _reduced:
 	result["brackets"] = brackets
 	var center := Vector2(0, top - 11.0)
 	result["shield"] = PackedVector2Array([center + Vector2(-5, -4), center + Vector2(5, -4), center + Vector2(4, 2), center + Vector2(0, 6), center + Vector2(-4, 2), center + Vector2(-5, -4)])
+	if state.air_floating and state.air_height > 0 and state.stamina > 0:
+		var wings: Array[PackedVector2Array] = []
+		for side: float in [-1.0, 1.0]:
+			wings.append(PackedVector2Array([center + Vector2(side * 8.0, 2.0), center + Vector2(side * 14.0, 2.0), center + Vector2(side * 18.0, -3.0)]))
+		result["float_wings"] = wings
 	return result
 
 

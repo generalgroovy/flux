@@ -26,11 +26,11 @@ static func entries(preferences: PlayerPreferences = null, device: int = Control
 			"Release caps remaining upward speed at %s units/s, not remaining flight time. Full hold reaches about %s units high from ground; only ascent pays sustain. Landing refreshes jump readiness." % [_units(MovementTuning.SHORT_HOP_VERTICAL_SPEED), _units(full_jump_height())],
 			{"duration_ms": MovementTuning.HOP_DURATION_MS, "duration_note": "nominal full jump from ground", "protection_ms": MovementTuning.JUMP_INVULNERABILITY_MS, "sustain_milli_per_second": MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND},
 			"The later airborne arc is vulnerable; aim for the landing lane."),
-		_row("double_jump", "Double jump", "jump", MovementTuning.DOUBLE_JUMP_COST,
-			"During your first jump, release and press {jump} again. Lift starts from your current height; steer freely and hold while rising to gain more height.",
-			"One second-jump opportunity, shared with an airborne wall jump. Height is capped at %s units. Wall contact does not refill this opportunity; land to reset it." % _units(MovementTuning.AIR_MAX_HEIGHT),
-			{"duration_ms": MovementTuning.DOUBLE_JUMP_DURATION_MS, "duration_note": "nominal lift cycle; landing depends on height", "protection_ms": MovementTuning.JUMP_INVULNERABILITY_MS, "sustain_milli_per_second": MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND},
-			"Spend only when the changed air path helps; it cannot chain into unlimited jumps."),
+		_row("double_jump", "Float / held air jump", "jump", MovementTuning.FLOAT_COST,
+			"During your first jump, release and press {jump} again, then hold. Float holds your current height; steer, coast or brake freely. Release to fall.",
+			"One Float opportunity per airtime, shared with an airborne wall jump. Wall contact does not refill it. Release, exhaustion, fast fall, evade, wallrun or forced control ends Float immediately.",
+			{"sustain_milli_per_second": MovementTuning.FLOAT_DRAIN_PER_SECOND, "protection_note": "Protected only while Float is active and paid; ending Float ends its protection immediately."},
+			"Continuous protection costs heavy Stamina. Predict your exit before releasing; there is no second upward launch."),
 		_row("slide", "Slide / held slide", "slide", MovementTuning.SLIDE_COST,
 			"Build ground speed, then press {slide}. Hold for the longer slide; release for the shorter remainder.",
 			"Needs at least %s world units/s. Release limits the remainder to %d ms; holding never extends protection." % [_units(MovementTuning.SLIDE_ENTRY_SPEED), MovementTuning.SLIDE_MINIMUM_MS],
@@ -43,7 +43,7 @@ static func entries(preferences: PlayerPreferences = null, device: int = Control
 		_row("slide_jump", "Slide jump", "jump", MovementTuning.SLIDE_JUMP_COST,
 			"While sliding, press {jump} after the minimum commitment; choose the outgoing direction.",
 			"Available after %d ms of accepted slide time, even while {slide} is held. Retains earned speed within the global cap." % MovementTuning.SLIDE_JUMP_MINIMUM_COMMITMENT_MS,
-			{"duration_ms": MovementTuning.SLIDE_JUMP_DURATION_MS, "duration_note": "nominal full jump from ground", "protection_ms": MovementTuning.JUMP_INVULNERABILITY_MS, "sustain_milli_per_second": MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND},
+			{"duration_ms": MovementTuning.HOP_DURATION_MS, "duration_note": "nominal full jump from ground", "protection_ms": MovementTuning.JUMP_INVULNERABILITY_MS, "sustain_milli_per_second": MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND},
 			"Costs another paid action and chain premium; later flight is vulnerable."),
 		_row("roll", "Ground roll", "evade", MovementTuning.ROLL_COST,
 			"On the ground, press {evade} with a direction. Use a neutral direction only when your facing is the intended escape.",
@@ -66,12 +66,12 @@ static func entries(preferences: PlayerPreferences = null, device: int = Control
 			"No new protection; predict the redirected path."),
 		_row("wall_run", "Wallrun / detach", "technique", MovementTuning.WALL_SKIM_COST,
 			"Touch a runnable wall, hold along its face and press {technique}. Press it again, steer away or reach the wall end to detach.",
-			"Works from ground or air. Detaching returns to finite steerable descent, not a new protected jump. Wall contact does not refill the air dodge or second jump. Same-surface lockout: %d ms." % MovementTuning.WALL_SKIM_SAME_SURFACE_LOCKOUT_MS,
+			"Works from ground or air. Detaching returns to finite steerable descent, not a new protected jump. Wall contact does not refill the air dodge or Float. Same-surface lockout: %d ms." % MovementTuning.WALL_SKIM_SAME_SURFACE_LOCKOUT_MS,
 			{"duration_ms": MovementTuning.WALL_SKIM_DURATION_MS, "cooldown_ms": MovementTuning.WALL_SKIM_COOLDOWN_MS},
 			"No protection. Follow the exposed wall lane or threaten its exit."),
 		_row("wall_jump", "Wall jump", "jump", MovementTuning.HOP_COST,
 			"Press {jump} near a remembered wall contact. In the first air jump, steer away from that wall when pressing.",
-			"Contact memory lasts %d ms; same-wall lockout %d ms. Air wall jump spends the second-jump opportunity." % [MovementTuning.WALL_MEMORY_MS, MovementTuning.SAME_WALL_LOCKOUT_MS],
+			"Contact memory lasts %d ms; same-wall lockout %d ms. Air wall jump spends the Float opportunity." % [MovementTuning.WALL_MEMORY_MS, MovementTuning.SAME_WALL_LOCKOUT_MS],
 			{"duration_ms": MovementTuning.HOP_DURATION_MS, "duration_note": "nominal lift cycle; landing depends on height", "protection_ms": MovementTuning.JUMP_INVULNERABILITY_MS, "sustain_milli_per_second": MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND},
 			"Cannot climb indefinitely; anticipate the outward path and later vulnerable landing."),
 		_row("fast_fall", "Fast fall", "slide", 0,
@@ -126,7 +126,11 @@ static func detail_lines(row: Dictionary) -> Array[String]:
 		result.append("- Timing: " + "; ".join(timing) + ".")
 	result.append("- Rule: " + String(row.get("timing_note", "")))
 	var protection := int(row.get("protection_ms", 0))
-	result.append("- Protection: opening %d ms only; the rest is vulnerable." % protection if protection > 0 else "- Protection: no new immunity from this technique.")
+	var protection_note := String(row.get("protection_note", ""))
+	if not protection_note.is_empty():
+		result.append("- Protection: " + protection_note)
+	else:
+		result.append("- Protection: opening %d ms only; the rest is vulnerable." % protection if protection > 0 else "- Protection: no new immunity from this technique.")
 	result.append("- Counter / caution: " + String(row.get("counter", "")))
 	return result
 
@@ -137,14 +141,15 @@ static func summary_lines(state: PlayerState = null) -> Array[String]:
 	var steps := mini(state.movement_chain_count, MovementTuning.MOVEMENT_CHAIN_MAXIMUM_STEPS) if state != null and state.movement_chain_reset_ticks > 0 else 0
 	var step_percent := roundi(float(MovementTuning.MOVEMENT_CHAIN_COST_STEP_RATIO) / 10.0)
 	return [
-		"Stamina %s maximum; recovery %s/s after %d ms without a spend and when ordinary movement allows it." % [_units(maximum), _units(recovery), MovementTuning.STAMINA_RECOVERY_DELAY_MS],
+		"Stamina %s maximum; base recovery %s/s, rising to %s/s after its %d ms spend delay when ordinary movement allows refill." % [_units(maximum), _units(recovery), _units(recovery * PlayerTuning.RESOURCE_RECOVERY_MAXIMUM_RATIO / 1000), MovementTuning.STAMINA_RECOVERY_DELAY_MS],
 		"Costs shown are base. Each paid continuation adds %d%%, capped at %d%%; resets after %d ms. Next premium: %d%%." % [step_percent, step_percent * MovementTuning.MOVEMENT_CHAIN_MAXIMUM_STEPS, MovementTuning.MOVEMENT_CHAIN_RESET_MS, steps * step_percent],
 		"The newest movement tap replaces older intent for up to %d ms; legal state, cooldown and Stamina are checked again. One paid action starts per tick; a refused move spends nothing." % MovementTuning.INPUT_BUFFER_MS,
 		"For simultaneous movement presses, priority is Evade, then Jump, Slide, Technique. Initial commitment is the short interval before another action can replace the current one, not a new immunity window.",
-		"Flux pays for spells; movement uses Stamina. High jump height and a held action never mean full-duration immunity.",
-		"Learn Travel first: move, sprint, jump, slide. Then Escape: roll, air dodge, fast fall, impact recovery. Expression combines them with wall routes, turns, wavedashes and landing reversals.",
+		"Flux pays for spells; movement uses Stamina. Ordinary held jump and slide never extend opening immunity. Float is the explicit exception: protected only while held, paid and active.",
+		"Learn Travel first: move, sprint, jump, slide. Then Escape: roll, air dodge, fast fall, impact recovery. Expression adds Float, wall routes, turns, wavedashes and landing reversals.",
 		"Wheel movement is a short pulse, not a hold. Same-direction notches group until %d ms without another notch; use buttons for precise second presses or sustained height and distance." % InputRouter.WHEEL_GESTURE_QUIET_MS,
-		"Hold drain and sprint cost are additional to the action's base cost; the chain premium applies to paid starts. Protection always ends before the full held action.",
+		"Hold drain and sprint cost are additional to base cost; the chain premium applies to paid starts. Float consumes Stamina continuously for its protected hold, not a fixed immunity window.",
+		"Unused Flux and Stamina independently ramp recovery from 1x to %.0fx over %.1f seconds after their own delay. Any positive spend resets only that resource's ramp; failed and free actions do not. Health recovery is unchanged." % [float(PlayerTuning.RESOURCE_RECOVERY_MAXIMUM_RATIO) / 1000.0, float(PlayerTuning.RESOURCE_RECOVERY_RAMP_MS) / 1000.0],
 		"Unbound action? Assign it at the Controls Lectern. Vault and crest-superglide are not active techniques.",
 	]
 

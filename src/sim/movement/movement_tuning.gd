@@ -4,7 +4,7 @@ extends RefCounted
 
 # Authoritative values are fixed-point world units, resource milli-units,
 # milliseconds, or scale-1000 ratios. They preserve the proven FLUX grammar.
-const COMPATIBILITY_ID: String = "movement-tuning-v11-continuous-height-air-budget"
+const COMPATIBILITY_ID: String = "movement-tuning-v12-held-protected-float"
 const PLAYER_RADIUS: int = 18_000
 const BASE_SPEED: int = 372_600
 const ACCELERATION: int = 2_277_000
@@ -34,11 +34,11 @@ const STAMINA_RECOVERY_DELAY_MS: int = 380
 
 const HOP_COST: int = 28_000
 const HOP_SPEED: int = 650_000
-const HOP_DURATION_MS: int = 500
+const HOP_DURATION_MS: int = 460
 const AIR_MAX_HEIGHT: int = 180_000
 const VERTICAL_GRAVITY: int = 2_880_000
-const JUMP_VERTICAL_SPEED: int = 720_000
-const SHORT_HOP_VERTICAL_SPEED: int = 410_000
+const JUMP_VERTICAL_SPEED: int = 660_000
+const SHORT_HOP_VERTICAL_SPEED: int = 390_000
 const AIR_TERMINAL_FALL_SPEED: int = 1_200_000
 const AIR_FAST_FALL_SPEED: int = 1_000_000
 const HOP_COOLDOWN_MS: int = 500
@@ -58,6 +58,8 @@ const SLOW_MINIMUM_RATIO: int = 250
 const SLOW_MAXIMUM_RATIO: int = 1000
 
 const DOUBLE_JUMP_COST: int = 24_000
+const FLOAT_COST: int = DOUBLE_JUMP_COST
+const FLOAT_DRAIN_PER_SECOND: int = 100_000
 const DOUBLE_JUMP_SPEED: int = 700_000
 const DOUBLE_JUMP_DURATION_MS: int = 500
 const AIR_REDIRECT_COST: int = 10_000
@@ -134,9 +136,10 @@ const MAX_AUTHORED_SPEED: int = SUPERGLIDE_SPEED
 static func compatibility_hash() -> String:
 	return CanonicalContent.sha256({
 		"id": COMPATIBILITY_ID,
+		"resource_recovery": [PlayerTuning.RESOURCE_RECOVERY_RAMP_MS, PlayerTuning.RESOURCE_RECOVERY_MAXIMUM_RATIO],
 		"vertical": [AIR_MAX_HEIGHT, VERTICAL_GRAVITY, JUMP_VERTICAL_SPEED,
 			SHORT_HOP_VERTICAL_SPEED, AIR_TERMINAL_FALL_SPEED, AIR_FAST_FALL_SPEED,
-			AIR_DODGE_DRAG_PER_SECOND],
+			AIR_DODGE_DRAG_PER_SECOND, FLOAT_COST, FLOAT_DRAIN_PER_SECOND],
 		"ordinary": [
 			HOP_COMMITMENT_MS, ROLL_COMMITMENT_MS, AIR_DODGE_COMMITMENT_MS,
 			WALL_RUN_COMMITMENT_MS, WALL_EXIT_AIR_MS, WAVE_DASH_COMMITMENT_MS,

@@ -3,6 +3,7 @@ extends FluxTestSuite
 
 const ABILITY_PATH: String = "res://content/abilities/foundation_abilities_v1.json"
 const CHAMPION_PATH: String = "res://content/champions/foundation_champions_v1.json"
+const Recovery = preload("res://src/sim/entities/resource_recovery.gd")
 
 
 func run() -> int:
@@ -136,7 +137,11 @@ func _test_profiles_are_authoritative() -> void:
 	state.health = 54_000
 	state.flux = 52_000
 	state.stamina = 54_000
+	state.flux_recovery_idle_ticks = 180
+	state.stamina_recovery_idle_ticks = 120
 	check(catalog.apply_to_player(state, "s_wayne", true), "S. Wayne profile applies with ratios preserved")
+	equal(state.flux_recovery_idle_ticks, 0, "champion switch resets Flux quiet age for the new profile")
+	equal(state.stamina_recovery_idle_ticks, 0, "champion switch resets Stamina quiet age for the new profile")
 	equal(state.champion_wire_id, 2, "S. Wayne owns stable wire id 2")
 	equal(state.primary_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "S. Wayne equips Eclipse Disc")
 	equal(state.active_1_wire_id, CombatTuning.POCKET_ECLIPSE_WIRE_ID, "S. Wayne equips Pocket Eclipse")
@@ -199,9 +204,10 @@ func _test_fivefold_stamina_reserve() -> void:
 		state.stamina = 0
 		state.stamina_remainder = 0
 		state.stamina_recovery_delay_ticks = 0
+		state.stamina_recovery_idle_ticks = 0
 		for tick: int in range(120):
 			MovementSystem.step(state, SimCommand.new(tick, state.entity_id), config, collision)
-		equal(state.stamina, int(before[3]), champion_id + " one second restores the old absolute amount, not five times as much")
+		equal(state.stamina, _quiet_second_recovery(int(before[3])), champion_id + " one second follows the independent quiet ramp over its unchanged base rate")
 	equal(ChampionCatalog.STAT_BOUNDS["stamina_maximum"], Vector2i(300_000, 800_000), "expanded Stamina resource envelope remains finite")
 	var abilities := AbilityCatalog.new()
 	check(abilities.load_from_file(ABILITY_PATH), "ability catalog loads for fivefold bound rejection")
@@ -238,15 +244,25 @@ func _test_profiles_execute_at_rate(tick_rate: int) -> void:
 	oh_tipi.flux = 0
 	s_wayne.flux = 0
 	red_baron.flux = 0
+	for state: PlayerState in [oh_tipi, s_wayne, red_baron]:
+		state.flux_recovery_remainder = 0
+		state.flux_recovery_idle_ticks = 0
 	for _index: int in range(tick_rate):
 		PlayerResourcesSystem.step(oh_tipi, oh_world.config)
 		PlayerResourcesSystem.step(s_wayne, wayne_world.config)
 		PlayerResourcesSystem.step(red_baron, baron_world.config)
-	equal(oh_tipi.flux, oh_tipi.flux_recovery_per_second, "%d Hz Oh Tipi recovers the exact authored Flux rate" % tick_rate)
-	equal(s_wayne.flux, s_wayne.flux_recovery_per_second, "%d Hz S. Wayne recovers the exact authored Flux rate" % tick_rate)
-	equal(red_baron.flux, red_baron.flux_recovery_per_second, "%d Hz Red Baron recovers the exact authored Flux rate" % tick_rate)
+	equal(oh_tipi.flux, _quiet_second_recovery(oh_tipi.flux_recovery_per_second), "%d Hz Oh Tipi applies the quiet curve to its authored Flux rate" % tick_rate)
+	equal(s_wayne.flux, _quiet_second_recovery(s_wayne.flux_recovery_per_second), "%d Hz S. Wayne applies the quiet curve to its authored Flux rate" % tick_rate)
+	equal(red_baron.flux, _quiet_second_recovery(red_baron.flux_recovery_per_second), "%d Hz Red Baron applies the quiet curve to its authored Flux rate" % tick_rate)
 	check(oh_world.state_hash() != wayne_world.state_hash(), "%d Hz champion identity changes canonical world state" % tick_rate)
 	check(baron_world.state_hash() != oh_world.state_hash(), "%d Hz the large profile changes canonical world state" % tick_rate)
+
+
+func _quiet_second_recovery(base_rate: int) -> int:
+	var total := 0
+	for tick: int in range(1, 121):
+		total += Recovery.rate_per_second(base_rate, tick, 120)
+	return total / 120
 
 
 func _test_invalid_profiles_fail_closed() -> void:

@@ -97,5 +97,6 @@ func _test_directional_puffs() -> void:
 		for offset: Vector2 in sample.puff_offsets:
 			check(offset.dot(sample.travel_direction) < 0.0, "landing cloud stays behind the escape direction")
 			check(offset.length() < 30.0, "landing cloud cannot fill neighboring lanes")
-		check(sample.puff_opacity <= LandingPresentation.NORMAL_MAXIMUM_OPACITY * 0.62, "landing puff stays subordinate to active threats")
+		check(sample.puff_opacity <= LandingPresentation.NORMAL_MAXIMUM_OPACITY * 0.80, "landing puff stays subordinate to active threats")
+		check(sample.puff_radius <= 6.5, "dust lobes remain small enough to leave nearby threats clear")
 	check(not LandingPresentation.sample(null, config).active, "missing landing actor fails closed")

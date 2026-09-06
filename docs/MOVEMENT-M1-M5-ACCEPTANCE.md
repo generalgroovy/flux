@@ -1,8 +1,91 @@
 # Movement M1-M5 acceptance
 
+## Held Float and recovery feedback
+
+Status: source-verified and ready for the user's movement playtest, 2026-09-06.
+Successor to `3a2ca16`. This replaces the second-jump
+lift and constant recovery descriptions in the historical sections below.
+No new spell, map, chemistry, character, installer or Linux work is included.
+
+| Outcome | Implemented rule |
+|---|---|
+| Slightly lower jump | Tap 31.8 px / 36 ticks (300 ms); held 75.6 px / 55 ticks (458.3 ms), identical in all eight directions; previous held apex was 90 px |
+| Invincible Float | Jump, release, then press/hold Jump again while airborne; holds exact activation height, freely steers/reverses, costs 24 Stamina before chain premium plus exactly 100/s held |
+| Clear end / finite allowance | Release, exhaustion, fresh fast fall, dodge, wallrun or forced control ends Float immediately; re-press/wall contact cannot replenish it; only actual landing restores the shared second-air-action allowance |
+| Recovery decisions | Stamina and Flux independently ramp 1x to 3x over 3 seconds after their existing 380/700 ms spend delays; actual ticks round up to the 120 Hz grid; every positive spend resets only its resource's ramp |
+| No passive loophole | Failed/free actions and gains do not reset quiet age; Stamina still refills only in eligible ordinary grounded movement, never while hovering; Health recovery unchanged |
+| Protection clarity | Existing dark-outlined white/teal shield brackets plus a distinct Float wing mark; no interpolation or cosmetic tail on actual protection; reduced effects preserve the same state |
+| Original motion accents | Finite takeoff ring, compact landing dust, travel-oriented dodge speed lines and slide trails; no new teleport/displacement rule, no copied source-game pixels |
+| Authority and reuse | Protocol 42 / snapshot 17; strict Float/recovery bounds, rollback fields and remote base rates/delays; unchanged fixed 120 Hz authority, 5x reserves, speed, three body sizes and eight directions |
+
+Float is intentionally the exception to finite opening protection: ordinary Jump,
+Slide, Roll and Air Dodge keep their existing finite windows. The body is still
+visible while protected; it never passes through worldbone. Keyboard/controller
+hold sustains Float; the mouse wheel is a short pulse and cannot sustain it.
+Spells remain paid with Flux, including while floating.
+
+### Current verification
+
+| Gate | Actual result |
+|---|---|
+| Final Full | `scripts/test.ps1 -Tier Full -ReceiptPath .godot/receipts/held-float-recovery-final-full.json`: 78 suites / 143,435 assertions, zero failures/stderr, import and independent 120 Hz boot; 54,803 ms |
+| Local Farflow | `scripts/smoke-farflow.ps1 -TickRate 120 -TimeoutSeconds 60`: host/join, HELLO, reconciliation, round, late-join/spectating, exact-actor return, rematch and reason-bearing shutdown passed |
+| Actual source launcher | `flux.cmd play -SmokeTest` passed; current protocol 42 startup logged in `.godot/run/launcher-smoke.log` |
+| Eight-player probe | `runtime_stress_probe.gd --quick --require-network-clear`: 6,867 assertions, two deterministic repeats, 40 paid projectiles, zero active-danger omissions or snapshot rejections, actual datagrams <=1,388 bytes / <=3 fragments |
+| Body/effects rendering | 34 actual-renderer sheets / 816 fixture cells, three sizes / eight directions / standard and reduced effects; 336 input-driven gameplay frames for Float, release, dodge and slide |
+| Player information | 2,390 focused UI/resource assertions and 48 final clean compendium/HUD frames; active Float, release and recovery meanings fit the existing HUD |
+
+Full includes 6 movement suites / 51,341 assertions, 4 art suites / 25,850 and
+10,404 prediction assertions, including a 599-tick ordinary-input Float/steering/
+release/quiet-recovery journey with exact authority convergence. One early
+prediction fixture was too short to reach the full ramp after its spend delay;
+extended the scenario, not the mechanics. The docs status gate caught a missing
+explicit current `Status:` heading; corrected before final Full. A final practice
+label regression now prevents exposing the legacy `DOUBLE_JUMP` enum to players.
+
+The eight-player probe measured simulation medians 1.926/1.959 ms, p99
+3.430/3.685 ms, worst 5.299/5.268 ms; zero sampled simulation ticks exceeded
+8.333 ms. Snapshot capture/packing is measured separately (median 1.797/1.805 ms).
+These are not rendered FPS, combined frame budgets or real internet proof.
+Bounded cosmetic-event overflow remains explicitly reported; active hazards
+were complete. Evidence: `.godot/runtime-audit/held-float-recovery.log`.
+
+![Actual held Float: three body templates and eight directions](evidence/held-float-recovery-v1/three-body-float.png)
+
+![Actual production inputs: protected Float after steering](evidence/held-float-recovery-v1/live-float.png)
+
+![Actual production inputs: shield gone immediately on release](evidence/held-float-recovery-v1/live-release.png)
+
+[Actual in-game Float guide](evidence/held-float-recovery-v1/float-guide.png).
+These four images are unchanged Godot render captures, not concept art. Template
+sheets use explicit state fixtures; the live pair uses normal production inputs.
+Full captures: `.godot/visual-captures/float-art-templates-20260906-v2/`,
+`float-release-standard-20260906-v1/`, `float-release-reduced-20260906-v1/`,
+`float-air-dodge-standard-20260906-v1/`, `float-slide-standard-20260906-v1/`,
+`compendium-float-quiet-selected-v1/` and `float-recovery-hud-v2/`.
+The earlier HUD v1 had an invalid abbreviated-direction warning and is not final
+evidence. Final capture/import error logs are empty. No physical-controller,
+internet, installer or subjective fun/balance acceptance is claimed.
+
+### Test this slice
+
+Run `C:\Users\sende\Projects\flux\flux.cmd`. Hold Space for the lower full jump,
+release then hold Space again near the apex. Turn with WASD during the protected
+Float, watch the Stamina drain, then release and observe the shield disappear
+before landing. Repeat into Q air dodge and fresh C fast fall; a second Float
+in the same flight must refuse. Stop spending each resource separately and watch
+its HUD recovery rate rise. F4 explains costs; F2/F3 support repeatable practice.
+Compare all three body sizes and reduced-effects mode.
+
+Reference inspiration is broad only: controllable hovering and expressive
+air-to-ground choices, not copied exact timings or source-character behavior.
+The [Project M character archive](https://pmunofficial.com/en/characters/mewtwo/)
+describes directional hovering that consumes an air action; FLUX uses its own
+explicit held invincibility, resource drain and fixed-height top-down rules.
+
 ## Expressive airborne feedback
 
-Status: source-verified and ready for the user's movement playtest (2026-09-06).
+Historical status: source-verified preceding checkpoint (2026-09-06).
 This user-authorized successor to `fd1898d` supersedes the earlier resource,
 speed and timer-only jump decisions below. No new spell, chemistry, map,
 roster, installer or Linux scope is included.

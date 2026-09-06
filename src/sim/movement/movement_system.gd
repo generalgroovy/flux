@@ -1,9 +1,12 @@
 class_name MovementSystem
 extends RefCounted
 
+const ResourceRecoveryScript = preload("res://src/sim/entities/resource_recovery.gd")
+
 
 static func step(state: PlayerState, command: SimCommand, config: SimConfig, world: CollisionWorld) -> void:
 	_advance_timers(state, config)
+	state.stamina_recovery_idle_ticks = ResourceRecoveryScript.advance_idle(state.stamina_recovery_idle_ticks, state.stamina_recovery_delay_ticks, config.tick_rate)
 	var direction: Vector2i = _direction(command.move_x, command.move_y, Vector2i(state.facing_x, state.facing_y))
 	if command.move_x != 0 or command.move_y != 0:
 		state.facing_x = direction.x
@@ -38,6 +41,8 @@ static func step(state: PlayerState, command: SimCommand, config: SimConfig, wor
 	if not control_locked:
 		_apply_variable_air_time(state, command, config)
 		_apply_variable_slide_time(state, command, config)
+	elif state.air_floating:
+		_end_air_float(state, "float_interrupted")
 
 	if impact_tech_started:
 		pass # The technique owns this tick's velocity; ordinary control resumes next tick.
@@ -103,7 +108,7 @@ static func _consume_slide_buffer(state: PlayerState, direction: Vector2i, confi
 		state.slide_buffer_ticks = 0
 
 
-static func _consume_jump_buffer(state: PlayerState, _command: SimCommand, direction: Vector2i, config: SimConfig) -> void:
+static func _consume_jump_buffer(state: PlayerState, command: SimCommand, direction: Vector2i, config: SimConfig) -> void:
 	if state.jump_buffer_ticks <= 0:
 		return
 	var consumed := false
@@ -117,9 +122,9 @@ static func _consume_jump_buffer(state: PlayerState, _command: SimCommand, direc
 		if state.wall_memory_ticks > 0 and state.wall_contact_id > 0 and outward and state.hop_stage == 1:
 			consumed = _try_air_wall_kick(state, direction, config)
 		else:
-			consumed = _try_double_jump(state, direction, config)
+			consumed = _try_air_float(state, command, direction, config)
 	elif state.air_dodge_ticks > 0 and not state.is_rolling():
-		consumed = _try_double_jump(state, direction, config)
+		consumed = _try_air_float(state, command, direction, config)
 	elif state.air_dodge_ticks <= 0 or state.is_rolling():
 		consumed = _try_hop(state, direction, config)
 	if consumed:
@@ -173,6 +178,12 @@ static func _apply_variable_air_time(state: PlayerState, command: SimCommand, co
 	# A takeoff grace tick excludes the C edge used for the preceding slide.
 	if fresh_air_slide and state.variable_jump_grace_ticks == 0:
 		state.fast_fall_armed = true
+	if state.air_floating:
+		if state.fast_fall_armed:
+			_end_air_float(state, "float_fast_fall")
+		else:
+			_apply_air_float(state, command, config)
+			return
 	if state.fast_fall_armed:
 		state.air_vertical_velocity = mini(state.air_vertical_velocity, -MovementTuning.AIR_FAST_FALL_SPEED)
 		if not state.fast_falling:
@@ -236,6 +247,8 @@ static func apply_control_state(
 		return true
 	if duration_ms <= 0:
 		return false
+	if requested_state != PlayerState.ControlState.SLOWED and state.air_floating:
+		_end_air_float(state, "float_interrupted")
 	if requested_state == PlayerState.ControlState.SLOWED:
 		var previous_ratio := state.slow_ratio if state.control_state == PlayerState.ControlState.SLOWED else 1000
 		var next_ratio := clampi(slow_ratio, MovementTuning.SLOW_MINIMUM_RATIO, MovementTuning.SLOW_MAXIMUM_RATIO)
@@ -354,6 +367,7 @@ static func _apply_impact_recovery_velocity(state: PlayerState, config: SimConfi
 
 static func _cancel_authored_movement(state: PlayerState) -> void:
 	var retain_air_budget := state.is_airborne()
+	state.air_floating = false
 	_clear_action_buffers(state)
 	state.movement_commitment_ticks = 0
 	state.wall_air_ticks = 0
@@ -423,30 +437,60 @@ static func _try_hop(state: PlayerState, direction: Vector2i, config: SimConfig)
 	return true
 
 
-static func _try_double_jump(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
-	var cost := _movement_action_cost(state, MovementTuning.DOUBLE_JUMP_COST)
-	if state.hop_stage != 1 or state.stamina < cost:
+static func _try_air_float(state: PlayerState, command: SimCommand, direction: Vector2i, config: SimConfig) -> bool:
+	var cost := _movement_action_cost(state, MovementTuning.FLOAT_COST)
+	if state.hop_stage != 1 or state.air_height <= 0 or state.stamina <= cost + config.per_tick(MovementTuning.FLOAT_DRAIN_PER_SECOND):
 		return false
-	var entry_speed := _planar_speed(state)
+	if not command.has_held(SimCommand.HELD_JUMP) and not command.has_pressed(SimCommand.PRESSED_JUMP):
+		return false
 	_spend_movement_action(state, cost, config)
 	state.hop_stage = 2
-	# Add lift from the actual height already reached, never a renderer arc reset.
-	state.air_vertical_velocity = MovementTuning.JUMP_VERTICAL_SPEED
+	state.air_floating = true
+	state.air_vertical_velocity = 0
+	state.air_height_remainder = 0
+	# Stable enum value remains a compatibility adapter; this is Float, not lift.
 	state.hop_mode = PlayerState.MovementMode.DOUBLE_JUMP
 	state.air_dodge_ticks = 0
 	state.wave_dash_queued = false
 	state.fast_fall_armed = false
-	state.hop_ticks = config.milliseconds_to_ticks(MovementTuning.DOUBLE_JUMP_DURATION_MS)
-	state.jump_protection_ticks = config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS)
+	state.hop_ticks = _remaining_air_ticks(state, config)
+	state.jump_protection_ticks = 0
 	state.variable_jump_grace_ticks = 1
 	state.jump_sustain_ticks = 0
-	state.hop_speed = entry_speed
 	state.hop_x = direction.x
 	state.hop_y = direction.y
-	state.air_redirects_remaining = 1
-	state.last_event = "double_jump"
+	state.last_event = "air_float"
 	_capture_air_velocity(state)
 	return true
+
+
+static func _apply_air_float(state: PlayerState, command: SimCommand, config: SimConfig) -> void:
+	if not command.has_held(SimCommand.HELD_JUMP) and not (state.variable_jump_grace_ticks > 0 and command.has_pressed(SimCommand.PRESSED_JUMP)):
+		_end_air_float(state, "float_release")
+		return
+	var total := state.stamina_remainder - MovementTuning.FLOAT_DRAIN_PER_SECOND
+	var required: int = -(total / config.tick_rate)
+	if state.stamina < required:
+		_end_air_float(state, "float_empty")
+		return
+	_apply_stamina_rate(state, -MovementTuning.FLOAT_DRAIN_PER_SECOND, config)
+	state.stamina_recovery_delay_ticks = config.milliseconds_to_ticks(MovementTuning.STAMINA_RECOVERY_DELAY_MS)
+	if state.stamina == 0:
+		_end_air_float(state, "float_empty")
+		return
+	state.air_vertical_velocity = 0
+	state.air_height_remainder = 0
+	# Ordinary rise age has a compact snapshot field; Float has no arc age.
+	state.jump_sustain_ticks = 0
+
+
+static func _end_air_float(state: PlayerState, event_name: String) -> void:
+	state.air_floating = false
+	state.air_vertical_velocity = mini(0, state.air_vertical_velocity)
+	state.hop_mode = PlayerState.MovementMode.HOP
+	state.jump_protection_ticks = 0
+	state.variable_jump_grace_ticks = 0
+	state.last_event = event_name
 
 
 static func _try_air_redirect(state: PlayerState, direction: Vector2i, config: SimConfig) -> bool:
@@ -481,6 +525,7 @@ static func _try_air_dodge(state: PlayerState, direction: Vector2i, config: SimC
 	)
 	state.movement_action_speed = _retained_speed(state, MovementTuning.AIR_DODGE_SPEED)
 	_spend_movement_action(state, cost, config)
+	state.air_floating = false
 	state.air_dodge_used = true
 	state.jump_sustain_ticks = 0
 	state.hop_mode = PlayerState.MovementMode.AIR_DODGE
@@ -529,6 +574,8 @@ static func _try_roll(state: PlayerState, direction: Vector2i, config: SimConfig
 static func is_combat_intangible(state: PlayerState, config: SimConfig) -> bool:
 	if state == null or config == null:
 		return false
+	if state.air_floating:
+		return state.air_height > 0 and state.stamina > 0
 	if state.hop_ticks > 0 and state.air_dodge_ticks <= 0:
 		return state.jump_protection_ticks > 0
 	if state.slide_ticks > 0:
@@ -633,6 +680,7 @@ static func _try_wall_skim(state: PlayerState, direction: Vector2i, config: SimC
 	tangent = _direction(tangent.x, tangent.y, clockwise)
 	state.movement_action_speed = _retained_speed(state, MovementTuning.WALL_SKIM_SPEED)
 	_spend_movement_action(state, cost, config)
+	state.air_floating = false
 	state.wall_air_ticks = state.hop_ticks
 	state.air_vertical_velocity = 0
 	state.hop_stage = maxi(1, state.hop_stage)
@@ -810,7 +858,7 @@ static func _apply_ground_velocity(state: PlayerState, command: SimCommand, dire
 		_apply_stamina_rate(state, -MovementTuning.SPRINT_DRAIN_PER_SECOND, config)
 		state.stamina_recovery_delay_ticks = config.milliseconds_to_ticks(MovementTuning.STAMINA_RECOVERY_DELAY_MS)
 	elif allow_recovery and state.stamina_recovery_delay_ticks == 0:
-		_apply_stamina_rate(state, state.stamina_recovery_per_second, config)
+		_apply_stamina_rate(state, ResourceRecoveryScript.rate_per_second(state.stamina_recovery_per_second, state.stamina_recovery_idle_ticks, config.tick_rate), config)
 
 
 static func _integrate(state: PlayerState, config: SimConfig, world: CollisionWorld) -> void:
@@ -882,6 +930,8 @@ static func _update_mode(state: PlayerState, command: SimCommand) -> void:
 
 
 static func _spend_stamina(state: PlayerState, amount: int, config: SimConfig) -> void:
+	if amount > 0:
+		state.stamina_recovery_idle_ticks = 0
 	state.stamina = maxi(0, state.stamina - amount)
 	state.stamina_remainder = 0
 	state.stamina_recovery_delay_ticks = config.milliseconds_to_ticks(MovementTuning.STAMINA_RECOVERY_DELAY_MS)
@@ -927,6 +977,8 @@ static func _hop_landing_intensity(hop_mode: int, fast_falling: bool) -> int:
 
 
 static func _apply_stamina_rate(state: PlayerState, rate_per_second: int, config: SimConfig) -> void:
+	if rate_per_second < 0:
+		state.stamina_recovery_idle_ticks = 0
 	var total: int = state.stamina_remainder + rate_per_second
 	@warning_ignore("integer_division")
 	var amount: int = total / config.tick_rate
@@ -1113,6 +1165,10 @@ static func _remaining_air_ticks(state: PlayerState, config: SimConfig) -> int:
 
 
 static func _integrate_height(state: PlayerState, config: SimConfig) -> void:
+	if state.air_floating:
+		state.air_vertical_velocity = 0
+		state.hop_ticks = _remaining_air_ticks(state, config)
+		return
 	if state.wall_skim_ticks > 0:
 		state.air_vertical_velocity = 0
 		state.hop_ticks = _remaining_air_ticks(state, config)
@@ -1142,6 +1198,7 @@ static func _integrate_height(state: PlayerState, config: SimConfig) -> void:
 
 static func _land(state: PlayerState, config: SimConfig) -> void:
 	var wavedash := state.wave_dash_queued
+	state.air_floating = false
 	state.landing_intensity = _hop_landing_intensity(state.hop_mode, state.fast_falling)
 	state.air_height = 0
 	state.air_vertical_velocity = 0

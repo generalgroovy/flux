@@ -1,35 +1,36 @@
-# Movement controls and learning: continuous height / fivefold reserves
+# Movement controls and learning: held Float / progressive recovery
 
-Status: **continuous-height guide and fivefold reserves pass focused checks; full integration and human acceptance pending**.
+Status: **current Float/recovery controls and source-derived guide are source-tested; human feel acceptance remains open**.
 
 Final suite, visual review and player acceptance are
 recorded by the integration lead in `MOVEMENT-M1-M5-ACCEPTANCE.md`.
 
 ## Current resource and air-action contract
 
-All five playable champions receive exactly five times their previous Stamina
-maximum. Health, Flux, role speed ratios, action costs and absolute recovery
-rates remain unchanged; more reserve is not faster recovery. The generic
+All five playable champions retain exactly five times their earlier Stamina
+maximum. Health, Flux maxima, role speed ratios and other action costs remain
+unchanged. Base recovery rates are unchanged, but each resource now ramps
+independently to 3x over three quiet seconds after its own spending delay. The generic
 movement fallback is 560 Stamina, but the HUD and compendium use the selected
 champion's actual values.
 
-| Champion | Size | Stamina before -> now | Recovery / second, unchanged |
+| Champion | Size | Stamina before -> now | Base -> quiet recovery / second |
 |---|---|---:|---:|
-| S. Wayne | Small | 118.8 -> 594 | 28 |
-| Grace Riva | Small | 123.2 -> 616 | 29 |
-| Wa Bidi | Small | 127.6 -> 638 | 32 |
-| Oh Tipi | Middle | 132 -> 660 | 30 |
-| The Red Baron | Large | 158.4 -> 792 | 32 |
+| S. Wayne | Small | 118.8 -> 594 | 28 -> 84 |
+| Grace Riva | Small | 123.2 -> 616 | 29 -> 87 |
+| Wa Bidi | Small | 127.6 -> 638 | 32 -> 96 |
+| Oh Tipi | Middle | 132 -> 660 | 30 -> 90 |
+| The Red Baron | Large | 158.4 -> 792 | 32 -> 96 |
 
 | Action | Current rule | Readable practice check |
 |---|---|---|
 | Ordinary travel | Base speed 372.6 units/s; champion ratio and 1.28 sprint multiplier still apply | Compare actual speed with the optional practice trace |
-| Tap / held jump | Continuous height; release caps upward speed at 410 units/s; held ground jump reaches about 90 units with a nominal 500 ms flight; landing refreshes readiness | Compare taps with a full hold; only ascent pays the 80 Stamina/s sustain |
-| Second jump | Fresh release and press; adds upward lift from current height, capped at 180 units | Re-jump before the apex and see height continue, without a ground reset |
+| Tap / held jump | Continuous height; release caps upward speed at 390 units/s; held jump 75.6 px / 458.3 ms, tap 31.8 px / 300 ms; landing refreshes readiness | Compare tap/hold; only ascent pays 80 Stamina/s sustain |
+| Float (replaces second jump) | Fresh release and press/hold; maintains exact current height, fully steerable and protected; 24 Stamina + chain premium, then 100/s | Hold near apex, turn, release: shield must disappear immediately; no new lift or repeat Float before landing |
 | Air dodge | One per real airtime; 180 ms decaying directional burst, then steerable flight; landing refills it without a cooldown wait | Turn or coast after the burst, then land and start a new jump/dodge chain |
 | Wall route | Wall contact never replenishes spent air-dodge or second-jump budgets | Touch a wall during the same flight and verify no bonus charge |
 | Fast fall | Fresh airborne Slide press sets at least 1,000 units/s downward speed; gravity continues until landing | Carrying C through takeoff does nothing; release and re-press to descend |
-| Protection | Jump opening 90 ms; air-dodge opening 120 ms, ending immediately on landing | Height and hold duration never represent full-flight immunity |
+| Protection | Ordinary jump opening 90 ms and air-dodge opening 120 ms, ending immediately on landing; Float explicitly protected while held, paid and active | Only the visible active Float shield represents maintained immunity; release/exhaustion/dodge/wallrun/fast fall/forced control ends Float |
 
 The guide labels airborne durations as nominal lift cycles, not hard landing
 timers. Runtime tuning owns these values; guide tests detect obsolete remaining-
@@ -40,15 +41,14 @@ bounds already support these values without an additional resource-cap change.
 
 ## Current verification
 
-On 2026-09-06, the canonical deferred headless runner executed the isolated
-`champion-catalog` (977 assertions), `body-type-profile-catalog` (49),
-`movement-guide-model` (327), `character-overview-model` (388) and
-`player-compendium` (875) suites: **2,616 assertions, zero failures**, clean
-stderr. Evidence: `.godot/compendium-audit/fivefold-reserves-guide-final.log`.
-This checks exact fivefold reserves, unchanged absolute recovery over a real
-120-tick second, finite rejection bounds, current UI resource values and revised
-guide/page behavior. It is not the integrated mechanics/network/visual gate.
-The earlier M1/M5 receipt below is historical, not proof of this revision.
+On 2026-09-06 the isolated `champion-catalog` (979), `movement-guide-model`
+(334), `player-compendium` (957), `compact-combat-hud` (39) and `player-resources`
+(81) suites passed **2,390 assertions, zero failures**, clean stderr:
+`.godot/compendium-audit/float-quiet-recovery-v2.log`. These check independent
+quiet timers, base-to-3x actual resource rates, positive-spend resets, failed/free
+actions, champion reset, truthful drain/refill HUD and Float instructions.
+The integrated Full/Farflow/render evidence is in the canonical movement ledger.
+Earlier receipts below are historical, not proof of this revision.
 
 ## Intent before extra inputs
 
@@ -58,7 +58,7 @@ this slice does not change saved bindings, preference schemas or those layers.
 
 | Input | One deliberate meaning | Safety rule |
 |---|---|---|
-| Space / jump button | Jump; hold for paid height, press again for a second jump | Wheel cannot fabricate a held jump |
+| Space / jump button | Jump; hold for paid height, release then press/hold for Float | Wheel cannot fabricate a held jump or sustained Float |
 | C / slide button | Ground slide; deliberate second press brakes | Carrying C through takeoff does not immediately fast-fall |
 | Fresh airborne C | Commit to an earlier landing | Release a previously held C, then press it again |
 | Wheel up | One short Jump intent | Same-direction notches group until 120 ms of quiet |
@@ -84,13 +84,14 @@ The normal no-wheel polling path remains unchanged.
 |---|---|---|
 | Travel | Move / brake, sprint, jump / hold, slide / hold | Run one lane, slide, release C, jump, steer and land deliberately |
 | Escape | Roll, air dodge, fast fall, impact recovery | Cross one threat lane with the protected opening, then finish outside danger |
-| Expression | Double jump, slide brake, slide jump, wavedash, air turn, wallrun, wall jump, landing reversal | Choose two different exits from the same approach without changing the opening |
+| Expression | Float, slide brake, slide jump, wavedash, air turn, wallrun, wall jump, landing reversal | Choose two different exits from the same approach without changing the opening |
 
 The live compendium marks each skill's group and derives bindings, base cost,
 hold drain, duration, cooldown and protection from current source tuning.
 Shared rules distinguish ground release-to-brake from airborne
 release-to-coast, held drain from the paid-start chain premium, and visible
-airtime from the shorter protection window. The newest movement intent replaces
+ordinary airtime from its shorter protection window, with held Float as the
+explicit protected exception. The newest movement intent replaces
 older buffered intent; the simulation still checks legality and affordability.
 
 Use the optional practice trace (F2 by default) and restart it (F3 by default)

@@ -38,4 +38,11 @@ func run() -> int:
 	equal(actor.canonical_values(), before, "practice observation never mutates authority")
 	trace.begin(5, Vector2.ZERO, 1)
 	equal(trace.last_status, "", "new practice run clears old status")
+	actor.movement_mode = PlayerState.MovementMode.DOUBLE_JUMP
+	actor.air_floating = true
+	trace.record(9, Vector2.ZERO, SimCommand.new(), 1, actor)
+	check(trace.last_status.begins_with("FLOAT "), "practice names active Float without leaking legacy double-jump identity")
+	actor.air_floating = false
+	trace.record(13, Vector2.ZERO, SimCommand.new(), 1, actor)
+	check(trace.last_status.begins_with("AIRBORNE "), "released state never keeps a misleading Float label")
 	return finish("movement-practice-trace")

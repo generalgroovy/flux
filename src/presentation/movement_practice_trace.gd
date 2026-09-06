@@ -57,7 +57,7 @@ func record(tick: int, position: Vector2, command: SimCommand, champion_id: int 
 	samples.append(position)
 	if state != null:
 		var mode: String = PlayerState.MovementMode.keys()[state.movement_mode]
-		mode = {"HOP": "JUMP", "WALL_SKIM": "WALLRUN", "WAVE_DASH": "WAVEDASH"}.get(mode, mode.replace("_", " "))
+		mode = "FLOAT" if state.air_floating else {"HOP": "JUMP", "DOUBLE_JUMP": "AIRBORNE", "WALL_SKIM": "WALLRUN", "WAVE_DASH": "WAVEDASH"}.get(mode, mode.replace("_", " "))
 		var speed := roundi(Vector2(state.velocity_x, state.velocity_y).length() / SimConfig.FIXED_SCALE)
 		var premium := mini(state.movement_chain_count, MovementTuning.MOVEMENT_CHAIN_MAXIMUM_STEPS) * MovementTuning.MOVEMENT_CHAIN_COST_STEP_RATIO / 10 if state.movement_chain_reset_ticks > 0 else 0
 		last_status = "%s  %du/s  |  STAMINA %.1f/%.1f  |  NEXT +%d%%" % [mode, speed, float(state.stamina) / 1000.0, float(state.stamina_maximum) / 1000.0, premium]

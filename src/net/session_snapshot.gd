@@ -2,7 +2,7 @@ class_name SessionSnapshot
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 16
+const SCHEMA_VERSION: int = 17
 const MAX_PLAYERS: int = 8
 # Remote movement presentation requires the actual action clocks/contact, not
 # a reconstruction from speed. Local reconciliation carries complete intent.
@@ -12,8 +12,11 @@ const MOVEMENT_PRESENTATION_FIELDS: Array[StringName] = [
 	&"hop_stage", &"air_redirects_remaining", &"slide_cooldown_ticks",
 	&"air_dodge_cooldown_ticks", &"movement_action_speed", &"hop_speed",
 	&"air_height", &"air_vertical_velocity", &"air_height_remainder", &"air_dodge_used", &"jump_held_last_tick",
+	&"air_floating", &"stamina_recovery_idle_ticks", &"flux_recovery_idle_ticks",
+	&"stamina_recovery_delay_ticks", &"flux_recovery_delay_ticks",
+	&"stamina_recovery_per_second", &"flux_recovery_per_second",
 ]
-const PLAYER_VALUE_COUNT: int = 94 # 74 base values + 20 validated movement values.
+const PLAYER_VALUE_COUNT: int = 101 # 74 base + 27 validated movement/resource values.
 const PROJECTILE_VALUE_COUNT: int = 12
 const FIELD_VALUE_COUNT: int = 7
 const EVENT_VALUE_COUNT: int = 6
@@ -408,7 +411,9 @@ static func _apply_values(state: PlayerState, values: PackedInt32Array) -> void:
 	state.spell_cooldown_ticks = values.slice(49 + PlayerState.SPELL_SLOT_COUNT, 49 + 2 * PlayerState.SPELL_SLOT_COUNT)
 	_decode_movement_context(state, values[73])
 	for index: int in range(MOVEMENT_PRESENTATION_FIELDS.size()):
-		state.set(MOVEMENT_PRESENTATION_FIELDS[index], int(values[74 + index]))
+		var property_name := MOVEMENT_PRESENTATION_FIELDS[index]
+		var value: int = values[74 + index]
+		state.set(property_name, value == 1 if property_name in [&"air_dodge_used", &"jump_held_last_tick", &"air_floating"] else value)
 	state._sync_legacy_spell_cooldowns()
 
 
@@ -456,8 +461,14 @@ static func _valid_player_values(values: PackedInt32Array) -> bool:
 		elif property_name == &"air_height_remainder":
 			if absi(value) >= 2 * 120:
 				return false
-		elif property_name in [&"air_dodge_used", &"jump_held_last_tick"]:
+		elif property_name in [&"air_dodge_used", &"jump_held_last_tick", &"air_floating"]:
 			if value not in [0, 1]:
+				return false
+		elif property_name in [&"stamina_recovery_idle_ticks", &"flux_recovery_idle_ticks"]:
+			if value < 0 or value > ResourceRecovery.maximum_idle_ticks(120):
+				return false
+		elif property_name in [&"stamina_recovery_per_second", &"flux_recovery_per_second"]:
+			if value < 0 or value > 1_000_000:
 				return false
 		elif value < 0 or value > MAX_TIMER_TICKS:
 			return false

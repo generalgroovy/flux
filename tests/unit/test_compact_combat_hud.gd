@@ -4,6 +4,7 @@ extends FluxTestSuite
 func run() -> int:
 	_test_repository_hud()
 	_test_fail_closed_contract()
+	_test_recovery_and_float_status()
 	return finish("compact-combat-hud")
 
 
@@ -23,7 +24,7 @@ func _test_repository_hud() -> void:
 	state.flux_recovery_delay_ticks = 84
 	equal(CompactCombatHud.flux_status_label(state, 120), "FLUX WAIT 0.7s", "combat delay is visible in the compact HUD")
 	state.flux_recovery_delay_ticks = 0
-	equal(CompactCombatHud.flux_status_label(state, 120), "FLUX RISING", "active Flux recovery is visible in the compact HUD")
+	equal(CompactCombatHud.flux_status_label(state, 120), "FLUX +20/s", "active Flux recovery shows its current rate in the compact HUD")
 	state.flux = 5_999
 	check(not CompactCombatHud.spell_is_affordable(state, {"flux_cost": 6}), "HUD compares authored whole-Flux cost against milli-unit state")
 	state.flux = 6_000
@@ -76,3 +77,35 @@ func _test_fail_closed_contract() -> void:
 	(hud.data["layout"] as Dictionary)["spell_cell_width"] = 500
 	check(not hud.validate(), "oversized compact HUD cell fails closed")
 	check(not hud.last_error.is_empty(), "compact HUD failure is actionable")
+
+
+func _test_recovery_and_float_status() -> void:
+	var state := PlayerState.new()
+	state.flux -= 10_000
+	state.stamina -= 10_000
+	state.flux_recovery_idle_ticks = 360
+	state.stamina_recovery_idle_ticks = 180
+	equal(CompactCombatHud.flux_status_label(state, 120), "FLUX +60/s", "Flux label displays its fully ramped independent rate")
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA +54/s", "Stamina label uses its own halfway-ramped rate")
+	state.stamina_recovery_delay_ticks = 46
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA WAIT 0.4s", "Stamina spend delay is distinct from actual recovering")
+	state.stamina_recovery_delay_ticks = 0
+	state.air_height = 40_000
+	state.hop_ticks = 25
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "quiet airborne state cannot falsely advertise active ground refill")
+	state.air_floating = true
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA FLOAT -100/s", "paid Float drain overrides passive recovery information")
+	state.air_floating = false
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "ending Float removes its paid status immediately")
+	state.air_floating = true
+	state.control_state = PlayerState.ControlState.STUNNED
+	check(not CompactCombatHud.stamina_status_label(state, 120).contains("FLOAT"), "forced control cannot advertise an active Float")
+	state.control_state = PlayerState.ControlState.FREE
+	state.stamina = 0
+	check(not CompactCombatHud.stamina_status_label(state, 120).contains("FLOAT"), "exhaustion cannot advertise protected Float spending")
+	# Check the actual smallest resource-bar lane without changing the HUD layout.
+	var labels: Array[String] = ["FLUX +150/s", "STAMINA +150/s", "STAMINA FLOAT -100/s", "STAMINA SPRINT -34/s", "STAMINA WAIT 0.4s", "STAMINA  NEXT +40%"]
+	for label: String in labels:
+		var rendered := "%s  792/792" % label
+		var measured := ThemeDB.fallback_font.get_string_size(rendered, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x
+		check(measured <= 192.0, label + " fits the existing 204px resource bar without clipping")

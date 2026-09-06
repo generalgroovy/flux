@@ -8,7 +8,7 @@ var arena := CollisionWorld.new(10_000_000, 10_000_000)
 func run() -> int:
 	equal(MovementTuning.STAMINA_MAXIMUM, 560_000, "default Stamina reserve is exactly five times112000")
 	equal(MovementTuning.STAMINA_RECOVERY_PER_SECOND, 27_000, "extra reserve does not silently increase recovery")
-	_test_physical_arc_and_double_jump()
+	_test_physical_arc_and_float()
 	_test_fresh_jump_edge()
 	_test_dodge_decay_and_airtime_allowance()
 	_test_contact_and_forced_control()
@@ -32,7 +32,7 @@ func _step(state: PlayerState, move: Vector2i = Vector2i.ZERO, held: int = 0, pr
 	check(absi(state.air_height_remainder) < 2 * config.tick_rate, "vertical integration remainder is canonical and bounded")
 
 
-func _test_physical_arc_and_double_jump() -> void:
+func _test_physical_arc_and_float() -> void:
 	for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
 		var full := _state()
 		var tap := _state()
@@ -52,30 +52,33 @@ func _test_physical_arc_and_double_jump() -> void:
 				tap_land_tick = tick + 1
 			if tick == 30:
 				check(not MovementSystem.is_combat_intangible(full, config), "high held apex never extends jump protection")
-		equal(full_apex, 90_000, "every direction reaches exact ninety-pixel full-hop apex")
-		equal(full_land_tick, 60, "full hop lands in exactly500ms at120Hz")
-		check(tap_apex >= 34_000 and tap_apex <= 36_000, "tap arc reaches approximately thirty-five pixels")
+		equal(full_apex, 75_600, "every direction reaches the slightly lower75.6-pixel full-hop apex")
+		equal(full_land_tick, 55, "full hop lands in55ticks at120Hz")
+		check(tap_apex >= 31_000 and tap_apex <= 33_000, "tap arc reaches approximately thirty-two pixels")
 		check(tap_land_tick > 0 and tap_land_tick < full_land_tick, "short hop lands before held hop")
 		check(full.stamina < tap.stamina, "additional held rise has a real sustain cost")
 		var double := _state()
 		_step(double, direction, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
 		for _tick: int in range(29):
 			_step(double, direction, SimCommand.HELD_JUMP)
-		equal(double.air_height, 90_000, "first apex is real shared height")
+		check(double.air_height > 70_000, "first apex remains real shared height")
 		_step(double, direction) # A real release before the next fresh press.
 		var before_height := double.air_height
 		var before_stamina := double.stamina
 		_step(double, direction, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
-		equal(double.hop_stage, 2, "one fresh second press consumes the finite second jump")
-		check(double.air_height > before_height, "double jump adds lift from current height without dropping to a new arc origin")
-		check(double.stamina < before_stamina, "second lift pays its continuation cost")
+		equal(double.hop_stage, 2, "one fresh second press consumes the finite Float allowance")
+		equal(double.air_height, before_height, "Float preserves current height without adding a second lift")
+		check(double.stamina < before_stamina, "Float pays its continuation cost and sustain")
 		var double_apex := double.air_height
 		for _tick: int in range(80):
 			_step(double, direction, SimCommand.HELD_JUMP)
 			double_apex = maxi(double_apex, double.air_height)
-		check(double_apex >= 179_000 and double_apex <= 180_000, "second full jump adds approximately ninety pixels to the current apex")
-		check(not double.is_airborne(), "double jump always returns to actual ground")
-		print("height direction ", direction, " full=", full_apex, " tap=", tap_apex, " full_ticks=", full_land_tick, " tap_ticks=", tap_land_tick, " double=", double_apex)
+		equal(double_apex, before_height, "held Float never adds height")
+		check(double.air_floating, "affordable held Float survives the former fixed jump duration")
+		for _tick: int in range(80):
+			_step(double, direction)
+		check(not double.is_airborne(), "released Float returns to actual ground")
+		print("height direction ", direction, " full=", full_apex, " tap=", tap_apex, " full_ticks=", full_land_tick, " tap_ticks=", tap_land_tick, " float=", double_apex)
 
 
 func _test_fresh_jump_edge() -> void:
@@ -83,14 +86,14 @@ func _test_fresh_jump_edge() -> void:
 	_step(state, Vector2i.ZERO, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
 	for _index: int in range(20):
 		_step(state, Vector2i.ZERO, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
-	equal(state.hop_stage, 1, "repeated held-key edges cannot automatically double jump")
+	equal(state.hop_stage, 1, "repeated held-key edges cannot automatically Float")
 	_step(state)
 	_step(state, Vector2i.ZERO, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
-	equal(state.hop_stage, 2, "release and fresh press does double jump")
+	equal(state.hop_stage, 2, "release and fresh press starts Float")
 	_step(state)
 	for _index: int in range(12):
 		_step(state, Vector2i.ZERO, 0, SimCommand.PRESSED_JUMP)
-	equal(state.hop_stage, 2, "third fresh presses cannot buy a third aerial lift")
+	equal(state.hop_stage, 2, "third fresh presses cannot rearm Float")
 
 
 func _test_dodge_decay_and_airtime_allowance() -> void:

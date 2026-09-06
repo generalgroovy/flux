@@ -3100,7 +3100,7 @@ static func parse_capture_movement(argument: String) -> String:
 	if not argument.begins_with("--capture-movement="):
 		return ""
 	var requested := argument.trim_prefix("--capture-movement=").strip_edges().to_lower()
-	return requested if requested in ["grounded", "hit", "walk", "brake", "reverse", "sprint", "slide", "roll", "jump", "air_dodge", "air_chain", "technique", "impact_recovery"] else ""
+	return requested if requested in ["grounded", "hit", "walk", "brake", "reverse", "sprint", "slide", "roll", "jump", "air_dodge", "air_chain", "float_release", "technique", "impact_recovery"] else ""
 
 
 static func parse_capture_direction(argument: String) -> Vector2i:
@@ -3144,6 +3144,15 @@ static func capture_movement_command(mode: String, tick: int, entity_id: int, di
 		var chain_held := SimCommand.HELD_JUMP if tick >= 4 and tick < 66 and tick != 23 else 0
 		var chain_pressed := SimCommand.PRESSED_JUMP if tick in [4, 24] else (SimCommand.PRESSED_EVADE if tick == 40 else 0)
 		return SimCommand.new(tick, entity_id, move_x, move_y, chain_held, chain_pressed, normalized_direction.x, normalized_direction.y)
+	if mode == "float_release":
+		# Production input only: takeoff, fresh held Float, steer across the
+		# original lane, release, fall and land. Never inject protected state.
+		var float_held := SimCommand.HELD_JUMP if tick >= 4 and tick < 64 and tick != 23 else 0
+		var float_pressed := SimCommand.PRESSED_JUMP if tick in [4, 24] else 0
+		if tick >= 40 and tick < 64:
+			move_x = -normalized_direction.y
+			move_y = normalized_direction.x
+		return SimCommand.new(tick, entity_id, move_x, move_y, float_held, float_pressed, move_x, move_y)
 	if mode in ["jump", "air_dodge"] and tick >= 4 and tick < 30:
 		held |= SimCommand.HELD_JUMP
 	if mode in ["jump", "air_dodge"] and tick == 4:

@@ -1,15 +1,17 @@
 class_name PlayerResourcesSystem
 extends RefCounted
 
+const Recovery = preload("res://src/sim/entities/resource_recovery.gd")
 
 static func step(state: PlayerState, config: SimConfig) -> void:
 	state.spawn_protection_ticks = maxi(0, state.spawn_protection_ticks - 1)
 	state.health_recovery_delay_ticks = maxi(0, state.health_recovery_delay_ticks - 1)
 	state.flux_recovery_delay_ticks = maxi(0, state.flux_recovery_delay_ticks - 1)
+	state.flux_recovery_idle_ticks = Recovery.advance_idle(state.flux_recovery_idle_ticks, state.flux_recovery_delay_ticks, config.tick_rate)
 	if state.health > 0 and state.health_recovery_delay_ticks == 0:
 		_apply_health_rate(state, state.health_recovery_per_second, config)
 	if state.flux_recovery_delay_ticks == 0:
-		_apply_flux_rate(state, state.flux_recovery_per_second, config)
+		_apply_flux_rate(state, Recovery.rate_per_second(state.flux_recovery_per_second, state.flux_recovery_idle_ticks, config.tick_rate), config)
 
 
 static func damage(state: PlayerState, amount: int, config: SimConfig) -> bool:
@@ -27,6 +29,7 @@ static func spend_flux(state: PlayerState, amount: int, config: SimConfig) -> bo
 	state.flux -= amount
 	state.flux_recovery_remainder = 0
 	state.flux_recovery_delay_ticks = config.milliseconds_to_ticks(PlayerTuning.FLUX_RECOVERY_DELAY_MS)
+	state.flux_recovery_idle_ticks = 0
 	return true
 
 

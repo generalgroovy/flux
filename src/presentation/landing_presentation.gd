@@ -64,8 +64,8 @@ static func sample(
 	for index: int in range(count):
 		var side_sign := float(index - 1) if count == 3 else 0.0
 		result.puff_offsets.append(-result.travel_direction * distance + side * side_sign * spread)
-	result.puff_radius = (2.5 + result.normalized_phase * 3.0) * (0.65 + result.intensity_ratio * 0.35)
-	result.puff_opacity = result.ring_opacity * 0.62
+	result.puff_radius = (3.5 + result.normalized_phase * 3.0) * (0.65 + result.intensity_ratio * 0.35)
+	result.puff_opacity = result.ring_opacity * 0.80
 	return result
 
 
@@ -90,5 +90,7 @@ static func draw(canvas: CanvasItem, center: Vector2, landing: Sample, language:
 		canvas.draw_arc(center, landing.ring_radius, start, start + side_sign * 0.75, 7, Color(color, landing.ring_opacity * 0.54), landing.ring_width)
 	for offset: Vector2 in landing.puff_offsets:
 		var puff := center + offset
+		canvas.draw_circle(puff, landing.puff_radius, Color(color, landing.puff_opacity * 0.24))
 		canvas.draw_arc(puff, landing.puff_radius, angle + 0.8, angle + 5.4, 8, Color(color, landing.puff_opacity), landing.ring_width)
+		canvas.draw_arc(puff - landing.travel_direction * landing.puff_radius * 0.48, landing.puff_radius * 0.65, angle + 1.1, angle + 4.7, 6, Color(color, landing.puff_opacity * 0.72), landing.ring_width)
 		canvas.draw_line(puff - landing.travel_direction * landing.puff_radius, puff - landing.travel_direction * (landing.puff_radius + 3.0), Color(color, landing.puff_opacity * 0.65), landing.ring_width)

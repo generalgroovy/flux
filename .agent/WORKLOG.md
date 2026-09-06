@@ -1,5 +1,30 @@
 # FLUX2 agent worklog
 
+## 2026-09-06 - held Float / recovery source playtest checkpoint
+
+- Lower jump: 75.6 px full / 31.8 px tap; second jump becomes steerable, paid, held
+  invincible Float with same-tick exits and real-landing budget reset.
+- Independent progressive Flux/Stamina recovery, source-derived HUD and guide,
+  clear original takeoff/landing/dodge/slide cues and immediate Float shield.
+- Protocol 42 / snapshot 17, canonical/reset/prediction/resource-presentation
+  fields, bounded timers and a 599-tick ordinary-input reconciliation scenario.
+- Final `scripts/test.ps1 -Tier Full -ReceiptPath
+  .godot/receipts/held-float-recovery-final-full.json`: 78 suites / 143,435
+  assertions, zero failures/stderr; import/independent 120 Hz boot; 54,803 ms.
+  Initial 143,433 pass preceded two practice-label checks; final gate includes both.
+- `scripts/smoke-farflow.ps1 -TickRate 120 -TimeoutSeconds 60` and
+  `flux.cmd play -SmokeTest` passed. `runtime_stress_probe.gd --quick
+  --require-network-clear`: 6,867 assertions, 8 players / 40 paid projectiles,
+  zero missing dangers/rejections, 1,388 B datagrams / <=3 fragments; worst sampled
+  simulation tick 5.299 ms. Serialization is separate; no FPS/internet/install guarantee.
+- Visual: 34 sheets / 816 cells, 336 production-input frames, 48 final clean UI
+  frames; all 3 sizes / 8 directions, standard/reduced. Selected unchanged PNGs
+  are embedded in the movement ledger; shield disappears at release frame 64.
+- Corrected short network fixture, docs status heading and old practice enum label;
+  warning-bearing UI v1 is historical only, clean east-spelling v2 is final.
+- Human feel/balance/controller review next. No chemistry/map/roster/installer,
+  actual teleport behavior or protected reference assets added. No remote push.
+
 ## 2026-09-06 - expressive airborne movement, source verified
 
 - Exact 5x Stamina and bounded body profiles; faster (+15%) running with

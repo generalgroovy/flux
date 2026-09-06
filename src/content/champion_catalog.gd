@@ -236,6 +236,8 @@ func apply_to_player(state: PlayerState, champion_id: String, preserve_resource_
 	state.health_recovery_delay_ticks = 0
 	state.flux_recovery_delay_ticks = 0
 	state.stamina_recovery_delay_ticks = 0
+	state.flux_recovery_idle_ticks = 0
+	state.stamina_recovery_idle_ticks = 0
 	state.last_event = "champion_%s" % champion_id
 	return true
 

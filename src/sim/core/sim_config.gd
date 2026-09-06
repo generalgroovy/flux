@@ -2,7 +2,7 @@ class_name SimConfig
 extends RefCounted
 
 
-const PROTOCOL_VERSION: int = 42
+const PROTOCOL_VERSION: int = 43
 const FIXED_SCALE: int = 1000
 const TICK_RATE: int = 120
 # Cast admission and replication share one finite authority envelope. Pending

@@ -8,9 +8,9 @@ static func step(state: PlayerState, config: SimConfig) -> void:
 	state.health_recovery_delay_ticks = maxi(0, state.health_recovery_delay_ticks - 1)
 	state.flux_recovery_delay_ticks = maxi(0, state.flux_recovery_delay_ticks - 1)
 	state.flux_recovery_idle_ticks = Recovery.advance_idle(state.flux_recovery_idle_ticks, state.flux_recovery_delay_ticks, config.tick_rate)
-	if state.health > 0 and state.health_recovery_delay_ticks == 0:
+	if state.health > 0 and state.health_recovery_delay_ticks == 0 and state.chemistry_regen_block_ticks == 0:
 		_apply_health_rate(state, state.health_recovery_per_second, config)
-	if state.flux_recovery_delay_ticks == 0:
+	if state.flux_recovery_delay_ticks == 0 and state.chemistry_regen_block_ticks == 0:
 		_apply_flux_rate(state, Recovery.rate_per_second(state.flux_recovery_per_second, state.flux_recovery_idle_ticks, config.tick_rate), config)
 
 

@@ -1,8 +1,10 @@
 class_name SessionSnapshot
 extends RefCounted
 
+const DepositState = preload("res://src/sim/chemistry/element_deposit_state.gd")
+const ReactionState = preload("res://src/sim/chemistry/element_reaction_state.gd")
 
-const SCHEMA_VERSION: int = 17
+const SCHEMA_VERSION: int = 18
 const MAX_PLAYERS: int = 8
 # Remote movement presentation requires the actual action clocks/contact, not
 # a reconstruction from speed. Local reconciliation carries complete intent.
@@ -15,9 +17,12 @@ const MOVEMENT_PRESENTATION_FIELDS: Array[StringName] = [
 	&"air_floating", &"stamina_recovery_idle_ticks", &"flux_recovery_idle_ticks",
 	&"stamina_recovery_delay_ticks", &"flux_recovery_delay_ticks",
 	&"stamina_recovery_per_second", &"flux_recovery_per_second",
+	&"float_used", &"float_ticks", &"float_max_duration_ms",
+	&"chemistry_reveal_ticks", &"chemistry_conceal_ticks", &"chemistry_regen_block_ticks",
+	&"pending_cast_target_x", &"pending_cast_target_y",
 ]
-const PLAYER_VALUE_COUNT: int = 101 # 74 base + 27 validated movement/resource values.
-const PROJECTILE_VALUE_COUNT: int = 12
+const PLAYER_VALUE_COUNT: int = 109 # 74 base + 35 validated movement/resource/target values.
+const PROJECTILE_VALUE_COUNT: int = 17 # Int32; optical mask split into low31/high5 bits.
 const FIELD_VALUE_COUNT: int = 7
 const EVENT_VALUE_COUNT: int = 6
 const TARGET_VALUE_COUNT: int = 10
@@ -25,9 +30,13 @@ const TARGET_VALUE_COUNT: int = 10
 # MTU-sized fragments; cast admission uses these same authority limits.
 const MAX_PROJECTILES: int = SimConfig.MAX_ACTIVE_PROJECTILES
 const MAX_FIELDS: int = SimConfig.MAX_ACTIVE_FIELDS
+const MAX_DEPOSITS: int = SimConfig.MAX_ACTIVE_PROJECTILES
+const MAX_REACTIONS: int = 32
 const MAX_EVENTS: int = 12
 const MAX_TARGETS: int = 4
 const MAX_ABSOLUTE_POSITION: int = 100_000_000
+# A legal cursor can span the diagonal of the nonnegative coordinate square.
+const MAX_PROJECTILE_REMAINING_DISTANCE: int = 142_000_000
 const MAX_TIMER_TICKS: int = 1_000_000
 const EVENT_KIND_MASK: int = 0xff
 const MAX_EVENT_ID: int = 0x7fffffff
@@ -107,17 +116,23 @@ static func capture(
 		round_values = fallback_round.capture(world)
 	var ordered_projectiles: Array[ProjectileState] = world.projectiles.duplicate()
 	ordered_projectiles.sort_custom(func(left: ProjectileState, right: ProjectileState) -> bool: return left.entity_id < right.entity_id)
-	var projectiles := PackedInt64Array()
+	var projectiles := PackedInt32Array()
 	for index: int in range(mini(ordered_projectiles.size(), MAX_PROJECTILES)):
 		var projectile: ProjectileState = ordered_projectiles[index]
-		projectiles.append_array(PackedInt64Array([
+		var values := PackedInt64Array([
 			projectile.entity_id, projectile.owner_id,
 			projectile.source_wire_id, projectile.element_wire_id,
 			projectile.position_x, projectile.position_y,
 			projectile.previous_x, projectile.previous_y,
 			projectile.velocity_x, projectile.velocity_y,
 			projectile.radius, projectile.lifetime_ticks,
-		]))
+			projectile.remaining_distance, projectile.source_cast_id,
+			projectile.material_strength, projectile.chemistry_interaction_mask & 0x7fffffff,
+			projectile.chemistry_interaction_mask >> 31,
+		])
+		if not _fits_int32(values) or not _valid_projectile_values(PackedInt32Array(Array(values))):
+			return {}
+		projectiles.append_array(PackedInt32Array(Array(values)))
 	var ordered_fields: Array[FieldState] = world.fields.duplicate()
 	ordered_fields.sort_custom(func(left: FieldState, right: FieldState) -> bool: return left.entity_id < right.entity_id)
 	var fields := PackedInt32Array()
@@ -152,6 +167,26 @@ static func capture(
 			target.health_maximum, target.health,
 			target.training_respawn_ticks, target.training_spawn_x, target.training_spawn_y, target.spawn_protection_ticks,
 		]))
+	# Chemistry is persistent harmful state, unlike the lossy cosmetic event lane.
+	# Refuse an over-budget or invalid whole snapshot instead of omitting danger.
+	if world.deposits.size() > MAX_DEPOSITS or world.reactions.size() > MAX_REACTIONS or world.deposits.size() + world.projectiles.size() > MAX_PROJECTILES:
+		return {}
+	var deposits: Array[PackedInt32Array] = []
+	var reactions: Array[PackedInt32Array] = []
+	var ordered_deposits := world.deposits.duplicate()
+	ordered_deposits.sort_custom(func(left: Variant, right: Variant) -> bool: return left.entity_id < right.entity_id)
+	for deposit: Variant in ordered_deposits:
+		var values: PackedInt64Array = deposit.canonical_values()
+		if not deposit.validate() or not _fits_int32(values):
+			return {}
+		deposits.append(PackedInt32Array(Array(values)))
+	var ordered_reactions := world.reactions.duplicate()
+	ordered_reactions.sort_custom(func(left: Variant, right: Variant) -> bool: return left.entity_id < right.entity_id)
+	for reaction: Variant in ordered_reactions:
+		var values: PackedInt64Array = reaction.canonical_values()
+		if not reaction.validate() or not _fits_int32(values):
+			return {}
+		reactions.append(PackedInt32Array(Array(values)))
 	return {
 		"schema": SCHEMA_VERSION,
 		"tick": world.tick,
@@ -159,6 +194,8 @@ static func capture(
 		"players": players,
 		"projectiles": projectiles,
 		"fields": fields,
+		"deposits": deposits,
+		"reactions": reactions,
 		"events": events,
 		"targets": targets,
 		"hearth": hearth_values,
@@ -210,19 +247,41 @@ static func validate(snapshot: Dictionary) -> bool:
 		if values.size() != PLAYER_VALUE_COUNT or not _valid_player_values(values):
 			return false
 	var projectiles_value: Variant = snapshot.get("projectiles")
-	if typeof(projectiles_value) != TYPE_PACKED_INT64_ARRAY:
+	if typeof(projectiles_value) != TYPE_PACKED_INT32_ARRAY:
 		return false
-	var projectiles: PackedInt64Array = projectiles_value
+	var projectiles: PackedInt32Array = projectiles_value
 	if projectiles.size() % PROJECTILE_VALUE_COUNT != 0 or projectiles.size() > MAX_PROJECTILES * PROJECTILE_VALUE_COUNT:
 		return false
 	var previous_projectile_id: int = 0
 	for offset: int in range(0, projectiles.size(), PROJECTILE_VALUE_COUNT):
-		var values: PackedInt64Array = projectiles.slice(offset, offset + PROJECTILE_VALUE_COUNT)
+		var values: PackedInt32Array = projectiles.slice(offset, offset + PROJECTILE_VALUE_COUNT)
 		if not _valid_projectile_values(values):
 			return false
 		if values[0] <= previous_projectile_id:
 			return false
 		previous_projectile_id = values[0]
+	var deposits_value: Variant = snapshot.get("deposits")
+	var reactions_value: Variant = snapshot.get("reactions")
+	if not deposits_value is Array or not reactions_value is Array:
+		return false
+	if deposits_value.size() > MAX_DEPOSITS or reactions_value.size() > MAX_REACTIONS or deposits_value.size() + projectiles.size() / PROJECTILE_VALUE_COUNT > MAX_PROJECTILES:
+		return false
+	var previous_deposit_id := 0
+	for values: Variant in deposits_value:
+		if typeof(values) != TYPE_PACKED_INT32_ARRAY:
+			return false
+		var deposit := DepositState.from_values(PackedInt64Array(Array(values)))
+		if deposit == null or deposit.entity_id <= previous_deposit_id:
+			return false
+		previous_deposit_id = deposit.entity_id
+	var previous_reaction_id := 0
+	for values: Variant in reactions_value:
+		if typeof(values) != TYPE_PACKED_INT32_ARRAY:
+			return false
+		var reaction := ReactionState.from_values(PackedInt64Array(Array(values)))
+		if reaction == null or reaction.entity_id <= previous_reaction_id:
+			return false
+		previous_reaction_id = reaction.entity_id
 	var fields_value: Variant = snapshot.get("fields")
 	if typeof(fields_value) != TYPE_PACKED_INT32_ARRAY:
 		return false
@@ -244,7 +303,7 @@ static func validate(snapshot: Dictionary) -> bool:
 		if typeof(values_value) != TYPE_PACKED_INT64_ARRAY:
 			return false
 		var values: PackedInt64Array = values_value
-		if values.size() != EVENT_VALUE_COUNT or not _valid_event_values(values):
+		if not _valid_event_values(values):
 			return false
 	var targets_value: Variant = snapshot.get("targets")
 	if not targets_value is Array or targets_value.size() > MAX_TARGETS:
@@ -321,13 +380,19 @@ static func apply_to_world(snapshot: Dictionary, world: SimWorld) -> bool:
 	world.players.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
 	world.tick = int(snapshot["tick"])
 	world.projectiles = []
-	var projectile_values: PackedInt64Array = snapshot["projectiles"]
+	var projectile_values: PackedInt32Array = snapshot["projectiles"]
 	for offset: int in range(0, projectile_values.size(), PROJECTILE_VALUE_COUNT):
 		world.projectiles.append(_projectile_from_values(projectile_values.slice(offset, offset + PROJECTILE_VALUE_COUNT)))
 	world.fields = []
 	var field_values: PackedInt32Array = snapshot["fields"]
 	for offset: int in range(0, field_values.size(), FIELD_VALUE_COUNT):
 		world.fields.append(_field_from_values(field_values.slice(offset, offset + FIELD_VALUE_COUNT), world))
+	world.deposits.clear()
+	for values: PackedInt32Array in snapshot["deposits"]:
+		world.deposits.append(DepositState.from_values(PackedInt64Array(Array(values))))
+	world.reactions.clear()
+	for values: PackedInt32Array in snapshot["reactions"]:
+		world.reactions.append(ReactionState.from_values(PackedInt64Array(Array(values))))
 	world.combat_events = []
 	for values_value: Variant in snapshot["events"]:
 		world.combat_events.append(decode_event(values_value))
@@ -413,7 +478,7 @@ static func _apply_values(state: PlayerState, values: PackedInt32Array) -> void:
 	for index: int in range(MOVEMENT_PRESENTATION_FIELDS.size()):
 		var property_name := MOVEMENT_PRESENTATION_FIELDS[index]
 		var value: int = values[74 + index]
-		state.set(property_name, value == 1 if property_name in [&"air_dodge_used", &"jump_held_last_tick", &"air_floating"] else value)
+		state.set(property_name, value == 1 if property_name in [&"air_dodge_used", &"jump_held_last_tick", &"air_floating", &"float_used"] else value)
 	state._sync_legacy_spell_cooldowns()
 
 
@@ -440,6 +505,10 @@ static func _valid_movement_context(encoded: int) -> bool:
 
 
 static func _valid_player_values(values: PackedInt32Array) -> bool:
+	var target_x: int = values[74 + MOVEMENT_PRESENTATION_FIELDS.find(&"pending_cast_target_x")]
+	var target_y: int = values[74 + MOVEMENT_PRESENTATION_FIELDS.find(&"pending_cast_target_y")]
+	if (target_x == -1) != (target_y == -1):
+		return false
 	for index: int in range(MOVEMENT_PRESENTATION_FIELDS.size()):
 		var value: int = values[74 + index]
 		var property_name := MOVEMENT_PRESENTATION_FIELDS[index]
@@ -461,8 +530,21 @@ static func _valid_player_values(values: PackedInt32Array) -> bool:
 		elif property_name == &"air_height_remainder":
 			if absi(value) >= 2 * 120:
 				return false
-		elif property_name in [&"air_dodge_used", &"jump_held_last_tick", &"air_floating"]:
+		elif property_name in [&"air_dodge_used", &"jump_held_last_tick", &"air_floating", &"float_used"]:
 			if value not in [0, 1]:
+				return false
+		elif property_name == &"float_max_duration_ms":
+			if value not in [MovementTuning.FLOAT_SMALL_DURATION_MS, MovementTuning.FLOAT_MIDDLE_DURATION_MS, MovementTuning.FLOAT_LARGE_DURATION_MS]:
+				return false
+		elif property_name == &"float_ticks":
+			var maximum_ms: int = values[74 + MOVEMENT_PRESENTATION_FIELDS.find(&"float_max_duration_ms")]
+			if value < 0 or value > (maximum_ms * 120 + 999) / 1000:
+				return false
+		elif property_name in [&"chemistry_reveal_ticks", &"chemistry_conceal_ticks", &"chemistry_regen_block_ticks"]:
+			if value < 0 or value > 120:
+				return false
+		elif property_name in [&"pending_cast_target_x", &"pending_cast_target_y"]:
+			if value < -1 or value > MAX_ABSOLUTE_POSITION:
 				return false
 		elif property_name in [&"stamina_recovery_idle_ticks", &"flux_recovery_idle_ticks"]:
 			if value < 0 or value > ResourceRecovery.maximum_idle_ticks(120):
@@ -550,7 +632,7 @@ static func _valid_player_values(values: PackedInt32Array) -> bool:
 	return values[32] in [0, 1] and values[33] in [0, 1]
 
 
-static func _projectile_from_values(values: PackedInt64Array) -> ProjectileState:
+static func _projectile_from_values(values: PackedInt32Array) -> ProjectileState:
 	var projectile := ProjectileState.new(
 		values[0],
 		values[1],
@@ -565,10 +647,18 @@ static func _projectile_from_values(values: PackedInt64Array) -> ProjectileState
 	)
 	projectile.previous_x = values[6]
 	projectile.previous_y = values[7]
+	projectile.remaining_distance = values[12]
+	projectile.source_cast_id = values[13]
+	projectile.material_strength = values[14]
+	projectile.chemistry_interaction_mask = values[15] | (int(values[16]) << 31)
 	return projectile
 
 
-static func _valid_projectile_values(values: PackedInt64Array) -> bool:
+static func _valid_projectile_values(values: PackedInt32Array) -> bool:
+	if values[12] < -1 or values[12] > MAX_PROJECTILE_REMAINING_DISTANCE or values[13] < 0 or values[13] > 0x7fffffff:
+		return false
+	if values[14] < 1 or values[14] > 1000 or values[15] < 0 or values[16] < 0 or values[16] > 31:
+		return false
 	if values[0] <= 0 or values[0] > 0x7fffffff:
 		return false
 	if values[1] < 1 or values[1] > MAX_PLAYERS:
@@ -583,6 +673,13 @@ static func _valid_projectile_values(values: PackedInt64Array) -> bool:
 		if absi(values[index]) > 10_000_000:
 			return false
 	return values[10] > 0 and values[10] <= 100_000 and values[11] >= 0 and values[11] <= MAX_TIMER_TICKS
+
+
+static func _fits_int32(values: PackedInt64Array) -> bool:
+	for value: int in values:
+		if value < -0x80000000 or value > 0x7fffffff:
+			return false
+	return true
 
 
 static func _field_from_values(values: PackedInt32Array, world: SimWorld) -> FieldState:
@@ -679,7 +776,7 @@ static func encode_event(event: Dictionary) -> PackedInt64Array:
 		"round_returning":
 			return PackedInt64Array([_event_header(21, event_id), SessionCharter.HOST_ENTITY_ID, 0, 0, 0, 0])
 		"beam_fired":
-			return PackedInt64Array([_event_header(22, event_id), int(event.get("owner_id", 0)), int(event.get("source_wire_id", 0)), int(event.get("target_id", 0)), int(event.get("end_x", 0)), int(event.get("end_y", 0))])
+			return PackedInt64Array([_event_header(22, event_id), int(event.get("owner_id", 0)), int(event.get("source_wire_id", 0)), int(event.get("target_id", 0)), int(event.get("end_x", 0)), int(event.get("end_y", 0)), int(event.get("origin_x", -1)), int(event.get("origin_y", -1))])
 		"spray_fired":
 			return PackedInt64Array([_event_header(23, event_id), int(event.get("owner_id", 0)), int(event.get("source_wire_id", 0)), int(event.get("end_x", 0)), int(event.get("end_y", 0)), int(event.get("hit_count", 0))])
 		"spray_hit":
@@ -741,6 +838,9 @@ static func decode_event(values: PackedInt64Array) -> Dictionary:
 			result = {"type": "round_returning", "entity_id": values[1]}
 		22:
 			result = {"type": "beam_fired", "owner_id": values[1], "source_wire_id": values[2], "target_id": values[3], "end_x": values[4], "end_y": values[5]}
+			if values[6] != -1 or values[7] != -1:
+				result["origin_x"] = values[6]
+				result["origin_y"] = values[7]
 		23:
 			result = {"type": "spray_fired", "owner_id": values[1], "source_wire_id": values[2], "end_x": values[3], "end_y": values[4], "hit_count": values[5]}
 		24:
@@ -753,10 +853,14 @@ static func decode_event(values: PackedInt64Array) -> Dictionary:
 
 
 static func _valid_event_values(values: PackedInt64Array) -> bool:
+	if values.is_empty():
+		return false
 	var header := int(values[0])
 	if header <= 0:
 		return false
 	var kind := header & EVENT_KIND_MASK
+	if values.size() != (8 if kind == 22 else EVENT_VALUE_COUNT):
+		return false
 	var event_id := header >> 8
 	if event_id < 0 or event_id > MAX_EVENT_ID:
 		return false
@@ -785,6 +889,8 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 	if kind == 21:
 		return values[1] == SessionCharter.HOST_ENTITY_ID
 	if kind == 22:
+		if (values[6] == -1) != (values[7] == -1) or absi(values[6]) > MAX_ABSOLUTE_POSITION or absi(values[7]) > MAX_ABSOLUTE_POSITION:
+			return false
 		return (
 			values[1] >= 1 and values[1] <= MAX_PLAYERS
 			and values[2] > 0 and values[2] <= 65_535

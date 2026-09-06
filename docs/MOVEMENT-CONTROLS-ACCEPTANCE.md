@@ -1,6 +1,6 @@
-# Movement controls and learning: held Float / progressive recovery
+# Movement controls and learning: low jump / size-limited Float / progressive recovery
 
-Status: **current Float/recovery controls and source-derived guide are source-tested; human feel acceptance remains open**.
+Status: **low-jump, size-limited Float, chemistry recovery seal and Q/V default migration implemented; this revision's final integrated and human feel acceptance remains open**.
 
 Final suite, visual review and player acceptance are
 recorded by the integration lead in `MOVEMENT-M1-M5-ACCEPTANCE.md`.
@@ -25,10 +25,10 @@ champion's actual values.
 | Action | Current rule | Readable practice check |
 |---|---|---|
 | Ordinary travel | Base speed 372.6 units/s; champion ratio and 1.28 sprint multiplier still apply | Compare actual speed with the optional practice trace |
-| Tap / held jump | Continuous height; release caps upward speed at 390 units/s; held jump 75.6 px / 458.3 ms, tap 31.8 px / 300 ms; landing refreshes readiness | Compare tap/hold; only ascent pays 80 Stamina/s sustain |
-| Float (replaces second jump) | Fresh release and press/hold; maintains exact current height, fully steerable and protected; 24 Stamina + chain premium, then 100/s | Hold near apex, turn, release: shield must disappear immediately; no new lift or repeat Float before landing |
+| Tap / held jump | Continuous low arc; release caps upward speed at 330 units/s; full approximately 28.9 px, tap approximately 22 px; landing refreshes readiness | Above 18 px, low ground projectiles pass underneath; beams, areas and explosions are not cleared; only ascent pays 80 Stamina/s sustain |
+| Float (replaces second jump) | Fresh release and press/hold; maintains current height, fully steerable and protected; 24 Stamina + chain premium, then 100/s; small 1.8 s, middle 1.5 s, large 1.2 s cap | Hold near apex, turn, release: shield must disappear immediately; no new lift or repeat Float before landing |
 | Air dodge | One per real airtime; 180 ms decaying directional burst, then steerable flight; landing refills it without a cooldown wait | Turn or coast after the burst, then land and start a new jump/dodge chain |
-| Wall route | Wall contact never replenishes spent air-dodge or second-jump budgets | Touch a wall during the same flight and verify no bonus charge |
+| Wall route | Independent walljump, Float and air-dodge opportunities; only actual landing restores spent air budgets | Walljump -> Float -> air dodge is legal, but touching another wall never refills a spent Float or dodge |
 | Fast fall | Fresh airborne Slide press sets at least 1,000 units/s downward speed; gravity continues until landing | Carrying C through takeoff does nothing; release and re-press to descend |
 | Protection | Ordinary jump opening 90 ms and air-dodge opening 120 ms, ending immediately on landing; Float explicitly protected while held, paid and active | Only the visible active Float shield represents maintained immunity; release/exhaustion/dodge/wallrun/fast fall/forced control ends Float |
 
@@ -39,7 +39,29 @@ Shared body envelopes are scaled exactly fivefold with an 800-Stamina global
 ceiling; oversized authored resources still fail closed. Network resource
 bounds already support these values without an additional resource-cap change.
 
-## Current verification
+## Current focused verification
+
+The canonical deferred runner passed **8 suites / 1,831 assertions** with zero
+failures and clean stderr: input-router (472), player-preferences (155),
+control-binding-editor (32), movement-guide-model (339), compact-combat-hud
+(42), player-resources (88), burst-projectile-presenter (117), and
+element-chemistry-presenter (586). Evidence:
+`.godot/compendium-audit/lowhop-chem-ui-final.log`.
+
+This verifies source-derived low-jump and Float instructions, remaining Float
+time, fixed-world pointer endpoints, legacy-default migration without stealing
+custom keys, chemistry recovery seals, and bounded effect presentation models.
+An initial resource fixture omitted the newly required positive Float duration;
+the corrected fixture exercises the actual held-drain path. Integrated chemistry,
+Full/Farflow, real controller feel and human visual acceptance remain separate.
+
+Original Godot-rendered 36-reaction / eight-deposit-and-impact specimens were
+inspected in standard and reduced-effects modes at
+`.godot/visual-captures/chemistry-native-final-normal/frame00000003.png` and
+`.godot/visual-captures/chemistry-native-final-reduced/frame00000003.png`.
+These are scaled render fixtures, not gameplay or performance acceptance.
+
+## Earlier verification (before the current low-hop / Q-V revision)
 
 On 2026-09-06 the isolated `champion-catalog` (979), `movement-guide-model`
 (334), `player-compendium` (957), `compact-combat-hud` (39) and `player-resources`
@@ -52,9 +74,11 @@ Earlier receipts below are historical, not proof of this revision.
 
 ## Intent before extra inputs
 
-Current defaults remain **WASD**, **Shift** sprint, **Space** jump, **C** slide,
-**Q** evade and **V** Technique. Ctrl / Alt remain the twelve-slot spell layers;
-this slice does not change saved bindings, preference schemas or those layers.
+Current defaults are **WASD**, **Shift** sprint, **Space** jump, **C** slide,
+**V** evade and **Q** Technique. Ctrl / Alt remain the twelve-slot spell layers.
+Preference schema 11 migrates the complete previous default keyboard profile;
+any customized keyboard profile, including explicit unbindings, retains its
+exact meanings. Mouse/controller bindings and spell layers are unchanged.
 
 | Input | One deliberate meaning | Safety rule |
 |---|---|---|
@@ -63,8 +87,8 @@ this slice does not change saved bindings, preference schemas or those layers.
 | Fresh airborne C | Commit to an earlier landing | Release a previously held C, then press it again |
 | Wheel up | One short Jump intent | Same-direction notches group until 120 ms of quiet |
 | Wheel down | One short Slide intent, or explicit airborne Fast Fall | Same scrolling gesture does not immediately brake its own slide |
-| Q / Evade | Roll on ground, air-dodge in air; late air-dodge can wavedash | No angle threshold for the late landing conversion |
-| V / Technique | Contact/direction-specific wallrun, turn or impact recovery | Always subject to the authoritative movement state and cost |
+| V / Evade | Roll on ground, air-dodge in air; late air-dodge can wavedash | No angle threshold for the late landing conversion |
+| Q / Technique | Contact/direction-specific wallrun, turn or impact recovery | Always subject to the authoritative movement state and cost |
 
 Wheel grouping is a local input filter, not an automatic action or macro. Each
 accepted gesture produces at most one pressed edge, no held flag and no

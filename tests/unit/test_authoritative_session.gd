@@ -59,10 +59,15 @@ func _test_authoritative_presence_and_input() -> void:
 		"pressed": SimCommand.PRESSED_JUMP,
 		"aim_x": 1000,
 		"aim_y": 0,
+		"aim_target_x": 1_500_000,
+		"aim_target_y": 750_000,
 	}
 	equal(session.ingest_inputs([packet]), 1, "validated transport input enters authority controller")
 	var commands := session.commands_for_tick(SimCommand.new(world.tick, 1))
 	equal(commands.size(), 2, "authority emits one ordered command per traveller")
+	equal(Vector2i(commands[1].aim_target_x, commands[1].aim_target_y), Vector2i(1_500_000, 750_000), "authority preserves the accepted remote world target")
+	var copied_command := commands[1].copy()
+	equal(Vector2i(copied_command.aim_target_x, copied_command.aim_target_y), Vector2i(1_500_000, 750_000), "command copying cannot drop the captured world target")
 	check(world.step(commands), "host simulates both travellers in one tick")
 	check(world.player(2).position_x > 1_352_000, "remote input moves only through host simulation")
 	check(world.player(2).hop_ticks > 0, "remote jump action executes once through the shared movement grammar")

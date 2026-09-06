@@ -94,6 +94,8 @@ func begin(world: SimWorld, participant_ids: Array[int], definition: Dictionary)
 	protection_ticks = world.config.milliseconds_to_ticks(int(parsed["protection_ms"]))
 	world.projectiles = []
 	world.fields = []
+	world.deposits.clear()
+	world.reactions.clear()
 	for index: int in range(ordered.size()):
 		var entity_id := ordered[index]
 		var spawn_position: Vector2i = spawn_points[index]
@@ -274,6 +276,8 @@ func _finish(world: SimWorld, winner_id: int) -> void:
 	_finish_tick(world.tick, winner_id)
 	world.projectiles = []
 	world.fields = []
+	world.deposits.clear()
+	world.reactions.clear()
 	_freeze_participants(world)
 
 

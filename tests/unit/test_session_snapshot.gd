@@ -10,11 +10,12 @@ func run() -> int:
 	_test_maximum_envelope_fits_transport()
 	_test_fragment_assembly_faults()
 	_test_snapshot_validation_fails_closed()
+	_test_complete_chemistry_envelope()
 	return finish("session-snapshot")
 
 
 func _test_snapshot_round_trip() -> void:
-	equal(SessionSnapshot.SCHEMA_VERSION, 17, "held float and progressive recovery snapshot schema is explicit")
+	equal(SessionSnapshot.SCHEMA_VERSION, 18, "bounded Float and chemistry snapshot schema is explicit")
 	var source := SimWorld.new(120, 7, CollisionWorld.new(3_000_000, 2_000_000))
 	var host: PlayerState = source.player()
 	host.champion_wire_id = 1
@@ -107,8 +108,10 @@ func _test_movement_presentation_round_trip() -> void:
 			value = 1
 		elif property_name in [&"movement_action_speed", &"hop_speed"]:
 			value = 456_000
-		elif property_name in [&"air_dodge_used", &"jump_held_last_tick", &"air_floating"]:
+		elif property_name in [&"air_dodge_used", &"jump_held_last_tick", &"air_floating", &"float_used"]:
 			value = 1
+		elif property_name == &"float_max_duration_ms":
+			value = MovementTuning.FLOAT_MIDDLE_DURATION_MS
 		elif property_name == &"air_vertical_velocity":
 			value = -456_000
 		elif property_name == &"air_height_remainder":
@@ -144,7 +147,7 @@ func _test_projectile_and_event_round_trip() -> void:
 		{"type": "edgeweave", "event_id": 42, "entity_id": 1, "projectile_id": 1000, "stamina": 8_000},
 		{"type": "social_emote", "event_id": 43, "entity_id": 1, "emote_id": 1},
 		{"type": "ready_changed", "event_id": 44, "entity_id": 1, "ready": true},
-		{"type": "beam_fired", "event_id": 45, "owner_id": 1, "source_wire_id": CombatTuning.POCKET_ECLIPSE_WIRE_ID, "target_id": 900, "end_x": 1_500_000, "end_y": 720_000},
+		{"type": "beam_fired", "event_id": 45, "owner_id": 1, "source_wire_id": CombatTuning.POCKET_ECLIPSE_WIRE_ID, "target_id": 900, "end_x": 1_500_000, "end_y": 720_000, "origin_x": 1_200_000, "origin_y": 650_000},
 		{"type": "spray_fired", "event_id": 46, "owner_id": 1, "source_wire_id": CombatTuning.TIDELINE_WIRE_ID, "end_x": 1_520_000, "end_y": 720_000, "hit_count": 1},
 		{"type": "spray_hit", "event_id": 47, "owner_id": 1, "source_wire_id": CombatTuning.TIDELINE_WIRE_ID, "target_id": 900, "damage": int(CombatTuning.cast_definition(CombatTuning.TIDELINE_WIRE_ID)["damage"])},
 	]
@@ -167,6 +170,7 @@ func _test_projectile_and_event_round_trip() -> void:
 		equal(int(replica.combat_events[2].get("event_id", 0)), 43, "semantic event identity round-trips inside the fixed header")
 		check(bool(replica.combat_events[3].get("ready", false)), "Hearth readiness event decodes")
 		equal(String(replica.combat_events[4].get("type", "")), "beam_fired", "beam cue decodes distinctly from a projectile")
+		equal(Vector2i(replica.combat_events[4].get("origin_x", -1), replica.combat_events[4].get("origin_y", -1)), Vector2i(1_200_000, 650_000), "optical beam continuation retains its actual segment origin")
 		equal(Vector2i(int(replica.combat_events[4].get("end_x", 0)), int(replica.combat_events[4].get("end_y", 0))), Vector2i(1_500_000, 720_000), "beam endpoint round-trips exactly")
 		equal(String(replica.combat_events[5].get("type", "")), "spray_fired", "spray fan cue decodes distinctly")
 		equal(int(replica.combat_events[5].get("hit_count", 0)), 1, "spray affected count round-trips")
@@ -287,9 +291,152 @@ func _test_maximum_envelope_fits_transport() -> void:
 	equal(received.size(), 1, "reordered maximum snapshot is applied atomically once")
 	if not received.is_empty():
 		check(received[0] == snapshot, "all varied maximum-envelope values round-trip exactly")
-		equal((received[0]["projectiles"] as PackedInt64Array).size(), SimConfig.MAX_ACTIVE_PROJECTILES * SessionSnapshot.PROJECTILE_VALUE_COUNT, "no admitted projectile omitted")
+		equal((received[0]["projectiles"] as PackedInt32Array).size(), SimConfig.MAX_ACTIVE_PROJECTILES * SessionSnapshot.PROJECTILE_VALUE_COUNT, "no admitted projectile omitted")
 		equal((received[0]["fields"] as PackedInt32Array).size(), SimConfig.MAX_ACTIVE_FIELDS * SessionSnapshot.FIELD_VALUE_COUNT, "no admitted field omitted")
 	receiver.stop()
+
+
+func _chemistry_deposit(index: int) -> ElementDepositState:
+	var deposit := ElementDepositState.new()
+	deposit.entity_id = 3000 + index
+	deposit.source_cast_id = 1000 + index
+	deposit.source_wire_id = CombatTuning.RILLSHOT_WIRE_ID
+	deposit.owner_id = 1 + index % 8
+	deposit.team_id = 1 + index % 8
+	deposit.element_wire_id = 1 + index % 8
+	deposit.position_x = 300_000 + index * 7919
+	deposit.position_y = 400_000 + index * 6151
+	deposit.created_tick = 100
+	deposit.expiry_tick = 600
+	return deposit
+
+
+func _chemistry_reaction(index: int) -> ElementReactionState:
+	var reaction := ElementReactionState.new()
+	reaction.entity_id = 4000 + index
+	reaction.recipe_wire_id = 301 + index % 36
+	reaction.owner_id = 1 + index % 8
+	reaction.team_id = 1 + index % 8
+	reaction.position_x = 500_000 + index * 3571
+	reaction.position_y = 600_000 + index * 2371
+	reaction.origin_x = reaction.position_x
+	reaction.origin_y = reaction.position_y
+	reaction.endpoint_x = reaction.position_x + 200_000
+	reaction.endpoint_y = reaction.position_y
+	reaction.created_tick = 100
+	reaction.active_tick = 110
+	reaction.decay_tick = 580
+	reaction.expiry_tick = 600
+	reaction.radius = 100_000
+	reaction.length = 260_000
+	reaction.health = 60_000
+	reaction.capacity = 36_000
+	reaction.pulse_index = 3
+	reaction.source_a = 3000 + index * 2
+	reaction.source_b = 3001 + index * 2
+	reaction.linked_deposit_ids = PackedInt64Array([6000, 6001, 6002, 6003])
+	reaction.path_points = PackedInt64Array([500000, 600000, 550000, 601000, 600000, 602000, 650000, 603000, 700000, 604000])
+	for actor_id: int in range(1, 17):
+		reaction.contacts.append_array(PackedInt64Array([actor_id, 100 + actor_id, actor_id % 2]))
+	return reaction
+
+
+func _test_complete_chemistry_envelope() -> void:
+	for deposit_count: int in [0, 64, 128]:
+		var world := SimWorld.new(120, 73, CollisionWorld.new(20_000_000, 20_000_000))
+		world.tick = 300
+		for actor_id: int in range(2, 9):
+			world.players.append(PlayerState.new(actor_id))
+		var names := {}
+		for actor: PlayerState in world.players:
+			actor.champion_wire_id = 1
+			names[actor.entity_id] = "T".repeat(SessionTransport.MAX_PLAYER_NAME_LENGTH)
+			actor.float_used = true
+			actor.air_floating = true
+			actor.air_height = 20_000
+			actor.float_ticks = 100
+			actor.chemistry_reveal_ticks = 120
+			actor.chemistry_conceal_ticks = 120
+			actor.chemistry_regen_block_ticks = 120
+			actor.pending_cast_target_x = 3_000_000
+			actor.pending_cast_target_y = 2_000_000
+		for index: int in range(128 - deposit_count):
+			var projectile := ProjectileState.new(1000 + index, 1 + index % 8, 1, CombatTuning.RILLSHOT_WIRE_ID, 2, Vector2i(300000 + index * 7919, 500000 + index * 6151), Vector2i(480000 - index * 187, index * 157), 12000, 9000, 500)
+			projectile.remaining_distance = 1_000_000 + index
+			projectile.source_cast_id = 1000 + index
+			projectile.material_strength = 1 + index % 1000
+			projectile.chemistry_interaction_mask = (1 << 36) - 1
+			world.projectiles.append(projectile)
+		for index: int in range(deposit_count):
+			world.deposits.append(_chemistry_deposit(index))
+		for index: int in range(32):
+			world.reactions.append(_chemistry_reaction(index))
+			world.fields.append(FieldState.new(2000 + index, 1 + index % 8, 1, CombatTuning.RIMEWAKE_WIRE_ID, 3, Vector2i(600000 + index * 1999, 650000), 50000, 180, PlayerState.ControlState.SLOWED, 300, 700))
+		var events: Array[Dictionary] = []
+		for index: int in range(12):
+			events.append({"type": "beam_fired", "source_wire_id": CombatTuning.POCKET_ECLIPSE_WIRE_ID, "owner_id": 1, "target_id": 2, "end_x": 900000 + index * 1957, "end_y": 800000, "origin_x": 700000, "origin_y": 600000 + index * 1531})
+		for index: int in range(4):
+			var target := PlayerState.new(900 + index)
+			target.actor_kind = PlayerState.ActorKind.TRAINING_TARGET
+			world.players.append(target)
+		var snapshot := SessionSnapshot.capture(world, names, events)
+		check(SessionSnapshot.validate(snapshot), "worst bounded mixed projectile/deposit/reaction snapshot validates")
+		var raw_size := var_to_bytes(snapshot).size()
+		check(raw_size <= SessionTransport.MAX_SNAPSHOT_UNCOMPRESSED_BYTES, "complete dangerous chemistry state fits the unchanged32KB raw envelope")
+		var packets := SessionTransport._snapshot_wire_packets(snapshot)
+		check(not packets.is_empty() and packets.size() <= SessionTransport.MAX_SNAPSHOT_FRAGMENTS, "complete chemistry state is admitted to bounded transport")
+		var receiver := SessionTransport.new()
+		receiver.mode = SessionTransport.Mode.CLIENT
+		packets.reverse()
+		var largest_datagram := 0
+		for packet: Dictionary in packets:
+			var bytes := var_to_bytes(packet)
+			largest_datagram = maxi(largest_datagram, bytes.size())
+			check(bytes.size() <= SessionTransport.ENET_MTU_BYTES, "chemistry fragment remains inside one MTU")
+			receiver._handle_packet(1, bytes)
+		var received := receiver.take_snapshots()
+		check(received.size() == 1 and received[0] == snapshot, "reversed fragments reconstruct one exact complete chemistry snapshot")
+		var replica := SimWorld.new(120, 73)
+		check(SessionSnapshot.apply_to_world(snapshot, replica), "complete chemistry snapshot applies atomically")
+		for index: int in range(world.deposits.size()):
+			equal(replica.deposits[index].canonical_values(), world.deposits[index].canonical_values(), "deposit canonical state round-trips losslessly")
+		for index: int in range(world.reactions.size()):
+			equal(replica.reactions[index].canonical_values(), world.reactions[index].canonical_values(), "reaction geometry/timeline/contact state round-trips losslessly")
+		for index: int in range(world.projectiles.size()):
+			var original: ProjectileState = world.projectiles[index]
+			var copied: ProjectileState = replica.projectiles[index]
+			equal(copied.chemistry_interaction_mask, original.chemistry_interaction_mask, "all36 optical interaction bits round-trip without signed32 truncation")
+			equal(copied.remaining_distance, original.remaining_distance, "projectile cursor-range budget round-trips")
+			equal(copied.source_cast_id, original.source_cast_id, "projectile deposit source identity round-trips")
+			equal(copied.material_strength, original.material_strength, "projectile matter strength round-trips")
+		print("chemistry snapshot deposits=", deposit_count, " projectiles=", world.projectiles.size(), " reactions=32 raw_bytes=", raw_size, " fragments=", packets.size(), " largest_datagram=", largest_datagram)
+		for key: String in ["deposits", "reactions"]:
+			var missing := snapshot.duplicate(true)
+			missing.erase(key)
+			check(not SessionSnapshot.validate(missing), "missing dangerous chemistry lane fails closed")
+		var malformed := snapshot.duplicate(true)
+		malformed["reactions"][0][1] = 337
+		check(not SessionSnapshot.validate(malformed), "unknown reaction wire fails closed")
+		malformed = snapshot.duplicate(true)
+		malformed["reactions"].append(malformed["reactions"][0])
+		check(not SessionSnapshot.validate(malformed), "over-cap reaction array fails closed")
+		malformed = snapshot.duplicate(true)
+		malformed["deposits"].append(PackedInt32Array(Array(_chemistry_deposit(200).canonical_values())))
+		check(not SessionSnapshot.validate(malformed), "combined projectile/deposit count cannot exceed authority admission")
+		world.deposits.append(_chemistry_deposit(200))
+		check(SessionSnapshot.capture(world, names).is_empty(), "over-admitted source refuses a whole snapshot instead of hiding a threat")
+		receiver.stop()
+	for recipe_wire: int in range(301, 337):
+		var world := SimWorld.new(120, 3)
+		world.player().champion_wire_id = 1
+		var reaction := _chemistry_reaction(0)
+		reaction.recipe_wire_id = recipe_wire
+		world.reactions.append(reaction)
+		var snapshot := SessionSnapshot.capture(world, {})
+		check(SessionSnapshot.validate(snapshot), "each of36 recipe identities is admitted without promoting unsupported values")
+		var replica := SimWorld.new(120, 3)
+		check(SessionSnapshot.apply_to_world(snapshot, replica), "each reaction identity restores for remote presentation")
+		equal(replica.reactions[0].recipe_wire_id, recipe_wire, "all36 reaction identities survive replication")
 
 
 func _fragment_fixture(tick: int = 10) -> Dictionary:

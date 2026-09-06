@@ -639,7 +639,7 @@
       "display_name": "Eclipse Disc",
       "shape": "projectile",
       "delivery": "aimed",
-      "impact": "damage_ricochet",
+      "impact": "damage",
       "residue": "none",
       "material_operation": "decay",
       "material_runtime_enabled": false,
@@ -657,9 +657,9 @@
       "radius": 11000,
       "damage": 10000,
       "lifetime_ms": 2000,
-      "remaining_bounces": 1,
-      "roles": ["angle_pressure", "ricochet"],
-      "counterplay": ["read_single_bounce", "change_lane", "cover"],
+      "remaining_bounces": 0,
+      "roles": ["lane_pressure", "element_deposit"],
+      "counterplay": ["read_endpoint", "change_lane", "cover"],
       "authority": "simulation"
     },
     {

@@ -1,8 +1,8 @@
 {
   "schema_version": 2,
   "id": "first-eight-element-reactions-v1",
-  "status": "compiled_runtime_gated",
-  "runtime_enabled": false,
+  "status": "bounded_level_one",
+  "runtime_enabled": true,
   "fundamental_elements": ["earth", "fire", "water", "wind", "ice", "charge", "light", "dark"],
   "deferred_elements": ["spirit", "chaos", "gravity", "time"],
   "policy": {
@@ -13,7 +13,7 @@
     "required_runtime_bounds": ["area", "propagation_depth", "lifetime", "work", "ownership"],
     "priority": "map_interaction_before_damage_multiplier",
     "worldbone_policy": "reject",
-    "mutation_gate": "disabled_until_c6"
+    "mutation_gate": "bounded_level_one"
   },
   "channels": ["structure", "heat", "saturation", "pressure_momentum", "charge", "radiance_vitality", "decay"],
   "element_channel_vectors": {

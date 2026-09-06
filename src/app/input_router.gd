@@ -300,6 +300,8 @@ func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> S
 		pressed,
 		quantized_aim.x,
 		quantized_aim.y,
+		clampi(roundi(pointer_position.x * SimConfig.FIXED_SCALE), 0, 100_000_000) if joy_aim.length() < AIM_DEADZONE else -1,
+		clampi(roundi(pointer_position.y * SimConfig.FIXED_SCALE), 0, 100_000_000) if joy_aim.length() < AIM_DEADZONE else -1,
 	)
 
 

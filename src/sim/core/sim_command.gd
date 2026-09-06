@@ -49,6 +49,8 @@ var held_actions: int
 var pressed_actions: int
 var aim_x: int
 var aim_y: int
+var aim_target_x: int = -1
+var aim_target_y: int = -1
 
 
 func _init(
@@ -60,6 +62,8 @@ func _init(
 	requested_pressed_actions: int = 0,
 	requested_aim_x: int = 1000,
 	requested_aim_y: int = 0,
+	requested_target_x: int = -1,
+	requested_target_y: int = -1,
 ) -> void:
 	tick = requested_tick
 	entity_id = requested_entity_id
@@ -70,6 +74,9 @@ func _init(
 	var aim := _normalized_direction(requested_aim_x, requested_aim_y)
 	aim_x = aim.x
 	aim_y = aim.y
+	if requested_target_x >= 0 and requested_target_y >= 0:
+		aim_target_x = clampi(requested_target_x, 0, 100_000_000)
+		aim_target_y = clampi(requested_target_y, 0, 100_000_000)
 
 
 func has_held(action: int) -> bool:
@@ -89,13 +96,13 @@ func first_pressed_spell_slot() -> int:
 
 func canonical_bytes() -> PackedByteArray:
 	var output := PackedByteArray()
-	for value: int in [tick, entity_id, move_x, move_y, held_actions, pressed_actions, aim_x, aim_y]:
+	for value: int in [tick, entity_id, move_x, move_y, held_actions, pressed_actions, aim_x, aim_y, aim_target_x, aim_target_y]:
 		CanonicalBytes.append_i64(output, value)
 	return output
 
 
 func copy() -> SimCommand:
-	return SimCommand.new(tick, entity_id, move_x, move_y, held_actions, pressed_actions, aim_x, aim_y)
+	return SimCommand.new(tick, entity_id, move_x, move_y, held_actions, pressed_actions, aim_x, aim_y, aim_target_x, aim_target_y)
 
 
 static func _normalized_direction(requested_x: int, requested_y: int) -> Vector2i:

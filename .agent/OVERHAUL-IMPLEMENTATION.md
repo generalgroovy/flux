@@ -1,6 +1,12 @@
 # FLUX 2 implementation path to first-eight playtest
 
-Current frontier: protocol 42, snapshot 17, preferences 10, Godot 4.7.1,
+**Checkpoint pause, 2026-09-06:** low-hop/finiteFloat and all36 first-grade
+chemistry source gate is verified (81suites/165,441assertions, localFarflow,
+paidcast integration). User requested launch and no more iteration. Follow
+`docs/LOW-HOP-CHEMISTRY-CHECKPOINT.md` for tests and resume boundaries. Human
+acceptance and heavy-load120Hz profiling remain open; no next feature slice.
+
+Current frontier: protocol 43, snapshot 18, preferences 11, Godot 4.7.1,
 canonical `main` (the remote compatibility ref mirrors its published checkpoint;
 the non-authoritative local compatibility ref may lag until a safe
 fast-forward). V0–V6 visual engineering, the exact
@@ -41,19 +47,25 @@ commitment, ownership, consequence, counter and recovery are readable.
 
 ## Slice sequence
 
-Current user-authorized outcome (2026-09-06): slightly lower jump; replace the
-second jump with steerable paid invincible Float; independent progressive
-Stamina/Flux recovery; original takeoff ring, landing dust, dodge streak and slide
-trail. Float holds current height, spends its second-air-action allowance until
-actual landing, costs 24 Stamina plus chain premium and 100/s while held; release,
-exhaustion, dodge, wallrun, fast fall or forced control ends it immediately.
-Base recovery rises 1x to 3x over three quiet seconds after the resource's own
-delay. Health, speed, capacities, map, spells and roster remain unchanged.
-Protocol 42 / snapshot 17 carry Float and accurate remote resource recovery;
-all-size/eight-direction, replay, local Farflow, Full and live render evidence
-must pass before the source playtest checkpoint. Acceptance remains in
-`docs/MOVEMENT-M1-M5-ACCEPTANCE.md#held-float-and-recovery-feedback`.
-Older revision rows below are historical, not alternative active rules.
+Current authorized revision (2026-09-06), built on the previous green Float
+checkpoint: low projectile-clearing jumps, independently limited Float, safe
+V/Q defaults and cursor endpoints, then finite deposits and all 36 first-eight
+spatial reactions. Source work is in integration; do not label the whole
+chemistry gate complete from catalog coverage or rendering alone.
+
+| Slice | Exact current contract | Required proof |
+|---|---|---|
+| Low jump + Float | Approximately 22/28.9 px tap/held; low ground projectile clearance above 18 px; Float small 1800 / middle 1500 / large 1200 ms; 24 + chain and 100 Stamina/s; actual landing resets | Eight-way/body tests, immediate protection exit, walljump -> Float -> air dodge, no beam/area/explosion bypass |
+| Input + teaching | V Evade, Q Technique; preferences 11 migrates only the entire previous default keyboard map; 12 spell slots unchanged; mouse fixed-world endpoint, controller directional range | Input/migration tests, source-derived F4 guide/HUD, actual cursor and modal safety |
+| Finite matter | First-eight independent deposits, bounded source/owner identity, 2-5 second lifespan; 36 stable recipe IDs, immutable worldbone | All-pair production paths, duplicate/capacity/reset/lifecycle tests; actual effects, not only definitions |
+| Chemistry presentation | Eight deposit/impact identities; all 36 use shared code-native primitives with actual authority radius/length/endpoints/path/phase; reduced-effects retains boundaries | Live standard/reduced/zoom/density captures; no actor masking or false reflected-ray origins |
+| Integration and pause | Protocol 43 / snapshot 18 include air budgets, chemistry status and persistent matter | Full, source import/120 Hz boot, replay/snapshot, local Farflow, Windows launch and bounded playtest; installer/signing/internet acceptance remains separate |
+
+The previous 5x Stamina pools, 15% speed increase and independent 1x-to-3x
+quiet-resource ramps remain. Chemistry may suppress positive recovery without
+resetting quiet ages or blocking costs. No roster promotion, new spell form,
+recursive reaction, material drift/grip or map expansion is part of this slice.
+Older revision rows below are historical, not competing active directions.
 
 Active feedback revision (2026-09-06): 5x Stamina capacities with unchanged
 costs/absolute recovery; 15% faster locomotion with proportional acceleration
@@ -131,7 +143,7 @@ Continue C6-C9 only from a verified green checkpoint; preserve the playtest paus
 | C5 reaction catalog — complete in this checkpoint | The fail-closed loader requires exactly 36 unordered-with-repetition pairs, symmetric lookup, unique IDs, lifecycle, counters, bounds and worldbone policy; recipes compile onto bounded shared primitives while mutation remains disabled. | Missing/duplicate/asymmetric/unbounded content fails tests and boot clearly; pair order cannot affect lookup or compatibility hash. |
 | C5.5 authority cleanup — complete in this checkpoint | Generated state/drift checks, stable suite selection, truthful receipts, `.\flux.cmd`, document statuses and conservative asset classification are green. Canonical roster adapters reconcile metadata without certifying archived pixels; derived Loom and exported-pack summaries are tested. The actual Windows export boots; unsigned installer trust remains independently blocked. | Protocol 37, Windows-only acceptance, 120 Hz, three body types and canonical names agree across runtime and docs; the exported payload boots and reports matching live content; the promoted map/M0-M2 implementation precedes C6. |
 | Map + M0-M2 — implemented candidate | Six-area campus, no-vault dispatch, explicit Evade, 50 ms slide protection/brake, independent jump protection, air-wall budget, contact-run detach and local practice trace/echo | Focused/full source checks; visual/network evidence in acceptance ledger; human balance/visual acceptance and concurrent-activity isolation remain pending |
-| C6 exposure/contact -- next | Add fixed-capacity element exposure cells keyed to the material grid; burst impact deposits one bounded source with owner/team/tick/strength; second source resolves one canonical recipe. | Repeated contact is deterministic, rate-bounded, authority-owned, and cannot mutate immutable worldbone. |
+| C6 exposure/contact -- current integration | Fixed-capacity element deposits with owner/team/cast/tick/strength; matching finite sources resolve one canonical recipe. | Repeated contact is deterministic, rate-bounded, authority-owned, and cannot mutate immutable worldbone. |
 | C7 shared reaction primitives | Implement reusable `surface`, `flow`, `cover`, `field`, `conduction`, `visibility`, `hazard`, `reveal/refraction`, and `fracture` effect families; map all recipes to bounded parameter sets. | Every pair has a live spatial effect and counter even when several recipes share safe physics primitives. |
 | C8 lifecycle/presentation | Formation telegraph, active state, residue/decay, compact label/icon, reduced/high-contrast cues, reset group, replay event, snapshot state and overflow diagnostics. | A player can identify the pair, boundary, danger/benefit, remaining phase, owner, and counter without reading source. |
 | C9 Crucible acceptance | Eight attunement plinths, two-source test basin, recipe codex, reset, route-safety checks, 120 Hz full tests, source/import boots, packaged boot, Farflow pair, installer rebuild and named solo/friend/accessibility/recovery journeys. | All 36 reactions are deliberately reproducible in-game; a newcomer can reach, create, read, counter and reset them; the exact green Windows build is ready for user playtest. |
@@ -181,7 +193,7 @@ Known C5.5 reconciliation targets are explicit:
 | 120 Hz gameplay, 60 Hz snapshots and a 60-sample presentation timebase | Document distinct simulation/transport/presentation roles; reject any alternate gameplay cadence |
 | Windows 120 Hz entry points versus frozen Linux helpers accepting 60 | Current Windows launch/test/package paths enforce 120; either migrate Linux helpers atomically when Linux returns to scope or label/refuse the obsolete option before claiming support |
 | 46 effective ability records versus 41 runtime spells | Generated state reports direct plus template-expanded records; 40 row-major matrix wires and Vector Lance are selectable/hashed as the current Loom library, while five passive/gated records remain visibly non-runtime |
-| 36 compiled reactions versus zero live chemistry mutation | Report catalog completeness and `runtime_enabled=false` separately; no plan, UI or package may imply that recipes already mutate the world |
+| Compiled recipes versus live chemistry acceptance | Catalog coverage is distinct from the in-progress deposit/execution/presentation integration; advertise completion only after all-pair/reset/replay/Farflow and visual proof |
 | Playable roster versus planned 2–3-affinity roster | Generated current state lists only three selectable champions; planned identities never enter runtime hashes or UI before promotion |
 | Active v3 visual contract versus stale five-size/identity inventory | Split current production metadata from classified archive inputs, preserve tested resolvers until all consumers migrate, and never let archive roster fields override the canonical cast/affinity manifests |
 | Old visual catalogs versus body-only current recipes | Replace and prove every live consumer before archival; concept/generated pixels never define gameplay identity |

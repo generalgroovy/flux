@@ -6,6 +6,7 @@ func run() -> int:
 	_test_air_wall_budget()
 	_test_explicit_intents_and_attachment()
 	_test_airborne_wallrun_chain()
+	_test_wall_contact_and_turns()
 	_test_slide_jump_commitment()
 	_test_snapshot_and_surface_seam()
 	_test_controls_migration_and_landing_buffer()
@@ -138,12 +139,86 @@ func _test_airborne_wallrun_chain() -> void:
 	check(state.air_dodge_ticks > 0 and state.wall_skim_ticks == 0, "air dodge cleanly owns the wallrun exit")
 
 
+func _test_wall_contact_and_turns() -> void:
+	var config := SimConfig.new(120)
+	var arena := CollisionWorld.new(4_000_000, 4_000_000)
+	arena.add_obstacle(CollisionWorld.Obstacle.new(7, 2_020_000, 1_800_000, 2_048_000, 2_200_000))
+	var state := _state()
+	state.position_x = 2_002_000
+	MovementSystem.step(state, SimCommand.new(0, 1, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE), config, arena)
+	check(state.wall_skim_ticks > 0, "Technique acquires actual nearby contact without a prerequisite collision tick")
+	var remaining := state.wall_skim_ticks
+	var paid := state.stamina
+	MovementSystem.step(state, SimCommand.new(1, 1, 0, -1000), config, arena)
+	check(state.velocity_y < 0 and state.wall_skim_y == -1000, "reverse tangent input reverses wallrun on its existing timer")
+	equal(state.wall_skim_ticks, remaining - 1, "wallrun reversal cannot refresh its finite duration")
+	equal(state.stamina, paid, "wallrun reversal does not create an extra activation charge")
+	MovementSystem.step(state, SimCommand.new(2, 1, -1000, 0), config, arena)
+	check(state.wall_skim_ticks == 0, "outward input deliberately leaves the wall")
+	state.position_x = 2_002_000
+	state.movement_commitment_ticks = 0
+	MovementSystem.step(state, SimCommand.new(3, 1, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE), config, arena)
+	equal(state.wall_skim_ticks, 0, "leave and re-enter cannot refresh the same-surface lockout")
+	var second_wall := CollisionWorld.new(4_000_000, 4_000_000)
+	second_wall.add_obstacle(CollisionWorld.Obstacle.new(9, 2_020_000, 1_800_000, 2_048_000, 2_200_000))
+	var reentry := _state()
+	reentry.position_x = 2_002_000
+	reentry.air_height = 20_000
+	reentry.hop_ticks = 15
+	reentry.hop_stage = 2
+	reentry.float_used = true
+	reentry.air_dodge_used = true
+	reentry.wall_skim_lockout_id = 7
+	reentry.wall_skim_lockout_ticks = 80
+	var before_reentry := reentry.stamina
+	MovementSystem.step(reentry, SimCommand.new(0, 1, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE), config, second_wall)
+	check(reentry.wall_skim_ticks > 0 and reentry.wall_skim_surface_id == 9, "a genuinely different wall allows a new activation after shared cooldown")
+	equal(reentry.stamina, before_reentry - MovementTuning.WALL_SKIM_COST, "different-surface re-entry pays its complete positive activation cost")
+	check(reentry.float_used and reentry.air_dodge_used and reentry.hop_stage == 2, "paid re-entry never refills Float, dash or wall-kick lift")
+	var gap := _state()
+	gap.position_x = 1_998_000
+	MovementSystem.step(gap, SimCommand.new(0, 1, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE), config, arena)
+	equal(gap.wall_skim_ticks, 0, "Technique cannot attach across more than three pixels of real gap")
+	equal(gap.stamina, gap.stamina_maximum, "out-of-contact Technique refuses without a wallrun payment")
+	var nonrunnable := CollisionWorld.new(4_000_000, 4_000_000)
+	var scenery := CollisionWorld.Obstacle.new(8, 2_020_000, 1_800_000, 2_048_000, 2_200_000)
+	scenery.wall_runnable = false
+	nonrunnable.add_obstacle(scenery)
+	var refused := _state()
+	refused.position_x = 2_002_000
+	MovementSystem.step(refused, SimCommand.new(0, 1, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE), config, nonrunnable)
+	equal(refused.wall_skim_ticks, 0, "non-runnable solid scenery never becomes wallrun contact")
+	arena.add_obstacle(CollisionWorld.Obstacle.new(8, 1_800_000, 2_100_000, 2_020_000, 2_128_000))
+	var corner := _state()
+	corner.position_x = 2_002_000
+	corner.position_y = 2_080_000
+	corner.air_height = 20_000
+	corner.hop_ticks = 15
+	corner.hop_stage = 2
+	corner.float_used = true
+	corner.air_dodge_used = true
+	MovementSystem.step(corner, SimCommand.new(0, 1, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE), config, arena)
+	check(corner.wall_skim_ticks > 0 and corner.wall_skim_surface_id == 8, "inside corner transfers only on the next actual collision face")
+	var corner_remaining := corner.wall_skim_ticks
+	MovementSystem.step(corner, SimCommand.new(1, 1, -1000, 0), config, arena)
+	check(corner.velocity_x < 0 and corner.wall_skim_surface_id == 8, "tangent input continues around the inside corner without penetrating it")
+	equal(corner.wall_skim_ticks, corner_remaining - 1, "corner transfer keeps the original shrinking wallrun clock")
+	check(corner.float_used and corner.air_dodge_used and corner.hop_stage == 2, "corner traversal cannot farm any airborne budget")
+	check(arena.can_occupy(Vector2i(corner.position_x, corner.position_y), corner.radius), "corner traversal respects solid floor-plan collision")
+	var edge := _state()
+	edge.position_x = 2_002_000
+	edge.position_y = 2_198_000
+	MovementSystem.step(edge, SimCommand.new(0, 1, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE), config, arena)
+	equal(edge.wall_skim_ticks, 0, "outside edge ends wallrun rather than snapping across empty space")
+
+
 func _test_controls_migration_and_landing_buffer() -> void:
 	var preferences := PlayerPreferences.new()
 	var old := preferences.to_dictionary()
 	old["schema_version"] = 9
 	(old["keyboard_bindings"] as Dictionary).erase("evade")
 	old["keyboard_bindings"]["jump"] = KEY_Q
+	old["keyboard_bindings"]["technique"] = KEY_V
 	(old["controller_bindings"] as Dictionary).erase("evade")
 	old["controller_bindings"]["jump"] = {"kind": "axis", "index": JOY_AXIS_TRIGGER_LEFT, "direction": 1}
 	check(preferences.apply_dictionary(old), "old custom bindings migrate")

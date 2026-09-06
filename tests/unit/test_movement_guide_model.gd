@@ -90,7 +90,11 @@ func _test_continuous_height_rules() -> void:
 	equal(int(second["cost_milli"]), MovementTuning.FLOAT_COST, "Float startup derives from actual tuning")
 	equal(int(second["sustain_milli_per_second"]), MovementTuning.FLOAT_DRAIN_PER_SECOND, "Float hold displays actual high Stamina cost")
 	equal(int(second["duration_ms"]), 0, "Float is limited by hold and resource instead of a fake fixed duration")
-	check(String(second["timing_note"]).contains("Wall contact does not refill"), "guide cannot promise unlimited Float resets from walls")
+	check(String(second["counter"]).contains("Wall contact does not refill"), "guide cannot promise unlimited Float resets from walls")
+	check(String(second["timing_note"]).contains("wall jump -> Float -> air dodge"), "guide teaches the independent legal air chain")
+	for duration: int in [MovementTuning.FLOAT_SMALL_DURATION_MS, MovementTuning.FLOAT_MIDDLE_DURATION_MS, MovementTuning.FLOAT_LARGE_DURATION_MS]:
+		check(String(second["timing_note"]).contains("%.1fs" % (float(duration) / 1000.0)), "Float guide displays the actual size duration")
+	check(String(jump["counter"]).contains("18 units") and String(jump["counter"]).contains("beams"), "low hop teaches projectile clearance without claiming blanket protection")
 	var float_details := " ".join(MovementGuideModelScript.detail_lines(second))
 	check(float_details.contains("Protected only while Float is active and paid"), "Float protection is continuous only during its paid hold")
 	check(not float_details.contains("no new immunity"), "generic guide fallback cannot contradict Float protection")

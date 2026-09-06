@@ -2,24 +2,29 @@
 
 **Flow. Learn. Unleash. eXecute.**
 
-**Current movement feedback revision (2026-09-06):** a slightly lower jump and
-**held invincible Float instead of double-jump lift**. Jump, release, then press
-and hold Jump again: steer freely at the activation height for **24 Stamina +
-chain premium, then 100/s**. Release or exhaustion ends protection immediately;
-air dodge, wallrun, fast fall and forced control also end Float. Actual landing
-restores its allowance. Both **Stamina and Flux recover progressively faster**
-after their own spending delay, reaching 3x base recovery over three quiet seconds.
-Original takeoff rings, landing dust, dodge streaks and slide trails reinforce
-movement without changing hitboxes. **F4** explains controls/costs; **F2/F3** show
-practice feedback/retry. Start `flux.cmd` in this checkout.
-See [current acceptance and evidence](docs/MOVEMENT-M1-M5-ACCEPTANCE.md#held-float-and-recovery-feedback)
-for exact test results and human-playtest limits. No new installer was produced;
-remote publication remains pending approval. The 5x reserves and 15% faster
-running from the preceding checkpoint are retained.
+**Current source revision (2026-09-06): low jumps, finite Float and first-eight chemistry.**
+**Paused for the requested playtest.** The Windows Full source gate passed
+**81 suites / 165,441 assertions**, zero failures and clean stderr, plus local
+Farflow host/join and real paid-cast chemistry tests. This is not a new installer.
+See the [checkpoint and test guide](docs/LOW-HOP-CHEMISTRY-CHECKPOINT.md).
+Heavy-load timing spikes remain: sustained 120 FPS is **not** accepted yet.
 
-Verified: **78 suites / 143,435 assertions**, clean import/120 Hz boot, local
-host/join lifecycle, source launcher and a 6,867-assertion eight-player diagnostic.
-Human feel/balance and real internet play remain separate acceptance checks.
+| Immediate change | Current source behavior | Acceptance boundary |
+|---|---|---|
+| Low jump | Approximately 22 px tap / 28.9 px held; above 18 px, low ground projectiles pass underneath | Beams, areas and explosions are not bypassed; ordinary jump still has only 90 ms opening immunity |
+| Float | Fresh airborne Jump press/hold holds current height; 24 Stamina + chain premium, then 100/s; small 1.8 s / middle 1.5 s / large 1.2 s maximum | Release, expiry, exhaustion, dodge, wallrun, fast fall or forced control ends protection immediately |
+| Air chains | Walljump -> Float -> air dodge; independent once-per-airtime opportunities | Only actual landing restores spent Float/dodge; touching walls never refills them |
+| Controls and aim | V evades, Q is Technique; cursor becomes an open-centre aiming sight and carries a world endpoint | Only previous fully default keyboard profiles migrate; custom bindings are preserved; controller aim uses range-limited directional casting |
+| Temporary matter | First-eight deposits last 2–5 seconds; all 36 first-grade pair identities execute with bounded authority-driven shapes and original rendering | All-pair paid formation, effects, reset, network and Full checks passed; human feel/readability and internet play remain open |
+| Recovery clarity | Stamina and Flux independently ramp 1x -> 3x over three quiet seconds after their own delay; HUD shows Float time and recovery seals | Actual positive spending resets only its own timer; chemistry recovery suppression does not erase quiet age |
+
+**F4** opens movement, characters and chemistry (Tab / shoulders change section);
+the Chemistry section includes endpoint/deposit instructions and all 36 pair
+results, with source-derived formation/active/decay times. **F2/F3** provide practice feedback/retry.
+Start `.\flux.cmd play` in this checkout. The [controls ledger](docs/MOVEMENT-CONTROLS-ACCEPTANCE.md)
+and [core chemistry revision](docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md) distinguish
+implemented source from integrated, visual, human-feel and internet acceptance.
+No new installer was produced; remote publication remains pending approval.
 
 | Playable champion | Body | Stamina | Base -> quiet recovery / s |
 |---|---|---:|---:|
@@ -32,7 +37,9 @@ Human feel/balance and real internet play remain separate acceptance checks.
 Capacities remain five times the earlier build. Base rates and other action
 costs are unchanged; the new recovery ramp applies independently to each resource.
 Stamina refills in ordinary grounded movement, not while sustaining Float or
-other paid movement. Health, resource maxima, spell balance, map and roster are unchanged.
+other paid movement. Resource maxima, spell costs, map and roster are unchanged.
+Blightsoil suppresses positive Health, Flux and Stamina recovery while active;
+spending and independent quiet clocks keep their normal rules.
 
 ![Actual movement renderer: three body templates, eight slide directions](docs/evidence/movement-m1-m5/three-body-slide-directions.png)
 
@@ -50,9 +57,9 @@ results and the explicit work still ahead. Full validation passed: **74 suites /
 Press **F4** (controller **Select/Back**) for the movement guide and alphabetical
 race/character compendium. This does not update an already-downloaded Windows installer.
 
-Latest control checkpoint: proportional slows, reliable held-slide jump
-conversion and continuous 31.8/75.6 px tap/held jump physics are source-tested at 120 Hz.
-The second airborne action now holds current height instead of adding lift.
+The previous 31.8/75.6 px jump is superseded by the low 22/28.9 px arc above.
+Proportional slows, reliable held-slide jump conversion and 120 Hz authority remain.
+Float holds current height instead of adding lift, now with explicit size caps.
 The [core revision](docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md) and
 [coordinated workstreams](.agent/TEAM-ITERATION-PROMPT.md) define the next work:
 reactable spells, reusable elemental art, temporary material, all first-level
@@ -77,15 +84,16 @@ physical places rather than a detached menu.
 > Wellspring campus, an authoritative 2–8 player direct-IP Farflow loop, and a
 > packaged one-file Windows player app are working. Comparable bursts for all
 > eight first-phase elements and the strict, symmetric 36-reaction definition
-> compiler are working; bounded exposure/contact is the next chemistry goal,
-> and world mutation remains deliberately gated until that slice passes.
+> compiler are working. Finite deposits and live spatial reactions are now
+> being integrated; their all-pair, reset, replay and network gate is not yet accepted.
 
 **Latest movement/resource update:** held Jump now buys a visibly higher arc,
 held Slide buys a longer lane, earned planar speed survives legal movement
 conversions, and airborne wallrun/air-dodge chains are live. Successive movement
 actions cost 10% more up to 40% and reset after 333 ms; every champion has more
-Stamina and every attack remains paid despite lower Flux costs. Protocol 42 and
-snapshot schema 17 carry complete threats, target respawn, Float and resource recovery state through Farflow. See the
+Stamina and every attack remains paid despite lower Flux costs. Protocol 43 and
+snapshot schema 18 add finite Float budgets and chemistry state to complete threats,
+target respawn and resource recovery through Farflow; their integration gate is pending. See the
 [quality expansion ledger](docs/QUALITY-EXPANSION-ACCEPTANCE.md).
 
 **Illustrated source revision:** illustrated stone/grass/water terrain, slate-and-timber
@@ -102,7 +110,7 @@ from the earlier artwork. See the [visual acceptance ledger](docs/VISUAL-REFINEM
 Run `.\flux.cmd play` for this source revision. Existing Windows exports predate
 these changes and must be rebuilt before sharing; do not mix old packages and
 new-source hosts. The [map/movement ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md)
-records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current source uses protocol 42; hosts and guests must use the same build.
+records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current source uses protocol 43; hosts and guests must use the same build.
 
 ![Current five-champion motion contact sheet](assets/concept/five-champion-motion-reference-v1.png)
 
@@ -131,7 +139,7 @@ Current counts deliberately distinguish authored inventory from promoted play:
 | Dimension | Authoritative current meaning |
 |---|---|
 | Abilities | 46 validated effective records; 41 have runtime wire IDs: a complete row-major 8-element × 5-family Loom plus Vector Lance; five passive/gated kit records are not selectable spells |
-| Chemistry | 36 symmetric definitions compile and hash; `runtime_enabled` remains false until bounded exposure/contact, execution and reset pass |
+| Chemistry | 36 symmetric first-grade reactions compile, hash and execute; paid all-pair formation, behavior/lifecycle, reset, transport and source Full checks pass; human playtest and heavy-load timing acceptance remain open |
 | Champions | 5 playable entries; 24 identities in the non-selectable roster/affinity plan |
 | Bodies | 3 authored gameplay roles: small, middle and large; five-size paths are legacy source/archive adapters only |
 | Cadence | 120 Hz authoritative simulation; 60 Hz transport snapshots and a 60-sample presentation clock are distinct non-gameplay cadences |
@@ -206,7 +214,7 @@ direct-IP internet builds only with trusted friends.
 | Wellspring | Nine districts, walk-up stations, practice actors, movement routes | Stronger authored landmarks and compact onboarding |
 | Movement | Full universal foundation at deterministic 120 Hz; normalized eight-way commands, active directional air control/facing, alternating gait contacts, native eight-way jump/slide/roll art, relative gait, and directional evasion cues | Measure response/braking/reversal/chains during chemistry, then tune the existing grammar from the packaged playtest before adding techniques |
 | Combat | Forty row-major matrix spells cover Bolt, Burst, Spray, Beam and Field for every first-eight element; Vector Lance remains a proven extra variant; one validated catalog owns economy, timing, geometry, damage, control, Loom order and reusable presentation | Finish visual-family acceptance, then let chemistry supply systemic differences without dual-element attacks |
-| Chemistry | Material grid, eight element-bearing Bursts, and 36 compiled symmetric recipes mapped to nine bounded spatial primitives and seven integer channels; mutation is off | Bounded exposure/contact, shared effect execution, lifecycle/presentation, reset, replay and Farflow proof |
+| Chemistry | First-eight finite deposits plus 36 stable recipe identities and authority-shaped code-native presentation are in the current source integration | All-pair production behavior, cover/visibility/refraction, lifecycle/reset/replay and complete Farflow state proof before acceptance |
 | Champions | Five playable: Oh Tipi, S. Wayne, Red Baron, Grace Riva, Wa Bidi | Refine motion contacts and verify visual readability before more roster expansion |
 | Farflow | Host-authoritative 2/4/8-player loop with contextual zero-config LAN discovery and direct-IP internet joining | Physical two-PC LAN/internet proof, then per-peer LOS filtering; measured 32-player work remains deferred |
 | Visuals | Integrated Wellspring gate accepted at 4.64/5; the foundation champions share The Red Baron's cell-bounded dark-ink language, and the Proving Court uses quiet room lanes, response pockets and bounded markers | Maintain one world/body/shadow/spell/projectile/interface hierarchy and improve weak live areas from gameplay captures, not isolated concept art |
@@ -237,8 +245,10 @@ mechanics.
 
 ## Controls
 
-All gameplay bindings are remappable at the in-world Controls Lectern and saved
-in a versioned local profile.
+Gameplay bindings are remappable at the in-world Controls Lectern and saved
+in a versioned local profile. The F4 / controller Select/Back compendium shortcut
+is a fixed interface shortcut, not yet rebindable; it closes before quit and
+blocks local gameplay input without pausing the multiplayer world.
 
 | Action | Keyboard/mouse default | Controller default |
 |---|---|---|
@@ -248,7 +258,8 @@ in a versioned local profile.
 | Sprint | Shift | Left shoulder |
 | Slide / fast-fall intent | Tap C/wheel down for 150 ms; hold for paid sustain | South face |
 | Jump / movement chain | Tap Space/wheel up for short hop; hold for paid sustain | Right shoulder |
-| Context technique | V | East face |
+| Evade: roll / air dodge | V | Left trigger |
+| Context technique | Q | East face |
 | Interact | F | North face |
 | Speech wheel | Hold T, choose direction | D-pad up |
 | Spells | 1–4 | Remappable |
@@ -261,7 +272,7 @@ Ctrl+1–4, and Alt+1–4. An empty position refuses without consuming Flux or
 cooldown. Ctrl and Alt are spell-layer modifiers; slide remains on C.
 
 Press edges are retained across the render-to-simulation boundary and then use
-the same 180 ms deterministic action buffer, so quick keyboard, mouse-wheel and
+the same 100 ms deterministic movement buffer, so quick keyboard, mouse-wheel and
 controller chords are not lost between frames. All eight movement-plus-slide
 combinations are exercised end to end at 120 Hz and the resulting slide lanes
 are verified at the authoritative 120 Hz tick. If a physical keyboard cannot
@@ -270,9 +281,9 @@ Lectern remap is the equivalent slide input.
 
 ## Movement grammar
 
-**2026-09-04 playable revision:** the larger Wellspring loop and no-vault
-movement update are implemented in source. Sprint+Jump stays Jump; Q / left
-trigger is Evade, V / B is Wall/Air Turn/Tech. Jump/Slide holds spend Stamina
+**Current no-vault movement:** the larger Wellspring loop and no-vault
+movement update are implemented in source. Sprint+Jump stays Jump; V / left
+trigger is Evade, Q / B is Wall/Air Turn/Tech. Jump/Slide holds spend Stamina
 for their optional tails; Slide has a brief 50 ms opening protection window and
 second-press brake. [Current map, controls and acceptance
 ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md) separates tested behavior from
@@ -282,8 +293,8 @@ pending human balance/visual acceptance and independent activity isolation.
 |---|---|---|---|
 | Strafe + independent aim | Crossfire, retreat, prediction | Acceleration, brake, counter-strafe timing | Playable |
 | Sprint | Rotate, pursue, disengage | Continuous Stamina drain and delayed recovery | Playable |
-| Jump | Physical lift with eight-way air control | Tap 31.8 px / 300 ms, held 75.6 px / 458 ms; ascent-only hold costs 80 Stamina/s; 90 ms authored opening protection | Playable |
-| Float | Fresh second Jump holds current height with freely steerable planar movement | 24 Stamina + chain premium then 100/s; protected while held and paid; release/exhaustion/action interruption ends it; landing restores allowance | Playable |
+| Jump | Low physical lift with eight-way air control | Approximately 22 px tap / 28.9 px held; above 18 px clears low ground projectiles, not beams/areas/explosions; ascent-only hold costs 80 Stamina/s; 90 ms opening protection | Current source candidate |
+| Float | Fresh airborne Jump holds current height with freely steerable planar movement | 24 Stamina + chain premium then 100/s; small 1.8 s / middle 1.5 s / large 1.2 s; protected only while active and paid; landing restores allowance | Current source candidate |
 | Slide / slide jump | Tap gives a 150 ms committed burst; hold pays 45 Stamina/s toward 480 ms; slide-jump preserves legal entry speed | Entry-speed gate; 50 ms opening protection; vulnerable paid tail; release/exhaustion shortens it; second C brakes; world stays solid | Playable |
 | Movement chain economy | Makes repeated evasive conversion expressive but progressively costly | Every paid continuation within 333 ms adds 10% cost up to 40%; refused actions and held tails never add a step; HUD shows the next premium | Playable |
 | Air redirect / air dodge | Sharp steering choice or directional decaying burst followed by controllable descent | One air dodge per actual airtime; 180 ms burst, 120 ms protection; walls do not refill; landing does; paid sharp redirects stay finite | Playable |
@@ -291,10 +302,10 @@ pending human balance/visual acceptance and independent activity isolation.
 | Wavedash | Convert a low directional air dodge into ground momentum, including straight ahead | Actual floor contact; no extra protection or free speed stacking | Playable |
 | Wall contact / wall kick | Rebound through authored wall routes | 220 ms same-wall lockout | Playable |
 | Vault / crest superglide | Retired | Serialized IDs remain reserved, no action activates either | Removed |
-| Wallrun | Contact-following run along authored practice walls | 18 Stamina; 420 ms maximum; detach at wall end, away input or second V; no i-frames | Playable |
+| Wallrun | Contact-following run along authored practice walls | 18 Stamina; 420 ms maximum; detach at wall end, away input or second Q; no i-frames | Playable |
 | Variable hop / fast fall | Change aerial rhythm | Bounded height and committed descent | Playable |
 | Landing cut | Trade timing for reduced landing recovery | Never cancels attack/status commitment | Playable |
-| Impact influence / tech | Bend launch; regain control near impact | Gradual influence; V tech costs 18 Stamina | Playable |
+| Impact influence / tech | Bend launch; regain control near impact | Gradual influence; Q tech costs 18 Stamina | Playable |
 | Edgeweave | Skim a hostile projectile to recover Stamina | No reward on hit/full Stamina/repeat contact | Playable |
 
 Slide, roll, jump, and air dodge intangibility applies only to attack contact during
@@ -532,7 +543,7 @@ default in gameplay while the Wellspring does not force limited information.
 | Capacity | Public cap 8; charters provide 2/4/8; later 32 only after measured architecture gate |
 | Transport | Godot ENet over UDP 24872, direct IP |
 | Authority | Host owns movement validation, resources, casts, hits, cooldowns, stations, roster, score, reset |
-| Compatibility | Protocol 42, snapshot 17, tick/tuning/map/content hashes |
+| Compatibility | Protocol 43, snapshot 18, preferences 11; tick/tuning/map/content hashes; current integration gate pending |
 | Client feel | Local movement prediction and bounded reconciliation; combat stays authoritative |
 | Join in progress | Observer until next gathering, then normal Hearth readiness |
 | Disconnect | 15-second in-memory exact-actor reservation and capability rotation |
@@ -793,7 +804,8 @@ The Spell Loom displays the full 8×5 element/family matrix and Vector Lance nex
 Drag from the catalog or another slot; click both selections then Assign, or use
 the keyboard/controller. Equipped spells swap without resetting cooldowns.
 The diagnostics (not the player-facing setup panel) retain the loaded counts:
-41 selectable spells, 12 positions, 5 playable champions and 36 sealed recipes.
+41 selectable spells, 12 positions, 5 playable champions and 36 recipe definitions;
+runtime chemistry status is reported separately from catalog completeness.
 `scripts/runtime-state.ps1` emits the same validated runtime content summary;
 with `-PackPath <file.pck>` it executes the exported payload from its own
 directory, without checkout fallback. Windows packaging includes that result
@@ -828,10 +840,10 @@ claim.
 | 1 | Verify setup/update/launch → host card → join card → safe close | Fresh Windows user reaches Wellspring and a trusted friend joins with one shared file plus address |
 | 2 | Lock camera/pixel tokens → three body types → body-only directional atlases → separate hand-cast effects → environment → HUD | Whole scene reads at gameplay zoom, in motion, high contrast, and reduced motion; no spell or world pixels are baked into champion sprites |
 | 3 | **Complete:** burst data contract → deterministic fan → projectile capacity → movement pressure room | Five-shot patterns stay readable and evadeable while every universal technique chains legally at 120 Hz |
-| 4 | **Complete:** eight bursts → bounded reaction catalog | Every unordered pair has one symmetric, fail-closed, compatibility-hashed recipe while live mutation remains off |
+| 4 | **Catalog complete:** eight bursts → bounded reaction catalog | Every unordered pair has one symmetric, fail-closed, compatibility-hashed recipe; live execution is the separate next gate |
 | 4.5 | **Complete in this checkpoint:** generated truth/tooling → canonical roster adapters → in-game/package state | Protocol/platform/tick/roster/body/content truth agrees before persistent reaction state is added; archival pixels remain separate and compatibility is preserved |
 | 4.6 | **Implemented: campus + M0-M2 movement** — wide loop, solid practice walls, dedicated Evade, slide protection/brake, air-wall kicks and local practice echo | Human movement/visual playtest and concurrent activity isolation remain pending |
-| 5 | Exposure/contact → shared primitives → lifecycle/readability → Crucible/reset/codex | Every pair forms, acts, decays, explains itself, replicates and resets at 120 Hz |
+| 5 | **Current integration:** exposure/contact → shared primitives → lifecycle/readability → Crucible/reset/codex | Every pair forms, acts, decays, explains itself, replicates and resets at 120 Hz; all-pair acceptance is not claimed yet |
 | 6 | **Playtest pause** | The exact packaged green build passes named solo, movement, pressure, chemistry, friend, accessibility and recovery journeys before broad retuning or scope expansion |
 | 7 | Measured movement feel → action clarity → projectile/map hierarchy → visual cohesion | Existing techniques become crisp and distinct, failures teach one correction and the Wellspring reads as one inhabited world before growth |
 | 8 | F0–F7: scenarios → movement → combat → chemistry → champion composition → player sandbox → developer sandbox → stress acceptance | The reusable base is fun, understandable, expressive, maintainable, performant and proven before routine content expansion |

@@ -95,7 +95,41 @@ func run() -> int:
 	panel.open_panel(Compendium.MOVEMENT, preferences)
 	panel.handle_event(_key(KEY_ESCAPE), font)
 	check(not panel.is_open, "Escape closes overlay")
+	_test_chemistry(panel, preferences, font)
 	return finish("player-compendium")
+
+
+func _test_chemistry(panel: RefCounted, preferences: PlayerPreferences, font: Font) -> void:
+	panel.open_panel(Compendium.CHARACTERS, preferences)
+	panel.handle_event(_key(KEY_TAB), font)
+	equal(panel.tab, Compendium.CHEMISTRY, "Chemistry is reachable through the existing Tab navigation")
+	equal(panel.row_count(), 9, "primer and eight element rows fit one readable list page")
+	var primer := " ".join(panel.detail_paragraphs())
+	check(primer.contains("2-5 seconds") and primer.contains("endpoint"), "primer explains paid terminal matter and aim endpoints")
+	check(primer.contains("separate from a spell's own Field"), "deposit duration cannot be mistaken for spell Field duration")
+	var seen := {}
+	for row: int in range(panel.row_count()):
+		panel.selected_row = row
+		for recipe: Dictionary in panel.chemistry_rows[row]["recipes"]:
+			seen[int(recipe.wire_id)] = true
+		var all_lines: Array[String] = []
+		for paragraph: String in panel.detail_paragraphs():
+			all_lines.append_array(Compendium.wrap_text(paragraph,font,Compendium.DETAIL_WIDTH))
+		var reached: Array[String] = []
+		for page: int in range(panel.detail_pages(font)):
+			panel.detail_page = page
+			var lines: Array[String] = panel.visible_detail_lines(font)
+			check(lines.size() <= Compendium.LINES_PER_PAGE, "chemistry page stays vertically bounded")
+			_assert_widths(lines,font,Compendium.DETAIL_WIDTH)
+			reached.append_array(lines)
+		equal(reached,all_lines,"every pair and effect remains reachable through detail paging")
+	equal(seen.size(),36,"all thirty-six unique pairs are accessible in the live compendium")
+	panel.handle_event(_joy(JOY_BUTTON_RIGHT_SHOULDER),font)
+	equal(panel.tab,Compendium.MOVEMENT,"controller cycles Chemistry back to Movement")
+	panel.handle_event(_joy(JOY_BUTTON_LEFT_SHOULDER),font)
+	equal(panel.tab,Compendium.CHEMISTRY,"controller can cycle backwards to Chemistry")
+	panel.handle_event(_key(KEY_ESCAPE),font)
+	check(not panel.is_open,"Chemistry closes through the same safe modal exit")
 
 
 func _assert_widths(lines: Array[String], font: Font, width: float) -> void:

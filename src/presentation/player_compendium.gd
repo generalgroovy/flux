@@ -6,8 +6,10 @@ extends RefCounted
 # champion, pause the shared world or change any authoritative gameplay value.
 const Guide = preload("res://src/presentation/movement_guide_model.gd")
 const Overview = preload("res://src/app/character_overview_model.gd")
+const ChemistryGuide = preload("res://src/presentation/chemistry_guide_model.gd")
 const MOVEMENT := 0
 const CHARACTERS := 1
+const CHEMISTRY := 2
 const ROWS_PER_PAGE := 10
 const LINES_PER_PAGE := 14
 const FONT_SIZE := 18
@@ -17,6 +19,7 @@ const PANEL := Rect2(48, 44, 1184, 632)
 const LIST_RECT := Rect2(72, 164, 298, 400)
 const MOVEMENT_TAB := Rect2(72, 112, 230, 34)
 const CHARACTERS_TAB := Rect2(312, 112, 230, 34)
+const CHEMISTRY_TAB := Rect2(552, 112, 230, 34)
 const CLOSE_RECT := Rect2(1116, 64, 92, 32)
 const PREVIOUS_ROWS := Rect2(72, 572, 140, 34)
 const NEXT_ROWS := Rect2(226, 572, 144, 34)
@@ -34,6 +37,7 @@ var selected_character := 0
 var detail_page := 0
 var device := ControlBindingEditor.DEVICE_KEYBOARD
 var movement_rows: Array[Dictionary] = []
+var chemistry_rows: Array[Dictionary] = []
 var overview: Dictionary = {}
 var summary: Array[String] = []
 var _wrapped_lines: Array[String] = []
@@ -45,6 +49,7 @@ var _summary_chain := -1
 
 func configure(champions: ChampionCatalog, roster: ChampionRosterPlan) -> bool:
 	overview = Overview.build(champions, roster)
+	chemistry_rows = ChemistryGuide.entries()
 	return bool(overview.get("valid", false))
 
 
@@ -72,7 +77,7 @@ func refresh_status(state: PlayerState) -> void:
 
 
 func set_tab(value: int) -> void:
-	tab = clampi(value, MOVEMENT, CHARACTERS)
+	tab = clampi(value, MOVEMENT, CHEMISTRY)
 	selected_row = 0
 	_reset_detail()
 
@@ -82,6 +87,8 @@ func close_panel() -> void:
 
 
 func row_count() -> int:
+	if tab == CHEMISTRY:
+		return chemistry_rows.size()
 	return movement_rows.size() if tab == MOVEMENT else (overview.get("rows", []) as Array).size()
 
 
@@ -125,6 +132,11 @@ func visible_detail_lines(font: Font) -> Array[String]:
 
 func detail_paragraphs() -> Array[String]:
 	var result: Array[String] = []
+	if tab == CHEMISTRY:
+		if selected_row < chemistry_rows.size():
+			for line: String in chemistry_rows[selected_row]["lines"]:
+				result.append(line)
+		return result
 	if tab == MOVEMENT:
 		if movement_rows.is_empty():
 			return result
@@ -176,7 +188,7 @@ func handle_event(event: InputEvent, font: Font, pointer: Vector2 = Vector2(-1, 
 			KEY_ESCAPE, KEY_F4:
 				close_panel()
 			KEY_TAB:
-				set_tab(CHARACTERS if tab == MOVEMENT else MOVEMENT)
+				set_tab(posmod(tab + (-1 if event.shift_pressed else 1), 3))
 			KEY_UP:
 				move_row(-1)
 			KEY_DOWN:
@@ -197,8 +209,10 @@ func handle_event(event: InputEvent, font: Font, pointer: Vector2 = Vector2(-1, 
 		match event.button_index:
 			JOY_BUTTON_BACK, JOY_BUTTON_B:
 				close_panel()
-			JOY_BUTTON_LEFT_SHOULDER, JOY_BUTTON_RIGHT_SHOULDER:
-				set_tab(CHARACTERS if tab == MOVEMENT else MOVEMENT)
+			JOY_BUTTON_LEFT_SHOULDER:
+				set_tab(posmod(tab - 1, 3))
+			JOY_BUTTON_RIGHT_SHOULDER:
+				set_tab(posmod(tab + 1, 3))
 			JOY_BUTTON_DPAD_UP:
 				move_row(-1)
 			JOY_BUTTON_DPAD_DOWN:
@@ -223,6 +237,8 @@ func handle_event(event: InputEvent, font: Font, pointer: Vector2 = Vector2(-1, 
 				set_tab(MOVEMENT)
 			elif CHARACTERS_TAB.has_point(pointer):
 				set_tab(CHARACTERS)
+			elif CHEMISTRY_TAB.has_point(pointer):
+				set_tab(CHEMISTRY)
 			elif PREVIOUS_ROWS.has_point(pointer):
 				move_row(-ROWS_PER_PAGE)
 			elif NEXT_ROWS.has_point(pointer):
@@ -250,7 +266,8 @@ func draw(canvas: CanvasItem, font: Font) -> void:
 	_button(canvas, font, CLOSE_RECT, "Close", false)
 	_button(canvas, font, MOVEMENT_TAB, "MOVEMENT", tab == MOVEMENT)
 	_button(canvas, font, CHARACTERS_TAB, "CHARACTERS", tab == CHARACTERS)
-	_text(canvas, font, Vector2(568, 134), "Read the action. Find your own expression.", 16, MUTED)
+	_button(canvas, font, CHEMISTRY_TAB, "CHEMISTRY", tab == CHEMISTRY)
+	_text(canvas, font, Vector2(802, 134), "Read. Try. Combine.", 16, MUTED)
 	canvas.draw_line(Vector2(386, 164), Vector2(386, 607), Color(BRASS, 0.5))
 	var indices := visible_row_indices()
 	for offset: int in range(indices.size()):
@@ -262,6 +279,8 @@ func draw(canvas: CanvasItem, font: Font) -> void:
 		var label: String
 		if tab == MOVEMENT:
 			label = String(movement_rows[index]["title"])
+		elif tab == CHEMISTRY:
+			label = String(chemistry_rows[index]["title"])
 		else:
 			var race: Dictionary = overview["rows"][index]
 			label = "%s  (%d)" % [race["race"], (race["champions"] as Array).size()]
@@ -277,8 +296,10 @@ func draw(canvas: CanvasItem, font: Font) -> void:
 			title = "%s  /  %s" % [entry["display_name"], String(entry["status"]).to_upper()]
 			if entries.size() > 1:
 				title += "  [%d/%d: Left / Right]" % [selected_character + 1, entries.size()]
-		else:
-			title = "Race awaiting a champion"
+			else:
+				title = "Race awaiting a champion"
+	elif tab == CHEMISTRY and not chemistry_rows.is_empty():
+		title = String(chemistry_rows[selected_row]["title"]) + ("  /  8 interactions" if selected_row > 0 else "  /  the first-eight chemistry sandbox")
 	_text(canvas, font, Vector2(402, 176), title, 19, PARCHMENT)
 	var lines := visible_detail_lines(font)
 	for index: int in range(lines.size()):

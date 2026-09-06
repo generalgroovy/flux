@@ -52,6 +52,7 @@ var interaction_presenter: WellspringInteractionPresenter
 var cartoon_champion_presenter: CartoonChampionPresenter
 var foundation_spell_presenter: FoundationSpellPresenter
 var burst_projectile_presenter: BurstProjectilePresenter
+var element_chemistry_presenter: ElementChemistryPresenter
 var ability_catalog: AbilityCatalog
 var runtime_content_summary: Dictionary = {}
 var runtime_content_lines: Array[String] = []
@@ -279,6 +280,11 @@ func _ready() -> void:
 		push_error("Spell presenters resolved different direction contracts")
 		get_tree().quit(1)
 		return
+	element_chemistry_presenter = ElementChemistryPresenter.new()
+	if not element_chemistry_presenter.configure(visual_language):
+		push_error("Element chemistry presentation could not load the shared visual language")
+		get_tree().quit(1)
+		return
 	champion_catalog = ChampionCatalog.new()
 	if not champion_catalog.load_from_file(CHAMPION_CATALOG_PATH, ability_catalog):
 		push_error(champion_catalog.last_error)
@@ -356,7 +362,7 @@ func _ready() -> void:
 		if argument in ["--capture-compendium=movement", "--capture-compendium=characters"]:
 			_open_player_compendium(PlayerCompendiumScript.CHARACTERS if argument.ends_with("=characters") else PlayerCompendiumScript.MOVEMENT)
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s/skeleton %s/directions %s, bursts %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, reactions %s/gated, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s/skeleton %s/directions %s, bursts %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, reactions %s/bounded-level-one, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -628,6 +634,7 @@ func _handle_spell_loom_input(event: InputEvent) -> void:
 
 
 func _exit_tree() -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if player_preferences != null and not preference_overrides_are_transient and not player_preferences.save_to_file():
 		push_warning(player_preferences.last_error)
 	if session_transport != null:
@@ -653,6 +660,7 @@ func _process(delta: float) -> void:
 	if player_compendium != null and player_compendium.is_open:
 		player_compendium.refresh_status(_local_player_state())
 	var controls_blocking: bool = join_address_editor_open or (controls_editor != null and controls_editor.is_open) or (spell_loom_editor != null and spell_loom_editor.is_open) or (player_compendium != null and player_compendium.is_open) or controls_input_guard_frames > 0
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if controls_blocking or not get_window().has_focus() else Input.MOUSE_MODE_HIDDEN
 	if controls_input_guard_frames > 0:
 		controls_input_guard_frames -= 1
 	if not controls_blocking:
@@ -733,7 +741,7 @@ func _process(delta: float) -> void:
 				var requested_aim := pointer_world_position - current_position
 				if requested_aim.length_squared() > 0.01:
 					capture_aim = requested_aim
-			command = SimCommand.new(world.tick, input_router.entity_id, 0, 0, 0, capture_pressed, roundi(capture_aim.x), roundi(capture_aim.y))
+			command = SimCommand.new(world.tick, input_router.entity_id, 0, 0, 0, capture_pressed, roundi(capture_aim.x), roundi(capture_aim.y), roundi(pointer_world_position.x * 1000.0), roundi(pointer_world_position.y * 1000.0))
 			print("FLUX2 spell capture aim: %d,%d" % [command.aim_x, command.aim_y])
 			capture_active_cast_sent = true
 		if (
@@ -744,7 +752,7 @@ func _process(delta: float) -> void:
 			and _local_player_state().pending_cast_wire_id != 0
 		):
 			var chain_pressed := SimCommand.SPELL_PRESSED_BITS[requested_capture_chain_spell_slot - 1]
-			command = SimCommand.new(world.tick, input_router.entity_id, command.move_x, command.move_y, command.held_actions, chain_pressed, command.aim_x, command.aim_y)
+			command = SimCommand.new(world.tick, input_router.entity_id, command.move_x, command.move_y, command.held_actions, chain_pressed, command.aim_x, command.aim_y, command.aim_target_x, command.aim_target_y)
 			capture_chain_cast_sent = true
 		if (
 			capture_spell_sequence_index < requested_capture_spell_sequence.size()
@@ -770,6 +778,7 @@ func _process(delta: float) -> void:
 					command.move_x, command.move_y, command.held_actions,
 					SimCommand.SPELL_PRESSED_BITS[sequence_slot - 1],
 					roundi(sequence_aim.x), roundi(sequence_aim.y),
+					roundi(pointer_world_position.x * 1000.0), roundi(pointer_world_position.y * 1000.0),
 				)
 				capture_spell_sequence_index += 1
 		if session_transport.is_connected_client() and requested_prediction_smoke and last_client_snapshot_tick >= 0 and prediction_smoke_inputs_sent < 18:
@@ -819,6 +828,10 @@ func _process(delta: float) -> void:
 					set_process(false)
 					return
 			_ingest_combat_cues(world.combat_events)
+			if not requested_capture_spell_sequence.is_empty():
+				for capture_event: Dictionary in world.combat_events:
+					if String(capture_event.get("type", "")) == "chemistry_formed":
+						print("FLUX2 paid chemistry capture: tick %d %s" % [world.tick, JSON.stringify(capture_event)])
 			if (requested_capture_active_cast or requested_capture_spell_slot > 0) and not world.combat_events.is_empty():
 				print(
 					"FLUX2 spell capture: tick %d pending %d/%d projectiles %d fields %d events %s"
@@ -883,6 +896,7 @@ func _draw() -> void:
 			draw_rect(rectangle, BRASS_COLOR if obstacle.vaultable else ATTUNEMENT_COLOR, false, 2.0)
 	for field: FieldState in world.fields:
 		_draw_field(field)
+	_draw_element_chemistry(float(world.tick) + alpha)
 	for projectile: ProjectileState in world.projectiles:
 		var projectile_position := ProjectilePresentationMotion.interpolated_position(projectile, alpha)
 		var projectile_color: Color = _projectile_color(projectile.element_wire_id)
@@ -949,13 +963,21 @@ func _draw() -> void:
 	if state.spawn_protection_ticks > 0:
 		var protection_ratio := clampf(float(state.spawn_protection_ticks) / float(maxi(1, world.config.milliseconds_to_ticks(1200))), 0.0, 1.0)
 		draw_arc(body_position, player_radius + 9.0, 0.0, TAU, 28, Color(ATTUNEMENT_COLOR, 0.32 + protection_ratio * 0.42), 2.0)
-	draw_line(body_position, body_position + Vector2(presentation_state.aim_x, presentation_state.aim_y) * 0.032, Color.WHITE, 3.0)
 	_draw_social_bubbles(camera_origin)
 	_draw_station_bubble(camera_origin)
 	draw_set_transform(Vector2.ZERO)
 	var observed_position := Vector2(float(observed_state.position_x) / SimConfig.FIXED_SCALE, float(observed_state.position_y) / SimConfig.FIXED_SCALE)
 	var pov_position := observed_position if spectating else rendered_position
 	_draw_pov_mask((pov_position - camera_origin) * _camera_zoom_scale(), Vector2(observed_state.aim_x, observed_state.aim_y), camera_origin)
+	if not spectating and Input.mouse_mode == Input.MOUSE_MODE_HIDDEN:
+		var aim_direction := Vector2(presentation_state.aim_x, presentation_state.aim_y).normalized()
+		var aim_stick := Vector2(Input.get_action_strength(&"aim_right") - Input.get_action_strength(&"aim_left"), Input.get_action_strength(&"aim_down") - Input.get_action_strength(&"aim_up"))
+		var reticle_position := get_viewport().get_mouse_position()
+		if capture_pointer_world.x >= 0:
+			reticle_position = (Vector2(capture_pointer_world) - camera_origin) * _camera_zoom_scale()
+		if aim_stick.length() >= InputRouter.AIM_DEADZONE:
+			reticle_position = (rendered_position + aim_direction * 320.0 - camera_origin) * _camera_zoom_scale()
+		AimReticlePresenter.draw(self, reticle_position, aim_direction)
 	var observed_champion_id := champion_catalog.champion_id_from_wire(observed_state.champion_wire_id)
 	var champion_data: Dictionary = champion_catalog.champion(observed_champion_id)
 	var champion_name := String(champion_data.get("display_name", observed_champion_id))
@@ -1118,6 +1140,8 @@ func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 			var owner: PlayerState = world.player(int(event.get("owner_id", 0)))
 			cue["kind"] = "beam"
 			cue["start"] = Vector2(float(owner.position_x) / 1000.0, float(owner.position_y) / 1000.0) if owner != null else anchor["position"]
+			if event.has("origin_x") and event.has("origin_y"):
+				cue["start"] = Vector2(float(event["origin_x"]), float(event["origin_y"])) / 1000.0
 			cue["end"] = anchor["position"]
 		elif kind == "spray_fired":
 			var spray_owner: PlayerState = world.player(int(event.get("owner_id", 0)))
@@ -1211,6 +1235,8 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visua
 	var motion_alpha := clampf(remote_snapshot_age_seconds * 60.0 if session_transport.is_connected_client() else accumulator_seconds * float(tick_rate), 0.0, 1.0)
 	for remote_state: PlayerState in world.players:
 		if remote_state.actor_kind != PlayerState.ActorKind.CHAMPION or remote_state.entity_id == local_entity_id:
+			continue
+		if not _chemistry_actor_visible(remote_state):
 			continue
 		var motion_point: Vector3 = actor_motion_history.sample(remote_state, motion_alpha)
 		var position := Vector2(motion_point.x, motion_point.y)
@@ -1882,6 +1908,8 @@ func _draw_social_bubbles(camera_origin: Vector2) -> void:
 	for bubble: Dictionary in social_bubbles:
 		var state: PlayerState = world.player(int(bubble.get("entity_id", 0)))
 		if state == null:
+			continue
+		if not _chemistry_actor_visible(state):
 			continue
 		var world_position := Vector2(float(state.position_x), float(state.position_y)) / SimConfig.FIXED_SCALE
 		var entity_id := int(bubble.get("entity_id", 0))
@@ -2726,6 +2754,8 @@ func _draw_practice_targets(camera_origin: Vector2) -> void:
 		var state: PlayerState = world.player(int(definition.get("entity_id", 0)))
 		if state == null:
 			continue
+		if not _chemistry_actor_visible(state):
+			continue
 		var position := Vector2(float(state.position_x) / 1000.0, float(state.position_y) / 1000.0)
 		var alive: bool = state.health > 0
 		_set_world_local_transform(position + Vector2(2, 9), Vector2(20.0, 7.0), camera_origin)
@@ -2816,6 +2846,25 @@ func _material_color(material_id: String) -> Color:
 			return Color("685e54")
 		_:
 			return Color("151711")
+
+
+func _chemistry_actor_visible(target: PlayerState) -> bool:
+	var observer := _spectator_state() if _is_spectating() else _local_player_state()
+	if observer == null or target.entity_id == observer.entity_id or target.chemistry_reveal_ticks > 0:
+		return true
+	return not ElementChemistrySystem.blocks_sight(Vector2i(observer.position_x, observer.position_y), Vector2i(target.position_x, target.position_y), world.reactions, world.tick)
+
+
+func _draw_element_chemistry(visual_tick: float) -> void:
+	if element_chemistry_presenter == null:
+		return
+	for deposit: ElementDepositState in world.deposits:
+		element_chemistry_presenter.draw_deposit(self, deposit, visual_tick, _reduced_effects_enabled())
+		var age := maxi(0, world.tick - deposit.created_tick)
+		if age < 24:
+			burst_projectile_presenter.draw_impact(self, ElementChemistryPresenter.ELEMENTS[deposit.element_wire_id], Vector2(deposit.position_x, deposit.position_y) / 1000.0, Vector2(deposit.direction_x, deposit.direction_y), age, 24, _reduced_effects_enabled())
+	for reaction: ElementReactionState in world.reactions:
+		element_chemistry_presenter.draw_reaction(self, reaction, ElementChemistrySystem.recipe(reaction.recipe_wire_id), visual_tick, _reduced_effects_enabled())
 
 
 func _draw_field(field: FieldState) -> void:

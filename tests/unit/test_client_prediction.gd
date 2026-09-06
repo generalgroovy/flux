@@ -130,6 +130,11 @@ func _test_movement_intent_state_round_trip() -> void:
 	authority.air_dodge_used = true
 	authority.jump_held_last_tick = true
 	authority.air_floating = true
+	authority.float_used = true
+	authority.float_ticks = 100
+	authority.chemistry_reveal_ticks = 84
+	authority.chemistry_conceal_ticks = 2
+	authority.chemistry_regen_block_ticks = 2
 	authority.hop_stage = 2
 	authority.air_vertical_velocity = 0
 	authority.stamina_recovery_idle_ticks = 137
@@ -147,6 +152,8 @@ func _test_movement_intent_state_round_trip() -> void:
 		[&"air_height_remainder", -240], [&"air_height_remainder", 240],
 		[&"air_dodge_used", 2], [&"jump_held_last_tick", -1],
 		[&"air_floating", 2], [&"air_floating", -1],
+		[&"float_used", 2], [&"float_ticks", -1], [&"float_ticks", 217], [&"float_max_duration_ms", 1400],
+		[&"chemistry_reveal_ticks", 121], [&"chemistry_conceal_ticks", -1], [&"chemistry_regen_block_ticks", 121],
 		[&"stamina_recovery_idle_ticks", -1], [&"stamina_recovery_idle_ticks", 361],
 	]:
 		var malformed: PackedInt64Array = packet["values"].duplicate()
@@ -180,13 +187,15 @@ func _test_float_recovery_live_prediction() -> void:
 	authority.position_y = 4_000_000
 	authority.stamina_maximum = 594_000
 	authority.stamina = 594_000
+	authority.float_max_duration_ms = MovementTuning.FLOAT_LARGE_DURATION_MS
 	var prediction := ClientPrediction.new()
 	check(prediction.configure(config, collision, 2), "Float recovery prediction configures")
 	check(prediction.reconcile(ClientPrediction.capture_packet(authority, 0, -1)), "Float prediction seeds from authority")
 	var protected_ticks := 0
 	var peak_idle_ticks := 0
+	var expired_while_held := false
 	for tick: int in range(1, 600):
-		var held := SimCommand.HELD_JUMP if tick >= 4 and tick < 160 and tick != 23 else 0
+		var held := SimCommand.HELD_JUMP if tick >= 4 and tick < 260 and tick != 23 else 0
 		var pressed := SimCommand.PRESSED_JUMP if tick in [4, 24] else 0
 		var direction := Vector2i(1000, 0) if tick < 70 else Vector2i(0, -1000)
 		var command := SimCommand.new(tick, 2, direction.x, direction.y, held, pressed)
@@ -194,6 +203,8 @@ func _test_float_recovery_live_prediction() -> void:
 		MovementSystem.step(authority, command, config, collision)
 		if authority.air_floating:
 			protected_ticks += 1
+		if authority.last_event == "float_expired" and held & SimCommand.HELD_JUMP:
+			expired_while_held = true
 		peak_idle_ticks = maxi(peak_idle_ticks, authority.stamina_recovery_idle_ticks)
 		var predicted_values: PackedInt64Array = ClientPrediction.capture_packet(prediction.predicted_state, tick, tick)["values"]
 		var authoritative_packet := ClientPrediction.capture_packet(authority, tick, tick)
@@ -202,7 +213,8 @@ func _test_float_recovery_live_prediction() -> void:
 			check(prediction.reconcile(authoritative_packet, authority.last_event), "Float snapshot %d reconciles" % tick)
 			_near(prediction.last_correction_pixels, 0.0, 0.001, "Float/recovery needs no correction at tick %d" % tick)
 	check(protected_ticks > 120, "production inputs hold protected Float beyond one second")
-	check(not authority.air_floating, "release clears protection after reconciliation")
+	equal(protected_ticks, config.milliseconds_to_ticks(MovementTuning.FLOAT_LARGE_DURATION_MS) - 1, "prediction respects the exact body-limited protected tick budget")
+	check(expired_while_held and not authority.air_floating and authority.air_height == 0, "hard Float expiry while still held matches authority and returns to ground")
 	equal(peak_idle_ticks, ResourceRecovery.maximum_idle_ticks(120), "post-float recovery reaches bounded full ramp")
 	check(authority.stamina > 500_000, "production float use refills through progressive recovery")
 

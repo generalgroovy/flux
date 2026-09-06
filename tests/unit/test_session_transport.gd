@@ -35,6 +35,20 @@ func _test_validation_fails_closed() -> void:
 	check(not transport.start_host(0, _signature(), "Host", "forged"), "unknown host charter is rejected")
 	check(not transport.start_join("127.0.0.1", SessionTransport.DEFAULT_PORT, _signature(), "Guest", "bad-hash"), "malformed join charter identity is rejected")
 	check(not SessionTransport._valid_input_packet({"sequence": "0", "move_x": 0, "move_y": 0, "held": 0, "pressed": 0, "aim_x": 1000, "aim_y": 0}), "string-coerced input fields fail closed")
+	var target_input := {"sequence": 0, "move_x": 0, "move_y": 0, "held": 0, "pressed": 0, "aim_x": 1000, "aim_y": 0, "aim_target_x": 100_000_000, "aim_target_y": 0}
+	check(SessionTransport._valid_input_packet(target_input), "bounded world target endpoint validates")
+	for target_value: Variant in [-2, 100_000_001, "12", 1.5]:
+		var malformed := target_input.duplicate()
+		malformed["aim_target_x"] = target_value
+		check(not SessionTransport._valid_input_packet(malformed), "out-of-range or coerced target endpoint fails closed")
+	for missing_key: String in ["aim_target_x", "aim_target_y"]:
+		var malformed := target_input.duplicate()
+		malformed.erase(missing_key)
+		check(not SessionTransport._valid_input_packet(malformed), "half-present target pair fails closed")
+	target_input["aim_target_x"] = -1
+	check(not SessionTransport._valid_input_packet(target_input), "mixed unset and set target coordinates fail closed")
+	target_input["aim_target_y"] = -1
+	check(SessionTransport._valid_input_packet(target_input), "explicit untargeted direction input remains valid")
 	check(SessionTransport._valid_request_packet({"sequence": 0, "action": SessionTransport.REQUEST_EMOTE, "value": 0}), "known typed interaction request validates")
 	check(SessionTransport._valid_request_packet({"sequence": 1, "action": SessionTransport.REQUEST_READY_TOGGLE, "value": 0}), "typed Hearth readiness request validates")
 	check(SessionTransport._valid_request_packet({"sequence": 2, "action": SessionTransport.REQUEST_PRACTICE_START, "value": 0}), "typed Hearth start request validates")
@@ -82,6 +96,8 @@ func _test_enet_loopback_handshake_and_input() -> void:
 		equal(String(joined[0].get("name", "")), "River Guest", "presence event carries the validated display name")
 
 	var command := SimCommand.new(0, 1, 700, -300, SimCommand.HELD_SPRINT, SimCommand.PRESSED_JUMP, 1000, 0)
+	command.aim_target_x = 876_543
+	command.aim_target_y = 456_789
 	check(client.send_input(17, command), "accepted client sends a bounded input packet")
 	check(_poll_until(host, client, func() -> bool: return not host.incoming_inputs.is_empty()), "host receives client input through ENet")
 	var inputs: Array[Dictionary] = host.take_inputs()
@@ -89,6 +105,7 @@ func _test_enet_loopback_handshake_and_input() -> void:
 	if not inputs.is_empty():
 		equal(int(inputs[0].get("sequence", -1)), 17, "input sequence survives transport")
 		equal(int(inputs[0].get("move_x", 0)), 700, "input movement survives transport")
+		equal(Vector2i(int(inputs[0].get("aim_target_x", -1)), int(inputs[0].get("aim_target_y", -1))), Vector2i(876_543, 456_789), "locked world target survives real ENet input transport exactly")
 		equal(int(inputs[0].get("peer_id", 0)), client.local_peer_id, "host stamps trusted sender identity")
 		equal(int(inputs[0].get("entity_id", 0)), client.local_entity_id, "host stamps the trusted simulation entity")
 	check(host.take_inputs().is_empty(), "host input drain is single-consumer")
@@ -195,7 +212,7 @@ func _test_enet_loopback_handshake_and_input() -> void:
 	equal(snapshots.size(), 1, "client drains one validated snapshot")
 	if not snapshots.is_empty():
 		equal(int(snapshots[0].get("tick", -1)), source.tick, "snapshot tick survives transport")
-		equal((snapshots[0].get("projectiles", PackedInt64Array()) as PackedInt64Array).size() / SessionSnapshot.PROJECTILE_VALUE_COUNT, 1, "projectile lane survives unreliable-ordered transport")
+		equal((snapshots[0].get("projectiles", PackedInt32Array()) as PackedInt32Array).size() / SessionSnapshot.PROJECTILE_VALUE_COUNT, 1, "projectile lane survives unreliable-ordered transport")
 		equal((snapshots[0].get("events", []) as Array).size(), 1, "semantic combat event survives unreliable-ordered transport")
 
 	# Real ENet delivery, not just a codec test: varied simultaneous threats need

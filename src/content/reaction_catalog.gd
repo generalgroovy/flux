@@ -56,8 +56,8 @@ func validate() -> bool:
 		return _fail("unsupported reaction catalog schema")
 	if String(data.get("id", "")) != "first-eight-element-reactions-v1":
 		return _fail("reaction catalog identity is unsupported")
-	if String(data.get("status", "")) != "compiled_runtime_gated" or bool(data.get("runtime_enabled", true)):
-		return _fail("reaction runtime must remain gated until C6")
+	if String(data.get("status", "")) != "bounded_level_one" or not bool(data.get("runtime_enabled", false)):
+		return _fail("reaction runtime requires the bounded first-grade contract")
 	if _string_array(data.get("fundamental_elements", [])) != FIRST_EIGHT_ELEMENTS:
 		return _fail("reaction catalog requires the exact ordered first-eight elements")
 	if _string_array(data.get("deferred_elements", [])) != DEFERRED_ELEMENTS:
@@ -69,7 +69,7 @@ func validate() -> bool:
 	if not bool(policy.get("pair_order_is_symmetric", false)) \
 		or not bool(policy.get("worldbone_immutable", false)) \
 		or String(policy.get("worldbone_policy", "")) != "reject" \
-		or String(policy.get("mutation_gate", "")) != "disabled_until_c6" \
+		or String(policy.get("mutation_gate", "")) != "bounded_level_one" \
 		or String(policy.get("priority", "")) != "map_interaction_before_damage_multiplier":
 		return _fail("reaction safety policy is incomplete")
 	for required_phase: String in ["formation", "active", "residue_or_decay"]:

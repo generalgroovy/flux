@@ -12,16 +12,29 @@ prose; correct stale prose in the same slice.
 
 ## Hard priority
 
-Latest feedback (2026-09-06) replaces double-jump lift with a held, steerable,
-Stamina-limited invincible Float and lowers the ordinary jump slightly. Implement
-and verify independent 1x-to-3x quiet recovery, clear original movement effects
-and immediate protection exit. Current protocol 42 / snapshot 17; preserve
-fixed 120 Hz, existing speed/capacities, all body sizes/directions and worldbone.
-Canonical acceptance: `docs/MOVEMENT-M1-M5-ACCEPTANCE.md#held-float-and-recovery-feedback`.
-This explicitly authorizes held Float protection, not full-flight ordinary-jump
-immunity. Close this coherent source checkpoint with tests/captures/Farflow and
-let the user test; no map/chemistry/roster/installer expansion or remote push.
-The previous feedback and queues below are historical/subordinate.
+Latest feedback (2026-09-06) authorizes low projectile-clearing jump, finite
+size-limited Float, V Evade / Q Technique, a cursor aiming sight and the complete
+first-eight chemistry slice. Work on protocol 43 / snapshot 18 / preferences 11.
+Preserve fixed 120 Hz, 5x Stamina pools, prior speed and resource ramps, three body
+sizes/eight directions, all 12 spell positions, five playable champions and solid
+worldbone. Jump is approximately 22/28.9 px tap/held; above 18 px clears low ground
+projectiles, not beams/areas/explosions. Float remains 24 + chain then 100 Stamina/s;
+small/middle/large cap 1800/1500/1200 ms, independent of walljump, one per airtime.
+Only actual landing restores spent Float/dodge. Preserve all customized bindings;
+migrate only the complete old default keyboard map. Pointer coordinates are
+authority-validated command targets, never client-owned hit decisions.
+
+Finish bounded 2-5 second deposits and all 36 actual spatial pair effects, distinct
+code-native deposit/impact/reaction rendering, lifecycle/reset/replay/visibility/
+refraction and complete Farflow replication. Rendering reads actual authority
+geometry/phase; it never fabricates a mechanic. Positive recovery suppression
+does not erase quiet ages or prohibit spending. Catalog coverage and a visual
+specimen do not prove usable chemistry. Use focused suites, then Full/import/
+120 Hz source boot, local Farflow and live integrated standard/reduced captures
+before declaring acceptance. Pause for the user at the chemistry playtest gate.
+Do not expand maps/roster/forms/material drift or publish remotely during this
+bounded source slice. Installer signing and physical internet play remain
+separate acceptance. All earlier instructions below are historical/subordinate.
 
 Newest feedback (2026-09-06) resumes one expressive-airborne slice after
 `fd1898d`: 5x Stamina capacities, 15% faster running, physical short/full/double
@@ -181,3 +194,10 @@ modes, update `README.md`, `.agent/BACKLOG.md`, `.agent/memory.md` and
 `.agent/WORKLOG.md`, then commit and push one reversible green checkpoint.
 Immediately start the next visual substep after the checkpoint; pause only for
 a real blocker or when the integrated V0–V6 rubric is honestly evidenced.
+# Checkpoint override: paused for user playtest
+
+2026-09-06: Full81suites/165,441assertions and source startup pass. Low hop,
+size-limitedFloat, V/Q migration and all36 bounded first-grade reactions are
+source-verified; see `docs/LOW-HOP-CHEMISTRY-CHECKPOINT.md`. The user requested
+pause and run. Do not continue features until resumed. Heavy-load timing fails
+the8.333ms budget despite correctness passes; profile next, never claim120FPS.

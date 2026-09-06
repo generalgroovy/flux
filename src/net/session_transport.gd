@@ -299,6 +299,8 @@ func send_input(sequence: int, command: SimCommand) -> bool:
 		"pressed": command.pressed_actions,
 		"aim_x": command.aim_x,
 		"aim_y": command.aim_y,
+		"aim_target_x": command.aim_target_x,
+		"aim_target_y": command.aim_target_y,
 	}
 	if not _valid_input_packet(payload):
 		return false
@@ -970,6 +972,14 @@ static func _validated_player_name(requested_name: String) -> String:
 
 
 static func _valid_input_packet(packet: Dictionary) -> bool:
+	if packet.has("aim_target_x") != packet.has("aim_target_y"):
+		return false
+	if packet.has("aim_target_x"):
+		for key: String in ["aim_target_x", "aim_target_y"]:
+			if typeof(packet[key]) != TYPE_INT or int(packet[key]) < -1 or int(packet[key]) > 100_000_000:
+				return false
+		if (int(packet["aim_target_x"]) == -1) != (int(packet["aim_target_y"]) == -1):
+			return false
 	for key: String in ["sequence", "move_x", "move_y", "aim_x", "aim_y", "held", "pressed"]:
 		if not packet.has(key) or typeof(packet[key]) != TYPE_INT:
 			return false

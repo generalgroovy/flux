@@ -67,6 +67,8 @@ var pending_cast_wire_id: int = 0
 var pending_cast_ticks: int = 0
 var pending_cast_aim_x: int = 1000
 var pending_cast_aim_y: int = 0
+var pending_cast_target_x: int = -1
+var pending_cast_target_y: int = -1
 var cast_recovery_ticks: int = 0
 var primary_cooldown_ticks: int = 0
 var active_1_cooldown_ticks: int = 0
@@ -129,8 +131,14 @@ var air_height_remainder: int = 0
 var air_dodge_used: bool = false
 var jump_held_last_tick: bool = false
 var air_floating: bool = false
+var float_used: bool = false
+var float_ticks: int = 0
+var float_max_duration_ms: int = MovementTuning.FLOAT_MIDDLE_DURATION_MS
 var flux_recovery_idle_ticks: int = 0
 var stamina_recovery_idle_ticks: int = 0
+var chemistry_reveal_ticks: int = 0
+var chemistry_conceal_ticks: int = 0
+var chemistry_regen_block_ticks: int = 0
 
 var jump_protection_ticks: int = 0
 var evade_buffer_ticks: int = 0
@@ -364,6 +372,8 @@ func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> voi
 	primary_held = false
 	pending_cast_wire_id = 0
 	pending_cast_ticks = 0
+	pending_cast_target_x = -1
+	pending_cast_target_y = -1
 	cast_recovery_ticks = 0
 	primary_cooldown_ticks = 0
 	active_1_cooldown_ticks = 0
@@ -392,8 +402,13 @@ func reset_for_spawn(spawn_position: Vector2i, protection_ticks: int = 0) -> voi
 	air_dodge_used = false
 	jump_held_last_tick = false
 	air_floating = false
+	float_used = false
+	float_ticks = 0
 	flux_recovery_idle_ticks = 0
 	stamina_recovery_idle_ticks = 0
+	chemistry_reveal_ticks = 0
+	chemistry_conceal_ticks = 0
+	chemistry_regen_block_ticks = 0
 	jump_protection_ticks = 0
 	evade_buffer_ticks = 0
 	landing_input_ticks = 0
@@ -449,6 +464,7 @@ func canonical_values() -> PackedInt64Array:
 		velocity_x, velocity_y, facing_x, facing_y, aim_x, aim_y, radius, movement_mode,
 		int(primary_held),
 		pending_cast_wire_id, pending_cast_ticks, pending_cast_aim_x, pending_cast_aim_y,
+		pending_cast_target_x, pending_cast_target_y,
 		cast_recovery_ticks, primary_cooldown_ticks, active_1_cooldown_ticks, active_2_cooldown_ticks,
 		edgeweave_cooldown_ticks, primary_wire_id, active_1_wire_id, active_2_wire_id,
 		health_maximum, health_recovery_per_second,
@@ -463,7 +479,9 @@ func canonical_values() -> PackedInt64Array:
 		int(slide_held_last_tick), int(fast_fall_armed), int(evade_buffer_airborne),
 		air_height, air_vertical_velocity, air_height_remainder,
 		int(air_dodge_used), int(jump_held_last_tick),
-		int(air_floating), flux_recovery_idle_ticks, stamina_recovery_idle_ticks,
+		int(air_floating), int(float_used), float_ticks, float_max_duration_ms,
+		flux_recovery_idle_ticks, stamina_recovery_idle_ticks,
+		chemistry_reveal_ticks, chemistry_conceal_ticks, chemistry_regen_block_ticks,
 		jump_protection_ticks, evade_buffer_ticks, landing_input_ticks, landing_input_x, landing_input_y,
 		hop_ticks, hop_cooldown_ticks, hop_stage, hop_mode, hop_speed, hop_x, hop_y,
 		air_redirects_remaining,

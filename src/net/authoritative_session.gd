@@ -192,6 +192,8 @@ func commands_for_tick(local_command: SimCommand) -> Array[SimCommand]:
 		0 if host_input_locked else local_command.pressed_actions,
 		local_command.aim_x,
 		local_command.aim_y,
+		local_command.aim_target_x,
+		local_command.aim_target_y,
 	))
 	var remote_ids: Array[int] = []
 	for state: PlayerState in world.players:
@@ -212,6 +214,8 @@ func commands_for_tick(local_command: SimCommand) -> Array[SimCommand]:
 			0 if stale else int(packet.get("pressed", 0)),
 			state.aim_x if stale else int(packet.get("aim_x", state.aim_x)),
 			state.aim_y if stale else int(packet.get("aim_y", state.aim_y)),
+			-1 if stale else int(packet.get("aim_target_x", -1)),
+			-1 if stale else int(packet.get("aim_target_y", -1)),
 		))
 		if not packet.is_empty():
 			if not stale:

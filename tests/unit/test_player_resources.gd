@@ -11,7 +11,30 @@ func run() -> int:
 		_test_independent_quiet_clocks(tick_rate)
 		_test_all_movement_spends_reset_quiet(tick_rate)
 		_test_stamina_quiet_recovery(tick_rate)
+		_test_chemistry_recovery_seal(tick_rate)
 	return finish("player-resources")
+
+
+func _test_chemistry_recovery_seal(tick_rate: int) -> void:
+	var config := SimConfig.new(tick_rate)
+	var state := PlayerState.new()
+	state.health -= 10_000
+	state.flux -= 20_000
+	state.chemistry_regen_block_ticks = 10
+	state.flux_recovery_idle_ticks = 120
+	var before_health := state.health
+	var before_flux := state.flux
+	PlayerResourcesSystem.step(state, config)
+	equal(state.health, before_health, "Blightsoil blocks positive Health recovery")
+	equal(state.flux, before_flux, "Blightsoil blocks positive Flux recovery")
+	equal(state.flux_recovery_idle_ticks, 121, "recovery seal does not erase quiet age")
+	check(PlayerResourcesSystem.spend_flux(state, 1000, config), "recovery seal does not prohibit affordable spending")
+	equal(state.flux, before_flux - 1000, "sealed spending retains its exact cost")
+	state.chemistry_regen_block_ticks = 0
+	state.flux_recovery_delay_ticks = 0
+	PlayerResourcesSystem.step(state, config)
+	check(state.health > before_health, "Health recovery resumes after the seal")
+	check(state.flux > before_flux - 1000, "Flux recovery resumes after the seal")
 
 
 func _step_empty(world: SimWorld, ticks: int) -> void:
@@ -167,6 +190,8 @@ func _test_all_movement_spends_reset_quiet(tick_rate: int) -> void:
 			state.jump_held_last_tick = true
 			if action == "float_hold":
 				state.air_floating = true
+				state.float_used = true
+				state.float_ticks = 120
 				state.hop_stage = 2
 				state.air_vertical_velocity = 0
 		var before := state.stamina

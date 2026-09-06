@@ -1,11 +1,23 @@
 # FLUX visual overhaul gate
 
-Current named user authorization (2026-09-06): lower jump, held invincible Float,
-progressive recovery and corresponding original motion effects. Review all
-three body sizes/eight directions, standard/reduced effects and actual-input
-capture. Active protection must disappear on the exact authoritative exit tick;
-cosmetic dust/streaks never imply extra immunity or introduce teleportation.
-This scoped feedback supersedes the historical blanket freeze below.
+Current named user authorization (2026-09-06): low projectile-clearing jump,
+size-limited invincible Float, cursor sight, finite first-eight deposits and
+all 36 Level 1 pair effects. Current integrated visual acceptance is pending.
+Review all three body sizes/eight directions, standard/reduced effects and
+actual-input capture. Float remaining time must match authority (small 1.8 s,
+middle 1.5 s, large 1.2 s); its shield vanishes on the exact exit tick. Ordinary low
+jump clears only ground projectiles above 18 px and has no full-flight immunity.
+
+Chemistry uses original reusable code-native primitives, distinct silhouettes
+and restrained motion, canonical element colours, low-opacity floor fills and
+readable occupied boundaries. Read actual radius, length, endpoints, linked paths
+and lifecycle from authority. Lens previews are +/-15 degrees, Lightbend 15 degrees,
+Prism planes perpendicular to their direction; reflected beams use their actual
+continuation origin. Reduced effects may remove decoration, not danger/extent/
+phase information. Keep body/clothing, shadow, spell, deposit and environment
+layers separate. A 36-cell render specimen proves drawing only; live zoom/density/
+accessibility and multiplayer acceptance remains required. This scoped feedback
+supersedes the historical blanket freeze and movement-only pauses below.
 
 Latest override (2026-09-05): the user authorizes the G0-G5 order in
 `docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md`, including higher jumps,

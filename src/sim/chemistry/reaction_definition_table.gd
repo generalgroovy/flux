@@ -2,7 +2,8 @@ class_name ReactionDefinitionTable
 extends RefCounted
 
 
-const COMPILER_CONTRACT_VERSION: int = 1
+const COMPILER_CONTRACT_VERSION: int = 2
+const Chemistry = preload("res://src/sim/chemistry/element_chemistry_system.gd")
 
 var last_error: String = ""
 var content_hash: String = ""
@@ -38,6 +39,8 @@ func compile(reactions: ReactionCatalog, abilities: AbilityCatalog) -> bool:
 		"compiler_contract_version": COMPILER_CONTRACT_VERSION,
 		"reaction_catalog_hash": reactions.content_hash,
 		"ability_catalog_hash": abilities.content_hash,
+		"level_one_runtime_rows": Chemistry.RECIPE_ROWS,
+		"deposit_lifetimes": Chemistry.ELEMENT_LIFE_MS,
 	})
 	return content_hash.length() == 64 or _fail("reaction definition hash failed")
 
@@ -59,7 +62,7 @@ func ordered_wire_ids() -> Array[int]:
 
 
 func mutation_enabled() -> bool:
-	return false
+	return _definitions_by_wire.size() == 36 and content_hash.length() == 64
 
 
 func _compile_definition(
@@ -89,6 +92,10 @@ func _compile_definition(
 				-SimConfig.FIXED_SCALE,
 				SimConfig.FIXED_SCALE,
 			)
+	var live := Chemistry.recipe(int(reaction.get("wire_id",0)))
+	if live.is_empty() or String(live["id"]) != String(reaction.get("id","")) or live["elements"] != element_wires:
+		_fail("first-grade runtime and authored recipe identity disagree")
+		return {}
 	return {
 		"id": String(reaction.get("id", "")),
 		"name": String(reaction.get("name", "")),
@@ -98,9 +105,15 @@ func _compile_definition(
 		"primitive": String(profile.get("primitive", "")),
 		"channel_vector": channel_vector,
 		"formation_threshold": int(profile.get("formation_threshold", 0)),
-		"formation_ms": int(profile.get("formation_ms", 0)),
-		"active_ms": int(profile.get("active_ms", 0)),
-		"residue_ms": int(profile.get("residue_ms", 0)),
+		"formation_ms": int(live["formation_ms"]),
+		"active_ms": int(live["active_ms"]),
+		"residue_ms": int(live["decay_ms"]),
+		"level_one": live,
+		# These expansive authored descriptions remain future design context;
+		# only the explicit level_one geometry/rule signature executes today.
+		"authored_actor_effects": (reaction.get("actor_effects",[]) as Array).duplicate(),
+		"authored_map_effects": (reaction.get("map_effects",[]) as Array).duplicate(),
+		"authored_profile": profile.duplicate(true),
 		"maximum_area_cells": int(profile.get("maximum_area_cells", 0)),
 		"maximum_propagation_depth": int(profile.get("maximum_propagation_depth", 0)),
 		"work_units_per_tick": int(profile.get("work_units_per_tick", 0)),
@@ -109,7 +122,7 @@ func _compile_definition(
 		"telegraph": String(reaction.get("telegraph", "")),
 		"residue": String(reaction.get("residue", "")),
 		"counters": (reaction.get("counters", []) as Array).duplicate(true),
-		"runtime_enabled": false,
+		"runtime_enabled": true,
 	}
 
 

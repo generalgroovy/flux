@@ -5,7 +5,7 @@ const BootstrapScript: Script = preload("res://src/app/bootstrap.gd")
 
 
 func run() -> int:
-	for action: StringName in [&"jump", &"primary", &"sprint", &"slide", &"interact", &"emote", &"spell_1", &"spell_2", &"spell_3", &"spell_4", &"spell_layer_ctrl", &"spell_layer_alt", &"adjust_camera_zoom"]:
+	for action: StringName in [&"jump", &"primary", &"sprint", &"slide", &"evade", &"technique", &"interact", &"emote", &"spell_1", &"spell_2", &"spell_3", &"spell_4", &"spell_layer_ctrl", &"spell_layer_alt", &"adjust_camera_zoom"]:
 		if InputMap.has_action(action):
 			InputMap.erase_action(action)
 	InputRouter.ensure_input_map()
@@ -23,6 +23,8 @@ func run() -> int:
 	equal(_keycodes(&"jump"), [KEY_SPACE], "jump defaults to Space exactly once")
 	equal(_keycodes(&"sprint"), [KEY_SHIFT], "sprint defaults to Shift")
 	equal(_keycodes(&"slide"), [KEY_C], "slide defaults to C")
+	equal(_keycodes(&"evade"), [KEY_V], "V maps only to the default evade action")
+	equal(_keycodes(&"technique"), [KEY_Q], "Q maps only to the default technique action")
 	check(_has_mouse_button(&"jump", MOUSE_BUTTON_WHEEL_UP), "wheel up triggers semantic jump")
 	check(_has_mouse_button(&"slide", MOUSE_BUTTON_WHEEL_DOWN), "wheel down triggers slide or airborne fast fall")
 	equal(_keycodes(&"interact"), [KEY_F], "walk-up interaction defaults to F")
@@ -49,7 +51,22 @@ func run() -> int:
 	check(InputMap.action_get_events(&"active_1").size() >= 3, "active one supports mouse, keyboard, and controller button")
 	check(InputMap.action_get_events(InputRouter.SPECTATE_NEXT_ACTION).size() >= 2, "spectator focus supports Tab and controller D-pad right")
 	_test_capture_pointer_parser()
+	_test_aim_endpoint()
 	return finish("input-router")
+
+
+func _test_aim_endpoint() -> void:
+	for action: StringName in [&"aim_left", &"aim_right", &"aim_up", &"aim_down"]:
+		Input.action_release(action)
+	var router := InputRouter.new()
+	var mouse := router.sample(0, Vector2(100, 100), Vector2(123.25, 234.5))
+	equal(Vector2i(mouse.aim_target_x, mouse.aim_target_y), Vector2i(123250, 234500), "mouse command preserves fixed-world impact endpoint")
+	Input.action_press(&"aim_right", 1.0)
+	var controller := router.sample(1, Vector2(100, 100), Vector2(123, 234))
+	equal(Vector2i(controller.aim_target_x, controller.aim_target_y), Vector2i(-1, -1), "controller direction keeps maximum-range endpoint sentinel")
+	Input.action_release(&"aim_right")
+	var bounded := router.sample(2, Vector2.ZERO, Vector2(-10, 200000))
+	equal(Vector2i(bounded.aim_target_x, bounded.aim_target_y), Vector2i(0, 100000000), "mouse endpoint stays inside command bounds")
 
 
 func _test_eight_direction_command_vectors() -> void:

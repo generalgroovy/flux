@@ -14,6 +14,8 @@ const STATE_FIELDS: Array[StringName] = [
 	&"air_velocity_x", &"air_velocity_y", &"movement_commitment_ticks", &"wall_air_ticks",
 	&"slide_held_last_tick", &"fast_fall_armed", &"evade_buffer_airborne",
 	&"air_height", &"air_vertical_velocity", &"air_height_remainder", &"air_dodge_used", &"jump_held_last_tick", &"air_floating",
+	&"float_used", &"float_ticks", &"float_max_duration_ms",
+	&"chemistry_reveal_ticks", &"chemistry_conceal_ticks", &"chemistry_regen_block_ticks",
 	&"facing_x", &"facing_y", &"aim_x", &"aim_y",
 	&"radius", &"movement_mode",
 	&"stamina_maximum", &"stamina_recovery_per_second", &"movement_speed_ratio",
@@ -35,7 +37,7 @@ const STATE_FIELDS: Array[StringName] = [
 	&"landing_ticks", &"landing_intensity", &"impact_recovery_ticks", &"sprinting",
 	&"control_state", &"control_ticks", &"control_x", &"control_y", &"control_speed", &"slow_ratio",
 ]
-const BOOLEAN_FIELDS: Array[StringName] = [&"fast_falling", &"wave_dash_queued", &"sprinting", &"slide_held_last_tick", &"fast_fall_armed", &"evade_buffer_airborne", &"air_dodge_used", &"jump_held_last_tick", &"air_floating"]
+const BOOLEAN_FIELDS: Array[StringName] = [&"fast_falling", &"wave_dash_queued", &"sprinting", &"slide_held_last_tick", &"fast_fall_armed", &"evade_buffer_airborne", &"air_dodge_used", &"jump_held_last_tick", &"air_floating", &"float_used"]
 const DIRECTION_FIELDS: Array[StringName] = [
 	&"facing_x", &"facing_y", &"aim_x", &"aim_y",
 	&"landing_input_x", &"landing_input_y", &"hop_x", &"hop_y", &"air_dodge_x", &"air_dodge_y",
@@ -269,6 +271,13 @@ static func validate_values(values: PackedInt64Array) -> bool:
 		return false
 	if _value(values, &"stamina_recovery_idle_ticks") < 0 or _value(values, &"stamina_recovery_idle_ticks") > ResourceRecovery.maximum_idle_ticks(120):
 		return false
+	if _value(values, &"float_max_duration_ms") not in [MovementTuning.FLOAT_SMALL_DURATION_MS, MovementTuning.FLOAT_MIDDLE_DURATION_MS, MovementTuning.FLOAT_LARGE_DURATION_MS]:
+		return false
+	if _value(values, &"float_ticks") < 0 or _value(values, &"float_ticks") > (_value(values, &"float_max_duration_ms") * 120 + 999) / 1000:
+		return false
+	for property_name: StringName in [&"chemistry_reveal_ticks", &"chemistry_conceal_ticks", &"chemistry_regen_block_ticks"]:
+		if _value(values, property_name) < 0 or _value(values, property_name) > 120:
+			return false
 	for property_name: StringName in BOOLEAN_FIELDS:
 		if _value(values, property_name) not in [0, 1]:
 			return false

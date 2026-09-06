@@ -144,6 +144,8 @@ static func flux_status_label(state: PlayerState, tick_rate: int) -> String:
 		return "FLUX"
 	if state.flux_recovery_delay_ticks > 0:
 		return "FLUX WAIT %.1fs" % (float(state.flux_recovery_delay_ticks) / float(maxi(1, tick_rate)))
+	if state.chemistry_regen_block_ticks > 0:
+		return "FLUX SEALED"
 	if state.health <= 0:
 		return "FLUX"
 	return "FLUX +%s/s" % _rate_points(Recovery.rate_per_second(state.flux_recovery_per_second, state.flux_recovery_idle_ticks, tick_rate))
@@ -155,8 +157,9 @@ static func stamina_status_label(state: PlayerState, tick_rate: int) -> String:
 	var safe_rate := maxi(1, tick_rate)
 	var slide_minimum := ceili(float(MovementTuning.SLIDE_MINIMUM_MS * safe_rate) / 1000.0)
 	var free_control := state.impact_recovery_ticks <= 0 and state.control_state in [PlayerState.ControlState.FREE, PlayerState.ControlState.SLOWED]
-	if free_control and state.air_floating and state.is_airborne() and state.stamina > 0:
-		return "STAMINA FLOAT -%d/s" % (MovementTuning.FLOAT_DRAIN_PER_SECOND / 1000)
+	if free_control and state.air_floating and state.float_ticks > 0 and state.is_airborne() and state.stamina > 0:
+		var remaining := ceilf(float(state.float_ticks) * 10.0 / float(safe_rate)) / 10.0
+		return "STAMINA FLOAT %.1fs -%d/s" % [remaining, MovementTuning.FLOAT_DRAIN_PER_SECOND / 1000]
 	# Airtime is not sustain: falling, dodging, wall attachment, released input
 	# and forced control all stop optional Jump spending in the simulation.
 	if free_control and state.is_airborne() and state.air_vertical_velocity > 0 \
@@ -172,6 +175,8 @@ static func stamina_status_label(state: PlayerState, tick_rate: int) -> String:
 	if state.movement_chain_reset_ticks > 0 and state.movement_chain_count > 0:
 		return "STAMINA  NEXT +%d%%" % (mini(state.movement_chain_count, MovementTuning.MOVEMENT_CHAIN_MAXIMUM_STEPS) * MovementTuning.MOVEMENT_CHAIN_COST_STEP_RATIO / 10)
 	if state.stamina < state.stamina_maximum and state.health > 0:
+		if state.chemistry_regen_block_ticks > 0:
+			return "STAMINA SEALED"
 		if state.stamina_recovery_delay_ticks > 0:
 			return "STAMINA WAIT %.1fs" % (float(state.stamina_recovery_delay_ticks) / float(safe_rate))
 		if free_control and not state.is_airborne() and state.air_dodge_ticks <= 0 \

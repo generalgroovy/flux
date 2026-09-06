@@ -5,7 +5,21 @@ func run() -> int:
 	_test_repository_atlas()
 	_test_direction_and_animation_contract()
 	_test_fail_closed_mutations()
+	_test_impact_profiles()
 	return finish("burst-projectile-presenter")
+
+
+func _test_impact_profiles() -> void:
+	for element: String in BurstProjectilePresenter.REQUIRED_ELEMENTS:
+		var start := BurstProjectilePresenter.impact_profile(element,0,30)
+		var midway := BurstProjectilePresenter.impact_profile(element,15,30)
+		equal(start.element,element,"impact keeps exact single-element identity")
+		check(float(midway.radius)>float(start.radius),"impact evolves smoothly with lifetime")
+		check(float(midway.opacity)<float(start.opacity),"impact fades without lingering opaque colour")
+		check(BurstProjectilePresenter.impact_profile(element,30,30).is_empty(),"impact expires exactly at its lifetime")
+		check(BurstProjectilePresenter.impact_profile(element,-1,30).is_empty(),"impact cannot precede its source event")
+	check(BurstProjectilePresenter.impact_profile("missing",0,30).is_empty(),"unknown elements cannot fabricate an impact")
+	check(BurstProjectilePresenter.impact_profile("fire",0,0).is_empty(),"invalid impact lifetime fails closed")
 
 
 func _configured(load_textures: bool = true) -> BurstProjectilePresenter:

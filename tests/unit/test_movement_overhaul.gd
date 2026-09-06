@@ -149,7 +149,7 @@ func _test_carried_slide_and_fresh_fast_fall() -> void:
 		_tick(state, direction, SimCommand.HELD_JUMP, SimCommand.PRESSED_SLIDE)
 		check(state.fast_falling and state.fast_fall_armed, "fresh airborne wheel-down pulse commits fastfall without a held bit")
 		_tick(state, direction, SimCommand.HELD_JUMP)
-		check(state.fast_falling, "accepted one-shot fastfall stays committed after pulse ends")
+		check(state.fast_falling or (state.air_height == 0 and state.landing_intensity == MovementTuning.LANDING_SLIDE_JUMP_INTENSITY), "one-shot fastfall stays committed through its immediate low-hop landing")
 
 
 func _test_no_op_redirect_and_stale_roll() -> void:
@@ -179,7 +179,7 @@ func _test_no_op_redirect_and_stale_roll() -> void:
 	check(roller.is_airborne() and not roller.is_rolling(), "historical roll never makes air dodge grounded")
 	_wait_commitment(roller)
 	_tick(roller, Vector2i(0, 1000), 0, SimCommand.PRESSED_JUMP)
-	equal(roller.hop_stage, 2, "committed air dodge can spend, not replenish, remaining second jump")
+	check(roller.float_used, "committed air dodge can spend, not replenish, remaining Float")
 	equal(roller.air_dodge_ticks, 0, "double jump cleanly leaves dodge and its protection clock")
 
 
@@ -201,6 +201,7 @@ func _test_locked_sustain_and_wall_exits() -> void:
 	wall.hop_ticks = 20
 	wall.air_height = 20_000
 	wall.hop_stage = 2
+	wall.float_used = true
 	wall.air_redirects_remaining = 0
 	wall.wall_contact_id = 7
 	wall.wall_memory_ticks = 12

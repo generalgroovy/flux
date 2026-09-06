@@ -8,6 +8,7 @@ func run() -> int:
 	_test_keyboard_bindings()
 	_test_persistence_round_trip()
 	_test_movement_transforms()
+	_test_evade_default_swap_migration()
 	return finish("player-preferences")
 
 
@@ -18,7 +19,9 @@ func _test_defaults_and_presets() -> void:
 	equal(preferences.pov_angle_degrees, 120, "cone angle remains ready when cone view is selected")
 	equal(preferences.pov_range, 720, "cone range remains ready when cone view is selected")
 	equal(preferences.camera_zoom_percent, 75, "the default camera exposes more connected movement space")
-	equal(PlayerPreferences.SCHEMA_VERSION, 10, "player preferences save schema v10")
+	equal(PlayerPreferences.SCHEMA_VERSION, 11, "player preferences save schema v11")
+	equal(preferences.keyboard_bindings[&"evade"], KEY_V, "V is the new default evade key")
+	equal(preferences.keyboard_bindings[&"technique"], KEY_Q, "Q keeps Technique distinct from evade")
 	equal(preferences.farflow_join_address, "127.0.0.1", "local Farflow is the safe address default")
 	equal(preferences.keyboard_bindings[&"sprint"], KEY_SHIFT, "Shift is the production-default sprint key")
 	equal(preferences.keyboard_bindings[&"slide"], KEY_C, "C is the persisted slide key")
@@ -58,7 +61,7 @@ func _test_validation() -> void:
 	equal(preferences.pov_range, 2048, "custom view length is legal")
 	equal(preferences.farflow_join_address, "friend.example.test", "valid Farflow address loads")
 	for mutation: Dictionary in [
-		{"schema_version": 11},
+		{"schema_version": 12},
 		{"movement_reference": "camera_relative"},
 		{"pov_mode": "wallhack"},
 		{"pov_angle_degrees": 14},
@@ -205,6 +208,30 @@ func _test_persistence_round_trip() -> void:
 	equal(loaded.to_dictionary(), saved.to_dictionary(), "saved preferences round-trip exactly")
 	var absolute_path: String = ProjectSettings.globalize_path(path)
 	check(DirAccess.remove_absolute(absolute_path) == OK, "preference test file is cleaned")
+
+
+func _test_evade_default_swap_migration() -> void:
+	var old_defaults := PlayerPreferences.default_keyboard_bindings_for_schema(10)
+	equal(old_defaults[&"evade"], KEY_Q, "migration remembers the old evade key exactly")
+	equal(old_defaults[&"technique"], KEY_V, "migration remembers the old technique key exactly")
+	var migrated := PlayerPreferences.new()
+	check(migrated.apply_dictionary(_base_preferences(10, old_defaults)), "complete old keyboard default profile migrates")
+	equal(migrated.keyboard_bindings, PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS, "default-profile migration is the exact Q/V safe swap")
+	for mutation: Dictionary in [{&"jump": KEY_J}, {&"evade": 0}, {&"technique": KEY_G}, {&"evade": KEY_G}]:
+		var custom := old_defaults.duplicate()
+		custom.merge(mutation, true)
+		var preserved := PlayerPreferences.new()
+		check(preserved.apply_dictionary(_base_preferences(10, custom)), "custom old keyboard profile remains valid")
+		equal(preserved.keyboard_bindings, custom, "even one custom key or unbind preserves all previous meanings")
+		var reloaded := PlayerPreferences.new()
+		check(reloaded.apply_dictionary(preserved.to_dictionary()), "custom migrated profile round-trips as schema11")
+		equal(reloaded.keyboard_bindings, custom, "later loads do not reapply the default swap to custom controls")
+	var legacy_custom := _base_preferences(9, {&"technique": KEY_Q})
+	var legacy := PlayerPreferences.new()
+	check(legacy.apply_dictionary(legacy_custom), "older custom Q still migrates without a conflicting added evade")
+	equal(legacy.keyboard_bindings[&"technique"], KEY_Q, "older custom Q belongs to its original action")
+	equal(legacy.keyboard_bindings[&"evade"], 0, "migration never steals Q from an older custom action")
+	equal(PlayerPreferences.validate_keyboard_bindings(migrated.keyboard_bindings), "", "new defaults have no duplicate key triggers")
 
 
 func _test_keyboard_bindings() -> void:

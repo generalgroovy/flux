@@ -33,7 +33,10 @@ func _test_knockout_respawn_result_and_packet() -> void:
 	var world := _world()
 	var round := SessionRound.new()
 	round.bind_hearth()
+	world.deposits.append(ElementDepositState.new())
+	world.reactions.append(ElementReactionState.new())
 	check(round.begin(world, [2, 1], _definition()), "round begins with sorted validated participants")
+	check(world.deposits.is_empty() and world.reactions.is_empty(), "new round clears all previous elemental matter and reactions")
 	equal(round.phase, SessionRound.Phase.ACTIVE, "round enters active phase")
 	equal(round.serial, 1, "round receives a monotonic serial")
 	equal(Vector2i(world.player().position_x, world.player().position_y), Vector2i(500_000, 400_000), "host receives first authored spawn")
@@ -45,6 +48,8 @@ func _test_knockout_respawn_result_and_packet() -> void:
 	for expected_score: int in range(1, 4):
 		world.player(2).health = 0
 		if expected_score == 3:
+			world.deposits.append(ElementDepositState.new())
+			world.reactions.append(ElementReactionState.new())
 			world.projectiles.append(ProjectileState.new(5000, 1, 1, CombatTuning.RILLSHOT_WIRE_ID, 2, Vector2i(700_000, 500_000), Vector2i(1, 0), 5_000, 1_000, 30))
 			world.fields.append(FieldState.new(6000, 1, 1, CombatTuning.RIMEWAKE_WIRE_ID, 5, Vector2i(700_000, 500_000), 72_000, 30, PlayerState.ControlState.SLOWED, 700, 650))
 		var emitted := round.advance(world, [{"type": "champion_defeated", "owner_id": 1, "target_id": 2, "projectile_id": 1000 + expected_score}])
@@ -61,6 +66,7 @@ func _test_knockout_respawn_result_and_packet() -> void:
 	equal(world.player().velocity_x, 0, "result freezes participant movement")
 	equal(world.projectiles.size(), 0, "result clears unresolved projectiles")
 	equal(world.fields.size(), 0, "result clears unresolved persistent fields")
+	check(world.deposits.is_empty() and world.reactions.is_empty(), "sealed round removes elemental matter and reactions before return")
 	var packet := round.capture(world)
 	check(SessionRound.validate_packet(packet), "result captures to a bounded packed packet")
 	var decoded := SessionRound.decoded(packet)

@@ -169,11 +169,11 @@ func _test_double_jump(tick_rate: int) -> void:
 	_step(world, 0, -1000, 0, SimCommand.PRESSED_JUMP)
 	equal(state.last_event, "air_float", "%d Hz second edge starts Float at current height" % tick_rate)
 	equal(state.stamina, after_hop - MovementTuning.FLOAT_COST * 1100 / 1000 - world.config.per_tick(MovementTuning.FLOAT_DRAIN_PER_SECOND), "%d Hz Float pays continuation cost and its first maintenance tick" % tick_rate)
-	equal(state.hop_stage, 2, "%d Hz double jump is bounded to stage two" % tick_rate)
+	check(state.float_used, "%d Hz Float consumes its independent once-per-airtime allowance" % tick_rate)
 	var after_double: int = state.stamina
 	_step(world, -1000, 0, 0, SimCommand.PRESSED_JUMP)
 	equal(state.stamina, after_double, "%d Hz released Float cannot be restarted by another pulse during the same airtime" % tick_rate)
-	equal(state.hop_stage, 2, "%d Hz denied third jump preserves stage two" % tick_rate)
+	check(state.float_used, "%d Hz denied Float restart preserves its spent allowance" % tick_rate)
 
 
 func _test_slide_and_slide_jump(tick_rate: int) -> void:
@@ -323,7 +323,8 @@ func _test_variable_jump_and_fast_fall(tick_rate: int) -> void:
 	var fall_world := SimWorld.new(tick_rate)
 	var fall_state: PlayerState = fall_world.player()
 	_step(fall_world, 1000, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
-	_step(fall_world, 1000, 0, SimCommand.HELD_JUMP)
+	for _index: int in range(8):
+		_step(fall_world, 1000, 0, SimCommand.HELD_JUMP)
 	var before_fall: int = fall_state.hop_ticks
 	_step(fall_world, 1000, 0, SimCommand.HELD_FAST_FALL)
 	equal(fall_state.last_event, "fast_fall", "%d Hz airborne slide input starts fast fall" % tick_rate)

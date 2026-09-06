@@ -1,6 +1,28 @@
 # FLUX 2 active backlog
 
-**READY FOR PLAYTEST: held Float + progressive recovery (2026-09-06).**
+**PAUSED FOR PLAYTEST: low jump, finite Float and first-eight chemistry (2026-09-06).**
+
+Full81 suites/165,441 assertions green, empty stderr; local Farflow and actual
+paid all36 formation/effect routes pass. See
+[checkpoint](../docs/LOW-HOP-CHEMISTRY-CHECKPOINT.md). The user requested a pause
+and source launch: do not begin another slice until resumed. Highest next
+technical priority is heavy-load profiling (observed120Hz budget spikes), then
+human movement/chemistry clarity feedback, not new features or publication.
+The acceptance-pending rows below describe the earlier integration stage;
+source correctness is now verified, human feel/internet/performance are not.
+
+| Next checkpoint | Current source | Acceptance still required |
+|---|---|---|
+| Movement / input | Low 22/28.9 px jump, 18 px low-projectile clearance; Float 1.8/1.5/1.2 s by size; independent walljump -> Float -> dodge; V Evade/Q Technique default migration; cursor endpoint | Full/network and actual input-driven visual proof; human feel review |
+| Chemistry | First-eight 2-5 s deposits, 36 executable recipe identities, reusable original shapes; suppressed recovery keeps quiet age | All-pair collision/visibility/refraction, bounded admission/reset/replay/Farflow and live readability |
+| Safe handoff | Protocol 43 / snapshot 18 / preferences 11; unchanged five champions, three bodies, 40 grid + 1 spells, 120 Hz | Source launch and exact checkpoint documentation, then required chemistry playtest pause |
+
+Focused usability/control/resource/render-model gate: 8 suites / 1,831 assertions,
+zero failures, clean stderr; `.godot/compendium-audit/lowhop-chem-ui-final.log`.
+This is not integrated chemistry acceptance. No new installer, remote publication,
+map/roster/form expansion, material drift/grip or recursive reaction in this slice.
+
+**PREVIOUS PLAYTEST CHECKPOINT: held Float + progressive recovery (2026-09-06).**
 Lower jump (75.6 px held), fresh second Jump becomes current-height steerable
 Float, 24 Stamina plus chain premium + 100/s held protection, immediate exit;
 independent 1x-to-3x quiet recovery; original takeoff/landing/dodge/slide cues.

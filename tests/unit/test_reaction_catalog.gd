@@ -59,7 +59,7 @@ func _test_bounded_definition_compiler() -> void:
 	check(table.compile(catalog, _abilities()), "complete reaction catalog compiles: %s" % table.last_error)
 	equal(table.ordered_wire_ids(), range(301, 337), "compiler preserves stable reaction wire order")
 	equal(table.content_hash.length(), 64, "compiled reaction definitions have a compatibility hash")
-	check(not table.mutation_enabled(), "C5 compiler cannot mutate world state before C6")
+	check(table.mutation_enabled(), "all first-grade executable recipes are promoted together")
 	for left_index: int in range(ReactionCatalog.FIRST_EIGHT_ELEMENTS.size()):
 		for right_index: int in range(left_index, ReactionCatalog.FIRST_EIGHT_ELEMENTS.size()):
 			var left := ReactionCatalog.FIRST_EIGHT_ELEMENTS[left_index]
@@ -70,7 +70,8 @@ func _test_bounded_definition_compiler() -> void:
 			check(String(definition.get("primitive", "")) in ReactionCatalog.PRIMITIVES, "%s maps to a shared primitive" % String(definition.get("id", "")))
 			equal((definition.get("channel_vector", {}) as Dictionary).size(), ReactionCatalog.CHANNELS.size(), "%s has the exact integer channel vector" % String(definition.get("id", "")))
 			equal(String(definition.get("worldbone_policy", "")), "reject", "%s cannot mutate worldbone" % String(definition.get("id", "")))
-			check(not bool(definition.get("runtime_enabled", true)), "%s stays mutation-gated" % String(definition.get("id", "")))
+			check(bool(definition.get("runtime_enabled", false)), "%s has a bounded first-grade execution signature" % String(definition.get("id", "")))
+			equal(String(definition["level_one"]["id"]),String(definition["id"]),"runtime minimum signature preserves recipe identity")
 			check(int(definition.get("maximum_area_cells", 0)) <= int(table.runtime_bounds["maximum_area_cells_per_reaction"]), "%s area is globally bounded" % String(definition.get("id", "")))
 			check(int(definition.get("work_units_per_tick", 0)) <= int(table.runtime_bounds["maximum_work_units_per_tick"]), "%s work is globally bounded" % String(definition.get("id", "")))
 	var magma := table.definition("fire", "earth")
@@ -95,7 +96,8 @@ func _test_content_change_updates_compatibility_hash() -> void:
 	check(changed.validate(), "bounded profile change validates: %s" % changed.last_error)
 	var changed_table := ReactionDefinitionTable.new()
 	check(changed_table.compile(changed, abilities), "changed reaction table compiles: %s" % changed_table.last_error)
-	equal(int(changed_table.definition("earth", "fire")["active_ms"]), 4001, "compiled lifecycle follows authored profile")
+	equal(int(changed_table.definition("earth", "fire")["authored_profile"]["active_ms"]), 4001, "future authored profile remains explicit design data")
+	equal(int(changed_table.definition("earth", "fire")["active_ms"]), 2200, "first-grade lifecycle cannot silently inherit the longer historical profile")
 	check(changed_table.content_hash != baseline.content_hash, "authored reaction change updates compatibility hash")
 
 
@@ -152,6 +154,6 @@ func _test_invalid_content_fails_closed() -> void:
 
 	var premature_runtime := ReactionCatalog.new()
 	premature_runtime.data = source.data.duplicate(true)
-	premature_runtime.data["runtime_enabled"] = true
-	check(not premature_runtime.validate(), "premature mutation runtime fails closed")
-	check(premature_runtime.last_error.contains("C6"), "runtime gate failure names the next authority boundary")
+	premature_runtime.data["status"] = "unbounded_recursive_runtime"
+	check(not premature_runtime.validate(), "unsupported recursive mutation runtime fails closed")
+	check(premature_runtime.last_error.contains("first-grade"), "runtime gate requires the bounded first-grade contract")

@@ -87,12 +87,13 @@ func _test_utf8_string_lengths() -> void:
 
 func _test_production_command_and_world_payloads() -> void:
 	var command := SimCommand.new(71, 3, -1000, 707, SimCommand.HELD_SPRINT | SimCommand.HELD_JUMP,
-		SimCommand.PRESSED_SPELL_12, -333, 777)
+		SimCommand.PRESSED_SPELL_12, -333, 777, 98_765_432, 12_345_678)
 	var expected_command := PackedByteArray()
 	for value: int in [command.tick, command.entity_id, command.move_x, command.move_y,
-		command.held_actions, command.pressed_actions, command.aim_x, command.aim_y]:
+		command.held_actions, command.pressed_actions, command.aim_x, command.aim_y, command.aim_target_x, command.aim_target_y]:
 		_reference_append(expected_command, value)
 	equal(command.canonical_bytes(), expected_command, "real command bytes match pre-optimization encoding")
+	equal(expected_command.size(), 80, "protocol 43 commands serialize ten signed64 values including captured cursor coordinates")
 	var world := SimWorld.new(120, 42, CollisionWorld.new(4_000_000, 3_000_000), "canonical-byte-fixture", "worldbone:風・水;bounds:4000x3000")
 	check(world.is_valid(), "production world is valid for canonical encoding comparison")
 	for entity_id: int in range(2, 4):
@@ -128,13 +129,29 @@ func _test_production_command_and_world_payloads() -> void:
 		world.fields[0].record_affected(2)
 	equal(_world_payload(world, false), _world_payload(world, true), "variable-length graze/field histories preserve complete canonical bytes")
 	equal(world.state_hash(), CanonicalBytes.sha256_hex(_world_payload(world, true)), "world hash retains variable-length histories")
+	# Explicitly exercise nonempty chemistry lanes, their new ID counters, and
+	# variable-length reaction data, not merely the two empty-lane count words.
+	var matter: Array = []
+	for index: int in range(3):
+		equal(ElementChemistrySystem.deposit_terminal(matter, 3000 + index, 5000 + index, CombatTuning.CINDERBOLT_WIRE_ID, 1, 1, 2 + index, Vector2i(500_000, 500_000), world.tick, world.config), 1, "canonical fixture builds validated elemental material")
+	world.deposits.append(matter[2])
+	var reaction := ElementChemistrySystem.form_reaction(matter[0], matter[1], 4000, world.tick, world.config)
+	reaction.linked_deposit_ids = PackedInt64Array([3002])
+	reaction.path_points = PackedInt64Array([500_000, 500_000, 540_000, 500_000])
+	reaction.contacts = PackedInt64Array([2, world.tick, 1, 3, world.tick, 0])
+	world.reactions.append(reaction)
+	world.next_deposit_id = 3003
+	world.next_reaction_id = 4001
+	check(world.deposits[0].validate() and reaction.validate(), "nonempty chemistry canonical fixture remains within real state bounds")
+	equal(_world_payload(world, false), _world_payload(world, true), "deposit and variable-length reaction bytes preserve the frozen byte-at-a-time encoding")
+	equal(world.state_hash(), CanonicalBytes.sha256_hex(_world_payload(world, true)), "actual world hash includes chemistry IDs, counts, fixed values, and variable histories")
 
 
 static func _world_payload(world: SimWorld, reference: bool) -> PackedByteArray:
 	# Explicit mirror of the published canonical field order; this must change
 	# only with a deliberate world-hash contract migration, never for speed.
 	var payload := PackedByteArray()
-	for value: int in [SimConfig.PROTOCOL_VERSION, world.config.tick_rate, world.tick, world.seed, world.next_projectile_id, world.next_field_id]:
+	for value: int in [SimConfig.PROTOCOL_VERSION, world.config.tick_rate, world.tick, world.seed, world.next_projectile_id, world.next_field_id, world.next_deposit_id, world.next_reaction_id]:
 		_append_value(payload, value, reference)
 	for value: String in [world.map_id, world.map_hash, world.transition_policy.content_hash]:
 		if reference:
@@ -154,6 +171,14 @@ static func _world_payload(world: SimWorld, reference: bool) -> PackedByteArray:
 	_append_value(payload, world.fields.size(), reference)
 	for field: FieldState in world.fields:
 		for value: int in field.canonical_values():
+			_append_value(payload, value, reference)
+	_append_value(payload, world.deposits.size(), reference)
+	for deposit: ElementDepositState in world.deposits:
+		for value: int in deposit.canonical_values():
+			_append_value(payload, value, reference)
+	_append_value(payload, world.reactions.size(), reference)
+	for reaction: ElementReactionState in world.reactions:
+		for value: int in reaction.canonical_values():
 			_append_value(payload, value, reference)
 	return payload
 

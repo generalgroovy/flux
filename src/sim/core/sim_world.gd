@@ -16,6 +16,10 @@ var map_hash: String = MAP_HASH
 var players: Array[PlayerState] = []
 var projectiles: Array[ProjectileState] = []
 var fields: Array[FieldState] = []
+var deposits: Array[ElementDepositState] = []
+var reactions: Array[ElementReactionState] = []
+var next_deposit_id: int = 3000
+var next_reaction_id: int = 4000
 var next_projectile_id: int = 1000
 var next_field_id: int = 2000
 var combat_events: Array[Dictionary] = []
@@ -97,11 +101,16 @@ func step(commands: Array[SimCommand]) -> bool:
 			state, command, config, next_projectile_id, next_field_id, collision, combat_events, transition_policy, capacity.x, capacity.y
 		)
 		_store_combat_result(spawned)
-	CombatSystem.resolve_instant_casts(players, config, collision, combat_events)
+	CombatSystem.resolve_instant_casts(players, config, collision, combat_events, reactions, tick)
 	fields.sort_custom(func(left: FieldState, right: FieldState) -> bool: return left.entity_id < right.entity_id)
 	fields = CombatSystem.advance_fields(fields, players, config, combat_events)
 	projectiles.sort_custom(func(left: ProjectileState, right: ProjectileState) -> bool: return left.entity_id < right.entity_id)
-	projectiles = CombatSystem.advance_projectiles(projectiles, players, config, collision, combat_events)
+	var owner_material_slots := {}
+	for state: PlayerState in players:
+		owner_material_slots[state.entity_id] = available_cast_capacity(state.entity_id).x
+	projectiles = CombatSystem.advance_projectiles(projectiles, players, config, collision, combat_events, reactions, tick, _free_material_slots(), owner_material_slots)
+	_consume_projectile_terminals()
+	next_reaction_id = ElementChemistrySystem.step(deposits, reactions, players, collision, config, tick, next_reaction_id, combat_events)
 	for state: PlayerState in ordered_players:
 		TrainingTargetSystemScript.step_target(state, config)
 	tick += 1
@@ -113,6 +122,10 @@ func available_cast_capacity(owner_id: int) -> Vector2i:
 	var reserved_fields := fields.size()
 	var owner_projectiles := 0
 	var owner_fields := 0
+	var owner_deposits := 0
+	for deposit: ElementDepositState in deposits:
+		if deposit.owner_id == owner_id:
+			owner_deposits += 1
 	for projectile: ProjectileState in projectiles:
 		if projectile.owner_id == owner_id:
 			owner_projectiles += 1
@@ -129,9 +142,38 @@ func available_cast_capacity(owner_id: int) -> Vector2i:
 			owner_projectiles += requirement.x
 			owner_fields += requirement.y
 	return Vector2i(
-		maxi(0, mini(SimConfig.MAX_ACTIVE_PROJECTILES - reserved_projectiles, SimConfig.MAX_PROJECTILES_PER_PLAYER - owner_projectiles)),
+		maxi(0, mini(mini(SimConfig.MAX_ACTIVE_PROJECTILES - reserved_projectiles, SimConfig.MAX_PROJECTILES_PER_PLAYER - owner_projectiles), mini(ElementChemistrySystem.MAX_DEPOSITS - deposits.size() - reserved_projectiles, ElementChemistrySystem.MAX_OWNER_DEPOSITS - owner_deposits - owner_projectiles))),
 		maxi(0, mini(SimConfig.MAX_ACTIVE_FIELDS - reserved_fields, SimConfig.MAX_FIELDS_PER_PLAYER - owner_fields)),
 	)
+
+
+func _free_material_slots() -> int:
+	var reserved := projectiles.size() + deposits.size()
+	for state: PlayerState in players:
+		if state.health > 0 and state.pending_cast_wire_id != 0:
+			reserved += CombatSystem.cast_capacity_requirement(state.pending_cast_wire_id).x
+	return maxi(0, mini(ElementChemistrySystem.MAX_DEPOSITS - reserved, SimConfig.MAX_ACTIVE_PROJECTILES - projectiles.size()))
+
+
+func _consume_projectile_terminals() -> void:
+	var public_events: Array[Dictionary] = []
+	for event: Dictionary in combat_events:
+		match String(event.get("type", "")):
+			"projectile_terminal":
+				var admitted := ElementChemistrySystem.deposit_terminal(deposits, next_deposit_id, int(event["source_cast_id"]), int(event["source_wire_id"]), int(event["owner_id"]), int(event["team_id"]), int(event["element_wire_id"]), event["position"], tick, config, event["direction"], int(event["strength"]))
+				if admitted > 0:
+					next_deposit_id += 1
+				elif admitted < 0:
+					# Admitted casts reserve this slot before payment; refusal is an invariant failure.
+					last_error = "reserved terminal material slot unavailable"
+			"chemistry_projectile_split":
+				var child: ProjectileState = event["projectile"]
+				child.entity_id = next_projectile_id
+				next_projectile_id += 1
+				projectiles.append(child)
+			_:
+				public_events.append(event)
+	combat_events = public_events
 
 
 func _store_combat_result(spawned: Variant) -> void:
@@ -162,7 +204,7 @@ static func _idle_defeated(state: PlayerState) -> void:
 
 func state_hash() -> String:
 	var payload := PackedByteArray()
-	for value: int in [SimConfig.PROTOCOL_VERSION, config.tick_rate, tick, seed, next_projectile_id, next_field_id]:
+	for value: int in [SimConfig.PROTOCOL_VERSION, config.tick_rate, tick, seed, next_projectile_id, next_field_id, next_deposit_id, next_reaction_id]:
 		CanonicalBytes.append_i64(payload, value)
 	CanonicalBytes.append_string(payload, map_id)
 	CanonicalBytes.append_string(payload, map_hash)
@@ -180,5 +222,13 @@ func state_hash() -> String:
 	CanonicalBytes.append_i64(payload, fields.size())
 	for field: FieldState in fields:
 		for value: int in field.canonical_values():
+			CanonicalBytes.append_i64(payload, value)
+	CanonicalBytes.append_i64(payload, deposits.size())
+	for deposit: ElementDepositState in deposits:
+		for value: int in deposit.canonical_values():
+			CanonicalBytes.append_i64(payload, value)
+	CanonicalBytes.append_i64(payload, reactions.size())
+	for reaction: ElementReactionState in reactions:
+		for value: int in reaction.canonical_values():
 			CanonicalBytes.append_i64(payload, value)
 	return CanonicalBytes.sha256_hex(payload)

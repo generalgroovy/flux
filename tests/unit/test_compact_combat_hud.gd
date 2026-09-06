@@ -94,7 +94,11 @@ func _test_recovery_and_float_status() -> void:
 	state.hop_ticks = 25
 	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "quiet airborne state cannot falsely advertise active ground refill")
 	state.air_floating = true
-	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA FLOAT -100/s", "paid Float drain overrides passive recovery information")
+	state.float_ticks = 216
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA FLOAT 1.8s -100/s", "paid Float shows remaining size-limited duration and drain")
+	state.float_ticks = 0
+	check(not CompactCombatHud.stamina_status_label(state, 120).contains("FLOAT"), "expired Float cannot advertise protected spending")
+	state.float_ticks = 216
 	state.air_floating = false
 	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "ending Float removes its paid status immediately")
 	state.air_floating = true
@@ -104,7 +108,12 @@ func _test_recovery_and_float_status() -> void:
 	state.stamina = 0
 	check(not CompactCombatHud.stamina_status_label(state, 120).contains("FLOAT"), "exhaustion cannot advertise protected Float spending")
 	# Check the actual smallest resource-bar lane without changing the HUD layout.
-	var labels: Array[String] = ["FLUX +150/s", "STAMINA +150/s", "STAMINA FLOAT -100/s", "STAMINA SPRINT -34/s", "STAMINA WAIT 0.4s", "STAMINA  NEXT +40%"]
+	state.air_floating = false
+	state.air_height = 0
+	state.chemistry_regen_block_ticks = 10
+	equal(CompactCombatHud.flux_status_label(state, 120), "FLUX SEALED", "chemistry-blocked Flux never falsely promises recovery")
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA SEALED", "chemistry-blocked Stamina never falsely promises recovery")
+	var labels: Array[String] = ["FLUX +150/s", "STAMINA +150/s", "STAMINA FLOAT 1.8s -100/s", "STAMINA SPRINT -34/s", "STAMINA WAIT 0.4s", "STAMINA  NEXT +40%"]
 	for label: String in labels:
 		var rendered := "%s  792/792" % label
 		var measured := ThemeDB.fallback_font.get_string_size(rendered, HORIZONTAL_ALIGNMENT_LEFT, -1, 10).x

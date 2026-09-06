@@ -23,6 +23,10 @@ var hit_control_duration_ms: int = 0
 var hit_control_speed: int = 0
 var hit_control_slow_ratio: int = 1000
 var remaining_bounces: int = 0
+var remaining_distance: int = -1
+var source_cast_id: int = 0
+var material_strength: int = 1000
+var chemistry_interaction_mask: int = 0
 var grazed_entity_ids := PackedInt64Array()
 
 
@@ -72,6 +76,7 @@ func canonical_values() -> PackedInt64Array:
 		radius, damage, lifetime_ticks,
 		hit_control_state, hit_control_duration_ms, hit_control_speed,
 		hit_control_slow_ratio, remaining_bounces,
+		remaining_distance, source_cast_id, material_strength, chemistry_interaction_mask,
 	])
 	values.append(grazed_entity_ids.size())
 	for grazed_id: int in grazed_entity_ids:

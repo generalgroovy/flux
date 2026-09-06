@@ -1,5 +1,6 @@
 class_name CombatSystem
 extends RefCounted
+@warning_ignore_start("integer_division")
 
 
 static func step_player(
@@ -68,7 +69,7 @@ static func step_player(
 		if pressed_cast_intent:
 			_refuse_cast(state, requested_wire_id, requested_spell_slot, "flux", events)
 		return null
-	_begin_cast(state, requested_wire_id, int(definition["startup_ms"]), config)
+	_begin_cast(state, requested_wire_id, int(definition["startup_ms"]), config, command)
 	events.append({"type": "cast_started", "entity_id": state.entity_id, "wire_id": requested_wire_id})
 	return null
 
@@ -106,6 +107,10 @@ static func advance_projectiles(
 	config: SimConfig,
 	world: CollisionWorld,
 	events: Array[Dictionary],
+	reactions: Array[ElementReactionState] = [],
+	current_tick: int = 0,
+	available_chemistry_slots: int = 0,
+	owner_material_slots: Dictionary = {},
 ) -> Array[ProjectileState]:
 	var survivors: Array[ProjectileState] = []
 	var ordered_players: Array[PlayerState] = players.duplicate()
@@ -119,6 +124,10 @@ static func advance_projectiles(
 		var delta := Vector2i(total_x / config.tick_rate, total_y / config.tick_rate)
 		projectile.remainder_x = total_x - delta.x * config.tick_rate
 		projectile.remainder_y = total_y - delta.y * config.tick_rate
+		var step_distance := SimCommand._integer_square_root(delta.x * delta.x + delta.y * delta.y)
+		if projectile.remaining_distance >= 0 and step_distance > projectile.remaining_distance:
+			delta = Vector2i(delta.x * projectile.remaining_distance / maxi(1, step_distance), delta.y * projectile.remaining_distance / maxi(1, step_distance))
+			step_distance = projectile.remaining_distance
 		var result: CollisionWorld.MoveResult = world.move_box(
 			Vector2i(projectile.position_x, projectile.position_y),
 			delta,
@@ -126,6 +135,28 @@ static func advance_projectiles(
 		)
 		projectile.position_x = result.position.x
 		projectile.position_y = result.position.y
+		if projectile.remaining_distance >= 0:
+			projectile.remaining_distance = maxi(0, projectile.remaining_distance - step_distance)
+		if not reactions.is_empty():
+			var split_capacity := mini(available_chemistry_slots, int(owner_material_slots.get(projectile.owner_id, 0)))
+			var interaction := ElementChemistrySystem.projectile_interaction(projectile, reactions, world, config, current_tick, split_capacity)
+			if bool(interaction.get("blocked", false)):
+				_emit_terminal(projectile, events, "construct")
+				continue
+			if interaction.get("split_velocity", Vector2i.ZERO) != Vector2i.ZERO and split_capacity > 0:
+				var child := ProjectileState.new(0, projectile.owner_id, projectile.team_id, projectile.source_wire_id, projectile.element_wire_id,
+					Vector2i(projectile.position_x, projectile.position_y), interaction["split_velocity"], projectile.radius,
+					int(interaction.get("split_damage", 0)), projectile.lifetime_ticks, projectile.hit_control_state,
+					projectile.hit_control_duration_ms, projectile.hit_control_speed, projectile.hit_control_slow_ratio)
+				child.remaining_distance = projectile.remaining_distance
+				child.source_cast_id = projectile.source_cast_id
+				child.material_strength = maxi(1, projectile.material_strength / 2)
+				projectile.material_strength = maxi(1, projectile.material_strength - child.material_strength)
+				child.chemistry_interaction_mask = projectile.chemistry_interaction_mask
+				child.grazed_entity_ids = projectile.grazed_entity_ids.duplicate()
+				events.append({"type": "chemistry_projectile_split", "projectile": child})
+				available_chemistry_slots -= 1
+				owner_material_slots[projectile.owner_id] = split_capacity - 1
 
 		var hit_entity_id: int = 0
 		for target: PlayerState in ordered_players:
@@ -133,7 +164,7 @@ static func advance_projectiles(
 				continue
 			var hit_radius: int = target.radius + projectile.radius
 			if _segment_circle_hit(projectile, target, hit_radius):
-				if MovementSystem.is_combat_intangible(target, config):
+				if MovementSystem.is_combat_intangible(target, config) or target.air_height >= MovementTuning.GROUND_PROJECTILE_CLEARANCE_HEIGHT:
 					target.last_event = "evaded_projectile"
 					continue
 				PlayerResourcesSystem.damage(target, projectile.damage, config)
@@ -167,32 +198,39 @@ static func advance_projectiles(
 
 		_resolve_edgeweave(projectile, ordered_players, hit_entity_id, config, events)
 		if hit_entity_id != 0:
+			_emit_terminal(projectile, events, "actor")
 			continue
 		if result.wall_normal != Vector2i.ZERO:
-			if projectile.remaining_bounces <= 0:
-				events.append({"type": "projectile_impact", "projectile_id": projectile.entity_id, "wall_id": result.wall_id})
-				continue
-			_reflect_projectile(projectile, result.wall_normal)
-			projectile.remaining_bounces -= 1
-			events.append({
-				"type": "projectile_bounced",
-				"projectile_id": projectile.entity_id,
-				"wall_id": result.wall_id,
-				"remaining_bounces": projectile.remaining_bounces,
-			})
+			events.append({"type": "projectile_impact", "projectile_id": projectile.entity_id, "wall_id": result.wall_id})
+			_emit_terminal(projectile, events, "obstacle")
+			continue
 		projectile.lifetime_ticks = maxi(0, projectile.lifetime_ticks - 1)
-		if projectile.lifetime_ticks == 0:
+		if projectile.lifetime_ticks == 0 or projectile.remaining_distance == 0:
 			events.append({"type": "projectile_expired", "projectile_id": projectile.entity_id})
+			_emit_terminal(projectile, events, "range")
 			continue
 		survivors.append(projectile)
 	return survivors
 
 
-static func _begin_cast(state: PlayerState, wire_id: int, startup_ms: int, config: SimConfig) -> void:
+static func _emit_terminal(projectile: ProjectileState, events: Array[Dictionary], reason: String) -> void:
+	events.append({
+		"type": "projectile_terminal", "projectile_id": projectile.entity_id,
+		"source_cast_id": projectile.source_cast_id if projectile.source_cast_id > 0 else projectile.entity_id,
+		"source_wire_id": projectile.source_wire_id, "owner_id": projectile.owner_id, "team_id": projectile.team_id,
+		"element_wire_id": projectile.element_wire_id, "position": Vector2i(projectile.position_x, projectile.position_y),
+		"direction": SimCommand._normalized_direction(projectile.velocity_x, projectile.velocity_y),
+		"strength": projectile.material_strength, "reason": reason,
+	})
+
+
+static func _begin_cast(state: PlayerState, wire_id: int, startup_ms: int, config: SimConfig, command: SimCommand = null) -> void:
 	state.pending_cast_wire_id = wire_id
 	state.pending_cast_ticks = config.milliseconds_to_ticks(startup_ms)
 	state.pending_cast_aim_x = state.aim_x
 	state.pending_cast_aim_y = state.aim_y
+	state.pending_cast_target_x = command.aim_target_x if command != null else -1
+	state.pending_cast_target_y = command.aim_target_y if command != null else -1
 	state.last_event = "cast_start_%d" % wire_id
 
 
@@ -236,10 +274,18 @@ static func _release_projectiles(
 	var speed := int(definition["speed"])
 	var radius := int(definition["radius"])
 	var base_direction := Vector2i(state.pending_cast_aim_x, state.pending_cast_aim_y)
+	var locked_distance := -1
+	if state.pending_cast_target_x >= 0 and state.pending_cast_target_y >= 0:
+		var locked_delta := Vector2i(state.pending_cast_target_x - state.position_x, state.pending_cast_target_y - state.position_y)
+		locked_distance = SimCommand._integer_square_root(locked_delta.x * locked_delta.x + locked_delta.y * locked_delta.y)
+		if locked_delta != Vector2i.ZERO:
+			base_direction = SimCommand._normalized_direction(locked_delta.x, locked_delta.y)
 	var rotations: Array = definition.get("projectile_rotations", [Vector2i(1000, 0)])
 	var angles: Array = definition.get("projectile_angles_degrees", [0])
 	@warning_ignore("integer_division")
 	var spawn_distance: int = state.radius + radius + CombatTuning.PROJECTILE_SPAWN_CLEARANCE
+	if locked_distance >= 0:
+		spawn_distance = mini(spawn_distance, locked_distance)
 	var directions: Array[Vector2i] = []
 	var spawn_positions: Array[Vector2i] = []
 	for rotation_value: Variant in rotations:
@@ -264,7 +310,7 @@ static func _release_projectiles(
 		@warning_ignore("integer_division")
 		var velocity := Vector2i(direction.x * speed / 1000, direction.y * speed / 1000)
 		var projectile_id := first_projectile_id + lane_index
-		projectiles.append(ProjectileState.new(
+		var projectile := ProjectileState.new(
 			projectile_id,
 			state.entity_id,
 			state.team_id,
@@ -279,8 +325,12 @@ static func _release_projectiles(
 			int(definition["hit_control_duration_ms"]),
 			int(definition["hit_control_speed"]),
 			int(definition["hit_control_slow_ratio"]),
-			int(definition["remaining_bounces"]),
-		))
+			0,
+		)
+		projectile.source_cast_id = first_projectile_id
+		projectile.material_strength = 1000 / maxi(1, directions.size())
+		projectile.remaining_distance = maxi(0, locked_distance - spawn_distance) if locked_distance >= 0 else -1
+		projectiles.append(projectile)
 		events.append({
 			"type": "projectile_spawned",
 			"projectile_id": projectile_id,
@@ -438,6 +488,8 @@ static func resolve_instant_casts(
 	config: SimConfig,
 	world: CollisionWorld,
 	events: Array[Dictionary],
+	reactions: Array = [],
+	current_tick: int = 0,
 ) -> void:
 	var resolved_events: Array[Dictionary] = []
 	for event: Dictionary in events:
@@ -473,7 +525,9 @@ static func resolve_instant_casts(
 			continue
 
 		if shape == "spray":
-			_resolve_spray(owner, wire_id, definition, origin, direction, endpoint, players, config, world, resolved_events)
+			_resolve_spray(owner, wire_id, definition, origin, direction, endpoint, players, config, world, resolved_events, reactions, current_tick)
+			continue
+		if not reactions.is_empty() and _resolve_chemistry_beam(owner, wire_id, definition, origin, endpoint, players, config, world, resolved_events, reactions, current_tick):
 			continue
 		var target: PlayerState = _first_beam_target(owner, origin, endpoint, int(definition["radius"]), players, config)
 		if target != null:
@@ -520,6 +574,8 @@ static func _resolve_spray(
 	config: SimConfig,
 	world: CollisionWorld,
 	resolved_events: Array[Dictionary],
+	reactions: Array = [],
+	current_tick: int = 0,
 ) -> void:
 	var hit_events: Array[Dictionary] = []
 	var hit_count: int = 0
@@ -544,6 +600,8 @@ static func _resolve_spray(
 		var remaining := Vector2i(target.position_x, target.position_y) - clear_endpoint
 		var hit_radius: int = target.radius + int(definition["radius"])
 		if remaining.length_squared() > hit_radius * hit_radius:
+			continue
+		if _spray_cover_intercepts(origin, Vector2i(target.position_x,target.position_y), int(definition["damage"]), reactions, current_tick, config):
 			continue
 		if MovementSystem.is_combat_intangible(target, config):
 			target.last_event = "evaded_spray"
@@ -583,6 +641,49 @@ static func _resolve_spray(
 		"hit_count": hit_count,
 	})
 	resolved_events.append_array(hit_events)
+
+
+static func _resolve_chemistry_beam(owner: PlayerState, wire_id: int, definition: Dictionary, origin: Vector2i, endpoint: Vector2i, players: Array[PlayerState], config: SimConfig, world: CollisionWorld, events: Array[Dictionary], reactions: Array, tick: int) -> bool:
+	var original_target := _first_beam_target(owner,origin,endpoint,int(definition["radius"]),players,config)
+	var first_point := Vector2i(original_target.position_x,original_target.position_y) if original_target != null else Vector2i(-1,-1)
+	var optical := ElementChemistrySystem.ray_interaction(origin,endpoint,int(definition["element_wire_id"]),int(definition["damage"]),reactions,tick,0,first_point)
+	if not bool(optical["transformed"]):
+		return false
+	var entry: Vector2i = optical["entry_point"]
+	if not bool(optical["blocked"]):
+		events.append({"type":"beam_fired","owner_id":owner.entity_id,"source_wire_id":wire_id,"target_id":0,"origin_x":origin.x,"origin_y":origin.y,"end_x":entry.x,"end_y":entry.y,"damage":0})
+	for ray: Dictionary in optical["rays"]:
+		var ray_origin: Vector2i = ray["origin"]
+		var requested_end: Vector2i = ray["end"]
+		var ray_delta := requested_end-ray_origin
+		var direction := SimCommand._normalized_direction(ray_delta.x,ray_delta.y)
+		var distance := SimCommand._integer_square_root(ray_delta.length_squared())
+		var ray_end := _beam_clear_endpoint(ray_origin,direction,distance,int(definition["radius"]),world)
+		var target := _first_beam_target(owner,ray_origin,ray_end,int(definition["radius"]),players,config)
+		var actual_damage := 0
+		if target != null:
+			ray_end = Vector2i(target.position_x,target.position_y)
+			if PlayerResourcesSystem.damage(target,int(ray["damage"]),config):
+				actual_damage = int(ray["damage"])
+			if actual_damage > 0 and target.health > 0 and int(definition["hit_control_duration_ms"]) > 0:
+				MovementSystem.apply_control_state(target,int(definition["hit_control_state"]),int(definition["hit_control_duration_ms"]),direction,int(definition["hit_control_speed"]),config,int(definition["hit_control_slow_ratio"]))
+		events.append({"type":"beam_fired","owner_id":owner.entity_id,"source_wire_id":wire_id,"target_id":target.entity_id if target != null else 0,"origin_x":ray_origin.x,"origin_y":ray_origin.y,"end_x":ray_end.x,"end_y":ray_end.y,"damage":actual_damage})
+		if target != null and target.health == 0 and target.actor_kind == PlayerState.ActorKind.CHAMPION:
+			events.append({"type":"champion_defeated","projectile_id":0,"owner_id":owner.entity_id,"target_id":target.entity_id})
+	return true
+
+
+static func _spray_cover_intercepts(origin: Vector2i,endpoint: Vector2i,damage: int,reactions: Array,tick: int,config: SimConfig) -> bool:
+	for result: ElementReactionState in reactions:
+		if not result.active(tick) or result.health <= 0 or result.recipe_wire_id not in [301,305,306,307,327,329]:
+			continue
+		if not ElementChemistrySystem._segment_enters(result,origin,endpoint,tick,config):
+			continue
+		result.health = maxi(0,result.health-damage)
+		if result.health == 0:
+			result.decay_tick = mini(result.decay_tick,tick)
+		return true
+	return false
 
 
 static func _beam_clear_endpoint(

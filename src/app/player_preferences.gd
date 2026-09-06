@@ -2,7 +2,7 @@ class_name PlayerPreferences
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 10
+const SCHEMA_VERSION: int = 11
 const DEFAULT_PATH: String = "user://player_preferences_v1.json"
 const DEFAULT_FARFLOW_JOIN_ADDRESS: String = "127.0.0.1"
 const MOVEMENT_WORLD_RELATIVE: String = "world_relative"
@@ -76,7 +76,7 @@ const SCHEMA_V3_DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"practice_trace": KEY_F2,
 	&"practice_retry": KEY_F3,
-	&"evade": KEY_Q,
+	&"evade": KEY_V,
 	&"move_left": KEY_A,
 	&"move_right": KEY_D,
 	&"move_up": KEY_W,
@@ -84,7 +84,7 @@ const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"sprint": KEY_SHIFT,
 	&"slide": KEY_C,
 	&"jump": KEY_SPACE,
-	&"technique": KEY_V,
+	&"technique": KEY_Q,
 	&"primary": 0,
 	&"active_1": KEY_E,
 	&"interact": KEY_F,
@@ -201,11 +201,11 @@ func apply_control_preset(preset_id: String) -> bool:
 func apply_dictionary(data: Dictionary) -> bool:
 	var raw_schema: Variant = data.get("schema_version", -1)
 	if not _is_whole_number(raw_schema):
-		last_error = "Player preferences require schema_version 1 through 10"
+		last_error = "Player preferences require schema_version 1 through 11"
 		return false
 	var requested_schema: int = int(raw_schema)
 	if requested_schema < 1 or requested_schema > SCHEMA_VERSION:
-		last_error = "Player preferences require schema_version 1 through 10"
+		last_error = "Player preferences require schema_version 1 through 11"
 		return false
 	var requested_movement: String = str(data.get("movement_reference", ""))
 	var requested_pov_mode: String = str(data.get("pov_mode", ""))
@@ -260,6 +260,7 @@ func apply_dictionary(data: Dictionary) -> bool:
 		last_error = "camera_zoom_percent must be between %d and %d" % [MIN_CAMERA_ZOOM_PERCENT, MAX_CAMERA_ZOOM_PERCENT]
 		return false
 	var requested_bindings: Dictionary[StringName, int]
+	var schema_defaults := default_keyboard_bindings_for_schema(requested_schema)
 	if requested_schema == 1:
 		requested_bindings = LEGACY_DEFAULT_KEYBOARD_BINDINGS.duplicate()
 	elif requested_schema == 2:
@@ -267,7 +268,7 @@ func apply_dictionary(data: Dictionary) -> bool:
 	elif requested_schema == 3:
 		requested_bindings = SCHEMA_V3_DEFAULT_KEYBOARD_BINDINGS.duplicate()
 	else:
-		requested_bindings = DEFAULT_KEYBOARD_BINDINGS.duplicate()
+		requested_bindings = schema_defaults.duplicate()
 	var binding_data: Variant = data.get("keyboard_bindings", {})
 	if not binding_data is Dictionary:
 		last_error = "keyboard_bindings must be an object"
@@ -293,7 +294,7 @@ func apply_dictionary(data: Dictionary) -> bool:
 		requested_bindings[action] = keycode
 	for action: StringName in DEFAULT_KEYBOARD_BINDINGS:
 		if not requested_bindings.has(action):
-			requested_bindings[action] = DEFAULT_KEYBOARD_BINDINGS[action]
+			requested_bindings[action] = schema_defaults[action]
 	requested_bindings.erase(&"toggle_tick_rate")
 	if requested_schema == 1:
 		if requested_bindings[&"jump"] == LEGACY_DEFAULT_KEYBOARD_BINDINGS[&"jump"]:
@@ -315,6 +316,11 @@ func apply_dictionary(data: Dictionary) -> bool:
 			for action: StringName in requested_bindings:
 				if action != added_action and requested_bindings[action] == requested_bindings[added_action]:
 					requested_bindings[added_action] = 0
+	if requested_schema < 11 and requested_bindings == default_keyboard_bindings_for_schema(10):
+		# Move only an entirely default keyboard profile. Even one custom
+		# binding preserves the previous Q/V meanings, including explicit unbinds.
+		requested_bindings[&"evade"] = KEY_V
+		requested_bindings[&"technique"] = KEY_Q
 	var binding_error: String = validate_keyboard_bindings(requested_bindings)
 	if not binding_error.is_empty():
 		last_error = binding_error
@@ -550,3 +556,11 @@ static func _is_whole_number(value: Variant) -> bool:
 	if value is float:
 		return is_finite(value) and value == floorf(value)
 	return false
+
+
+static func default_keyboard_bindings_for_schema(schema: int) -> Dictionary[StringName, int]:
+	var result: Dictionary[StringName, int] = DEFAULT_KEYBOARD_BINDINGS.duplicate()
+	if schema < 11:
+		result[&"evade"] = KEY_Q
+		result[&"technique"] = KEY_V
+	return result

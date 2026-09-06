@@ -135,9 +135,9 @@ func _test_real_tap_and_hold() -> void:
 		peaks.append(peak)
 		check(protected_ticks <= world.config.milliseconds_to_ticks(MovementTuning.JUMP_INVULNERABILITY_MS), "longer height cannot extend protection")
 		equal(JumpPresentation.sample(world.player(), world.config).body_lift_pixels, 0.0, "real jump returns to ground")
-	check(peaks[1] >= 74.0 and peaks[1] <= 77.0, "held jump reaches the lower physical seventy-six-pixel apex")
-	check(peaks[0] >= 28.0 and peaks[0] <= 42.0, "tap jump remains compact")
-	check(peaks[1] > peaks[0] * 2.0, "real tap and hold clearly differ")
+	check(peaks[1] >= 28.0 and peaks[1] <= 30.0, "held low jump reaches the requested approximately twenty-nine-pixel apex")
+	check(peaks[0] >= 21.0 and peaks[0] <= 23.0, "tap low jump reaches the requested approximately twenty-two-pixel apex")
+	check(peaks[1] - peaks[0] >= 6.0 and peaks[1] - peaks[0] <= 8.0, "new low tap and hold preserve a clear six-to-eight-pixel height choice")
 
 
 func _test_real_float_and_dodge_continuity() -> void:
@@ -151,7 +151,7 @@ func _test_real_float_and_dodge_continuity() -> void:
 		world.step([SimCommand.new(world.tick, 1, 1000, 0, held, pressed)])
 		var state := world.player()
 		if index in [20, 35]:
-			check(before > 30_000, "real transition occurs while visibly airborne")
+			check(before > MovementTuning.GROUND_PROJECTILE_CLEARANCE_HEIGHT, "real transition occurs above the low-projectile clearance line")
 			check(absi(state.air_height - before) < 12_000, "Float/dodge cannot snap the physical or visible height")
 			var sample := JumpPresentation.sample(state, world.config, 0.5, false, before)
 			check(sample.body_lift_pixels >= float(mini(before, state.air_height)) / 1000.0 and sample.body_lift_pixels <= float(maxi(before, state.air_height)) / 1000.0, "transition frame remains between its actual height endpoints")
@@ -184,6 +184,8 @@ func _test_float_and_takeoff_contract() -> void:
 		state.jump_protection_ticks = 0
 		check(not bool(JumpPresentation.takeoff_contract(state, config, reduced)["active"]), "takeoff ring finishes with its accepted opening")
 		state.air_floating = true
+		state.float_used = true
+		state.float_ticks = 120
 		for stale_timer: int in [0, 1, 100]:
 			state.jump_protection_ticks = stale_timer
 			equal(JumpPresentation.protection_ratio(state, config), 1.0, "active Float does not fade with stale jump protection clocks")
@@ -211,6 +213,6 @@ func _test_real_float_release_cue() -> void:
 			check(sample.protection_active, "every actually paid Float tick keeps a steady shield")
 			equal(sample.body_lift_pixels, float(before) / 1000.0, "Float steering never changes the attained visual height")
 		if index == 70:
-			check(state.air_height > 30_000, "release test remains visibly airborne")
+			check(state.air_height > MovementTuning.GROUND_PROJECTILE_CLEARANCE_HEIGHT, "release test remains visibly above the low-projectile clearance line")
 			check(not state.air_floating and not sample.protection_active, "release cue ends immediately even when height interpolation is one sample behind")
 	check(float_ticks >= 45, "release test actually holds Float beyond the original jump opening")

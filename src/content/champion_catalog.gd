@@ -204,6 +204,9 @@ func apply_to_player(state: PlayerState, champion_id: String, preserve_resource_
 	var old_flux := state.flux
 	var old_stamina := state.stamina
 	state.champion_wire_id = int(champion_data["wire_id"])
+	state.float_max_duration_ms = MovementTuning.float_duration_ms(String(champion_data["body_type"]))
+	# Attunement cannot refill or lengthen an already spent airborne allowance.
+	state.float_ticks = mini(state.float_ticks, (state.float_max_duration_ms * 120 + 999) / 1000)
 	state.health_maximum = int(stats["health_maximum"])
 	state.health_recovery_per_second = int(stats["health_recovery_per_second"])
 	state.flux_maximum = int(stats["flux_maximum"])
@@ -218,6 +221,8 @@ func apply_to_player(state: PlayerState, champion_id: String, preserve_resource_
 	state.reset_spell_slots_to_kit()
 	state.pending_cast_wire_id = 0
 	state.pending_cast_ticks = 0
+	state.pending_cast_target_x = -1
+	state.pending_cast_target_y = -1
 	state.cast_recovery_ticks = 0
 	state.primary_cooldown_ticks = 0
 	state.active_1_cooldown_ticks = 0

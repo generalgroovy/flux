@@ -493,6 +493,8 @@ func _test_movement_template_direction_matrix() -> void:
 					state.hop_mode = PlayerState.MovementMode.HOP
 					if action == "float":
 						state.air_floating = true
+						state.float_used = true
+						state.float_ticks = 120
 						state.hop_mode = PlayerState.MovementMode.DOUBLE_JUMP
 				if action == "roll":
 					state.air_dodge_ticks = 12
@@ -560,6 +562,8 @@ func _test_immediate_protection_contract() -> void:
 				check((expired["brackets"] as Array).is_empty() and (expired["shield"] as PackedVector2Array).is_empty(), "no shield geometry remains to suggest protection")
 				state.air_height = 55_000
 				state.air_floating = true
+				state.float_used = true
+				state.float_ticks = 120
 				var floating := CartoonChampionPresenter.protection_contract(state, config, reduced, height)
 				equal((floating["float_wings"] as Array).size(), 2, "active Float has a distinct steady winged shield in all sizes and effect profiles")
 				equal(floating["remaining_ratio"], 1.0, "Float does not visually fade while held")
@@ -569,6 +573,10 @@ func _test_immediate_protection_contract() -> void:
 				state.air_floating = true
 				state.stamina = 0
 				check(not bool(CartoonChampionPresenter.protection_contract(state, config, reduced, height)["active"]), "exhausted Float cannot fabricate protection even with a stale flag")
+				state.stamina = state.stamina_maximum
+				state.float_ticks = 0
+				var timed_out := CartoonChampionPresenter.protection_contract(state, config, reduced, height)
+				check(not bool(timed_out["active"]) and (timed_out["float_wings"] as Array).is_empty(), "expired Float cannot retain a shield even with Stamina and a stale active flag")
 				state.air_floating = false
 				state.spawn_protection_ticks = 1
 				check(bool(CartoonChampionPresenter.protection_contract(state, config, reduced, height)["active"]), "spawn safety cannot look vulnerable")

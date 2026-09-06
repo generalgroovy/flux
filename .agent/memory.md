@@ -1,5 +1,62 @@
 # Active implementation memory
 
+## 2026-09-06 final low-hop chemistry source checkpoint and pause
+
+- User explicitly requested pause at checkpoint and launch. No next slice until
+  resumed; no remote push or installer update authorized in this pass.
+- Final `scripts/test.ps1 -Tier Full -ReceiptPath .godot/receipts/low-hop-chemistry-checkpoint.json`
+  passed81 suites/165,441 assertions in59,653ms at14:11UTC; stderr0bytes.
+  Protocol43/snapshot18/preferences11. Source behavior and exact limitations:
+  `docs/LOW-HOP-CHEMISTRY-CHECKPOINT.md`.
+- Real paid casts form all36 recipes; helper827 behavior checks, complete snapshot
+  envelope26,804B, trueBeam segment origins, narrowmist sights, packetextreme
+  cursor diagonal142m guard, round resets, fixedhash replay all verified.
+- Real local Farflow120Hz60s smoke passed host/join/reconciliation/latejoin/
+  spectate/reconnect/rematch/stewardship. RealSteam rendered at tick65 through
+  ordinary paid Fire/Water commands. Initial capture used invalid optional
+  `--pov-mode=off` (warning and unchanged full setting), not an engine error;
+  finalFull startup and finalUI/render fixtures are warning-clean.
+- Heavyload probe correctness8,251assertions pass, networkgaps0, but performance
+  NOTgreen: median5.457/7.090ms, p9539.256/36.891ms,206/330of720ticks >8.333ms
+  with previous game open. Profile before claiming sustained120Hz/120FPS.
+- FirstFull failed211 stale test assertions; fixed independent command/world
+  serializer lanes, verifiedonlyEclipseDisc bounces1->0 changed itsfingerprint,
+  seeded positiveFloatduration and added expiredshieldtests, updated tight
+ 29pxapex/22pxtap bounds. FinalFull rerun is the current evidence.
+- Previous owned gamePID9824 closed via normalwindowrequest; log confirmed
+  preferencesflush/networkshutdown. Preserve useruntracked node_modules,
+  firewall.ps1 and DownloadsShortcut. Source launcher remains flux.cmd.
+
+## 2026-09-06 low-hop / finite Float / chemistry integration (not final acceptance)
+
+- New source revision from12a17de: low22/28.9px tap/held jump,18px low-ground-
+  projectile clearance, Float1800/1500/1200ms bybody, independent walljump->Float
+  ->air dodge. Root/runtime own mechanics/network and final integrated evidence.
+- Preferences11 swaps full-default EvadeQ->V / TechniqueV->Q only; customized
+  keyboard profiles and mouse/controller/12spell layers are preserved. InputRouter
+  sends fixed-world mouse endpoint with bounded coordinates; joystick remains
+  directional/maxrange. Failed/free actions and wheel grouping remain unchanged.
+- Guide/HUD derive new height, budgets and remaining Float time from authority.
+  Chemistry recovery seal blocks positive Health/Flux (Stamina runtime-owned)
+  without erasing quiet age or preventing costs. Tests cover resume and paid resets.
+- New ElementChemistryPresenter uses canonical colours plus8deposit identities,
+  36recipe shapes, authoritative radius/length/endpoint/path/phase, reduced-effect
+  boundaries and original reusable primitives. Burst impacts and open-centre
+  screen-space AimReticlePresenter are code-native, no external raster assets.
+- Isolated import clean. Focused canonical runner: input-router472,
+  preferences155, binding-editor32, guide339, HUD42, resources88, Burst117,
+  chemistry-presenter586 =1,831assertions/8suites, zero failures/clean stderr;
+  `.godot/compendium-audit/lowhop-chem-ui-v2.log`. The first run caught a stale
+  manually seeded Float fixture without its new positive duration; fixed fixture.
+- Inspected actual Godot draw fixture, all36+8deposits/impacts, standard/reduced,
+  4frames each at120Hz under `.godot/visual-captures/chemistry-native-specimen-v2`
+  and `chemistry-native-reduced-v1`. These are scaled1280x720 render specimens,
+  not gameplay, performance or final integrated acceptance; stderr clean.
+- Final integration still pending: all-pair effects, collision/visibility/optics,
+  reset/replication/Farflow, actual-game captures and source launch. Parent owns
+  final source/runtime-gate promotion and receipt. No commit/push, installer,
+  security changes, atlas generation or personal-file mutation by this worker.
+
 ## 2026-09-06 held Float and progressive recovery, verified source
 
 - User feedback replaces second-jump lift with held steerable invincible Float,

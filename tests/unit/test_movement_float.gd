@@ -11,6 +11,7 @@ func run() -> int:
 	_test_interruptions_and_budgets()
 	_test_recovery_spend_hooks()
 	_test_replay()
+	_test_size_caps_and_wall_chain()
 	return finish("movement-float")
 
 
@@ -32,7 +33,7 @@ func _step(state: PlayerState, direction: Vector2i = Vector2i.ZERO, held: int = 
 func _begin(state: PlayerState, direction: Vector2i = Vector2i.ZERO) -> void:
 	_step(state, direction, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
 	check(state.air_floating, "fresh airborne Jump enters affordable Float")
-	equal(state.hop_stage, 2, "Float spends the finite second-air-action allowance")
+	check(state.float_used, "Float spends its independent once-per-airtime allowance")
 
 
 func _test_held_float_all_directions() -> void:
@@ -59,7 +60,7 @@ func _test_held_float_all_directions() -> void:
 		check(state.air_height < height and state.air_vertical_velocity < 0, "release immediately resumes descending from current height")
 		equal(state.stamina, before_release, "release does not charge optional sustain")
 		_step(state, direction, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
-		check(not state.air_floating and state.hop_stage == 2, "fresh repress cannot rearm Float during the same airtime")
+		check(not state.air_floating and state.float_used, "fresh repress cannot rearm Float during the same airtime")
 		state.jump_buffer_ticks = 0
 		for _index: int in range(40):
 			_step(state)
@@ -97,6 +98,7 @@ func _test_fractional_drain_and_exhaustion() -> void:
 	_begin(prior_fraction)
 	equal(prior_fraction.stamina, 1, "startup clears prior fraction once, then pays its exact833-unit first Float tick")
 	var long_hold := _air_state()
+	long_hold.float_max_duration_ms = MovementTuning.FLOAT_SMALL_DURATION_MS
 	_begin(long_hold)
 	for _index: int in range(180):
 		_step(long_hold, Vector2i.ZERO, SimCommand.HELD_JUMP)
@@ -113,14 +115,14 @@ func _test_interruptions_and_budgets() -> void:
 		var before := state.stamina
 		_step(state, Vector2i.ZERO, SimCommand.HELD_JUMP)
 		equal(state.stamina, before, "forced control stops optional Float maintenance")
-		equal(state.hop_stage, 2, "forced control cannot restore spent Float budget")
+		check(state.float_used, "forced control cannot restore spent Float budget")
 	var dodge := _air_state()
 	_begin(dodge)
 	for _index: int in range(dodge.movement_commitment_ticks):
 		_step(dodge, Vector2i.ZERO, SimCommand.HELD_JUMP)
 	_step(dodge, Vector2i(1000, 0), SimCommand.HELD_JUMP, SimCommand.PRESSED_EVADE)
 	check(not dodge.air_floating and dodge.air_dodge_used, "air dodge interrupts Float and spends its own independent airtime allowance")
-	equal(dodge.hop_stage, 2, "air dodge cannot restore Float budget")
+	check(dodge.float_used, "air dodge cannot restore Float budget")
 	check(dodge.air_height < 50_000, "dodge exits stationary Float into actual descent")
 	var collision := CollisionWorld.new(10_000_000, 10_000_000)
 	collision.add_obstacle(CollisionWorld.Obstacle.new(7, 5_020_000, 4_000_000, 5_048_000, 6_000_000))
@@ -133,7 +135,7 @@ func _test_interruptions_and_budgets() -> void:
 	_step(wall, Vector2i(0, 1000), SimCommand.HELD_JUMP, SimCommand.PRESSED_TECHNIQUE, collision)
 	check(wall.wall_skim_ticks > 0 and not wall.air_floating, "wallrun deliberately interrupts Float")
 	check(not MovementSystem.is_combat_intangible(wall, config), "wallrun inherits no Float protection")
-	equal(wall.hop_stage, 2, "wall attachment cannot replenish Float")
+	check(wall.float_used, "wall attachment cannot replenish Float")
 	var falling := _air_state()
 	_begin(falling)
 	_step(falling, Vector2i.ZERO, SimCommand.HELD_JUMP, SimCommand.PRESSED_SLIDE)
@@ -169,3 +171,81 @@ func _test_replay() -> void:
 		for world: SimWorld in [first, repeat]:
 			check(world.step([SimCommand.new(tick, 1, move.x, move.y, held, pressed)]), "Float and ramp replay tick executes")
 		equal(first.state_hash(), repeat.state_hash(), "canonical replay matches through Float, release, landing and ramp recovery")
+
+
+func _test_size_caps_and_wall_chain() -> void:
+	var abilities := AbilityCatalog.new()
+	check(abilities.load_from_file("res://content/abilities/foundation_abilities_v1.json"), "Float body-cap ability content loads")
+	var catalog := ChampionCatalog.new()
+	check(catalog.load_from_file("res://content/champions/foundation_champions_v1.json", abilities), "Float body-cap champion content loads")
+	for champion_id: String in catalog.ordered_champion_ids():
+		var champion_state := _air_state()
+		check(catalog.apply_to_player(champion_state, champion_id), "actual champion applies canonical Float duration")
+		var body := String(catalog.champions_by_id[champion_id]["body_type"])
+		equal(champion_state.float_max_duration_ms, MovementTuning.float_duration_ms(body), "actual champion duration comes from its canonical body type, not resource size or sprite radius")
+		champion_state.float_used = true
+		champion_state.float_ticks = 100
+		check(catalog.apply_to_player(champion_state, champion_id, true), "midair attunement retains valid resource ratios")
+		check(champion_state.float_used and champion_state.float_ticks == 100, "attunement cannot refill or extend Float")
+	for body: String in ["small", "middle", "large"]:
+		for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+			var state := _air_state()
+			state.float_max_duration_ms = MovementTuning.float_duration_ms(body)
+			var maximum_ticks := config.milliseconds_to_ticks(state.float_max_duration_ms)
+			var original_height := state.air_height
+			_begin(state, direction)
+			equal(state.float_ticks, maximum_ticks - 1, "activation consumes the first bounded Float tick")
+			for age: int in range(1, maximum_ticks - 1):
+				_step(state, direction, SimCommand.HELD_JUMP)
+				check(state.air_floating and state.float_used, "each size remains active only within its paid hard cap")
+				equal(state.air_height, original_height, "size cap never changes activation height")
+			equal(state.float_ticks, 1, "last permitted Float state has one remaining tick")
+			var paid := state.stamina
+			_step(state, direction, SimCommand.HELD_JUMP)
+			check(not state.air_floating and state.float_ticks == 0 and state.float_used, "hard expiry removes Float but preserves spent allowance on that tick")
+			check(not MovementSystem.is_combat_intangible(state, config), "hard expiry immediately removes true invulnerability")
+			check(state.air_height < original_height, "expired Float resumes descent immediately")
+			equal(state.stamina, paid, "expiry never charges an unavailable protected tick")
+			_step(state)
+			_step(state, direction, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+			check(not state.air_floating, "fresh repress cannot extend any body size cap")
+			MovementSystem._land(state, config)
+			check(not state.float_used and state.float_ticks == 0, "actual landing restores independent Float budget")
+	for normal: Vector2i in [Vector2i.RIGHT * 1000, Vector2i.LEFT * 1000, Vector2i.UP * 1000, Vector2i.DOWN * 1000]:
+		var wall := _air_state()
+		wall.wall_memory_ticks = 12
+		wall.wall_contact_id = 7
+		wall.wall_x = normal.x
+		wall.wall_y = normal.y
+		_step(wall, normal, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
+		check(wall.hop_stage == 2 and not wall.float_used, "wall jump spends only its finite lift budget, leaving Float ready")
+		for _index: int in range(wall.movement_commitment_ticks):
+			_step(wall, normal, SimCommand.HELD_JUMP)
+		_step(wall, normal)
+		_begin(wall, normal)
+		equal(wall.hop_stage, 2, "Float after wall jump cannot restore another wall lift")
+		for _index: int in range(wall.movement_commitment_ticks):
+			_step(wall, normal, SimCommand.HELD_JUMP)
+		_step(wall, normal, SimCommand.HELD_JUMP, SimCommand.PRESSED_EVADE)
+		check(wall.air_dodge_used and not wall.air_floating and wall.float_used, "wall jump to Float to air dash is legal without any budget refill")
+	var status := _air_state()
+	status.air_height = 0
+	status.air_vertical_velocity = 0
+	status.hop_ticks = 0
+	status.stamina = 100_000
+	status.chemistry_regen_block_ticks = 3
+	status.chemistry_reveal_ticks = 3
+	status.chemistry_conceal_ticks = 3
+	status.stamina_recovery_idle_ticks = 100
+	var original_stamina := status.stamina
+	_step(status)
+	equal(status.stamina, original_stamina, "chemistry blocks positive Stamina recovery without consuming resource")
+	check(status.stamina_recovery_idle_ticks > 100, "regen block does not fake use or reset quiet recovery")
+	equal(status.chemistry_reveal_ticks, 2, "chemistry reveal ages once per authoritative step")
+	equal(status.chemistry_conceal_ticks, 2, "chemistry conceal ages once per authoritative step")
+	status.float_used = true
+	status.float_ticks = 10
+	status.air_floating = true
+	status.reset_for_spawn(Vector2i(5_000_000, 5_000_000))
+	check(not status.float_used and not status.air_floating and status.float_ticks == 0, "respawn clears active and spent Float while retaining champion duration")
+	equal(status.chemistry_regen_block_ticks + status.chemistry_reveal_ticks + status.chemistry_conceal_ticks, 0, "respawn clears all chemistry status timers")

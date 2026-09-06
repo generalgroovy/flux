@@ -106,15 +106,24 @@ func _test_cast_capacity_refusal_and_reuse() -> void:
 	for field: FieldState in world.fields:
 		field.lifetime_ticks = 1
 	check(world.step([]), "ordinary lifecycle expiry releases capacity")
-	equal(world.available_cast_capacity(caster.entity_id), Vector2i(16, 4), "expiry restores both per-owner budgets")
+	var remaining_material := world.deposits.filter(func(deposit: ElementDepositState) -> bool: return deposit.owner_id == caster.entity_id).size()
+	check(remaining_material > 0, "expired projectiles retain paid terminal material until its own expiry")
+	var free_material_slots := 16 - remaining_material
+	equal(world.available_cast_capacity(caster.entity_id), Vector2i(free_material_slots, 4), "projectile expiry does not erase terminal material reservations")
 	check(world.step(_admission_commands(world, SimCommand.PRESSED_SPELL_1)), "the previously refused fan can reuse expired capacity")
 	equal(caster.pending_cast_wire_id, CombatTuning.CINDERFAN_WIRE_ID, "retry accepts exactly one whole fan")
 	equal(caster.flux, initial_flux - int(CombatTuning.cast_definition(CombatTuning.CINDERFAN_WIRE_ID)["flux_cost"]), "retry spends Flux only when accepted")
-	equal(world.available_cast_capacity(caster.entity_id).x, 11, "startup immediately reserves five owner slots")
+	equal(world.available_cast_capacity(caster.entity_id).x, free_material_slots - 5, "startup reserves five slots in addition to still-live material")
 	caster.health = 0
 	check(world.step([]), "death clears the paid pending cast without leaking reservation")
-	equal(world.available_cast_capacity(caster.entity_id).x, 16, "dead pending casts release their reserved slots")
+	equal(world.available_cast_capacity(caster.entity_id).x, free_material_slots, "dead pending casts release only their own reservations")
 	equal(world.projectiles.size(), 0, "a defeated pending caster emits no orphan fan")
+	var last_material_expiry := world.tick
+	for deposit: ElementDepositState in world.deposits:
+		last_material_expiry = maxi(last_material_expiry, deposit.expiry_tick)
+	while world.tick <= last_material_expiry:
+		check(world.step([]), "terminal material expires through ordinary world ticks")
+	equal(world.available_cast_capacity(caster.entity_id), Vector2i(16,4), "only actual material expiry restores the full owner budget")
 
 
 func _test_repeated_cast_owner_limit() -> void:
@@ -633,18 +642,18 @@ func _test_s_wayne_disc_ricochet(tick_rate: int) -> void:
 		int(CombatTuning.cast_definition(CombatTuning.ECLIPSE_DISC_WIRE_ID)["remaining_bounces"]),
 	)
 	var projectiles: Array[ProjectileState] = [projectile]
-	var bounced: bool = false
+	var impacted: bool = false
+	var terminal: bool = false
 	for _index: int in range(tick_rate):
 		var events: Array[Dictionary] = []
 		projectiles = CombatSystem.advance_projectiles(projectiles, [owner], SimConfig.new(tick_rate), collision, events)
-		bounced = bounced or events.any(func(event: Dictionary) -> bool: return event.get("type") == "projectile_bounced" and int(event.get("wall_id", 0)) == 77)
-		if bounced:
+		impacted = impacted or events.any(func(event: Dictionary) -> bool: return event.get("type") == "projectile_impact" and int(event.get("wall_id", 0)) == 77)
+		terminal = terminal or events.any(func(event: Dictionary) -> bool: return event.get("type") == "projectile_terminal" and int(event.get("element_wire_id", 0)) == 8)
+		if impacted:
 			break
-	check(bounced, "%d Hz Eclipse Disc emits one authored ricochet" % tick_rate)
-	equal(projectiles.size(), 1, "%d Hz Eclipse Disc survives its available ricochet" % tick_rate)
-	if not projectiles.is_empty():
-		check(projectiles[0].velocity_x < 0, "%d Hz Eclipse Disc reflects away from the wall" % tick_rate)
-		equal(projectiles[0].remaining_bounces, 0, "%d Hz Eclipse Disc consumes its only ricochet" % tick_rate)
+	check(impacted, "%d Hz Eclipse Disc explodes on worldbone" % tick_rate)
+	check(terminal, "%d Hz Eclipse Disc emits one terminal Dark material source" % tick_rate)
+	equal(projectiles.size(), 0, "%d Hz all projectile spells stop at obstacles" % tick_rate)
 
 
 func _test_s_wayne_pocket_eclipse(tick_rate: int) -> void:
@@ -756,6 +765,10 @@ func _test_pressure_exhaustion_and_recovery(tick_rate: int) -> void:
 		var cycle_bound := world.config.milliseconds_to_ticks(int(definition["startup_ms"])) + world.config.milliseconds_to_ticks(int(definition["cooldown_ms"])) + 2
 		var exhaustion_limit := expected_casts * cycle_bound
 		for _index: int in range(exhaustion_limit):
+			# This fixture measures cost/cadence, not material admission. The
+			# separate capacity fixture above preserves and tests every deposit.
+			world.deposits.clear()
+			world.reactions.clear()
 			check(_step(world, SimCommand.new(world.tick, caster.entity_id, 0, 0, SimCommand.HELD_PRIMARY, 0, 1000, 0)), "%d Hz %s sustained-pressure tick steps" % [tick_rate, champion_id])
 			for event: Dictionary in world.combat_events:
 				if event.get("type") == "cast_started" and int(event.get("wire_id", 0)) == caster.primary_wire_id:

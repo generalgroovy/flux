@@ -11,7 +11,7 @@ func run() -> int:
 
 
 func _test_supported_tick_rates() -> void:
-	equal(SimConfig.PROTOCOL_VERSION, 42, "current 120 Hz host-authoritative float/recovery protocol is explicit")
+	equal(SimConfig.PROTOCOL_VERSION, 43, "current 120 Hz host-authoritative low-hop chemistry protocol is explicit")
 	check(not SimConfig.new(60).is_valid(), "retired 60 Hz cadence fails closed")
 	check(SimConfig.new(120).is_valid(), "120 Hz is the sole supported cadence")
 	check(not SimConfig.new(90).is_valid(), "intermediate tick rates fail closed")
@@ -20,9 +20,12 @@ func _test_supported_tick_rates() -> void:
 
 func _test_command_serialization() -> void:
 	var command := SimCommand.new(7, 3, -1000, 1000, SimCommand.HELD_SPRINT, SimCommand.PRESSED_JUMP, 300, -400)
+	command.aim_target_x = 1_234_567
+	command.aim_target_y = 7_654_321
 	var copy: SimCommand = command.copy()
 	equal(command.canonical_bytes(), copy.canonical_bytes(), "command bytes are stable across copies")
-	equal(command.canonical_bytes().size(), 64, "protocol-v2 command wire payload has fixed width")
+	equal(command.canonical_bytes().size(), 80, "protocol43 command has ten fixed-width int64 values including locked target")
+	equal(Vector2i(copy.aim_target_x, copy.aim_target_y), Vector2i(1_234_567, 7_654_321), "canonical command copy retains the exact locked world endpoint")
 	equal(Vector2i(command.aim_x, command.aim_y), Vector2i(600, -800), "aim is deterministically quantized to scale 1000")
 	var spell_command := SimCommand.new(8, 3, 0, 0, 0, SimCommand.PRESSED_SPELL_4 | SimCommand.PRESSED_SPELL_2)
 	equal(spell_command.first_pressed_spell_slot(), 2, "lowest requested spell slot wins deterministically")

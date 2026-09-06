@@ -10,7 +10,7 @@ const SHIPPED_DEFINITION_SIGNATURES: Dictionary = {
 	140: "c7d02ddccee191c7267b0ee19fc99640da5c6f0cb526d546b94a8630472c0ba3",
 	141: "d94cc312d3e1b5c5d2494dfdaa64920d7e15a6b06bcbb91a1e928c7c7afb4b0c",
 	144: "10069e98045e5fb89c0bb5ff758f47a77a5b2517b43ac20670144bf5d943b407",
-	142: "db69dcd64edaf6991b938b5bd8f6448a3ead12cc493bd1a232cd3f4033e13694",
+	142: "d7287168450c400f9c796567517df7f7fc67586c7b3b02ca28df0cf281c089de",
 	143: "14bb8db9663ed3dbbc7b30be7e0bb7a0bbd3fac6d156481ec07bf0bf97446195",
 	145: "f9b716b0b6cc1a515acdc40a284d2bc4e8ad6665533cb033bb538a70fe17921a",
 	146: "4c24e416cb181da539a25dc08a1302e155c51fe6f747e5f7c22fa64f9f6aed4a",
@@ -53,6 +53,10 @@ func _test_exact_legacy_parity() -> void:
 			equal(_definition_signature(table.definition(wire_id)).length(), 64, "new matrix wire %d has a deterministic definition signature" % wire_id)
 	check(table.definition(65_535).is_empty(), "unknown wire fails closed")
 	check(table.projectile_definition(CombatTuning.TIDELINE_WIRE_ID).is_empty(), "compiled spray cannot enter projectile simulation")
+	var eclipse_definition := table.definition(142)
+	equal(int(eclipse_definition["remaining_bounces"]), 0, "Eclipse deposits its material at the first terminal instead of intrinsically ricocheting")
+	eclipse_definition["remaining_bounces"] = 1
+	equal(_definition_signature(eclipse_definition), "db69dcd64edaf6991b938b5bd8f6448a3ead12cc493bd1a232cd3f4033e13694", "accepted Eclipse definition changes only its intrinsic bounce count")
 
 
 func _test_authored_change_updates_definition_and_hash() -> void:

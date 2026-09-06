@@ -16,7 +16,7 @@ const STAT_BOUNDS: Dictionary = {
 	"health_recovery_per_second": Vector2i(0, 8_000),
 	"flux_maximum": Vector2i(60_000, 160_000),
 	"flux_recovery_per_second": Vector2i(5_000, 50_000),
-	"stamina_maximum": Vector2i(60_000, 160_000),
+	"stamina_maximum": Vector2i(300_000, 800_000),
 	"stamina_recovery_per_second": Vector2i(10_000, 50_000),
 	"movement_speed_ratio": Vector2i(850, 1150),
 }

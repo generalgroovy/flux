@@ -11,7 +11,7 @@ func run() -> int:
 	_test_affinity_point_budget_and_treevor_exception()
 	_test_unique_affinity_pairs()
 	_test_profiles_are_authoritative()
-	_test_resource_reserve_candidate()
+	_test_fivefold_stamina_reserve()
 	for tick_rate: int in [120]:
 		_test_profiles_execute_at_rate(tick_rate)
 	_test_invalid_profiles_fail_closed()
@@ -132,7 +132,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.active_2_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "Oh Tipi equips Rimewake as the third proven spell")
 	equal(Array(state.spell_wire_ids), [140, 141, 144, 145, 146, 154, 155, 156, 148, 157, 158, 159], "Oh Tipi leads a representative row-major twelve-spell weave with champion spells")
 	equal(state.health, 108_000, "Oh Tipi starts at authored maximum Health")
-	equal(state.stamina_maximum, 132_000, "Oh Tipi has the larger Stamina reserve")
+	equal(state.stamina_maximum, 660_000, "Oh Tipi has the fivefold Stamina reserve")
 	state.health = 54_000
 	state.flux = 52_000
 	state.stamina = 54_000
@@ -153,35 +153,63 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.active_2_wire_id, CombatTuning.CINDERFAN_WIRE_ID, "The Red Baron equips Cinder Fan as readable lane pressure")
 	equal(Array(state.spell_wire_ids), [145, 144, 146, 154, 155, 156, 140, 148, 141, 157, 158, 159], "The Red Baron leads the row-major weave with Fire/Ice spells")
 	equal(state.health_maximum, 132_000, "large body owns the deepest Health reserve")
-	equal(state.stamina_maximum, 158_400, "large body owns the deepest Stamina reserve")
+	equal(state.stamina_maximum, 792_000, "large body owns the deepest fivefold Stamina reserve")
 	equal(state.movement_speed_ratio, 910, "large body pays for staying power with deliberate ground speed")
 
 
-func _test_resource_reserve_candidate() -> void:
+func _test_fivefold_stamina_reserve() -> void:
 	var catalog := _catalog()
 	var baselines := {
-		"oh_tipi": [104_000, 120_000, 19_000, 30_000, 108_000, 980],
-		"s_wayne": [112_000, 108_000, 23_000, 28_000, 90_000, 1060],
-		"red_baron": [96_000, 144_000, 17_000, 32_000, 132_000, 910],
-		"grace_reava": [120_000, 112_000, 21_000, 29_000, 92_000, 1030],
-		"wa_bidi": [106_000, 116_000, 25_000, 32_000, 98_000, 1050],
+		"oh_tipi": [114_400, 132_000, 19_000, 30_000, 108_000, 980, 1800],
+		"s_wayne": [123_200, 118_800, 23_000, 28_000, 90_000, 1060, 2200],
+		"red_baron": [105_600, 158_400, 17_000, 32_000, 132_000, 910, 1200],
+		"grace_reava": [132_000, 123_200, 21_000, 29_000, 92_000, 1030, 1800],
+		"wa_bidi": [116_600, 127_600, 25_000, 32_000, 98_000, 1050, 1800],
 	}
+	var roster := ChampionRosterPlan.new()
+	check(roster.load_from_files(), "fivefold reserve overview roster loads")
+	var overview := CharacterOverviewModel.build(catalog, roster)
+	check(bool(overview["valid"]), "fivefold reserves remain representable in character overview")
+	var config := SimConfig.new(120)
+	var collision := CollisionWorld.new(2_000_000, 2_000_000)
 	for champion_id: String in baselines:
 		var before: Array = baselines[champion_id]
 		var state := PlayerState.new()
-		check(catalog.apply_to_player(state, champion_id), champion_id + " applies the readability reserve candidate")
-		equal(state.flux_maximum * 10, int(before[0]) * 11, champion_id + " receives exactly 10% more Flux reserve")
-		equal(state.stamina_maximum * 10, int(before[1]) * 11, champion_id + " receives exactly 10% more Stamina reserve")
+		check(catalog.apply_to_player(state, champion_id), champion_id + " applies the fivefold Stamina candidate")
+		equal(state.flux_maximum, int(before[0]), champion_id + " keeps the same Flux reserve")
+		equal(state.stamina_maximum, int(before[1]) * 5, champion_id + " receives exactly five times its current Stamina reserve")
 		equal(state.flux_recovery_per_second, int(before[2]), champion_id + " keeps the same Flux recovery commitment")
 		equal(state.stamina_recovery_per_second, int(before[3]), champion_id + " keeps the same Stamina recovery commitment")
 		equal(state.health_maximum, int(before[4]), champion_id + " gains no Health advantage from reserve tuning")
 		equal(state.movement_speed_ratio, int(before[5]), champion_id + " preserves body movement tempo")
+		equal(state.health_recovery_per_second, int(before[6]), champion_id + " keeps the same Health recovery rate")
+		var displayed: Dictionary = overview["entries_by_id"][champion_id]
+		equal(int(displayed["stats"]["stamina_maximum"]), state.stamina_maximum, champion_id + " overview shows the actual fivefold maximum")
+		var stamina_line := String((displayed["stat_lines"] as Array)[2])
+		check(stamina_line.contains("Stamina %s" % String.num(float(state.stamina_maximum) / 1000.0, 2)), champion_id + " readable resource line uses current Stamina points")
+		check(stamina_line.contains("recovery %s/s" % String.num(float(state.stamina_recovery_per_second) / 1000.0, 2)), champion_id + " readable resource line keeps the real absolute recovery rate")
+		var guide := MovementGuideModel.summary_lines(state)
+		check(guide[0].contains("%s maximum" % String.num(float(state.stamina_maximum) / 1000.0, 1).trim_suffix(".0")), champion_id + " movement guide does not show the smaller default reserve")
 		state.flux = state.flux_maximum - 1
 		state.stamina = state.stamina_maximum - 1
-		PlayerResourcesSystem.step(state, SimConfig.new(120))
-		MovementSystem.step(state, SimCommand.new(0, state.entity_id), SimConfig.new(120), CollisionWorld.new(2_000_000, 2_000_000))
+		PlayerResourcesSystem.step(state, config)
+		MovementSystem.step(state, SimCommand.new(0, state.entity_id), config, collision)
 		equal(state.flux, state.flux_maximum, champion_id + " clamps Flux at the new authoritative maximum")
 		equal(state.stamina, state.stamina_maximum, champion_id + " clamps Stamina at the new authoritative maximum")
+		state.stamina = 0
+		state.stamina_remainder = 0
+		state.stamina_recovery_delay_ticks = 0
+		for tick: int in range(120):
+			MovementSystem.step(state, SimCommand.new(tick, state.entity_id), config, collision)
+		equal(state.stamina, int(before[3]), champion_id + " one second restores the old absolute amount, not five times as much")
+	equal(ChampionCatalog.STAT_BOUNDS["stamina_maximum"], Vector2i(300_000, 800_000), "expanded Stamina resource envelope remains finite")
+	var abilities := AbilityCatalog.new()
+	check(abilities.load_from_file(ABILITY_PATH), "ability catalog loads for fivefold bound rejection")
+	var outside := ChampionCatalog.new()
+	outside.data = catalog.data.duplicate(true)
+	(outside.data["champions"][0]["stats"] as Dictionary)["stamina_maximum"] = 800_001
+	check(not outside.validate(abilities), "resource values above the expanded cap fail closed")
+	check(outside.last_error.contains("stamina_maximum"), "rejected oversized Stamina is diagnosable")
 
 
 func _test_profiles_execute_at_rate(tick_rate: int) -> void:

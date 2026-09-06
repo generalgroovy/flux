@@ -80,6 +80,9 @@ var tick_rate: int = 120
 var accumulator_seconds: float = 0.0
 var previous_position := Vector2.ZERO
 var current_position := Vector2.ZERO
+var previous_air_height: int = 0
+var actor_motion_history := preload("res://src/presentation/actor_motion_history.gd").new()
+var remote_snapshot_age_seconds: float = 0.0
 var dropped_time_seconds: float = 0.0
 var show_debug_overlay: bool = false
 var movement_trace := MovementPracticeTrace.new()
@@ -674,6 +677,7 @@ func _process(delta: float) -> void:
 	if session_steward != null and world != null:
 		session_steward.expire(world.tick)
 	station_notice_seconds = maxf(0.0, station_notice_seconds - delta)
+	remote_snapshot_age_seconds = minf(0.1, remote_snapshot_age_seconds + maxf(0.0, delta))
 	_update_combat_cues(delta)
 	_update_social_bubbles(delta)
 	if client_prediction != null:
@@ -700,6 +704,8 @@ func _process(delta: float) -> void:
 	var steps: int = 0
 	while accumulator_seconds >= fixed_delta and steps < MAX_CATCH_UP_STEPS:
 		previous_position = current_position
+		var prior_motion_state: PlayerState = client_prediction.predicted_state if session_transport.is_connected_client() and client_prediction.is_ready() else _local_player_state()
+		previous_air_height = prior_motion_state.air_height if prior_motion_state != null else 0
 		if requested_capture_movement in ["hit", "impact_recovery"] and world.tick == 4 and not session_transport.is_connected_client():
 			MovementSystem.apply_control_state(
 				_local_player_state(), PlayerState.ControlState.LAUNCHED, 180,
@@ -834,6 +840,8 @@ func _process(delta: float) -> void:
 			elif session_transport.is_host():
 				authoritative_session.record_combat_events(world.combat_events)
 			current_position = _player_position()
+		if not session_transport.is_connected_client():
+			actor_motion_history.capture(world.players)
 		movement_trace.record(world.tick, current_position, command, _local_player_state().champion_wire_id, _local_player_state())
 		accumulator_seconds -= fixed_delta
 		steps += 1
@@ -888,9 +896,9 @@ func _draw() -> void:
 	var observed_state: PlayerState = _spectator_state() if spectating else state
 	if observed_state == null:
 		observed_state = state
-	_draw_remote_travellers(camera_origin, state.entity_id, roundi(visual_tick))
+	_draw_remote_travellers(camera_origin, state.entity_id, visual_tick)
 	var presentation_state: PlayerState = client_prediction.predicted_state if session_transport.is_connected_client() and client_prediction.is_ready() else state
-	var presentation := JumpPresentation.sample(presentation_state, world.config, alpha, _reduced_effects_enabled())
+	var presentation := JumpPresentation.sample(presentation_state, world.config, alpha, _reduced_effects_enabled(), previous_air_height)
 	var landing := LandingPresentation.sample(presentation_state, world.config, alpha, _reduced_effects_enabled())
 	var player_radius: float = float(presentation_state.radius) / 1000.0
 	var shadow_center := rendered_position + Vector2(0.0, player_radius * 0.58)
@@ -915,7 +923,7 @@ func _draw() -> void:
 			presentation_state,
 			presentation_champion_id,
 			sprite_anchor,
-			roundi(visual_tick),
+			visual_tick,
 			world.config,
 			_reduced_effects_enabled(),
 			shadow_center,
@@ -1199,17 +1207,19 @@ func _draw_combat_cues(camera_origin: Vector2) -> void:
 		draw_string(ThemeDB.fallback_font, position + Vector2(-label_width * 0.5, -28.0 - phase * 18.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 11, Color(color, opacity))
 
 
-func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visual_tick: int) -> void:
+func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visual_tick: float) -> void:
+	var motion_alpha := clampf(remote_snapshot_age_seconds * 60.0 if session_transport.is_connected_client() else accumulator_seconds * float(tick_rate), 0.0, 1.0)
 	for remote_state: PlayerState in world.players:
 		if remote_state.actor_kind != PlayerState.ActorKind.CHAMPION or remote_state.entity_id == local_entity_id:
 			continue
-		var position := Vector2(float(remote_state.position_x) / 1000.0, float(remote_state.position_y) / 1000.0)
-		var presentation := JumpPresentation.sample(remote_state, world.config, 0.0, _reduced_effects_enabled())
+		var motion_point: Vector3 = actor_motion_history.sample(remote_state, motion_alpha)
+		var position := Vector2(motion_point.x, motion_point.y)
+		var presentation := JumpPresentation.sample(remote_state, world.config, motion_alpha, _reduced_effects_enabled(), actor_motion_history.previous_height(remote_state))
 		var landing := LandingPresentation.sample(remote_state, world.config, 0.0, _reduced_effects_enabled())
 		var radius := float(remote_state.radius) / 1000.0
 		var shadow_center := position + Vector2(0.0, radius * 0.58)
 		if campus_renderer.natural_kit != null:
-			campus_renderer.natural_kit.draw_actor_contact(self, campus_layout, remote_state, shadow_center, visual_tick, _reduced_effects_enabled())
+			campus_renderer.natural_kit.draw_actor_contact(self, campus_layout, remote_state, shadow_center, roundi(visual_tick), _reduced_effects_enabled())
 		var shadow_scale: Vector2 = landing.shadow_scale if landing.active else presentation.shadow_scale
 		_draw_receiving_surface_shadow(
 			shadow_center,
@@ -1245,7 +1255,7 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visua
 			draw_arc(body_position, radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
 		if show_debug_overlay:
 			_draw_actor_hitbox_diagnostic(body_position, radius, champion_id)
-		_draw_spell_startup(remote_state, sprite_anchor, visual_tick)
+		_draw_spell_startup(remote_state, sprite_anchor, roundi(visual_tick))
 		if remote_state.spawn_protection_ticks > 0:
 			var protection_ratio := clampf(float(remote_state.spawn_protection_ticks) / float(maxi(1, world.config.milliseconds_to_ticks(1200))), 0.0, 1.0)
 			draw_arc(body_position, radius + 9.0, 0.0, TAU, 28, Color(ATTUNEMENT_COLOR, 0.32 + protection_ratio * 0.42), 2.0)
@@ -1529,6 +1539,8 @@ func _sync_session_transport() -> void:
 			var snapshot: Dictionary = snapshots.back()
 			if int(snapshot.get("tick", -1)) > last_client_snapshot_tick and SessionSnapshot.apply_to_world(snapshot, world):
 				last_client_snapshot_tick = int(snapshot["tick"])
+				actor_motion_history.capture(world.players)
+				remote_snapshot_age_seconds = 0.0
 				var overflow: PackedInt32Array = snapshot.get("overflow", PackedInt32Array([0, 0, 0]))
 				network_projectile_overflow = overflow[0]
 				session_names_by_entity = SessionSnapshot.names(snapshot)
@@ -1595,6 +1607,9 @@ func _sync_session_transport() -> void:
 			if client_prediction.reconcile(reconciliations.back(), authority_event, _reduced_effects_enabled()):
 				previous_position = current_position
 				current_position = client_prediction.presented_position_pixels()
+				# Reconciliation is a new authority sample, never a delayed protection
+				# state or a blend from an unrelated pre-respawn airborne arc.
+				previous_air_height = client_prediction.predicted_state.air_height
 				if requested_prediction_smoke and not prediction_smoke_started:
 					prediction_smoke_started = true
 					prediction_smoke_start_x = client_prediction.last_authoritative_position_pixels.x
@@ -2522,6 +2537,7 @@ func _begin_shared_practice() -> bool:
 	current_position = _player_position()
 	previous_position = current_position
 	_publish_session_event({"type": "practice_started", "entity_id": SessionTransport.SERVER_PEER_ID})
+	_reset_motion_history()
 	if requested_steward_smoke and authoritative_session.session_round.serial == 2:
 		steward_smoke_due_tick = world.tick + world.config.milliseconds_to_ticks(250)
 	station_notice = "The Proving Court opens. First to three."
@@ -2562,6 +2578,7 @@ func _return_to_hearth() -> bool:
 	current_position = _player_position()
 	previous_position = current_position
 	_publish_session_event({"type": "round_returning", "entity_id": SessionTransport.SERVER_PEER_ID})
+	_reset_motion_history()
 	if requested_rematch_smoke:
 		_handle_session_requests([{
 			"entity_id": SessionTransport.SERVER_PEER_ID,
@@ -2668,6 +2685,7 @@ func _start_match(requested_tick_rate: int) -> bool:
 	dropped_time_seconds = 0.0
 	current_position = _player_position()
 	previous_position = current_position
+	_reset_motion_history()
 	print("FLUX2 match initialized at %d Hz" % tick_rate)
 	return true
 
@@ -3082,7 +3100,7 @@ static func parse_capture_movement(argument: String) -> String:
 	if not argument.begins_with("--capture-movement="):
 		return ""
 	var requested := argument.trim_prefix("--capture-movement=").strip_edges().to_lower()
-	return requested if requested in ["grounded", "hit", "walk", "brake", "reverse", "sprint", "slide", "roll", "jump", "air_dodge", "technique", "impact_recovery"] else ""
+	return requested if requested in ["grounded", "hit", "walk", "brake", "reverse", "sprint", "slide", "roll", "jump", "air_dodge", "air_chain", "technique", "impact_recovery"] else ""
 
 
 static func parse_capture_direction(argument: String) -> Vector2i:
@@ -3122,6 +3140,10 @@ static func capture_movement_command(mode: String, tick: int, entity_id: int, di
 		# Truthful review capture holds the same C/wheel semantic that now pays
 		# for the optional slide tail; the press at tick six still starts it.
 		held |= SimCommand.HELD_SLIDE
+	if mode == "air_chain":
+		var chain_held := SimCommand.HELD_JUMP if tick >= 4 and tick < 66 and tick != 23 else 0
+		var chain_pressed := SimCommand.PRESSED_JUMP if tick in [4, 24] else (SimCommand.PRESSED_EVADE if tick == 40 else 0)
+		return SimCommand.new(tick, entity_id, move_x, move_y, chain_held, chain_pressed, normalized_direction.x, normalized_direction.y)
 	if mode in ["jump", "air_dodge"] and tick >= 4 and tick < 30:
 		held |= SimCommand.HELD_JUMP
 	if mode in ["jump", "air_dodge"] and tick == 4:
@@ -3429,6 +3451,7 @@ func _reconcile_spectator_focus() -> void:
 		client_prediction.reset()
 		current_position = _player_position()
 		previous_position = current_position
+		_reset_motion_history()
 		station_notice = "The company gathered. Your champion is active at the Hearth."
 		station_notice_seconds = 4.0
 		if requested_spectator_smoke and not spectator_smoke_handoff_reported:
@@ -3437,6 +3460,14 @@ func _reconcile_spectator_focus() -> void:
 			station_notice = "Hearth handoff complete; ready for the next Court."
 			station_notice_seconds = 4.0
 			print("FLUX2 farflow spectator smoke: Hearth handoff ready for entity %d" % session_transport.local_entity_id)
+
+
+func _reset_motion_history() -> void:
+	actor_motion_history.clear()
+	actor_motion_history.capture(world.players)
+	var actor := _local_player_state()
+	previous_air_height = actor.air_height if actor != null else 0
+	remote_snapshot_age_seconds = 0.0
 
 
 func _is_spectating() -> bool:

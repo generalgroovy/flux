@@ -1,10 +1,21 @@
 # FLUX 2 active backlog
 
-**PAUSED: movement M1-M5 source-verified (2026-09-06).**
+**READY FOR PLAYTEST: expressive airborne movement revision (2026-09-06).**
+Latest user feedback explicitly resumes movement work: exactly 5x champion
+Stamina capacity, 15% faster running, continuous short/full/double-jump height,
+one directional air dodge per airtime, immediate readable protection and slight
+presentation-only interpolation. Keep costs/recovery, spells, maps and roster
+unchanged. Final Full passed 77 suites / 132,698 assertions; local Farflow,
+source launch, 6,435-assertion eight-player probe, three-size/eight-direction
+fixtures and real input-driven standard/reduced recordings passed. Collect
+human movement/clarity feedback before another scope expansion. Rollback is `fd1898d`;
+publication of that checkpoint was blocked pending explicit remote approval.
+
+**Previous: movement M1-M5 source-verified (2026-09-06).**
 [Movement acceptance](../docs/MOVEMENT-M1-M5-ACCEPTANCE.md) covers all three
 body sizes/eight facing directions, 75 suites / 102,863 assertions, rendered
-evidence, local Farflow and source launch. Wait for the user's movement playtest;
-do not begin another slice. Human controller/feel review remains open.
+evidence, local Farflow and source launch. The new user feedback above supersedes
+its pause. Human controller/feel review remains open.
 The previously paused six-stream checkpoint is tracked in
 [Team foundation acceptance](../docs/TEAM-FOUNDATION-ACCEPTANCE.md). The compendium,
 slower spells, larger reserves, complete bounded threat replication, runtime

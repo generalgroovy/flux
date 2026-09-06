@@ -22,14 +22,14 @@ static func entries(preferences: PlayerPreferences = null, device: int = Control
 			"Drains Stamina only while moving; empty reserves return you to ordinary movement.",
 			{"sustain_milli_per_second": MovementTuning.SPRINT_DRAIN_PER_SECOND}, "No protection; predict the longer travel lane."),
 		_row("jump", "Jump / held jump", "jump", MovementTuning.HOP_COST,
-			"Tap {jump} to lift; hold it for the full paid arc. Your horizontal momentum carries through takeoff; steer, coast or counter-steer in air. Jump alone adds no forward launch.",
-			"Release limits remaining flight to %d ms. Sustained height/time does not extend opening protection." % MovementTuning.VARIABLE_JUMP_MINIMUM_MS,
-			{"duration_ms": MovementTuning.HOP_DURATION_MS, "cooldown_ms": MovementTuning.HOP_COOLDOWN_MS, "protection_ms": MovementTuning.JUMP_INVULNERABILITY_MS, "sustain_milli_per_second": MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND},
+			"Tap {jump} to lift; hold while rising for a higher paid jump. Momentum carries through takeoff; steer, coast or counter-steer in air. Jump alone adds no forward launch.",
+			"Release caps remaining upward speed at %s units/s, not remaining flight time. Full hold reaches about %s units high from ground; only ascent pays sustain. Landing refreshes jump readiness." % [_units(MovementTuning.SHORT_HOP_VERTICAL_SPEED), _units(full_jump_height())],
+			{"duration_ms": MovementTuning.HOP_DURATION_MS, "duration_note": "nominal full jump from ground", "protection_ms": MovementTuning.JUMP_INVULNERABILITY_MS, "sustain_milli_per_second": MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND},
 			"The later airborne arc is vulnerable; aim for the landing lane."),
 		_row("double_jump", "Double jump", "jump", MovementTuning.DOUBLE_JUMP_COST,
-			"During your first jump, press {jump} again and choose a direction. Hold for the remaining paid arc.",
-			"One second air jump; shares that opportunity with an airborne wall jump.",
-			{"duration_ms": MovementTuning.DOUBLE_JUMP_DURATION_MS, "protection_ms": MovementTuning.JUMP_INVULNERABILITY_MS, "sustain_milli_per_second": MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND},
+			"During your first jump, release and press {jump} again. Lift starts from your current height; steer freely and hold while rising to gain more height.",
+			"One second-jump opportunity, shared with an airborne wall jump. Height is capped at %s units. Wall contact does not refill this opportunity; land to reset it." % _units(MovementTuning.AIR_MAX_HEIGHT),
+			{"duration_ms": MovementTuning.DOUBLE_JUMP_DURATION_MS, "duration_note": "nominal lift cycle; landing depends on height", "protection_ms": MovementTuning.JUMP_INVULNERABILITY_MS, "sustain_milli_per_second": MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND},
 			"Spend only when the changed air path helps; it cannot chain into unlimited jumps."),
 		_row("slide", "Slide / held slide", "slide", MovementTuning.SLIDE_COST,
 			"Build ground speed, then press {slide}. Hold for the longer slide; release for the shorter remainder.",
@@ -43,22 +43,22 @@ static func entries(preferences: PlayerPreferences = null, device: int = Control
 		_row("slide_jump", "Slide jump", "jump", MovementTuning.SLIDE_JUMP_COST,
 			"While sliding, press {jump} after the minimum commitment; choose the outgoing direction.",
 			"Available after %d ms of accepted slide time, even while {slide} is held. Retains earned speed within the global cap." % MovementTuning.SLIDE_JUMP_MINIMUM_COMMITMENT_MS,
-			{"duration_ms": MovementTuning.SLIDE_JUMP_DURATION_MS, "protection_ms": MovementTuning.JUMP_INVULNERABILITY_MS, "sustain_milli_per_second": MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND},
+			{"duration_ms": MovementTuning.SLIDE_JUMP_DURATION_MS, "duration_note": "nominal full jump from ground", "protection_ms": MovementTuning.JUMP_INVULNERABILITY_MS, "sustain_milli_per_second": MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND},
 			"Costs another paid action and chain premium; later flight is vulnerable."),
 		_row("roll", "Ground roll", "evade", MovementTuning.ROLL_COST,
 			"On the ground, press {evade} with a direction. Use a neutral direction only when your facing is the intended escape.",
-			"Roll and air dodge share the evade cooldown lane.",
+			"Ground roll has its own cooldown. Air dodge uses a separate once-per-airtime opportunity.",
 			{"duration_ms": MovementTuning.ROLL_DURATION_MS, "cooldown_ms": MovementTuning.ROLL_COOLDOWN_MS, "protection_ms": MovementTuning.ROLL_INVULNERABILITY_MS},
 			"The end of the roll is vulnerable; do not roll into the next projectile."),
 		_row("air_dodge", "Air dodge", "evade", MovementTuning.AIR_DODGE_COST,
 			"While airborne or wallrunning, press {evade} and choose a direction.",
-			"Replaces the current air action with one committed dodge; cannot be repeated until its cooldown clears.",
-			{"duration_ms": MovementTuning.AIR_DODGE_DURATION_MS, "cooldown_ms": MovementTuning.AIR_DODGE_COOLDOWN_MS, "protection_ms": MovementTuning.AIR_DODGE_INVULNERABILITY_MS},
-			"The final part is vulnerable. Watch the destination, not just the first threat."),
+			"One air dodge per airtime. The directional burst decays, preserving height and vertical motion, then returns to steerable flight. Landing refills it for your next jump without a cooldown wait; wall contact does not.",
+			{"duration_ms": MovementTuning.AIR_DODGE_DURATION_MS, "protection_ms": MovementTuning.AIR_DODGE_INVULNERABILITY_MS},
+			"Landing ends dodge protection immediately. The later burst and descent are vulnerable; watch the destination."),
 		_row("wave_dash", "Wavedash", "evade", MovementTuning.AIR_DODGE_COST,
 			"Near landing, press {evade} with the direction you want to travel; the dodge resolves into a low landing dash.",
-			"Accept the dodge with at most %d ms of jump remaining. No turn-angle requirement and no extra cost beyond the air dodge." % MovementTuning.WAVE_DASH_INPUT_WINDOW_MS,
-			{"duration_ms": MovementTuning.WAVE_DASH_DURATION_MS, "cooldown_ms": MovementTuning.AIR_DODGE_COOLDOWN_MS},
+			"While descending, accept the dodge within an estimated %d ms of landing. No turn-angle requirement or extra cost; it uses your one air dodge." % MovementTuning.WAVE_DASH_INPUT_WINDOW_MS,
+			{"duration_ms": MovementTuning.WAVE_DASH_DURATION_MS},
 			"The landing dash grants no new protection; an early input gives an ordinary air dodge."),
 		_row("air_turn", "Air turn", "technique", MovementTuning.AIR_REDIRECT_COST,
 			"During a jump, press {technique} with a changed direction for a stronger immediate turn. At a wall, along-wall input chooses a valid wallrun; an unavailable wallrun can fall back to a legal air turn.",
@@ -66,17 +66,17 @@ static func entries(preferences: PlayerPreferences = null, device: int = Control
 			"No new protection; predict the redirected path."),
 		_row("wall_run", "Wallrun / detach", "technique", MovementTuning.WALL_SKIM_COST,
 			"Touch a runnable wall, hold along its face and press {technique}. Press it again, steer away or reach the wall end to detach.",
-			"Works from ground or air. Detaching preserves a finite airborne descent, not a new protected jump. Same-surface lockout is %d ms; contact must remain real." % MovementTuning.WALL_SKIM_SAME_SURFACE_LOCKOUT_MS,
+			"Works from ground or air. Detaching returns to finite steerable descent, not a new protected jump. Wall contact does not refill the air dodge or second jump. Same-surface lockout: %d ms." % MovementTuning.WALL_SKIM_SAME_SURFACE_LOCKOUT_MS,
 			{"duration_ms": MovementTuning.WALL_SKIM_DURATION_MS, "cooldown_ms": MovementTuning.WALL_SKIM_COOLDOWN_MS},
 			"No protection. Follow the exposed wall lane or threaten its exit."),
 		_row("wall_jump", "Wall jump", "jump", MovementTuning.HOP_COST,
 			"Press {jump} near a remembered wall contact. In the first air jump, steer away from that wall when pressing.",
 			"Contact memory lasts %d ms; same-wall lockout %d ms. Air wall jump spends the second-jump opportunity." % [MovementTuning.WALL_MEMORY_MS, MovementTuning.SAME_WALL_LOCKOUT_MS],
-			{"duration_ms": MovementTuning.HOP_DURATION_MS, "cooldown_ms": MovementTuning.HOP_COOLDOWN_MS, "protection_ms": MovementTuning.JUMP_INVULNERABILITY_MS, "sustain_milli_per_second": MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND},
+			{"duration_ms": MovementTuning.HOP_DURATION_MS, "duration_note": "nominal lift cycle; landing depends on height", "protection_ms": MovementTuning.JUMP_INVULNERABILITY_MS, "sustain_milli_per_second": MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND},
 			"Cannot climb indefinitely; anticipate the outward path and later vulnerable landing."),
 		_row("fast_fall", "Fast fall", "slide", 0,
 			"After takeoff, press {slide} afresh to commit to an earlier landing. If you were already holding Slide before jumping, release and press again first.",
-			"An accepted wheel-down gesture also commits to fast fall; it does not need a held button. Consumes %d additional flight tick per simulation tick; cannot rewind a landing." % MovementTuning.FAST_FALL_EXTRA_TICKS,
+			"An accepted wheel-down gesture also commits without a hold. Sets downward speed to at least %s units/s; ordinary gravity continues until real ground contact." % _units(MovementTuning.AIR_FAST_FALL_SPEED),
 			{}, "No new protection; land earlier only if the floor lane is safe."),
 		_row("landing_cut", "Landing reversal", "move", 0,
 			"Press against your current travel immediately after landing for a firmer reversal.",
@@ -118,7 +118,8 @@ static func detail_lines(row: Dictionary) -> Array[String]:
 	if int(row.get("commitment_ms", 0)) > 0:
 		timing.append("%d ms initial commitment" % int(row["commitment_ms"]))
 	if int(row.get("duration_ms", 0)) > 0:
-		timing.append("up to %d ms action" % int(row["duration_ms"]))
+		var duration_note := String(row.get("duration_note", ""))
+		timing.append("%d ms %s" % [int(row["duration_ms"]), duration_note] if not duration_note.is_empty() else "up to %d ms action" % int(row["duration_ms"]))
 	if int(row.get("cooldown_ms", 0)) > 0:
 		timing.append("%d ms cooldown" % int(row["cooldown_ms"]))
 	if not timing.is_empty():
@@ -181,3 +182,8 @@ static func commitment_ms_for(id: String) -> int:
 
 static func _units(value: int) -> String:
 	return ("%.1f" % (float(value) / 1000.0)).trim_suffix(".0")
+
+
+static func full_jump_height() -> int:
+	# A guide estimate, not an alternative simulation; fixed ticks can differ slightly.
+	return roundi(float(MovementTuning.JUMP_VERTICAL_SPEED) * float(MovementTuning.JUMP_VERTICAL_SPEED) / (2.0 * float(MovementTuning.VERTICAL_GRAVITY)))

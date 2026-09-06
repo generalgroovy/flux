@@ -31,10 +31,33 @@ func _test_repository_hud() -> void:
 	state = PlayerState.new()
 	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "neutral Stamina keeps the compact label")
 	state.hop_ticks = SimConfig.new(120).milliseconds_to_ticks(MovementTuning.VARIABLE_JUMP_MINIMUM_MS) + 1
+	state.air_height = 20_000
+	state.air_vertical_velocity = 500_000
+	state.jump_held_last_tick = true
 	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA  JUMP -80/s", "paid jump sustain is explicit without relying on color")
-	state.hop_ticks -= 1
+	state.jump_held_last_tick = false
 	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "tap jump does not claim a sustain drain")
+	state.jump_held_last_tick = true
+	state.air_vertical_velocity = -300_000
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "descent never advertises the retired timer-derived jump drain")
+	state.air_vertical_velocity = 500_000
+	state.air_dodge_ticks = 10
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "air dodge does not advertise jump sustain")
+	state.air_dodge_ticks = 0
+	state.wall_skim_ticks = 10
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "wall attachment does not advertise jump sustain")
+	state.wall_skim_ticks = 0
+	state.control_state = PlayerState.ControlState.STUNNED
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "forced control cannot claim optional sustain spending")
+	state.control_state = PlayerState.ControlState.FREE
+	state.stamina = 0
+	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA", "exhausted jump does not advertise an unaffordable drain")
+	state.stamina = state.stamina_maximum
+	state.air_height = 0
+	state.air_vertical_velocity = 0
+	state.hop_ticks = 0
 	state.slide_ticks = SimConfig.new(120).milliseconds_to_ticks(MovementTuning.SLIDE_MINIMUM_MS) + 1
+	state.slide_held_last_tick = true
 	equal(CompactCombatHud.stamina_status_label(state, 120), "STAMINA  SLIDE -45/s", "paid slide sustain is explicit without relying on color")
 	state.slide_ticks = 0
 	state.movement_chain_count = 2

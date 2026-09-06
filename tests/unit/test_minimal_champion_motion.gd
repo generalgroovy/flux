@@ -6,6 +6,7 @@ func run() -> int:
 	_test_complete_movement_mapping()
 	_test_tick_rate_parity_and_reduced_motion()
 	_test_locomotion_contact_phase()
+	_test_continuous_micro_pivot()
 	return finish("minimal-champion-motion")
 
 
@@ -88,3 +89,25 @@ func _test_locomotion_contact_phase() -> void:
 	var phase_120 := motion.locomotion_contact_frame("grounded_weaver", "sprint", MinimalChampionMotion.tick_at_visual_rate(24, 120), 3)
 	equal(phase_120, 1, "120 Hz contact-frame cadence reaches the authored opposite contact")
 	equal(motion.locomotion_contact_frame("buoyant_keeper", "idle", 99.0), 0, "non-locomotion states cannot select an alternate contact")
+
+
+func _test_continuous_micro_pivot() -> void:
+	var motion := MinimalChampionMotion.new()
+	check(motion.load_from_file(), "micro-pivot uses existing motion profiles")
+	for profile_id: String in motion.profiles:
+		for action: String in ["walk", "sprint"]:
+			var duration := float((motion.profiles[profile_id][action] as Dictionary)["duration_ticks"])
+			for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+				var facing := Vector2(direction)
+				for phase: float in [0.0, 0.5, 1.0]:
+					check(motion.locomotion_pivot_offset(profile_id, action, phase * duration, facing, 1.0).length() < 0.0001, "both planted contacts return to the exact pivot")
+				var previous := Vector2.ZERO
+				for index: int in range(121):
+					var elapsed := duration * float(index) / 120.0
+					var offset := motion.locomotion_pivot_offset(profile_id, action, elapsed, facing, 1.0)
+					var reduced := motion.locomotion_pivot_offset(profile_id, action, elapsed, facing, 1.0, true)
+					check(offset.length() <= 1.5, "gait interpolation never becomes a large body displacement")
+					check(offset.distance_to(previous) <= 0.16, "fractional gait advances smoothly without a pose-position snap")
+					check(reduced.length() <= offset.length() + 0.0001, "reduced mode retains the same phase with quieter displacement")
+					previous = offset
+				equal(motion.locomotion_pivot_offset(profile_id, action, duration * 0.25, facing, 0.0), Vector2.ZERO, "stopped body cannot inherit a moving bob")

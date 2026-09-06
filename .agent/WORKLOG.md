@@ -1,5 +1,32 @@
 # FLUX2 agent worklog
 
+## 2026-09-06 - expressive airborne movement, source verified
+
+- Exact 5x Stamina and bounded body profiles; faster (+15%) running with
+  proportional acceleration/braking; continuous physical jump/double-jump height,
+  one air dodge per airtime, finite decaying burst and landing-ready chaining.
+- Protocol 41 / snapshot 16 replicate all new height/budget fields with strict
+  bounds. Bounded previous/current render samples and fractional gait keep
+  movement smooth without delaying input facing or protection markers.
+- Protected state has instant white/teal brackets + shield in standard/reduced
+  effects. Three sizes/eight directions share stable body pivots and pixel sampling.
+- Full initially passed 77 / 132,693. Live frame review then exposed a stale
+  Jump drain HUD label during descent; fixed and added five assertions.
+  Final Full 77 / 132,698, no stderr, import/120 Hz boot, 69,792 ms:
+  .godot/receipts/expressive-airborne-final-full.json.
+- Local Farflow host/join/reconciliation/lifecycle passed. A parent shell guard
+  read a stale native LASTEXITCODE after that successful PowerShell script and
+  stopped the remaining commands; those checks were subsequently run separately.
+  Actual flux.cmd play -SmokeTest passed; strict eight-player probe passed
+  6,435 assertions with 40 paid projectiles and no omitted threat snapshots or
+  rejected snapshots. One 9.983 ms simulation tick prevents a hard 120 FPS claim.
+- 32 real renderer sheets, 192 final v2 input-driven game frames, 24 compendium
+  frames inspected. Final selected evidence and exact boundaries are in
+  docs/MOVEMENT-M1-M5-ACCEPTANCE.md#expressive-airborne-feedback.
+- No new hand-drawn atlases, installer, chemistry, map or roster. No physical
+  controller/internet acceptance. Ready for user test; no external push attempted
+  while the prior explicit publication approval remains outstanding.
+
 ## 2026-09-06 - M1-M5 movement overhaul, source verified
 
 - Implemented continuous vectors and buffered intent, safe wheel/held controls,

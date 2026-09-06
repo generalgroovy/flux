@@ -229,7 +229,7 @@ func draw(
 	state: PlayerState,
 	champion_id: String,
 	body_anchor: Vector2,
-	presentation_tick: int,
+	presentation_tick: float,
 	config: SimConfig,
 	reduced_effects: bool = false,
 	ground_anchor: Vector2 = Vector2.INF,
@@ -243,12 +243,12 @@ func draw(
 	var anchor := body_anchor + (frame["offset"] as Vector2)
 	var floor_anchor := ground_anchor if ground_anchor.is_finite() else body_anchor
 	_draw_counter_strafe_accent(canvas, state, floor_anchor, reduced_effects)
-	_draw_movement_accent(canvas, state, floor_anchor, presentation_tick, reduced_effects, body_anchor)
-	_draw_aura(canvas, definition, anchor, presentation_tick, reduced_effects, float(frame["aura_scale"]))
+	_draw_movement_accent(canvas, state, floor_anchor, roundi(presentation_tick), reduced_effects, body_anchor)
+	_draw_aura(canvas, definition, anchor, roundi(presentation_tick), reduced_effects, float(frame["aura_scale"]))
 	if atlas == null:
 		return false
 	_draw_atlas_candidate(canvas, state, champion_id, String(frame["animation_state"]), anchor)
-	_draw_evasion_contour(canvas, state, body_anchor, presentation_tick, config, reduced_effects)
+	_draw_evasion_contour(canvas, state, anchor, config, reduced_effects, float(definition.get("height", 68)))
 	return true
 
 
@@ -277,9 +277,11 @@ func movement_frame(champion_id: String, state: PlayerState, presentation_tick: 
 		motion_sample.offset *= response
 		motion_sample.aura_scale = lerpf(1.0, motion_sample.aura_scale, response)
 		_apply_relative_gait_motion(motion_sample, locomotion_gait(state), reduced_effects)
-	# Ground contact already exists in the authored A/B poses. Translating the
-	# whole sprite to fake a gait slides planted feet and doubles jump lift.
+	# Foot plants retain their exact pivot; the between-contact motion is tiny
+	# and smooth, never a scale pulse or blended directional atlas frame.
 	var pose_offset := motion_sample.offset.round() if motion_id in ["cast", "hit"] else Vector2.ZERO
+	if motion_id in ["walk", "sprint"]:
+		pose_offset = motion.locomotion_pivot_offset(String(definition.get("motion_profile", "")), motion_id, motion_elapsed, Vector2(state.velocity_x, state.velocity_y), movement_response_scale(state), reduced_effects)
 	var contact_frame := 0
 	if animation_state in EXPECTED_PHASE_STATES:
 		contact_frame = motion.locomotion_contact_frame(String(definition.get("motion_profile", "")), motion_id, motion_elapsed)
@@ -659,20 +661,48 @@ func _draw_evasion_contour(
 	canvas: CanvasItem,
 	state: PlayerState,
 	ground_anchor: Vector2,
-	_tick: int,
 	config: SimConfig,
 	reduced: bool,
+	body_height: float = 68.0,
 ) -> void:
-	if not MovementSystem.is_combat_intangible(state, config):
+	if state.health <= 0 or (state.spawn_protection_ticks <= 0 and not MovementSystem.is_combat_intangible(state, config)):
 		return
-	var color := language.ramp_color("parchment", 4)
-	var phase := 1.0 - JumpPresentation.protection_ratio(state, config)
-	var radius := 21.0
-	var opacity := 0.62 if not reduced else 0.48
-	var center := ground_anchor + Vector2(0.0, -22.0)
-	canvas.draw_arc(center, radius, -1.35 + phase, 0.25 + phase, 10, Color(color, opacity), 2.0)
-	canvas.draw_arc(center, radius, 1.8 + phase, 3.4 + phase, 10, Color(color, opacity), 2.0)
-	_draw_directional_evasion_cue(canvas, state, ground_anchor, phase, color, opacity)
+	var contract := protection_contract(state, config, reduced, body_height)
+	if not bool(contract["active"]):
+		return
+	var teal := language.ramp_color("deep_water", 4)
+	var ink := language.ramp_color("deep_water", 0)
+	# The shape, not hue or flashing, communicates protection in every profile.
+	# No time interpolation or afterimage is permitted on this layer.
+	for segment: PackedVector2Array in contract["brackets"]:
+		var points := _offset(segment, ground_anchor)
+		canvas.draw_polyline(points, Color(ink, 0.98), 6.0)
+		canvas.draw_polyline(points, Color(teal, 1.0), 4.0)
+		canvas.draw_polyline(points, Color.WHITE, 1.5)
+	var shield := _offset(contract["shield"], ground_anchor)
+	canvas.draw_colored_polygon(shield, Color(ink, 0.98))
+	canvas.draw_polyline(shield, Color(teal, 1.0), 4.0)
+	canvas.draw_polyline(shield, Color.WHITE, 1.5)
+
+
+static func protection_contract(state: PlayerState, config: SimConfig, _reduced: bool = false, body_height: float = 68.0) -> Dictionary:
+	var result := {"active": false, "brackets": [], "shield": PackedVector2Array(), "remaining_ratio": 0.0}
+	var ratio := JumpPresentation.protection_ratio(state, config)
+	if ratio <= 0.0:
+		return result
+	result["active"] = true
+	result["remaining_ratio"] = ratio
+	var top := -clampf(body_height, 40.0, 76.0) - 2.0
+	var bottom := 2.0
+	var brackets: Array[PackedVector2Array] = []
+	for side: float in [-1.0, 1.0]:
+		var x := 29.0 * side
+		brackets.append(PackedVector2Array([Vector2(x - side * 7, top), Vector2(x, top), Vector2(x, top + 9)]))
+		brackets.append(PackedVector2Array([Vector2(x - side * 7, bottom), Vector2(x, bottom), Vector2(x, bottom - 9)]))
+	result["brackets"] = brackets
+	var center := Vector2(0, top - 11.0)
+	result["shield"] = PackedVector2Array([center + Vector2(-5, -4), center + Vector2(5, -4), center + Vector2(4, 2), center + Vector2(0, 6), center + Vector2(-4, 2), center + Vector2(-5, -4)])
+	return result
 
 
 static func evasion_direction(state: PlayerState) -> String:

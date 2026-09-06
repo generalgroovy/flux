@@ -150,11 +150,17 @@ static func stamina_status_label(state: PlayerState, tick_rate: int) -> String:
 	if state == null:
 		return "STAMINA"
 	var safe_rate := maxi(1, tick_rate)
-	var jump_minimum := ceili(float(MovementTuning.VARIABLE_JUMP_MINIMUM_MS * safe_rate) / 1000.0)
 	var slide_minimum := ceili(float(MovementTuning.SLIDE_MINIMUM_MS * safe_rate) / 1000.0)
-	if state.hop_ticks > jump_minimum:
+	var free_control := state.impact_recovery_ticks <= 0 and state.control_state in [PlayerState.ControlState.FREE, PlayerState.ControlState.SLOWED]
+	# Airtime is not sustain: falling, dodging, wall attachment, released input
+	# and forced control all stop optional Jump spending in the simulation.
+	if free_control and state.is_airborne() and state.air_vertical_velocity > 0 \
+		and state.air_dodge_ticks <= 0 and state.wall_skim_ticks <= 0 \
+		and state.jump_held_last_tick and state.variable_jump_grace_ticks <= 0 \
+		and state.stamina >= MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND / safe_rate:
 		return "STAMINA  JUMP -%d/s" % (MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND / 1000)
-	if state.slide_ticks > slide_minimum:
+	if free_control and state.slide_ticks > slide_minimum and state.slide_held_last_tick \
+		and state.stamina >= MovementTuning.SLIDE_SUSTAIN_DRAIN_PER_SECOND / safe_rate:
 		return "STAMINA  SLIDE -%d/s" % (MovementTuning.SLIDE_SUSTAIN_DRAIN_PER_SECOND / 1000)
 	if state.movement_chain_reset_ticks > 0 and state.movement_chain_count > 0:
 		return "STAMINA  NEXT +%d%%" % (mini(state.movement_chain_count, MovementTuning.MOVEMENT_CHAIN_MAXIMUM_STEPS) * MovementTuning.MOVEMENT_CHAIN_COST_STEP_RATIO / 10)

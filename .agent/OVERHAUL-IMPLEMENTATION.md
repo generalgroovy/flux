@@ -1,6 +1,6 @@
 # FLUX 2 implementation path to first-eight playtest
 
-Current frontier: protocol 40, snapshot 15, preferences 10, Godot 4.7.1,
+Current frontier: protocol 41, snapshot 16, preferences 10, Godot 4.7.1,
 canonical `main` (the remote compatibility ref mirrors its published checkpoint;
 the non-authoritative local compatibility ref may lag until a safe
 fast-forward). V0–V6 visual engineering, the exact
@@ -40,6 +40,18 @@ composable mastery. A technically complete slice is not product-complete until
 commitment, ownership, consequence, counter and recovery are readable.
 
 ## Slice sequence
+
+Active feedback revision (2026-09-06): 5x Stamina capacities with unchanged
+costs/absolute recovery; 15% faster locomotion with proportional acceleration
+and braking; continuous fixed-point jump height and gravity; short/full hop,
+fresh-press second jump from current height, one directional air dodge per
+airtime, and landing-reset availability. Keep universal wall/slide chains,
+finite invulnerability and immutable worldbone. Interpolate presentation only,
+never protection or facing. All three body sizes/eight directions share the
+same tested state/renderer contracts. Full, Farflow, rendered samples and source
+launch precede the next user playtest. Protocol 41 / snapshot 16 explicitly
+carry height, vertical velocity, integrator remainder and air/input budgets.
+This feedback supersedes the M1-M5 pause below; no chemistry/map/roster scope.
 
 Newest user order (2026-09-06): movement M1-M5 only, including clear live
 animation for every body size and eight facing directions. Follow

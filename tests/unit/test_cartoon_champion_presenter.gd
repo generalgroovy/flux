@@ -12,6 +12,7 @@ func run() -> int:
 	_test_extension_pages_and_motion_facing()
 	_test_movement_template_direction_matrix()
 	_test_wall_contact_side()
+	_test_immediate_protection_contract()
 	return finish("cartoon-champion-presenter")
 
 
@@ -76,6 +77,7 @@ func _test_extension_pages_and_motion_facing() -> void:
 	equal(CartoonChampionPresenter.presentation_facing_vector(state, "cast"), Vector2i(-1000, 0), "stationary casting follows spell aim")
 	state.movement_mode = PlayerState.MovementMode.HOP
 	state.hop_ticks = 2
+	state.air_height = 1000
 	equal(presenter.silhouette_state(state), "jump", "air casting never substitutes standing legs")
 	state.control_state = PlayerState.ControlState.STUNNED
 	equal(presenter.silhouette_state(state), "hit", "loss of control keeps precedence over cast locomotion")
@@ -468,7 +470,7 @@ func _test_movement_template_direction_matrix() -> void:
 	check(presenter.configure(language), "movement matrix uses the live champion presenter")
 	var config := SimConfig.new(120)
 	var actions := {"idle": PlayerState.MovementMode.IDLE, "walk": PlayerState.MovementMode.WALK, "sprint": PlayerState.MovementMode.SPRINT, "jump": PlayerState.MovementMode.HOP, "slide": PlayerState.MovementMode.SLIDE, "roll": PlayerState.MovementMode.ROLL, "air_turn": PlayerState.MovementMode.HOP, "wallrun": PlayerState.MovementMode.WALL_SKIM, "landing": PlayerState.MovementMode.IDLE}
-	for champion_id: String in ["s_wayne", "oh_tipi", "red_baron"]:
+	for champion_id: String in presenter.champions:
 		var profile_id := String(presenter.recipe(champion_id)["motion_profile"])
 		for direction_index: int in range(8):
 			var direction: Vector2i = EightDirectionResolver.FIXED_VECTORS[direction_index]
@@ -485,6 +487,7 @@ func _test_movement_template_direction_matrix() -> void:
 					state.velocity_x = 0
 					state.velocity_y = 0
 				if action in ["jump", "air_turn"]:
+					state.air_height = 45_000
 					state.hop_ticks = 12
 					state.hop_mode = PlayerState.MovementMode.HOP
 				if action == "roll":
@@ -503,7 +506,10 @@ func _test_movement_template_direction_matrix() -> void:
 					equal(region.position.x, float(direction_index * 96), "%s/%s keeps input-facing direction %d" % [champion_id, action, direction_index])
 					equal(region.size, CartoonChampionPresenter.CELL_SIZE, "%s/%s uses the same source-cell dimensions" % [champion_id, action])
 					equal(frame["scale"], Vector2.ONE, "%s/%s never rescales its template" % [champion_id, action])
-					equal(frame["offset"], Vector2.ZERO, "%s/%s keeps its feet pivot pinned" % [champion_id, action])
+					if action in ["walk", "sprint"]:
+						check((frame["offset"] as Vector2).length() <= 1.5, "%s/%s uses only a bounded micro-pivot" % [champion_id, action])
+					else:
+						equal(frame["offset"], Vector2.ZERO, "%s/%s keeps its feet pivot pinned" % [champion_id, action])
 					check(presenter.texture_for_champion(champion_id).get_image().get_region(Rect2i(region)).get_used_rect().has_area(), "%s/%s resolves actual body pixels" % [champion_id, action])
 				if action in ["walk", "sprint"]:
 					var duration := float((presenter.motion.profiles[profile_id][action] as Dictionary)["duration_ticks"])
@@ -528,3 +534,26 @@ func _test_wall_contact_side() -> void:
 		check(offset.dot(Vector2(normal)) < 0.0, "wall sparks originate toward the wall, not away from it")
 		equal(offset.length(), float(state.radius) / SimConfig.FIXED_SCALE, "wall contact uses the real body radius")
 	check(CartoonChampionPresenter.wall_contact_geometry(PlayerState.new()).is_empty(), "no wall contact cannot fabricate sparks")
+
+
+func _test_immediate_protection_contract() -> void:
+	var config := SimConfig.new(120)
+	for height: float in [58.0, 68.0, 76.0]:
+		for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+			for reduced: bool in [false, true]:
+				var state := PlayerState.new()
+				state.hop_ticks = 20
+				state.facing_x = direction.x
+				state.facing_y = direction.y
+				state.jump_protection_ticks = 1
+				var protected := CartoonChampionPresenter.protection_contract(state, config, reduced, height)
+				check(bool(protected["active"]), "even the last protected tick is unmistakably marked")
+				equal((protected["brackets"] as Array).size(), 4, "four quiet corners are colour-independent status")
+				equal((protected["shield"] as PackedVector2Array).size(), 6, "protected state carries a small closed shield")
+				state.jump_protection_ticks = 0
+				var expired := CartoonChampionPresenter.protection_contract(state, config, reduced, height)
+				check(not bool(expired["active"]), "protection disappears on the exact authoritative off tick")
+				check((expired["brackets"] as Array).is_empty() and (expired["shield"] as PackedVector2Array).is_empty(), "no shield geometry remains to suggest protection")
+				state.spawn_protection_ticks = 1
+				check(bool(CartoonChampionPresenter.protection_contract(state, config, reduced, height)["active"]), "spawn safety cannot look vulnerable")
+	check(not bool(CartoonChampionPresenter.protection_contract(null, config)["active"]), "missing protection state fails closed")

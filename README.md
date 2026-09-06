@@ -2,18 +2,33 @@
 
 **Flow. Learn. Unleash. eXecute.**
 
-**Ready for movement playtest: M1-M5 (2026-09-06).** Continuous steering, safer
-wheel/button intent, unified air/wall transitions, momentum-based slides and
-all-body/eight-direction motion passed **75 suites / 102,863 assertions**,
-local host/join and source launch. **F4** opens the movement guide; **F2/F3**
-trace/retry shows actual speed, Stamina and chain cost. Start `flux.cmd` in this
-checkout. See [movement acceptance, controls and actual images](docs/MOVEMENT-M1-M5-ACCEPTANCE.md)
-for exact evidence and human-playtest limits. No new installer was produced.
+**Current movement feedback revision (2026-09-06):** exactly **5x Stamina**,
+**15% faster running**, physical short/full/double jumps, one directional air
+dodge per airtime, landing-ready chains and clear protection brackets/shield.
+Height and gait receive slight presentation-only interpolation; facing and
+invulnerability switch immediately. **F4** opens the movement guide; **F2/F3**
+show practice speed/Stamina/chain cost and retry. Start `flux.cmd` in this checkout.
+See [current movement acceptance and evidence](docs/MOVEMENT-M1-M5-ACCEPTANCE.md#expressive-airborne-feedback)
+for tests and human-playtest limits. **77 suites / 132,698 assertions**, local
+Farflow, source launcher and the bounded eight-player diagnostic passed.
+No new installer was produced; remote publication remains pending approval.
+
+| Playable champion | Body | Stamina | Recovery / s |
+|---|---|---:|---:|
+| S. Wayne | Small | 594 | 28 |
+| Grace Riva | Small | 616 | 29 |
+| Wa Bidi | Small | 638 | 32 |
+| Oh Tipi | Middle | 660 | 30 |
+| The Red Baron | Large | 792 | 32 |
+
+Capacities are exactly five times the previous build; costs and absolute recovery
+are unchanged. Health, Flux, spell balance, map geometry and roster are unchanged.
 
 ![Actual movement renderer: three body templates, eight slide directions](docs/evidence/movement-m1-m5/three-body-slide-directions.png)
 
-The sheet is an actual renderer state fixture, not a gameplay sequence. The
-following six-stream receipt describes the preceding green checkpoint.
+The sheet is the preceding M1-M5 renderer state fixture, not a gameplay sequence.
+The following six-stream receipt is historical; the current movement revision
+supersedes its Stamina totals, not its unchanged spell work.
 
 Moving spells are **20% slower** with preserved reach;
 five playable champions have **10% more Flux and Stamina**. Multiplayer now
@@ -26,7 +41,8 @@ Press **F4** (controller **Select/Back**) for the movement guide and alphabetica
 race/character compendium. This does not update an already-downloaded Windows installer.
 
 Latest control checkpoint: proportional slows, reliable held-slide jump
-conversion and a higher 34/84 px tap/held jump arc are source-tested at 120 Hz.
+conversion and continuous 35/90 px tap/held jump physics are source-tested at 120 Hz.
+An apex-timed double jump reaches roughly 180 px from its existing height.
 The [core revision](docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md) and
 [coordinated workstreams](.agent/TEAM-ITERATION-PROMPT.md) define the next work:
 reactable spells, reusable elemental art, temporary material, all first-level
@@ -58,8 +74,8 @@ physical places rather than a detached menu.
 held Slide buys a longer lane, earned planar speed survives legal movement
 conversions, and airborne wallrun/air-dodge chains are live. Successive movement
 actions cost 10% more up to 40% and reset after 333 ms; every champion has more
-Stamina and every attack remains paid despite lower Flux costs. Protocol 40 and
-snapshot schema 15 carry complete threats, target respawn and movement state through Farflow. See the
+Stamina and every attack remains paid despite lower Flux costs. Protocol 41 and
+snapshot schema 16 carry complete threats, target respawn and physical movement state through Farflow. See the
 [quality expansion ledger](docs/QUALITY-EXPANSION-ACCEPTANCE.md).
 
 **Illustrated source revision:** illustrated stone/grass/water terrain, slate-and-timber
@@ -76,7 +92,7 @@ from the earlier artwork. See the [visual acceptance ledger](docs/VISUAL-REFINEM
 Run `.\flux.cmd play` for this source revision. Existing Windows exports predate
 these changes and must be rebuilt before sharing; do not mix old packages and
 new-source hosts. The [map/movement ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md)
-records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current source uses protocol 40; hosts and guests must use the same build.
+records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current source uses protocol 41; hosts and guests must use the same build.
 
 ![Current five-champion motion contact sheet](assets/concept/five-champion-motion-reference-v1.png)
 
@@ -95,8 +111,8 @@ their movement pose and travel direction; HUD portraits use the same live art.
 
 | New basic character | Health / Flux / Stamina | Ground speed | Initial single-element spells |
 |---|---|---|---|
-| Grace Riva, small Sylph | 92 / 132 / 123.2 | 103% | Rillshot, Gale Burst, Pocket Eclipse |
-| Wa Bidi, small Goblin | 98 / 116.6 / 127.6 | 105% | Arc Primary, Gale Burst, Cinder Fan |
+| Grace Riva, small Sylph | 92 / 132 / 616 | 103% | Rillshot, Gale Burst, Pocket Eclipse |
+| Wa Bidi, small Goblin | 98 / 116.6 / 638 | 105% | Arc Primary, Gale Burst, Cinder Fan |
 
 These are usable foundation kits; unique racial abilities are not claimed.
 
@@ -256,12 +272,12 @@ pending human balance/visual acceptance and independent activity isolation.
 |---|---|---|---|
 | Strafe + independent aim | Crossfire, retreat, prediction | Acceleration, brake, counter-strafe timing | Playable |
 | Sprint | Rotate, pursue, disengage | Continuous Stamina drain and delayed recovery | Playable |
-| Hop / double jump | Vertical lift with eight-way live air control; preserves earned planar speed | Tap reaches a compact 34 px apex; holding pays 80 Stamina/s toward an 84 px / 320 ms arc; protection remains only the 90 ms opening | Playable |
+| Hop / double jump | Physical lift with eight-way air control; second jump starts from current height and preserves planar momentum | Tap ~35 px / 308 ms, held 90 px / 500 ms; ascent-only hold costs 80 Stamina/s; fresh second press, 180 px ceiling; only 90 ms authored opening protection | Playable |
 | Slide / slide jump | Tap gives a 150 ms committed burst; hold pays 45 Stamina/s toward 480 ms; slide-jump preserves legal entry speed | Entry-speed gate; 50 ms opening protection; vulnerable paid tail; release/exhaustion shortens it; second C brakes; world stays solid | Playable |
 | Movement chain economy | Makes repeated evasive conversion expressive but progressively costly | Every paid continuation within 333 ms adds 10% cost up to 40%; refused actions and held tails never add a step; HUD shows the next premium | Playable |
-| Air redirect / air dodge | Strong snap correction or committed escape beyond ordinary air steering | Limited use, cost, fixed duration, safe collision recovery | Playable |
+| Air redirect / air dodge | Sharp steering choice or directional decaying burst followed by controllable descent | One air dodge per actual airtime; 180 ms burst, 120 ms protection; walls do not refill; landing does; paid sharp redirects stay finite | Playable |
 | Ground roll | Evade a predicted lane while grounded | 24 Stamina; 130 ms opening attack intangibility inside 240 ms action | Playable |
-| Wavedash | Convert angled air dodge into ground momentum | Exact landing geometry; no free stacking | Playable |
+| Wavedash | Convert a low directional air dodge into ground momentum, including straight ahead | Actual floor contact; no extra protection or free speed stacking | Playable |
 | Wall contact / wall kick | Rebound through authored wall routes | 220 ms same-wall lockout | Playable |
 | Vault / crest superglide | Retired | Serialized IDs remain reserved, no action activates either | Removed |
 | Wallrun | Contact-following run along authored practice walls | 18 Stamina; 420 ms maximum; detach at wall end, away input or second V; no i-frames | Playable |
@@ -505,7 +521,7 @@ default in gameplay while the Wellspring does not force limited information.
 | Capacity | Public cap 8; charters provide 2/4/8; later 32 only after measured architecture gate |
 | Transport | Godot ENet over UDP 24872, direct IP |
 | Authority | Host owns movement validation, resources, casts, hits, cooldowns, stations, roster, score, reset |
-| Compatibility | Protocol 40, snapshot 15, tick/tuning/map/content hashes |
+| Compatibility | Protocol 41, snapshot 16, tick/tuning/map/content hashes |
 | Client feel | Local movement prediction and bounded reconciliation; combat stays authoritative |
 | Join in progress | Observer until next gathering, then normal Hearth readiness |
 | Disconnect | 15-second in-memory exact-actor reservation and capability rotation |

@@ -4,11 +4,11 @@ extends RefCounted
 
 # Authoritative values are fixed-point world units, resource milli-units,
 # milliseconds, or scale-1000 ratios. They preserve the proven FLUX grammar.
-const COMPATIBILITY_ID: String = "movement-tuning-v10-continuous-committed-air-control"
+const COMPATIBILITY_ID: String = "movement-tuning-v11-continuous-height-air-budget"
 const PLAYER_RADIUS: int = 18_000
-const BASE_SPEED: int = 324_000
-const ACCELERATION: int = 1_980_000
-const DECELERATION: int = 3_000_000
+const BASE_SPEED: int = 372_600
+const ACCELERATION: int = 2_277_000
+const DECELERATION: int = 3_450_000
 const SPRINT_MULTIPLIER: int = 1280
 const COUNTER_STRAFE_MULTIPLIER: int = 1900
 const COUNTER_STRAFE_DOT_THRESHOLD: int = -24_000_000
@@ -27,14 +27,20 @@ const MOVEMENT_CHAIN_RESET_MS: int = 333
 const MOVEMENT_CHAIN_COST_STEP_RATIO: int = 100
 const MOVEMENT_CHAIN_MAXIMUM_STEPS: int = 4
 
-const STAMINA_MAXIMUM: int = 112_000
+const STAMINA_MAXIMUM: int = 560_000
 const SPRINT_DRAIN_PER_SECOND: int = 34_000
 const STAMINA_RECOVERY_PER_SECOND: int = 27_000
 const STAMINA_RECOVERY_DELAY_MS: int = 380
 
 const HOP_COST: int = 28_000
 const HOP_SPEED: int = 650_000
-const HOP_DURATION_MS: int = 320
+const HOP_DURATION_MS: int = 500
+const AIR_MAX_HEIGHT: int = 180_000
+const VERTICAL_GRAVITY: int = 2_880_000
+const JUMP_VERTICAL_SPEED: int = 720_000
+const SHORT_HOP_VERTICAL_SPEED: int = 410_000
+const AIR_TERMINAL_FALL_SPEED: int = 1_200_000
+const AIR_FAST_FALL_SPEED: int = 1_000_000
 const HOP_COOLDOWN_MS: int = 500
 const JUMP_SUSTAIN_DRAIN_PER_SECOND: int = 80_000
 const HOP_STEERING_PER_SECOND: int = 6_000
@@ -53,7 +59,7 @@ const SLOW_MAXIMUM_RATIO: int = 1000
 
 const DOUBLE_JUMP_COST: int = 24_000
 const DOUBLE_JUMP_SPEED: int = 700_000
-const DOUBLE_JUMP_DURATION_MS: int = 200
+const DOUBLE_JUMP_DURATION_MS: int = 500
 const AIR_REDIRECT_COST: int = 10_000
 const AIR_REDIRECT_BLEND: int = 720
 
@@ -62,6 +68,7 @@ const AIR_DODGE_SPEED: int = 860_000
 const AIR_DODGE_DURATION_MS: int = 180
 const AIR_DODGE_COOLDOWN_MS: int = 620
 const AIR_DODGE_INVULNERABILITY_MS: int = 120
+const AIR_DODGE_DRAG_PER_SECOND: int = 2_400_000
 const ROLL_COST: int = 24_000
 const ROLL_SPEED: int = 620_000
 const ROLL_DURATION_MS: int = 240
@@ -104,7 +111,7 @@ const SLIDE_STEERING: int = 320
 const SLIDE_DRAG_PER_SECOND: int = 120_000
 const SLIDE_JUMP_COST: int = 20_000
 const SLIDE_JUMP_SPEED: int = 790_000
-const SLIDE_JUMP_DURATION_MS: int = 230
+const SLIDE_JUMP_DURATION_MS: int = 500
 const SLIDE_JUMP_MINIMUM_COMMITMENT_MS: int = 40
 # Retained for older route fixtures; conversion now uses elapsed commitment.
 const SLIDE_JUMP_WINDOW_MS: int = 110
@@ -127,6 +134,9 @@ const MAX_AUTHORED_SPEED: int = SUPERGLIDE_SPEED
 static func compatibility_hash() -> String:
 	return CanonicalContent.sha256({
 		"id": COMPATIBILITY_ID,
+		"vertical": [AIR_MAX_HEIGHT, VERTICAL_GRAVITY, JUMP_VERTICAL_SPEED,
+			SHORT_HOP_VERTICAL_SPEED, AIR_TERMINAL_FALL_SPEED, AIR_FAST_FALL_SPEED,
+			AIR_DODGE_DRAG_PER_SECOND],
 		"ordinary": [
 			HOP_COMMITMENT_MS, ROLL_COMMITMENT_MS, AIR_DODGE_COMMITMENT_MS,
 			WALL_RUN_COMMITMENT_MS, WALL_EXIT_AIR_MS, WAVE_DASH_COMMITMENT_MS,

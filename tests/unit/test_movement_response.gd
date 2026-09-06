@@ -2,9 +2,9 @@ extends FluxTestSuite
 
 
 func run() -> int:
-	equal(MovementTuning.BASE_SPEED, 324_000, "ordinary steady speed is the measured ten-percent-slower candidate")
-	equal(MovementTuning.ACCELERATION, 1_980_000, "ordinary acceleration preserves immediate response")
-	equal(MovementTuning.DECELERATION, 3_000_000, "ordinary braking is deliberately tighter")
+	equal(MovementTuning.BASE_SPEED, 372_600, "ordinary speed is fifteen percent above the prior checkpoint")
+	equal(MovementTuning.ACCELERATION, 2_277_000, "ordinary acceleration scales with the faster run")
+	equal(MovementTuning.DECELERATION, 3_450_000, "ordinary braking preserves the faster run stop timing")
 	equal(MovementTuning.COUNTER_STRAFE_MULTIPLIER, 1900, "counter-strafe owns the crisp reversal profile")
 	check(MovementTuning.compatibility_hash().length() == 64, "all movement tuning contributes a stable compatibility identity")
 	var metrics_120 := _response_metrics(120)
@@ -50,11 +50,11 @@ func _test_slow_expiry_and_authored_motion() -> void:
 	MovementSystem.apply_control_state(walker, PlayerState.ControlState.SLOWED, 1000, Vector2i.ZERO, 0, config, 700)
 	for tick: int in range(119):
 		MovementSystem.step(walker, SimCommand.new(tick, 1, 1000, 0), config, arena)
-	equal(walker.velocity_x, 226_800, "70 percent slow holds 226.8 units per second before expiry")
+	equal(walker.velocity_x, MovementTuning.BASE_SPEED * 700 / 1000, "70 percent slow retains its exact speed ratio before expiry")
 	MovementSystem.step(walker, SimCommand.new(119, 1, 1000, 0), config, arena)
 	equal(walker.control_state, PlayerState.ControlState.FREE, "slow ends on its exact authoritative tick")
 	equal(walker.slow_ratio, 1000, "expired slow clears its modifier")
-	equal(walker.velocity_x, 243_300, "expiry resumes ordinary acceleration rather than snapping or retaining drag")
+	equal(walker.velocity_x, MovementTuning.BASE_SPEED * 700 / 1000 + config.per_tick(MovementTuning.ACCELERATION), "expiry resumes ordinary acceleration rather than snapping or retaining drag")
 	for tick: int in range(120, 140):
 		MovementSystem.step(walker, SimCommand.new(tick, 1, 1000, 0), config, arena)
 	equal(walker.velocity_x, MovementTuning.BASE_SPEED, "ordinary speed is fully recoverable after slow")
@@ -81,10 +81,10 @@ func _test_slow_expiry_and_authored_motion() -> void:
 
 func _test_bounds(metrics: Dictionary) -> void:
 	var tick_rate := int(metrics["tick_rate"])
-	check(int(metrics["walk_distance"]) >= 298_000 and int(metrics["walk_distance"]) <= 301_000, "%d Hz one-second walk is 8–12%% below the legacy baseline" % tick_rate)
-	check(int(metrics["stop_distance"]) <= 17_000, "%d Hz release stops inside seventeen pixels" % tick_rate)
+	check(int(metrics["walk_distance"]) >= 342_700 and int(metrics["walk_distance"]) <= 346_150, "%d Hz one-second walk scales fifteen percent above the prior checkpoint" % tick_rate)
+	check(int(metrics["stop_distance"]) <= 19_550, "%d Hz stop distance grows only proportionally to the requested run speed" % tick_rate)
 	check(int(metrics["stop_ms"]) <= 120, "%d Hz release reaches rest within 120 ms" % tick_rate)
-	check(int(metrics["reverse_overshoot"]) <= 13_500, "%d Hz reversal drift stays inside 13.5 pixels" % tick_rate)
+	check(int(metrics["reverse_overshoot"]) <= 15_525, "%d Hz reversal drift grows only proportionally to the requested run speed" % tick_rate)
 	check(int(metrics["reverse_ms"]) <= 105, "%d Hz reversal crosses zero within 105 ms" % tick_rate)
 	equal(int(metrics["cruise_velocity"]), MovementTuning.BASE_SPEED, "%d Hz reaches exact ordinary steady speed" % tick_rate)
 	check(bool(metrics["residual_mode_visible"]), "%d Hz braking keeps the walk response until physical rest" % tick_rate)

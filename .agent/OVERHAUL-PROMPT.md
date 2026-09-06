@@ -12,6 +12,15 @@ prose; correct stale prose in the same slice.
 
 ## Hard priority
 
+Newest feedback (2026-09-06) resumes one expressive-airborne slice after
+`fd1898d`: 5x Stamina capacities, 15% faster running, physical short/full/double
+jumps with continuous height, one air dodge per actual airtime, landing-ready
+chains, unambiguous authoritative protection and slight render interpolation.
+Keep fixed 120 Hz authority, no vault, no height-based worldbone bypass, all
+three body sizes/eight directions and bounded multiplayer state. Restore a
+verified source playtest checkpoint before new scope. Remote publishing remains
+pending explicit approval after the previous safety-review rejection.
+
 Latest explicit authorization (2026-09-06): implement movement M1-M5 and its
 all-body/eight-direction visual clarity, then return a verified playable
 checkpoint to the user. The canonical ledger is

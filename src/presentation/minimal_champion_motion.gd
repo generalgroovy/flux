@@ -98,6 +98,7 @@ func sample(profile_id: String, motion_id: String, elapsed_ticks_at_60: float, r
 			break
 	var span := maxf(0.0001, float(right.get("at", 1.0)) - float(left.get("at", 0.0)))
 	var blend := clampf((phase - float(left.get("at", 0.0))) / span, 0.0, 1.0)
+	blend = smoothstep(0.0, 1.0, blend)
 	result.offset = _vector2(left.get("offset", []), Vector2.ZERO).lerp(_vector2(right.get("offset", []), Vector2.ZERO), blend)
 	# Body dimensions belong to the three atlas templates. Motion may translate
 	# the pose and animate detached aura layers, but never resize body pixels.
@@ -107,6 +108,21 @@ func sample(profile_id: String, motion_id: String, elapsed_ticks_at_60: float, r
 		result.offset *= 0.35
 		result.aura_scale = lerpf(1.0, result.aura_scale, 0.35)
 	return result
+
+
+func locomotion_pivot_offset(profile_id: String, motion_id: String, elapsed_ticks_at_60: float, direction: Vector2, response: float, reduced_motion: bool = false) -> Vector2:
+	if motion_id not in ["walk", "sprint"] or not profiles.has(profile_id):
+		return Vector2.ZERO
+	var profile: Dictionary = profiles[profile_id]
+	var duration := float((profile.get(motion_id, {}) as Dictionary).get("duration_ticks", 1))
+	var phase := fposmod(maxf(0.0, elapsed_ticks_at_60), maxf(1.0, duration)) / maxf(1.0, duration)
+	var strength := clampf(response, 0.0, 1.0) * (0.25 if reduced_motion else 1.0)
+	# Contact A and B remain discrete crisp atlas frames. This tiny continuous
+	# pivot path returns to zero at both foot plants; body scale never changes.
+	var airborne_fraction := pow(sin(TAU * phase), 2.0)
+	var bob := -airborne_fraction * (1.25 if motion_id == "sprint" else 0.85)
+	var lean := direction.normalized() * sin(4.0 * PI * phase) * 0.35
+	return (Vector2(0.0, bob) + lean) * strength
 
 
 func locomotion_contact_frame(profile_id: String, motion_id: String, elapsed_ticks_at_60: float, phase_seed: int = 0) -> int:

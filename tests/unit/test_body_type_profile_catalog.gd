@@ -19,9 +19,15 @@ func run() -> int:
 	var movement: Array = catalog.shared_rules.get("universal_movement", [])
 	for action_id: String in ["jump", "slide", "roll", "air_dodge", "wave_dash", "wall_kick"]:
 		check(movement.has(action_id), "%s remains available to every size" % action_id)
-	check(catalog.accepts("small", {"health_maximum": 90000, "health_recovery_per_second": 2200, "flux_maximum": 123200, "flux_recovery_per_second": 23000, "stamina_maximum": 118800, "stamina_recovery_per_second": 28000, "movement_speed_ratio": 1060}), "S. Wayne fits the small skirmisher envelope")
-	check(catalog.accepts("middle", {"health_maximum": 108000, "health_recovery_per_second": 1800, "flux_maximum": 114400, "flux_recovery_per_second": 19000, "stamina_maximum": 132000, "stamina_recovery_per_second": 30000, "movement_speed_ratio": 980}), "Oh Tipi fits the middle adapter envelope")
-	check(catalog.accepts("large", {"health_maximum": 132000, "health_recovery_per_second": 1200, "flux_maximum": 105600, "flux_recovery_per_second": 17000, "stamina_maximum": 158400, "stamina_recovery_per_second": 32000, "movement_speed_ratio": 910}), "The Red Baron fits the large anchor envelope")
+	check(catalog.accepts("small", {"health_maximum": 90000, "health_recovery_per_second": 2200, "flux_maximum": 123200, "flux_recovery_per_second": 23000, "stamina_maximum": 594000, "stamina_recovery_per_second": 28000, "movement_speed_ratio": 1060}), "S. Wayne fits the small skirmisher envelope")
+	check(catalog.accepts("middle", {"health_maximum": 108000, "health_recovery_per_second": 1800, "flux_maximum": 114400, "flux_recovery_per_second": 19000, "stamina_maximum": 660000, "stamina_recovery_per_second": 30000, "movement_speed_ratio": 980}), "Oh Tipi fits the middle adapter envelope")
+	check(catalog.accepts("large", {"health_maximum": 132000, "health_recovery_per_second": 1200, "flux_maximum": 105600, "flux_recovery_per_second": 17000, "stamina_maximum": 792000, "stamina_recovery_per_second": 32000, "movement_speed_ratio": 910}), "The Red Baron fits the large anchor envelope")
+	var former_stamina_envelopes := {"small": [114400, 129800], "middle": [127600, 145200], "large": [149600, 160000]}
+	for body_type: String in former_stamina_envelopes:
+		var current: Array = catalog.profiles[body_type]["stat_bounds"]["stamina_maximum"]
+		var previous: Array = former_stamina_envelopes[body_type]
+		equal(int(current[0]), int(previous[0]) * 5, body_type + " lower Stamina envelope is exactly fivefold")
+		equal(int(current[1]), int(previous[1]) * 5, body_type + " upper Stamina envelope is exactly fivefold")
 	for body_type: String in BodyTypeProfileCatalog.BODY_TYPES:
 		var bounds: Dictionary = (catalog.profiles[body_type] as Dictionary)["stat_bounds"]
 		for stat_name: String in BodyTypeProfileCatalog.STAT_NAMES:

@@ -1,5 +1,37 @@
 # Active implementation memory
 
+## 2026-09-06 expressive airborne feedback, verified source
+
+- Latest user requests exactly 5x Stamina, faster running, Melee-inspired
+  jumps/double jump/air dodge, clear protection and slight animation interpolation.
+  Source implemented on main from local fd1898d. No map/spell/roster expansion.
+- Champion reserves are 594/616/638/660/792; recovery/costs unchanged. Base
+  movement 372.6 (+15%) with matching acceleration/braking; sprint remains x1.28.
+- Continuous midpoint integer height: tap 35.083 px / 37 ticks; held 90 px /
+  60 ticks; apex-timed second jump 179.900 px, no height reset, 180 px ceiling.
+  Landing refreshes jump and one next-airtime dodge; walls do not refill budgets.
+  Dodge decays over 180 ms into steerable fall; no blanket helpless lockout.
+- Five canonical height/input/budget fields round-trip under protocol 41 /
+  snapshot 16. ActorMotionHistory bounds interpolation to 8 adjacent samples,
+  no extrapolation, immediate death/teleport/identity resets. Facing and
+  protection are unsmoothed. All body sizes/directions retain crisp atlas art.
+- Actual capture review caught stale Jump -80/s during descent. Fixed live HUD
+  condition and added five checks, then reran Full: 77 suites / 132,698 assertions,
+  zero stderr, import and 120 Hz boot; 69,792 ms. Receipt
+  .godot/receipts/expressive-airborne-final-full.json. Local Farflow and real
+  source launcher passed. Strict 8-player probe: 6,435 assertions, no omitted
+  threat snapshots/rejections, peak datagram 1,364 bytes; one tick 9.983 ms means
+  no unconditional rendered 120 FPS claim. Probe measures simulation, not FPS.
+- Visual: 32 sheets/768 fixtures plus 192 real-input final v2 frames, normal
+  and reduced; protection visibly present at44 and gone at56 while airborne.
+  24 compendium frames show actual costs/594-792 reserves through UI selection
+  only. Four selected unchanged images saved in docs/evidence/expressive-airborne-v1.
+- User playtest next. Windows source: Projects/flux/flux.cmd, not Documents
+  checkout or old installer. Current control docs/README/plan are updated.
+  Physical controller/internet/install acceptance remains open. Remote push was
+  rejected last turn pending explicit approval; do not retry/bypass. Preserve
+  personal node_modules, scripts/firewall.ps1 and scripts/Downloads - Shortcut.lnk.
+
 ## 2026-09-06 M1-M5 movement-only playtest checkpoint
 
 - User authorized M1-M5 plus visual clarity for all body types/directions.

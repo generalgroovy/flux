@@ -123,11 +123,28 @@ func _test_movement_intent_state_round_trip() -> void:
 	authority.slide_held_last_tick = true
 	authority.fast_fall_armed = true
 	authority.evade_buffer_airborne = true
+	authority.air_height = 123_456
+	authority.air_vertical_velocity = -456_789
+	authority.air_height_remainder = -119
+	authority.air_dodge_used = true
+	authority.jump_held_last_tick = true
+	authority.stamina_maximum = 792_000
+	authority.stamina = 791_123
 	var packet := ClientPrediction.capture_packet(authority, 1, -1)
 	check(not packet.is_empty(), "new movement intent state is admitted for prediction")
 	var restored := ClientPrediction.restore_state(packet["values"])
 	for property_name: StringName in ClientPrediction.STATE_FIELDS:
 		equal(restored.get(property_name), authority.get(property_name), "prediction round-trips %s" % property_name)
+	for fixture: Array in [
+		[&"air_height", -1], [&"air_height", MovementTuning.AIR_MAX_HEIGHT + 1],
+		[&"air_vertical_velocity", -MovementTuning.AIR_TERMINAL_FALL_SPEED - 1],
+		[&"air_vertical_velocity", MovementTuning.JUMP_VERTICAL_SPEED + 1],
+		[&"air_height_remainder", -240], [&"air_height_remainder", 240],
+		[&"air_dodge_used", 2], [&"jump_held_last_tick", -1],
+	]:
+		var malformed: PackedInt64Array = packet["values"].duplicate()
+		malformed[ClientPrediction.STATE_FIELDS.find(fixture[0])] = fixture[1]
+		check(not ClientPrediction.validate_values(malformed), "physical airborne bounds reject %s=%s" % fixture)
 	for property_name: StringName in [&"slide_held_last_tick", &"fast_fall_armed", &"evade_buffer_airborne", &"movement_commitment_ticks", &"wall_air_ticks"]:
 		var malformed: PackedInt64Array = packet["values"].duplicate()
 		malformed[ClientPrediction.STATE_FIELDS.find(property_name)] = -1

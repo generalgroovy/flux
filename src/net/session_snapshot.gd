@@ -2,7 +2,7 @@ class_name SessionSnapshot
 extends RefCounted
 
 
-const SCHEMA_VERSION: int = 15
+const SCHEMA_VERSION: int = 16
 const MAX_PLAYERS: int = 8
 # Remote movement presentation requires the actual action clocks/contact, not
 # a reconstruction from speed. Local reconciliation carries complete intent.
@@ -11,8 +11,9 @@ const MOVEMENT_PRESENTATION_FIELDS: Array[StringName] = [
 	&"wall_x", &"wall_y", &"hop_x", &"hop_y", &"air_dodge_x", &"air_dodge_y",
 	&"hop_stage", &"air_redirects_remaining", &"slide_cooldown_ticks",
 	&"air_dodge_cooldown_ticks", &"movement_action_speed", &"hop_speed",
+	&"air_height", &"air_vertical_velocity", &"air_height_remainder", &"air_dodge_used", &"jump_held_last_tick",
 ]
-const PLAYER_VALUE_COUNT: int = 89 # 74 base values + 15 validated movement values.
+const PLAYER_VALUE_COUNT: int = 94 # 74 base values + 20 validated movement values.
 const PROJECTILE_VALUE_COUNT: int = 12
 const FIELD_VALUE_COUNT: int = 7
 const EVENT_VALUE_COUNT: int = 6
@@ -445,6 +446,18 @@ static func _valid_player_values(values: PackedInt32Array) -> bool:
 				return false
 		elif property_name in [&"movement_action_speed", &"hop_speed"]:
 			if value < 0 or value > MovementTuning.MAX_AUTHORED_SPEED:
+				return false
+		elif property_name == &"air_height":
+			if value < 0 or value > MovementTuning.AIR_MAX_HEIGHT:
+				return false
+		elif property_name == &"air_vertical_velocity":
+			if value < -MovementTuning.AIR_TERMINAL_FALL_SPEED or value > MovementTuning.JUMP_VERTICAL_SPEED:
+				return false
+		elif property_name == &"air_height_remainder":
+			if absi(value) >= 2 * 120:
+				return false
+		elif property_name in [&"air_dodge_used", &"jump_held_last_tick"]:
+			if value not in [0, 1]:
 				return false
 		elif value < 0 or value > MAX_TIMER_TICKS:
 			return false

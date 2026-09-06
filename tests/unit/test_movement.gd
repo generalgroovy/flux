@@ -317,7 +317,7 @@ func _test_variable_jump_and_fast_fall(tick_rate: int) -> void:
 	_step(cut_world, 1000, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
 	_step(cut_world, 1000, 0)
 	equal(cut_state.last_event, "jump_cut", "%d Hz releasing jump cuts the authored arc" % tick_rate)
-	equal(cut_state.hop_ticks, cut_world.config.milliseconds_to_ticks(MovementTuning.VARIABLE_JUMP_MINIMUM_MS), "%d Hz release preserves the bounded minimum arc" % tick_rate)
+	check(cut_state.air_vertical_velocity <= MovementTuning.SHORT_HOP_VERTICAL_SPEED and cut_state.air_height > 0, "%d Hz release cuts rising velocity without resetting height" % tick_rate)
 	check(cut_state.hop_ticks < held_remaining, "%d Hz released jump lands before held jump" % tick_rate)
 
 	var fall_world := SimWorld.new(tick_rate)
@@ -328,7 +328,7 @@ func _test_variable_jump_and_fast_fall(tick_rate: int) -> void:
 	_step(fall_world, 1000, 0, SimCommand.HELD_FAST_FALL)
 	equal(fall_state.last_event, "fast_fall", "%d Hz airborne slide input starts fast fall" % tick_rate)
 	check(fall_state.fast_falling, "%d Hz fast fall is explicit canonical state" % tick_rate)
-	equal(fall_state.hop_ticks, before_fall - 1 - MovementTuning.FAST_FALL_EXTRA_TICKS, "%d Hz fast fall advances the arc by its bounded extra rate" % tick_rate)
+	check(fall_state.hop_ticks < before_fall and fall_state.air_vertical_velocity <= -MovementTuning.AIR_FAST_FALL_SPEED, "%d Hz fast fall creates bounded downward velocity rather than advancing an art clock" % tick_rate)
 	equal(fall_state.movement_mode, PlayerState.MovementMode.FAST_FALL, "%d Hz fast fall has an explicit presentation mode" % tick_rate)
 	var stamina_before: int = fall_state.stamina
 	_step(fall_world, 1000, 0, SimCommand.HELD_FAST_FALL)
@@ -364,7 +364,7 @@ func _test_paid_jump_and_slide_sustain(tick_rate: int) -> void:
 	_step(exhausted_jump, 0, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
 	_step(exhausted_jump, 0, 0, SimCommand.HELD_JUMP)
 	equal(exhausted_jump.player().last_event, "jump_sustain_empty", "empty Stamina releases jump sustain honestly")
-	equal(exhausted_jump.player().hop_ticks, exhausted_jump.config.milliseconds_to_ticks(MovementTuning.VARIABLE_JUMP_MINIMUM_MS), "empty jump retains the guaranteed tap arc")
+	check(exhausted_jump.player().air_height > 0 and exhausted_jump.player().air_vertical_velocity <= MovementTuning.SHORT_HOP_VERTICAL_SPEED, "empty jump cuts the rise without deleting earned height")
 	var partial_jump := SimWorld.new(tick_rate)
 	partial_jump.player().stamina = MovementTuning.HOP_COST + partial_jump.config.per_tick(MovementTuning.JUMP_SUSTAIN_DRAIN_PER_SECOND) - 1
 	_step(partial_jump, 0, 0, SimCommand.HELD_JUMP, SimCommand.PRESSED_JUMP)
@@ -441,6 +441,8 @@ func _test_same_wall_lockout(tick_rate: int) -> void:
 	equal(state.wall_lockout_id, contacted_wall, "%d Hz wall kick records wall identity" % tick_rate)
 	check(state.wall_lockout_ticks > 0, "%d Hz same-wall lockout starts" % tick_rate)
 	state.hop_ticks = 0
+	state.air_height = 0
+	state.air_vertical_velocity = 0
 	state.hop_cooldown_ticks = 0
 	state.wall_memory_ticks = 0
 	state.position_x = state.radius + 1000
@@ -469,7 +471,7 @@ func _test_wall_skim(tick_rate: int) -> void:
 	while state.wall_skim_ticks > 0:
 		_step(world, 0, 1000)
 	equal(state.last_event, "wall_end", "%d Hz wall skim emits an explicit recovery event" % tick_rate)
-	check(state.hop_ticks > 0 and state.is_airborne(), "%d Hz wall edge exits into finite airborne descent" % tick_rate)
+	check(state.air_height == 0 and not state.is_airborne(), "%d Hz ground-level wallrun exit cannot fabricate extra height" % tick_rate)
 	equal(state.jump_protection_ticks, 0, "%d Hz wall exit never buys fresh protection" % tick_rate)
 	state.wall_memory_ticks = world.config.milliseconds_to_ticks(MovementTuning.WALL_MEMORY_MS)
 	state.wall_contact_id = skim_surface

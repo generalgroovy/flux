@@ -1,6 +1,91 @@
 # Movement M1-M5 acceptance
 
-Status: source-verified M1-M5 checkpoint, 2026-09-06; paused for the user's movement playtest.
+## Expressive airborne feedback
+
+Status: source-verified and ready for the user's movement playtest (2026-09-06).
+This user-authorized successor to `fd1898d` supersedes the earlier resource,
+speed and timer-only jump decisions below. No new spell, chemistry, map,
+roster, installer or Linux scope is included.
+
+| Decision | Current implementation / acceptance |
+|---|---|
+| More freedom | Every champion Stamina maximum and body envelope is exactly 5x; default 560, champions 594-792; unchanged Health/Flux, recovery and costs |
+| Faster, still crisp | Base 372.6 units/s (+15%), sprint x1.28; acceleration/braking +15%, unchanged champion ratios and 900 speed cap |
+| Short/full jump | Integer midpoint gravity; real tap apex 35.083 px / 37 ticks, full 90 px / 60 ticks at 120 Hz, identical in all 8 directions |
+| Second jump | Fresh press restores upward velocity from current height; apex-timed chain 179.900 px; hard 180 px ceiling; no visual arc reset |
+| Air dodge | One per actual airtime, directional 180 ms decaying burst; controlled finite fall, no blanket helpless lockout; walls/cooldown/collision do not replenish |
+| Landing expression | Actual landing refreshes jump readiness and next-airtime dodge, preserves low-dodge wavedash and costs; protection never carries into a wavedash |
+| Honest protection | White/teal dark-outlined brackets and small shield appear/disappear from authority; no afterglow, no smoothing; reduced effects retain the same status |
+| Smooth readable bodies | Stable 58/68/76 templates, all 5 existing champions/eight directions; bounded height interpolation and <=1.5 px fractional gait; nearest sprite sampling, no sprite crossfade |
+| Shared multiplayer state | Protocol 41 / snapshot 16 add height, vertical velocity, integration remainder, air-dodge use and fresh-jump history; bounds, round-trip, replay and eight-player capacity are checked |
+| Minimal rendering state | At most 8 adjacent actor samples; no extrapolation, instant teleport/death/identity resets, facing/protection untouched; local 120 Hz and remote 60 Hz samples stay distinct |
+
+Protection values are authored in milliseconds and rounded up to the next
+120 Hz tick: Jump 11 ticks (~92 ms), Air Dodge 15 (~125 ms), Roll 16 (~133 ms), Slide 6
+(50 ms). Early actual landing ends airborne protection; extra held height does
+not extend it. Height never lets an actor pass through immutable worldbone.
+
+The old timer-derived HUD drain label was caught during actual frame review:
+it said Jump -80/s on descent. It now checks real ascent, held input, control,
+dodge/wall state and available Stamina; a regression test covers the mismatch.
+
+### Final verification and actual images
+
+| Gate | Executed result |
+|---|---|
+| Final Full | `scripts/test.ps1 -Tier Full -ReceiptPath .godot/receipts/expressive-airborne-final-full.json`: 77 suites / 132,698 assertions, zero failures/stderr, import and independent 120 Hz boot; 69,792 ms |
+| Local Farflow | `scripts/smoke-farflow.ps1 -TickRate 120 -TimeoutSeconds 60`: host/join, HELLO, movement reconciliation, rounds, late join, exact actor return, rematch and reason-bearing shutdown passed |
+| Real source launcher | `flux.cmd play -SmokeTest` passed |
+| Eight-player diagnostic | `runtime_stress_probe.gd --quick --require-network-clear`: 6,435 assertions; 2 deterministic repeats, 40 paid projectiles, no lost threat snapshots or rejections; peak datagram 1,364 bytes / 3 fragments |
+| Body/protection rendering | 32 actual renderer sheets / 768 fixture cells, three sizes / eight directions, standard and reduced effects; all five live champion recipes tested |
+| Actual input recording | 192 final v2 frames: real jump -> fresh double jump -> air dodge -> landing; shield visible on frame 44 and absent on 56 in both effects profiles, HUD drain corrected |
+| Compendium | 24 actual rendered frames; Jump/Air Dodge and the small/middle/large champion stats read correctly at 1280x720; isolated harness selects UI rows only |
+
+![Three body types and eight directions: protected air-dodge renderer fixture](evidence/expressive-airborne-v1/three-body-protected-dodge.png)
+
+![Actual input-driven protected air dodge](evidence/expressive-airborne-v1/live-protected.png)
+
+![Same input-driven flight after protection expires](evidence/expressive-airborne-v1/live-vulnerable.png)
+
+[Actual Air Dodge guide](evidence/expressive-airborne-v1/air-dodge-guide.png).
+Full final recordings are in `.godot/visual-captures/physical-air-chain-standard-20260906-v2/`
+and the corresponding `reduced` directory. Earlier v1 recordings contain the
+now-fixed HUD label and are not final evidence. Fixtures are not legal-input
+playthroughs; compendium row selection is not a physical controller test.
+
+The eight-player probe measures simulation separately from snapshot packing,
+not rendered FPS or internet capacity. Medians were 2.161 / 2.267 ms, p99
+4.424 / 3.900 ms, worst 9.983 / 4.249 ms; one tick exceeded 8.333 ms. This
+does not establish uninterrupted 120 FPS. The checkpoint remains Windows source
+only; no installer rebuild, internet proof or GitHub publication is claimed.
+
+### Reference interpretation
+
+Use reference games as design principles, not copied assets or exact balancing.
+Melee contributes short/full-hop and directional aerial-evasion decisions;
+Nintendo confirms universal mid-air dodge in its
+[official Melee overview](https://www.nintendo.com/en-gb/Games/Nintendo-GameCube/Super-Smash-Bros-Melee-268951.html).
+Respawn's [Titanfall 2 movement advice](https://blog.playstation.com/?p=184604)
+motivates combining wallrun, slide and double jump into alternate routes.
+FLUX retains independent top-down aim, controllable post-dodge descent and
+paid magical combat; no source game is reproduced frame-for-frame. The other
+requested references inform our own goals of momentum expression, clean threat
+lanes, grounded shadows and systemic combinations; this slice does not add
+their mechanics, art, or chemistry features.
+
+### Playtest route
+
+Start `C:\Users\sende\Projects\flux\flux.cmd`. Tap/hold Space, release and
+press Space again near the apex, then Q with direction; observe the small shield
+vanish while still airborne. C pressed afresh fast-falls. Land, jump immediately,
+and verify a new air dodge is available. Compare all 3 body roles with Shift/C,
+wall V and F2/F3 practice. F4 explains costs, opening protection and counters.
+Body art remains the existing transparent atlas, not a new hand-drawn animation
+set. Physical controller, human feel and real internet play remain open.
+
+## Historical M1-M5 checkpoint
+
+Status: source-verified M1-M5 checkpoint,2026-09-06; original acceptance follows.
 
 This supersedes the paused six-stream queue for the current task. Preserve a
 launchable Windows source checkpoint. No chemistry, map expansion, new roster,

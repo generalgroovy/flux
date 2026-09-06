@@ -129,7 +129,7 @@ func _test_airborne_wallrun_chain() -> void:
 	state.wall_x = -1000
 	MovementSystem.step(state, SimCommand.new(1, 1, 0, 1000, 0, SimCommand.PRESSED_TECHNIQUE), config, arena)
 	equal(state.last_event, "wall_skim", "airborne wall contact can chain into wallrun before air redirect")
-	check(state.wall_skim_ticks > 0 and state.hop_ticks == 0, "wallrun cleanly owns the airborne transition")
+	check(state.wall_skim_ticks > 0 and state.air_height > 0 and state.air_vertical_velocity == 0, "wallrun attaches at the current actual height")
 	equal(state.movement_chain_count, 2, "jump-to-wallrun is charged as a two-action chain")
 	for tick: int in range(1, config.milliseconds_to_ticks(MovementTuning.WALL_RUN_COMMITMENT_MS)):
 		MovementSystem.step(state, SimCommand.new(tick, 1, 0, 1000), config, arena)
@@ -154,11 +154,14 @@ func _test_controls_migration_and_landing_buffer() -> void:
 	var config := SimConfig.new(120)
 	var arena := CollisionWorld.new(4_000_000, 4_000_000)
 	state.hop_ticks = 2
+	state.air_height = 1000
+	state.air_vertical_velocity = -60_000
 	state.hop_stage = 1
 	state.hop_x = 1000
 	MovementSystem.step(state, SimCommand.new(0, 1, -1000, 0, SimCommand.HELD_JUMP), config, arena)
 	var before := state.velocity_x
 	MovementSystem.step(state, SimCommand.new(1, 1), config, arena)
+	MovementSystem.step(state, SimCommand.new(2, 1), config, arena)
 	check(state.velocity_x < before, "remembered landing direction keeps reversal intent across one empty tick")
 	equal(state.landing_input_ticks, 0, "landing input is consumed, not held forever")
 

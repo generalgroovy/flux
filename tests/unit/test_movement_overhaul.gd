@@ -78,8 +78,11 @@ func _test_one_intent_and_commitment() -> void:
 	equal(grounded.movement_chain_count, 1, "old ground Technique cannot become a later paid air turn")
 	var landing := _state()
 	landing.hop_ticks = 4
+	landing.air_height = 3000
+	landing.air_vertical_velocity = -80_000
 	landing.hop_stage = 1
 	landing.air_dodge_cooldown_ticks = 5
+	landing.air_dodge_used = true
 	var before := landing.stamina
 	_tick(landing, Vector2i(1000, 0), 0, SimCommand.PRESSED_EVADE)
 	check(landing.evade_buffer_airborne, "unready airborne Evade remembers its original context")
@@ -97,6 +100,8 @@ func _test_air_families_and_slow() -> void:
 			for mode: int in [PlayerState.MovementMode.HOP, PlayerState.MovementMode.DOUBLE_JUMP, PlayerState.MovementMode.SLIDE_JUMP, PlayerState.MovementMode.WALL_KICK]:
 				var state := _state()
 				state.hop_ticks = 36
+				state.air_height = 150_000
+				state.air_vertical_velocity = 300_000
 				state.hop_mode = mode
 				state.hop_speed = 600_000
 				state.air_velocity_x = direction.x * 600_000 / 1000
@@ -194,6 +199,7 @@ func _test_locked_sustain_and_wall_exits() -> void:
 	var wall := _state()
 	wall.position_x = 5_002_000
 	wall.hop_ticks = 20
+	wall.air_height = 20_000
 	wall.hop_stage = 2
 	wall.air_redirects_remaining = 0
 	wall.wall_contact_id = 7
@@ -203,7 +209,7 @@ func _test_locked_sustain_and_wall_exits() -> void:
 	check(wall.wall_skim_ticks > 0 and wall.is_airborne(), "wallrun is attached airborne state")
 	equal(wall.hop_stage, 2, "wallrun preserves spent double jump")
 	equal(wall.air_redirects_remaining, 0, "wallrun preserves spent redirect")
-	equal(wall.wall_air_ticks, 19, "wallrun records the exact remaining original air clock")
+	equal(wall.wall_air_ticks, 20, "wallrun records the remaining original air clock")
 	_tick(wall, Vector2i(-1000, 0), 0, 0, arena)
 	check(wall.wall_skim_ticks == 0 and wall.hop_ticks > 0, "outward detach has a real airborne successor")
 	equal(wall.hop_stage, 2, "detach cannot replenish jump budget")
@@ -224,6 +230,8 @@ func _test_wavedash_landing_protection() -> void:
 	for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
 		var state := _state()
 		state.hop_ticks = 8
+		state.air_height = 12_000
+		state.air_vertical_velocity = -120_000
 		state.hop_stage = 1
 		state.hop_x = direction.x
 		state.hop_y = direction.y
@@ -236,7 +244,7 @@ func _test_wavedash_landing_protection() -> void:
 			if state.wave_dash_ticks > 0:
 				check(not MovementSystem.is_combat_intangible(state, SimConfig.new(120)), "wavedash landing cannot refresh dodge protection")
 			_tick(state, direction)
-		equal(protected_ticks, SimConfig.new(120).milliseconds_to_ticks(MovementTuning.AIR_DODGE_INVULNERABILITY_MS), "landing conversion uses only the purchased dodge protection window")
+		check(protected_ticks > 0 and protected_ticks <= SimConfig.new(120).milliseconds_to_ticks(MovementTuning.AIR_DODGE_INVULNERABILITY_MS), "real landing ends protection no later than the purchased dodge window")
 
 
 func _test_profile_routes_and_repeat_hashes() -> void:

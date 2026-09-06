@@ -7,11 +7,16 @@ without explaining itself through a conventional menu or text wall. Movement,
 spell geometry, elemental chemistry, champions and world state combine into a
 player sandbox; the same production systems provide safe developer iteration.
 
-Current authority is Windows, Godot 4.7.1, 120 Hz, protocol 40, five playable
+Current authority is Windows, Godot 4.7.1, 120 Hz, protocol 41, five playable
 champions, forty-one runtime-proven spells, twelve equipped positions and a
 compiled but mutation-gated 36-reaction first-eight catalog.
 
 Latest ordered design and acceptance:
+the [expressive airborne feedback](MOVEMENT-M1-M5-ACCEPTANCE.md#expressive-airborne-feedback)
+is the active movement-only revision; larger Stamina pools, physical jump
+continuity and exact protection readability precede further chemistry.
+
+Following that user playtest, the existing deferred order remains
 [`CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md`](CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md).
 The 2-5 second deposits and Level 1 pair effects are next implementation work,
 not a claim that chemistry already runs.

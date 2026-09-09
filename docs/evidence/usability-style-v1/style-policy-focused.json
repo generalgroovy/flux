@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "completed_at_utc": "2026-09-08T17:48:28.4654278Z",
+  "tier": "focused",
+  "result": "passed",
+  "failure": null,
+  "source": {
+    "head": "a1aa02807626823d0fbc1e25e75441ca3b7f4d36",
+    "branch": "main",
+    "dirty": true,
+    "current_state_sha256": "900d499c01cdd2794e9b4d2dce3d840ff3b018335aef36e1b72597c27987a9c7",
+    "asset_inventory_sha256": null
+  },
+  "requested_suite_ids": [
+    "visual-language",
+    "pixel-magic-library",
+    "pixel-assets-export",
+    "element-glyph-renderer"
+  ],
+  "executed": {
+    "current_state_check": true,
+    "asset_inventory": false,
+    "doctor": true,
+    "import": false,
+    "deterministic_suite_runner": true,
+    "suite_count": 4,
+    "assertion_count": 44049,
+    "suites": [
+      {
+        "id": "visual-language",
+        "assertions": 161,
+        "failures": 0
+      },
+      {
+        "id": "element-glyph-renderer",
+        "assertions": 1078,
+        "failures": 0
+      },
+      {
+        "id": "pixel-magic-library",
+        "assertions": 42744,
+        "failures": 0
+      },
+      {
+        "id": "pixel-assets-export",
+        "assertions": 66,
+        "failures": 0
+      }
+    ],
+    "boot_120_hz": false,
+    "package_and_installer": false
+  },
+  "duration_ms": 12824,
+  "stderr_bytes": 0,
+  "logs": [
+    {
+      "path": ".godot/windows-tests/suite.log",
+      "sha256": "dddd3da673d1553f850b55eb74c5260fdaed0498438df6424cd2383d5b37b67c",
+      "stderr_bytes": 0
+    }
+  ]
+}

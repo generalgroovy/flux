@@ -1,0 +1,400 @@
+{
+  "schema_version": 1,
+  "status": "local_verified_qv_delivery_candidate",
+  "date": "2026-09-09",
+  "candidate": "exports/windows-followup-p47-20260909/release/FLUX.exe",
+  "version": "0.1.0-dev-a1aa028076-a4fca5fa64",
+  "source_checkpoint": "docs/evidence/qv-runtime-v1/checkpoint.json",
+  "source_gate": {
+    "kind": "inherited_checkpoint_not_rerun",
+    "suites": 91,
+    "assertions": 463294,
+    "failures": 0
+  },
+  "native_journey": {
+    "passed": true,
+    "stages": 16,
+    "native_argv_assertions": 20,
+    "baseline_update_tested": true,
+    "baseline": "exports/windows-cast-gallery-p47-20260908/release/FLUX.exe",
+    "previous_versions_retained": true,
+    "automatic_rollback_tested": false,
+    "shortcuts_requested": false,
+    "real_home_install_requested": false,
+    "isolated_game_boot_frames": 3,
+    "protocol": 47,
+    "simulation_hz": 120,
+    "successful_child_stderr_bytes": 0,
+    "expected_refusal_exit_codes": [
+      2,
+      1
+    ],
+    "expected_refusal_stderr_bytes": [
+      33,
+      225
+    ]
+  },
+  "isolated_preferences": {
+    "technique": "V",
+    "evade": "Q",
+    "schema": 11,
+    "keyboard_defaults_revision": 1,
+    "sound_volume_percent": 30
+  },
+  "protected_user_paths_unchanged": true,
+  "payloads": [
+    {
+      "file": "exports/windows-followup-p47-20260909/release/FLUX.exe",
+      "bytes": 96787968,
+      "sha256": "4bd03fd6ee50d7161b445bc03e2c8e99477b366a44b63f8fadba084ce31b5121"
+    },
+    {
+      "file": "exports/windows-followup-p47-20260909/release/FLUX2-Windows-x86_64.zip",
+      "bytes": 96762699,
+      "sha256": "a4fca5fa645f856a069f500a787e3767460fc2565a864f5a51b7a87fd0e78389"
+    },
+    {
+      "file": "exports/windows-followup-p47-20260909/windows/flux2.exe",
+      "bytes": 109071360,
+      "sha256": "04baf75cc1d69dd93eb709533ecab4fd7770bb8a530645717017a06a9d9809fc"
+    },
+    {
+      "file": "exports/windows-followup-p47-20260909/windows/flux2.pck",
+      "bytes": 66211176,
+      "sha256": "9d8cc66320a73c3f544c70489f443709807d84128a12b82d5fa322d07869e967"
+    },
+    {
+      "file": "exports/windows-followup-p47-20260909/windows/BUILD-STATE.json",
+      "bytes": 3525,
+      "sha256": "ec5c74d26815dc41f087cceeb51065b963df80ebfd15ede865e58ead3c798fc4"
+    },
+    {
+      "file": "exports/windows-followup-p47-20260909/build-verified-delivery.ps1",
+      "bytes": 5208,
+      "sha256": "dce0c025c3895180d33c01a14a32c24e33c55d0db7b8f024abfc596eebe5ddca"
+    },
+    {
+      "file": "exports/windows-followup-p47-20260909/verify-pack-defaults.gd",
+      "bytes": 604,
+      "sha256": "4ce206d3d90b905bff0c04f8671a0b3eb336528d078f30160a38da80dccf8ec5"
+    }
+  ],
+  "evidence_files": [
+    {
+      "file": ".gdignore",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "build-logs/bootstrap-build.log",
+      "bytes": 187,
+      "sha256": "41fc91907e20414682c8ccaffd43b2fc2fa6373a57c89d39069857cae05d65ec"
+    },
+    {
+      "file": "build-logs/bundle.log",
+      "bytes": 120,
+      "sha256": "5fe7ada8750ebcfd283309c9ba531b9d71a84a581d7a508fc60575eeb98ece52"
+    },
+    {
+      "file": "build-logs/installer-journey.log",
+      "bytes": 593,
+      "sha256": "646a49dbc2c166068a1ecf74fdaa9b45e53cd893c68f0bd36a96af3e157b2a13"
+    },
+    {
+      "file": "build-logs/pack-defaults.log",
+      "bytes": 138,
+      "sha256": "8223b2e35b175260a0d38eba739b6f272585a064981d54a29aa3ca3c6c3f5ae9"
+    },
+    {
+      "file": "build-logs/pack-defaults.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "build-logs/runtime-pack.log",
+      "bytes": 1100,
+      "sha256": "049efd202b2a763222ea89832689ada37c03a1adcf34c7ba247eb92ac4b78f5c"
+    },
+    {
+      "file": "build-logs/runtime-pack.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "build-logs/runtime-source.log",
+      "bytes": 1100,
+      "sha256": "049efd202b2a763222ea89832689ada37c03a1adcf34c7ba247eb92ac4b78f5c"
+    },
+    {
+      "file": "build-logs/runtime-source.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "BUILD-STATE.json",
+      "bytes": 3525,
+      "sha256": "ec5c74d26815dc41f087cceeb51065b963df80ebfd15ede865e58ead3c798fc4"
+    },
+    {
+      "file": "installer-journey-receipt.json",
+      "bytes": 6594,
+      "sha256": "6ff13a83092ed3b0206406e495872948be258dcc3709d108d7c9a7a2391bf738"
+    },
+    {
+      "file": "logs/00-readonly-root.command.txt",
+      "bytes": 242,
+      "sha256": "6969bfa1350fcb6e3cf7b09522ff34ea6dc8637801f3d82b9ab17bbb36a5785b"
+    },
+    {
+      "file": "logs/00-readonly-root.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/00-readonly-root.stdout.log",
+      "bytes": 127,
+      "sha256": "9cda18f7f933bce09f19fa8cfdb1e5ea02e56ab8b770a9b95c18e56277978829"
+    },
+    {
+      "file": "logs/01-clean-install.command.txt",
+      "bytes": 253,
+      "sha256": "5e156e56eb541fdf5da1c029b012158abedbeb72bed27769a78c6ccbb5e68c38"
+    },
+    {
+      "file": "logs/01-clean-install.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/01-clean-install.stdout.log",
+      "bytes": 323,
+      "sha256": "0fdc828c700b412c852fd73884651c10b5ab289e45a1ef0002c358d582fb7680"
+    },
+    {
+      "file": "logs/02-stored-root-inference.command.txt",
+      "bytes": 150,
+      "sha256": "adb821ddcd42634a2a91abf10664fd93acdd73478cae655bd29d7f57c70065b8"
+    },
+    {
+      "file": "logs/02-stored-root-inference.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/02-stored-root-inference.stdout.log",
+      "bytes": 127,
+      "sha256": "9cda18f7f933bce09f19fa8cfdb1e5ea02e56ab8b770a9b95c18e56277978829"
+    },
+    {
+      "file": "logs/03-stored-reuse.command.txt",
+      "bytes": 161,
+      "sha256": "c6830d7e9522373f2b48eb4d911d80651d555a9ab921848489c9c4e1ec02120e"
+    },
+    {
+      "file": "logs/03-stored-reuse.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/03-stored-reuse.stdout.log",
+      "bytes": 249,
+      "sha256": "67c510daaae19782c474b718a8d2056406fdcb4ea18ed72a2a9166b17a6b5d57"
+    },
+    {
+      "file": "logs/04-corrupt-pck-repair.command.txt",
+      "bytes": 161,
+      "sha256": "c6830d7e9522373f2b48eb4d911d80651d555a9ab921848489c9c4e1ec02120e"
+    },
+    {
+      "file": "logs/04-corrupt-pck-repair.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/04-corrupt-pck-repair.stdout.log",
+      "bytes": 363,
+      "sha256": "933ab0d27d3e768f1102315923581f6664fa7d248116e1bc63367a30907a5872"
+    },
+    {
+      "file": "logs/05-truncated-manifest-repair.command.txt",
+      "bytes": 172,
+      "sha256": "283dbeb35ab4993d0d1c4cae82c4adbc28ae35ed8291f9cd4d68667f984fdfb4"
+    },
+    {
+      "file": "logs/05-truncated-manifest-repair.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/05-truncated-manifest-repair.stdout.log",
+      "bytes": 363,
+      "sha256": "43257ec6d999db1241e78e71be3398f4dfcbb5dac42a1f970217e8ccd641846f"
+    },
+    {
+      "file": "logs/06-repaired-stored-reuse.command.txt",
+      "bytes": 161,
+      "sha256": "c6830d7e9522373f2b48eb4d911d80651d555a9ab921848489c9c4e1ec02120e"
+    },
+    {
+      "file": "logs/06-repaired-stored-reuse.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/06-repaired-stored-reuse.stdout.log",
+      "bytes": 289,
+      "sha256": "3aaf56b2cb926432e87c11221c0d14a004fe66db7505101e2c05429fcb46d0d6"
+    },
+    {
+      "file": "logs/07-empty-root-refusal.command.txt",
+      "bytes": 146,
+      "sha256": "e83591d702fa0e734b215b866438b409af44a6aec345114f98e4f0357d80eab1"
+    },
+    {
+      "file": "logs/07-empty-root-refusal.stderr.log",
+      "bytes": 33,
+      "sha256": "342636c5540e85c91a79352d09f47ed7663e168e59ee169a88d605ea8d21dcb5"
+    },
+    {
+      "file": "logs/07-empty-root-refusal.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/08-unowned-root-refusal.command.txt",
+      "bytes": 251,
+      "sha256": "92c9cc45b4cbaae4d4f0d4f5c2ba525d8d910085071267d5643ab133e81d8180"
+    },
+    {
+      "file": "logs/08-unowned-root-refusal.stderr.log",
+      "bytes": 225,
+      "sha256": "d04f3f7c851d3ba8789d6f050db170b8bf8bff1b9703130c37b6872efddbef29"
+    },
+    {
+      "file": "logs/08-unowned-root-refusal.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/09-baseline-preflight.command.txt",
+      "bytes": 253,
+      "sha256": "1c7b9978e4aff34760aaa523551973734001839ec4d1c312eec4b646d6834a78"
+    },
+    {
+      "file": "logs/09-baseline-preflight.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/09-baseline-preflight.stdout.log",
+      "bytes": 134,
+      "sha256": "f9f5916211ce4424b9e34489d0dc99e8daa961d6ab3918e658045d9a8d55e204"
+    },
+    {
+      "file": "logs/10-baseline-install.command.txt",
+      "bytes": 264,
+      "sha256": "382b0680a08cf72d54c6cc07942b6712b4958a89c423c02bfb6d7550f17e27d8"
+    },
+    {
+      "file": "logs/10-baseline-install.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/10-baseline-install.stdout.log",
+      "bytes": 330,
+      "sha256": "12c45043a83bd23c7b5b807de273c1ef5e6dc5c37e6738f1a459da53ca808de7"
+    },
+    {
+      "file": "logs/11-baseline-update.command.txt",
+      "bytes": 260,
+      "sha256": "56acfef58164da991ba63d3fd1450822b2fadc674d5c5fa9c80cd9b03848f6ce"
+    },
+    {
+      "file": "logs/11-baseline-update.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/11-baseline-update.stdout.log",
+      "bytes": 330,
+      "sha256": "7678920c8d07b9c0359536b1a35c239c20db4d4e2054eec728cee6e9c8301a8c"
+    },
+    {
+      "file": "logs/12-userdata-argv-probe.command.txt",
+      "bytes": 814,
+      "sha256": "1254663fafc3c8792bacb95725d1220ac50c64553c9ea58bff7b5a3f584f3c74"
+    },
+    {
+      "file": "logs/12-userdata-argv-probe.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/12-userdata-argv-probe.stdout.log",
+      "bytes": 344,
+      "sha256": "d2a161931fabb80f2f18a842ad84296ea36587761821d9ceb6dfaf8aefedd902"
+    },
+    {
+      "file": "logs/14-installed-runtime-state.command.txt",
+      "bytes": 684,
+      "sha256": "d2beab53351b4061be1fd793d7236a61701167631ec0785c29f2fa0db1ba8765"
+    },
+    {
+      "file": "logs/14-installed-runtime-state.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/14-installed-runtime-state.stdout.log",
+      "bytes": 1100,
+      "sha256": "049efd202b2a763222ea89832689ada37c03a1adcf34c7ba247eb92ac4b78f5c"
+    },
+    {
+      "file": "logs/15-actual-launcher-game-boot.command.txt",
+      "bytes": 374,
+      "sha256": "6ead9d19839543401f5c6c79e08e30785aead10e136c09d3ce67910573d3861c"
+    },
+    {
+      "file": "logs/15-actual-launcher-game-boot.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "logs/15-actual-launcher-game-boot.stdout.log",
+      "bytes": 1113,
+      "sha256": "73f5757515cd450697039d8a4e6702d855fed67a7f0fc367e6cd3af82c9b8930"
+    },
+    {
+      "file": "logs/actual-game-boot.log",
+      "bytes": 801,
+      "sha256": "cecae7bd4200e232413ed47d7127a22c944eff76c1dcb94885b60f6e2fb3307c"
+    },
+    {
+      "file": "logs/runtime-state-godot.log",
+      "bytes": 1097,
+      "sha256": "90edd8ab854094eff1faff745ce660fff593422cc57edc0f7e4bfbf8bb4913f5"
+    },
+    {
+      "file": "logs/userdata-godot.log",
+      "bytes": 341,
+      "sha256": "d697fabda4553383f860ebbdabf093c8ccd9ac822387034249793acf0ecc7770"
+    },
+    {
+      "file": "README.md",
+      "bytes": 5879,
+      "sha256": "0c016165062767fd5ed10885b393c472510a0dac6afca14074210ae687bb1ce0"
+    },
+    {
+      "file": "SHA256SUMS.txt",
+      "bytes": 168,
+      "sha256": "72ec57cc6cd2b0f6d8ae2b436e6b81876ccb8838c56de1a992e7dcbe78ec164b"
+    },
+    {
+      "file": "user-data-guard.json",
+      "bytes": 2923,
+      "sha256": "b52e86aace08e653b58131712b5713cc522b26b2fd1be7d348329f09fda8bd81"
+    }
+  ],
+  "boundary": "Exact previously verified QV payload rebundled; no new source export, production change, Full rerun, user install, release publication or human/two-PC acceptance. Later runtime/art trials are not included. Source-launch import readiness remains open."
+}

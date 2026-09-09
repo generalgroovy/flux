@@ -7,6 +7,10 @@ const MovementGuideModelScript = preload("res://src/presentation/movement_guide_
 func run() -> int:
 	var preferences := PlayerPreferences.new()
 	var rows: Array[Dictionary] = MovementGuideModelScript.entries(preferences)
+	for evade_id: String in ["roll", "air_dodge"]:
+		equal(String(MovementGuideModelScript.entry_by_id(evade_id, preferences)["binding"]), "Q", "evade guide follows the current Q default")
+	for technique_id: String in ["wall_run", "air_turn", "impact_tech"]:
+		equal(String(MovementGuideModelScript.entry_by_id(technique_id, preferences)["binding"]), "V", "wall/air/tech guides follow the current V default")
 	equal(rows.size(), 16, "guide covers sixteen active movement techniques, not retired vault adapters")
 	var ids: Dictionary = {}
 	for row: Dictionary in rows:

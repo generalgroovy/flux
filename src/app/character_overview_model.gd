@@ -73,6 +73,7 @@ static func build(champions: ChampionCatalog, roster: ChampionRosterPlan) -> Dic
 			entry["playstyle"] = String(source["playstyle"])
 			# Only the validated body role is exposed, not stale shared movement prose.
 			entry["body_profile"] = (champions.body_type_profiles.profiles[String(entry["body_type"])] as Dictionary).duplicate(true)
+			entry["hurt_radius"] = champions.body_type_profiles.hurt_radius(String(entry["body_type"]))
 			playable_count += 1
 		var row: Dictionary = races[race_id]
 		(row["champions"] as Array).append(entry)
@@ -86,7 +87,7 @@ static func build(champions: ChampionCatalog, roster: ChampionRosterPlan) -> Dic
 	var rows: Array = []
 	for race_id: String in race_ids:
 		var row: Dictionary = races[race_id]
-		(row["champions"] as Array).sort_custom(_name_before)
+		(row["champions"] as Array).sort_custom(_size_then_name_before)
 		rows.append(row)
 	var result := {
 		"schema_version": 1, "valid": true, "error": "", "rows": rows,
@@ -95,7 +96,7 @@ static func build(champions: ChampionCatalog, roster: ChampionRosterPlan) -> Dic
 		"planned_count": roster.ids_by_availability("planned").size(),
 		"placeholder_count": roster.ids_by_availability("placeholder").size(),
 		"race_rules_note": RACE_RULE_NOTE,
-		"stat_units": "Stats use fixed-point thousandths; displayed resources and regeneration are points and points/s. Speed is relative to base walk speed.",
+		"stat_units": "Stats use fixed-point thousandths; displayed resources and base recovery are points and points/s. Unused Flux and Stamina ramp recovery after their delay; Health does not use that idle ramp. Speed is relative to base walk speed.",
 		"source_hashes": {"champions": champions.content_hash, "roster": roster.content_hash},
 	}
 	_freeze(result)
@@ -103,10 +104,11 @@ static func build(champions: ChampionCatalog, roster: ChampionRosterPlan) -> Dic
 
 
 static func _stat_lines(stats: Dictionary) -> Array[String]:
+	var idle_ramp := String.num(float(PlayerTuning.RESOURCE_RECOVERY_MAXIMUM_RATIO) / 1000.0, 1).trim_suffix(".0")
 	return [
-		"Health %s | recovery %s/s" % [_points(int(stats["health_maximum"])), _points(int(stats["health_recovery_per_second"]))],
-		"Flux %s | recovery %s/s" % [_points(int(stats["flux_maximum"])), _points(int(stats["flux_recovery_per_second"]))],
-		"Stamina %s | recovery %s/s" % [_points(int(stats["stamina_maximum"])), _points(int(stats["stamina_recovery_per_second"]))],
+		"Health %s | base recovery %s/s; no idle ramp" % [_points(int(stats["health_maximum"])), _points(int(stats["health_recovery_per_second"]))],
+		"Flux %s | base recovery %s/s; idle up to %sx after delay" % [_points(int(stats["flux_maximum"])), _points(int(stats["flux_recovery_per_second"])), idle_ramp],
+		"Stamina %s | base recovery %s/s; idle up to %sx after delay" % [_points(int(stats["stamina_maximum"])), _points(int(stats["stamina_recovery_per_second"])), idle_ramp],
 		"Walk speed %s%% of base" % String.num(float(stats["movement_speed_ratio"]) / 10.0, 1),
 	]
 
@@ -115,7 +117,11 @@ static func _points(value: int) -> String:
 	return String.num(float(value) / float(SimConfig.FIXED_SCALE), 2)
 
 
-static func _name_before(left: Dictionary, right: Dictionary) -> bool:
+static func _size_then_name_before(left: Dictionary, right: Dictionary) -> bool:
+	var left_size := ChampionRosterPlan.EXPECTED_BODY_ROLES.find(String(left["body_type"]))
+	var right_size := ChampionRosterPlan.EXPECTED_BODY_ROLES.find(String(right["body_type"]))
+	if left_size != right_size:
+		return left_size < right_size
 	var left_name := String(left["display_name"]).to_lower()
 	var right_name := String(right["display_name"]).to_lower()
 	return String(left["id"]) < String(right["id"]) if left_name == right_name else left_name < right_name

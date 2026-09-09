@@ -1,10 +1,17 @@
-param([ValidateSet('Windows', 'Linux', 'All')][string]$Target = 'All')
+param(
+    [ValidateSet('Windows', 'Linux', 'All')][string]$Target = 'All',
+    [string]$ExportRoot = '',
+    [string]$ReleaseRoot = ''
+)
 . (Join-Path $PSScriptRoot 'flux2-common.ps1')
 
 $repoRoot = Get-FluxRepoRoot
 $godotBin = Get-FluxGodot
 & (Join-Path $PSScriptRoot 'doctor.ps1') -RequireExportTemplates -ExportTarget $Target
-$exportRoot = Join-Path $repoRoot 'exports'
+if (-not $ExportRoot) { $ExportRoot = Join-Path $repoRoot 'exports' }
+$exportRoot = [System.IO.Path]::GetFullPath($ExportRoot)
+if (-not $ReleaseRoot) { $ReleaseRoot = Join-Path $exportRoot 'release' }
+$ReleaseRoot = [System.IO.Path]::GetFullPath($ReleaseRoot)
 New-Item -ItemType Directory -Path $exportRoot -Force | Out-Null
 $packageLogRoot = Join-Path $repoRoot '.godot\package'
 New-Item -ItemType Directory -Path $packageLogRoot -Force | Out-Null
@@ -33,8 +40,8 @@ $lines = Get-ChildItem -LiteralPath $exportRoot -Recurse -File | Where-Object { 
     "$(Get-FluxFileSha256 $_.FullName)  $relative"
 }
 [System.IO.File]::WriteAllLines($manifest, [string[]]$lines, [System.Text.UTF8Encoding]::new($false))
-& (Join-Path $PSScriptRoot 'bundle-release.ps1') -Target $Target -ExportRoot $exportRoot -ReleaseRoot (Join-Path $exportRoot 'release')
+& (Join-Path $PSScriptRoot 'bundle-release.ps1') -Target $Target -ExportRoot $exportRoot -ReleaseRoot $ReleaseRoot
 if ($Target -in @('Windows', 'All')) {
-    & (Join-Path $PSScriptRoot 'build-windows-bootstrap.ps1')
+    & (Join-Path $PSScriptRoot 'build-windows-bootstrap.ps1') -Payload (Join-Path $ReleaseRoot 'FLUX2-Windows-x86_64.zip') -Output (Join-Path $ReleaseRoot 'FLUX.exe')
 }
 Write-Output "PASS: release exports, portable archives and checksums written to $exportRoot"

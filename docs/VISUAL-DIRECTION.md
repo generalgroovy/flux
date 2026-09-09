@@ -1,197 +1,72 @@
-# FLUX 2 visual direction
+# FLUX current visual direction
 
-Status: **canonical art-direction contract**.
+Status: current art contract, 2026-09-08; replaces accumulated historical overrides.
 
-**2026-09-06 authority update:** the user-selected
-[Oh Tipi illustration and production contract](../reference/art/oh_tipi_authority_v1/README.md)
-supersede earlier champion boards for character style. Crisp pixel clusters,
-articulated silhouettes, layered dark materials and restrained accents are the
-new target; existing three-body/eight-way coverage, hand casting and separate
-magic/shadow layers remain mandatory. A reference image is not an animation atlas.
+The original [Oh Tipi](../reference/art/oh_tipi_authority_v1/oh-tipi-authoritative-reference.png)
+supports current neutral-template pixel grammar: sensible proportions, layered
+clothes, intentional clusters and charming anatomy. After all three basic templates
+pass animation/direction coverage and user acceptance, the new
+[cast style target](../reference/art/cast_style_post_templates_v1/README.md) becomes
+the primary look for character rework. [CURRENT-CAST](CURRENT-CAST.md) still owns
+identity, size allocation and affinities; neither sheet overrides those facts.
 
-Current implementation: [illustrated camera/body acceptance](VISUAL-REFINEMENT-ACCEPTANCE.md).
-Map and champion artwork share approximately 55-degree elevation, short visible
-facades and readable shoulder/roof tops. Floors remain screen-cardinal: no
-isometric input rotation, collision skew or angle-dependent body scaling.
-Worldbone buildings remain opaque; collisionless scenery remains withheld.
-Zoom remains 50/75/100%; old automatic roof-fade proposals are superseded.
+Current production gate: finish and visually accept generic Small/Middle/Large
+templates before named-character repairs/additions. Construction diagrams and
+partial technical proofs are not accepted sprite templates. See SPRITE-PIPELINE.md.
+The new sheet's expressive faces, compact silhouettes, dark outlines, practical
+clothing and restrained material highlights must survive native pixel scale.
+Its spells, auras, weapons, ground shadows, borders and parchment are excluded
+from bodies, and its quarter-view poses do not replace eight-way facing.
 
-## Intent
+| Layer | Required treatment |
+| --- | --- |
+| Bodies | Small 58/Middle 68/Large 76 px; 96 px cells, pivot 48, 84; no per-action resizing |
+| Identity | Unique ancestry/costume silhouette; practical nonsexualized clothes; S. Wayne dark-skinned, Biggy Bob brown-haired |
+| Motion | S/SE/E/NE/N/NW/W/SW; symmetric front, centered back, true opposite contacts |
+| Portraits | Exact occupied top third of South-grounded sprite, proportional nearest fit, transparent32px cache |
+| Casting | Bare hands; independent magic/shadows/auras |
+| World | Warm stone, dark timber, brass, deep water, plants; detail at edges |
+| Perspective | 55-degree illustration over screen-cardinal floors; 50/75/100% zoom; opaque worldbone |
+| Threats | Discrete owned projectiles and real extent; no lane-hiding bloom |
+| Matter | Tileable native-pixel material itself shows the footprint; no separate range circles/outline markers |
+| UI | Health/Flux/Stamina, 4 active spell cells/modifier; compact movement table and chemistry matrix, full rules under Details |
+| Accessibility | Grayscale/color-vision review, reduced decoration retaining essentials |
 
-FLUX 2 should feel like a living magical instrument: handcrafted, old, repaired,
-and densely inhabited, yet precise enough for high-speed competitive movement.
-The world combines warm masonry, dark wood, botanical overgrowth, aged brass,
-deep water, and compact alchemical machinery. Magic is not generic bloom; it is
-a controlled system of shapes, pulses, residue, and material change.
+Each visual read needs more than color: silhouette/topology identifies the
+element, occupied material shows extent, and phase/motion shows when it matters.
+Guide diagrams are labeled explanations, not extra world effects. Reaction
+Details follows the selected pair and uses a source-proportional phase strip.
+The runtime visual-language metadata now enforces the same three sizes, eight
+headings, ten rows and opaque-worldbone policy as this document. Four extra palette
+families remain reserved compatibility styles, not active spells/elements.
 
-The generated [Wellspring visual target](../assets/concept/sanctum-hub-visual-direction-v1.png)
-establishes atmosphere and district scale. It does not define final geometry,
-camera metrics, tiles, protected routes, or authoritative chemistry cells.
+| Element | Visual language, not added gameplay |
+| --- | --- |
+| Fire | Orange/red pointed tongues, bright core, rising sparks |
+| Water | Deep blue/cyan flat ripples, rounded splashes |
+| Earth | Ochre angular slabs, cracks, compact rubble |
+| Wind | Pale teal directional open ribbons |
+| Charge | Yellow branching zigzags, separated sparks |
+| Ice | Icy cyan/blue facets and cold motes |
+| Light | Ivory/gold rays, geometric highlights |
+| Dark | Violet/ink voids, broken inward wisps |
+| Steam | Pale warm-gray rising billows; unlike blue water, pointed fire or directional wind |
 
-The generated [gameplay-scale v3 specimen](../assets/concept/wellspring-gameplay-specimen-v3.png)
-narrows that atmosphere into an actual play view: larger expressive champions,
-moderately tilted facades over unambiguous top-down floors, dense scenic edges,
-clean movement lanes, readable material families, translucent bubbles and a
-compact three-resource/layered-spell HUD. Its immutable provenance is stored beside
-it. It remains a specification target—not a shippable sprite sheet, tile set,
-HUD atlas, collision source or acceptance proof.
+Steam retains its actual concealing windows; stronger art adds no damage.
+Flame tongues, spreading billows and stone clusters tile inside authoritative
+shapes, including obstacle cuts; formation/expiry remain truthful. Reduced or
+zero optional decoration keeps the essential material coverage. A stone-looking
+deposit is not automatically a wall: only actual reaction cover blocks shots.
+Reuse usable pixel packs first. Source/manifests/hashes/import rules accompany
+promotion. References/rejected drafts stay out of runtime export.
 
-The user-passed
-[champion board](../assets/concept/flux-champions-visual-style-v1.png) is the
-historical character-style target: compact expressive bodies, strong
-ancestry silhouettes, readable equipment/materials, and immediately legible
-elemental personality. Its labels are not gameplay authority and its pixels are
-not runtime frames.
+Follow [SPRITE-PIPELINE](SPRITE-PIPELINE.md). Every changed material needs actual
+normal/reduced, zoom and formation/active/quiet/decay/expiry captures, visibility/
+budget tests. Automated coverage is separate from human charm and performance.
 
-## Visual pillars
-
-1. **Handmade precision.** Crisp pixel clusters, deliberate ramps, restrained
-   texture repetition, and readable silhouettes. Avoid smooth AI-painterly
-   surfaces in shipped assets.
-2. **Dense edges, clear lanes.** Detail lives in gardens, roof lines, machinery,
-   water, and boundaries. Combat and movement corridors preserve clean values
-   and identifiable collision edges.
-3. **Material truth.** Stone, timber, metal, water, oil, frost, smoke, rubble,
-   and immutable worldbone remain recognizable before effects are added.
-4. **Magic has grammar.** Cyan indicates attunement and stable transit; violet
-   indicates mode-space and dimensional energy. Every gameplay element also has
-   a distinct shape, animation cadence, sound family, and residue.
-5. **Places have silhouettes.** A district remains identifiable on the map with
-   color removed: conservatory loops, archive towers, proving-ground basins,
-   foundry cylinders, gardens, observatory domes, and portal rings.
-6. **Perspective never steals information.** A foreground roof, wall, canopy,
-   construct, or high ledge fades/cuts away or yields to a restrained ownership
-   silhouette when it covers a character inside authoritative LOS. No such cue
-   appears for an actor outside permitted LOS.
-7. **Compact action and bullet-pattern clarity.** Study only broad production
-   principles found in crisp room-scale action games: economical silhouettes,
-   distinct projectile lanes, spell cadence, bounded impact bursts and dense
-   encounters that retain escape space. FLUX uses original old-world champions,
-   hand-cast magic, rooms, patterns, assets, UI and timing; it never reproduces
-   Enter the Gungeon or another bullet-hell game's weapons, enemies, rooms,
-   palette, exact mechanics, effects, animation or trade dress.
-
-Broad environmental study may include strongly staged room silhouettes,
-layered depth, landmark-first composition, dramatic readable lighting,
-responsive ambience, dense scenic edges, and clear combat floors seen in
-polished isometric action games. FLUX 2 does not copy Hades/Hades II rooms,
-assets, layouts, camera metrics, palettes, props, characters, UI, effects,
-symbols, animation, or trade dress.
-
-## Foundation palette
-
-| Role | Color | Use |
-| --- | --- | --- |
-| Deep water | `#153c4a` | void framing, canals, flooded layers |
-| Forest shadow | `#17261b` | distant vegetation and deep recesses |
-| Garden green | `#304b27` | playable grass and planted terraces |
-| Moss highlight | `#66834a` | growth edges and soft traversal cues |
-| Warm path | `#8b7045` | ordinary walkable masonry |
-| Pale stone | `#b6a477` | primary route highlights and plazas |
-| Worldbone | `#26282a` | immutable foundation and hard silhouette |
-| Timber | `#4b3226` | buildings, rails, warm interiors |
-| Aged brass | `#b88438` | machines, trims, important affordances |
-| Attunement cyan | `#55dbe0` | stable portals, friendly energy, player |
-| Flux violet | `#9b65d9` | mode-space, advanced magic, anomalies |
-| Fire amber | `#e58a38` | heat, ignition, dangerous machinery |
-| Parchment | `#e2d8b2` | high-value UI text and map drafting |
-
-Final ramps require contrast tests in context. These hex values are coordination
-anchors, not permission to flatten pixel art into solid fills.
-
-## Camera, pixels, and density
-
-- Establish one world-to-pixel unit and an integer camera zoom before producing
-  final environment tiles.
-- Nearest-neighbor sampling is mandatory for pixel assets. Subpixel simulation
-  positions are preserved; presentation snaps or filters according to the
-  approved camera policy rather than changing authority.
-- Characters, projectiles, interactables, hazards, and pickups receive a quiet
-  value field around their silhouette during combat.
-- Decorations never obscure protected route edges, spawn safety, telegraphs, or
-  chemistry state. Foliage and roof layers fade or cut away predictably.
-- Basic jumps present an original compact body lift above a stable ground
-  anchor. A separate shadow remains on the receiving surface, grows broader and
-  darker during ascent, is largest at the apex, contracts during descent, and
-  settles on a crisp landing. Space is the production default jump key. The
-  same normalized authoritative phase drives presentation at the authoritative
-  120 Hz tick.
-  This studies only the readability of classic handheld
-  top-down adventure jumps and copies no sprite, frames, timing, sound, input,
-  item, or map behavior.
-- Effects budgets are per category and support reduced-motion and low-density
-  modes without hiding authoritative events.
-- Every spell lane has a color-independent silhouette and speed family. Visual
-  noise may decorate a lane only after its owner, collision extent, travel
-  direction and active window are already clear.
-- Pattern density is budgeted per screen and per actor. Quiet silhouette rings,
-  collision edges and at least one readable escape route take priority over
-  particles, aura flourishes and ambient magic.
-
-### Compact handheld readability target
-
-FLUX may study the broad production discipline of Game Boy Color-era top-down
-adventure graphics, including the compact tiles, economical color ramps,
-character-to-environment scale and immediate landmark silhouettes associated
-with *The Legend of Zelda: Oracle of Ages* and *Oracle of Seasons*. The target is
-that level of clarity, not those games' content. FLUX must use original sprites,
-tiles, maps, palettes, characters, props, symbols, animation, UI and trade dress.
-
-Generated or user-passed character boards are concept references only. The
-passed eighteen-champion board sets the minimum visual bar and may help review
-compact body proportions,
-directional separation and equipment cues, but they are not approved runtime
-sprite sheets and cannot set hitboxes, animation timing or final scale. Any
-future promotion requires local provenance, immutable hashes, declared grid,
-frame and pivot metadata, animation alignment, and gameplay-zoom accessibility
-and performance evidence shared with the environment kit.
-
-Every pictured champion requires a complete original in-game sprite set. The
-current runtime-addressable direction atlases and 25-action skeleton contract
-are integration foundations, not final animation acceptance. Each champion must
-pass idle, movement, jump/rise/fall/land, traversal, combat, defense/damage,
-interaction, defeat, and signature/fallback taunt coverage applicable to its
-kit, with deterministic semantic event binding and no animation-owned outcomes.
-
-All champion casting is hands-only. Spell skeletons begin with hand anticipation,
-bind release geometry to declared hand anchors and end with readable recovery;
-staffs, wands, scepters, rods and held magical foci are excluded. Physical
-weapons or tools may exist for identity and non-magical action, but may not
-quietly become the source of a spell.
-
-## Environment kit
-
-The first original modular kit should cover:
-
-- worldbone cliff/foundation masks with stone, root, and runic-metal skins;
-- warm path, plaza, stair, ramp, bridge, low wall, full wall, runnable face, rail,
-  gap, roof, doorway, canal, and shoreline modules;
-- grass, garden, forest-edge, water, undercroft, foundry, archive, observatory,
-  and portal-room overlays;
-- destructible stone, brick, timber, glass, metal, vegetation, and chemistry
-  vessels separated from immutable topology;
-- standardized attunement shrine pieces visible at map, room, and interaction
-  scales.
-
-All modules require presentation art plus separate authored topology, elevation,
-traversal, material seed, reset group, navigation hint, and safety metadata.
-
-## HUD, overlays, and the lobby
-
-The Wellspring is the application interface in spatial form, but common actions must also be
-available through a fast, controller-friendly overlay. Spatial and overlay
-flows invoke the same application commands; neither owns hidden game state.
-
-UI uses compact dark timber/metal surfaces, aged-brass rules, parchment text,
-and cyan focus. Panels should preserve world context where safe. Critical combat
-HUD remains simpler and higher contrast than lobby furniture. Every interaction
-has focus, disabled, pending, success, failure, and offline states.
-
-## Acceptance gates
-
-An asset or environment slice is not ready because it resembles the concept.
-It must also pass silhouette/readability review at gameplay zoom, color-vision
-and grayscale checks, collision/material alignment, reduced-effects review,
-memory/import budgets, 120 Hz Windows source/import presentation smokes, and
-originality/license provenance. Portable Linux code remains preserved but is
-outside the current release acceptance scope.
+Every accepted pixel-page replacement also updates the reviewed raw-export
+allowlist in `addons/pixel_assets_export/atlas_source_contract.gd` in the same
+slice. Run `pixel-assets-export` alongside the presenter/library suites and
+verify an actual exported PCK. Do not automatically trust a newly authored hash
+or weaken mutation/missing-file rejection. Source rendering alone is not export
+readiness.

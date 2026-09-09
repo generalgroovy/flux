@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "source_kind": "exported_pack",
+  "pack_sha256": "9d8cc66320a73c3f544c70489f443709807d84128a12b82d5fa322d07869e967",
+  "state": {
+    "authority": "derived from validated loaded catalogs; not gameplay configuration",
+    "content": {
+      "abilities_authored": 62,
+      "body_roles": [
+        "small",
+        "middle",
+        "large"
+      ],
+      "champions_playable": 27,
+      "hashes": {
+        "abilities": "51bc4bc17c65f29c788ae64a3889c9214e94932d018114d2cdb82380ad23f493",
+        "champions": "93f980e2a985bfb48013185f9941d591fdde150589a1a3f39dd0b25abf2b123f",
+        "reactions": "175e6438c4fd5b618cb81e95ff13aafa677238b90fd20b4b06b2ee97ebbddcf2"
+      },
+      "playable_champion_ids": [
+        "oh_tipi",
+        "s_wayne",
+        "red_baron",
+        "grace_reava",
+        "wa_bidi",
+        "steezo",
+        "treevor_mason",
+        "oll_i",
+        "fluup",
+        "nico_lai",
+        "spai_si",
+        "leaf_hidden",
+        "ha_rekt",
+        "dr_apex",
+        "haara",
+        "hesus_christo",
+        "grimm_bow",
+        "biggy_bob",
+        "jan_wicked",
+        "ba_djoh",
+        "urzh",
+        "donnok",
+        "djonah_thaan",
+        "luuh_i_zeh",
+        "juul_i_yaina",
+        "faab_i_yaina",
+        "joh_haynes"
+      ],
+      "reaction_mutation_enabled": true,
+      "reactions_defined": 36,
+      "spell_positions": 12,
+      "spells_runtime_selectable": 57
+    },
+    "runtime": {
+      "maximum_players": 8,
+      "preferences_schema": 11,
+      "protocol": 47,
+      "simulation_hz": 120,
+      "snapshot_schema": 18
+    },
+    "schema_version": 1
+  },
+  "provenance": {
+    "checkpoint": "docs/evidence/qv-runtime-v1/checkpoint.json",
+    "checkpoint_sha256": "b06b321200eb8597f9fb76d14bb4d28d30311333eb391c18325e05dcb1c99634",
+    "source_hashes": [
+      {
+        "file": "src/app/player_preferences.gd",
+        "sha256": "c127c6d1e160db825e7bc4f83e4fb4350ec74a617b1ddf6da3d5a796bdd8adac"
+      },
+      {
+        "file": "src/app/input_router.gd",
+        "sha256": "343de83bcc164fc82db7cc5e88d8cab215427b0897d47e2465c57376d6cd1b5e"
+      },
+      {
+        "file": "src/sim/combat/combat_system.gd",
+        "sha256": "788cc518ef1b59ae042b58792b777cc45d26296425a4ecd5a5fcc1a907f6b874"
+      },
+      {
+        "file": "tests/unit/test_player_preferences.gd",
+        "sha256": "81abc4702d3823fb807f17b5a643b2ac62888ed1c394e7467500249734d88497"
+      },
+      {
+        "file": "tests/unit/test_input_router.gd",
+        "sha256": "fa8d1dea53c0f9e748c34ae2ac377b906dcf78d11457b8988a982d9ed2e4df73"
+      },
+      {
+        "file": "tests/unit/test_control_binding_editor.gd",
+        "sha256": "75dba831a2668f8dffeea3b2ccacaa0048156d5b7ed42d6f5cba6838e2046cc4"
+      },
+      {
+        "file": "tests/unit/test_movement_guide_model.gd",
+        "sha256": "b5eb23cb93b6f4bcd3d7d052765988266e34aa0490dba7333654e811ed6a8975"
+      },
+      {
+        "file": "tests/unit/test_combat.gd",
+        "sha256": "8c7bf46447a9dccaa9d3a2fa87e4688c673b20d344d60fc8129e9cd5d44d4da4"
+      },
+      {
+        "file": "tests/scenarios/projectile_circle_equivalence.gd",
+        "sha256": "0ca6ab7245741f276d48106b796ce1e7bbadcefebb8b593c83a99a4e8432ad57"
+      }
+    ],
+    "full_suites": 91,
+    "full_assertions": 463294,
+    "boundary": "Rebundled exact verified QV runtime payload, not a newly exported or newly Full-tested source build."
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "status": "local_full_export_raw_boot_passed",
+  "build_name": "windows-playtest-clarity-p47-20260909",
+  "completed_at_utc": "2026-09-09T14:45:02.9926295Z",
+  "full_suites": 94,
+  "full_assertions": 537041,
+  "source_records": 3079,
+  "payloads": [
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-playtest-clarity-p47-20260909\\windows\\flux2.exe",
+      "bytes": 109071360,
+      "sha256": "04baf75cc1d69dd93eb709533ecab4fd7770bb8a530645717017a06a9d9809fc"
+    },
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-playtest-clarity-p47-20260909\\windows\\flux2.pck",
+      "bytes": 67179784,
+      "sha256": "bd5b15fdffccc7eb1affa80b1b443768e861b2706f9ef9baa0c9f641037b406b"
+    },
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-playtest-clarity-p47-20260909\\release\\FLUX2-Windows-x86_64.zip",
+      "bytes": 97700400,
+      "sha256": "08c9f112156b2ec9a76d9c304fa8faa9c34a8d2ce7aab99435263befb1dd62c9"
+    }
+  ],
+  "source_inventory_sha256": "f0097f194a7c7a4b08e737297dbcaad48c21aae6e293b049388ca4ed78628601",
+  "full_receipt_sha256": "4487ef884e2f69b307e5a99b85edfc1de55a2516ba486aa9d00b2efe946b5a4f",
+  "source_inventory_scope": "Actual filesystem, including ignored files: src,content,assets,scenes,addons,scripts,tests; project.godot,export_presets.cfg; packaging/PLAY-FLUX.cmd,packaging/README-FIRST.txt; art_batches/pixel_v1/{magic,map}/{manifest.json,export/**}; art_batches/wellspring_style_v2/runtime/**. Reparse traversal rejected; not entire repository, docs, source art or unrelated packaging files.",
+  "capture_receipt_sha256": "bc524042b12af46f58654b6192c4233d7e95517aa86c8ab7b1d6f19f62eca7f8",
+  "runtime": {
+    "maximum_players": 8,
+    "preferences_schema": 11,
+    "protocol": 47,
+    "simulation_hz": 120,
+    "snapshot_schema": 18
+  },
+  "new_installer": "not_attempted_portable_only",
+  "current_pointer": "not_changed",
+  "publication": "not_attempted",
+  "human_animation_acceptance": "pending",
+  "friend_network_acceptance": "pending",
+  "sustained_120fps": "not_certified"
+}

@@ -90,7 +90,10 @@ func _test_locked_point_and_burst() -> void:
 		check(world.projectiles.is_empty() and not world.deposits.is_empty(), "real target-range expiration deposits persistent element matter")
 		check(world.reactions.is_empty(), "one Burst cannot react with itself through its shared cast identity")
 		if expected_lanes == 1 and not world.deposits.is_empty():
-			check(absi(world.deposits[0].position_x - target.x) <= 3 and absi(world.deposits[0].position_y - target.y) <= 3, "single projectile terminates at the captured point within fixed-point rounding")
+			var terminals := world.deposits.filter(func(value: ElementDepositState) -> bool: return not value.is_trail())
+			equal(terminals.size(), 1, "single projectile has exactly one terminal, separately from earlier flight trails")
+			if terminals.size() == 1:
+				check(absi(terminals[0].position_x - target.x) <= 3 and absi(terminals[0].position_y - target.y) <= 3, "single projectile terminates at the captured point within fixed-point rounding")
 
 func _test_terminal_deposits() -> void:
 	var wall := _world()

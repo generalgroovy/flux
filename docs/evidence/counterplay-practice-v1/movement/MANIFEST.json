@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "status": "Finalized preference-safe v3 capture package, 2026-09-09. Final parent Full after teardown guard passed. Not human gameplay acceptance or release.",
+  "render_source": ".godot/movement-coach-render-v3",
+  "render_fixture": "tests/visual/capture_movement_coach.gd",
+  "render_dimensions": [
+    1280,
+    720
+  ],
+  "focused_assertions": 591,
+  "integration_selection_assertions": 4573,
+  "integrated_full": {
+    "parent_record": "../full-before-fixture-guard.json",
+    "suites": 91,
+    "assertions": 462658,
+    "failures": 0,
+    "stderr_bytes": 0,
+    "duration_ms": 98525,
+    "stage": "before_capture_teardown_guard"
+  },
+  "hash_scope": "Six final PNGs and six verbatim stdout/stderr payloads; README, .gdignore and this manifest are excluded.",
+  "files": [
+    {
+      "file": "float-controller-50-reduced.png",
+      "bytes": 144700,
+      "sha256": "f42b81bb2d3f695f3da7251f0f3a611433bc99bcfb76bc46b98961532c9d8975"
+    },
+    {
+      "file": "float-controller-75-reduced.png",
+      "bytes": 110273,
+      "sha256": "4d2c47f06fac1bfb470a42afefd341e7cae95dbaa1791161f4a1b900f40baaef"
+    },
+    {
+      "file": "float.png",
+      "bytes": 102315,
+      "sha256": "3276928a8b6147506ae7e129120b5dd377933933608a8b9d83f59dfbc063326a"
+    },
+    {
+      "file": "focused.log",
+      "bytes": 266,
+      "sha256": "96bf2fcf1158c4166d2c6b3db9dac51e5b9d452c0ac06274717d42da9110750a"
+    },
+    {
+      "file": "focused.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "grounded.png",
+      "bytes": 105718,
+      "sha256": "9ce15257f6e84a802b23d69dfa9fb6e3c6606f00c444eeed02ca65f3913c127e"
+    },
+    {
+      "file": "integration-focused.log",
+      "bytes": 358,
+      "sha256": "d4c43fbdf3e8208a1012aaf7f1cbae21c07a7ff5dc50347780215f29d8d6df82"
+    },
+    {
+      "file": "integration-focused.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "render.log",
+      "bytes": 1808,
+      "sha256": "8bd6230ca6b175bcf226ae7cf5bafaa747f5a5f7f54d73d2963db27b1b08cde9"
+    },
+    {
+      "file": "render.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "wall-exit.png",
+      "bytes": 105451,
+      "sha256": "bdf5d4ddc852e184c964aabfcc69e51fa819f3d1857a5c1f048ef147a3e7096d"
+    },
+    {
+      "file": "wallrun.png",
+      "bytes": 106004,
+      "sha256": "e32a38954e827b494c29d9f2db363a2d171fc97b7036159e8e98f719b0d637b1"
+    }
+  ],
+  "post_guard_full": {
+    "status": "passed",
+    "parent_record": "../full-receipt.json",
+    "suites": 91,
+    "assertions": 462661,
+    "duration_ms": 90542,
+    "stderr_bytes": 0,
+    "failures": 0,
+    "new_teardown_assertions": 3
+  },
+  "preference_guard": {
+    "parent_record": "../capture-preferences-guard.json",
+    "bytes": 783,
+    "sha256": "6631f947ca60efb11ec54b4bba21c652442a3481427f4b06ee9df8606a919cbe",
+    "result": "passed",
+    "before_and_after_preferences_sha256": "f8e2d8f27f7720ef09c473cf9612a92f042997acce7df9395447cf11b10f1d8c",
+    "before_and_after_last_write_utc_dotnet_ticks": "639245355837132274",
+    "boundary": "These safe reruns only; original user settings are not inferred."
+  }
+}

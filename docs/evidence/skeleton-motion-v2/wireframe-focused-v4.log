@@ -1,0 +1,10 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+character-selection-grid: 1097 assertions, 0 failures
+character-gallery-integration: 236 assertions, 0 failures
+CHAMPION_ATLAS_SETUP live=27 extensions=2 capacity=24 decoded_payload_bytes=14745600 configure_us=248027
+cartoon-champion-presenter: 42670 assertions, 0 failures
+player-preferences: 855 assertions, 0 failures
+sight-occlusion: 76 assertions, 0 failures
+wireframe-body-presenter: 20132 assertions, 0 failures
+PASS: 6 selected FLUX2 headless suite(s): wireframe-body-presenter,cartoon-champion-presenter,sight-occlusion,player-preferences,character-selection-grid,character-gallery-integration

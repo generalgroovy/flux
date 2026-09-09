@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "completed_at_utc": "2026-09-08T14:48:02.3062622Z",
+  "tier": "focused",
+  "result": "passed",
+  "failure": null,
+  "source": {
+    "head": "a1aa02807626823d0fbc1e25e75441ca3b7f4d36",
+    "branch": "main",
+    "dirty": true,
+    "current_state_sha256": "cb8d31c48d213c351031a023ea7fb70bb7dda3a56ee4a829855f9aa37d0598d7",
+    "asset_inventory_sha256": null
+  },
+  "requested_suite_ids": [
+    "cartoon-champion-presenter",
+    "character-selection-grid",
+    "character-gallery-integration"
+  ],
+  "executed": {
+    "current_state_check": true,
+    "asset_inventory": false,
+    "doctor": true,
+    "import": false,
+    "deterministic_suite_runner": true,
+    "suite_count": 3,
+    "assertion_count": 33059,
+    "suites": [
+      {
+        "id": "character-selection-grid",
+        "assertions": 943,
+        "failures": 0
+      },
+      {
+        "id": "character-gallery-integration",
+        "assertions": 116,
+        "failures": 0
+      },
+      {
+        "id": "cartoon-champion-presenter",
+        "assertions": 32000,
+        "failures": 0
+      }
+    ],
+    "boot_120_hz": false,
+    "package_and_installer": false
+  },
+  "duration_ms": 16527,
+  "stderr_bytes": 0,
+  "logs": [
+    {
+      "path": ".godot/windows-tests/suite.log",
+      "sha256": "e71ced838343047610c8b364cbcd5dfbdf01ffce1ea8ecc5e843c7d32b13baf5",
+      "stderr_bytes": 0
+    }
+  ]
+}

@@ -2,25 +2,26 @@ extends FluxTestSuite
 
 
 const CATALOG_PATH: String = "res://content/abilities/foundation_abilities_v1.json"
-# Protocol 39's reviewed slowdown. Independent production A/B traces in
-# test_elemental_bursts constrain speed, timing, preserved reach and expiry.
-const SHIPPED_DEFINITION_SIGNATURES: Dictionary = {
-	101: "a2c968a00f1026537d2f9bc3322dbe53cf30f2b6960570f928c6deef4a847ea5",
-	110: "e5b953b9b15f0b3a0db0008869c5ab465169a10fab75b729839af1de886734b8",
-	140: "c7d02ddccee191c7267b0ee19fc99640da5c6f0cb526d546b94a8630472c0ba3",
+# Local readability candidate: 20% slower and 20% larger projectiles.
+# Independent production A/B traces in test_elemental_bursts constrain
+# speed, actual collision radius, timing, preserved reach and expiry.
+const CANDIDATE_DEFINITION_SIGNATURES: Dictionary = {
+	101: "5f0485be6169c4621f9f2c4b9b7b57ba966e42814c1a1c1ad33c426d48546011",
+	110: "75ebd63e86007701558ec3f008638bf7540da89b3041be76fdfee75849251395",
+	140: "32693d70069c7083b26c36666cb5ad48864691476da0188a1d7e8b6203b5476e",
 	141: "d94cc312d3e1b5c5d2494dfdaa64920d7e15a6b06bcbb91a1e928c7c7afb4b0c",
-	144: "10069e98045e5fb89c0bb5ff758f47a77a5b2517b43ac20670144bf5d943b407",
-	142: "d7287168450c400f9c796567517df7f7fc67586c7b3b02ca28df0cf281c089de",
+	144: "6bbdb77fb4e2356adf7a6cb222f2b787642c9ac32c90f60aaa092475c4fc4751",
+	142: "6558f49079d8993f7472f1d02e11ccede7a7cdc84b67a34454f85e58536062d9",
 	143: "14bb8db9663ed3dbbc7b30be7e0bb7a0bbd3fac6d156481ec07bf0bf97446195",
-	145: "f9b716b0b6cc1a515acdc40a284d2bc4e8ad6665533cb033bb538a70fe17921a",
-	146: "4c24e416cb181da539a25dc08a1302e155c51fe6f747e5f7c22fa64f9f6aed4a",
-	147: "739336b3730d05ed90ec2c513921da1279333ba0d415fca658981ed1eddcbaac",
-	149: "bcaa05209caed3ed9c05b42b878b27037e5a5055d11168580cafc51fd2f32c5b",
-	148: "3f13fa336f24b230ad49a5d90272289c3964e76b7272e38895000bd247492745",
-	150: "ca16b5479b275becc7b014ae203c379f3173e0661528bd23e49b594458a21274",
-	151: "b869bf61a01d397ee579d2426a4e695182e4e8f91e8f974c0186c7fbe95bc60f",
-	152: "c92000fb61abdf01925734e41a1ca4600ced8f2b23e3cc4076d01456e4f86111",
-	153: "97d238250e5e15f1ba96077f861caa72d0b3b8160bdaafbb3e8edfed47da6f51",
+	145: "339e9eed3be4962b07a29404a740aeecb09112ac27475c9d82f033527511aba8",
+	146: "b9b0f79041c8797da4bfb9677af9c23986658b12b2d87d13b70e6fad7a3a97f6",
+	147: "fe50719aab228ccd860791a50d778aec8310092f54a3db807731bd5cbfe2c623",
+	149: "1f26860d5e648dbdf5aba02638edfe6d17350983c11d84d1899a220afcb52664",
+	148: "e6756f3fb733de6875723bbc121479f1d9815ed2b8d81e2921565f939b04943e",
+	150: "d7e72e3f17e781fcc613fc705ae8f37f1636645ac3a770ea95157abeb5715b45",
+	151: "e5e391e231d7cd21fb1d9bc9c4db78ac426cb22e8fe0a81b8a3bda760135ecbb",
+	152: "6951b4bce13498a966dc105dc09e8564a9ae201cac0b75fda0e825d119b297b0",
+	153: "2290e06b8f44d905eaa5269ab816665dd2972f47878e312a53fcbe20ecbdde1d",
 }
 
 
@@ -46,17 +47,17 @@ func _test_exact_legacy_parity() -> void:
 	for wire_id: int in CombatTuning.runtime_wire_ids():
 		check(table.is_runtime_wire_id(wire_id), "compiled table contains live wire %d" % wire_id)
 		equal(table.definition(wire_id), CombatTuning.cast_definition(wire_id), "wire %d compiles byte-for-byte equivalent simulation data" % wire_id)
-		if SHIPPED_DEFINITION_SIGNATURES.has(wire_id):
-			equal(_definition_signature(table.definition(wire_id)), SHIPPED_DEFINITION_SIGNATURES[wire_id], "wire %d preserves its accepted resource-retune outcome fixture" % wire_id)
+		if CANDIDATE_DEFINITION_SIGNATURES.has(wire_id):
+			equal(_definition_signature(table.definition(wire_id)), CANDIDATE_DEFINITION_SIGNATURES[wire_id], "wire %d preserves its local readability candidate fixture" % wire_id)
 		else:
-			check(wire_id >= 154 and wire_id <= 178, "new compiled wire stays inside the reserved matrix range")
+			check(wire_id >= 154 and wire_id <= 194, "new compiled wire stays inside the reserved matrix range")
 			equal(_definition_signature(table.definition(wire_id)).length(), 64, "new matrix wire %d has a deterministic definition signature" % wire_id)
 	check(table.definition(65_535).is_empty(), "unknown wire fails closed")
 	check(table.projectile_definition(CombatTuning.TIDELINE_WIRE_ID).is_empty(), "compiled spray cannot enter projectile simulation")
 	var eclipse_definition := table.definition(142)
 	equal(int(eclipse_definition["remaining_bounces"]), 0, "Eclipse deposits its material at the first terminal instead of intrinsically ricocheting")
 	eclipse_definition["remaining_bounces"] = 1
-	equal(_definition_signature(eclipse_definition), "db69dcd64edaf6991b938b5bd8f6448a3ead12cc493bd1a232cd3f4033e13694", "accepted Eclipse definition changes only its intrinsic bounce count")
+	equal(_definition_signature(eclipse_definition), "4d2c13d8121a220082f114fa3fa5dfa4f922c98e3fe0bc6f444864b55aa1a979", "readability candidate Eclipse definition changes only its intrinsic bounce count")
 
 
 func _test_authored_change_updates_definition_and_hash() -> void:

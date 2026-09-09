@@ -23,9 +23,23 @@ func _test_repository_language() -> void:
 	var perspective: Dictionary = language.data.get("perspective_contract", {})
 	equal(String(perspective.get("projection")), "top_down_cardinal_with_tilted_facades", "perspective preserves cardinal-friendly floors")
 	check(bool(perspective.get("forbid_diamond_grid")), "misleading diamond navigation is explicitly forbidden")
+	equal(perspective.foreground_cutaway_required, false, "current map never requires automatic proximity fading")
+	equal(perspective.worldbone_opaque, true, "worldbone remains opaque")
 	var character: Dictionary = language.data.get("character_contract", {})
 	check(VisualLanguage._numeric_array_equals(character.get("head_height_ratio"), [0.20, 0.23]), "cartoon champions reserve a mature compact ordinary-head read")
-	equal(character.get("required_silhouette_states"), ["south", "east", "north", "jump", "cast", "hit"], "gameplay silhouette review is bounded")
+	equal(character.get("required_directions"), CartoonChampionPresenter.EXPECTED_DIRECTIONS, "art and runtime agree on all eight headings")
+	equal(character.get("required_silhouette_states"), CartoonChampionPresenter.EXPECTED_ATLAS_STATES, "art contract matches runtime ten action/contact rows")
+	equal((character.get("required_directions") as Array).size() * (character.get("required_silhouette_states") as Array).size(), 80, "silhouette checklist covers all80 cells")
+	for body: String in VisualLanguage.CHARACTER_BODY_HEIGHTS:
+		equal(float(character.body_heights[body]), float(VisualLanguage.CHARACTER_BODY_HEIGHTS[body]), "exact registered height: " + body)
+	equal(character.portrait_source, "south_grounded_occupied_top_third", "portraits use front sprite top third")
+	check(character.preserve_sensible_anatomy and character.preserve_fixed_body_scale and character.forbid_photorealistic_rendering, "sensible proportions are compatible with expressive pixel rendering")
+	var active: Array = language.data.element_availability.active
+	equal(active.size(), AbilityCatalog.FIRST_EIGHT_ELEMENTS.size(), "only current eight elements are active")
+	for element: String in AbilityCatalog.FIRST_EIGHT_ELEMENTS:
+		check(element in active, "active palette includes live element: " + element)
+	for element: String in VisualLanguage.RESERVED_ELEMENT_STYLES:
+		check(element not in active and element in language.elements, "reserved style remains compatible without claiming playability: " + element)
 	check(language.content_hash().length() == 64, "visual language exposes a stable content hash")
 
 
@@ -47,15 +61,10 @@ func _test_live_renderer_binding() -> void:
 	check(not renderer.configure(null), "live renderer refuses an absent visual language")
 	check(renderer.configure(language), "live renderer binds the validated language")
 	check(renderer.natural_kit != null and renderer.natural_kit.content_hash.length() == 64, "live renderer binds the reusable natural-map kit")
-	equal(renderer.WATER, language.ramp_color("deep_water", 1), "live water derives from the shared ramp")
-	equal(renderer.STONE, language.ramp_color("warm_stone", 2), "live stone derives from the shared ramp")
 	equal(renderer.BRASS, language.ramp_color("aged_brass", 2), "live brass derives from the shared ramp")
 	equal(renderer.CYAN, language.ui_color("focus"), "live affordance focus derives from the shared UI token")
-	var footprint := Rect2(100.0, 100.0, 80.0, 64.0)
-	equal(renderer.cutaway_amount(footprint, Vector2(20.0, 20.0)), 0.0, "distant architecture stays intact")
-	equal(renderer.cutaway_amount(footprint, Vector2(140.0, 100.0)), 1.0, "near architecture cuts to its cardinal footprint")
-	check(renderer.cutaway_amount(footprint, Vector2(140.0, 58.0)) > 0.0, "cutaway eases predictably at its outer boundary")
-	equal(renderer.cutaway_amount(Rect2(), Vector2.ZERO), 0.0, "empty footprint cannot create a cutaway")
+	equal(renderer.PARCHMENT, language.ui_color("text_primary"), "live map labels use the shared readable text token")
+	equal(renderer.PANEL, language.ui_color("panel_fill"), "live map labels use the shared panel token")
 
 
 func _test_fail_closed_contract() -> void:
@@ -65,8 +74,21 @@ func _test_fail_closed_contract() -> void:
 		func(data: Dictionary) -> void: (data["pixel_contract"] as Dictionary)["supported_camera_percent"] = [75],
 		func(data: Dictionary) -> void: (data["perspective_contract"] as Dictionary)["projection"] = "diamond_isometric",
 		func(data: Dictionary) -> void: (data["perspective_contract"] as Dictionary)["maximum_facade_rise_to_footprint_ratio"] = 1.4,
+		func(data: Dictionary) -> void: (data["perspective_contract"] as Dictionary)["foreground_cutaway_required"] = true,
+		func(data: Dictionary) -> void: (data["perspective_contract"] as Dictionary)["worldbone_opaque"] = false,
 		func(data: Dictionary) -> void: (data["character_contract"] as Dictionary)["style"] = "realistic",
 		func(data: Dictionary) -> void: (data["character_contract"] as Dictionary)["head_height_ratio"] = [0.2, 0.25],
+		func(data: Dictionary) -> void: (data["character_contract"] as Dictionary)["gameplay_height_pixels"] = [44, 76],
+		func(data: Dictionary) -> void: ((data["character_contract"] as Dictionary)["body_heights"] as Dictionary)["small"] = 44,
+		func(data: Dictionary) -> void: ((data["character_contract"] as Dictionary)["body_heights"] as Dictionary)["small"] = "58",
+		func(data: Dictionary) -> void: ((data["character_contract"] as Dictionary)["body_heights"] as Dictionary)["tiny"] = 44,
+		func(data: Dictionary) -> void: ((data["character_contract"] as Dictionary)["required_directions"] as Array).remove_at(3),
+		func(data: Dictionary) -> void: ((data["character_contract"] as Dictionary)["required_silhouette_states"] as Array).pop_back(),
+		func(data: Dictionary) -> void: (data["character_contract"] as Dictionary)["preserve_sensible_anatomy"] = false,
+		func(data: Dictionary) -> void: (data["character_contract"] as Dictionary)["preserve_fixed_body_scale"] = false,
+		func(data: Dictionary) -> void: (data["character_contract"] as Dictionary)["portrait_source"] = "separate_portrait",
+		func(data: Dictionary) -> void: ((data["element_availability"] as Dictionary)["active"] as Array).append("chaos"),
+		func(data: Dictionary) -> void: ((data["element_availability"] as Dictionary)["reserved_style_only"] as Array).clear(),
 		func(data: Dictionary) -> void: (data["layers"] as Array).reverse(),
 		func(data: Dictionary) -> void: ((data["ramps"] as Dictionary)["warm_stone"] as Array).pop_back(),
 		func(data: Dictionary) -> void: ((data["elements"] as Dictionary)["ice"] as Dictionary)["shape"] = ((data["elements"] as Dictionary)["water"] as Dictionary)["shape"],

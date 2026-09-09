@@ -1,0 +1,2 @@
+C:\Users\sende\Projects\flux\exports\windows-template-runtime-p47-20260909\release\FLUX.exe
+"--quiet" "--print-install-root" "--install-root=C:\Users\sende\Projects\flux\.godot\bootstrap-test\run 6d9a1e922650466ea2dfd2882b48cc96\install with spaces"

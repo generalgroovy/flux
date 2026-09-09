@@ -11,6 +11,7 @@ func run() -> int:
 	_test_fragment_assembly_faults()
 	_test_snapshot_validation_fails_closed()
 	_test_complete_chemistry_envelope()
+	_test_trail_snapshot_limits()
 	return finish("session-snapshot")
 
 
@@ -154,6 +155,15 @@ func _test_projectile_and_event_round_trip() -> void:
 	var impact_station_event := SessionSnapshot.encode_event({"type": "station_confirmed", "event_id": 48, "entity_id": 1, "action": SessionTransport.REQUEST_IMPACT_PRACTICE})
 	check(not impact_station_event.is_empty() and SessionSnapshot._valid_event_values(impact_station_event), "Momentum Chime confirmation uses the bounded semantic event lane")
 	equal(int(SessionSnapshot.decode_event(impact_station_event).get("action", 0)), SessionTransport.REQUEST_IMPACT_PRACTICE, "Momentum Chime confirmation round-trips its stable action")
+	for reason: int in [SessionRequestPolicy.REFUSED_COOLDOWN, SessionRequestPolicy.REFUSED_DISTANCE, SessionRequestPolicy.REFUSED_UNAVAILABLE]:
+		var refusal := SessionSnapshot.encode_event({"type": "request_refused", "event_id": 49, "entity_id": 1, "action": SessionTransport.REQUEST_CHAMPION_SELECT, "reason": reason})
+		check(not refusal.is_empty() and SessionSnapshot._valid_event_values(refusal), "exact champion refusal retains bounded host feedback")
+		var decoded := SessionSnapshot.decode_event(refusal)
+		equal(int(decoded.get("action", 0)), SessionTransport.REQUEST_CHAMPION_SELECT, "selection refusal round-trips exact action")
+		equal(int(decoded.get("reason", 0)), reason, "selection refusal round-trips host reason")
+	var exact_confirmation := SessionSnapshot.encode_event({"type": "champion_attuned", "event_id": 50, "entity_id": 1, "champion_wire_id": 27})
+	check(not exact_confirmation.is_empty() and SessionSnapshot._valid_event_values(exact_confirmation), "named roster wire confirmation remains within existing snapshot schema")
+	equal(int(SessionSnapshot.decode_event(exact_confirmation).get("champion_wire_id", 0)), 27, "host confirms exact champion wire, not a cycle index")
 	var snapshot := SessionSnapshot.capture(source, {1: "Host"}, events)
 	check(SessionSnapshot.validate(snapshot), "projectile/event snapshot validates")
 	var replica := SimWorld.new(120, 3, CollisionWorld.new(3_000_000, 2_000_000))
@@ -437,6 +447,89 @@ func _test_complete_chemistry_envelope() -> void:
 		var replica := SimWorld.new(120, 3)
 		check(SessionSnapshot.apply_to_world(snapshot, replica), "each reaction identity restores for remote presentation")
 		equal(replica.reactions[0].recipe_wire_id, recipe_wire, "all36 reaction identities survive replication")
+
+
+func _snapshot_trail(index: int, owner: int) -> ElementDepositState:
+	var deposit := _chemistry_deposit(index)
+	deposit.owner_id = owner
+	deposit.radius = ElementChemistrySystem.TRAIL_RADIUS
+	deposit.strength = ElementChemistrySystem.TRAIL_STRENGTH
+	deposit.expiry_tick = deposit.created_tick + SimConfig.new(120).milliseconds_to_ticks(ElementChemistrySystem.TRAIL_LIFE_MS[deposit.element_wire_id])
+	return deposit
+
+
+func _test_trail_snapshot_limits() -> void:
+	var world := SimWorld.new(120, 119, CollisionWorld.new(20_000_000, 20_000_000))
+	world.tick = 150
+	world.player().champion_wire_id = 1
+	for owner: int in range(2, 9):
+		var actor := PlayerState.new(owner)
+		actor.champion_wire_id = 1
+		world.players.append(actor)
+	for index: int in ElementChemistrySystem.MAX_TRAILS:
+		world.deposits.append(_snapshot_trail(index, 1 + index % 8))
+	var before := world.state_hash()
+	var boundary := SessionSnapshot.capture(world, {})
+	check(not boundary.is_empty(), "capture admits exactly32 global trails at four for each of eight owners")
+	check(SessionSnapshot.validate(boundary), "received snapshot admits the exact global/per-owner trail boundary")
+	equal(world.state_hash(), before, "role-cap capture leaves canonical source state untouched")
+	if boundary.is_empty():
+		return
+	equal(boundary["schema"], 18, "trail role caps add no snapshot schema fields")
+	equal(boundary["deposits"][0].size(), 14, "trail role is carried by the existing fourteen deposit values")
+	var replica := SimWorld.new(120, 119)
+	check(SessionSnapshot.apply_to_world(boundary, replica), "exact-boundary trails restore as a presentation replica")
+	equal(replica.deposits.size(), ElementChemistrySystem.MAX_TRAILS, "replica loses no admitted trail at the boundary")
+	for index: int in world.deposits.size():
+		equal(replica.deposits[index].canonical_values(), world.deposits[index].canonical_values(), "trail canonical footprint/strength/expiry round-trips exactly")
+	# A ninth, orphan owner isolates the GLOBAL cap: no owner has a fifth trail.
+	var extra_global := _snapshot_trail(ElementChemistrySystem.MAX_TRAILS, 10000)
+	check(extra_global.validate(), "global one-over payload is individually valid and does not rely on malformed fields")
+	world.deposits.append(extra_global)
+	before = world.state_hash()
+	check(SessionSnapshot.capture(world, {}).is_empty(), "capture refuses33 global trails even when every owner remains within four")
+	equal(world.state_hash(), before, "refused global capture does not prune or alter authoritative matter")
+	var forged_global := boundary.duplicate(true)
+	forged_global["deposits"].append(PackedInt32Array(Array(extra_global.canonical_values())))
+	check(not SessionSnapshot.validate(forged_global), "handcrafted incoming dictionary cannot bypass the global trail cap")
+	before = replica.state_hash()
+	check(not SessionSnapshot.apply_to_world(forged_global, replica), "over-global trail snapshot cannot apply")
+	equal(replica.state_hash(), before, "rejected over-global snapshot leaves the existing replica atomic")
+	# Four trails plus eleven real terminals remain legal. The fifth trail then
+	# violates only the role cap, not the existing16-owner/128-global matter cap.
+	world.deposits.clear()
+	for index: int in ElementChemistrySystem.MAX_OWNER_TRAILS:
+		world.deposits.append(_snapshot_trail(index, 10000))
+	for index: int in range(ElementChemistrySystem.MAX_OWNER_TRAILS, 15):
+		var terminal := _chemistry_deposit(index)
+		terminal.owner_id = 10000
+		world.deposits.append(terminal)
+	var owner_boundary := SessionSnapshot.capture(world, {})
+	check(SessionSnapshot.validate(owner_boundary), "orphan owner may carry four trails alongside eleven genuine terminal deposits")
+	var fifth := _snapshot_trail(15, 10000)
+	world.deposits.append(fifth)
+	check(SessionSnapshot.capture(world, {}).is_empty(), "capture rejects a fifth owner trail while total matter stays within16")
+	if not owner_boundary.is_empty():
+		var forged_owner := owner_boundary.duplicate(true)
+		forged_owner["deposits"].append(PackedInt32Array(Array(fifth.canonical_values())))
+		check(not SessionSnapshot.validate(forged_owner), "handcrafted incoming dictionary cannot bypass the per-owner trail cap")
+		before = replica.state_hash()
+		check(not SessionSnapshot.apply_to_world(forged_owner, replica), "over-owner snapshot refuses before mutation")
+		equal(replica.state_hash(), before, "rejected per-owner snapshot preserves existing replica")
+	# Full shared envelope remains128: terminal deposits do not consume trail caps.
+	world.deposits.clear()
+	for index: int in SessionSnapshot.MAX_DEPOSITS:
+		world.deposits.append(_snapshot_trail(index, 1 + index % 8) if index < ElementChemistrySystem.MAX_TRAILS else _chemistry_deposit(index))
+	var mixed := SessionSnapshot.capture(world, {})
+	check(SessionSnapshot.validate(mixed), "32trails plus96terminals preserve the complete existing128-deposit envelope")
+	if not mixed.is_empty():
+		equal(mixed["deposits"].size(), SessionSnapshot.MAX_DEPOSITS, "no terminal or trail is silently truncated")
+		var malformed := mixed.duplicate(true)
+		malformed["deposits"][0][10] = ElementChemistrySystem.TRAIL_RADIUS - 1
+		check(not SessionSnapshot.validate(malformed), "a forged near-trail radius cannot dodge role limits by becoming an invalid terminal")
+	# The remaining shared projectile/deposit bound still applies independently.
+	world.deposits.append(_chemistry_deposit(SessionSnapshot.MAX_DEPOSITS))
+	check(SessionSnapshot.capture(world, {}).is_empty(), "trail hardening retains the original shared total matter limit")
 
 
 func _fragment_fixture(tick: int = 10) -> Dictionary:

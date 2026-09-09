@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "completed_at_utc": "2026-09-09T11:28:44.0550013Z",
+  "tier": "focused",
+  "result": "passed",
+  "failure": null,
+  "source": {
+    "head": "a1aa02807626823d0fbc1e25e75441ca3b7f4d36",
+    "branch": "main",
+    "dirty": true,
+    "current_state_sha256": "3df315cdca5491d8393d25062add6deb804110bf41096fc6f8c404aa78fb217f",
+    "asset_inventory_sha256": null
+  },
+  "requested_suite_ids": [
+    "element-chemistry,burst-projectile-presenter,foundation-spell-presenter,heavy-blast-presenter,pixel-magic-library,chemistry-practice-coach,character-gallery-integration"
+  ],
+  "executed": {
+    "current_state_check": true,
+    "asset_inventory": false,
+    "doctor": true,
+    "import": false,
+    "deterministic_suite_runner": true,
+    "suite_count": 7,
+    "assertion_count": 108709,
+    "suites": [
+      {
+        "id": "character-gallery-integration",
+        "assertions": 236,
+        "failures": 0
+      },
+      {
+        "id": "element-chemistry",
+        "assertions": 1948,
+        "failures": 0
+      },
+      {
+        "id": "chemistry-practice-coach",
+        "assertions": 4198,
+        "failures": 0
+      },
+      {
+        "id": "foundation-spell-presenter",
+        "assertions": 2957,
+        "failures": 0
+      },
+      {
+        "id": "heavy-blast-presenter",
+        "assertions": 40535,
+        "failures": 0
+      },
+      {
+        "id": "burst-projectile-presenter",
+        "assertions": 16091,
+        "failures": 0
+      },
+      {
+        "id": "pixel-magic-library",
+        "assertions": 42744,
+        "failures": 0
+      }
+    ],
+    "boot_120_hz": false,
+    "package_and_installer": false
+  },
+  "duration_ms": 17331,
+  "stderr_bytes": 0,
+  "logs": [
+    {
+      "path": ".godot/windows-tests/suite.log",
+      "sha256": "066896137f0b86f6e893a28a15d7541ecbed24bd776e0c2b59ece4ef90f58ecc",
+      "stderr_bytes": 0
+    }
+  ]
+}

@@ -11,7 +11,41 @@ func run() -> int:
 	_test_bounds(metrics_120)
 	_test_slow_is_a_speed_ratio()
 	_test_slow_expiry_and_authored_motion()
+	_test_walk_sprint_contrast()
 	return finish("movement-response")
+
+
+func _test_walk_sprint_contrast() -> void:
+	equal(MovementTuning.SPRINT_MULTIPLIER, 1600, "held sprint is sixty percent faster than unchanged walking")
+	equal(MovementTuning.COMPATIBILITY_ID, "movement-tuning-v14-walk-sprint-contrast", "new authoritative speed has a distinct compatibility identity")
+	var config := SimConfig.new(120)
+	var arena := CollisionWorld.new(10_000_000, 10_000_000)
+	for body_ratio: int in [900, 1000, 1100]:
+		for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+			var walker := PlayerState.new(1)
+			var runner := PlayerState.new(2)
+			for state: PlayerState in [walker, runner]:
+				state.position_x = 5_000_000
+				state.position_y = 5_000_000
+				state.movement_speed_ratio = body_ratio
+				state.radius = int({900: 21_000, 1000: 18_000, 1100: 15_000}[body_ratio])
+			var radius_before := runner.radius
+			for tick: int in range(120):
+				MovementSystem.step(walker, SimCommand.new(tick, 1, direction.x, direction.y), config, arena)
+				MovementSystem.step(runner, SimCommand.new(tick, 2, direction.x, direction.y, SimCommand.HELD_SPRINT), config, arena)
+			var walking := Vector2(walker.velocity_x, walker.velocity_y).length()
+			var running := Vector2(runner.velocity_x, runner.velocity_y).length()
+			check(absf(running / walking - 1.6) < 0.001, "all size ratios and eight directions retain the 1.6 sprint contrast")
+			check(running <= MovementTuning.MAX_AUTHORED_SPEED, "ordinary sprint stays below the existing authored speed ceiling")
+			equal(runner.radius, radius_before, "sprinting cannot change the selected size hurt radius")
+			check(runner.stamina < walker.stamina, "stronger sprint still pays its existing stamina drain")
+			check(MovementSystem._retained_speed(runner, MovementTuning.ROLL_SPEED) <= MovementTuning.MAX_AUTHORED_SPEED, "roll entry retains the bounded existing authored speed policy")
+			check(MovementSystem._retained_speed(runner, MovementTuning.WALL_SKIM_SPEED) <= MovementTuning.MAX_AUTHORED_SPEED, "wallrun entry cannot amplify stronger sprint beyond the existing cap")
+			check(MovementSystem._retained_speed(runner, 0) <= MovementTuning.MAX_AUTHORED_SPEED, "slide entry remains bounded retained momentum rather than a new boost")
+			for tick: int in range(120, 144):
+				MovementSystem.step(runner, SimCommand.new(tick, 2, direction.x, direction.y), config, arena)
+			check((Vector2i(runner.velocity_x, runner.velocity_y) - Vector2i(walker.velocity_x, walker.velocity_y)).length_squared() <= 4, "releasing sprint returns to unchanged walking within 200 ms")
+	print("Sprint contrast: walk=", MovementTuning.BASE_SPEED, " sprint=", MovementTuning.BASE_SPEED * MovementTuning.SPRINT_MULTIPLIER / 1000, " movement_hash=", MovementTuning.compatibility_hash())
 
 
 func _test_slow_is_a_speed_ratio() -> void:

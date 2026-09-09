@@ -1,0 +1,2 @@
+C:\Users\sende\Projects\flux\exports\windows-followup-p47-20260909\release\FLUX.exe
+"--quiet" "--install-only" "--no-shortcuts" "--install-root=C:\Users\sende\Projects\flux\.godot\bootstrap-test\run 633592f8222244fba64875b4629d1378\install with spaces"

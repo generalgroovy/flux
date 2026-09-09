@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "completed_at_utc": "2026-09-09T11:21:52.6084373Z",
+  "tier": "focused",
+  "result": "failed",
+  "failure": "Godot emitted a script/import/runtime error.",
+  "source": {
+    "head": "a1aa02807626823d0fbc1e25e75441ca3b7f4d36",
+    "branch": "main",
+    "dirty": true,
+    "current_state_sha256": "e2ba996979634666e282b433f2bbbea1b01885480299cb1c8840281254174c7e",
+    "asset_inventory_sha256": null
+  },
+  "requested_suite_ids": [
+    "element-chemistry,burst-projectile-presenter,foundation-spell-presenter,heavy-blast-presenter,pixel-magic-library"
+  ],
+  "executed": {
+    "current_state_check": true,
+    "asset_inventory": false,
+    "doctor": true,
+    "import": false,
+    "deterministic_suite_runner": true,
+    "suite_count": 5,
+    "assertion_count": 104275,
+    "suites": [
+      {
+        "id": "element-chemistry",
+        "assertions": 1948,
+        "failures": 0
+      },
+      {
+        "id": "foundation-spell-presenter",
+        "assertions": 2957,
+        "failures": 0
+      },
+      {
+        "id": "heavy-blast-presenter",
+        "assertions": 40535,
+        "failures": 0
+      },
+      {
+        "id": "burst-projectile-presenter",
+        "assertions": 16091,
+        "failures": 24
+      },
+      {
+        "id": "pixel-magic-library",
+        "assertions": 42744,
+        "failures": 1
+      }
+    ],
+    "boot_120_hz": false,
+    "package_and_installer": false
+  },
+  "duration_ms": 15567,
+  "stderr_bytes": 0,
+  "logs": [
+    {
+      "path": ".godot/windows-tests/suite.log",
+      "sha256": "048711fc4d6f4142dcbdbf992b0018d373b2ba7274eeb426246edf50c5fdda8c",
+      "stderr_bytes": 0
+    }
+  ]
+}

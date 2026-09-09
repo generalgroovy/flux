@@ -1,0 +1,606 @@
+{
+  "audio": "not_started",
+  "authority_unchanged_by_draw": true,
+  "frames": [
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "champion_wire_id": 2,
+      "distance_phase": 0.604686247996795,
+      "file": "s_wayne-east-aim-north.png",
+      "kind": "actual_gameplay",
+      "tick": 24,
+      "velocity": [
+        394956,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "champion_wire_id": 2,
+      "distance_phase": 0.604686247996795,
+      "file": "s_wayne-east-aim-north-cone.png",
+      "kind": "actual_gameplay_cone",
+      "tick": 24,
+      "velocity": [
+        394956,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "cast_started_event": {
+        "entity_id": 1,
+        "type": "cast_started",
+        "wire_id": 142
+      },
+      "champion_wire_id": 2,
+      "distance_phase": 0.771352914663461,
+      "file": "s_wayne-east-cast-north-startup.png",
+      "flux_after_payment": 116200,
+      "flux_before": 123200,
+      "flux_paid": 7000,
+      "kind": "actual_paid_moving_cast_startup",
+      "primary_wire_id": 142,
+      "tick": 28,
+      "velocity": [
+        394956,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "cast_started_event": {
+        "entity_id": 1,
+        "type": "cast_started",
+        "wire_id": 142
+      },
+      "champion_wire_id": 2,
+      "distance_phase": 0.146352914663461,
+      "file": "s_wayne-east-cast-north-delivery.png",
+      "flux_after_payment": 116200,
+      "flux_before": 123200,
+      "flux_paid": 7000,
+      "kind": "actual_paid_moving_cast_delivery",
+      "primary_wire_id": 142,
+      "projectile_id": 1000,
+      "projectile_spawned_event": {
+        "lane_angle_degrees": 0,
+        "lane_count": 1,
+        "lane_index": 0,
+        "owner_id": 1,
+        "projectile_id": 1000,
+        "type": "projectile_spawned",
+        "wire_id": 142
+      },
+      "projectile_velocity": [
+        0,
+        -499200
+      ],
+      "tick": 37,
+      "velocity": [
+        394956,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "champion_wire_id": 2,
+      "distance_phase": 0.606781194739169,
+      "file": "s_wayne-east-aim-south.png",
+      "kind": "actual_gameplay",
+      "tick": 61,
+      "velocity": [
+        394956,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "cast_started_event": {
+        "entity_id": 1,
+        "type": "cast_started",
+        "wire_id": 142
+      },
+      "champion_wire_id": 2,
+      "distance_phase": 0.773447861405835,
+      "file": "s_wayne-east-cast-south-startup.png",
+      "flux_after_payment": 116200,
+      "flux_before": 123200,
+      "flux_paid": 7000,
+      "kind": "actual_paid_moving_cast_startup",
+      "primary_wire_id": 142,
+      "tick": 65,
+      "velocity": [
+        394956,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "cast_started_event": {
+        "entity_id": 1,
+        "type": "cast_started",
+        "wire_id": 142
+      },
+      "champion_wire_id": 2,
+      "distance_phase": 0.148447861405835,
+      "file": "s_wayne-east-cast-south-delivery.png",
+      "flux_after_payment": 116200,
+      "flux_before": 123200,
+      "flux_paid": 7000,
+      "kind": "actual_paid_moving_cast_delivery",
+      "primary_wire_id": 142,
+      "projectile_id": 1001,
+      "projectile_spawned_event": {
+        "lane_angle_degrees": 0,
+        "lane_count": 1,
+        "lane_index": 0,
+        "owner_id": 1,
+        "projectile_id": 1001,
+        "type": "projectile_spawned",
+        "wire_id": 142
+      },
+      "projectile_velocity": [
+        0,
+        499200
+      ],
+      "tick": 74,
+      "velocity": [
+        394956,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "champion_wire_id": 2,
+      "distance_phase": 0.148447861405835,
+      "file": "s_wayne-gallery.png",
+      "kind": "actual_gallery",
+      "tick": 74,
+      "velocity": [
+        394956,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "champion_wire_id": 1,
+      "distance_phase": 0.511968966522907,
+      "file": "oh_tipi-east-aim-north.png",
+      "kind": "actual_gameplay",
+      "tick": 98,
+      "velocity": [
+        365148,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "champion_wire_id": 1,
+      "distance_phase": 0.511968966522907,
+      "file": "oh_tipi-east-aim-north-cone.png",
+      "kind": "actual_gameplay_cone",
+      "tick": 98,
+      "velocity": [
+        365148,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "cast_started_event": {
+        "entity_id": 1,
+        "type": "cast_started",
+        "wire_id": 140
+      },
+      "champion_wire_id": 1,
+      "distance_phase": 0.649648813100962,
+      "file": "oh_tipi-east-cast-north-startup.png",
+      "flux_after_payment": 108400,
+      "flux_before": 114400,
+      "flux_paid": 6000,
+      "kind": "actual_paid_moving_cast_startup",
+      "primary_wire_id": 140,
+      "tick": 102,
+      "velocity": [
+        365148,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "cast_started_event": {
+        "entity_id": 1,
+        "type": "cast_started",
+        "wire_id": 140
+      },
+      "champion_wire_id": 1,
+      "distance_phase": 0.890610638786765,
+      "file": "oh_tipi-east-cast-north-delivery.png",
+      "flux_after_payment": 108400,
+      "flux_before": 114400,
+      "flux_paid": 6000,
+      "kind": "actual_paid_moving_cast_delivery",
+      "primary_wire_id": 140,
+      "projectile_id": 1002,
+      "projectile_spawned_event": {
+        "lane_angle_degrees": 0,
+        "lane_count": 1,
+        "lane_index": 0,
+        "owner_id": 1,
+        "projectile_id": 1002,
+        "type": "projectile_spawned",
+        "wire_id": 140
+      },
+      "projectile_velocity": [
+        0,
+        -576000
+      ],
+      "tick": 109,
+      "velocity": [
+        365148,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "champion_wire_id": 1,
+      "distance_phase": 0.511968966522907,
+      "file": "oh_tipi-east-aim-south.png",
+      "kind": "actual_gameplay",
+      "tick": 133,
+      "velocity": [
+        365148,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "cast_started_event": {
+        "entity_id": 1,
+        "type": "cast_started",
+        "wire_id": 140
+      },
+      "champion_wire_id": 1,
+      "distance_phase": 0.649648813100962,
+      "file": "oh_tipi-east-cast-south-startup.png",
+      "flux_after_payment": 108400,
+      "flux_before": 114400,
+      "flux_paid": 6000,
+      "kind": "actual_paid_moving_cast_startup",
+      "primary_wire_id": 140,
+      "tick": 137,
+      "velocity": [
+        365148,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "cast_started_event": {
+        "entity_id": 1,
+        "type": "cast_started",
+        "wire_id": 140
+      },
+      "champion_wire_id": 1,
+      "distance_phase": 0.890610638786765,
+      "file": "oh_tipi-east-cast-south-delivery.png",
+      "flux_after_payment": 108400,
+      "flux_before": 114400,
+      "flux_paid": 6000,
+      "kind": "actual_paid_moving_cast_delivery",
+      "primary_wire_id": 140,
+      "projectile_id": 1003,
+      "projectile_spawned_event": {
+        "lane_angle_degrees": 0,
+        "lane_count": 1,
+        "lane_index": 0,
+        "owner_id": 1,
+        "projectile_id": 1003,
+        "type": "projectile_spawned",
+        "wire_id": 140
+      },
+      "projectile_velocity": [
+        0,
+        576000
+      ],
+      "tick": 144,
+      "velocity": [
+        365148,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "champion_wire_id": 1,
+      "distance_phase": 0.890610638786765,
+      "file": "oh_tipi-gallery.png",
+      "kind": "actual_gallery",
+      "tick": 144,
+      "velocity": [
+        365148,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "champion_wire_id": 3,
+      "distance_phase": 0.445050073538714,
+      "file": "red_baron-east-aim-north.png",
+      "kind": "actual_gameplay",
+      "tick": 168,
+      "velocity": [
+        339066,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "champion_wire_id": 3,
+      "distance_phase": 0.445050073538714,
+      "file": "red_baron-east-aim-north-cone.png",
+      "kind": "actual_gameplay_cone",
+      "tick": 168,
+      "velocity": [
+        339066,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "cast_started_event": {
+        "entity_id": 1,
+        "type": "cast_started",
+        "wire_id": 145
+      },
+      "champion_wire_id": 3,
+      "distance_phase": 0.559453925623102,
+      "file": "red_baron-east-cast-north-startup.png",
+      "flux_after_payment": 99600,
+      "flux_before": 105600,
+      "flux_paid": 6000,
+      "kind": "actual_paid_moving_cast_startup",
+      "primary_wire_id": 145,
+      "tick": 172,
+      "velocity": [
+        339066,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "cast_started_event": {
+        "entity_id": 1,
+        "type": "cast_started",
+        "wire_id": 145
+      },
+      "champion_wire_id": 3,
+      "distance_phase": 0.78823939026126,
+      "file": "red_baron-east-cast-north-delivery.png",
+      "flux_after_payment": 99600,
+      "flux_before": 105600,
+      "flux_paid": 6000,
+      "kind": "actual_paid_moving_cast_delivery",
+      "primary_wire_id": 145,
+      "projectile_id": 1004,
+      "projectile_spawned_event": {
+        "lane_angle_degrees": 0,
+        "lane_count": 1,
+        "lane_index": 0,
+        "owner_id": 1,
+        "projectile_id": 1004,
+        "type": "projectile_spawned",
+        "wire_id": 145
+      },
+      "projectile_velocity": [
+        0,
+        -537600
+      ],
+      "tick": 180,
+      "velocity": [
+        339066,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "champion_wire_id": 3,
+      "distance_phase": 0.445050073538714,
+      "file": "red_baron-east-aim-south.png",
+      "kind": "actual_gameplay",
+      "tick": 204,
+      "velocity": [
+        339066,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "cast_started_event": {
+        "entity_id": 1,
+        "type": "cast_started",
+        "wire_id": 145
+      },
+      "champion_wire_id": 3,
+      "distance_phase": 0.559453925623102,
+      "file": "red_baron-east-cast-south-startup.png",
+      "flux_after_payment": 99600,
+      "flux_before": 105600,
+      "flux_paid": 6000,
+      "kind": "actual_paid_moving_cast_startup",
+      "primary_wire_id": 145,
+      "tick": 208,
+      "velocity": [
+        339066,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "cast_started_event": {
+        "entity_id": 1,
+        "type": "cast_started",
+        "wire_id": 145
+      },
+      "champion_wire_id": 3,
+      "distance_phase": 0.78823939026126,
+      "file": "red_baron-east-cast-south-delivery.png",
+      "flux_after_payment": 99600,
+      "flux_before": 105600,
+      "flux_paid": 6000,
+      "kind": "actual_paid_moving_cast_delivery",
+      "primary_wire_id": 145,
+      "projectile_id": 1005,
+      "projectile_spawned_event": {
+        "lane_angle_degrees": 0,
+        "lane_count": 1,
+        "lane_index": 0,
+        "owner_id": 1,
+        "projectile_id": 1005,
+        "type": "projectile_spawned",
+        "wire_id": 145
+      },
+      "projectile_velocity": [
+        0,
+        537600
+      ],
+      "tick": 216,
+      "velocity": [
+        339066,
+        0
+      ]
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "champion_wire_id": 3,
+      "distance_phase": 0.78823939026126,
+      "file": "red_baron-gallery.png",
+      "kind": "actual_gallery",
+      "tick": 216,
+      "velocity": [
+        339066,
+        0
+      ]
+    },
+    {
+      "file": "production-phase-00.png",
+      "kind": "controlled_production_presenter",
+      "normalized_distance_phase": 0.0
+    },
+    {
+      "file": "production-phase-01.png",
+      "kind": "controlled_production_presenter",
+      "normalized_distance_phase": 0.125
+    },
+    {
+      "file": "production-phase-02.png",
+      "kind": "controlled_production_presenter",
+      "normalized_distance_phase": 0.25
+    },
+    {
+      "file": "production-phase-03.png",
+      "kind": "controlled_production_presenter",
+      "normalized_distance_phase": 0.375
+    },
+    {
+      "file": "production-phase-04.png",
+      "kind": "controlled_production_presenter",
+      "normalized_distance_phase": 0.5
+    },
+    {
+      "file": "production-phase-05.png",
+      "kind": "controlled_production_presenter",
+      "normalized_distance_phase": 0.625
+    },
+    {
+      "file": "production-phase-06.png",
+      "kind": "controlled_production_presenter",
+      "normalized_distance_phase": 0.75
+    },
+    {
+      "file": "production-phase-07.png",
+      "kind": "controlled_production_presenter",
+      "normalized_distance_phase": 0.875
+    }
+  ],
+  "human_acceptance": "not_run",
+  "network": "not_started",
+  "preferences": "transient_fixture_only",
+  "schema_version": 1,
+  "size": [
+    1280,
+    720
+  ]
+}

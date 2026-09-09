@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "completed_at_utc": "2026-09-09T12:27:03.1249782Z",
+  "tier": "focused",
+  "result": "failed",
+  "failure": "Godot emitted a script/import/runtime error.",
+  "source": {
+    "head": "a1aa02807626823d0fbc1e25e75441ca3b7f4d36",
+    "branch": "main",
+    "dirty": true,
+    "current_state_sha256": "cdbb9c4044054b0994a70054461d3268f7cc7e5dc08b4316a06e9eb714285f13",
+    "asset_inventory_sha256": null
+  },
+  "requested_suite_ids": [
+    "element-trails,element-chemistry,projectile-chemistry-integration,session-snapshot,pixel-magic-library,burst-projectile-presenter,pixel-assets-export,chemistry-practice-coach,chemistry-guide-model"
+  ],
+  "executed": {
+    "current_state_check": true,
+    "asset_inventory": false,
+    "doctor": true,
+    "import": false,
+    "deterministic_suite_runner": true,
+    "suite_count": 0,
+    "assertion_count": 0,
+    "suites": [],
+    "boot_120_hz": false,
+    "package_and_installer": false
+  },
+  "duration_ms": 12420,
+  "stderr_bytes": 0,
+  "logs": [
+    {
+      "path": ".godot/windows-tests/suite.log",
+      "sha256": "35c9861334dde48b61bc8d5b0fe0fdfc113ff417a49487e2281e8338704f89ab",
+      "stderr_bytes": 0
+    }
+  ]
+}

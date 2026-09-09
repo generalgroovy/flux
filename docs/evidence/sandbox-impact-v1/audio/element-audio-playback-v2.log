@@ -1,0 +1,17 @@
+WorkerThreadPool: 8 threads, 2 max low-priority.
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+TextServer: Added interface "Dummy"
+TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+Using "default" pen tablet driver...
+
+TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+CORE API HASH: 3769296884
+EDITOR API HASH: 3146738256
+Loading resource: res://tests/scenarios/element_audio_playback_probe.gd remapped: res://tests/scenarios/element_audio_playback_probe.gd
+Completed load for: 'res://tests/scenarios/element_audio_playback_probe.gd' remapped 'res://tests/scenarios/element_audio_playback_probe.gd' at thread -1
+SceneTreeFTI: traversal method DEFAULT
+Loaded system CA certificates
+PASS: 16 actual AudioStreamPlayer starts/mutes;4 owned nodes;Dummy output only;no listening claim
+XR: Clearing primary interface
+XR: Removed interface "Native mobile"
+XR: Removed interface "OpenXR"

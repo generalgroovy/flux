@@ -1,19 +1,32 @@
 # FLUX runtime visual system
 
-Status: **canonical runtime presentation architecture**.
+Status: **current runtime presentation architecture with labeled historical evidence**, 2026-09-08.
 
 The runtime visual system is presentation-only. It may interpret authoritative
 state, but it never decides movement, collision, visibility, resources, spell
 membership, damage, cooldowns, score or outcomes.
 
+[SPECIFICATION](../SPECIFICATION.md) owns current scope;
+[VISUAL-DIRECTION](VISUAL-DIRECTION.md) owns the current visual contract.
+This file explains their presentation boundaries, not a second implementation
+queue. The current character checkpoint is
+[basic templates, gait, portraits and compact guides](CHARACTER-TEMPLATE-V2-CHECKPOINT.md).
+The V0–V6 sections below preserve earlier engineering evidence and are explicitly
+historical; their acceptance scores, named spells, map dimensions and production
+commands do not override the current contracts.
+
 ## Expandable foundation
 
 | Boundary | Canonical source | Responsibility |
 | --- | --- | --- |
-| Visual tokens | `content/visual/visual_language_v1.json` | Pixel grid, ordered ramps, twelve element shape/cadence identities, UI metrics, density budgets, layer order and review thresholds. |
+| Visual tokens | `content/visual/visual_language_v1.json` | Pixel grid, ordered ramps, eight active element identities and four reserved style entries, UI metrics, density budgets, layer order and review thresholds. |
 | Validation/API | `src/presentation/visual_language.gd` | Fail-closed loading and typed access without local color invention. |
 | Pixel components | `src/presentation/pixel_primitives.gd` | Stepped panels, dividers, material tiles, runes and resource treatments shared by world, spells and GUI. |
 | Pixel placement | `src/presentation/pixel_presentation.gd` | Whole-output-pixel translation at 50/75/100% while simulation stays subpixel/fixed-point. |
+| Live campus | `src/presentation/sanctum_campus_renderer.gd`, `src/presentation/wellspring_illustrated_kit.gd` | Validated illustrated ground, opaque worldbone structures, stations and readable activity areas; art never owns collision. |
+| Body presentation | `src/presentation/cartoon_champion_presenter.gd` | Registered three-size, eight-heading pages, distance-driven contact selection and sprite-derived portraits. |
+| Pixel magic | `src/presentation/pixel_magic_library.gd`, `src/presentation/element_chemistry_presenter.gd` | Validated reusable pixel frames clipped to authoritative material coverage and phase; essential material remains at zero optional decoration. |
+| Player guides | `src/presentation/player_compendium.gd`, `src/presentation/chemistry_guide_model.gd` | Compact movement table and full 8×8 chemistry matrix with current values and accessible Details. |
 | Gate specimen | `src/presentation/visual_specimen.gd` | Live `--visual-specimen` review of tokens and components; it is diagnostic evidence, not gameplay authority. |
 
 Every promoted character, environment, spell and GUI slice must reuse these
@@ -22,15 +35,15 @@ layer, unbounded particle count or renderer-owned rule is a regression.
 
 ## Maintained cohesion hierarchy
 
-The accepted visual gate is a foundation, not permission for later slices to
-invent their own look. Every touched asset follows the same reading order and
-is reviewed inside live gameplay rather than only on an isolated sheet.
+Existing engineering evidence is not blanket visual acceptance for later
+slices. Every touched asset follows the same reading order and is reviewed
+inside live gameplay rather than only on an isolated sheet.
 
 | Priority | Live read | Shared rule |
 | ---: | --- | --- |
 | 1 | Champion and immediate state | Stable 58/68/76 px body envelopes, shared feet pivot, body/clothing-only atlas, ancestry silhouette and no per-action scaling. |
 | 2 | Hostile spell geometry | Dark boundary, bright controlled core, ownership shape, bounded size/speed class and unambiguous travel/collision cue. |
-| 3 | Interactions and major reactions | Short contextual parchment treatment, anchored source and a shape/timing cue that survives grayscale. |
+| 3 | Interactive matter and major reactions | Tileable native-pixel material shows occupied area and phase; no range circles, perimeter markers or diagnostic outlines. Contextual information stays compact and distinct from material. |
 | 4 | Routes, cover and landmarks | Quiet walkable values, visible collision feet/thresholds, large district silhouettes and authored response lanes. |
 | 5 | Material texture and ambient life | Warm stone, timber, brass, water and growth detail concentrates at scenic edges and never competes with play. |
 
@@ -50,27 +63,93 @@ one unreadable glow.
 FLUX uses top-down cardinal floors with tilted facades, not a diamond isometric
 grid. Walkable tiles remain visually square; horizontal/vertical inputs map to
 horizontal/vertical screen movement; wall feet, cover footprints, door
-thresholds and elevation transitions stay visible. Facades may rise up to 0.85
-of their readable footprint and foreground structures must cut away before they
-hide legal information.
+thresholds and elevation transitions stay visible. Art uses a 55-degree
+illustration angle while floors stay unrotated; facades may rise up to 0.85 of
+their readable footprint. Current worldbone structures remain opaque and stable:
+no proximity fade or replacement with a flat footprint. Preserve readable
+routes through composition and silhouette placement rather than making solid
+structures disappear. The retained `cutaway` layer and archived architecture
+helpers are compatibility/history, not permission to restore that behavior.
 
-Champions use mature compact cartoon proportions at gameplay scale: an ordinary
-head/skull at 24–30% of total body height, clear torso and limbs, body-and-clothing-only
-pixels, 1–2-pixel outlines, 3–5 colors per material and a separate grounded
-shadow. Hair, fins, horns and ancestry crowns are silhouette features rather
-than cranium size. The current body atlas covers `S/SE/E/NE/N/NW/W/SW` for both
-movement and facing. South/front faces the
-camera symmetrically, north/back is centered, sides are profiles, and diagonal
-views preserve ancestry/clothing asymmetry. Travel and aim remain continuous;
-presentation resolves them independently so diagonal free movement and
-aim-facing forward/back/strafe gait read without changing simulation. Jump,
-cast and hit silhouettes must read in every direction before detail is approved.
-The revised concept board at
-`assets/concept/visual-system-cartoon-perspective-v2.png` clarifies the intended
-charm and body language, but its steep courtyard is explicitly not the runtime
-camera target.
+The original Oh Tipi artwork is the current character style authority, as
+recorded by the [template contract](../art_batches/character_style_v1/template_v2/contract.json).
+Champions use sensible anatomy and expressive nonphotorealistic pixel rendering:
+an ordinary head/skull at 20–23% of total body height, clear torso and limbs,
+body-and-clothing-only pixels, 1–2-pixel outlines, 3–5 colors per material and a
+separate grounded shadow. Hair, fins, horns and ancestry crowns are silhouette
+features rather than cranium size. Hands cast magic; weapons, spell effects,
+auras, shadows and environment are not baked into character pixels.
 
-## V0 baseline
+| Shared body rule | Current contract |
+| --- | --- |
+| Sizes | Small / Middle / Large at exactly 58 / 68 / 76 px standing height |
+| Registration | 96×96 cells; common 48/84 foot pivot; one calibrated scale per body across every action |
+| Eight headings | `S/SE/E/NE/N/NW/W/SW`; symmetric front, centered back, true side profiles, distinct front/back quarter views |
+| Ten rows per heading | `grounded`, `jump`, `cast`, `hit`, `walk`, `sprint`, `slide`, `roll`, `walk_b`, `sprint_b` |
+| Gait | Anatomical left/right support alternates with opposing arms; real locomotion distance advances a shared phase without turning correction offsets into footsteps |
+| Portrait | Exact top third of occupied South-grounded sprite bounds, full width, nearest proportional fit into transparent 32×32; shared by HUD and Gallery |
+| Gameplay boundary | Three sizes retain distinct stats and hurtboxes but share wall clearance; neither is derived from sprite pixels |
+
+All 80 heading/action cells must be readable. Rear diagonals show the back and
+rear skull rather than a side-on face; adjacent headings must remain
+distinguishable. Existing Jan diagonals still need raster correction. A
+different pixel hash or recolored trousers does not prove alternating anatomy.
+Travel and aim remain continuous; presentation does not quantize simulation or
+change movement controls. Current walking still has two authored contacts, not
+a completed multi-frame walk cycle.
+
+**Production gate: basic Small → Middle → Large templates first, then user
+acceptance of all three together.** Only then may named-character repair or
+remaining-cast generation resume. Construction guides and a Small South-only
+technical proof are not approved neutral runtime atlases. Existing playable
+pages stay usable while new candidate promotion requires exact-hash review.
+Follow [ADDING-VISUAL-ASSETS](ADDING-VISUAL-ASSETS.md) and the
+[template production guide](../art_batches/character_style_v1/template_v2/README.md),
+not archived generation commands below.
+
+Older concept boards remain composition references, not replacements for the
+original Oh Tipi authority or the current camera/template contract.
+
+## Element identity and acceptance boundary
+
+The eight active families are Earth, Fire, Water, Wind, Ice, Charge, Light and
+Dark. Spirit, Chaos, Gravity and Time remain reserved palette/glyph entries for
+compatibility only; they do not enable additional spells or chemistry.
+The specimen and player-facing current overviews show active elements only.
+Each active family must read through color, shape, value and motion together;
+do not recolor an existing validated pixel pack without reviewing its sprites
+and preserving source/atlas provenance.
+
+Plain terminal matter from Bolt, Heavy, Rapid and Wave is finite and harmless
+by itself; Beam, Spray and Field do not supply chemistry deposits. The 36
+first-grade recipes act only during their authoritative active windows. Steam
+uses billowing concealment material, not an implied damaging Water cloud;
+stone deposits are not automatically walking walls. Reaction cover blocks
+shots/rays rather than walking. Material animation shows actual coverage with
+world-anchored, clipped pixel tiles, including in reduced effects.
+
+Source checks, actual renders, packaged boot, human style/feel acceptance and a
+published installer are separate gates. No historical score proves current
+template acceptance, internet play or sustained 120 FPS; the simulation target
+is authoritative 120 Hz.
+
+Run the current diagnostic token specimen on Windows:
+
+```powershell
+scripts/run.cmd --visual-specimen --pov-mode=full --camera-zoom=75
+```
+
+## Historical evidence ledger
+
+The V0–V6 narratives below describe their recorded checkpoints, including older
+cutaway behavior, character production paths, spell profiles and campus size.
+Past-tense scope applies throughout these sections even where the original
+record uses “now” or “live.” Retain them for provenance and architectural
+context; use the contracts above and the active implementation queue for new
+work. Their engineering acceptance does not reopen the current basic-template
+user gate.
+
+### Historical V0 baseline
 
 Historical baseline captures were recorded on 2026-08-13 from commit `e996610`
 at 1280x720 and 1920x1080, camera 50/75/100%, full view, fixed 60 Hz. They are
@@ -79,17 +158,11 @@ demonstrates the primary failure clearly: flat schematic surfaces, tiny actor
 scale and a text-heavy top HUD preserve rules but do not meet FLUX's charm,
 material, silhouette or overview targets.
 
-Run the live token specimen on Windows:
+The specimen froze vocabulary; it did not itself open the visual gate. V1–V6
+recorded the subsequent character, environment, spell, GUI and integrated
+engineering evidence; the current queue supersedes that historical sequence.
 
-```powershell
-scripts/run.cmd --visual-specimen --pov-mode=full --camera-zoom=75
-```
-
-The specimen freezes vocabulary; it does not open the visual gate. V1–V6 in
-`.agent/VISUAL-OVERHAUL.md` still require actual character, environment, spell,
-GUI and integrated live evidence.
-
-## V1 live renderer foundation
+### Historical V1 renderer foundation
 
 The Wellspring renderer now refuses to boot without the validated visual
 language and derives its water, stone, timber, brass, roof, garden, focus and
@@ -111,7 +184,7 @@ live map is still schematic and the v2 character atlases are still too small
 and crude. V2 therefore begins with compact cartoon production candidates for
 Oh Tipi and S. Wayne before further environment beautification.
 
-## V2 foundation champions and minimal motion
+### Historical V2 foundation champions and minimal motion
 
 S. Wayne, Oh Tipi and The Red Baron now draw from one promoted 768×2880
 body-only runtime atlas with 96×96 cells and a 48×84 ground pivot. Each champion
@@ -147,7 +220,7 @@ rate-independent presentation phase from 120 Hz state. Offsets stay within four
 pixels, squash/stretch within 6%, reduced motion damps all three channels, and
 the `--debug-overlay` diagnostic proves the sprite never owns its hitbox.
 
-## V3 natural-map and modular-campus candidate
+### Historical V3 natural-map and modular-campus candidate
 
 `content/visual/natural_map_kit_v1.json` is the editable environment recipe.
 It declares bounded district vocabularies, density, material ramps, seeded
@@ -198,7 +271,11 @@ anchors remain visible at overview and detail scales. These captures prove
 dimensions, launchability, and alignment only; the V6 rubric still needs
 interactive two-player and subjective cohesion review.
 
-## V4 foundation-spell presentation
+### Historical V4 foundation-spell presentation
+
+The five profiles below are historical presentation evidence, not the current
+57-spell catalog. Their dual-element wording, freeze/ring descriptions and
+residue claims must not be used as current spell or chemistry rules.
 
 `content/visual/foundation_spell_visuals_v1.json` is the exact five-spell visual
 contract. It is validated against the ability catalog at boot: stable wire ID,
@@ -249,7 +326,7 @@ runtime assets. V4 is engineering-complete, while integrated
 charm/accessibility scoring remains mandatory at V6. The V5 sandbox capture
 harness now supplies truthful 1080p evidence without rewriting the live project.
 
-## V5 compact HUD and Wellspring interaction language
+### Historical V5 compact HUD and Wellspring interaction language
 
 `content/visual/compact_hud_v1.json` now owns the bounded combat-HUD geometry.
 The live frame keeps only champion/location, session state, Health, Flux,
@@ -280,7 +357,7 @@ changes only that copy's viewport, checks every frame's count and dimensions,
 and cleans only the verified sandbox. Reviewed V5 evidence is under ignored
 `.godot/visual-captures/v5-acceptance-*-final` directories.
 
-## V6 integrated accessibility and Farflow acceptance
+### Historical V6 integrated accessibility and Farflow acceptance
 
 `content/visual/accessibility_profiles_v1.json` owns the exact visual profiles,
 their labels, provenance and one-pass budget. `VisualAccessibilityFilter`

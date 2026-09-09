@@ -10,9 +10,9 @@ func run() -> int:
 	return finish("session-transport")
 
 
-func _signature(tick_rate: int = 120) -> String:
+func _signature(tick_rate: int = 120, protocol_version: int = SimConfig.PROTOCOL_VERSION) -> String:
 	return SessionTransport.compatibility_signature(
-		SimConfig.PROTOCOL_VERSION,
+		protocol_version,
 		tick_rate,
 		"a".repeat(64),
 		"b".repeat(64),
@@ -25,6 +25,7 @@ func _test_validation_fails_closed() -> void:
 	equal(SessionTransport.MAX_PLAYERS, 8, "public session cap is eight players")
 	check(SessionCharter.catalog_hash().length() == 64, "session charter catalog contributes a bounded compatibility identity")
 	equal(_signature().length(), 64, "compatibility identity is a SHA-256 digest")
+	check(_signature(120, 46) != _signature(), "old cycling-only rules cannot share protocol47 compatibility")
 	check(SessionTransport.compatibility_signature(SimConfig.PROTOCOL_VERSION, 120, "a".repeat(64), "b".repeat(64), "c".repeat(64), "d".repeat(64), "e".repeat(64)) != _signature(), "reaction definitions contribute to Farflow compatibility")
 	check(not transport.start_host(80, _signature()), "privileged production host port is rejected")
 	check(transport.last_error.contains("1024"), "invalid host port has an actionable error")
@@ -52,8 +53,13 @@ func _test_validation_fails_closed() -> void:
 	check(SessionTransport._valid_request_packet({"sequence": 0, "action": SessionTransport.REQUEST_EMOTE, "value": 0}), "known typed interaction request validates")
 	check(SessionTransport._valid_request_packet({"sequence": 1, "action": SessionTransport.REQUEST_READY_TOGGLE, "value": 0}), "typed Hearth readiness request validates")
 	check(SessionTransport._valid_request_packet({"sequence": 2, "action": SessionTransport.REQUEST_PRACTICE_START, "value": 0}), "typed Hearth start request validates")
-	check(SessionTransport._valid_request_packet({"sequence": 3, "action": SessionTransport.REQUEST_SPELL_EQUIP, "value": 576}), "typed final Spell Loom request validates")
+	check(SessionTransport._valid_request_packet({"sequence": 3, "action": SessionTransport.REQUEST_SPELL_EQUIP, "value": 768}), "typed final Spell Loom request validates")
 	check(SessionTransport._valid_request_packet({"sequence": 4, "action": SessionTransport.REQUEST_IMPACT_PRACTICE, "value": 0}), "typed Momentum Chime request validates")
+	equal(SessionTransport.REQUEST_CHAMPION_SELECT, 8, "exact champion selection has a stable distinct wire action")
+	for value: int in [1, 5, 27, 4096]:
+		check(SessionTransport._valid_request_packet({"sequence": 5, "action": SessionTransport.REQUEST_CHAMPION_SELECT, "value": value}), "bounded exact champion wire validates: %d" % value)
+	for value: Variant in [0, -1, 4097, "2", 2.0, true, null]:
+		check(not SessionTransport._valid_request_packet({"sequence": 5, "action": SessionTransport.REQUEST_CHAMPION_SELECT, "value": value}), "invalid/coerced champion wire fails closed: %s" % str(value))
 	check(not SessionTransport._valid_request_packet({"sequence": 0, "action": 99, "value": 0}), "unknown interaction request fails closed")
 	check(not SessionTransport._valid_request_packet({"sequence": "0", "action": SessionTransport.REQUEST_EMOTE, "value": 0}), "coerced interaction sequence fails closed")
 	check(not SessionTransport._valid_request_packet({"sequence": 4, "action": SessionTransport.REQUEST_EMOTE, "value": 1}), "unrelated request cannot smuggle a value")
@@ -151,21 +157,40 @@ func _test_enet_loopback_handshake_and_input() -> void:
 	check(_poll_until(host, client, func() -> bool: return not host.incoming_requests.is_empty()), "host receives Hearth request through reliable ENet")
 	var hearth_requests := host.take_requests()
 	equal(int(hearth_requests[0].get("action", 0)) if not hearth_requests.is_empty() else 0, SessionTransport.REQUEST_READY_TOGGLE, "Hearth action survives trusted request stamping")
-	check(client.send_request(6, SessionTransport.REQUEST_SPELL_EQUIP, 576), "client sends a bounded Spell Loom weave")
+	check(client.send_request(6, SessionTransport.REQUEST_SPELL_EQUIP, 768), "client sends a bounded Spell Loom weave")
 	check(_poll_until(host, client, func() -> bool: return not host.incoming_requests.is_empty()), "host receives Spell Loom weave through reliable ENet")
 	var spell_requests := host.take_requests()
-	equal(int(spell_requests[0].get("value", 0)) if not spell_requests.is_empty() else 0, 576, "host receives the bounded slot/library value")
+	equal(int(spell_requests[0].get("value", 0)) if not spell_requests.is_empty() else 0, 768, "host receives the bounded slot/library value")
 	check(client.send_request(7, SessionTransport.REQUEST_IMPACT_PRACTICE), "client sends a bounded Momentum Chime intent")
 	check(_poll_until(host, client, func() -> bool: return not host.incoming_requests.is_empty()), "host receives Momentum Chime intent through reliable ENet")
 	var impact_requests := host.take_requests()
 	equal(int(impact_requests[0].get("action", 0)) if not impact_requests.is_empty() else 0, SessionTransport.REQUEST_IMPACT_PRACTICE, "Momentum Chime action survives trusted request stamping")
-	check(not client.send_request(8, SessionTransport.REQUEST_SPELL_EQUIP, 577), "out-of-range Spell Loom value fails before transport")
+	check(not client.send_request(8, SessionTransport.REQUEST_SPELL_EQUIP, 769), "out-of-range Spell Loom value fails before transport")
+	check(client.send_request(8, SessionTransport.REQUEST_CHAMPION_SELECT, 27), "client sends exact champion identity, not a cycle offset")
+	check(_poll_until(host, client, func() -> bool: return not host.incoming_requests.is_empty()), "host receives exact champion selection through reliable ENet")
+	var champion_requests := host.take_requests()
+	equal(champion_requests.size(), 1, "exact champion request arrives once")
+	if not champion_requests.is_empty():
+		equal(int(champion_requests[0].get("action", 0)), SessionTransport.REQUEST_CHAMPION_SELECT, "exact action survives transport")
+		equal(int(champion_requests[0].get("value", 0)), 27, "exact requested champion survives transport")
+		equal(int(champion_requests[0].get("entity_id", 0)), client.local_entity_id, "host stamps trusted champion selection owner")
+	check(client.send_request(8, SessionTransport.REQUEST_CHAMPION_SELECT, 1), "replayed sequence cannot choose a different champion")
+	for _index: int in range(20):
+		host.poll()
+		client.poll()
+		OS.delay_msec(1)
+	check(host.take_requests().is_empty(), "exact selection replay is discarded before application")
 
 	var incompatible := SessionTransport.new()
 	check(incompatible.start_join("127.0.0.1", host.bound_port, _signature(60), "Old Build"), "incompatible client reaches handshake boundary")
 	check(_poll_until(host, incompatible, func() -> bool: return incompatible.mode == SessionTransport.Mode.OFFLINE and not incompatible.last_error.is_empty()), "incompatible session is rejected deterministically")
 	check(incompatible.last_error.contains("Incompatible"), "compatibility refusal explains the mismatch")
 	equal(host.player_count(), 2, "rejected client never enters authoritative roster")
+	var old_chemistry := SessionTransport.new()
+	check(old_chemistry.start_join("127.0.0.1", host.bound_port, _signature(120, 46), "Old Build"), "protocol46 peer reaches the compatibility guard")
+	check(_poll_until(host, old_chemistry, func() -> bool: return old_chemistry.mode == SessionTransport.Mode.OFFLINE and not old_chemistry.last_error.is_empty()), "older champion selection rules are refused over real ENet")
+	check(old_chemistry.last_error.contains("Incompatible"), "older selection refusal gives an actionable build mismatch")
+	equal(host.player_count(), 2, "protocol mismatch cannot consume a player slot")
 
 	var source := SimWorld.new(120, 1, CollisionWorld.new())
 	source.player().champion_wire_id = 1

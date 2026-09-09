@@ -1,0 +1,15 @@
+{
+  "schema_version": 2,
+  "passed": false,
+  "installer": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-template-runtime-p47-20260909\\release\\FLUX.exe",
+  "installer_sha256": "ab3752950c81626985738ab45dbd1eff92131f7829231e629026d63c755c1760",
+  "baseline_installer": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-cast-gallery-p47-20260908\\release\\FLUX.exe",
+  "baseline_update_tested": false,
+  "protocol": 47,
+  "playable_champions": 27,
+  "test_root": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 6d9a1e922650466ea2dfd2882b48cc96",
+  "shortcuts_requested": false,
+  "real_home_install_requested": false,
+  "failure": "System.Management.Automation.RuntimeException: Windows execution policy blocked this build. Acceptance is BLOCKED; no bypass was attempted.",
+  "stages": []
+}

@@ -1,0 +1,8 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+character-gallery-integration: 65 assertions, 0 failures
+control-binding-editor: 32 assertions, 0 failures
+spell-delivery-expansion: 13255 assertions, 0 failures
+input-router: 542 assertions, 0 failures
+player-preferences: 155 assertions, 0 failures
+PASS: 5 selected FLUX2 headless suite(s): input-router,character-gallery-integration,spell-delivery-expansion,control-binding-editor,player-preferences

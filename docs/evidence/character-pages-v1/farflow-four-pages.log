@@ -1,0 +1,17 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (AMD) - ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001506) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.21045.5002)
+
+Movie Maker mode enabled, recording movie in 1280×720 @ 120 FPS...
+FLUX2 match initialized at 120 Hz
+FLUX2 farflow host: listening on UDP 24929 · OPEN COMMONS · 8 places
+FLUX2 bootstrap: 120 Hz, protocol 47, movement 80df3eae9d9f, transitions 8885f1454560, controls world_relative, POV full/195/1120, camera 100%, visual c512d48c283d, accessibility f8b7418be443/standard/full, HUD 55d33e6634ec, interactions 6ddebf6e50de, spells 7adc0e77b275/skeleton b8cff0a65bb1/directions e4f67a894f65, bursts 7d670909694a, cartoon recipes 97b44fb94a61/atlas 3a0f8bb6187b, Sanctum districts 9, travel nodes 9, campus e9b6df77e78f, ability catalog 93ee84099356, reactions 69ad258d7039/bounded-level-one, champions 82d64ec72fed, build 13/13, materials 1c9b15a12d94, yard 3b466b916d6e
+FLUX2 illustrated campus: 9a26b5cf401f, art elevation 55deg/cardinal, setup 199 ms, 0 decorations
+FLUX2 farflow host: joined entity 2 (River Guest)
+FLUX2 farflow social: shared emote entity 2
+--------------------------------------------------------------------------------
+Done recording movie at path: C:\Users\sende\Projects\flux\.godot\visual-captures\character-pages-farflow-20260908\frame.png
+120 frames at 120 FPS (movie length: 00:00:01:00), recorded in 00:00:13 (7% of real-time speed).
+CPU render time: 1.21 seconds (average: 10.09 ms/frame)
+GPU render time: 0.00 seconds (average: 0.00 ms/frame)
+Encoding time: 5.33 seconds (average: 44.41 ms/frame)
+--------------------------------------------------------------------------------

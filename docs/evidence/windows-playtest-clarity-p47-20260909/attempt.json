@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "result": "passed",
+  "failure": null,
+  "finished_at_utc": "2026-09-09T14:45:03.0082611Z",
+  "prior_builds": "preserved",
+  "environment_restored": true
+}

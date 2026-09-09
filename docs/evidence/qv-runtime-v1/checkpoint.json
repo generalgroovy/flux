@@ -1,0 +1,244 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-09",
+  "status": "local_verified_uncommitted",
+  "git_head": "a1aa02807626823d0fbc1e25e75441ca3b7f4d36",
+  "branch": "main",
+  "dirty": true,
+  "full": {
+    "suites": 91,
+    "assertions": 463294,
+    "failures": 0,
+    "stderr_bytes": 0,
+    "duration_ms": 79550,
+    "record": "full-receipt.json"
+  },
+  "payload_directory": "C:/Users/sende/AppData/Local/FLUX-dev/playtests/qv-runtime-20260909",
+  "payloads": [
+    {
+      "file": "flux2.exe",
+      "bytes": 109071360,
+      "sha256": "04baf75cc1d69dd93eb709533ecab4fd7770bb8a530645717017a06a9d9809fc"
+    },
+    {
+      "file": "flux2.pck",
+      "bytes": 66211176,
+      "sha256": "9d8cc66320a73c3f544c70489f443709807d84128a12b82d5fa322d07869e967"
+    }
+  ],
+  "isolated_boot": {
+    "outside_checkout": true,
+    "no_source_path": true,
+    "lan_discovery": false,
+    "isolated_appdata": true,
+    "tick_rate": 120,
+    "protocol": 47,
+    "fresh_profile": {
+      "evade": "Q",
+      "revision": 1,
+      "technique": "V",
+      "schema": 11,
+      "verified": true
+    },
+    "stderr_bytes": 0
+  },
+  "capture_guard": {
+    "result": "passed",
+    "processes": [
+      "capture_movement_coach.gd",
+      "capture_sound_controls.gd"
+    ],
+    "saved_preferences_sha256_before_and_after": "ac77e394551a44b7f3ba5be9e63badf3cc2ece058b75e5c756bfe0ef6c9183b3",
+    "last_write_utc_dotnet_ticks_before_and_after": "639245386681280089",
+    "movement_frames": 6,
+    "controls_frames": 6,
+    "boundary": "These complete captures including teardown preserve saved settings; not human acceptance."
+  },
+  "artifacts": [
+    {
+      "file": "input-preferences-focused.log",
+      "bytes": 240,
+      "sha256": "ac0d56e56e57c37b0dec83b33b90fc80069f705f17bd45f570b2f511414ae61f"
+    },
+    {
+      "file": "isolated-boot.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "suite.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "movement-render.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "full-receipt.json",
+      "bytes": 11301,
+      "sha256": "3511f77236c1dc4f66317fe6f5432c88a2a46a6723d91942670fefe732fcccd1"
+    },
+    {
+      "file": "suite.log",
+      "bytes": 14203,
+      "sha256": "f81a9d5dde506698babc007c4e721d41eaf61c2faf0f357dd386091929a6a2fa"
+    },
+    {
+      "file": "boot-120.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "controls-render.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "export.log",
+      "bytes": 348714,
+      "sha256": "03c5b7ed66beb90764a1178b907bc4e0a630ea691c45fbbd64b618899208cbf8"
+    },
+    {
+      "file": "import.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "input-preferences-focused.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "export.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "movement-render.log",
+      "bytes": 1808,
+      "sha256": "d8d3f9fd1e483fe77a19f158fbf3e477c0d399aab02c7d3224535dea38146404"
+    },
+    {
+      "file": "import.log",
+      "bytes": 2032,
+      "sha256": "b644c06330b1abbd569259011b3f90bae8d006c6d132107b4c24a07830d5da97"
+    },
+    {
+      "file": "controls-render.log",
+      "bytes": 775,
+      "sha256": "f43702e4444fb996b957772cbfde90b1a446e7a1774b731d6b7db212f21d04d5"
+    },
+    {
+      "file": "boot-120.log",
+      "bytes": 806,
+      "sha256": "c0b818ba5c28f2418475a6ce043ca6a7f445e23bcc1607c72cf2495c737f6ddf"
+    },
+    {
+      "file": "isolated-boot.log",
+      "bytes": 806,
+      "sha256": "17be30b7eb768350b0064279d3e5b74105c2eece09a83d6261657a6114f17a1f"
+    },
+    {
+      "file": "ui/movement/float-controller-50-reduced.png",
+      "bytes": 144700,
+      "sha256": "f42b81bb2d3f695f3da7251f0f3a611433bc99bcfb76bc46b98961532c9d8975"
+    },
+    {
+      "file": "ui/movement/float-controller-75-reduced.png",
+      "bytes": 110273,
+      "sha256": "4d2c47f06fac1bfb470a42afefd341e7cae95dbaa1791161f4a1b900f40baaef"
+    },
+    {
+      "file": "ui/movement/float.png",
+      "bytes": 102315,
+      "sha256": "3276928a8b6147506ae7e129120b5dd377933933608a8b9d83f59dfbc063326a"
+    },
+    {
+      "file": "ui/movement/grounded.png",
+      "bytes": 105603,
+      "sha256": "1e88e13273c6f95f19c2fdd25870e65bfc9a1672976218dc06bac622e3880ed1"
+    },
+    {
+      "file": "ui/movement/wall-exit.png",
+      "bytes": 105300,
+      "sha256": "b97b710ddedbf0c9d683acb70b2927ef4b61e02fd65de959282973939d821138"
+    },
+    {
+      "file": "ui/movement/wallrun.png",
+      "bytes": 106004,
+      "sha256": "e32a38954e827b494c29d9f2db363a2d171fc97b7036159e8e98f719b0d637b1"
+    },
+    {
+      "file": "ui/controls/controls-1280x720-0.png",
+      "bytes": 79879,
+      "sha256": "8f56f16a6f753fdc9f307707691059870d7579ccec39bb2f1b2a8d2755fe6d99"
+    },
+    {
+      "file": "ui/controls/controls-1280x720-100.png",
+      "bytes": 79955,
+      "sha256": "de672989a30e71d93e48100b2ae8e386632c2ea170990f9eac02ddf49f82c921"
+    },
+    {
+      "file": "ui/controls/controls-1280x720-30.png",
+      "bytes": 79900,
+      "sha256": "4ea29296906ed5496e38c29edb58112dd07a26440b1e9c40505574f4133d0799"
+    },
+    {
+      "file": "ui/controls/controls-1920x1080-0.png",
+      "bytes": 207967,
+      "sha256": "83febc7a6bf91108672030b7affb377171448664d56e4c4b8bf87226b61f8c6d"
+    },
+    {
+      "file": "ui/controls/controls-1920x1080-100.png",
+      "bytes": 207802,
+      "sha256": "97a4ab4c46ba37787546a2a6948e19a6bbd1b58bfaca978a906943b4c24166b6"
+    },
+    {
+      "file": "ui/controls/controls-1920x1080-30.png",
+      "bytes": 207675,
+      "sha256": "380171081af097f2fec9433838e11e962c97cb505d85e01cb4fe5c379dac92a5"
+    }
+  ],
+  "source_hashes": [
+    {
+      "file": "src/app/player_preferences.gd",
+      "sha256": "c127c6d1e160db825e7bc4f83e4fb4350ec74a617b1ddf6da3d5a796bdd8adac"
+    },
+    {
+      "file": "src/app/input_router.gd",
+      "sha256": "343de83bcc164fc82db7cc5e88d8cab215427b0897d47e2465c57376d6cd1b5e"
+    },
+    {
+      "file": "src/sim/combat/combat_system.gd",
+      "sha256": "788cc518ef1b59ae042b58792b777cc45d26296425a4ecd5a5fcc1a907f6b874"
+    },
+    {
+      "file": "tests/unit/test_player_preferences.gd",
+      "sha256": "81abc4702d3823fb807f17b5a643b2ac62888ed1c394e7467500249734d88497"
+    },
+    {
+      "file": "tests/unit/test_input_router.gd",
+      "sha256": "fa8d1dea53c0f9e748c34ae2ac377b906dcf78d11457b8988a982d9ed2e4df73"
+    },
+    {
+      "file": "tests/unit/test_control_binding_editor.gd",
+      "sha256": "75dba831a2668f8dffeea3b2ccacaa0048156d5b7ed42d6f5cba6838e2046cc4"
+    },
+    {
+      "file": "tests/unit/test_movement_guide_model.gd",
+      "sha256": "b5eb23cb93b6f4bcd3d7d052765988266e34aa0490dba7333654e811ed6a8975"
+    },
+    {
+      "file": "tests/unit/test_combat.gd",
+      "sha256": "8c7bf46447a9dccaa9d3a2fa87e4688c673b20d344d60fc8129e9cd5d44d4da4"
+    },
+    {
+      "file": "tests/scenarios/projectile_circle_equivalence.gd",
+      "sha256": "0ca6ab7245741f276d48106b796ce1e7bbadcefebb8b593c83a99a4e8432ad57"
+    }
+  ],
+  "boundary": "Preserved existing dirty state, no commit/push/installer refresh. Runtime median improves but mixed p95 remains open. No new character art.",
+  "previous_build_unchanged": "C:/Users/sende/AppData/Local/FLUX-dev/playtests/counterplay-practice-20260909"
+}

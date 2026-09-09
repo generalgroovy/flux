@@ -83,6 +83,9 @@ def main():
             third_party_pixels=False,reference_principles_url="https://penusbmic.itch.io/",
             reference_use="expressive_key_poses_silhouette_spacing_and_material_motion_only",
             editable_source="source/frames/*.json",authoring_source="source/author.py",
+            element_refinement_source="source/restyle_elements_v3.py",
+            element_refinement_evidence="art_batches/magic_style_v3/source-proof.json",
+            element_refinement_method="original_palette_index_drawings; outlined_material_motifs; no_reference_pixels_copied",
             license="original_project_candidate; project_distribution_license_not_changed"),
         import_rules=dict(format="PNG RGBA8",alpha="binary_authored_alpha; runtime_opacity_modulation_separate",
             logical_pixel_world_px=1,terrain_cell_reference_px=32,body_heights_reference_px=[58,68,76],
@@ -97,7 +100,7 @@ def main():
             essential_boundaries_are_never_dropped=True,phase_sampler_allocations_per_tick=0,
             authority_capacity_reference={"deposits":128,"reactions":32},
             authority_capacities_are_not_modified=True,performance_acceptance="unprofiled_in_FLUX; no_FPS_claim"))
-    (ROOT/"manifest.json").write_text(json.dumps(manifest,indent=2)+"\n",encoding="utf-8")
+    (ROOT/"manifest.json").write_text(json.dumps(manifest,indent=2)+"\n",encoding="utf-8",newline="\n")
     print(f"EXPORTED {len(assets)} sequences / {sum(len(a['frames']) for a in assets)} frames / {len(atlases)} atlases / {manifest['budgets']['decoded_rgba_bytes']} RGBA bytes")
 
 if __name__=="__main__": main()

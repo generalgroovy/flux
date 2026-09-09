@@ -10,53 +10,79 @@ const MAX_OWNER_DEPOSITS: int = 16
 const MAX_TRACKED_ACTORS: int = 16
 const MAX_LINKS: int = 4
 const CELL_SIZE: int = 96_000
-const ELEMENT_LIFE_MS: Array[int] = [0, 5000, 3000, 4000, 2000, 4000, 2000, 3000, 3000]
+# More time to combine matter; still bounded by the existing five-second wire limit.
+const ELEMENT_LIFE_MS: Array[int] = [0, 5000, 4000, 5000, 3000, 5000, 3000, 4000, 4000]
+const TRAIL_LIFE_MS: Array[int] = [0, 1500, 1100, 1400, 800, 1400, 800, 1200, 1300]
+const TRAIL_RADIUS: int = 16000
+const TRAIL_STRENGTH: int = 250
+const TRAIL_SPACING: int = 28000
+const TRAIL_SAMPLE_TICKS: int = 8
+const MAX_OWNER_TRAILS: int = 4
+const MAX_TRAILS: int = 32
+const TRAIL_CAST_RESERVE: int = 2
+const TRAIL_SUSTAIN_RATIO: int = 600
+
+static func movement_surface_policy() -> Dictionary:
+	return {"version": 1, "recipe": 301, "name": "Rampart", "footprint": "cardinal_rectangle", "length": 64000, "thickness": 36000, "orientation": "dominant_cast_axis_x_ties", "solid": "active_living_only", "overlap": "escape_until_clear_then_block_reentry", "wall_clearance": 18000, "prediction": "exact_authority_tick_rows_v1", "surface_id_base": 100000000}
+
+static func rampart_bounds(result: ElementReactionState) -> Rect2i:
+	var extent := Vector2i(18000, 32000) if absi(result.direction_x) >= absi(result.direction_y) else Vector2i(32000, 18000)
+	return Rect2i(Vector2i(result.position_x, result.position_y) - extent, extent * 2)
+
+static func trail_policy() -> Dictionary:
+	return {"version": 4, "rapid_trails": false, "one_payload_per_cast": true, "trail_predates_impact": true, "life_ms": TRAIL_LIFE_MS, "radius": TRAIL_RADIUS, "strength": TRAIL_STRENGTH,
+		"spacing": TRAIL_SPACING, "sample_ticks": TRAIL_SAMPLE_TICKS, "owner_cap": MAX_OWNER_TRAILS,
+		"global_cap": MAX_TRAILS, "cast_reserve": TRAIL_CAST_RESERVE, "sustain_ratio": TRAIL_SUSTAIN_RATIO,
+		"needs_terminal_partner": true, "terminal_promotes_same_cell_trail": true,
+		"own_trail_reclamation": "successful_whole_cast_oldest_created_then_entity_id",
+		"reclaim_terminal": false, "reclaim_nonexpired_reaction_links": false}
 # Stable recipe order is the authored table, not dictionary order. Geometry,
 # timing and executable rule identities belong to simulation, never rendering.
 const RECIPE_ROWS: Array = [
-	["fortify",1,1,"cover",180,2500,400,18000,64000,0,0,32],
-	["magma",1,2,"front",350,2200,500,24000,80000,30000,400,0],
-	["mud",1,3,"disk",200,2600,350,62000,0,0,0,0],
-	["dustfront",1,4,"corridor",250,1800,350,28000,120000,38000,0,0],
-	["permafrost",1,5,"cover",240,2400,650,14000,80000,0,0,18],
-	["grounding_network",1,6,"node",250,2600,300,38000,0,0,0,16],
-	["crystal_prism",1,7,"plane",400,2200,400,8000,70000,0,0,18],
-	["blightsoil",1,8,"disk",300,2400,400,54000,0,0,0,0],
-	["conflagration",2,2,"ring",400,2400,400,72000,24000,0,600,0],
-	["steam",2,3,"expanding_veil",240,2100,500,90000,0,0,0,0],
-	["firestorm",2,4,"corridor",350,1800,350,18000,130000,68000,350,0],
+	["fortify",1,1,"cover",180,3125,400,18000,64000,0,0,32],
+	["magma",1,2,"front",350,2750,500,24000,80000,30000,400,0],
+	["mud",1,3,"disk",200,3250,350,62000,0,0,0,0],
+	["dustfront",1,4,"corridor",250,2250,350,28000,120000,38000,0,0],
+	["permafrost",1,5,"cover",240,3000,650,14000,80000,0,0,18],
+	["grounding_network",1,6,"node",250,3250,300,38000,0,0,0,16],
+	["crystal_prism",1,7,"plane",400,2750,400,8000,70000,0,0,18],
+	["blightsoil",1,8,"disk",300,3000,400,54000,0,0,0,0],
+	["conflagration",2,2,"ring",400,3000,400,72000,24000,0,600,0],
+	["steam",2,3,"expanding_veil",240,2625,500,90000,0,0,0,0],
+	["firestorm",2,4,"corridor",350,2250,350,18000,130000,68000,350,0],
 	["thermal_shock",2,5,"fracture",600,100,550,90000,0,0,0,0],
 	["plasma_arc",2,6,"branch",450,120,400,10000,180000,0,0,0],
 	["solar_flare",2,7,"reveal_pulse",220,100,650,100000,0,0,0,0],
-	["cinderveil",2,8,"ember_veil",300,2400,400,56000,0,0,350,0],
-	["flood",3,3,"flow",220,2500,350,64000,0,0,0,0],
-	["mistcurrent",3,4,"corridor",220,2200,400,25000,160000,25000,0,0],
-	["freeze",3,5,"growing_strip",300,2000,350,16000,140000,0,0,0],
-	["conductive_flood",3,6,"water_path",500,2100,350,20000,180000,0,600,0],
-	["mirrorwater",3,7,"observation",220,2600,350,55000,0,0,0,0],
-	["blackwater",3,8,"motion_veil",260,2400,400,62000,0,0,0,0],
-	["vortex",4,4,"annulus",400,2200,400,72000,24000,0,0,0],
-	["hailstream",4,5,"pulse_lane",400,2250,350,14000,180000,0,450,0],
-	["ion_storm",4,6,"drifting_node",450,2100,400,40000,0,22000,700,0],
-	["lightbend",4,7,"bend",250,2400,300,45000,0,0,0,0],
-	["shadowdraft",4,8,"bands",300,2400,350,30000,150000,30000,300,0],
-	["glacier",5,5,"cover",650,2800,600,24000,86000,0,0,60],
-	["superconduct",5,6,"frost_path",500,1800,350,8000,260000,0,900,0],
-	["crystal_lens",5,7,"lens",450,2300,400,18000,60000,0,0,20],
-	["black_ice",5,8,"entry_mark",300,2500,400,54000,0,0,0,0],
+	["cinderveil",2,8,"ember_veil",300,3000,400,56000,0,0,350,0],
+	["flood",3,3,"flow",220,3125,350,64000,0,0,0,0],
+	["mistcurrent",3,4,"corridor",220,2750,400,25000,160000,25000,0,0],
+	["freeze",3,5,"growing_strip",300,2500,350,16000,140000,0,0,0],
+	["conductive_flood",3,6,"water_path",500,2625,350,20000,180000,0,600,0],
+	["mirrorwater",3,7,"observation",220,3250,350,55000,0,0,0,0],
+	["blackwater",3,8,"motion_veil",260,3000,400,62000,0,0,0,0],
+	["vortex",4,4,"annulus",400,2750,400,72000,24000,0,0,0],
+	["hailstream",4,5,"pulse_lane",400,2813,350,14000,180000,0,450,0],
+	["ion_storm",4,6,"drifting_node",450,2625,400,40000,0,22000,700,0],
+	["lightbend",4,7,"bend",250,3000,300,45000,0,0,0,0],
+	["shadowdraft",4,8,"bands",300,3000,350,30000,150000,30000,300,0],
+	["glacier",5,5,"cover",650,3500,600,24000,86000,0,0,60],
+	["superconduct",5,6,"frost_path",500,2250,350,8000,260000,0,900,0],
+	["crystal_lens",5,7,"lens",450,2875,400,18000,60000,0,0,20],
+	["black_ice",5,8,"entry_mark",300,3125,400,54000,0,0,0,0],
 	["overload",6,6,"push_pulse",650,100,450,85000,0,0,0,0],
 	["arcflash",6,7,"reveal_line",300,140,400,12000,180000,0,0,0],
-	["static_shroud",6,8,"entry_veil",320,2200,400,58000,0,0,0,0],
-	["radiance",7,7,"reveal_area",300,2500,400,78000,0,0,0,0],
-	["penumbra",7,8,"border",220,2400,250,66000,0,0,0,0],
-	["umbral_field",8,8,"attrition_veil",350,2800,450,74000,0,0,600,0],
+	["static_shroud",6,8,"entry_veil",320,2750,400,58000,0,0,0,0],
+	["radiance",7,7,"reveal_area",300,3125,400,78000,0,0,0,0],
+	["penumbra",7,8,"border",220,3000,250,66000,0,0,0,0],
+	["umbral_field",8,8,"attrition_veil",350,3500,450,74000,0,0,600,0],
 ]
 
 static func recipe(wire_id: int) -> Dictionary:
 	if wire_id < 301 or wire_id > 336:
 		return {}
 	var row: Array = RECIPE_ROWS[wire_id - 301]
-	return {"id": row[0], "name": String(row[0]).replace("_", " ").capitalize(), "wire_id": wire_id, "elements": [row[1], row[2]], "shape": row[3], "formation_ms": row[4], "active_ms": row[5], "decay_ms": row[6], "radius": row[7], "length": row[8], "speed": row[9], "pulse_ms": row[10], "health": int(row[11])*1000}
+	var display_name := "Rampart" if wire_id == 301 else String(row[0]).replace("_", " ").capitalize()
+	return {"id": row[0], "name": display_name, "wire_id": wire_id, "elements": [row[1], row[2]], "shape": row[3], "formation_ms": row[4], "active_ms": row[5], "decay_ms": row[6], "radius": row[7], "length": row[8], "speed": row[9], "pulse_ms": row[10], "health": int(row[11])*1000}
 
 static func recipe_wire(element_a: int, element_b: int) -> int:
 	for index: int in range(RECIPE_ROWS.size()):
@@ -65,19 +91,41 @@ static func recipe_wire(element_a: int, element_b: int) -> int:
 			return 301 + index
 	return 0
 
-static func deposit_terminal(deposits: Array, entity_id: int, cast_id: int, spell_id: int, owner: int, team: int, element: int, position: Vector2i, tick: int, config: SimConfig, direction: Vector2i = Vector2i(1000,0), strength: int = 1000) -> int:
+static func deposit_terminal(deposits: Array, entity_id: int, cast_id: int, spell_id: int, owner: int, team: int, element: int, position: Vector2i, tick: int, config: SimConfig, direction: Vector2i = Vector2i(1000,0), strength: int = 1000, flight_trail: bool = false) -> int:
 	if config == null or entity_id <= 0 or cast_id <= 0 or element < 1 or element > 8 or strength <= 0 or strength > 1000:
 		return -1
 	var owner_count := 0
+	var owner_trails := 0
+	var trail_count := 0
+	var promoted: ElementDepositState = null
 	for existing: ElementDepositState in deposits:
 		if existing.owner_id == owner:
 			owner_count += 1
-		# Same-source repeated contacts coalesce only in the same occupied cell;
-		# do not refresh lifetime, add strength or manufacture a second source.
-		if existing.source_cast_id == cast_id and cell(Vector2i(existing.position_x, existing.position_y)) == cell(position):
-			return 0
-	if deposits.size() >= MAX_DEPOSITS or owner_count >= MAX_OWNER_DEPOSITS:
+		if existing.is_trail():
+			trail_count += 1
+			if existing.owner_id == owner:
+				owner_trails += 1
+		if existing.source_cast_id != cast_id:
+			continue
+		var point := Vector2i(existing.position_x, existing.position_y)
+		if flight_trail:
+			if (point - position).length_squared() < TRAIL_SPACING * TRAIL_SPACING:
+				return 0
+		elif cell(point) == cell(position):
+			# Real impact replaces a same-cell narrow trail exactly once. A
+			# second real impact still coalesces without refreshing its lifetime.
+			if not existing.is_trail():
+				return 0
+			if promoted == null:
+				promoted = existing
+	if flight_trail and (trail_count >= MAX_TRAILS or owner_trails >= MAX_OWNER_TRAILS):
 		return -1
+	if promoted == null and (deposits.size() >= MAX_DEPOSITS or owner_count >= MAX_OWNER_DEPOSITS):
+		return -1
+	if promoted != null:
+		# New identity disconnects any older reaction path linked to the trail;
+		# the impact must not move or extend an existing conductor in place.
+		deposits.erase(promoted)
 	var result := Deposit.new()
 	result.entity_id = entity_id
 	result.source_cast_id = cast_id
@@ -90,10 +138,10 @@ static func deposit_terminal(deposits: Array, entity_id: int, cast_id: int, spel
 	var normalized := SimCommand._normalized_direction(direction.x, direction.y)
 	result.direction_x = normalized.x if normalized != Vector2i.ZERO else 1000
 	result.direction_y = normalized.y
-	result.strength = strength
-	result.radius = 24_000 + strength * 8
+	result.strength = mini(strength, TRAIL_STRENGTH) if flight_trail else strength
+	result.radius = TRAIL_RADIUS if flight_trail else 24_000 + strength * 8
 	result.created_tick = tick
-	result.expiry_tick = tick + config.milliseconds_to_ticks(ELEMENT_LIFE_MS[element])
+	result.expiry_tick = tick + config.milliseconds_to_ticks(TRAIL_LIFE_MS[element] if flight_trail else ELEMENT_LIFE_MS[element])
 	deposits.append(result)
 	deposits.sort_custom(func(a: ElementDepositState,b: ElementDepositState) -> bool: return a.entity_id < b.entity_id)
 	return 1
@@ -120,7 +168,11 @@ static func step(deposits: Array, reactions: Array, actors: Array, collision: Co
 			continue
 		for right: int in range(left+1,deposits.size()):
 			var b: ElementDepositState = deposits[right]
-			if b.strength <= 0 or a.source_cast_id == b.source_cast_id:
+			if b.strength <= 0 or a.source_cast_id == b.source_cast_id or (a.is_trail() and b.is_trail()):
+				continue
+			# A new impact can cash in an older trail. A passing projectile's
+			# fresh trail must not detonate an already-placed terminal ingredient.
+			if (a.is_trail() and b.created_tick <= a.created_tick) or (b.is_trail() and a.created_tick <= b.created_tick):
 				continue
 			var apos := Vector2i(a.position_x,a.position_y)
 			var bpos := Vector2i(b.position_x,b.position_y)
@@ -137,8 +189,11 @@ static func step(deposits: Array, reactions: Array, actors: Array, collision: Co
 			_build_path(result,deposits,collision)
 			reactions.append(result)
 			occupied[cell(center)] = true
-			a.strength = 0
-			b.strength = 0
+			# Fragments share a single paid chemistry payload; no leftover
+			# sibling/flight ingredients may form additional free reactions.
+			for fragment: ElementDepositState in deposits:
+				if fragment.source_cast_id == a.source_cast_id or fragment.source_cast_id == b.source_cast_id:
+					fragment.strength = 0
 			next_reaction_id += 1
 			events.append({"type":"chemistry_formed","reaction_id":result.entity_id,"recipe_wire_id":wire,"owner_id":result.owner_id})
 			break
@@ -174,7 +229,12 @@ static func form_reaction(a: ElementDepositState,b: ElementDepositState,entity_i
 	result.source_b = maxi(a.source_cast_id,b.source_cast_id)
 	result.created_tick = tick
 	result.active_tick = tick + config.milliseconds_to_ticks(int(definition["formation_ms"]))
-	result.decay_tick = result.active_tick + config.milliseconds_to_ticks(int(definition["active_ms"]))
+	var active_ms := int(definition["active_ms"])
+	# Trail-assisted recipes retain identity/geometry and their warning window,
+	# but sustained effects have 60% uptime. Instant windows are not multiplied.
+	if (a.is_trail() or b.is_trail()) and active_ms >= 1000:
+		active_ms = active_ms * TRAIL_SUSTAIN_RATIO / 1000
+	result.decay_tick = result.active_tick + config.milliseconds_to_ticks(active_ms)
 	result.expiry_tick = result.decay_tick + config.milliseconds_to_ticks(int(definition["decay_ms"]))
 	result.radius = int(definition["radius"])
 	result.length = int(definition["length"])
@@ -254,7 +314,9 @@ static func _apply_result(result: ElementReactionState,deposits: Array,reactions
 		result.pulse_index = pulse
 	if wire == 312 and new_pulse:
 		for cover: ElementReactionState in reactions:
-			if cover.health > 0 and contains(result,Vector2i(cover.position_x,cover.position_y),tick,config) and clear_line(Vector2i(result.position_x,result.position_y),Vector2i(cover.position_x,cover.position_y),collision):
+			# Forming/decaying silhouettes are not active cover. Breaking one before
+			# activation would also put decay before active_tick in canonical state.
+			if cover.active(tick) and cover.health > 0 and contains(result,Vector2i(cover.position_x,cover.position_y),tick,config) and clear_line(Vector2i(result.position_x,result.position_y),Vector2i(cover.position_x,cover.position_y),collision):
 				cover.health = maxi(0,cover.health-30_000)
 				if cover.health == 0:
 					cover.decay_tick = mini(cover.decay_tick,tick)
@@ -300,7 +362,7 @@ static func _apply_result(result: ElementReactionState,deposits: Array,reactions
 			elif wire == 304:
 				push = Vector2i(-push.y,push.x)
 			var amount := 14000 if wire == 331 else config.per_tick(45000 if wire == 322 else 40000 if wire == 316 else 25000)
-			var moved := collision.move_box(point,scaled(push,amount),actor.radius).position if collision != null else point+scaled(push,amount)
+			var moved := collision.move_box(point,scaled(push,amount),MovementTuning.PLAYER_RADIUS).position if collision != null else point+scaled(push,amount)
 			actor.position_x = moved.x
 			actor.position_y = moved.y
 		var damage := 0
@@ -331,8 +393,14 @@ static func _contact_index(result: ElementReactionState,actor_id: int) -> int:
 static func contains(result: ElementReactionState,point: Vector2i,tick: int,config: SimConfig) -> bool:
 	var origin := Vector2i(result.position_x,result.position_y)
 	var offset := point-origin
-	var shape := String(recipe(result.recipe_wire_id).get("shape",""))
+	# A sampled geometry query needs only the authored shape, not a newly
+	# allocated metadata dictionary/name/element array at every sample point.
+	var wire := result.recipe_wire_id
+	var shape := String(RECIPE_ROWS[wire - 301][3]) if wire >= 301 and wire <= 336 else ""
 	var distance := offset.length_squared()
+	if wire == 301:
+		var bounds := rampart_bounds(result)
+		return point.x >= bounds.position.x and point.x <= bounds.end.x and point.y >= bounds.position.y and point.y <= bounds.end.y
 	if shape in ["annulus","ring"]:
 		return distance <= result.radius*result.radius and distance >= result.length*result.length
 	if shape in ["water_path","frost_path","branch"]:
@@ -403,7 +471,9 @@ static func projectile_interaction(projectile: ProjectileState,reactions: Array,
 				var absorbed := mini(result.capacity,projectile.damage)
 				result.capacity -= absorbed
 				projectile.damage -= absorbed
-				response["blocked"] = projectile.damage <= 0
+				# Capacity absorbs first; residual damage hits the physical node,
+				# never both the node and an actor behind it (same rule as beams).
+				response["blocked"] = true
 				if projectile.damage > 0:
 					result.health = maxi(0,result.health-projectile.damage)
 			else:
@@ -518,6 +588,8 @@ static func _segment_enters(result: ElementReactionState,start: Vector2i,end: Ve
 	return bool(_entry_point(result,start,end,tick,config)["hit"])
 
 static func _entry_point(result: ElementReactionState,start: Vector2i,end: Vector2i,tick: int,config: SimConfig) -> Dictionary:
+	if not _entry_bounds_overlap(result,start,end):
+		return {"hit":false,"point":end}
 	var delta := end-start
 	var count := mini(512,maxi(1,(SimCommand._integer_square_root(delta.length_squared())+1999)/2000))
 	for index: int in range(count+1):
@@ -525,6 +597,38 @@ static func _entry_point(result: ElementReactionState,start: Vector2i,end: Vecto
 		if contains(result,point,tick,config):
 			return {"hit":true,"point":point}
 	return {"hit":false,"point":end}
+
+static func _entry_bounds_overlap(result: ElementReactionState,start: Vector2i,end: Vector2i) -> bool:
+	# This is only a rejection guard. Every sampled query point lies between
+	# its current endpoints, including signed integer truncation in scaled().
+	# Recompute current geometry: drifting centers, growing lengths, reflected
+	# continuations and clipped approaches must never reuse stale bounds.
+	var wire := result.recipe_wire_id
+	if wire == 301:
+		var bounds := rampart_bounds(result)
+		return not (maxi(start.x, end.x) < bounds.position.x or mini(start.x, end.x) > bounds.end.x or maxi(start.y, end.y) < bounds.position.y or mini(start.y, end.y) > bounds.end.y)
+	var shape := String(RECIPE_ROWS[wire-301][3]) if wire >= 301 and wire <= 336 else ""
+	var bound_start := Vector2i(result.position_x,result.position_y)
+	var bound_end := bound_start
+	match shape:
+		"water_path", "frost_path", "branch":
+			# Linked points may lie outside the origin/endpoint envelope. Keep
+			# their exact path test without adding another scan of the array.
+			return true
+		"corridor", "front", "growing_strip", "pulse_lane", "bands", "reveal_line":
+			bound_end = Vector2i(result.endpoint_x,result.endpoint_y)
+		"cover", "plane", "lens":
+			var side := scaled(Vector2i(-result.direction_y,result.direction_x),result.length/2)
+			bound_start -= side
+			bound_end += side
+	# segment_near's clamped integer projection stays inside its endpoint
+	# bounds. The other shapes fit their outer disk; annulus holes and moving
+	# pulse windows only remove points. Strict separation retains tangencies.
+	var radius := absi(result.radius)
+	return not (maxi(start.x,end.x) < mini(bound_start.x,bound_end.x)-radius \
+		or mini(start.x,end.x) > maxi(bound_start.x,bound_end.x)+radius \
+		or maxi(start.y,end.y) < mini(bound_start.y,bound_end.y)-radius \
+		or mini(start.y,end.y) > maxi(bound_start.y,bound_end.y)+radius)
 
 static func clear_line(start: Vector2i,end: Vector2i,collision: CollisionWorld) -> bool:
 	if collision == null:

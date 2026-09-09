@@ -7,7 +7,24 @@ func run() -> int:
 	_test_tick_rate_parity_and_reduced_motion()
 	_test_locomotion_contact_phase()
 	_test_continuous_micro_pivot()
+	_test_distance_phase_helpers()
 	return finish("minimal-champion-motion")
+
+
+func _test_distance_phase_helpers() -> void:
+	var motion := MinimalChampionMotion.new()
+	check(motion.load_from_file(), "distance phase helper loads existing durations")
+	for height: float in [58.0, 68.0, 76.0]:
+		check(absf(MinimalChampionMotion.locomotion_stride_pixels(height) - height * 1.3) < 0.00001, "full stride is two clear 0.65-height foot contacts")
+	for profile_id: String in motion.profiles:
+		for action: String in ["walk", "sprint"]:
+			for phase: float in [0.0, 0.25, 0.5, 0.75]:
+				var elapsed := motion.locomotion_elapsed_at_phase(profile_id, action, phase)
+				equal(motion.locomotion_contact_frame(profile_id, action, elapsed), 0 if phase < 0.5 else 1, "distance phase selects the same support foot across all authored durations")
+	equal(motion.locomotion_elapsed_at_phase("missing", "walk", 0.5), 0.0, "invalid profile fails to a stable contact")
+	equal(motion.locomotion_elapsed_at_phase("buoyant_keeper", "air", 0.5), 0.0, "distance phase cannot advance an airborne action")
+	check(is_finite(MinimalChampionMotion.locomotion_stride_pixels(NAN)), "invalid height cannot poison a presentation phase")
+	equal(motion.locomotion_elapsed_at_phase("buoyant_keeper", "walk", NAN), 0.0, "invalid phase fails to a stable plant")
 
 
 func _test_repository_motion() -> void:

@@ -1,5 +1,9 @@
 # Movement controls and learning: low jump / size-limited Float / progressive recovery
 
+Historical slice record: its Q/V assignments describe that revision. Current
+defaults are Technique V / Roll-Air Dodge Q; see [README](../README.md#controls-and-movement)
+and [SPECIFICATION.md](../SPECIFICATION.md). Earlier evidence below is unchanged.
+
 Status: **low-jump, size-limited Float, chemistry recovery seal and Q/V default migration implemented; this revision's final integrated and human feel acceptance remains open**.
 
 Final suite, visual review and player acceptance are
@@ -24,7 +28,7 @@ champion's actual values.
 
 | Action | Current rule | Readable practice check |
 |---|---|---|
-| Ordinary travel | Base speed 372.6 units/s; champion ratio and 1.28 sprint multiplier still apply | Compare actual speed with the optional practice trace |
+| Ordinary travel | Base speed 372.6 units/s; champion ratio and 1.60 sprint multiplier apply | Compare actual speed and distinct walk/sprint stride with the optional practice trace |
 | Tap / held jump | Continuous low arc; release caps upward speed at 330 units/s; full approximately 28.9 px, tap approximately 22 px; landing refreshes readiness | Above 18 px, low ground projectiles pass underneath; beams, areas and explosions are not cleared; only ascent pays 80 Stamina/s sustain |
 | Float (replaces second jump) | Fresh release and press/hold; maintains current height, fully steerable and protected; 24 Stamina + chain premium, then 100/s; small 1.8 s, middle 1.5 s, large 1.2 s cap | Hold near apex, turn, release: shield must disappear immediately; no new lift or repeat Float before landing |
 | Air dodge | One per real airtime; 180 ms decaying directional burst, then steerable flight; landing refills it without a cooldown wait | Turn or coast after the burst, then land and start a new jump/dodge chain |

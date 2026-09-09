@@ -1,0 +1,6 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+movement-practice-coach: 252 assertions, 0 failures
+practice-coach-integration: 124 assertions, 0 failures
+chemistry-practice-coach: 4197 assertions, 0 failures
+PASS: 3 selected FLUX2 headless suite(s): practice-coach-integration,chemistry-practice-coach,movement-practice-coach

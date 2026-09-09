@@ -11,7 +11,7 @@ static func draw(canvas: CanvasItem, language: VisualLanguage, viewport_size: Ve
 	PixelPrimitives.draw_panel(canvas, panel, language, true, false)
 	var pad := float(language.ui_metric("panel_padding")) * 2.0
 	var title_position := panel.position + Vector2(pad, 38)
-	canvas.draw_string(ThemeDB.fallback_font, title_position, "FLUX VISUAL LANGUAGE / GATE V0", HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - pad * 2.0, 22, language.ui_color("text_primary"))
+	canvas.draw_string(ThemeDB.fallback_font, title_position, "FLUX VISUAL LANGUAGE / CURRENT TOKENS", HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - pad * 2.0, 22, language.ui_color("text_primary"))
 	canvas.draw_string(ThemeDB.fallback_font, title_position + Vector2(0, 24), "PRESENTATION ONLY / 2PX GRID / 50 75 100 CAMERA / ORIGINAL RUNTIME TOKENS", HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - pad * 2.0, 11, language.ui_color("focus"))
 	PixelPrimitives.draw_divider(canvas, Vector2(panel.position.x + pad, panel.position.y + 78), Vector2(panel.end.x - pad, panel.position.y + 78), language)
 
@@ -42,10 +42,10 @@ static func _draw_materials(canvas: CanvasItem, language: VisualLanguage, bounds
 
 
 static func _draw_elements(canvas: CanvasItem, language: VisualLanguage, bounds: Rect2, tick: int) -> void:
-	canvas.draw_string(ThemeDB.fallback_font, bounds.position + Vector2(0, 16), "ELEMENT SHAPE + VALUE", HORIZONTAL_ALIGNMENT_LEFT, bounds.size.x, 14, language.ui_color("text_primary"))
-	var element_ids := VisualLanguage.REQUIRED_ELEMENTS
+	canvas.draw_string(ThemeDB.fallback_font, bounds.position + Vector2(0, 16), "EIGHT ACTIVE ELEMENTS / SHAPE + VALUE", HORIZONTAL_ALIGNMENT_LEFT, bounds.size.x, 14, language.ui_color("text_primary"))
+	var element_ids := VisualLanguage.ACTIVE_ELEMENTS
 	var gap := 5.0
-	var size := minf(38.0, (bounds.size.x - gap * 11.0) / 12.0)
+	var size := minf(48.0, (bounds.size.x - gap * (element_ids.size() - 1)) / float(element_ids.size()))
 	for index: int in element_ids.size():
 		var element_id: String = element_ids[index]
 		var rectangle := Rect2(bounds.position + Vector2(float(index) * (size + gap), 34), Vector2(size, size))
@@ -55,7 +55,7 @@ static func _draw_elements(canvas: CanvasItem, language: VisualLanguage, bounds:
 		var short_label: String = {"charge": "CHG", "chaos": "CHS", "spirit": "SPI", "gravity": "GRV"}.get(element_id, element_id.left(3).to_upper())
 		canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(1, size + 14), short_label, HORIZONTAL_ALIGNMENT_CENTER, size, 9, language.ui_color("text_secondary"))
 	# The first-eight motion samples execute the same bounded field/impact path.
-	var live_elements := ["earth", "fire", "water", "wind", "ice", "charge", "light", "dark"]
+	var live_elements := VisualLanguage.ACTIVE_ELEMENTS
 	var motion_spacing := bounds.size.x / float(live_elements.size())
 	for index: int in live_elements.size():
 		var element_id: String = live_elements[index]

@@ -1,0 +1,13 @@
+OK: Godot 4.7.1.stable.official.a13da4feb and FLUX 2 source foundation are present.
+Export templates: C:\Users\sende\AppData\Roaming\Godot\export_templates\4.7.1.stable
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+FAIL: guide teaches distinct paid sources and finite consumption
+player-compendium: 5063 assertions, 1 failures
+chemistry-practice-coach: 4184 assertions, 0 failures
+FAIL: 1 assertion(s) failed
+Exception: C:\Users\sende\Projects\flux\scripts\flux2-common.ps1:83
+Line |
+  83 |  … -in @($bad)) { throw 'Godot emitted a script/import/runtime error.' }
+     |                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Godot emitted a script/import/runtime error.

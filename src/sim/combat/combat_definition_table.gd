@@ -88,6 +88,8 @@ func _compile_definition(ability: Dictionary, catalog: AbilityCatalog) -> Dictio
 		"startup_ms": int(ability.get("startup_ms", 0)),
 		"recovery_ms": int(ability.get("recovery_ms", 0)),
 	}
+	if bool(ability.get("repeat_while_held", false)):
+		definition["repeat_while_held"] = true
 	match String(definition["shape"]):
 		"projectile":
 			definition.merge({
@@ -101,6 +103,9 @@ func _compile_definition(ability: Dictionary, catalog: AbilityCatalog) -> Dictio
 				"hit_control_slow_ratio": 1000,
 				"remaining_bounces": int(ability.get("remaining_bounces", 0)),
 			})
+			if ability.has("blast_radius"):
+				definition["blast_radius"] = int(ability["blast_radius"])
+				definition["blast_damage"] = int(ability["blast_damage"])
 			if ability.has("projectile_angles_degrees"):
 				var angles: Array[int] = []
 				var rotations: Array[Vector2i] = []

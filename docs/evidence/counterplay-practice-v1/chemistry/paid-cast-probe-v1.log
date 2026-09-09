@@ -1,0 +1,12 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+COUNTER_PROBE blocked=false okay=true error= tick=300
+CASTS [{ "wire_id": 173, "tick": 0, "spent": 6000, "endpoint": (1504000, 1328000) }, { "wire_id": 173, "tick": 39, "spent": 6000, "endpoint": (1504000, 1328000) }, { "wire_id": 145, "tick": 179, "spent": 6000, "endpoint": (1600000, 1328000) }, { "wire_id": 140, "tick": 206, "spent": 6000, "endpoint": (1600000, 1328000) }]
+REACTION 334 origin=(1503996, 1327992) active/decay/expiry=[109, 409, 457]
+REACTION 310 origin=(1599934, 1327995) active/decay/expiry=[259, 511, 571]
+STATUS reveal=2 conceal=2 visible=true
+COUNTER_PROBE blocked=true okay=true error= tick=287
+CASTS [{ "wire_id": 173, "tick": 0, "spent": 6000, "endpoint": (1504000, 1328000) }, { "wire_id": 173, "tick": 39, "spent": 6000, "endpoint": (1504000, 1328000) }, { "wire_id": 145, "tick": 166, "spent": 6000, "endpoint": (1600000, 1328000) }, { "wire_id": 140, "tick": 193, "spent": 6000, "endpoint": (1600000, 1328000) }]
+REACTION 334 origin=(1526972, 1370800) active/decay/expiry=[96, 396, 444]
+REACTION 310 origin=(1599934, 1327995) active/decay/expiry=[246, 498, 558]
+STATUS reveal=0 conceal=2 visible=false

@@ -6,6 +6,7 @@ const Reaction = preload("res://src/sim/chemistry/element_reaction_state.gd")
 var config := SimConfig.new(120)
 
 func run() -> int:
+	_test_readable_lifetimes()
 	_test_deposits()
 	_test_pairs()
 	_test_effects()
@@ -13,7 +14,27 @@ func run() -> int:
 	_test_connectivity()
 	_test_capacity_and_replay()
 	_test_live_beam_routing()
+	_test_cover_lifecycle_edges()
+	_test_all_reaction_boundaries_and_replay()
+	_test_link_expiry_and_pulse_windows()
+	_test_entry_bounds_edges()
 	return finish("element-chemistry")
+
+
+func _test_readable_lifetimes() -> void:
+	var expected := [0, 5000, 4000, 5000, 3000, 5000, 3000, 4000, 4000]
+	for element: int in range(1, 9):
+		equal(Chemistry.ELEMENT_LIFE_MS[element], expected[element], "temporary elements retain the authored3to5second combining window")
+	var impulses := {312: 100, 313: 120, 314: 100, 331: 100, 332: 140}
+	for wire: int in range(301, 337):
+		var definition := Chemistry.recipe(wire)
+		var reaction := _reaction(wire)
+		check(reaction.validate(), "longer reactions remain inside existing snapshot validation bounds")
+		check(reaction.expiry_tick - reaction.created_tick <= 600, "all phases together remain within5seconds")
+		if impulses.has(wire):
+			equal(definition.active_ms, impulses[wire], "instant reaction active window is not stretched into repeated hits")
+		else:
+			check(int(definition.active_ms) >= 2250, "sustained effects now offer a longer readable interaction window")
 
 func _deposit(id: int,element: int,at: Vector2i = Vector2i(500000,500000),cast_id: int = -1) -> ElementDepositState:
 	var deposits: Array = []
@@ -41,7 +62,7 @@ func _test_deposits() -> void:
 	for element: int in range(1,9):
 		var deposit := _deposit(element,element)
 		check(deposit.validate(),"all eight deposit states validate")
-		equal(deposit.expiry_tick,config.milliseconds_to_ticks(Chemistry.ELEMENT_LIFE_MS[element]),"element owns its 2-5 second lifetime")
+		equal(deposit.expiry_tick,config.milliseconds_to_ticks(Chemistry.ELEMENT_LIFE_MS[element]),"element owns its 3-5 second lifetime")
 		var decoded := Deposit.from_values(deposit.canonical_values())
 		check(decoded != null,"deposit roundtrip validates")
 		equal(decoded.canonical_values(),deposit.canonical_values(),"every deposit field survives roundtrip")
@@ -282,3 +303,131 @@ func _test_live_beam_routing() -> void:
 	CombatSystem.resolve_instant_casts([owner,behind],config,world,events,[cover],cover.active_tick)
 	equal(behind.health,behind.health_maximum,"temporary cover intercepts an actual instant Beam")
 	check(cover.health < int(Chemistry.recipe(301)["health"]),"actual Beam damages cover")
+
+func _test_cover_lifecycle_edges() -> void:
+	for phase: String in ["forming", "active", "decaying"]:
+		var fracture := _reaction(312)
+		var cover := _reaction(305)
+		if phase == "forming":
+			cover.active_tick = fracture.active_tick + 1
+		elif phase == "decaying":
+			cover.decay_tick = fracture.active_tick
+		var before := cover.health
+		_apply(fracture, _actor(), fracture.active_tick, [cover])
+		equal(cover.health, 0 if phase == "active" else before, "Thermal Shock damages active cover only: %s" % phase)
+		check(cover.validate(), "fracture never moves cover decay before formation: %s" % phase)
+		check(Reaction.from_values(cover.canonical_values()) != null, "fractured cover remains snapshot-decodable: %s" % phase)
+	for incoming: int in [4000, 5000, 12000, 30000]:
+		var node := _reaction(306)
+		node.capacity = 5000
+		var beam_node := Reaction.from_values(node.canonical_values())
+		var shot := ProjectileState.new(100, 2, 2, 100, 6, Vector2i(510000, 500000), Vector2i(500000, 0), 4000, incoming, 50)
+		shot.previous_x = 490000
+		var response := Chemistry.projectile_interaction(shot, [node], null, config, node.active_tick)
+		check(bool(response["blocked"]), "Grounding Network stops Charge at below/exact/over capacity: %d" % incoming)
+		equal(node.capacity, maxi(0, 5000-incoming), "node capacity absorbs only the available charge")
+		equal(node.health, maxi(0, 16000-maxi(0, incoming-5000)), "only residual charge damages finite node health")
+		var beam := Chemistry.ray_interaction(Vector2i(490000, 500000), Vector2i(510000, 500000), 6, incoming, [beam_node], node.active_tick)
+		equal(response["blocked"], beam["blocked"], "Charge projectile and beam agree on cover interception")
+		equal(node.canonical_values(), beam_node.canonical_values(), "Charge projectile and beam spend identical node budgets")
+		check(node.validate(), "over-capacity node destruction preserves valid state")
+		if node.health == 0:
+			equal(node.decay_tick, node.active_tick, "broken active node enters decay immediately")
+			var later := ProjectileState.new(101, 2, 2, 100, 6, Vector2i(510000, 500000), Vector2i(500000, 0), 4000, 1000, 50)
+			later.previous_x = 490000
+			check(not bool(Chemistry.projectile_interaction(later, [node], null, config, node.active_tick)["blocked"]), "destroyed node cannot block the next projectile")
+
+func _test_all_reaction_boundaries_and_replay() -> void:
+	for wire: int in range(301, 337):
+		var original := _reaction(wire)
+		for boundary: int in [original.active_tick-1, original.decay_tick, original.expiry_tick]:
+			var result := Reaction.from_values(original.canonical_values())
+			var actor := _actor()
+			var before := actor.canonical_values()
+			var reactions: Array = [result]
+			var events: Array = []
+			Chemistry.step([], reactions, [actor], null, config, boundary, 5000, events)
+			equal(actor.canonical_values(), before, "%s has no actor effect outside active phase at %d" % [Chemistry.recipe(wire)["id"], boundary])
+			check(events.is_empty(), "inactive reaction cannot emit an effect event")
+			equal(reactions.is_empty(), boundary == original.expiry_tick, "expiry removes state at the exact deadline")
+		var left := Reaction.from_values(original.canonical_values())
+		var right := Reaction.from_values(original.canonical_values())
+		var left_actor := _actor(Vector2i(550000, 500000) if wire in [309, 322] else Vector2i(500000, 500000))
+		var right_actor := _actor(Vector2i(left_actor.position_x, left_actor.position_y))
+		for tick: int in [original.active_tick, original.active_tick+1, original.decay_tick-1]:
+			var left_events: Array = []
+			var right_events: Array = []
+			Chemistry.step([], [left], [left_actor], null, config, tick, 5000, left_events)
+			# Replay starts from serialized authoritative state, not shared objects.
+			right = Reaction.from_values(right.canonical_values())
+			Chemistry.step([], [right], [right_actor], null, config, tick, 5000, right_events)
+			equal(left.canonical_values(), right.canonical_values(), "all36 reaction clocks/contacts replay exactly")
+			equal(left_actor.canonical_values(), right_actor.canonical_values(), "all36 actor outcomes replay exactly")
+			equal(left_events, right_events, "all36 effect events replay exactly")
+			check(left.validate(), "all36 active states remain network-valid")
+
+func _test_link_expiry_and_pulse_windows() -> void:
+	for wire: int in [313, 319, 328]:
+		var result := _reaction(wire)
+		var material := 6 if wire == 313 else 3 if wire == 319 else 5
+		var link := _deposit(10, material, Vector2i(610000, 500000))
+		link.expiry_tick = result.active_tick + 1
+		var deposits: Array = [link]
+		Chemistry._build_path(result, deposits, null)
+		var actor := _actor(Vector2i(570000, 500000))
+		_apply(result, actor, result.active_tick, [], deposits)
+		check(actor.health < actor.health_maximum, "live conductor supplies the initial discharge")
+		result.pulse_index = -1
+		actor = _actor(Vector2i(570000, 500000))
+		_apply(result, actor, link.expiry_tick, [], deposits)
+		check(deposits.is_empty(), "expired conductor is removed before reaction effects")
+		equal(actor.health, actor.health_maximum, "expired link cannot supply a same-tick discharge")
+	var ring := _reaction(309)
+	var target := _actor(Vector2i(550000, 500000))
+	var period := config.milliseconds_to_ticks(int(Chemistry.recipe(309)["pulse_ms"]))
+	_apply(ring, target, ring.active_tick)
+	var first_health := target.health
+	_apply(ring, target, ring.active_tick)
+	_apply(ring, target, ring.active_tick+period-1)
+	# Repeating a tick/occupancy check inside the same pulse cannot add damage.
+	equal(target.health, first_health, "one damage application per pulse window")
+	_apply(ring, target, ring.active_tick+period)
+	equal(target.health, first_health-8000, "next pulse deals exactly its authored 8 HP")
+	var final_health := target.health
+	_apply(ring, target, ring.decay_tick)
+	equal(target.health, final_health, "decay boundary never grants a final hidden damage pulse")
+
+func _test_entry_bounds_edges() -> void:
+	var cover := _reaction(301)
+	var tangent := Vector2i(cover.position_x+cover.radius, cover.position_y)
+	check(Chemistry._entry_bounds_overlap(cover,tangent,tangent), "broadphase retains a capsule tangent")
+	equal(Chemistry._entry_point(cover,tangent,tangent,cover.active_tick,config), {"hit":true,"point":tangent}, "zero-length tangent preserves exact contact")
+	var outside := tangent+Vector2i(1,0)
+	check(not Chemistry._entry_bounds_overlap(cover,outside,outside), "strictly separated capsule is rejected")
+	equal(Chemistry._entry_point(cover,outside,outside,cover.active_tick,config), {"hit":false,"point":outside}, "miss returns the supplied endpoint")
+	# Permafrost retains the generic capsule; Rampart uses its shared rectangle.
+	cover = _reaction(305)
+	cover.position_x = -700001
+	cover.position_y = -800003
+	cover.length = 80003
+	cover.direction_x = -731
+	cover.direction_y = 317
+	var side := Chemistry.scaled(Vector2i(-cover.direction_y,cover.direction_x),cover.length/2)
+	var tip := Vector2i(cover.position_x,cover.position_y)+side
+	check(Chemistry._entry_bounds_overlap(cover,tip,tip), "mutated negative center and odd-length angled capsule use fresh bounds")
+	check(bool(Chemistry._entry_point(cover,tip,tip,cover.active_tick,config)["hit"]), "signed truncation keeps the actual capsule tip")
+	for wire: int in [313,319,328]:
+		var linked := _reaction(wire)
+		linked.path_points = PackedInt64Array([500000,500000,700000,650000,740000,450000])
+		var far_tip := Vector2i(740000,450000)
+		check(Chemistry._entry_bounds_overlap(linked,far_tip,far_tip), "linked geometry falls through without an extra array scan")
+		check(bool(Chemistry._entry_point(linked,far_tip,far_tip,linked.active_tick,config)["hit"]), "remote linked endpoint cannot be falsely culled")
+	var hail := _reaction(323)
+	var lane_end := Vector2i(hail.endpoint_x,hail.endpoint_y)
+	check(Chemistry._entry_bounds_overlap(hail,lane_end,lane_end), "moving pulse uses the conservative whole-lane envelope")
+	var prism := _reaction(307)
+	var approach := Chemistry.ray_interaction(Vector2i(450000,500000),Vector2i(580000,500000),7,9001,[prism],prism.active_tick)
+	check(bool(approach["transformed"]), "guard retains actual prism approach")
+	var reflected: Dictionary = approach["rays"][0]
+	var continuation := Chemistry.ray_interaction(reflected["origin"],reflected["end"],7,9001,[prism],prism.active_tick,int(approach["interaction_mask"]))
+	check(not bool(continuation["transformed"]), "reflected continuation preserves interaction-mask behavior")

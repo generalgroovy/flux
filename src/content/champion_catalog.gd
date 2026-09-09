@@ -8,7 +8,7 @@ const AFFINITY_POINT_BUDGET: int = 3
 const SUPPORTED_ANCESTRIES: Array[String] = [
 	"human", "dwarf", "gnome", "hobbit", "elf", "orc", "troll", "minotaur",
 	"seakin", "wyrmborn", "stoneborn", "treefolk", "sylph", "undead", "goblin",
-	"nymph", "arachnoid", "vampire", "demon", "angel", "werewolf",
+	"nymph", "spiderkin", "vampire", "demon", "angel", "werewolf",
 ]
 const SUPPORTED_BODY_TYPES: Array[String] = ["small", "middle", "large"]
 const STAT_BOUNDS: Dictionary = {
@@ -64,7 +64,6 @@ func validate(abilities: AbilityCatalog) -> bool:
 		return _fail("unsupported champion catalog schema")
 	if String(data.get("id", "")).is_empty():
 		return _fail("champion catalog id is required")
-	var affinity_pair_owners: Dictionary = {}
 	for value: Variant in data.get("champions", []):
 		if not value is Dictionary:
 			return _fail("every champion must be an object")
@@ -113,13 +112,9 @@ func validate(abilities: AbilityCatalog) -> bool:
 		if affinity_point_total != AFFINITY_POINT_BUDGET:
 			return _fail("champion affinity points must total %d: %s" % [AFFINITY_POINT_BUDGET, champion_id])
 
-		if affinities.size() == 2:
-			var affinity_pair: Array[String] = [String(affinities[0]), String(affinities[1])]
-			affinity_pair.sort()
-			var affinity_pair_key := "%s+%s" % [affinity_pair[0], affinity_pair[1]]
-			if affinity_pair_owners.has(affinity_pair_key):
-				return _fail("two-affinity combinations must be unique: %s conflicts with %s" % [champion_id, String(affinity_pair_owners[affinity_pair_key])])
-			affinity_pair_owners[affinity_pair_key] = champion_id
+		# The canonical affinity plan permits shared pairs. Identity, body role,
+		# kit and visual recipe distinguish champions; never rewrite documented
+		# affinities merely to force a globally unique two-element combination.
 
 		var stats: Dictionary = champion.get("stats", {})
 		for stat_name: String in STAT_BOUNDS:
@@ -137,7 +132,19 @@ func validate(abilities: AbilityCatalog) -> bool:
 			var ability_id := String(kit.get(slot_name, ""))
 			var ability: Dictionary = abilities.ability(ability_id)
 			var expected_kind := "primary" if slot_name == "primary" else "active"
-			if ability.is_empty() or String(ability.get("slot_kind", "")) != expected_kind:
+			var accepted_kind := String(ability.get("slot_kind", "")) == expected_kind
+			if slot_name == "primary" and not accepted_kind:
+				# Matrix Bolts are legacy-labelled active spells, but all eight
+				# ordinary single-lane Bolts can initialize the primary channel.
+				# This does not broaden starter primaries to Heavy/Rapid/Wave or
+				# instant/area forms, nor change freely woven spell-slot access.
+				var angles: Variant = ability.get("projectile_angles_degrees", [0])
+				accepted_kind = String(ability.get("family", "")) == "bolt" \
+					and String(ability.get("shape", "")) == "projectile" \
+					and String(ability.get("runtime_status", "")) == "playable" \
+					and abilities.runtime_wire_ids.has(int(ability.get("wire_id", 0))) \
+					and angles is Array and (angles as Array).size() == 1 and angles[0] == 0
+			if ability.is_empty() or not accepted_kind:
 				return _fail("champion kit slot is invalid: %s/%s" % [champion_id, slot_name])
 			kit_wires[slot_name] = int(ability.get("wire_id", 0))
 		kit_wires["active_2"] = 0
@@ -204,6 +211,7 @@ func apply_to_player(state: PlayerState, champion_id: String, preserve_resource_
 	var old_flux := state.flux
 	var old_stamina := state.stamina
 	state.champion_wire_id = int(champion_data["wire_id"])
+	state.radius = body_type_profiles.hurt_radius(String(champion_data["body_type"]))
 	state.float_max_duration_ms = MovementTuning.float_duration_ms(String(champion_data["body_type"]))
 	# Attunement cannot refill or lengthen an already spent airborne allowance.
 	state.float_ticks = mini(state.float_ticks, (state.float_max_duration_ms * 120 + 999) / 1000)

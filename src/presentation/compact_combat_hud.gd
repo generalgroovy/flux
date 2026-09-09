@@ -86,6 +86,9 @@ func draw(
 	active_layer: int,
 	tick_rate: int,
 	spectating: bool,
+	capacity: Vector2i = Vector2i(-1, -1),
+	cast_gate: String = "",
+	pointer: Vector2 = Vector2(-1000, -1000),
 ) -> void:
 	if canvas == null or state == null or ability_catalog == null or language == null:
 		return
@@ -106,7 +109,7 @@ func draw(
 	var resource_width := float(layout.get("resource_width", 270))
 	var resource_height := float(layout.get("resource_height", 118))
 	var resources := Rect2(margin, viewport_size.y - margin - resource_height, resource_width, resource_height)
-	_draw_resources(canvas, resources, state, champion_id, champion_name, layout, tick_rate)
+	_draw_resources(canvas, resources, state, champion_id, champion_name, layout, tick_rate, resources.has_point(pointer))
 
 	var cell_width := float(layout.get("spell_cell_width", 142))
 	var cell_height := float(layout.get("spell_cell_height", 70))
@@ -121,22 +124,48 @@ func draw(
 	for button_index: int in range(PlayerState.SPELL_BUTTON_COUNT):
 		var rectangle := Rect2(spell_start + Vector2(float(button_index) * (cell_width + gap), 0), Vector2(cell_width, cell_height))
 		var slot_index := active_layer * PlayerState.SPELL_BUTTON_COUNT + button_index
-		_draw_spell_cell(canvas, rectangle, state, ability_catalog, slot_index, button_index, tick_rate, copy)
+		_draw_spell_cell(canvas, rectangle, state, ability_catalog, slot_index, button_index, tick_rate, copy, capacity, cast_gate)
 
 
-func _draw_resources(canvas: CanvasItem, rectangle: Rect2, state: PlayerState, champion_id: String, champion_name: String, layout: Dictionary, tick_rate: int) -> void:
+func _draw_resources(canvas: CanvasItem, rectangle: Rect2, state: PlayerState, champion_id: String, champion_name: String, layout: Dictionary, tick_rate: int, details: bool = false) -> void:
 	_draw_panel(canvas, rectangle, 0.94)
 	var medallion := rectangle.position + Vector2(28, 34)
 	canvas.draw_circle(medallion + Vector2(2, 3), 19.0, Color(language.ramp_color("worldbone", 0), 0.7))
 	canvas.draw_circle(medallion, 18.0, language.ramp_color("aged_brass", 2))
 	_draw_portrait(canvas, medallion, champion_id)
-	canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(54, 19), champion_name.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 64.0, 11, language.ui_color("text_primary"))
+	var protection := protection_status(state, tick_rate)
+	canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(54, 19), champion_name.to_upper() if protection.is_empty() else protection, HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 64.0, 11, language.ui_color("text_primary") if protection.is_empty() else language.ui_color("focus"))
 	var bar_x := rectangle.position.x + 54.0
 	var bar_width := rectangle.size.x - 66.0
 	var bar_height := float(layout.get("resource_bar_height", 20))
 	_draw_resource_bar(canvas, Rect2(bar_x, rectangle.position.y + 29, bar_width, bar_height), "HEALTH", state.health, state.health_maximum, language.ramp_color("health", 3))
-	_draw_resource_bar(canvas, Rect2(bar_x, rectangle.position.y + 56, bar_width, bar_height), flux_status_label(state, tick_rate), state.flux, state.flux_maximum, language.ramp_color("flux", 3))
-	_draw_resource_bar(canvas, Rect2(bar_x, rectangle.position.y + 83, bar_width, bar_height), stamina_status_label(state, tick_rate), state.stamina, state.stamina_maximum, language.ramp_color("stamina", 3))
+	_draw_resource_bar(canvas, Rect2(bar_x, rectangle.position.y + 56, bar_width, bar_height), flux_status_label(state, tick_rate) if details else quiet_resource_label(state, "FLUX"), state.flux, state.flux_maximum, language.ramp_color("flux", 3))
+	_draw_resource_bar(canvas, Rect2(bar_x, rectangle.position.y + 83, bar_width, bar_height), stamina_status_label(state, tick_rate) if details else quiet_resource_label(state, "STAMINA"), state.stamina, state.stamina_maximum, language.ramp_color("stamina", 3))
+
+
+static func quiet_resource_label(state: PlayerState, resource: String) -> String:
+	# Routine wait/rate numbers are available on pointer inspection, not a
+	# continuously changing combat label. Sealed recovery remains prominent.
+	if state == null or state.health <= 0:
+		return resource
+	if state.chemistry_regen_block_ticks > 0:
+		return resource + " SEALED"
+	# Finite protection time affects the next decision, unlike routine regen
+	# bookkeeping. Keep it visible even when recovery details are collapsed.
+	if resource == "STAMINA" and state.air_floating and state.float_ticks > 0 and state.stamina > 0 and state.control_state in [PlayerState.ControlState.FREE, PlayerState.ControlState.SLOWED]:
+		return "STAMINA FLOAT %.1fs" % (float(state.float_ticks) / 120.0)
+	return resource
+
+
+static func protection_status(state: PlayerState, tick_rate: int = 120) -> String:
+	var config := SimConfig.new(maxi(1, tick_rate))
+	if JumpPresentation.protection_ratio(state, config) <= 0.0:
+		return ""
+	if state.spawn_protection_ticks > 0:
+		return "PROTECTED / SPAWN"
+	if state.air_floating:
+		return "PROTECTED / FLOAT"
+	return "PROTECTED"
 
 
 static func flux_status_label(state: PlayerState, tick_rate: int) -> String:
@@ -201,7 +230,7 @@ func _draw_resource_bar(canvas: CanvasItem, rectangle: Rect2, label: String, val
 	canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(6, 14), "%s  %d/%d" % [label, value / 1000, maximum / 1000], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 12.0, 10, language.ui_color("text_primary"))
 
 
-func _draw_spell_cell(canvas: CanvasItem, rectangle: Rect2, state: PlayerState, ability_catalog: AbilityCatalog, slot_index: int, button_index: int, tick_rate: int, copy: Dictionary) -> void:
+func _draw_spell_cell(canvas: CanvasItem, rectangle: Rect2, state: PlayerState, ability_catalog: AbilityCatalog, slot_index: int, button_index: int, tick_rate: int, copy: Dictionary, capacity: Vector2i = Vector2i(-1, -1), cast_gate: String = "") -> void:
 	var wire_id: int = state.spell_wire_id(slot_index + 1)
 	var ability: Dictionary = ability_catalog.ability_from_wire(wire_id)
 	var empty := ability.is_empty()
@@ -214,13 +243,42 @@ func _draw_spell_cell(canvas: CanvasItem, rectangle: Rect2, state: PlayerState, 
 	if empty:
 		canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(10, 35), String(copy.get("loom", "WEAVE AT LOOM")), HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 20.0, 9, language.ui_color("text_muted"))
 		return
-	var cooldown_ticks := _cooldown_for_wire(state, wire_id)
-	var flux_cost_units := int(ability.get("flux_cost", 0))
-	var affordable := spell_is_affordable(state, ability)
-	var status := (String(copy.get("ready", "READY")) if affordable else "NEED %d F" % flux_cost_units) if cooldown_ticks <= 0 else "%.1fs" % (float(cooldown_ticks) / float(maxi(tick_rate, 1)))
-	var affordability := "FREE" if flux_cost_units == 0 else "%d F" % flux_cost_units
-	canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(10, 35), "%s · %s" % [String(ability.get("shape", "spell")).to_upper(), affordability], HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 20.0, 9, language.ui_color("text_secondary"))
-	canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(10, 55), status, HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 20.0, 10, (accent if affordable else language.ui_color("danger")) if cooldown_ticks <= 0 else language.ui_color("pending"))
+	var readiness := spell_readiness(state, ability, tick_rate, capacity, cast_gate)
+	var status := String(readiness.label)
+	canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(10, 35), spell_summary_label(ability), HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 20.0, 9, language.ui_color("text_secondary"))
+	if not status.is_empty():
+		canvas.draw_string(ThemeDB.fallback_font, rectangle.position + Vector2(10, 55), status, HORIZONTAL_ALIGNMENT_LEFT, rectangle.size.x - 20.0, 10, language.ui_color("pending") if readiness.kind in ["cooldown", "startup"] else language.ui_color("danger"))
+	var track := Rect2(rectangle.position + Vector2(10, rectangle.size.y - 8), Vector2(rectangle.size.x - 20, 3))
+	canvas.draw_rect(track, Color(accent, 0.15))
+	canvas.draw_rect(Rect2(track.position, Vector2(track.size.x * float(readiness.progress), track.size.y)), Color(accent, 0.9))
+
+
+static func spell_readiness(state: PlayerState, ability: Dictionary, tick_rate: int = 120, capacity: Vector2i = Vector2i(-1, -1), cast_gate: String = "") -> Dictionary:
+	var result := {"kind": "ready", "label": "", "progress": 1.0}
+	if state == null or state.health <= 0 or ability.is_empty():
+		return {"kind": "unavailable", "label": "UNAVAILABLE", "progress": 0.0}
+	var wire := int(ability.get("wire_id", 0))
+	if state.pending_cast_wire_id != 0 or cast_gate == "startup_commitment":
+		return {"kind": "startup", "label": "CASTING" if state.pending_cast_wire_id == wire else "FINISH CAST", "progress": 0.0}
+	if not cast_gate.is_empty():
+		return {"kind": "control", "label": "CONTROLLED", "progress": 0.0}
+	var cooldown := state.spell_cooldown_for_wire(wire)
+	if cooldown > 0:
+		var total := maxi(1, ceili(float(int(ability.get("cooldown_ms", 1)) * maxi(1, tick_rate)) / 1000.0))
+		return {"kind": "cooldown", "label": "%.1fs" % (float(cooldown) / float(maxi(1, tick_rate))), "progress": clampf(1.0 - float(cooldown) / float(total), 0.0, 1.0)}
+	var needed := CombatSystem.cast_capacity_requirement(wire)
+	if (capacity.x >= 0 and needed.x > capacity.x) or (capacity.y >= 0 and needed.y > capacity.y):
+		return {"kind": "capacity", "label": "MATERIAL LIMIT" if needed.x > 0 else "FIELD LIMIT", "progress": 0.0}
+	if not spell_is_affordable(state, ability):
+		return {"kind": "flux", "label": "NEED %d F" % int(ability.get("flux_cost", 0)), "progress": 0.0}
+	return result
+
+
+static func spell_summary_label(ability: Dictionary) -> String:
+	var family := AbilityCatalog._spell_family(ability)
+	var label := "WAVE" if family == "burst" else (family.to_upper() if not family.is_empty() else "SPELL")
+	var cost := int(ability.get("flux_cost", 0))
+	return "%s · %s" % [label, "FREE" if cost == 0 else "%d F" % cost]
 
 
 static func spell_is_affordable(state: PlayerState, ability: Dictionary) -> bool:
@@ -245,12 +303,17 @@ func _draw_panel(canvas: CanvasItem, rectangle: Rect2, opacity: float) -> void:
 	canvas.draw_polyline(outline, Color(language.ramp_color("aged_brass", 2), 0.72 * opacity), 1.0, false)
 
 
+func portrait_source(champion_id: String) -> Dictionary:
+	return {} if champion_art == null else champion_art.portrait_frame(champion_id)
+
+
 func _draw_portrait(canvas: CanvasItem, center: Vector2, champion_id: String) -> void:
 	canvas.draw_circle(center, 14.0, language.ramp_color("worldbone", 0))
-	if champion_art != null and champion_art.can_present(champion_id):
-		# The same body page supplies portraits; no second skin/design catalog
-		# can become stale when a character is added or its artwork changes.
-		canvas.draw_texture_rect_region(champion_art.texture_for_champion(champion_id), Rect2(center - Vector2(16, 16), Vector2(32, 32)), champion_art.portrait_region(champion_id))
+	var frame := portrait_source(champion_id)
+	if not frame.is_empty():
+		# Share the Gallery's anatomy-derived crop, including accepted art whose
+		# full world page is not resident. The transparent square preserves aspect.
+		canvas.draw_texture_rect_region(frame["texture"], Rect2(center - Vector2(16, 16), Vector2(32, 32)), frame["region"])
 
 
 func _draw_element_glyph(canvas: CanvasItem, center: Vector2, element: String, accent: Color, empty: bool) -> void:

@@ -5,6 +5,7 @@ extends RefCounted
 # only authority for walkability, walls, targets and station commands.
 const PATH := "res://content/visual/wellspring_illustrated_v1.json"
 const MapLibrary = preload("res://src/presentation/pixel_map_library.gd")
+const GroundStyle = preload("res://art_batches/wellspring_style_v2/ground_style.gd")
 const PROP_IDS := ["oak", "small_tree", "flowers", "ferns", "wall_horizontal", "wall_vertical", "rocks", "planter", "fountain", "lectern", "target", "bell", "doorway", "bench", "lantern", "banner"]
 var data: Dictionary = {}
 var content_hash := ""
@@ -20,11 +21,13 @@ var campus: SanctumCampusLayout
 var cached_terrain_builds := 0
 var ground_generation_ms := 0
 var pixel_map: RefCounted
+var ground_style: RefCounted
 
 
 func configure(layout: SanctumCampusLayout, path: String = PATH) -> bool:
 	last_error = ""
 	ground = null
+	ground_style = null
 	tiles.clear()
 	water_tiles.clear()
 	paths.clear()
@@ -83,36 +86,33 @@ func configure(layout: SanctumCampusLayout, path: String = PATH) -> bool:
 	pixel_map = MapLibrary.default_library()
 	if pixel_map.content_hash.is_empty():
 		return _fail(pixel_map.last_error)
-	_compile_ground()
+	ground_style = GroundStyle.new()
+	if not ground_style.configure_style(pixel_map):
+		return _fail(ground_style.last_error)
+	if not _compile_ground():
+		return _fail("Warm terrain composition failed; historical ground is not a fallback")
 	# Decorative cutouts are withheld until each one has an authoritative
 	# worldbone/clearance contract. A visible tree or fountain must never invite
 	# the player to collide with geometry that the simulation does not own.
 	ground_generation_ms = Time.get_ticks_msec() - started
 	# Decoded pixel hashes also work in exported builds where PNGs are remapped.
-	content_hash = (source + layout.content_hash + pixel_map.content_hash).sha256_text()
+	content_hash = (source + layout.content_hash + pixel_map.content_hash + ground_style.content_hash).sha256_text()
 	return true
 
 
-func _compile_ground() -> void:
+func _compile_ground() -> bool:
 	if pixel_map != null:
 		var families: Array[String] = []
 		for y: int in range(0, campus.canvas_size.y, 32):
 			for x: int in range(0, campus.canvas_size.x, 32):
 				families.append(pixel_family(surface_at(Vector2(x + 16, y + 16))))
 		@warning_ignore("integer_division")
-		var composed: Image = pixel_map.compose_ground(families, campus.canvas_size.x / 32, campus.canvas_size.y / 32)
+		var composed: Image = ground_style.compose_ground(families, campus.canvas_size.x / 32, campus.canvas_size.y / 32)
 		if composed != null:
 			ground = ImageTexture.create_from_image(composed)
 			cached_terrain_builds += 1
-			return
-	var image := Image.create(campus.canvas_size.x, campus.canvas_size.y, false, Image.FORMAT_RGBA8)
-	for y: int in range(0, campus.canvas_size.y, 32):
-		for x: int in range(0, campus.canvas_size.x, 32):
-			var material := surface_at(Vector2(x + 16, y + 16))
-			var tile: Image = water_tiles[(x / 128) % 2 + ((y / 128) % 2) * 2] if material == 8 else tiles[material]
-			image.blit_rect(tile, Rect2i(posmod(x, 128), posmod(y, 128), 32, 32), Vector2i(x, y))
-	ground = ImageTexture.create_from_image(image)
-	cached_terrain_builds += 1
+			return true
+	return false
 
 
 static func pixel_family(material: int) -> String:
@@ -130,9 +130,10 @@ static func pixel_family(material: int) -> String:
 func surface_at(point: Vector2) -> int:
 	var cell := Vector2i(point / 32)
 	var seed := absi(cell.x * 173 + cell.y * 389 + int(data["terrain"]["seed"]))
-	# Presentation shoreline stays inside the existing map envelope. It grants
-	# no new water collision or material behavior.
-	var land := Rect2(64, 128, 2944, 1504)
+	# Retain the authored64/128px shore margins inside the current map envelope.
+	# Resizing the campus must not paint playable annex routes as water. This
+	# classification grants no water collision or material-assisted movement.
+	var land := Rect2(64, 128, campus.canvas_size.x - 128, campus.canvas_size.y - 224)
 	if not land.has_point(point):
 		return 8
 	var edge := minf(minf(point.x - land.position.x, land.end.x - point.x), minf(point.y - land.position.y, land.end.y - point.y))

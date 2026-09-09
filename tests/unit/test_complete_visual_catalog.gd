@@ -5,6 +5,7 @@ func run() -> int:
 	_test_repository_catalog()
 	_test_catalog_lookups()
 	_test_status_boundaries()
+	_test_archive_subset_boundary()
 	_test_invalid_catalog_fails_closed()
 	return finish("complete-visual-catalog")
 
@@ -13,7 +14,7 @@ func _test_repository_catalog() -> void:
 	var catalog := CompleteVisualCatalog.new()
 	check(catalog.load_from_file(), "complete visual catalog validates: %s" % catalog.last_error)
 	equal(catalog.ancestries.size(), 23, "all ancestry/body-plan slots are registered")
-	equal(catalog.champions.size(), 24, "all champion visual slots are registered")
+	equal(catalog.champions.size(), 24, "the historical archive retains its twenty-four champion visual slots")
 	equal(catalog.districts.size(), 9, "all Sanctum district visual packages are registered")
 	equal((catalog.props.get("order", []) as Array).size(), 16, "all typed prop families are registered")
 	equal((catalog.props.get("states", []) as Array).size(), 8, "all interaction presentation states are registered")
@@ -28,7 +29,7 @@ func _test_catalog_lookups() -> void:
 	equal(catalog.champion("nico_lai").get("display_name"), "Waka Aren Si", "compatibility asset resolves the canonical name")
 	equal(catalog.champion("oll_i").get("ancestry"), "werewolf", "current roster identity overrides archive metadata")
 	equal(catalog.champion("red_baron").get("body_type"), "large", "Red Baron has the canonical large role")
-	equal(catalog.champion("steezo").get("availability"), "planned", "visual assets do not promote planned champions")
+	equal(catalog.champion("steezo").get("availability"), "playable", "current playable availability derives from canonical promotion, not archived art")
 	equal(catalog.champion("steezo").get("asset_authority"), "legacy_visual_archive", "metadata migration never certifies old pixels as current art")
 	check(not catalog.ancestry("weaverkin").is_empty(), "provisional Weaverkin body plan resolves")
 	check(not catalog.district("movement_conservatory").is_empty(), "Movement Conservatory visual package resolves")
@@ -57,3 +58,23 @@ func _test_invalid_catalog_fails_closed() -> void:
 	}
 	check(not catalog.validate(), "incomplete visual catalog fails closed")
 	check(not catalog.last_error.is_empty(), "complete catalog failure is diagnosable")
+
+
+func _test_archive_subset_boundary() -> void:
+	var catalog := CompleteVisualCatalog.new()
+	check(catalog.load_from_file(), "historical complete archive accepts an expanded canonical roster")
+	for champion_id: String in ["luuh_i_zeh", "juul_i_yaina", "faab_i_yaina", "joh_haynes"]:
+		check(not catalog.roster_plan.entry(champion_id).is_empty(), "new identity exists canonically: " + champion_id)
+		check(catalog.champion(champion_id).is_empty(), "new identity receives no fabricated archive art: " + champion_id)
+	for champion_id: String in catalog.champions:
+		var entry := catalog.champion(champion_id)
+		equal(entry["asset_authority"], "legacy_visual_archive", "runtime promotion cannot certify archived pixels: " + champion_id)
+		equal(entry["availability"], catalog.roster_plan.entry(champion_id)["availability"], "availability remains source-derived: " + champion_id)
+	var archive: Dictionary = (catalog.data["champions"] as Dictionary).duplicate(true)
+	var original: Dictionary = archive["steezo"]
+	archive.erase("steezo")
+	archive["unknown_archive_identity"] = original
+	catalog.data["champions"] = archive
+	check(not catalog.validate(), "unknown archived identity fails even while historical package count stays24")
+	check(catalog.last_error.contains("unknown canonical champion ID"), "archive identity refusal is actionable")
+	check(catalog.champions.is_empty(), "failed projection cannot expose a partially canonicalized archive")

@@ -1,0 +1,922 @@
+[
+  {
+    "file": "content/abilities/foundation_abilities_v1.json",
+    "bytes": 29331,
+    "sha256": "60c3f233ba996776b4ebbbb5089632d8376e9bc1d1da517ba4c139f5533cd835"
+  },
+  {
+    "file": "content/animations/skeleton_animation_manifest_v1.json",
+    "bytes": 6704,
+    "sha256": "cea6b658e77d87c72341d32e72d8806239737405682a7f991ad598e9532508b2"
+  },
+  {
+    "file": "content/assets/sanctum_modular_kit_candidate_v2.json",
+    "bytes": 4720,
+    "sha256": "072509ce26e5a2e148af019f40b8dfaeffae77e4d849f21bea88b5464ef0fb7b"
+  },
+  {
+    "file": "content/assets/sanctum_runtime_kit_v1.json",
+    "bytes": 3058,
+    "sha256": "ff6de903d0512cec7333e91f763344e093e02c33dba487b28175bc0109e53763"
+  },
+  {
+    "file": "content/assets/wellspring_environment_runtime_v2.json",
+    "bytes": 4965,
+    "sha256": "8f796c9bb29238a6f22d3ba57a306e93ab6e6135d0d20f5e75f4eb2263823a2c"
+  },
+  {
+    "file": "content/assets/wellspring_environment_source_v2.json",
+    "bytes": 2818,
+    "sha256": "9519ec5bc9563cfa97a543b1bd5c9cfaa7de017c627aa9124160b56fa0ef5737"
+  },
+  {
+    "file": "content/champions/body_type_profiles_v1.json",
+    "bytes": 2506,
+    "sha256": "775278bd9e2306c8e427ec8846333d7d302f39b484b3653060c2e7bcdc7ec8ba"
+  },
+  {
+    "file": "content/champions/champion_affinities_first_eight_v1.json",
+    "bytes": 9732,
+    "sha256": "2ed80ae33d43e3d6d30084e517f6531f66f8eb084011861742d320a634c884da"
+  },
+  {
+    "file": "content/champions/champion_identity_migrations_v1.json",
+    "bytes": 2264,
+    "sha256": "f3a8a87d0ea545d7f9ad04133ab8c2c55b7cef52f4886bd57aaa07f538470334"
+  },
+  {
+    "file": "content/champions/champion_roster_plan_v1.json",
+    "bytes": 6825,
+    "sha256": "234400870bc12f3b3f1dad6bf3aebc4560a2898eb738145b119b2ff74c3e657e"
+  },
+  {
+    "file": "content/champions/foundation_champions_v1.json",
+    "bytes": 30409,
+    "sha256": "e7c2aa60244bbaea097a28ae5d55c2a2c6cd604685d3bcec60d82988f5211e99"
+  },
+  {
+    "file": "content/champions/full_cast_candidate_v1.json",
+    "bytes": 43842,
+    "sha256": "69b6a461c307a16483ebd3a06d09d39abc6600634148dbfec882032790f732f1"
+  },
+  {
+    "file": "content/gameplay/action_transition_matrix_v1.json",
+    "bytes": 1530,
+    "sha256": "9d7be015fced48de1bb269f8de97803ad69e746efda10cd8bdb1714123bec19c"
+  },
+  {
+    "file": "content/loadouts/foundation_practitioner_v1.json",
+    "bytes": 642,
+    "sha256": "8250e218fd5e7cbf3488fdab97cf0693f134b6f6cdf5793452ce705b0e9767fb"
+  },
+  {
+    "file": "content/maps/districts/alchemical_proving_grounds_visual_v1.json",
+    "bytes": 26135,
+    "sha256": "5d3fe6786d06ae815751d19b985cb7601c1d42ff0a9425bf2d89856da7cdae78"
+  },
+  {
+    "file": "content/maps/districts/crown_observatory_visual_v1.json",
+    "bytes": 20447,
+    "sha256": "e656e27da859c03906e6a4b36f5d6e0b3c5c8d6433482d2343ead068486c1c07"
+  },
+  {
+    "file": "content/maps/districts/foundry_deep_visual_v1.json",
+    "bytes": 21409,
+    "sha256": "17b6675a01ad1b13d7ae953386977d3749e6a648966c7370629dc24a321020d8"
+  },
+  {
+    "file": "content/maps/districts/living_archive_visual_v1.json",
+    "bytes": 21798,
+    "sha256": "520316f9656bdcc8faf5ceee4a3931dd235e25c38341ce92a4ae500cda14b664"
+  },
+  {
+    "file": "content/maps/districts/movement_conservatory_visual_v1.json",
+    "bytes": 19123,
+    "sha256": "e3a7ff1cb68bec449121c75f2100fa2b00dc052ebafd9f8dc60d36cd9fe286bb"
+  },
+  {
+    "file": "content/maps/districts/nexus_court_visual_v1.json",
+    "bytes": 20963,
+    "sha256": "7a99f449fb9531f522b091babba41107937557b4acd8785b60cef3e682bfbf14"
+  },
+  {
+    "file": "content/maps/districts/seasonal_expanse_visual_v1.json",
+    "bytes": 26283,
+    "sha256": "6f62b6eee2f36bc6ca21196b21a61cc6bff887f98406307e1bf67af46b4943dd"
+  },
+  {
+    "file": "content/maps/districts/verdant_recovery_visual_v1.json",
+    "bytes": 23409,
+    "sha256": "ecf82a0d8ed4319e39232e3c4f84b1471640ed8126705bcc4af49e6c425bbee5"
+  },
+  {
+    "file": "content/maps/districts/wayfarer_concourse_visual_v1.json",
+    "bytes": 20673,
+    "sha256": "7c666c8373357bbf1efe39875510f1761dff8caf29d75d9a965055bfd9bc2740"
+  },
+  {
+    "file": "content/maps/nexus_to_conservatory_visual_v1.json",
+    "bytes": 30402,
+    "sha256": "53c9654f109345534568dfc5235568b867dc8460b42acda50c8e111f913b1965"
+  },
+  {
+    "file": "content/maps/sanctum_campus_g2_v1.json",
+    "bytes": 15983,
+    "sha256": "d69604bc8ef6ec7039ebb02a96752b298672e7fe03a28cabbe5d8eef24c8dd9d"
+  },
+  {
+    "file": "content/maps/sanctum_hub_v1.json",
+    "bytes": 6462,
+    "sha256": "cc6c128bbda90e218326abfcd352bddf8d05acde35dd037ce75af48f9e1e2c83"
+  },
+  {
+    "file": "content/maps/sanctum_material_yard_v1.json",
+    "bytes": 1839,
+    "sha256": "eb98cadfda054a394f741cd67a5f6552d3c197e17a433342deb68dc6f788bdce"
+  },
+  {
+    "file": "content/maps/sanctum_to_wellspring_alias_v2.json",
+    "bytes": 185,
+    "sha256": "34c5decba60fc88c8c089f24b2b86f77cfe588e54fefacef506eb373c05c9459"
+  },
+  {
+    "file": "content/maps/wellspring_hub_v2.json",
+    "bytes": 560,
+    "sha256": "0f234b9c7a4b5c5ba60b517249724c060013dd9d520b20f8632cc2a816619bfc"
+  },
+  {
+    "file": "content/maps/wellspring/districts/deep_foundry_v2.json",
+    "bytes": 133679,
+    "sha256": "c24ad8d25efe39e8289a4e5c5810a2df7afc8a9520ca76807de84c3cd25848e1"
+  },
+  {
+    "file": "content/maps/wellspring/districts/elemental_proving_grounds_v2.json",
+    "bytes": 115416,
+    "sha256": "07bc6b785a2f9c0d1ba02fa07797f637e7d724c63b0b2bde0168fdcb4dc91b05"
+  },
+  {
+    "file": "content/maps/wellspring/districts/farflow_concourse_v2.json",
+    "bytes": 124585,
+    "sha256": "b2866982f1404d0c7f8985de8309e5115fe906ebcbe7bc310abdfa4071df1042"
+  },
+  {
+    "file": "content/maps/wellspring/districts/living_archive_v2.json",
+    "bytes": 124829,
+    "sha256": "1bf22db2fa993e2809ea0227ca3b7b770433680ec29ce0bdcd4eed2ce9063092"
+  },
+  {
+    "file": "content/maps/wellspring/districts/movement_gardens_v2.json",
+    "bytes": 118740,
+    "sha256": "78f415a0607200ef1c7610161949be31eefab0f764fe7d68f2671b8ddeacaaf8"
+  },
+  {
+    "file": "content/maps/wellspring/districts/restoration_grove_v2.json",
+    "bytes": 106046,
+    "sha256": "d481d14cf9a1844dde4cb626ec4afe5ee179122857303f90be70efbb6d7d9ef6"
+  },
+  {
+    "file": "content/maps/wellspring/districts/seasonal_reaches_v2.json",
+    "bytes": 126210,
+    "sha256": "a9a7acf32547b0c204d46b6e827793ceb7a4a6def0dd899535adc204a28402c8"
+  },
+  {
+    "file": "content/maps/wellspring/districts/source_court_v2.json",
+    "bytes": 135119,
+    "sha256": "b8a8194d2afe04c8f654287ab3b6a4a389f6e7a26c0033a0412631b5eb605450"
+  },
+  {
+    "file": "content/maps/wellspring/districts/starward_crown_v2.json",
+    "bytes": 108399,
+    "sha256": "d3ad59dc15eb1ef0703487508b53b9d8ad9bf75b733a2204f54099afef99177e"
+  },
+  {
+    "file": "content/materials/foundation_materials_v1.json",
+    "bytes": 2639,
+    "sha256": "61c071f551d458186c56708ba4daa40f2b5d92b71899ac08ab849ecd81c21c06"
+  },
+  {
+    "file": "content/reactions/first_eight_element_reactions_v1.json",
+    "bytes": 17153,
+    "sha256": "ca94f7c46417b56087fa8bb71326c26d42dd43a088b1b154ddfaa0b7e403caca"
+  },
+  {
+    "file": "content/visual/accessibility_profiles_v1.json",
+    "bytes": 1469,
+    "sha256": "f8b7418be443f579ef7da44af43c8605e27665ce9de6bcbd84d301b171f4e387"
+  },
+  {
+    "file": "content/visual/burst_projectile_runtime_v3.json",
+    "bytes": 4178,
+    "sha256": "9657f7599a3af634f06e65814e1b9b1aef6c073baa40d186f8984a95ef26649a"
+  },
+  {
+    "file": "content/visual/champion_page_overrides_v1.json",
+    "bytes": 2793,
+    "sha256": "c2108084f19456e54e0e57eb40795b4d6ed1aea9631a4637d62f1c3846acba05"
+  },
+  {
+    "file": "content/visual/compact_hud_v1.json",
+    "bytes": 731,
+    "sha256": "55d33e6634ece1f3bb0418f8feb71ea3f4630f1dce1735d4a5347f9f39525763"
+  },
+  {
+    "file": "content/visual/complete_visual_catalog_v1.json",
+    "bytes": 34712,
+    "sha256": "2ed708b1477fb5078b71772aaf48da0810c69ecdfb9d2bb1ff07151d0eca50e3"
+  },
+  {
+    "file": "content/visual/complete_visual_hashes_v1.json",
+    "bytes": 42409,
+    "sha256": "a8954b5d7133ba5044f670020698f3012088de5d9c486fd6ddacea35546a3d5d"
+  },
+  {
+    "file": "content/visual/foundation_champion_visuals_v1.json",
+    "bytes": 10394,
+    "sha256": "42f8a690d0288190e20154ed9d4529b2c6dac95c04ec8fc1d3f1e557e958ecdd"
+  },
+  {
+    "file": "content/visual/foundation_spell_visuals_v1.json",
+    "bytes": 4086,
+    "sha256": "e99d40aa92944b08971828b0f20673a2858db53d6fc7a562b14ef45286199033"
+  },
+  {
+    "file": "content/visual/minimal_champion_motion_v1.json",
+    "bytes": 9742,
+    "sha256": "5ace2b571120838df6566c949b10817088b9a50a6166d3a2f0a05f80fe7f281a"
+  },
+  {
+    "file": "content/visual/natural_map_kit_v1.json",
+    "bytes": 2411,
+    "sha256": "d234eb206bd45db124775bb070e0589502faa6c46358c0fa476c236a99b9b625"
+  },
+  {
+    "file": "content/visual/reference_style_front_catalog_v3.json",
+    "bytes": 5783,
+    "sha256": "a343162ad063183f137f65a444ac0d2e50e3e90b62818d6bf783f8bac2fe7f83"
+  },
+  {
+    "file": "content/visual/spell_animation_skeletons_v1.json",
+    "bytes": 3147,
+    "sha256": "b8cff0a65bb145471c43ef1a2aebbd3b6a872c000c930da5520735310261cbd5"
+  },
+  {
+    "file": "content/visual/spell_delivery_direction_v1.json",
+    "bytes": 684,
+    "sha256": "e4f67a894f6579ae9af564153b001972cc8ea3ea7086097ba820528b7160929d"
+  },
+  {
+    "file": "content/visual/visual_asset_hashes_v1.json",
+    "bytes": 4696,
+    "sha256": "5aff23a51c313df756ed28fabf9612c3181ab1b55ebb9822a0dccf1898b9702c"
+  },
+  {
+    "file": "content/visual/visual_asset_registry_v1.json",
+    "bytes": 23954,
+    "sha256": "ef177e303b8eee111b4eef3d8037e35d0347b60ee90d7f842566b68f88526122"
+  },
+  {
+    "file": "content/visual/visual_iteration_manifest_v3.json",
+    "bytes": 16001,
+    "sha256": "4c1bdc838c3197e70986809d030d102807813ee4f1fa0ebb1108310d0ed1e1b3"
+  },
+  {
+    "file": "content/visual/visual_language_v1.json",
+    "bytes": 5710,
+    "sha256": "cb6572d320bf03075eebd59864e3d265dcb24d49ff01eee7b527cab5e897dc6d"
+  },
+  {
+    "file": "content/visual/wellspring_architecture_kit_v1.json",
+    "bytes": 3891,
+    "sha256": "bf4f29f408ab17a5e17f702c717af13865b41911eddbe926ed6dca56eff7afa0"
+  },
+  {
+    "file": "content/visual/wellspring_illustrated_v1.json",
+    "bytes": 1170,
+    "sha256": "ea6ab4420fb69328a954d8aae0db7b411203ee78f4c198dd64cd077d25e1053d"
+  },
+  {
+    "file": "content/visual/wellspring_interaction_language_v1.json",
+    "bytes": 1721,
+    "sha256": "6ddebf6e50def1109260327e4babc86b1620d1fd9ad41e8d7c11c103cf34d62a"
+  },
+  {
+    "file": "content/visual/wellspring_visual_catalog_v2.json",
+    "bytes": 170523,
+    "sha256": "b029c42228486536e142a0cdf7db6975b0f9a80735c1021ea3effffce88bcfeb"
+  },
+  {
+    "file": "content/visual/wellspring_visual_hashes_v2.json",
+    "bytes": 127092,
+    "sha256": "a298529c39df1d6b28851c79963b6deba1e49116f36e0ae645bb9b703f1e8fa0"
+  },
+  {
+    "file": "content/visual/wellspring_wayfinding_v1.json",
+    "bytes": 2502,
+    "sha256": "0ce8275e0b9838679e7f3ab0b304014ee8fdb5d5c04f10b275671e9d47c37092"
+  },
+  {
+    "file": "export_presets.cfg",
+    "bytes": 3009,
+    "sha256": "d478e924fd6ceeadddff9d9cd06e3a9735c77ea334195588eb33fd1cc872594d"
+  },
+  {
+    "file": "project.godot",
+    "bytes": 1195,
+    "sha256": "e75d063a041645bac0e4d7a8de6637387ce0c4f6fd09765ea8f3cfe6112c2b70"
+  },
+  {
+    "file": "scenes/bootstrap/bootstrap.tscn",
+    "bytes": 359,
+    "sha256": "238de3d175ba48d8abed6a24a7b57ca450035501e2846ca22b4b3f923b5dd16c"
+  },
+  {
+    "file": "scenes/characters/wellspring_character_sprite.tscn",
+    "bytes": 399,
+    "sha256": "bdfc62fee8443f38fad25227ed872ec294590c28594bfdc01da9e8036a4c02f4"
+  },
+  {
+    "file": "scenes/maps/wellspring/source_court.tscn",
+    "bytes": 310,
+    "sha256": "973c060087d24dc07de02346a8a74b3eb2977be7f6f5d11a4f7ddc36cef1325b"
+  },
+  {
+    "file": "scenes/presentation/complete_visual_gallery.tscn",
+    "bytes": 226,
+    "sha256": "407e1e69da9cbf5a22fecaef5abec84c5397e269f07a6309c5ace8e6fd46016f"
+  },
+  {
+    "file": "scenes/presentation/visual_asset_gallery.tscn",
+    "bytes": 220,
+    "sha256": "bef37cb6d1fc8e601b731a3dc5c5c4934b879336e71f9b14044e88f6bf4fa273"
+  },
+  {
+    "file": "scenes/presentation/wellspring_visual_gallery.tscn",
+    "bytes": 1346,
+    "sha256": "abcb898dddb3ed4eefa3257f2c73158186dd2d039502a1b394baf02cd32600b9"
+  },
+  {
+    "file": "src/app/bootstrap.gd",
+    "bytes": 190278,
+    "sha256": "1e9d506c243778e1977f777f8e8c107cc93de488dc40753d08eed32fdfb6d4e1"
+  },
+  {
+    "file": "src/app/champion_attunement.gd",
+    "bytes": 1872,
+    "sha256": "712fea9f1d7d769e8b567c28a7d8692c636c66e80d1e0b08cff8688d0b0b4df4"
+  },
+  {
+    "file": "src/app/character_overview_model.gd",
+    "bytes": 7578,
+    "sha256": "d38338c63d22ff39eef49ec6e10515b1a62f7cff6c4ceed6638681aa7aa1d699"
+  },
+  {
+    "file": "src/app/character_selection_model.gd",
+    "bytes": 6808,
+    "sha256": "7ff441015cbda5307dbe720424226a581d0cb4fcca23e185da683f98fed5daf1"
+  },
+  {
+    "file": "src/app/control_binding_editor.gd",
+    "bytes": 9788,
+    "sha256": "56274d374861d4fb1d20b316c195f46777286d393f96a32a4b1c83e1ad50494a"
+  },
+  {
+    "file": "src/app/input_router.gd",
+    "bytes": 19351,
+    "sha256": "343de83bcc164fc82db7cc5e88d8cab215427b0897d47e2465c57376d6cd1b5e"
+  },
+  {
+    "file": "src/app/player_preferences.gd",
+    "bytes": 25327,
+    "sha256": "c127c6d1e160db825e7bc4f83e4fb4350ec74a617b1ddf6da3d5a796bdd8adac"
+  },
+  {
+    "file": "src/app/runtime_content_summary.gd",
+    "bytes": 1996,
+    "sha256": "eba559acf7afa821feea5aba6c631af7c058623ef9ceb0798eebd8a990c7ed78"
+  },
+  {
+    "file": "src/app/sanctum_station_model.gd",
+    "bytes": 1304,
+    "sha256": "812d7ab7eb3761e829654d9977368123a8a1c49f41c1aedc5cf2224bac761846"
+  },
+  {
+    "file": "src/app/spectator_focus.gd",
+    "bytes": 1782,
+    "sha256": "3c026b7221da9e4f2b3ef38dfc32b8358f430b0f060c41a35e923c73a0bb784d"
+  },
+  {
+    "file": "src/app/spell_loom_editor.gd",
+    "bytes": 6287,
+    "sha256": "cf6fb8f6a0568fe2cf3014779cbfe719e49ebfb4722491605abe8ac9fa7effd9"
+  },
+  {
+    "file": "src/content/ability_catalog.gd",
+    "bytes": 23639,
+    "sha256": "3764b358ecfcbd0b85c035b6e7b59850dca88ffbf557a46112204bfa92a92cec"
+  },
+  {
+    "file": "src/content/body_type_profile_catalog.gd",
+    "bytes": 5150,
+    "sha256": "08a39b545a4856cb34d3e1d8dfd1b93a700905211e0c11081e6dda2985935811"
+  },
+  {
+    "file": "src/content/canonical_content.gd",
+    "bytes": 1035,
+    "sha256": "0acfb4e7da0fa7078a2447c13cea0d86981f048e2bc2832ee9c5da451da9dd8e"
+  },
+  {
+    "file": "src/content/champion_catalog.gd",
+    "bytes": 12792,
+    "sha256": "b6056cf54f122d5113fdb321d5d6abfc82f61bd40402dcc2a6742a063e1ecf4f"
+  },
+  {
+    "file": "src/content/champion_roster_plan.gd",
+    "bytes": 12083,
+    "sha256": "a9a4660205e8174cc5480644cb34ad534a7dfe031bb8a7b78a043ba80f976bad"
+  },
+  {
+    "file": "src/content/environment_kit_manifest.gd",
+    "bytes": 7755,
+    "sha256": "54126c0ab2c8d7648cd3d2d479ccb7e3acb34dc85a859b48881df76f87076e97"
+  },
+  {
+    "file": "src/content/hub_definition.gd",
+    "bytes": 5592,
+    "sha256": "2403991ca08e9544679c5c68e1f552dfb5c957f2a73b3663056ae348b13338f2"
+  },
+  {
+    "file": "src/content/image_asset_inspector.gd",
+    "bytes": 1144,
+    "sha256": "ffd64987bf15d8a71fe5dbdfcdc912b2dfa3814ebdd409fa9085d36907ac809a"
+  },
+  {
+    "file": "src/content/loadout_definition.gd",
+    "bytes": 6084,
+    "sha256": "56e511b750f6814eb35a53b668fd7b6eb586520e12664952a9dcb6a55c6d06bd"
+  },
+  {
+    "file": "src/content/material_registry.gd",
+    "bytes": 4896,
+    "sha256": "11de0b32a30cb3ca527d2fc732e7f88b7e6c701c895a718980be14ad16271b29"
+  },
+  {
+    "file": "src/content/material_yard_definition.gd",
+    "bytes": 6248,
+    "sha256": "80e2837e6ad3daf9097ccb01527e1421eeee8fa1b7ac27b9d193da3aa10bf1ab"
+  },
+  {
+    "file": "src/content/reaction_catalog.gd",
+    "bytes": 12399,
+    "sha256": "ea77cf64f8cf173ac1613770f3bb0a9d334eff7c7cdde4fbf77a6b7abfeaeb29"
+  },
+  {
+    "file": "src/content/sanctum_campus_layout.gd",
+    "bytes": 35458,
+    "sha256": "5e32375bcb6b4a1149535df20dd8e973d801e1d5986a7b303c4f5fbfd2184797"
+  },
+  {
+    "file": "src/content/sanctum_runtime_kit.gd",
+    "bytes": 8454,
+    "sha256": "1452a2ef283ab337bcabf38d2bb24025ef3843bbbeff1f1e75f3977430be5322"
+  },
+  {
+    "file": "src/content/wellspring_environment_kit.gd",
+    "bytes": 7017,
+    "sha256": "cd757ca31b36e245bda96238c897b951ac850ba9e115441bee964b468ef7830c"
+  },
+  {
+    "file": "src/net/authoritative_session.gd",
+    "bytes": 12805,
+    "sha256": "877945ce350b6d2d059f1a78c54d1378c32764211c5bade15e02ee273da8b82f"
+  },
+  {
+    "file": "src/net/client_prediction.gd",
+    "bytes": 14410,
+    "sha256": "d51628e5ba16c3b87db99ce4720a6a74519a5ceec1341d3bf7af1c163f5a6dbd"
+  },
+  {
+    "file": "src/net/lan_lobby.gd",
+    "bytes": 16099,
+    "sha256": "eed65d1b6c72eb516252eacee7ea5271d8a0525df9c62c12f5b16525dcbb0dee"
+  },
+  {
+    "file": "src/net/session_charter.gd",
+    "bytes": 4053,
+    "sha256": "e4ee475d8f5183390710a9bdb7bc8fb8879fee664395b71e12140ae61ddb085e"
+  },
+  {
+    "file": "src/net/session_event_inbox.gd",
+    "bytes": 703,
+    "sha256": "3474a1e72a364426dc3693306612d3d93fe6b8c7d5a96d01258a6ebdcefd2b82"
+  },
+  {
+    "file": "src/net/session_hearth.gd",
+    "bytes": 7380,
+    "sha256": "d8989b6482580300671734192f542895d4ff78996b64f41e2ab45788e8c71a4a"
+  },
+  {
+    "file": "src/net/session_request_policy.gd",
+    "bytes": 2124,
+    "sha256": "17a9d4d18bd08d87656f683dda66bb5e8d02955ba96957a9c12be10e6f6e706b"
+  },
+  {
+    "file": "src/net/session_round.gd",
+    "bytes": 13398,
+    "sha256": "90342666044e23ebba8d45515a05a5fff6e4e8208acaf32bc8d6a7685fd501a8"
+  },
+  {
+    "file": "src/net/session_snapshot.gd",
+    "bytes": 44749,
+    "sha256": "f367526b9fefc4c9d76098273d956ef6beb02c851e5df208af2ab74101c917f1"
+  },
+  {
+    "file": "src/net/session_steward.gd",
+    "bytes": 3185,
+    "sha256": "c2ee2d8fe558db2622c16c4ca0b8e67420ba4a8a119d10a8f430caab860c367f"
+  },
+  {
+    "file": "src/net/session_transport.gd",
+    "bytes": 36906,
+    "sha256": "3c97a6e6a6c312135ebf140b575be80871efebb18de3b70fcc2092ebafd30a1d"
+  },
+  {
+    "file": "src/presentation/actor_motion_history.gd",
+    "bytes": 6374,
+    "sha256": "0b5fc2c37d762a51433e4fa75de53750500b0f98d5c9f851614539d85cc995be"
+  },
+  {
+    "file": "src/presentation/aim_reticle_presenter.gd",
+    "bytes": 1419,
+    "sha256": "21fed10b6c01756e51065a9f5ba77cd16d425968d027426871dafdce1ec6995d"
+  },
+  {
+    "file": "src/presentation/burst_projectile_presenter.gd",
+    "bytes": 4716,
+    "sha256": "446d7ade0765d93f2200fc2d9488ba844c5197cfb24859ff452c834ca67b1b41"
+  },
+  {
+    "file": "src/presentation/cartoon_champion_presenter.gd",
+    "bytes": 75372,
+    "sha256": "4fd1da0b1e1c2de9d98501b2168fbd3733a02dbadcf514d7604dd7111e662f85"
+  },
+  {
+    "file": "src/presentation/character_selection_grid.gd",
+    "bytes": 15873,
+    "sha256": "cc984faecbba4960753bea661e6df48172b8e19c3e09a98e396525b07fe049f4"
+  },
+  {
+    "file": "src/presentation/chemistry_guide_model.gd",
+    "bytes": 12532,
+    "sha256": "43dc7289029a2837eb9456c2ef24d41b980f1543a359a64e1c6f0b1bb7168d1d"
+  },
+  {
+    "file": "src/presentation/chemistry_practice_coach.gd",
+    "bytes": 12704,
+    "sha256": "4a9291038e5ec76e463fde1c1a2bf1966950c353fdaeaf52a553afd1d6385120"
+  },
+  {
+    "file": "src/presentation/combat_feedback_model.gd",
+    "bytes": 2302,
+    "sha256": "ae35c0b84a2515fce608582b5f3578320170eaf0950ccada300aab3d0cdf7382"
+  },
+  {
+    "file": "src/presentation/compact_combat_hud.gd",
+    "bytes": 17146,
+    "sha256": "5c2685673f29e03ac76b2e0925ff20f29677a81d0c7a7a3bbf454ebedbac5920"
+  },
+  {
+    "file": "src/presentation/complete_visual_catalog.gd",
+    "bytes": 8014,
+    "sha256": "e723a54585e898596fa07c10fe5ec0a411feae4fa653ac2445d1b59c4c8386d8"
+  },
+  {
+    "file": "src/presentation/complete_visual_gallery.gd",
+    "bytes": 2365,
+    "sha256": "b3002492f6fbdcc266470152f14182bc93afef7e370497c3a9f6907b2d54cacb"
+  },
+  {
+    "file": "src/presentation/eight_direction_resolver.gd",
+    "bytes": 4211,
+    "sha256": "de6b2bf98748bbede0e48269c3e634b939f082fbbd9b2e6384f470c5f9da37f2"
+  },
+  {
+    "file": "src/presentation/element_audio.gd",
+    "bytes": 5901,
+    "sha256": "7554e1fc8eb24d59eb851cc2544a271767c5431dc538838a9b1fecf4bd6cb1b8"
+  },
+  {
+    "file": "src/presentation/element_chemistry_presenter.gd",
+    "bytes": 21168,
+    "sha256": "fbb350f5122a966404550788fc8e395eb67a518a330ef660e268033f98621b9d"
+  },
+  {
+    "file": "src/presentation/element_glyph_renderer.gd",
+    "bytes": 10670,
+    "sha256": "11af970ab80d80ec9bfb5108c1334386b0a671f96d7ca8640fc47160d29dc849"
+  },
+  {
+    "file": "src/presentation/foundation_spell_presenter.gd",
+    "bytes": 31657,
+    "sha256": "4c6870b5d374e6dad6af85b74ff8fe1368fc8f71ce9f9ba6f17344c711757704"
+  },
+  {
+    "file": "src/presentation/heavy_blast_presenter.gd",
+    "bytes": 5653,
+    "sha256": "5fb0b4558fbea6f6b3a934358c8365dab8b6aee1908ca8d5b5b1fa059ddc8181"
+  },
+  {
+    "file": "src/presentation/jump_presentation.gd",
+    "bytes": 4747,
+    "sha256": "bbbbc2c48c3d141b174e3142e283ca228680afd4d88baa604a49f2373dc1ef91"
+  },
+  {
+    "file": "src/presentation/landing_presentation.gd",
+    "bytes": 5128,
+    "sha256": "3f431b8c98eb4b0902b9e0d6cb016b10403236314c764f1bd3f12c11ef272f1d"
+  },
+  {
+    "file": "src/presentation/minimal_champion_motion.gd",
+    "bytes": 13635,
+    "sha256": "39aa94094ae7027e6af0a9cbd4c744e9921d75e3aac03dc1c9c120994ed3dba2"
+  },
+  {
+    "file": "src/presentation/movement_guide_model.gd",
+    "bytes": 17351,
+    "sha256": "d086e4466c56991dc09392b9ca1c735d3fdf3d1fe4354acf64f4b2388df78ea8"
+  },
+  {
+    "file": "src/presentation/movement_practice_coach.gd",
+    "bytes": 5560,
+    "sha256": "d51f60410c24d07e539c44a374dc8a27d8bd7df714b80c5f3f42f03121a6c538"
+  },
+  {
+    "file": "src/presentation/movement_practice_trace.gd",
+    "bytes": 4421,
+    "sha256": "1739a15b6d083a41ce535370ee19d127ca483c05fd85d9d941064c47fee06cc7"
+  },
+  {
+    "file": "src/presentation/natural_map_kit.gd",
+    "bytes": 22022,
+    "sha256": "e17bdc3ee15d4317cb2ade22a6ae77663962ec0da76597d45b5f3377fedf3aa5"
+  },
+  {
+    "file": "src/presentation/pixel_effect_geometry.gd",
+    "bytes": 16956,
+    "sha256": "a57ec4541e363c835830615f1c15adaace8f7b8a923ddd0f05025dbc649f6ca7"
+  },
+  {
+    "file": "src/presentation/pixel_magic_library.gd",
+    "bytes": 22507,
+    "sha256": "5c49b74fee791a1309d4952c2122c9a71bb7054e55b60a7f5b5ceeb7d82d4f03"
+  },
+  {
+    "file": "src/presentation/pixel_map_library.gd",
+    "bytes": 10634,
+    "sha256": "02b2d41e082bee3fd2d037939cadbe8f6db556e6aa6a780eaacc9c7370366882"
+  },
+  {
+    "file": "src/presentation/pixel_movement_effects.gd",
+    "bytes": 7355,
+    "sha256": "fa7e1820ab131e61f2adeaf4342d28a8ebffa7fc9fe21c1fc8db27d167929252"
+  },
+  {
+    "file": "src/presentation/pixel_presentation.gd",
+    "bytes": 801,
+    "sha256": "e0eb9564015374be10d9fd8b2c107c36884d21b7922a6f0ac0377adf390591f1"
+  },
+  {
+    "file": "src/presentation/pixel_primitives.gd",
+    "bytes": 4297,
+    "sha256": "091ebf6905700f64b5ae80a961be648f8c278c706e37d85bb6624dfab97ff700"
+  },
+  {
+    "file": "src/presentation/pixel_spell_effects.gd",
+    "bytes": 12444,
+    "sha256": "798ceb0c16f28f3a40da81396eea4e35dc9b0476a9f17df5d6dd2e57e11b0a1f"
+  },
+  {
+    "file": "src/presentation/player_compendium.gd",
+    "bytes": 25885,
+    "sha256": "61e426e08ad7fa849a752ea9707ad720dd1ac4779284d4e2d251328a718d38e4"
+  },
+  {
+    "file": "src/presentation/projectile_presentation_motion.gd",
+    "bytes": 2118,
+    "sha256": "8dea9dea68ebce00021e76d94eb65c8681e34621aa4b9f314e3949aeccc2c556"
+  },
+  {
+    "file": "src/presentation/sanctum_campus_renderer.gd",
+    "bytes": 6875,
+    "sha256": "963e9c78e7cc64b3935d60407e89f045af9ff9fc7dae340bc040081c00dc5619"
+  },
+  {
+    "file": "src/presentation/sight_occlusion.gd",
+    "bytes": 1898,
+    "sha256": "e4ed35e1950f45f070305f535c02f083d455384ee05ccbabba81dd62d5966cc1"
+  },
+  {
+    "file": "src/presentation/skeleton_animation_library.gd",
+    "bytes": 8649,
+    "sha256": "547c3db74b0161529a37b203f6a0ade1aede313e43dfbd31317985582ee0d7e9"
+  },
+  {
+    "file": "src/presentation/spell_animation_skeleton_library.gd",
+    "bytes": 5440,
+    "sha256": "a30fa17efe5e5188949cb0bc53df27c80835e35ca92126004955beac927fbb95"
+  },
+  {
+    "file": "src/presentation/spell_delivery_direction_contract.gd",
+    "bytes": 3603,
+    "sha256": "78ec19ce7b77b433744eee29231851ef715ec6fc3d2b010d9722841835b60731"
+  },
+  {
+    "file": "src/presentation/spell_loom_presenter.gd",
+    "bytes": 8240,
+    "sha256": "30cf2a36910653ac5f8b20a7a38030219fb89aec5eddc55c8425737ca80e05cd"
+  },
+  {
+    "file": "src/presentation/visual_accessibility_filter.gd",
+    "bytes": 5620,
+    "sha256": "328ed835a2300b6148e39936bf89ea8c50719ca0d10b676b28e124bd677cf275"
+  },
+  {
+    "file": "src/presentation/visual_asset_gallery.gd",
+    "bytes": 3686,
+    "sha256": "d76a758544ba068e79bb653c8fb3b9cddf1f4d48d66b31b8010152a80c113917"
+  },
+  {
+    "file": "src/presentation/visual_asset_registry.gd",
+    "bytes": 6227,
+    "sha256": "b33616c4d5f84288abb5b625d985ce0301168ee4368b31d42f6d510f6db53df2"
+  },
+  {
+    "file": "src/presentation/visual_language.gd",
+    "bytes": 11925,
+    "sha256": "be8b3368b67584776f55b0bc944b3e4d2c1941313f4d965998b5d3914df2d599"
+  },
+  {
+    "file": "src/presentation/visual_specimen.gd",
+    "bytes": 8368,
+    "sha256": "659bb7f37a0b29a2908857b8726e7adea77cb4d68e137dadbc750ad95d65ec4f"
+  },
+  {
+    "file": "src/presentation/wellspring_architecture_kit.gd",
+    "bytes": 43990,
+    "sha256": "04eb70221fe82c01a897d867ddb37e8dc995f9fd2501e961842154d56d80ffd7"
+  },
+  {
+    "file": "src/presentation/wellspring_character_sprite.gd",
+    "bytes": 10701,
+    "sha256": "b0c48c790cb299441ad8367bf9dc7664c02fc78582bd852a200ff1ba13932c17"
+  },
+  {
+    "file": "src/presentation/wellspring_district_view.gd",
+    "bytes": 5703,
+    "sha256": "a6bc3c910d3d9d6e3fcfc3cbb1b146e172803642e18c2f0eab25ef74109c1569"
+  },
+  {
+    "file": "src/presentation/wellspring_illustrated_kit.gd",
+    "bytes": 17687,
+    "sha256": "bb3c94b81466c5bedb60053c1cf90038e2331fa51e912f226c23935b14f6bfce"
+  },
+  {
+    "file": "src/presentation/wellspring_interaction_presenter.gd",
+    "bytes": 17313,
+    "sha256": "3c8b1421e953dfef257cc2743c4c4b83e9225cce6f891cc35213f42889c9ec72"
+  },
+  {
+    "file": "src/presentation/wellspring_visual_catalog.gd",
+    "bytes": 11487,
+    "sha256": "f94587841c31c98a8d013f18607af3011c88a14ac6d962cdc75959ff71aa20fe"
+  },
+  {
+    "file": "src/presentation/wellspring_wayfinding.gd",
+    "bytes": 7799,
+    "sha256": "c0e1c443eb958e9f446fed3a6b2e400ea283dbd286d3e41075440f96f3632f6a"
+  },
+  {
+    "file": "src/sim/chemistry/element_chemistry_system.gd",
+    "bytes": 31341,
+    "sha256": "b0596612896e2c475994894a99aff40ed2e047866d1ec536eec767bd66d8b28f"
+  },
+  {
+    "file": "src/sim/chemistry/element_deposit_state.gd",
+    "bytes": 1881,
+    "sha256": "e4a362641b1f452ce5dae54e1f0ac98b03fa3aa84a50856383c68341e092a160"
+  },
+  {
+    "file": "src/sim/chemistry/element_reaction_state.gd",
+    "bytes": 4313,
+    "sha256": "7fa53b5ea55a88b9e8a554e0c7d7b3df91de37602915d6bb2e7917ab69308062"
+  },
+  {
+    "file": "src/sim/chemistry/reaction_definition_table.gd",
+    "bytes": 5647,
+    "sha256": "2fd6698493c8428c09aa1a313423bb8e4ec8ef8bb7c9ebc5c4d07378e9f34324"
+  },
+  {
+    "file": "src/sim/combat/combat_definition_table.gd",
+    "bytes": 5595,
+    "sha256": "ccc1debd803211b24a670838719a3ad67b3a868f82614844f82d7790ad4453e2"
+  },
+  {
+    "file": "src/sim/combat/combat_system.gd",
+    "bytes": 40867,
+    "sha256": "cdce33b7ee0528c57870cd1a3f5ce8faa52bee9517ec56962bdf8551b6aebd1a"
+  },
+  {
+    "file": "src/sim/combat/combat_tuning.gd",
+    "bytes": 2000,
+    "sha256": "1afb639574671a627dbbc54fb98ccf4ac370d3e3f68d76cc6e33377f246198ff"
+  },
+  {
+    "file": "src/sim/combat/field_state.gd",
+    "bytes": 1987,
+    "sha256": "1921cca91aa39faf08a8d84ceba0a37945b918c9c61859363b88cead7135dbd5"
+  },
+  {
+    "file": "src/sim/combat/projectile_state.gd",
+    "bytes": 3029,
+    "sha256": "a55d766c9f5c2c3518428f58285cce0c99509ee69cec5b1770ebd2e870e8ce66"
+  },
+  {
+    "file": "src/sim/combat/training_target_system.gd",
+    "bytes": 1667,
+    "sha256": "fc6dc3970c078a922afc9fd6c3bd505ea4eaa37e83cab631386e83df594c92f4"
+  },
+  {
+    "file": "src/sim/core/action_transition_policy.gd",
+    "bytes": 5773,
+    "sha256": "d19c37dc7c091a21b2b1c52dd0109648d2808bfaf3bd5d9fc52e2e5d9f9bf9ba"
+  },
+  {
+    "file": "src/sim/core/canonical_bytes.gd",
+    "bytes": 856,
+    "sha256": "11de76f54bd1f420fe925d2683dcdaeca1ef59d253810cbbfc42f5ff12250d2a"
+  },
+  {
+    "file": "src/sim/core/sim_command.gd",
+    "bytes": 4154,
+    "sha256": "9a43b9eb8b5f5ca5d0763febf67284c45592217c3966f31df3da992c598672ae"
+  },
+  {
+    "file": "src/sim/core/sim_config.gd",
+    "bytes": 1276,
+    "sha256": "6426f41ceb9e9b466144548d3a476bc94c7fc721c147f9d6a2a91427d7634665"
+  },
+  {
+    "file": "src/sim/core/sim_world.gd",
+    "bytes": 12128,
+    "sha256": "8acc7c3539776c9c8d0d2ad308563083becfe8d07274a276646ea63ece008112"
+  },
+  {
+    "file": "src/sim/entities/player_resources_system.gd",
+    "bytes": 2522,
+    "sha256": "6bfd286db169bb69747790aca0c91c1f0760055b879058964323fb86348f6d7c"
+  },
+  {
+    "file": "src/sim/entities/player_state.gd",
+    "bytes": 16867,
+    "sha256": "af6f8bb2739471bfd7f9af9e93de1c129997e3aeb73f6ca4999d8b04f8e99fa0"
+  },
+  {
+    "file": "src/sim/entities/player_tuning.gd",
+    "bytes": 693,
+    "sha256": "9d444df43f0254fbeaf925adf445d79380d8b1c6dce30d751d0d16275b46587b"
+  },
+  {
+    "file": "src/sim/entities/resource_recovery.gd",
+    "bytes": 1071,
+    "sha256": "c43d050b84819e20dfa4550cbac4ac5e5bb993e9e1073b9ad160222f18615d3b"
+  },
+  {
+    "file": "src/sim/materials/material_grid.gd",
+    "bytes": 9452,
+    "sha256": "b85cdd30e47f96a98b945f9a2b477ea1bbbb1572f746c82c30f4fe524f693959"
+  },
+  {
+    "file": "src/sim/movement/movement_system.gd",
+    "bytes": 60595,
+    "sha256": "b78690d7952d857a4b652d0f842975e3d9d3469d60fd17a2ae149e815cb71556"
+  },
+  {
+    "file": "src/sim/movement/movement_tuning.gd",
+    "bytes": 8661,
+    "sha256": "0f7a0819c1bcc80934c4f12851d4cedd7b2440ed180ef5653022ce4a66ce5b80"
+  },
+  {
+    "file": "src/sim/movement/surface_motion_policy.gd",
+    "bytes": 705,
+    "sha256": "b74f39aeb9bc87a7633524dac0793d63501f14b633e1d8e2da41d8e2aec67c0c"
+  },
+  {
+    "file": "src/sim/replay/replay_data.gd",
+    "bytes": 1849,
+    "sha256": "0d9591dfc420ca9ca26461f34f1eefbc32269517575b52c2b980512c7e28961e"
+  },
+  {
+    "file": "src/sim/world/collision_world.gd",
+    "bytes": 10602,
+    "sha256": "377ef92412714fe58ff0358fb956bbf3ea89420b51843be6e8e5d6ca7df94605"
+  }
+]

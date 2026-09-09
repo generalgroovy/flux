@@ -15,6 +15,8 @@ const LINES_PER_PAGE := 14
 const FONT_SIZE := 18
 const LINE_HEIGHT := 25
 const DETAIL_WIDTH := 770.0
+const PAIR_LINES_PER_PAGE := 12
+const PHASE_STRIP := Rect2(402, 193, 794, 18)
 const PANEL := Rect2(48, 44, 1184, 632)
 const LIST_RECT := Rect2(72, 164, 298, 400)
 const MOVEMENT_TAB := Rect2(72, 112, 230, 34)
@@ -29,12 +31,19 @@ const INK := Color("141a17ee")
 const PARCHMENT := Color("eee0b8")
 const MUTED := Color("b7b69e")
 const BRASS := Color("b79351")
+const OVERVIEW_TOGGLE := Rect2(882, 112, 200, 34)
+const PRIMER_RECT := Rect2(72, 166, 116, 34)
+const MOVE_COLUMNS := [72.0, 305.0, 573.0, 686.0, 828.0, 1050.0, 1208.0]
+const MOVE_HEADERS := ["Technique", "Current input", "Base start", "Base /s", "Protection window", "Cooldown"]
 
 var is_open := false
 var tab := MOVEMENT
 var selected_row := 0
 var selected_character := 0
 var detail_page := 0
+var show_details := false
+var selected_element_column := 0
+var visual_language: VisualLanguage
 var device := ControlBindingEditor.DEVICE_KEYBOARD
 var movement_rows: Array[Dictionary] = []
 var chemistry_rows: Array[Dictionary] = []
@@ -50,7 +59,8 @@ var _summary_chain := -1
 func configure(champions: ChampionCatalog, roster: ChampionRosterPlan) -> bool:
 	overview = Overview.build(champions, roster)
 	chemistry_rows = ChemistryGuide.entries()
-	return bool(overview.get("valid", false))
+	visual_language = VisualLanguage.new()
+	return bool(overview.get("valid", false)) and visual_language.load_from_file()
 
 
 func open_panel(selected_tab: int, preferences: PlayerPreferences, state: PlayerState = null, input_device: int = ControlBindingEditor.DEVICE_KEYBOARD) -> void:
@@ -79,7 +89,64 @@ func refresh_status(state: PlayerState) -> void:
 func set_tab(value: int) -> void:
 	tab = clampi(value, MOVEMENT, CHEMISTRY)
 	selected_row = 0
+	show_details = false
+	selected_element_column = 0
 	_reset_detail()
+
+
+func compact_overview() -> bool:
+	return tab != CHARACTERS and not show_details
+
+
+func toggle_details() -> void:
+	if tab == CHARACTERS:
+		return
+	show_details = not show_details
+	detail_page = 0
+	_cache_key = ""
+
+
+func move_column(delta: int) -> void:
+	if tab == CHEMISTRY:
+		selected_element_column = clampi(selected_element_column + delta, 0, 7)
+		if selected_row == 0:
+			selected_row = 1
+		detail_page = 0
+		_cache_key = ""
+	else:
+		move_character(delta)
+
+
+static func movement_overview_rect(row: int) -> Rect2:
+	return Rect2(72, 190 + row * 23, 1136, 23) if row >= 0 and row < 16 else Rect2()
+
+
+static func chemistry_overview_rect(row: int, column: int) -> Rect2:
+	return Rect2(192 + column * 127, 211 + row * 42, 127, 42) if row >= 0 and row < 8 and column >= 0 and column < 8 else Rect2()
+
+
+func overview_hit(pointer: Vector2) -> bool:
+	if not compact_overview():
+		return false
+	if tab == MOVEMENT:
+		for row: int in range(movement_rows.size()):
+			if movement_overview_rect(row).has_point(pointer):
+				selected_row = row
+				_reset_detail()
+				return true
+	elif tab == CHEMISTRY:
+		if PRIMER_RECT.has_point(pointer):
+			selected_row = 0
+			_reset_detail()
+			return true
+		for row: int in range(8):
+			for column: int in range(8):
+				if chemistry_overview_rect(row, column).has_point(pointer):
+					selected_row = row + 1
+					selected_element_column = column
+					_reset_detail()
+					return true
+	return false
 
 
 func close_panel() -> void:
@@ -115,27 +182,62 @@ func visible_row_indices() -> Array[int]:
 
 
 func change_detail_page(delta: int, font: Font) -> void:
+	show_details = true
 	var pages := detail_pages(font)
 	detail_page = clampi(detail_page + delta, 0, maxi(0, pages - 1))
 
 
 func detail_pages(font: Font) -> int:
 	_ensure_wrapped(font)
-	return maxi(1, ceili(float(_wrapped_lines.size()) / LINES_PER_PAGE))
+	return maxi(1, ceili(float(_wrapped_lines.size()) / detail_line_limit()))
 
 
 func visible_detail_lines(font: Font) -> Array[String]:
 	_ensure_wrapped(font)
 	detail_page = clampi(detail_page, 0, detail_pages(font) - 1)
-	return _wrapped_lines.slice(detail_page * LINES_PER_PAGE, (detail_page + 1) * LINES_PER_PAGE)
+	return _wrapped_lines.slice(detail_page * detail_line_limit(), (detail_page + 1) * detail_line_limit())
+
+
+func detail_line_limit() -> int:
+	return PAIR_LINES_PER_PAGE if tab == CHEMISTRY and selected_row > 0 else LINES_PER_PAGE
+
+
+func chemistry_title() -> String:
+	if selected_row == 0:
+		return "Start here  /  the first-eight chemistry sandbox"
+	var cell := ChemistryGuide.matrix_cell(selected_row - 1, selected_element_column)
+	return "%s + %s = %s" % [cell.first, cell.second, cell.name] if not cell.is_empty() else "Reaction unavailable"
+
+
+func chemistry_phase_strip() -> Array[Dictionary]:
+	if tab != CHEMISTRY or selected_row <= 0:
+		return []
+	var cell := ChemistryGuide.matrix_cell(selected_row - 1, selected_element_column)
+	if cell.is_empty():
+		return []
+	var durations: Array[int] = [int(cell.formation_ms), int(cell.active_ms), int(cell.decay_ms)]
+	var labels := ["Warning", "Active effects", "Harmless decay"]
+	var total := durations[0] + durations[1] + durations[2]
+	var elapsed := 0
+	var phases: Array[Dictionary] = []
+	for index: int in range(3):
+		var left := PHASE_STRIP.position.x + PHASE_STRIP.size.x * float(elapsed) / maxf(1.0, total)
+		elapsed += durations[index]
+		var right := PHASE_STRIP.position.x + PHASE_STRIP.size.x * float(elapsed) / maxf(1.0, total)
+		phases.append({"label": labels[index], "duration_ms": durations[index], "rectangle": Rect2(left, PHASE_STRIP.position.y, right - left, PHASE_STRIP.size.y)})
+	return phases
 
 
 func detail_paragraphs() -> Array[String]:
 	var result: Array[String] = []
 	if tab == CHEMISTRY:
+		if selected_row > 0:
+			return ChemistryGuide.pair_lines(selected_row - 1, selected_element_column)
 		if selected_row < chemistry_rows.size():
 			for line: String in chemistry_rows[selected_row]["lines"]:
 				result.append(line)
+			if selected_row == 0:
+				result.append_array(spell_catalog_lines())
 		return result
 	if tab == MOVEMENT:
 		if movement_rows.is_empty():
@@ -164,7 +266,7 @@ func detail_paragraphs() -> Array[String]:
 		result.append("Body role: " + String(profile.get("role", "")).capitalize())
 		result.append("Strengths: " + _human_list(profile.get("strengths", [])))
 		result.append("Tradeoffs: " + _human_list(profile.get("tradeoffs", [])))
-		result.append("All three body sizes share the same collision radius. No hidden reach, evasion or damage bonus.")
+		result.append("Hurtbox radius: %d px. Wall clearance: 18 px for every size. Pose changes never resize either footprint." % (int(entry["hurt_radius"]) / 1000))
 		var kit: Dictionary = entry["foundation_kit"]
 		var kit_keys: Array = kit.keys()
 		kit_keys.sort()
@@ -180,11 +282,34 @@ func detail_paragraphs() -> Array[String]:
 	return result
 
 
+static func spell_catalog_lines() -> Array[String]:
+	# Stable representative wires share the authored family templates. Costs and
+	# geometry come from the same compiled definitions used by spell execution.
+	var heavy := CombatTuning.cast_definition(179)
+	var rapid := CombatTuning.cast_definition(180)
+	var wave := CombatTuning.cast_definition(CombatTuning.CINDERFAN_WIRE_ID)
+	if heavy.is_empty() or rapid.is_empty() or wave.is_empty():
+		return ["Spell-family details are unavailable until the catalog loads."]
+	var elements := AbilityCatalog.FIRST_EIGHT_ELEMENTS.size()
+	var families := AbilityCatalog.SPELL_MATRIX_FAMILIES.size()
+	return [
+		"SPELL FAMILIES / compare them at the Pattern Range",
+		"%d elements x %d families = %d matrix spells; %d selectable spells including the Vector Lance variant." % [elements,families,elements*families,CombatTuning.runtime_wire_ids().size()],
+		"Columns: Bolt / Heavy / Rapid / Wave / Spray / Beam / Field. Your twelve configured spell positions and current bindings are unchanged.",
+		"Bolt is single-shot pressure; Spray covers a close cone; Beam traces a line; Field places a timed control zone.",
+		"Heavy: %d Flux; %d damage in a %d px-radius blast when the shell stops. Aim between nearby targets to compare splash with a direct hit." % [int(heavy.flux_cost)/SimConfig.FIXED_SCALE,int(heavy.blast_damage)/SimConfig.FIXED_SCALE,int(heavy.blast_radius)/SimConfig.FIXED_SCALE],
+		"Rapid: hold its configured spell-slot button to repeat; %d Flux per shot and %d ms cooldown. Release stops firing; every shot still needs Flux and free capacity." % [int(rapid.flux_cost)/SimConfig.FIXED_SCALE,int(rapid.cooldown_ms)],
+		"Wave (the canonical Burst family): %d projectiles launch together in an arc, not a timed volley. Siblings share one cast and cannot react with each other." % (wave.get("projectile_angles_degrees", []) as Array).size(),
+	]
+
+
 func handle_event(event: InputEvent, font: Font, pointer: Vector2 = Vector2(-1, -1)) -> bool:
 	if not is_open:
 		return false
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
+			KEY_ENTER, KEY_KP_ENTER:
+				toggle_details()
 			KEY_ESCAPE, KEY_F4:
 				close_panel()
 			KEY_TAB:
@@ -198,15 +323,17 @@ func handle_event(event: InputEvent, font: Font, pointer: Vector2 = Vector2(-1, 
 			KEY_END:
 				move_row(ROWS_PER_PAGE)
 			KEY_LEFT:
-				move_character(-1)
+				move_column(-1)
 			KEY_RIGHT:
-				move_character(1)
+				move_column(1)
 			KEY_PAGEUP:
 				change_detail_page(-1, font)
 			KEY_PAGEDOWN:
 				change_detail_page(1, font)
 	elif event is InputEventJoypadButton and event.pressed:
 		match event.button_index:
+			JOY_BUTTON_A:
+				toggle_details()
 			JOY_BUTTON_BACK, JOY_BUTTON_B:
 				close_panel()
 			JOY_BUTTON_LEFT_SHOULDER:
@@ -218,9 +345,9 @@ func handle_event(event: InputEvent, font: Font, pointer: Vector2 = Vector2(-1, 
 			JOY_BUTTON_DPAD_DOWN:
 				move_row(1)
 			JOY_BUTTON_DPAD_LEFT:
-				move_character(-1)
+				move_column(-1)
 			JOY_BUTTON_DPAD_RIGHT:
-				move_character(1)
+				move_column(1)
 			JOY_BUTTON_X:
 				change_detail_page(-1, font)
 			JOY_BUTTON_Y:
@@ -233,12 +360,18 @@ func handle_event(event: InputEvent, font: Font, pointer: Vector2 = Vector2(-1, 
 		elif event.button_index == MOUSE_BUTTON_LEFT:
 			if CLOSE_RECT.has_point(pointer):
 				close_panel()
+			elif OVERVIEW_TOGGLE.has_point(pointer) and tab != CHARACTERS:
+				toggle_details()
+			elif overview_hit(pointer):
+				pass
 			elif MOVEMENT_TAB.has_point(pointer):
 				set_tab(MOVEMENT)
 			elif CHARACTERS_TAB.has_point(pointer):
 				set_tab(CHARACTERS)
 			elif CHEMISTRY_TAB.has_point(pointer):
 				set_tab(CHEMISTRY)
+			elif compact_overview():
+				pass # Hidden reader controls must not receive overview clicks.
 			elif PREVIOUS_ROWS.has_point(pointer):
 				move_row(-ROWS_PER_PAGE)
 			elif NEXT_ROWS.has_point(pointer):
@@ -267,7 +400,11 @@ func draw(canvas: CanvasItem, font: Font) -> void:
 	_button(canvas, font, MOVEMENT_TAB, "MOVEMENT", tab == MOVEMENT)
 	_button(canvas, font, CHARACTERS_TAB, "CHARACTERS", tab == CHARACTERS)
 	_button(canvas, font, CHEMISTRY_TAB, "CHEMISTRY", tab == CHEMISTRY)
-	_text(canvas, font, Vector2(802, 134), "Read. Try. Combine.", 16, MUTED)
+	if tab != CHARACTERS:
+		_button(canvas, font, OVERVIEW_TOGGLE, "Overview" if show_details else "Details  [Enter / A]", show_details)
+	if compact_overview():
+		_draw_compact_overview(canvas, font)
+		return
 	canvas.draw_line(Vector2(386, 164), Vector2(386, 607), Color(BRASS, 0.5))
 	var indices := visible_row_indices()
 	for offset: int in range(indices.size()):
@@ -290,27 +427,117 @@ func draw(canvas: CanvasItem, font: Font) -> void:
 		var row: Dictionary = movement_rows[selected_row]
 		title = "%s  |  %s" % [row["title"], row["binding"]]
 	elif tab == CHARACTERS:
-		var entries := _characters()
-		if not entries.is_empty():
-			var entry: Dictionary = entries[selected_character]
-			title = "%s  /  %s" % [entry["display_name"], String(entry["status"]).to_upper()]
-			if entries.size() > 1:
-				title += "  [%d/%d: Left / Right]" % [selected_character + 1, entries.size()]
-			else:
-				title = "Race awaiting a champion"
+		title = character_title()
 	elif tab == CHEMISTRY and not chemistry_rows.is_empty():
-		title = String(chemistry_rows[selected_row]["title"]) + ("  /  8 interactions" if selected_row > 0 else "  /  the first-eight chemistry sandbox")
-	_text(canvas, font, Vector2(402, 176), title, 19, PARCHMENT)
+		title = chemistry_title()
+	var pair_selected := tab == CHEMISTRY and selected_row > 0
+	if pair_selected:
+		var cell := ChemistryGuide.matrix_cell(selected_row - 1, selected_element_column)
+		for index: int in range(2):
+			var element := String(cell.first if index == 0 else cell.second).to_lower()
+			ElementGlyphRenderer.draw(canvas, visual_language, Vector2(413 + index * 25, 169), element, 8, visual_language.element_color(element, "bright"))
+	_text(canvas, font, Vector2(458 if pair_selected else 402, 176), fit_text(title, font, 738 if pair_selected else 794, 19), 19, PARCHMENT)
+	if pair_selected:
+		var phases := chemistry_phase_strip()
+		var colors := [BRASS, Color("83b59b"), MUTED]
+		for index: int in range(phases.size()):
+			var phase: Dictionary = phases[index]
+			canvas.draw_rect(phase.rectangle, colors[index])
+			var legend := "%s  %.2fs" % [phase.label, float(phase.duration_ms) / 1000.0]
+			_text(canvas, font, Vector2(402 + index * 265, 235), legend, 15, colors[index])
 	var lines := visible_detail_lines(font)
 	for index: int in range(lines.size()):
-		_text(canvas, font, Vector2(402, 210 + index * LINE_HEIGHT), lines[index], FONT_SIZE, PARCHMENT)
+		_text(canvas, font, Vector2(402, (267 if pair_selected else 210) + index * LINE_HEIGHT), lines[index], FONT_SIZE, PARCHMENT)
 	_button(canvas, font, PREVIOUS_ROWS, "< Rows", false)
 	_button(canvas, font, NEXT_ROWS, "Rows >", false)
 	_button(canvas, font, PREVIOUS_DETAIL, "< Details", false)
 	_button(canvas, font, NEXT_DETAIL, "Details >", false)
 	_text(canvas, font, Vector2(596, 595), "Detail page %d / %d" % [detail_page + 1, detail_pages(font)], 16, MUTED)
-	_text(canvas, font, Vector2(72, 632), "Tab / LB RB: section    Up Down / wheel: rows    Left Right: character    PgUp PgDn / X Y: details", 16, MUTED)
+	var navigation := "Arrows / D-pad: pair    Wheel: first element    Enter / A: overview" if tab == CHEMISTRY else "Up Down / wheel: rows    Left Right: character"
+	_text(canvas, font, Vector2(72, 632), "Tab / LB RB: section    %s    PgUp PgDn / X Y: pages" % navigation, 15, MUTED)
 	_text(canvas, font, Vector2(72, 658), "F4 / Back: close  |  Your controls are resting. The shared world does not pause.", 16, BRASS)
+
+
+func _draw_compact_overview(canvas: CanvasItem, font: Font) -> void:
+	if tab == MOVEMENT:
+		for column: int in range(MOVE_HEADERS.size()):
+			_text(canvas, font, Vector2(MOVE_COLUMNS[column] + 7, 181), MOVE_HEADERS[column], 16, BRASS)
+		for row: int in range(movement_rows.size()):
+			var rectangle := movement_overview_rect(row)
+			canvas.draw_rect(rectangle, Color("4c482bee") if row == selected_row else Color("202a2388") if row % 2 == 0 else Color("141a1788"))
+			if row == selected_row:
+				canvas.draw_rect(rectangle, BRASS, false, 1.0)
+			var cells := Guide.compact_cells(movement_rows[row])
+			for column: int in range(cells.size()):
+				var width: float = MOVE_COLUMNS[column + 1] - MOVE_COLUMNS[column] - 14.0
+				_text(canvas, font, Vector2(MOVE_COLUMNS[column] + 7, rectangle.position.y + 17), fit_text(cells[column], font, width, 16), 16, PARCHMENT if row == selected_row else MUTED)
+		_text(canvas, font, Vector2(72, 575), "Base Stamina before combo premiums; hold drain is additional. Body budgets and exact conditions: Details.", 15, BRASS)
+	else:
+		_button(canvas, font, PRIMER_RECT, "Start here", selected_row == 0)
+		for element: int in range(8):
+			var name := ChemistryGuide.ELEMENTS[element + 1]
+			var color := visual_language.element_color(name.to_lower(), "bright")
+			var header := Rect2(192 + element * 127, 166, 127, 34)
+			canvas.draw_rect(header, Color("202a23"))
+			ElementGlyphRenderer.draw(canvas, visual_language, header.position + Vector2(13, 17), name.to_lower(), 7, color)
+			_text(canvas, font, header.position + Vector2(27, 23), name, 16, color)
+			var side := Vector2(72, 211 + element * 42)
+			ElementGlyphRenderer.draw(canvas, visual_language, side + Vector2(9, 13), name.to_lower(), 7, color)
+			_text(canvas, font, side + Vector2(23, 19), name, 16, color)
+			_text(canvas, font, side + Vector2(23, 36), "%.1fs matter" % (float(ChemistryGuide.Chemistry.ELEMENT_LIFE_MS[element + 1]) / 1000.0), 12, MUTED)
+		for row: int in range(8):
+			for column: int in range(8):
+				var rectangle := chemistry_overview_rect(row, column)
+				var selected := selected_row == row + 1 and selected_element_column == column
+				canvas.draw_rect(rectangle.grow(-1), Color("51472a") if selected else Color("25352b") if row == column else Color("202a23"))
+				if selected:
+					canvas.draw_rect(rectangle.grow(-1), PARCHMENT, false, 2.0)
+				var cell := ChemistryGuide.matrix_cell(row, column)
+				var lines := wrap_text(String(cell.get("name", "Unavailable")), font, rectangle.size.x - 12.0, 14)
+				for line: int in range(mini(2, lines.size())):
+					_text(canvas, font, rectangle.position + Vector2(6, 17 + line * 17), fit_text(lines[line], font, rectangle.size.x - 12, 14), 14, PARCHMENT if selected else MUTED)
+		_text(canvas, font, Vector2(72, 570), "Both orders match: 36 unique reactions. Plain matter adds no automatic damage or status.", 15, BRASS)
+	var selected := compact_summary(font)
+	for line: int in range(selected.size()):
+		_text(canvas, font, Vector2(72, 597 + line * 22), selected[line], 16, PARCHMENT)
+	_text(canvas, font, Vector2(72, 648), "Tab / LB RB: section   Arrows / D-pad: select   Enter / A: details   F4 / Back: close", 15, MUTED)
+	_text(canvas, font, Vector2(72, 668), "Reading blocks your controls, not the shared world.", 13, BRASS)
+
+
+func compact_summary(font: Font) -> Array[String]:
+	var lines: Array[String] = []
+	if tab == MOVEMENT and not movement_rows.is_empty():
+		var row: Dictionary = movement_rows[selected_row]
+		lines = [String(row.execution), String(row.counter)]
+	elif tab == CHEMISTRY and selected_row > 0:
+		var cell := ChemistryGuide.matrix_cell(selected_row - 1, selected_element_column)
+		lines = ["%s + %s = %s  |  %.2fs form > %.2fs active > %.2fs decay" % [cell.first, cell.second, cell.name, float(cell.formation_ms) / 1000.0, float(cell.active_ms) / 1000.0, float(cell.decay_ms) / 1000.0], String(cell.effect)]
+	else:
+		lines = ["Cast two separate Bolt / Heavy / Rapid / Wave spells into overlapping matter before it expires.", "Only active reactions apply effects. Select a pair to inspect it; Details keeps the full rules and counters."]
+	var result: Array[String] = []
+	for line: String in lines:
+		result.append(fit_text(line, font, 1136.0, 16))
+	return result
+
+
+static func fit_text(value: String, font: Font, width: float, size: int) -> String:
+	if font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x <= width:
+		return value
+	var result := value
+	while not result.is_empty() and font.get_string_size(result + "...", HORIZONTAL_ALIGNMENT_LEFT, -1, size).x > width:
+		result = result.left(result.length() - 1)
+	return result + "..."
+
+
+func character_title() -> String:
+	var entries := _characters()
+	if entries.is_empty():
+		return "Race awaiting a champion"
+	var entry: Dictionary = entries[selected_character]
+	var title := "%s  /  %s" % [entry["display_name"], String(entry["status"]).to_upper()]
+	if entries.size() > 1:
+		title += "  [%d/%d: Left / Right]" % [selected_character + 1, entries.size()]
+	return title
 
 
 static func wrap_text(value: String, font: Font, width: float, size: int = FONT_SIZE) -> Array[String]:
@@ -338,7 +565,7 @@ static func wrap_text(value: String, font: Font, width: float, size: int = FONT_
 
 
 func _ensure_wrapped(font: Font) -> void:
-	var key := "%d/%d/%d/%d" % [tab, selected_row, selected_character, font.get_instance_id()]
+	var key := "%d/%d/%d/%d/%d" % [tab, selected_row, selected_character, selected_element_column, font.get_instance_id()]
 	if key == _cache_key:
 		return
 	_cache_key = key

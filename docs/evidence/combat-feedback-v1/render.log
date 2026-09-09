@@ -1,0 +1,10 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (AMD) - ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001506) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.21045.5002)
+
+RENDERED res://.godot/combat-feedback-v1/render-a/beam_fired-normal.png
+RENDERED res://.godot/combat-feedback-v1/render-a/beam_fired-reduced.png
+RENDERED res://.godot/combat-feedback-v1/render-a/spray_hit-normal.png
+RENDERED res://.godot/combat-feedback-v1/render-a/spray_hit-reduced.png
+RENDERED res://.godot/combat-feedback-v1/render-a/field_triggered-normal.png
+RENDERED res://.godot/combat-feedback-v1/render-a/field_triggered-reduced.png
+PASS: 6 actual1280x720 captures;8 elements x3 contact families x normal/reduced; inherited live cue hook and draw path

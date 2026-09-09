@@ -1,0 +1,34 @@
+{
+  "status": "local_full_export_raw_boot_passed",
+  "full_suites": 94,
+  "full_assertions": 532858,
+  "source_records": 2133,
+  "payloads": [
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-warm-trails-p47-20260909\\windows\\flux2.exe",
+      "bytes": 109071360,
+      "sha256": "04baf75cc1d69dd93eb709533ecab4fd7770bb8a530645717017a06a9d9809fc"
+    },
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-warm-trails-p47-20260909\\windows\\flux2.pck",
+      "bytes": 67073892,
+      "sha256": "4108090ac878c2c5038759fb93a753e91d867c284a7f1afa13384ab2ac656889"
+    },
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-warm-trails-p47-20260909\\release\\FLUX2-Windows-x86_64.zip",
+      "bytes": 97594791,
+      "sha256": "208ff6fbc8840d4fe9400ba05bb785c8595b6de19789c0cf454f3f53d5e0048d"
+    }
+  ],
+  "new_installer": "not_attempted_prior_policy_block",
+  "live_visual_mode": "shared_clothed_adventurer_base_walk_sprint",
+  "playable_profiles": 27,
+  "shared_body_count": 3,
+  "shared_texture_count": 9,
+  "art_overhaul": "basic_elements_terrain_shared_bodies_live_named_skins_pending",
+  "trail_policy_version": 3,
+  "rapid_trails": false,
+  "human_animation_acceptance": "pending",
+  "friend_network_acceptance": "pending",
+  "sustained_120fps": "not_certified"
+}

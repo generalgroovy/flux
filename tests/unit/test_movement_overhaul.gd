@@ -8,6 +8,7 @@ func run() -> int:
 	_test_carried_slide_and_fresh_fast_fall()
 	_test_no_op_redirect_and_stale_roll()
 	_test_locked_sustain_and_wall_exits()
+	_test_slow_cannot_cancel_forced_control()
 	_test_wavedash_landing_protection()
 	_test_profile_routes_and_repeat_hashes()
 	return finish("movement-overhaul")
@@ -225,6 +226,56 @@ func _test_locked_sustain_and_wall_exits() -> void:
 	for _index: int in range(20):
 		_tick(wall, Vector2i(-1000, 0), 0, 0, arena)
 	check(not wall.is_airborne(), "wall detach necessarily reaches ground")
+
+
+func _test_slow_cannot_cancel_forced_control() -> void:
+	var config := SimConfig.new(120)
+	var policy := ActionTransitionPolicy.new()
+	check(policy.load_from_file(), "forced-control overlap uses the live cast policy")
+	for control: int in [PlayerState.ControlState.LAUNCHED, PlayerState.ControlState.GRAPPLED, PlayerState.ControlState.CHARGING, PlayerState.ControlState.STUNNED, PlayerState.ControlState.ROOTED]:
+		for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+			var state := _state()
+			check(MovementSystem.apply_control_state(state, control, 50, direction, 420_000, config), "hard control is accepted before overlapping slow")
+			var before := state.canonical_values()
+			check(not MovementSystem.apply_control_state(state, PlayerState.ControlState.SLOWED, 650, Vector2i.ZERO, 0, config, 550), "lower-priority slow cannot replace an active hard-control clock")
+			check(state.canonical_values() == before, "refused slow changes no velocity, timer, resource, protection or air allowance")
+			equal(policy.cast_gate_reason(state), "control_%s" % ActionTransitionPolicy.control_state_id(control), "slow cannot reopen casting during forced control")
+			for _tick_index: int in range(config.milliseconds_to_ticks(50)):
+				_tick(state)
+			equal(state.control_ticks, 0, "hard control expires on its original deadline")
+			check(MovementSystem.apply_control_state(state, PlayerState.ControlState.SLOWED, 650, Vector2i.ZERO, 0, config, 550), "a fresh slow may apply after hard-control expiry")
+			equal(state.slow_ratio, 550, "post-expiry slow uses its authored ratio without a deferred stack")
+	var chemistry := preload("res://src/sim/chemistry/element_chemistry_system.gd")
+	var victim := _state()
+	victim.team_id = 2
+	var at := Vector2i(victim.position_x, victim.position_y)
+	var deposits: Array = []
+	for element: int in [1, 3]:
+		equal(chemistry.deposit_terminal(deposits, element, element, 100, 1, 1, element, at, 0, config), 1, "real Earth/Water terminal ingredients admit")
+	var reactions: Array = []
+	var events: Array = []
+	chemistry.step(deposits, reactions, [], _arena(), config, 0, 4000, events)
+	equal(reactions.size(), 1, "real terminal ingredients form one Mud reaction")
+	var mud: ElementReactionState = reactions[0]
+	equal(mud.recipe_wire_id, 303, "overlap fixture uses authoritative Mud")
+	var tideline := CombatTuning.cast_definition(141)
+	check(MovementSystem.apply_control_state(victim, int(tideline["hit_control_state"]), int(tideline["hit_control_duration_ms"]), Vector2i(1000, 0), int(tideline["hit_control_speed"]), config), "actual Tideline control definition applies")
+	_tick(victim)
+	var launched := victim.canonical_values()
+	chemistry.step(deposits, reactions, [victim], _arena(), config, mud.active_tick, 4001, events)
+	check(victim.canonical_values() == launched, "active Mud cannot erase the accepted Tideline launch")
+	equal(policy.cast_gate_reason(victim), "control_launched", "Mud contact leaves the Tideline casting gate intact")
+	var field := FieldState.new(2000, 3, 1, 158, 3, at, 85000, 100, PlayerState.ControlState.SLOWED, 650, 700)
+	var field_events: Array[Dictionary] = []
+	CombatSystem.advance_fields([field], [victim], config, field_events)
+	check(victim.canonical_values() == launched, "an actual slowing Field cannot replace forced launch either")
+	check(field.has_affected(victim.entity_id), "one-shot Field contact is consumed, not queued for a later hidden slow")
+	var already_slow := _state()
+	already_slow.velocity_x = 100_000
+	MovementSystem.apply_control_state(already_slow, PlayerState.ControlState.SLOWED, 100, Vector2i.ZERO, 0, config, 700)
+	check(MovementSystem.apply_control_state(already_slow, PlayerState.ControlState.SLOWED, 200, Vector2i.ZERO, 0, config, 550), "existing slow-to-slow updates remain accepted")
+	equal(already_slow.velocity_x, 55000, "stronger slow preserves one proportional scale, without compounding")
+	equal(already_slow.control_ticks, config.milliseconds_to_ticks(200), "ordinary slow replacement retains its authored duration")
 
 
 func _test_wavedash_landing_protection() -> void:

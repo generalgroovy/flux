@@ -1,22 +1,37 @@
-FLUX 2 - PORTABLE FRIEND BUILD
+FLUX 2 - WINDOWS PORTABLE FRIEND BUILD
 ==============================
 
 No installer or administrator access is required.
 
-WINDOWS
+START
 1. Extract the whole archive.
 2. Double-click PLAY-FLUX.cmd.
 
-LINUX
-1. Extract the whole archive.
-2. Double-click play-flux.sh and choose Run, or run ./play-flux.sh.
+Or open flux2.exe directly, keeping flux2.pck beside it. No Godot editor needed.
+
+QUICK CONTROLS (DEFAULTS; REBIND AT CONTROLS LECTERN)
+WASD move; mouse aims. Shift sprints. Space jumps; release then hold again for
+finite Float. C slides. Q rolls/air-dodges. V is the wall/air technique.
+1-4 cast spells. Ctrl+1-4 and Alt+1-4 use the other eight configured slots.
+F4 opens the full compendium. The Spell Loom changes spells.
+
+TRY THIS BUILD
+Follow Commons -> Movement -> Crucible -> Sparring. Compare walk/sprint with
+independent aim. The HUD marks protection and shows remaining Float time.
+Hover resources for recovery details; hover practice cards for more explanation.
+Rapid creates no flight trail. Plain matter is harmless until a valid pair forms.
 
 PLAY TOGETHER
 Both players must use the same build. The host walks to Host Farflow in the
-Wellspring and opens a company. A friend enters the host address at Join
+Wellspring and starts a session. A friend enters the host address at Join
 Farflow, then joins. Direct internet play currently requires the host to allow
 the displayed UDP port through the router/firewall; LAN and private-overlay
 network addresses avoid public port forwarding.
+
+UPDATE
+Close the game. Extract a newer verified build into a NEW folder; keep this one
+as a fallback. Use that new folder to play. This portable has no automatic online
+updater, and an older installed desktop shortcut may open a different build.
 
 SAFE EXIT
 Close the window normally. FLUX saves local settings and closes its network

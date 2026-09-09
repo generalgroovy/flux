@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-09",
+  "status": "fresh_standalone_verified_installer_policy_blocked",
+  "version": "0.1.0-dev-a1aa028076-7cd1fbcb91",
+  "source": {
+    "full_suites": 91,
+    "full_assertions": 463310,
+    "full_failures": 0,
+    "full_stderr_bytes": 0,
+    "full_duration_ms": 85390,
+    "full_receipt_sha256": "ffb1652dd2c3afb31c13e1ca21fd3be4d8a8bcf99566125876e6dd949cd6f801",
+    "combat_raw_sha256": "cdce33b7ee0528c57870cd1a3f5ce8faa52bee9517ec56962bdf8551b6aebd1a",
+    "runtime_records": 184,
+    "unchanged_before_after_export_and_after_smoke": true
+  },
+  "export": {
+    "fresh": true,
+    "strict": true,
+    "stderr_bytes": 0,
+    "source_pack_catalogs_match": true,
+    "default_technique": "V",
+    "default_evade": "Q",
+    "preferences_schema": 11,
+    "keyboard_defaults_revision": 1
+  },
+  "standalone": {
+    "native_attempts": 1,
+    "passed": true,
+    "executable": "exports/windows-template-runtime-p47-20260909/windows/flux2.exe",
+    "source_path_used": false,
+    "isolated_appdata": true,
+    "frames": 3,
+    "protocol": 47,
+    "simulation_hz": 120,
+    "stderr_bytes": 0,
+    "remaining_owned_processes": 0,
+    "authenticode": "NotSigned",
+    "security_bypass": false
+  },
+  "installer": {
+    "passed": false,
+    "status": "blocked_before_first_preflight",
+    "win32_error": 4551,
+    "message": "An Application Control policy has blocked this file.",
+    "executed_stages": 0,
+    "update_tested": false,
+    "repair_tested": false,
+    "retention_tested": false,
+    "real_home_install_requested": false,
+    "shortcuts_requested": false,
+    "retry_or_bypass": false
+  },
+  "portable_zip": {
+    "member_hashes_verified": 6
+  },
+  "live_guard": {
+    "paths": 6,
+    "unchanged_existence_bytes_hashes_mtimes": true
+  },
+  "preserved_qv_fallback": {
+    "installer": "exports/windows-followup-p47-20260909/release/FLUX.exe",
+    "sha256": "4bd03fd6ee50d7161b445bc03e2c8e99477b366a44b63f8fadba084ce31b5121",
+    "older_payload": true,
+    "previously_passed_stages": 16,
+    "previously_passed_argv_assertions": 20
+  },
+  "payloads": [
+    {
+      "file": "exports/windows-template-runtime-p47-20260909/release/FLUX.exe",
+      "bytes": 96800256,
+      "sha256": "ab3752950c81626985738ab45dbd1eff92131f7829231e629026d63c755c1760"
+    },
+    {
+      "file": "exports/windows-template-runtime-p47-20260909/release/FLUX2-Windows-x86_64.zip",
+      "bytes": 96774779,
+      "sha256": "7cd1fbcb912cf3032492c51f0390798e77aa520003e61098c31a4b46ed6e8ee2"
+    },
+    {
+      "file": "exports/windows-template-runtime-p47-20260909/windows/flux2.exe",
+      "bytes": 109071360,
+      "sha256": "04baf75cc1d69dd93eb709533ecab4fd7770bb8a530645717017a06a9d9809fc"
+    },
+    {
+      "file": "exports/windows-template-runtime-p47-20260909/windows/flux2.pck",
+      "bytes": 66211656,
+      "sha256": "ed7ea726c3dd51516871cf5005d6395641e1d683e59b5f4cd33813b3fe4dd316"
+    },
+    {
+      "file": "exports/windows-template-runtime-p47-20260909/windows/BUILD-STATE.json",
+      "bytes": 2377,
+      "sha256": "4afe380de39f69a28cec7c918d1461c69e16e85aeecf87e6fc28844b62b7ad8e"
+    },
+    {
+      "file": "exports/windows-template-runtime-p47-20260909/windows/SOURCE-STATE.json",
+      "bytes": 33611,
+      "sha256": "fb6fe3f89d6e0ca243408aadca98496b392cce4cac06a8cba8aec4972fee160c"
+    },
+    {
+      "file": "exports/windows-template-runtime-p47-20260909/build-final-delivery.ps1",
+      "bytes": 6641,
+      "sha256": "196c1734881ef3768b55dcf27906cd1b694a03680abe27bf4f0dedf69004fe23"
+    },
+    {
+      "file": "exports/windows-template-runtime-p47-20260909/verify-pack-defaults.gd",
+      "bytes": 604,
+      "sha256": "4ce206d3d90b905bff0c04f8671a0b3eb336528d078f30160a38da80dccf8ec5"
+    }
+  ],
+  "evidence_files": [
+    {
+      "file": ".gdignore",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "blocked-installer-logs/00-readonly-root.command.txt",
+      "bytes": 250,
+      "sha256": "e85f473b0cbe2132df437eb46418064217f7fdf32d17c5a9019934545b80996f"
+    },
+    {
+      "file": "blocked-installer-logs/00-readonly-root.stderr.log",
+      "bytes": 1392,
+      "sha256": "e6923a444e37641b34c0d4d0c62d59f3951db11cf9be61638188a835d598643b"
+    },
+    {
+      "file": "blocked-installer-receipt.json",
+      "bytes": 827,
+      "sha256": "0b3b99a3697b4461df81172db0a353f36f94edab186be5df7ad2a6fe934bc7b4"
+    },
+    {
+      "file": "build-logs/bootstrap-build.log",
+      "bytes": 195,
+      "sha256": "eeafe859f259769f1129b66481e7e0bfbb529c2cf7356ee34efd19281bd386ba"
+    },
+    {
+      "file": "build-logs/bundle.log",
+      "bytes": 128,
+      "sha256": "168cc4754b3d89780a2652048279cdba0cab2562fd71a0314a826343d255a544"
+    },
+    {
+      "file": "build-logs/installer-journey.log",
+      "bytes": 332,
+      "sha256": "36cdcb9134f980bb99e6ee5e2b348421cea6bf6b952a3a536ce44bd7d5f7078a"
+    },
+    {
+      "file": "build-logs/pack-defaults.log",
+      "bytes": 138,
+      "sha256": "8223b2e35b175260a0d38eba739b6f272585a064981d54a29aa3ca3c6c3f5ae9"
+    },
+    {
+      "file": "build-logs/pack-defaults.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "build-logs/raw-executable-smoke.log",
+      "bytes": 806,
+      "sha256": "3d7f4b777745848d3fa0dc892a5a37d975202c0d3616b5365c3b936b6e811c66"
+    },
+    {
+      "file": "build-logs/raw-executable-smoke.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "build-logs/raw-game-boot.log",
+      "bytes": 801,
+      "sha256": "9dd2f4a07b1772dbbe70c7b631e2dfcc6ee4f0237c04c89736c59c3873b372a8"
+    },
+    {
+      "file": "build-logs/runtime-pack.log",
+      "bytes": 1100,
+      "sha256": "049efd202b2a763222ea89832689ada37c03a1adcf34c7ba247eb92ac4b78f5c"
+    },
+    {
+      "file": "build-logs/runtime-pack.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "build-logs/runtime-source.log",
+      "bytes": 1100,
+      "sha256": "049efd202b2a763222ea89832689ada37c03a1adcf34c7ba247eb92ac4b78f5c"
+    },
+    {
+      "file": "build-logs/runtime-source.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "build-logs/strict-export.log",
+      "bytes": 348714,
+      "sha256": "48d91cb0aaea76c04d2de8289c1c5f10a49795bea3b8e5f54f60de315d565030"
+    },
+    {
+      "file": "build-logs/strict-export.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "BUILD-STATE.json",
+      "bytes": 2377,
+      "sha256": "4afe380de39f69a28cec7c918d1461c69e16e85aeecf87e6fc28844b62b7ad8e"
+    },
+    {
+      "file": "full/asset-inventory.json",
+      "bytes": 362905,
+      "sha256": "7cae34620eb9132eaec8d7b7495db5168b12962dbbbd6e3fe713df5019bd6401"
+    },
+    {
+      "file": "full/boot-120.log",
+      "bytes": 806,
+      "sha256": "e76f55ef6c545ce82992c195844cae57670729bb0f0bf259ab108e62e4abebe0"
+    },
+    {
+      "file": "full/boot-120.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "full/current-state.json",
+      "bytes": 21056,
+      "sha256": "c384562f1f89f4df2abf8cfa32941ebc6efdeaa45267dc605ff94624c536c987"
+    },
+    {
+      "file": "full/full-receipt.json",
+      "bytes": 11301,
+      "sha256": "ffb1652dd2c3afb31c13e1ca21fd3be4d8a8bcf99566125876e6dd949cd6f801"
+    },
+    {
+      "file": "full/import.log",
+      "bytes": 2015,
+      "sha256": "3a2dd373c1c4f7092e0da3aecb03de652921a2369c52bba47c088a4c3bb2e5a1"
+    },
+    {
+      "file": "full/import.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "full/suite.log",
+      "bytes": 14203,
+      "sha256": "0cdae1fc7f8cd003239ea209a6a94dac59a20feb1610fdde9fb166000082664a"
+    },
+    {
+      "file": "full/suite.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "README.md",
+      "bytes": 6006,
+      "sha256": "b78ca28f7c2371d66ad25896ec9e96fbf247790ac6b1133e26e5ffb3f7a71d43"
+    },
+    {
+      "file": "SHA256SUMS.txt",
+      "bytes": 168,
+      "sha256": "91da3c0a825a0bcd203a1a91d83fed0cb561b815c8012e56b5a486ccb089d237"
+    },
+    {
+      "file": "SOURCE-STATE.json",
+      "bytes": 33611,
+      "sha256": "fb6fe3f89d6e0ca243408aadca98496b392cce4cac06a8cba8aec4972fee160c"
+    },
+    {
+      "file": "user-data-guard.json",
+      "bytes": 2902,
+      "sha256": "d215f671706d5327cca4a6d188c6777567c7b17c10acc1ffb5cf86106913beeb"
+    }
+  ],
+  "boundary": "Local fresh standalone game passed; installer acceptance remains blocked. No production/shared-packaging edits, actual user install, security bypass, source-launch readiness repair, character-art promotion, signing, public release or human/two-PC acceptance."
+}

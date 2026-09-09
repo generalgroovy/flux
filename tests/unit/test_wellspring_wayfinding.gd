@@ -20,6 +20,9 @@ func _test_repository_wayfinding() -> void:
 	var kinds: Dictionary[String, bool] = {}
 	for point: Dictionary in wayfinding.points:
 		kinds[String(point.get("kind", ""))] = true
+		check(not String(point.get("subtitle", "")).contains("CHEMISTRY SOON"), "wayfinding cannot advertise implemented chemistry as pending")
+		if String(point.get("id", "")) == "elemental-crucible":
+			check(String(point["subtitle"]).contains("TWO CASTS"), "Crucible wayfinding gives the first practical chemistry action")
 	for kind: String in WellspringWayfinding.ALLOWED_KINDS:
 		check(kinds.has(kind), "purposeful campus includes %s wayfinding" % kind)
 

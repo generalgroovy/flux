@@ -40,13 +40,13 @@ func _test_catalog() -> void:
 	equal(first.content_hash, second.content_hash, "catalog hash is stable across reloads")
 	equal(first.elements_by_id.size(), 12, "all twelve thematic element families are declared")
 	equal(first.active_element_ids(), ["charge", "dark", "earth", "fire", "ice", "light", "water", "wind"], "only the first eight families are runtime-enabled")
-	equal(first.playable_spell_ids().size(), 41, "forty matrix cells and one proven variant enter the playable selector")
+	equal(first.playable_spell_ids().size(), 57, "fifty-six matrix cells and one proven variant enter the playable selector")
 	check(first.playable_spell_ids().has("vector-lance"), "the proven Vector Lance variant remains globally weaveable")
 	for gated_id: String in ["spirit", "chaos", "gravity", "time"]:
 		check(not bool((first.elements_by_id[gated_id] as Dictionary)["runtime_enabled"]), "%s remains explicitly gated" % gated_id)
 	equal(String(first.data.get("affinity_rule", "")), "aligned_active_cost_discount_capped_by_affinity_strength", "ability catalog declares weighted affinity discount rule")
 	equal(int(first.economy["recovery_delay_ms"]), PlayerTuning.FLUX_RECOVERY_DELAY_MS, "catalog owns the compiled Flux recovery delay")
-	equal((first.economy["cadence_tiers_ms"] as Dictionary).keys().size(), 3, "economy declares exactly three cadence tiers")
+	equal((first.economy["cadence_tiers_ms"] as Dictionary).keys().size(), 4, "economy declares four bounded cadence tiers including Rapid")
 	equal(int(first.ability("arc-primary")["flux_cost"]) * 1000, int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["flux_cost"]), "foundation primary has exact positive Flux cost")
 	equal(int(first.ability("arc-primary")["wire_id"]), CombatTuning.PRIMARY_WIRE_ID, "compiled primary wire matches catalog")
 	equal(int(first.ability("arc-primary")["cooldown_ms"]), int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["cooldown_ms"]), "compiled primary cooldown matches catalog")
@@ -115,8 +115,8 @@ func _test_catalog() -> void:
 
 func _test_spell_matrix() -> void:
 	var catalog := _catalog()
-	equal(catalog.spell_matrix_ids.size(), 40, "spell matrix has exactly eight rows by five columns")
-	equal(catalog.spell_matrix_wire_ids, catalog.runtime_wire_ids.slice(0, 40), "runtime order begins row-major for stable Loom navigation")
+	equal(catalog.spell_matrix_ids.size(), 56, "spell matrix has exactly eight rows by seven columns")
+	equal(catalog.spell_matrix_wire_ids, catalog.runtime_wire_ids.slice(0, 56), "runtime order begins row-major for stable Loom navigation")
 	var claimed: Dictionary = {}
 	for element_id: String in AbilityCatalog.FIRST_EIGHT_ELEMENTS:
 		for family_id: String in AbilityCatalog.SPELL_MATRIX_FAMILIES:

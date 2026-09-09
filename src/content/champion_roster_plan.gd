@@ -4,10 +4,10 @@ extends RefCounted
 
 const DEFAULT_PATH := "res://content/champions/champion_roster_plan_v1.json"
 const EXPECTED_ID := "champion-roster-plan-v1"
-const EXPECTED_STATUS := "design_locked_nonselectable_registry"
-const EXPECTED_AUTHORITY := "canonical planned identity, ancestry, body role and availability; playable promotion remains owned by foundation_champions_v1"
-const EXPECTED_CHAMPION_COUNT := 24
-const EXPECTED_PLAYABLE_COUNT := 5
+const EXPECTED_STATUS := "canonical_identity_availability_registry"
+const EXPECTED_AUTHORITY := "canonical identity, ancestry, body role and availability; playable profiles remain owned by foundation_champions_v1"
+const EXPECTED_CHAMPION_COUNT := 30
+const EXPECTED_PLAYABLE_COUNT := 29
 const ALLOWED_AVAILABILITY: Array[String] = ["playable", "planned", "placeholder"]
 const EXPECTED_BODY_ROLES: Array[String] = ["small", "middle", "large"]
 
@@ -50,7 +50,7 @@ func validate() -> bool:
 	if int(data.get("schema_version", -1)) != 1 or String(data.get("id", "")) != EXPECTED_ID:
 		return _fail("champion roster plan identity is unsupported")
 	if String(data.get("status", "")) != EXPECTED_STATUS or String(data.get("authority", "")) != EXPECTED_AUTHORITY:
-		return _fail("champion roster plan must remain non-selectable planning authority")
+		return _fail("champion roster must declare canonical identity and availability authority")
 	for required_path: String in ["affinity_catalog", "playable_catalog", "identity_migrations"]:
 		var referenced_path := String(data.get(required_path, ""))
 		if not referenced_path.begins_with("res://content/champions/") or not FileAccess.file_exists(referenced_path):
@@ -64,7 +64,7 @@ func validate() -> bool:
 		return _fail("champion roster plan ancestry/body vocabulary is incomplete")
 	var champions: Array = data.get("champions", [])
 	if champions.size() != EXPECTED_CHAMPION_COUNT:
-		return _fail("champion roster plan must contain exactly 24 identities")
+		return _fail("champion roster plan must contain exactly %d identities" % EXPECTED_CHAMPION_COUNT)
 	var display_names: Dictionary = {}
 	var playable_count := 0
 	var placeholder_count := 0
@@ -175,12 +175,14 @@ func _validate_linked_catalogs() -> bool:
 			return _fail("planned roster is missing affinity identity: %s" % champion_id)
 		if String((affinities_by_id[champion_id] as Dictionary).get("display_name", "")) != String((champions_by_id[champion_id] as Dictionary).get("display_name", "")):
 			return _fail("planned roster and affinity display names disagree: %s" % champion_id)
+		if String((affinities_by_id[champion_id] as Dictionary).get("availability", "")) != String((champions_by_id[champion_id] as Dictionary).get("availability", "")):
+			return _fail("roster and affinity availability disagree: %s" % champion_id)
 	var playable_by_id: Dictionary = {}
 	for value: Variant in playable_data.get("champions", []):
 		if value is Dictionary:
 			playable_by_id[String((value as Dictionary).get("id", ""))] = value
 	if playable_by_id.size() != EXPECTED_PLAYABLE_COUNT:
-		return _fail("playable catalog must contain exactly three promoted champions")
+		return _fail("playable catalog must contain exactly %d promoted champions" % EXPECTED_PLAYABLE_COUNT)
 	for champion_id: String in ordered_ids:
 		var roster_entry: Dictionary = champions_by_id[champion_id]
 		var should_be_playable := String(roster_entry.get("availability", "")) == "playable"

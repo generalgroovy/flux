@@ -2,8 +2,8 @@ class_name SanctumCampusLayout
 extends RefCounted
 
 
-const SUPPORTED_SCHEMA_VERSION: int = 5
-const REQUIRED_CANVAS := Vector2i(3072, 1728)
+const SUPPORTED_SCHEMA_VERSION: int = 6
+const REQUIRED_CANVAS := Vector2i(3072, 2304)
 const REQUIRED_VIEWPORT := Vector2i(1280, 720)
 const REQUIRED_DISTRICTS: Array[String] = [
 	"conservatory-gardens",
@@ -36,6 +36,9 @@ var landmarks_by_id: Dictionary[String, Dictionary] = {}
 var reset_zones_by_id: Dictionary[String, Dictionary] = {}
 var stations_by_id: Dictionary[String, Dictionary] = {}
 var practice_targets_by_id: Dictionary[String, Dictionary] = {}
+var practice_groups_by_id: Dictionary[String, Dictionary] = {}
+# Prepared once at content validation; presentation reads these same target-linked lanes.
+var practice_lanes: Array[Dictionary] = []
 var arena_definition: Dictionary = {}
 var canvas_size := Vector2i.ZERO
 var viewport_size := Vector2i.ZERO
@@ -67,6 +70,8 @@ func validate() -> bool:
 	reset_zones_by_id = {}
 	stations_by_id = {}
 	practice_targets_by_id = {}
+	practice_groups_by_id = {}
+	practice_lanes = []
 	arena_definition = {}
 	if int(data.get("schema_version", 0)) != SUPPORTED_SCHEMA_VERSION:
 		return _fail("Unsupported Sanctum campus schema")
@@ -77,7 +82,7 @@ func validate() -> bool:
 		return _fail("Sanctum campus canvas_size must contain width and height")
 	canvas_size = Vector2i(int(canvas[0]), int(canvas[1]))
 	if canvas_size != REQUIRED_CANVAS:
-		return _fail("Sanctum campus must provide the authored 2560 x 1440 world")
+		return _fail("Sanctum campus must provide the authored %d x %d world" % [REQUIRED_CANVAS.x, REQUIRED_CANVAS.y])
 	var viewport: Array = data.get("viewport_size", [])
 	if viewport.size() != 2:
 		return _fail("Sanctum campus viewport_size must contain width and height")
@@ -347,6 +352,9 @@ func validate() -> bool:
 			return _fail("Sanctum campus is missing required station: %s" % required_station_id)
 
 	var target_entity_ids: Dictionary[int, bool] = {}
+	var target_values: Variant = data.get("practice_targets", [])
+	if not target_values is Array or target_values.size() < 1 or target_values.size() > SessionSnapshot.MAX_TARGETS:
+		return _fail("Practice targets must fit the %d-target multiplayer snapshot budget" % SessionSnapshot.MAX_TARGETS)
 	for value: Variant in data.get("practice_targets", []):
 		if not value is Dictionary:
 			return _fail("Every Sanctum practice target must be an object")
@@ -425,6 +433,8 @@ func validate() -> bool:
 		return _fail("Every visible district requires a fast-travel context marker")
 
 	var collision := build_collision_world()
+	if not _validate_practice_groups(collision):
+		return false
 	# Ordinary routes and bridges promise full-width, obstacle-free passage.
 	for value: Variant in (data.get("routes", []) as Array) + (data.get("connections", []) as Array):
 		var route: Dictionary = value
@@ -464,6 +474,77 @@ func validate() -> bool:
 			return _fail("Sanctum arena spawn overlaps authored collision")
 	content_hash = CanonicalContent.sha256(data)
 	return content_hash.length() == 64 or _fail("Sanctum campus hash failed")
+
+
+func _validate_practice_groups(collision: CollisionWorld) -> bool:
+	var values: Variant = data.get("practice_groups", [])
+	if not values is Array or values.size() < 1 or values.size() > SessionSnapshot.MAX_TARGETS:
+		return _fail("Campus requires a bounded list of practice groups")
+	var activities: Dictionary = {}
+	for activity: Dictionary in data["activity_areas"]:
+		activities[String(activity["id"])] = activity
+	var grouped_targets: Dictionary = {}
+	for value: Variant in values:
+		if not value is Dictionary:
+			return _fail("Practice group must be an object")
+		var group: Dictionary = value
+		var group_id := String(group.get("id", ""))
+		var activity_id := String(group.get("activity", ""))
+		if group_id.is_empty() or practice_groups_by_id.has(group_id) or not activities.has(activity_id):
+			return _fail("Practice group identity or activity is invalid")
+		var activity: Dictionary = activities[activity_id]
+		var activity_bounds := _parse_bounds(activity["bounds"])
+		var bounds := _parse_bounds(group.get("bounds", []))
+		if bounds.size.x < 192 or bounds.size.y < 192 or not activity_bounds.encloses(bounds):
+			return _fail("Practice group needs an open area inside its activity: %s" % group_id)
+		for building: Dictionary in buildings_by_id.values():
+			if bounds.intersects(_parse_bounds(building["bounds"])):
+				return _fail("Practice group open area overlaps worldbone: %s" % group_id)
+		var label := String(group.get("label", ""))
+		var purpose := String(group.get("purpose", ""))
+		var label_anchor := _parse_point(group.get("label_anchor", []))
+		if label.is_empty() or label.length() > 32 or purpose.is_empty() or purpose.length() > 40 or not activity_bounds.encloses(Rect2i(label_anchor, Vector2i(224, 32))):
+			return _fail("Practice group needs a concise label inside its activity: %s" % group_id)
+		var target_ids: Variant = group.get("target_ids", [])
+		var anchors: Variant = group.get("firing_anchors", [])
+		var lane_width := int(group.get("lane_width", 0))
+		if not target_ids is Array or not anchors is Array or target_ids.is_empty() or target_ids.size() != anchors.size() or lane_width < 40 or lane_width > 96:
+			return _fail("Practice group requires one safe firing lane per target: %s" % group_id)
+		for index: int in range(target_ids.size()):
+			var target_id := String(target_ids[index])
+			if not practice_targets_by_id.has(target_id) or grouped_targets.has(target_id):
+				return _fail("Practice target must belong to exactly one known group: %s" % target_id)
+			var target: Dictionary = practice_targets_by_id[target_id]
+			var target_position := _parse_point(target["position"])
+			var anchor := _parse_point(anchors[index])
+			var clearance := lane_width / 2
+			if String(target["district"]) != String(activity["district"]) or not bounds.grow(-clearance).has_point(anchor) or not bounds.grow(-clearance).has_point(target_position):
+				return _fail("Practice lane leaves its declared open area: %s" % target_id)
+			if anchor.distance_squared_to(target_position) < 128 * 128:
+				return _fail("Practice lane is too short for a readable cast: %s" % target_id)
+			for station: Dictionary in stations_by_id.values():
+				var station_position := Vector2(_parse_point(station["position"]))
+				var nearest := Geometry2D.get_closest_point_to_segment(station_position, Vector2(anchor), Vector2(target_position))
+				var station_clearance := float(int(station["interaction_radius"]) + clearance)
+				if station_position.distance_squared_to(nearest) < station_clearance * station_clearance:
+					return _fail("Practice firing lane crosses a station interaction area: %s" % target_id)
+			var steps := maxi(1, ceili(Vector2(target_position - anchor).length() / 16.0))
+			for step: int in range(steps + 1):
+				var point := Vector2i(Vector2(anchor).lerp(Vector2(target_position), float(step) / steps)) * SimConfig.FIXED_SCALE
+				if not collision.can_occupy(point, clearance * SimConfig.FIXED_SCALE):
+					return _fail("Practice firing lane is blocked by worldbone: %s" % target_id)
+			practice_lanes.append({"group_id":group_id, "target_id":target_id, "start":anchor, "end":target_position, "width":lane_width})
+			grouped_targets[target_id] = true
+		practice_groups_by_id[group_id] = group
+	if grouped_targets.size() != practice_targets_by_id.size():
+		return _fail("Every practice target needs a purposeful firing group")
+	var targets: Array = practice_targets_by_id.values()
+	for left: int in range(targets.size()):
+		for right: int in range(left + 1, targets.size()):
+			var separation := int(targets[left]["radius"]) + int(targets[right]["radius"]) + MovementTuning.PLAYER_RADIUS * 2 / SimConfig.FIXED_SCALE + 8
+			if _parse_point(targets[left]["position"]).distance_squared_to(_parse_point(targets[right]["position"])) < separation * separation:
+				return _fail("Practice targets leave insufficient walking and silhouette space")
+	return true
 
 
 func build_collision_world() -> CollisionWorld:

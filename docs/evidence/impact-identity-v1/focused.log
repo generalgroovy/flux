@@ -1,0 +1,5 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+foundation-spell-presenter: 2957 assertions, 0 failures
+burst-projectile-presenter: 10987 assertions, 0 failures
+PASS: 2 selected FLUX2 headless suite(s): burst-projectile-presenter,foundation-spell-presenter

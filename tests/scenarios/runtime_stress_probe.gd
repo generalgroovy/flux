@@ -5,6 +5,8 @@ extends SceneTree
 # suite. Fixture injection is offline only; it does not raise Farflow capacity.
 # --quick selects the legal eight-actor journey only.
 # --require-network-clear turns observed legal-load transport gaps into failure.
+# --stages adds a subsystem-timed mirror, checked against real step each tick.
+const StageSampler = preload("res://tests/scenarios/runtime_stage_sampler.gd")
 const SEED: int = 608_120
 const WARMUP_TICKS: int = 120
 const LEGAL_TICKS: int = 720
@@ -42,9 +44,16 @@ func _run() -> void:
 		"seed": SEED, "tick_rate": 120, "cpu": OS.get_processor_name(),
 		"ability_sha256": FileAccess.get_sha256("res://content/abilities/foundation_abilities_v1.json"),
 		"champion_sha256": FileAccess.get_sha256("res://content/champions/foundation_champions_v1.json"),
+		"sim_world_sha256": FileAccess.get_sha256("res://src/sim/core/sim_world.gd"),
+		"stage_mirror_enabled": OS.get_cmdline_user_args().has("--stages"),
 		"measurement": "SimWorld.step only; snapshots timed separately; no rendered FPS or socket/network capacity claim",
 	}))
 	_run_pair("legal-eight-burst", 8, 0, 0, 0, true)
+	# Explicitly selected: keep the established --quick workload unchanged.
+	if OS.get_cmdline_user_args().has("--scenario=legal-eight-mixed-deliveries"):
+		_run_pair("legal-eight-mixed-deliveries", 8, 0, 0, 0, true)
+	if OS.get_cmdline_user_args().has("--scenario=legal-eight-field-opening"):
+		_run_pair("legal-eight-field-opening", 8, 0, 0, 0, true)
 	if not OS.get_cmdline_user_args().has("--quick"):
 		_run_pair("admitted-eight-envelope", 8, SimConfig.MAX_ACTIVE_PROJECTILES, SimConfig.MAX_ACTIVE_FIELDS, 64, false)
 		_run_pair("eight-256-projectiles-open", 8, 256, 16, 0, false)
@@ -81,17 +90,31 @@ func _run_pair(label: String, actor_count: int, projectile_count: int, field_cou
 
 
 func _run_scenario(label: String, actor_count: int, projectile_count: int, field_count: int, obstacle_count: int, legal_casts: bool, reverse_commands: bool) -> Dictionary:
-	var world := _make_world(actor_count, obstacle_count)
+	var mixed_deliveries := label == "legal-eight-mixed-deliveries"
+	var field_opening := label == "legal-eight-field-opening"
+	var world := _make_world(actor_count, obstacle_count, mixed_deliveries, field_opening)
+	var mirror: SimWorld = _make_world(actor_count, obstacle_count, mixed_deliveries, field_opening) if OS.get_cmdline_user_args().has("--stages") else null
+	var stage_samples := {}
+	var slowest_stages: Array[Dictionary] = []
+	if mirror != null:
+		for stage: String in StageSampler.STAGES:
+			stage_samples[stage] = PackedInt64Array()
 	_check(world.is_valid(), "%s world starts valid" % label)
 	for _warmup: int in range(WARMUP_TICKS):
-		_check(world.step(_commands(world, false, reverse_commands)), "%s warmup step" % label)
+		_check(world.step(_commands(world, false, reverse_commands, false, field_opening)), "%s warmup step" % label)
+		if mirror != null:
+			_check(mirror.step(_commands(mirror, false, reverse_commands, false, field_opening)), "%s mirror warmup step" % label)
 	if not legal_casts:
 		_seed_load(world, projectile_count, field_count)
+		if mirror != null:
+			_seed_load(mirror, projectile_count, field_count)
 	var samples := PackedInt64Array()
 	var snapshot_samples := PackedInt64Array()
 	var checkpoints: Array[String] = []
 	var peak_projectiles := world.projectiles.size()
 	var peak_fields := world.fields.size()
+	var peak_deposits := world.deposits.size()
+	var peak_reactions := world.reactions.size()
 	var peak_events := 0
 	var peak_raw_bytes := 0
 	var peak_wire_bytes := 0
@@ -103,12 +126,18 @@ func _run_scenario(label: String, actor_count: int, projectile_count: int, field
 	var maximum_overflow := PackedInt32Array([0, 0, 0, 0])
 	var expiry_events := PackedInt32Array([0, 0])
 	var over_budget_ticks := 0
+	var paid_starts := {"heavy": 0, "rapid": 0, "burst": 0}
+	var actual_releases := {"heavy": 0, "rapid": 0, "burst": 0}
+	var paid_actors := {"heavy": {}, "rapid": {}, "burst": {}}
+	var cast_refusals := {}
+	var field_phase_samples := {}
+	var field_observations := {"paid_starts":0,"releases":0,"triggers":0,"presence_ticks":0,"instance_ticks":0,"world_cap_ticks":0,"owner_cap_instance_ticks":0,"peak_pending":0,"peak_per_owner":0,"minimum_actor_flux":2147483647,"authored_flux_paid":0,"formation_reaction_instance_ticks":0,"active_reaction_instance_ticks":0,"decay_reaction_instance_ticks":0,"field_wires":{},"paid_by_family":{},"releases_by_family":{},"refusals_by_family":{}}
 	var sample_ticks := LEGAL_TICKS if legal_casts else FIXTURE_TICKS
 	for sample_index: int in range(sample_ticks):
 		# Match the production renderer's read-only obstacle access each frame;
 		# this must not accidentally disable the optimized simulation path.
 		world.collision.obstacle_view()
-		var commands := _commands(world, legal_casts, reverse_commands)
+		var commands := _commands(world, legal_casts, reverse_commands, mixed_deliveries, field_opening)
 		var started_us := Time.get_ticks_usec()
 		var stepped := world.step(commands)
 		var elapsed_us := Time.get_ticks_usec() - started_us
@@ -116,8 +145,42 @@ func _run_scenario(label: String, actor_count: int, projectile_count: int, field
 		if elapsed_us > TICK_BUDGET_US:
 			over_budget_ticks += 1
 		_check(stepped, "%s sample step" % label)
+		if field_opening:
+			_observe_field_opening(world,field_observations,cast_refusals)
+		if mixed_deliveries:
+			for event: Dictionary in world.combat_events:
+				var kind := String(event.get("type", ""))
+				var wire := int(event.get("wire_id", 0))
+				var family := "rapid" if wire >= 180 and wire <= 194 and wire % 2 == 0 else ("heavy" if wire >= 179 and wire <= 193 else "burst")
+				if kind == "cast_started":
+					paid_starts[family] += 1
+					paid_actors[family][int(event["entity_id"])] = true
+				if kind == "projectile_spawned": actual_releases[family] += 1
+				if kind == "cast_refused":
+					var reason := String(event.get("reason", "unknown"))
+					cast_refusals[reason] = int(cast_refusals.get(reason, 0)) + 1
+		if mirror != null:
+			var stage_result: Dictionary = StageSampler.measured_step(mirror, commands)
+			_check(bool(stage_result.ok), "%s stage mirror step" % label)
+			_check(world.state_hash() == mirror.state_hash(), "%s stage mirror canonical state agrees at tick %d" % [label, world.tick])
+			_check(world.combat_events == mirror.combat_events, "%s stage mirror events agree at tick %d" % [label, world.tick])
+			if field_opening:
+				_record_field_phase(world,elapsed_us,stage_result.times,field_phase_samples)
+			var sum_us := 0
+			for stage: String in StageSampler.STAGES:
+				var duration := int(stage_result.times[stage])
+				var stage_values: PackedInt64Array = stage_samples[stage]
+				stage_values.append(duration)
+				stage_samples[stage] = stage_values
+				sum_us += duration
+			slowest_stages.append({"tick": world.tick, "production_us": elapsed_us, "stage_sum_us": sum_us, "times_us": stage_result.times, "projectiles": world.projectiles.size(), "fields": world.fields.size(), "deposits": world.deposits.size(), "reactions": world.reactions.size()})
+			slowest_stages.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return int(a.stage_sum_us) > int(b.stage_sum_us))
+			if slowest_stages.size() > 8:
+				slowest_stages.resize(8)
 		peak_projectiles = maxi(peak_projectiles, world.projectiles.size())
 		peak_fields = maxi(peak_fields, world.fields.size())
+		peak_deposits = maxi(peak_deposits, world.deposits.size())
+		peak_reactions = maxi(peak_reactions, world.reactions.size())
 		peak_events = maxi(peak_events, world.combat_events.size())
 		_count_expiry(world, expiry_events)
 		if sample_index % 60 == 0:
@@ -161,28 +224,58 @@ func _run_scenario(label: String, actor_count: int, projectile_count: int, field
 				_check(received.size() == 1 and received[0] == snapshot, "%s accepted reversed fragments reconstruct exactly one complete snapshot" % label)
 			if legal_casts and (missing_danger or packets.is_empty()):
 				legal_network_gaps += 1
-	_check(peak_projectiles >= (40 if legal_casts else projectile_count), "%s requested load was actually reached" % label)
+	_check(peak_projectiles >= (1 if field_opening else (40 if legal_casts else projectile_count)), "%s requested projectile load was actually reached" % label)
+	if field_opening:
+		_check(peak_fields == SimConfig.MAX_ACTIVE_FIELDS, "legal paid opening reaches the existing world Field cap")
+		_check(int(field_observations.peak_per_owner) == SimConfig.MAX_FIELDS_PER_PLAYER, "legal paid opening reaches the existing owner Field cap")
+		_check(int(field_observations.triggers) >= 8, "Fields really trigger on opposing actors, not only empty-space fixtures")
+		_check((field_observations.field_wires as Dictionary).size() == 8, "all eight real elemental Field identities release")
+		_check(int(cast_refusals.get("capacity",0)) >= 8, "a fifth Field attempt is refused before payment for every capped owner")
+	if mixed_deliveries:
+		for family: String in ["heavy", "rapid", "burst"]:
+			_check((paid_actors[family] as Dictionary).size() == 8 and int(actual_releases[family]) >= 8, "%s all eight actors really pay for %s and actual projectiles release" % [label, family])
 	if not legal_casts:
 		_check(world.projectiles.size() == projectile_count, "%s full projectile fixture survived the measurement window" % label)
 		_check(world.fields.size() == field_count, "%s full field fixture survived the measurement window" % label)
 	var cleanup_ticks := 0
-	while cleanup_ticks < CLEANUP_LIMIT and (not world.projectiles.is_empty() or not world.fields.is_empty() or _has_pending_cast(world)):
-		_check(world.step(_commands(world, false, reverse_commands)), "%s cleanup step" % label)
+	while cleanup_ticks < CLEANUP_LIMIT and (not world.projectiles.is_empty() or not world.fields.is_empty() or _has_pending_cast(world) or ((mixed_deliveries or field_opening) and (not world.deposits.is_empty() or not world.reactions.is_empty()))):
+		_check(world.step(_commands(world, false, reverse_commands, false, field_opening)), "%s cleanup step" % label)
 		peak_events = maxi(peak_events, world.combat_events.size())
 		_count_expiry(world, expiry_events)
 		cleanup_ticks += 1
 	_check(world.projectiles.is_empty() and world.fields.is_empty() and not _has_pending_cast(world), "%s all projectiles/fields/pending casts expire without forced clearing" % label)
+	if mixed_deliveries or field_opening:
+		_check(world.deposits.is_empty() and world.reactions.is_empty(), "%s terminal matter and reactions also expire without forced clearing" % label)
 	if not legal_casts:
 		_check(expiry_events[0] == projectile_count and expiry_events[1] == field_count, "%s every injected asset emits exactly one expiry" % label)
 	_check(world.combat_events.size() <= projectile_count + field_count + actor_count * 5, "%s events remain tick-scoped during simultaneous expiry" % label)
 	_check(world.step([]), "%s one idle step after cleanup" % label)
 	_check(world.combat_events.is_empty(), "%s previous expiry event batch is released on next tick" % label)
+	var stage_report := {}
+	for stage: String in stage_samples:
+		_check((stage_samples[stage] as PackedInt64Array).size() == sample_ticks, "%s every stage includes every measured tick" % label)
+		stage_report[stage] = _percentiles(stage_samples[stage])
+	if field_opening:
+		for family: String in ["heavy","rapid","burst"]:
+			actual_releases[family] = int(field_observations.releases_by_family.get(family,0))
+	var field_phase_report := {}
+	for phase: String in field_phase_samples:
+		var bucket: Dictionary = field_phase_samples[phase]
+		field_phase_report[phase] = {"ticks":(bucket.step as PackedInt64Array).size()}
+		for stage: String in bucket:
+			field_phase_report[phase][stage+"_us"] = _percentiles(bucket[stage])
 	return {
 		"scenario": label, "actor_count": actor_count, "obstacle_count": obstacle_count,
 		"obstacle_path": "legacy linear" if OS.get_cmdline_user_args().has("--linear-obstacles") else "indexed with bounded/small-map fallback",
 		"source": "ordinary paid spell commands" if legal_casts else "offline initial-state load fixture; ordinary authoritative updates",
 		"sample_ticks": sample_ticks, "tick_us": _percentiles(samples), "ticks_over_8333_us": over_budget_ticks,
 		"peak_projectiles": peak_projectiles, "peak_fields": peak_fields, "peak_events": peak_events,
+		"peak_deposits": peak_deposits, "peak_reactions": peak_reactions,
+		"paid_starts_by_delivery": field_observations.paid_by_family if field_opening else paid_starts, "projectile_releases_by_delivery": actual_releases, "cast_refusals_by_reason": cast_refusals,
+		"field_opening_observations": field_observations if field_opening else {},
+		"field_phase_timings": field_phase_report,
+		"authority_caps": {"projectiles":SimConfig.MAX_ACTIVE_PROJECTILES,"fields":SimConfig.MAX_ACTIVE_FIELDS,"owner_projectiles":SimConfig.MAX_PROJECTILES_PER_PLAYER,"owner_fields":SimConfig.MAX_FIELDS_PER_PLAYER,"deposits":ElementChemistrySystem.MAX_DEPOSITS,"reactions":ElementChemistrySystem.MAX_REACTIONS},
+		"stage_mirror_us": stage_report, "slowest_stage_samples": slowest_stages,
 		"snapshot_samples": snapshot_count, "snapshot_capture_and_pack_us": _percentiles(snapshot_samples),
 		"peak_snapshot_raw_bytes": peak_raw_bytes, "peak_candidate_wire_bytes": peak_wire_bytes,
 		"peak_datagram_bytes": peak_datagram_bytes, "peak_datagram_count": peak_datagram_count,
@@ -194,7 +287,7 @@ func _run_scenario(label: String, actor_count: int, projectile_count: int, field
 	}
 
 
-func _make_world(actor_count: int, obstacle_count: int) -> SimWorld:
+func _make_world(actor_count: int, obstacle_count: int, mixed_deliveries: bool = false, field_opening: bool = false) -> SimWorld:
 	var collision := CollisionWorld.new(12_000_000, 6_000_000)
 	for index: int in range(obstacle_count):
 		var x := 7_000_000 + (index % 8) * 400_000
@@ -212,6 +305,25 @@ func _make_world(actor_count: int, obstacle_count: int) -> SimWorld:
 		state.position_y = 2_000_000 + (index / 8) * 300_000
 		state.team_id = index + 1
 		_check(state.place_proven_spell(0, CombatTuning.ELEMENTAL_BURST_WIRE_IDS[index % 8]), "fixture equips a real elemental Burst")
+		if mixed_deliveries:
+			_check(state.place_proven_spell(0, 179 + (index % 8) * 2), "mixed fixture equips the actual elemental Heavy")
+			_check(state.place_proven_spell(1, 180 + (index % 8) * 2), "mixed fixture equips the actual elemental Rapid")
+			_check(state.place_proven_spell(2, CombatTuning.ELEMENTAL_BURST_WIRE_IDS[index % 8]), "mixed fixture keeps the actual elemental Wave")
+		if field_opening:
+			# Four paired lanes make the existing non-damaging Fields actually
+			# trigger. No health/Flux refill or cooldown/placement bypass.
+			@warning_ignore("integer_division")
+			state.position_x = 1_000_000 + (index / 2) * 600_000
+			state.position_y = 2_000_000 + (index % 2) * 220_000
+			var other_elements := ["fire","water","earth","wind","charge","light","dark"]
+			for slot: int in range(5):
+				var element := "ice" if slot == 0 else String(other_elements[(index+slot-1)%7])
+				var definition := abilities.ability(abilities.spell_id_at(element,"field"))
+				_check(int(definition.get("flux_cost",0)) > 0, "Field opening uses a positive-cost authored spell")
+				_check(state.place_proven_spell(slot,int(definition.wire_id)), "Field opening equips real independent Field slots")
+			_check(state.place_proven_spell(5,179+(index%8)*2), "Field opening equips a real Heavy")
+			_check(state.place_proven_spell(6,180+(index%8)*2), "Field opening equips a real Rapid")
+			_check(state.place_proven_spell(7,CombatTuning.ELEMENTAL_BURST_WIRE_IDS[index%8]), "Field opening equips a real Wave")
 		world.players.append(state)
 	if OS.get_cmdline_user_args().has("--linear-obstacles"):
 		var legacy_array := collision.obstacles
@@ -219,14 +331,35 @@ func _make_world(actor_count: int, obstacle_count: int) -> SimWorld:
 	return world
 
 
-func _commands(world: SimWorld, allow_casts: bool, reverse_order: bool) -> Array[SimCommand]:
+func _commands(world: SimWorld, allow_casts: bool, reverse_order: bool, mixed_deliveries: bool = false, field_opening: bool = false) -> Array[SimCommand]:
 	var commands: Array[SimCommand] = []
 	for state: PlayerState in world.players:
 		# Parallel lanes keep actors alive and exercise real geometric target
 		# checks. No health refill, cooldown bypass or per-tick state rewrite.
 		var direction := 1000 if world.tick % 240 < 120 else -1000
 		var pressed := SimCommand.PRESSED_SPELL_1 if allow_casts and world.tick % 120 == 0 else 0
-		commands.append(SimCommand.new(world.tick, state.entity_id, direction, 0, 0, pressed, 0, -1000))
+		var held := 0
+		var aim_y := -1000
+		if mixed_deliveries and allow_casts:
+			var phase := (world.tick - WARMUP_TICKS) % 240
+			pressed = SimCommand.PRESSED_SPELL_1 if phase == 0 else (SimCommand.PRESSED_SPELL_3 if phase == 60 else 0)
+			held = SimCommand.SPELL_HELD_BITS[1] if phase >= 120 and phase < 200 else 0
+		if field_opening:
+			var phase := world.tick-WARMUP_TICKS
+			direction = 0 if phase < 240 else direction
+			aim_y = 1000 if state.entity_id%2 == 1 else -1000
+			pressed = 0
+			held = 0
+			if allow_casts:
+				if phase in [0,60,120,180,240]:
+					@warning_ignore("integer_division")
+					pressed = SimCommand.SPELL_PRESSED_BITS[phase/60]
+				elif phase == 330:
+					pressed = SimCommand.SPELL_PRESSED_BITS[7]
+				elif phase == 420:
+					pressed = SimCommand.SPELL_PRESSED_BITS[5]
+				held = SimCommand.SPELL_HELD_BITS[6] if phase >= 252 and phase < 312 else 0
+		commands.append(SimCommand.new(world.tick, state.entity_id, direction, 0, held, pressed, 0, aim_y))
 	if reverse_order:
 		commands.reverse()
 	return commands
@@ -248,6 +381,79 @@ func _seed_load(world: SimWorld, projectile_count: int, field_count: int) -> voi
 			int(field_definition["hit_control_state"]), int(field_definition["hit_control_duration_ms"]),
 			int(field_definition["hit_control_slow_ratio"])))
 		world.next_field_id += 1
+
+
+func _observe_field_opening(world: SimWorld,observed: Dictionary,refusals: Dictionary) -> void:
+	# Observation is outside the measured production step and never changes the
+	# world. Count released live Fields separately from paid startup reservations.
+	var by_owner := {}
+	for field: FieldState in world.fields:
+		by_owner[field.owner_id] = int(by_owner.get(field.owner_id,0))+1
+	observed.instance_ticks += world.fields.size()
+	observed.presence_ticks += int(not world.fields.is_empty())
+	observed.world_cap_ticks += int(world.fields.size() == SimConfig.MAX_ACTIVE_FIELDS)
+	var pending := 0
+	for actor: PlayerState in world.players:
+		var owned := int(by_owner.get(actor.entity_id,0))
+		observed.peak_per_owner = maxi(int(observed.peak_per_owner),owned)
+		observed.owner_cap_instance_ticks += int(owned == SimConfig.MAX_FIELDS_PER_PLAYER)
+		observed.minimum_actor_flux = mini(int(observed.minimum_actor_flux),actor.flux)
+		if actor.pending_cast_wire_id != 0 and String(CombatTuning.cast_definition(actor.pending_cast_wire_id).get("shape","")) == "field":
+			pending += 1
+	observed.peak_pending = maxi(int(observed.peak_pending),pending)
+	for reaction: ElementReactionState in world.reactions:
+		if world.tick-1 < reaction.active_tick:
+			observed.formation_reaction_instance_ticks += 1
+		elif reaction.active(world.tick-1):
+			observed.active_reaction_instance_ticks += 1
+		else:
+			observed.decay_reaction_instance_ticks += 1
+	for event: Dictionary in world.combat_events:
+		var kind := String(event.get("type",""))
+		var wire := int(event.get("wire_id",event.get("source_wire_id",0)))
+		var definition := abilities.ability_from_wire(wire)
+		var family := AbilityCatalog._spell_family(definition) if not definition.is_empty() else "unknown"
+		if kind == "cast_started":
+			var cost := int(CombatTuning.cast_definition(wire).get("flux_cost",0))
+			_check(cost > 0,"every observed cast start pays positive authored Flux")
+			observed.authored_flux_paid += cost
+			observed.paid_by_family[family] = int(observed.paid_by_family.get(family,0))+1
+			observed.paid_starts += int(family == "field")
+		elif kind in ["field_spawned","projectile_spawned"]:
+			observed.releases_by_family[family] = int(observed.releases_by_family.get(family,0))+1
+			if kind == "field_spawned":
+				observed.releases += 1
+				observed.field_wires[wire] = int(observed.field_wires.get(wire,0))+1
+		elif kind == "field_triggered":
+			observed.triggers += 1
+		elif kind == "cast_refused":
+			var reason := String(event.get("reason","unknown"))
+			refusals[reason] = int(refusals.get(reason,0))+1
+			var key := family+":"+reason
+			observed.refusals_by_family[key] = int(observed.refusals_by_family.get(key,0))+1
+
+
+func _record_field_phase(world: SimWorld,step_us: int,times: Dictionary,samples: Dictionary) -> void:
+	# Conditional timing buckets overlap intentionally: a capped tick also
+	# belongs to fields_live, and may contain real projectiles. This avoids
+	# mistaking the later no-Field tail for the cost of the saturated opening.
+	var phases: Array[String] = []
+	if not world.fields.is_empty():
+		phases.append("fields_live")
+		if world.fields.size() == SimConfig.MAX_ACTIVE_FIELDS:
+			phases.append("field_cap")
+		if not world.projectiles.is_empty():
+			phases.append("fields_and_projectiles")
+	elif not world.reactions.is_empty():
+		phases.append("reaction_tail")
+	for phase: String in phases:
+		if not samples.has(phase):
+			samples[phase] = {"step":PackedInt64Array(),"projectiles":PackedInt64Array(),"fields":PackedInt64Array(),"chemistry":PackedInt64Array(),"capacity":PackedInt64Array()}
+		var bucket: Dictionary = samples[phase]
+		for stage: String in bucket:
+			var values: PackedInt64Array = bucket[stage]
+			values.append(step_us if stage == "step" else int(times[stage]))
+			bucket[stage] = values
 
 
 func _has_pending_cast(world: SimWorld) -> bool:

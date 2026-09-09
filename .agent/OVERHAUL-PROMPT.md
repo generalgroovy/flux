@@ -1,203 +1,39 @@
-# Prompt: continue the FLUX overhaul
+# FLUX continuation prompt
 
-Act as FLUX's principal gameplay, systems, rendering, pixel-art integration,
-UX, QA, networking and release engineer. Continue from the newest green commit
-on `main`, keeping `codex/continuous-overhaul` unified as a compatibility branch. Read `README.md`, `AGENTS.md` when it applies,
-`.agent/VISUAL-OVERHAUL.md`, `.agent/OVERHAUL-IMPLEMENTATION.md`,
-`.agent/DELIVERY-EFFICIENCY.md`, `.agent/CONTINUOUS-IMPLEMENTATION-PROMPT.md`, `.agent/memory.md`,
-`.agent/BACKLOG.md`, the newest `.agent/WORKLOG.md` entry and
-`docs/PLAYER-EXPERIENCE-OVERHAUL.md`, `docs/FOUNDATION-SYSTEMS.md` and
-`docs/VISUAL-DIRECTION.md` before editing. Runtime truth and tests outrank stale
-prose; correct stale prose in the same slice.
+Read SPECIFICATION.md, README.md, .agent/OVERHAUL-IMPLEMENTATION.md,
+docs/CURRENT-CAST.md and the next slice's focused files. Inspect Git status;
+preserve existing work. Execute the next bounded queue slice, not retired plans.
 
-## Hard priority
+Reuse tested systems; keep simulation/presentation separate. Sprites follow
+three-size/eight-direction true-alpha registration with real contacts. Work on
+generic Small first, then Middle and Large. September9 reopens race production;
+read docs/RACE-VISUAL-ROLLOUT.md and the R0-R5 queue. A construction diagram,
+direction label, portrait or partial proof is not a completed sprite template.
+Use the same assembler and renderer; promote complete visually reviewed
+identities one at a time. Pixel matter follows exact authority.
+For the later character styling pass, use the new reference in
+reference/art/cast_style_post_templates_v1 over the accepted general templates.
+Complete all live animation/action mappings in eight directions before that pass;
+80 occupied cells alone are not animation acceptance. Never bake the reference's
+spell effects, shadows, props or parchment into body pixels or infer roster changes.
+Reject invalid artwork rather than disguising failure.
 
-Latest feedback (2026-09-06) authorizes low projectile-clearing jump, finite
-size-limited Float, V Evade / Q Technique, a cursor aiming sight and the complete
-first-eight chemistry slice. Work on protocol 43 / snapshot 18 / preferences 11.
-Preserve fixed 120 Hz, 5x Stamina pools, prior speed and resource ramps, three body
-sizes/eight directions, all 12 spell positions, five playable champions and solid
-worldbone. Jump is approximately 22/28.9 px tap/held; above 18 px clears low ground
-projectiles, not beams/areas/explosions. Float remains 24 + chain then 100 Stamina/s;
-small/middle/large cap 1800/1500/1200 ms, independent of walljump, one per airtime.
-Only actual landing restores spent Float/dodge. Preserve all customized bindings;
-migrate only the complete old default keyboard map. Pointer coordinates are
-authority-validated command targets, never client-owned hit decisions.
+Prefer compact, source-derived tables/matrices and clear selection feedback in
+menus; keep full rules available under Details. Avoid changing costs, physics or
+chemistry to suit the visual presentation. September9 explicitly authorizes
+slower/larger projectiles and a larger map/effect footprint; implement each with
+authoritative geometry/rendering checks. Measure stride from actual ground
+travel and preserve anatomy, foot registration and readable eight-way facing.
 
-Finish bounded 2-5 second deposits and all 36 actual spatial pair effects, distinct
-code-native deposit/impact/reaction rendering, lifecycle/reset/replay/visibility/
-refraction and complete Farflow replication. Rendering reads actual authority
-geometry/phase; it never fabricates a mechanic. Positive recovery suppression
-does not erase quiet ages or prohibit spending. Catalog coverage and a visual
-specimen do not prove usable chemistry. Use focused suites, then Full/import/
-120 Hz source boot, local Farflow and live integrated standard/reduced captures
-before declaring acceptance. Pause for the user at the chemistry playtest gate.
-Do not expand maps/roster/forms/material drift or publish remotely during this
-bounded source slice. Installer signing and physical internet play remain
-separate acceptance. All earlier instructions below are historical/subordinate.
+Run focused tests, real captures for visuals and Full at checkpoints. Update
+queue/worklog with exact results and limitations. No automatic commits/pushes/
+publication/security changes. Stop safely with at least 10% weekly allowance
+remaining (user changed the active cutoff on 2026-09-09), reserving closeout
+headroom before beginning another slice. Historical 40%/50%/75% receipts do not
+override this active floor. A revised budget alone is not a request to start work.
 
-Newest feedback (2026-09-06) resumes one expressive-airborne slice after
-`fd1898d`: 5x Stamina capacities, 15% faster running, physical short/full/double
-jumps with continuous height, one air dodge per actual airtime, landing-ready
-chains, unambiguous authoritative protection and slight render interpolation.
-Keep fixed 120 Hz authority, no vault, no height-based worldbone bypass, all
-three body sizes/eight directions and bounded multiplayer state. Restore a
-verified source playtest checkpoint before new scope. Remote publishing remains
-pending explicit approval after the previous safety-review rejection.
-
-Latest explicit authorization (2026-09-06): implement movement M1-M5 and its
-all-body/eight-direction visual clarity, then return a verified playable
-checkpoint to the user. The canonical ledger is
-`docs/MOVEMENT-M1-M5-ACCEPTANCE.md`. Protocol 40 / snapshot 15 preserve the new
-movement state. This movement-only request supersedes all continuing queues
-below for this batch; do not expand chemistry, maps, spells or the roster.
-
-Current coordinated checkpoint: follow `.agent/TEAM-ITERATION-PROMPT.md` and
-`docs/TEAM-FOUNDATION-ACCEPTANCE.md`; complete the Full/Farflow/compendium proof
-before further expansion. Preserve protocol-39 complete-threat admission and
-replication, source-derived player information and the chemistry playtest pause.
-
-Latest user override: G0-G5 in `docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md`
-now leads. Correct proven control defects, raise jump presentation, finish the
-element/form visual grid, implement finite 2-5 second replicated deposits, then
-Steam and the remaining first-level pairs. Keep every slice playable and tested.
-This named authorization supersedes older blanket freezes below. Preserve the
-chemistry playtest pause and do not treat a compiled recipe as a working effect.
-
-Newest user override: U1-U5 in `docs/CLARITY-AND-CONTROL-ITERATION.md` takes
-priority: shared Baron anatomy, single-element clarity, drag/drop spell catalog,
-clean guidance and lift-only/input-steered jumps. This authorizes those named
-mechanical changes; no hybrids or chemistry mutation is implied.
-
-Latest user revision reopens the live visual gate: implement R1-R4 in
-`docs/VISUAL-REFINEMENT-ACCEPTANCE.md` before chemistry. Match concept material
-richness and a user-friendly elevated/cardinal camera across map and bodies.
-
-Historical visual baseline: D7 scored 4.64/5 with every category at least
-4.5, and V10 keeps actor ownership plus an escape lane through projectile,
-beam, spray and field density at 50/75/100%, grayscale and reduced effects.
-Treat those earlier gates as the minimum bar; they are not acceptance of the
-user-requested v13/illustrated replacement. Complete its integrated review first.
-
-Current C2.5 checkpoint: Oh Tipi, S. Wayne and The Red Baron exercise middle,
-small and large equal-budget roles. All three share collision and universal
-movement; The Red Baron adds body/clothing-only eight-way art, the editable
-`iron_regent` motion profile, Fire Cinderbolt and Ice Rimewake. Continuous
-analog movement/aim, normalized digital diagonals and simulation authority
-remain unchanged. Cinder Fan now supplies the deterministic readable five-shot
-acceptance, and all three champions share a cell-bounded exterior ink derived
-from The Red Baron's material language without palette or scale replacement.
-The eight mechanically comparable first-eight Bursts are source-green and have
-truthful 120 Hz comparison evidence. C5 reaction definitions and C5.5 current
-truth/tooling/roster adapters are complete. The current map/movement source
-acceptance ledger is docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md.
-The map-first campus/M0-M2 revision is implemented: explicit Evade, no vault,
-slide protection/brake and contact wallrun/finite air-wall jumps. Next C6
-exposure/contact; material motion is neutral and landing burst excluded. Do not
-restore vaulting through a new map, context action or character. Unsigned Windows installer trust
-remains a separate release blocker; do not weaken security or claim install
-acceptance. Apply the explicit O0–O14 design,
-architecture, release, asset, testing, measured-feel and visual-cohesion rules
-from `.agent/OPTIMIZATION-IMPLEMENTATION.md` at their assigned seams; do not
-turn them into a detached rewrite.
-
-Use the player-experience contract as the product filter: each addition must
-create a readable decision, combine with existing systems, carry an honest
-cost/counter and teach failure through one actionable cause. Depth comes from
-movement, geometry, elements, world state and social timing composing; option,
-particle and text count are not quality measures.
-
-Make the Wellspring and GUI match the charm, density, readable perspective and
-material richness of the supplied gameplay reference while remaining wholly
-original and more useful for play. Preserve the wider 75% default overview and
-50/75/100% zoom. Build dense scenic edges around quiet readable lanes; use warm
-masonry, dark timber, aged brass, deep water, gardens, banners, runes and
-controlled elemental light. Replace schematic buildings, tiny/debug bodies and
-the text-heavy top strip with production-quality original pixel presentation.
-Use moderately tilted facades above unambiguous top-down floors, predictable
-roof/canopy cutaways, expressive Oh Tipi and S. Wayne silhouettes, readable
-jump shadows, restrained affinity auras, distinct spell shapes, translucent
-bubbles/prompts and a compact brass/parchment HUD.
-
-The HUD must show portrait, Health, Flux, Stamina, network state when relevant,
-the active Plain/Ctrl/Alt layer and exactly four active spell cells. The system
-still has twelve independently configurable positions—Plain 1–4, Ctrl+1–4 and
-Alt+1–4. Do not copy the reference's fifth button. Keep detailed information in
-fast translucent station/overview panels so the main frame shows routes,
-landmarks, players, threats and interaction options.
-
-Work through visual tokens/pixel pipeline, the exact `small`/`middle`/`large`
-body system, eight-direction movement and animation coverage for every gameplay-critical state,
-three foundation champions,
-Wellspring environment, current spell visuals, GUI/interactions and integrated
-acceptance in that exact order. Do not accept a concept image, manifest,
-placeholder or isolated specimen as completion: the improvement must run in the
-actual game. Champion atlases contain only body and clothing: south/front faces
-the camera symmetrically, north is centered back, sides are profiles and all
-four diagonals preserve ancestry/clothing identity. Every gameplay-critical
-animation and non-spell movement family must select a valid frame in all eight
-directions before the visual gate
-can advance; compose empty-hand casting, aura, shadow, projectile, equipment
-and environment in separate reusable layers. Capture and inspect
-720p/1080p frames at relevant zooms, ordinary
-and reduced effects, grayscale and common color-vision simulations, with
-collision/cutaway diagnostics. Require at least 4/5 in every visual rubric
-category and a 4.5/5 mean. Preserve fixed-tick authority and the last pushed
-green rollback point throughout.
-
-## Current execution order
-
-V0–V10, universal non-ability movement, natural reusable motion/environment,
-the explicit transition matrix and positive-Flux cadence foundation are green.
-Continue in the authoritative order from `.agent/BACKLOG.md`: five-shot pattern
-simulation and eight first-element burst entries (complete), strict reaction
-catalog and current-truth/live-manifest migration (complete), map + M0-M2 (implemented candidate), exposure/contact, shared
-reaction primitives, lifecycle/presentation, and the Crucible playtest package.
-At the required playtest pause, use measured feedback for the existing movement
-grammar and maintained visual hierarchy, then execute F0–F7 from
-`docs/FOUNDATION-SYSTEMS.md` to harden composable gameplay kernels and the
-production-path player/developer sandbox before adding techniques, champions,
-elements, spell types, ancestries, maps or modes. Do not add another champion
-before the three current roles are validated under pattern pressure.
-
-## Operating discipline
-
-At each slice, inspect branch/status/history and current captures; name one
-observable outcome and its deterministic, visual, accessibility, network and
-platform checks; implement it without touching unrelated user files; run focused
-and full tests, imports, an independent 120 Hz boot, applicable Farflow journeys
-and live frame/interactive review; inspect stderr, diff, MTU/performance and
-asset provenance; update the canonical docs and handoff state; commit and push
-one reversible green checkpoint. Always keep the Windows source/package
-launchable; preserve existing Linux source scripts but make no new Linux
-release or acceptance claim in the current scope.
-the published commit playable. Never copy protected assets or claim tests,
-visual quality, balance, platform parity or remote play without direct evidence.
-
-## Immediate eight-direction movement/animation iteration
-
-Continue from the integrated v13 foundation atlas: preserve the validated resolver
-for `south`, `south_east`, `east`, `north_east`, `north`, `north_west`, `west`,
-and `south_west`, the two walk/sprint contacts, and native eight-way evasion art
-while expanding one complete action family at a time on future champions and body contracts. Travel direction and facing
-direction remain distinct: free locomotion can face travel; aiming/casting uses
-aim-facing forward/back/strafe gait. Keyboard diagonals stay normalized and
-controller/mouse vectors stay continuous.
-Keep body/clothing pixels, hand-cast effects, shadows, auras, projectiles and
-environment in independent layers; do not change simulation authority, input,
-collision, timing, resource costs, cooldowns or network rules. Use data-driven
-direction mappings, boundary/hysteresis tests, fail-closed schema checks, stable feet pivots, nearest
-sampling and deterministic 120 Hz contact-frame selection. Add focused tests before
-editing art, run the full Windows gate and source/imported boots, inspect
-eight-direction movement/facing matrix captures at 50/75/100% plus reduced/high-contrast/grayscale
-modes, update `README.md`, `.agent/BACKLOG.md`, `.agent/memory.md` and
-`.agent/WORKLOG.md`, then commit and push one reversible green checkpoint.
-Immediately start the next visual substep after the checkpoint; pause only for
-a real blocker or when the integrated V0–V6 rubric is honestly evidenced.
-# Checkpoint override: paused for user playtest
-
-2026-09-06: Full81suites/165,441assertions and source startup pass. Low hop,
-size-limitedFloat, V/Q migration and all36 bounded first-grade reactions are
-source-verified; see `docs/LOW-HOP-CHEMISTRY-CHECKPOINT.md`. The user requested
-pause and run. Do not continue features until resumed. Heavy-load timing fails
-the8.333ms budget despite correctness passes; profile next, never claim120FPS.
+For delegated work, use docs/AI-DELEGATION-RESEARCH.md and the focused roles in
+.codex/agents. The primary agent assigns exact file ownership, prevents competing
+writers, and integrates/tests the result. One integration owner plus at most
+three bounded workers; serialize Godot Full/export and local model inference.
+The local model is an offline advisor, not an autonomous code executor.

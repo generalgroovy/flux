@@ -2,6 +2,7 @@ class_name SessionRequestPolicy
 extends RefCounted
 
 
+const Attunement = preload("res://src/app/champion_attunement.gd")
 const ACCEPTED: int = 0
 const REFUSED_COOLDOWN: int = 1
 const REFUSED_DISTANCE: int = 2
@@ -25,7 +26,9 @@ static func validate(
 			return ACCEPTED if world_tick >= emote_ready_tick else REFUSED_COOLDOWN
 		SessionTransport.REQUEST_TRAINING_RESET:
 			return ACCEPTED if _focused_station(state, stations_by_id) == "training-reset" else REFUSED_DISTANCE
-		SessionTransport.REQUEST_CHAMPION_NEXT:
+		SessionTransport.REQUEST_CHAMPION_NEXT, SessionTransport.REQUEST_CHAMPION_SELECT:
+			if not Attunement.is_available(state):
+				return REFUSED_UNAVAILABLE
 			return ACCEPTED if _focused_station(state, stations_by_id) == "champion-loom" else REFUSED_DISTANCE
 		SessionTransport.REQUEST_SPELL_EQUIP:
 			return ACCEPTED if _focused_station(state, stations_by_id) == "spell-loom" else REFUSED_DISTANCE

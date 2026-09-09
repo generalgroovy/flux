@@ -1,0 +1,2 @@
+C:\Users\sende\Projects\flux\exports\windows-cast-gallery-p47-20260908\release\FLUX.exe
+"--quiet" "--print-install-root" "--install-root=C:\Users\sende\Projects\flux\.godot\bootstrap-test\run 633592f8222244fba64875b4629d1378\update fixture with spaces"

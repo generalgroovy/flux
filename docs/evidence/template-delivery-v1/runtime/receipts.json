@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-09",
+  "note": "Historical drill plus one approved batch trial; file manifest excludes itself; root integration gates remain separate",
+  "files": [
+    {
+      "name": ".gdignore",
+      "bytes": 1,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "name": "BATCH-CANDIDATE.md",
+      "bytes": 7488,
+      "sha256": "42d67830eaa89463db240d687d889ef2e4219cc10a403cbff01b20e8f219497d"
+    },
+    {
+      "name": "batch-comparison.json",
+      "bytes": 12628,
+      "sha256": "41b15ed3915288bfb171232f833db48b4cf24396c455971fbfef0d30c260a7d4"
+    },
+    {
+      "name": "batch-edges-v3.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "batch-edges-v3.log",
+      "bytes": 2962,
+      "sha256": "dfcfaa800a1f363ac6ee50cd0959d472d6a14eb51f30b3b994eefca4538f019f"
+    },
+    {
+      "name": "drill-summary.json",
+      "bytes": 28033,
+      "sha256": "307b79e41d4531174f37ff0f048a1e5ba929959a72e96fefd7b5bad6a5e0abd2"
+    },
+    {
+      "name": "failed-typed-array-attempt.zip",
+      "bytes": 99963,
+      "sha256": "ddc56f4265d0e90be6878178910267458e044b651543485a892314c7d29409fe"
+    },
+    {
+      "name": "field-batch-oracle-v2.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "field-batch-oracle-v2.log",
+      "bytes": 502829,
+      "sha256": "894f31fd6cbb5677f0c80e3bd12f868356ea46e95b8eac041114c1d67d3ca934"
+    },
+    {
+      "name": "mixed-batch-baseline.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "mixed-batch-baseline.log",
+      "bytes": 10898,
+      "sha256": "1a0c1b32cbc3438633c8e99f94b729c7751d1ad087351c7171890a19409cd7b7"
+    },
+    {
+      "name": "mixed-batch-candidate-v2.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "mixed-batch-candidate-v2.log",
+      "bytes": 10863,
+      "sha256": "e2673f6f998590200a8ac894d854bbe5785fe4804ff86c22b2a45f590387910e"
+    },
+    {
+      "name": "mixed-batch-oracle-v2.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "mixed-batch-oracle-v2.log",
+      "bytes": 511704,
+      "sha256": "ad05511fc56d44e7a5ede220b86ea78c70a1704c2f5494515923a646605cc4f0"
+    },
+    {
+      "name": "projectile-drill.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "projectile-drill.log",
+      "bytes": 512337,
+      "sha256": "fa5418a25a83d381b7a9d840976cacc5439c698ad796077dfabbc36f7b7c87ee"
+    },
+    {
+      "name": "README.md",
+      "bytes": 8706,
+      "sha256": "292270060a8e635b175408db0522aeebb0baea117806f65bc6c83a9725ab6d05"
+    }
+  ]
+}

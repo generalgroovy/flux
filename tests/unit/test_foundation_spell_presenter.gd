@@ -1,6 +1,10 @@
 extends FluxTestSuite
 
 
+const Feedback = preload("res://src/presentation/combat_feedback_model.gd")
+const FeedbackHarness = preload("res://tests/support/combat_feedback_harness.gd")
+
+
 func run() -> int:
 	_test_repository_profiles()
 	_test_shared_direction_contract()
@@ -8,7 +12,170 @@ func run() -> int:
 	_test_projectile_presentation_motion()
 	_test_fail_closed_catalog_alignment()
 	_test_pixel_material_contract()
+	_test_pixel_heading_cue()
+	_test_pixel_family_weight_and_field_identity()
+	_test_truthful_combat_feedback()
+	_test_live_combat_feedback_hook()
 	return finish("foundation-spell-presenter")
+
+
+func _test_live_combat_feedback_hook() -> void:
+	var node := FeedbackHarness.new()
+	node.ability_catalog = AbilityCatalog.new()
+	check(node.ability_catalog.load_from_file("res://content/abilities/foundation_abilities_v1.json"), "live feedback hook catalog loads")
+	node.visual_language = VisualLanguage.new()
+	check(node.visual_language.load_from_file(), "live feedback hook uses validated element colors")
+	node.world = SimWorld.new(120)
+	var target := PlayerState.new(2)
+	target.position_x = 400000
+	target.position_y = 300000
+	node.world.players.append(target)
+	var before := target.canonical_values()
+	var events: Array[Dictionary] = [
+		{"type": "beam_fired", "source_wire_id": 155, "owner_id": 1, "target_id": 2, "end_x": 400000, "end_y": 300000, "origin_x": 200000, "origin_y": 300000},
+		{"type": "spray_hit", "source_wire_id": 164, "owner_id": 1, "target_id": 2, "damage": 7000},
+		{"type": "field_triggered", "source_wire_id": 156, "owner_id": 1, "target_id": 2, "field_id": 4000},
+	]
+	node._ingest_combat_cues(events)
+	equal(node.combat_cues.size(), 3, "actual bootstrap hook creates exactly the admitted feedback cues")
+	for index: int in range(events.size()):
+		var cue: Dictionary = node.combat_cues[index]
+		var description := Feedback.describe(events[index], node.ability_catalog)
+		equal(cue.label, description.label, "live ingestion uses truthful model copy")
+		equal(cue.color, node.visual_language.element_color(description.element, "bright"), "live ingestion uses the correct source-element accent")
+		equal(cue.position, Vector2(400, 300), "existing authoritative cue anchor stays unchanged")
+		equal(cue.duration, 0.20 if index == 0 else 0.55, "live ingestion preserves the existing finite cue duration")
+	equal(node.combat_cues[0].start, Vector2(200, 300), "Beam origin stays exact and is never inferred from label metadata")
+	equal(node.combat_cues[0].end, Vector2(400, 300), "Beam endpoint stays exact")
+	node._update_combat_cues(0.21)
+	equal(node.combat_cues.size(), 2, "Beam feedback still expires after its original 0.20 seconds")
+	node._update_combat_cues(0.35)
+	check(node.combat_cues.is_empty(), "all contacts still expire after their original 0.55 seconds")
+	for unused: int in range(30):
+		node._ingest_combat_cues([events[1]])
+	equal(node.combat_cues.size(), 24, "presentation retains its original 24-cue cap")
+	equal(target.canonical_values(), before, "real feedback path leaves player authority unchanged")
+	node.free()
+
+
+func _test_truthful_combat_feedback() -> void:
+	var catalog := AbilityCatalog.new()
+	check(catalog.load_from_file("res://content/abilities/foundation_abilities_v1.json"), "combat feedback reads the current validated catalog")
+	var original_catalog := catalog.data.duplicate(true)
+	for element: String in AbilityCatalog.FIRST_EIGHT_ELEMENTS:
+		for family: String in ["beam", "spray", "field"]:
+			var ability := catalog.ability(catalog.spell_id_at(element, family))
+			var wire_id := int(ability.wire_id)
+			var identity := String(ability.display_name).to_upper()
+			var kinds: Array = ["beam_fired"] if family == "beam" else (["spray_fired", "spray_hit"] if family == "spray" else ["field_triggered"])
+			for kind: String in kinds:
+				for hit: int in [0, 1]:
+					var event := {"type": kind, "source_wire_id": wire_id, "owner_id": 1, "target_id": hit, "damage": 3125, "hit_count": hit, "field_id": 4000, "end_x": 240000, "end_y": 360000}
+					var original := event.duplicate(true)
+					var feedback := Feedback.describe(event, catalog)
+					var expected := identity
+					match kind:
+						"beam_fired": expected += " · HIT" if hit > 0 else ""
+						"spray_fired": expected += " ×%d" % hit
+						"spray_hit": expected += " · -3.125"
+						"field_triggered": expected += " · CONTACT"
+					equal(feedback.label, expected, "feedback identifies the actual " + element + " " + family)
+					equal(feedback.element, element, "feedback color cannot borrow a different element")
+					check(not String(feedback.label).contains("SLOW") and not String(feedback.label).contains("LAUNCH"), "contact cannot assert a control outcome absent from the event")
+					var decoded := SessionSnapshot.decode_event(SessionSnapshot.encode_event(event))
+					equal(Feedback.describe(decoded, catalog), feedback, "host and guest use identical existing wire metadata for " + kind)
+					equal(event, original, "presentation leaves the semantic event untouched")
+					check(ThemeDB.fallback_font.get_string_size(feedback.label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x <= 180.0, "actual cue copy stays compact at the existing 11px font")
+	for amount: int in [0, 1, 125, 1000, 3125, 18000]:
+		var event := {"type": "projectile_hit", "source_wire_id": 145, "damage": amount}
+		var expected: String = {0: "HIT", 1: "-0.001", 125: "-0.125", 1000: "-1", 3125: "-3.125", 18000: "-18"}[amount]
+		equal(Feedback.describe(event, catalog).label, expected, "carried damage preserves exact milli-unit precision")
+	equal(Feedback.describe({"type": "beam_fired", "source_wire_id": 143, "target_id": 2, "damage": 0}, catalog).label, "POCKET ECLIPSE · HIT", "special Eclipse never invents damage or successful Slow")
+	equal(Feedback.describe({"type": "spray_hit", "source_wire_id": 141, "damage": 14000}, catalog).label, "TIDELINE · -14", "special Tideline keeps identity and reported damage without claiming Launch")
+	equal(Feedback.describe({"type": "field_triggered", "source_wire_id": 144}, catalog).label, "RIMEWAKE · CONTACT", "Rimewake contact does not imply Slow over forced movement")
+	equal(Feedback.describe({"type": "beam_fired", "source_wire_id": 99999, "target_id": 1}, catalog), {"label": "BEAM · HIT", "element": ""}, "unknown identity stays neutral without inventing a spell")
+	equal(Feedback.describe({"type": "beam_fired", "source_wire_id": 141, "target_id": 1}, catalog), {"label": "BEAM · HIT", "element": ""}, "mismatched spell family cannot borrow identity or color")
+	equal(Feedback.describe({"type": "beam_fired", "source_wire_id": 155}, null), {"label": "BEAM", "element": ""}, "missing catalog gets a neutral semantic fallback")
+	equal(Feedback.describe({"type": "beam_fired", "source_wire_id": 155}, AbilityCatalog.new()), {"label": "BEAM", "element": ""}, "unvalidated catalog cannot supply identity")
+	equal(Feedback.describe({"type": "projectile_hit", "damage": -1}, catalog).label, "HIT", "invalid negative amount cannot appear as healing")
+	for kind: String in ["cast_started", "cast_refused", "cast_blocked", "field_expired", "unknown"]:
+		check(Feedback.describe({"type": kind, "source_wire_id": 155}, catalog).is_empty(), "unrelated events retain their existing presentation path")
+	equal(catalog.data, original_catalog, "feedback cannot change validated gameplay data")
+
+
+func _test_pixel_family_weight_and_field_identity() -> void:
+	var spell_source := FileAccess.get_file_as_string("res://src/presentation/pixel_spell_effects.gd")
+	check(not spell_source.contains("draw_polyline("), "Field and Spray do not draw separate range-circle or cone outlines")
+	var pixels := PixelSpellEffects.new()
+	for reduced: bool in [false, true]:
+		pixels.library.begin_frame(reduced)
+		for element: String in pixels.ELEMENTS:
+			for unused: int in range(100):
+				pixels.library.take_decoration(pixels.asset_id(element, "field_tile", reduced))
+		equal(pixels.library.decoration_remaining(), 0, "field identity fixture exhausts the shared optional budget")
+		for element: String in pixels.ELEMENTS:
+			var rapid := pixels.impact_profile(element, 5.0, reduced)
+			var ordinary := pixels.impact_profile(element, 10.0, reduced)
+			var heavy := pixels.impact_profile(element, 16.0, reduced)
+			equal(rapid.scale, 0.9375, "Rapid contact gains readability while remaining smaller than a Bolt")
+			equal(ordinary.scale, 1.875, "ordinary contact gets a bounded50percent readability expansion")
+			equal(heavy.scale, 3.0, "Heavy contact stays distinct from its damage footprint")
+			equal(pixels.impact_profile(element, 8.0, reduced).scale, 1.5, "default contacts share the same readable scale")
+			equal(rapid.opacity, 0.95 if reduced else 1.0, "reduced mode preserves contact identity without adding flashes")
+			equal(pixels.impact_profile(element, 0.1, reduced).scale, 0.75, "tiny valid sources retain a visible but bounded contact")
+			check(float(pixels.impact_profile(element, 1000.0, reduced).scale) <= pixels.MAX_IMPACT_SCALE, "cosmetic impact scale has a hard bound")
+			check(float(rapid.opacity) > 0.0 and float(heavy.opacity) <= 1.0, "radius scaling never creates overbright layers")
+			var lifetime := int(pixels.library.asset(heavy.asset_id).total_ticks)
+			check(not pixels.library.sample(heavy.asset_id, lifetime - 1).is_empty(), "contact retains its original one-shot animation")
+			check(pixels.library.sample(heavy.asset_id, lifetime).is_empty(), "Heavy contact expires at the original tick, not a scaled lifetime")
+			for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+				var tail := pixels.flight_tail_profile(element, Vector2.ZERO, Vector2(direction), 16.0, reduced)
+				check(float(tail.scale) <= pixels.MAX_TAIL_SCALE, "Heavy optional trail does not grow into a giant secondary threat")
+				check(is_equal_approx((tail.anchor as Vector2).length(), 16.0), "tail attachment still follows the real projectile radius")
+			var field := pixels.field_model(element, Vector2(128, 160), 48.0, 12, reduced)
+			check(not field.is_empty() and not field.core_frame.is_empty(), "all eight Fields preserve their element core after decoration is exhausted")
+			equal(field.core_asset_id, pixels.asset_id(element, "flight", reduced), "Field identity reuses the distinct existing element core in the selected effects mode")
+			equal(field.core_frame, pixels.library.sample(field.core_asset_id, 12), "Field core samples real immutable atlas frames at authoritative age")
+			equal(field.core_frame.size, Vector2(32, 32), "guaranteed identity remains a single unscaled native cell")
+			equal(field.frame, pixels.library.sample(pixels.asset_id(element, "field_tile", reduced), 12), "optional Field material tiles remain unchanged")
+			check(field.core_frame.region != field.frame.region, "guaranteed identity no longer repeats the sparse field-tile grains")
+			equal(field.core_opacity, 0.55 if reduced else 0.72, "core substitution preserves the accepted mode opacity")
+			equal(field.material_opacity, 0.10 if reduced else 0.20, "core substitution does not increase optional material density")
+			check(float(field.core_opacity) > float(field.material_opacity) and float(field.material_opacity) <= 0.20, "readable centre does not turn the field into an opaque area")
+			equal(field.core_anchor, Vector2(128, 160), "field identity is fixed to the authoritative centre")
+			for radius: float in [5.0, 16.0, 48.0, 90.0]:
+				field = pixels.field_model(element, Vector2(128, 160), radius, 12, reduced)
+				var parts := PixelEffectGeometry.clipped_frame_parts(field.core_frame, field.core_anchor, field.polygons)
+				check(not parts.is_empty(), "small and large field cores intersect their real mask")
+				for part: Dictionary in parts:
+					for point: Vector2 in part.points:
+						check(point.distance_to(field.core_anchor) <= radius + 0.001, "stronger native material cannot spill outside actual Field radius")
+			equal(pixels.library.decoration_remaining(), 0, "field modeling cannot replenish the optional budget")
+	for radius: float in [0.0, -1.0, NAN, INF]:
+		check(pixels.impact_profile("fire", radius, false).is_empty(), "invalid radius cannot create an impact")
+		check(pixels.field_model("fire", Vector2.ZERO, radius, 0, false).is_empty(), "invalid radius cannot create a Field")
+	check(pixels.impact_profile("missing", 16, false).is_empty(), "unknown element cannot borrow an impact")
+	check(pixels.field_model("water", Vector2.ZERO, 48, -1, false).is_empty(), "negative Field age is not rendered")
+
+
+func _test_pixel_heading_cue() -> void:
+	var pixels := PixelSpellEffects.new()
+	for element: String in pixels.ELEMENTS:
+		for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+			var heading := Vector2(direction)
+			var origin := Vector2(150, 200)
+			var normal := pixels.flight_tail_profile(element, origin, heading, 10.0, false)
+			var reduced := pixels.flight_tail_profile(element, origin, heading, 10.0, true)
+			check(not normal.is_empty() and not reduced.is_empty(), "all eight elements/directions retain a normal and reduced heading cue")
+			equal(normal.anchor, reduced.anchor, "reduced mode preserves the actual travel attachment")
+			check((origin - (reduced.anchor as Vector2)).dot(heading) > 0.0, "tail stays behind real travel, not facing or camera direction")
+			check(is_equal_approx(float(reduced.angle), heading.angle()), "tail preserves continuous travel orientation")
+			check(float(reduced.scale) < float(normal.scale) and float(reduced.opacity) < float(normal.opacity), "reduced cue is shorter and quieter, never a larger threat")
+			check(not pixels.library.sample(reduced.asset_id, 0).is_empty(), "heading cue uses an existing reduced pixel asset")
+	for direction: Vector2 in [Vector2.ZERO, Vector2(INF, 0), Vector2(NAN, 1)]:
+		check(pixels.flight_tail_profile("fire", Vector2.ZERO, direction, 10, false).is_empty(), "invalid/stationary heading cannot invent a tail")
+	check(pixels.flight_tail_profile("missing", Vector2.ZERO, Vector2.RIGHT, 10, false).is_empty(), "unknown element has no heading art")
+	check(pixels.flight_tail_profile("fire", Vector2.ZERO, Vector2.RIGHT, 0, false).is_empty(), "zero radius has no heading art")
 
 
 func _test_pixel_material_contract() -> void:
@@ -50,7 +217,7 @@ func _test_repository_profiles() -> void:
 	check(catalog.load_from_file("res://content/abilities/foundation_abilities_v1.json"), "ability catalog loads for spell presentation")
 	var presenter := FoundationSpellPresenter.new()
 	check(presenter.configure(language, catalog), "foundation spell presentation validates: %s" % presenter.last_error)
-	equal(presenter.profiles_by_id.size(), 41, "every runtime spell has an authored or reusable family visual profile")
+	equal(presenter.profiles_by_id.size(), 57, "every runtime spell has an authored or reusable family visual profile")
 	equal(presenter.profiles_by_wire.size(), catalog.runtime_wire_ids.size(), "no runtime spell can fall through to invisible presentation")
 	equal(presenter.animation_skeletons.skeletons.size(), 4, "foundation spells share four reusable delivery skeletons")
 	check(presenter.animation_skeleton_hash.length() == 64, "foundation spell presentation exposes the skeleton content hash")

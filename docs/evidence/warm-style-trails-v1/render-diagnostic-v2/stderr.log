@@ -1,0 +1,7 @@
+ERROR: Invalid polygon data, triangulation failed.
+   at: canvas_item_add_polygon (servers/rendering/renderer_canvas_cull.cpp:1770)
+   GDScript backtrace (most recent call first):
+       [0] _draw_model (res://src/presentation/element_chemistry_presenter.gd:226)
+       [1] draw_deposit (res://src/presentation/element_chemistry_presenter.gd:195)
+       [2] _draw_element_chemistry (res://src/app/bootstrap.gd:3294)
+       [3] _draw (res://src/app/bootstrap.gd:1033)

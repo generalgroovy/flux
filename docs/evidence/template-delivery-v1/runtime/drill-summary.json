@@ -1,0 +1,1042 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-09",
+  "scope": "one current-source paired investigation; no production optimization attempted",
+  "metadata": {
+    "cpu": "AMD Ryzen 3 7320U with Radeon Graphics",
+    "engine": "4.7.1-stable (official)",
+    "geometry": "fixed 12000000x6000000,zero obstacles,no live map JSON",
+    "scenario": "legal-eight-mixed-deliveries",
+    "seed": 608120,
+    "source_sha256": {
+      "content/abilities/foundation_abilities_v1.json": "60c3f233ba996776b4ebbbb5089632d8376e9bc1d1da517ba4c139f5533cd835",
+      "content/champions/foundation_champions_v1.json": "e7c2aa60244bbaea097a28ae5d55c2a2c6cd604685d3bcec60d82988f5211e99",
+      "src/sim/chemistry/element_chemistry_system.gd": "b0596612896e2c475994894a99aff40ed2e047866d1ec536eec767bd66d8b28f",
+      "src/sim/combat/combat_system.gd": "788cc518ef1b59ae042b58792b777cc45d26296425a4ecd5a5fcc1a907f6b874",
+      "src/sim/core/sim_world.gd": "8acc7c3539776c9c8d0d2ad308563083becfe8d07274a276646ea63ece008112",
+      "src/sim/world/collision_world.gd": "377ef92412714fe58ff0358fb956bbf3ea89420b51843be6e8e5d6ca7df94605",
+      "tests/scenarios/runtime_drill_chemistry.gd": "931bf738929dff19a6ae5c1d08abef109fa99162d8bcb63497b184eeb9162aca",
+      "tests/scenarios/runtime_drill_combat.gd": "55d95de76b94cea563a3fcd758ad63b2273f7b78f28fd17c4e04d1214496daec",
+      "tests/scenarios/runtime_drill_sampler.gd": "36cd28b1bf09fe6b22cb5d5e0f94670f9426de11457671e3afe64873c64d9e56",
+      "tests/scenarios/runtime_projectile_drill.gd": "46de985200f714238951c790b7e45f17e2bfa55e04c066158219283e1d473b20",
+      "tests/scenarios/runtime_stress_probe.gd": "c8a7b543c75f24d3df13533f75be16269749a3016dee3b32fef2288c99132160"
+    },
+    "timing_scope": "unmodified production step; separate source-derived observer; nested timers include observer overhead"
+  },
+  "result": {
+    "all_tick_state_event_trace_sha256": "ff2bdc56764b3440760974b7e81ae2b11660e83c1180c32d8d3673ec6de7f543",
+    "cleanup_ticks": 741,
+    "event_counts": {
+      "cast_refused": 13,
+      "cast_started": 157,
+      "chemistry_formed": 76,
+      "projectile_expired": 202,
+      "projectile_spawned": 225
+    },
+    "final_hash": "d4dafe70a3c318a00dc1ced33d4bdcd49b7ae18308a9f33f31f0dfe9f1bede25",
+    "measured_query_totals": {
+      "active_reactions_visited": 439229,
+      "already_masked_after_geometry": 0,
+      "bounds_rejected": 105029,
+      "clear_line_calls": 17,
+      "clear_line_samples": 255,
+      "contains_samples": 75,
+      "eligible_reactions": 105057,
+      "entry_calls": 105057,
+      "entry_hits": 17,
+      "interaction_calls": 21474,
+      "reactions_visited": 578770
+    },
+    "production_step_us": {
+      "max": 15642,
+      "median": 3850,
+      "p95": 9316,
+      "p99": 10226
+    },
+    "sample_ticks": 720,
+    "ticks_over_8333_us": 121
+  },
+  "breakdown": {
+    "all": {
+      "ticks": 720,
+      "production_us": {
+        "median": 3850,
+        "p95": 9316,
+        "max": 15642
+      },
+      "projectile_stage_us": {
+        "median": 2631,
+        "p95": 8328,
+        "max": 11667
+      },
+      "interaction_us": {
+        "median": 588,
+        "p95": 5407,
+        "max": 7118
+      },
+      "entry_us": {
+        "median": 226,
+        "p95": 2174,
+        "max": 2887
+      },
+      "bounds_us": {
+        "median": 147,
+        "p95": 1306,
+        "max": 1744
+      },
+      "contains_us": {
+        "median": 0,
+        "p95": 0,
+        "max": 25
+      },
+      "clear_line_us": {
+        "median": 0,
+        "p95": 0,
+        "max": 61
+      },
+      "reaction_iteration_and_response_residual_us": {
+        "median": 453,
+        "p95": 3236,
+        "max": 4231
+      },
+      "projectile_rest_residual_us": {
+        "median": 1549,
+        "p95": 2922,
+        "max": 4679
+      },
+      "counts": {
+        "active_reactions_visited": {
+          "median": 203,
+          "p95": 2340,
+          "max": 2340
+        },
+        "already_masked_after_geometry": {
+          "median": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "bounds_rejected": {
+          "median": 49,
+          "p95": 540,
+          "max": 540
+        },
+        "clear_line_calls": {
+          "median": 0,
+          "p95": 0,
+          "max": 2
+        },
+        "clear_line_samples": {
+          "median": 0,
+          "p95": 0,
+          "max": 34
+        },
+        "contains_samples": {
+          "median": 0,
+          "p95": 0,
+          "max": 6
+        },
+        "eligible_reactions": {
+          "median": 49,
+          "p95": 540,
+          "max": 540
+        },
+        "entry_calls": {
+          "median": 49,
+          "p95": 540,
+          "max": 540
+        },
+        "entry_hits": {
+          "median": 0,
+          "p95": 0,
+          "max": 2
+        },
+        "interaction_calls": {
+          "median": 16,
+          "p95": 90,
+          "max": 90
+        },
+        "reactions_visited": {
+          "median": 416,
+          "p95": 2430,
+          "max": 2520
+        }
+      },
+      "eligible_wires": {
+        "301": 54487,
+        "327": 50570
+      }
+    },
+    "slowest_production_5pct": {
+      "ticks": 36,
+      "production_us": {
+        "median": 9614,
+        "p95": 13111,
+        "max": 15642
+      },
+      "projectile_stage_us": {
+        "median": 8279,
+        "p95": 11244,
+        "max": 11667
+      },
+      "interaction_us": {
+        "median": 5406,
+        "p95": 6930,
+        "max": 7118
+      },
+      "entry_us": {
+        "median": 2155,
+        "p95": 2788,
+        "max": 2887
+      },
+      "bounds_us": {
+        "median": 1296,
+        "p95": 1683,
+        "max": 1744
+      },
+      "contains_us": {
+        "median": 0,
+        "p95": 19,
+        "max": 21
+      },
+      "clear_line_us": {
+        "median": 0,
+        "p95": 40,
+        "max": 61
+      },
+      "reaction_iteration_and_response_residual_us": {
+        "median": 3235,
+        "p95": 4142,
+        "max": 4231
+      },
+      "projectile_rest_residual_us": {
+        "median": 2897,
+        "p95": 4314,
+        "max": 4549
+      },
+      "counts": {
+        "active_reactions_visited": {
+          "median": 2236,
+          "p95": 2340,
+          "max": 2340
+        },
+        "already_masked_after_geometry": {
+          "median": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "bounds_rejected": {
+          "median": 516,
+          "p95": 540,
+          "max": 540
+        },
+        "clear_line_calls": {
+          "median": 0,
+          "p95": 1,
+          "max": 2
+        },
+        "clear_line_samples": {
+          "median": 0,
+          "p95": 23,
+          "max": 34
+        },
+        "contains_samples": {
+          "median": 0,
+          "p95": 4,
+          "max": 4
+        },
+        "eligible_reactions": {
+          "median": 516,
+          "p95": 540,
+          "max": 540
+        },
+        "entry_calls": {
+          "median": 516,
+          "p95": 540,
+          "max": 540
+        },
+        "entry_hits": {
+          "median": 0,
+          "p95": 1,
+          "max": 2
+        },
+        "interaction_calls": {
+          "median": 86,
+          "p95": 90,
+          "max": 90
+        },
+        "reactions_visited": {
+          "median": 2340,
+          "p95": 2520,
+          "max": 2520
+        }
+      },
+      "eligible_wires": {
+        "301": 8944,
+        "327": 8941
+      }
+    },
+    "over_budget": {
+      "ticks": 121,
+      "production_us": {
+        "median": 9138,
+        "p95": 10736,
+        "max": 15642
+      },
+      "projectile_stage_us": {
+        "median": 8121,
+        "p95": 8514,
+        "max": 11667
+      },
+      "interaction_us": {
+        "median": 5313,
+        "p95": 5512,
+        "max": 7118
+      },
+      "entry_us": {
+        "median": 2104,
+        "p95": 2229,
+        "max": 2887
+      },
+      "bounds_us": {
+        "median": 1259,
+        "p95": 1344,
+        "max": 1744
+      },
+      "contains_us": {
+        "median": 0,
+        "p95": 13,
+        "max": 25
+      },
+      "clear_line_us": {
+        "median": 0,
+        "p95": 24,
+        "max": 61
+      },
+      "reaction_iteration_and_response_residual_us": {
+        "median": 3200,
+        "p95": 3320,
+        "max": 4231
+      },
+      "projectile_rest_residual_us": {
+        "median": 2814,
+        "p95": 3002,
+        "max": 4549
+      },
+      "counts": {
+        "active_reactions_visited": {
+          "median": 2236,
+          "p95": 2340,
+          "max": 2340
+        },
+        "already_masked_after_geometry": {
+          "median": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "bounds_rejected": {
+          "median": 516,
+          "p95": 540,
+          "max": 540
+        },
+        "clear_line_calls": {
+          "median": 0,
+          "p95": 1,
+          "max": 2
+        },
+        "clear_line_samples": {
+          "median": 0,
+          "p95": 13,
+          "max": 34
+        },
+        "contains_samples": {
+          "median": 0,
+          "p95": 3,
+          "max": 6
+        },
+        "eligible_reactions": {
+          "median": 516,
+          "p95": 540,
+          "max": 540
+        },
+        "entry_calls": {
+          "median": 516,
+          "p95": 540,
+          "max": 540
+        },
+        "entry_hits": {
+          "median": 0,
+          "p95": 1,
+          "max": 2
+        },
+        "interaction_calls": {
+          "median": 86,
+          "p95": 90,
+          "max": 90
+        },
+        "reactions_visited": {
+          "median": 2340,
+          "p95": 2494,
+          "max": 2520
+        }
+      },
+      "eligible_wires": {
+        "301": 30000,
+        "327": 29994
+      }
+    },
+    "at_least80_projectile_interactions": {
+      "ticks": 102,
+      "production_us": {
+        "median": 9113,
+        "p95": 9669,
+        "max": 10909
+      },
+      "projectile_stage_us": {
+        "median": 8170,
+        "p95": 8454,
+        "max": 8716
+      },
+      "interaction_us": {
+        "median": 5348,
+        "p95": 5494,
+        "max": 5681
+      },
+      "entry_us": {
+        "median": 2121,
+        "p95": 2211,
+        "max": 2316
+      },
+      "bounds_us": {
+        "median": 1273,
+        "p95": 1339,
+        "max": 1363
+      },
+      "contains_us": {
+        "median": 0,
+        "p95": 9,
+        "max": 13
+      },
+      "clear_line_us": {
+        "median": 0,
+        "p95": 21,
+        "max": 37
+      },
+      "reaction_iteration_and_response_residual_us": {
+        "median": 3207,
+        "p95": 3310,
+        "max": 3365
+      },
+      "projectile_rest_residual_us": {
+        "median": 2851,
+        "p95": 2987,
+        "max": 3138
+      },
+      "counts": {
+        "active_reactions_visited": {
+          "median": 2236,
+          "p95": 2340,
+          "max": 2340
+        },
+        "already_masked_after_geometry": {
+          "median": 0,
+          "p95": 0,
+          "max": 0
+        },
+        "bounds_rejected": {
+          "median": 516,
+          "p95": 540,
+          "max": 540
+        },
+        "clear_line_calls": {
+          "median": 0,
+          "p95": 1,
+          "max": 1
+        },
+        "clear_line_samples": {
+          "median": 0,
+          "p95": 11,
+          "max": 22
+        },
+        "contains_samples": {
+          "median": 0,
+          "p95": 2,
+          "max": 3
+        },
+        "eligible_reactions": {
+          "median": 516,
+          "p95": 540,
+          "max": 540
+        },
+        "entry_calls": {
+          "median": 516,
+          "p95": 540,
+          "max": 540
+        },
+        "entry_hits": {
+          "median": 0,
+          "p95": 1,
+          "max": 1
+        },
+        "interaction_calls": {
+          "median": 88,
+          "p95": 90,
+          "max": 90
+        },
+        "reactions_visited": {
+          "median": 2340,
+          "p95": 2494,
+          "max": 2520
+        }
+      },
+      "eligible_wires": {
+        "301": 21709,
+        "327": 21706
+      }
+    },
+    "top12": [
+      {
+        "chemistry_nested_us": {
+          "bounds_us": 1428,
+          "clear_line_us": 0,
+          "contains_us": 0,
+          "entry_us": 2285,
+          "interaction_us": 5596
+        },
+        "counts": {
+          "active_reactions_visited": 1872,
+          "already_masked_after_geometry": 0,
+          "bounds_rejected": 432,
+          "clear_line_calls": 0,
+          "clear_line_samples": 0,
+          "contains_samples": 0,
+          "eligible_reactions": 432,
+          "entry_calls": 432,
+          "entry_hits": 0,
+          "interaction_calls": 72,
+          "reactions_visited": 2016
+        },
+        "deposits_after": 52,
+        "eligible_queries_by_wire": {
+          "301": 216,
+          "327": 216
+        },
+        "production_us": 15642,
+        "projectiles_after": 72,
+        "reactions_after": 28,
+        "stages_us": {
+          "capacity": 303,
+          "casts": 189,
+          "chemistry": 3043,
+          "commands": 69,
+          "fields": 14,
+          "instant_casts": 6,
+          "movement": 410,
+          "projectiles": 8848,
+          "resources": 51,
+          "targets": 12,
+          "terminals": 3
+        },
+        "tick": 630
+      },
+      {
+        "chemistry_nested_us": {
+          "bounds_us": 1744,
+          "clear_line_us": 0,
+          "contains_us": 0,
+          "entry_us": 2887,
+          "interaction_us": 7118
+        },
+        "counts": {
+          "active_reactions_visited": 1872,
+          "already_masked_after_geometry": 0,
+          "bounds_rejected": 432,
+          "clear_line_calls": 0,
+          "clear_line_samples": 0,
+          "contains_samples": 0,
+          "eligible_reactions": 432,
+          "entry_calls": 432,
+          "entry_hits": 0,
+          "interaction_calls": 72,
+          "reactions_visited": 2016
+        },
+        "deposits_after": 52,
+        "eligible_queries_by_wire": {
+          "301": 216,
+          "327": 216
+        },
+        "production_us": 13111,
+        "projectiles_after": 72,
+        "reactions_after": 28,
+        "stages_us": {
+          "capacity": 376,
+          "casts": 267,
+          "chemistry": 4114,
+          "commands": 102,
+          "fields": 24,
+          "instant_casts": 8,
+          "movement": 612,
+          "projectiles": 11667,
+          "resources": 64,
+          "targets": 18,
+          "terminals": 5
+        },
+        "tick": 628
+      },
+      {
+        "chemistry_nested_us": {
+          "bounds_us": 1683,
+          "clear_line_us": 0,
+          "contains_us": 0,
+          "entry_us": 2788,
+          "interaction_us": 6930
+        },
+        "counts": {
+          "active_reactions_visited": 1872,
+          "already_masked_after_geometry": 0,
+          "bounds_rejected": 432,
+          "clear_line_calls": 0,
+          "clear_line_samples": 0,
+          "contains_samples": 0,
+          "eligible_reactions": 432,
+          "entry_calls": 432,
+          "entry_hits": 0,
+          "interaction_calls": 72,
+          "reactions_visited": 2016
+        },
+        "deposits_after": 52,
+        "eligible_queries_by_wire": {
+          "301": 216,
+          "327": 216
+        },
+        "production_us": 12354,
+        "projectiles_after": 72,
+        "reactions_after": 28,
+        "stages_us": {
+          "capacity": 389,
+          "casts": 255,
+          "chemistry": 3666,
+          "commands": 60,
+          "fields": 20,
+          "instant_casts": 7,
+          "movement": 529,
+          "projectiles": 11244,
+          "resources": 60,
+          "targets": 18,
+          "terminals": 4
+        },
+        "tick": 629
+      },
+      {
+        "chemistry_nested_us": {
+          "bounds_us": 911,
+          "clear_line_us": 0,
+          "contains_us": 0,
+          "entry_us": 1544,
+          "interaction_us": 3874
+        },
+        "counts": {
+          "active_reactions_visited": 1612,
+          "already_masked_after_geometry": 0,
+          "bounds_rejected": 372,
+          "clear_line_calls": 0,
+          "clear_line_samples": 0,
+          "contains_samples": 0,
+          "eligible_reactions": 372,
+          "entry_calls": 372,
+          "entry_hits": 0,
+          "interaction_calls": 62,
+          "reactions_visited": 1736
+        },
+        "deposits_after": 81,
+        "eligible_queries_by_wire": {
+          "301": 186,
+          "327": 186
+        },
+        "production_us": 12318,
+        "projectiles_after": 28,
+        "reactions_after": 32,
+        "stages_us": {
+          "capacity": 195,
+          "casts": 149,
+          "chemistry": 2010,
+          "commands": 32,
+          "fields": 10,
+          "instant_casts": 5,
+          "movement": 310,
+          "projectiles": 6519,
+          "resources": 38,
+          "targets": 11,
+          "terminals": 4121
+        },
+        "tick": 645
+      },
+      {
+        "chemistry_nested_us": {
+          "bounds_us": 1203,
+          "clear_line_us": 0,
+          "contains_us": 0,
+          "entry_us": 1990,
+          "interaction_us": 4928
+        },
+        "counts": {
+          "active_reactions_visited": 2028,
+          "already_masked_after_geometry": 0,
+          "bounds_rejected": 468,
+          "clear_line_calls": 0,
+          "clear_line_samples": 0,
+          "contains_samples": 0,
+          "eligible_reactions": 468,
+          "entry_calls": 468,
+          "entry_hits": 0,
+          "interaction_calls": 78,
+          "reactions_visited": 2106
+        },
+        "deposits_after": 46,
+        "eligible_queries_by_wire": {
+          "301": 234,
+          "327": 234
+        },
+        "production_us": 11047,
+        "projectiles_after": 78,
+        "reactions_after": 27,
+        "stages_us": {
+          "capacity": 268,
+          "casts": 165,
+          "chemistry": 2074,
+          "commands": 37,
+          "fields": 12,
+          "instant_casts": 5,
+          "movement": 359,
+          "projectiles": 7696,
+          "resources": 34,
+          "targets": 13,
+          "terminals": 3
+        },
+        "tick": 620
+      },
+      {
+        "chemistry_nested_us": {
+          "bounds_us": 1309,
+          "clear_line_us": 0,
+          "contains_us": 0,
+          "entry_us": 2316,
+          "interaction_us": 5681
+        },
+        "counts": {
+          "active_reactions_visited": 2236,
+          "already_masked_after_geometry": 0,
+          "bounds_rejected": 516,
+          "clear_line_calls": 0,
+          "clear_line_samples": 0,
+          "contains_samples": 0,
+          "eligible_reactions": 516,
+          "entry_calls": 516,
+          "entry_hits": 0,
+          "interaction_calls": 86,
+          "reactions_visited": 2494
+        },
+        "deposits_after": 36,
+        "eligible_queries_by_wire": {
+          "301": 258,
+          "327": 258
+        },
+        "production_us": 10909,
+        "projectiles_after": 86,
+        "reactions_after": 29,
+        "stages_us": {
+          "capacity": 337,
+          "casts": 278,
+          "chemistry": 1729,
+          "commands": 39,
+          "fields": 12,
+          "instant_casts": 5,
+          "movement": 350,
+          "projectiles": 8716,
+          "resources": 33,
+          "targets": 10,
+          "terminals": 2
+        },
+        "tick": 550
+      },
+      {
+        "chemistry_nested_us": {
+          "bounds_us": 1180,
+          "clear_line_us": 0,
+          "contains_us": 0,
+          "entry_us": 1915,
+          "interaction_us": 4773
+        },
+        "counts": {
+          "active_reactions_visited": 1872,
+          "already_masked_after_geometry": 0,
+          "bounds_rejected": 432,
+          "clear_line_calls": 0,
+          "clear_line_samples": 0,
+          "contains_samples": 0,
+          "eligible_reactions": 432,
+          "entry_calls": 432,
+          "entry_hits": 0,
+          "interaction_calls": 72,
+          "reactions_visited": 2016
+        },
+        "deposits_after": 52,
+        "eligible_queries_by_wire": {
+          "301": 216,
+          "327": 216
+        },
+        "production_us": 10736,
+        "projectiles_after": 72,
+        "reactions_after": 28,
+        "stages_us": {
+          "capacity": 275,
+          "casts": 197,
+          "chemistry": 2523,
+          "commands": 46,
+          "fields": 15,
+          "instant_casts": 7,
+          "movement": 394,
+          "projectiles": 7530,
+          "resources": 47,
+          "targets": 11,
+          "terminals": 3
+        },
+        "tick": 631
+      },
+      {
+        "chemistry_nested_us": {
+          "bounds_us": 1170,
+          "clear_line_us": 0,
+          "contains_us": 0,
+          "entry_us": 1936,
+          "interaction_us": 4902
+        },
+        "counts": {
+          "active_reactions_visited": 2028,
+          "already_masked_after_geometry": 0,
+          "bounds_rejected": 468,
+          "clear_line_calls": 0,
+          "clear_line_samples": 0,
+          "contains_samples": 0,
+          "eligible_reactions": 468,
+          "entry_calls": 468,
+          "entry_hits": 0,
+          "interaction_calls": 78,
+          "reactions_visited": 2106
+        },
+        "deposits_after": 48,
+        "eligible_queries_by_wire": {
+          "301": 234,
+          "327": 234
+        },
+        "production_us": 10226,
+        "projectiles_after": 78,
+        "reactions_after": 27,
+        "stages_us": {
+          "capacity": 369,
+          "casts": 956,
+          "chemistry": 2343,
+          "commands": 45,
+          "fields": 32,
+          "instant_casts": 40,
+          "movement": 808,
+          "projectiles": 7668,
+          "resources": 104,
+          "targets": 11,
+          "terminals": 8
+        },
+        "tick": 625
+      },
+      {
+        "chemistry_nested_us": {
+          "bounds_us": 1406,
+          "clear_line_us": 0,
+          "contains_us": 0,
+          "entry_us": 2331,
+          "interaction_us": 5753
+        },
+        "counts": {
+          "active_reactions_visited": 1872,
+          "already_masked_after_geometry": 0,
+          "bounds_rejected": 432,
+          "clear_line_calls": 0,
+          "clear_line_samples": 0,
+          "contains_samples": 0,
+          "eligible_reactions": 432,
+          "entry_calls": 432,
+          "entry_hits": 0,
+          "interaction_calls": 72,
+          "reactions_visited": 2016
+        },
+        "deposits_after": 52,
+        "eligible_queries_by_wire": {
+          "301": 216,
+          "327": 216
+        },
+        "production_us": 10117,
+        "projectiles_after": 72,
+        "reactions_after": 28,
+        "stages_us": {
+          "capacity": 362,
+          "casts": 248,
+          "chemistry": 2724,
+          "commands": 55,
+          "fields": 24,
+          "instant_casts": 9,
+          "movement": 522,
+          "projectiles": 9772,
+          "resources": 59,
+          "targets": 11,
+          "terminals": 4
+        },
+        "tick": 627
+      },
+      {
+        "chemistry_nested_us": {
+          "bounds_us": 1320,
+          "clear_line_us": 0,
+          "contains_us": 0,
+          "entry_us": 2185,
+          "interaction_us": 5420
+        },
+        "counts": {
+          "active_reactions_visited": 2340,
+          "already_masked_after_geometry": 0,
+          "bounds_rejected": 540,
+          "clear_line_calls": 0,
+          "clear_line_samples": 0,
+          "contains_samples": 0,
+          "eligible_reactions": 540,
+          "entry_calls": 540,
+          "entry_hits": 0,
+          "interaction_calls": 90,
+          "reactions_visited": 2430
+        },
+        "deposits_after": 36,
+        "eligible_queries_by_wire": {
+          "301": 270,
+          "327": 270
+        },
+        "production_us": 10101,
+        "projectiles_after": 90,
+        "reactions_after": 27,
+        "stages_us": {
+          "capacity": 246,
+          "casts": 163,
+          "chemistry": 1565,
+          "commands": 36,
+          "fields": 12,
+          "instant_casts": 4,
+          "movement": 325,
+          "projectiles": 8342,
+          "resources": 30,
+          "targets": 9,
+          "terminals": 2
+        },
+        "tick": 581
+      },
+      {
+        "chemistry_nested_us": {
+          "bounds_us": 1168,
+          "clear_line_us": 0,
+          "contains_us": 0,
+          "entry_us": 1958,
+          "interaction_us": 4909
+        },
+        "counts": {
+          "active_reactions_visited": 2028,
+          "already_masked_after_geometry": 0,
+          "bounds_rejected": 468,
+          "clear_line_calls": 0,
+          "clear_line_samples": 0,
+          "contains_samples": 0,
+          "eligible_reactions": 468,
+          "entry_calls": 468,
+          "entry_hits": 0,
+          "interaction_calls": 78,
+          "reactions_visited": 2106
+        },
+        "deposits_after": 52,
+        "eligible_queries_by_wire": {
+          "301": 234,
+          "327": 234
+        },
+        "production_us": 10068,
+        "projectiles_after": 72,
+        "reactions_after": 28,
+        "stages_us": {
+          "capacity": 247,
+          "casts": 165,
+          "chemistry": 2435,
+          "commands": 37,
+          "fields": 12,
+          "instant_casts": 5,
+          "movement": 366,
+          "projectiles": 7639,
+          "resources": 37,
+          "targets": 9,
+          "terminals": 429
+        },
+        "tick": 626
+      },
+      {
+        "chemistry_nested_us": {
+          "bounds_us": 1193,
+          "clear_line_us": 0,
+          "contains_us": 0,
+          "entry_us": 2000,
+          "interaction_us": 5017
+        },
+        "counts": {
+          "active_reactions_visited": 2184,
+          "already_masked_after_geometry": 0,
+          "bounds_rejected": 504,
+          "clear_line_calls": 0,
+          "clear_line_samples": 0,
+          "contains_samples": 0,
+          "eligible_reactions": 504,
+          "entry_calls": 504,
+          "entry_hits": 0,
+          "interaction_calls": 84,
+          "reactions_visited": 2268
+        },
+        "deposits_after": 46,
+        "eligible_queries_by_wire": {
+          "301": 252,
+          "327": 252
+        },
+        "production_us": 9895,
+        "projectiles_after": 78,
+        "reactions_after": 27,
+        "stages_us": {
+          "capacity": 255,
+          "casts": 158,
+          "chemistry": 2207,
+          "commands": 33,
+          "fields": 11,
+          "instant_casts": 4,
+          "movement": 352,
+          "projectiles": 7790,
+          "resources": 33,
+          "targets": 12,
+          "terminals": 366
+        },
+        "tick": 611
+      }
+    ]
+  },
+  "receipt": "PASS: runtime-projectile-drill; 5669 assertions; 0 failures",
+  "post_capture_change": "Added fail-closed source identity guard to runtime_projectile_drill.gd after capture; no mirrored mechanism or measurement changed. No second engine run performed for that guard; inspected and raw source hashes verified.",
+  "conclusions": [
+    "Repeated reaction visit/filter/response work dominates the observed interaction slow ticks; sampled narrow phase and clear-line are rare in this fixed mixed fixture.",
+    "Eligible queries use only reaction wires301 and327 in this workload; it does not represent all36 recipes or dense close combat.",
+    "First next seam: per-batch order-preserving active/projectile-wire candidate list, preserving originals for Heavy cover and inner active checks for same-batch decay.",
+    "Second next seam: ephemeral current-batch geometry for immutable centers/length/endpoints, only after mutation audit; more proof burden.",
+    "Third next seam: avoid miss-result Dictionary allocation in boolean-only projectile entry calls, keeping ray point-result contract; likely smaller than scan filtering."
+  ],
+  "limits": [
+    "Observer timers and Dictionary counters add cost; nested percentile buckets cannot be summed as independent stage totals.",
+    "The separately timed real world is unmodified, but alternating observer execution changes cache/CPU conditions. One sample is a diagnostic, not A/B optimization gain.",
+    "No allocator instrumentation was used; explicit response/entry construction counts are source-derived opportunities, not measured allocation time.",
+    "This slice does not improve/complete the p95 gate, test Full, render, export, or physical network acceptance."
+  ]
+}

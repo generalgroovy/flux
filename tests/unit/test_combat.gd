@@ -16,6 +16,7 @@ func run() -> int:
 		_test_red_baron_cinderbolt(tick_rate)
 		_test_red_baron_cinder_fan(tick_rate)
 		_test_movement_spell_chains(tick_rate)
+		_test_casts_during_every_movement_mode(tick_rate)
 		_test_pressure_exhaustion_and_recovery(tick_rate)
 		_test_edgeweave(tick_rate)
 		_test_evasive_intangibility(tick_rate)
@@ -23,7 +24,70 @@ func run() -> int:
 	_test_cast_capacity_refusal_and_reuse()
 	_test_global_cast_capacity()
 	_test_repeated_cast_owner_limit()
+	_test_segment_circle_bounds()
+	_test_projectile_reaction_candidates()
 	return finish("combat")
+
+
+func _test_projectile_reaction_candidates() -> void:
+	var reactions: Array[ElementReactionState] = []
+	equal(CombatSystem._projectile_reaction_candidates(reactions,10),[],"empty reaction list remains empty")
+	for wire: int in range(301,337):
+		var reaction := ElementReactionState.new()
+		reaction.entity_id = wire
+		reaction.recipe_wire_id = wire
+		reaction.active_tick = 10
+		reaction.decay_tick = 20
+		reaction.health = 0
+		reactions.append(reaction)
+	var expected: Array[int] = [301,305,306,307,320,325,327,329,335]
+	var candidates := CombatSystem._projectile_reaction_candidates(reactions,10)
+	equal(candidates.size(),9,"only nine projectile-interacting recipe identities are selected")
+	for index: int in range(expected.size()):
+		equal(candidates[index],reactions[expected[index]-301],"candidate selection retains exact order and references, including health-zero active cover")
+	equal(CombatSystem._projectile_reaction_candidates(reactions,9),[],"forming reactions cannot enter this tick's batch")
+	equal(CombatSystem._projectile_reaction_candidates(reactions,20),[],"decay boundary is excluded")
+	reactions.append(reactions[0])
+	candidates = CombatSystem._projectile_reaction_candidates(reactions,10)
+	equal(candidates.size(),10,"duplicate references preserve duplicate visits")
+	equal(candidates[0],candidates[9],"duplicate candidates still alias the same mutable reaction")
+	reactions[0].decay_tick = 10
+	check(not candidates[0].active(10) and not candidates[9].active(10),"earlier-projectile decay remains visible through both references")
+
+
+func _test_segment_circle_bounds() -> void:
+	# These expected values also lock the old signed integer projection, which
+	# intentionally is not a floating-point projection rewrite.
+	var cases: Array[Array] = [
+		[Vector2i(-10,0),Vector2i(10,0),Vector2i(0,3),3,true],
+		[Vector2i(-10,0),Vector2i(10,0),Vector2i(0,4),3,false],
+		[Vector2i(-10,0),Vector2i(10,0),Vector2i(13,0),3,true],
+		[Vector2i(-10,0),Vector2i(10,0),Vector2i(14,0),3,false],
+		[Vector2i(-10,0),Vector2i(10,0),Vector2i(13,3),3,false],
+		[Vector2i.ZERO,Vector2i.ZERO,Vector2i.ZERO,0,true],
+		[Vector2i.ZERO,Vector2i.ZERO,Vector2i(1,0),0,false],
+		[Vector2i.ZERO,Vector2i.ZERO,Vector2i(3,4),-5,true],
+		[Vector2i.ZERO,Vector2i.ZERO,Vector2i(3,5),-5,false],
+		[Vector2i(-3,-2),Vector2i(4,1),Vector2i(1,0),0,false],
+		[Vector2i(4,1),Vector2i(-3,-2),Vector2i(1,0),0,false],
+		[Vector2i(4,1),Vector2i(-3,-2),Vector2i(1,0),1,true],
+		[Vector2i(99900000,99900000),Vector2i(100000000,100000000),Vector2i(100000000,100000000),0,true],
+	]
+	var projectile := ProjectileState.new(9001,1,1,179,2,Vector2i.ZERO,Vector2i.ZERO,1000,9000,120)
+	var target := PlayerState.new(2)
+	for query: Array in cases:
+		# Reuse both objects so stale bounds would fail after mutation.
+		projectile.previous_x = (query[0] as Vector2i).x
+		projectile.previous_y = (query[0] as Vector2i).y
+		projectile.position_x = (query[1] as Vector2i).x
+		projectile.position_y = (query[1] as Vector2i).y
+		target.position_x = (query[2] as Vector2i).x
+		target.position_y = (query[2] as Vector2i).y
+		var before_projectile := projectile.canonical_values()
+		var before_target := target.canonical_values()
+		equal(CombatSystem._segment_circle_hit(projectile,target,query[3]),query[4],"strict bounds retain tangent, endpoint, signed rounding and radius behavior")
+		equal(projectile.canonical_values(),before_projectile,"circle query does not mutate projectile")
+		equal(target.canonical_values(),before_target,"circle query does not mutate target")
 
 
 func _admission_world(player_count: int, projectiles_per_owner: int = 0, fields_per_owner: int = 0) -> SimWorld:
@@ -131,25 +195,37 @@ func _test_repeated_cast_owner_limit() -> void:
 	var caster := world.player()
 	check(caster.place_proven_spell(1, 148), "second distinct Burst enters the repeat-cast fixture")
 	check(caster.place_proven_spell(2, 147), "third distinct Burst enters the repeat-cast fixture")
-	check(caster.place_proven_spell(3, CombatTuning.PRIMARY_WIRE_ID), "one Bolt can use the final owner slot")
+	check(caster.place_proven_spell(3, CombatTuning.PRIMARY_WIRE_ID), "one Bolt can use spare owner capacity")
 	var expected_live := 0
-	for pressed: int in [SimCommand.PRESSED_SPELL_1, SimCommand.PRESSED_SPELL_2, SimCommand.PRESSED_SPELL_3]:
+	for pressed: int in [SimCommand.PRESSED_SPELL_1, SimCommand.PRESSED_SPELL_2]:
 		check(world.step(_admission_commands(world, pressed)), "successive distinct Burst pays for its own reservation")
 		for _tick: int in range(19):
 			check(world.step([]), "successive Burst releases through ordinary startup")
 		expected_live += 5
 		equal(world.projectiles.size(), expected_live, "each paid Burst adds all five lanes without expiry or truncation")
-	check(caster.place_proven_spell(0, 149), "a fourth ready Burst tests capacity independently of cooldown")
+	equal(world.deposits.size(), 4, "two paid Waves also fill the four optional trail slots")
+	check(world.deposits.all(func(deposit: ElementDepositState) -> bool: return deposit.is_trail()), "shared material occupancy is real flight trail, not an early terminal")
+	equal(world.available_cast_capacity(caster.entity_id).x, 2, "ten shots and four trails leave two paid single-shot slots")
+	equal(world.available_cast_offer(caster.entity_id).x, 6, "four optional trails offer enough virtual room for another whole Wave")
 	var flux_before := caster.flux
-	check(world.step(_admission_commands(world, SimCommand.PRESSED_SPELL_1)), "the fourth Burst refuses at fifteen live owner projectiles")
-	equal(caster.pending_cast_wire_id, 0, "one remaining slot cannot accept five more lanes")
-	equal(caster.flux, flux_before, "repeated-cast refusal never charges for partial pressure")
-	check(world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_refused" and event.get("reason") == "capacity"), "repeat-cast limit is an explicit capacity refusal")
-	check(world.step(_admission_commands(world, SimCommand.PRESSED_SPELL_4)), "a paid Bolt can use the one remaining owner slot")
-	equal(world.available_cast_capacity(caster.entity_id).x, 0, "the Bolt reserves the final owner slot during startup")
-	for _tick: int in range(9):
-		check(world.step([]), "the admitted Bolt keeps its slot through release")
-	equal(world.projectiles.size(), SimConfig.MAX_PROJECTILES_PER_PLAYER, "repeated production casts stop exactly at the sixteen-projectile owner cap")
+	var next_id := world.next_projectile_id
+	check(world.step(_admission_commands(world, SimCommand.PRESSED_SPELL_3)), "third whole Wave can trade exactly three optional trails for its reservation")
+	equal(caster.pending_cast_wire_id, 147, "the third Wave is admitted as a whole paid cast")
+	equal(caster.flux, flux_before - int(CombatTuning.cast_definition(147).flux_cost), "reclamation does not alter the third Wave's positive cost")
+	equal(world.next_projectile_id, next_id, "startup still allocates no partial Wave IDs")
+	equal(world.deposits.size(), 1, "only the three trails actually needed by the Wave are reclaimed")
+	equal(world.available_cast_capacity(caster.entity_id).x, 0, "ten live shots plus five paid lanes and one trail fill the shared cap")
+	for _tick: int in range(19):
+		check(world.step([]), "third paid Wave releases through normal startup")
+	equal(world.projectiles.size(), 15, "all five lanes release without truncation after reclamation")
+	check(world.step(_admission_commands(world, SimCommand.PRESSED_SPELL_4)), "a paid Bolt can reclaim the last optional trail for the final hard projectile slot")
+	equal(world.available_cast_capacity(caster.entity_id).x, 0, "Bolt reservation keeps the shared and projectile caps exact")
+	check(world.deposits.is_empty(), "the final Bolt needed exactly the one remaining optional trail")
+	for _tick: int in range(12):
+		check(world.step([]), "final paid Bolt releases without truncation")
+	equal(world.projectiles.size(), SimConfig.MAX_PROJECTILES_PER_PLAYER, "sixteen live projectiles remain the immutable owner cap")
+	equal(world.projectiles.size() + world.deposits.size(), ElementChemistrySystem.MAX_OWNER_DEPOSITS, "repeated production casts stop at the exact sixteen-slot shared material cap")
+	equal(world.available_cast_offer(caster.entity_id).x, 0, "reclamation cannot invent a seventeenth projectile slot")
 
 
 func _test_global_cast_capacity() -> void:
@@ -329,6 +405,8 @@ func _test_positive_flux_primary(tick_rate: int) -> void:
 	for _index: int in range(tick_rate):
 		check(_step(world, SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000, 0)), "%d Hz primary flight steps" % tick_rate)
 		for event: Dictionary in world.combat_events:
+			if String(event.get("type", "")) == "projectile_spawned":
+				equal(caster.primary_cooldown_ticks, world.config.milliseconds_to_ticks(int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["cooldown_ms"])), "%d Hz primary starts its exact authored cooldown on release" % tick_rate)
 			saw_spawn = saw_spawn or String(event.get("type", "")) == "projectile_spawned"
 			saw_hit = saw_hit or String(event.get("type", "")) == "projectile_hit"
 		if saw_hit:
@@ -337,7 +415,8 @@ func _test_positive_flux_primary(tick_rate: int) -> void:
 	check(saw_hit, "%d Hz primary resolves an authoritative hit" % tick_rate)
 	equal(enemy.health, PlayerTuning.HEALTH_MAXIMUM - int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["damage"]), "%d Hz primary damage is exact" % tick_rate)
 	equal(caster.flux, initial_flux - int(CombatTuning.cast_definition(CombatTuning.PRIMARY_WIRE_ID)["flux_cost"]), "%d Hz primary cannot recover before its combat delay" % tick_rate)
-	check(caster.primary_cooldown_ticks > 0, "%d Hz primary cooldown is active" % tick_rate)
+	# Slower projectiles may hit after their unchanged cast cooldown has elapsed.
+	check(caster.primary_cooldown_ticks >= 0, "%d Hz primary cooldown stays bounded independently of flight time" % tick_rate)
 
 	var refused_world := SimWorld.new(tick_rate)
 	var refused: PlayerState = refused_world.player()
@@ -580,7 +659,8 @@ func _test_oh_tipi_rimewake(tick_rate: int) -> void:
 	check(world.combat_events.any(func(event: Dictionary) -> bool: return event.get("type") == "field_expired"), "%d Hz Rimewake expiration is semantically observable" % tick_rate)
 
 	var blocked_collision := CollisionWorld.new(1_200_000, 720_000)
-	blocked_collision.add_obstacle(CollisionWorld.Obstacle.new(81, 330_000, 290_000, 470_000, 430_000))
+	# Leave enough real clearance for the enlarged field and its minimum range.
+	blocked_collision.add_obstacle(CollisionWorld.Obstacle.new(81, 360_000, 290_000, 470_000, 430_000))
 	var blocked_world := SimWorld.new(tick_rate, 12, blocked_collision)
 	var blocked_caster: PlayerState = blocked_world.player()
 	_apply_oh_tipi(blocked_caster)
@@ -591,7 +671,7 @@ func _test_oh_tipi_rimewake(tick_rate: int) -> void:
 			break
 	equal(blocked_world.fields.size(), 1, "%d Hz Rimewake traces back to safe ground when maximum range is obstructed" % tick_rate)
 	if not blocked_world.fields.is_empty():
-		check(blocked_world.fields[0].position_x < 258_000, "%d Hz fallback placement remains clear of the authored obstacle" % tick_rate)
+		check(blocked_world.fields[0].position_x + blocked_world.fields[0].radius < 360_000, "%d Hz fallback placement keeps the entire authored radius clear of the obstacle" % tick_rate)
 
 	var sealed_collision := CollisionWorld.new(1_200_000, 720_000)
 	sealed_collision.add_obstacle(CollisionWorld.Obstacle.new(82, 220_000, 270_000, 470_000, 450_000))
@@ -745,6 +825,38 @@ func _test_movement_spell_chains(tick_rate: int) -> void:
 	cooling.primary_cooldown_ticks = 10
 	check(_step(cooldown_world, SimCommand.new(cooldown_world.tick, cooling.entity_id, 0, 0, 0, SimCommand.PRESSED_SPELL_1)), "%d Hz cooling spell command steps" % tick_rate)
 	check(cooldown_world.combat_events.any(func(event: Dictionary) -> bool: return event.get("reason") == "cooldown" and int(event.get("wire_id", 0)) == CombatTuning.RILLSHOT_WIRE_ID), "%d Hz own cooldown refusal is visible" % tick_rate)
+
+
+func _test_casts_during_every_movement_mode(tick_rate: int) -> void:
+	for champion_id: String in ["s_wayne", "oh_tipi", "red_baron"]:
+		for mode: int in PlayerState.MovementMode.values():
+			var world := SimWorld.new(tick_rate)
+			var caster: PlayerState = world.player()
+			match champion_id:
+				"s_wayne": _apply_s_wayne(caster)
+				"oh_tipi": _apply_oh_tipi(caster)
+				"red_baron": _apply_red_baron(caster)
+			caster.movement_mode = mode
+			caster.movement_commitment_ticks = 24
+			caster.cast_recovery_ticks = 18
+			var policy := ActionTransitionPolicy.new()
+			check(policy.load_from_file(), "cast/movement fixture loads current policy")
+			var events: Array[Dictionary] = []
+			var flux_before := caster.flux
+			var stamina_before := caster.stamina
+			var wire := caster.primary_wire_id
+			var label := "%s/%s" % [champion_id, PlayerState.MovementMode.keys()[mode]]
+			# Direct production combat entry preserves the seeded movement phase;
+			# the existing simultaneous-jump test separately exercises world order.
+			# Raw mode tags (including compatibility-only values) are not control
+			# locks or newly enabled moves. Separate ControlState gates still apply.
+			CombatSystem.step_player(caster, SimCommand.new(0, caster.entity_id, 0, 0, 0, SimCommand.PRESSED_SPELL_1), world.config, 100, 200, world.collision, events, policy)
+			equal(caster.pending_cast_wire_id, wire, label + " permits paid spell startup during movement/recovery")
+			check(events.any(func(event: Dictionary) -> bool: return event.get("type") == "cast_started"), label + " emits real cast start")
+			equal(caster.flux, flux_before - int(CombatTuning.cast_definition(wire)["flux_cost"]), label + " spends exact positive Flux")
+			equal(caster.stamina, stamina_before, label + " does not charge movement Stamina for a spell")
+			equal(caster.movement_mode, mode, label + " does not cancel movement")
+			equal(caster.movement_commitment_ticks, 24, label + " preserves movement phase")
 
 
 func _test_pressure_exhaustion_and_recovery(tick_rate: int) -> void:

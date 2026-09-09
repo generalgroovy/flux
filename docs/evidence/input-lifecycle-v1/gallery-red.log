@@ -1,0 +1,16 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+FAIL: invalid reload discards pending authority intent (expected=0 actual=2)
+FAIL: invalid reload does not retain stale equipped identity (expected= actual=oh_tipi)
+FAIL: invalid reload resets race navigation (expected=0 actual=6)
+FAIL: valid reload clears stale acknowledgement text (expected= actual=Waiting for the host to confirm attunement.)
+FAIL: successful replacement does not inherit a request (expected=0 actual=2)
+FAIL: successful replacement waits for fresh equipped identity (expected= actual=oh_tipi)
+character-selection-model: 448 assertions, 6 failures
+FAIL: invalid reload closes old modal instead of trapping input
+FAIL: invalid reload resets detail pagination (expected=0 actual=2)
+FAIL: invalid reload releases old portrait presenter and cached texture
+FAIL: recovered Gallery requires a deliberate reopen
+FAIL: valid replacement also closes stale panel state
+character-selection-grid: 859 assertions, 5 failures
+FAIL: 11 assertion(s) failed

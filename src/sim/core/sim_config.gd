@@ -2,7 +2,9 @@ class_name SimConfig
 extends RefCounted
 
 
-const PROTOCOL_VERSION: int = 43
+# Heavy terminal blasts, authored held-slot Rapid firing and the expanded Loom.
+# Existing wire fields remain; old peers must not simulate different attacks.
+const PROTOCOL_VERSION: int = 47
 const FIXED_SCALE: int = 1000
 const TICK_RATE: int = 120
 # Cast admission and replication share one finite authority envelope. Pending

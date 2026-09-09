@@ -3,6 +3,7 @@ extends FluxTestSuite
 
 func run() -> int:
 	_test_repository_recipes()
+	_test_temporary_body_templates()
 	_test_semantic_states()
 	_test_semantic_aliases_fail_closed()
 	_test_diagonal_contract_fails_closed()
@@ -10,12 +11,168 @@ func run() -> int:
 	_test_relative_locomotion_gaits()
 	_test_locomotion_contact_regions()
 	_test_extension_pages_and_motion_facing()
+	_test_live_extension_page_bounds()
+	_test_extension_integrity_reload()
+	_test_complete_page_overrides()
+	_test_top_third_portraits()
 	_test_movement_template_direction_matrix()
+	_test_distance_phase_frames()
 	_test_wall_contact_side()
 	_test_immediate_protection_contract()
+	_test_float_time_budget()
 	_test_directional_movement_trails()
 	_test_pixel_movement_layers()
 	return finish("cartoon-champion-presenter")
+
+
+func _test_top_third_portraits() -> void:
+	# Distinct colors above/below the anatomical third make a fixed 32px crop or
+	# accidentally included body fail, even with a large transparent cell gutter.
+	for height: int in [58, 68, 76]:
+		var image := Image.create(192, 192, false, Image.FORMAT_RGBA8)
+		image.fill(Color.TRANSPARENT)
+		var used := Rect2i(123, 84 - height, 42, height)
+		image.fill_rect(used, Color.RED)
+		var third := ceili(float(height) / 3.0)
+		image.fill_rect(Rect2i(used.position, Vector2i(42, third)), Color.BLUE)
+		image.set_pixel(used.position.x + 21, used.position.y + 2, Color.TRANSPARENT)
+		var original := image.get_data()
+		var frame := CartoonChampionPresenter._build_portrait(image, Rect2i(96, 0, 96, 96))
+		equal(frame.get("occupied_model_region"), Rect2(used), "portrait measures actual South-grounded anatomy including nonzero atlas cell origin")
+		equal(frame.get("source_region"), Rect2(used.position, Vector2i(42, third)), "portrait crops exactly the top ceil(occupied height / 3), not the empty cell")
+		var pixels := (frame["texture"] as Texture2D).get_image()
+		equal(pixels.get_size(), Vector2i(32, 32), "each size uses one bounded compact portrait")
+		var content: Rect2 = frame["content_region"]
+		equal(content.size.x, 32.0, "entire occupied width is retained in the fitted portrait")
+		check(absf(content.size.y - 32.0 * third / 42.0) <= 0.5, "portrait fitting preserves anatomy aspect to the nearest output pixel")
+		for y: int in 32:
+			for x: int in 32:
+				var color := pixels.get_pixel(x, y)
+				check(color == Color.BLUE or color == Color.TRANSPARENT, "nearest crop preserves transparent pixels and excludes the lower two thirds")
+		check(not pixels.has_mipmaps(), "portrait upload never adds mipmap blur")
+		equal(image.get_data(), original, "portrait extraction never edits the original source pixels")
+	check(CartoonChampionPresenter._build_portrait(null, Rect2i(0, 0, 96, 96)).is_empty(), "missing portrait source fails closed")
+	var blank := Image.create(96, 96, false, Image.FORMAT_RGBA8)
+	blank.fill(Color.TRANSPARENT)
+	check(CartoonChampionPresenter._build_portrait(blank, Rect2i(0, 0, 96, 96)).is_empty(), "empty anatomy does not manufacture a portrait")
+	check(CartoonChampionPresenter._build_portrait(blank, Rect2i(1, 0, 96, 96)).is_empty(), "out-of-bounds portrait source is rejected")
+	var language := VisualLanguage.new()
+	check(language.load_from_file(), "portrait visual language loads")
+	var baseline := CartoonChampionPresenter.new()
+	check(baseline.configure(language, CartoonChampionPresenter.DEFAULT_PATH, "", false), "all baseline and alias portrait paths load independently of overrides")
+	var unique_textures: Dictionary = {}
+	for champion_id: String in baseline.champions:
+		var frame := baseline.portrait_frame(champion_id)
+		var source: Rect2 = frame["source_region"]
+		var occupied: Rect2 = frame["occupied_model_region"]
+		equal(source.position, occupied.position, "every baseline portrait starts at the front model's actual top")
+		equal(source.size, Vector2(occupied.size.x, ceilf(occupied.size.y / 3.0)), "every baseline body and alias obeys the same upper-third crop")
+		equal(source, baseline.portrait_region(champion_id), "legacy source-region query is consistent with baseline atlas residency")
+		equal((frame["texture"] as Texture2D).get_size(), Vector2(32, 32), "Gallery no longer receives whole-body baseline cells")
+		unique_textures[(frame["texture"] as Texture2D).get_instance_id()] = true
+		var template_id := String(baseline.champions[champion_id].get("template_source_id", ""))
+		if not template_id.is_empty():
+			check(frame["texture"] == baseline.portrait_frame(template_id)["texture"], "temporary aliases share their baseline crop without duplicate texture allocation")
+		equal(frame["texture"], baseline.portrait_frame(champion_id)["texture"], "repeated portrait reads reuse the prepared compact texture")
+	equal(unique_textures.size(), baseline.REQUIRED_FOUNDATION.size() + baseline.extension_atlases.size(), "only actual baseline identities allocate compact textures")
+	check(baseline.portrait_frame("unknown").is_empty(), "unknown portrait metadata fails closed")
+	var active := CartoonChampionPresenter.new()
+	check(active.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "accepted page portraits load at configuration")
+	var revision := active.portrait_revision()
+	for champion_id: String in active.override_page_ids:
+		var frame := active.portrait_frame(champion_id)
+		var occupied: Rect2 = frame["occupied_model_region"]
+		equal((frame["source_region"] as Rect2).size, Vector2(occupied.size.x, ceilf(occupied.size.y / 3.0)), "all accepted overrides use the exact anatomical crop before world residency")
+		check(frame.get("complete_page_override", false), "compact portrait reports effective accepted art without requiring a full page")
+		equal(active.override_resident_count(), 0, "viewing all accepted portraits never admits a world page")
+		equal(active.portrait_revision(), revision, "portrait lookup cannot mutate art generation")
+	for champion_id: String in active.override_page_ids:
+		var first_texture: Texture2D
+		for index: int in range(8):
+			var view := active.inspection_frame(champion_id, EightDirectionResolver.DIRECTION_ORDER[index])
+			check(not view.is_empty(), "nonresident accepted character has an inspection body")
+			equal(view.region, Rect2(index * 96, 0, 96, 96), "nonresident override inspects its own first row, not baseline fallback")
+			equal((view.texture as Texture2D).get_size(), Vector2(768, 960), "inspection borrows the complete accepted character page")
+			if index == 0:
+				first_texture = view.texture
+			else:
+				check(first_texture == view.texture, "turning reuses one inspection page without repeated loads")
+			equal(active.override_resident_count(), 0, "inspection never changes the admitted eight-actor page set")
+		equal(active._inspection_champion_id, champion_id, "one inspection slot replaces previous character instead of growing a cache")
+	check(active.inspection_frame("unknown", "south").is_empty(), "unknown identity has no body preview")
+	check(active.inspection_frame("oh_tipi", "unknown").is_empty(), "unknown heading cannot fake a valid front pose")
+	check(active.configure(language, CartoonChampionPresenter.DEFAULT_PATH, "", false), "portrait reload can return to baseline art")
+	check(active._inspection_texture == null and active._inspection_champion_id.is_empty(), "art reload releases the borrowed inspection page")
+	check(active.portrait_revision() > revision, "art reload invalidates consumer portrait caches")
+	for champion_id: String in active.champions:
+		check(not active.portrait_frame(champion_id).get("complete_page_override", false), "baseline reload releases every stale accepted portrait")
+
+
+func _test_distance_phase_frames() -> void:
+	var language := VisualLanguage.new()
+	check(language.load_from_file(), "distance gait visual language loads")
+	var presenter := CartoonChampionPresenter.new()
+	check(presenter.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "distance gait presenter loads")
+	var config := SimConfig.new(120)
+	for champion_id: String in presenter.champions:
+		for direction_index: int in range(8):
+			var direction := EightDirectionResolver.FIXED_VECTORS[direction_index]
+			var state := PlayerState.new(1)
+			state.facing_x = direction.x
+			state.facing_y = direction.y
+			state.aim_x = direction.x
+			state.aim_y = direction.y
+			state.velocity_x = direction.x * 300
+			state.velocity_y = direction.y * 300
+			var canonical := state.canonical_values()
+			for action: int in [PlayerState.MovementMode.WALK, PlayerState.MovementMode.SPRINT]:
+				state.movement_mode = action
+				for phase: float in [0.0, 0.25, 0.5, 0.75]:
+					var first := presenter.movement_frame(champion_id, state, 0.0, config, false, phase)
+					var later := presenter.movement_frame(champion_id, state, 950.0, config, false, phase)
+					equal(first["source_region"], later["source_region"], "held distance phase cannot march because the wall clock advanced")
+					equal(first["contact_frame"], 0 if phase < 0.5 else 1, "walk and sprint preserve the same opposite-foot phase")
+					equal((first["source_region"] as Rect2).position.x, float(direction_index * 96), "distance gait never delays or blends an input-facing column")
+					equal(first["scale"], Vector2.ONE, "distance cadence does not stretch the size template")
+			state.movement_mode = PlayerState.MovementMode.IDLE
+			equal(state.canonical_values(), canonical, "distance phase sampling never mutates authority")
+
+
+func _test_temporary_body_templates() -> void:
+	var language := VisualLanguage.new()
+	check(language.load_from_file(), "temporary template visual language loads")
+	var presenter := CartoonChampionPresenter.new()
+	check(presenter.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "explicit full-cast temporary templates load")
+	var live: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(presenter.LIVE_CATALOG_PATH))
+	equal(presenter.champions.size(), (live["champions"] as Array).size(), "every live identity has a bounded presentation recipe")
+	var temporary_count := 0
+	for entry: Dictionary in live["champions"]:
+		var id := String(entry["id"])
+		var recipe := presenter.recipe(id)
+		equal(recipe.get("body_type"), entry.get("body_type"), "visual and simulation body agree: " + id)
+		if entry.get("art_status", "") != "temporary_body_template":
+			check(not recipe.get("temporary_body_template", false), "existing individual art is not mislabeled temporary")
+			continue
+		temporary_count += 1
+		var source_id := String(entry["template_source_id"])
+		check(recipe.get("temporary_body_template", false), "template substitution is explicit: " + id)
+		equal(recipe.get("display_name"), entry.get("display_name"), "temporary art retains the actual identity")
+		check(presenter.texture_for_champion(id) == presenter.texture_for_champion(source_id), "aliases share one texture rather than allocating extra pages")
+		for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+			var state := PlayerState.new()
+			state.facing_x = direction.x
+			state.facing_y = direction.y
+			for pose: String in presenter.EXPECTED_ATLAS_STATES:
+				equal(presenter.source_region_for_animation_state(id, state, pose), presenter.source_region_for_animation_state(source_id, state, pose), "all eighty cells retain exact body registration")
+	equal(temporary_count, 24, "24 catalog fallback template declarations remain available independently of accepted overrides")
+	equal(presenter.extension_atlases.size(), 2, "full cast does not grow texture allocations")
+	for invalid: Dictionary in [
+		{"id": "bad", "template_source_id": "oh_tipi", "body_type": "large", "art_status": "temporary_body_template", "unique_runtime_art_approved": false},
+		{"id": "bad", "template_source_id": "unknown", "body_type": "middle", "art_status": "temporary_body_template", "unique_runtime_art_approved": false},
+		{"id": "bad", "template_source_id": "oh_tipi", "body_type": "middle", "art_status": "approved", "unique_runtime_art_approved": true},
+	]:
+		check(not presenter._register_temporary_templates([invalid]), "unapproved or mismatched template fails closed")
+		check(not presenter.can_present("bad"), "failed validation does not partially register artwork")
 
 
 func _test_pixel_movement_layers() -> void:
@@ -73,7 +230,7 @@ func _test_extension_pages_and_motion_facing() -> void:
 	var language := VisualLanguage.new()
 	check(language.load_from_file(), "motion-facing language loads")
 	var presenter := CartoonChampionPresenter.new()
-	check(presenter.configure(language), "paged champion art validates")
+	check(presenter.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "paged champion art validates")
 	for champion_id: String in presenter.champions:
 		var pixels := presenter.texture_for_champion(champion_id).get_image()
 		var portrait := presenter.portrait_region(champion_id)
@@ -104,15 +261,21 @@ func _test_extension_pages_and_motion_facing() -> void:
 			state.facing_y = direction.y
 			state.velocity_x = -direction.x
 			state.velocity_y = -direction.y
-			equal(CartoonChampionPresenter.presentation_facing_vector(state, pose), direction, pose + " immediately follows input intent while physical coast remains independent")
+			state.aim_x = -direction.x
+			state.aim_y = -direction.y
+			equal(CartoonChampionPresenter.presentation_facing_vector(state, pose), -direction, pose + " immediately follows cursor while travel remains independent")
 	state.velocity_x = 0
 	state.velocity_y = 1000
 	state.facing_x = 0
 	state.facing_y = -1000
+	state.aim_x = 0
+	state.aim_y = -1000
 	equal(presenter.source_region_for_animation_state("oh_tipi", state, "slide"), Rect2(384, 576, 96, 96), "slide body faces new north intent while south momentum remains visible through its wake")
 	state.pending_cast_wire_id = 1
 	state.pending_cast_aim_x = -1000
 	state.pending_cast_aim_y = 0
+	state.aim_x = 1000
+	state.aim_y = 0
 	for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
 		state.velocity_x = direction.x
 		state.velocity_y = direction.y
@@ -122,12 +285,13 @@ func _test_extension_pages_and_motion_facing() -> void:
 			state.movement_mode = mode
 			var pose := String(PlayerState.MovementMode.keys()[mode]).to_lower()
 			equal(presenter.silhouette_state(state), pose, "moving casts preserve " + pose + " contacts")
-			equal(CartoonChampionPresenter.presentation_facing_vector(state, presenter.silhouette_state(state)), direction, "moving casts keep feet facing travel independently of spell aim")
+			equal(CartoonChampionPresenter.presentation_facing_vector(state, presenter.silhouette_state(state)), Vector2i(1000, 0), "moving casts face current cursor without replacing locomotion")
 	state.velocity_x = 0
 	state.velocity_y = 0
 	state.movement_mode = PlayerState.MovementMode.IDLE
 	equal(presenter.silhouette_state(state), "cast", "stationary casts retain the authored bare-hand pose")
-	equal(CartoonChampionPresenter.presentation_facing_vector(state, "cast"), Vector2i(-1000, 0), "stationary casting follows spell aim")
+	equal(CartoonChampionPresenter.presentation_facing_vector(state, "cast"), Vector2i(1000, 0), "stationary casting follows current cursor, not the locked shot")
+	equal(state.pending_cast_aim_x, -1000, "visual turning cannot retarget the committed shot")
 	state.movement_mode = PlayerState.MovementMode.HOP
 	state.hop_ticks = 2
 	state.air_height = 1000
@@ -136,12 +300,325 @@ func _test_extension_pages_and_motion_facing() -> void:
 	equal(presenter.silhouette_state(state), "hit", "loss of control keeps precedence over cast locomotion")
 
 
+func _test_live_extension_page_bounds() -> void:
+	var visual: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(CartoonChampionPresenter.DEFAULT_PATH))
+	var live: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(CartoonChampionPresenter.LIVE_CATALOG_PATH))
+	var entries: Array = live["champions"]
+	var presenter := CartoonChampionPresenter.new()
+	presenter.champions = (visual["champions"] as Dictionary).duplicate(true)
+	check(presenter._validate_extension_registry(visual["extension_atlases"], entries), "current two-page registry is matched to the actual live roster")
+	equal(presenter.extension_page_capacity, 26, "29 live identities permit26 individual pages beyond the three foundation bodies")
+	equal(presenter.extension_page_capacity, entries.size() - presenter.REQUIRED_FOUNDATION.size(), "page bound is content-derived, not the previous21-page limit")
+	# Structural admission fixture only: no new image files, accepted art, or GPU
+	# resources are produced by describing future pages for existing identities.
+	var full_pages: Dictionary = {}
+	for entry: Dictionary in entries:
+		var id := String(entry["id"])
+		if id in presenter.REQUIRED_FOUNDATION:
+			continue
+		if not presenter.champions.has(id):
+			presenter.champions[id] = (visual["champions"][String(entry["template_source_id"])] as Dictionary).duplicate(true)
+		full_pages[id] = {"path": "res://assets/sprites/champions_v3/capacity_fixture/" + id + ".png", "sha256": "a".repeat(64), "imported_rgba_sha256": "b".repeat(64)}
+	var full_recipes := presenter.champions.duplicate(true)
+	check(presenter._validate_extension_registry(full_pages, entries), "all24 matched live page descriptors are admitted before file/import checks")
+	check(presenter.extension_atlases.is_empty() and presenter.atlas == null, "descriptor admission creates no textures or fake runtime art")
+	var mutations: Array[Dictionary] = []
+	var extra := full_pages.duplicate(true)
+	extra["not_in_cast"] = (full_pages["grace_reava"] as Dictionary).duplicate(true)
+	mutations.append(extra)
+	var missing := full_pages.duplicate(true)
+	missing.erase("grace_reava")
+	mutations.append(missing)
+	var wrong_identity := full_pages.duplicate(true)
+	wrong_identity["not_in_cast"] = wrong_identity["grace_reava"]
+	wrong_identity.erase("grace_reava")
+	mutations.append(wrong_identity)
+	var base_page := full_pages.duplicate(true)
+	base_page["oh_tipi"] = base_page["grace_reava"]
+	base_page.erase("grace_reava")
+	mutations.append(base_page)
+	var duplicate_path := full_pages.duplicate(true)
+	duplicate_path["wa_bidi"]["path"] = duplicate_path["grace_reava"]["path"]
+	mutations.append(duplicate_path)
+	for bad_path: String in ["res://assets/other.png", "res://assets/sprites/champions_v3/../other.png", "res://assets/sprites/champions_v3/page.txt"]:
+		var bad := full_pages.duplicate(true)
+		bad["grace_reava"]["path"] = bad_path
+		mutations.append(bad)
+	for field: String in ["sha256", "imported_rgba_sha256"]:
+		for invalid_digest: String in ["a".repeat(63), "g".repeat(64), "-" + "a".repeat(63), "é".repeat(64)]:
+			var bad := full_pages.duplicate(true)
+			bad["grace_reava"][field] = invalid_digest
+			mutations.append(bad)
+	var malformed := full_pages.duplicate(true)
+	malformed["grace_reava"] = []
+	mutations.append(malformed)
+	for mutation: Dictionary in mutations:
+		check(not presenter._validate_extension_registry(mutation, entries), "extra, unmatched, duplicate, escaped or unauthenticated page descriptors fail closed")
+		equal(presenter.extension_page_capacity, 0, "rejected page registry exposes no validated allowance")
+		check(not presenter.last_error.is_empty(), "page descriptor rejection has an explicit reason")
+	var duplicate_id := entries.duplicate(true)
+	duplicate_id.append(entries[0])
+	var missing_base := entries.duplicate(true)
+	missing_base.pop_front()
+	var excessive := entries.duplicate(true)
+	while excessive.size() <= presenter.MAX_LIVE_RECIPES:
+		excessive.append(entries[0])
+	for invalid_entries: Array in [duplicate_id, missing_base, excessive, [null]]:
+		check(not presenter._validate_extension_registry(full_pages, invalid_entries), "invalid live identity source cannot inflate atlas capacity")
+	presenter.champions.erase("grace_reava")
+	check(not presenter._validate_extension_registry(full_pages, entries), "a live ID without an authored recipe cannot acquire a page")
+	presenter.champions = full_recipes
+	presenter.champions["orphan_recipe"] = (full_recipes["oh_tipi"] as Dictionary).duplicate(true)
+	check(not presenter._validate_extension_registry(full_pages, entries), "an authored recipe outside the live catalog is rejected")
+
+
+func _test_extension_integrity_reload() -> void:
+	var language := VisualLanguage.new()
+	check(language.load_from_file(), "page integrity language loads")
+	var presenter := CartoonChampionPresenter.new()
+	var started := Time.get_ticks_usec()
+	check(presenter.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "baseline individual pages validate before adversarial reload")
+	var configure_usec := Time.get_ticks_usec() - started
+	var payload_bytes := int(presenter.atlas.get_width() * presenter.atlas.get_height() * 4)
+	for texture: Texture2D in presenter.extension_atlases.values():
+		payload_bytes += texture.get_width() * texture.get_height() * 4
+	print("CHAMPION_ATLAS_SETUP live=%d extensions=%d capacity=%d decoded_payload_bytes=%d configure_us=%d" % [presenter.champions.size(), presenter.extension_atlases.size(), presenter.extension_page_capacity, payload_bytes, configure_usec])
+	var visual: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(CartoonChampionPresenter.DEFAULT_PATH))
+	var fixture_path := "user://cartoon-atlas-integrity-%d.json" % Time.get_ticks_usec()
+	for mutation_id: String in ["orphan", "missing_file", "source_hash", "imported_hash"]:
+		var changed := visual.duplicate(true)
+		var pages: Dictionary = changed["extension_atlases"]
+		match mutation_id:
+			"orphan":
+				pages["not_in_cast"] = (pages["grace_reava"] as Dictionary).duplicate(true)
+			"missing_file":
+				pages["grace_reava"]["path"] = "res://assets/sprites/champions_v3/no-such-atlas-integrity-fixture.png"
+			"source_hash":
+				pages["grace_reava"]["sha256"] = "0".repeat(64)
+			"imported_hash":
+				pages["grace_reava"]["imported_rgba_sha256"] = "0".repeat(64)
+		var file := FileAccess.open(fixture_path, FileAccess.WRITE)
+		check(file != null, "isolated invalid manifest fixture opens")
+		if file == null:
+			return
+		file.store_string(JSON.stringify(changed))
+		file.close()
+		check(not presenter.configure(language, fixture_path, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "real configure rejects " + mutation_id)
+		check(not presenter.last_error.is_empty(), "real rejected configure reports its integrity failure")
+		check(presenter.champions.is_empty() and presenter.extension_atlases.is_empty() and presenter.atlas == null, "failed reload cannot expose old or partly validated page textures")
+		equal(presenter.extension_page_capacity, 0, "failed reload clears page allowance")
+		equal(presenter.content_hash, "", "failed reload cannot advertise a valid manifest hash")
+		equal(DirAccess.remove_absolute(ProjectSettings.globalize_path(fixture_path)), OK, "isolated integrity fixture is removed")
+	check(presenter.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "valid full-cast template presentation recovers after every rejected reload")
+	equal(presenter.champions.size(), 29, "capacity fix does not change the current29 visible identities")
+	equal(presenter.extension_atlases.size(), 2, "capacity fix does not manufacture future champion pages")
+
+
+func _override_manifest(pages: Dictionary) -> Dictionary:
+	return {
+		"schema_version": 1, "id": CartoonChampionPresenter.OVERRIDE_ID,
+		"authority": CartoonChampionPresenter.EXPECTED_AUTHORITY,
+		"cell": [96, 96], "pivot": [48, 84], "dimensions": [768, 960], "runtime_scale": [1, 1],
+		"directions": CartoonChampionPresenter.EXPECTED_DIRECTIONS.duplicate(),
+		"states": CartoonChampionPresenter.EXPECTED_ATLAS_STATES.duplicate(),
+		"frame_count": 80, "row_layout": "state_major_direction_minor",
+		"sampling": "nearest_no_mipmaps", "atlas_role": "body_and_clothing_only",
+		"timing": "existing_minimal_champion_motion", "pages": pages,
+	}
+
+
+func _test_complete_page_overrides() -> void:
+	var language := VisualLanguage.new()
+	check(language.load_from_file(), "override language loads")
+	var presenter := CartoonChampionPresenter.new()
+	check(presenter.configure(language, presenter.DEFAULT_PATH, "", false), "explicit baseline has no optional overrides")
+	var visual: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(presenter.DEFAULT_PATH))
+	_test_cross_baseline_override_identity(presenter, visual)
+	var approved: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(presenter.DEFAULT_OVERRIDE_PATH))
+	# Reuse the actually approved S. Wayne page as a loader fixture, never another identity's art.
+	var source_page: Dictionary = approved["pages"]["s_wayne"].duplicate(true)
+	var manifest := _override_manifest({"s_wayne": source_page})
+	check(presenter._validate_override_manifest(manifest), "required foundation IDs can own a complete independent replacement page")
+	var all_pages: Dictionary = {}
+	for champion_id: String in presenter.champions:
+		var page := source_page.duplicate(true)
+		page["path"] = "res://assets/sprites/champions_v3/test-descriptor-only/" + champion_id + ".png"
+		page["body_type"] = presenter.champions[champion_id]["body_type"]
+		page["reference_height"] = presenter.champions[champion_id]["height"]
+		page["sha256"] = (champion_id + "source-descriptor-only").sha256_text()
+		page["imported_rgba_sha256"] = (champion_id + "pixels-descriptor-only").sha256_text()
+		all_pages[champion_id] = page
+	check(presenter._validate_override_manifest(_override_manifest(all_pages)), "all current live IDs admit descriptors without loading nonexistent future art")
+	equal(presenter.override_resident_count(), 0, "descriptor checks allocate no complete-page textures")
+	var too_many: Array[String] = []
+	for champion_id: String in all_pages:
+		too_many.append(champion_id)
+		if too_many.size() == 9: break
+	presenter._override_pages = all_pages.duplicate(true)
+	check(not presenter.prepare_override_pages(too_many), "nine active override pages are refused before any nonexistent file is accessed")
+	equal(presenter.override_resident_count(), 0, "oversized request cannot allocate a partial working set")
+	presenter._override_pages.clear()
+	for key: String in ["frame_count", "states", "directions", "pivot", "cell", "dimensions", "runtime_scale", "sampling", "timing", "authority", "atlas_role", "row_layout", "schema_version"]:
+		var invalid := manifest.duplicate(true)
+		invalid.erase(key)
+		check(not presenter._validate_override_manifest(invalid), "incomplete or incompatible override metadata fails closed: " + key)
+	for geometry: Array in [[48.1, 84], [48, 84.1], ["48", 84]]:
+		var invalid := manifest.duplicate(true)
+		invalid["pivot"] = geometry
+		check(not presenter._validate_override_manifest(invalid), "fractions and numeric strings cannot shift an approved pivot")
+	for changes: Dictionary in [
+		{"body_type": "large"}, {"reference_height": 76}, {"status": "candidate"},
+		{"visible_feet_y": 82}, {"visible_feet_y": 83.1}, {"visible_feet_y": "83"},
+		{"path": "res://assets/sprites/champions_v3/../outside.png"}, {"path": "user://page.png"},
+		{"sha256": "g".repeat(64)}, {"imported_rgba_sha256": "A".repeat(64)},
+	]:
+		var invalid := manifest.duplicate(true)
+		invalid["pages"]["s_wayne"].merge(changes, true)
+		check(not presenter._validate_override_manifest(invalid), "mismatched body, unaccepted status, escaped path or malformed hash fails closed")
+	var orphan := manifest.duplicate(true)
+	orphan["pages"]["not_a_live_character"] = source_page
+	check(not presenter._validate_override_manifest(orphan), "unknown character overrides fail closed")
+	var duplicated := manifest.duplicate(true)
+	duplicated["pages"]["grace_reava"] = source_page
+	check(not presenter._validate_override_manifest(duplicated), "one imported path cannot impersonate two approved unique pages")
+	for duplicate_field: String in ["sha256", "imported_rgba_sha256"]:
+		var renamed := all_pages.duplicate(true)
+		renamed["steezo"][duplicate_field] = renamed["s_wayne"][duplicate_field]
+		check(not presenter._validate_override_manifest(_override_manifest(renamed)), "renamed/recompressed template pixels are not unique identity art: " + duplicate_field)
+	var original_pixels := presenter.texture_for_champion("grace_reava").get_image()
+	check(presenter._validate_override_pixels(original_pixels, 58), "existing complete small page meets exact native registration")
+	var edge_aligned := Image.create(768, 960, false, Image.FORMAT_RGBA8)
+	edge_aligned.blit_rect(original_pixels, Rect2i(0, 1, 768, 959), Vector2i.ZERO)
+	check(presenter._validate_override_pixels(edge_aligned, 58, 83), "new importer feet-edge convention is explicit, not a hidden sprite translation")
+	check(not presenter._validate_override_pixels(edge_aligned, 58, 84), "the same pixels cannot claim a different exact feet convention")
+	var raised_arm := original_pixels.duplicate() as Image
+	raised_arm.set_pixel(48, 96 + 2, Color.WHITE)
+	check(presenter._validate_override_pixels(raised_arm, 58), "registered raised action anatomy may extend above standing guide without rescaling")
+	for mutation: String in ["empty", "gutter", "feet", "body_height", "partial", "blurred_alpha", "mipmaps", "rgb"]:
+		var pixels := original_pixels.duplicate() as Image
+		match mutation:
+			"empty": pixels.fill_rect(Rect2i(0, 96, 96, 96), Color.TRANSPARENT)
+			"gutter": pixels.set_pixel(0, 40, Color.WHITE)
+			"feet": pixels.set_pixel(48, 85, Color.WHITE)
+			"body_height": pixels.set_pixel(48, 2, Color.WHITE)
+			"partial": pixels.crop(768, 864)
+			"blurred_alpha": pixels.set_pixel(48, 40, Color(1.0, 1.0, 1.0, 0.5))
+			"mipmaps": pixels.generate_mipmaps()
+			"rgb": pixels.convert(Image.FORMAT_RGB8)
+		check(not presenter._validate_override_pixels(pixels, 58), "pixel-level incomplete/clipped/unregistered override is rejected: " + mutation)
+	var fixture_path := "user://complete-page-override-%d.json" % Time.get_ticks_usec()
+	var file := FileAccess.open(fixture_path, FileAccess.WRITE)
+	check(file != null, "isolated override manifest fixture opens")
+	if file == null: return
+	file.store_string(JSON.stringify(manifest))
+	file.close()
+	var configured := presenter.configure(language, presenter.DEFAULT_PATH, fixture_path, false)
+	check(configured, "real source/import hashes validate a complete foundation override: " + presenter.last_error)
+	if not configured: return
+	equal(presenter.override_page_ids, ["s_wayne"], "only the explicitly named identity is registered")
+	equal(presenter.override_resident_count(), 0, "registration retains no full-page override textures")
+	var portrait := presenter.portrait_frame("s_wayne")
+	check(bool(portrait.get("complete_page_override", false)), "Gallery receives the accepted portrait before world page preparation")
+	equal((portrait["texture"] as Texture2D).get_size(), Vector2(32, 32), "each unique Gallery portrait occupies only32px square")
+	check(presenter.portrait_frame("s_wayne")["texture"] == portrait["texture"], "Gallery portrait reuses its small verified texture")
+	var baseline_texture := presenter.texture_for_champion("s_wayne")
+	var state := PlayerState.new()
+	state.facing_y = 1000
+	state.facing_x = 0
+	state.aim_x = 0
+	state.aim_y = 1000
+	var baseline_region := presenter.source_region_for_animation_state("s_wayne", state, "grounded")
+	check(presenter.prepare_override_pages(["s_wayne", "s_wayne", "oh_tipi"]), "one unique override and baseline identities prepare atomically")
+	equal(presenter.override_resident_count(), 1, "duplicate requests do not duplicate residency")
+	check(presenter.texture_for_champion("s_wayne") != baseline_texture, "complete page supersedes foundation texture only when prepared")
+	for pose: String in presenter.EXPECTED_ATLAS_STATES:
+		for direction: String in presenter.EXPECTED_DIRECTIONS:
+			var vector := EightDirectionResolver.fixed_vector(direction)
+			state.facing_x = vector.x
+			state.facing_y = vector.y
+			state.aim_x = vector.x
+			state.aim_y = vector.y
+			var region := presenter.source_region_for_animation_state("s_wayne", state, pose)
+			equal(region, Rect2(presenter.EXPECTED_DIRECTIONS.find(direction) * 96, presenter.EXPECTED_ATLAS_STATES.find(pose) * 96, 96, 96), "every override pose/direction uses the same complete native page")
+	for champion_id: String in presenter.champions:
+		if presenter.champions[champion_id].get("template_source_id", "") == "s_wayne":
+			check(presenter.texture_for_champion(champion_id) == baseline_texture, "temporary aliases retain old source pixels when exemplar becomes unique")
+	var retained := presenter.texture_for_champion("s_wayne")
+	check(presenter.prepare_override_pages(["s_wayne"]), "same active set is cheap and valid")
+	check(presenter.texture_for_champion("s_wayne") == retained, "same active set never reloads/uploads a full page")
+	check(not presenter.prepare_override_pages(["unknown"]), "unknown preparation is refused without changing verified residency")
+	equal(presenter.override_resident_count(), 1, "failed preparation preserves the old verified working set")
+	check(presenter.prepare_override_pages([]), "empty active set releases complete-page ownership")
+	equal(presenter.override_resident_count(), 0, "no inactive full override remains cached")
+	check(presenter.texture_for_champion("s_wayne") == baseline_texture, "unprepared character retains working v15 fallback")
+	state.facing_x = 0
+	state.facing_y = 1000
+	state.aim_x = 0
+	state.aim_y = 1000
+	equal(presenter.source_region_for_animation_state("s_wayne", state, "grounded"), baseline_region, "fallback uses original foundation row, not override row zero")
+	check(presenter.portrait_frame("s_wayne")["texture"] == portrait["texture"], "compact portrait survives full-page eviction")
+	for bad_field: String in ["sha256", "imported_rgba_sha256", "path", "baseline_clone"]:
+		var invalid := manifest.duplicate(true)
+		if bad_field == "baseline_clone":
+			invalid["pages"]["s_wayne"].merge(visual["extension_atlases"]["grace_reava"], true)
+			invalid["pages"]["s_wayne"]["visible_feet_y"] = 84
+		else:
+			invalid["pages"]["s_wayne"][bad_field] = "res://assets/sprites/champions_v3/missing-complete-page.png" if bad_field == "path" else "0".repeat(64)
+		file = FileAccess.open(fixture_path, FileAccess.WRITE)
+		file.store_string(JSON.stringify(invalid))
+		file.close()
+		check(not presenter.configure(language, presenter.DEFAULT_PATH, fixture_path, false), "actual configure rejects missing or tampered override: " + bad_field)
+		check(presenter.champions.is_empty() and presenter.override_page_ids.is_empty() and presenter.override_resident_count() == 0, "failed override configure exposes no partial registry or stale page set")
+		check(presenter._baseline_identity_pages.is_empty(), "invalid configure also releases baseline identity fingerprints")
+	var same_identity: Dictionary = visual["extension_atlases"]["grace_reava"].duplicate(true)
+	same_identity.merge({"body_type": "small", "reference_height": 58, "visible_feet_y": 84, "status": "reviewed_complete_runtime_page"})
+	file = FileAccess.open(fixture_path, FileAccess.WRITE)
+	file.store_string(JSON.stringify(_override_manifest({"grace_reava": same_identity})))
+	file.close()
+	check(presenter.configure(language, presenter.DEFAULT_PATH, fixture_path, false), "actual loader permits deliberate same-identity baseline replacement")
+	check(presenter.prepare_override_pages(["grace_reava"]), "same-identity replacement remains preparable with verified pixels")
+	equal(DirAccess.remove_absolute(ProjectSettings.globalize_path(fixture_path)), OK, "isolated override fixture is removed")
+	check(presenter.configure(language, presenter.DEFAULT_PATH, "", false), "working v15 remains reloadable without overrides")
+
+
+func _test_cross_baseline_override_identity(presenter: CartoonChampionPresenter, visual: Dictionary) -> void:
+	var approved: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(presenter.DEFAULT_OVERRIDE_PATH))
+	var page: Dictionary = approved["pages"]["s_wayne"].duplicate(true)
+	var extension: Dictionary = visual["extension_atlases"]["grace_reava"]
+	for field: String in ["path", "sha256", "imported_rgba_sha256"]:
+		var clone := page.duplicate(true)
+		clone[field] = extension[field]
+		check(not presenter._validate_override_manifest(_override_manifest({"s_wayne": clone})), "another baseline extension cannot be claimed by path/source/pixel identity: " + field)
+	var same_extension := page.duplicate(true)
+	same_extension.merge(extension, true)
+	same_extension["visible_feet_y"] = 84
+	check(presenter._validate_override_manifest(_override_manifest({"grace_reava": same_extension})), "deliberate same-identity extension replacement remains valid")
+	var atlas_pixels := presenter.atlas.get_image()
+	for index: int in presenter.REQUIRED_FOUNDATION.size():
+		var identity: String = presenter.REQUIRED_FOUNDATION[index]
+		var foundation_page := atlas_pixels.get_region(Rect2i(0, index * 960, 768, 960))
+		var crop := page.duplicate(true)
+		crop["imported_rgba_sha256"] = presenter._bytes_sha256(foundation_page.get_data())
+		var impostor := "steezo" if identity == "s_wayne" else "ha_rekt" if identity == "oh_tipi" else "fluup"
+		crop["body_type"] = presenter.champions[impostor]["body_type"]
+		crop["reference_height"] = presenter.champions[impostor]["height"]
+		check(not presenter._validate_override_manifest(_override_manifest({impostor: crop})), "cropped/recompressed foundation pixels cannot become a different identity: " + identity)
+		crop["body_type"] = presenter.champions[identity]["body_type"]
+		crop["reference_height"] = presenter.champions[identity]["height"]
+		check(presenter._validate_override_manifest(_override_manifest({identity: crop})), "same-identity foundation pixels remain admissible metadata: " + identity)
+	equal(presenter.override_resident_count(), 0, "cross-baseline hash checks keep no full override textures resident")
+	equal(presenter._baseline_identity_pages.size(), presenter.REQUIRED_FOUNDATION.size() + presenter.extension_atlases.size(), "fingerprints cover each independently verified baseline identity")
+	for baseline: Dictionary in presenter._baseline_identity_pages.values():
+		for fingerprint: Variant in baseline.values():
+			check(fingerprint is String, "baseline cache retains only short strings, never a cropped image or texture")
+
+
 func _test_repository_recipes() -> void:
 	var presenter := CartoonChampionPresenter.new()
-	check(not presenter.configure(null), "presenter refuses an absent visual language")
+	check(not presenter.configure(null, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "presenter refuses an absent visual language")
 	var language := VisualLanguage.new()
 	check(language.load_from_file(), "visual language loads for champion recipes")
-	check(presenter.configure(language), "foundation cartoon recipes validate: %s" % presenter.last_error)
+	check(presenter.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "foundation cartoon recipes validate: %s" % presenter.last_error)
 	check(presenter.atlas != null, "reviewed foundation runtime atlas loads")
 	check(presenter.motion != null and presenter.motion.content_hash.length() == 64, "editable minimal-motion recipes load with champion art")
 	check(presenter.content_hash.length() == 64, "champion presentation content has a stable hash")
@@ -194,9 +671,13 @@ func _test_repository_recipes() -> void:
 	var state := PlayerState.new()
 	state.facing_x = 0
 	state.facing_y = 1000
+	state.aim_x = 0
+	state.aim_y = 1000
 	equal(presenter.source_region("oh_tipi", state), Rect2(0, 0, 96, 96), "Oh Tipi south grounded selects the first cell")
 	state.facing_x = -1000
 	state.facing_y = 0
+	state.aim_x = -1000
+	state.aim_y = 0
 	equal(presenter.source_region("oh_tipi", state), Rect2(576, 0, 96, 96), "Oh Tipi west grounded selects dedicated west art")
 	state.pending_cast_wire_id = 1
 	state.pending_cast_aim_x = -1000
@@ -205,6 +686,8 @@ func _test_repository_recipes() -> void:
 	state.pending_cast_wire_id = 0
 	state.facing_x = 1000
 	state.facing_y = 0
+	state.aim_x = 1000
+	state.aim_y = 0
 	equal(presenter.source_region("red_baron", state), Rect2(192, 1920, 96, 96), "The Red Baron east grounded selects the large foundation row")
 	equal(String(presenter.recipe("red_baron").get("body_type", "")), "large", "The Red Baron is the first promoted large body")
 	var atlas_image := presenter.atlas.get_image()
@@ -233,6 +716,8 @@ func _test_repository_recipes() -> void:
 		var directional_state := PlayerState.new()
 		directional_state.facing_x = int((case["facing"] as Vector2i).x)
 		directional_state.facing_y = int((case["facing"] as Vector2i).y)
+		directional_state.aim_x = directional_state.facing_x
+		directional_state.aim_y = directional_state.facing_y
 		var expected_x := float(case["column"]) * 96.0
 		equal(presenter.source_region("oh_tipi", directional_state), Rect2(expected_x, 0, 96, 96), "grounded %s animation selects dedicated cardinal art" % case["state"])
 		directional_state.pending_cast_wire_id = 1
@@ -266,6 +751,8 @@ func _test_repository_recipes() -> void:
 		var diagonal_state := PlayerState.new()
 		diagonal_state.facing_x = int((case["facing"] as Vector2i).x)
 		diagonal_state.facing_y = int((case["facing"] as Vector2i).y)
+		diagonal_state.aim_x = diagonal_state.facing_x
+		diagonal_state.aim_y = diagonal_state.facing_y
 		var expected_x := float(case["column"]) * 96.0
 		equal(presenter.source_region("oh_tipi", diagonal_state), Rect2(expected_x, 0, 96, 96), "grounded %s selects promoted diagonal art" % case["state"])
 		diagonal_state.pending_cast_wire_id = 1
@@ -296,7 +783,7 @@ func _test_semantic_states() -> void:
 	var language := VisualLanguage.new()
 	check(language.load_from_file(), "visual language loads for semantic states")
 	var presenter := CartoonChampionPresenter.new()
-	check(presenter.configure(language), "foundation cartoon recipes load for semantic states")
+	check(presenter.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "foundation cartoon recipes load for semantic states")
 	var state := PlayerState.new()
 	equal(CartoonChampionPresenter.semantic_action(state), "idle", "idle resolves to a stable semantic action")
 	equal(presenter.silhouette_state(state), "grounded", "idle state uses its declared grounded alias")
@@ -393,7 +880,7 @@ func _test_semantic_aliases_fail_closed() -> void:
 	var language := VisualLanguage.new()
 	check(language.load_from_file(), "visual language loads for adversarial alias tests")
 	var valid := CartoonChampionPresenter.new()
-	check(valid.configure(language), "valid semantic aliases load before adversarial mutations")
+	check(valid.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "valid semantic aliases load before adversarial mutations")
 	var mutations: Array[Dictionary] = []
 	var missing: Dictionary = valid.semantic_state_aliases.duplicate(true)
 	missing.erase("roll")
@@ -415,23 +902,23 @@ func _test_diagonal_contract_fails_closed() -> void:
 	var language := VisualLanguage.new()
 	check(language.load_from_file(), "visual language loads for diagonal contract tests")
 	var presenter := CartoonChampionPresenter.new()
-	check(presenter.configure(language), "valid diagonal contract loads before mutation")
+	check(presenter.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "valid diagonal contract loads before mutation")
 	var contract := presenter.diagonal_core_contract.duplicate(true)
 	contract["states"] = ["grounded", "cast"]
 	check(not presenter._validate_diagonal_core_contract(contract), "missing diagonal core state fails closed")
 	check(not presenter.last_error.is_empty(), "diagonal contract failure is actionable")
 	equal(presenter.diagonal_core_contract, {}, "failed diagonal validation exposes no stale contract")
-	check(presenter.configure(language), "valid diagonal contracts reload before locomotion mutation")
+	check(presenter.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "valid diagonal contracts reload before locomotion mutation")
 	var locomotion_contract := presenter.diagonal_locomotion_contract.duplicate(true)
 	locomotion_contract["gaits"] = ["forward", "backward"]
 	check(not presenter._validate_diagonal_locomotion_contract(locomotion_contract), "incomplete gait catalog fails closed")
 	equal(presenter.diagonal_locomotion_contract, {}, "failed locomotion validation exposes no stale contract")
-	check(presenter.configure(language), "valid diagonal contracts reload before evasion mutation")
+	check(presenter.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "valid diagonal contracts reload before evasion mutation")
 	var evasion_contract := presenter.diagonal_evasion_contract.duplicate(true)
 	evasion_contract["states"] = ["jump", "roll"]
 	check(not presenter._validate_diagonal_evasion_contract(evasion_contract), "missing diagonal evasion state fails closed")
 	equal(presenter.diagonal_evasion_contract, {}, "failed evasion validation exposes no stale contract")
-	check(presenter.configure(language), "valid contracts reload before locomotion phase mutation")
+	check(presenter.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "valid contracts reload before locomotion phase mutation")
 	var phase_contract := presenter.locomotion_phase_contract.duplicate(true)
 	phase_contract["frame_states"] = {"walk": ["walk", "walk_b"], "sprint": ["sprint"]}
 	check(not presenter._validate_locomotion_phase_contract(phase_contract), "missing alternate sprint contact fails closed")
@@ -471,19 +958,21 @@ func _test_relative_locomotion_gaits() -> void:
 	state.velocity_y = 707
 	state.facing_x = 707
 	state.facing_y = 707
-	equal(CartoonChampionPresenter.presentation_facing_vector(state, "walk"), Vector2i(707, 707), "free locomotion faces physical travel")
+	state.aim_x = 707
+	state.aim_y = 707
+	equal(CartoonChampionPresenter.presentation_facing_vector(state, "walk"), Vector2i(707, 707), "coincident cursor and travel face forward")
 	equal(CartoonChampionPresenter.locomotion_gait(state), "forward", "free locomotion uses forward gait")
 	state.primary_held = true
 	state.aim_x = -707
 	state.aim_y = -707
-	equal(CartoonChampionPresenter.presentation_facing_vector(state, "walk"), Vector2i(707, 707), "movement art follows travel even while independent aim opposes it")
-	equal(CartoonChampionPresenter.locomotion_gait(state), "forward", "opposed aim does not rotate movement artwork")
+	equal(CartoonChampionPresenter.presentation_facing_vector(state, "walk"), Vector2i(-707, -707), "movement art follows opposed cursor")
+	equal(CartoonChampionPresenter.locomotion_gait(state), "backward", "opposed cursor selects backward cadence")
 	state.aim_x = -707
 	state.aim_y = 707
-	equal(CartoonChampionPresenter.locomotion_gait(state), "forward", "quarter-turn aim does not rotate movement artwork")
+	equal(CartoonChampionPresenter.locomotion_gait(state), "strafe_left", "quarter-turn cursor selects left strafe")
 	state.aim_x = 707
 	state.aim_y = -707
-	equal(CartoonChampionPresenter.locomotion_gait(state), "forward", "opposite quarter-turn still faces travel")
+	equal(CartoonChampionPresenter.locomotion_gait(state), "strafe_right", "opposite quarter-turn cursor selects right strafe")
 	var backward_sample := MinimalChampionMotion.Sample.new()
 	backward_sample.offset = Vector2(2.0, -2.0)
 	backward_sample.scale = Vector2(1.04, 0.96)
@@ -502,13 +991,15 @@ func _test_locomotion_contact_regions() -> void:
 	var language := VisualLanguage.new()
 	check(language.load_from_file(), "visual language loads for contact-frame regions")
 	var presenter := CartoonChampionPresenter.new()
-	check(presenter.configure(language), "foundation recipes load for contact-frame regions")
+	check(presenter.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "foundation recipes load for contact-frame regions")
 	var state := PlayerState.new()
 	state.movement_mode = PlayerState.MovementMode.WALK
 	state.velocity_x = 707
 	state.velocity_y = -707
 	state.facing_x = 707
 	state.facing_y = -707
+	state.aim_x = 707
+	state.aim_y = -707
 	equal(presenter.source_region_for_animation_state("oh_tipi", state, "walk"), Rect2(288, 384, 96, 96), "walk contact A owns north-east art")
 	equal(presenter.source_region_for_animation_state("oh_tipi", state, "walk_b"), Rect2(288, 768, 96, 96), "walk contact B owns north-east art")
 	state.movement_mode = PlayerState.MovementMode.SPRINT
@@ -520,7 +1011,7 @@ func _test_movement_template_direction_matrix() -> void:
 	var language := VisualLanguage.new()
 	check(language.load_from_file(), "movement matrix language loads")
 	var presenter := CartoonChampionPresenter.new()
-	check(presenter.configure(language), "movement matrix uses the live champion presenter")
+	check(presenter.configure(language, CartoonChampionPresenter.DEFAULT_PATH, CartoonChampionPresenter.DEFAULT_OVERRIDE_PATH, false), "movement matrix uses the live champion presenter")
 	var config := SimConfig.new(120)
 	var actions := {"idle": PlayerState.MovementMode.IDLE, "walk": PlayerState.MovementMode.WALK, "sprint": PlayerState.MovementMode.SPRINT, "jump": PlayerState.MovementMode.HOP, "float": PlayerState.MovementMode.DOUBLE_JUMP, "slide": PlayerState.MovementMode.SLIDE, "roll": PlayerState.MovementMode.ROLL, "air_turn": PlayerState.MovementMode.HOP, "wallrun": PlayerState.MovementMode.WALL_SKIM, "landing": PlayerState.MovementMode.IDLE}
 	for champion_id: String in presenter.champions:
@@ -561,7 +1052,7 @@ func _test_movement_template_direction_matrix() -> void:
 				for reduced: bool in [false, true]:
 					var frame := presenter.movement_frame(champion_id, state, 19.0, config, reduced)
 					var region: Rect2 = frame["source_region"]
-					equal(region.position.x, float(direction_index * 96), "%s/%s keeps input-facing direction %d" % [champion_id, action, direction_index])
+					equal(region.position.x, float(((direction_index + 4) % 8) * 96), "%s/%s keeps cursor-facing opposite movement %d" % [champion_id, action, direction_index])
 					equal(region.size, CartoonChampionPresenter.CELL_SIZE, "%s/%s uses the same source-cell dimensions" % [champion_id, action])
 					equal(frame["scale"], Vector2.ONE, "%s/%s never rescales its template" % [champion_id, action])
 					if action in ["walk", "sprint"]:
@@ -633,6 +1124,55 @@ func _test_immediate_protection_contract() -> void:
 				state.spawn_protection_ticks = 1
 				check(bool(CartoonChampionPresenter.protection_contract(state, config, reduced, height)["active"]), "spawn safety cannot look vulnerable")
 	check(not bool(CartoonChampionPresenter.protection_contract(null, config)["active"]), "missing protection state fails closed")
+
+
+func _test_float_time_budget() -> void:
+	var config := SimConfig.new(120)
+	for body: Vector2i in [Vector2i(58, 1800), Vector2i(68, 1500), Vector2i(76, 1200)]:
+		for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+			var state := PlayerState.new()
+			state.air_height = 20000
+			state.air_floating = true
+			state.float_used = true
+			state.float_max_duration_ms = body.y
+			state.facing_x = direction.x
+			state.facing_y = direction.y
+			var total := config.milliseconds_to_ticks(body.y)
+			for remaining: int in [total, total / 2, 1, 0]:
+				state.float_ticks = remaining
+				var canonical := state.canonical_values()
+				var normal := CartoonChampionPresenter.protection_contract(state, config, false, body.x)
+				var reduced := CartoonChampionPresenter.protection_contract(state, config, true, body.x)
+				equal(normal, reduced, "Float time and protection information is identical in reduced effects")
+				equal(normal.get("float_budget_ratio", -1.0), float(remaining) / total, "Float budget reports the exact authoritative remaining time for each body")
+				var slots: Array = normal.get("float_budget_slots", [])
+				var fills: Array = normal.get("float_budget_fills", [])
+				equal(slots.size(), 3 if remaining > 0 else 0, "only active Float has three static budget slots")
+				if remaining > 0:
+					equal(normal.remaining_ratio, 1.0, "time budget never fades the still-active protection shield")
+					check(not fills.is_empty(), "even the final Float tick keeps one visible time-budget pixel")
+					for slot: Rect2 in slots:
+						equal(slot.position.y, (normal.shield as PackedVector2Array)[0].y - 10.0, "compact time meter stays directly above the existing shield without stacking a high icon")
+					for index: int in range(fills.size()):
+						check((slots[index] as Rect2).encloses(fills[index]), "budget fill never grows beyond its fixed slot")
+					if remaining == total:
+						equal(fills, slots, "full Float time fills all three fixed slots")
+					elif remaining == 1:
+						equal(fills.size(), 1, "final tick is a single partial slot, not a fresh full bar")
+						if not fills.is_empty():
+							equal((fills[0] as Rect2).size.x, 1.0, "final tick remains one crisp pixel without flashing")
+				else:
+					check(not normal.active and fills.is_empty(), "timeout removes time and protection on the exact same query")
+				equal(state.canonical_values(), canonical, "budget sampling cannot consume Stamina/time or change direction")
+			state.spawn_protection_ticks = 1
+			state.float_ticks = total
+			for exit_kind: String in ["release", "exhaustion", "timeout"]:
+				state.air_floating = exit_kind != "release"
+				state.stamina = 0 if exit_kind == "exhaustion" else state.stamina_maximum
+				state.float_ticks = 0 if exit_kind == "timeout" else total
+				var ended := CartoonChampionPresenter.protection_contract(state, config, false, body.x)
+				check(ended.active, "independent spawn protection remains visible after Float ends")
+				check((ended.get("float_budget_slots", []) as Array).is_empty() and (ended.float_wings as Array).is_empty(), "Float-specific information disappears despite overlapping spawn protection")
 
 
 func _test_directional_movement_trails() -> void:

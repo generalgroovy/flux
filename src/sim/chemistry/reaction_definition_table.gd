@@ -41,6 +41,8 @@ func compile(reactions: ReactionCatalog, abilities: AbilityCatalog) -> bool:
 		"ability_catalog_hash": abilities.content_hash,
 		"level_one_runtime_rows": Chemistry.RECIPE_ROWS,
 		"deposit_lifetimes": Chemistry.ELEMENT_LIFE_MS,
+		"trail_policy": Chemistry.trail_policy(),
+		"movement_surface_policy": Chemistry.movement_surface_policy(),
 	})
 	return content_hash.length() == 64 or _fail("reaction definition hash failed")
 

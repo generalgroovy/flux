@@ -1,0 +1,117 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (4 steps)[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  40% ] [90m[1mupdate_scripts_classes[22m | ActorMotionHistory[39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[   0% ] [90m[1m_update_scan_actions[22m | Started Scanning actions... (26 steps)[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | large-east.png[39m[0m
+[   3% ] [90m[1m_update_scan_actions[22m | large-north.png[39m[0m
+[   7% ] [90m[1m_update_scan_actions[22m | large-north_east.png[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | large-north_west.png[39m[0m
+[  14% ] [90m[1m_update_scan_actions[22m | large-south.png[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | large-south_east.png[39m[0m
+[  22% ] [90m[1m_update_scan_actions[22m | large-south_west.png[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | large-west.png[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | middle-east.png[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | middle-north.png[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | middle-north_east.png[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | middle-north_west.png[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | middle-south.png[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | middle-south_east.png[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | middle-south_west.png[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | middle-west.png[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | small-east.png[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | small-north.png[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | small-north_east.png[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | small-north_west.png[39m[0m
+[  74% ] [90m[1m_update_scan_actions[22m | small-south.png[39m[0m
+[  77% ] [90m[1m_update_scan_actions[22m | small-south_east.png[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | small-south_west.png[39m[0m
+[  85% ] [90m[1m_update_scan_actions[22m | small-west.png[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | small-ne-pair-v1-held.png[39m[0m
+[  92% ] [90m[1m_update_scan_actions[22m | small-ne-pilot-v2-held.png[39m[0m
+[92m[ DONE ][39m [1m_update_scan_actions[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (26 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   3% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   7% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  11% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  14% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  18% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  22% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  25% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  29% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  33% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  37% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  40% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  44% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  48% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  51% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  55% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  59% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  62% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  66% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  70% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  74% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  77% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  81% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  85% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  88% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  92% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing pre-reimport operations...[39m[0m
+[   0% ] [90m[1mreimport[22m | small-ne-pilot-v2-held.png[39m[0m
+[   3% ] [90m[1mreimport[22m | small-ne-pair-v1-held.png[39m[0m
+[   7% ] [90m[1mreimport[22m | small-west.png[39m[0m
+[  11% ] [90m[1mreimport[22m | small-south_west.png[39m[0m
+[  14% ] [90m[1mreimport[22m | small-south_east.png[39m[0m
+[  18% ] [90m[1mreimport[22m | small-south.png[39m[0m
+[  22% ] [90m[1mreimport[22m | small-north_west.png[39m[0m
+[  25% ] [90m[1mreimport[22m | small-north_east.png[39m[0m
+[  29% ] [90m[1mreimport[22m | small-north.png[39m[0m
+[  33% ] [90m[1mreimport[22m | small-east.png[39m[0m
+[  37% ] [90m[1mreimport[22m | middle-west.png[39m[0m
+[  40% ] [90m[1mreimport[22m | middle-south_west.png[39m[0m
+[  44% ] [90m[1mreimport[22m | middle-south_east.png[39m[0m
+[  48% ] [90m[1mreimport[22m | middle-south.png[39m[0m
+[  51% ] [90m[1mreimport[22m | middle-north_west.png[39m[0m
+[  55% ] [90m[1mreimport[22m | middle-north_east.png[39m[0m
+[  59% ] [90m[1mreimport[22m | middle-north.png[39m[0m
+[  62% ] [90m[1mreimport[22m | middle-east.png[39m[0m
+[  66% ] [90m[1mreimport[22m | large-west.png[39m[0m
+[  70% ] [90m[1mreimport[22m | large-south_west.png[39m[0m
+[  74% ] [90m[1mreimport[22m | large-south_east.png[39m[0m
+[  77% ] [90m[1mreimport[22m | large-south.png[39m[0m
+[  81% ] [90m[1mreimport[22m | large-north_west.png[39m[0m
+[  85% ] [90m[1mreimport[22m | large-north_east.png[39m[0m
+[  88% ] [90m[1mreimport[22m | large-north.png[39m[0m
+[  92% ] [90m[1mreimport[22m | large-east.png[39m[0m
+[  96% ] [90m[1mreimport[22m | Finalizing Asset Import...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (26 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing post-reimport operations...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[  33% ] [90m[1mloading_editor_layout[22m | Reopening scenes...[39m[0m
+[  50% ] [90m[1mloading_editor_layout[22m | Loading central editor layout...[39m[0m
+[  66% ] [90m[1mloading_editor_layout[22m | Loading plugin window layout...[39m[0m
+[  83% ] [90m[1mloading_editor_layout[22m | Editor layout ready.[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m

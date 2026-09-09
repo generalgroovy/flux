@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "scope": "Six exact live preferences/install-pointer/launcher/ownership-marker/shortcut paths; matching existence, bytes, SHA256 and UTC mtime before/after the full delivery process. Not a recursive audit of all user files.",
+  "before": [
+    {
+      "path": "C:\\Users\\sende\\AppData\\Roaming\\Godot\\app_userdata\\FLUX 2\\player_preferences_v1.json",
+      "exists": true,
+      "bytes": 2966,
+      "mtime": "639245386681280089",
+      "sha256": "ac77e394551a44b7f3ba5be9e63badf3cc2ece058b75e5c756bfe0ef6c9183b3"
+    },
+    {
+      "path": "C:\\Users\\sende\\AppData\\Local\\FLUX\\FLUX.exe",
+      "exists": false,
+      "bytes": null,
+      "mtime": null,
+      "sha256": null
+    },
+    {
+      "path": "C:\\Users\\sende\\AppData\\Local\\FLUX\\current.txt",
+      "exists": true,
+      "bytes": 66,
+      "mtime": "639235103744190286",
+      "sha256": "79ef8c2c961e87cdd41d217c93567a68f35988ca19dc04d4d2b92b422fe67881"
+    },
+    {
+      "path": "C:\\Users\\sende\\AppData\\Local\\FLUX\\.flux-install-root",
+      "exists": false,
+      "bytes": null,
+      "mtime": null,
+      "sha256": null
+    },
+    {
+      "path": "C:\\Users\\sende\\Desktop\\FLUX.lnk",
+      "exists": false,
+      "bytes": null,
+      "mtime": null,
+      "sha256": null
+    },
+    {
+      "path": "C:\\Users\\sende\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\FLUX\\FLUX.lnk",
+      "exists": true,
+      "bytes": 1190,
+      "mtime": "639235103745215883",
+      "sha256": "e2d66b997a5cbd2fe6203c4b8b378cc242bd369f7a2e4db2b64fd5f7a739c43a"
+    }
+  ],
+  "after": [
+    {
+      "path": "C:\\Users\\sende\\AppData\\Roaming\\Godot\\app_userdata\\FLUX 2\\player_preferences_v1.json",
+      "exists": true,
+      "bytes": 2966,
+      "mtime": "639245386681280089",
+      "sha256": "ac77e394551a44b7f3ba5be9e63badf3cc2ece058b75e5c756bfe0ef6c9183b3"
+    },
+    {
+      "path": "C:\\Users\\sende\\AppData\\Local\\FLUX\\FLUX.exe",
+      "exists": false,
+      "bytes": null,
+      "mtime": null,
+      "sha256": null
+    },
+    {
+      "path": "C:\\Users\\sende\\AppData\\Local\\FLUX\\current.txt",
+      "exists": true,
+      "bytes": 66,
+      "mtime": "639235103744190286",
+      "sha256": "79ef8c2c961e87cdd41d217c93567a68f35988ca19dc04d4d2b92b422fe67881"
+    },
+    {
+      "path": "C:\\Users\\sende\\AppData\\Local\\FLUX\\.flux-install-root",
+      "exists": false,
+      "bytes": null,
+      "mtime": null,
+      "sha256": null
+    },
+    {
+      "path": "C:\\Users\\sende\\Desktop\\FLUX.lnk",
+      "exists": false,
+      "bytes": null,
+      "mtime": null,
+      "sha256": null
+    },
+    {
+      "path": "C:\\Users\\sende\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\FLUX\\FLUX.lnk",
+      "exists": true,
+      "bytes": 1190,
+      "mtime": "639235103745215883",
+      "sha256": "e2d66b997a5cbd2fe6203c4b8b378cc242bd369f7a2e4db2b64fd5f7a739c43a"
+    }
+  ]
+}

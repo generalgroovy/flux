@@ -1,0 +1,709 @@
+{
+  "audio": "not_started",
+  "frames": [
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 2,
+      "file": "s_wayne-south-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 594000,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 2,
+      "file": "s_wayne-south-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 559334,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        707,
+        707
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 2,
+      "file": "s_wayne-south_east-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 594000,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        707,
+        707
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 2,
+      "file": "s_wayne-south_east-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 559334,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        1000,
+        0
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 2,
+      "file": "s_wayne-east-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 594000,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        1000,
+        0
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 2,
+      "file": "s_wayne-east-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 559334,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        707,
+        -707
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 2,
+      "file": "s_wayne-north_east-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 594000,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        707,
+        -707
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 2,
+      "file": "s_wayne-north_east-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 559334,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 2,
+      "file": "s_wayne-north-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 594000,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 2,
+      "file": "s_wayne-north-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 559334,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        -707,
+        -707
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 2,
+      "file": "s_wayne-north_west-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 594000,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        -707,
+        -707
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 2,
+      "file": "s_wayne-north_west-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 559334,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        -1000,
+        0
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 2,
+      "file": "s_wayne-west-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 594000,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        -1000,
+        0
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 2,
+      "file": "s_wayne-west-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 559334,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        -707,
+        707
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 2,
+      "file": "s_wayne-south_west-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 594000,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        -707,
+        707
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 2,
+      "file": "s_wayne-south_west-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 559334,
+      "stamina_before": 594000
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-south-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 660000,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-south-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 625334,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        707,
+        707
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-south_east-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 660000,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        707,
+        707
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-south_east-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 625334,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        1000,
+        0
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-east-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 660000,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        1000,
+        0
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-east-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 625334,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        707,
+        -707
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-north_east-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 660000,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        707,
+        -707
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-north_east-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 625334,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-north-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 660000,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-north-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 625334,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        -707,
+        -707
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-north_west-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 660000,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        -707,
+        -707
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-north_west-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 625334,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        -1000,
+        0
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-west-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 660000,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        -1000,
+        0
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-west-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 625334,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        -707,
+        707
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-south_west-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 660000,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        -707,
+        707
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 1,
+      "file": "oh_tipi-south_west-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 625334,
+      "stamina_before": 660000
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 3,
+      "file": "red_baron-south-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 792000,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        0,
+        1000
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 3,
+      "file": "red_baron-south-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 757334,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        707,
+        707
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 3,
+      "file": "red_baron-south_east-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 792000,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        707,
+        707
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 3,
+      "file": "red_baron-south_east-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 757334,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        1000,
+        0
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 3,
+      "file": "red_baron-east-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 792000,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        1000,
+        0
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 3,
+      "file": "red_baron-east-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 757334,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        707,
+        -707
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 3,
+      "file": "red_baron-north_east-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 792000,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        707,
+        -707
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 3,
+      "file": "red_baron-north_east-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 757334,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 3,
+      "file": "red_baron-north-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 792000,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 3,
+      "file": "red_baron-north-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 757334,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        -707,
+        -707
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 3,
+      "file": "red_baron-north_west-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 792000,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        -707,
+        -707
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 3,
+      "file": "red_baron-north_west-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 757334,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        -1000,
+        0
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 3,
+      "file": "red_baron-west-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 792000,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        -1000,
+        0
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 3,
+      "file": "red_baron-west-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 757334,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        -707,
+        707
+      ],
+      "air_height": 0,
+      "angle": 360,
+      "champion_wire_id": 3,
+      "file": "red_baron-south_west-cone360-ground.png",
+      "jump_paid": false,
+      "range": 240,
+      "stamina_after": 792000,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        -707,
+        707
+      ],
+      "air_height": 25300,
+      "angle": 15,
+      "champion_wire_id": 3,
+      "file": "red_baron-south_west-cone15-jump.png",
+      "jump_paid": true,
+      "range": 240,
+      "stamina_after": 757334,
+      "stamina_before": 792000
+    },
+    {
+      "aim": [
+        707,
+        707
+      ],
+      "air_height": 0,
+      "angle": 15,
+      "champion_wire_id": 2,
+      "file": "rear-corner-full-control.png",
+      "range": 240,
+      "target_visible": true
+    },
+    {
+      "aim": [
+        707,
+        707
+      ],
+      "air_height": 0,
+      "angle": 15,
+      "champion_wire_id": 2,
+      "file": "rear-corner-cone-blocked.png",
+      "opaque_building_id": 101,
+      "range": 240,
+      "rear_ground_distance": 69.4348754882813,
+      "target_visible": false
+    }
+  ],
+  "human_acceptance": "not_run",
+  "network": "not_started",
+  "preferences": "transient_fixture",
+  "projection_y_scale": 0.819152044288992,
+  "rear_ground_radius": 72.0,
+  "schema_version": 1
+}

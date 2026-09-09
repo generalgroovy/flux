@@ -9,13 +9,52 @@ func run() -> int:
 	check(roster.load_from_files(), "canonical champion roster plan validates: %s" % roster.last_error)
 	if roster.ordered_ids.is_empty():
 		return finish("champion-roster-plan")
-	equal(roster.ordered_ids.size(), 24, "roster plan contains exactly 24 identities")
-	equal(roster.ids_by_availability("playable"), ["oh_tipi", "s_wayne", "red_baron", "wa_bidi", "grace_reava"], "only promoted champions are playable")
-	equal(roster.ids_by_availability("placeholder"), ["unnamed_angel"], "the angel remains visibly non-selectable")
+	equal(roster.data["status"], "canonical_identity_availability_registry", "registry describes live canonical identity and availability rather than planned-only content")
+	equal(int(roster.data["schema_version"]), 1, "status clarification does not invent a structural schema change")
+	var affinity_metadata: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(String(roster.data["affinity_catalog"])))
+	equal(affinity_metadata["status"], "canonical_first_eight_affinity_allocation", "affinity metadata describes current first-eight allocations")
+	var stale_status = ChampionRosterPlanScript.new()
+	stale_status.data = roster.data.duplicate(true)
+	stale_status.data["status"] = "design_locked_nonselectable_registry"
+	check(not stale_status.validate(), "obsolete planned-only status cannot silently reappear in live identity authority")
+	equal(roster.ordered_ids.size(), 30, "roster plan contains twenty-nine named identities and the reserved placeholder")
+	equal(roster.ids_by_availability("planned").size(), 0, "all named entries have explicit baseline implementations")
+	equal(roster.data["allowed_ancestries"].size(), 21, "Spiderkin replaces the unused ancestry slot instead of inventing an extra race")
+	check("spiderkin" in roster.data["allowed_ancestries"] and "arachnoid" not in roster.data["allowed_ancestries"], "canonical active race vocabulary uses Spiderkin")
+	for newcomer: Array in [["luuh_i_zeh", "Luuh I Zeh", "spiderkin", "small", {"dark": 2, "water": 1}], ["juul_i_yaina", "Juul I Yaina", "demon", "small", {"ice": 2, "wind": 1}], ["faab_i_yaina", "Faab I Yaina", "angel", "middle", {"fire": 2, "light": 1}], ["joh_haynes", "Joh Haynes", "orc", "large", {"earth": 2, "charge": 1}]]:
+		var identity: Dictionary = roster.entry(String(newcomer[0]))
+		equal(identity.get("display_name"), newcomer[1], "newcomer preserves the exact reference name")
+		equal(identity.get("ancestry"), newcomer[2], "newcomer preserves the assigned ancestry")
+		equal(identity.get("body_role"), newcomer[3], "newcomer preserves the documented body class")
+		equal(identity.get("availability"), "playable", "documented newcomer is implemented with explicit temporary art")
+		var actual_points: Dictionary = roster.affinity_entry(String(newcomer[0])).get("affinity_points", {})
+		var expected_points: Dictionary = newcomer[4]
+		equal(actual_points.size(), expected_points.size(), "newcomer keeps exactly the documented affinity set")
+		for element: String in expected_points:
+			equal(int(actual_points.get(element, 0)), int(expected_points[element]), "newcomer preserves the exact v4 affinity strength")
+	equal(roster.ids_by_availability("playable").size(), 29, "every named identity is promoted")
+	equal(roster.ids_by_availability("placeholder"), ["unnamed_angel"], "the unnamed Angel placeholder remains non-selectable while Faab is playable")
 	equal(String(roster.entry("s_wayne").get("ancestry", "")), "hobbit", "S. Wayne remains a Hobbit")
 	equal(String(roster.entry("haara").get("ancestry", "")), "nymph", "Haara remains a Nymph")
 	equal(String(roster.entry("wa_bidi").get("ancestry", "")), "goblin", "Wa Bidi remains a Goblin")
+	for newcomer: Array in [["h_le_ne", "H. Le-ne", "stoneborn", "middle", {"earth": 1, "wind": 1, "fire": 1}], ["fimu_yashiha", "Fimu Yashiha", "treefolk", "small", {"water": 1, "fire": 1, "light": 1}]]:
+		var identity: Dictionary = roster.entry(String(newcomer[0]))
+		equal(identity.get("display_name"), newcomer[1], "new portrait character has its exact requested name")
+		equal(identity.get("ancestry"), newcomer[2], "new portrait character has the requested race")
+		equal(identity.get("body_role"), newcomer[3], "new portrait character uses its explicit existing body class")
+		equal(identity.get("gender"), "female", "both requested portrait characters are female")
+		equal(identity.get("availability"), "playable", "new named character is present in Gallery selection")
+		var actual_points: Dictionary = roster.affinity_entry(String(newcomer[0])).get("affinity_points", {})
+		var expected_points: Dictionary = newcomer[4]
+		equal(actual_points.size(), expected_points.size(), "new portrait character has exactly its three requested affinities")
+		for element: String in expected_points:
+			equal(int(actual_points.get(element, 0)), int(expected_points[element]), "requested element uses the existing equal-point generalist rule")
 	equal(String(roster.entry("spai_si").get("ancestry", "")), "demon", "Spai Si remains a Demon")
+	for champion_id: String in ["juul_i_yaina", "faab_i_yaina", "spai_si"]:
+		equal(String(roster.entry(champion_id).get("gender", "")), "male", "user-specified male identity is retained: " + champion_id)
+	equal(String(roster.entry("wa_bidi").get("gender", "")), "female", "Wa Bidi retains the user-specified female identity")
+	equal(roster.entry("juul_i_yaina").get("appearance", {}).get("hair", ""), "curly dark hair", "Juul retains curly dark hair")
+	equal(roster.entry("faab_i_yaina").get("appearance", {}).get("hair", ""), "bald", "Faab retains a bald head")
 	equal(String(roster.entry("hesus_christo").get("ancestry", "")), "elf", "Hesus Christo remains an Elf")
 	equal(String(roster.entry("djonah_thaan").get("ancestry", "")), "vampire", "Djonah Thaan remains a Vampire")
 	equal(String(roster.entry("nico_lai").get("display_name", "")), "Waka Aren Si", "legacy Nico technical ID resolves to the canonical display name")
@@ -32,8 +71,8 @@ func run() -> int:
 
 	var promoted_plan = ChampionRosterPlanScript.new()
 	promoted_plan.data = roster.data.duplicate(true)
-	((promoted_plan.data["champions"] as Array)[3] as Dictionary)["availability"] = "playable"
-	check(not promoted_plan.validate(), "planned content cannot become playable without the promoted catalog")
+	((promoted_plan.data["champions"] as Array)[23] as Dictionary)["availability"] = "playable"
+	check(not promoted_plan.validate(), "reserved Angel cannot become playable without a named profile and promoted catalog")
 
 	var stale_name = ChampionRosterPlanScript.new()
 	stale_name.data = roster.data.duplicate(true)
@@ -54,4 +93,76 @@ func run() -> int:
 	(adapted["elements"] as Array).clear()
 	equal(roster.affinity_entry("wa_bidi")["affinities"], ["charge", "wind", "fire"], "adapter cannot mutate canonical affinities")
 	check(roster.visual_metadata("missing", archived).is_empty(), "unknown visual identity fails closed")
+	_test_full_cast_candidate(roster)
 	return finish("champion-roster-plan")
+
+
+func _test_full_cast_candidate(roster: ChampionRosterPlan) -> void:
+	const CANDIDATE_PATH := "res://content/champions/full_cast_candidate_v1.json"
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(CANDIDATE_PATH))
+	check(parsed is Dictionary, "isolated full-cast candidate is valid JSON")
+	if not parsed is Dictionary: return
+	var candidate: Dictionary = parsed
+	equal(int(candidate.get("schema_version", 0)), 1, "candidate has its own non-runtime schema")
+	equal(String(candidate.get("status", "")), "promoted_baseline_provenance_not_runtime", "candidate records baseline implementation without claiming final visual acceptance")
+	equal(candidate.get("runtime_enabled"), false, "candidate is explicitly disabled as live content")
+	equal(candidate.get("reserved_placeholder_id"), "unnamed_angel", "candidate preserves the unapproved Angel reservation")
+	var abilities := AbilityCatalog.new()
+	check(abilities.load_from_file("res://content/abilities/foundation_abilities_v1.json"), "real shared spell catalog validates candidate kit references")
+	var live := ChampionCatalog.new()
+	check(live.load_from_file("res://content/champions/foundation_champions_v1.json", abilities), "live catalog remains independently valid")
+	equal(live.ordered_champion_ids().size(), 29, "live catalog explicitly owns the promoted twenty-seven profiles")
+	equal(int(candidate.get("current_playable_count", 0)), 29, "provenance current-status count follows the implemented catalog")
+	var accidental := ChampionCatalog.new()
+	check(not accidental.load_from_file(CANDIDATE_PATH, abilities), "candidate cannot accidentally load as the live ChampionCatalog schema")
+	var projected := ChampionCatalog.new()
+	# Explicit in-memory projection validates candidate numbers and existing
+	# kits without changing paths, selection, or any production catalog file.
+	projected.data = {"schema_version": ChampionCatalog.SUPPORTED_SCHEMA_VERSION, "id": "full-cast-candidate-test-projection", "default_champion_id": "oh_tipi", "champions": candidate.get("champions", [])}
+	check(projected.validate(abilities), "all candidate stats, weighted affinities, ancestry and kits pass the existing runtime rules: %s" % projected.last_error)
+	if not projected.last_error.is_empty(): return
+	equal(projected.ordered_champion_ids().size(), 29, "candidate has every named identity and no extra champion")
+	check(projected.champion("unnamed_angel").is_empty(), "placeholder is not assigned a candidate playable wire")
+	equal((candidate.get("decisions_by_id", {}) as Dictionary).size(), 24, "only the twenty-four newly specified profiles carry new-decision labels")
+	equal(candidate.get("shared_runtime_spell_count"), 57, "candidate uses the present shared 57-spell library")
+	var seen := {}
+	var baseline_ids := {"small": "s_wayne", "middle": "oh_tipi", "large": "red_baron"}
+	var expected_wire := 6
+	for id: String in roster.ordered_ids:
+		var identity := roster.entry(id)
+		if identity["availability"] == "placeholder": continue
+		var entry := projected.champion(id)
+		check(not entry.is_empty() and not seen.has(id), "named candidate exists exactly once: " + id)
+		seen[id] = true
+		equal(entry.get("display_name"), identity["display_name"], "candidate preserves canonical display identity")
+		equal(entry.get("ancestry"), identity["ancestry"], "candidate preserves canonical ancestry")
+		equal(entry.get("body_type"), identity["body_role"], "candidate preserves documented body class")
+		equal(entry.get("affinities"), roster.affinity_entry(id)["affinities"], "candidate preserves canonical affinity ordering")
+		equal(entry.get("affinity_points"), roster.affinity_entry(id)["affinity_points"], "candidate never invents replacement affinity weights")
+		equal(entry, live.champion(id), "every live baseline agrees with its explicit provenance record")
+		if id in candidate["preserved_live_champion_ids"]:
+			equal(entry, live.champion(id), "current live profile remains verbatim in the candidate")
+		else:
+			var baseline_id := String(baseline_ids[String(identity["body_role"])])
+			equal(entry["stats"], live.champion(baseline_id)["stats"], "new candidate numbers are the explicit existing same-body baseline")
+			equal(int(entry["wire_id"]), expected_wire, "proposed new wires follow stable roster order without renumbering current champions")
+			expected_wire += 1
+			var decision: Dictionary = (candidate["decisions_by_id"] as Dictionary)[id]
+			equal(decision.get("stat_baseline_champion_id"), baseline_id, "new stats name their real baseline provenance")
+			equal(decision.get("individual_balance_approved"), false, "new baseline is not advertised as individual balance approval")
+			equal(decision.get("unique_runtime_art_approved"), false, "candidate data does not certify character art")
+			equal(decision.get("status"), "implemented_baseline_temporary_art", "implemented baseline is not mislabeled as pending runtime work")
+			equal(entry.get("art_status"), "temporary_body_template", "temporary visual reuse is explicit on each added runtime entry")
+			equal(entry.get("template_source_id"), baseline_id, "temporary runtime template names the actual same-size source")
+		var state := PlayerState.new(1)
+		check(projected.apply_to_player(state, id), "candidate can initialize the existing generic player state in isolation")
+		check(state.has_valid_spell_slots(), "candidate produces an ordinary valid twelve-slot weave")
+		equal(state.proven_spell_wire_ids().size(), 57, "all candidates share the same proven spell access")
+		for wire: int in state.kit_spell_wire_ids():
+			check(CombatTuning.is_runtime_wire_id(wire), "candidate starter kit uses an existing authoritative spell only")
+	equal(seen.size(), 29, "all twenty-nine named identities are covered")
+	equal(expected_wire, 30, "proposed new wire range ends at29 while the Angel remains reserved")
+	var invalid := ChampionCatalog.new()
+	invalid.data = projected.data.duplicate(true)
+	((invalid.data["champions"] as Array)[-1] as Dictionary)["stats"]["stamina_maximum"] = 800_001
+	check(not invalid.validate(abilities), "candidate validation retains existing stat caps rather than expanding them")

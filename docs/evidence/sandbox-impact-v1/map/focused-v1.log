@@ -1,0 +1,9 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+PRE_ANNEX_CONTENT_HASH 1977f644057dd6a10c7bb3e08f2fd656456bc322a54d1281cf8179368aa45abf
+sanctum-campus-layout: 3772 assertions, 0 failures
+conservatory-route: 3902 assertions, 0 failures
+ILLUSTRATED_SETUP: 248 ms; 0 props; one terrain texture
+wellspring-illustrated-kit: 159 assertions, 0 failures
+PIXEL_MAP_SETUP: 164ms;4 cached atlases;one ground texture;original palette
+pixel-map-library: 7906 assertions, 0 failures

@@ -5,6 +5,7 @@ extends RefCounted
 const DEFAULT_PATH := "res://content/champions/body_type_profiles_v1.json"
 const EXPECTED_ID := "body-type-profiles-v1-equal-budget"
 const BODY_TYPES: Array[String] = ["small", "middle", "large"]
+const HURT_RADII := {"small": 15_000, "middle": 18_000, "large": 21_000}
 const STAT_NAMES: Array[String] = [
 	"health_maximum",
 	"health_recovery_per_second",
@@ -57,6 +58,7 @@ func validate() -> bool:
 	profiles = profiles_value
 	if int(shared_rules.get("competitive_budget", 0)) != 100 \
 		or String(shared_rules.get("collision_radius_policy", "")) != "shared_foundation_radius" \
+		or String(shared_rules.get("hurt_radius_policy", "")) != "fixed_body_profile_independent_of_animation" \
 		or shared_rules.get("visual_template_order", []) != BODY_TYPES \
 		or String(shared_rules.get("visual_size_authority", "")) != "presentation_only_no_hidden_reach_evasion_or_damage" \
 		or (shared_rules.get("universal_movement", []) as Array).size() < 10:
@@ -72,6 +74,9 @@ func validate() -> bool:
 		if not profiles.has(body_type) or not profiles[body_type] is Dictionary:
 			return _fail("body-type profile is missing: %s" % body_type)
 		var profile: Dictionary = profiles[body_type]
+		var hurt_value: Variant = profile.get("hurt_radius", null)
+		if not (hurt_value is int or hurt_value is float) or float(hurt_value) != float(HURT_RADII[body_type]):
+			return _fail("body-type hurt radius is unsupported: %s" % body_type)
 		if String(profile.get("role", "")).is_empty() \
 			or (profile.get("strengths", []) as Array).size() < 2 \
 			or (profile.get("tradeoffs", []) as Array).size() < 2:
@@ -101,6 +106,10 @@ func accepts(body_type: String, stats: Dictionary) -> bool:
 
 func role(body_type: String) -> String:
 	return String((profiles.get(body_type, {}) as Dictionary).get("role", ""))
+
+
+func hurt_radius(body_type: String) -> int:
+	return int((profiles.get(body_type, {}) as Dictionary).get("hurt_radius", 0))
 
 
 func _fail(message: String) -> bool:

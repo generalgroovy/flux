@@ -1,11 +1,97 @@
 extends FluxTestSuite
 
+const Bootstrap = preload("res://src/app/bootstrap.gd")
+
 
 func run() -> int:
 	for tick_rate: int in [120]:
 		_test_advanced_route(tick_rate)
 		_test_momentum_chime_route(tick_rate)
+		_test_south_annex(tick_rate)
 	return finish("conservatory-route")
+
+
+func _test_south_annex(tick_rate: int) -> void:
+	var layout := SanctumCampusLayout.new()
+	check(layout.load_from_file("res://content/maps/sanctum_campus_g2_v1.json"), "southern route loads the live authoritative campus")
+	var walk_hash := ""
+	for repeat: int in range(2):
+		var world := SimWorld.new(tick_rate, 20260909, layout.build_collision_world(), String(layout.data["id"]), layout.content_hash)
+		var state := world.player()
+		state.reset_for_spawn(Vector2i(560_000, 1_408_000))
+		var start_stamina := state.stamina
+		var circuit: Array = []
+		for route: Dictionary in layout.data["routes"]:
+			if String(route["id"]) == "conservatory-south-loop":
+				circuit = route["points"].duplicate(true)
+		# Existing canopy closes the loop; then the same ordinary path reaches
+		# the new bridge, the unchanged Practice Bell and the unchanged Crucible.
+		circuit.append_array([[560,1408],[800,1408],[848,1536],[848,2080],[1120,2080],[1888,2080],[1888,1376],[1568,1440]])
+		for waypoint: Array in circuit:
+			check(_walk_to(world, Vector2i(int(waypoint[0]), int(waypoint[1])) * SimConfig.FIXED_SCALE), "ordinary movement reaches connected southern waypoint %s" % str(waypoint))
+		check(state.stamina >= start_stamina, "walking the annex requires no paid traversal action")
+		equal(state.hop_stage, 0, "ordinary return reaches the experiment without jumping or vaulting")
+		if repeat == 0:
+			walk_hash = world.state_hash()
+		else:
+			equal(world.state_hash(), walk_hash, "same120Hz command route gives the same authoritative world hash")
+	for wall_id: int in [115, 116]:
+		_test_annex_wall(layout, wall_id, tick_rate)
+	for zoom: int in [50, 75, 100]:
+		for focus: Vector2 in [Vector2(256,2080), Vector2(848,2080), Vector2(1888,2080), Vector2(1536,880)]:
+			var viewport := Vector2i(1280,720)
+			var origin := Bootstrap.camera_origin_for(focus, viewport, layout.canvas_size, layout.reserved_ui_top, zoom)
+			var visible := Vector2(viewport) / (float(zoom) / 100.0)
+			check(origin.x >= 0 and origin.y >= 0 and origin.x + visible.x <= layout.canvas_size.x + 0.01 and origin.y + visible.y <= layout.canvas_size.y + 0.01, "all supported zooms keep the camera inside the enlarged world")
+			check(Rect2(origin, visible).has_point(focus), "southern focus remains on-screen at every supported zoom")
+
+
+func _walk_to(world: SimWorld, target: Vector2i) -> bool:
+	var state := world.player()
+	for _index: int in range(1200):
+		var position := Vector2i(state.position_x, state.position_y)
+		if position.distance_squared_to(target) <= 6_000 * 6_000:
+			return true
+		var direction := (Vector2(target - position)).normalized() * 1000.0
+		if not _step(world, roundi(direction.x), roundi(direction.y)):
+			return false
+		check(world.collision.can_occupy(Vector2i(state.position_x, state.position_y), MovementTuning.PLAYER_RADIUS), "ordinary annex traversal never enters worldbone")
+	return false
+
+
+func _test_annex_wall(layout: SanctumCampusLayout, wall_id: int, tick_rate: int) -> void:
+	var world := SimWorld.new(tick_rate, 20260910 + wall_id, layout.build_collision_world(), String(layout.data["id"]), layout.content_hash)
+	var state := world.player()
+	var bounds := SanctumCampusLayout._parse_bounds(layout.buildings_by_id[wall_id]["bounds"])
+	var horizontal := bounds.size.x > bounds.size.y
+	var approach := Vector2i(0,-1000) if horizontal else Vector2i(1000,0)
+	var tangent := Vector2i(1000,0) if horizontal else Vector2i(0,1000)
+	var outward := -approach
+	var start := Vector2i(bounds.get_center().x * 1000, bounds.end.y * 1000 + MovementTuning.PLAYER_RADIUS + 1000) if horizontal else Vector2i(bounds.position.x * 1000 - MovementTuning.PLAYER_RADIUS - 1000, bounds.position.y * 1000 + 64000)
+	state.reset_for_spawn(start)
+	state.velocity_x = approach.x * MovementTuning.BASE_SPEED / 1000
+	state.velocity_y = approach.y * MovementTuning.BASE_SPEED / 1000
+	check(_step(world, approach.x, approach.y), "approach reaches authored southern wall")
+	equal(state.wall_contact_id, wall_id, "collision contact identifies the actual new wall")
+	var stamina_before := state.stamina
+	check(_step(world, tangent.x, tangent.y, 0, SimCommand.PRESSED_TECHNIQUE), "new wall accepts the existing wallrun request")
+	equal(state.last_event, "wall_skim", "new wall starts real wallrun rather than only a painted route")
+	check(state.stamina < stamina_before, "southern wallrun pays its existing movement cost")
+	for _index: int in range(world.config.milliseconds_to_ticks(MovementTuning.WALL_RUN_COMMITMENT_MS) + 1):
+		_step(world, tangent.x, tangent.y)
+	check(state.wall_skim_ticks > 0, "new wall has enough length for a readable attached run")
+	check(_step(world, outward.x, outward.y, 0, SimCommand.PRESSED_JUMP), "attached jump uses existing wall-kick transition")
+	check(state.last_event in ["air_wall_kick", "wall_kick"], "actual southern wallrun can kick into its clear turning space")
+	check(state.wall_skim_ticks == 0 and state.is_airborne(), "wall kick leaves the wall airborne")
+	for _index: int in range(world.config.milliseconds_to_ticks(MovementTuning.HOP_COMMITMENT_MS) + 1):
+		_step(world, outward.x, outward.y)
+	check(_step(world, -tangent.x, -tangent.y, 0, SimCommand.PRESSED_TECHNIQUE), "open annex accepts the existing paid air-turn request")
+	for _index: int in range(world.config.milliseconds_to_ticks(MovementTuning.INPUT_BUFFER_MS)):
+		if state.technique_buffer_ticks == 0:
+			break
+		_step(world, -tangent.x, -tangent.y)
+	equal(state.last_event, "air_redirect", "wall kick has room for the existing air redirect")
+	check(world.collision.can_occupy(Vector2i(state.position_x, state.position_y), MovementTuning.PLAYER_RADIUS), "new wall chain ends in collision-safe turning space")
 
 
 func _step(world: SimWorld, move_x: int = 0, move_y: int = 0, held: int = 0, pressed: int = 0) -> bool:

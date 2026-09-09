@@ -5,12 +5,13 @@ param(
     [ValidateSet('open_commons', 'sparring_circle', 'duel_knot')][string]$Charter = 'open_commons',
     [ValidatePattern('^[a-z_]+$')][string]$HostChampion = 'oh_tipi',
     [ValidatePattern('^[a-z_]+$')][string]$GuestChampion = 's_wayne',
-    [ValidateRange(5, 60)][int]$TimeoutSeconds = 30
+    [ValidateRange(5, 60)][int]$TimeoutSeconds = 30,
+    [string]$LogDirectory = ''
 )
 . (Join-Path $PSScriptRoot 'flux2-common.ps1')
 
 $repoRoot = Get-FluxRepoRoot
-$logRoot = Join-Path $repoRoot '.godot\farflow-smoke'
+$logRoot = if ($LogDirectory) { [System.IO.Path]::GetFullPath($LogDirectory) } else { Join-Path $repoRoot '.godot\farflow-smoke' }
 New-Item -ItemType Directory -Path $logRoot -Force | Out-Null
 $hostLog = Join-Path $logRoot 'host.log'
 $guestLog = Join-Path $logRoot 'guest.log'

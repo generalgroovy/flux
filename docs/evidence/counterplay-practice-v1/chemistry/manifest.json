@@ -1,0 +1,144 @@
+{
+  "status": "Current capture: guarded v2. Root-level render v1 remains superseded and retained unchanged for provenance.",
+  "recorded_date": "2026-09-09",
+  "current_render_directory": "v2",
+  "verification": "Original logs and PNGs copied unchanged; every destination length and SHA-256 was compared with its source after copying. The five current v2 PNGs are 1280 x 720.",
+  "lifecycle_boundary": "The linked guard verifies unchanged saved-preferences SHA-256 and last-write timestamp across both complete v2 rerun processes including teardown. Earlier unguarded capture teardown could persist fixture defaults; this does not prove preservation of original pre-v1 user settings. No speculative settings restoration was performed.",
+  "related_evidence": [
+    {
+      "file": "../capture-preferences-guard.json",
+      "source": "docs/evidence/counterplay-practice-v1/capture-preferences-guard.json",
+      "bytes": 783,
+      "sha256": "6631f947ca60efb11ec54b4bba21c652442a3481427f4b06ee9df8606a919cbe",
+      "status": "passed_both_complete_capture_processes_including_teardown"
+    }
+  ],
+  "files": [
+    {
+      "file": "focused-v3.log",
+      "source": ".godot/radiance-steam-work/focused-v3.log",
+      "bytes": 130,
+      "sha256": "9dc5d38f1e47f01726de7021f09d59efa0917752a1a078cca2bdfb03dbb3274b",
+      "status": "earlier_focused_checkpoint"
+    },
+    {
+      "file": "focused-v3.log.err",
+      "source": ".godot/radiance-steam-work/focused-v3.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "earlier_focused_checkpoint"
+    },
+    {
+      "file": "paid-cast-probe-v1.log",
+      "source": ".godot/radiance-steam-work/probe-v1.log",
+      "bytes": 1218,
+      "sha256": "57f8973c72d9eb478ed03449a302e6ec485fc4f52d571e4e79a05b586f42b24b",
+      "status": "earlier_timing_probe"
+    },
+    {
+      "file": "paid-cast-probe-v1.log.err",
+      "source": ".godot/radiance-steam-work/probe-v1.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "earlier_timing_probe"
+    },
+    {
+      "file": "render-root.log",
+      "source": ".godot/chemistry-counter-render-root.log",
+      "bytes": 2636,
+      "sha256": "d12423184aad8df584cf1bdc8e2a1be6f47803bb66e3d33670b80de24e0db1f5",
+      "status": "superseded_unguarded_render_v1"
+    },
+    {
+      "file": "render-root.log.err",
+      "source": ".godot/chemistry-counter-render-root.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "superseded_unguarded_render_v1"
+    },
+    {
+      "file": "overlap-normal.png",
+      "source": ".godot/chemistry-counter-v1/render-root-v1/overlap-normal.png",
+      "bytes": 180333,
+      "sha256": "571e4d12c49ea5d902f7bdb62e1b3586a28292fc49db32b9b940c8e5ce91b4e7",
+      "status": "superseded_unguarded_render_v1"
+    },
+    {
+      "file": "overlap-reduced.png",
+      "source": ".godot/chemistry-counter-v1/render-root-v1/overlap-reduced.png",
+      "bytes": 177485,
+      "sha256": "87116f1b2283daa95c59418d24ca174afe03c6e291ed1b3b4da659ede9ed7976",
+      "status": "superseded_unguarded_render_v1"
+    },
+    {
+      "file": "reveal-expired-normal.png",
+      "source": ".godot/chemistry-counter-v1/render-root-v1/reveal-expired-normal.png",
+      "bytes": 175637,
+      "sha256": "f905f281232bff28abbf272d266f25cdbe22ed31e9f5a2f03056c909731318b0",
+      "status": "superseded_unguarded_render_v1"
+    },
+    {
+      "file": "worldbone-normal.png",
+      "source": ".godot/chemistry-counter-v1/render-root-v1/worldbone-normal.png",
+      "bytes": 175040,
+      "sha256": "fc53ec5e1c469a44e36f01668e4b8c6f94c387dbe05e0a57ce1431ad720ac607",
+      "status": "superseded_unguarded_render_v1"
+    },
+    {
+      "file": "worldbone-reduced.png",
+      "source": ".godot/chemistry-counter-v1/render-root-v1/worldbone-reduced.png",
+      "bytes": 172835,
+      "sha256": "2832f253408d751efe5a5bc067d5c7806e7469f7ce80f18dc40a4aaa0a4ca74a",
+      "status": "superseded_unguarded_render_v1"
+    },
+    {
+      "file": "v2/render-root-v2.log",
+      "source": ".godot/chemistry-counter-render-root-v2.log",
+      "bytes": 2636,
+      "sha256": "4bec84f54d0b7be784d6668c041edf58f788ffb4e79040ff1c7a25bdaa86d387",
+      "status": "current_guarded_render_v2"
+    },
+    {
+      "file": "v2/render-root-v2.log.err",
+      "source": ".godot/chemistry-counter-render-root-v2.log.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "current_guarded_render_v2"
+    },
+    {
+      "file": "v2/overlap-normal.png",
+      "source": ".godot/chemistry-counter-v1/render-root-v2/overlap-normal.png",
+      "bytes": 180333,
+      "sha256": "571e4d12c49ea5d902f7bdb62e1b3586a28292fc49db32b9b940c8e5ce91b4e7",
+      "status": "current_guarded_render_v2"
+    },
+    {
+      "file": "v2/overlap-reduced.png",
+      "source": ".godot/chemistry-counter-v1/render-root-v2/overlap-reduced.png",
+      "bytes": 177485,
+      "sha256": "87116f1b2283daa95c59418d24ca174afe03c6e291ed1b3b4da659ede9ed7976",
+      "status": "current_guarded_render_v2"
+    },
+    {
+      "file": "v2/reveal-expired-normal.png",
+      "source": ".godot/chemistry-counter-v1/render-root-v2/reveal-expired-normal.png",
+      "bytes": 175637,
+      "sha256": "f905f281232bff28abbf272d266f25cdbe22ed31e9f5a2f03056c909731318b0",
+      "status": "current_guarded_render_v2"
+    },
+    {
+      "file": "v2/worldbone-normal.png",
+      "source": ".godot/chemistry-counter-v1/render-root-v2/worldbone-normal.png",
+      "bytes": 175040,
+      "sha256": "fc53ec5e1c469a44e36f01668e4b8c6f94c387dbe05e0a57ce1431ad720ac607",
+      "status": "current_guarded_render_v2"
+    },
+    {
+      "file": "v2/worldbone-reduced.png",
+      "source": ".godot/chemistry-counter-v1/render-root-v2/worldbone-reduced.png",
+      "bytes": 172835,
+      "sha256": "2832f253408d751efe5a5bc067d5c7806e7469f7ce80f18dc40a4aaa0a4ca74a",
+      "status": "current_guarded_render_v2"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "completed_at_utc": "2026-09-09T12:30:12.3669836Z",
+  "tier": "focused",
+  "result": "failed",
+  "failure": "Godot emitted a script/import/runtime error.",
+  "source": {
+    "head": "a1aa02807626823d0fbc1e25e75441ca3b7f4d36",
+    "branch": "main",
+    "dirty": true,
+    "current_state_sha256": "c41a8dc5ae1c87d8c05cbd47e22a8ddd6b0955be9a67957fad4dc860823f0c68",
+    "asset_inventory_sha256": null
+  },
+  "requested_suite_ids": [
+    "element-trails,element-chemistry,projectile-chemistry-integration,session-snapshot,pixel-magic-library,burst-projectile-presenter,pixel-assets-export,chemistry-practice-coach,player-compendium"
+  ],
+  "executed": {
+    "current_state_check": true,
+    "asset_inventory": false,
+    "doctor": true,
+    "import": false,
+    "deterministic_suite_runner": true,
+    "suite_count": 9,
+    "assertion_count": 97431,
+    "suites": [
+      {
+        "id": "player-compendium",
+        "assertions": 5063,
+        "failures": 2
+      },
+      {
+        "id": "projectile-chemistry-integration",
+        "assertions": 10288,
+        "failures": 1
+      },
+      {
+        "id": "element-chemistry",
+        "assertions": 1948,
+        "failures": 0
+      },
+      {
+        "id": "element-trails",
+        "assertions": 15144,
+        "failures": 48
+      },
+      {
+        "id": "chemistry-practice-coach",
+        "assertions": 4177,
+        "failures": 9
+      },
+      {
+        "id": "burst-projectile-presenter",
+        "assertions": 16539,
+        "failures": 0
+      },
+      {
+        "id": "pixel-magic-library",
+        "assertions": 42744,
+        "failures": 0
+      },
+      {
+        "id": "pixel-assets-export",
+        "assertions": 72,
+        "failures": 0
+      },
+      {
+        "id": "session-snapshot",
+        "assertions": 1456,
+        "failures": 0
+      }
+    ],
+    "boot_120_hz": false,
+    "package_and_installer": false
+  },
+  "duration_ms": 21745,
+  "stderr_bytes": 0,
+  "logs": [
+    {
+      "path": ".godot/windows-tests/suite.log",
+      "sha256": "2c54c359079a65fa2df5eb90df5322143ae1947e6400997e05b92f2043a8791b",
+      "stderr_bytes": 0
+    }
+  ]
+}

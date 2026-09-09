@@ -4,12 +4,12 @@ extends RefCounted
 
 # Authoritative values are fixed-point world units, resource milli-units,
 # milliseconds, or scale-1000 ratios. They preserve the proven FLUX grammar.
-const COMPATIBILITY_ID: String = "movement-tuning-v13-low-hop-bounded-float"
+const COMPATIBILITY_ID: String = "movement-tuning-v14-walk-sprint-contrast"
 const PLAYER_RADIUS: int = 18_000
 const BASE_SPEED: int = 372_600
 const ACCELERATION: int = 2_277_000
 const DECELERATION: int = 3_450_000
-const SPRINT_MULTIPLIER: int = 1280
+const SPRINT_MULTIPLIER: int = 1600
 const COUNTER_STRAFE_MULTIPLIER: int = 1900
 const COUNTER_STRAFE_DOT_THRESHOLD: int = -24_000_000
 const MOVING_MODE_MINIMUM_SPEED: int = 20_000

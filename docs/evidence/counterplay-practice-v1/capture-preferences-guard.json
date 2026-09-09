@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "scope": "Saved FLUX 2 preferences file before and after both complete capture processes including teardown",
+  "movement_output": ".godot/movement-coach-render-v3",
+  "chemistry_output": ".godot/chemistry-counter-v1/render-root-v2",
+  "before_sha256": "f8e2d8f27f7720ef09c473cf9612a92f042997acce7df9395447cf11b10f1d8c",
+  "after_sha256": "f8e2d8f27f7720ef09c473cf9612a92f042997acce7df9395447cf11b10f1d8c",
+  "before_last_write_utc_dotnet_ticks": 639245355837132274,
+  "after_last_write_utc_dotnet_ticks": 639245355837132274,
+  "boundary": "Checks these reruns only. Earlier unguarded capture teardown could persist fixture defaults; it is not evidence of original user settings. No speculative settings restoration was performed."
+}

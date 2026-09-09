@@ -135,6 +135,16 @@ static func detail_lines(row: Dictionary) -> Array[String]:
 	return result
 
 
+static func compact_cells(row: Dictionary) -> Array[String]:
+	if row.is_empty():
+		return []
+	var protection := "%d ms opening" % int(row.protection_ms) if int(row.protection_ms) > 0 else "None added"
+	if not String(row.get("protection_note", "")).is_empty():
+		protection = "While held + paid"
+	var cooldown := "%d ms" % int(row.cooldown_ms) if int(row.cooldown_ms) > 0 else "See rule"
+	return [String(row.title), String(row.binding), _units(int(row.cost_milli)), _units(int(row.sustain_milli_per_second)) + "/s", protection, cooldown]
+
+
 static func summary_lines(state: PlayerState = null) -> Array[String]:
 	var maximum := state.stamina_maximum if state != null else MovementTuning.STAMINA_MAXIMUM
 	var recovery := state.stamina_recovery_per_second if state != null else MovementTuning.STAMINA_RECOVERY_PER_SECOND

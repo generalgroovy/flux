@@ -77,6 +77,8 @@ func _add_inferred_profiles(catalog: AbilityCatalog) -> void:
 			family = "bolt" if String(ability.get("shape", "")) == "projectile" else String(ability.get("shape", ""))
 		var vocabulary: Dictionary = {
 			"bolt": ["projectile", "paired_focus", "elemental_bolt", "elemental_streak", "elemental_break"],
+			"heavy": ["projectile", "paired_focus", "elemental_bolt", "elemental_streak", "elemental_break"],
+			"rapid": ["projectile", "paired_focus", "elemental_bolt", "elemental_streak", "elemental_break"],
 			"spray": ["spray", "rising_fan", "elemental_spray", "elemental_lanes", "elemental_break"],
 			"beam": ["beam", "paired_focus", "elemental_beam", "elemental_boundary", "elemental_break"],
 			"field": ["field", "frost_sigil", "elemental_field", "none", "elemental_field_break"],
@@ -437,7 +439,8 @@ func draw_cue(canvas: CanvasItem, cue: Dictionary, phase: float, reduced_effects
 		var full_endpoint := start + (endpoint-start).normalized() * float(ability.get("range",0)) / 1000.0
 		if pixel_effects.spray(canvas, element, start, full_endpoint, int(ability.get("cone_cosine_squared_per_million", 820000)), age, reduced_effects, opacity, float(ability.get("radius",0))/1000.0):
 			return true
-	if event_type in ["projectile_hit", "spray_hit", "field_triggered"] and pixel_effects.impact(canvas, element, position, age, reduced_effects):
+	var impact_radius := float(ability.get("radius", 8000)) / 1000.0 if event_type == "projectile_hit" else 8.0
+	if event_type in ["projectile_hit", "spray_hit", "field_triggered"] and pixel_effects.impact(canvas, element, position, age, reduced_effects, impact_radius):
 		return true
 	if event_type in ["cast_refused", "cast_blocked"]:
 		var refusal_radius := 12.0 + phase * 11.0

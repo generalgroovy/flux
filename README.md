@@ -1,418 +1,271 @@
-# FLUX 2
+# FLUX
 
-**Flow. Learn. Unleash. eXecute.**
+A movement-led, shared elemental magic sandbox for Windows: learn expressive
+movement, configure hand-cast spells, combine temporary elements and play with
+friends in the Wellspring.
 
-**Current testable source (2026-09-06): pixel magic + Wellspring asset integration.**
-The finished magic/map packs are integrated over the verified low-hop,
-finite Float and first-eight chemistry checkpoint. Oh Tipi's newly supplied art
-is now the [authoritative character-style reference](reference/art/oh_tipi_authority_v1/README.md).
-It is a reference illustration, not a replacement animation atlas.
-See the [asset integration and acceptance record](docs/PIXEL-ASSET-INTEGRATION.md).
-Combined Windows verification passed **85 suites / 270,135 assertions**, zero
-failures, warnings or stderr; local host/join and isolated Windows export boot
-also passed. This is a source playtest checkpoint, not a newly published installer.
-Heavy-load timing spikes remain: sustained 120 FPS is **not** accepted yet.
+**Current source: 29 playable profiles, 57 spells, active first-grade chemistry.**
+All 29 profiles now use their matching Small / Middle / Large shared adventurer body
+in gameplay and character selection. Names, races, stats and affinities remain
+distinct; race-specific skins are retained as historical assets, not shown live.
+Human movement/animation acceptance and later character skins remain in progress.
+The shared bodies now wear warm charcoal/leather/gold clothing at 92% visual scale;
+the source rig, hurtboxes and wall clearance are unchanged. Wellspring paving and
+all eight basic magic animations use the same clearer pixel language. New finite
+trail chemistry is an explicit gameplay change. Both players need this build.
 
-| Visual slice | Current integration | Preserved contract |
-|---|---|---|
-| Magic | Native pixel projectiles, impacts, casting/movement accents and temporary reaction material; normal/reduced variants | Actual paid admission, geometry, links, lifetimes and protection |
-| Wellspring | Map-kit terrain transitions and supported prop slots on the existing campus | Walkable routes, buildings/colliders and movement practice layout; facade rework remains separate |
-| Characters | New Oh Tipi style authority: teal scales, dark layered cloth, restrained trim and crisp silhouettes | Five live champions; three sizes, eight directions and hand casting; complete sheets remain until replacements are ready |
+**Current priority: distinct mirror reactions, starting with Earth cover/movement.**
+The [next-slice plan](docs/MIRROR-AND-WORKSHOP-PLAN.md) then rolls out basic race
+visuals and a larger interactive Wellspring. Planned mechanics are not already
+in the verified portable; the measured runtime budget miss remains an open gate.
+The Earth Rampart playtest is packaged; human movement/readability acceptance
+remains open. Basic race silhouettes are queued after the mirror pilot series;
+detailed named skins still need satisfactory shared-template/direction review.
+Current body facing follows the cursor/controller aim independently of travel;
+casting remains possible throughout voluntary movement, subject to spell startup,
+cooldown, Flux and forced-control safeguards. The new
+[three-size skeleton system](art_batches/character_style_v1/wireframe_motion_v2/README.md)
+is the live shared foundation: 240 key-pose cells, 1,536 walking cells and 1,536 distinct
+sprinting cells cover eight travel directions by eight aim directions by eight
+stride phases per size. Nine textures are shared across the whole cast.
+Opposed aim/travel uses backpedalling or strafing, not a twisted spine.
+Hurtboxes depend only on size (15 / 18 / 21px); wall clearance is 18px for all.
+The [playtest clarity checkpoint](docs/PLAYTEST-CLARITY-CHECKPOINT.md) separates
+current verification from the retained [warm-style/trail checkpoint](docs/WARM-STYLE-TRAILS-CHECKPOINT.md),
+[awareness checkpoint](docs/MOTION-AWARENESS-CHECKPOINT.md)
+and [earlier template evidence](docs/CHARACTER-TEMPLATE-V2-CHECKPOINT.md).
 
-![Actual Wellspring source integration at 75% zoom](docs/evidence/pixel-assets-v1/wellspring-source.png)
+The [new cast-look reference](reference/art/cast_style_post_templates_v1/README.md)
+now informs live basic clothing, terrain and magic. Unique race/character skins
+and final illustrative fidelity remain pending; a shared body is not a finished cast.
+[Current race/facing rollout and readability checkpoint](docs/RACE-VISUAL-ROLLOUT.md).
 
-Actual game capture, not a concept mockup. Terrain, lecterns, banners and planters
-use the new kit; existing roofs/facades and live character sheets remain visible.
+## Game at a glance
 
-| Immediate change | Current source behavior | Acceptance boundary |
-|---|---|---|
-| Low jump | Approximately 22 px tap / 28.9 px held; above 18 px, low ground projectiles pass underneath | Beams, areas and explosions are not bypassed; ordinary jump still has only 90 ms opening immunity |
-| Float | Fresh airborne Jump press/hold holds current height; 24 Stamina + chain premium, then 100/s; small 1.8 s / middle 1.5 s / large 1.2 s maximum | Release, expiry, exhaustion, dodge, wallrun, fast fall or forced control ends protection immediately |
-| Air chains | Walljump -> Float -> air dodge; independent once-per-airtime opportunities | Only actual landing restores spent Float/dodge; touching walls never refills them |
-| Controls and aim | V evades, Q is Technique; cursor becomes an open-centre aiming sight and carries a world endpoint | Only previous fully default keyboard profiles migrate; custom bindings are preserved; controller aim uses range-limited directional casting |
-| Temporary matter | First-eight deposits last 2–5 seconds; all 36 first-grade pair identities execute with bounded authority-driven shapes and original rendering | All-pair paid formation, effects, reset, network and Full checks passed; human feel/readability and internet play remain open |
-| Recovery clarity | Stamina and Flux independently ramp 1x -> 3x over three quiet seconds after their own delay; HUD shows Float time and recovery seals | Actual positive spending resets only its own timer; chemistry recovery suppression does not erase quiet age |
+| Aspect | Current game |
+| --- | --- |
+| World | Wellspring 3072x2304 campus; 9 districts, 12 stations; southern movement loop, wallrun line and wide return routes |
+| Movement | Eight-way keyboard/continuous analog; sprint, jump, Float, slide, roll, air dodge, wavedash, wallrun/kick, redirect, fast fall, tech |
+| Resources | Health, attack Flux, movement Stamina; independent quiet-time recovery |
+| Spells | Seven families; 4 buttons across Plain/Ctrl/Alt = 12 individually configurable positions |
+| Elements | Fire, Water, Earth, Wind, Charge, Ice, Light, Dark |
+| Chemistry | 36 symmetric first-grade reactions; finite deposits, explicit extent/phase/counter |
+| Characters | 29 playable entries; 30 identities including one reserved Angel; 3 body roles |
+| Networking | Host-authoritative Farflow, offline or up to 8 same-build players |
+| Engine | 120 Hz authoritative simulation; 60 Hz transport snapshots; Godot 4.7.1 |
+| Performance | Known budget miss: eight-player empty-obstacle simulation p95 9.868-10.606 ms exceeds 8.333 ms, plus separate snapshot work; this is not rendered FPS or sustained 120 FPS certification |
+| Feedback | Element-specific impact imprints; local cast/contact sound with volume/mute at Controls Lectern |
+| Sight option | 55-degree ground-projected cone; 72px nearby awareness respects opaque cover; your own body is never masked |
 
-**F4** opens movement, characters and chemistry (Tab / shoulders change section);
-the Chemistry section includes endpoint/deposit instructions and all 36 pair
-results, with source-derived formation/active/decay times. **F2/F3** provide practice feedback/retry.
-Start `.\flux.cmd play` in this checkout. The [controls ledger](docs/MOVEMENT-CONTROLS-ACCEPTANCE.md)
-and [core chemistry revision](docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md) distinguish
-implemented source from integrated, visual, human-feel and internet acceptance.
-No new installer was produced; remote publication remains pending approval.
+The [current design contract](SPECIFICATION.md) owns scope. The
+[single implementation queue](.agent/OVERHAUL-IMPLEMENTATION.md) owns next work.
+Old checkpoint numbers and concept sheets are evidence/reference, not competing plans.
 
-| Playable champion | Body | Stamina | Base -> quiet recovery / s |
-|---|---|---:|---:|
-| S. Wayne | Small | 594 | 28 -> 84 |
-| Grace Riva | Small | 616 | 29 -> 87 |
-| Wa Bidi | Small | 638 | 32 -> 96 |
-| Oh Tipi | Middle | 660 | 30 -> 90 |
-| The Red Baron | Large | 792 | 32 -> 96 |
+## Learn by doing
 
-Capacities remain five times the earlier build. Base rates and other action
-costs are unchanged; the new recovery ramp applies independently to each resource.
-Stamina refills in ordinary grounded movement, not while sustaining Float or
-other paid movement. Resource maxima, spell costs, map and roster are unchanged.
-Blightsoil suppresses positive Health, Flux and Stamina recovery while active;
-spending and independent quiet clocks keep their normal rules.
+Start with one readable action, then combine it with another; the Wellspring is
+a practice space, not a requirement to memorize the whole catalog.
 
-![Actual movement renderer: three body templates, eight slide directions](docs/evidence/movement-m1-m5/three-body-slide-directions.png)
-
-The sheet is the preceding M1-M5 renderer state fixture, not a gameplay sequence.
-The following six-stream receipt is historical; the current movement revision
-supersedes its Stamina totals, not its unchanged spell work.
-
-Moving spells are **20% slower** with preserved reach;
-five playable champions have **10% more Flux and Stamina**. Multiplayer now
-represents every admitted projectile/field instead of silently omitting busy
-lanes. Training dummies return after three seconds. See the
-[six-stream acceptance ledger](docs/TEAM-FOUNDATION-ACCEPTANCE.md) for measured
-results and the explicit work still ahead. Full validation passed: **74 suites /
-60,230 assertions**, local host/join and the source launcher smoke test.
-Press **F4** (controller **Select/Back**) for the movement guide and alphabetical
-race/character compendium. This does not update an already-downloaded Windows installer.
-
-The previous 31.8/75.6 px jump is superseded by the low 22/28.9 px arc above.
-Proportional slows, reliable held-slide jump conversion and 120 Hz authority remain.
-Float holds current height instead of adding lift, now with explicit size caps.
-The [core revision](docs/CORE-GAMEPLAY-AND-CHEMISTRY-REVISION.md) and
-[coordinated workstreams](.agent/TEAM-ITERATION-PROMPT.md) define the next work:
-reactable spells, reusable elemental art, temporary material, all first-level
-pairs, longer practice routes and clearer in-game guides/roster.
-
-Latest visual checkpoint: live projectile cores, cast markers, combat HUD and
-Spell Loom now share element symbols. Projectile outlines use crisp sampling.
-The broader Q3 motion/accessibility review remains open; this is a tested source
-update, not a newly published installer.
-
-FLUX 2 is an original 2.5D top-down elemental arena game built in Godot 4.7.1.
-It combines crisp independent-aim combat, expressive chained movement, readable
-bullet patterns, and a bounded world-chemistry sandbox. The player always
-arrives in the Wellspring: a walkable shared academy where training, character
-and spell configuration, hosting, joining, settings, testing, and safe exit are
-physical places rather than a detached menu.
-
-![Wellspring gameplay target](assets/concept/wellspring-gameplay-specimen-v3.png)
-
-> **Current playable state:** Windows is the active release target. Five distinct champions,
-> including Grace Riva (Wind/Water/Light) and Wa Bidi (Charge/Wind/Fire), the full movement foundation, 41 playable foundation spells, the
-> Wellspring campus, an authoritative 2–8 player direct-IP Farflow loop, and a
-> packaged one-file Windows player app are working. Comparable bursts for all
-> eight first-phase elements and the strict, symmetric 36-reaction definition
-> compiler are working. Finite deposits and live spatial reactions passed their
-> all-pair, reset, replay and local-network source gate; pixel presentation is the
-> current integration slice. Human readability and internet play remain open.
-
-**Latest movement/resource update:** held Jump now buys a visibly higher arc,
-held Slide buys a longer lane, earned planar speed survives legal movement
-conversions, and airborne wallrun/air-dodge chains are live. Successive movement
-actions cost 10% more up to 40% and reset after 333 ms; every champion has more
-Stamina and every attack remains paid despite lower Flux costs. Protocol 43 and
-snapshot schema 18 add finite Float budgets and chemistry state to complete threats,
-target respawn and resource recovery through Farflow; their source gate passed. See the
-[quality expansion ledger](docs/QUALITY-EXPANSION-ACCEPTANCE.md).
-
-**Illustrated source revision:** illustrated stone/grass/water terrain, slate-and-timber
-buildings, reusable props and renewed small/middle/large eight-way body templates
-are integrated into the 3072x1728 six-area campus. The art uses an elevated
-approximately 55-degree view, while floors, movement, aiming and collisions
-remain screen-aligned. Visible buildings are fully opaque collision-backed
-worldbone; collisionless decorations and landmarks are withheld for now.
-50/75/100% zoom remains available. Visual acceptance is reopened, not inherited
-from the earlier artwork. See the [visual acceptance ledger](docs/VISUAL-REFINEMENT-ACCEPTANCE.md).
-
-![Current in-game Wellspring overview, 1080p at 50% zoom](docs/evidence/illustrated-wellspring-v1/overview.png)
-
-Run `.\flux.cmd play` for this source revision. Existing Windows exports predate
-these changes and must be rebuilt before sharing; do not mix old packages and
-new-source hosts. The [map/movement ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md)
-records the unchanged no-vault controls and prior protocol-33 movement checkpoint. Current source uses protocol 43; hosts and guests must use the same build.
-
-![Current five-champion motion contact sheet](assets/concept/five-champion-motion-reference-v1.png)
-
-Rows: Oh Tipi, S. Wayne, Red Baron, Grace Riva, Wa Bidi. Columns: front, south
-walk A/B, south slide, jump, roll, east walk A/B. All ten runtime rows cover eight directions;
-hit/recovery derives from grounded recoil and sprint B reuses walk B. The 29
-semantic actions use explicit aliases, not 29 independently drawn animations.
-Spells, auras and ground shadows remain separate from body/clothing artwork.
-See [editable cast sources and prompt specifications](reference/art/cast_expansion_v1/README.md)
-and the [motion acceptance ledger](docs/CAST-MOTION-ACCEPTANCE.md). New champions use
-separate reusable atlas pages; all movement poses face actual travel. South slides
-use frontal replacements. Complete clean alternating contact review in every
-direction remains in progress; frame coverage is not proof of animation quality.
-All five front walk/sprint pairs now exchange foot contacts. Moving casts keep
-their movement pose and travel direction; HUD portraits use the same live art.
-
-| New basic character | Health / Flux / Stamina | Ground speed | Initial single-element spells |
-|---|---|---|---|
-| Grace Riva, small Sylph | 92 / 132 / 616 | 103% | Rillshot, Gale Burst, Pocket Eclipse |
-| Wa Bidi, small Goblin | 98 / 116.6 / 638 | 105% | Arc Primary, Gale Burst, Cinder Fan |
-
-These are usable foundation kits; unique racial abilities are not claimed.
-
-Current counts deliberately distinguish authored inventory from promoted play:
-
-| Dimension | Authoritative current meaning |
+| Try | What to notice |
 |---|---|
-| Abilities | 46 validated effective records; 41 have runtime wire IDs: a complete row-major 8-element × 5-family Loom plus Vector Lance; five passive/gated kit records are not selectable spells |
-| Chemistry | 36 symmetric first-grade reactions compile, hash and execute; paid all-pair formation, behavior/lifecycle, reset, transport and source Full checks pass; human playtest and heavy-load timing acceptance remain open |
-| Champions | 5 playable entries; 24 identities in the non-selectable roster/affinity plan |
-| Bodies | 3 authored gameplay roles: small, middle and large; five-size paths are legacy source/archive adapters only |
-| Cadence | 120 Hz authoritative simulation; 60 Hz transport snapshots and a 60-sample presentation clock are distinct non-gameplay cadences |
+| Walk, stop, jump, steer in air | Travel and aim are independent; jump gives height, not an automatic forward launch |
+| Walk, hold Shift, release Shift | Sprint is now 60% faster than walking, with a longer stride and distinct lean; size modifiers still apply |
+| Open F4 Movement; select Jump or Float | The opening protection window is not the same as total airtime; hold costs are additional |
+| At the Spell Loom, equip Fire Bolt and Water Bolt in two slots | All characters can use both; twelve configurable positions do not require twelve different spells |
+| Cast both at one nearby endpoint before the first matter expires | Two separate deposits combine into Steam; its active mist conceals distant actors, not projectiles, and deals no damage |
+| Land a new shot on an older flight trail | Spend both casts' chemistry payloads for one reaction; sustained effects are shorter than terminal + terminal |
+| Compare Bolt with Rapid | Bolt may leave narrow trail ingredients; Rapid never leaves flight trails, but still deposits terminal matter |
+| Experiment inside the Crucible | A compact card explains live matter/reaction phase, remaining time, effect and counter; hidden during menus and rounds |
+| Make Light + Light, then Fire + Water nearby | Radiance can reveal actors inside Steam; keep the two reaction origins in separate nearby cells so their active areas overlap |
+| Compare Earth + Earth, then Fire + Earth | Rampart is active breakable movement/shot/ray cover and a wallrun/kick surface; Magma damages grounded enemies, so jumping is a relevant counter |
+| Use the Practice Bell and change one choice | Refill resources/clear temporary effects; repeat before adding more spells or movement to the chain |
+| Follow Canopy south into SOUTH MOVEMENT LOOP | Two-line hints follow your current bindings, grounded/wallrun/air/Float state and remaining Stamina; try the paid wallrun/kick line or simply walk around |
+| Open Controls Lectern and compare elemental sounds | Default 30%; use header -/+ or brackets/LB/RB; 0/Start mutes; unmute restores 30% |
 
-## Get, play, host, join
+In **F4 Chemistry**, select the pair you want, then **Details**: the title,
+effect/counter and warning/active/harmless-decay timeline all follow that pair.
+Left/right or D-pad changes its second element without leaving Details.
 
-| Person | One safe path | Result |
-|---|---|---|
-| Windows player | Download and double-click `FLUX.exe` | One hash-verified file installs or updates per-user, repairs if needed, then starts the game |
-| Windows developer | Run `.\flux.cmd play` | One thin task front door dispatches to the pinned Godot source launch at 120 Hz |
-| Host | Use **Host Farflow** on the southern edge of Source Court | Opens authoritative UDP session on port `24872` |
-| Friend on the same LAN | Walk to the Farflow stations and choose **Join** | Compatible hosts appear automatically through bounded UDP discovery; different builds remain visible but cannot be joined |
-| Internet friend | Walk to **Join Farflow**, press interact, type/paste the host address, press Enter | Address is saved locally; join is compatibility-checked with clear refusal on mismatch/full session |
-| Everyone | Use the **Session Hearth** | Ready, synchronized start, results, and rematch without reopening the company |
+Radiance and Steam stay **two independent reactions**, not a new chained recipe.
+Use two Light Bolts at one nearby point, then Fire and Water Bolts about three
+floor tiles to the side before Radiance ends. The Crucible card recognizes their
+active overlap. Radiance must reach an actor: worldbone can block the reveal,
+and leaving Radiance lets its short refreshed reveal expire. Steam still hides
+only actors that satisfy its own concealment rules, never projectiles.
+The southern movement card is also personal: it disappears in menus, on focus
+loss, while spectating or during rounds. F4 retains the complete movement rules.
 
-Build the one-file friend package on Windows:
+Sound is intentionally local and non-positional. Only your accepted casts and
+on-screen, chemistry-visible contacts produce cues. Sight-cone mode suppresses
+contact cues; casts remain audible. Menus, focus loss and spectating silence it.
+The editable eight-element sound sketches need human listening acceptance.
+The [current eight-player paid-load diagnostic](docs/evidence/playtest-clarity-runtime-v1/README.md)
+preserves deterministic state but misses the CPU budget; it is not rendered FPS
+or remote-play proof. The [earlier runtime comparison](docs/evidence/template-delivery-v1/runtime/BATCH-CANDIDATE.md)
+remains historical evidence, not a timing result for this checkpoint.
 
-```powershell
-scripts\install-export-templates.cmd
-scripts\package.cmd Windows
-```
+## Install, play, update
 
-Developer verification is explicit and warning-clean:
+**Latest local developer playtest:**
+[Earth Rampart checkpoint](docs/RAMPART-M1-CHECKPOINT.md),
+verified Full **95 suites / 537,802 assertions**, zero failures/stderr,
+38 actual production-game captures, strict export/PCK identity verification
+and isolated Windows release boot. Open
+[flux2.exe](exports/windows-rampart-m1-p47-20260909/windows/flux2.exe)
+with its adjacent `flux2.pck`. No editor or installation is needed for this raw
+exported game. The previous refreshed installer was blocked by this PC's Windows
+Application Control; this checkpoint is portable-only, with no installer retry
+or policy bypass.
+For the same current build in one archive, use the
+[current portable ZIP](exports/windows-rampart-m1-p47-20260909/release/FLUX2-Windows-x86_64.zip), 97.7 MB;
+extract it completely and keep its files together.
 
-```powershell
-scripts\test.cmd -Tier Fast     # import + 120 Hz boot
-scripts\test.cmd -Tier Focused -Suite reaction-catalog
-scripts\test.cmd -Tier Full     # Fast + all deterministic suites
-scripts\test.cmd -Tier Release  # Full + Windows package/install/repair/boot
-```
+Quick comparison: walk with WASD, hold Shift to sprint and aim independently.
+At the Spell Loom compare Fire Bolt with Fire Rapid: Rapid must leave no flight
+trail; a new Water impact on older Fire matter makes Steam. Try the smaller
+clothed bodies against the warm floor at different zoom levels. Follow the quiet
+Commons -> Movement -> Crucible -> Sparring floor guides; hover resource/practice
+cards for details and compare protection during Float, casting and expiry.
+F8 still tests the optional cone. Both friends must use this same new ZIP;
+matching protocol numbers alone do not establish matching content. Older builds
+are retained. Human style/feel, physical two-PC play and sustained rendered
+120 FPS remain unaccepted; the measured CPU budget miss is an active follow-up.
 
-Every tier reports elapsed time and stderr bytes. Unexpected Godot warnings are
-failures. On 2026-09-04 the actual Windows game export booted successfully,
-but Application Control still blocked the rebuilt unsigned `FLUX.exe`
-installer before installation; Release acceptance needs trusted signing or
-administrator-approved publisher trust. No security settings were changed.
+The latest installer with a passed isolated setup/update/repair journey is the
+older [QV FLUX.exe](exports/windows-followup-p47-20260909/release/FLUX.exe), 96.8 MB.
+It includes V Technique / Q Evade, protocol47,27 profiles and57 spells, but not
+the newer shared-body, warm-style, finite-trail or reaction-batch changes.
+It is a historical fallback, **not an installer for the current portable**.
+[Exact fallback evidence](docs/evidence/template-delivery-v1/delivery/README.md).
 
-Send only `exports\release\FLUX.exe`. Double-clicking a newer copy stages and
-verifies the new version before atomically switching the installed `FLUX.exe`;
-an interrupted install leaves the previous version selected. The development
-build is unsigned, so Windows may show a publisher warning or an enterprise
-Device Guard policy may block the unsigned app until a release certificate and
-signing pipeline exist. The portable `exports\release\FLUX2-Windows-x86_64.zip`
-bundle is the fallback for managed test machines; its checksum is listed in
-`exports\release\SHA256SUMS.txt`.
+| Action | One path |
+| --- | --- |
+| Play current build | Extract the current portable ZIP completely; open PLAY-FLUX.cmd, or flux2.exe with its adjacent flux2.pck |
+| Play current build again | Open the same extracted current-build folder; an older installed shortcut does not select it |
+| Update current portable | Close the game; extract a newer verified portable into a new folder and keep the prior folder; no automatic online update |
+| Verify current local files | In PowerShell 7, run `pwsh -NoProfile -File scripts/current-checkpoint.ps1` from the checkout; exact payload and evidence hashes, no launch or download |
+| Historical installer only | QV FLUX.exe installs/updates/repairs its older QV payload; its installed shortcut still opens that older build |
+| Source play | Run `flux.cmd play` from this checkout |
+| Host | Host Farflow station; UDP24872 |
+| Join | Join Farflow; LAN discovery or host address; both players need the same build |
+| Exit | Close normally; game saves local settings and closes its peer |
 
-Build the Windows package from the intended unified `main` checkpoint; verify the supplied
-`FLUX.exe` or the portable ZIP against `exports\release\SHA256SUMS.txt` before
-sharing it.
+Unsigned development build: Windows may warn/block it; never disable security.
+This is an **offline updater**, not automatic internet updating or a published
+GitHub release. Internet hosting needs the host's UDP24872 router/firewall
+arrangement or a private overlay. Physical two-PC acceptance remains open.
+The new export passed a headless local Farflow lifecycle smoke through joining,
+late spectator handoff, rounds, reconnect and rematch; its
+[same-machine logs](docs/evidence/playtest-clarity-runtime-v1/farflow/host.log)
+do not establish physical two-PC or Internet play acceptance.
 
-For internet play, the host currently forwards/allows **UDP 24872**. The friend
-opens **Join Farflow**, types or pastes the host's public address, and presses
-Enter. The last valid address is saved on that PC. Developers and diagnostics
-may still override it from the command line:
+[Current delivery pointer and exact hashes](docs/current-checkpoint.json) ·
+[Current checkpoint and acceptance limits](docs/PLAYTEST-CLARITY-CHECKPOINT.md) ·
+[Historical installer-policy boundary](docs/evidence/template-delivery-v1/final-delivery/README.md) ·
+[Older verified QV portable ZIP](exports/windows-followup-p47-20260909/release/FLUX2-Windows-x86_64.zip)
 
-```powershell
-scripts\run.cmd --join-address=203.0.113.10 --player-name="River Guest"
-```
+The pointer selects one immutable verified checkpoint, not every unexported edit
+in this checkout. `scripts/current-state.ps1 -Check` validates current source
+facts and reports pinned delivery separately. Missing local exports are marked
+unavailable; `scripts/current-checkpoint.ps1` succeeds only when all pinned
+payloads and evidence are present and match. File verification is not a new
+installer, engine, human or two-PC acceptance run.
 
-LAN play uses the host's LAN address. Two local copies default to `127.0.0.1`.
-LAN discovery is automatic while the contextual Farflow station panel is open;
-its controls never become a detached main menu. Relay, NAT traversal,
-encryption, and signed public update channels are not claimed yet; test
-direct-IP internet builds only with trusted friends.
+## Controls and movement
 
-## Product state
+Bindings are configurable at the Controls Lectern; the F4 compendium is a fixed
+interface shortcut. Detailed costs/timings and effects are taught from runtime
+data in-game. Modal panels block local gameplay input, not the shared world.
+The current defaults are **V Technique / Q Roll-Air Dodge**. Only a complete,
+untouched old default keyboard profile migrates automatically; custom keys,
+partial profiles and explicit unbinds remain yours. Mouse/controller layouts do
+not change. [Migration and older-build boundary](docs/QV-RUNTIME-CHECKPOINT.md).
+Movement now opens as one 16-technique table; Chemistry as a complete 8x8 reaction
+matrix. Select a row/cell for a short explanation, then Enter/controller A/Details
+for complete rules. Values and rebound controls come from the current game data.
+After a menu or Alt-Tab interruption, release and freshly press held paid
+actions before using them again; directional movement may resume normally.
 
-| Area | Now | Next acceptance |
-|---|---|---|
-| Repository | One authoritative Godot runtime; generated state/drift checks, selectable suites, receipts, developer front door, asset inventory, canonical roster adapters and exact-package content evidence are verified | Current visual/camera replacement before C6 exposure/contact; unsigned installer trust remains independently blocked |
-| Lifecycle | Source launch, portable archives, checksums, one-file Windows install/update/run | Signed releases, clean uninstall UI, public update channel |
-| Wellspring | Nine districts, walk-up stations, practice actors, movement routes | Stronger authored landmarks and compact onboarding |
-| Movement | Full universal foundation at deterministic 120 Hz; normalized eight-way commands, active directional air control/facing, alternating gait contacts, native eight-way jump/slide/roll art, relative gait, and directional evasion cues | Measure response/braking/reversal/chains during chemistry, then tune the existing grammar from the packaged playtest before adding techniques |
-| Combat | Forty row-major matrix spells cover Bolt, Burst, Spray, Beam and Field for every first-eight element; Vector Lance remains a proven extra variant; one validated catalog owns economy, timing, geometry, damage, control, Loom order and reusable presentation | Finish visual-family acceptance, then let chemistry supply systemic differences without dual-element attacks |
-| Chemistry | First-eight finite deposits plus 36 stable recipe identities and authority-shaped code-native presentation are in the current source integration | All-pair production behavior, cover/visibility/refraction, lifecycle/reset/replay and complete Farflow state proof before acceptance |
-| Champions | Five playable: Oh Tipi, S. Wayne, Red Baron, Grace Riva, Wa Bidi | Refine motion contacts and verify visual readability before more roster expansion |
-| Farflow | Host-authoritative 2/4/8-player loop with contextual zero-config LAN discovery and direct-IP internet joining | Physical two-PC LAN/internet proof, then per-peer LOS filtering; measured 32-player work remains deferred |
-| Visuals | Integrated Wellspring gate accepted at 4.64/5; the foundation champions share The Red Baron's cell-bounded dark-ink language, and the Proving Court uses quiet room lanes, response pockets and bounded markers | Maintain one world/body/shadow/spell/projectile/interface hierarchy and improve weak live areas from gameplay captures, not isolated concept art |
+| Action | Keyboard/mouse default |
+| --- | --- |
+| Move / aim | WASD / mouse |
+| Primary / active | Left / right mouse |
+| Sprint | Shift |
+| Jump / hold / airborne Float | Space or wheel up |
+| Slide / hold / fast fall | C or wheel down |
+| Roll / air dodge | Q |
+| Wall/air technique / tech | V |
+| Interact | F; contextual action may also use E |
+| Spell positions | 1–4, Ctrl+1–4, Alt+1–4 |
+| Speech / reset | Hold T / R |
+| Guide / view options | F4 / F8–F11 |
 
-## Design pillars
+Controller movement/aim use left/right stick; actions are remappable.
+Current low jump clears low ground projectiles above 18 px, not beams/areas/blasts.
+Float holds height while paid, with 1.8/1.5/1.2 s Small/Middle/Large limits.
+Protection is finite and explicitly displayed; solid world stays solid.
+Movement chain premiums reset after 333 ms and do not grant free speed/protection.
+No vaulting or crest-superglide action is available.
 
-| Pillar | Observable rule |
-|---|---|
-| Movement is offense and defense | Routes, aim, spacing, timing, feints, and resource discipline decide exchanges |
-| Bullet hell stays readable | Every lane exposes origin, owner, shape, element, speed class, impact, and expiry |
-| Chemistry changes space | Reactions create routes, cover, hazards, visibility, friction, conduction, and counters—not automatic elemental bonus damage |
-| Fast, not frictionless | Actions chain when physically legal; startup, cost, recovery, collision, and authored cooldowns preserve decisions |
-| Minimal spectacle, maximal response | Strong silhouettes, restrained effects, exact hit confirmation, and no state hidden behind decoration |
-| One visual grammar | Champions read first, threats second, interactions third, architecture fourth, and ambient detail last at every zoom |
-| One simulation truth | Fixed-tick systems own outcomes; rendering, particles, sound, and camera never invent gameplay |
-| One production sandbox | Players, developers, tests and captures exercise the same validated commands, systems, reset rules and packaged runtime |
-| Composition before duplication | New champions, spells, elements, ancestries and materials combine reusable kernels and fail closed when incomplete |
-| Simple verbs, deep combinations | Depth comes from movement, geometry, elements, world state and timing composing—not hidden exceptions or option count |
-| Learn by doing | Strong defaults, nearby affordances and one contextual prompt teach before the Living Archive explains |
-| Failure is actionable | Every blocked action or failed journey names one cause, one safe next action and preserves a quick retry |
-| Plug-and-play is gameplay | Obtain, install/update, start, host/join, leave and recover are short, honest and safe player journeys |
-| Always playable | Every slice ends launchable, tested, documented, and recoverable before the next begins |
+## Spell Loom
 
-Broad inspiration comes from compact pixel adventures, room-scale action games,
-bullet-hell shooters, arena combat, and expressive movement games. FLUX copies
-no protected characters, maps, weapons, layouts, symbols, art, audio, or exact
-mechanics.
+62 validated effective records; 57 have runtime wire IDs. Five passive/gated
+kit records are not selectable spells. Every character can configure every
+shared spell; affinities are not a class lock.
 
-## Controls
+| Element | Bolt | Heavy | Rapid | Wave | Spray | Beam | Field |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Fire | Cinderbolt | Cinder Shell | Ember Stream | Cinder Fan | Ember Sweep | Cinderline | Hearthring |
+| Water | Rillshot | Tide Shell | Rill Stream | Rill Burst | Tideline | Undertow Line | Springwell |
+| Earth | Flintshot | Boulder Shell | Gravel Stream | Stone Burst | Shard Gale | Faultline | Stonehold |
+| Wind | Gale Needle | Pressure Shell | Gale Stream | Gale Burst | Squall | Pressure Line | Updraft |
+| Charge | Arc Primary | Thunder Shell | Spark Stream | Arc Burst | Spark Shower | Voltline | Static Snare |
+| Ice | Rimeshard | Frost Shell | Sleet Stream | Rime Burst | Sleet | Frostline | Rimewake |
+| Light | Dawn Needle | Dawn Shell | Glint Stream | Prism Burst | Radiant Veil | Pocket Eclipse | Halo Ground |
+| Dark | Eclipse Disc | Night Shell | Gloam Stream | Eclipse Burst | Gloam Breath | Nightline | Umbral Pool |
 
-Gameplay bindings are remappable at the in-world Controls Lectern and saved
-in a versioned local profile. The F4 / controller Select/Back compendium shortcut
-is a fixed interface shortcut, not yet rebindable; it closes before quit and
-blocks local gameplay input without pausing the multiplayer world.
+Vector Lance is the additional Charge Bolt variant. Wave is the simultaneous
+five-lane Burst, not a delayed volley. Every attack spends positive Flux.
 
-| Action | Keyboard/mouse default | Controller default |
-|---|---|---|
-| Move / aim | WASD / mouse | Left stick / right stick |
-| Primary | Left mouse | Right trigger |
-| Active | Right mouse or E | West face |
-| Sprint | Shift | Left shoulder |
-| Slide / fast-fall intent | Tap C/wheel down for 150 ms; hold for paid sustain | South face |
-| Jump / movement chain | Tap Space/wheel up for short hop; hold for paid sustain | Right shoulder |
-| Evade: roll / air dodge | V | Left trigger |
-| Context technique | Q | East face |
-| Interact | F | North face |
-| Speech wheel | Hold T, choose direction | D-pad up |
-| Spells | 1–4 | Remappable |
-| Spell layers | Ctrl+1–4 / Alt+1–4 | Remappable |
-| Reset practice | R | Remappable |
-| POV / zoom | F8 / F9 / F10 / F11 | Lectern/remappable |
+## Elements and chemistry
 
-The Spell Loom exposes twelve independently ordered positions: Plain 1–4,
-Ctrl+1–4, and Alt+1–4. An empty position refuses without consuming Flux or
-cooldown. Ctrl and Alt are spell-layer modifiers; slide remains on C.
+| Element | Terminal / trail lifetime | Material read |
+| --- | ---: | --- |
+| Fire | 4 / 1.1 s | Orange pointed tongues/sparks |
+| Water | 5 / 1.4 s | Blue rounded ripples |
+| Earth | 5 / 1.5 s | Ochre angular stones |
+| Wind | 3 / 0.8 s | Pale mint directional ribbons |
+| Charge | 3 / 0.8 s | Yellow branching sparks |
+| Ice | 5 / 1.4 s | Cold faceted crystals |
+| Light | 4 / 1.2 s | Ivory/gold stars and rays |
+| Dark | 4 / 1.3 s | Violet/ink inward wisps |
 
-Press edges are retained across the render-to-simulation boundary and then use
-the same 100 ms deterministic movement buffer, so quick keyboard, mouse-wheel and
-controller chords are not lost between frames. All eight movement-plus-slide
-combinations are exercised end to end at 120 Hz and the resulting slide lanes
-are verified at the authoritative 120 Hz tick. If a physical keyboard cannot
-report a three-key chord because of hardware rollover, wheel-down or a Controls
-Lectern remap is the equivalent slide input.
-
-## Movement grammar
-
-**Current no-vault movement:** the larger Wellspring loop and no-vault
-movement update are implemented in source. Sprint+Jump stays Jump; V / left
-trigger is Evade, Q / B is Wall/Air Turn/Tech. Jump/Slide holds spend Stamina
-for their optional tails; Slide has a brief 50 ms opening protection window and
-second-press brake. [Current map, controls and acceptance
-ledger](docs/WELLSPRING-MOVEMENT-ACCEPTANCE.md) separates tested behavior from
-pending human balance/visual acceptance and independent activity isolation.
-
-| Technique | Purpose | Bound / counterplay | State |
-|---|---|---|---|
-| Strafe + independent aim | Crossfire, retreat, prediction | Acceleration, brake, counter-strafe timing | Playable |
-| Sprint | Rotate, pursue, disengage | Continuous Stamina drain and delayed recovery | Playable |
-| Jump | Low physical lift with eight-way air control | Approximately 22 px tap / 28.9 px held; above 18 px clears low ground projectiles, not beams/areas/explosions; ascent-only hold costs 80 Stamina/s; 90 ms opening protection | Current source candidate |
-| Float | Fresh airborne Jump holds current height with freely steerable planar movement | 24 Stamina + chain premium then 100/s; small 1.8 s / middle 1.5 s / large 1.2 s; protected only while active and paid; landing restores allowance | Current source candidate |
-| Slide / slide jump | Tap gives a 150 ms committed burst; hold pays 45 Stamina/s toward 480 ms; slide-jump preserves legal entry speed | Entry-speed gate; 50 ms opening protection; vulnerable paid tail; release/exhaustion shortens it; second C brakes; world stays solid | Playable |
-| Movement chain economy | Makes repeated evasive conversion expressive but progressively costly | Every paid continuation within 333 ms adds 10% cost up to 40%; refused actions and held tails never add a step; HUD shows the next premium | Playable |
-| Air redirect / air dodge | Sharp steering choice or directional decaying burst followed by controllable descent | One air dodge per actual airtime; 180 ms burst, 120 ms protection; walls do not refill; landing does; paid sharp redirects stay finite | Playable |
-| Ground roll | Evade a predicted lane while grounded | 24 Stamina; 130 ms opening attack intangibility inside 240 ms action | Playable |
-| Wavedash | Convert a low directional air dodge into ground momentum, including straight ahead | Actual floor contact; no extra protection or free speed stacking | Playable |
-| Wall contact / wall kick | Rebound through authored wall routes | 220 ms same-wall lockout | Playable |
-| Vault / crest superglide | Retired | Serialized IDs remain reserved, no action activates either | Removed |
-| Wallrun | Contact-following run along authored practice walls | 18 Stamina; 420 ms maximum; detach at wall end, away input or second Q; no i-frames | Playable |
-| Variable hop / fast fall | Change aerial rhythm | Bounded height and committed descent | Playable |
-| Landing cut | Trade timing for reduced landing recovery | Never cancels attack/status commitment | Playable |
-| Impact influence / tech | Bend launch; regain control near impact | Gradual influence; Q tech costs 18 Stamina | Playable |
-| Edgeweave | Skim a hostile projectile to recover Stamina | No reward on hit/full Stamina/repeat contact | Playable |
-
-Slide, roll, jump, and air dodge intangibility applies only to attack contact during
-the authored opening windows. Solid world geometry remains solid.
-
-Movement polish is measured rather than guessed: legal input should affect
-authoritative state within one 120 Hz tick unless a visible commitment blocks
-it; one transition contract owns buffers/cancels/costs/cooldowns/refusals; and
-repeatable journeys record stopping distance, reversal, landing recovery and
-chain success. Small favors acceleration/recovery, middle flexibility and
-large stability/momentum without changing universal access or creating hidden
-collision advantage. No new technique is added until every existing one has a
-distinct use, readable transition, deterministic test and counterplay.
-
-## Combat, resources, and spell geometry
-
-| Resource/layer | Contract |
-|---|---|
-| Health | Defeat resource with authored recovery timing |
-| Flux | Every attack costs Flux; a positive spend resets its 700 ms delay and independent 1x-to-3x recovery ramp; insufficient Flux refuses before creating an outcome |
-| Stamina | Movement resource for sprint, aerial actions, slides, wall routes, roll, and tech |
-| Affinity | 3 innate points split 2+1 or 1+1+1; bounded build discount only, never automatic damage advantage |
-| Primary | Reliable independent-aim pressure with positive Flux cost |
-| Spell weave | Twelve configurable positions over four buttons and three modifier layers |
-| Authority | Startup, collision, cost, cooldown, damage, reaction, score, and reset are simulation/host owned |
-
-| Current delivery family | Player decision | Required read |
-|---|---|---|
-| Bolt/projectile | Lead, weave, clash, ricochet, use cover | Origin, direction, radius, owner, element, impact |
-| Burst/fan | Occupy several lanes or leave a deliberate gap | Ordered fan angles and common timing |
-| Beam/ray | Hold or sweep a lane | Startup line, obstruction, active time, recovery |
-| Spray/cone | Commit close or displace a flank | Facing, boundary, count, escape edge |
-| Field/volume | Deny, reveal, slow, prime terrain | Exact boundary, delay, duration, counter |
-
-The Spell Loom presents the complete current catalog in the same row-major grid
-used by validation, simulation and networking. Every cell is single-element,
-globally configurable, positively priced, and executable through one of five
-shared attack-family resolvers.
-
-| Element | Bolt | Burst | Spray | Beam | Field |
-|---|---|---|---|---|---|
-| Fire | Cinderbolt | Cinder Fan | Ember Sweep | Cinderline | Hearthring |
-| Water | Rillshot | Rill Burst | Tideline | Undertow Line | Springwell |
-| Earth | Flintshot | Stone Burst | Shard Gale | Faultline | Stonehold |
-| Wind | Gale Needle | Gale Burst | Squall | Pressure Line | Updraft |
-| Charge | Arc Primary | Arc Burst | Spark Shower | Voltline | Static Snare |
-| Ice | Rimeshard | Rime Burst | Sleet | Frostline | Rimewake |
-| Light | Dawn Needle | Prism Burst | Radiant Veil | Pocket Eclipse | Halo Ground |
-| Dark | Eclipse Disc | Eclipse Burst | Gloam Breath | Nightline | Umbral Pool |
-
-Vector Lance remains a globally configurable Charge Bolt variant outside the
-comparison grid. Wave, orbit, construct and tether families remain planned,
-not selectable claims.
-
-The first-eight bullet-pattern baseline is playable: each element emits five projectiles at
-`-24°, -12°, 0°, +12°, +24°`, ordered negative-to-positive for deterministic
-IDs and replay. It spends one positive Flux cost, cannot multiply damage on one
-target, stays inside bounded work/snapshot capacity, and leaves authored dodge
-lanes. Element changes presentation and the future chemistry payload; it never
-changes this comparison geometry, economy, or damage budget.
-
-## Elements
-
-Eight elements are active in the first chemistry phase. Four remain gated until
-the eight-family matrix is playable, bounded, resettable, and readable.
-
-| Active element | Physical/magical identity | Typical spatial verbs |
-|---|---|---|
-| Earth | Mass, metal, structure, growth, fracture | Raise, brace, block, crumble, conduct |
-| Fire | Heat, ignition, smoke, pressure | Burn, spread, consume, soften, illuminate |
-| Water | Flow, pressure, wetness, cleansing, displacement | Flood, carry, cool, connect, erode |
-| Wind | Air, sound, pressure, lift, redirection | Push, pull, bend, disperse, orbit |
-| Ice | Cold, friction, brittle structure, lanes | Freeze, slide, bridge, fracture, focus |
-| Charge | Conduction, stored force, interruption | Arc, store, ground, overload, reveal |
-| Light | Life, reveal, refraction, protection | Expose, reflect, split, ward, restore |
-| Dark | Death, plague, blood, decay, concealment | Wither, pursue, obscure, sacrifice, drain |
-
-| Deferred | Identity | Gate |
-|---|---|---|
-| Spirit | Psyche, dream, memory, resolve, aether | First-eight acceptance complete |
-| Chaos | Void, entropy, instability, mutation | First-eight acceptance complete |
-| Gravity | Weight, pull, orbit, anchoring | First-eight acceptance complete |
-| Time | Delay, haste, echo, bounded rewind | First-eight acceptance complete |
-
-### Complete first-eight interaction matrix
-
-The matrix is symmetric: row+column and column+row resolve to one recipe.
+Bolt/Heavy/Rapid/Wave leave deposits at their actual terminal position while their
+chemistry payload remains unspent. Bolt/Heavy/Wave can also leave optional 16px
+trail ingredients; **Rapid never leaves flight trails**. Terminal radius is 24-32px.
+Plain matter is not damage or a status. Different casts can combine; siblings
+from one Wave cannot. Beam/Spray/Field currently do not deposit.
+Trail + trail never reacts. A new terminal can combine with an older trail for
+60% sustained active time (instant windows unchanged). Each contributing cast
+spends its whole chemistry payload once: leftover fragments disappear and a
+still-flying projectile cannot refill them, but retains its direct attack damage.
+Four trails per owner / 32 globally share the existing 16/128 material caps;
+reserved paid terminal slots take priority over optional trails.
+Existing trails still occupy material capacity until spent/expired, so they can
+temporarily reduce room for another five-projectile Wave; Rapid avoids that
+flight-trail overhead.
+Only active reaction phases apply effects; reduced visuals never change rules.
+Sustained active windows are about 25% longer, allowing more pulses if you remain
+inside a damaging hazard. The five instant reactions retain their short windows;
+all reactions still expire within five seconds including formation and decay.
+Impacts have 1.5x finite playback and a stronger element imprint, without growing
+their hit radius. The [live basic-element refinement](art_batches/magic_style_v3/README.md)
+updates 112 normal/reduced sequences with editable pixel sources; reaction art
+remains a separate next acceptance slice.
 
 | + | Earth | Fire | Water | Wind | Ice | Charge | Light | Dark |
-|---|---|---|---|---|---|---|---|---|
-| **Earth** | Fortify | Magma | Mud | Dustfront | Permafrost | Grounding Network | Crystal Prism | Blightsoil |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **Earth** | Rampart | Magma | Mud | Dustfront | Permafrost | Grounding Network | Crystal Prism | Blightsoil |
 | **Fire** | Magma | Conflagration | Steam | Firestorm | Thermal Shock | Plasma Arc | Solar Flare | Cinderveil |
 | **Water** | Mud | Steam | Flood | Mistcurrent | Freeze | Conductive Flood | Mirrorwater | Blackwater |
 | **Wind** | Dustfront | Firestorm | Mistcurrent | Vortex | Hailstream | Ion Storm | Lightbend | Shadowdraft |
@@ -421,482 +274,121 @@ The matrix is symmetric: row+column and column+row resolve to one recipe.
 | **Light** | Crystal Prism | Solar Flare | Mirrorwater | Lightbend | Crystal Lens | Arcflash | Radiance | Penumbra |
 | **Dark** | Blightsoil | Cinderveil | Blackwater | Shadowdraft | Black Ice | Static Shroud | Penumbra | Umbral Field |
 
-Every recipe now compiles through stable wire IDs into one of nine shared
-primitives (`surface`, `flow`, `cover`, `field`, `conduction`, `visibility`,
-`hazard`, `refraction`, `fracture`) and seven clamped integer channels. Each has
-`formation → active → residue/decay`, public thresholds,
-bounded area/propagation/lifetime/work/ownership, and at least one spatial
-counter. Worldbone is immutable; authored structures can stage and break;
-transient matter has hard capacities and deterministic cleanup. C5 validates
-and compatibility-hashes this truth but cannot mutate the world; C6 promotes
-bounded exposure/contact. The machine truth is
-[`content/reactions/first_eight_element_reactions_v1.json`](content/reactions/first_eight_element_reactions_v1.json).
+The 36 pairs are symmetric. Steam conceals without damage; Black Ice slows without
+friction changes; Mirrorwater observes rather than reflects; Solar Flare/Radiance
+reveal without healing. Worldbone stays immutable. Earth + Earth Rampart alone
+adds temporary movement collision and wallrun/kick faces; its warning/decay are
+permeable, and an overlapping actor can escape. Other temporary cover still
+blocks shots/rays, not walking. Use **F4 -> Chemistry** for precise outcomes/counters, not name-based
+assumptions. Recursive chemistry and additional elements are outside current scope.
 
-## Champions
+Color identifies the element, not an automatic status: distinguish the spell's
+impact, harmless leftover matter and an active reaction. The four additional
+palette families retained in tooling are reserved styles, not selectable elements.
 
-Oh Tipi, S. Wayne, The Red Baron, Grace Riva, and Wa Bidi are currently selectable.
-Every other entry is a
-design/migration target, not a claim of playable content. Every champion spends
-the same three affinity points: two-element specialists use `2+1`, while
-three-element generalists use `1+1+1` and gain breadth without a strength-2
-discount. Duplicate combinations are legal when their full play patterns differ.
+## Cast, three sizes, one motion system
 
-| Champion | Ancestry | Body type | Weighted affinities | Availability |
-|---|---|---|---|---|
-| Oh Tipi | Seakin | Middle | Water 2 · Charge 1 | **Playable** |
-| S. Wayne | Hobbit | Small | Dark 2 · Light 1 | **Playable** |
-| The Red Baron | Undead | Large | Fire 2 · Ice 1 | **Playable** |
-| Steezo | Goblin | Small | Charge 1 · Fire 1 · Light 1 | Planned |
-| Treevor the Mason | Treefolk | Large | Earth 1 · Wind 1 · Fire 1 | Planned |
-| Oll' I | Werewolf | Large | Earth 1 · Fire 1 · Light 1 | Planned |
-| Fluup | Orc | Large | Wind 1 · Charge 1 · Ice 1 | Planned |
-| Wa Bidi | Goblin | Small | Charge 1 · Wind 1 · Fire 1 | **Playable** |
-| Grace Riva | Sylph | Small | Wind 1 · Water 1 · Light 1 | **Playable**; `grace_reava` stable ID |
-| Waka Aren Si | Gnome | Small | Charge 2 · Light 1 | Planned; `nico_lai` compatibility ID |
-| Spai Si | Demon | Middle | Wind 1 · Earth 1 · Light 1 | Planned |
-| Leaf the Hidden | Treefolk | Middle | Water 1 · Earth 1 · Light 1 | Planned |
-| Ha Rekt | Wyrmborn | Large | Ice 1 · Wind 1 · Fire 1 | Planned |
-| Dr. Apex | Stoneborn | Large | Earth 1 · Light 1 · Water 1 | Planned |
-| Haara | Nymph | Small | Light 2 · Wind 1 | Planned |
-| Hesus Christo | Elf | Middle | Earth 2 · Water 1 | Planned |
-| Grimm Bow | Troll | Large | Earth 2 · Water 1; Chaos reserved | Planned |
-| Biggy Bob | Dwarf | Middle | Earth 1 · Fire 1 · Light 1 | Planned |
-| Jan Wicked | Human | Middle | Ice 1 · Dark 1 · Charge 1 | Planned |
-| Ba Djoh | Minotaur | Large | Earth 1 · Fire 1 · Water 1 | Planned |
-| Urzh | Stoneborn | Large | Earth 1 · Fire 1 · Charge 1 | Planned |
-| Don Doko Don | Dwarf | Middle | Earth 1 · Fire 1 · Water 1 | Planned; `donnok` compatibility ID |
-| Djonah Thaan | Vampire | Middle | Dark 1 · Charge 1 · Fire 1 | Planned |
-| Unnamed Angel | Angel | Middle | Light 2 · Wind 1 | Non-selectable placeholder |
+[Complete race/character/affinity/stat table](docs/CURRENT-CAST.md).
+Alphabetically ordered race columns, hover details and host-confirmed selection
+are available in the Gallery. Switching character restores that character's
+starter kit while preserving resource percentages; selecting the same character
+is a no-op. No unique racial passives are implemented.
 
-Only three body types exist: `small`, `middle`, and `large`. Tiny and huge are
-retired vocabulary and migrate to small and large respectively; medium migrates
-to middle. Body type bounds silhouette, footprint and tuning ranges but never
-grants hidden reach, evasion, damage or elemental advantage.
+| Body | Playable count | Pixel envelope | Hurt radius | Baseline |
+| --- | ---: | ---: | ---: | --- |
+| Small | 8 | 53 (58 source) | 15 px | S. Wayne; faster tempo, less Health/Stamina |
+| Middle | 9 | 63 (68 source) | 18 px | Oh Tipi; balanced reserves |
+| Large | 10 | 70 (76 source) | 21 px | The Red Baron; deeper reserves, slower tempo |
 
-| Body type | Equal-budget role | Strengths | Honest trade-offs |
-|---|---|---|---|
-| Small | Skirmisher | Ground speed, Flux recovery, compact visual read | Health and Stamina reserves |
-| Middle | Adapter | Balanced resources, route flexibility, stable recovery | No extreme stat; moderate commitments |
-| Large | Anchor | Health, Stamina, lane presence | Ground speed and Flux recovery |
+Shared 96 px cells/pivot (48, 84), eight directions, stable scale, independent
+shadows/effects and universal movement access. All sizes keep 18 px wall clearance;
+hurt radii are fixed per size and never resize with animation. Original Oh Tipi supplies the
+style; all casting is empty-handed. Unique sprites require genuine anatomical
+contacts and complete reviewed pages, not palette swaps or portraits.
 
-All three retain the same foundation collision radius and the complete universal
-movement grammar. The validated body-profile catalog rejects champion stats
-outside the selected role envelope, so size is asymmetric but never a strict
-upgrade. Their authored upright silhouettes progress `58 → 68 → 76 px`; this is
-large enough to identify skirmisher, adapter, and anchor at a glance while the
-shared hit radius prevents smaller art from gaining hidden evasion or larger art
-from gaining reach.
+![Original character style authority; staff/effects excluded from runtime bodies](reference/art/oh_tipi_authority_v1/oh-tipi-authoritative-reference.png)
 
-Champion atlases contain body and clothing only. The current green runtime has
-authored frames in `S/SE/E/NE/N/NW/W/SW`: front/south faces the camera with
-centered, balanced anatomy; north is a centered back view; east/west are
-profiles; diagonals are distinct three-quarter silhouettes. Jump, slide, and
-roll now use native art in every direction. Walk and sprint alternate two
-opposite planted-leg contacts on each champion's editable cadence. Simulation movement and aim stay continuous, keyboard
-diagonals stay normalized, and presentation resolves travel separately from
-facing so aim-facing forward/back/strafe movement remains readable. Shadows, auras, spells,
-projectiles, environment, tools and equipment are separate reusable layers.
-Magic originates from a visible empty-hand lane above the shared feet pivot;
-staffs, wands, rods,
-scepters, held foci and floating companion foci are excluded. Character bodies
-and clothing avoid sexualized presentation.
+[Current sprite production contract](docs/SPRITE-PIPELINE.md) ·
+[Visual direction](docs/VISUAL-DIRECTION.md)
 
-## Ancestry body plans
+<details>
+<summary>Historical material-rendering and character review evidence</summary>
 
-| Ancestry | Boon/identity | Bound/trade-off |
-|---|---|---|
-| Human | Adaptable neutral baseline | No extreme body advantage |
-| Dwarf | Grounded structure resistance | Slower route profile |
-| Gnome | Compact device specialist | Low health and mass |
-| Hobbit | Low profile and recovery | Increased launch vulnerability |
-| Elf | Precision and air control | Fragile body budget |
-| Orc | Heavy commitments and interruption resistance | Slower recovery |
-| Troll | Large-body endurance | Delayed, highly readable actions |
-| Minotaur | Forward momentum and structural impact | Weak turning and miss recovery |
-| Seakin | Current/water-route steering | Depends on authored currents |
-| Wyrmborn | Strong anthropomorphic aerial commitment | Reduced Stamina budget |
-| Stoneborn | Braced mineral mass and structure synergy | Slow acceleration/movement |
-| Treefolk | Rooted stability and growth hooks | Large, fire-readable body |
-| Sylph | Fine air control | Very low health and mass |
-| Undead | Remnant/rune restoration rules | Reduced ordinary healing |
-| Goblin | Fast tool-led play | Fragile body |
-| Nymph | Bloom/support reactions | Power requires readable setup |
-| Vampire | Pursuit and interruptible sustain | Must establish Dark/blood setup |
-| Werewolf | Forward breaker | Strong commitment, weak turning |
-| Angel | Feather-wing body-plan foundation | Champion identity unapproved |
-| Demon | Angular redirect silhouette | No hidden reach or free evasion |
+The material sheet uses the live renderer at native world-pixel scale; Steam
+phases are explicit diagnostic fixtures, not a simulated multiplayer session.
 
-Body type changes only bounded health, recovery, speed, acceleration, mass,
-footprint, knockback, air control, camera/readability, and route clearance.
-Small, middle and large bodies all render at `1.00×` around the shared feet
-pivot; their authored atlas silhouettes, not per-action scaling, carry the size
-difference. Hitboxes and simulation outcomes never inherit art size implicitly.
-Wings, tails, horns, fins, roots, and extra limbs are not surprise hitboxes.
+![Material-defined element and Steam footprints without separate range circles](docs/evidence/material-hurtbox-v1/materials-normal.png)
 
-## Wellspring structure
+Separate range outlines are removed from deposits/reactions, Field and Spray.
+Material itself is tiled inside the actual area. Reduced Field contrast and
+visible tile repetition still need visual acceptance; [current checkpoint](docs/MATERIAL-HURTBOX-CHECKPOINT.md).
 
-| District | Play purpose | Landmark |
-|---|---|---|
-| Source Court | Arrival, introduction, attunement | Cosmic Wellspring |
-| Farflow Concourse | Host, join, charter, teams, travel | Farflow Gates |
-| Movement Gardens | Fundamentals, advanced routes, trials | Momentum Arbor |
-| Elemental Proving Grounds | Aim, targets, destruction, chemistry | Eightfold Basins |
-| Living Archive | Codex, rules, roster, replays, analytics | Oracular Dome |
-| Restoration Grove | Recovery and low-pressure interaction | Heartroot Garden |
-| Deep Foundry | Fabrication and transmutation | Flux Crucible |
-| Starward Crown | Settings, accessibility, diagnostics | Twin Astrolabes |
-| Seasonal Reaches | Private trials and later events | Fourfold Orrery |
+The earlier S. Wayne **12/80-cell pilot below is historical**, superseded by his
+complete80-cell historical source page, itself now replaced live by the shared
+adventurer body. Original sources and exact reviewed background-removal
+masks remain preserved; this old image is not evidence for the newly promoted sheet.
 
-The map must always offer an ordinary safe route, a faster committed route, and
-a situational route using movement, material state, or team setup. Buildings
-occlude cone-view sight; angles are clamped to 15–360°, and full view is the
-default in gameplay while the Wellspring does not force limited information.
+![Partial S. Wayne native and enlarged light/dark review](docs/evidence/cleanup-art-v1/swayne-partial-review.png)
 
-## Farflow network contract
+[Cleanup, evidence and remaining work](docs/CLEANUP-ART-CHECKPOINT.md).
 
-| Rule | Current boundary |
-|---|---|
-| Capacity | Public cap 8; charters provide 2/4/8; later 32 only after measured architecture gate |
-| Transport | Godot ENet over UDP 24872, direct IP |
-| Authority | Host owns movement validation, resources, casts, hits, cooldowns, stations, roster, score, reset |
-| Compatibility | Protocol 43, snapshot 18, preferences 11; tick/tuning/map/content hashes; current integration gate pending |
-| Client feel | Local movement prediction and bounded reconciliation; combat stays authoritative |
-| Join in progress | Observer until next gathering, then normal Hearth readiness |
-| Disconnect | 15-second in-memory exact-actor reservation and capability rotation |
-| Shutdown | Double-confirm host close, reason-bearing guest release, safe local return |
-| Security honesty | Strict packet/type/size/rate bounds; no transport encryption/authentication claim yet |
+</details>
 
-Maintained local journey:
+## Actual game and validation
+
+Latest source playtest: [Earth Rampart checkpoint](docs/RAMPART-M1-CHECKPOINT.md).
+Full **95 suites / 537,802 assertions** passed with zero failures/stderr,
+38 actual gameplay captures, strict export/PCK identity, same-export localhost
+Farflow lifecycle and isolated Windows EXE/PCK boot. The builder verified 3,083 frozen source/package files remained
+unchanged. All 29 profiles use three shared clothed bodies; individual skins await
+human template/movement acceptance. The eight-player simulation CPU budget miss
+and actual-map rendered performance remain open. A new installer has
+not been attempted; the older QV installer is the last one with completed
+isolated setup/update/repair checks.
+
+![Current production-rendered Earth Rampart: actual paid casting and movement contact](docs/evidence/windows-rampart-m1-p47-20260909/inputs/capture/oh_tipi-rampart-contact.png)
+
+<details>
+<summary>Earlier named-skin and delivery checkpoints (not the current live body)</summary>
+
+![Actual Wellspring source gameplay with S. Wayne's complete new-style page](docs/evidence/character-pages-v1/swayne-wellspring.png)
+
+![Actual race-column Gallery with four new-style pages; remaining template art is explicitly marked](docs/evidence/character-pages-v1/gallery-four-pages.png)
+
+| Checkpoint | Evidence |
+| --- | --- |
+| Prior cast source | 90 suites /398,091 assertions; local Farflow and actual Gallery captures |
+| Prior Windows delivery | 16 installer stages /20 native argv assertions; isolated install/update/repair/boot |
+| Prior cleanup/art source | 87 suites / 398,314 assertions, clean import/120 Hz boot; actual Windows PCK checked; [checkpoint](docs/CLEANUP-ART-CHECKPOINT.md) |
+| Prior input/Gallery refinement | 87 suites / 398,436 assertions, clean import/120 Hz boot; [checkpoint](docs/INPUT-LIFECYCLE-CHECKPOINT.md) |
+| Prior material/hurtbox refinement | 87 suites / 419,354 assertions, clean import/120 Hz boot; [exact changes and playtest](docs/MATERIAL-HURTBOX-CHECKPOINT.md) |
+| Verified four-page character checkpoint | Full87/419,622 passed with strict import/120Hz boot; actual local pair and Windows payload verified; [exact coverage and evidence](docs/CHARACTER-PAGES-CHECKPOINT.md) |
+| Historical five-page character source | Final Full: 87 suites / 419,651 assertions, zero failures/stderr; strict import/120 Hz boot, 84.856s. Isolated Windows release EXE/PCK also booted as Jan Wicked. Not a new installer. [Evidence](docs/CHARACTER-PAGES-CHECKPOINT.md) |
+| Open | Unique full-cast art, human feel/charm, mixed 8-player timing, physical remote play, signing/online updates |
+
+</details>
+
+## Develop and extend
+
+[AI delegation research and current preparation wave](docs/AI-DELEGATION-RESEARCH.md)
+documents five reusable specialist roles, the verified optional local coding
+model, and the active 33%-remaining weekly work limit. Developer AI tools are
+not required to install or play FLUX.
 
 ```powershell
-scripts\smoke-farflow.cmd
-scripts\smoke-farflow.cmd -Executable exports\windows\flux2.exe
-```
-
-## Visual system and embedded reference gallery
-
-Runtime art uses an original mature compact pixel proportion language: smaller
-ordinary heads, clear torsos and limbs, stable feet, distinctive ancestry silhouettes,
-restrained shading, clear bare-hand cast poses, clean shadow/elevation
-separation, and symmetric front/back/mirrored-direction rules. The 640×360 virtual
-pixel composition scales with nearest-neighbor filtering while gameplay camera
-zoom remains configurable from 50–100%.
-
-![Current hands-only cast](assets/concept/current-cast-hands-only-v1.png)
-
-<details>
-<summary><strong>Visual direction boards</strong></summary>
-
-![Cartoon perspective and readable scene grammar](assets/concept/visual-system-cartoon-perspective-v2.png)
-
-![Champion visual style baseline](assets/concept/flux-champions-visual-style-v1.png)
-
-![Wellspring hub direction](assets/concept/sanctum-hub-visual-direction-v1.png)
-
-![Wellspring environment kit source](assets/concept/sanctum-environment-kit-source-v1.png)
-
-![Modular environment alpha](assets/concept/sanctum-modular-kit-alpha-candidate-v2.png)
-
-</details>
-
-<details>
-<summary><strong>Canonical three-body system</strong></summary>
-
-The production/redesign order is fixed from smallest to largest: S. Wayne
-(`small`) → Oh Tipi (`middle`) → The Red Baron (`large`).
-
-![Small-to-large mature proportion reference](assets/concept/foundation-proportion-reference-small-to-large-v1.png)
-
-The retained `size_1_tiny`, `size_2_small`, `size_3_medium`, `size_4_large`,
-and `size_5_huge` path fragments belong to the legacy visual archive; only
-`small`, `middle`, and `large` are authored runtime body types.
-
-![Eight-direction body-only foundation runtime atlas](assets/sprites/champions_v3/foundation/runtime_atlas_eight_v12.png)
-
-This atlas is a reusable body/clothing layer for all three foundation champions;
-spells, auras, shadows, projectiles, environment and equipment are composed
-independently. Each champion's `atlas_row` is authored in
-`content/visual/foundation_champion_visuals_v1.json`. The versioned 768×2880
-atlas packs eight direction columns under each champion. Every grounded,
-empty-hand cast, hit/recovery, jump, slide, and roll state has native eight-way
-art; walk and sprint add a second opposite contact row for true leg alternation.
-The Red Baron is the shared anatomy, material, and ink reference: a deterministic builder
-derives a restrained one-pixel exterior ink from his darkest visible material
-clusters and applies it cell-by-cell without recoloring or bleeding between
-champions. A bounded source-time pass first removes direction-dependent scale
-drift, then processes `small`, `middle`, and `large`, keeping the 58/68/76 px
-upright heights, runtime scale `1.0`, and shared feet pivot while reducing
-oversized heads on the first two templates. Hair,
-fins, horns, identity palettes, ancestry features and the three authored body
-silhouettes remain distinct.
-An independent two-stroke directional evasion cue still reinforces actual
-travel/facing during invulnerability frames.
-During free locomotion the body faces travel; while combat intent is active it
-faces aim and exposes forward, backward, and strafe gait cues. Neither profile
-is synthesized at runtime. The
-validator rejects missing states, directions, hashes, pivots or
-layout drift before the scene can boot, and the deterministic builder plus exact
-generation prompts live beside the source sheets.
-
-</details>
-
-<details>
-<summary><strong>Burst projectile production system</strong></summary>
-
-The reviewed v3 board supplies neutral plus Fire, Water, Wind, Earth, Charge,
-Ice, Light, and Dark. Deterministic tooling derives separate 32 px runtime
-sheets with 8 directions × 16 columns: formation, travel, impact, residue, and
-one reserved migration cell. Every live projectile now uses the appropriate
-element sheet while its exact aim, radius, collision, speed and outcome remain
-simulation-owned. Live projectile presentation clamps the readable diameter to
-28–46 px, adds a dark under-silhouette, exact collision rim and forward travel
-cue, and interpolates from authoritative fixed-tick positions; current projectile
-speeds are intentionally about 13–15% slower than the preceding checkpoint.
-
-![Nine-element burst style board](reference/art/projectiles/burst_v3/burst_element_style_board_v3.png)
-
-![Fire runtime phases and directions](assets/effects/projectiles/burst_v3/burst_fire_runtime_32.png)
-
-</details>
-
-Spell delivery animation is also data-driven:
-`content/visual/spell_animation_skeletons_v1.json` defines bounded startup →
-release → travel → impact → residue phases for projectile, beam, spray and
-field families. Foundation spell profiles reference one matching skeleton; the
-loader fails closed on shape mismatches while all simulation timing and outcomes
-remain authoritative. The manifest is centrally registered in
-`content/visual/visual_asset_registry_v1.json` and its hash is printed in the
-bootstrap diagnostic for reproducible Windows handoffs. The first two phases
-also drive a shared, restrained hand-gather and release cue at the champion's
-empty hand. A separate fail-closed direction contract keeps body cast/recovery,
-gather/release, projectile orientation and trail art on the same nearest-eight
-sector while simulation aim, continuous hand offset and beam/spray geometry
-remain exact. Spell-specific silhouettes stay layered on top, never baked into
-champion sprites.
-
-The Nexus source court also has a small authored decoration layer: six bounded
-lantern, planter, and rune anchors live in the court profile, are validated
-relative to the court footprint, and render after pavers at restrained opacity.
-They improve approach readability and give the space a lived-in rhythm without
-changing topology, collision, routes, station radii, or simulation state.
-
-The current visual checkpoint has truthful 1280×720 captures at 50%, 75% and
-100% zoom, a 1920×1080 capture at 75%, an 8-frame startup/chain cast capture,
-and high-contrast/reduced-effects captures under
-`.godot/visual-captures/post-unify-v9-*`; these are ignored review artifacts
-and can be regenerated with `scripts/capture-visual.ps1`.
-
-Run `scripts\capture-visual-matrix.cmd -Name review-name` for the bounded
-integrated review: it distributes idle, walk, sprint, reverse, jump, cast, hit
-and evade across all eight directions for Oh Tipi and S. Wayne, covers
-50/75/100% zoom plus every visual profile, captures 720p/1080p overviews, and
-proves a real mixed-champion Farflow pair. It writes ignored truthful frames, a
-machine-readable manifest and one contact sheet below
-`.godot/visual-captures/`; a prefix is never overwritten or resumed silently.
-
-The complete eight-way movement checkpoint adds alternating walk/sprint contacts
-plus native jump/slide/roll art for both champions. Truthful live gait evidence
-is under `.godot/visual-captures/animation-v8-*`; older cardinal evidence remains
-under `.godot/visual-captures/movement-v5-*`. Capture-only
-`--capture-direction=south|south_east|east|north_east|north|north_west|west|south_west`
-makes the full direction matrix reproducible and does not affect ordinary
-controls or simulation. A shared fixed-point presentation resolver now owns
-this exact order, sector boundaries, zero-vector fallback and review
-hysteresis; continuous simulation movement and aim remain unchanged.
-
-The body manifest now exposes exact semantic aliases for all live movement,
-control, cast/recovery and defeat states, plus reserved attack, defense,
-interaction and taunt presentation cues. Advanced actions intentionally reuse a
-promoted direction-complete row through data rather than hidden renderer branches;
-unknown, missing, extra, or nonexistent-row aliases fail closed. Truthful
-impact/cast-recovery evidence lives under ignored
-`.godot/visual-captures/semantic-v5-*`.
-
-Concept images guide proportion, color roles, mood, and readability. They do not
-define hitboxes, timing, abilities, map topology, or simulation rules. Promotion
-requires deterministic slicing, manifests, native/4× review, accessibility,
-gameplay-zoom evidence, and tests.
-
-## Architecture
-
-### Authority order
-
-When two sources disagree, use this order and repair the lower source in the
-same slice:
-
-| Rank | Authority |
-| ---: | --- |
-| 1 | Executed runtime, validated content and passing tests; no prose may overrule observed behavior |
-| 2 | `README.md`, `.agent/BACKLOG.md`, `.agent/OVERHAUL-IMPLEMENTATION.md` and `.agent/memory.md` for current state/order |
-| 3 | Focused documents explicitly labelled `canonical` for product/system contracts |
-| 4 | Files labelled `planned` for gated future behavior; never claim them as live |
-| 5 | Files labelled `migration`, `historical`, `baseline` or `superseded`; consult only for lineage and recovery |
-
-`SPECIFICATION.md`, `docs/OVERHAUL-PLAN.md` and `docs/DEVELOPMENT.md` are not
-current entry points. C5.5 now generates protocol/schema/hash/count/platform/
-package reports and verifies current-facing counts against source; the Loom and
-exported payload also expose the same validated runtime-content summary.
-
-```text
-content/       validated champions, abilities, maps, materials, reactions, visuals
-src/sim/       fixed-tick deterministic movement/combat/state
-src/net/       protocol, snapshots, validation, host/client session boundary
-src/app/       boot, input, preferences, Wellspring orchestration
-src/presentation/ renderer-owned visuals and feedback only
-scenes/        Godot composition and authored runtime scenes
-assets/        promoted runtime art plus quarantined concept/provenance
-reference/     design/reference inputs that are never silently runtime authority
-tests/         deterministic content, simulation, network, launch acceptance
-packaging/     Windows bootstrap source and manifest
-scripts/       one-command run, test, package, installer, and network smoke
-docs/          focused contracts; README is the player/developer front door
-.agent/        current implementation gates, backlog, worklog, handoff memory
-```
-
-Rules flow in one direction:
-
-```text
-validated content -> commands -> fixed-tick simulation -> authoritative state
-                                              |
-                                              +-> snapshots/replay
-                                              +-> presentation events
-```
-
-No renderer, particle, animation, sound, client packet, or concept image owns an
-outcome.
-
-The incremental architecture target keeps `bootstrap.gd` as the composition
-root only. Runtime-content validation, Wellspring interactions, Farflow
-orchestration, combat presentation, capture diagnostics and safe quit move into
-focused collaborators only when their seam is touched; movement, combat,
-networking and rendering are never rewritten together. Packet validation/codec
-logic separates from ENet lifecycle without moving authority to clients.
-
-Expansion follows the canonical
-[foundation systems contract](docs/FOUNDATION-SYSTEMS.md): champions compose
-ancestry/body/stats/affinities/kit/presentation; spells compose delivery,
-elemental payload, modifiers, economy, outcomes and presentation; reactions
-compile unordered element pairs onto bounded shared primitives. Versioned
-developer scenarios submit ordinary semantic commands, so focused tests,
-replays, Farflow and packaged builds prove one production rule path.
-Enemies use bounded command policies rather than private physics; objectives and
-modes compose session/lifecycle policies rather than fork combat. After F7,
-every content unit moves through intent → definition → isolated proof →
-production integration → communication → stress/package → promotion. Stable
-IDs, explicit dependencies, capacity budgets, compatibility classes, generated
-acceptance rows and migrations make expansion repeatable without executable
-mods or champion/element-specific controller branches.
-The developer loop follows the
-[delivery-efficiency plan](.agent/DELIVERY-EFFICIENCY.md): selected suites and
-small scenarios provide fast inner feedback, while every published checkpoint
-still runs the complete deterministic gate and records an honest receipt.
-
-## Develop, test, package
-
-Pinned engine: **Godot 4.7.1**. `.\flux.cmd` is the single Windows developer task
-front door; it delegates rather than duplicating the underlying scripts.
-
-```powershell
-.\flux.cmd doctor
-.\flux.cmd check
-.\flux.cmd assets
 .\flux.cmd play
-.\flux.cmd play -SmokeTest
-.\flux.cmd test -Tier Full
-.\flux.cmd package
+.\scripts\current-state.ps1 -Check
+.\scripts\test.cmd -Tier Focused -Suite cartoon-champion-presenter
+.\scripts\test.cmd -Tier Full
+.\scripts\package.ps1 -Target Windows -ExportRoot C:\path\to\new-build
 ```
 
-`scripts/current-state.cmd -Check` writes the ignored
-`.godot/reports/current-state.json` report from executed settings, source and
-catalogs, then fails on current contract drift. `scripts/test.*` runs that audit,
-deterministic suites, and source/imported-resource boots at the authoritative
-120 Hz tick. `-Tier Focused -Suite <stable-id>` runs only named suites; Full
-cannot accept a filter and therefore cannot silently become partial. Use
-`scripts\test.cmd -ListSuites` to discover IDs. Every completed gate writes an
-ignored, hash-bearing JSON receipt under `.godot/receipts/` containing only the
-steps and suites that actually ran.
+Use the suite IDs printed by `scripts/test.ps1 -ListSuites`; no implicit partial
+Full pass. Source/content/presentation stay separate. Reuse validated data and
+fixed registration; add no identity-specific simulation or second animation
+stack. Test exact touched paths, inspect actual visuals and retain a working
+checkpoint. No automatic push or publication.
 
-The Spell Loom displays the full 8×5 element/family matrix and Vector Lance next to twelve slots.
-Drag from the catalog or another slot; click both selections then Assign, or use
-the keyboard/controller. Equipped spells swap without resetting cooldowns.
-The diagnostics (not the player-facing setup panel) retain the loaded counts:
-41 selectable spells, 12 positions, 5 playable champions and 36 recipe definitions;
-runtime chemistry status is reported separately from catalog completeness.
-`scripts/runtime-state.ps1` emits the same validated runtime content summary;
-with `-PackPath <file.pck>` it executes the exported payload from its own
-directory, without checkout fallback. Windows packaging includes that result
-as `BUILD-STATE.json`, bound to the PCK's SHA-256. This proves content identity,
-not installer execution, remote connectivity or human playtest acceptance.
-
-`.\flux.cmd assets` writes a conservative tracked-asset inventory under
-`.godot/reports/`. It separates direct runtime-code references, catalog
-declarations, tooling inputs, documentation-only references and unreferenced
-candidates. A candidate is never safe to delete until catalog, export and
-history reachability are also proven.
-
-`play -SmokeTest` tests the real source launcher with a bounded headless
-120 Hz run and no LAN discovery socket, so it can run while another game is
-open. Normal play keeps discovery enabled. The launcher waits for the actual
-game process; it no longer mistakes an old PowerShell exit code for a failure.
-
-Generated `.godot/`, exports, local dependencies, credentials, and personal
-firewall rules are not source.
-
-Linux-oriented source and helper scripts are retained as frozen compatibility
-and migration evidence; some still expose the retired 60 Hz option and are not
-current validation entry points. The supported Windows paths above enforce the
-single 120 Hz gameplay cadence. This pass makes no Linux release or acceptance
-claim.
-
-## Continuous implementation order
-
-| Gate | Small slices | Acceptance |
-|---:|---|---|
-| 0 | Retire duplicate runtime → record recovery → replace stale docs | One Godot authority; no useful design truth lost |
-| 1 | Verify setup/update/launch → host card → join card → safe close | Fresh Windows user reaches Wellspring and a trusted friend joins with one shared file plus address |
-| 2 | Lock camera/pixel tokens → three body types → body-only directional atlases → separate hand-cast effects → environment → HUD | Whole scene reads at gameplay zoom, in motion, high contrast, and reduced motion; no spell or world pixels are baked into champion sprites |
-| 3 | **Complete:** burst data contract → deterministic fan → projectile capacity → movement pressure room | Five-shot patterns stay readable and evadeable while every universal technique chains legally at 120 Hz |
-| 4 | **Catalog complete:** eight bursts → bounded reaction catalog | Every unordered pair has one symmetric, fail-closed, compatibility-hashed recipe; live execution is the separate next gate |
-| 4.5 | **Complete in this checkpoint:** generated truth/tooling → canonical roster adapters → in-game/package state | Protocol/platform/tick/roster/body/content truth agrees before persistent reaction state is added; archival pixels remain separate and compatibility is preserved |
-| 4.6 | **Implemented: campus + M0-M2 movement** — wide loop, solid practice walls, dedicated Evade, slide protection/brake, air-wall kicks and local practice echo | Human movement/visual playtest and concurrent activity isolation remain pending |
-| 5 | **Current integration:** exposure/contact → shared primitives → lifecycle/readability → Crucible/reset/codex | Every pair forms, acts, decays, explains itself, replicates and resets at 120 Hz; all-pair acceptance is not claimed yet |
-| 6 | **Playtest pause** | The exact packaged green build passes named solo, movement, pressure, chemistry, friend, accessibility and recovery journeys before broad retuning or scope expansion |
-| 7 | Measured movement feel → action clarity → projectile/map hierarchy → visual cohesion | Existing techniques become crisp and distinct, failures teach one correction and the Wellspring reads as one inhabited world before growth |
-| 8 | F0–F7: scenarios → movement → combat → chemistry → champion composition → player sandbox → developer sandbox → stress acceptance | The reusable base is fun, understandable, expressive, maintainable, performant and proven before routine content expansion |
-
-After the first-eight playtest, work first resolves recorded movement-feel and
-visual-cohesion findings. It then resumes with reaction tuning, richer spell
-geometries/chemistry, one complete champion at a time, per-peer visibility,
-additional maps, bots, and only then broader modes/roster.
-
-## Focused contracts
-
-- [Repository consolidation](docs/BRANCH-CONSOLIDATION.md)
-- [Player controls and POV](docs/PLAYER-CONTROLS-AND-POV.md)
-- [Player experience and usability](docs/PLAYER-EXPERIENCE-OVERHAUL.md)
-- [Combat foundation](docs/COMBAT-FOUNDATION.md)
-- [Ability configuration](docs/ABILITY-CONFIGURATION.md)
-- [Core game design](docs/CORE-GAME-DESIGN.md)
-- [Foundation systems and expansion](docs/FOUNDATION-SYSTEMS.md)
-- [Delivery efficiency](.agent/DELIVERY-EFFICIENCY.md)
-- [Spell delivery foundations](docs/SPELLCASTING-DELIVERY-FOUNDATIONS.md)
-- [First-eight affinities](docs/CHAMPION-AFFINITIES-FIRST-EIGHT.md)
-- [First-eight reactions](docs/ELEMENT-REACTIONS-FIRST-EIGHT.md)
-- [Selective environment responses](docs/ELEMENT-ENVIRONMENT-RESPONSES.md)
-- [Reaction implementation plan](docs/ELEMENT-REACTIONS-IMPLEMENTATION-PLAN.md)
-- [Material grid](docs/MATERIAL-GRID-FOUNDATION.md)
-- [Projectile foundations](docs/PROJECTILE-DELIVERY-FOUNDATIONS.md)
-- [Networking](docs/NETWORKING.md)
-- [Wellspring](docs/WELLSPRING-HUB.md)
-- [Sprite pipeline](docs/SPRITE-PIPELINE.md)
-- [Visual system](docs/VISUAL-SYSTEM.md)
-
-Historical and migration references remain linkable for evidence but do not
-define current work: [root specification](SPECIFICATION.md),
-[long-form overhaul record](docs/OVERHAUL-PLAN.md),
-[legacy development notes](docs/DEVELOPMENT.md),
-[Sanctum naming adapter](docs/SANCTUM-HUB.md), and completed implementation or
-visual-baseline records explicitly labelled as such.
-
-The source license and third-party notices govern redistribution. Reference
-material is never permission to copy another game's protected expression.
+Archived obsolete producers cannot return: `scripts/check-current-scope.ps1`
+guards their absence/dependencies. The cleanup's recovery copies are outside
+the repo; current source, tests, usable assets and necessary migrations remain.

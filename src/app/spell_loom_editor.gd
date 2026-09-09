@@ -3,18 +3,17 @@ extends RefCounted
 
 
 const LIBRARY_CAPACITY: int = SessionTransport.MAX_SPELL_LIBRARY_SIZE
-const VISIBLE_SPELL_COUNT: int = 48
+const VISIBLE_SPELL_COUNT: int = 64
 const PANEL_RECT := Rect2(24, 20, 1232, 680)
 const GRID_X: float = 48.0
 const GRID_Y: float = 154.0
-const GRID_CELL_WIDTH: float = 142.0
+const GRID_CELL_WIDTH: float = 110.0
 const GRID_CELL_HEIGHT: float = 86.0
-const MATRIX_LABEL_X: float = 644.0
-const SPELL_PICKER_X: float = 710.0
-const SPELL_PICKER_WIDTH: float = 104.0
+const MATRIX_LABEL_X: float = 498.0
+const SPELL_PICKER_X: float = 564.0
+const SPELL_PICKER_WIDTH: float = 94.0
 const SPELL_PICKER_HEIGHT: float = 43.0
-const MATRIX_CELL_COUNT: int = 40
-const MATRIX_COLUMNS: int = 5
+const DETAIL_DIVIDER_Y: float = 565.0
 const ASSIGN_RECT := Rect2(1018, 624, 210, 38)
 const CLOSE_RECT := Rect2(1200, 34, 34, 32)
 
@@ -66,13 +65,24 @@ static func slot_rect(index: int) -> Rect2:
 
 
 func spell_rect(index: int) -> Rect2:
-	if index < 0:
+	if index < 0 or index >= mini(VISIBLE_SPELL_COUNT, available_wire_ids.size()):
 		return Rect2()
-	var row := index / MATRIX_COLUMNS
-	var column := index % MATRIX_COLUMNS
-	if index >= MATRIX_CELL_COUNT:
-		row += 1
+	var columns := matrix_columns()
+	var row := index / columns
+	var column := index % columns
 	return Rect2(SPELL_PICKER_X + column * SPELL_PICKER_WIDTH, GRID_Y + row * SPELL_PICKER_HEIGHT, SPELL_PICKER_WIDTH - 6, SPELL_PICKER_HEIGHT - 5)
+
+
+static func matrix_columns() -> int:
+	return AbilityCatalog.SPELL_MATRIX_FAMILIES.size()
+
+
+static func matrix_cell_count() -> int:
+	return matrix_columns() * AbilityCatalog.FIRST_EIGHT_ELEMENTS.size()
+
+
+static func variant_label_position() -> Vector2:
+	return Vector2(MATRIX_LABEL_X, GRID_Y + AbilityCatalog.FIRST_EIGHT_ELEMENTS.size() * SPELL_PICKER_HEIGHT + 22)
 
 
 static func slot_at(position: Vector2) -> int:

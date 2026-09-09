@@ -1,0 +1,13 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+CHAMPION_ATLAS_SETUP live=27 extensions=2 capacity=24 decoded_payload_bytes=14745600 configure_us=319353
+FAIL: another baseline extension cannot be claimed by path/source/pixel identity: path
+FAIL: another baseline extension cannot be claimed by path/source/pixel identity: sha256
+FAIL: another baseline extension cannot be claimed by path/source/pixel identity: imported_rgba_sha256
+FAIL: cropped/recompressed foundation pixels cannot become a different identity: oh_tipi
+FAIL: cropped/recompressed foundation pixels cannot become a different identity: s_wayne
+FAIL: cropped/recompressed foundation pixels cannot become a different identity: red_baron
+FAIL: actual configure rejects missing or tampered override: baseline_clone
+FAIL: failed override configure exposes no partial registry or stale page set
+cartoon-champion-presenter: 32013 assertions, 8 failures
+FAIL: 8 assertion(s) failed

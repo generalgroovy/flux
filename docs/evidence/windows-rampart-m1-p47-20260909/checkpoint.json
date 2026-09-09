@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "status": "local_full_export_raw_boot_passed",
+  "build_name": "windows-rampart-m1-p47-20260909",
+  "completed_at_utc": "2026-09-09T18:53:07.7612312Z",
+  "full_suites": 95,
+  "full_assertions": 537802,
+  "source_records": 3083,
+  "payloads": [
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-rampart-m1-p47-20260909\\windows\\flux2.exe",
+      "bytes": 109071360,
+      "sha256": "04baf75cc1d69dd93eb709533ecab4fd7770bb8a530645717017a06a9d9809fc"
+    },
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-rampart-m1-p47-20260909\\windows\\flux2.pck",
+      "bytes": 67188404,
+      "sha256": "23918264334a2c1dd013c0403903c53dda751155f8bd5dea2db27c18d98865b7"
+    },
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-rampart-m1-p47-20260909\\release\\FLUX2-Windows-x86_64.zip",
+      "bytes": 97707386,
+      "sha256": "1af4d42cc71a9a091ad6e64682e3852b75ead65a297638fe9004e45d3e9a943f"
+    }
+  ],
+  "source_inventory_sha256": "848898561d5c6fc5736eea34e13d3e80ded0ac917db84bd2619a41b226151845",
+  "full_receipt_sha256": "74fe5f9a8f6a1ca5f0627d87b39f7fd9fd1ec82cffc4c7ea57dea01c6f01b280",
+  "source_inventory_scope": "Actual filesystem, including ignored files: src,content,assets,scenes,addons,scripts,tests; project.godot,export_presets.cfg; packaging/PLAY-FLUX.cmd,packaging/README-FIRST.txt; art_batches/pixel_v1/{magic,map}/{manifest.json,export/**}; art_batches/wellspring_style_v2/runtime/**. Reparse traversal rejected; not entire repository, docs, source art or unrelated packaging files.",
+  "capture_receipt_sha256": "2aa7324ed00c7ebf81797bad92e9d61cbe7c0514615467cba854d49b8b7df4a3",
+  "runtime": {
+    "maximum_players": 8,
+    "preferences_schema": 11,
+    "protocol": 47,
+    "simulation_hz": 120,
+    "snapshot_schema": 18
+  },
+  "new_installer": "not_attempted_portable_only",
+  "current_pointer": "not_changed",
+  "publication": "not_attempted",
+  "human_animation_acceptance": "pending",
+  "friend_network_acceptance": "pending",
+  "sustained_120fps": "not_certified"
+}

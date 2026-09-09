@@ -1,0 +1,365 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-09",
+  "status": "root-reviewed guard retained as modest median-cost optimization; mixed slow-tail gate remains open",
+  "scope": "same-input local headless CPU diagnostic; not rendered FPS, physical networking, full-suite or 120 Hz acceptance",
+  "engine": {
+    "ability_sha256": "60c3f233ba996776b4ebbbb5089632d8376e9bc1d1da517ba4c139f5533cd835",
+    "champion_sha256": "e7c2aa60244bbaea097a28ae5d55c2a2c6cd604685d3bcec60d82988f5211e99",
+    "cpu": "AMD Ryzen 3 7320U with Radeon Graphics",
+    "engine": "4.7.1-stable (official)",
+    "measurement": "SimWorld.step only; snapshots timed separately; no rendered FPS or socket/network capacity claim",
+    "protocol": 47,
+    "seed": 608120,
+    "sim_world_sha256": "8acc7c3539776c9c8d0d2ad308563083becfe8d07274a276646ea63ece008112",
+    "snapshot_schema": 18,
+    "stage_mirror_enabled": true,
+    "tick_rate": 120,
+    "version": 1
+  },
+  "geometry": "fixture-owned 12000000 x 6000000 fixed-unit world; zero obstacles; does not load Wellspring map",
+  "source_sha256": {
+    "common_and_candidate": {
+      "src/sim/chemistry/element_chemistry_system.gd": "b0596612896e2c475994894a99aff40ed2e047866d1ec536eec767bd66d8b28f",
+      "tests/scenarios/projectile_circle_equivalence.gd": "0ca6ab7245741f276d48106b796ce1e7bbadcefebb8b593c83a99a4e8432ad57",
+      "tests/scenarios/runtime_stress_probe.gd": "c8a7b543c75f24d3df13533f75be16269749a3016dee3b32fef2288c99132160",
+      "content/champions/foundation_champions_v1.json": "e7c2aa60244bbaea097a28ae5d55c2a2c6cd604685d3bcec60d82988f5211e99",
+      "src/sim/world/collision_world.gd": "377ef92412714fe58ff0358fb956bbf3ea89420b51843be6e8e5d6ca7df94605",
+      "tests/unit/test_combat.gd": "8c7bf46447a9dccaa9d3a2fa87e4688c673b20d344d60fc8129e9cd5d44d4da4",
+      "src/sim/combat/combat_system.gd": "788cc518ef1b59ae042b58792b777cc45d26296425a4ecd5a5fcc1a907f6b874",
+      "src/sim/core/sim_world.gd": "8acc7c3539776c9c8d0d2ad308563083becfe8d07274a276646ea63ece008112",
+      "content/abilities/foundation_abilities_v1.json": "60c3f233ba996776b4ebbbb5089632d8376e9bc1d1da517ba4c139f5533cd835",
+      "tests/scenarios/runtime_stage_sampler.gd": "d0f6e3de16c4ad453047220378d6a199e59234f61453b0ccf7e91b77aeb2c6a4"
+    },
+    "baseline_combat": "239e8040a88f62262f41b0c50210136ea981f729b8c0a02646dcfc80049c7bb8",
+    "candidate_combat": "788cc518ef1b59ae042b58792b777cc45d26296425a4ecd5a5fcc1a907f6b874"
+  },
+  "stress_compare": {
+    "excluded_timing_fields": [
+      "tick_us",
+      "snapshot_capture_and_pack_us",
+      "stage_mirror_us",
+      "slowest_stage_samples",
+      "ticks_over_8333_us"
+    ],
+    "non_timing_differences": [
+      [],
+      []
+    ],
+    "repeats": [
+      {
+        "repeat": 1,
+        "baseline_step_us": {
+          "max": 36535,
+          "median": 3853,
+          "p95": 9376,
+          "p99": 10486
+        },
+        "candidate_step_us": {
+          "max": 13903,
+          "median": 3592,
+          "p95": 9977,
+          "p99": 10690
+        },
+        "median_saved_us": 261,
+        "median_saved_percent": 6.77,
+        "p95_saved_us": -601,
+        "baseline_projectile_us": {
+          "max": 20693,
+          "median": 2667,
+          "p95": 6832,
+          "p99": 6926
+        },
+        "candidate_projectile_us": {
+          "max": 9247,
+          "median": 2463,
+          "p95": 7102,
+          "p99": 7855
+        },
+        "baseline_over_budget_ticks": 141,
+        "candidate_over_budget_ticks": 136,
+        "final_hash": "d4dafe70a3c318a00dc1ced33d4bdcd49b7ae18308a9f33f31f0dfe9f1bede25",
+        "checkpoint_hashes_equal": true
+      },
+      {
+        "repeat": 2,
+        "baseline_step_us": {
+          "max": 23709,
+          "median": 4022,
+          "p95": 10118,
+          "p99": 11662
+        },
+        "candidate_step_us": {
+          "max": 12791,
+          "median": 3668,
+          "p95": 9626,
+          "p99": 9953
+        },
+        "median_saved_us": 354,
+        "median_saved_percent": 8.8,
+        "p95_saved_us": 492,
+        "baseline_projectile_us": {
+          "max": 20657,
+          "median": 2845,
+          "p95": 7401,
+          "p99": 8485
+        },
+        "candidate_projectile_us": {
+          "max": 13851,
+          "median": 2465,
+          "p95": 6995,
+          "p99": 7130
+        },
+        "baseline_over_budget_ticks": 135,
+        "candidate_over_budget_ticks": 128,
+        "final_hash": "d4dafe70a3c318a00dc1ced33d4bdcd49b7ae18308a9f33f31f0dfe9f1bede25",
+        "checkpoint_hashes_equal": true
+      }
+    ],
+    "baseline_non_timing": {
+      "actor_count": 8,
+      "authority_caps": {
+        "deposits": 128,
+        "fields": 32,
+        "owner_fields": 4,
+        "owner_projectiles": 16,
+        "projectiles": 128,
+        "reactions": 32
+      },
+      "cast_refusals_by_reason": {
+        "capacity": 12,
+        "flux": 1
+      },
+      "checkpoints": [
+        "f5be8cc63ffeb060731545ae4490a0e2cf771e58b742045c21e7c0e18209f213",
+        "ff56f0b957f1082a2c9e66d55e9697c1b90531e1f17a864d97f4acea835ae9c1",
+        "65e7e23c5a4a32b4f2dfec5d0e2e0de3a639de595b3cfae7c7e52ff88de18f9f",
+        "2dfcbc05f5a7a0794085d960f22a8d3a78854b1d27acd18406725f5e31e5d142",
+        "8cca411ad3031e4e8e761aea63a71296b1e2c3047e1b2138677e40028bea83a0",
+        "ab1af6fd50cfc96747253e9cbb837d5f2be584197bad0a50381e7e44ba4a0e83",
+        "0576386d54ce193bf33e40934f1e23349c67b65f0b3f3c7eabdf3052936657df",
+        "34019bec04afdd8722205b34e6242d90482b2538c89e7da1de0fa9111c422061",
+        "bc6d8624962ef5843feaa901c0093b29829df79312daa93795e5df7510e650af",
+        "6c2e65eae44a43cf6488317fe97d6c54ec89b56395da055e3f766be392ab116c",
+        "9713ab4076f968cbe28815310e5d161ee754a119c970b07490c9c32111a2b415",
+        "44efac6cbba51cac5174e226e7bea808e742c589cb45b27a74dbd0c26be02ebe"
+      ],
+      "cleanup_ticks": 741,
+      "danger_overflow_samples": 0,
+      "expiry_events": [
+        202,
+        0
+      ],
+      "field_opening_observations": {},
+      "field_phase_timings": {},
+      "final_hash": "d4dafe70a3c318a00dc1ced33d4bdcd49b7ae18308a9f33f31f0dfe9f1bede25",
+      "maximum_overflow_projectiles_fields_events_targets": [
+        0,
+        0,
+        30,
+        0
+      ],
+      "network_scope": "eight-player presentation envelope",
+      "obstacle_count": 0,
+      "obstacle_path": "indexed with bounded/small-map fallback",
+      "paid_starts_by_delivery": {
+        "burst": 17,
+        "heavy": 18,
+        "rapid": 122
+      },
+      "peak_candidate_wire_bytes": 6152,
+      "peak_datagram_bytes": 1296,
+      "peak_datagram_count": 6,
+      "peak_deposits": 107,
+      "peak_events": 42,
+      "peak_fields": 0,
+      "peak_projectiles": 96,
+      "peak_reactions": 32,
+      "peak_snapshot_raw_bytes": 16356,
+      "projectile_releases_by_delivery": {
+        "burst": 85,
+        "heavy": 18,
+        "rapid": 122
+      },
+      "repeat": 1,
+      "sample_ticks": 720,
+      "scenario": "legal-eight-mixed-deliveries",
+      "snapshot_rejections": 0,
+      "snapshot_samples": 360,
+      "source": "ordinary paid spell commands"
+    }
+  },
+  "every_tick_oracle": {
+    "baseline": {
+      "all_queries": 39230,
+      "all_tick_state_and_event_trace_sha256": "ff2bdc56764b3440760974b7e81ae2b11660e83c1180c32d8d3673ec6de7f543",
+      "broad_misses": 24558,
+      "cleanup_ticks": 741,
+      "event_counts": {
+        "cast_refused": 13,
+        "cast_started": 157,
+        "chemistry_formed": 76,
+        "projectile_expired": 202,
+        "projectile_spawned": 225
+      },
+      "final_hash": "d4dafe70a3c318a00dc1ced33d4bdcd49b7ae18308a9f33f31f0dfe9f1bede25",
+      "real_broad_misses": 20734,
+      "real_survivor_queries": 20734,
+      "runtime_probe_sha256": "c8a7b543c75f24d3df13533f75be16269749a3016dee3b32fef2288c99132160",
+      "sample_stride_ticks": 12,
+      "scope": "post-step survivor queries; excludes terminated projectiles; not exact production invocation counts; trace covers every warmup/measured/cleanup/idle state and ordered event batch",
+      "seed": 609122,
+      "source_combat_sha256": "239e8040a88f62262f41b0c50210136ea981f729b8c0a02646dcfc80049c7bb8",
+      "survivor_eligible_pairs_per_tick": {
+        "max": 672,
+        "median": 336,
+        "p95": 672,
+        "p99": 672
+      },
+      "world_seed": 608120
+    },
+    "candidate": {
+      "all_queries": 39230,
+      "all_tick_state_and_event_trace_sha256": "ff2bdc56764b3440760974b7e81ae2b11660e83c1180c32d8d3673ec6de7f543",
+      "broad_misses": 24558,
+      "cleanup_ticks": 741,
+      "event_counts": {
+        "cast_refused": 13,
+        "cast_started": 157,
+        "chemistry_formed": 76,
+        "projectile_expired": 202,
+        "projectile_spawned": 225
+      },
+      "final_hash": "d4dafe70a3c318a00dc1ced33d4bdcd49b7ae18308a9f33f31f0dfe9f1bede25",
+      "real_broad_misses": 20734,
+      "real_survivor_queries": 20734,
+      "runtime_probe_sha256": "c8a7b543c75f24d3df13533f75be16269749a3016dee3b32fef2288c99132160",
+      "sample_stride_ticks": 12,
+      "scope": "post-step survivor queries; excludes terminated projectiles; not exact production invocation counts; trace covers every warmup/measured/cleanup/idle state and ordered event batch",
+      "seed": 609122,
+      "source_combat_sha256": "788cc518ef1b59ae042b58792b777cc45d26296425a4ecd5a5fcc1a907f6b874",
+      "survivor_eligible_pairs_per_tick": {
+        "max": 672,
+        "median": 336,
+        "p95": 672,
+        "p99": 672
+      },
+      "world_seed": 608120
+    },
+    "non_timing_differences_except_source_sha": [],
+    "trace_ticks": 1582
+  },
+  "helper_microbenchmarks": [
+    {
+      "calls": 82936,
+      "candidate": false,
+      "candidate_first": false,
+      "checksum": 0,
+      "elapsed_us": 166943,
+      "workload": "paid-mixed-survivors"
+    },
+    {
+      "calls": 82936,
+      "candidate": true,
+      "candidate_first": false,
+      "checksum": 0,
+      "elapsed_us": 110929,
+      "workload": "paid-mixed-survivors"
+    },
+    {
+      "calls": 82936,
+      "candidate": true,
+      "candidate_first": true,
+      "checksum": 0,
+      "elapsed_us": 117097,
+      "workload": "paid-mixed-survivors"
+    },
+    {
+      "calls": 82936,
+      "candidate": false,
+      "candidate_first": true,
+      "checksum": 0,
+      "elapsed_us": 164611,
+      "workload": "paid-mixed-survivors"
+    },
+    {
+      "calls": 9216,
+      "candidate": false,
+      "candidate_first": false,
+      "checksum": 6456,
+      "elapsed_us": 15771,
+      "workload": "boundary-and-near-hit"
+    },
+    {
+      "calls": 9216,
+      "candidate": true,
+      "candidate_first": false,
+      "checksum": 6456,
+      "elapsed_us": 20124,
+      "workload": "boundary-and-near-hit"
+    },
+    {
+      "calls": 9216,
+      "candidate": true,
+      "candidate_first": true,
+      "checksum": 6456,
+      "elapsed_us": 19923,
+      "workload": "boundary-and-near-hit"
+    },
+    {
+      "calls": 9216,
+      "candidate": false,
+      "candidate_first": true,
+      "checksum": 6456,
+      "elapsed_us": 14654,
+      "workload": "boundary-and-near-hit"
+    },
+    {
+      "calls": 32768,
+      "candidate": false,
+      "candidate_first": false,
+      "checksum": 22432,
+      "elapsed_us": 44185,
+      "workload": "synthetic-eight-target-close-cluster"
+    },
+    {
+      "calls": 32768,
+      "candidate": true,
+      "candidate_first": false,
+      "checksum": 22432,
+      "elapsed_us": 63347,
+      "workload": "synthetic-eight-target-close-cluster"
+    },
+    {
+      "calls": 32768,
+      "candidate": true,
+      "candidate_first": true,
+      "checksum": 22432,
+      "elapsed_us": 69529,
+      "workload": "synthetic-eight-target-close-cluster"
+    },
+    {
+      "calls": 32768,
+      "candidate": false,
+      "candidate_first": true,
+      "checksum": 22432,
+      "elapsed_us": 48728,
+      "workload": "synthetic-eight-target-close-cluster"
+    }
+  ],
+  "verification": {
+    "stress_baseline": "PASS: runtime-stress-probe; 16551 assertions; 0 failures; legal network-gap samples=0",
+    "stress_candidate": "PASS: runtime-stress-probe; 16551 assertions; 0 failures; legal network-gap samples=0",
+    "diagnostic_baseline": "PASS: projectile-circle-equivalence; 119315 assertions; 0 failures; queries=39230",
+    "diagnostic_final": "PASS: projectile-circle-equivalence; 157458 assertions; 0 failures; queries=40254",
+    "initial_combined_failure": "circle-candidate.log has one incorrect hand-authored unit expected value (radius0 on non-axis truncated projection). Exact frozen-oracle comparisons and replay matched. Corrected expected=false and added radius1 expected=true; final run passed. No production edit was needed for this test correction."
+  },
+  "limitations": [
+    "Median savings are consistent across two repeats, but p95 changes have opposite signs.",
+    "The sampled mixed lane target queries all miss; no close-combat general-speedup claim.",
+    "Dense query-only cluster is slower; it is not a paid-cast world and does not establish whole-world FPS regression.",
+    "Original integer arithmetic remains unchanged for overlapping bounds and negative radii; overflow inputs are outside the proved non-overflow arithmetic domain.",
+    "StageSampler still uses legacy capacity accounting from the previous wave; not a timing claim about the retained one-pass inventory helper.",
+    "No Full/import/export or rendered capture was run by this lane."
+  ]
+}

@@ -175,9 +175,10 @@ static func capture(
 	var reactions: Array[PackedInt32Array] = []
 	var ordered_deposits := world.deposits.duplicate()
 	ordered_deposits.sort_custom(func(left: Variant, right: Variant) -> bool: return left.entity_id < right.entity_id)
+	var trail_counts: Dictionary[int, int] = {}
 	for deposit: Variant in ordered_deposits:
 		var values: PackedInt64Array = deposit.canonical_values()
-		if not deposit.validate() or not _fits_int32(values):
+		if not deposit.validate() or not _fits_int32(values) or not _accept_trail_budget(deposit, trail_counts):
 			return {}
 		deposits.append(PackedInt32Array(Array(values)))
 	var ordered_reactions := world.reactions.duplicate()
@@ -267,11 +268,12 @@ static func validate(snapshot: Dictionary) -> bool:
 	if deposits_value.size() > MAX_DEPOSITS or reactions_value.size() > MAX_REACTIONS or deposits_value.size() + projectiles.size() / PROJECTILE_VALUE_COUNT > MAX_PROJECTILES:
 		return false
 	var previous_deposit_id := 0
+	var trail_counts: Dictionary[int, int] = {}
 	for values: Variant in deposits_value:
 		if typeof(values) != TYPE_PACKED_INT32_ARRAY:
 			return false
 		var deposit := DepositState.from_values(PackedInt64Array(Array(values)))
-		if deposit == null or deposit.entity_id <= previous_deposit_id:
+		if deposit == null or deposit.entity_id <= previous_deposit_id or not _accept_trail_budget(deposit, trail_counts):
 			return false
 		previous_deposit_id = deposit.entity_id
 	var previous_reaction_id := 0
@@ -339,6 +341,20 @@ static func validate(snapshot: Dictionary) -> bool:
 		var round_entity_id := int((entry_value as Dictionary).get("entity_id", 0))
 		if not seen.has(round_entity_id):
 			return false
+	return true
+
+
+static func _accept_trail_budget(deposit: ElementDepositState, counts: Dictionary[int, int]) -> bool:
+	if not deposit.is_trail():
+		return true
+	# Call only after deposit validation: owner IDs are positive, so zero safely
+	# records the global total. Orphan owners still consume their role budget.
+	var total := int(counts.get(0, 0)) + 1
+	var owner_total := int(counts.get(deposit.owner_id, 0)) + 1
+	if total > ElementChemistrySystem.MAX_TRAILS or owner_total > ElementChemistrySystem.MAX_OWNER_TRAILS:
+		return false
+	counts[0] = total
+	counts[deposit.owner_id] = owner_total
 	return true
 
 
@@ -657,7 +673,9 @@ static func _projectile_from_values(values: PackedInt32Array) -> ProjectileState
 static func _valid_projectile_values(values: PackedInt32Array) -> bool:
 	if values[12] < -1 or values[12] > MAX_PROJECTILE_REMAINING_DISTANCE or values[13] < 0 or values[13] > 0x7fffffff:
 		return false
-	if values[14] < 1 or values[14] > 1000 or values[15] < 0 or values[16] < 0 or values[16] > 31:
+	# Zero is a canonically spent chemistry payload; the damaging projectile
+	# still flies, but cannot regenerate ingredients after an early trail combo.
+	if values[14] < 0 or values[14] > 1000 or values[15] < 0 or values[16] < 0 or values[16] > 31:
 		return false
 	if values[0] <= 0 or values[0] > 0x7fffffff:
 		return false
@@ -929,7 +947,7 @@ static func _valid_event_values(values: PackedInt64Array) -> bool:
 	if kind == 12:
 		return values[2] > 0 and values[2] <= 4096
 	if kind == 13:
-		return values[2] in [SessionTransport.REQUEST_EMOTE, SessionTransport.REQUEST_TRAINING_RESET, SessionTransport.REQUEST_CHAMPION_NEXT, SessionTransport.REQUEST_READY_TOGGLE, SessionTransport.REQUEST_PRACTICE_START, SessionTransport.REQUEST_SPELL_EQUIP, SessionTransport.REQUEST_IMPACT_PRACTICE] and values[3] >= 1 and values[3] <= 3
+		return values[2] in [SessionTransport.REQUEST_EMOTE, SessionTransport.REQUEST_TRAINING_RESET, SessionTransport.REQUEST_CHAMPION_NEXT, SessionTransport.REQUEST_READY_TOGGLE, SessionTransport.REQUEST_PRACTICE_START, SessionTransport.REQUEST_SPELL_EQUIP, SessionTransport.REQUEST_IMPACT_PRACTICE, SessionTransport.REQUEST_CHAMPION_SELECT] and values[3] >= 1 and values[3] <= 3
 	if kind == 14:
 		return values[2] in [0, 1]
 	if kind == 15:

@@ -8,6 +8,7 @@ const EXPECTED_AUTHORITY := "presentation only; motion samples never change simu
 const REQUIRED_MOTIONS := ["idle", "walk", "sprint", "low", "air", "cast", "hit"]
 const REQUIRED_ACCENTS := ["counter_strafe", "double_jump", "slide", "slide_jump", "air_dodge", "roll", "wave_dash", "wall_kick", "vault", "superglide", "fast_fall", "wall_skim", "impact_recovery"]
 const ALLOWED_ACCENT_KINDS := ["brake_ticks", "lift_ring", "ground_wake", "speed_fins", "ground_chevron", "kick_burst", "crest_arc", "fall_lines", "wall_sparks", "recovery_brace"]
+const LOCOMOTION_FULL_STRIDE_HEIGHT_RATIO := 1.30
 
 
 class Sample:
@@ -136,6 +137,20 @@ func locomotion_contact_frame(profile_id: String, motion_id: String, elapsed_tic
 		return 0
 	var phase := fposmod(maxf(0.0, elapsed_ticks_at_60) + float(phase_seed), duration) / duration
 	return 1 if phase >= 0.5 else 0
+
+
+static func locomotion_stride_pixels(body_height: float) -> float:
+	# Two contacts per full cycle: each step travels 0.65 body heights. Using
+	# 0.65 for the *whole* cycle would flicker two-frame art at ~17 contacts/sec.
+	var height := body_height if is_finite(body_height) else 68.0
+	return clampf(height, 40.0, 96.0) * LOCOMOTION_FULL_STRIDE_HEIGHT_RATIO
+
+
+func locomotion_elapsed_at_phase(profile_id: String, motion_id: String, normalized_phase: float) -> float:
+	if motion_id not in ["walk", "sprint"] or not profiles.has(profile_id) or not is_finite(normalized_phase):
+		return 0.0
+	var duration := float((profiles[profile_id].get(motion_id, {}) as Dictionary).get("duration_ticks", 1))
+	return fposmod(normalized_phase, 1.0) * duration
 
 
 static func motion_id(state: PlayerState) -> String:

@@ -1,0 +1,10 @@
+
+System.Management.Automation.MethodInvocationException: Exception calling "Start" with "0" argument(s): "An error occurred trying to start process 'C:\Users\sende\Projects\flux\exports\windows-template-runtime-p47-20260909\release\FLUX.exe' with working directory 'C:\Users\sende\Projects\flux\.godot\bootstrap-test\run 6d9a1e922650466ea2dfd2882b48cc96'. An Application Control policy has blocked this file."
+ ---> System.ComponentModel.Win32Exception (4551): An error occurred trying to start process 'C:\Users\sende\Projects\flux\exports\windows-template-runtime-p47-20260909\release\FLUX.exe' with working directory 'C:\Users\sende\Projects\flux\.godot\bootstrap-test\run 6d9a1e922650466ea2dfd2882b48cc96'. An Application Control policy has blocked this file.
+   at System.Diagnostics.Process.StartWithCreateProcess(ProcessStartInfo startInfo)
+   at CallSite.Target(Closure, CallSite, Object)
+   --- End of inner exception stack trace ---
+   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception)
+   at System.Management.Automation.Interpreter.ActionCallInstruction`2.Run(InterpretedFrame frame)
+   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame)
+   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame)

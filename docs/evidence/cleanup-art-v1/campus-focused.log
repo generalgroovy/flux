@@ -1,0 +1,12 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+visual-language: 87 assertions, 0 failures
+natural-map-kit: 35 assertions, 0 failures
+wellspring-wayfinding: 29 assertions, 0 failures
+wellspring-architecture-kit: 64 assertions, 0 failures
+ILLUSTRATED_SETUP: 200 ms; 0 props; one terrain texture
+wellspring-illustrated-kit: 153 assertions, 0 failures
+PIXEL_MAP_SETUP: 130ms;4 cached atlases;one ground texture;original palette
+pixel-map-library: 7906 assertions, 0 failures
+sanctum-campus-layout: 430 assertions, 0 failures
+PASS: 7 selected FLUX2 headless suite(s): visual-language,wellspring-architecture-kit,wellspring-illustrated-kit,pixel-map-library,natural-map-kit,sanctum-campus-layout,wellspring-wayfinding

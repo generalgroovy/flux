@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-09",
+  "status": "local_uncommitted_source_verified_art_held_installer_blocked",
+  "independent_runtime_review": "approved_bounded_retention_no_blocking_semantic_findings",
+  "full": {
+    "suites": 91,
+    "assertions": 463310,
+    "failures": 0,
+    "stderr_bytes": 0,
+    "duration_ms": 85390,
+    "receipt": "final-delivery/full/full-receipt.json"
+  },
+  "root_delivery_hash_audit": {
+    "matched_records": 224,
+    "groups": "final-delivery manifest evidence_files and payloads, SOURCE-STATE records",
+    "manifest_sha256": "6aaf307ba3f22bf22105aa8ed1d37bfc5aa305e6d6fcd53f3856c2ab777978fb",
+    "authored_runtime_records": 184
+  },
+  "runtime": {
+    "combat_raw_sha256": "cdce33b7ee0528c57870cd1a3f5ce8faa52bee9517ec56962bdf8551b6aebd1a",
+    "candidate_state_and_ordered_events": "exact_old_batch_match",
+    "sustained_120_fps_accepted": false
+  },
+  "art": {
+    "candidate": "art_batches/character_style_v1/template_small/south-pilot-v3/review-v1/template_small-partial-review.png",
+    "candidate_sha256": "7d1e146f33ae3af16be3baf7c2629ffc570e0db2cc130047b106b9456d294d8a",
+    "source_sha256": "97f1cf793f43f8a1c7126f08972e9cacbdfa070c2501db1f8af1a1baaf4ee5ac",
+    "source_mode": "opaque_painted_checker",
+    "removed_edge_connected_pixels": 1135201,
+    "assembled_cells": 3,
+    "required_cells": 80,
+    "occupied_heights": [58, 58, 58],
+    "reviewers": ["root", "independent_agent"],
+    "source_contacts": "opposite_support_legs_and_arm_swings",
+    "native_result": "held_enclosed_matte_islands_and_playback_pending",
+    "human_accepted": false,
+    "live_promotion": false
+  },
+  "delivery": {
+    "raw_release_boot": "passed_isolated_headless_not_human_acceptance",
+    "new_installer": "blocked_windows_application_control_4551",
+    "new_installer_executed_stages": 0,
+    "previous_qv_installer": "16_stages_and_20_native_argv_assertions_passed_older_payload",
+    "user_install_settings_shortcuts": "unchanged",
+    "published": false
+  },
+  "scope_check": "43_retired_paths_absent_308_live_files_13_current_claims_passed",
+  "weekly_allowance": { "last_observed_remaining_percent": 36, "user_floor_percent": 33 }
+}

@@ -142,6 +142,9 @@ func reaction_mask(state: RefCounted, definition: Dictionary, tick: int, config:
 
 
 static func _extent(state: RefCounted, shape: String, origin: Vector2, radius: float) -> Rect2:
+	if int(state.recipe_wire_id) == 301:
+		var footprint := Chemistry.rampart_bounds(state)
+		return Rect2(Vector2(footprint.position) / 1000.0, Vector2(footprint.size) / 1000.0)
 	var bounds := Rect2(origin, Vector2.ZERO)
 	if shape in ["cover", "plane", "lens"]:
 		@warning_ignore("integer_division")
@@ -156,6 +159,8 @@ static func _extent(state: RefCounted, shape: String, origin: Vector2, radius: f
 
 
 static func _shape_pieces(state: RefCounted, shape: String, origin: Vector2, radius: float, hail: Vector2) -> Array:
+	if int(state.recipe_wire_id) == 301:
+		return [rectangle_polygon(_extent(state, shape, origin, radius))]
 	if shape in ["annulus", "ring"]:
 		var inner := float(state.length) / 1000.0
 		if inner >= radius:
@@ -353,11 +358,45 @@ static func clipped_frame_parts(frame: Dictionary, anchor: Vector2, polygons: Ar
 			rectangle[index] = anchor + (rectangle[index] - anchor).rotated(rotation)
 	for polygon: PackedVector2Array in polygons:
 		for clipped: PackedVector2Array in Geometry2D.intersect_polygons(polygon, rectangle):
+			var indices := local_triangle_indices(clipped)
+			if indices.is_empty():
+				continue # Degenerate/nonfinite output never reaches a GPU polygon draw.
 			var uv := PackedVector2Array()
 			for point: Vector2 in clipped:
 				uv.append((source.position + (point - anchor).rotated(-rotation) + pivot) / texture.get_size())
-			result.append({"points": clipped, "uvs": uv})
+			result.append({"points": clipped, "uvs": uv, "indices": indices})
 	return result
+
+
+static func local_triangle_indices(points: PackedVector2Array) -> PackedInt32Array:
+	if points.size() < 3:
+		return PackedInt32Array()
+	# Triangulate's winding area sums float cross products. At large world
+	# coordinates a genuine subpixel sliver can lose its sign to cancellation.
+	# Translate only the triangulation input; never move/round the drawn mask
+	# vertices or UVs, and never fill a failed piece using a convex hull.
+	var local := PackedVector2Array()
+	for point: Vector2 in points:
+		if not point.is_finite():
+			return PackedInt32Array()
+		local.append(point - points[0])
+	return Geometry2D.triangulate_polygon(local)
+
+
+static func draw_frame_part(canvas: CanvasItem, part: Dictionary, texture: Texture2D, opacity: float = 1.0, uv_offset: Vector2 = Vector2.ZERO) -> bool:
+	if canvas == null or texture == null or opacity <= 0.0 or (part.get("indices", PackedInt32Array()) as PackedInt32Array).is_empty():
+		return false
+	var uvs: PackedVector2Array = part.uvs
+	if uv_offset != Vector2.ZERO:
+		uvs = uvs.duplicate()
+		for index: int in range(uvs.size()):
+			uvs[index] += uv_offset
+	# Explicit indices avoid re-running unstable world-coordinate triangulation
+	# inside CanvasItem.draw_polygon. One draw command per original clipped part.
+	RenderingServer.canvas_item_add_triangle_array(canvas.get_canvas_item(), part.indices, part.points,
+		PackedColorArray([Color(1, 1, 1, clampf(opacity, 0.0, 1.0))]), uvs,
+		PackedInt32Array(), PackedFloat32Array(), texture.get_rid())
+	return true
 
 
 static func draw_clipped_frame(canvas: CanvasItem, frame: Dictionary, anchor: Vector2, polygons: Array, opacity: float = 1.0, rotation: float = 0.0) -> int:
@@ -365,5 +404,5 @@ static func draw_clipped_frame(canvas: CanvasItem, frame: Dictionary, anchor: Ve
 		return 0
 	var parts := clipped_frame_parts(frame, anchor, polygons, rotation)
 	for part: Dictionary in parts:
-		canvas.draw_polygon(part.points, PackedColorArray([Color(1, 1, 1, clampf(opacity, 0.0, 1.0))]), part.uvs, frame.texture)
+		draw_frame_part(canvas, part, frame.texture, opacity)
 	return parts.size()

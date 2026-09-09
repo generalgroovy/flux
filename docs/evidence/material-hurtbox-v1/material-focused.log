@@ -1,0 +1,6 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+foundation-spell-presenter: 2499 assertions, 0 failures
+element-chemistry-presenter: 17376 assertions, 0 failures
+pixel-effect-geometry: 50993 assertions, 0 failures
+PASS: 3 selected FLUX2 headless suite(s): element-chemistry-presenter,pixel-effect-geometry,foundation-spell-presenter

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "source_kind": "exported_pack",
+  "pack_sha256": "19adcd8e3e24a9d7f25a1a3943f80b8b1e40802c1ccafb8538a6fc4e1236edeb",
+  "state": {
+    "authority": "derived from validated loaded catalogs; not gameplay configuration",
+    "content": {
+      "abilities_authored": 62,
+      "body_roles": [
+        "small",
+        "middle",
+        "large"
+      ],
+      "champions_playable": 27,
+      "hashes": {
+        "abilities": "93ee840993568f89d8f878c925f80cac8257eb300bf598e879e9bea964e1252f",
+        "champions": "8d4807eaf78061d6cfe2407f33cafdec7765fa36cbc7a5512339a1093e9f2182",
+        "reactions": "175e6438c4fd5b618cb81e95ff13aafa677238b90fd20b4b06b2ee97ebbddcf2"
+      },
+      "playable_champion_ids": [
+        "oh_tipi",
+        "s_wayne",
+        "red_baron",
+        "grace_reava",
+        "wa_bidi",
+        "steezo",
+        "treevor_mason",
+        "oll_i",
+        "fluup",
+        "nico_lai",
+        "spai_si",
+        "leaf_hidden",
+        "ha_rekt",
+        "dr_apex",
+        "haara",
+        "hesus_christo",
+        "grimm_bow",
+        "biggy_bob",
+        "jan_wicked",
+        "ba_djoh",
+        "urzh",
+        "donnok",
+        "djonah_thaan",
+        "luuh_i_zeh",
+        "juul_i_yaina",
+        "faab_i_yaina",
+        "joh_haynes"
+      ],
+      "reaction_mutation_enabled": true,
+      "reactions_defined": 36,
+      "spell_positions": 12,
+      "spells_runtime_selectable": 57
+    },
+    "runtime": {
+      "maximum_players": 8,
+      "preferences_schema": 11,
+      "protocol": 47,
+      "simulation_hz": 120,
+      "snapshot_schema": 18
+    },
+    "schema_version": 1
+  }
+}

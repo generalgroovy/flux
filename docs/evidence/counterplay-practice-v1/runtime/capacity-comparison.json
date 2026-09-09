@@ -1,0 +1,2002 @@
+{
+  "schema_version": 1,
+  "captured_date": "2026-09-09",
+  "scope": "Local candidate, no change to gameplay/caps/protocol; StageSampler retains legacy capacity path; whole-step and standalone-helper timings own the optimization comparison",
+  "comparisons": [
+    {
+      "baseline_log": "mixed-baseline.log",
+      "candidate_log": "mixed-candidate.log",
+      "changed_metadata_fields": [
+        "sim_world_sha256"
+      ],
+      "baseline_sim_world_sha256": "40dd951a795ae4f9ee3e9c748bff15e5af9b614c34adaf90012e9d0da9d4fd98",
+      "candidate_sim_world_sha256": "8acc7c3539776c9c8d0d2ad308563083becfe8d07274a276646ea63ece008112",
+      "repeats": [
+        {
+          "repeat": 1,
+          "baseline_step_us": {
+            "max": 15345,
+            "median": 4324,
+            "p95": 10819,
+            "p99": 13566
+          },
+          "candidate_step_us": {
+            "max": 17619,
+            "median": 4107,
+            "p95": 11004,
+            "p99": 12755
+          },
+          "median_saved_us": 217,
+          "median_reduction_percent": 5.02,
+          "p95_saved_us": -185,
+          "baseline_over_budget": 142,
+          "candidate_over_budget": 138,
+          "checked_non_timing_fields": [
+            "actor_count",
+            "cast_refusals_by_reason",
+            "checkpoints",
+            "cleanup_ticks",
+            "danger_overflow_samples",
+            "expiry_events",
+            "final_hash",
+            "maximum_overflow_projectiles_fields_events_targets",
+            "network_scope",
+            "obstacle_count",
+            "obstacle_path",
+            "paid_starts_by_delivery",
+            "peak_candidate_wire_bytes",
+            "peak_datagram_bytes",
+            "peak_datagram_count",
+            "peak_deposits",
+            "peak_events",
+            "peak_fields",
+            "peak_projectiles",
+            "peak_reactions",
+            "peak_snapshot_raw_bytes",
+            "projectile_releases_by_delivery",
+            "repeat",
+            "sample_ticks",
+            "scenario",
+            "snapshot_rejections",
+            "snapshot_samples",
+            "source"
+          ],
+          "changed_non_timing_fields": [],
+          "added_report_fields": [
+            "authority_caps",
+            "field_opening_observations",
+            "field_phase_timings"
+          ],
+          "changed_phase_tick_counts": [],
+          "final_hash": "d4dafe70a3c318a00dc1ced33d4bdcd49b7ae18308a9f33f31f0dfe9f1bede25",
+          "candidate_result": {
+            "actor_count": 8,
+            "authority_caps": {
+              "deposits": 128,
+              "fields": 32,
+              "owner_fields": 4,
+              "owner_projectiles": 16,
+              "projectiles": 128,
+              "reactions": 32
+            },
+            "cast_refusals_by_reason": {
+              "capacity": 12,
+              "flux": 1
+            },
+            "checkpoints": [
+              "f5be8cc63ffeb060731545ae4490a0e2cf771e58b742045c21e7c0e18209f213",
+              "ff56f0b957f1082a2c9e66d55e9697c1b90531e1f17a864d97f4acea835ae9c1",
+              "65e7e23c5a4a32b4f2dfec5d0e2e0de3a639de595b3cfae7c7e52ff88de18f9f",
+              "2dfcbc05f5a7a0794085d960f22a8d3a78854b1d27acd18406725f5e31e5d142",
+              "8cca411ad3031e4e8e761aea63a71296b1e2c3047e1b2138677e40028bea83a0",
+              "ab1af6fd50cfc96747253e9cbb837d5f2be584197bad0a50381e7e44ba4a0e83",
+              "0576386d54ce193bf33e40934f1e23349c67b65f0b3f3c7eabdf3052936657df",
+              "34019bec04afdd8722205b34e6242d90482b2538c89e7da1de0fa9111c422061",
+              "bc6d8624962ef5843feaa901c0093b29829df79312daa93795e5df7510e650af",
+              "6c2e65eae44a43cf6488317fe97d6c54ec89b56395da055e3f766be392ab116c",
+              "9713ab4076f968cbe28815310e5d161ee754a119c970b07490c9c32111a2b415",
+              "44efac6cbba51cac5174e226e7bea808e742c589cb45b27a74dbd0c26be02ebe"
+            ],
+            "cleanup_ticks": 741,
+            "danger_overflow_samples": 0,
+            "expiry_events": [
+              202,
+              0
+            ],
+            "field_opening_observations": {},
+            "field_phase_timings": {},
+            "final_hash": "d4dafe70a3c318a00dc1ced33d4bdcd49b7ae18308a9f33f31f0dfe9f1bede25",
+            "maximum_overflow_projectiles_fields_events_targets": [
+              0,
+              0,
+              30,
+              0
+            ],
+            "network_scope": "eight-player presentation envelope",
+            "obstacle_count": 0,
+            "obstacle_path": "indexed with bounded/small-map fallback",
+            "paid_starts_by_delivery": {
+              "burst": 17,
+              "heavy": 18,
+              "rapid": 122
+            },
+            "peak_candidate_wire_bytes": 6152,
+            "peak_datagram_bytes": 1296,
+            "peak_datagram_count": 6,
+            "peak_deposits": 107,
+            "peak_events": 42,
+            "peak_fields": 0,
+            "peak_projectiles": 96,
+            "peak_reactions": 32,
+            "peak_snapshot_raw_bytes": 16356,
+            "projectile_releases_by_delivery": {
+              "burst": 85,
+              "heavy": 18,
+              "rapid": 122
+            },
+            "repeat": 1,
+            "sample_ticks": 720,
+            "scenario": "legal-eight-mixed-deliveries",
+            "slowest_stage_samples": [
+              {
+                "deposits": 36,
+                "fields": 0,
+                "production_us": 15339,
+                "projectiles": 90,
+                "reactions": 27,
+                "stage_sum_us": 16981,
+                "tick": 564,
+                "times_us": {
+                  "capacity": 548,
+                  "casts": 255,
+                  "chemistry": 3053,
+                  "commands": 56,
+                  "fields": 22,
+                  "instant_casts": 9,
+                  "movement": 550,
+                  "projectiles": 12404,
+                  "resources": 53,
+                  "targets": 27,
+                  "terminals": 4
+                }
+              },
+              {
+                "deposits": 36,
+                "fields": 0,
+                "production_us": 14212,
+                "projectiles": 90,
+                "reactions": 27,
+                "stage_sum_us": 15182,
+                "tick": 562,
+                "times_us": {
+                  "capacity": 545,
+                  "casts": 332,
+                  "chemistry": 2449,
+                  "commands": 80,
+                  "fields": 35,
+                  "instant_casts": 14,
+                  "movement": 649,
+                  "projectiles": 10989,
+                  "resources": 67,
+                  "targets": 16,
+                  "terminals": 6
+                }
+              },
+              {
+                "deposits": 36,
+                "fields": 0,
+                "production_us": 16411,
+                "projectiles": 90,
+                "reactions": 27,
+                "stage_sum_us": 14864,
+                "tick": 565,
+                "times_us": {
+                  "capacity": 439,
+                  "casts": 239,
+                  "chemistry": 1985,
+                  "commands": 69,
+                  "fields": 18,
+                  "instant_casts": 7,
+                  "movement": 528,
+                  "projectiles": 11517,
+                  "resources": 47,
+                  "targets": 12,
+                  "terminals": 3
+                }
+              },
+              {
+                "deposits": 36,
+                "fields": 0,
+                "production_us": 14604,
+                "projectiles": 90,
+                "reactions": 27,
+                "stage_sum_us": 14408,
+                "tick": 563,
+                "times_us": {
+                  "capacity": 397,
+                  "casts": 232,
+                  "chemistry": 2513,
+                  "commands": 61,
+                  "fields": 19,
+                  "instant_casts": 7,
+                  "movement": 463,
+                  "projectiles": 10652,
+                  "resources": 45,
+                  "targets": 15,
+                  "terminals": 4
+                }
+              },
+              {
+                "deposits": 81,
+                "fields": 0,
+                "production_us": 14014,
+                "projectiles": 28,
+                "reactions": 32,
+                "stage_sum_us": 14407,
+                "tick": 645,
+                "times_us": {
+                  "capacity": 320,
+                  "casts": 227,
+                  "chemistry": 2248,
+                  "commands": 44,
+                  "fields": 20,
+                  "instant_casts": 8,
+                  "movement": 474,
+                  "projectiles": 6552,
+                  "resources": 56,
+                  "targets": 11,
+                  "terminals": 4447
+                }
+              },
+              {
+                "deposits": 36,
+                "fields": 0,
+                "production_us": 17619,
+                "projectiles": 90,
+                "reactions": 27,
+                "stage_sum_us": 14308,
+                "tick": 576,
+                "times_us": {
+                  "capacity": 545,
+                  "casts": 290,
+                  "chemistry": 2273,
+                  "commands": 83,
+                  "fields": 30,
+                  "instant_casts": 10,
+                  "movement": 565,
+                  "projectiles": 10431,
+                  "resources": 62,
+                  "targets": 13,
+                  "terminals": 6
+                }
+              },
+              {
+                "deposits": 36,
+                "fields": 0,
+                "production_us": 12505,
+                "projectiles": 90,
+                "reactions": 28,
+                "stage_sum_us": 13250,
+                "tick": 559,
+                "times_us": {
+                  "capacity": 428,
+                  "casts": 511,
+                  "chemistry": 3225,
+                  "commands": 45,
+                  "fields": 15,
+                  "instant_casts": 9,
+                  "movement": 385,
+                  "projectiles": 8562,
+                  "resources": 38,
+                  "targets": 21,
+                  "terminals": 11
+                }
+              },
+              {
+                "deposits": 36,
+                "fields": 0,
+                "production_us": 11152,
+                "projectiles": 90,
+                "reactions": 27,
+                "stage_sum_us": 13026,
+                "tick": 583,
+                "times_us": {
+                  "capacity": 428,
+                  "casts": 200,
+                  "chemistry": 2932,
+                  "commands": 50,
+                  "fields": 14,
+                  "instant_casts": 8,
+                  "movement": 411,
+                  "projectiles": 8904,
+                  "resources": 40,
+                  "targets": 35,
+                  "terminals": 4
+                }
+              }
+            ],
+            "snapshot_capture_and_pack_us": {
+              "max": 8362,
+              "median": 4183,
+              "p95": 5382,
+              "p99": 6192
+            },
+            "snapshot_rejections": 0,
+            "snapshot_samples": 360,
+            "source": "ordinary paid spell commands",
+            "stage_mirror_us": {
+              "capacity": {
+                "max": 953,
+                "median": 293,
+                "p95": 658,
+                "p99": 863
+              },
+              "casts": {
+                "max": 845,
+                "median": 178,
+                "p95": 368,
+                "p99": 526
+              },
+              "chemistry": {
+                "max": 3275,
+                "median": 1136,
+                "p95": 2298,
+                "p99": 2932
+              },
+              "commands": {
+                "max": 179,
+                "median": 36,
+                "p95": 55,
+                "p99": 77
+              },
+              "fields": {
+                "max": 48,
+                "median": 12,
+                "p95": 19,
+                "p99": 30
+              },
+              "instant_casts": {
+                "max": 31,
+                "median": 5,
+                "p95": 11,
+                "p99": 16
+              },
+              "movement": {
+                "max": 778,
+                "median": 351,
+                "p95": 461,
+                "p99": 574
+              },
+              "projectiles": {
+                "max": 12404,
+                "median": 2723,
+                "p95": 7666,
+                "p99": 8844
+              },
+              "resources": {
+                "max": 105,
+                "median": 34,
+                "p95": 50,
+                "p99": 64
+              },
+              "targets": {
+                "max": 51,
+                "median": 10,
+                "p95": 14,
+                "p99": 20
+              },
+              "terminals": {
+                "max": 4447,
+                "median": 2,
+                "p95": 13,
+                "p99": 560
+              }
+            },
+            "tick_us": {
+              "max": 17619,
+              "median": 4107,
+              "p95": 11004,
+              "p99": 12755
+            },
+            "ticks_over_8333_us": 138
+          }
+        },
+        {
+          "repeat": 2,
+          "baseline_step_us": {
+            "max": 13652,
+            "median": 4429,
+            "p95": 10407,
+            "p99": 10976
+          },
+          "candidate_step_us": {
+            "max": 34986,
+            "median": 4123,
+            "p95": 10213,
+            "p99": 10789
+          },
+          "median_saved_us": 306,
+          "median_reduction_percent": 6.91,
+          "p95_saved_us": 194,
+          "baseline_over_budget": 141,
+          "candidate_over_budget": 137,
+          "checked_non_timing_fields": [
+            "actor_count",
+            "cast_refusals_by_reason",
+            "checkpoints",
+            "cleanup_ticks",
+            "danger_overflow_samples",
+            "expiry_events",
+            "final_hash",
+            "maximum_overflow_projectiles_fields_events_targets",
+            "network_scope",
+            "obstacle_count",
+            "obstacle_path",
+            "paid_starts_by_delivery",
+            "peak_candidate_wire_bytes",
+            "peak_datagram_bytes",
+            "peak_datagram_count",
+            "peak_deposits",
+            "peak_events",
+            "peak_fields",
+            "peak_projectiles",
+            "peak_reactions",
+            "peak_snapshot_raw_bytes",
+            "projectile_releases_by_delivery",
+            "repeat",
+            "sample_ticks",
+            "scenario",
+            "snapshot_rejections",
+            "snapshot_samples",
+            "source"
+          ],
+          "changed_non_timing_fields": [],
+          "added_report_fields": [
+            "authority_caps",
+            "field_opening_observations",
+            "field_phase_timings"
+          ],
+          "changed_phase_tick_counts": [],
+          "final_hash": "d4dafe70a3c318a00dc1ced33d4bdcd49b7ae18308a9f33f31f0dfe9f1bede25",
+          "candidate_result": {
+            "actor_count": 8,
+            "authority_caps": {
+              "deposits": 128,
+              "fields": 32,
+              "owner_fields": 4,
+              "owner_projectiles": 16,
+              "projectiles": 128,
+              "reactions": 32
+            },
+            "cast_refusals_by_reason": {
+              "capacity": 12,
+              "flux": 1
+            },
+            "checkpoints": [
+              "f5be8cc63ffeb060731545ae4490a0e2cf771e58b742045c21e7c0e18209f213",
+              "ff56f0b957f1082a2c9e66d55e9697c1b90531e1f17a864d97f4acea835ae9c1",
+              "65e7e23c5a4a32b4f2dfec5d0e2e0de3a639de595b3cfae7c7e52ff88de18f9f",
+              "2dfcbc05f5a7a0794085d960f22a8d3a78854b1d27acd18406725f5e31e5d142",
+              "8cca411ad3031e4e8e761aea63a71296b1e2c3047e1b2138677e40028bea83a0",
+              "ab1af6fd50cfc96747253e9cbb837d5f2be584197bad0a50381e7e44ba4a0e83",
+              "0576386d54ce193bf33e40934f1e23349c67b65f0b3f3c7eabdf3052936657df",
+              "34019bec04afdd8722205b34e6242d90482b2538c89e7da1de0fa9111c422061",
+              "bc6d8624962ef5843feaa901c0093b29829df79312daa93795e5df7510e650af",
+              "6c2e65eae44a43cf6488317fe97d6c54ec89b56395da055e3f766be392ab116c",
+              "9713ab4076f968cbe28815310e5d161ee754a119c970b07490c9c32111a2b415",
+              "44efac6cbba51cac5174e226e7bea808e742c589cb45b27a74dbd0c26be02ebe"
+            ],
+            "cleanup_ticks": 741,
+            "danger_overflow_samples": 0,
+            "expiry_events": [
+              202,
+              0
+            ],
+            "field_opening_observations": {},
+            "field_phase_timings": {},
+            "final_hash": "d4dafe70a3c318a00dc1ced33d4bdcd49b7ae18308a9f33f31f0dfe9f1bede25",
+            "maximum_overflow_projectiles_fields_events_targets": [
+              0,
+              0,
+              30,
+              0
+            ],
+            "network_scope": "eight-player presentation envelope",
+            "obstacle_count": 0,
+            "obstacle_path": "indexed with bounded/small-map fallback",
+            "paid_starts_by_delivery": {
+              "burst": 17,
+              "heavy": 18,
+              "rapid": 122
+            },
+            "peak_candidate_wire_bytes": 6152,
+            "peak_datagram_bytes": 1296,
+            "peak_datagram_count": 6,
+            "peak_deposits": 107,
+            "peak_events": 42,
+            "peak_fields": 0,
+            "peak_projectiles": 96,
+            "peak_reactions": 32,
+            "peak_snapshot_raw_bytes": 16356,
+            "projectile_releases_by_delivery": {
+              "burst": 85,
+              "heavy": 18,
+              "rapid": 122
+            },
+            "repeat": 2,
+            "sample_ticks": 720,
+            "scenario": "legal-eight-mixed-deliveries",
+            "slowest_stage_samples": [
+              {
+                "deposits": 97,
+                "fields": 0,
+                "production_us": 33057,
+                "projectiles": 12,
+                "reactions": 32,
+                "stage_sum_us": 21701,
+                "tick": 667,
+                "times_us": {
+                  "capacity": 411,
+                  "casts": 297,
+                  "chemistry": 17828,
+                  "commands": 79,
+                  "fields": 23,
+                  "instant_casts": 10,
+                  "movement": 591,
+                  "projectiles": 2366,
+                  "resources": 74,
+                  "targets": 17,
+                  "terminals": 5
+                }
+              },
+              {
+                "deposits": 8,
+                "fields": 0,
+                "production_us": 34986,
+                "projectiles": 88,
+                "reactions": 0,
+                "stage_sum_us": 20419,
+                "tick": 374,
+                "times_us": {
+                  "capacity": 3334,
+                  "casts": 245,
+                  "chemistry": 77,
+                  "commands": 83,
+                  "fields": 23,
+                  "instant_casts": 10,
+                  "movement": 634,
+                  "projectiles": 15937,
+                  "resources": 55,
+                  "targets": 16,
+                  "terminals": 5
+                }
+              },
+              {
+                "deposits": 81,
+                "fields": 0,
+                "production_us": 13163,
+                "projectiles": 28,
+                "reactions": 32,
+                "stage_sum_us": 13279,
+                "tick": 645,
+                "times_us": {
+                  "capacity": 275,
+                  "casts": 174,
+                  "chemistry": 2119,
+                  "commands": 35,
+                  "fields": 14,
+                  "instant_casts": 5,
+                  "movement": 332,
+                  "projectiles": 5919,
+                  "resources": 42,
+                  "targets": 9,
+                  "terminals": 4355
+                }
+              },
+              {
+                "deposits": 46,
+                "fields": 0,
+                "production_us": 10589,
+                "projectiles": 78,
+                "reactions": 27,
+                "stage_sum_us": 11895,
+                "tick": 611,
+                "times_us": {
+                  "capacity": 441,
+                  "casts": 186,
+                  "chemistry": 2139,
+                  "commands": 40,
+                  "fields": 14,
+                  "instant_casts": 5,
+                  "movement": 397,
+                  "projectiles": 8196,
+                  "resources": 42,
+                  "targets": 11,
+                  "terminals": 424
+                }
+              },
+              {
+                "deposits": 36,
+                "fields": 0,
+                "production_us": 10160,
+                "projectiles": 90,
+                "reactions": 26,
+                "stage_sum_us": 11662,
+                "tick": 595,
+                "times_us": {
+                  "capacity": 314,
+                  "casts": 173,
+                  "chemistry": 1706,
+                  "commands": 35,
+                  "fields": 11,
+                  "instant_casts": 5,
+                  "movement": 341,
+                  "projectiles": 9031,
+                  "resources": 32,
+                  "targets": 11,
+                  "terminals": 3
+                }
+              },
+              {
+                "deposits": 36,
+                "fields": 0,
+                "production_us": 10572,
+                "projectiles": 86,
+                "reactions": 29,
+                "stage_sum_us": 11059,
+                "tick": 545,
+                "times_us": {
+                  "capacity": 387,
+                  "casts": 272,
+                  "chemistry": 1773,
+                  "commands": 39,
+                  "fields": 12,
+                  "instant_casts": 5,
+                  "movement": 351,
+                  "projectiles": 8168,
+                  "resources": 36,
+                  "targets": 12,
+                  "terminals": 4
+                }
+              },
+              {
+                "deposits": 36,
+                "fields": 0,
+                "production_us": 10048,
+                "projectiles": 90,
+                "reactions": 27,
+                "stage_sum_us": 10933,
+                "tick": 563,
+                "times_us": {
+                  "capacity": 316,
+                  "casts": 176,
+                  "chemistry": 1715,
+                  "commands": 35,
+                  "fields": 11,
+                  "instant_casts": 4,
+                  "movement": 357,
+                  "projectiles": 8273,
+                  "resources": 33,
+                  "targets": 10,
+                  "terminals": 3
+                }
+              },
+              {
+                "deposits": 36,
+                "fields": 0,
+                "production_us": 10100,
+                "projectiles": 86,
+                "reactions": 29,
+                "stage_sum_us": 10899,
+                "tick": 556,
+                "times_us": {
+                  "capacity": 703,
+                  "casts": 355,
+                  "chemistry": 1676,
+                  "commands": 36,
+                  "fields": 12,
+                  "instant_casts": 10,
+                  "movement": 353,
+                  "projectiles": 7705,
+                  "resources": 32,
+                  "targets": 9,
+                  "terminals": 8
+                }
+              }
+            ],
+            "snapshot_capture_and_pack_us": {
+              "max": 6069,
+              "median": 4168,
+              "p95": 4964,
+              "p99": 5697
+            },
+            "snapshot_rejections": 0,
+            "snapshot_samples": 360,
+            "source": "ordinary paid spell commands",
+            "stage_mirror_us": {
+              "capacity": {
+                "max": 3334,
+                "median": 292,
+                "p95": 670,
+                "p99": 905
+              },
+              "casts": {
+                "max": 846,
+                "median": 176,
+                "p95": 365,
+                "p99": 506
+              },
+              "chemistry": {
+                "max": 17828,
+                "median": 1130,
+                "p95": 2178,
+                "p99": 2784
+              },
+              "commands": {
+                "max": 161,
+                "median": 34,
+                "p95": 49,
+                "p99": 64
+              },
+              "fields": {
+                "max": 50,
+                "median": 12,
+                "p95": 18,
+                "p99": 24
+              },
+              "instant_casts": {
+                "max": 59,
+                "median": 5,
+                "p95": 10,
+                "p99": 14
+              },
+              "movement": {
+                "max": 634,
+                "median": 348,
+                "p95": 420,
+                "p99": 524
+              },
+              "projectiles": {
+                "max": 15937,
+                "median": 2889,
+                "p95": 7487,
+                "p99": 7774
+              },
+              "resources": {
+                "max": 257,
+                "median": 34,
+                "p95": 46,
+                "p99": 60
+              },
+              "targets": {
+                "max": 28,
+                "median": 10,
+                "p95": 13,
+                "p99": 18
+              },
+              "terminals": {
+                "max": 4355,
+                "median": 3,
+                "p95": 16,
+                "p99": 532
+              }
+            },
+            "tick_us": {
+              "max": 34986,
+              "median": 4123,
+              "p95": 10213,
+              "p99": 10789
+            },
+            "ticks_over_8333_us": 137
+          }
+        }
+      ]
+    },
+    {
+      "baseline_log": "field-opening-final.log",
+      "candidate_log": "field-opening-candidate.log",
+      "changed_metadata_fields": [
+        "sim_world_sha256"
+      ],
+      "baseline_sim_world_sha256": "40dd951a795ae4f9ee3e9c748bff15e5af9b614c34adaf90012e9d0da9d4fd98",
+      "candidate_sim_world_sha256": "8acc7c3539776c9c8d0d2ad308563083becfe8d07274a276646ea63ece008112",
+      "repeats": [
+        {
+          "repeat": 1,
+          "baseline_step_us": {
+            "max": 7088,
+            "median": 2432,
+            "p95": 4585,
+            "p99": 5713
+          },
+          "candidate_step_us": {
+            "max": 15157,
+            "median": 2191,
+            "p95": 3873,
+            "p99": 4784
+          },
+          "median_saved_us": 241,
+          "median_reduction_percent": 9.91,
+          "p95_saved_us": 712,
+          "baseline_over_budget": 0,
+          "candidate_over_budget": 3,
+          "checked_non_timing_fields": [
+            "actor_count",
+            "authority_caps",
+            "cast_refusals_by_reason",
+            "checkpoints",
+            "cleanup_ticks",
+            "danger_overflow_samples",
+            "expiry_events",
+            "field_opening_observations",
+            "final_hash",
+            "maximum_overflow_projectiles_fields_events_targets",
+            "network_scope",
+            "obstacle_count",
+            "obstacle_path",
+            "paid_starts_by_delivery",
+            "peak_candidate_wire_bytes",
+            "peak_datagram_bytes",
+            "peak_datagram_count",
+            "peak_deposits",
+            "peak_events",
+            "peak_fields",
+            "peak_projectiles",
+            "peak_reactions",
+            "peak_snapshot_raw_bytes",
+            "projectile_releases_by_delivery",
+            "repeat",
+            "sample_ticks",
+            "scenario",
+            "snapshot_rejections",
+            "snapshot_samples",
+            "source"
+          ],
+          "changed_non_timing_fields": [],
+          "added_report_fields": [],
+          "changed_phase_tick_counts": [],
+          "final_hash": "a7b73080a9cd23cb4581c0caba5e3273aaa98a1c90fa61f8dce2231d0a9ee753",
+          "candidate_result": {
+            "actor_count": 8,
+            "authority_caps": {
+              "deposits": 128,
+              "fields": 32,
+              "owner_fields": 4,
+              "owner_projectiles": 16,
+              "projectiles": 128,
+              "reactions": 32
+            },
+            "cast_refusals_by_reason": {
+              "capacity": 8,
+              "flux": 4
+            },
+            "checkpoints": [
+              "95d01606ae130c2b01c401c19db76b28a0a42c46554e26ce7e19bb7e890024ab",
+              "aeb7f8975628514384e04402f6ca69e4d21205598ead716b7cae080c66b58b58",
+              "c245e30b018cb613d67fca33bd81bdabdd3f6d29e2984ef1917977dfa37bca11",
+              "92636567c3a25dd16274cea2791dfbec69994e4da7f857cf984d84f1b5203bc5",
+              "afe72e116720618279ae53f5febc45ad34f009b077484714084b660e6a792b4f",
+              "dfcf4fd64944febc4210486dfcb04c0926b744b30835f1e78e8b39e385d2f89a",
+              "687a77a43b8216674cc4bf963ce5e44c768c61de23b127bd358eb19d3fdf09f2",
+              "f97844abe34c7d7e0d37943000da102c2484508a4ff895147d653f26f24b85b5",
+              "96af032a9821adbf922afd97bc1e597d0e1200a24a1e8c16f7a1a2e756ba7011",
+              "3145d81e1b16d5660ef6023f74f69024f9fee38c6e768fa96707bf9abfed7547",
+              "5a31955bbf55759a8137b09baf2e541632deb28ab9f233a8941bb146ac98a8ec",
+              "a3b9619eaf53cf2245e3556e7fca890abc5b121eef3b738f0cebdc0f10c43430"
+            ],
+            "cleanup_ticks": 680,
+            "danger_overflow_samples": 0,
+            "expiry_events": [
+              58,
+              32
+            ],
+            "field_opening_observations": {
+              "active_reaction_instance_ticks": 3494,
+              "authored_flux_paid": 856000,
+              "decay_reaction_instance_ticks": 168,
+              "field_wires": {
+                "144": 8,
+                "156": 4,
+                "158": 4,
+                "162": 4,
+                "166": 3,
+                "169": 3,
+                "175": 3,
+                "178": 3
+              },
+              "formation_reaction_instance_ticks": 792,
+              "instance_ticks": 6688,
+              "minimum_actor_flux": 2090,
+              "owner_cap_instance_ticks": 568,
+              "paid_by_family": {
+                "burst": 8,
+                "field": 32,
+                "heavy": 4,
+                "rapid": 32
+              },
+              "paid_starts": 32,
+              "peak_pending": 8,
+              "peak_per_owner": 4,
+              "presence_ticks": 368,
+              "refusals_by_family": {
+                "field:capacity": 8,
+                "heavy:flux": 4
+              },
+              "releases": 32,
+              "releases_by_family": {
+                "burst": 40,
+                "field": 32,
+                "heavy": 4,
+                "rapid": 32
+              },
+              "triggers": 32,
+              "world_cap_ticks": 71
+            },
+            "field_phase_timings": {
+              "field_cap": {
+                "capacity_us": {
+                  "max": 753,
+                  "median": 104,
+                  "p95": 561,
+                  "p99": 753
+                },
+                "chemistry_us": {
+                  "max": 21,
+                  "median": 9,
+                  "p95": 20,
+                  "p99": 21
+                },
+                "fields_us": {
+                  "max": 510,
+                  "median": 405,
+                  "p95": 497,
+                  "p99": 510
+                },
+                "projectiles_us": {
+                  "max": 807,
+                  "median": 10,
+                  "p95": 551,
+                  "p99": 807
+                },
+                "step_us": {
+                  "max": 2271,
+                  "median": 1167,
+                  "p95": 1929,
+                  "p99": 2271
+                },
+                "ticks": 71
+              },
+              "fields_and_projectiles": {
+                "capacity_us": {
+                  "max": 775,
+                  "median": 220,
+                  "p95": 530,
+                  "p99": 772
+                },
+                "chemistry_us": {
+                  "max": 249,
+                  "median": 12,
+                  "p95": 56,
+                  "p99": 248
+                },
+                "fields_us": {
+                  "max": 539,
+                  "median": 205,
+                  "p95": 438,
+                  "p99": 510
+                },
+                "projectiles_us": {
+                  "max": 2975,
+                  "median": 1078,
+                  "p95": 2471,
+                  "p99": 2586
+                },
+                "step_us": {
+                  "max": 4443,
+                  "median": 2144,
+                  "p95": 3627,
+                  "p99": 4250
+                },
+                "ticks": 142
+              },
+              "fields_live": {
+                "capacity_us": {
+                  "max": 775,
+                  "median": 171,
+                  "p95": 504,
+                  "p99": 753
+                },
+                "chemistry_us": {
+                  "max": 249,
+                  "median": 9,
+                  "p95": 21,
+                  "p99": 98
+                },
+                "fields_us": {
+                  "max": 539,
+                  "median": 210,
+                  "p95": 434,
+                  "p99": 498
+                },
+                "projectiles_us": {
+                  "max": 2975,
+                  "median": 10,
+                  "p95": 2422,
+                  "p99": 2504
+                },
+                "step_us": {
+                  "max": 4443,
+                  "median": 1027,
+                  "p95": 3458,
+                  "p99": 3844
+                },
+                "ticks": 368
+              },
+              "reaction_tail": {
+                "capacity_us": {
+                  "max": 503,
+                  "median": 153,
+                  "p95": 361,
+                  "p99": 434
+                },
+                "chemistry_us": {
+                  "max": 6812,
+                  "median": 1162,
+                  "p95": 1482,
+                  "p99": 2125
+                },
+                "fields_us": {
+                  "max": 154,
+                  "median": 12,
+                  "p95": 25,
+                  "p99": 34
+                },
+                "projectiles_us": {
+                  "max": 3848,
+                  "median": 703,
+                  "p95": 2287,
+                  "p99": 2995
+                },
+                "step_us": {
+                  "max": 15157,
+                  "median": 2829,
+                  "p95": 4163,
+                  "p99": 5866
+                },
+                "ticks": 323
+              }
+            },
+            "final_hash": "a7b73080a9cd23cb4581c0caba5e3273aaa98a1c90fa61f8dce2231d0a9ee753",
+            "maximum_overflow_projectiles_fields_events_targets": [
+              0,
+              0,
+              28,
+              0
+            ],
+            "network_scope": "eight-player presentation envelope",
+            "obstacle_count": 0,
+            "obstacle_path": "indexed with bounded/small-map fallback",
+            "paid_starts_by_delivery": {
+              "burst": 8,
+              "field": 32,
+              "heavy": 4,
+              "rapid": 32
+            },
+            "peak_candidate_wire_bytes": 3832,
+            "peak_datagram_bytes": 1296,
+            "peak_datagram_count": 4,
+            "peak_deposits": 38,
+            "peak_events": 40,
+            "peak_fields": 32,
+            "peak_projectiles": 72,
+            "peak_reactions": 16,
+            "peak_snapshot_raw_bytes": 10292,
+            "projectile_releases_by_delivery": {
+              "burst": 40,
+              "heavy": 4,
+              "rapid": 32
+            },
+            "repeat": 1,
+            "sample_ticks": 720,
+            "scenario": "legal-eight-field-opening",
+            "slowest_stage_samples": [
+              {
+                "deposits": 38,
+                "fields": 0,
+                "production_us": 15157,
+                "projectiles": 4,
+                "reactions": 16,
+                "stage_sum_us": 9774,
+                "tick": 680,
+                "times_us": {
+                  "capacity": 374,
+                  "casts": 355,
+                  "chemistry": 6185,
+                  "commands": 64,
+                  "fields": 25,
+                  "instant_casts": 9,
+                  "movement": 1812,
+                  "projectiles": 842,
+                  "resources": 87,
+                  "targets": 17,
+                  "terminals": 4
+                }
+              },
+              {
+                "deposits": 38,
+                "fields": 0,
+                "production_us": 13216,
+                "projectiles": 4,
+                "reactions": 16,
+                "stage_sum_us": 9116,
+                "tick": 681,
+                "times_us": {
+                  "capacity": 205,
+                  "casts": 277,
+                  "chemistry": 6812,
+                  "commands": 63,
+                  "fields": 28,
+                  "instant_casts": 10,
+                  "movement": 742,
+                  "projectiles": 783,
+                  "resources": 175,
+                  "targets": 17,
+                  "terminals": 4
+                }
+              },
+              {
+                "deposits": 38,
+                "fields": 0,
+                "production_us": 5866,
+                "projectiles": 4,
+                "reactions": 16,
+                "stage_sum_us": 6662,
+                "tick": 675,
+                "times_us": {
+                  "capacity": 175,
+                  "casts": 190,
+                  "chemistry": 1525,
+                  "commands": 46,
+                  "fields": 17,
+                  "instant_casts": 6,
+                  "movement": 365,
+                  "projectiles": 2995,
+                  "resources": 46,
+                  "targets": 12,
+                  "terminals": 1285
+                }
+              },
+              {
+                "deposits": 10,
+                "fields": 0,
+                "production_us": 5217,
+                "projectiles": 46,
+                "reactions": 8,
+                "stage_sum_us": 6271,
+                "tick": 518,
+                "times_us": {
+                  "capacity": 222,
+                  "casts": 202,
+                  "chemistry": 900,
+                  "commands": 42,
+                  "fields": 154,
+                  "instant_casts": 7,
+                  "movement": 453,
+                  "projectiles": 3848,
+                  "resources": 29,
+                  "targets": 13,
+                  "terminals": 401
+                }
+              },
+              {
+                "deposits": 36,
+                "fields": 0,
+                "production_us": 2341,
+                "projectiles": 4,
+                "reactions": 15,
+                "stage_sum_us": 5893,
+                "tick": 762,
+                "times_us": {
+                  "capacity": 181,
+                  "casts": 332,
+                  "chemistry": 3505,
+                  "commands": 42,
+                  "fields": 30,
+                  "instant_casts": 12,
+                  "movement": 595,
+                  "projectiles": 1116,
+                  "resources": 59,
+                  "targets": 15,
+                  "terminals": 6
+                }
+              },
+              {
+                "deposits": 19,
+                "fields": 0,
+                "production_us": 4052,
+                "projectiles": 29,
+                "reactions": 14,
+                "stage_sum_us": 5537,
+                "tick": 646,
+                "times_us": {
+                  "capacity": 206,
+                  "casts": 202,
+                  "chemistry": 1403,
+                  "commands": 49,
+                  "fields": 21,
+                  "instant_casts": 8,
+                  "movement": 454,
+                  "projectiles": 3114,
+                  "resources": 57,
+                  "targets": 19,
+                  "terminals": 4
+                }
+              },
+              {
+                "deposits": 13,
+                "fields": 0,
+                "production_us": 4427,
+                "projectiles": 43,
+                "reactions": 8,
+                "stage_sum_us": 5186,
+                "tick": 523,
+                "times_us": {
+                  "capacity": 238,
+                  "casts": 379,
+                  "chemistry": 389,
+                  "commands": 55,
+                  "fields": 27,
+                  "instant_casts": 10,
+                  "movement": 1268,
+                  "projectiles": 2747,
+                  "resources": 49,
+                  "targets": 20,
+                  "terminals": 4
+                }
+              },
+              {
+                "deposits": 19,
+                "fields": 0,
+                "production_us": 3909,
+                "projectiles": 29,
+                "reactions": 14,
+                "stage_sum_us": 5125,
+                "tick": 647,
+                "times_us": {
+                  "capacity": 199,
+                  "casts": 198,
+                  "chemistry": 1088,
+                  "commands": 44,
+                  "fields": 34,
+                  "instant_casts": 10,
+                  "movement": 405,
+                  "projectiles": 3080,
+                  "resources": 50,
+                  "targets": 12,
+                  "terminals": 5
+                }
+              }
+            ],
+            "snapshot_capture_and_pack_us": {
+              "max": 6526,
+              "median": 2633,
+              "p95": 3380,
+              "p99": 5005
+            },
+            "snapshot_rejections": 0,
+            "snapshot_samples": 360,
+            "source": "ordinary paid spell commands",
+            "stage_mirror_us": {
+              "capacity": {
+                "max": 775,
+                "median": 157,
+                "p95": 453,
+                "p99": 530
+              },
+              "casts": {
+                "max": 888,
+                "median": 166,
+                "p95": 273,
+                "p99": 381
+              },
+              "chemistry": {
+                "max": 6812,
+                "median": 14,
+                "p95": 1320,
+                "p99": 1698
+              },
+              "commands": {
+                "max": 148,
+                "median": 32,
+                "p95": 56,
+                "p99": 72
+              },
+              "fields": {
+                "max": 539,
+                "median": 106,
+                "p95": 409,
+                "p99": 478
+              },
+              "instant_casts": {
+                "max": 32,
+                "median": 4,
+                "p95": 10,
+                "p99": 17
+              },
+              "movement": {
+                "max": 1812,
+                "median": 323,
+                "p95": 441,
+                "p99": 680
+              },
+              "projectiles": {
+                "max": 3848,
+                "median": 322,
+                "p95": 2401,
+                "p99": 2586
+              },
+              "resources": {
+                "max": 175,
+                "median": 31,
+                "p95": 51,
+                "p99": 72
+              },
+              "targets": {
+                "max": 41,
+                "median": 9,
+                "p95": 14,
+                "p99": 20
+              },
+              "terminals": {
+                "max": 1285,
+                "median": 2,
+                "p95": 7,
+                "p99": 114
+              }
+            },
+            "tick_us": {
+              "max": 15157,
+              "median": 2191,
+              "p95": 3873,
+              "p99": 4784
+            },
+            "ticks_over_8333_us": 3
+          }
+        },
+        {
+          "repeat": 2,
+          "baseline_step_us": {
+            "max": 9909,
+            "median": 2449,
+            "p95": 4443,
+            "p99": 5809
+          },
+          "candidate_step_us": {
+            "max": 10325,
+            "median": 2185,
+            "p95": 3763,
+            "p99": 4104
+          },
+          "median_saved_us": 264,
+          "median_reduction_percent": 10.78,
+          "p95_saved_us": 680,
+          "baseline_over_budget": 1,
+          "candidate_over_budget": 1,
+          "checked_non_timing_fields": [
+            "actor_count",
+            "authority_caps",
+            "cast_refusals_by_reason",
+            "checkpoints",
+            "cleanup_ticks",
+            "danger_overflow_samples",
+            "expiry_events",
+            "field_opening_observations",
+            "final_hash",
+            "maximum_overflow_projectiles_fields_events_targets",
+            "network_scope",
+            "obstacle_count",
+            "obstacle_path",
+            "paid_starts_by_delivery",
+            "peak_candidate_wire_bytes",
+            "peak_datagram_bytes",
+            "peak_datagram_count",
+            "peak_deposits",
+            "peak_events",
+            "peak_fields",
+            "peak_projectiles",
+            "peak_reactions",
+            "peak_snapshot_raw_bytes",
+            "projectile_releases_by_delivery",
+            "repeat",
+            "sample_ticks",
+            "scenario",
+            "snapshot_rejections",
+            "snapshot_samples",
+            "source"
+          ],
+          "changed_non_timing_fields": [],
+          "added_report_fields": [],
+          "changed_phase_tick_counts": [],
+          "final_hash": "a7b73080a9cd23cb4581c0caba5e3273aaa98a1c90fa61f8dce2231d0a9ee753",
+          "candidate_result": {
+            "actor_count": 8,
+            "authority_caps": {
+              "deposits": 128,
+              "fields": 32,
+              "owner_fields": 4,
+              "owner_projectiles": 16,
+              "projectiles": 128,
+              "reactions": 32
+            },
+            "cast_refusals_by_reason": {
+              "capacity": 8,
+              "flux": 4
+            },
+            "checkpoints": [
+              "95d01606ae130c2b01c401c19db76b28a0a42c46554e26ce7e19bb7e890024ab",
+              "aeb7f8975628514384e04402f6ca69e4d21205598ead716b7cae080c66b58b58",
+              "c245e30b018cb613d67fca33bd81bdabdd3f6d29e2984ef1917977dfa37bca11",
+              "92636567c3a25dd16274cea2791dfbec69994e4da7f857cf984d84f1b5203bc5",
+              "afe72e116720618279ae53f5febc45ad34f009b077484714084b660e6a792b4f",
+              "dfcf4fd64944febc4210486dfcb04c0926b744b30835f1e78e8b39e385d2f89a",
+              "687a77a43b8216674cc4bf963ce5e44c768c61de23b127bd358eb19d3fdf09f2",
+              "f97844abe34c7d7e0d37943000da102c2484508a4ff895147d653f26f24b85b5",
+              "96af032a9821adbf922afd97bc1e597d0e1200a24a1e8c16f7a1a2e756ba7011",
+              "3145d81e1b16d5660ef6023f74f69024f9fee38c6e768fa96707bf9abfed7547",
+              "5a31955bbf55759a8137b09baf2e541632deb28ab9f233a8941bb146ac98a8ec",
+              "a3b9619eaf53cf2245e3556e7fca890abc5b121eef3b738f0cebdc0f10c43430"
+            ],
+            "cleanup_ticks": 680,
+            "danger_overflow_samples": 0,
+            "expiry_events": [
+              58,
+              32
+            ],
+            "field_opening_observations": {
+              "active_reaction_instance_ticks": 3494,
+              "authored_flux_paid": 856000,
+              "decay_reaction_instance_ticks": 168,
+              "field_wires": {
+                "144": 8,
+                "156": 4,
+                "158": 4,
+                "162": 4,
+                "166": 3,
+                "169": 3,
+                "175": 3,
+                "178": 3
+              },
+              "formation_reaction_instance_ticks": 792,
+              "instance_ticks": 6688,
+              "minimum_actor_flux": 2090,
+              "owner_cap_instance_ticks": 568,
+              "paid_by_family": {
+                "burst": 8,
+                "field": 32,
+                "heavy": 4,
+                "rapid": 32
+              },
+              "paid_starts": 32,
+              "peak_pending": 8,
+              "peak_per_owner": 4,
+              "presence_ticks": 368,
+              "refusals_by_family": {
+                "field:capacity": 8,
+                "heavy:flux": 4
+              },
+              "releases": 32,
+              "releases_by_family": {
+                "burst": 40,
+                "field": 32,
+                "heavy": 4,
+                "rapid": 32
+              },
+              "triggers": 32,
+              "world_cap_ticks": 71
+            },
+            "field_phase_timings": {
+              "field_cap": {
+                "capacity_us": {
+                  "max": 746,
+                  "median": 105,
+                  "p95": 475,
+                  "p99": 746
+                },
+                "chemistry_us": {
+                  "max": 14,
+                  "median": 9,
+                  "p95": 13,
+                  "p99": 14
+                },
+                "fields_us": {
+                  "max": 792,
+                  "median": 409,
+                  "p95": 540,
+                  "p99": 792
+                },
+                "projectiles_us": {
+                  "max": 676,
+                  "median": 10,
+                  "p95": 557,
+                  "p99": 676
+                },
+                "step_us": {
+                  "max": 2126,
+                  "median": 1149,
+                  "p95": 1951,
+                  "p99": 2126
+                },
+                "ticks": 71
+              },
+              "fields_and_projectiles": {
+                "capacity_us": {
+                  "max": 1025,
+                  "median": 237,
+                  "p95": 700,
+                  "p99": 927
+                },
+                "chemistry_us": {
+                  "max": 293,
+                  "median": 13,
+                  "p95": 59,
+                  "p99": 128
+                },
+                "fields_us": {
+                  "max": 577,
+                  "median": 215,
+                  "p95": 420,
+                  "p99": 545
+                },
+                "projectiles_us": {
+                  "max": 3011,
+                  "median": 1244,
+                  "p95": 2590,
+                  "p99": 2933
+                },
+                "step_us": {
+                  "max": 10325,
+                  "median": 2468,
+                  "p95": 3845,
+                  "p99": 4586
+                },
+                "ticks": 142
+              },
+              "fields_live": {
+                "capacity_us": {
+                  "max": 1025,
+                  "median": 174,
+                  "p95": 513,
+                  "p99": 803
+                },
+                "chemistry_us": {
+                  "max": 293,
+                  "median": 10,
+                  "p95": 39,
+                  "p99": 101
+                },
+                "fields_us": {
+                  "max": 792,
+                  "median": 217,
+                  "p95": 420,
+                  "p99": 540
+                },
+                "projectiles_us": {
+                  "max": 3011,
+                  "median": 10,
+                  "p95": 2469,
+                  "p99": 2773
+                },
+                "step_us": {
+                  "max": 10325,
+                  "median": 1090,
+                  "p95": 3571,
+                  "p99": 4178
+                },
+                "ticks": 368
+              },
+              "reaction_tail": {
+                "capacity_us": {
+                  "max": 499,
+                  "median": 139,
+                  "p95": 333,
+                  "p99": 361
+                },
+                "chemistry_us": {
+                  "max": 1710,
+                  "median": 1136,
+                  "p95": 1250,
+                  "p99": 1428
+                },
+                "fields_us": {
+                  "max": 128,
+                  "median": 11,
+                  "p95": 15,
+                  "p99": 20
+                },
+                "projectiles_us": {
+                  "max": 2642,
+                  "median": 376,
+                  "p95": 2143,
+                  "p99": 2369
+                },
+                "step_us": {
+                  "max": 5525,
+                  "median": 2514,
+                  "p95": 3853,
+                  "p99": 4085
+                },
+                "ticks": 323
+              }
+            },
+            "final_hash": "a7b73080a9cd23cb4581c0caba5e3273aaa98a1c90fa61f8dce2231d0a9ee753",
+            "maximum_overflow_projectiles_fields_events_targets": [
+              0,
+              0,
+              28,
+              0
+            ],
+            "network_scope": "eight-player presentation envelope",
+            "obstacle_count": 0,
+            "obstacle_path": "indexed with bounded/small-map fallback",
+            "paid_starts_by_delivery": {
+              "burst": 8,
+              "field": 32,
+              "heavy": 4,
+              "rapid": 32
+            },
+            "peak_candidate_wire_bytes": 3832,
+            "peak_datagram_bytes": 1296,
+            "peak_datagram_count": 4,
+            "peak_deposits": 38,
+            "peak_events": 40,
+            "peak_fields": 32,
+            "peak_projectiles": 72,
+            "peak_reactions": 16,
+            "peak_snapshot_raw_bytes": 10292,
+            "projectile_releases_by_delivery": {
+              "burst": 40,
+              "heavy": 4,
+              "rapid": 32
+            },
+            "repeat": 2,
+            "sample_ticks": 720,
+            "scenario": "legal-eight-field-opening",
+            "slowest_stage_samples": [
+              {
+                "deposits": 38,
+                "fields": 0,
+                "production_us": 5525,
+                "projectiles": 4,
+                "reactions": 16,
+                "stage_sum_us": 5543,
+                "tick": 675,
+                "times_us": {
+                  "capacity": 169,
+                  "casts": 172,
+                  "chemistry": 1428,
+                  "commands": 34,
+                  "fields": 13,
+                  "instant_casts": 6,
+                  "movement": 342,
+                  "projectiles": 2193,
+                  "resources": 43,
+                  "targets": 9,
+                  "terminals": 1134
+                }
+              },
+              {
+                "deposits": 0,
+                "fields": 8,
+                "production_us": 3646,
+                "projectiles": 72,
+                "reactions": 0,
+                "stage_sum_us": 4747,
+                "tick": 486,
+                "times_us": {
+                  "capacity": 633,
+                  "casts": 260,
+                  "chemistry": 24,
+                  "commands": 36,
+                  "fields": 133,
+                  "instant_casts": 7,
+                  "movement": 579,
+                  "projectiles": 3011,
+                  "resources": 47,
+                  "targets": 13,
+                  "terminals": 4
+                }
+              },
+              {
+                "deposits": 0,
+                "fields": 16,
+                "production_us": 10325,
+                "projectiles": 32,
+                "reactions": 0,
+                "stage_sum_us": 4724,
+                "tick": 422,
+                "times_us": {
+                  "capacity": 395,
+                  "casts": 599,
+                  "chemistry": 33,
+                  "commands": 110,
+                  "fields": 358,
+                  "instant_casts": 10,
+                  "movement": 943,
+                  "projectiles": 2171,
+                  "resources": 82,
+                  "targets": 19,
+                  "terminals": 4
+                }
+              },
+              {
+                "deposits": 17,
+                "fields": 0,
+                "production_us": 3798,
+                "projectiles": 31,
+                "reactions": 14,
+                "stage_sum_us": 4336,
+                "tick": 612,
+                "times_us": {
+                  "capacity": 171,
+                  "casts": 197,
+                  "chemistry": 778,
+                  "commands": 46,
+                  "fields": 13,
+                  "instant_casts": 5,
+                  "movement": 450,
+                  "projectiles": 2624,
+                  "resources": 39,
+                  "targets": 10,
+                  "terminals": 3
+                }
+              },
+              {
+                "deposits": 0,
+                "fields": 16,
+                "production_us": 4048,
+                "projectiles": 32,
+                "reactions": 0,
+                "stage_sum_us": 4316,
+                "tick": 423,
+                "times_us": {
+                  "capacity": 474,
+                  "casts": 617,
+                  "chemistry": 32,
+                  "commands": 64,
+                  "fields": 366,
+                  "instant_casts": 9,
+                  "movement": 761,
+                  "projectiles": 1896,
+                  "resources": 73,
+                  "targets": 19,
+                  "terminals": 5
+                }
+              },
+              {
+                "deposits": 19,
+                "fields": 0,
+                "production_us": 3411,
+                "projectiles": 29,
+                "reactions": 14,
+                "stage_sum_us": 4238,
+                "tick": 649,
+                "times_us": {
+                  "capacity": 137,
+                  "casts": 154,
+                  "chemistry": 927,
+                  "commands": 27,
+                  "fields": 9,
+                  "instant_casts": 3,
+                  "movement": 295,
+                  "projectiles": 2642,
+                  "resources": 31,
+                  "targets": 10,
+                  "terminals": 3
+                }
+              },
+              {
+                "deposits": 0,
+                "fields": 8,
+                "production_us": 4178,
+                "projectiles": 72,
+                "reactions": 0,
+                "stage_sum_us": 4128,
+                "tick": 469,
+                "times_us": {
+                  "capacity": 172,
+                  "casts": 867,
+                  "chemistry": 18,
+                  "commands": 27,
+                  "fields": 113,
+                  "instant_casts": 33,
+                  "movement": 339,
+                  "projectiles": 2490,
+                  "resources": 30,
+                  "targets": 11,
+                  "terminals": 28
+                }
+              },
+              {
+                "deposits": 17,
+                "fields": 0,
+                "production_us": 3846,
+                "projectiles": 31,
+                "reactions": 14,
+                "stage_sum_us": 4118,
+                "tick": 609,
+                "times_us": {
+                  "capacity": 280,
+                  "casts": 165,
+                  "chemistry": 960,
+                  "commands": 35,
+                  "fields": 12,
+                  "instant_casts": 5,
+                  "movement": 360,
+                  "projectiles": 2260,
+                  "resources": 29,
+                  "targets": 10,
+                  "terminals": 2
+                }
+              }
+            ],
+            "snapshot_capture_and_pack_us": {
+              "max": 4811,
+              "median": 2600,
+              "p95": 3173,
+              "p99": 3736
+            },
+            "snapshot_rejections": 0,
+            "snapshot_samples": 360,
+            "source": "ordinary paid spell commands",
+            "stage_mirror_us": {
+              "capacity": {
+                "max": 1025,
+                "median": 152,
+                "p95": 468,
+                "p99": 706
+              },
+              "casts": {
+                "max": 867,
+                "median": 164,
+                "p95": 272,
+                "p99": 460
+              },
+              "chemistry": {
+                "max": 1710,
+                "median": 23,
+                "p95": 1227,
+                "p99": 1313
+              },
+              "commands": {
+                "max": 113,
+                "median": 29,
+                "p95": 41,
+                "p99": 65
+              },
+              "fields": {
+                "max": 792,
+                "median": 106,
+                "p95": 410,
+                "p99": 457
+              },
+              "instant_casts": {
+                "max": 33,
+                "median": 4,
+                "p95": 8,
+                "p99": 11
+              },
+              "movement": {
+                "max": 943,
+                "median": 314,
+                "p95": 431,
+                "p99": 577
+              },
+              "projectiles": {
+                "max": 3011,
+                "median": 293,
+                "p95": 2394,
+                "p99": 2641
+              },
+              "resources": {
+                "max": 120,
+                "median": 30,
+                "p95": 43,
+                "p99": 62
+              },
+              "targets": {
+                "max": 168,
+                "median": 9,
+                "p95": 12,
+                "p99": 19
+              },
+              "terminals": {
+                "max": 1134,
+                "median": 2,
+                "p95": 7,
+                "p99": 73
+              }
+            },
+            "tick_us": {
+              "max": 10325,
+              "median": 2185,
+              "p95": 3763,
+              "p99": 4104
+            },
+            "ticks_over_8333_us": 1
+          }
+        }
+      ]
+    }
+  ],
+  "log_hashes": [
+    {
+      "file": "mixed-candidate.log",
+      "bytes": 10911,
+      "sha256": "39fc906542a69b8804732be44d18e1c5d97c05218797aa8b54bfe8c307c4552f"
+    },
+    {
+      "file": "mixed-candidate.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "field-opening-candidate.log",
+      "bytes": 14686,
+      "sha256": "259827661adc9f685f4e6e67c9d36ef81ab3645eb2ca4e71d7ed28846c5486d5"
+    },
+    {
+      "file": "field-opening-candidate.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "capacity-equivalence.log",
+      "bytes": 582,
+      "sha256": "846a6eeed9af2ee1bda974fcce7a4c1d2e623a0af7fd308bb9d135ba95eb3dfa"
+    },
+    {
+      "file": "capacity-equivalence.err",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "source_hashes": [
+    {
+      "file": "src/sim/core/sim_world.gd",
+      "sha256": "8acc7c3539776c9c8d0d2ad308563083becfe8d07274a276646ea63ece008112"
+    },
+    {
+      "file": "src/sim/chemistry/element_chemistry_system.gd",
+      "sha256": "b0596612896e2c475994894a99aff40ed2e047866d1ec536eec767bd66d8b28f"
+    },
+    {
+      "file": "src/sim/combat/combat_system.gd",
+      "sha256": "239e8040a88f62262f41b0c50210136ea981f729b8c0a02646dcfc80049c7bb8"
+    },
+    {
+      "file": "tests/scenarios/runtime_stress_probe.gd",
+      "sha256": "c8a7b543c75f24d3df13533f75be16269749a3016dee3b32fef2288c99132160"
+    },
+    {
+      "file": "tests/scenarios/runtime_stage_sampler.gd",
+      "sha256": "d0f6e3de16c4ad453047220378d6a199e59234f61453b0ccf7e91b77aeb2c6a4"
+    },
+    {
+      "file": "tests/scenarios/owner_material_capacity_equivalence.gd",
+      "sha256": "08b4f8f4db6e346f01136c8564ff80ca9931c94057d101ad6e3758915c7b1353"
+    }
+  ],
+  "oracle_assertions": 5784,
+  "oracle_failures": 0,
+  "generated_worlds": 384,
+  "micro_calls_per_pass": 480,
+  "micro_legacy_us": [
+    115980,
+    113863
+  ],
+  "micro_candidate_us": [
+    39216,
+    40426
+  ],
+  "micro_checksum": 6496
+}

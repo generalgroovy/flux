@@ -10,10 +10,10 @@ const IMPACTS: Array[String] = ["empower", "damage", "damage_interrupt", "barrie
 const RESIDUES: Array[String] = ["none", "trail", "field", "construct"]
 const MATERIAL_OPERATIONS: Array[String] = ["none", "heat", "cool", "wet", "charge", "discharge", "fracture", "push", "reveal", "decay"]
 const RUNTIME_STATUSES: Array[String] = ["playable", "catalog_only"]
-const CADENCE_TIER_IDS: Array[String] = ["pressure", "tempo", "control"]
+const CADENCE_TIER_IDS: Array[String] = ["rapid", "pressure", "tempo", "control"]
 const MAX_PROJECTILE_PATTERN_LANES: int = 9
 const FIRST_EIGHT_ELEMENTS: Array[String] = ["fire", "water", "earth", "wind", "charge", "ice", "light", "dark"]
-const SPELL_MATRIX_FAMILIES: Array[String] = ["bolt", "burst", "spray", "beam", "field"]
+const SPELL_MATRIX_FAMILIES: Array[String] = ["bolt", "heavy", "rapid", "burst", "spray", "beam", "field"]
 const BURST_ANGLES: Array[int] = [-24, -12, 0, 12, 24]
 
 var data: Dictionary = {}
@@ -279,7 +279,7 @@ func _validate_spell_matrix() -> bool:
 			spell_matrix_ids.append(ability_id)
 			spell_matrix_wire_ids.append(int(ability.get("wire_id", 0)))
 	if claimed.size() != FIRST_EIGHT_ELEMENTS.size() * SPELL_MATRIX_FAMILIES.size():
-		return _fail("spell matrix must contain exactly forty unique cells")
+		return _fail("spell matrix must fill every element/family cell exactly once")
 	return true
 
 
@@ -320,6 +320,13 @@ func _validate_playable_simulation(ability: Dictionary) -> bool:
 	match shape:
 		"projectile":
 			required_positive.append_array(["speed", "damage", "lifetime_ms"])
+			if not ability.get("repeat_while_held", false) is bool or (bool(ability.get("repeat_while_held", false)) and _spell_family(ability) != "rapid"):
+				return _fail("only Rapid may repeat held spell slots: %s" % ability_id)
+			if _spell_family(ability) == "heavy":
+				if not _bounded_integer(ability.get("blast_radius"), 1000, 120000) or not _bounded_integer(ability.get("blast_damage"), 1, 100000):
+					return _fail("Heavy needs a bounded blast: %s" % ability_id)
+			elif ability.has("blast_radius") or ability.has("blast_damage"):
+				return _fail("only Heavy owns a terminal blast: %s" % ability_id)
 			for angle_value: Variant in ability.get("projectile_angles_degrees", [0]):
 				if int(angle_value) not in BURST_ANGLES:
 					return _fail("runtime projectile angles have no deterministic rotation: %s/%d" % [ability_id, int(angle_value)])

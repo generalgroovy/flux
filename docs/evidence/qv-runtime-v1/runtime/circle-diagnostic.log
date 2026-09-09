@@ -1,0 +1,12 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+CIRCLE_QUERY_META {"all_queries":39230,"broad_misses":24558,"mixed_end_hash":"51b72f84b7840e4375979ecca37ba1ba33925307e1d263e97250e5c6729d2896","real_survivor_queries":20734,"runtime_probe_sha256":"c8a7b543c75f24d3df13533f75be16269749a3016dee3b32fef2288c99132160","sample_stride_ticks":12,"scope":"post-step survivor queries; excludes terminated projectiles; not exact production invocation counts","seed":609122,"source_combat_sha256":"239e8040a88f62262f41b0c50210136ea981f729b8c0a02646dcfc80049c7bb8","survivor_eligible_pairs_per_tick":{"max":672,"median":336,"p95":672,"p99":672},"world_seed":608120}
+CIRCLE_QUERY_BENCH {"calls":82936,"candidate":false,"candidate_first":false,"checksum":0,"elapsed_us":164825,"workload":"paid-mixed-survivors"}
+CIRCLE_QUERY_BENCH {"calls":82936,"candidate":true,"candidate_first":false,"checksum":0,"elapsed_us":112832,"workload":"paid-mixed-survivors"}
+CIRCLE_QUERY_BENCH {"calls":82936,"candidate":true,"candidate_first":true,"checksum":0,"elapsed_us":111571,"workload":"paid-mixed-survivors"}
+CIRCLE_QUERY_BENCH {"calls":82936,"candidate":false,"candidate_first":true,"checksum":0,"elapsed_us":167166,"workload":"paid-mixed-survivors"}
+CIRCLE_QUERY_BENCH {"calls":9216,"candidate":false,"candidate_first":false,"checksum":6456,"elapsed_us":16149,"workload":"boundary-and-near-hit"}
+CIRCLE_QUERY_BENCH {"calls":9216,"candidate":true,"candidate_first":false,"checksum":6456,"elapsed_us":19886,"workload":"boundary-and-near-hit"}
+CIRCLE_QUERY_BENCH {"calls":9216,"candidate":true,"candidate_first":true,"checksum":6456,"elapsed_us":20419,"workload":"boundary-and-near-hit"}
+CIRCLE_QUERY_BENCH {"calls":9216,"candidate":false,"candidate_first":true,"checksum":6456,"elapsed_us":15911,"workload":"boundary-and-near-hit"}
+PASS: projectile-circle-equivalence; 118572 assertions; 0 failures; queries=39230

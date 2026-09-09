@@ -3,6 +3,7 @@ extends RefCounted
 
 
 const SCHEMA_VERSION: int = 11
+const KEYBOARD_DEFAULTS_REVISION: int = 1
 const DEFAULT_PATH: String = "user://player_preferences_v1.json"
 const DEFAULT_FARFLOW_JOIN_ADDRESS: String = "127.0.0.1"
 const MOVEMENT_WORLD_RELATIVE: String = "world_relative"
@@ -73,7 +74,7 @@ const SCHEMA_V3_DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"adjust_pov_angle": KEY_F9,
 	&"adjust_pov_range": KEY_F10,
 }
-const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
+const SCHEMA_V11_DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"practice_trace": KEY_F2,
 	&"practice_retry": KEY_F3,
 	&"evade": KEY_V,
@@ -85,6 +86,36 @@ const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
 	&"slide": KEY_C,
 	&"jump": KEY_SPACE,
 	&"technique": KEY_Q,
+	&"primary": 0,
+	&"active_1": KEY_E,
+	&"interact": KEY_F,
+	&"emote": KEY_T,
+	&"spell_1": KEY_1,
+	&"spell_2": KEY_2,
+	&"spell_3": KEY_3,
+	&"spell_4": KEY_4,
+	&"spell_layer_ctrl": KEY_CTRL,
+	&"spell_layer_alt": KEY_ALT,
+	&"reset_match": KEY_R,
+	&"toggle_debug_overlay": KEY_F1,
+	&"toggle_movement_reference": KEY_F7,
+	&"toggle_pov_mode": KEY_F8,
+	&"adjust_pov_angle": KEY_F9,
+	&"adjust_pov_range": KEY_F10,
+	&"adjust_camera_zoom": KEY_F11,
+}
+const DEFAULT_KEYBOARD_BINDINGS: Dictionary[StringName, int] = {
+	&"practice_trace": KEY_F2,
+	&"practice_retry": KEY_F3,
+	&"evade": KEY_Q,
+	&"move_left": KEY_A,
+	&"move_right": KEY_D,
+	&"move_up": KEY_W,
+	&"move_down": KEY_S,
+	&"sprint": KEY_SHIFT,
+	&"slide": KEY_C,
+	&"jump": KEY_SPACE,
+	&"technique": KEY_V,
 	&"primary": 0,
 	&"active_1": KEY_E,
 	&"interact": KEY_F,
@@ -166,6 +197,7 @@ var mouse_bindings: Dictionary[StringName, int] = {}
 var controller_bindings: Dictionary = {}
 var reduced_motion: bool = false
 var high_contrast: bool = false
+var sound_volume_percent: int = 30
 var farflow_join_address: String = DEFAULT_FARFLOW_JOIN_ADDRESS
 var last_error: String = ""
 
@@ -185,6 +217,7 @@ func reset_to_defaults() -> void:
 	controller_bindings = DEFAULT_CONTROLLER_BINDINGS.duplicate(true)
 	reduced_motion = false
 	high_contrast = false
+	sound_volume_percent = 30
 	farflow_join_address = DEFAULT_FARFLOW_JOIN_ADDRESS
 	last_error = ""
 
@@ -207,7 +240,19 @@ func apply_dictionary(data: Dictionary) -> bool:
 	if requested_schema < 1 or requested_schema > SCHEMA_VERSION:
 		last_error = "Player preferences require schema_version 1 through 11"
 		return false
+	var raw_keyboard_revision: Variant = data.get("keyboard_defaults_revision", 0)
+	if not _is_whole_number(raw_keyboard_revision) or float(raw_keyboard_revision) < 0.0 or float(raw_keyboard_revision) > KEYBOARD_DEFAULTS_REVISION:
+		last_error = "keyboard_defaults_revision must be an integer from 0 to %d" % KEYBOARD_DEFAULTS_REVISION
+		return false
+	var requested_keyboard_revision := int(raw_keyboard_revision)
 	var requested_movement: String = str(data.get("movement_reference", ""))
+	# Optional additive setting: older v11 builds ignore it without rejecting the
+	# user's entire control profile. No existing field changes meaning or default.
+	var raw_sound: Variant = data.get("sound_volume_percent", 30)
+	if not _is_whole_number(raw_sound) or float(raw_sound) < 0.0 or float(raw_sound) > 100.0:
+		last_error = "sound_volume_percent must be an integer from 0 to 100"
+		return false
+	var requested_sound_volume := int(raw_sound)
 	var requested_pov_mode: String = str(data.get("pov_mode", ""))
 	var requested_reduced_motion: bool = false
 	if requested_schema >= 2:
@@ -261,6 +306,8 @@ func apply_dictionary(data: Dictionary) -> bool:
 		return false
 	var requested_bindings: Dictionary[StringName, int]
 	var schema_defaults := default_keyboard_bindings_for_schema(requested_schema)
+	if requested_schema == SCHEMA_VERSION and requested_keyboard_revision == KEYBOARD_DEFAULTS_REVISION:
+		schema_defaults = DEFAULT_KEYBOARD_BINDINGS.duplicate()
 	if requested_schema == 1:
 		requested_bindings = LEGACY_DEFAULT_KEYBOARD_BINDINGS.duplicate()
 	elif requested_schema == 2:
@@ -316,11 +363,12 @@ func apply_dictionary(data: Dictionary) -> bool:
 			for action: StringName in requested_bindings:
 				if action != added_action and requested_bindings[action] == requested_bindings[added_action]:
 					requested_bindings[added_action] = 0
-	if requested_schema < 11 and requested_bindings == default_keyboard_bindings_for_schema(10):
-		# Move only an entirely default keyboard profile. Even one custom
-		# binding preserves the previous Q/V meanings, including explicit unbinds.
-		requested_bindings[&"evade"] = KEY_V
-		requested_bindings[&"technique"] = KEY_Q
+	# Schemas 1-10 already used Technique V / Evade Q; do not replay the old
+	# schema-11 swap. Only a complete, untouched, unrevisioned v11 layout moves.
+	# Partial profiles and even one custom binding/unbind retain their meanings.
+	if requested_schema == 11 and requested_keyboard_revision == 0 and _is_complete_keyboard_layout(binding_data, SCHEMA_V11_DEFAULT_KEYBOARD_BINDINGS):
+		requested_bindings[&"evade"] = DEFAULT_KEYBOARD_BINDINGS[&"evade"]
+		requested_bindings[&"technique"] = DEFAULT_KEYBOARD_BINDINGS[&"technique"]
 	var binding_error: String = validate_keyboard_bindings(requested_bindings)
 	if not binding_error.is_empty():
 		last_error = binding_error
@@ -387,6 +435,7 @@ func apply_dictionary(data: Dictionary) -> bool:
 	controller_bindings = requested_controller_bindings
 	reduced_motion = requested_reduced_motion
 	high_contrast = requested_high_contrast
+	sound_volume_percent = requested_sound_volume
 	farflow_join_address = requested_farflow_join_address
 	last_error = ""
 	return true
@@ -395,6 +444,9 @@ func apply_dictionary(data: Dictionary) -> bool:
 func to_dictionary() -> Dictionary:
 	return {
 		"schema_version": SCHEMA_VERSION,
+		# Older schema-11 readers ignore this additive marker and retain the
+		# explicit V/Q map on re-save; its omission cannot flip that map back.
+		"keyboard_defaults_revision": KEYBOARD_DEFAULTS_REVISION,
 		"movement_reference": movement_reference,
 		"pov_mode": pov_mode,
 		"pov_angle_degrees": pov_angle_degrees,
@@ -405,6 +457,7 @@ func to_dictionary() -> Dictionary:
 		"controller_bindings": controller_bindings,
 		"reduced_motion": reduced_motion,
 		"high_contrast": high_contrast,
+		"sound_volume_percent": sound_volume_percent,
 		"farflow_join_address": farflow_join_address,
 	}
 
@@ -559,8 +612,18 @@ static func _is_whole_number(value: Variant) -> bool:
 
 
 static func default_keyboard_bindings_for_schema(schema: int) -> Dictionary[StringName, int]:
-	var result: Dictionary[StringName, int] = DEFAULT_KEYBOARD_BINDINGS.duplicate()
+	# Historical schema defaults must not follow future current-layout edits.
+	var result: Dictionary[StringName, int] = SCHEMA_V11_DEFAULT_KEYBOARD_BINDINGS.duplicate()
 	if schema < 11:
 		result[&"evade"] = KEY_Q
 		result[&"technique"] = KEY_V
 	return result
+
+
+static func _is_complete_keyboard_layout(bindings: Dictionary, expected: Dictionary[StringName, int]) -> bool:
+	if bindings.size() != expected.size():
+		return false
+	for action: StringName in expected:
+		if not bindings.has(action) or bindings[action] != expected[action]:
+			return false
+	return true

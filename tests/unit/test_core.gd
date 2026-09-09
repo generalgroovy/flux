@@ -7,11 +7,12 @@ func run() -> int:
 	_test_independent_aim()
 	_test_actor_kind_is_canonical()
 	_test_command_validation()
+	_test_post_cast_owner_capacity()
 	return finish("core")
 
 
 func _test_supported_tick_rates() -> void:
-	equal(SimConfig.PROTOCOL_VERSION, 43, "current 120 Hz host-authoritative low-hop chemistry protocol is explicit")
+	equal(SimConfig.PROTOCOL_VERSION, 47, "current exact champion-attunement protocol is explicit")
 	check(not SimConfig.new(60).is_valid(), "retired 60 Hz cadence fails closed")
 	check(SimConfig.new(120).is_valid(), "120 Hz is the sole supported cadence")
 	check(not SimConfig.new(90).is_valid(), "intermediate tick rates fail closed")
@@ -24,7 +25,7 @@ func _test_command_serialization() -> void:
 	command.aim_target_y = 7_654_321
 	var copy: SimCommand = command.copy()
 	equal(command.canonical_bytes(), copy.canonical_bytes(), "command bytes are stable across copies")
-	equal(command.canonical_bytes().size(), 80, "protocol43 command has ten fixed-width int64 values including locked target")
+	equal(command.canonical_bytes().size(), 80, "command retains ten fixed-width int64 values including locked target")
 	equal(Vector2i(copy.aim_target_x, copy.aim_target_y), Vector2i(1_234_567, 7_654_321), "canonical command copy retains the exact locked world endpoint")
 	equal(Vector2i(command.aim_x, command.aim_y), Vector2i(600, -800), "aim is deterministically quantized to scale 1000")
 	var spell_command := SimCommand.new(8, 3, 0, 0, 0, SimCommand.PRESSED_SPELL_4 | SimCommand.PRESSED_SPELL_2)
@@ -56,3 +57,47 @@ func _test_actor_kind_is_canonical() -> void:
 	var target_world := SimWorld.new(120)
 	target_world.player().actor_kind = PlayerState.ActorKind.TRAINING_TARGET
 	check(champion_world.state_hash() != target_world.state_hash(), "champion and practice-target actor kinds hash differently")
+
+
+func _test_post_cast_owner_capacity() -> void:
+	var world := SimWorld.new(120)
+	_check_owner_capacity(world,"offline owner")
+	world.players.clear()
+	_check_owner_capacity(world,"empty world")
+	world.players.append(PlayerState.new(1))
+	world.players.append(PlayerState.new(2))
+	world.players[0].pending_cast_wire_id = CombatTuning.CINDERFAN_WIRE_ID
+	world.players[1].pending_cast_wire_id = CombatTuning.CINDERFAN_WIRE_ID
+	world.players[1].health = 0
+	_check_owner_capacity(world,"living Wave reserves five; dead Wave reserves none")
+	equal(world._owner_material_slots()[1],11,"whole pending Wave reserves five owner slots")
+	for index: int in range(123):
+		world.projectiles.append(ProjectileState.new(1000+index,999,1,145,2,Vector2i(100000,100000),Vector2i(1000,0),10800,9000,120))
+	_check_owner_capacity(world,"orphan material still fills global capacity")
+	equal(world._owner_material_slots()[1],0,"123 orphan projectiles plus five pending lanes fill the global cap")
+	world.projectiles.pop_back()
+	_check_owner_capacity(world,"one global slot remains")
+	equal(world._owner_material_slots()[1],1,"full pattern reservation leaves exactly one global slot")
+	world.players.reverse()
+	world.projectiles.reverse()
+	_check_owner_capacity(world,"reordered owners and material")
+	world.projectiles.clear()
+	for index: int in range(16):
+		var deposit := ElementDepositState.new()
+		deposit.entity_id = 3000+index
+		deposit.owner_id = 2
+		world.deposits.append(deposit)
+	_check_owner_capacity(world,"owner deposit ceiling includes defeated owners")
+	equal(world._owner_material_slots()[2],0,"sixteen deposits exhaust that owner's material slots")
+	equal(world._owner_material_slots()[1],11,"other owner's deposit ceiling does not consume these owner slots")
+
+
+func _check_owner_capacity(world: SimWorld,label: String) -> void:
+	var before := world.state_hash()
+	var expected := {}
+	for actor: PlayerState in world.players:
+		expected[actor.entity_id] = world.available_cast_capacity(actor.entity_id).x
+	var actual := world._owner_material_slots()
+	equal(actual,expected,label+": batch matches unchanged sequential query")
+	equal(actual.keys(),expected.keys(),label+": requested-owner insertion order is preserved")
+	equal(world.state_hash(),before,label+": capacity reads never change canonical state")

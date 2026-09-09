@@ -251,6 +251,14 @@ static func apply_control_state(
 		return true
 	if duration_ms <= 0:
 		return false
+	# A surface/field slow cannot release forced movement or its casting gate.
+	# Do not queue it: a fresh contact after the hard-control deadline may apply.
+	if requested_state == PlayerState.ControlState.SLOWED and state.control_ticks > 0 and state.control_state in [
+		PlayerState.ControlState.LAUNCHED, PlayerState.ControlState.GRAPPLED,
+		PlayerState.ControlState.CHARGING, PlayerState.ControlState.STUNNED,
+		PlayerState.ControlState.ROOTED,
+	]:
+		return false
 	if requested_state != PlayerState.ControlState.SLOWED and state.air_floating:
 		_end_air_float(state, "float_interrupted")
 	if requested_state == PlayerState.ControlState.SLOWED:
@@ -888,7 +896,7 @@ static func _integrate(state: PlayerState, config: SimConfig, world: CollisionWo
 	var delta := Vector2i(total_x / config.tick_rate, total_y / config.tick_rate)
 	state.position_remainder_x = total_x - delta.x * config.tick_rate
 	state.position_remainder_y = total_y - delta.y * config.tick_rate
-	var result: CollisionWorld.MoveResult = world.move_box(Vector2i(state.position_x, state.position_y), delta, state.radius)
+	var result: CollisionWorld.MoveResult = world.move_box(Vector2i(state.position_x, state.position_y), delta, MovementTuning.PLAYER_RADIUS)
 	state.position_x = result.position.x
 	state.position_y = result.position.y
 	if result.wall_normal != Vector2i.ZERO:
@@ -1140,7 +1148,7 @@ static func _has_wall_contact(state: PlayerState, world: CollisionWorld, surface
 	for obstacle: CollisionWorld.Obstacle in world.obstacle_view():
 		if obstacle.obstacle_id != surface_id or not obstacle.wall_runnable:
 			continue
-		var tolerance := state.radius + MovementTuning.WALL_CONTACT_TOLERANCE
+		var tolerance := MovementTuning.PLAYER_RADIUS + MovementTuning.WALL_CONTACT_TOLERANCE
 		if state.wall_x != 0 and state.position_y >= obstacle.minimum_y and state.position_y <= obstacle.maximum_y:
 			var face := obstacle.minimum_x if state.wall_x < 0 else obstacle.maximum_x
 			return absi(state.position_x - face) <= tolerance
@@ -1162,18 +1170,18 @@ static func _refresh_wall_contact(state: PlayerState, world: CollisionWorld, con
 		var normal := Vector2i.ZERO
 		var gap := best_gap
 		if state.position_y >= obstacle.minimum_y and state.position_y <= obstacle.maximum_y:
-			if state.position_x <= obstacle.minimum_x - state.radius:
-				gap = obstacle.minimum_x - state.radius - state.position_x
+			if state.position_x <= obstacle.minimum_x - MovementTuning.PLAYER_RADIUS:
+				gap = obstacle.minimum_x - MovementTuning.PLAYER_RADIUS - state.position_x
 				normal = Vector2i(-1000, 0)
-			elif state.position_x >= obstacle.maximum_x + state.radius:
-				gap = state.position_x - obstacle.maximum_x - state.radius
+			elif state.position_x >= obstacle.maximum_x + MovementTuning.PLAYER_RADIUS:
+				gap = state.position_x - obstacle.maximum_x - MovementTuning.PLAYER_RADIUS
 				normal = Vector2i(1000, 0)
 		if state.position_x >= obstacle.minimum_x and state.position_x <= obstacle.maximum_x:
-			if state.position_y <= obstacle.minimum_y - state.radius:
-				gap = obstacle.minimum_y - state.radius - state.position_y
+			if state.position_y <= obstacle.minimum_y - MovementTuning.PLAYER_RADIUS:
+				gap = obstacle.minimum_y - MovementTuning.PLAYER_RADIUS - state.position_y
 				normal = Vector2i(0, -1000)
-			elif state.position_y >= obstacle.maximum_y + state.radius:
-				gap = state.position_y - obstacle.maximum_y - state.radius
+			elif state.position_y >= obstacle.maximum_y + MovementTuning.PLAYER_RADIUS:
+				gap = state.position_y - obstacle.maximum_y - MovementTuning.PLAYER_RADIUS
 				normal = Vector2i(0, 1000)
 		if normal != Vector2i.ZERO and gap <= MovementTuning.WALL_CONTACT_TOLERANCE and (gap < best_gap or (gap == best_gap and obstacle.obstacle_id < best_id)):
 			best_gap = gap

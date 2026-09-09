@@ -1,5 +1,786 @@
 # FLUX2 agent worklog
 
+## 2026-09-09 - M0/M1 Rampart, verified and paused
+
+User lowered weekly floor to10%, then requested checkpoint cleanup and pause.
+M0/M1: Earth mirror alone now creates cardinal64x36px solid movement/shot/ray
+cover with existing paid wallrun/kick, overlap escape, exact expiry and size-only
+hurtboxes/common18px clearance. Worldbone stays immutable. Exact-tick prediction
+rows are part of the compiled compatibility contract; no free airtime/resources.
+Delegated runtime plus independent collision/network review; root owns teaching,
+pixel masonry, real rendering, evidence, delivery and cleanup.
+
+Focused8 suites84,719 assertions passed after correcting an airborne fixture and
+oversize1872-byte ENet message. Bounded shared compression/fragment codec now
+sends the32-surface example in1000bytes; forced fragmentation is tested, no
+warning suppression/reliable head-of-line shortcut. Six editable Earth-mirror
+sequences became tiled masonry. Geometry matches movement; actual-game contrast
+and deposit/reaction triangles are checked. Disposable backend probe removed.
+
+Fullv3:95 suites/537,802 assertions/zero failures,warnings,stderr;38 final paid
+actual-game frames;3,083 frozen files unchanged; strict export/PCK/raw boot passed.
+Same exact exported localhost Farflow host/join/reconcile/round/latejoin/rematch/
+stewardship passed120Hz UDP24972, empty stderr, isolated preferences, helpersclosed.
+Current pointer:windows-rampart-m1-p47-20260909. PCK SHA:
+23918264334a2c1dd013c0403903c53dda751155f8bd5dea2db27c18d98865b7.
+ZIP97,707,386bytes SHA:
+1af4d42cc71a9a091ad6e64682e3852b75ead65a297638fe9004e45d3e9a943f.
+
+Preserved failed focused/Full/capture evidence; export pin refresh and a capture
+typed-array correction were verified with a fresh source freeze/Full/capture.
+Old playtest-clarity portable retained. Historical QV installer EXE was not found
+on final recheck; current portable verifies independently, combined verifier
+reports historical unavailability honestly. No installer/security/push/publication.
+Pause requested: no M2/race/map work started. Next M2aIce, M2bCharge, remaining
+mirrors, then basic race art Small->Middle->Large and Wellspring expansion.
+Human feel/style, physical two-PC Internet and sustained120FPS remain open.
+
+## 2026-09-09 - Playtest clarity and transactional casting (verified portable)
+
+Current user cutoff is 10% weekly allowance remaining. W0-W5 replace overlapping
+active slice lists; prior text is preserved under docs/history. Dirty unrelated
+source, original assets and prior exports are preserved. No installer retry,
+security change, remote publication or visible game launch is implied.
+
+Delegated W0 exact checkpoint guidance/validation, W1 own-trail transactional
+reclamation and paid economy comparison, W2 shared-body counter-swing/shading,
+W3 quiet floor-route guidance and W4 harmless material visual role. Root adds
+quiet HUD/readiness/protection and compact state-derived practice cards, then
+serializes integrated rendering, Full and immutable portable verification.
+
+Focused chemistry passed 43,183 assertions; paid economy probe passed 1,776.
+Initial W2 presentation pass passed 96,066. First combined seven-suite integration
+passed 71,530 with empty stderr. Final unfiltered Fullv2 passed94 suites/537,041
+assertions/zero stderr in97.106s;26 fresh actual-game renders plus3 campus views
+passed. Strict portable export/PCK inspection and isolated raw-EXE boot passed.
+3,079 frozen runtime/test/package file records stayed identical. Export:
+exports/windows-playtest-clarity-p47-20260909. PCK SHA:
+bd5b15fdffccc7eb1affa80b1b443768e861b2706f9ef9baa0c9f641037b406b.
+ZIP97,700,400 bytes, SHA:
+08c9f112156b2ec9a76d9c304fa8faa9c34a8d2ce7aab99435263befb1dd62c9.
+Exact exported localhost Farflow smoke passed host/join/reconciliation/round/
+late-join/rematch/reconnect/stewardship; real two-PC remains pending.
+
+Builder preflight initially found a UTC DateTime stringify/parse bug. Preserved
+first Full/logs; corrected parser and shipping-input scope,104 source-only checks,
+then fresh freeze/Full/capture/build. No previous build was overwritten.
+Paid8-actor stress is deterministic with no missing danger/rejected snapshots,
+but misses8.333ms CPU budget (p959.868-10.606ms plus separate snapshot work).
+Do not call this sustained120FPS acceptance. A packed moving-cast prototype fits
+one Large gait page but fails AtlasTexture.get_image padding; candidate only,
+not admitted. No new named skins or physics changes from that experiment.
+Human playtest/style, full-load rendering and Internet acceptance remain open;
+see docs/PLAYTEST-CLARITY-CHECKPOINT.md. No commit/push/installer retry/security
+change or public release this turn; current portable pointer promoted separately.
+
+## 2026-09-09 - Warm shared bodies, terrain, magic and finite ingredient trails
+
+User supplied the warm fantasy cast sheet and lowered weekly stop floor to 20%.
+The subsequent correction is explicit: Rapid shots are too weak to leave flight
+trails. Root honors it for all 8 Rapid elements; terminal matter/direct damage stay.
+Delegated native-source body clothing + 92% visual scale, 135-tile warm terrain,
+and 112 basic magic sequences; all remain editable and reusable. Bodies are shared
+foundations, not completed named skins. Original source exports are preserved.
+
+Root introduced optional 16px trails for Bolt/Heavy/Wave, shorter finite element
+lifetimes, 4-owner/32-global role caps within existing 16/128 materials, paid-terminal
+priority, and broader 24-32px terminal footprints. A new terminal + strictly older trail
+can trigger one chemistry payload per cast, at 60% sustained active time; direct
+projectile damage remains. All fragments and still-flying siblings spend that
+payload once; zero strength survives snapshots and optics. Compiled compatibility
+fingerprint changed while protocol 47 / snapshot 18 field layout remains.
+
+Testing exposed trail-induced fixture assumptions and a real payload-multiplication
+risk; corrected whole-cast consumption and explicit chronology before acceptance.
+Terminal-only Radiance/cover fixture now uses real single paid Rapid shots so
+its wall tests the actual terminal origin, not a valid shifted trail midpoint.
+New regressions cover all 8 Rapid exclusions, all 36 trail-pairs, reservations, walls,
+snapshot caps, payload expiry, same-tick orderings and spent Prism/Lens handling.
+
+Actual combined capture found float-cancellation triangulation failure on a tiny
+Charge sliver. Delegated exact repro/fix uses local triangulation but original
+world vertices/UVs and explicit GPU indices; no expanded mask or lost valid part.
+69,244 focused assertions pass; a clean 23-frame rerun validates 1,056 parts / 6,192 triangles,
+and all 23 world hashes match pre-fix. Failed attempts retained separately.
+Magic 20,484 assertions / 413 animated sequences and body/terrain source checks pass.
+Final Full passed: 94 suites / 532,858 assertions, zero stderr. Strict export,
+isolated standalone Windows boot and 97.6MB portable ZIP passed; 2,133 source
+records stayed unchanged. PCK SHA4108090ac878c2c5038759fb93a753e91d867c284a7f1afa13384ab2ac656889;
+ZIP SHA208ff6fbc8840d4fe9400ba05bb785c8595b6de19789c0cf454f3f53d5e0048d.
+New build: exports/windows-warm-trails-p47-20260909. No commit, push, new installer,
+policy bypass, visible launch, real remote test or sustained-render120fps claim.
+
+## 2026-09-09 - Projected awareness, distinct sprint and longer magic
+
+User requested a 2.5D cone with rear awareness and an unmasked own character,
+more dynamic skeletons/stronger walk-run contrast, longer and more impactful
+effects, and delegated oldschool magic artwork. Weekly stop floor is 25% remaining.
+Sight worker implemented the 55-degree projection, 72-unit near ellipse,
+opaque-cover actor filtering and exact body-only postmask redraw. Motion worker
+added three shared eight-phase sprint banks (nine total textures, 3,312 cells,
+116.44 MiB decoded), with fixed bones and size-only geometry. Sprint now has a
+1.60 multiplier; base speed/carry caps and costs are unchanged. Root lengthened
+basic matter to 3-5s and 31 sustained reaction active phases about 25%, retaining
+the five instant windows, pulse damage and contact geometry. Impact playback is
+finite at 1.5x, with a stronger imprint and longer terminal/Heavy aftermath.
+
+Art worker used built-in image generation for an original 24-study element board,
+then refined the ground-material column. It is opaque reference-only, excluded
+from runtime import; exact prompts/provenance and production gates are preserved
+in art_batches/magic_style_v2. No named-skin or unreviewed atlas promotion.
+The source-art audit now understands schema 2 and all nine texture banks.
+
+Focused motion: 120,857 assertions; combined focused: 108,709; art audit: 279
+assertions / 71 cases; magic pack: 20,484 checks. Integration caught stale gait,
+Fire-countdown and Magma-duration expectations plus an overly dim final imprint
+tick and the intentionally changed chemistry source hash. These were corrected
+without removing assertions or relaxing authority checks; initial failure
+receipts are retained. Added a late Large sprint decoded-hash rejection test.
+Final Full: 93 suites / 507,991 assertions / zero failures and stderr, 92.993s.
+Independent source review found no blockers; connected-client predicted-body
+coverage and human/live-performance acceptance remain explicit next gates.
+
+Captured 50 production POV frames and six actual paid walk/sprint frames; four
+additional contact-render frames use explicitly synthetic ages, not fake hits.
+Strict Windows export, same-pack content audit and isolated raw boot passed.
+The new immutable exports/windows-awareness-tempo-p47-20260909 folder and ZIP
+pin 2,114 source records; previous playtests are untouched. No installer retry,
+security-policy change, visible game launch, commit, push or publication.
+See docs/MOTION-AWARENESS-CHECKPOINT.md for current behavior, evidence and next
+small slices. README now points to this portable playtest, not the older build.
+
+## 2026-09-09 - Live shared skeletons and independent travel/aim
+
+User authorized all27 characters to use their size skeleton, eight-way travel
+independent of aim, and hurtboxes exclusively size-driven; weekly floor25%.
+Art worker generated240base+1536locomotioncells from the existing fixed-bone
+rig, correcting discontinuous/overcompressed ankle poses before final baking.
+Runtime worker integrated six shared lossless textures and three compact
+portraits, with strict source/RGBA validation and distance-driven stride frames.
+Root prevented old local/remote skin fallbacks and updated Gallery/HUD semantics.
+Read-only reviewer independently confirmed all64pairs per size, fixed bones,
+non-crossing contacts and unchanged size-only15/18/21px hurtboxes/common18px
+wall clearance. All27 identities/stats/affinities remain; no simulation changes.
+
+Focused6/65066/zero stderr passed. First Full92/484179 found22 historical HUD
+template-source expectations; original failure receipt/log preserved. Live HUD
+tests now assert size-skeleton identity explicitly; no assertion deletion or
+legacy test bypass. Final Full92/485395/zero stderr passed in88.992s;32 rendered
+frames include six actual paid moving casts at startup/delivery. Strict Windows
+export and isolated raw boot passed;1610 source records stayed unchanged. Final
+handoff also makes six critical lossless .png.import files source-control eligible
+through a narrow ignore exception, verified separately without runtime changes.
+docs/SKELETON-MOTION-CHECKPOINT.md records receipts and current portable path.
+Controlled actual-game captures use transient settings and no networking/audio.
+Eight phases/aim-ready arms are a neutral
+playtest basis, not human acceptance or dedicated moving-cast recoil animation.
+Older art/exports remain; no installer retry/security bypass/commit/push.
+
+## 2026-09-09 - Cursor-facing, cone geometry and geometric base skeletons
+
+User requested cursor-following facing, casting at any time, simple three-size
+wireframe bases and cone update. Root made presentation-only live-aim facing
+and actual paid-cast matrix; explorer mapped authority seams; cone worker owned
+SightOcclusion/helper, only bootstrap._draw_pov_mask and focused tests; art
+worker reused existing fixed-bone pose_guide_model in a candidate-only exporter.
+No production combat legality change: voluntary movement already casts; controls,
+pending startup, Flux/cooldown/capacity and UI/death gates retained. Movement
+facing/committed spell aim are untouched; relative backward/strafe gait now
+follows current aim versus travel. All live profiles covered at8 headings.
+
+Full91/464036/0/empty stderr,81.275s. Presenter42670,combat25288,sight76.
+Six actual game captures use transient/no-network harness; all3sizes travel east
+while aim facesnorth/south; canonical state unchanged by draw and liveprefs hash
+unchanged. Corrected historical aim fixture expectations rather than weakening
+new opposed-facing checks. Strict Windows export + direct native isolated boot
+passed;184source hashes unchanged. First boot invocation incorrectly used
+unsupported--path; rejected log retained, normal invocation then passed. No
+installer attempt/security-policy change, no commit/push/live install.
+
+Wireframe prototype:3RGBA768x960atlases,240 key/contact cells,58/68/76height,
+96cell,pivot48/84,2400bonechecks/384contactchecks; plain front/back/limb markers.
+No duplicate rig equations or live renderer; no new race/catalog or artwork
+promotion. Not smooth fullclips yet. New request puts this geometric basis
+ahead of the held detailed Small matte pilot. Next review profile volume and
+distance-driven strafe/backpedal/transition playback. See
+docs/AIM-CONE-WIREFRAME-CHECKPOINT.md and its runnable newWindowsbuild.
+
+## 2026-09-09 - Small contact candidate, measured batch runtime and split delivery
+
+Continued in three bounded lanes: root Small art/contact proof and integration;
+runtime agent one ephemeral reaction-list optimization plus exact old-batch
+oracles; delivery agent immutable Windows export/install journey. Independent
+reviewer audited runtime authority and the actual art. No commit/push, live
+installation, shortcuts, balance changes or named-character promotion.
+
+Runtime retained after two same-input repeats: mixed whole-step p95
+9.586/9.595 ->8.093/7.990ms; over8.333ms ticks127/124 ->19/6. First-repeat max
+worsens12.166 ->14.076ms, so no sustained120Hz/FPS claim. Candidate selection is
+batch-local, preserves reference/order/duplicates, rechecks live phases, and
+keeps full reactions for Heavy/cover/blasts. Exact mixed5669, Field5646 and
+all36-recipe edge+combat28957 checks passed. Initial typed-array errors were
+rejected and archived, not counted as acceptance. Fresh Full91/463310/0,
+stderr0,85.390s; strict export and isolated native release boot passed.
+
+Delivery rebuilt separately. Older QV installer passed16 stages/20 argv checks.
+Newest installer was rejected by Windows Application Control4551 before stage00;
+zero installer gates ran. No identity-rebuild/security bypass attempted. The
+standard raw official-template EXE/PCK boot passed separately with isolated
+settings and V/Q schema11/revision1, not installer acceptance. Guards preserve
+actual install/preferences/shortcuts and older artifacts. See
+docs/evidence/template-delivery-v1/final-delivery for exact split status/hashes.
+
+Small South v3 initial board repeated contacts. One built-in image edit fixes
+both arm and leg alternation; immutable outputs and final prompt retained.
+Existing source-hash-locked assembler produces3/80 cells, each58px at48/84;
+reviewed edge-only matte removal records exact mask. Enclosed checker islands
+remain in bent-arm gaps: independent review agrees contact source is improved,
+but native sprite candidate HELD, no runtime promotion or completed template.
+Busy tiny face/hands and high-stepping gait still need playback/style review.
+Proof helper's first parse error was corrected using the existing hash utility;
+only clean final run counts. Corrected stale README neutral-builder claims.
+
+Current summary: docs/TEMPLATE-DELIVERY-CHECKPOINT.md. Next smallest work:
+source-specific negative-space repair and distance-driven Small A/B playback,
+then rear-quarter grammar; no mass generation or named-art gate bypass.
+Weekly usage was checked at37%remaining, above the user's33%floor.
+
+## 2026-09-09 - V Technique defaults and delegated circle-query checkpoint
+
+User requested default Q->V and delegation of next slices. Since V previously
+held Evade, root announced/implemented the safe two-key swap: Technique V,
+Roll/Air Dodge Q. Input agent owns preferences/two unit suites, runtime agent
+owns one contact helper/diagnostic/core test, independent reviewer owns audit
+and bounded next Small-art artifact proposal. Root owns docs, dynamic-label
+integration, captures, Full and standalone export. Existing dirty work preserved;
+no commit/push/merge/installer/publication or named-art promotion.
+
+Schema11 retained; additive keyboard_defaults_revision1. Frozen historical
+default map prevents deriving past migrations from current defaults. Only raw
+complete unrevisioned old-v11 default keyboard dictionaries auto-swap. Partial,
+custom and explicitly unbound layouts remain; mouse/controller unchanged.
+Schemas1-10 avoid replaying superseded swap. Oldreader cannot oscillate explicit
+new defaults, but dropping marker from an intentionally exact-old-default map
+loses intent; this downgrade boundary is documented and asserted. Six final
+custom-device/downgrade assertions included in Full. Input593/preferences855,
+editor32/guide344, movementcoach252/inheritedintegration127 all passed.
+
+Runtime adds nine stateless bounds-rejection lines before unchanged integer
+segment-circle projection; negative radii fall back. No costs/caps/hurtboxes/
+ordering/outcome change.157,458 focused/differential assertions incl40,254 query
+comparisons;16,551 mixed profile passed. Exact canonical state+ordered-event
+digest across1,582 ticks:ff2bdc56764b3440760974b7e81ae2b11660e83c1180c32d8d3673ec6de7f543.
+Median step3.853/4.022 ->3.592/3.668ms (6.8/8.8%); p959.376/10.118 ->9.977/9.626ms
+is NOT consistent tail improvement. Close-cluster helper is slower0.58-0.63us
+per call; far misses save0.57-0.68us. Tiny39-assertion normalFull regression added.
+First focus syntax typo and wrong handwritten radius0 test expectation corrected
+against source/oracle, failed receipts kept separate. No provenance gate relaxed.
+
+Independent review found old README/editor expectations; root fixed them and
+added five current guide-binding assertions. Older controls contract now clearly
+historical; checkpoint controls/timings remain intact with current links. Art
+review confirms Small South v2 opaque matte/repeated arm bias; next is ONE
+grounded+A/B source board using existing neutral-aware assembler/calibration.
+No image generated or held candidate promoted in this slice.
+
+Full91/463,294/0,79.550s,stderr0; source gates/import/120Hz boot passed. Six720p/
+1080p Controls and six movement captures passed; root inspected currentV/Q table
+and V southerncard; actual saved settings hash+mtime unchanged through captures.
+StrictWindows export + copied standalone120Hz/protocol47 boot with isolated
+APPDATA passed. Fresh profile verifiesTechniqueV/EvadeQ/schema11/revision1.
+Runnable: C:\Users\sende\AppData\Local\FLUX-dev\playtests\qv-runtime-20260909\flux2.exe.
+PCK66,211,176bytes/SHA9d8cc66320a73c3f544c70489f443709807d84128a12b82d5fa322d07869e967.
+29 copied logs/PNGs verified in docs/evidence/qv-runtime-v1/checkpoint.json;
+docs/QV-RUNTIME-CHECKPOINT.md is current handoff. Previous standalone retained.
+Weekly allowance last checked39%remaining, above33%floor. Further mixedtail,
+human gameplay/template acceptance, installer refresh and physicaltwoPC remain.
+
+## 2026-09-09 - Delegated counterplay, movement coaching and owner-inventory checkpoint
+
+Continued user-authorized implementation/delegation from sandbox-impact baseline.
+Three disjoint lanes: sandbox authored/tested the existing Radiance/Steam counter;
+feedback authored binding-aware movement teaching and audited real inherited
+bootstrap gates; runtime measured legal mixed/32-Field loads and exact owner
+inventory batching. Root integrated personal gating/render/input-device choice,
+paid movement captures, Steam's discoverable Light+Light hint, safety repair,
+Full/export and this handoff. No balance, costs, element, recipe, capacity,
+protocol, character pixels or art-acceptance gate changes. Dirty tree preserved;
+no commit/push/merge/publication/installer refresh. Weekly allowance last checked
+40%remaining, above user33%floor; downloaded local-model inference still deferred.
+
+Crucible: four real depositing casts spend24 Flux. Distinct96px origin cells,
+currently active overlapping Radiance/Steam, actual reveal2->1->0 expiry,
+reentry/independent decay and fixture-only worldbone interruption proved. Card
+copy is conditional; it never asserts an actor is visible through a wall.
+Steam alone now hints Light+Light. Chemistry coach4,198 Full assertions passed.
+
+Southern loop:2-line view uses actual role/Stamina/commitment/airtime budgets and
+bindings, valid local actor/guest only, HEARTH only, hidden for menu/focus/rearm,
+spectator/specimen/death. Deliberate gameplay device input only; InputMap and
+station device unaffected. Movement252, inherited integration127 assertions
+passed in final Full. Six actual rendered states include paid wallrun tick13,
+kick tick25 and Float tick37; no scripted outcome/fake free movement.
+
+Reviewer caught inherited fixture teardown could persist temporary settings.
+Fixed shared harness constructor to transient, retained real cleanup; three
+spy assertions prove zero save attempts. Repeated6movement/5chemistry GPU frames
+with actual saved preference SHA+mtime identical before/after complete processes.
+Earlier unguarded capture evidence is superseded; no claim original settings
+survived and no speculative restoration. New standalone smoke isolates APPDATA
+inside its own test folder. No production settings behavior changed.
+
+Runtime: post-cast stateless owner inventory only; pre-payment queries and caps
+unchanged.5,784 seeded oracle assertions; mixed16,551 and Field14,733 passed.
+All shared counters/checkpoint/final hashes match. Mixed median4.324/4.429ms
+->4.107/4.123ms; p9510.819/10.407 ->11.004/10.213ms (no consistent tail gain).
+Field median2.432/2.449 ->2.191/2.185ms; p954.585/4.443 ->3.873/3.763ms.
+Real32paidFields/4perowner,71cap-ticks,32enemytriggers; eight fifthFields refused
+before payment, later Heavy Flux refusals natural. Mixed still over8.333ms;
+no sustained120Hz, renderedFPS, human fun or physical network claim.
+
+Initial Full91/462,658/0 in98.525s preserved before fixture guard. Final
+Full91/462,661/0 in90.542s, stderr0, source gates and120Hz boot passed. Strict
+Windows export; SHA-matched copied EXE/PCK boot outside checkout passed with
+isolated settings, no source path/LAN discovery. New runnable developer build:
+`C:\Users\sende\AppData\Local\FLUX-dev\playtests\counterplay-practice-20260909\flux2.exe`.
+PCK66,209,976bytes SHA3061a3d1fbeae6a91c149ee816a963896e5bbfb2e585cfaaa1ef1c337689c85c.
+Prior standalone and old installer untouched. Evidence/receipts/captures in
+docs/evidence/counterplay-practice-v1; docs/COUNTERPLAY-PRACTICE-CHECKPOINT.md.
+Next: human route/counter/feedback acceptance, measured mixed slow-tail work,
+Small neutral art gate then Middle/Large; installer/two-PC acceptance separate.
+
+## 2026-09-09 - Delegated sandbox, impact, runtime and local audio checkpoint
+
+User requested efficient deep delegated iteration with stronger visual impact
+and creative sandbox play. Retained Windows/120Hz/8-player authority, all27
+profiles,57 spells,36 finite recipes, template-first art gate and33%weekly floor.
+Existing dirty work preserved; no commit/push/merge/publication or installer change.
+
+Parallel lanes: feedback authored a12-tick existing-pixel contact imprint and
+independently audited root audio; sandbox extended the campus south and tested
+actual traversal, then authored silent audio/preference tests; runtime introduced
+a conservative current-geometry query rejection and measured exact-equivalent
+eight-player traces. Root integrated audio/settings/privacy, rendered controls,
+audited authority/visual evidence and ran the final suite/export/checkpoint.
+
+Campus3072x2304 (+576height), two non-vaultable optional wallrun surfaces,
+160px ordinary loop/eastern return; original content reconstructed hash matches.
+Ground texture adds6.75MiB, remains27MiB below tile cap. Real traversal and
+camera/bypass assertions passed15,739. Impact lane passed13,944; ten actual
+comparison sheets; modest50%change, denser Heavy/zero-budget identity.
+
+Audio:16 short editable PCM clips, four fixed voices, default30%, local accepted
+cast/confirmed visible contact only. Reviewer caught cone-mask information leak;
+root now rejects cone contacts and offscreen/chemistry-concealed targets, with
+cheap muted/irrelevant/remote rejection first. No positional enemy cues. Six
+actual720p/1080p Controls renders caught y108 header above panel; fixed to144
+and added geometry/mouse/key/echo/capture/migration regressions. Audio2,673 plus
+preferences317 passed; all8elements x4 real paid cast/contact families, no sim
+hash change. Silent Dummy probe started/muted16 real AudioStreamPlayer clips;
+fixture waits one mixer retirement cycle before quit to avoid early-exit handles.
+No human listening or output-device quality acceptance claimed.
+
+Runtime differential:23,760 exact old/new queries;84,312 combined assertions;
+all12 checkpoints/final hashes and non-timing fields equal in both repeats.
+Isolated legal-eight-burst p95 step10.033/10.207ms ->6.726/6.792ms; projectile
+7.548/7.614ms ->4.035/4.129ms. Median flat, p99/max noisy, zero Fields in fixture;
+not sustained FPS or network-capacity evidence. Source review preserved sampled
+hit points/order; no cache or per-query linked-path scan added.
+
+Initial Full found exactly two stale magic-source digest assertions. Retained
+failed receipt/log, explicitly updated manifest/source snapshot/strict hash test
+against the renewed differential evidence; never weakened drift rejection.
+Pixel pack validator20,484/0, no pixel/recipe/phase change. Evidence.gdignore
+added so review PNGs do not become editor imports.
+
+Final Full89 suites/462,144 assertions,0failures/stderr,87.624s; current-state,
+inventory, doctor, import and120Hz source boot passed. Strict Windows export
+passed; exact EXE/PCK copied outside checkout and booted without --path or LAN.
+Playable folder: LOCALAPPDATA/FLUX-dev/playtests/sandbox-impact-20260909.
+PCK66,202,680bytes SHA256 bbd3268bb1c2de012b2283f04b74d42b83a50ee352bf24066fcd7ca13d23c7b7.
+See docs/SANDBOX-IMPACT-CHECKPOINT.md and docs/evidence/sandbox-impact-v1.
+Previous build retained. Final weekly allowance check56%used/44%remaining,
+above the user-authorized33%remaining floor.
+
+Next: human route/impact/listening acceptance, actual paid Radiance/Steam counter
+lesson, mixed/Field-heavy profiling before chemistry widening, neutral art gate,
+then refreshed installer and physical two-PC test. No art promotion was inferred.
+
+## 2026-09-09 - 33% floor, researched tooling and bounded delegated wave
+
+User clarified both reusable local specialist instructions and downloadable
+model weights. Active queue/prompt/backlog now use33% weekly remaining, not used.
+Prepared five project-scoped Codex TOML roles without model/permission overrides;
+current workers use exact owned prompts. Research in docs/AI-DELEGATION-RESEARCH.md.
+Qwen2.5-Coder1.5B Q4_K_M and pinned llama.cpp b10809 downloaded outside checkout;
+published hashes and51 runtime files verified,10 safety checks passed. No local
+inference claim:1.39GiB free RAM triggered unchanged1.5GiB guard before startup.
+
+Delegated accurate combat labels, compact authoritative Crucible teaching,
+independent chemistry-copy review and one Small South art attempt. Reviewer found
+missing Crystal Lens projectile capacity/damage caveat; corrected. Raster held
+for opaque checkerboard and nonalternating arms, no promotion. Integration/Full
+and packaged evidence initially pending; final results follow. No publication or release.
+
+Final integrated Full passed88 suites/441,503assertions,0failures/stderr,94.794s;
+source check, asset audit, import, doctor and120Hz boot passed. Combat4,359focused,
+coach4,086focused; six feedback and13 full-gameplay1280x720 captures reviewed.
+Paid Fire/Water lesson ticks23/45/73/325/385 verify matter/form/active/decay/expiry.
+Integration caught and fixed missing-guest-actor fallback; no coaching host state.
+Five TOML roles parsed,10 local guard tests rerun, published install hashes
+reverified. Evidence captures now have.gdignore so they do not add editor imports.
+Strict Windows export and same-hash copied EXE/PCK boot outside checkout passed.
+PCK66,190,844bytes,sha25663689eeab73cc3e9da0f65aec583d182961c00233e4b9f6553046e8fbc80901f.
+Test build:LOCALAPPDATA/FLUX-dev/playtests/delegation-coach-20260909/flux2.exe.
+See docs/DELEGATED-CLARITY-CHECKPOINT.md for exact evidence and unfinished gates.
+Account closeout52%used/48%remaining, safely above33%floor. FreeRAM1.36GiB,
+so local inference remains deferred without relaxing the safety gate.
+
+## 2026-09-09 - allowance floor revised to 40% remaining
+
+User changed the active weekly remaining-allowance gate from 50% to 40% and asked
+for the next slices/subslices. Updated the active queue, continuation prompt and
+backlog; older checkpoint budget statements remain historical records. Current
+account reading was 49% used / 51% remaining. This is a planning/status turn:
+no implementation, new artwork, test-build rebuild or release was started.
+
+## 2026-09-09 - bounded race-inspection and projectile-readability checkpoint
+
+User requested unique race art, exact eight45degree facings, slower/larger
+projectiles, clearer impacts, larger map and effect footprints. Weekly allowance
+52percent remaining on entry,51percent at closeout; stopped new scope to protect
+the50percent floor. No new generated sprite page or full map expansion claimed.
+
+Implemented33 projectile definitions speedx0.8/radiusx1.2/lifetimex1.25;8 Heavy
+blast radii70->84 and8 Fields85->102 (Rimewake72->86.4). Unchanged damage,
+economy/cadence, chemistry/deposits, protocol47 and snapshot18. New ability/map
+content signatures participate in session compatibility. Actual compare-target
+gaps96->120 preserve hit-one versus midpoint-hit-both in unchanged district bounds.
+
+Gallery selected-body inspector reads8 exact grounded atlas cells using brackets,
+L3/R3 or mouse buttons; card top-third portraits unchanged. A bounded one-page
+inspection slot fixes nonresident override fallback without changing8 actor-page
+admission. Real facing anatomy remains pending; inspector does not manufacture art.
+Contact pixel stamp25percent larger, bounded3x, reduced opacity0.95; no new layer,
+flash, lifetime, damage or fabricated range circle. Existing PNG sources unchanged.
+
+Focused checks then Full87/436,991,zero failures/stderr,97.537s,strict import and
+120Hz boot green. Initial Full found stale70px geometry/help fixtures and was
+not accepted; corrected exact84px checks preserve cover clipping. Gallery/magic
+fixtures rendered and reviewed; actual packaged Windows boot recorded separately.
+Evidence: docs/evidence/readability-race-v1; new direct-run payload in
+.godot/readability-race-export. No installer rebuild, commit, push or merge.
+Race briefs/remaining work: docs/RACE-VISUAL-ROLLOUT.md and active R0-R5 queue.
+
+## 2026-09-08 - queued new cast look after complete general templates
+
+Preserved the user-supplied cast sheet unchanged under
+reference/art/cast_style_post_templates_v1/cast-style-reference.png; source/copy
+SHA-256 match:4f24f503007ac34eb5e41411186ff3ac8880c58e9c438ef9b01c17ddcba68eba.
+This is the newer primary character-look target only after all three basic
+templates have complete, reviewed direction/action animation playback and user
+acceptance. An80-cell occupancy check is not that gate. Neutral construction and
+current playable sprites remain unchanged. Styling guidance preserves expressive
+faces, silhouettes, clothes and material ramps but excludes baked spells, shadows,
+weapons, parchment and card borders; no identities/affinities inferred from figures.
+Updated reference index, production contract/prompt, current specification, visual
+direction, authoring guide, README and queue. Corrected the authoring guide's stale
+claim that explicit neutral-ID assembler support was still future work. No game
+code, art generation, installer, commit, push or publication in this reference slice.
+
+## 2026-09-08 - exact-pair learning and consistent visual policy
+
+Read-only audits found selected chemistry cells opened whole-row Details,
+controller station entry taught keyboard bindings, base recovery lacked an idle
+ramp qualifier, and visual-language/VISUAL-SYSTEM requirements conflicted with
+current three-size/eight-way proportions and opaque worldbone. Fixed those seams
+without balance, roster, protocol or raster-art changes. Pair Details now has
+matching title/glyphs, source-proportional phase strip, both-axis navigation and
+column-aware cache. Crystal Lens supplementary wording explicitly distinguishes
+Light splitting from non-Light cover. Full shared primer remains available.
+
+Visual policy now validates58/68/76,8directions/10rows, sensible fixed proportions,
+front-model top-third portraits and opaque worldbone. Eight active elements are
+distinguished from four reserved style entries; all12 compatibility palettes
+remain. Only the reviewed visual-language source hash was rebound in the magic
+manifest/authoring snapshot; no PNG, palette/cadence, atlas allowlist or chemistry
+hash was refreshed automatically. VISUAL-SYSTEM keeps useful old evidence clearly
+historical. README adds a practical action/pair/counter/reset learning sequence.
+
+Full87/434,389 passed,0failures/stderr,81.785s,strictimport/120Hzboot. Focused
+style44,049;pair5,060;device/recovery6,417 passed. Actual720pSteam/Grounding/matrix
+renders inspected, programmatic navigation not manual controller acceptance.
+New local.godot/usability-style-export/flux2.exe+PCK,66,177,980bytes;
+SHA5d0d3e959db9ee6b1c100fe5b7e2bcab8c3b8db74b9463b754f82bb74b6e6d0a.
+Strictexport and actualreleaseboot fromisolatedfolder passed. Oldbuilds untouched;
+noinstallerrefresh,commit,push,publication. Durableevidence:
+docs/USABILITY-STYLE-CHECKPOINT.md and docs/evidence/usability-style-v1.
+Next: calibratedSmallneutral/contacts,then8directions,Middle,Large,useracceptance;
+namedcharactersstaypaused. Weeklyfloor50%remaining unchanged.
+
+## 2026-09-08 - basic templates first; distance gait, portraits and compact guides
+
+Latest user gate takes priority over character-first continuation: complete and
+visually accept generic Small, then Middle and Large before named repairs/additions.
+Reusable fixed-bone model (not a runtime rig),48 current construction/contact
+boards, exact neutral identity support in the existing assembler, review receipt
+validator and canonical batch scaffolder are implemented. Old five-size/weapon
+worksheets no longer guide production. Runtime gait follows ground distance,
+preserves phase through turns and excludes correction-tail motion; actual actor
+metadata owns identity/body/lifecycle. HUD and Gallery share exact front-model
+top-third portraits. Movement is a16-row table; Chemistry a complete8x8matrix,
+with source-derived values, concise selection summaries and full Details retained.
+
+Final integrated Full:87 suites/431,965 assertions,0failures/stderr,79.362s;
+strict import and120Hz boot. Additional fixed-volume10,830; neutral builder1,119;
+compactUI3,548; gait/prediction72,315; portrait43,707 focused assertions passed.
+Review validator138/42cases and batch scaffolder2,812/58cases passed on both
+PowerShell7 and WindowsPowerShell5. Actual compact movement/chemistry720p captures
+and Jan/S.Wayne/Gallery portrait captures inspected. These do not establish final
+human animation/charm, sustained120FPS or physical remote-friend acceptance.
+
+Art status: three rear-diagonal generations held, guide-first pair uncalibrated,
+Small South only1/80-cell technical proof (binaryalpha,58px,actualfeetrow83).
+Native face/clothing clarity still needs improvement; no neutral template or
+named character promoted. Existing27 profiles/eight individual sets/19template
+profiles unchanged. Source originals, masks, hashes, prompts and rejected evidence
+retained. Current guides-v3/contact-guides-v2 fix bone lengths and overlap; earlier
+guides remain superseded evidence. Templates first remains the next active slice.
+
+New local test payload:.godot/basic-template-ui-export/flux2.exe+flux2.pck;
+PCK66,172,412bytes SHA40d33dd8b1054b18c0d3deb1868ba92404a24955c31df3d6b19869204df37824.
+Strict Windows export and actual releaseEXE adjacentPCK boot in isolatedfolder
+passed. Offline guide tools excluded. Existing installer/test payloads untouched;
+no commit/push/publication. Source-launch cache readiness remains deferred.
+Durable evidence and honest coverage:docs/CHARACTER-TEMPLATE-V2-CHECKPOINT.md and
+docs/evidence/character-template-v2. Weekly allowance floor remains50%remaining.
+
+## 2026-09-08 - complete character pages and bounded texture residency
+
+Source-playtest work in progress: Steezo, Oh Tipi, S. Wayne, Waka Aren Si and Jan
+Wicked now have complete new-style80-cell overrides. Eight individual sets/19 effective
+templates, catalog22 fallback declarations retained. Fixed post-nearest actual
+foot registration, added strict native QA, atomic eight-active-page preparation,
+compact portraits and Gallery generation-cache invalidation. Gameplay, shared
+wall clearance and size-specific hurtboxes unchanged. First-two-page Full87/
+419,622 passed; later four-page focused33,059 and Full87/419,622 passed (92.003s,
+stderr0, strict import/120Hz boot). Source coverage audit93/29 green; actual
+world/Gallery and local two-process Farflow pair verified. Two-page exported-release
+boot verified; four-page release EXE/PCK also passed strict120Hz boot as Waka Aren Si
+from an isolated adjacent-package directory without source fallback.
+Biggy Bob and Red Baron art were held for remaining gaits; Fluup/Jan art initially isolated.
+Jan later passed the five-page focused33,059 gate and is live. Fluup remains held
+for11 repeated contacts, enclosed matte islands and yaw; Treevor is isolated.
+Independent review found baseline-extension clone admission/reporting not covered
+by override-only duplicate checks. Fixed with cached string fingerprints of
+extensions and all three decoded foundation pages, no per-draw work; same-identity
+replacement retained. Red8 failures -> focused33,088/0; source audit109/34 green.
+Five-page final Full passed: 87 suites / 419,651 assertions, zero failures/stderr,
+84.856s, strict import and 120 Hz boot. Isolated official release EXE with adjacent
+five-page PCK booted as Jan Wicked with no source fallback; payload 66,159,932 bytes,
+SHA256 aa71264bce48d97c47806c16ef002859e62e0beb9552d6b36750e5a68ba4c82d.
+Treevor's80-cell candidate is held for
+remaining directional/gait defects; no pending art batch is silently counted live.
+Budget cutoff revised by user to50% weekly remaining. See current checkpoint
+`docs/CHARACTER-PAGES-CHECKPOINT.md`; no installer/commit/push/publication.
+
+User shifted to playtest after this verified checkpoint. Shared the exact local
+`.godot/character-pages-five-export/flux2.exe` with its adjacent `flux2.pck`.
+An isolated probe also reproduced stale/missing character imports behind the
+source launcher's nonempty-cache shortcut. No launcher edits were made before
+handoff; conditional content/sidecar/engine readiness is the next bounded fix.
+The exported test payload is unaffected; the current source cache passed Full.
+Retained probe evidence is linked from the character-page checkpoint.
+
+## 2026-09-08 - material footprints and clarified body hurtboxes
+
+H2 verified source:87 suites /419,354 assertions, no failures/stderr, strict import
+and120Hz boot in84.792s. Final user clarification: distinct core stats and
+15/18/21px hurt radii, identical18px wall clearance. Existing serializedradius
+owns combat; physical consumers are explicit shared clearance. No schema change.
+Removed chemistry/Field/Spray perimeter overlays; clipped native material remains
+at zero optional budget. No atlas regeneration. Real captures inspected; reduced
+Field contrast and regular tiling remain open visual issues. No complete updated
+character pages found; five existing sets/22aliases, S.Wayne12/80 review only.
+Stopped expansion at75% weekly remaining. No installer/commit/push/publication.
+See docs/MATERIAL-HURTBOX-CHECKPOINT.md and durable evidence/material-hurtbox-v1.
+
+## 2026-09-08 - input interruption and Gallery lifecycle hardening
+
+Verified local source refinement; existing dirty work preserved. Focus loss now
+sends neutral local commands while authoritative time/network continue, drops
+queued wheel gestures and prevents capture overrides from restoring input.
+Paid actions held during menus/focus interruption require release and a fresh
+press; directional movement may resume. No balance, schema, art or content change.
+Gallery reconfiguration now clears pending/equipped/navigation/details/portrait
+state and closes the old panel before validation; valid recovery is deliberate.
+
+Regression-first proof: 31 input/focus and 11 Gallery failures reproduced;
+final input five-suite gate14,049 and model/grid448/859 pass. Aggregate Full:
+87 suites / 398,436 assertions, zero failures/stderr; strict import and actual
+protocol47/120Hz boot passed in86.036s. See docs/INPUT-LIFECYCLE-CHECKPOINT.md
+and docs/evidence/input-lifecycle-v1 for exact receipts and red/green logs.
+No physical Alt-Tab/controller/two-PC acceptance claimed. No installer rebuild,
+commit, push or publication; use flux.cmd play for this source refinement.
+
+## 2026-09-08 - recoverable cleanup, reusable character admission, pixel material
+
+Status: verified local source checkpoint; no new installer or publication.
+See docs/CLEANUP-ART-CHECKPOINT.md and the single current queue.
+
+Removed 43 proven retired producer/class/test/plan/prompt paths; exact originals
+and rewritten primary docs are hash-backed outside the repo in
+C:\Users\sende\Projects\flux-cleanup-archive-20260908. Preserved existing dirty
+gameplay/packaging work, accepted source assets and live compatibility/provenance.
+Current scope guard protects exact absences/dependencies and 13 source-derived
+primary claims (103 guard self-tests). Consolidated specification, README,
+visual/sprite contracts and old execution instructions.
+
+Removed old nine-sheet projectile dependency and 558 lines of shadowed campus
+rendering; actual normal/reduced map pixels match before/after. Generalized
+character admission to all 27 live identities and exactly three body guides;
+strict hash/path/pixel validation and failed-config cleanup retained. New S. Wayne
+art remains a 12/80-cell review only (8 standing headings, south/east walk A/B).
+User explicitly authorized reviewed background removal and assembly; original
+images, source-specific masks, prompts and partial status are preserved.
+
+Strengthened eight base-material silhouettes and selected native Steam-only
+rounded rising animation. Reviewed real normal/reduced renderer captures;
+authority, timing, concealment and geometry unchanged. No new mechanics or
+roster changes. Existing 5 individual sprite sets and 22 labeled aliases remain.
+
+Initial cleanup Full: 87 suites / 398,015 assertions, zero failures/stderr,
+clean import and 120 Hz boot. Atlas follow-up: 4 suites / 33,159 assertions.
+Campus follow-up: 7 suites / 8,704 assertions, identical actual captures,
+clean protocol 47 / 120 Hz boot. Final aggregate: 87 suites / 398,314 assertions,
+zero failures/stderr, strict import and boot, 99.502 s. Exact receipt and logs:
+docs/evidence/cleanup-art-v1. Character importer separately passes 997 checks.
+The first aggregate run caught four stale raw-export-pin assertions; corrected
+only the accepted Steam page pin, kept the seven-file allowlist, added corruption
+coverage, and proved an actual isolated Windows PCK (22 checks). Its runtime
+identity is 27 characters/57 spells/36 reactions/protocol 47/120 Hz. Retained the
+failed receipt. Native pack20,484 and material107,879 checks also pass.
+No commit, push, installation into user profile or rebuild of prior installer.
+
+## 2026-09-08 - Windows one-file playtest delivery
+
+Built `exports/windows-cast-gallery-p47-20260908/release/FLUX.exe` from the
+current authoritative Godot source. Version `0.1.0-dev-a1aa028076-0601294068`,
+95,535,104 bytes, SHA256 `95f1b3086d56f1a944cc6d8cc6257b8b93f3812b5fdebc11c71c24deba0dedb0`.
+Protocol 47 / 27 playable profiles / 57 spells verified from the actual exported
+and installed PCK. Game mechanics/art unchanged; rejected pixel-v2 studies excluded.
+
+Hardened embedded manifest authentication, safe archive/root handling, immutable
+repair, preserved custom roots, transactional selection and launcher restoration,
+quiet bounded tests and Windows argument quoting. No automatic old-version pruning.
+Sixteen installer-journey gates and 20 native argv assertions pass, including an
+actual isolated stored-launcher -> release-game boot at configured 120 Hz. Distinct
+upgrade baseline is a clearly labeled current-game fixture, not a historical release.
+Source Full90/398091 is prior game evidence, not a new packaging rerun.
+
+Delivery/limitations: `docs/WINDOWS-DELIVERY-CHECKPOINT.md`; compact receipt/logs:
+`docs/evidence/windows-delivery-v1/`. No real home installation, shortcuts, public
+release, push, security changes or online update feed. Unsigned, offline updater;
+newer supplied FLUX.exe is the update path. Friend internet acceptance remains open.
+Known follow-up: identical external installer creates another launcher backup;
+ordinary play uses installed shortcut. Test roots remain for local evidence.
+
+## 2026-09-08 - named cast, guarded Gallery and Oh Tipi source studies
+
+Status: verified local playable-baseline candidate; full unique-art restyle unfinished.
+See `docs/CAST-GALLERY-CHECKPOINT.md`.27 named baseline profiles are playable;
+22 use visibly marked body-template art, Angel remains reserved. Exact host
+selection, no-op attunement, modal input and complete starter-kit matrix pass
+focused checks. New Oh Tipi images remain opaque-matte/contact-QA drafts and are
+not live sprites. No commit/push/installer or sustained120FPS acceptance.
+
+Final Full90/398091 passes with zero failures/warnings/stderr and120Hz source
+boot. Exact-selection loopback450 assertions, three body classes/24directions;
+Farflow host/guest/late guest, reconnect/rematch pass.785 strict art-import tests
+pass but actual opaque drafts correctly fail import. Receipts/screenshots are
+retained in `docs/evidence/cast-gallery-v1/`. Fixed historical24-art/canonical28
+subset validators and a too-long station label before final Full. Source frozen.
+
+## 2026-09-08 - paid delivery families, readable matter and practice ranges
+
+Status: verified local playtest candidate; documentation and retained evidence
+consolidated. No commit, push or installer publication.
+Full handoff: `docs/DELIVERY-PRACTICE-CHECKPOINT.md`.
+
+| Slice | Implementation and evidence |
+|---|---|
+| Delivery |16 new reusable element extensions: Heavy and Rapid for all8. Existing simultaneous five-lane Burst is displayed as Wave.57 selectable spells /56 matrix cells /62 effective definitions. |
+| Correctness |Held Rapid fixes: slot wire resolution plus SimWorld admission capacity. Real keyboard1/Ctrl1/Alt1 repeats, positive per-shot payment, unique releases, key-up, silent bounded refusal, live symmetric Wave angles and mixed replay covered by13,255 focused assertions. |
+| Heavy safety |One direct-or-splash damage per victim, paid protection/cover/team rules, optical child damage conservation, exact terminal deposit, exposed-side temporary-cover contact rewind. No movement retuning. |
+| Runtime |Removed recipe-dictionary allocation from repeated contains calls.124,640 differential checks and62,743 focused chemistry assertions; original legal-eight p95 improves~36% but still exceeds8.33ms. No120FPS acceptance claim. |
+| Presentation |Stronger original pixel material; budget-independent native Field identity; radius-scaled impacts; cached cover-clipped Heavy aftermath. No new raster files promoted. |
+| Usability/map |Seven-column Loom,57×12 drag/drop acceptance; family names on hotbar; F4 source-derived help; four3-second respawning targets in two validated practice groups, unchanged14 worldbone obstacles. |
+| Integrated evidence |Final complete gate:87 suites /330,190 assertions, zero failures/warnings/stderr, source boot120Hz. Local Farflow UDP24938 passes host/join, reconciliation, late join, rematch and stewardship. Receipt:docs/evidence/delivery-practice-v1/full-receipt.json. |
+| Mixed-load limit |16,621 correctness assertions green, complete snapshots and natural cleanup; p95~20ms, projectile-stage p95~17ms. Transient-event overflow reaches40; no sustained120Hz or complete-cue-delivery acceptance. Source diagnostic and exact log retained. |
+| Render evidence |Actual720p Loom and110-frame paid Heavy range capture; normal/reduced/zero-decoration/expired material fixture pages. Automated evidence does not replace human feel, internet acceptance or rendered performance. |
+
+Protocol46 rejects45 peers; snapshot18/preferences11 remain unchanged. Preserve
+all existing dirty work and character-reference drafts. Follow-on work is mixed
+load attribution and playtest-driven tuning, not another unchecked expansion.
+
+## 2026-09-07 - animation feedback and visual-readability checkpoint
+
+| Slice | Delivered and checked |
+|---|---|
+| Float clarity | Compact3-slot native-pixel remaining-time indicator, independent solid protection shield. Removed obsolete static tick. All3bodies x8directions, normal/reduced, finaltick, exit and overlapping spawn protection; focused27663 assertions green. |
+| Concealment truth | Existing authority predicate drives25% material opacity in Steam/Shadowdraft's nonconcealing active windows. Edges/masks/formation/decay and other34reactions unchanged;10831 focused assertions green. |
+| Flight direction | Existing reduced pixel tails now retain shorter/quieter continuous travel direction. Cosmetic budget remains bounded and mandatory core remains unmodified;44001 focused assertions across spell/burst/library suites green. |
+| Final integration | Full85/282089,0 failures/warnings/stderr;120Hz source boot, state/asset checks pass. Protocol45 unchanged; no simulation, wire or gameplay-hash changes. |
+| Render acceptance | Four actual1280x900 comparison samples and96-frame1280x720 production Float-release route at75% zoom. Inspected active, released/falling and grounded states. Actual visual QA shortened meter spacing and removed redundant marker before final Full. |
+
+Record: `docs/PIXEL-ASSET-INTEGRATION.md#visual-readability-2026-09-07`.
+Receipt: `.godot/receipts/visual-readability-20260907-final.json`.
+Durable images: `docs/evidence/visual-readability-v1/`; reusable renderer fixture:
+`tests/visual/capture_visual_readability.gd`. Existing atlas/manifest files untouched.
+No commit/push/installer or new raster asset generation. Human charm/feel acceptance
+and the measured heavy-load120Hz issue remain open. Continue within the75%-remaining
+weekly allowance floor; do not broaden cosmetic timing into gameplay changes.
+
+## 2026-09-07 - existing mechanics and animation foundation hardening
+
+| Slice | Delivered proof |
+|---|---|
+| Hard-control priority | SLOWED cannot replace positive Launched/Grappled/Charging/Stunned/Rooted timers or reopen casting.163 red regressions reproduced;59059 focused assertions green; real Tideline/Mud and Field entry,8 directions, exact expiry and unchanged ordinary slowing. |
+| Spawn continuity | Rising/replenished spawn protection resets render history for nearby already-alive and same-position elevated spawns.120 red regressions;26090 focused assertions green across3 body IDs and8 directions; normal countdown interpolation retained. |
+| Integration | Protocol45, snapshot18/preferences11 unchanged. Full85 suites/280218 assertions,0 failures/warnings/stderr; source120Hz boot and state/asset checks pass. Real ENet rejects44 peers. Local Farflow UDP24937 passes host/join, reconciliation, transitions, late join, rematch and stewardship. |
+| Runtime evidence | Existing legal-eight-burst probe:8247 assertions, equal repeat hashes and no danger/network gaps; p95 SimWorld.step17.476/18.054ms,177/174 of720 ticks over8.333ms. Performance acceptance fails; headless source timings are not rendered/release FPS. No speculative optimization applied. |
+
+Handoff and next slices: `docs/FOUNDATION-HARDENING.md`.
+Full receipt: `.godot/receipts/foundation-hardening-20260907.json`.
+Baseline probe: `.godot/foundation-solid-20260907/baseline-runtime.log`.
+No tuning, roster/catalog changes, bitmap replacement, installer rebuild, commit
+or push. Prior dirty work preserved. First Full attempt caught an invalid long
+name in the new protocol test; corrected only the fixture and reran the full gate.
+Next: attribute stage timings/counts, optimize measured hotspot, then human motion
+and chemistry feel review. Preserve at least75% weekly allowance; do not start a
+slice without room for verification and documentation.
+
+## 2026-09-07 - chemistry correctness and clarity checkpoint
+
+| Slice | Delivered proof |
+|---|---|
+| Cover correctness | Thermal Shock excludes forming/decaying cover; Grounding stops residual Charge like rays. Eight red regressions became green; all36 phase/replay, link-expiry and pulse tests retained. |
+| Player teaching | F4 now teaches a two-cast reaction on its first page and distinguishes impact, Field and plain matter; all36 current effects/counters, real-font pagination and all-eight Prism routing tested. README current-element table now matches runtime. |
+| Material visibility | Thin live paths receive bounded native-size centreline stamps;32 grid offsets/cardinal/diagonal and normal/reduced tests; actual renderer fixture captured without editing original bitmap assets. |
+| Integration | Protocol44 behaviour boundary, snapshot18/preferences11 unchanged; realENet refuses protocol43. Full85 suites/279661 assertions,0 failures/warnings/stderr; source120Hz boot, localFarflow and realWindows export boot passed. |
+
+Receipt: `.godot/receipts/chemistry-refinement-20260907-checkpoint.json`.
+Export proof: `.godot/chemistry-release-r44/BUILD-STATE.json` and `boot.log`.
+Durable captures: `docs/evidence/chemistry-refinement-v1/`.
+Detailed handoff: `docs/PIXEL-ASSET-INTEGRATION.md#chemistry-refinement-2026-09-07`.
+
+Local source changes on main; no commit, push or installer publication. Original
+art manifests/PNGs, all prior user edits and new draft/reference directories were
+preserved. No generic Burn/Wet/heal/lifesteal, recursive chemistry, roster/map or
+movement retuning was added. The source hash audit pins the reviewed kernel
+without rewriting the supplied pack's original provenance. Next: human feel/
+readability review, material-motion approval and measured heavy-load120Hz work.
+
 ## 2026-09-06 - held Float / recovery source playtest checkpoint
 
 - Lower jump: 75.6 px full / 31.8 px tap; second jump becomes steerable, paid, held

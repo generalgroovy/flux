@@ -12,8 +12,18 @@ func run() -> int:
 		return finish("pixel-magic-library")
 	equal(library.page_count(), 3, "magic prepares exactly three shared textures")
 	equal(library.asset_count(), 474, "all authored normal/reduced sequences are addressable")
-	check(library.source_hash_differences.is_empty(), "candidate source audit hashes match this integration checkpoint")
-	equal(library.content_hash, FileAccess.get_sha256(Library.MANIFEST_PATH), "library identity comes from the unchanged raw manifest")
+	# Explicit audit: the existing contact bounds/narrowphase guard is unchanged.
+	# This revision adds finite, narrow trail ingredients; Rapid is excluded.
+	# Trail-assisted sustained reactions are shorter; baseline recipe/pulse and
+	# instant windows remain unchanged. See the element-trails regression suite.
+	equal(library.source_hash_differences, [], "reviewed source snapshot has no unexplained drift")
+	equal(FileAccess.get_sha256("res://src/sim/chemistry/element_chemistry_system.gd"), "162a1c9fb9f4b32abc16cfc0a53bf6ae5a2a8b2cb8ce24d0fc0ddb5cadb238ca", "reviewed Rampart cardinal geometry and movement policy v1; future authority drift requires renewed audit")
+	equal(library.content_hash, FileAccess.get_sha256(Library.MANIFEST_PATH), "library identity comes from the current raw manifest")
+	var stale_snapshot: Dictionary = document.duplicate(true)
+	stale_snapshot["source_files"][0]["sha256"] = "a".repeat(64)
+	var stale_library := Library.new()
+	check(stale_library.load_from_manifest(stale_snapshot), "stale source evidence does not replace structural gameplay validation")
+	equal(stale_library.source_hash_differences, [String(stale_snapshot["source_files"][0]["path"])], "one deliberately stale source hash is reported exactly")
 	_test_all_frames_and_absolute_clocks()
 	_test_lookup_and_orientation()
 	_test_invalid_manifests()

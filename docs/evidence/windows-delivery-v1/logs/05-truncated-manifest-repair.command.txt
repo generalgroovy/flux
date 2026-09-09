@@ -1,0 +1,2 @@
+C:\Users\sende\Projects\flux\.godot\bootstrap-test\run 4cd8cd52dd2f46489f6f7e1d8697059b\install with spaces\FLUX.exe
+"--quiet" "--install-only" "--no-shortcuts" "--repair"

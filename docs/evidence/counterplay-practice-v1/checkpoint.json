@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-09",
+  "status": "local_verified_uncommitted",
+  "git_head": "a1aa02807626823d0fbc1e25e75441ca3b7f4d36",
+  "branch": "main",
+  "dirty": true,
+  "scope": "Incremental current wave over the preserved dirty working tree. Source hashes below are final after Full/export; this is not a commit, new installer or release.",
+  "full": {
+    "file": "full-receipt.json",
+    "sha256": "98d8d09e2eed073a2212d507ffbe9d14726b3bf6306b375bce8a739a282a0a54",
+    "suites": 91,
+    "assertions": 462661,
+    "failures": 0,
+    "stderr_bytes": 0,
+    "duration_ms": 90542
+  },
+  "payload_directory": "C:/Users/sende/AppData/Local/FLUX-dev/playtests/counterplay-practice-20260909",
+  "payloads": [
+    {
+      "file": "flux2.exe",
+      "bytes": 109071360,
+      "sha256": "04baf75cc1d69dd93eb709533ecab4fd7770bb8a530645717017a06a9d9809fc"
+    },
+    {
+      "file": "flux2.pck",
+      "bytes": 66209976,
+      "sha256": "3061a3d1fbeae6a91c149ee816a963896e5bbfb2e585cfaaa1ef1c337689c85c"
+    }
+  ],
+  "boot": {
+    "file": "isolated-boot.log",
+    "sha256": "e8d28e6cdcc0ea201356248ff913bc65476b914bdf0621aef468c990670c47a1",
+    "outside_checkout": true,
+    "no_source_path": true,
+    "lan_discovery": false,
+    "isolated_appdata": true,
+    "tick_rate": 120,
+    "protocol": 47,
+    "stderr_bytes": 0
+  },
+  "export": {
+    "file": "export.log",
+    "sha256": "bfc5271760720cf6492417434e15e2dc1907e28eb50ece500eed9cfe14c18720",
+    "preset": "Windows x86_64",
+    "stderr_bytes": 0
+  },
+  "previous_payload_unchanged": "C:/Users/sende/AppData/Local/FLUX-dev/playtests/sandbox-impact-20260909",
+  "source_hashes": [
+    {
+      "file": "src/app/bootstrap.gd",
+      "sha256": "fef3012aa8e75b8ae3096555d51b08cdf7119537ef801a7f2f129484b65d269a"
+    },
+    {
+      "file": "src/presentation/chemistry_practice_coach.gd",
+      "sha256": "4a9291038e5ec76e463fde1c1a2bf1966950c353fdaeaf52a553afd1d6385120"
+    },
+    {
+      "file": "src/presentation/movement_practice_coach.gd",
+      "sha256": "d51f60410c24d07e539c44a374dc8a27d8bd7df714b80c5f3f42f03121a6c538"
+    },
+    {
+      "file": "src/sim/core/sim_world.gd",
+      "sha256": "8acc7c3539776c9c8d0d2ad308563083becfe8d07274a276646ea63ece008112"
+    },
+    {
+      "file": "tests/support/chemistry_coach_harness.gd",
+      "sha256": "9439f2d61a9cccb51b0396ce471eae06f8e5df43e2b6287c3301917ebf7d300b"
+    },
+    {
+      "file": "tests/support/chemistry_counter_harness.gd",
+      "sha256": "0183bfedcc1b66efbb1214d20aa34e8bb23a50a5c54c9e59f61a0f03de457bf1"
+    },
+    {
+      "file": "tests/unit/test_practice_coach_integration.gd",
+      "sha256": "265216d5a8a735dfd16208d0f4698adcc05ba932ee43c2c36dfd72462315948e"
+    },
+    {
+      "file": "tests/unit/test_movement_practice_coach.gd",
+      "sha256": "3f028a2db422a5cca1f3928ca24e64cff6c3b89be70ed7966d6f5fa7520e8f8d"
+    },
+    {
+      "file": "tests/unit/test_chemistry_practice_coach.gd",
+      "sha256": "45f78ac300f7ec9d6f1dd2051595bda674b0581f29b7a4bd9d90d15372b91441"
+    },
+    {
+      "file": "tests/unit/test_core.gd",
+      "sha256": "3dd1a94de7b79b9c8cbce3eb2acc9d10e11a8853954e669e685701405b3ee92e"
+    },
+    {
+      "file": "tests/run_all.gd",
+      "sha256": "c18d6b36894bfe4d6b4bcb6913093cf5e7758623508145b885a362948ad9c43d"
+    },
+    {
+      "file": "tests/scenarios/runtime_stress_probe.gd",
+      "sha256": "c8a7b543c75f24d3df13533f75be16269749a3016dee3b32fef2288c99132160"
+    },
+    {
+      "file": "tests/scenarios/owner_material_capacity_equivalence.gd",
+      "sha256": "08b4f8f4db6e346f01136c8564ff80ca9931c94057d101ad6e3758915c7b1353"
+    },
+    {
+      "file": "tests/visual/capture_movement_coach.gd",
+      "sha256": "bba3d23ab84baea358ea8986e2b4b12a3df19ab1e7a6fd9ecd00705c70f149a8"
+    },
+    {
+      "file": "tests/visual/capture_chemistry_counter.gd",
+      "sha256": "63dc8e9f6d639c54b8062741c1291805e0cb792c729d498677d3a785911f0d55"
+    }
+  ],
+  "open_gates": [
+    "Mixed 8-player slow tail exceeds 8.333 ms",
+    "Human gameplay/listening and physical controller acceptance",
+    "Small then Middle/Large neutral art acceptance before new character promotion",
+    "Refreshed installer and physical two-PC play"
+  ]
+}

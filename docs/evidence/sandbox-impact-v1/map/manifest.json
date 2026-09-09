@@ -1,0 +1,13 @@
+{
+  "recorded_date": "2026-09-09",
+  "verification": "Every destination byte length and SHA-256 was compared with its original source after copying. Original files were not modified.",
+  "files": [
+    {"file": "focused-v1.log", "source": ".godot/south-annex-work/focused-v1.log", "bytes": 503, "sha256": "fdb2b4b0b3224c3cef2830eff388aecaf2ebea8373d071d5f441fad90f72a191"},
+    {"file": "focused-v1.log.err", "source": ".godot/south-annex-work/focused-v1.log.err", "bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+    {"file": "capture-v1.log", "source": ".godot/south-annex-work/capture-v1.log", "bytes": 740, "sha256": "80188090714ab13d4ff4475116552772f5d8a115ce2e5123f9d77aa6d1b64d48"},
+    {"file": "capture-v1.log.err", "source": ".godot/south-annex-work/capture-v1.log.err", "bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+    {"file": "overview-normal.png", "source": ".godot/south-annex-capture-v1/overview-normal.png", "bytes": 657542, "sha256": "5dd751367432d2049f9ee45eb0de5212992738ab3036576a5366057a83e316a9"},
+    {"file": "overview-reduced.png", "source": ".godot/south-annex-capture-v1/overview-reduced.png", "bytes": 656620, "sha256": "f6d72ec1900bf9fb3b22a357070824720fce470609975057ffc8c379b46a2e20"},
+    {"file": "annex-native.png", "source": ".godot/south-annex-capture-v1/annex-native.png", "bytes": 59880, "sha256": "12f0c8d7fbbf8c80b1ced33f07d1c6ae67c9bb8cb9af179b28d7e31ea36eae04"}
+  ]
+}

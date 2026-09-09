@@ -1,5 +1,9 @@
 # Low-hop and first-grade chemistry playtest checkpoint
 
+Historical September6 checkpoint. Its Q/V defaults and payload identity are not
+current: see [README](../README.md#controls-and-movement) for Technique V /
+Roll-Air Dodge Q and the latest local build. Original evidence below is retained.
+
 Status: source-verified pause checkpoint; 81 suites / 165,441 assertions passed; human playtest requested.
 
 2026-09-06; Windows source checkout on `main`; protocol **43**, snapshot **18**,

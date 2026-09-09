@@ -1,0 +1,482 @@
+{
+  "schema_version": 1,
+  "completed_at_utc": "2026-09-08T07:28:58.0960409Z",
+  "tier": "full",
+  "result": "passed",
+  "failure": null,
+  "source": {
+    "head": "a1aa02807626823d0fbc1e25e75441ca3b7f4d36",
+    "branch": "main",
+    "dirty": true,
+    "current_state_sha256": "3201e8dace2ef67d1345cc8e4fca1737d682dca1de7ccdd533ac2821c0bce7c3",
+    "asset_inventory_sha256": "9efe5f2c335fd6f6dcc9a030bea68ac07455f9c558c010a382b6f9f275085fdd"
+  },
+  "requested_suite_ids": [],
+  "executed": {
+    "current_state_check": true,
+    "asset_inventory": true,
+    "doctor": true,
+    "import": true,
+    "deterministic_suite_runner": true,
+    "suite_count": 87,
+    "assertion_count": 330190,
+    "suites": [
+      {
+        "id": "authoritative-session",
+        "assertions": 113,
+        "failures": 0
+      },
+      {
+        "id": "action-transition-policy",
+        "assertions": 26,
+        "failures": 0
+      },
+      {
+        "id": "conservatory-route",
+        "assertions": 14,
+        "failures": 0
+      },
+      {
+        "id": "ability-content",
+        "assertions": 608,
+        "failures": 0
+      },
+      {
+        "id": "combat-definition-table",
+        "assertions": 235,
+        "failures": 0
+      },
+      {
+        "id": "champion-catalog",
+        "assertions": 979,
+        "failures": 0
+      },
+      {
+        "id": "champion-roster-plan",
+        "assertions": 25,
+        "failures": 0
+      },
+      {
+        "id": "character-overview-model",
+        "assertions": 388,
+        "failures": 0
+      },
+      {
+        "id": "movement-guide-model",
+        "assertions": 339,
+        "failures": 0
+      },
+      {
+        "id": "player-compendium",
+        "assertions": 1653,
+        "failures": 0
+      },
+      {
+        "id": "runtime-content-summary",
+        "assertions": 23,
+        "failures": 0
+      },
+      {
+        "id": "body-type-profile-catalog",
+        "assertions": 49,
+        "failures": 0
+      },
+      {
+        "id": "control-binding-editor",
+        "assertions": 32,
+        "failures": 0
+      },
+      {
+        "id": "spell-loom-editor",
+        "assertions": 8715,
+        "failures": 0
+      },
+      {
+        "id": "combat",
+        "assertions": 6515,
+        "failures": 0
+      },
+      {
+        "id": "collision-broadphase",
+        "assertions": 21781,
+        "failures": 0
+      },
+      {
+        "id": "training-target-system",
+        "assertions": 1509,
+        "failures": 0
+      },
+      {
+        "id": "elemental-bursts",
+        "assertions": 487,
+        "failures": 0
+      },
+      {
+        "id": "spell-delivery-expansion",
+        "assertions": 13255,
+        "failures": 0
+      },
+      {
+        "id": "projectile-chemistry-integration",
+        "assertions": 9538,
+        "failures": 0
+      },
+      {
+        "id": "reaction-catalog",
+        "assertions": 479,
+        "failures": 0
+      },
+      {
+        "id": "element-chemistry",
+        "assertions": 1733,
+        "failures": 0
+      },
+      {
+        "id": "core",
+        "assertions": 21,
+        "failures": 0
+      },
+      {
+        "id": "canonical-bytes",
+        "assertions": 4815,
+        "failures": 0
+      },
+      {
+        "id": "environment-kit-manifest",
+        "assertions": 64,
+        "failures": 0
+      },
+      {
+        "id": "visual-candidate-manifest",
+        "assertions": 46,
+        "failures": 0
+      },
+      {
+        "id": "visual-production-contract",
+        "assertions": 160,
+        "failures": 0
+      },
+      {
+        "id": "visual-language",
+        "assertions": 91,
+        "failures": 0
+      },
+      {
+        "id": "element-glyph-renderer",
+        "assertions": 1078,
+        "failures": 0
+      },
+      {
+        "id": "visual-accessibility-filter",
+        "assertions": 14,
+        "failures": 0
+      },
+      {
+        "id": "eight-direction-resolver",
+        "assertions": 64,
+        "failures": 0
+      },
+      {
+        "id": "compact-combat-hud",
+        "assertions": 161,
+        "failures": 0
+      },
+      {
+        "id": "wellspring-interaction-presenter",
+        "assertions": 37,
+        "failures": 0
+      },
+      {
+        "id": "cartoon-champion-presenter",
+        "assertions": 9239,
+        "failures": 0
+      },
+      {
+        "id": "minimal-champion-motion",
+        "assertions": 17704,
+        "failures": 0
+      },
+      {
+        "id": "natural-map-kit",
+        "assertions": 35,
+        "failures": 0
+      },
+      {
+        "id": "wellspring-wayfinding",
+        "assertions": 29,
+        "failures": 0
+      },
+      {
+        "id": "wellspring-environment-kit",
+        "assertions": 23,
+        "failures": 0
+      },
+      {
+        "id": "wellspring-architecture-kit",
+        "assertions": 67,
+        "failures": 0
+      },
+      {
+        "id": "wellspring-illustrated-kit",
+        "assertions": 119,
+        "failures": 0
+      },
+      {
+        "id": "foundation-spell-presenter",
+        "assertions": 2498,
+        "failures": 0
+      },
+      {
+        "id": "heavy-blast-presenter",
+        "assertions": 27671,
+        "failures": 0
+      },
+      {
+        "id": "spell-animation-skeleton-library",
+        "assertions": 18,
+        "failures": 0
+      },
+      {
+        "id": "burst-projectile-presenter",
+        "assertions": 117,
+        "failures": 0
+      },
+      {
+        "id": "element-chemistry-presenter",
+        "assertions": 11027,
+        "failures": 0
+      },
+      {
+        "id": "pixel-magic-library",
+        "assertions": 42742,
+        "failures": 0
+      },
+      {
+        "id": "pixel-effect-geometry",
+        "assertions": 50993,
+        "failures": 0
+      },
+      {
+        "id": "pixel-map-library",
+        "assertions": 7906,
+        "failures": 0
+      },
+      {
+        "id": "pixel-assets-export",
+        "assertions": 52,
+        "failures": 0
+      },
+      {
+        "id": "sprite-sheet-extractor",
+        "assertions": 198,
+        "failures": 0
+      },
+      {
+        "id": "hub-definition",
+        "assertions": 46,
+        "failures": 0
+      },
+      {
+        "id": "input-router",
+        "assertions": 472,
+        "failures": 0
+      },
+      {
+        "id": "jump-presentation",
+        "assertions": 720,
+        "failures": 0
+      },
+      {
+        "id": "actor-motion-history",
+        "assertions": 275,
+        "failures": 0
+      },
+      {
+        "id": "landing-presentation",
+        "assertions": 117,
+        "failures": 0
+      },
+      {
+        "id": "material-content",
+        "assertions": 35,
+        "failures": 0
+      },
+      {
+        "id": "material-grid",
+        "assertions": 30,
+        "failures": 0
+      },
+      {
+        "id": "player-preferences",
+        "assertions": 155,
+        "failures": 0
+      },
+      {
+        "id": "sanctum-campus-layout",
+        "assertions": 430,
+        "failures": 0
+      },
+      {
+        "id": "sanctum-station-model",
+        "assertions": 19,
+        "failures": 0
+      },
+      {
+        "id": "session-transport",
+        "assertions": 211,
+        "failures": 0
+      },
+      {
+        "id": "lan-lobby",
+        "assertions": 25,
+        "failures": 0
+      },
+      {
+        "id": "session-steward",
+        "assertions": 19,
+        "failures": 0
+      },
+      {
+        "id": "spectator-focus",
+        "assertions": 14,
+        "failures": 0
+      },
+      {
+        "id": "session-charter",
+        "assertions": 24,
+        "failures": 0
+      },
+      {
+        "id": "session-hearth",
+        "assertions": 36,
+        "failures": 0
+      },
+      {
+        "id": "session-round",
+        "assertions": 55,
+        "failures": 0
+      },
+      {
+        "id": "session-snapshot",
+        "assertions": 1391,
+        "failures": 0
+      },
+      {
+        "id": "client-prediction",
+        "assertions": 10958,
+        "failures": 0
+      },
+      {
+        "id": "session-request-policy",
+        "assertions": 20,
+        "failures": 0
+      },
+      {
+        "id": "sanctum-runtime-kit",
+        "assertions": 46,
+        "failures": 0
+      },
+      {
+        "id": "sight-occlusion",
+        "assertions": 11,
+        "failures": 0
+      },
+      {
+        "id": "movement-response",
+        "assertions": 214,
+        "failures": 0
+      },
+      {
+        "id": "movement",
+        "assertions": 1266,
+        "failures": 0
+      },
+      {
+        "id": "movement-revision",
+        "assertions": 1394,
+        "failures": 0
+      },
+      {
+        "id": "movement-overhaul",
+        "assertions": 31847,
+        "failures": 0
+      },
+      {
+        "id": "movement-height",
+        "assertions": 11004,
+        "failures": 0
+      },
+      {
+        "id": "movement-float",
+        "assertions": 14449,
+        "failures": 0
+      },
+      {
+        "id": "movement-practice-trace",
+        "assertions": 14,
+        "failures": 0
+      },
+      {
+        "id": "player-resources",
+        "assertions": 88,
+        "failures": 0
+      },
+      {
+        "id": "skeleton-animation-library",
+        "assertions": 8976,
+        "failures": 0
+      },
+      {
+        "id": "visual-asset-registry",
+        "assertions": 16,
+        "failures": 0
+      },
+      {
+        "id": "image-asset-inspector",
+        "assertions": 6,
+        "failures": 0
+      },
+      {
+        "id": "wellspring-character-sprite",
+        "assertions": 67,
+        "failures": 0
+      },
+      {
+        "id": "complete-visual-catalog",
+        "assertions": 34,
+        "failures": 0
+      },
+      {
+        "id": "wellspring-visual-catalog",
+        "assertions": 207,
+        "failures": 0
+      },
+      {
+        "id": "replay",
+        "assertions": 14,
+        "failures": 0
+      }
+    ],
+    "boot_120_hz": true,
+    "package_and_installer": false
+  },
+  "duration_ms": 84849,
+  "stderr_bytes": 0,
+  "logs": [
+    {
+      "path": ".godot/windows-tests/import.log",
+      "sha256": "86b35db4c091b70d13b3fab170e5fd1f5ad6150cabc20f0faef2059b03c7c96f",
+      "stderr_bytes": 0
+    },
+    {
+      "path": ".godot/windows-tests/boot-120.log",
+      "sha256": "49d845e71131bff90c5fc88696a37cdfcc1a82e412b0e5db33ec711996d330cf",
+      "stderr_bytes": 0
+    },
+    {
+      "path": ".godot/windows-tests/suite.log",
+      "sha256": "b459df95d6a6fb34b9765f80c70fe715c018dfa5245d53e0208ce802f8eee6da",
+      "stderr_bytes": 0
+    }
+  ]
+}

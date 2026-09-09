@@ -61,6 +61,9 @@ const TIMER_FIELDS: Array[StringName] = [
 
 var config: SimConfig
 var collision: CollisionWorld
+var reaction_movement: ReactionMovementWorld
+var reaction_surfaces := PackedInt32Array()
+var predicted_tick: int = 0
 var local_entity_id: int = 0
 var predicted_state: PlayerState
 var pending_inputs: Array[Dictionary] = []
@@ -83,6 +86,7 @@ func configure(new_config: SimConfig, new_collision: CollisionWorld, entity_id: 
 		return false
 	config = new_config
 	collision = new_collision
+	reaction_movement = ReactionMovementWorld.new(collision)
 	local_entity_id = entity_id
 	return true
 
@@ -90,6 +94,9 @@ func configure(new_config: SimConfig, new_collision: CollisionWorld, entity_id: 
 func reset() -> void:
 	config = null
 	collision = null
+	reaction_movement = null
+	reaction_surfaces = PackedInt32Array()
+	predicted_tick = 0
 	local_entity_id = 0
 	predicted_state = null
 	pending_inputs = []
@@ -150,6 +157,8 @@ func reconcile(packet: Dictionary, authoritative_event: String = "network_snapsh
 	var previous_raw := raw_position_pixels()
 	var had_prediction := is_ready()
 	predicted_state = restore_state(values)
+	reaction_surfaces = packet["surfaces"].duplicate()
+	predicted_tick = authoritative_tick
 	predicted_state.last_event = authoritative_event
 	last_authoritative_position_pixels = raw_position_pixels()
 	last_authoritative_tick = authoritative_tick
@@ -208,17 +217,21 @@ func estimated_ack_delay_ms() -> int:
 func _step_prediction(command: SimCommand) -> void:
 	predicted_state.aim_x = command.aim_x
 	predicted_state.aim_y = command.aim_y
-	MovementSystem.step(predicted_state, command, config, collision)
+	reaction_movement.set_surfaces(reaction_surfaces, predicted_tick)
+	reaction_movement.begin_actor(Vector2i(predicted_state.position_x, predicted_state.position_y), MovementTuning.PLAYER_RADIUS)
+	ReactionMovementWorld.clear_stale_contact(predicted_state, reaction_movement)
+	MovementSystem.step(predicted_state, command, config, reaction_movement)
+	predicted_tick += 1
 
 
-static func capture_packet(state: PlayerState, tick: int, acknowledged_sequence: int) -> Dictionary:
+static func capture_packet(state: PlayerState, tick: int, acknowledged_sequence: int, reactions: Array = []) -> Dictionary:
 	if state == null:
 		return {}
 	var values := PackedInt64Array()
 	for property_name: StringName in STATE_FIELDS:
 		var value: Variant = state.get(property_name)
 		values.append(int(value))
-	var packet := {"tick": tick, "sequence": acknowledged_sequence, "values": values}
+	var packet := {"tick": tick, "sequence": acknowledged_sequence, "values": values, "surfaces": ReactionMovementWorld.capture_surfaces(reactions, tick)}
 	return packet if validate_packet(packet) else {}
 
 
@@ -238,6 +251,9 @@ static func validate_packet(packet: Dictionary) -> bool:
 	if int(packet["tick"]) < 0 or int(packet["tick"]) > 0x7fffffff:
 		return false
 	if int(packet["sequence"]) < -1 or int(packet["sequence"]) > 0x7fffffff:
+		return false
+	var surfaces: Variant = packet.get("surfaces")
+	if not surfaces is PackedInt32Array or not ReactionMovementWorld.validate_surfaces(surfaces, int(packet["tick"])):
 		return false
 	var values: Variant = packet.get("values")
 	return typeof(values) == TYPE_PACKED_INT64_ARRAY and validate_values(values)

@@ -10,7 +10,8 @@ func run() -> int:
 	_test_repository_catalog()
 	_test_all_promoted_kits_execute()
 	_test_affinity_point_budget_and_treevor_exception()
-	_test_unique_affinity_pairs()
+	_test_shared_affinity_pairs()
+	_test_existing_single_lane_bolt_primaries()
 	_test_profiles_are_authoritative()
 	_test_fivefold_stamina_reserve()
 	for tick_rate: int in [120]:
@@ -29,29 +30,59 @@ func _catalog() -> ChampionCatalog:
 
 func _test_all_promoted_kits_execute() -> void:
 	var catalog := _catalog()
+	var cases := 0
 	for champion_id: String in catalog.ordered_champion_ids():
 		for slot: int in range(3):
-			var world := SimWorld.new(120)
-			check(catalog.apply_to_player(world.player(), champion_id), champion_id + " applies before casting")
-			var state := world.player()
-			var wire := state.spell_wire_id(slot + 1)
-			check(CombatTuning.runtime_wire_ids().has(wire), champion_id + " starts with executable spells")
-			var before_flux := state.flux
-			var bits: int = [SimCommand.PRESSED_SPELL_1, SimCommand.PRESSED_SPELL_2, SimCommand.PRESSED_SPELL_3][slot]
-			check(world.step([SimCommand.new(0, 1, 0, 0, 0, bits, 1000, 0)]), champion_id + " accepts configured spell input")
-			check(state.flux < before_flux, champion_id + " pays positive Flux for every attack")
-			for _tick: int in range(24):
-				check(world.step([SimCommand.new(world.tick, 1, 0, 0, 0, 0, 1000, 0)]), "kit completes simulation without error")
-			check(state.has_valid_spell_slots(), "kit casting preserves valid global slots")
+			for direction: Vector2i in EightDirectionResolver.FIXED_VECTORS:
+				var world := SimWorld.new(120, 1, CollisionWorld.new(6_000_000, 6_000_000))
+				check(catalog.apply_to_player(world.player(), champion_id), champion_id + " applies before eight-direction casting")
+				var state := world.player()
+				state.position_x = 3_000_000
+				state.position_y = 3_000_000
+				for stat: String in catalog.champion(champion_id)["stats"]:
+					equal(int(state.get(stat)), int(catalog.champion(champion_id)["stats"][stat]), "all body-stat values reach authority: " + champion_id + "/" + stat)
+				var wire := state.spell_wire_id(slot + 1)
+				var definition := CombatTuning.cast_definition(wire)
+				check(CombatTuning.runtime_wire_ids().has(wire), champion_id + " starts with executable spells")
+				var before_flux := state.flux
+				var bits: int = [SimCommand.PRESSED_SPELL_1, SimCommand.PRESSED_SPELL_2, SimCommand.PRESSED_SPELL_3][slot]
+				check(world.step([SimCommand.new(0, 1, 0, 0, 0, bits, direction.x, direction.y)]), champion_id + " accepts configured spell input")
+				equal(before_flux - state.flux, int(definition["flux_cost"]), champion_id + " pays the exact compiled cost once")
+				var starts := 0
+				for event: Dictionary in world.combat_events:
+					if event.get("type") == "cast_started": starts += 1
+				equal(starts, 1, "one press accepts exactly one paid startup")
+				var releases := 0
+				var release_kind: String = {"projectile": "projectile_spawned", "beam": "beam_fired", "spray": "spray_fired", "field": "field_spawned"}.get(String(definition["shape"]), "")
+				var expected_releases := (definition.get("projectile_rotations", [Vector2i(1000, 0)]) as Array).size() if definition["shape"] == "projectile" else 1
+				for _tick: int in range(world.config.milliseconds_to_ticks(int(definition["startup_ms"])) + 1):
+					check(world.step([SimCommand.new(world.tick, 1, 0, 0, 0, 0, direction.x, direction.y)]), "kit completes authoritative startup without error")
+					for event: Dictionary in world.combat_events:
+						check(event.get("type") != "cast_refused", "accepted startup cannot silently become a refused cast")
+						if event.get("type") == release_kind:
+							releases += 1
+							equal(int(event.get("wire_id", event.get("source_wire_id", 0))), wire, "paid release retains exact starter identity")
+					if releases > 0: break
+				equal(releases, expected_releases, "every paid starter releases its actual lane/shape count: " + champion_id)
+				equal(state.pending_cast_wire_id, 0, "paid startup clears on real release")
+				for projectile: ProjectileState in world.projectiles:
+					check(projectile.velocity_x * direction.x + projectile.velocity_y * direction.y > 0, "live projectile follows requested screen-cardinal direction")
+				check(state.has_valid_spell_slots(), "kit casting preserves valid global slots")
+				cases += 1
+	equal(cases, 29 * 3 * 8, "all twenty-nine profiles, three starter slots and eight directions execute")
 
 
 func _test_repository_catalog() -> void:
 	var catalog := _catalog()
 	equal(catalog.default_champion_id, "oh_tipi", "Oh Tipi is the safe first-run champion")
-	equal(catalog.ordered_champion_ids(), ["oh_tipi", "s_wayne", "red_baron", "grace_reava", "wa_bidi"], "wire order produces stable champion cycling")
+	equal(catalog.ordered_champion_ids().slice(0, 5), ["oh_tipi", "s_wayne", "red_baron", "grace_reava", "wa_bidi"], "original five wire identities remain stable")
+	equal(catalog.ordered_champion_ids().size(), 29, "all named identities are promoted while Angel remains reserved")
 	equal(catalog.next_champion_id("oh_tipi"), "s_wayne", "champion cycle advances")
 	equal(catalog.next_champion_id("s_wayne"), "red_baron", "champion cycle reaches the large foundation champion")
-	equal(catalog.next_champion_id("wa_bidi"), "oh_tipi", "champion cycle wraps")
+	equal(catalog.next_champion_id("wa_bidi"), "steezo", "existing wire five continues into the newly implemented roster")
+	equal(catalog.next_champion_id("joh_haynes"), "h_le_ne", "existing final wire continues into H. Le-ne without renumbering")
+	equal(catalog.next_champion_id("h_le_ne"), "fimu_yashiha", "new characters retain append-only wire order")
+	equal(catalog.next_champion_id("fimu_yashiha"), "oh_tipi", "complete named champion cycle wraps")
 	equal(String(catalog.champion("oh_tipi").get("ancestry")), "seakin", "Oh Tipi is a Seakin")
 	equal(String(catalog.champion("s_wayne").get("ancestry")), "hobbit", "S. Wayne is a Hobbit")
 	equal(String(catalog.champion("red_baron").get("ancestry")), "undead", "The Red Baron is Undead")
@@ -91,6 +122,7 @@ func _test_affinity_point_budget_and_treevor_exception() -> void:
 
 	var treevor_candidate := ChampionCatalog.new()
 	treevor_candidate.data = source.data.duplicate(true)
+	(treevor_candidate.data["champions"] as Array).assign((treevor_candidate.data["champions"] as Array).filter(func(entry: Dictionary) -> bool: return entry["id"] != ChampionCatalog.TREEVOR_CHAMPION_ID))
 	var treevor: Dictionary = (treevor_candidate.data["champions"][0] as Dictionary).duplicate(true)
 	treevor["id"] = ChampionCatalog.TREEVOR_CHAMPION_ID
 	treevor["wire_id"] = 99
@@ -104,11 +136,11 @@ func _test_affinity_point_budget_and_treevor_exception() -> void:
 	check(treevor_candidate.validate(abilities), "Treevor may split the same three-point budget 1+1+1: %s" % treevor_candidate.last_error)
 
 
-func _test_unique_affinity_pairs() -> void:
+func _test_shared_affinity_pairs() -> void:
 	var abilities := AbilityCatalog.new()
-	check(abilities.load_from_file(ABILITY_PATH), "ability catalog loads for pair uniqueness")
+	check(abilities.load_from_file(ABILITY_PATH), "ability catalog loads for canonical shared pairs")
 	var source := ChampionCatalog.new()
-	check(source.load_from_file(CHAMPION_PATH, abilities), "champion source loads for pair uniqueness")
+	check(source.load_from_file(CHAMPION_PATH, abilities), "champion source loads for canonical shared pairs")
 
 	var candidate := ChampionCatalog.new()
 	candidate.data = source.data.duplicate(true)
@@ -119,8 +151,45 @@ func _test_unique_affinity_pairs() -> void:
 	duplicate_pair["affinities"] = ["charge", "water"]
 	duplicate_pair["affinity_points"] = {"charge": 2, "water": 1}
 	(candidate.data["champions"] as Array).append(duplicate_pair)
-	check(not candidate.validate(abilities), "reverse-order duplicate affinity pair fails closed even with opposite weighting")
-	check(candidate.last_error.contains("combinations must be unique"), "duplicate pair failure explains the invariant")
+	check(candidate.validate(abilities), "shared two-affinity sets remain legal as declared by the canonical plan")
+	equal(candidate.affinity_strength("duplicate_pair_fixture", "charge"), 2, "shared pair still preserves its exact independent point allocation")
+	duplicate_pair["affinities"] = ["water", "water"]
+	duplicate_pair["affinity_points"] = {"water": 3}
+	check(not candidate.validate(abilities), "duplicate elements inside one profile still fail closed")
+
+
+func _test_existing_single_lane_bolt_primaries() -> void:
+	var abilities := AbilityCatalog.new()
+	check(abilities.load_from_file(ABILITY_PATH), "real shared spell catalog loads for starter-primary admission")
+	var source := ChampionCatalog.new()
+	check(source.load_from_file(CHAMPION_PATH, abilities), "live named roster validates before primary eligibility checks")
+	var matrix: Dictionary = abilities.data["spell_matrix"]
+	for element: String in AbilityCatalog.FIRST_EIGHT_ELEMENTS:
+		var bolt_id := String((matrix["cells"][element] as Array)[0])
+		var candidate := ChampionCatalog.new()
+		candidate.data = source.data.duplicate(true)
+		(candidate.data["champions"][0] as Dictionary)["foundation_kit"]["primary"] = bolt_id
+		check(candidate.validate(abilities), "existing %s single-lane Bolt can initialize the starter primary: %s" % [element, candidate.last_error])
+		if not candidate.last_error.is_empty(): continue
+		var world := SimWorld.new(120)
+		check(candidate.apply_to_player(world.player(), "oh_tipi"), "candidate Bolt kit applies in an isolated existing player state")
+		var before := world.player().flux
+		check(world.step([SimCommand.new(0, 1, 0, 0, SimCommand.HELD_PRIMARY, 0, 1000, 0)]), "real held-primary input accepts an elemental Bolt")
+		equal(world.player().flux, before - int(CombatTuning.cast_definition(world.player().primary_wire_id)["flux_cost"]), "newly eligible starter Bolt still pays its ordinary spell cost")
+		var released := false
+		for _tick: int in range(20):
+			check(world.step([]), "accepted existing Bolt completes its ordinary startup")
+			if not world.projectiles.is_empty():
+				released = true
+				break
+		check(released, "new starter-primary eligibility uses the real existing projectile kernel")
+		if released: equal(world.projectiles.size(), 1, "starter Bolt emits a single lane")
+	for forbidden: String in ["cinder-shell", "ember-stream", "cinder-fan", "cinderline", "ember-sweep", "hearthring", "vector-lance"]:
+		var candidate := ChampionCatalog.new()
+		candidate.data = source.data.duplicate(true)
+		(candidate.data["champions"][0] as Dictionary)["foundation_kit"]["primary"] = forbidden
+		check(not candidate.validate(abilities), "starter-primary exception cannot admit other delivery forms: " + forbidden)
+		check(candidate.last_error.contains("kit slot is invalid"), "unsupported starter primary reports the exact kit boundary")
 
 
 func _test_profiles_are_authoritative() -> void:
@@ -131,7 +200,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.primary_wire_id, CombatTuning.RILLSHOT_WIRE_ID, "Oh Tipi equips Rillshot")
 	equal(state.active_1_wire_id, CombatTuning.TIDELINE_WIRE_ID, "Oh Tipi equips Tideline")
 	equal(state.active_2_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "Oh Tipi equips Rimewake as the third proven spell")
-	equal(Array(state.spell_wire_ids), [140, 141, 144, 145, 146, 154, 155, 156, 148, 157, 158, 159], "Oh Tipi leads a representative row-major twelve-spell weave with champion spells")
+	equal(Array(state.spell_wire_ids), [140, 141, 144, 145, 179, 180, 146, 154, 155, 156, 181, 182], "Oh Tipi leads a representative row-major twelve-spell weave with champion spells")
 	equal(state.health, 108_000, "Oh Tipi starts at authored maximum Health")
 	equal(state.stamina_maximum, 660_000, "Oh Tipi has the fivefold Stamina reserve")
 	state.health = 54_000
@@ -146,7 +215,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.primary_wire_id, CombatTuning.ECLIPSE_DISC_WIRE_ID, "S. Wayne equips Eclipse Disc")
 	equal(state.active_1_wire_id, CombatTuning.POCKET_ECLIPSE_WIRE_ID, "S. Wayne equips Pocket Eclipse")
 	equal(state.active_2_wire_id, 0, "S. Wayne does not expose an unfinished third spell")
-	equal(Array(state.spell_wire_ids), [142, 143, 145, 146, 154, 155, 156, 140, 148, 141, 157, 158], "champion switch keeps a representative row-major weave and leads with the new champion kit")
+	equal(Array(state.spell_wire_ids), [142, 143, 145, 179, 180, 146, 154, 155, 156, 140, 181, 182], "champion switch keeps a representative row-major weave and leads with the new champion kit")
 	equal(state.health, 45_000, "Health ratio survives an in-world champion switch")
 	equal(state.flux, 56_000, "Flux ratio survives an in-world champion switch")
 	equal(state.stamina, 48_600, "Stamina ratio survives an in-world champion switch")
@@ -156,7 +225,7 @@ func _test_profiles_are_authoritative() -> void:
 	equal(state.primary_wire_id, CombatTuning.CINDERBOLT_WIRE_ID, "The Red Baron equips Cinderbolt")
 	equal(state.active_1_wire_id, CombatTuning.RIMEWAKE_WIRE_ID, "The Red Baron equips Rimewake")
 	equal(state.active_2_wire_id, CombatTuning.CINDERFAN_WIRE_ID, "The Red Baron equips Cinder Fan as readable lane pressure")
-	equal(Array(state.spell_wire_ids), [145, 144, 146, 154, 155, 156, 140, 148, 141, 157, 158, 159], "The Red Baron leads the row-major weave with Fire/Ice spells")
+	equal(Array(state.spell_wire_ids), [145, 144, 146, 179, 180, 154, 155, 156, 140, 181, 182, 148], "The Red Baron leads the row-major weave with Fire/Ice spells")
 	equal(state.health_maximum, 132_000, "large body owns the deepest Health reserve")
 	equal(state.stamina_maximum, 792_000, "large body owns the deepest fivefold Stamina reserve")
 	equal(state.movement_speed_ratio, 910, "large body pays for staying power with deliberate ground speed")

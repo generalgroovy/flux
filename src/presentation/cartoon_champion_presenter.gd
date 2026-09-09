@@ -4,6 +4,7 @@ extends RefCounted
 
 const DEFAULT_PATH := "res://content/visual/foundation_champion_visuals_v1.json"
 const PixelMovement = preload("res://src/presentation/pixel_movement_effects.gd")
+const WireframeBody = preload("res://src/presentation/wireframe_body_presenter.gd")
 const EXPECTED_ID := "foundation-champion-visuals-v15-motion-facing"
 const EXPECTED_AUTHORITY := "presentation only; hitboxes, movement, casts and outcomes remain authoritative elsewhere"
 const REQUIRED_FOUNDATION := ["oh_tipi", "s_wayne", "red_baron"]
@@ -41,6 +42,13 @@ const BODY_TYPE_RENDER_SCALE := {
 const HAND_CAST_HEIGHT := 27.0
 const HAND_CAST_FORWARD := 4.0
 const HAND_CAST_SIDE := 7.0
+const LIVE_CATALOG_PATH := "res://content/champions/foundation_champions_v1.json"
+const MAX_LIVE_RECIPES := 64
+const DEFAULT_OVERRIDE_PATH := "res://content/visual/champion_page_overrides_v1.json"
+const OVERRIDE_ID := "champion-complete-page-overrides-v1"
+const MAX_RESIDENT_OVERRIDE_PAGES := 8
+const OVERRIDE_DIMENSIONS := Vector2i(768, 960)
+const PORTRAIT_SIZE := Vector2i(32, 32)
 
 var language: VisualLanguage
 var champions: Dictionary = {}
@@ -56,14 +64,49 @@ var diagonal_evasion_contract: Dictionary = {}
 var locomotion_phase_contract: Dictionary = {}
 var atlas_directions: Array = []
 var extension_atlases: Dictionary[String, Texture2D] = {}
+var extension_page_capacity: int = 0
 var atlas_states: Array = []
 var semantic_state_aliases: Dictionary = {}
 var body_templates: Dictionary = {}
 var shared_style_contract: Dictionary = {}
 var pixel_movement := PixelMovement.new()
+var override_page_ids: Array[String] = []
+var _override_pages: Dictionary = {}
+var _override_textures: Dictionary[String, Texture2D] = {}
+var _inspection_texture: Texture2D
+var _inspection_champion_id := ""
+var _override_portraits: Dictionary = {}
+var _baseline_portraits: Dictionary = {}
+var _baseline_identity_pages: Dictionary = {}
+var configuration_generation: int = 0
+var wireframe_mode: bool = true
+var wireframe_body := WireframeBody.new()
+var _wireframe_portraits: Dictionary = {}
 
 
-func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> bool:
+func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH, override_path: String = DEFAULT_OVERRIDE_PATH, use_wireframe: bool = true) -> bool:
+	configuration_generation += 1
+	wireframe_mode = use_wireframe
+	wireframe_body.clear()
+	_wireframe_portraits.clear()
+	if _configure_validated(visual_language, path) and (wireframe_mode or _configure_overrides(override_path)):
+		return true
+	# A rejected reload may not expose a half-validated page set to callers.
+	champions.clear()
+	extension_atlases.clear()
+	extension_page_capacity = 0
+	atlas = null
+	atlas_hash = ""
+	content_hash = ""
+	_clear_overrides()
+	_baseline_identity_pages.clear()
+	_baseline_portraits.clear()
+	wireframe_body.clear()
+	_wireframe_portraits.clear()
+	return false
+
+
+func _configure_validated(visual_language: VisualLanguage, path: String) -> bool:
 	language = visual_language
 	champions.clear()
 	content_hash = ""
@@ -77,10 +120,14 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 	locomotion_phase_contract.clear()
 	atlas_directions.clear()
 	extension_atlases.clear()
+	extension_page_capacity = 0
 	atlas_states.clear()
 	semantic_state_aliases.clear()
 	body_templates.clear()
 	shared_style_contract.clear()
+	_clear_overrides()
+	_baseline_identity_pages.clear()
+	_baseline_portraits.clear()
 	motion = MinimalChampionMotion.new()
 	if not motion.load_from_file():
 		return _fail(motion.last_error)
@@ -153,10 +200,34 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 			return false
 	# Additional champions get bounded per-character pages instead of growing a
 	# single texture beyond device limits. Base three-template IDs stay stable.
+	var live_source := FileAccess.get_file_as_string(LIVE_CATALOG_PATH)
+	var live_data: Variant = JSON.parse_string(live_source)
+	if not live_data is Dictionary or not (live_data as Dictionary).get("champions", null) is Array:
+		return _fail("Character art requires the live identity catalog")
+	var live_entries: Array = (live_data as Dictionary)["champions"]
 	var extension_data: Variant = data.get("extension_atlases", {})
-	if not extension_data is Dictionary or (extension_data as Dictionary).size() > 21:
-		return _fail("Additional champion pages require a bounded dictionary")
+	if not _validate_extension_registry(extension_data, live_entries):
+		champions.clear()
+		return false
 	var extensions: Dictionary = extension_data
+	if wireframe_mode:
+		# Validated identity/body metadata stays intact. Shared size bodies
+		# replace only presentation; old character pages stay available for audits.
+		for champion_id: String in champions:
+			if not _validate_recipe(champion_id, champions[champion_id]):
+				return false
+		if not _register_temporary_templates(live_entries):
+			return false
+		if not wireframe_body.configure():
+			return _fail(wireframe_body.last_error)
+		for body_type: String in EXPECTED_BODY_TYPES:
+			var pixels := wireframe_body.base_texture(body_type).get_image()
+			_wireframe_portraits[body_type] = _build_portrait(pixels, Rect2i(0, 0, 96, 96))
+			if (_wireframe_portraits[body_type] as Dictionary).is_empty():
+				return _fail("Wireframe size lacks a South portrait: " + body_type)
+		atlas_hash = wireframe_body.content_hash
+		content_hash = (source + live_source + wireframe_body.content_hash).sha256_text()
+		return true
 	for champion_id: String in champions:
 		if champion_id in REQUIRED_FOUNDATION:
 			continue
@@ -174,10 +245,17 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 		if texture == null or texture.get_size() != Vector2(768, 960):
 			return _fail("Additional champion page must contain ten eight-direction rows")
 		var decoded_page := texture.get_image()
+		if decoded_page == null or decoded_page.is_empty():
+			return _fail("Additional champion decoded page is unavailable: " + champion_id)
 		decoded_page.convert(Image.FORMAT_RGBA8)
 		if _bytes_sha256(decoded_page.get_data()) != String(page.get("imported_rgba_sha256", "")):
 			return _fail("Additional champion decoded page hash changed: " + champion_id)
 		extension_atlases[champion_id] = texture
+		_baseline_identity_pages[champion_id] = {
+			"path": page_path, "sha256": String(page["sha256"]),
+			"imported_rgba_sha256": String(page["imported_rgba_sha256"]),
+		}
+		_baseline_portraits[champion_id] = _build_portrait(decoded_page, Rect2i(0, 0, 96, 96))
 	var atlas_resource: Resource = load(ATLAS_PATH)
 	if not atlas_resource is Texture2D:
 		champions.clear()
@@ -193,16 +271,383 @@ func configure(visual_language: VisualLanguage, path: String = DEFAULT_PATH) -> 
 		atlas = null
 		champions.clear()
 		return _fail("Foundation cartoon decoded atlas hash is invalid")
-	content_hash = source.sha256_text()
+	# Hash each already-verified foundation identity once. Only short digests
+	# survive configuration; no cropped images/textures are retained or drawn.
+	# This catches renamed/recompressed crops even though their PNG hash changes.
+	for index: int in REQUIRED_FOUNDATION.size():
+		var foundation_pixels := decoded.get_region(Rect2i(0, index * OVERRIDE_DIMENSIONS.y, OVERRIDE_DIMENSIONS.x, OVERRIDE_DIMENSIONS.y))
+		_baseline_identity_pages[REQUIRED_FOUNDATION[index]] = {
+			"imported_rgba_sha256": _bytes_sha256(foundation_pixels.get_data()),
+		}
+		_baseline_portraits[REQUIRED_FOUNDATION[index]] = _build_portrait(decoded, Rect2i(0, index * OVERRIDE_DIMENSIONS.y, 96, 96))
+	# Playtest-only aliases reuse the exact body atlas and motion profile. They do
+	# not manufacture race art, duplicate textures, or alter authoritative stats.
+	if not _register_temporary_templates(live_entries):
+		return false
+	for champion_id: String in champions:
+		var source_id := String(champions[champion_id].get("template_source_id", ""))
+		if not source_id.is_empty():
+			_baseline_portraits[champion_id] = _baseline_portraits[source_id]
+	content_hash = (source + live_source).sha256_text()
+	return true
+
+
+func _clear_overrides() -> void:
+	_inspection_texture = null
+	_inspection_champion_id = ""
+	override_page_ids.clear()
+	_override_pages.clear()
+	_override_textures.clear()
+	_override_portraits.clear()
+
+
+func _configure_overrides(path: String) -> bool:
+	# An absent optional registry retains the working v15 pages. A present but
+	# invalid registry is never silently treated as absent or partially applied.
+	if path.is_empty() or (path == DEFAULT_OVERRIDE_PATH and not FileAccess.file_exists(path)):
+		return true
+	if not FileAccess.file_exists(path):
+		return _fail("Complete champion page registry does not exist: " + path)
+	var source := FileAccess.get_file_as_string(path)
+	var parsed: Variant = JSON.parse_string(source)
+	if not _validate_override_manifest(parsed):
+		return false
+	var pages: Dictionary = parsed["pages"]
+	var portraits: Dictionary = {}
+	# Validate every registered page once, releasing the uncached full texture
+	# after its small portrait is extracted. No full-page GPU cache is populated.
+	for champion_id: String in pages:
+		var texture := _load_verified_override(champion_id, pages[champion_id])
+		if texture == null:
+			return false
+		var pixels := texture.get_image()
+		portraits[champion_id] = _build_portrait(pixels, Rect2i(0, 0, 96, 96))
+	_override_pages = pages.duplicate(true)
+	_override_portraits = portraits
+	for champion_id: String in pages:
+		override_page_ids.append(champion_id)
+	override_page_ids.sort()
+	content_hash = (content_hash + source).sha256_text()
+	return true
+
+
+func _validate_override_manifest(value: Variant) -> bool:
+	if not value is Dictionary:
+		return _fail("Complete champion page registry must be an object")
+	var data: Dictionary = value
+	if data.get("schema_version") != 1 or data.get("id") != OVERRIDE_ID \
+		or data.get("authority") != EXPECTED_AUTHORITY \
+		or not _exact_numeric_array(data.get("cell"), [96, 96]) or not _exact_numeric_array(data.get("pivot"), [48, 84]) \
+		or not _exact_numeric_array(data.get("dimensions"), [768, 960]) or not _exact_numeric_array(data.get("runtime_scale"), [1, 1]) \
+		or data.get("directions") != EXPECTED_DIRECTIONS or data.get("states") != EXPECTED_ATLAS_STATES \
+		or data.get("frame_count") != 80 or data.get("row_layout") != "state_major_direction_minor" \
+		or data.get("timing") != "existing_minimal_champion_motion" \
+		or data.get("sampling") != "nearest_no_mipmaps" or data.get("atlas_role") != "body_and_clothing_only":
+		return _fail("Complete champion page registry geometry, timing or authority is unsupported")
+	if not data.get("pages") is Dictionary or data["pages"].size() > champions.size():
+		return _fail("Complete champion pages exceed the validated live roster")
+	var paths: Dictionary = {}
+	var source_hashes: Dictionary = {}
+	var pixel_hashes: Dictionary = {}
+	for key: Variant in data["pages"]:
+		if not key is String or not champions.has(key) or not data["pages"][key] is Dictionary:
+			return _fail("Complete champion page requires an existing live identity and recipe")
+		var page: Dictionary = data["pages"][key]
+		if page.get("body_type") != champions[key]["body_type"] or page.get("reference_height") != champions[key]["height"] \
+			or page.get("status") != "reviewed_complete_runtime_page":
+			return _fail("Complete champion page body registration or approval is invalid: " + key)
+		var feet: Variant = page.get("visible_feet_y")
+		if not (feet is int or feet is float) or (float(feet) != 83.0 and float(feet) != 84.0):
+			return _fail("Complete champion page must declare one exact visible feet baseline: " + key)
+		var path := String(page.get("path", ""))
+		if not path.begins_with("res://assets/sprites/champions_v3/") or not path.ends_with(".png") \
+			or path.simplify_path() != path or "\\" in path or paths.has(path.to_lower()):
+			return _fail("Complete champion pages require distinct contained PNG paths: " + key)
+		for field: String in ["sha256", "imported_rgba_sha256"]:
+			var digest := String(page.get(field, ""))
+			if digest.length() != 64 or not digest.is_valid_hex_number(false) or digest != digest.to_lower():
+				return _fail("Complete champion page hash is invalid: " + key)
+		if _duplicates_other_baseline_identity(key, page):
+			return _fail("Complete champion page duplicates another baseline identity: " + key)
+		# Renaming the same file (or recompressing the same pixels) must not
+		# turn a body-template alias into a supposedly unique accepted identity.
+		if source_hashes.has(page["sha256"]) or pixel_hashes.has(page["imported_rgba_sha256"]):
+			return _fail("Complete champion pages require distinct identity pixels: " + key)
+		paths[path.to_lower()] = true
+		source_hashes[page["sha256"]] = true
+		pixel_hashes[page["imported_rgba_sha256"]] = true
+	return true
+
+
+func _duplicates_other_baseline_identity(champion_id: String, page: Dictionary) -> bool:
+	for baseline_id: String in _baseline_identity_pages:
+		if baseline_id == champion_id:
+			continue # Deliberate same-identity replacement is not extra coverage.
+		var baseline: Dictionary = _baseline_identity_pages[baseline_id]
+		for field: String in ["path", "sha256", "imported_rgba_sha256"]:
+			var fingerprint := String(baseline.get(field, ""))
+			if fingerprint.is_empty():
+				continue
+			var candidate := String(page.get(field, ""))
+			if (candidate.to_lower() == fingerprint.to_lower()) if field == "path" else (candidate == fingerprint):
+				return true
+	return false
+
+
+static func _exact_numeric_array(value: Variant, expected: Array) -> bool:
+	# JSON numbers decode as floats; reject fractions/strings without treating
+	# equivalent serialized integer geometry as a different typed Array.
+	if not value is Array or value.size() != expected.size():
+		return false
+	for index: int in expected.size():
+		if not (value[index] is int or value[index] is float) or float(value[index]) != float(expected[index]):
+			return false
+	return true
+
+
+func _load_verified_override(champion_id: String, page: Dictionary) -> Texture2D:
+	var path := String(page["path"])
+	if not ResourceLoader.exists(path):
+		_fail("Complete champion imported page is missing: " + champion_id)
+		return null
+	# Exported Godot PNGs may be remapped to .ctex; decoded RGBA remains mandatory.
+	# Source bytes are additionally mandatory and SHA-checked in editor/source runs.
+	if OS.has_feature("editor") and (not FileAccess.file_exists(path) or _sha256(path) != String(page["sha256"])):
+		_fail("Complete champion source page hash changed: " + champion_id)
+		return null
+	var texture := ResourceLoader.load(path, "Texture2D", ResourceLoader.CACHE_MODE_IGNORE) as Texture2D
+	if texture == null or Vector2i(texture.get_size()) != OVERRIDE_DIMENSIONS:
+		_fail("Complete champion page must contain all eighty native cells: " + champion_id)
+		return null
+	var pixels := texture.get_image()
+	if pixels == null or pixels.is_empty() or pixels.has_mipmaps() or pixels.get_format() != Image.FORMAT_RGBA8 \
+		or _bytes_sha256(pixels.get_data()) != String(page["imported_rgba_sha256"]):
+		_fail("Complete champion decoded RGBA or import settings changed: " + champion_id)
+		return null
+	if not _validate_override_pixels(pixels, int(page["reference_height"]), int(page["visible_feet_y"])):
+		return null
+	return texture
+
+
+func _validate_override_pixels(pixels: Image, height: int, visible_feet_y: int = 84) -> bool:
+	if pixels == null or pixels.get_size() != OVERRIDE_DIMENSIONS or height not in [58, 68, 76] or visible_feet_y not in [83, 84]:
+		return _fail("Complete champion page dimensions/body guide are invalid")
+	# Native image validation is performed on admission, not inside drawing.
+	# A matching hash is integrity evidence, not permission for blurred alpha.
+	if pixels.get_format() != Image.FORMAT_RGBA8 or pixels.has_mipmaps() or pixels.detect_alpha() != Image.ALPHA_BIT:
+		return _fail("Complete champion pages require native binary alpha without mipmaps")
+	for row: int in EXPECTED_ATLAS_STATES.size():
+		for column: int in EXPECTED_DIRECTIONS.size():
+			var used := pixels.get_region(Rect2i(column * 96, row * 96, 96, 96)).get_used_rect()
+			if not used.has_area() or not Rect2i(1, 1, 94, 94).encloses(used) \
+				or used.end.y != visible_feet_y + 1 or used.size.y < 12 \
+				or (row == 0 and column == 0 and (used.size.y < height - 2 or used.size.y > height + 2)) \
+				or (row == 0 and column > 0 and (used.size.y < height - 8 or used.size.y > height + 6)):
+				return _fail("Complete champion cell is empty, clipped or not registered at its fixed feet/body guide: %d/%d" % [row, column])
+	return true
+
+
+func prepare_override_pages(champion_ids: Array[String]) -> bool:
+	# Caller invokes on active-identity changes before drawing, never per draw.
+	# Base identities cost no override slot. Invalid preparation preserves the
+	# last verified working set atomically and returns an actionable error.
+	var requested: Array[String] = []
+	for champion_id: String in champion_ids:
+		if not champions.has(champion_id):
+			return _fail("Cannot prepare an unknown character: " + champion_id)
+		if _override_pages.has(champion_id) and champion_id not in requested:
+			requested.append(champion_id)
+	if requested.size() > MAX_RESIDENT_OVERRIDE_PAGES:
+		return _fail("Active complete champion page allowance exceeded")
+	var prepared: Dictionary[String, Texture2D] = {}
+	for champion_id: String in requested:
+		if _override_textures.has(champion_id):
+			prepared[champion_id] = _override_textures[champion_id]
+		else:
+			var texture := _load_verified_override(champion_id, _override_pages[champion_id])
+			if texture == null:
+				return false
+			prepared[champion_id] = texture
+	_override_textures = prepared
+	last_error = ""
+	return true
+
+
+func override_resident_count() -> int:
+	return _override_textures.size()
+
+
+func inspection_frame(champion_id: String, direction_id: String) -> Dictionary:
+	# One borrowed Gallery page, separate from the eight admitted actor pages.
+	# Never display an old fallback for a valid but currently nonresident override.
+	if not can_present(champion_id) or direction_id not in EXPECTED_DIRECTIONS:
+		return {}
+	if wireframe_mode:
+		return {"texture": texture_for_champion(champion_id), "region": WireframeBody.base_region("grounded", EXPECTED_DIRECTIONS.find(direction_id)), "wireframe_body": true, "visual_mode": "wireframe_body", "body_type": String(champions[champion_id]["body_type"])}
+	var texture := texture_for_champion(champion_id)
+	var row := int(champions[champion_id].get("atlas_row", -1)) * atlas_states.size()
+	if _override_pages.has(champion_id):
+		row = 0
+		if not _override_textures.has(champion_id):
+			if _inspection_champion_id != champion_id:
+				_inspection_texture = _load_verified_override(champion_id, _override_pages[champion_id])
+				_inspection_champion_id = champion_id if _inspection_texture != null else ""
+			texture = _inspection_texture
+	if texture == null or row < 0:
+		return {}
+	return {"texture": texture, "region": Rect2(EXPECTED_DIRECTIONS.find(direction_id) * 96, row * 96, 96, 96)}
+
+
+func portrait_frame(champion_id: String) -> Dictionary:
+	if not can_present(champion_id):
+		return {}
+	if wireframe_mode:
+		var wireframe: Dictionary = (_wireframe_portraits.get(String(champions[champion_id]["body_type"]), {}) as Dictionary).duplicate()
+		wireframe["wireframe_body"] = true
+		wireframe["visual_mode"] = "wireframe_body"
+		wireframe["body_type"] = String(champions[champion_id]["body_type"])
+		wireframe["temporary_body_template"] = true
+		wireframe["template_source_id"] = ""
+		wireframe["complete_page_override"] = false
+		return wireframe
+	var has_override := _override_portraits.has(champion_id)
+	var frame: Dictionary = (_override_portraits if has_override else _baseline_portraits).get(champion_id, {}).duplicate()
+	if frame.is_empty():
+		return {}
+	var definition: Dictionary = champions[champion_id]
+	frame["temporary_body_template"] = not has_override and bool(definition.get("temporary_body_template", false))
+	frame["template_source_id"] = "" if has_override else String(definition.get("template_source_id", ""))
+	frame["complete_page_override"] = has_override
+	return frame
+
+
+static func _build_portrait(pixels: Image, south_grounded_cell: Rect2i) -> Dictionary:
+	# Crop anatomy, never the empty cell: the top ceil(height / 3) rows of the
+	# actual front-facing model, retaining its entire occupied width. Work only
+	# at verified page admission; no image reads, fitting or GPU uploads in draw.
+	if pixels == null or pixels.is_empty() or not south_grounded_cell.has_area() \
+		or not Rect2i(Vector2i.ZERO, pixels.get_size()).encloses(south_grounded_cell):
+		return {}
+	var occupied := pixels.get_region(south_grounded_cell).get_used_rect()
+	if not occupied.has_area():
+		return {}
+	occupied.position += south_grounded_cell.position
+	var source := Rect2i(occupied.position, Vector2i(occupied.size.x, ceili(float(occupied.size.y) / 3.0)))
+	var crop := pixels.get_region(source)
+	var scale := minf(float(PORTRAIT_SIZE.x) / source.size.x, float(PORTRAIT_SIZE.y) / source.size.y)
+	var fitted_size := Vector2i(maxi(1, roundi(source.size.x * scale)), maxi(1, roundi(source.size.y * scale)))
+	crop.resize(fitted_size.x, fitted_size.y, Image.INTERPOLATE_NEAREST)
+	var image := Image.create(PORTRAIT_SIZE.x, PORTRAIT_SIZE.y, false, Image.FORMAT_RGBA8)
+	image.fill(Color.TRANSPARENT)
+	var offset := Vector2i((PORTRAIT_SIZE - fitted_size) / 2)
+	image.blit_rect(crop, Rect2i(Vector2i.ZERO, fitted_size), offset)
+	return {"texture": ImageTexture.create_from_image(image), "region": Rect2(Vector2.ZERO, Vector2(PORTRAIT_SIZE)),
+		"source_region": Rect2(source), "occupied_model_region": Rect2(occupied), "content_region": Rect2(Vector2(offset), Vector2(fitted_size))}
+
+
+func portrait_revision() -> int:
+	return configuration_generation
+
+
+func _validate_extension_registry(value: Variant, live_entries: Array) -> bool:
+	extension_page_capacity = 0
+	if not value is Dictionary or live_entries.size() > MAX_LIVE_RECIPES:
+		return _fail("Additional champion pages require a bounded live registry")
+	var live_ids: Dictionary = {}
+	for entry_value: Variant in live_entries:
+		if not entry_value is Dictionary:
+			return _fail("Character art identity must be an object")
+		var entry: Dictionary = entry_value
+		var champion_id := String(entry.get("id", ""))
+		if champion_id.is_empty() or live_ids.has(champion_id):
+			return _fail("Character art identities must be nonempty and unique")
+		live_ids[champion_id] = true
+	for champion_id: String in REQUIRED_FOUNDATION:
+		if not live_ids.has(champion_id) or not champions.has(champion_id):
+			return _fail("Character art registry lacks a required foundation: " + champion_id)
+	var extensions: Dictionary = value
+	var capacity := live_ids.size() - REQUIRED_FOUNDATION.size()
+	if extensions.size() > capacity:
+		return _fail("Additional champion pages exceed the live roster allowance")
+	var page_paths: Dictionary = {}
+	for key: Variant in extensions:
+		if not key is String or key in REQUIRED_FOUNDATION or not live_ids.has(key) or not champions.has(key):
+			return _fail("Additional champion page has no matching live recipe: " + str(key))
+		if not extensions[key] is Dictionary:
+			return _fail("Additional champion page must be an object: " + str(key))
+		var page: Dictionary = extensions[key]
+		var page_path := String(page.get("path", ""))
+		if not page_path.begins_with("res://assets/sprites/champions_v3/") or not page_path.ends_with(".png") \
+			or "/../" in page_path or "/./" in page_path or page_paths.has(page_path.to_lower()):
+			return _fail("Additional champion pages require distinct contained PNG paths: " + str(key))
+		for field: String in ["sha256", "imported_rgba_sha256"]:
+			var digest := String(page.get(field, ""))
+			if digest.length() != 64:
+				return _fail("Additional champion page hash is invalid: " + str(key))
+			for index: int in digest.length():
+				var digit := digest.unicode_at(index)
+				if not (digit >= 48 and digit <= 57) and not (digit >= 97 and digit <= 102):
+					return _fail("Additional champion page hash is invalid: " + str(key))
+		page_paths[page_path.to_lower()] = true
+	for champion_id: String in champions:
+		if not live_ids.has(champion_id):
+			return _fail("Character art recipe is not in the live roster: " + champion_id)
+		if champion_id not in REQUIRED_FOUNDATION and not extensions.has(champion_id):
+			return _fail("Additional champion lacks a matching page: " + champion_id)
+	extension_page_capacity = capacity
+	return true
+
+
+func _register_temporary_templates(entries: Array) -> bool:
+	if entries.size() > MAX_LIVE_RECIPES:
+		return _fail("Character presentation capacity exceeded")
+	var additions: Dictionary = {}
+	for value: Variant in entries:
+		if not value is Dictionary:
+			return _fail("Character presentation identity must be an object")
+		var entry: Dictionary = value
+		var champion_id := String(entry.get("id", ""))
+		if champions.has(champion_id):
+			continue
+		var source_id := String(entry.get("template_source_id", ""))
+		if champion_id.is_empty() or additions.has(champion_id) or source_id not in REQUIRED_FOUNDATION \
+			or String(entry.get("art_status", "")) != "temporary_body_template" \
+			or entry.get("unique_runtime_art_approved", true) != false:
+			return _fail("Character lacks accepted art or an explicit temporary template: " + champion_id)
+		var definition: Dictionary = (champions[source_id] as Dictionary).duplicate(true)
+		if String(entry.get("body_type", "")) != String(definition["body_type"]):
+			return _fail("Temporary character template must match its body size: " + champion_id)
+		definition["display_name"] = entry.get("display_name", "")
+		definition["ancestry"] = entry.get("ancestry", "")
+		definition["affinities"] = entry.get("affinities", [])
+		definition["temporary_body_template"] = true
+		definition["template_source_id"] = source_id
+		definition["art_status"] = "temporary_body_template"
+		if not _validate_recipe(champion_id, definition):
+			return false
+		additions[champion_id] = definition
+	champions.merge(additions)
 	return true
 
 
 func can_present(champion_id: String) -> bool:
-	return champions.has(champion_id)
+	return champions.has(champion_id) and (not wireframe_mode or wireframe_body.base_texture(String(champions[champion_id]["body_type"])) != null)
 
 
 func recipe(champion_id: String) -> Dictionary:
-	return (champions.get(champion_id, {}) as Dictionary).duplicate(true)
+	var result := (champions.get(champion_id, {}) as Dictionary).duplicate(true)
+	if wireframe_mode and not result.is_empty():
+		result["wireframe_body"] = true
+		result["art_status"] = "shared_size_skeleton"
+		return result
+	if _override_pages.has(champion_id):
+		result["complete_page_override"] = true
+		result["override_resident"] = _override_textures.has(champion_id)
+		if _override_textures.has(champion_id):
+			result["temporary_body_template"] = false
+			result["template_source_id"] = ""
+			result["art_status"] = "reviewed_complete_runtime_page"
+	return result
 
 
 func source_region(champion_id: String, state: PlayerState) -> Rect2:
@@ -212,6 +657,11 @@ func source_region(champion_id: String, state: PlayerState) -> Rect2:
 func source_region_for_animation_state(champion_id: String, state: PlayerState, animation_state: String) -> Rect2:
 	if state == null or not champions.has(champion_id):
 		return Rect2()
+	if wireframe_mode:
+		if not can_present(champion_id):
+			return Rect2()
+		var aim := presentation_facing_vector(state, animation_state)
+		return WireframeBody.base_region(animation_state, EightDirectionResolver.classify_index(aim.x, aim.y))
 	var row := int((champions[champion_id] as Dictionary).get("atlas_row", -1))
 	if row < 0 or row >= REQUIRED_FOUNDATION.size():
 		return Rect2()
@@ -223,6 +673,8 @@ func source_region_for_animation_state(champion_id: String, state: PlayerState, 
 	if state_index < 0 or direction_index < 0:
 		return Rect2()
 	var atlas_row := row * atlas_states.size() + state_index
+	if _override_textures.has(champion_id):
+		atlas_row = state_index
 	return Rect2(Vector2(float(direction_index) * CELL_SIZE.x, float(atlas_row) * CELL_SIZE.y), CELL_SIZE)
 
 
@@ -235,29 +687,31 @@ func draw(
 	config: SimConfig,
 	reduced_effects: bool = false,
 	ground_anchor: Vector2 = Vector2.INF,
+	locomotion_phase: float = -1.0,
 ) -> bool:
 	if canvas == null or state == null or not champions.has(champion_id):
 		return false
-	var frame := movement_frame(champion_id, state, presentation_tick, config, reduced_effects)
+	var frame := movement_frame(champion_id, state, presentation_tick, config, reduced_effects, locomotion_phase)
 	if frame.is_empty():
 		return false
 	var definition: Dictionary = champions[champion_id]
 	var anchor := body_anchor + (frame["offset"] as Vector2)
 	var floor_anchor := ground_anchor if ground_anchor.is_finite() else body_anchor
-	if pixel_movement.ready() and atlas != null:
-		pixel_movement.draw_afterimages(canvas, state, config, texture_for_champion(champion_id), frame["source_region"], anchor, float(definition.get("height",68)), reduced_effects)
+	var frame_texture: Texture2D = frame.get("texture", texture_for_champion(champion_id))
+	if frame_texture == null:
+		return false
+	if pixel_movement.ready():
+		pixel_movement.draw_afterimages(canvas, state, config, frame_texture, frame["source_region"], anchor, float(definition.get("height",68)), reduced_effects)
 	_draw_counter_strafe_accent(canvas, state, floor_anchor, reduced_effects)
 	_draw_takeoff_accent(canvas, state, floor_anchor, config, reduced_effects)
 	_draw_movement_accent(canvas, state, floor_anchor, roundi(presentation_tick), reduced_effects, body_anchor, config)
 	_draw_aura(canvas, definition, anchor, roundi(presentation_tick), reduced_effects, float(frame["aura_scale"]))
-	if atlas == null:
-		return false
-	_draw_atlas_candidate(canvas, state, champion_id, String(frame["animation_state"]), anchor)
+	canvas.draw_texture_rect_region(frame_texture, Rect2(anchor - PIVOT, CELL_SIZE), frame["source_region"])
 	_draw_evasion_contour(canvas, state, anchor, config, reduced_effects, float(definition.get("height", 68)))
 	return true
 
 
-func movement_frame(champion_id: String, state: PlayerState, presentation_tick: float, config: SimConfig, reduced_effects: bool = false) -> Dictionary:
+func movement_frame(champion_id: String, state: PlayerState, presentation_tick: float, config: SimConfig, reduced_effects: bool = false, locomotion_phase: float = -1.0) -> Dictionary:
 	if state == null or config == null or not champions.has(champion_id):
 		return {}
 	var definition: Dictionary = champions[champion_id]
@@ -275,7 +729,12 @@ func movement_frame(champion_id: String, state: PlayerState, presentation_tick: 
 	# Contact pose and secondary motion share one seeded phase. Previously the
 	# opposite foot could be selected while the torso was still on contact A.
 	if motion_id in ["walk", "sprint"]:
-		motion_elapsed += float(maxi(0, state.entity_id) * 3)
+		if locomotion_phase >= 0.0 and is_finite(locomotion_phase):
+			motion_elapsed = motion.locomotion_elapsed_at_phase(String(definition.get("motion_profile", "")), motion_id, locomotion_phase)
+		else:
+			# Pure preview/legacy callers without world travel history retain the
+			# deterministic timed cycle; the live game supplies a distance phase.
+			motion_elapsed += float(maxi(0, state.entity_id) * 3)
 	var motion_sample := motion.sample(String(definition.get("motion_profile", "")), motion_id, motion_elapsed, reduced_effects)
 	if motion_id in ["walk", "sprint"]:
 		var response := movement_response_scale(state)
@@ -292,7 +751,17 @@ func movement_frame(champion_id: String, state: PlayerState, presentation_tick: 
 		contact_frame = motion.locomotion_contact_frame(String(definition.get("motion_profile", "")), motion_id, motion_elapsed)
 		if contact_frame == 1:
 			animation_state += "_b"
-	return {"animation_state": animation_state, "motion_id": motion_id, "contact_frame": contact_frame, "offset": pose_offset, "scale": Vector2.ONE, "aura_scale": motion_sample.aura_scale, "source_region": source_region_for_animation_state(champion_id, state, animation_state)}
+	var result := {"animation_state": animation_state, "motion_id": motion_id, "contact_frame": contact_frame, "offset": pose_offset, "scale": Vector2.ONE, "aura_scale": motion_sample.aura_scale, "source_region": source_region_for_animation_state(champion_id, state, animation_state)}
+	if wireframe_mode:
+		var phase := locomotion_phase
+		if phase < 0.0 or not is_finite(phase):
+			var duration := motion.locomotion_elapsed_at_phase(String(definition.get("motion_profile", "")), motion_id, 0.5) * 2.0
+			phase = motion_elapsed / maxf(1.0, duration)
+		var body_frame := wireframe_body.frame(String(definition["body_type"]), animation_state, presentation_facing_vector(state, animation_state), Vector2i(state.velocity_x, state.velocity_y), phase)
+		if body_frame.is_empty():
+			return {}
+		result.merge(body_frame, true)
+	return result
 
 
 func _draw_atlas_candidate(canvas: CanvasItem, state: PlayerState, champion_id: String, animation_state: String, anchor: Vector2) -> void:
@@ -301,15 +770,22 @@ func _draw_atlas_candidate(canvas: CanvasItem, state: PlayerState, champion_id: 
 
 
 func texture_for_champion(champion_id: String) -> Texture2D:
+	if wireframe_mode:
+		return wireframe_body.base_texture(String((champions.get(champion_id, {}) as Dictionary).get("body_type", "")))
+	if _override_textures.has(champion_id):
+		return _override_textures[champion_id]
 	return extension_atlases.get(champion_id, atlas)
 
 
 func portrait_region(champion_id: String) -> Rect2:
 	if not can_present(champion_id):
 		return Rect2()
-	var definition: Dictionary = champions[champion_id]
-	var row := int(definition.get("atlas_row", 0)) * atlas_states.size()
-	return Rect2(32, row * 96 + 83 - int(definition.get("height", 68)), 32, 32)
+	if wireframe_mode:
+		return portrait_frame(champion_id).get("source_region", Rect2())
+	# Legacy source-region queries must match texture_for_champion() residency.
+	# UI consumers use portrait_frame(), which also works before world admission.
+	var cache := _override_portraits if _override_textures.has(champion_id) else _baseline_portraits
+	return cache.get(champion_id, {}).get("source_region", Rect2())
 
 
 func silhouette_state(state: PlayerState) -> String:
@@ -415,24 +891,17 @@ static func direction_for_state(state_id: String, x: int, y: int) -> String:
 	return cardinal_direction(x, y)
 
 
-static func presentation_facing_vector(state: PlayerState, state_id: String = "") -> Vector2i:
+static func presentation_facing_vector(state: PlayerState, _state_id: String = "") -> Vector2i:
 	if state == null:
 		return Vector2i(0, 1000)
-	var resolved_state := state_id if not state_id.is_empty() else "grounded"
-	if resolved_state == "cast":
-		if state.pending_cast_wire_id > 0:
-			return Vector2i(state.pending_cast_aim_x, state.pending_cast_aim_y)
-		return Vector2i(state.aim_x, state.aim_y)
-	if resolved_state in ["walk", "sprint", "slide", "roll", "jump"]:
-		# Body intent follows the accepted movement input, including reversal;
-		# physical coast remains legible through separate travel-facing dust.
-		var intended := Vector2i(state.facing_x, state.facing_y)
-		if intended != Vector2i.ZERO:
-			return intended
-		var travel := Vector2i(state.velocity_x, state.velocity_y)
-		if travel != Vector2i.ZERO:
-			return travel
-	return Vector2i(state.facing_x, state.facing_y)
+	# Presentation follows live cursor/controller aim without turn easing or a
+	# cast-start latch. Movement facing still owns neutral evasions; pending cast
+	# aim still owns the committed shot. Never write either authority field here.
+	var aim := Vector2i(state.aim_x, state.aim_y)
+	if aim != Vector2i.ZERO:
+		return aim
+	var movement_facing := Vector2i(state.facing_x, state.facing_y)
+	return movement_facing if movement_facing != Vector2i.ZERO else Vector2i(0, 1000)
 
 
 static func has_combat_facing_intent(state: PlayerState) -> bool:
@@ -488,7 +957,7 @@ func _validate_body_template_contract(value: Variant) -> bool:
 		or _vector2i(contract.get("shared_feet_pivot", [])) != Vector2i(48, 84) \
 		or contract.get("runtime_scale", []) != [1.0, 1.0]:
 		return _fail("Cartoon champion body template geometry is unsupported")
-	if String(contract.get("shared_collision_policy", "")) != "universal_gameplay_collision_independent_of_visual_body_type" \
+	if String(contract.get("shared_collision_policy", "")) != "shared_wall_clearance_size_specific_hurtboxes_independent_of_pose_pixels" \
 		or String(contract.get("animation_policy", "")) != "pose_and_offset_only_never_rescale_body":
 		return _fail("Cartoon champion size lock must remain presentation-only and invariant")
 	var templates: Dictionary = contract.get("templates", {})
@@ -722,7 +1191,7 @@ static func wall_contact_geometry(state: PlayerState) -> Dictionary:
 	var normal := Vector2(state.wall_x, state.wall_y).normalized()
 	if normal == Vector2.ZERO:
 		return {}
-	return {"normal": normal, "offset": -normal * float(state.radius) / SimConfig.FIXED_SCALE}
+	return {"normal": normal, "offset": -normal * float(MovementTuning.PLAYER_RADIUS) / SimConfig.FIXED_SCALE}
 
 
 func _draw_pixel_movement_accent(canvas: CanvasItem, state: PlayerState, ground_anchor: Vector2, age: int, reduced: bool, config: SimConfig) -> void:
@@ -755,6 +1224,7 @@ func _draw_evasion_contour(
 	if not bool(contract["active"]):
 		return
 	if pixel_movement.protection(canvas,contract,ground_anchor,reduced):
+		_draw_float_budget(canvas, contract, ground_anchor)
 		return
 	var teal := language.ramp_color("deep_water", 4)
 	var ink := language.ramp_color("deep_water", 0)
@@ -774,10 +1244,23 @@ func _draw_evasion_contour(
 		canvas.draw_polyline(points, Color(ink, 0.98), 5.0)
 		canvas.draw_polyline(points, Color(teal, 1.0), 3.0)
 		canvas.draw_polyline(points, Color.WHITE, 1.25)
+	_draw_float_budget(canvas, contract, ground_anchor)
+
+
+func _draw_float_budget(canvas: CanvasItem, contract: Dictionary, anchor: Vector2) -> void:
+	# Separate time information never fades/flashes the still-active shield.
+	# Normal and reduced effects retain exactly the same three native-pixel slots.
+	var ink := language.ramp_color("deep_water", 0)
+	var teal := language.ramp_color("deep_water", 4)
+	for slot: Rect2 in contract["float_budget_slots"]:
+		canvas.draw_rect(Rect2(anchor + slot.position, slot.size).grow(1.0), Color(ink, 0.98))
+		canvas.draw_rect(Rect2(anchor + slot.position, slot.size), Color(teal, 0.35))
+	for fill: Rect2 in contract["float_budget_fills"]:
+		canvas.draw_rect(Rect2(anchor + fill.position, fill.size), Color.WHITE)
 
 
 static func protection_contract(state: PlayerState, config: SimConfig, _reduced: bool = false, body_height: float = 68.0) -> Dictionary:
-	var result := {"active": false, "brackets": [], "shield": PackedVector2Array(), "float_wings": [], "remaining_ratio": 0.0}
+	var result := {"active": false, "brackets": [], "shield": PackedVector2Array(), "float_wings": [], "remaining_ratio": 0.0, "float_budget_ratio": 0.0, "float_budget_slots": [], "float_budget_fills": []}
 	var ratio := JumpPresentation.protection_ratio(state, config)
 	if ratio <= 0.0:
 		return result
@@ -793,11 +1276,20 @@ static func protection_contract(state: PlayerState, config: SimConfig, _reduced:
 	result["brackets"] = brackets
 	var center := Vector2(0, top - 11.0)
 	result["shield"] = PackedVector2Array([center + Vector2(-5, -4), center + Vector2(5, -4), center + Vector2(4, 2), center + Vector2(0, 6), center + Vector2(-4, 2), center + Vector2(-5, -4)])
-	if state.air_floating and state.air_height > 0 and state.stamina > 0:
+	if state.air_floating and state.air_height > 0 and state.stamina > 0 and state.float_ticks > 0:
 		var wings: Array[PackedVector2Array] = []
 		for side: float in [-1.0, 1.0]:
 			wings.append(PackedVector2Array([center + Vector2(side * 8.0, 2.0), center + Vector2(side * 14.0, 2.0), center + Vector2(side * 18.0, -3.0)]))
 		result["float_wings"] = wings
+		var total := config.milliseconds_to_ticks(clampi(state.float_max_duration_ms, MovementTuning.FLOAT_LARGE_DURATION_MS, MovementTuning.FLOAT_SMALL_DURATION_MS))
+		var budget := clampf(float(state.float_ticks) / float(maxi(1, total)), 0.0, 1.0)
+		result["float_budget_ratio"] = budget
+		for index: int in range(3):
+			var slot := Rect2(center + Vector2(-12 + index * 9, -14), Vector2(7, 3))
+			(result["float_budget_slots"] as Array).append(slot)
+			var width := ceili(7.0 * clampf(budget * 3.0 - float(index), 0.0, 1.0))
+			if width > 0:
+				(result["float_budget_fills"] as Array).append(Rect2(slot.position, Vector2(width, 3)))
 	return result
 
 
@@ -840,7 +1332,14 @@ func _validate_recipe(champion_id: String, value: Variant) -> bool:
 		or int(body_template.get("reference_height", 0)) != int(definition.get("height", 0)):
 		return _fail("Cartoon champion does not match its reusable body template: %s" % champion_id)
 	var atlas_row := int(definition.get("atlas_row", -1))
-	if champion_id not in REQUIRED_FOUNDATION and atlas_row != 0:
+	var temporary := bool(definition.get("temporary_body_template", false))
+	if temporary:
+		var source_id := String(definition.get("template_source_id", ""))
+		if source_id not in REQUIRED_FOUNDATION or not champions.has(source_id) \
+			or atlas_row != int((champions[source_id] as Dictionary).get("atlas_row", -1)) \
+			or body_type != String((champions[source_id] as Dictionary).get("body_type", "")):
+			return _fail("Temporary recipe must retain its exact body template: " + champion_id)
+	if champion_id not in REQUIRED_FOUNDATION and not temporary and atlas_row != 0:
 		return _fail("Additional champion page rows must start at zero: " + champion_id)
 	if atlas_row < 0 or atlas_row >= REQUIRED_FOUNDATION.size():
 		return _fail("Cartoon champion atlas row is unsupported: %s" % champion_id)
@@ -924,7 +1423,7 @@ func _validate_diagonal_locomotion_contract(value: Variant) -> bool:
 		return _fail("Cartoon champion diagonal locomotion coverage is unsupported")
 	if contract.get("gaits", []) != EXPECTED_RELATIVE_GAITS:
 		return _fail("Cartoon champion relative gait catalog is incomplete")
-	if String(contract.get("facing_policy", "")) != "travel_when_free_aim_when_combat_intent" \
+	if String(contract.get("facing_policy", "")) != "live_aim_all_poses_independent_of_travel" \
 		or String(contract.get("authority", "")) != "presentation_only":
 		return _fail("Cartoon champion locomotion facing policy is unsupported")
 	diagonal_locomotion_contract = contract.duplicate(true)

@@ -85,7 +85,7 @@ func register_peers(events: Array[Dictionary]) -> int:
 		var champion_id := "s_wayne" if entity_id % 2 == 0 else champion_catalog.default_champion_id
 		if not champion_catalog.apply_to_player(state, champion_id):
 			continue
-		var spawn_position := _spawn_position(entity_id, state.radius)
+		var spawn_position := _spawn_position(entity_id, MovementTuning.PLAYER_RADIUS)
 		state.position_x = spawn_position.x
 		state.position_y = spawn_position.y
 		_apply_charter_team(state)
@@ -310,6 +310,7 @@ func capture_reconciliation(entity_id: int) -> Dictionary:
 		state,
 		world.tick,
 		int(last_processed_input_sequence_by_entity.get(entity_id, -1)),
+		world.reactions,
 	)
 
 

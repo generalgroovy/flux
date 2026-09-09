@@ -17,6 +17,7 @@ const SPELL_ALT_LAYER_ACTION: StringName = &"spell_layer_alt"
 const AIM_DEADZONE: float = 0.25
 const WHEEL_GESTURE_QUIET_MS: int = 120
 const WHEEL_MOVEMENT_ACTIONS: Array[StringName] = [&"jump", &"slide"]
+const PAID_ACTIONS: Array[StringName] = [&"sprint", &"primary", &"evade", &"jump", &"technique", &"active_1", &"slide", &"spell_1", &"spell_2", &"spell_3", &"spell_4"]
 
 var entity_id: int
 var evade_was_down: bool = false
@@ -35,6 +36,7 @@ var physical_press_frames: Dictionary[StringName, int] = {}
 var consumed_physical_frames: Dictionary[StringName, int] = {}
 var physical_hold_frames: Dictionary[StringName, int] = {}
 var physical_holds: Dictionary[StringName, bool] = {}
+var quarantined_actions: Dictionary[StringName, bool] = {}
 
 
 func _init(requested_entity_id: int = 1) -> void:
@@ -119,7 +121,8 @@ static func _add_event_once(action: StringName, event: InputEvent) -> void:
 
 
 func observe_input_event(event: InputEvent) -> void:
-	# Called only for gameplay input, after modal editors have had priority.
+	# Modal callers immediately discard the observed intent. Keeping its source
+	# still distinguishes a UI wheel pulse from an intentionally held button.
 	# Keep wheel origin until sampling: Godot's aggregate action state otherwise
 	# makes a wheel notch indistinguishable from a deliberately held button.
 	if event is InputEventKey and event.echo:
@@ -140,6 +143,10 @@ func observe_input_event(event: InputEvent) -> void:
 			physical_holds[action] = event.is_action_pressed(action)
 			if event.is_action_pressed(action):
 				physical_press_frames[action] = frame
+	for action: StringName in quarantined_actions.keys():
+		if event.is_action_released(action) and not _raw_paid_action_down(action):
+			quarantined_actions.erase(action)
+			_consume_engine_edge(action)
 
 
 func accept_wheel_pulse(action: StringName, timestamp_ms: int) -> bool:
@@ -210,15 +217,43 @@ func consume_wheel_pulse(action: StringName, timestamp_ms: int) -> bool:
 
 
 func discard_transient_movement_input() -> void:
-	# Modal readers may run for many simulation ticks. Do not replay a wheel
-	# pulse accepted immediately before opening one when the reader closes.
+	# Quarantine paid holds across modal/focus interruptions. Directional movement
+	# may resume, but UI presses and drags cannot become fresh gameplay actions.
 	pending_wheel_pulses.clear()
-	for action: StringName in WHEEL_MOVEMENT_ACTIONS:
+	for action: StringName in PAID_ACTIONS:
+		if _raw_paid_action_down(action):
+			quarantined_actions[action] = true
+		else:
+			quarantined_actions.erase(action)
 		_consume_engine_edge(action)
 		consumed_physical_frames[action] = Engine.get_process_frames()
+	evade_was_down = false
+	jump_was_down = false
+	technique_was_down = false
+	active_1_was_down = false
+	slide_was_down = false
+	spell_was_down.fill(false)
+
+
+func _raw_paid_action_down(action: StringName) -> bool:
+	return _movement_action_down(action) if action in WHEEL_MOVEMENT_ACTIONS else Input.is_action_pressed(action)
+
+
+func _paid_action_down(action: StringName) -> bool:
+	return not quarantined_actions.has(action) and _raw_paid_action_down(action)
+
+
+func _consume_quarantined_input() -> void:
+	for action: StringName in quarantined_actions.keys():
+		_consume_engine_edge(action)
+		pending_wheel_pulses.erase(action)
+		consumed_physical_frames[action] = Engine.get_process_frames()
+		if not _raw_paid_action_down(action):
+			quarantined_actions.erase(action)
 
 
 func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> SimCommand:
+	_consume_quarantined_input()
 	var movement_input := Input.get_vector(
 		&"move_left", &"move_right", &"move_up", &"move_down", AIM_DEADZONE,
 	)
@@ -226,17 +261,17 @@ func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> S
 	var raw_move_x := quantized_movement.x
 	var raw_move_y := quantized_movement.y
 	var held: int = 0
-	if Input.is_action_pressed(&"sprint"):
+	if _paid_action_down(&"sprint"):
 		held |= SimCommand.HELD_SPRINT
-	if Input.is_action_pressed(PRIMARY_ACTION):
+	if _paid_action_down(PRIMARY_ACTION):
 		held |= SimCommand.HELD_PRIMARY
-	var evade_down: bool = Input.is_action_pressed(&"evade")
+	var evade_down: bool = _paid_action_down(&"evade")
 	var evade_pressed: bool = _action_pressed_edge(&"evade", evade_down, evade_was_down)
 	evade_was_down = evade_down
-	var jump_down: bool = _movement_action_down(&"jump")
-	var technique_down: bool = Input.is_action_pressed(&"technique")
-	var active_1_down: bool = Input.is_action_pressed(ACTIVE_1_ACTION)
-	var slide_down: bool = _movement_action_down(SLIDE_ACTION)
+	var jump_down: bool = _paid_action_down(&"jump")
+	var technique_down: bool = _paid_action_down(&"technique")
+	var active_1_down: bool = _paid_action_down(ACTIVE_1_ACTION)
+	var slide_down: bool = _paid_action_down(SLIDE_ACTION)
 	var jump_pressed: bool = _movement_pressed_edge(&"jump", jump_down, jump_was_down)
 	var technique_pressed: bool = _action_pressed_edge(&"technique", technique_down, technique_was_down)
 	var active_1_pressed: bool = _action_pressed_edge(ACTIVE_1_ACTION, active_1_down, active_1_was_down)
@@ -257,7 +292,9 @@ func sample(tick: int, player_position: Vector2, pointer_position: Vector2) -> S
 	var ctrl_layer: bool = Input.is_action_pressed(SPELL_CTRL_LAYER_ACTION)
 	var alt_layer: bool = Input.is_action_pressed(SPELL_ALT_LAYER_ACTION)
 	for button_index: int in range(SPELL_ACTIONS.size()):
-		var spell_down: bool = Input.is_action_pressed(SPELL_ACTIONS[button_index])
+		var spell_down: bool = _paid_action_down(SPELL_ACTIONS[button_index])
+		if spell_down:
+			held |= SimCommand.SPELL_HELD_BITS[selected_spell_slot_index(button_index, ctrl_layer, alt_layer)]
 		var spell_pressed: bool = pressed_edge(
 			spell_down,
 			spell_was_down[button_index],

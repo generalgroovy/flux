@@ -1,0 +1,26 @@
+{
+  "status": "local_full_export_raw_boot_passed",
+  "full_suites": 91,
+  "full_assertions": 464036,
+  "source_records": 184,
+  "payloads": [
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-aim-cone-p47-20260909\\windows\\flux2.exe",
+      "bytes": 109071360,
+      "sha256": "04baf75cc1d69dd93eb709533ecab4fd7770bb8a530645717017a06a9d9809fc"
+    },
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-aim-cone-p47-20260909\\windows\\flux2.pck",
+      "bytes": 66211912,
+      "sha256": "34889a23306a50598022071c12f7c908d95ab3dac8858ecea098c286ec30007f"
+    },
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-aim-cone-p47-20260909\\release\\FLUX2-Windows-x86_64.zip",
+      "bytes": 96763197,
+      "sha256": "9952c4861a3ae9b765e01aacdc728c81e80f74bef9073e14c0f6721fea1363b1"
+    }
+  ],
+  "new_installer": "not_attempted_prior_policy_block",
+  "live_character_promotion": false,
+  "rejected_boot": "original invocation used unsupported --path; preserved raw-boot.log.err, clean direct boot is acceptance"
+}

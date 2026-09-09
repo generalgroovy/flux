@@ -9,6 +9,8 @@ func run() -> int:
 	_test_persistence_round_trip()
 	_test_movement_transforms()
 	_test_evade_default_swap_migration()
+	_test_keyboard_default_revision()
+	_test_optional_sound_volume()
 	return finish("player-preferences")
 
 
@@ -20,8 +22,9 @@ func _test_defaults_and_presets() -> void:
 	equal(preferences.pov_range, 720, "cone range remains ready when cone view is selected")
 	equal(preferences.camera_zoom_percent, 75, "the default camera exposes more connected movement space")
 	equal(PlayerPreferences.SCHEMA_VERSION, 11, "player preferences save schema v11")
-	equal(preferences.keyboard_bindings[&"evade"], KEY_V, "V is the new default evade key")
-	equal(preferences.keyboard_bindings[&"technique"], KEY_Q, "Q keeps Technique distinct from evade")
+	equal(preferences.keyboard_bindings[&"evade"], KEY_Q, "Q is the default evade key")
+	equal(preferences.keyboard_bindings[&"technique"], KEY_V, "V keeps Technique distinct from evade")
+	equal(preferences.to_dictionary().get("keyboard_defaults_revision"), 1, "fresh defaults record the additive keyboard revision")
 	equal(preferences.farflow_join_address, "127.0.0.1", "local Farflow is the safe address default")
 	equal(preferences.keyboard_bindings[&"sprint"], KEY_SHIFT, "Shift is the production-default sprint key")
 	equal(preferences.keyboard_bindings[&"slide"], KEY_C, "C is the persisted slide key")
@@ -201,6 +204,7 @@ func _test_persistence_round_trip() -> void:
 	saved.set_camera_zoom_percent(50)
 	saved.reduced_motion = true
 	saved.high_contrast = true
+	saved.sound_volume_percent = 70
 	saved.farflow_join_address = "192.0.2.44"
 	check(saved.save_to_file(path), "preferences save offline")
 	var loaded := PlayerPreferences.new()
@@ -208,6 +212,73 @@ func _test_persistence_round_trip() -> void:
 	equal(loaded.to_dictionary(), saved.to_dictionary(), "saved preferences round-trip exactly")
 	var absolute_path: String = ProjectSettings.globalize_path(path)
 	check(DirAccess.remove_absolute(absolute_path) == OK, "preference test file is cleaned")
+
+
+func _test_optional_sound_volume() -> void:
+	var defaults := PlayerPreferences.new()
+	equal(defaults.sound_volume_percent, 30, "new preference profiles use conservative sound gain")
+	equal(defaults.to_dictionary().get("sound_volume_percent"), 30, "sound volume is persisted as an optional scalar")
+	equal(PlayerPreferences.SCHEMA_VERSION, 11, "additive audio does not strand older schema11 control profiles")
+	defaults.sound_volume_percent = 0
+	defaults.reset_to_defaults()
+	equal(defaults.sound_volume_percent, 30, "reset restores safe gain instead of retaining mute or full gain")
+	for schema: int in range(1, 12):
+		var old_profile := _base_preferences(schema, {&"jump": KEY_J, &"primary": KEY_P})
+		var migrated := PlayerPreferences.new()
+		migrated.sound_volume_percent = 100
+		check(migrated.apply_dictionary(old_profile), "schema%d without audio field still loads" % schema)
+		equal(migrated.sound_volume_percent, 30, "schema%d missing field gets the safe default, not stale previous volume" % schema)
+		equal(migrated.keyboard_bindings[&"jump"], KEY_J, "audio migration preserves custom jump for schema%d" % schema)
+		equal(migrated.keyboard_bindings[&"primary"], KEY_P, "audio migration preserves custom primary for schema%d" % schema)
+		var muted := old_profile.duplicate(true)
+		muted["sound_volume_percent"] = 0
+		check(migrated.apply_dictionary(muted), "schema%d accepts an explicit additive mute field" % schema)
+		equal(migrated.sound_volume_percent, 0, "schema%d explicit zero is not mistaken for an absent setting" % schema)
+	var custom := PlayerPreferences.new()
+	custom.keyboard_bindings[&"jump"] = KEY_J
+	custom.mouse_bindings[&"jump"] = MOUSE_BUTTON_MIDDLE
+	custom.controller_bindings[&"jump"] = {"kind": "button", "index": JOY_BUTTON_START, "direction": 0}
+	custom.reduced_motion = true
+	custom.high_contrast = true
+	custom.sound_volume_percent = 70
+	custom.farflow_join_address = "192.0.2.55"
+	var valid := custom.to_dictionary().duplicate(true)
+	var loaded := PlayerPreferences.new()
+	check(loaded.apply_dictionary(valid), "custom keyboard/mouse/controller profile accepts sound setting")
+	for volume: Variant in [0, 1, 30, 99, 100, 0.0, 30.0, 100.0]:
+		var candidate := valid.duplicate(true)
+		candidate["sound_volume_percent"] = volume
+		check(loaded.apply_dictionary(candidate), "whole numeric gain is accepted: %s" % volume)
+		equal(loaded.sound_volume_percent, int(volume), "accepted numeric gain retains its exact value")
+		equal(loaded.keyboard_bindings, custom.keyboard_bindings, "audio setting does not change custom keyboard controls")
+		equal(loaded.mouse_bindings, custom.mouse_bindings, "audio setting does not change custom mouse controls")
+		equal(loaded.controller_bindings, custom.controller_bindings, "audio setting does not change custom controller controls")
+	check(loaded.apply_dictionary(valid), "atomic rejection fixture restores its complete original state")
+	var before := loaded.to_dictionary().duplicate(true)
+	for invalid: Variant in [-1, 101, 30.5, -0.5, NAN, INF, -INF, "30", "false", true, false, null, [], {}]:
+		var candidate := valid.duplicate(true)
+		candidate["movement_reference"] = PlayerPreferences.MOVEMENT_AIM_RELATIVE
+		candidate["keyboard_bindings"][&"jump"] = KEY_K
+		candidate["sound_volume_percent"] = invalid
+		check(not loaded.apply_dictionary(candidate), "invalid sound scalar fails closed: %s" % str(invalid))
+		equal(loaded.to_dictionary(), before, "invalid audio never partially mutates any existing preference")
+		check(loaded.last_error.contains("sound_volume_percent"), "invalid audio reports its own field")
+	var late_failure := valid.duplicate(true)
+	late_failure["sound_volume_percent"] = 100
+	late_failure["controller_bindings"][&"jump"] = {"kind": "axis", "index": 99, "direction": 1}
+	check(not loaded.apply_dictionary(late_failure), "later binding validation can reject an otherwise valid sound value")
+	equal(loaded.to_dictionary(), before, "later validation does not commit sound early")
+	var old_reader_shape := valid.duplicate(true)
+	old_reader_shape.erase("sound_volume_percent")
+	var compatible := PlayerPreferences.new()
+	check(compatible.apply_dictionary(old_reader_shape), "schema11 document remains valid when the additive audio field is ignored")
+	equal(compatible.keyboard_bindings, custom.keyboard_bindings, "ignoring the new field retains keyboard customization")
+	equal(compatible.mouse_bindings, custom.mouse_bindings, "ignoring the new field retains mouse customization")
+	equal(compatible.controller_bindings, custom.controller_bindings, "ignoring the new field retains controller customization")
+	# This checks the on-disk schema shape, not execution of an uninstalled older binary.
+	var json_round_trip: Dictionary = JSON.parse_string(JSON.stringify(valid))
+	check(compatible.apply_dictionary(json_round_trip), "JSON float decoding accepts whole-number persisted volume")
+	equal(compatible.to_dictionary(), valid, "audio and all customized controls round-trip without loss")
 
 
 func _test_evade_default_swap_migration() -> void:
@@ -232,6 +303,132 @@ func _test_evade_default_swap_migration() -> void:
 	equal(legacy.keyboard_bindings[&"technique"], KEY_Q, "older custom Q belongs to its original action")
 	equal(legacy.keyboard_bindings[&"evade"], 0, "migration never steals Q from an older custom action")
 	equal(PlayerPreferences.validate_keyboard_bindings(migrated.keyboard_bindings), "", "new defaults have no duplicate key triggers")
+
+
+func _test_keyboard_default_revision() -> void:
+	var old_v11 := PlayerPreferences.SCHEMA_V11_DEFAULT_KEYBOARD_BINDINGS
+	equal(PlayerPreferences.default_keyboard_bindings_for_schema(11), old_v11, "schema11 historical default is frozen independently of current defaults")
+	equal(old_v11[&"technique"], KEY_Q, "historical schema11 Technique remains Q")
+	equal(old_v11[&"evade"], KEY_V, "historical schema11 Evade remains V")
+	for revision: Variant in [0, 0.0]:
+		var old_json: Dictionary = JSON.parse_string(JSON.stringify(_base_preferences(11, old_v11)))
+		old_json["keyboard_defaults_revision"] = revision
+		var decoded := PlayerPreferences.new()
+		check(decoded.apply_dictionary(old_json), "explicit revision zero accepts JSON-decoded complete old default keycodes")
+		equal(decoded.keyboard_bindings, PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS, "whole-number JSON values retain exact default-layout migration eligibility")
+	var custom_devices := _base_preferences(11, old_v11)
+	custom_devices["mouse_bindings"] = PlayerPreferences.DEFAULT_MOUSE_BINDINGS.duplicate()
+	custom_devices["mouse_bindings"][&"technique"] = MOUSE_BUTTON_MIDDLE
+	custom_devices["controller_bindings"] = PlayerPreferences.DEFAULT_CONTROLLER_BINDINGS.duplicate(true)
+	custom_devices["controller_bindings"][&"technique"] = {"kind": "button", "index": JOY_BUTTON_START, "direction": 0}
+	var migrated_devices := PlayerPreferences.new()
+	check(migrated_devices.apply_dictionary(custom_devices), "untouched keyboard default migrates alongside custom device layouts")
+	equal(migrated_devices.keyboard_bindings, PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS, "mouse/controller customization does not prevent the keyboard-only default swap")
+	equal(migrated_devices.mouse_bindings, custom_devices["mouse_bindings"], "keyboard-only swap preserves every custom mouse binding")
+	equal(migrated_devices.controller_bindings, custom_devices["controller_bindings"], "keyboard-only swap preserves every custom controller binding")
+	for schema: int in range(1, 12):
+		var historical: Dictionary = PlayerPreferences.default_keyboard_bindings_for_schema(schema)
+		if schema == 1:
+			historical = PlayerPreferences.LEGACY_DEFAULT_KEYBOARD_BINDINGS.duplicate()
+		elif schema == 2:
+			historical = PlayerPreferences.SCHEMA_V2_DEFAULT_KEYBOARD_BINDINGS.duplicate()
+		elif schema == 3:
+			historical = PlayerPreferences.SCHEMA_V3_DEFAULT_KEYBOARD_BINDINGS.duplicate()
+		var loaded := PlayerPreferences.new()
+		check(loaded.apply_dictionary(_base_preferences(schema, historical)), "schema%d full historical defaults load" % schema)
+		equal(loaded.keyboard_bindings, PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS, "schema%d untouched defaults reach exact Technique V / Evade Q" % schema)
+		var current := loaded.to_dictionary().duplicate(true)
+		equal(current.get("schema_version"), 11, "migration keeps older schema11 readers compatible")
+		equal(current.get("keyboard_defaults_revision"), 1, "every accepted legacy profile persists current layout revision")
+		for round_trip: int in range(3):
+			check(loaded.apply_dictionary(JSON.parse_string(JSON.stringify(current))), "schema%d JSON reload %d succeeds" % [schema, round_trip])
+			equal(loaded.to_dictionary(), current, "migration is idempotent through JSON numeric decoding")
+		# Existing readers ignore unknown fields and write their known schema11
+		# shape. This checks that shape, not execution of an older binary.
+		var old_reader_shape := current.duplicate(true)
+		old_reader_shape.erase("keyboard_defaults_revision")
+		check(loaded.apply_dictionary(old_reader_shape), "old-reader re-save without additive marker still loads")
+		equal(loaded.keyboard_bindings, PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS, "an old-reader re-save cannot oscillate the explicit current V/Q default")
+		var custom := historical.duplicate()
+		custom[&"jump"] = KEY_J
+		custom[&"primary"] = KEY_P
+		custom[&"technique"] = KEY_G
+		custom[&"evade"] = 0
+		var customized := _base_preferences(schema, custom)
+		var mouse := PlayerPreferences.DEFAULT_MOUSE_BINDINGS.duplicate()
+		mouse[&"jump"] = MOUSE_BUTTON_MIDDLE
+		var controller := PlayerPreferences.DEFAULT_CONTROLLER_BINDINGS.duplicate(true)
+		controller[&"technique"] = {"kind": "button", "index": JOY_BUTTON_START, "direction": 0}
+		customized["mouse_bindings"] = mouse
+		customized["controller_bindings"] = controller
+		check(loaded.apply_dictionary(customized), "schema%d custom controls on every device load" % schema)
+		for action: StringName in [&"jump", &"primary", &"technique", &"evade"]:
+			equal(loaded.keyboard_bindings[action], custom[action], "schema%d keeps explicit %s ownership or unbind" % [schema, action])
+		equal(loaded.mouse_bindings, mouse, "keyboard revision leaves custom mouse layout unchanged")
+		equal(loaded.controller_bindings, controller, "keyboard revision leaves custom controller layout unchanged")
+		var custom_round_trip := loaded.to_dictionary().duplicate(true)
+		check(loaded.apply_dictionary(JSON.parse_string(JSON.stringify(custom_round_trip))), "custom controls serialize and reload")
+		equal(loaded.to_dictionary(), custom_round_trip, "all customized settings survive an exact JSON round-trip")
+		var omitted := _base_preferences(schema, {})
+		omitted.erase("keyboard_bindings")
+		check(loaded.apply_dictionary(omitted), "schema%d still accepts an omitted optional keyboard object" % schema)
+		equal(loaded.keyboard_bindings, old_v11 if schema == 11 else PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS, "omitted keyboard data is not proof of a complete old v11 default profile")
+	# Every unrelated customization or explicit unbind prevents the old-pair swap.
+	for action: StringName in old_v11:
+		for keycode: int in [KEY_G, 0]:
+			if old_v11[action] == keycode:
+				continue
+			var custom := old_v11.duplicate()
+			custom[action] = keycode
+			var preserved := PlayerPreferences.new()
+			check(preserved.apply_dictionary(_base_preferences(11, custom)), "old v11 single custom %s=%d loads" % [action, keycode])
+			equal(preserved.keyboard_bindings, custom, "one customization protects the entire prior keyboard layout")
+	for removed_action: StringName in old_v11:
+		var partial := old_v11.duplicate()
+		partial.erase(removed_action)
+		var preserved := PlayerPreferences.new()
+		check(preserved.apply_dictionary(_base_preferences(11, partial)), "partial v11 map loads with historical missing-key defaults")
+		equal(preserved.keyboard_bindings, old_v11, "a missing %s is not silently promoted to proof of untouched full defaults" % removed_action)
+		check(preserved.apply_dictionary(preserved.to_dictionary()), "revision protects a normalized partial map on the next load")
+		equal(preserved.keyboard_bindings, old_v11, "normalized partial map never acquires a delayed swap")
+	var explicit_old := _base_preferences(11, old_v11)
+	explicit_old["keyboard_defaults_revision"] = 1
+	var explicit := PlayerPreferences.new()
+	check(explicit.apply_dictionary(explicit_old), "current-revision user may deliberately retain the exact old layout")
+	equal(explicit.keyboard_bindings, old_v11, "revisioned explicit old defaults are genuine user controls")
+	check(explicit.apply_dictionary(JSON.parse_string(JSON.stringify(explicit.to_dictionary()))), "deliberate old layout round-trips")
+	equal(explicit.keyboard_bindings, old_v11, "current builds never reinterpret a deliberate old layout")
+	# Downgrade limitation: an old reader discarding the marker also discards
+	# evidence that this exact old-default map was deliberately selected.
+	var downgraded_old := explicit.to_dictionary().duplicate(true)
+	downgraded_old.erase("keyboard_defaults_revision")
+	var upgraded_again := PlayerPreferences.new()
+	check(upgraded_again.apply_dictionary(downgraded_old), "downgraded exact old-default profile is still loadable")
+	equal(upgraded_again.keyboard_bindings, PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS, "marker stripping loses deliberate old-default intent but cannot oscillate the new layout")
+	var late_failure := _base_preferences(11, old_v11)
+	var before := explicit.to_dictionary().duplicate(true)
+	for malformed: Dictionary in [
+		{"mouse_bindings": {&"jump": MOUSE_BUTTON_LEFT}},
+		{"controller_bindings": {&"jump": {"kind": "axis", "index": 99, "direction": 1}}},
+	]:
+		var candidate := late_failure.duplicate(true)
+		candidate.merge(malformed, true)
+		check(not explicit.apply_dictionary(candidate), "invalid later device validation rejects a pending keyboard migration")
+		equal(explicit.to_dictionary(), before, "late validation never commits the swap or revision early")
+	for invalid: Variant in [-1, 2, 0.5, NAN, INF, -INF, true, false, "1", null, [], {}]:
+		var candidate := late_failure.duplicate(true)
+		candidate["keyboard_defaults_revision"] = invalid
+		check(not explicit.apply_dictionary(candidate), "invalid keyboard revision fails closed: %s" % str(invalid))
+		check(explicit.last_error.contains("keyboard_defaults_revision"), "invalid revision identifies its field")
+		equal(explicit.to_dictionary(), before, "revision validation leaves every existing setting unchanged")
+	var current_partial := _base_preferences(11, {&"jump": KEY_J})
+	current_partial["keyboard_defaults_revision"] = 1.0
+	check(explicit.apply_dictionary(current_partial), "whole-number JSON revision accepts a partial current profile")
+	equal(explicit.keyboard_bindings[&"technique"], KEY_V, "current revision seeds current Technique for missing fields")
+	equal(explicit.keyboard_bindings[&"evade"], KEY_Q, "current revision seeds current Evade for missing fields")
+	explicit.reset_to_defaults()
+	equal(explicit.keyboard_bindings, PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS, "explicit reset uses the new default layout")
+	equal(explicit.to_dictionary().get("keyboard_defaults_revision"), 1, "explicit reset persists the current layout revision")
 
 
 func _test_keyboard_bindings() -> void:

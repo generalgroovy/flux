@@ -14,6 +14,11 @@ const REQUIRED_ELEMENTS := [
 	"earth", "fire", "water", "wind", "ice", "charge",
 	"light", "dark", "spirit", "chaos", "gravity", "time",
 ]
+const ACTIVE_ELEMENTS := ["earth", "fire", "water", "wind", "ice", "charge", "light", "dark"]
+const RESERVED_ELEMENT_STYLES := ["spirit", "chaos", "gravity", "time"]
+const CHARACTER_BODY_HEIGHTS := {"small": 58, "middle": 68, "large": 76}
+const CHARACTER_DIRECTIONS := ["south", "south_east", "east", "north_east", "north", "north_west", "west", "south_west"]
+const CHARACTER_STATES := ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll", "walk_b", "sprint_b"]
 const REQUIRED_LAYERS := [
 	"deep_water", "world_foundation", "traversable_surface", "surface_detail",
 	"architecture", "props", "actor_shadow", "actor", "spell_underlay",
@@ -81,7 +86,9 @@ func validate() -> bool:
 	var facade_ratio := float(perspective.get("maximum_facade_rise_to_footprint_ratio", 0.0))
 	if facade_ratio <= 0.0 or facade_ratio > 0.85:
 		return _fail("Facade rise exceeds the user-friendly perspective bound")
-	for flag: String in ["cardinal_navigation_unambiguous", "collision_footprint_visible", "door_threshold_visible", "foreground_cutaway_required", "forbid_diamond_grid", "forbid_art_owned_collision"]:
+	if perspective.get("foreground_cutaway_required") != false:
+		return _fail("Automatic foreground cutaway is not part of the current opaque-worldbone contract")
+	for flag: String in ["cardinal_navigation_unambiguous", "collision_footprint_visible", "door_threshold_visible", "worldbone_opaque", "forbid_diamond_grid", "forbid_art_owned_collision"]:
 		if not bool(perspective.get(flag, false)):
 			return _fail("Perspective safety flag is required: %s" % flag)
 	var character: Dictionary = data.get("character_contract", {})
@@ -91,13 +98,23 @@ func validate() -> bool:
 		return _fail("Character head/body readability ratio changed")
 	if _vector2i(character.get("grounded_cell", [])) != Vector2i(96, 96) or _vector2i(character.get("grounded_pivot", [])) != Vector2i(48, 84):
 		return _fail("Character grounded cell/pivot changed outside migration")
-	if not _numeric_array_equals(character.get("gameplay_height_pixels", []), [44.0, 76.0]) \
+	if not _numeric_array_equals(character.get("gameplay_height_pixels", []), [58.0, 76.0]) \
 		or not _numeric_array_equals(character.get("outline_pixels", []), [1.0, 2.0]) \
 		or not _numeric_array_equals(character.get("material_ramp_colors", []), [3.0, 5.0]):
 		return _fail("Character gameplay-scale pixel budget changed")
-	if character.get("required_silhouette_states", []) != ["south", "east", "north", "jump", "cast", "hit"]:
-		return _fail("Character silhouette review states changed")
-	for flag: String in ["separate_ground_shadow", "forbid_realistic_anatomy", "forbid_sexualized_design"]:
+	var body_heights: Dictionary = character.get("body_heights", {})
+	if body_heights.size() != CHARACTER_BODY_HEIGHTS.size():
+		return _fail("Character templates require exactly Small, Middle and Large")
+	for body: String in CHARACTER_BODY_HEIGHTS:
+		var height: Variant = body_heights.get(body)
+		if (not height is int and not height is float) or float(height) != float(CHARACTER_BODY_HEIGHTS[body]):
+			return _fail("Character body height must match the registered three-size template: " + body)
+	if character.get("required_directions", []) != CHARACTER_DIRECTIONS \
+		or character.get("required_silhouette_states", []) != CHARACTER_STATES:
+		return _fail("Character review requires eight headings and ten action/contact rows")
+	if String(character.get("portrait_source", "")) != "south_grounded_occupied_top_third":
+		return _fail("Character portraits must derive from the occupied front-model top third")
+	for flag: String in ["separate_ground_shadow", "preserve_sensible_anatomy", "preserve_fixed_body_scale", "forbid_photorealistic_rendering", "forbid_sexualized_design"]:
 		if not bool(character.get(flag, false)):
 			return _fail("Character readability/safety flag is required: %s" % flag)
 	var layers: Array = data.get("layers", [])
@@ -116,6 +133,9 @@ func validate() -> bool:
 			if not _valid_color(String(color_value)):
 				return _fail("Visual ramp contains an invalid color: %s" % ramp_id)
 	elements = data.get("elements", {})
+	var availability: Dictionary = data.get("element_availability", {})
+	if availability.get("active", []) != ACTIVE_ELEMENTS or availability.get("reserved_style_only", []) != RESERVED_ELEMENT_STYLES:
+		return _fail("Visual language must distinguish eight active elements from four reserved styles")
 	if elements.size() != REQUIRED_ELEMENTS.size():
 		return _fail("Visual language must define all twelve element families")
 	var shapes: Dictionary = {}

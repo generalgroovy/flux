@@ -23,8 +23,8 @@ func run() -> int:
 	equal(_keycodes(&"jump"), [KEY_SPACE], "jump defaults to Space exactly once")
 	equal(_keycodes(&"sprint"), [KEY_SHIFT], "sprint defaults to Shift")
 	equal(_keycodes(&"slide"), [KEY_C], "slide defaults to C")
-	equal(_keycodes(&"evade"), [KEY_V], "V maps only to the default evade action")
-	equal(_keycodes(&"technique"), [KEY_Q], "Q maps only to the default technique action")
+	equal(_keycodes(&"evade"), [KEY_Q], "Q maps only to the default evade action")
+	equal(_keycodes(&"technique"), [KEY_V], "V maps only to the default technique action")
 	check(_has_mouse_button(&"jump", MOUSE_BUTTON_WHEEL_UP), "wheel up triggers semantic jump")
 	check(_has_mouse_button(&"slide", MOUSE_BUTTON_WHEEL_DOWN), "wheel down triggers slide or airborne fast fall")
 	equal(_keycodes(&"interact"), [KEY_F], "walk-up interaction defaults to F")
@@ -40,10 +40,12 @@ func run() -> int:
 	equal(InputRouter.selected_spell_slot_index(3, false, true), 11, "Alt+4 selects position 12")
 	equal(InputRouter.selected_spell_slot_index(1, true, true), 9, "Alt deterministically wins a dual-modifier chord")
 	_test_press_edge_resilience()
+	_test_qv_physical_press_paths()
 	_test_eight_direction_command_vectors()
 	_test_absolute_keyboard_chords()
 	_test_eight_direction_slide_chords()
 	_test_wheel_gesture_safety()
+	_test_modal_paid_action_quarantine()
 	check(_has_joy_button(&"emote", JOY_BUTTON_DPAD_UP), "social speech retains a controller d-pad shortcut")
 	check(not _keycodes(&"primary").has(KEY_SPACE), "primary has no Space keyboard alias")
 	check(_has_mouse_button(&"primary", MOUSE_BUTTON_LEFT), "primary retains left mouse")
@@ -93,6 +95,49 @@ func _test_press_edge_resilience() -> void:
 	check(InputRouter.pressed_edge(false, false, true), "buffered engine transition preserves a short press between samples")
 	check(not InputRouter.pressed_edge(true, true, false), "held action does not repeat without a new transition")
 	check(not InputRouter.pressed_edge(false, false, false), "idle action produces no semantic press")
+
+
+func _test_qv_physical_press_paths() -> void:
+	var router := InputRouter.new()
+	var preferences := PlayerPreferences.new()
+	var profiles: Array[Dictionary] = [preferences.to_dictionary()]
+	var legacy := preferences.to_dictionary().duplicate(true)
+	legacy.erase("keyboard_defaults_revision")
+	legacy["keyboard_bindings"] = PlayerPreferences.SCHEMA_V11_DEFAULT_KEYBOARD_BINDINGS.duplicate()
+	check(preferences.apply_dictionary(legacy), "actual input fixture migrates complete old v11 defaults")
+	profiles.append(preferences.to_dictionary())
+	var custom := legacy.duplicate(true)
+	custom["keyboard_bindings"][&"jump"] = KEY_J
+	check(preferences.apply_dictionary(custom), "actual input fixture retains a customized old Q/V layout")
+	profiles.append(preferences.to_dictionary())
+	for profile: Dictionary in profiles:
+		check(preferences.apply_dictionary(profile), "press-path profile reloads persisted controls")
+		# Start with both legacy physical aliases present, as on a reused InputMap.
+		InputRouter._add_key(&"evade", KEY_V)
+		InputRouter._add_key(&"technique", KEY_Q)
+		check(router.configure_keyboard_bindings(preferences.keyboard_bindings), "applying a profile replaces old aliases before sampling")
+		for action: StringName in [&"evade", &"technique"]:
+			equal(_keycodes(action), [preferences.keyboard_bindings[action]], "only the configured physical key owns %s" % action)
+		for keycode: int in [KEY_Q, KEY_V]:
+			for action: StringName in InputRouter.PAID_ACTIONS:
+				Input.action_release(action)
+			router.discard_transient_movement_input()
+			var action := &"evade" if preferences.keyboard_bindings[&"evade"] == keycode else &"technique"
+			var expected := SimCommand.PRESSED_EVADE if action == &"evade" else SimCommand.PRESSED_TECHNIQUE
+			var event := _physical_key_event(keycode, true)
+			check(event.is_action_pressed(action), "physical Q/V event matches its configured semantic action")
+			check(not event.is_action_pressed(&"technique" if action == &"evade" else &"evade"), "one physical Q/V key cannot match both actions")
+			_deliver_movement_event(router, event)
+			var pressed := router.sample(0, Vector2.ZERO, Vector2.RIGHT)
+			equal(pressed.pressed_actions, expected, "physical Q/V reaches exactly one paid command bit")
+			var held := router.sample(1, Vector2.ZERO, Vector2.RIGHT)
+			equal(held.pressed_actions, 0, "held Q/V does not repeat the semantic press during catch-up")
+			_deliver_movement_event(router, _physical_key_event(keycode, false))
+			var released := router.sample(2, Vector2.ZERO, Vector2.RIGHT)
+			equal(released.pressed_actions, 0, "physical Q/V release does not create another action")
+			equal(released.held_actions, 0, "physical Q/V release leaves no paid held intent")
+	check(router.configure_keyboard_bindings(PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS), "press-path test restores current keyboard defaults")
+	router.discard_transient_movement_input()
 
 
 func _test_absolute_keyboard_chords() -> void:
@@ -221,6 +266,70 @@ func _test_wheel_gesture_safety() -> void:
 	check(not router.consume_wheel_pulse(&"jump", 6001 + InputRouter.WHEEL_GESTURE_QUIET_MS), "stale wheel pulse expires instead of becoming delayed movement")
 	for action: StringName in [&"jump", &"slide"]:
 		Input.action_release(action)
+
+
+func _test_modal_paid_action_quarantine() -> void:
+	var cases: Array[Dictionary] = [
+		{"action": &"jump", "held": SimCommand.HELD_JUMP, "pressed": SimCommand.PRESSED_JUMP},
+		{"action": &"slide", "held": SimCommand.HELD_SLIDE, "pressed": SimCommand.PRESSED_SLIDE},
+		{"action": &"evade", "held": 0, "pressed": SimCommand.PRESSED_EVADE},
+		{"action": &"technique", "held": 0, "pressed": SimCommand.PRESSED_TECHNIQUE},
+		{"action": &"active_1", "held": 0, "pressed": SimCommand.PRESSED_ACTIVE_1},
+		{"action": &"primary", "held": SimCommand.HELD_PRIMARY, "pressed": 0},
+		{"action": &"sprint", "held": SimCommand.HELD_SPRINT, "pressed": 0},
+	]
+	for index: int in range(InputRouter.SPELL_ACTIONS.size()):
+		cases.append({"action": InputRouter.SPELL_ACTIONS[index], "held": SimCommand.SPELL_HELD_BITS[index], "pressed": SimCommand.SPELL_PRESSED_BITS[index]})
+	for case: Dictionary in cases:
+		Input.action_release(case.action)
+		var router := InputRouter.new()
+		router.sample(0, Vector2.ZERO, Vector2.RIGHT)
+		Input.action_press(case.action)
+		router.discard_transient_movement_input()
+		for tick: int in range(1, 4):
+			var blocked := router.sample(tick, Vector2.ZERO, Vector2.RIGHT)
+			check((blocked.held_actions & int(case.held)) == 0 and (blocked.pressed_actions & int(case.pressed)) == 0, "%s held during a modal cannot buy an action when gameplay resumes" % case.action)
+		Input.action_release(case.action)
+		router.sample(4, Vector2.ZERO, Vector2.RIGHT)
+		Input.action_press(case.action)
+		var fresh := router.sample(5, Vector2.ZERO, Vector2.RIGHT)
+		check((fresh.held_actions & int(case.held)) == int(case.held) and (fresh.pressed_actions & int(case.pressed)) == int(case.pressed), "%s works after release and a fresh gameplay press" % case.action)
+		Input.action_release(case.action)
+		router.sample(6, Vector2.ZERO, Vector2.RIGHT)
+	var direction_router := InputRouter.new()
+	Input.action_press(&"move_right")
+	direction_router.discard_transient_movement_input()
+	equal(direction_router.sample(7, Vector2.ZERO, Vector2.RIGHT).move_x, 1000, "ordinary directional movement may resume after a modal")
+	Input.action_release(&"move_right")
+	# Quarantine follows the physical numbered action across Ctrl/Alt changes;
+	# it cannot be bypassed by selecting a different Rapid slot while held.
+	for layer: StringName in [InputRouter.SPELL_CTRL_LAYER_ACTION, InputRouter.SPELL_ALT_LAYER_ACTION]:
+		for index: int in range(InputRouter.SPELL_ACTIONS.size()):
+			var layer_router := InputRouter.new()
+			layer_router.sample(0, Vector2.ZERO, Vector2.RIGHT)
+			var action := InputRouter.SPELL_ACTIONS[index]
+			Input.action_press(action)
+			layer_router.discard_transient_movement_input()
+			Input.action_press(layer)
+			var blocked := layer_router.sample(0, Vector2.ZERO, Vector2.RIGHT)
+			equal(blocked.held_actions, 0, "modifier changes cannot revive a quarantined Rapid hold")
+			equal(blocked.pressed_actions, 0, "modifier changes cannot revive a quarantined spell edge")
+			Input.action_release(action)
+			layer_router.sample(1, Vector2.ZERO, Vector2.RIGHT)
+			Input.action_press(action)
+			var fresh := layer_router.sample(2, Vector2.ZERO, Vector2.RIGHT)
+			var slot := InputRouter.selected_spell_slot_index(index, layer == InputRouter.SPELL_CTRL_LAYER_ACTION, layer == InputRouter.SPELL_ALT_LAYER_ACTION)
+			check(fresh.has_pressed(SimCommand.SPELL_PRESSED_BITS[slot]) and fresh.has_held(SimCommand.SPELL_HELD_BITS[slot]), "fresh layered press restores the correct slot after quarantine")
+			Input.action_release(action)
+			Input.action_release(layer)
+	var wheel_router := InputRouter.new()
+	_deliver_movement_event(wheel_router, _physical_key_event(KEY_SPACE, true))
+	wheel_router.discard_transient_movement_input()
+	_deliver_movement_event(wheel_router, _physical_key_event(KEY_SPACE, false))
+	_deliver_movement_event(wheel_router, _wheel_event(MOUSE_BUTTON_WHEEL_UP, true))
+	var wheel := wheel_router.sample(8, Vector2.ZERO, Vector2.RIGHT)
+	check(wheel.has_pressed(SimCommand.PRESSED_JUMP) and not wheel.has_held(SimCommand.HELD_JUMP), "released quarantine permits a fresh short wheel jump without fabricating a hold")
+	_deliver_movement_event(wheel_router, _wheel_event(MOUSE_BUTTON_WHEEL_UP, false))
 
 
 func _deliver_movement_event(router: InputRouter, event: InputEvent) -> void:

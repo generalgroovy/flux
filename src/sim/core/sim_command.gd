@@ -40,6 +40,9 @@ const SPELL_PRESSED_BITS: Array[int] = [
 	PRESSED_SPELL_11,
 	PRESSED_SPELL_12,
 ]
+# Held spell slots reuse bit positions4-15 in the separate held mask. Only
+# authored repeat-while-held families consume them; ordinary spells stay edge-triggered.
+const SPELL_HELD_BITS: Array[int] = SPELL_PRESSED_BITS
 
 var tick: int
 var entity_id: int
@@ -90,6 +93,13 @@ func has_pressed(action: int) -> bool:
 func first_pressed_spell_slot() -> int:
 	for index: int in range(SPELL_PRESSED_BITS.size()):
 		if has_pressed(SPELL_PRESSED_BITS[index]):
+			return index + 1
+	return 0
+
+
+func first_held_spell_slot() -> int:
+	for index: int in range(SPELL_HELD_BITS.size()):
+		if has_held(SPELL_HELD_BITS[index]):
 			return index + 1
 	return 0
 

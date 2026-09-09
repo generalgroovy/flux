@@ -2,17 +2,18 @@
 extends RefCounted
 
 # Source PNGs are immutable acceptance inputs, not replacements for Godot's
-# imported textures. Deliberately allowlist only the seven live atlas files.
+# imported textures. Deliberately allowlist only the eight live atlas files.
 const SOURCES: Array[Dictionary] = [
-	{"path": "res://art_batches/pixel_v1/magic/export/magic_00.png", "size": 30651, "sha256": "e59c854dc6e685ad5be478a3fc1536509844f74add25d0d0f137ed46cf43636a"},
-	{"path": "res://art_batches/pixel_v1/magic/export/magic_01.png", "size": 41412, "sha256": "822e7a6c2f875fb3577e07d83c68fc283812d2a58101f14627cc7e3fb6efe3f6"},
-	{"path": "res://art_batches/pixel_v1/magic/export/magic_02.png", "size": 16673, "sha256": "fc0e3844c226af1b4d6e2cd31a555f9e86b3a8d832aa76316730a13a84e5457b"},
+	{"path": "res://art_batches/pixel_v1/magic/export/magic_00.png", "size": 40100, "sha256": "1a3932668902b2615023927c4d68b50c635acbc3a8bd84fcb6dfd63ed800d1b2"},
+	{"path": "res://art_batches/pixel_v1/magic/export/magic_01.png", "size": 42951, "sha256": "8ab2789392d725d34340b44ece245fae595a1b2dd3f01e2e3e11138eb52004f7"},
+	{"path": "res://art_batches/pixel_v1/magic/export/magic_02.png", "size": 19596, "sha256": "7c7de1e140879563ad59247387e49466673d9c70a9cb40b9206d62ed273391de"},
 	{"path": "res://art_batches/pixel_v1/map/export/terrain/atlas.png", "size": 3139, "sha256": "9ecd13274c76979357befde01af4322bbb515c03a75b806a713ec7d7ef48a6be"},
 	{"path": "res://art_batches/pixel_v1/map/export/architecture/atlas.png", "size": 13000, "sha256": "a3ad3658a846940b1277c1ca7145801829d8fbb2eeee8f0999d027f0377c0686"},
 	{"path": "res://art_batches/pixel_v1/map/export/props/atlas.png", "size": 9104, "sha256": "3bb037b3038e49c18936ff98b90fa60b568744838a68a599b05f8678fb7c1eaf"},
 	{"path": "res://art_batches/pixel_v1/map/export/ambient/atlas.png", "size": 4870, "sha256": "7c8051cc8a48fec7cf75fedbdda93222c91160de2791cfe9d38b50a31f42fdec"},
+	{"path": "res://art_batches/wellspring_style_v2/runtime/terrain.png", "size": 3824, "sha256": "d5e50f860c18c11e6a34077fb6b99234f850a05a1dbbbecd40ef6b86b2d2eb47"},
 ]
-const TOTAL_BYTES: int = 118849
+const TOTAL_BYTES: int = 136584
 
 
 static func validate_bytes(index: int, bytes: PackedByteArray) -> bool:

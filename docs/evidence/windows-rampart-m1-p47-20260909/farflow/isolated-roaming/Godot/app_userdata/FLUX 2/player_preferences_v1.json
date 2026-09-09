@@ -1,0 +1,173 @@
+{
+	"camera_zoom_percent": 75,
+	"controller_bindings": {
+		"active_1": {
+			"direction": 0,
+			"index": 2,
+			"kind": "button"
+		},
+		"emote": {
+			"direction": 0,
+			"index": 11,
+			"kind": "button"
+		},
+		"evade": {
+			"direction": 1,
+			"index": 4,
+			"kind": "axis"
+		},
+		"interact": {
+			"direction": 0,
+			"index": 3,
+			"kind": "button"
+		},
+		"jump": {
+			"direction": 0,
+			"index": 10,
+			"kind": "button"
+		},
+		"move_down": {
+			"direction": 1,
+			"index": 1,
+			"kind": "axis"
+		},
+		"move_left": {
+			"direction": -1,
+			"index": 0,
+			"kind": "axis"
+		},
+		"move_right": {
+			"direction": 1,
+			"index": 0,
+			"kind": "axis"
+		},
+		"move_up": {
+			"direction": -1,
+			"index": 1,
+			"kind": "axis"
+		},
+		"practice_retry": {
+			"direction": 0,
+			"index": -1,
+			"kind": "none"
+		},
+		"practice_trace": {
+			"direction": 0,
+			"index": -1,
+			"kind": "none"
+		},
+		"primary": {
+			"direction": 1,
+			"index": 5,
+			"kind": "axis"
+		},
+		"slide": {
+			"direction": 0,
+			"index": 0,
+			"kind": "button"
+		},
+		"spell_1": {
+			"direction": 0,
+			"index": -1,
+			"kind": "none"
+		},
+		"spell_2": {
+			"direction": 0,
+			"index": -1,
+			"kind": "none"
+		},
+		"spell_3": {
+			"direction": 0,
+			"index": -1,
+			"kind": "none"
+		},
+		"spell_4": {
+			"direction": 0,
+			"index": -1,
+			"kind": "none"
+		},
+		"spell_layer_alt": {
+			"direction": 0,
+			"index": -1,
+			"kind": "none"
+		},
+		"spell_layer_ctrl": {
+			"direction": 0,
+			"index": -1,
+			"kind": "none"
+		},
+		"sprint": {
+			"direction": 0,
+			"index": 9,
+			"kind": "button"
+		},
+		"technique": {
+			"direction": 0,
+			"index": 1,
+			"kind": "button"
+		}
+	},
+	"farflow_join_address": "127.0.0.1",
+	"high_contrast": false,
+	"keyboard_bindings": {
+		"active_1": 69,
+		"adjust_camera_zoom": 4194342,
+		"adjust_pov_angle": 4194340,
+		"adjust_pov_range": 4194341,
+		"emote": 84,
+		"evade": 81,
+		"interact": 70,
+		"jump": 32,
+		"move_down": 83,
+		"move_left": 65,
+		"move_right": 68,
+		"move_up": 87,
+		"practice_retry": 4194334,
+		"practice_trace": 4194333,
+		"primary": 0,
+		"reset_match": 82,
+		"slide": 67,
+		"spell_1": 49,
+		"spell_2": 50,
+		"spell_3": 51,
+		"spell_4": 52,
+		"spell_layer_alt": 4194328,
+		"spell_layer_ctrl": 4194326,
+		"sprint": 4194325,
+		"technique": 86,
+		"toggle_debug_overlay": 4194332,
+		"toggle_movement_reference": 4194338,
+		"toggle_pov_mode": 4194339
+	},
+	"keyboard_defaults_revision": 1,
+	"mouse_bindings": {
+		"active_1": 2,
+		"emote": 0,
+		"evade": 0,
+		"interact": 0,
+		"jump": 4,
+		"move_down": 0,
+		"move_left": 0,
+		"move_right": 0,
+		"move_up": 0,
+		"practice_retry": 0,
+		"practice_trace": 0,
+		"primary": 1,
+		"slide": 5,
+		"spell_1": 0,
+		"spell_2": 0,
+		"spell_3": 0,
+		"spell_4": 0,
+		"spell_layer_alt": 0,
+		"spell_layer_ctrl": 0,
+		"sprint": 0,
+		"technique": 0
+	},
+	"movement_reference": "world_relative",
+	"pov_angle_degrees": 120,
+	"pov_mode": "full",
+	"pov_range": 720,
+	"reduced_motion": false,
+	"schema_version": 11,
+	"sound_volume_percent": 30
+}

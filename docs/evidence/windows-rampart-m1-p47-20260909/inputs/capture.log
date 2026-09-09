@@ -1,0 +1,56 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (AMD) - ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001506) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.21045.5002)
+
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/s_wayne-quiet.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/oh_tipi-quiet.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/red_baron-quiet.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/earth-bolt-flight.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/earth-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/fire-bolt-flight.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/fire-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/water-bolt-flight.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/water-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/wind-bolt-flight.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/wind-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/ice-bolt-flight.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/ice-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/charge-bolt-flight.png
+LEGACY_WORLD_TRIANGULATION {"cell_anchor":[1592.0,1362.0],"deposit_values":[3002,1000,101,1,1,6,1568000,1322560,0,-1000,16000,250,24,120],"frame":"charge-bolt-terminal","indices":[2,0,1],"local_origin_triangulates":true,"points":[[1576.0,1336.21997070313],[1576.0,1336.0],[1576.431640625,1336.0]],"production_triangles_valid":true}
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/charge-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/light-bolt-flight.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/light-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/dark-bolt-flight.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/dark-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/fire-rapid-flight.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/fire-rapid-terminal.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/older-fire-trail-water-impact-steam-active.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/steam-expired-no-child-matter.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/paid-float-protected.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/paid-float-cast-startup.png
+LEGACY_WORLD_TRIANGULATION {"cell_anchor":[1608.0,1426.0],"deposit_values":[3000,1000,145,1,1,2,1582606,1387284,-294,-955,16000,250,24,156],"frame":"paid-float-ended","indices":[3,0,1,1,2,3],"local_origin_triangulates":true,"points":[[1592.01049804688,1400.22827148438],[1592.0,1400.23364257813],[1592.0,1400.0],[1592.23876953125,1400.0]],"production_triangles_valid":true}
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/paid-float-ended.png
+RAMPART DRAW {"footprint_cells":24,"frame_empty":false,"id":4000,"model_empty":false,"opacity":0.258090909090909,"polygon_count":1,"stats":{"boundary_loops":0,"boundary_markers":0,"clipped_parts":25,"core_stamps":1,"culled":0,"footprint_cells":24,"geometry":{"builds":26,"cache_entries":26,"cache_hits":100,"colliders_considered":2016,"peak_polygons":1,"relevant_colliders":0},"optional_limit":192,"optional_stamps":0}}
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/s_wayne-rampart-formation.png
+RAMPART DRAW {"footprint_cells":24,"frame_empty":false,"id":4000,"model_empty":false,"opacity":0.68,"polygon_count":1,"stats":{"boundary_loops":0,"boundary_markers":0,"clipped_parts":25,"core_stamps":1,"culled":0,"footprint_cells":24,"geometry":{"builds":27,"cache_entries":27,"cache_hits":102,"colliders_considered":2064,"peak_polygons":1,"relevant_colliders":0},"optional_limit":192,"optional_stamps":0}}
+RAMPART PIXELS changed=1761 strong=1640
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/s_wayne-rampart-contact.png
+RAMPART DRAW {"footprint_cells":24,"frame_empty":false,"id":4000,"model_empty":false,"opacity":0.623333333333333,"polygon_count":1,"stats":{"boundary_loops":0,"boundary_markers":0,"clipped_parts":25,"core_stamps":1,"culled":0,"footprint_cells":24,"geometry":{"builds":27,"cache_entries":27,"cache_hits":105,"colliders_considered":2112,"peak_polygons":1,"relevant_colliders":0},"optional_limit":192,"optional_stamps":0}}
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/s_wayne-rampart-decay.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/s_wayne-rampart-expired-passage.png
+RAMPART DRAW {"footprint_cells":24,"frame_empty":false,"id":4000,"model_empty":false,"opacity":0.258090909090909,"polygon_count":1,"stats":{"boundary_loops":0,"boundary_markers":0,"clipped_parts":25,"core_stamps":1,"culled":0,"footprint_cells":24,"geometry":{"builds":27,"cache_entries":27,"cache_hits":108,"colliders_considered":2160,"peak_polygons":1,"relevant_colliders":0},"optional_limit":192,"optional_stamps":0}}
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/oh_tipi-rampart-formation.png
+RAMPART DRAW {"footprint_cells":24,"frame_empty":false,"id":4000,"model_empty":false,"opacity":0.68,"polygon_count":1,"stats":{"boundary_loops":0,"boundary_markers":0,"clipped_parts":25,"core_stamps":1,"culled":0,"footprint_cells":24,"geometry":{"builds":27,"cache_entries":27,"cache_hits":111,"colliders_considered":2208,"peak_polygons":1,"relevant_colliders":0},"optional_limit":192,"optional_stamps":0}}
+RAMPART PIXELS changed=1451 strong=1336
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/oh_tipi-rampart-contact.png
+RAMPART DRAW {"footprint_cells":24,"frame_empty":false,"id":4000,"model_empty":false,"opacity":0.623333333333333,"polygon_count":1,"stats":{"boundary_loops":0,"boundary_markers":0,"clipped_parts":25,"core_stamps":1,"culled":0,"footprint_cells":24,"geometry":{"builds":27,"cache_entries":27,"cache_hits":114,"colliders_considered":2256,"peak_polygons":1,"relevant_colliders":0},"optional_limit":192,"optional_stamps":0}}
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/oh_tipi-rampart-decay.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/oh_tipi-rampart-expired-passage.png
+RAMPART DRAW {"footprint_cells":24,"frame_empty":false,"id":4000,"model_empty":false,"opacity":0.258090909090909,"polygon_count":1,"stats":{"boundary_loops":0,"boundary_markers":0,"clipped_parts":25,"core_stamps":1,"culled":0,"footprint_cells":24,"geometry":{"builds":27,"cache_entries":27,"cache_hits":117,"colliders_considered":2304,"peak_polygons":1,"relevant_colliders":0},"optional_limit":192,"optional_stamps":0}}
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/red_baron-rampart-formation.png
+RAMPART DRAW {"footprint_cells":24,"frame_empty":false,"id":4000,"model_empty":false,"opacity":0.68,"polygon_count":1,"stats":{"boundary_loops":0,"boundary_markers":0,"clipped_parts":25,"core_stamps":1,"culled":0,"footprint_cells":24,"geometry":{"builds":27,"cache_entries":27,"cache_hits":120,"colliders_considered":2352,"peak_polygons":1,"relevant_colliders":0},"optional_limit":192,"optional_stamps":0}}
+RAMPART PIXELS changed=1235 strong=1143
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/red_baron-rampart-contact.png
+RAMPART DRAW {"footprint_cells":24,"frame_empty":false,"id":4000,"model_empty":false,"opacity":0.623333333333333,"polygon_count":1,"stats":{"boundary_loops":0,"boundary_markers":0,"clipped_parts":25,"core_stamps":1,"culled":0,"footprint_cells":24,"geometry":{"builds":27,"cache_entries":27,"cache_hits":123,"colliders_considered":2400,"peak_polygons":1,"relevant_colliders":0},"optional_limit":192,"optional_stamps":0}}
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/red_baron-rampart-decay.png
+RENDERED res://.godot/warm-style-trails-render-rampart-m1-final-v2/red_baron-rampart-expired-passage.png
+PASS:38 integrated actual-game frames;8Bolt flight+terminal,1Rapid flight+terminal,3body sizes,2paid older-trail/new-impact Steam+spent-expiry;optional paid Float/cast/protection expiry;no injected deposits;draw world hashes unchanged

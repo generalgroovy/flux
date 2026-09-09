@@ -1,0 +1,33 @@
+{
+  "status": "six_lossless_import_settings_verified_and_not_ignored",
+  "timing": "final_handoff_check_after_export; files unchanged, ignore exemption added",
+  "fix_alpha_border": false,
+  "mipmaps": false,
+  "compression_mode": 0,
+  "records": [
+    {
+      "file": "assets/sprites/wireframe_motion_v2/large-base.png.import",
+      "sha256": "40cddd86ebeaff415e41f000f7a9106d8562ea0a79f0102a31311f5cd3b21925"
+    },
+    {
+      "file": "assets/sprites/wireframe_motion_v2/large-locomotion.png.import",
+      "sha256": "00e21233b4c61831f95117e4fe58a1ee041d49aa2d271d385ac337711c60a01f"
+    },
+    {
+      "file": "assets/sprites/wireframe_motion_v2/middle-base.png.import",
+      "sha256": "0bba944771fe99f4af0c3eb5bc3104a10a5eb4aba65f5ea8367a15ae265adb19"
+    },
+    {
+      "file": "assets/sprites/wireframe_motion_v2/middle-locomotion.png.import",
+      "sha256": "71054975ab4d1b2fa87f639fdd79b8a255531587c5e51e799f4ece0a9e74f79f"
+    },
+    {
+      "file": "assets/sprites/wireframe_motion_v2/small-base.png.import",
+      "sha256": "a8504b815c477c8d4a229b86406b876429b58d8486ebc177ce876f155928d614"
+    },
+    {
+      "file": "assets/sprites/wireframe_motion_v2/small-locomotion.png.import",
+      "sha256": "6984ebc40d0dd5ed330b25d0bf0d7f4f6759296f23f11fdadfe0f8cbf3e4ff48"
+    }
+  ]
+}

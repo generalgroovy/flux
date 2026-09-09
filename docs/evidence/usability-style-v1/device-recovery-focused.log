@@ -1,0 +1,7 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+character-overview-model: 630 assertions, 0 failures
+character-selection-model: 502 assertions, 0 failures
+character-gallery-integration: 231 assertions, 0 failures
+player-compendium: 5054 assertions, 0 failures
+PASS: 4 selected FLUX2 headless suite(s): character-gallery-integration,character-overview-model,character-selection-model,player-compendium

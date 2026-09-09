@@ -5,6 +5,7 @@
   "shared_rules": {
     "competitive_budget": 100,
     "collision_radius_policy": "shared_foundation_radius",
+    "hurt_radius_policy": "fixed_body_profile_independent_of_animation",
     "visual_template_order": ["small", "middle", "large"],
     "visual_template_height_pixels": {"small": 58, "middle": 68, "large": 76},
     "visual_size_authority": "presentation_only_no_hidden_reach_evasion_or_damage",
@@ -12,6 +13,7 @@
   },
   "profiles": {
     "small": {
+      "hurt_radius": 15000,
       "role": "skirmisher",
       "strengths": ["ground_speed", "flux_recovery", "small_visual_silhouette"],
       "tradeoffs": ["health_reserve", "stamina_reserve"],
@@ -26,6 +28,7 @@
       }
     },
     "middle": {
+      "hurt_radius": 18000,
       "role": "adapter",
       "strengths": ["resource_balance", "route_flexibility", "stable_recovery"],
       "tradeoffs": ["no_extreme_stat", "moderate_commitment"],
@@ -40,6 +43,7 @@
       }
     },
     "large": {
+      "hurt_radius": 21000,
       "role": "anchor",
       "strengths": ["health_reserve", "stamina_reserve", "lane_presence"],
       "tradeoffs": ["ground_speed", "flux_recovery"],

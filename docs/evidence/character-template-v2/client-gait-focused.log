@@ -1,0 +1,9 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+character-gallery-integration: 212 assertions, 0 failures
+CHAMPION_ATLAS_SETUP live=27 extensions=2 capacity=24 decoded_payload_bytes=14745600 configure_us=250188
+cartoon-champion-presenter: 42466 assertions, 0 failures
+minimal-champion-motion: 17736 assertions, 0 failures
+actor-motion-history: 943 assertions, 0 failures
+client-prediction: 10958 assertions, 0 failures
+PASS: 5 selected FLUX2 headless suite(s): character-gallery-integration,actor-motion-history,minimal-champion-motion,cartoon-champion-presenter,client-prediction

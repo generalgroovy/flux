@@ -27,7 +27,13 @@ static func step_player(
 	var requested_wire_id := requested_spell_wire_id
 	if requested_spell_slot == 0 and command.has_pressed(SimCommand.PRESSED_ACTIVE_1):
 		requested_wire_id = state.active_1_wire_id
-	var held_primary_intent := not pressed_cast_intent and command.has_held(SimCommand.HELD_PRIMARY)
+	var held_slot := command.first_held_spell_slot()
+	var repeating_slot := not pressed_cast_intent and held_slot > 0 and bool(CombatTuning.cast_definition(state.spell_wire_id(held_slot)).get("repeat_while_held", false))
+	if repeating_slot:
+		requested_spell_slot = held_slot
+		requested_wire_id = state.spell_wire_id(held_slot)
+		requested_spell_wire_id = requested_wire_id
+	var held_primary_intent := not pressed_cast_intent and not repeating_slot and command.has_held(SimCommand.HELD_PRIMARY)
 	if held_primary_intent:
 		requested_wire_id = state.primary_wire_id
 
@@ -39,7 +45,7 @@ static func step_player(
 			return _release_cast(state, config, projectile_id, field_id, world, events)
 		return null
 	var gate_reason := transition_policy.cast_gate_reason(state)
-	if not gate_reason.is_empty() and (pressed_cast_intent or held_primary_intent):
+	if not gate_reason.is_empty() and (pressed_cast_intent or held_primary_intent or repeating_slot):
 		if pressed_cast_intent:
 			_refuse_cast(state, requested_wire_id, requested_spell_slot, gate_reason, events)
 		return null
@@ -47,7 +53,7 @@ static func step_player(
 	if requested_spell_slot > 0 and requested_spell_wire_id == 0:
 		_refuse_cast(state, 0, requested_spell_slot, "empty_slot", events)
 		return null
-	if not pressed_cast_intent and not held_primary_intent:
+	if not pressed_cast_intent and not held_primary_intent and not repeating_slot:
 		return null
 	if not CombatTuning.is_runtime_wire_id(requested_wire_id) or state.spell_slot_index_for_wire(requested_wire_id) < 0:
 		_refuse_cast(state, requested_wire_id, requested_spell_slot, "kit", events)
@@ -63,7 +69,8 @@ static func step_player(
 	var required_capacity := cast_capacity_requirement(requested_wire_id)
 	if (available_projectiles >= 0 and required_capacity.x > available_projectiles) \
 		or (available_fields >= 0 and required_capacity.y > available_fields):
-		_refuse_cast(state, requested_wire_id, requested_spell_slot, "capacity", events)
+		if pressed_cast_intent:
+			_refuse_cast(state, requested_wire_id, requested_spell_slot, "capacity", events)
 		return null
 	if not PlayerResourcesSystem.spend_flux(state, int(definition["flux_cost"]), config):
 		if pressed_cast_intent:
@@ -115,6 +122,9 @@ static func advance_projectiles(
 	var survivors: Array[ProjectileState] = []
 	var ordered_players: Array[PlayerState] = players.duplicate()
 	ordered_players.sort_custom(func(left: PlayerState, right: PlayerState) -> bool: return left.entity_id < right.entity_id)
+	var projectile_reactions: Array[ElementReactionState] = []
+	if not projectiles.is_empty():
+		projectile_reactions = _projectile_reaction_candidates(reactions, current_tick)
 	for projectile: ProjectileState in projectiles:
 		projectile.previous_x = projectile.position_x
 		projectile.previous_y = projectile.position_y
@@ -137,10 +147,12 @@ static func advance_projectiles(
 		projectile.position_y = result.position.y
 		if projectile.remaining_distance >= 0:
 			projectile.remaining_distance = maxi(0, projectile.remaining_distance - step_distance)
-		if not reactions.is_empty():
+		if not projectile_reactions.is_empty():
 			var split_capacity := mini(available_chemistry_slots, int(owner_material_slots.get(projectile.owner_id, 0)))
-			var interaction := ElementChemistrySystem.projectile_interaction(projectile, reactions, world, config, current_tick, split_capacity)
+			var interaction := ElementChemistrySystem.projectile_interaction(projectile, projectile_reactions, world, config, current_tick, split_capacity)
 			if bool(interaction.get("blocked", false)):
+				_rewind_heavy_cover_contact(projectile, config, world, reactions, current_tick)
+				_explode_projectile(projectile, ordered_players, config, world, reactions, current_tick, events)
 				_emit_terminal(projectile, events, "construct")
 				continue
 			if interaction.get("split_velocity", Vector2i.ZERO) != Vector2i.ZERO and split_capacity > 0:
@@ -150,8 +162,8 @@ static func advance_projectiles(
 					projectile.hit_control_duration_ms, projectile.hit_control_speed, projectile.hit_control_slow_ratio)
 				child.remaining_distance = projectile.remaining_distance
 				child.source_cast_id = projectile.source_cast_id
-				child.material_strength = maxi(1, projectile.material_strength / 2)
-				projectile.material_strength = maxi(1, projectile.material_strength - child.material_strength)
+				child.material_strength = maxi(1, projectile.material_strength / 2) if projectile.material_strength > 0 else 0
+				projectile.material_strength = maxi(1, projectile.material_strength - child.material_strength) if projectile.material_strength > 0 else 0
 				child.chemistry_interaction_mask = projectile.chemistry_interaction_mask
 				child.grazed_entity_ids = projectile.grazed_entity_ids.duplicate()
 				events.append({"type": "chemistry_projectile_split", "projectile": child})
@@ -198,19 +210,93 @@ static func advance_projectiles(
 
 		_resolve_edgeweave(projectile, ordered_players, hit_entity_id, config, events)
 		if hit_entity_id != 0:
+			_explode_projectile(projectile, ordered_players, config, world, reactions, current_tick, events, hit_entity_id)
 			_emit_terminal(projectile, events, "actor")
 			continue
 		if result.wall_normal != Vector2i.ZERO:
 			events.append({"type": "projectile_impact", "projectile_id": projectile.entity_id, "wall_id": result.wall_id})
+			_explode_projectile(projectile, ordered_players, config, world, reactions, current_tick, events)
 			_emit_terminal(projectile, events, "obstacle")
 			continue
 		projectile.lifetime_ticks = maxi(0, projectile.lifetime_ticks - 1)
 		if projectile.lifetime_ticks == 0 or projectile.remaining_distance == 0:
 			events.append({"type": "projectile_expired", "projectile_id": projectile.entity_id})
+			_explode_projectile(projectile, ordered_players, config, world, reactions, current_tick, events)
 			_emit_terminal(projectile, events, "range")
 			continue
 		survivors.append(projectile)
 	return survivors
+
+
+static func _projectile_reaction_candidates(reactions: Array[ElementReactionState], tick: int) -> Array[ElementReactionState]:
+	# Only this synchronous projectile batch owns the list. Wires/tick are fixed;
+	# active reactions may decay from earlier hits, so the query still rechecks
+	# active(). Preserve references/order/duplicates and all original Heavy paths.
+	var candidates: Array[ElementReactionState] = []
+	for reaction: ElementReactionState in reactions:
+		if reaction.active(tick) and reaction.recipe_wire_id in [301,305,306,307,320,325,327,329,335]:
+			candidates.append(reaction)
+	return candidates
+
+
+static func _rewind_heavy_cover_contact(projectile: ProjectileState, config: SimConfig, world: CollisionWorld, reactions: Array[ElementReactionState], tick: int) -> void:
+	if int(CombatTuning.cast_definition(projectile.source_wire_id).get("blast_radius", 0)) <= 0:
+		return
+	var start := Vector2i(projectile.previous_x, projectile.previous_y)
+	var end := Vector2i(projectile.position_x, projectile.position_y)
+	if blast_clear_line(start, end, world, reactions, tick, config) or not blast_clear_line(start, start, world, reactions, tick, config):
+		return
+	# Chemistry detects swept contact before the terminal pass. Its sampled end
+	# may be inside surviving cover: rewind only this new shell to the last clear
+	# point so exposed-side splash works without leaking through the shield.
+	# Integer bisection is bounded and deterministic; a projectile born inside
+	# cover is never teleported outside. Destroyed cover no longer blocks it.
+	var low := 0
+	var high := 1024
+	for _iteration: int in range(10):
+		var middle := (low + high) / 2
+		var point := start + Vector2i((end.x - start.x) * middle / 1024, (end.y - start.y) * middle / 1024)
+		if blast_clear_line(start, point, world, reactions, tick, config):
+			low = middle
+		else:
+			high = middle
+	projectile.position_x = start.x + (end.x - start.x) * low / 1024
+	projectile.position_y = start.y + (end.y - start.y) * low / 1024
+
+
+static func _explode_projectile(projectile: ProjectileState, ordered_players: Array[PlayerState], config: SimConfig, world: CollisionWorld, reactions: Array[ElementReactionState], tick: int, events: Array[Dictionary], excluded_id: int = 0) -> void:
+	var definition := CombatTuning.cast_definition(projectile.source_wire_id)
+	var radius := int(definition.get("blast_radius", 0))
+	# Optical damage splits cannot manufacture full-strength secondary blasts.
+	var damage := mini(projectile.damage, int(definition.get("blast_damage", 0)))
+	if radius <= 0 or damage <= 0:
+		return
+	var origin := Vector2i(projectile.position_x, projectile.position_y)
+	for target: PlayerState in ordered_players:
+		if target.entity_id in [excluded_id, projectile.owner_id] or target.team_id == projectile.team_id or target.health <= 0 or target.spawn_protection_ticks > 0 or MovementSystem.is_combat_intangible(target, config):
+			continue
+		var point := Vector2i(target.position_x, target.position_y)
+		var reach := radius + target.radius
+		if (point - origin).length_squared() > reach * reach or not blast_clear_line(origin, point, world, reactions, tick, config):
+			continue
+		# Height alone evades low bullets, not area explosions. Paid protection
+		# still works; direct-hit victims were already damaged and are excluded.
+		PlayerResourcesSystem.damage(target, damage, config)
+		events.append({"type":"projectile_hit", "projectile_id":projectile.entity_id,
+			"source_wire_id":projectile.source_wire_id, "owner_id":projectile.owner_id,
+			"target_id":target.entity_id, "damage":damage})
+		if target.actor_kind == PlayerState.ActorKind.CHAMPION and target.health == 0:
+			events.append({"type":"champion_defeated", "projectile_id":projectile.entity_id,
+				"owner_id":projectile.owner_id, "target_id":target.entity_id})
+
+
+static func blast_clear_line(origin: Vector2i, point: Vector2i, world: CollisionWorld, reactions: Array[ElementReactionState], tick: int, config: SimConfig) -> bool:
+	if not ElementChemistrySystem.clear_line(origin, point, world):
+		return false
+	for cover: ElementReactionState in reactions:
+		if cover.health > 0 and cover.active(tick) and ElementChemistrySystem._segment_enters(cover, origin, point, tick, config):
+			return false
+	return true
 
 
 static func _emit_terminal(projectile: ProjectileState, events: Array[Dictionary], reason: String) -> void:
@@ -283,7 +369,7 @@ static func _release_projectiles(
 	var rotations: Array = definition.get("projectile_rotations", [Vector2i(1000, 0)])
 	var angles: Array = definition.get("projectile_angles_degrees", [0])
 	@warning_ignore("integer_division")
-	var spawn_distance: int = state.radius + radius + CombatTuning.PROJECTILE_SPAWN_CLEARANCE
+	var spawn_distance: int = MovementTuning.PLAYER_RADIUS + radius + CombatTuning.PROJECTILE_SPAWN_CLEARANCE
 	if locked_distance >= 0:
 		spawn_distance = mini(spawn_distance, locked_distance)
 	var directions: Array[Vector2i] = []
@@ -400,7 +486,7 @@ static func _release_field(
 
 static func _field_placement(state: PlayerState, direction: Vector2i, maximum_range: int, field_radius: int, world: CollisionWorld) -> Vector2i:
 	const TRACE_STEP: int = 8_000
-	var minimum_range := state.radius + field_radius
+	var minimum_range := MovementTuning.PLAYER_RADIUS + field_radius
 	var distance := maximum_range
 	while distance >= minimum_range:
 		@warning_ignore("integer_division")
@@ -802,6 +888,15 @@ static func _resolve_edgeweave(
 
 
 static func _segment_circle_hit(projectile: ProjectileState, target: PlayerState, radius: int) -> bool:
+	# The clamped integer closest point stays between the current endpoints.
+	# Strict separation preserves tangency; negative radii keep the old square.
+	if radius >= 0 and (
+		target.position_x < mini(projectile.previous_x, projectile.position_x) - radius
+		or target.position_x > maxi(projectile.previous_x, projectile.position_x) + radius
+		or target.position_y < mini(projectile.previous_y, projectile.position_y) - radius
+		or target.position_y > maxi(projectile.previous_y, projectile.position_y) + radius
+	):
+		return false
 	var delta_x: int = projectile.position_x - projectile.previous_x
 	var delta_y: int = projectile.position_y - projectile.previous_y
 	var offset_x: int = target.position_x - projectile.previous_x

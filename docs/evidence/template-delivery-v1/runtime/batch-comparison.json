@@ -1,0 +1,302 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-09",
+  "status": "retained for integration pending independent boundary review and root Full checkpoint",
+  "scope": "ephemeral candidate reaction list only; no protocol/caps/cost/geometry change",
+  "baseline_metadata": {
+    "ability_sha256": "60c3f233ba996776b4ebbbb5089632d8376e9bc1d1da517ba4c139f5533cd835",
+    "champion_sha256": "e7c2aa60244bbaea097a28ae5d55c2a2c6cd604685d3bcec60d82988f5211e99",
+    "cpu": "AMD Ryzen 3 7320U with Radeon Graphics",
+    "engine": "4.7.1-stable (official)",
+    "measurement": "SimWorld.step only; snapshots timed separately; no rendered FPS or socket/network capacity claim",
+    "protocol": 47,
+    "seed": 608120,
+    "sim_world_sha256": "8acc7c3539776c9c8d0d2ad308563083becfe8d07274a276646ea63ece008112",
+    "snapshot_schema": 18,
+    "stage_mirror_enabled": true,
+    "tick_rate": 120,
+    "version": 1
+  },
+  "candidate_metadata": {
+    "ability_sha256": "60c3f233ba996776b4ebbbb5089632d8376e9bc1d1da517ba4c139f5533cd835",
+    "champion_sha256": "e7c2aa60244bbaea097a28ae5d55c2a2c6cd604685d3bcec60d82988f5211e99",
+    "cpu": "AMD Ryzen 3 7320U with Radeon Graphics",
+    "engine": "4.7.1-stable (official)",
+    "measurement": "SimWorld.step only; snapshots timed separately; no rendered FPS or socket/network capacity claim",
+    "protocol": 47,
+    "seed": 608120,
+    "sim_world_sha256": "8acc7c3539776c9c8d0d2ad308563083becfe8d07274a276646ea63ece008112",
+    "snapshot_schema": 18,
+    "stage_mirror_enabled": true,
+    "tick_rate": 120,
+    "version": 1
+  },
+  "source_sha256": {
+    "baseline_combat": "788cc518ef1b59ae042b58792b777cc45d26296425a4ecd5a5fcc1a907f6b874",
+    "candidate_combat_canonical_lf": "fafc913872bb2ec4957aa109b943b669c9d4580c0e1c6b7ece2092f5bb391bc3",
+    "final_files": {
+      "tests/scenarios/runtime_projectile_drill.gd": "753b5aa36c406034b30a0aa32ddc878be3f440a3bc149a8e2517afb1271b5e78",
+      "tests/unit/test_combat.gd": "4b433b10a45ff5c2d686f658fabcf761ee1141b03e75489718ff45cd88b0519a",
+      "tests/scenarios/runtime_stress_probe.gd": "c8a7b543c75f24d3df13533f75be16269749a3016dee3b32fef2288c99132160",
+      "tests/scenarios/projectile_reaction_batch_equivalence.gd": "ae31991dadd6ab53e85f17a73bbb86f1926a4b661102cb29528fb04712f16fd4",
+      "tests/scenarios/runtime_stage_sampler.gd": "d0f6e3de16c4ad453047220378d6a199e59234f61453b0ccf7e91b77aeb2c6a4",
+      "tests/scenarios/runtime_drill_chemistry.gd": "931bf738929dff19a6ae5c1d08abef109fa99162d8bcb63497b184eeb9162aca",
+      "src/sim/chemistry/element_chemistry_system.gd": "b0596612896e2c475994894a99aff40ed2e047866d1ec536eec767bd66d8b28f",
+      "content/abilities/foundation_abilities_v1.json": "60c3f233ba996776b4ebbbb5089632d8376e9bc1d1da517ba4c139f5533cd835",
+      "src/sim/combat/combat_system.gd": "cdce33b7ee0528c57870cd1a3f5ce8faa52bee9517ec56962bdf8551b6aebd1a",
+      "src/sim/world/collision_world.gd": "377ef92412714fe58ff0358fb956bbf3ea89420b51843be6e8e5d6ca7df94605",
+      "content/champions/foundation_champions_v1.json": "e7c2aa60244bbaea097a28ae5d55c2a2c6cd604685d3bcec60d82988f5211e99",
+      "tests/scenarios/runtime_drill_sampler.gd": "36cd28b1bf09fe6b22cb5d5e0f94670f9426de11457671e3afe64873c64d9e56",
+      "tests/scenarios/runtime_drill_combat.gd": "55d95de76b94cea563a3fcd758ad63b2273f7b78f28fd17c4e04d1214496daec",
+      "src/sim/core/sim_world.gd": "8acc7c3539776c9c8d0d2ad308563083becfe8d07274a276646ea63ece008112"
+    }
+  },
+  "stress_comparison": {
+    "ignored_timing_fields": [
+      "tick_us",
+      "snapshot_capture_and_pack_us",
+      "stage_mirror_us",
+      "slowest_stage_samples",
+      "ticks_over_8333_us"
+    ],
+    "non_timing_differences": [
+      [],
+      []
+    ],
+    "repeats": [
+      {
+        "repeat": 1,
+        "baseline_step_us": {
+          "max": 12166,
+          "median": 4226,
+          "p95": 9586,
+          "p99": 10198
+        },
+        "candidate_step_us": {
+          "max": 14076,
+          "median": 3545,
+          "p95": 8093,
+          "p99": 8824
+        },
+        "p95_saved_us": 1493,
+        "p95_saved_percent": 15.57,
+        "baseline_projectile_us": {
+          "max": 8672,
+          "median": 2653,
+          "p95": 6883,
+          "p99": 7182
+        },
+        "candidate_projectile_us": {
+          "max": 10248,
+          "median": 2221,
+          "p95": 5484,
+          "p99": 5647
+        },
+        "baseline_over_budget_ticks": 127,
+        "candidate_over_budget_ticks": 19,
+        "final_hash": "d4dafe70a3c318a00dc1ced33d4bdcd49b7ae18308a9f33f31f0dfe9f1bede25",
+        "all_checkpoint_hashes_equal": true
+      },
+      {
+        "repeat": 2,
+        "baseline_step_us": {
+          "max": 12777,
+          "median": 3668,
+          "p95": 9595,
+          "p99": 10004
+        },
+        "candidate_step_us": {
+          "max": 11665,
+          "median": 3456,
+          "p95": 7990,
+          "p99": 8235
+        },
+        "p95_saved_us": 1605,
+        "p95_saved_percent": 16.73,
+        "baseline_projectile_us": {
+          "max": 7244,
+          "median": 2478,
+          "p95": 6918,
+          "p99": 7042
+        },
+        "candidate_projectile_us": {
+          "max": 6095,
+          "median": 2146,
+          "p95": 5423,
+          "p99": 5595
+        },
+        "baseline_over_budget_ticks": 124,
+        "candidate_over_budget_ticks": 6,
+        "final_hash": "d4dafe70a3c318a00dc1ced33d4bdcd49b7ae18308a9f33f31f0dfe9f1bede25",
+        "all_checkpoint_hashes_equal": true
+      }
+    ],
+    "non_timing_report": {
+      "actor_count": 8,
+      "authority_caps": {
+        "deposits": 128,
+        "fields": 32,
+        "owner_fields": 4,
+        "owner_projectiles": 16,
+        "projectiles": 128,
+        "reactions": 32
+      },
+      "cast_refusals_by_reason": {
+        "capacity": 12,
+        "flux": 1
+      },
+      "checkpoints": [
+        "f5be8cc63ffeb060731545ae4490a0e2cf771e58b742045c21e7c0e18209f213",
+        "ff56f0b957f1082a2c9e66d55e9697c1b90531e1f17a864d97f4acea835ae9c1",
+        "65e7e23c5a4a32b4f2dfec5d0e2e0de3a639de595b3cfae7c7e52ff88de18f9f",
+        "2dfcbc05f5a7a0794085d960f22a8d3a78854b1d27acd18406725f5e31e5d142",
+        "8cca411ad3031e4e8e761aea63a71296b1e2c3047e1b2138677e40028bea83a0",
+        "ab1af6fd50cfc96747253e9cbb837d5f2be584197bad0a50381e7e44ba4a0e83",
+        "0576386d54ce193bf33e40934f1e23349c67b65f0b3f3c7eabdf3052936657df",
+        "34019bec04afdd8722205b34e6242d90482b2538c89e7da1de0fa9111c422061",
+        "bc6d8624962ef5843feaa901c0093b29829df79312daa93795e5df7510e650af",
+        "6c2e65eae44a43cf6488317fe97d6c54ec89b56395da055e3f766be392ab116c",
+        "9713ab4076f968cbe28815310e5d161ee754a119c970b07490c9c32111a2b415",
+        "44efac6cbba51cac5174e226e7bea808e742c589cb45b27a74dbd0c26be02ebe"
+      ],
+      "cleanup_ticks": 741,
+      "danger_overflow_samples": 0,
+      "expiry_events": [
+        202,
+        0
+      ],
+      "field_opening_observations": {},
+      "field_phase_timings": {},
+      "final_hash": "d4dafe70a3c318a00dc1ced33d4bdcd49b7ae18308a9f33f31f0dfe9f1bede25",
+      "maximum_overflow_projectiles_fields_events_targets": [
+        0,
+        0,
+        30,
+        0
+      ],
+      "network_scope": "eight-player presentation envelope",
+      "obstacle_count": 0,
+      "obstacle_path": "indexed with bounded/small-map fallback",
+      "paid_starts_by_delivery": {
+        "burst": 17,
+        "heavy": 18,
+        "rapid": 122
+      },
+      "peak_candidate_wire_bytes": 6152,
+      "peak_datagram_bytes": 1296,
+      "peak_datagram_count": 6,
+      "peak_deposits": 107,
+      "peak_events": 42,
+      "peak_fields": 0,
+      "peak_projectiles": 96,
+      "peak_reactions": 32,
+      "peak_snapshot_raw_bytes": 16356,
+      "projectile_releases_by_delivery": {
+        "burst": 85,
+        "heavy": 18,
+        "rapid": 122
+      },
+      "repeat": 1,
+      "sample_ticks": 720,
+      "scenario": "legal-eight-mixed-deliveries",
+      "snapshot_rejections": 0,
+      "snapshot_samples": 360,
+      "source": "ordinary paid spell commands"
+    }
+  },
+  "every_tick_frozen_old_batch_oracles": {
+    "mixed": {
+      "all_tick_state_event_trace_sha256": "ff2bdc56764b3440760974b7e81ae2b11660e83c1180c32d8d3673ec6de7f543",
+      "cleanup_ticks": 741,
+      "event_counts": {
+        "cast_refused": 13,
+        "cast_started": 157,
+        "chemistry_formed": 76,
+        "projectile_expired": 202,
+        "projectile_spawned": 225
+      },
+      "final_hash": "d4dafe70a3c318a00dc1ced33d4bdcd49b7ae18308a9f33f31f0dfe9f1bede25",
+      "measured_query_totals": {
+        "active_reactions_visited": 439229,
+        "already_masked_after_geometry": 0,
+        "bounds_rejected": 105029,
+        "clear_line_calls": 17,
+        "clear_line_samples": 255,
+        "contains_samples": 75,
+        "eligible_reactions": 105057,
+        "entry_calls": 105057,
+        "entry_hits": 17,
+        "interaction_calls": 21474,
+        "reactions_visited": 578770
+      },
+      "production_step_us": {
+        "max": 11169,
+        "median": 3618,
+        "p95": 7902,
+        "p99": 8471
+      },
+      "sample_ticks": 720,
+      "ticks_over_8333_us": 8
+    },
+    "fields": {
+      "all_tick_state_event_trace_sha256": "b04ecc54f2b37bb4b21871441231b9e4c2ffa498130de15f46a432663531f669",
+      "cleanup_ticks": 680,
+      "event_counts": {
+        "cast_refused": 12,
+        "cast_started": 76,
+        "chemistry_formed": 19,
+        "field_expired": 32,
+        "field_spawned": 32,
+        "field_triggered": 32,
+        "projectile_expired": 58,
+        "projectile_hit": 13,
+        "projectile_spawned": 76
+      },
+      "final_hash": "a7b73080a9cd23cb4581c0caba5e3273aaa98a1c90fa61f8dce2231d0a9ee753",
+      "measured_query_totals": {
+        "active_reactions_visited": 45215,
+        "already_masked_after_geometry": 0,
+        "bounds_rejected": 13415,
+        "clear_line_calls": 5,
+        "clear_line_samples": 104,
+        "contains_samples": 19,
+        "eligible_reactions": 13422,
+        "entry_calls": 13422,
+        "entry_hits": 5,
+        "interaction_calls": 5527,
+        "reactions_visited": 70437
+      },
+      "production_step_us": {
+        "max": 5152,
+        "median": 2167,
+        "p95": 3242,
+        "p99": 3541
+      },
+      "sample_ticks": 720,
+      "ticks_over_8333_us": 0
+    }
+  },
+  "verification": {
+    "mixed_baseline": "PASS: runtime-stress-probe; 16551 assertions; 0 failures; legal network-gap samples=0",
+    "mixed_candidate": "PASS: runtime-stress-probe; 16551 assertions; 0 failures; legal network-gap samples=0",
+    "mixed_oracle": "PASS: runtime-projectile-drill; 5669 assertions; 0 failures",
+    "field_oracle": "PASS: runtime-projectile-drill; 5646 assertions; 0 failures",
+    "batch_edges": "PASS: projectile-reaction-batch-equivalence; 28957 assertions; 0 failures; seed=609123; fixtures=288; batch_steps=864; recipe_wires=36",
+    "normal_full_added_assertions": 16,
+    "all_final_stderr_bytes": 0
+  },
+  "failed_attempt": "Initial typed-array ternary empty branch raised Godot runtime assignment errors while state assertions passed. All affected receipts rejected; owned candidate profile stopped. Replaced conditional expression with typed empty array plus normal if, then clean v2 oracles/profile and v3 stronger edges passed. Failed raw outputs retained in failed-typed-array-attempt.zip. Launch gate now rejects nonempty stderr as well as nonzero exit.",
+  "equivalence_conditions": [
+    "Synchronous batch has fixed tick and recipe wire IDs, no reaction append or activation; hit mutations only consume health/capacity, shorten decay or mark pulse.",
+    "Candidate list preserves original order, duplicates and live references. Original inner active/wire/health/mask checks are unchanged.",
+    "Only projectile_interaction receives the candidate list. Heavy rewind, explosions, blasts, cover and line queries retain the complete original list.",
+    "Health-zero active reactions are retained. Earlier destruction remains visible to later projectiles through unchanged active check.",
+    "Public standalone interaction function is untouched, as are the nine-line circle guard and previous inventory/chemistry guards."
+  ],
+  "limits": [
+    "One paired current-source two-repeat benchmark on this machine; no sustained120Hz certification.",
+    "P99/max spikes remain; no rendered FPS/physical network/human play acceptance.",
+    "Mixed fixture peaks96projectiles/32reactions, zero Fields; Field opening is separately exact-old-batch checked, not a Field timing speedup claim.",
+    "Full/export/provenance/updated delivery are root-owned and not performed by this lane."
+  ]
+}

@@ -2,8 +2,13 @@
 .autocode/*
 !.autocode/roles.toml
 *.import
+# The shared skeleton validator checks exact decoded RGBA; preserve these
+# lossless import settings instead of recreating alpha-border repair defaults.
+!assets/sprites/wireframe_motion_v2/*.png.import
 *.pyc
 __pycache__/
 build/
 exports/
 reports/
+node_modules/
+*.lnk

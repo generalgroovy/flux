@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "completed_at_utc": "2026-09-09T12:39:34.6356998Z",
+  "tier": "focused",
+  "result": "failed",
+  "failure": "Godot emitted a script/import/runtime error.",
+  "source": {
+    "head": "a1aa02807626823d0fbc1e25e75441ca3b7f4d36",
+    "branch": "main",
+    "dirty": true,
+    "current_state_sha256": "e3ce32d30e869c1c83fcedc0e5dad1f08282be502f7f7add7d4faab39fd3e55a",
+    "asset_inventory_sha256": null
+  },
+  "requested_suite_ids": [
+    "element-trails,element-chemistry,projectile-chemistry-integration,session-snapshot,pixel-magic-library,burst-projectile-presenter,pixel-assets-export,chemistry-practice-coach,player-compendium,cartoon-champion-presenter,pov-presentation,wireframe-body-presenter"
+  ],
+  "executed": {
+    "current_state_check": true,
+    "asset_inventory": false,
+    "doctor": true,
+    "import": false,
+    "deterministic_suite_runner": true,
+    "suite_count": 12,
+    "assertion_count": 172367,
+    "suites": [
+      {
+        "id": "player-compendium",
+        "assertions": 5063,
+        "failures": 0
+      },
+      {
+        "id": "projectile-chemistry-integration",
+        "assertions": 10289,
+        "failures": 0
+      },
+      {
+        "id": "element-chemistry",
+        "assertions": 1948,
+        "failures": 0
+      },
+      {
+        "id": "element-trails",
+        "assertions": 15998,
+        "failures": 0
+      },
+      {
+        "id": "chemistry-practice-coach",
+        "assertions": 4184,
+        "failures": 4
+      },
+      {
+        "id": "cartoon-champion-presenter",
+        "assertions": 42670,
+        "failures": 0
+      },
+      {
+        "id": "burst-projectile-presenter",
+        "assertions": 16539,
+        "failures": 0
+      },
+      {
+        "id": "pixel-magic-library",
+        "assertions": 42744,
+        "failures": 0
+      },
+      {
+        "id": "pixel-assets-export",
+        "assertions": 72,
+        "failures": 0
+      },
+      {
+        "id": "session-snapshot",
+        "assertions": 1456,
+        "failures": 0
+      },
+      {
+        "id": "pov-presentation",
+        "assertions": 882,
+        "failures": 0
+      },
+      {
+        "id": "wireframe-body-presenter",
+        "assertions": 30522,
+        "failures": 0
+      }
+    ],
+    "boot_120_hz": false,
+    "package_and_installer": false
+  },
+  "duration_ms": 32769,
+  "stderr_bytes": 0,
+  "logs": [
+    {
+      "path": ".godot/windows-tests/suite.log",
+      "sha256": "cac80bf1a762da2f9de09d9fb77bba816bff370ce976246ece91c57393d8efce",
+      "stderr_bytes": 0
+    }
+  ]
+}

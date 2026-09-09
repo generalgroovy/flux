@@ -1,0 +1,33 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+element-chemistry: 1948 assertions, 0 failures
+foundation-spell-presenter: 2957 assertions, 0 failures
+heavy-blast-presenter: 40535 assertions, 0 failures
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+FAIL: even the last budget-exhausted imprint tick keeps readable value
+burst-projectile-presenter: 16091 assertions, 24 failures
+FAIL: reviewed exact-equivalent contact bounds guard; future drift requires renewed audit (expected=b0596612896e2c475994894a99aff40ed2e047866d1ec536eec767bd66d8b28f actual=e79c9ffb736d5a8199491df49f5e2e4124bc0e9074f0f03d0ab226459117abb0)
+pixel-magic-library: 42744 assertions, 1 failures
+FAIL: 25 assertion(s) failed

@@ -1,0 +1,16 @@
+ERROR: Unable to open file: res://.godot/imported/jan-wicked-v1.png-99c5588357a60633e194d15494df8180.ctex.
+   at: _load_data (scene/resources/compressed_texture.cpp:45)
+   GDScript backtrace (most recent call first):
+       [0] _initialize (res://probe.gd:9)
+ERROR: Failed loading resource: res://.godot/imported/jan-wicked-v1.png-99c5588357a60633e194d15494df8180.ctex.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _initialize (res://probe.gd:9)
+ERROR: Failed loading resource: res://assets/sprites/champions_v3/style_v1/jan-wicked-v1.png.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _initialize (res://probe.gd:9)
+ERROR: Error loading resource: 'res://assets/sprites/champions_v3/style_v1/jan-wicked-v1.png'.
+   at: load (core/core_bind.cpp:82)
+   GDScript backtrace (most recent call first):
+       [0] _initialize (res://probe.gd:9)

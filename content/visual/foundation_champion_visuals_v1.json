@@ -20,7 +20,7 @@
     "runtime_scale": [1.0, 1.0],
     "shared_cell": [96, 96],
     "shared_feet_pivot": [48, 84],
-    "shared_collision_policy": "universal_gameplay_collision_independent_of_visual_body_type",
+    "shared_collision_policy": "shared_wall_clearance_size_specific_hurtboxes_independent_of_pose_pixels",
     "animation_policy": "pose_and_offset_only_never_rescale_body",
     "templates": {
       "small": {
@@ -79,7 +79,7 @@
     "states": ["walk", "sprint"],
     "coverage": "every_foundation_champion_has_every_diagonal_locomotion_cell",
     "gaits": ["idle", "forward", "backward", "strafe_left", "strafe_right"],
-    "facing_policy": "travel_when_free_aim_when_combat_intent",
+    "facing_policy": "live_aim_all_poses_independent_of_travel",
     "authority": "presentation_only"
   },
   "diagonal_evasion_contract": {

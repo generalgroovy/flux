@@ -1,0 +1,3401 @@
+{
+  "audio": "not_started",
+  "authority_unchanged_by_draw": true,
+  "deposits": "never_injected",
+  "frames": [
+    {
+      "champion": "s_wayne",
+      "deposits": [],
+      "file": "s_wayne-quiet.png",
+      "footprint_audit": {
+        "checked_parts": 0,
+        "checked_triangles": 0,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_quiet_body_size",
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "tick": 0,
+      "trail_count": 0,
+      "world_hash": "ff5f2fc72180b1e50f7c7cff3e8147a3a7a952e5c0c967b502906bd9b189ee6e"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [],
+      "file": "oh_tipi-quiet.png",
+      "footprint_audit": {
+        "checked_parts": 0,
+        "checked_triangles": 0,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_quiet_body_size",
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "tick": 0,
+      "trail_count": 0,
+      "world_hash": "8a492e569268333863b5d0b2f7c27ab6c365a9eda443ca08e2abfcd151685437"
+    },
+    {
+      "champion": "red_baron",
+      "deposits": [],
+      "file": "red_baron-quiet.png",
+      "footprint_audit": {
+        "checked_parts": 0,
+        "checked_triangles": 0,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_quiet_body_size",
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "tick": 0,
+      "trail_count": 0,
+      "world_hash": "6085b3f279b2f223849ce83c5328b2cea9f0c95db2ae8d50f7588935b1d729a3"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 16,
+          "element": 1,
+          "expiry_tick": 196,
+          "id": 3000,
+          "position": [
+            1568000,
+            1376480
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 24,
+          "element": 1,
+          "expiry_tick": 204,
+          "id": 3001,
+          "position": [
+            1568000,
+            1345760
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        }
+      ],
+      "element": "earth",
+      "file": "earth-bolt-flight.png",
+      "footprint_audit": {
+        "checked_parts": 32,
+        "checked_triangles": 192,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 159
+      },
+      "projectiles": [
+        {
+          "element": 1,
+          "id": 1000,
+          "material_strength": 1000,
+          "position": [
+            1568000,
+            1345760
+          ],
+          "source_cast_id": 1000
+        }
+      ],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "tick": 25,
+      "trail_count": 2,
+      "wire_id": 159,
+      "world_hash": "dc9d7d98f50c4a70b24b22943a5de204c8eac0b34ebec1c97f44d2a485897eff"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 16,
+          "element": 1,
+          "expiry_tick": 196,
+          "id": 3000,
+          "position": [
+            1568000,
+            1376480
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 24,
+          "element": 1,
+          "expiry_tick": 204,
+          "id": 3001,
+          "position": [
+            1568000,
+            1345760
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 32,
+          "element": 1,
+          "expiry_tick": 212,
+          "id": 3002,
+          "position": [
+            1568000,
+            1315040
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 40,
+          "element": 1,
+          "expiry_tick": 220,
+          "id": 3003,
+          "position": [
+            1568000,
+            1284320
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 57,
+          "element": 1,
+          "expiry_tick": 657,
+          "id": 3004,
+          "position": [
+            1568000,
+            1220000
+          ],
+          "radius": 32000,
+          "role": "terminal",
+          "source_cast_id": 1000,
+          "strength": 1000
+        }
+      ],
+      "element": "earth",
+      "file": "earth-bolt-terminal.png",
+      "footprint_audit": {
+        "checked_parts": 98,
+        "checked_triangles": 564,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 159
+      },
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "terminal_id": 3004,
+      "terminal_radius": 32000,
+      "tick": 66,
+      "trail_count": 4,
+      "wire_id": 159,
+      "world_hash": "5b9cf72dd817a5d9084cd8486fa5631029c5784928ab963df341c37a0c745d2a"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 8,
+          "element": 2,
+          "expiry_tick": 140,
+          "id": 3000,
+          "position": [
+            1568000,
+            1402720
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 16,
+          "element": 2,
+          "expiry_tick": 148,
+          "id": 3001,
+          "position": [
+            1568000,
+            1366880
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        }
+      ],
+      "element": "fire",
+      "file": "fire-bolt-flight.png",
+      "footprint_audit": {
+        "checked_parts": 30,
+        "checked_triangles": 188,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 145
+      },
+      "projectiles": [
+        {
+          "element": 2,
+          "id": 1000,
+          "material_strength": 1000,
+          "position": [
+            1568000,
+            1366880
+          ],
+          "source_cast_id": 1000
+        }
+      ],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "tick": 17,
+      "trail_count": 2,
+      "wire_id": 145,
+      "world_hash": "191592d22f8d52ffe2ed9ea931fcb09c4f48800f8bfa1f160725a56dbba61383"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 8,
+          "element": 2,
+          "expiry_tick": 140,
+          "id": 3000,
+          "position": [
+            1568000,
+            1402720
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 16,
+          "element": 2,
+          "expiry_tick": 148,
+          "id": 3001,
+          "position": [
+            1568000,
+            1366880
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 24,
+          "element": 2,
+          "expiry_tick": 156,
+          "id": 3002,
+          "position": [
+            1568000,
+            1331040
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 32,
+          "element": 2,
+          "expiry_tick": 164,
+          "id": 3003,
+          "position": [
+            1568000,
+            1295200
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 49,
+          "element": 2,
+          "expiry_tick": 529,
+          "id": 3004,
+          "position": [
+            1568000,
+            1220000
+          ],
+          "radius": 32000,
+          "role": "terminal",
+          "source_cast_id": 1000,
+          "strength": 1000
+        }
+      ],
+      "element": "fire",
+      "file": "fire-bolt-terminal.png",
+      "footprint_audit": {
+        "checked_parts": 96,
+        "checked_triangles": 560,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 145
+      },
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "terminal_id": 3004,
+      "terminal_radius": 32000,
+      "tick": 58,
+      "trail_count": 4,
+      "wire_id": 145,
+      "world_hash": "56524307fa0dd1eea91a326e49b802749e548158e66403c839ae9a80cee94782"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 8,
+          "element": 3,
+          "expiry_tick": 176,
+          "id": 3000,
+          "position": [
+            1568000,
+            1398800
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 16,
+          "element": 3,
+          "expiry_tick": 184,
+          "id": 3001,
+          "position": [
+            1568000,
+            1360400
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        }
+      ],
+      "element": "water",
+      "file": "water-bolt-flight.png",
+      "footprint_audit": {
+        "checked_parts": 30,
+        "checked_triangles": 188,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 140
+      },
+      "projectiles": [
+        {
+          "element": 3,
+          "id": 1000,
+          "material_strength": 1000,
+          "position": [
+            1568000,
+            1360400
+          ],
+          "source_cast_id": 1000
+        }
+      ],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "tick": 17,
+      "trail_count": 2,
+      "wire_id": 140,
+      "world_hash": "adb1fb3578938da2e3a21cba79bbad5a1ee59fe258946da9363508edd922b292"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 8,
+          "element": 3,
+          "expiry_tick": 176,
+          "id": 3000,
+          "position": [
+            1568000,
+            1398800
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 16,
+          "element": 3,
+          "expiry_tick": 184,
+          "id": 3001,
+          "position": [
+            1568000,
+            1360400
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 24,
+          "element": 3,
+          "expiry_tick": 192,
+          "id": 3002,
+          "position": [
+            1568000,
+            1322000
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 32,
+          "element": 3,
+          "expiry_tick": 200,
+          "id": 3003,
+          "position": [
+            1568000,
+            1283600
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 46,
+          "element": 3,
+          "expiry_tick": 646,
+          "id": 3004,
+          "position": [
+            1568000,
+            1220000
+          ],
+          "radius": 32000,
+          "role": "terminal",
+          "source_cast_id": 1000,
+          "strength": 1000
+        }
+      ],
+      "element": "water",
+      "file": "water-bolt-terminal.png",
+      "footprint_audit": {
+        "checked_parts": 94,
+        "checked_triangles": 556,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 140
+      },
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "terminal_id": 3004,
+      "terminal_radius": 32000,
+      "tick": 55,
+      "trail_count": 4,
+      "wire_id": 140,
+      "world_hash": "f7314aa21c15831c745183ce5103fbe01a76d8a5f825e482901e8bd1295ef056"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 16,
+          "element": 4,
+          "expiry_tick": 112,
+          "id": 3000,
+          "position": [
+            1568000,
+            1376480
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 24,
+          "element": 4,
+          "expiry_tick": 120,
+          "id": 3001,
+          "position": [
+            1568000,
+            1345760
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        }
+      ],
+      "element": "wind",
+      "file": "wind-bolt-flight.png",
+      "footprint_audit": {
+        "checked_parts": 32,
+        "checked_triangles": 192,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 163
+      },
+      "projectiles": [
+        {
+          "element": 4,
+          "id": 1000,
+          "material_strength": 1000,
+          "position": [
+            1568000,
+            1345760
+          ],
+          "source_cast_id": 1000
+        }
+      ],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "tick": 25,
+      "trail_count": 2,
+      "wire_id": 163,
+      "world_hash": "38006cee6de3ad8a24d92bd639764e53cba9ba28790c43e2a1c713703a536106"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 16,
+          "element": 4,
+          "expiry_tick": 112,
+          "id": 3000,
+          "position": [
+            1568000,
+            1376480
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 24,
+          "element": 4,
+          "expiry_tick": 120,
+          "id": 3001,
+          "position": [
+            1568000,
+            1345760
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 32,
+          "element": 4,
+          "expiry_tick": 128,
+          "id": 3002,
+          "position": [
+            1568000,
+            1315040
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 40,
+          "element": 4,
+          "expiry_tick": 136,
+          "id": 3003,
+          "position": [
+            1568000,
+            1284320
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 57,
+          "element": 4,
+          "expiry_tick": 417,
+          "id": 3004,
+          "position": [
+            1568000,
+            1220000
+          ],
+          "radius": 32000,
+          "role": "terminal",
+          "source_cast_id": 1000,
+          "strength": 1000
+        }
+      ],
+      "element": "wind",
+      "file": "wind-bolt-terminal.png",
+      "footprint_audit": {
+        "checked_parts": 98,
+        "checked_triangles": 564,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 163
+      },
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "terminal_id": 3004,
+      "terminal_radius": 32000,
+      "tick": 66,
+      "trail_count": 4,
+      "wire_id": 163,
+      "world_hash": "ca87edcbcc0a0ba13527249cce73b0ec713913e8aea50eeb96bafe2aef732119"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 16,
+          "element": 5,
+          "expiry_tick": 184,
+          "id": 3000,
+          "position": [
+            1568000,
+            1376480
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 24,
+          "element": 5,
+          "expiry_tick": 192,
+          "id": 3001,
+          "position": [
+            1568000,
+            1345760
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        }
+      ],
+      "element": "ice",
+      "file": "ice-bolt-flight.png",
+      "footprint_audit": {
+        "checked_parts": 32,
+        "checked_triangles": 192,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 170
+      },
+      "projectiles": [
+        {
+          "element": 5,
+          "id": 1000,
+          "material_strength": 1000,
+          "position": [
+            1568000,
+            1345760
+          ],
+          "source_cast_id": 1000
+        }
+      ],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "tick": 25,
+      "trail_count": 2,
+      "wire_id": 170,
+      "world_hash": "f1ba92d194104a96baac2d21b99eecb599112b5c16e5949532f306717d7d87d8"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 16,
+          "element": 5,
+          "expiry_tick": 184,
+          "id": 3000,
+          "position": [
+            1568000,
+            1376480
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 24,
+          "element": 5,
+          "expiry_tick": 192,
+          "id": 3001,
+          "position": [
+            1568000,
+            1345760
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 32,
+          "element": 5,
+          "expiry_tick": 200,
+          "id": 3002,
+          "position": [
+            1568000,
+            1315040
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 40,
+          "element": 5,
+          "expiry_tick": 208,
+          "id": 3003,
+          "position": [
+            1568000,
+            1284320
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 57,
+          "element": 5,
+          "expiry_tick": 657,
+          "id": 3004,
+          "position": [
+            1568000,
+            1220000
+          ],
+          "radius": 32000,
+          "role": "terminal",
+          "source_cast_id": 1000,
+          "strength": 1000
+        }
+      ],
+      "element": "ice",
+      "file": "ice-bolt-terminal.png",
+      "footprint_audit": {
+        "checked_parts": 98,
+        "checked_triangles": 564,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 170
+      },
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "terminal_id": 3004,
+      "terminal_radius": 32000,
+      "tick": 66,
+      "trail_count": 4,
+      "wire_id": 170,
+      "world_hash": "22ffb66d9e2c416da416531de2fb890d6d62edc5624df48f69acfd1d49dbe1fe"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 8,
+          "element": 6,
+          "expiry_tick": 104,
+          "id": 3000,
+          "position": [
+            1568000,
+            1404480
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 16,
+          "element": 6,
+          "expiry_tick": 112,
+          "id": 3001,
+          "position": [
+            1568000,
+            1363520
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        }
+      ],
+      "element": "charge",
+      "file": "charge-bolt-flight.png",
+      "footprint_audit": {
+        "checked_parts": 32,
+        "checked_triangles": 192,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 101
+      },
+      "projectiles": [
+        {
+          "element": 6,
+          "id": 1000,
+          "material_strength": 1000,
+          "position": [
+            1568000,
+            1363520
+          ],
+          "source_cast_id": 1000
+        }
+      ],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "tick": 17,
+      "trail_count": 2,
+      "wire_id": 101,
+      "world_hash": "74d0859c0be1d76cf7de82c0118e8fefd943b937163d43d2bdba4c3570f1a75f"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 8,
+          "element": 6,
+          "expiry_tick": 104,
+          "id": 3000,
+          "position": [
+            1568000,
+            1404480
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 16,
+          "element": 6,
+          "expiry_tick": 112,
+          "id": 3001,
+          "position": [
+            1568000,
+            1363520
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 24,
+          "element": 6,
+          "expiry_tick": 120,
+          "id": 3002,
+          "position": [
+            1568000,
+            1322560
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 32,
+          "element": 6,
+          "expiry_tick": 128,
+          "id": 3003,
+          "position": [
+            1568000,
+            1281600
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 45,
+          "element": 6,
+          "expiry_tick": 405,
+          "id": 3004,
+          "position": [
+            1568000,
+            1220000
+          ],
+          "radius": 32000,
+          "role": "terminal",
+          "source_cast_id": 1000,
+          "strength": 1000
+        }
+      ],
+      "element": "charge",
+      "file": "charge-bolt-terminal.png",
+      "footprint_audit": {
+        "checked_parts": 98,
+        "checked_triangles": 564,
+        "invalid_parts": [],
+        "legacy_world_failures": [
+          {
+            "cell_anchor": [
+              1592.0,
+              1362.0
+            ],
+            "deposit_values": [
+              3002,
+              1000,
+              101,
+              1,
+              1,
+              6,
+              1568000,
+              1322560,
+              0,
+              -1000,
+              16000,
+              250,
+              24,
+              120
+            ],
+            "frame": "charge-bolt-terminal",
+            "indices": [
+              2,
+              0,
+              1
+            ],
+            "local_origin_triangulates": true,
+            "points": [
+              [
+                1576.0,
+                1336.21997070313
+              ],
+              [
+                1576.0,
+                1336.0
+              ],
+              [
+                1576.431640625,
+                1336.0
+              ]
+            ],
+            "production_triangles_valid": true
+          }
+        ]
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 101
+      },
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "terminal_id": 3004,
+      "terminal_radius": 32000,
+      "tick": 54,
+      "trail_count": 4,
+      "wire_id": 101,
+      "world_hash": "bac36c9c47d0a57a0481fa6da813d117a6ccdcc82c426fb98e1bc76c07d4ac12"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 16,
+          "element": 7,
+          "expiry_tick": 160,
+          "id": 3000,
+          "position": [
+            1568000,
+            1376480
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 24,
+          "element": 7,
+          "expiry_tick": 168,
+          "id": 3001,
+          "position": [
+            1568000,
+            1345760
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        }
+      ],
+      "element": "light",
+      "file": "light-bolt-flight.png",
+      "footprint_audit": {
+        "checked_parts": 32,
+        "checked_triangles": 192,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 173
+      },
+      "projectiles": [
+        {
+          "element": 7,
+          "id": 1000,
+          "material_strength": 1000,
+          "position": [
+            1568000,
+            1345760
+          ],
+          "source_cast_id": 1000
+        }
+      ],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "tick": 25,
+      "trail_count": 2,
+      "wire_id": 173,
+      "world_hash": "c46df2ac5561100130deae6ba1a2c667cd05ee3b57a5c96571fa742cba986c74"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 16,
+          "element": 7,
+          "expiry_tick": 160,
+          "id": 3000,
+          "position": [
+            1568000,
+            1376480
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 24,
+          "element": 7,
+          "expiry_tick": 168,
+          "id": 3001,
+          "position": [
+            1568000,
+            1345760
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 32,
+          "element": 7,
+          "expiry_tick": 176,
+          "id": 3002,
+          "position": [
+            1568000,
+            1315040
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 40,
+          "element": 7,
+          "expiry_tick": 184,
+          "id": 3003,
+          "position": [
+            1568000,
+            1284320
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 57,
+          "element": 7,
+          "expiry_tick": 537,
+          "id": 3004,
+          "position": [
+            1568000,
+            1220000
+          ],
+          "radius": 32000,
+          "role": "terminal",
+          "source_cast_id": 1000,
+          "strength": 1000
+        }
+      ],
+      "element": "light",
+      "file": "light-bolt-terminal.png",
+      "footprint_audit": {
+        "checked_parts": 98,
+        "checked_triangles": 564,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 173
+      },
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "terminal_id": 3004,
+      "terminal_radius": 32000,
+      "tick": 66,
+      "trail_count": 4,
+      "wire_id": 173,
+      "world_hash": "a30007b9af3f210ff0400267e513a1f96e475fdfb7e5a276c6136acb5e9eec4a"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 16,
+          "element": 8,
+          "expiry_tick": 172,
+          "id": 3000,
+          "position": [
+            1568000,
+            1371520
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 24,
+          "element": 8,
+          "expiry_tick": 180,
+          "id": 3001,
+          "position": [
+            1568000,
+            1338240
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        }
+      ],
+      "element": "dark",
+      "file": "dark-bolt-flight.png",
+      "footprint_audit": {
+        "checked_parts": 30,
+        "checked_triangles": 188,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 107400,
+        "flux_before": 114400,
+        "flux_paid": 7000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 142
+      },
+      "projectiles": [
+        {
+          "element": 8,
+          "id": 1000,
+          "material_strength": 1000,
+          "position": [
+            1568000,
+            1338240
+          ],
+          "source_cast_id": 1000
+        }
+      ],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "tick": 25,
+      "trail_count": 2,
+      "wire_id": 142,
+      "world_hash": "582fbe601d5b75af6d6dda0f3ced09cd3da0958d13675c9fbdc04faf464a4f2b"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 16,
+          "element": 8,
+          "expiry_tick": 172,
+          "id": 3000,
+          "position": [
+            1568000,
+            1371520
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 24,
+          "element": 8,
+          "expiry_tick": 180,
+          "id": 3001,
+          "position": [
+            1568000,
+            1338240
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 32,
+          "element": 8,
+          "expiry_tick": 188,
+          "id": 3002,
+          "position": [
+            1568000,
+            1304960
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 40,
+          "element": 8,
+          "expiry_tick": 196,
+          "id": 3003,
+          "position": [
+            1568000,
+            1271680
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 53,
+          "element": 8,
+          "expiry_tick": 533,
+          "id": 3004,
+          "position": [
+            1568000,
+            1220000
+          ],
+          "radius": 32000,
+          "role": "terminal",
+          "source_cast_id": 1000,
+          "strength": 1000
+        }
+      ],
+      "element": "dark",
+      "file": "dark-bolt-terminal.png",
+      "footprint_audit": {
+        "checked_parts": 92,
+        "checked_triangles": 552,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_bolt",
+      "payment": {
+        "flux_after": 107400,
+        "flux_before": 114400,
+        "flux_paid": 7000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 142
+      },
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "terminal_id": 3004,
+      "terminal_radius": 32000,
+      "tick": 62,
+      "trail_count": 4,
+      "wire_id": 142,
+      "world_hash": "95e0a3dca019565ad0380eebbd1b81c3328d5884035b3acee295156dc79dd399"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [],
+      "element": "fire",
+      "file": "fire-rapid-flight.png",
+      "footprint_audit": {
+        "checked_parts": 0,
+        "checked_triangles": 0,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_rapid",
+      "payment": {
+        "flux_after": 112400,
+        "flux_before": 114400,
+        "flux_paid": 2000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 180
+      },
+      "projectiles": [
+        {
+          "element": 2,
+          "id": 1000,
+          "material_strength": 1000,
+          "position": [
+            1568000,
+            1330934
+          ],
+          "source_cast_id": 1000
+        }
+      ],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "tick": 19,
+      "trail_count": 0,
+      "wire_id": 180,
+      "world_hash": "142624a7071d1b7650de8fd0e19d16f1f22f5a3f59917a58f429e50865fa1900"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [
+        {
+          "created_tick": 40,
+          "element": 2,
+          "expiry_tick": 520,
+          "id": 3000,
+          "position": [
+            1568000,
+            1220000
+          ],
+          "radius": 32000,
+          "role": "terminal",
+          "source_cast_id": 1000,
+          "strength": 1000
+        }
+      ],
+      "element": "fire",
+      "file": "fire-rapid-terminal.png",
+      "footprint_audit": {
+        "checked_parts": 34,
+        "checked_triangles": 180,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_rapid",
+      "payment": {
+        "flux_after": 112400,
+        "flux_before": 114400,
+        "flux_paid": 2000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1220000
+        ],
+        "tick": 0,
+        "wire_id": 180
+      },
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "source_cast_id": 1000,
+      "terminal_id": 3000,
+      "terminal_radius": 32000,
+      "tick": 49,
+      "trail_count": 0,
+      "wire_id": 180,
+      "world_hash": "970c7ac81486296ca4c47b11cd25e97e52cc4108bfc32120a8a18e8058e24766"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [],
+      "file": "older-fire-trail-water-impact-steam-active.png",
+      "fire_payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1140000
+        ],
+        "tick": 0,
+        "wire_id": 145
+      },
+      "footprint_audit": {
+        "checked_parts": 38,
+        "checked_triangles": 188,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_older_trail_new_impact_steam",
+      "older_trail": [
+        3000,
+        1000,
+        145,
+        1,
+        1,
+        2,
+        1568000,
+        1402720,
+        0,
+        -1000,
+        16000,
+        250,
+        8,
+        140
+      ],
+      "projectiles": [],
+      "reaction_count": 1,
+      "reaction_draws": [
+        {
+          "footprint_cells": 38,
+          "frame_empty": false,
+          "id": 4000,
+          "model_empty": false,
+          "opacity": 0.44,
+          "polygon_count": 1,
+          "stats": {
+            "boundary_loops": 0,
+            "boundary_markers": 0,
+            "clipped_parts": 39,
+            "core_stamps": 1,
+            "culled": 0,
+            "footprint_cells": 38,
+            "geometry": {
+              "builds": 22,
+              "cache_entries": 22,
+              "cache_hits": 95,
+              "colliders_considered": 1872,
+              "peak_polygons": 1,
+              "relevant_colliders": 0
+            },
+            "optional_limit": 192,
+            "optional_stamps": 0
+          }
+        }
+      ],
+      "reaction_values": [
+        4000,
+        310,
+        1,
+        1,
+        1568000,
+        1402720,
+        1568000,
+        1402720,
+        0,
+        -1000,
+        28,
+        57,
+        246,
+        306,
+        30000,
+        0,
+        0,
+        0,
+        -1,
+        1000,
+        1001,
+        1568000,
+        1402720,
+        0,
+        0,
+        0
+      ],
+      "spent_live_projectiles_at_formation": [
+        {
+          "damage": 10000,
+          "id": 1000,
+          "material_strength": 0,
+          "source_cast_id": 1000
+        }
+      ],
+      "tick": 69,
+      "trail_count": 0,
+      "water_payment": {
+        "flux_after": 102400,
+        "flux_before": 108400,
+        "flux_paid": 6000,
+        "slot": 2,
+        "target": [
+          1568000,
+          1402720
+        ],
+        "tick": 20,
+        "wire_id": 140
+      },
+      "world_hash": "93d5ffd76ab541450d1dd2891f1445a5565c9c38442ba95d132e0e4eac19a33e"
+    },
+    {
+      "champion": "oh_tipi",
+      "chemistry_formed_events": [
+        {
+          "owner_id": 1,
+          "reaction_id": 4000,
+          "recipe_wire_id": 310,
+          "type": "chemistry_formed"
+        }
+      ],
+      "deposits": [],
+      "file": "steam-expired-no-child-matter.png",
+      "fire_payment": {
+        "flux_after": 108400,
+        "flux_before": 114400,
+        "flux_paid": 6000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1140000
+        ],
+        "tick": 0,
+        "wire_id": 145
+      },
+      "footprint_audit": {
+        "checked_parts": 0,
+        "checked_triangles": 0,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "actual_paid_older_trail_new_impact_steam",
+      "no_payload_regeneration_through_tick": 307,
+      "older_trail": [
+        3000,
+        1000,
+        145,
+        1,
+        1,
+        2,
+        1568000,
+        1402720,
+        0,
+        -1000,
+        16000,
+        250,
+        8,
+        140
+      ],
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "reaction_values": [
+        4000,
+        310,
+        1,
+        1,
+        1568000,
+        1402720,
+        1568000,
+        1402720,
+        0,
+        -1000,
+        28,
+        57,
+        246,
+        306,
+        30000,
+        0,
+        0,
+        0,
+        -1,
+        1000,
+        1001,
+        1568000,
+        1402720,
+        0,
+        0,
+        0
+      ],
+      "spent_live_projectiles_at_formation": [
+        {
+          "damage": 10000,
+          "id": 1000,
+          "material_strength": 0,
+          "source_cast_id": 1000
+        }
+      ],
+      "tick": 307,
+      "trail_count": 0,
+      "water_payment": {
+        "flux_after": 102400,
+        "flux_before": 108400,
+        "flux_paid": 6000,
+        "slot": 2,
+        "target": [
+          1568000,
+          1402720
+        ],
+        "tick": 20,
+        "wire_id": 140
+      },
+      "world_hash": "d537749639b990e4f0757462d8fbc8d3467f547df1b8ce910516b54d5df79f77"
+    },
+    {
+      "champion": "s_wayne",
+      "deposits": [],
+      "file": "paid-float-protected.png",
+      "float_ticks": 215,
+      "footprint_audit": {
+        "checked_parts": 0,
+        "checked_triangles": 0,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "paid_jump_float",
+      "projectiles": [],
+      "protection": "PROTECTED / FLOAT",
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "stamina_paid": 55233,
+      "tick": 12,
+      "trail_count": 0,
+      "world_hash": "4f13af3c01ed4025a5dd30fd6ef555c464fad4182030f1eb8b164fa6e2b839a8"
+    },
+    {
+      "champion": "s_wayne",
+      "deposits": [],
+      "file": "paid-float-cast-startup.png",
+      "flux_paid": 6000,
+      "footprint_audit": {
+        "checked_parts": 0,
+        "checked_triangles": 0,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "paid_cast_during_float",
+      "pending_wire": 145,
+      "projectiles": [],
+      "protection": "PROTECTED / FLOAT",
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "tick": 13,
+      "trail_count": 0,
+      "world_hash": "82d982ecd6f629b15c926886518b4ab91742379a527075e0d0a20621edf9f25b"
+    },
+    {
+      "champion": "s_wayne",
+      "deposits": [
+        {
+          "created_tick": 24,
+          "element": 2,
+          "expiry_tick": 156,
+          "id": 3000,
+          "position": [
+            1582606,
+            1387284
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 32,
+          "element": 2,
+          "expiry_tick": 164,
+          "id": 3001,
+          "position": [
+            1572069,
+            1353057
+          ],
+          "radius": 16000,
+          "role": "trail",
+          "source_cast_id": 1000,
+          "strength": 250
+        },
+        {
+          "created_tick": 36,
+          "element": 2,
+          "expiry_tick": 516,
+          "id": 3002,
+          "position": [
+            1568053,
+            1340009
+          ],
+          "radius": 32000,
+          "role": "terminal",
+          "source_cast_id": 1000,
+          "strength": 1000
+        }
+      ],
+      "file": "paid-float-ended.png",
+      "footprint_audit": {
+        "checked_parts": 65,
+        "checked_triangles": 370,
+        "invalid_parts": [],
+        "legacy_world_failures": [
+          {
+            "cell_anchor": [
+              1608.0,
+              1426.0
+            ],
+            "deposit_values": [
+              3000,
+              1000,
+              145,
+              1,
+              1,
+              2,
+              1582606,
+              1387284,
+              -294,
+              -955,
+              16000,
+              250,
+              24,
+              156
+            ],
+            "frame": "paid-float-ended",
+            "indices": [
+              3,
+              0,
+              1,
+              1,
+              2,
+              3
+            ],
+            "local_origin_triangulates": true,
+            "points": [
+              [
+                1592.01049804688,
+                1400.22827148438
+              ],
+              [
+                1592.0,
+                1400.23364257813
+              ],
+              [
+                1592.0,
+                1400.0
+              ],
+              [
+                1592.23876953125,
+                1400.0
+              ]
+            ],
+            "production_triangles_valid": true
+          }
+        ]
+      },
+      "kind": "paid_float_released",
+      "projectiles": [],
+      "protection": "",
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "tick": 113,
+      "trail_count": 2,
+      "world_hash": "27d583ab048b231e404d975bd5c4981a2f8b19b3f560728b7cd244681c19acb5"
+    },
+    {
+      "champion": "s_wayne",
+      "deposits": [],
+      "file": "s_wayne-rampart-formation.png",
+      "first": {
+        "flux_after": 121200,
+        "flux_before": 123200,
+        "flux_paid": 2000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 0,
+        "wire_id": 184
+      },
+      "footprint_audit": {
+        "checked_parts": 24,
+        "checked_triangles": 48,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "paid_earth_mirror_lifecycle",
+      "projectiles": [],
+      "reaction_count": 1,
+      "reaction_draws": [
+        {
+          "footprint_cells": 24,
+          "frame_empty": false,
+          "id": 4000,
+          "model_empty": false,
+          "opacity": 0.258090909090909,
+          "polygon_count": 1,
+          "stats": {
+            "boundary_loops": 0,
+            "boundary_markers": 0,
+            "clipped_parts": 25,
+            "core_stamps": 1,
+            "culled": 0,
+            "footprint_cells": 24,
+            "geometry": {
+              "builds": 26,
+              "cache_entries": 26,
+              "cache_hits": 100,
+              "colliders_considered": 2016,
+              "peak_polygons": 1,
+              "relevant_colliders": 0
+            },
+            "optional_limit": 192,
+            "optional_stamps": 0
+          }
+        }
+      ],
+      "reaction_values": [
+        4000,
+        301,
+        1,
+        1,
+        1568000,
+        1280000,
+        1568000,
+        1280000,
+        0,
+        -1000,
+        59,
+        81,
+        456,
+        504,
+        18000,
+        64000,
+        32000,
+        0,
+        -1,
+        1000,
+        1001,
+        1568000,
+        1216000,
+        0,
+        0,
+        0
+      ],
+      "second": {
+        "flux_after": 119200,
+        "flux_before": 121200,
+        "flux_paid": 2000,
+        "slot": 2,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 30,
+        "wire_id": 184
+      },
+      "tick": 60,
+      "trail_count": 0,
+      "world_hash": "0773a2ec3a1fc4a10de0c1f7ae268fb2f9baba4128ff646a5b7f23e7358c656f"
+    },
+    {
+      "actual_ridge_changed_pixels": 1761,
+      "actual_ridge_strong_pixels": 1640,
+      "champion": "s_wayne",
+      "contact_id": 100004000,
+      "contact_position": [
+        1568000,
+        1316000
+      ],
+      "deposits": [],
+      "file": "s_wayne-rampart-contact.png",
+      "first": {
+        "flux_after": 121200,
+        "flux_before": 123200,
+        "flux_paid": 2000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 0,
+        "wire_id": 184
+      },
+      "footprint_audit": {
+        "checked_parts": 24,
+        "checked_triangles": 48,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "paid_earth_mirror_lifecycle",
+      "projectiles": [],
+      "reaction_count": 1,
+      "reaction_draws": [
+        {
+          "footprint_cells": 24,
+          "frame_empty": false,
+          "id": 4000,
+          "model_empty": false,
+          "opacity": 0.68,
+          "polygon_count": 1,
+          "stats": {
+            "boundary_loops": 0,
+            "boundary_markers": 0,
+            "clipped_parts": 25,
+            "core_stamps": 1,
+            "culled": 0,
+            "footprint_cells": 24,
+            "geometry": {
+              "builds": 27,
+              "cache_entries": 27,
+              "cache_hits": 102,
+              "colliders_considered": 2064,
+              "peak_polygons": 1,
+              "relevant_colliders": 0
+            },
+            "optional_limit": 192,
+            "optional_stamps": 0
+          }
+        }
+      ],
+      "reaction_values": [
+        4000,
+        301,
+        1,
+        1,
+        1568000,
+        1280000,
+        1568000,
+        1280000,
+        0,
+        -1000,
+        59,
+        81,
+        456,
+        504,
+        18000,
+        64000,
+        32000,
+        0,
+        -1,
+        1000,
+        1001,
+        1568000,
+        1216000,
+        0,
+        0,
+        0
+      ],
+      "second": {
+        "flux_after": 119200,
+        "flux_before": 121200,
+        "flux_paid": 2000,
+        "slot": 2,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 30,
+        "wire_id": 184
+      },
+      "tick": 202,
+      "trail_count": 0,
+      "world_hash": "11dfa4cf891faef292ffbbb34c66451abc321d030a60f56dfec22baaa735e03d"
+    },
+    {
+      "actual_ridge_changed_pixels": 1761,
+      "actual_ridge_strong_pixels": 1640,
+      "champion": "s_wayne",
+      "contact_id": 100004000,
+      "contact_position": [
+        1568000,
+        1316000
+      ],
+      "deposits": [],
+      "file": "s_wayne-rampart-decay.png",
+      "first": {
+        "flux_after": 121200,
+        "flux_before": 123200,
+        "flux_paid": 2000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 0,
+        "wire_id": 184
+      },
+      "footprint_audit": {
+        "checked_parts": 24,
+        "checked_triangles": 48,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "paid_earth_mirror_lifecycle",
+      "projectiles": [],
+      "reaction_count": 1,
+      "reaction_draws": [
+        {
+          "footprint_cells": 24,
+          "frame_empty": false,
+          "id": 4000,
+          "model_empty": false,
+          "opacity": 0.623333333333333,
+          "polygon_count": 1,
+          "stats": {
+            "boundary_loops": 0,
+            "boundary_markers": 0,
+            "clipped_parts": 25,
+            "core_stamps": 1,
+            "culled": 0,
+            "footprint_cells": 24,
+            "geometry": {
+              "builds": 27,
+              "cache_entries": 27,
+              "cache_hits": 105,
+              "colliders_considered": 2112,
+              "peak_polygons": 1,
+              "relevant_colliders": 0
+            },
+            "optional_limit": 192,
+            "optional_stamps": 0
+          }
+        }
+      ],
+      "reaction_values": [
+        4000,
+        301,
+        1,
+        1,
+        1568000,
+        1280000,
+        1568000,
+        1280000,
+        0,
+        -1000,
+        59,
+        81,
+        456,
+        504,
+        18000,
+        64000,
+        32000,
+        0,
+        -1,
+        1000,
+        1001,
+        1568000,
+        1216000,
+        0,
+        0,
+        0
+      ],
+      "second": {
+        "flux_after": 119200,
+        "flux_before": 121200,
+        "flux_paid": 2000,
+        "slot": 2,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 30,
+        "wire_id": 184
+      },
+      "tick": 460,
+      "trail_count": 0,
+      "world_hash": "1fb5f5597a2bfb3f6d99cb499be19fdd131562c61e0a9e460c2631f95f1d3da7"
+    },
+    {
+      "actual_ridge_changed_pixels": 1761,
+      "actual_ridge_strong_pixels": 1640,
+      "champion": "s_wayne",
+      "contact_id": 100004000,
+      "contact_position": [
+        1568000,
+        1316000
+      ],
+      "deposits": [],
+      "file": "s_wayne-rampart-expired-passage.png",
+      "first": {
+        "flux_after": 121200,
+        "flux_before": 123200,
+        "flux_paid": 2000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 0,
+        "wire_id": 184
+      },
+      "footprint_audit": {
+        "checked_parts": 0,
+        "checked_triangles": 0,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "paid_earth_mirror_lifecycle",
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "reaction_values": [
+        4000,
+        301,
+        1,
+        1,
+        1568000,
+        1280000,
+        1568000,
+        1280000,
+        0,
+        -1000,
+        59,
+        81,
+        456,
+        504,
+        18000,
+        64000,
+        32000,
+        0,
+        -1,
+        1000,
+        1001,
+        1568000,
+        1216000,
+        0,
+        0,
+        0
+      ],
+      "second": {
+        "flux_after": 119200,
+        "flux_before": 121200,
+        "flux_paid": 2000,
+        "slot": 2,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 30,
+        "wire_id": 184
+      },
+      "tick": 550,
+      "trail_count": 0,
+      "world_hash": "5e74a21e36a99e17083152588ba254b1bde435a662be990af8c8c2b90ce9190b"
+    },
+    {
+      "champion": "oh_tipi",
+      "deposits": [],
+      "file": "oh_tipi-rampart-formation.png",
+      "first": {
+        "flux_after": 112400,
+        "flux_before": 114400,
+        "flux_paid": 2000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 0,
+        "wire_id": 184
+      },
+      "footprint_audit": {
+        "checked_parts": 24,
+        "checked_triangles": 48,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "paid_earth_mirror_lifecycle",
+      "projectiles": [],
+      "reaction_count": 1,
+      "reaction_draws": [
+        {
+          "footprint_cells": 24,
+          "frame_empty": false,
+          "id": 4000,
+          "model_empty": false,
+          "opacity": 0.258090909090909,
+          "polygon_count": 1,
+          "stats": {
+            "boundary_loops": 0,
+            "boundary_markers": 0,
+            "clipped_parts": 25,
+            "core_stamps": 1,
+            "culled": 0,
+            "footprint_cells": 24,
+            "geometry": {
+              "builds": 27,
+              "cache_entries": 27,
+              "cache_hits": 108,
+              "colliders_considered": 2160,
+              "peak_polygons": 1,
+              "relevant_colliders": 0
+            },
+            "optional_limit": 192,
+            "optional_stamps": 0
+          }
+        }
+      ],
+      "reaction_values": [
+        4000,
+        301,
+        1,
+        1,
+        1568000,
+        1280000,
+        1568000,
+        1280000,
+        0,
+        -1000,
+        59,
+        81,
+        456,
+        504,
+        18000,
+        64000,
+        32000,
+        0,
+        -1,
+        1000,
+        1001,
+        1568000,
+        1216000,
+        0,
+        0,
+        0
+      ],
+      "second": {
+        "flux_after": 110400,
+        "flux_before": 112400,
+        "flux_paid": 2000,
+        "slot": 2,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 30,
+        "wire_id": 184
+      },
+      "tick": 60,
+      "trail_count": 0,
+      "world_hash": "c26857579d3013564da288a41909001bb45cd10066fec7c3c8d2318f365fb2cf"
+    },
+    {
+      "actual_ridge_changed_pixels": 1451,
+      "actual_ridge_strong_pixels": 1336,
+      "champion": "oh_tipi",
+      "contact_id": 100004000,
+      "contact_position": [
+        1568000,
+        1316000
+      ],
+      "deposits": [],
+      "file": "oh_tipi-rampart-contact.png",
+      "first": {
+        "flux_after": 112400,
+        "flux_before": 114400,
+        "flux_paid": 2000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 0,
+        "wire_id": 184
+      },
+      "footprint_audit": {
+        "checked_parts": 24,
+        "checked_triangles": 48,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "paid_earth_mirror_lifecycle",
+      "projectiles": [],
+      "reaction_count": 1,
+      "reaction_draws": [
+        {
+          "footprint_cells": 24,
+          "frame_empty": false,
+          "id": 4000,
+          "model_empty": false,
+          "opacity": 0.68,
+          "polygon_count": 1,
+          "stats": {
+            "boundary_loops": 0,
+            "boundary_markers": 0,
+            "clipped_parts": 25,
+            "core_stamps": 1,
+            "culled": 0,
+            "footprint_cells": 24,
+            "geometry": {
+              "builds": 27,
+              "cache_entries": 27,
+              "cache_hits": 111,
+              "colliders_considered": 2208,
+              "peak_polygons": 1,
+              "relevant_colliders": 0
+            },
+            "optional_limit": 192,
+            "optional_stamps": 0
+          }
+        }
+      ],
+      "reaction_values": [
+        4000,
+        301,
+        1,
+        1,
+        1568000,
+        1280000,
+        1568000,
+        1280000,
+        0,
+        -1000,
+        59,
+        81,
+        456,
+        504,
+        18000,
+        64000,
+        32000,
+        0,
+        -1,
+        1000,
+        1001,
+        1568000,
+        1216000,
+        0,
+        0,
+        0
+      ],
+      "second": {
+        "flux_after": 110400,
+        "flux_before": 112400,
+        "flux_paid": 2000,
+        "slot": 2,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 30,
+        "wire_id": 184
+      },
+      "tick": 202,
+      "trail_count": 0,
+      "world_hash": "6c84aadbdcd4b6399c95052f84af0fa07cd347dacd62629117b330a730460538"
+    },
+    {
+      "actual_ridge_changed_pixels": 1451,
+      "actual_ridge_strong_pixels": 1336,
+      "champion": "oh_tipi",
+      "contact_id": 100004000,
+      "contact_position": [
+        1568000,
+        1316000
+      ],
+      "deposits": [],
+      "file": "oh_tipi-rampart-decay.png",
+      "first": {
+        "flux_after": 112400,
+        "flux_before": 114400,
+        "flux_paid": 2000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 0,
+        "wire_id": 184
+      },
+      "footprint_audit": {
+        "checked_parts": 24,
+        "checked_triangles": 48,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "paid_earth_mirror_lifecycle",
+      "projectiles": [],
+      "reaction_count": 1,
+      "reaction_draws": [
+        {
+          "footprint_cells": 24,
+          "frame_empty": false,
+          "id": 4000,
+          "model_empty": false,
+          "opacity": 0.623333333333333,
+          "polygon_count": 1,
+          "stats": {
+            "boundary_loops": 0,
+            "boundary_markers": 0,
+            "clipped_parts": 25,
+            "core_stamps": 1,
+            "culled": 0,
+            "footprint_cells": 24,
+            "geometry": {
+              "builds": 27,
+              "cache_entries": 27,
+              "cache_hits": 114,
+              "colliders_considered": 2256,
+              "peak_polygons": 1,
+              "relevant_colliders": 0
+            },
+            "optional_limit": 192,
+            "optional_stamps": 0
+          }
+        }
+      ],
+      "reaction_values": [
+        4000,
+        301,
+        1,
+        1,
+        1568000,
+        1280000,
+        1568000,
+        1280000,
+        0,
+        -1000,
+        59,
+        81,
+        456,
+        504,
+        18000,
+        64000,
+        32000,
+        0,
+        -1,
+        1000,
+        1001,
+        1568000,
+        1216000,
+        0,
+        0,
+        0
+      ],
+      "second": {
+        "flux_after": 110400,
+        "flux_before": 112400,
+        "flux_paid": 2000,
+        "slot": 2,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 30,
+        "wire_id": 184
+      },
+      "tick": 460,
+      "trail_count": 0,
+      "world_hash": "eacae21fb64d593464d272bb80ff3db1ed647d5fc2b6a9afd36e5e550f226f1b"
+    },
+    {
+      "actual_ridge_changed_pixels": 1451,
+      "actual_ridge_strong_pixels": 1336,
+      "champion": "oh_tipi",
+      "contact_id": 100004000,
+      "contact_position": [
+        1568000,
+        1316000
+      ],
+      "deposits": [],
+      "file": "oh_tipi-rampart-expired-passage.png",
+      "first": {
+        "flux_after": 112400,
+        "flux_before": 114400,
+        "flux_paid": 2000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 0,
+        "wire_id": 184
+      },
+      "footprint_audit": {
+        "checked_parts": 0,
+        "checked_triangles": 0,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "paid_earth_mirror_lifecycle",
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "reaction_values": [
+        4000,
+        301,
+        1,
+        1,
+        1568000,
+        1280000,
+        1568000,
+        1280000,
+        0,
+        -1000,
+        59,
+        81,
+        456,
+        504,
+        18000,
+        64000,
+        32000,
+        0,
+        -1,
+        1000,
+        1001,
+        1568000,
+        1216000,
+        0,
+        0,
+        0
+      ],
+      "second": {
+        "flux_after": 110400,
+        "flux_before": 112400,
+        "flux_paid": 2000,
+        "slot": 2,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 30,
+        "wire_id": 184
+      },
+      "tick": 550,
+      "trail_count": 0,
+      "world_hash": "7a3e1ee5864d7e0a0d3afa5ac15736be027d9b3b43f1f5454c0dcbb1fdea1986"
+    },
+    {
+      "champion": "red_baron",
+      "deposits": [],
+      "file": "red_baron-rampart-formation.png",
+      "first": {
+        "flux_after": 103600,
+        "flux_before": 105600,
+        "flux_paid": 2000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 0,
+        "wire_id": 184
+      },
+      "footprint_audit": {
+        "checked_parts": 24,
+        "checked_triangles": 48,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "paid_earth_mirror_lifecycle",
+      "projectiles": [],
+      "reaction_count": 1,
+      "reaction_draws": [
+        {
+          "footprint_cells": 24,
+          "frame_empty": false,
+          "id": 4000,
+          "model_empty": false,
+          "opacity": 0.258090909090909,
+          "polygon_count": 1,
+          "stats": {
+            "boundary_loops": 0,
+            "boundary_markers": 0,
+            "clipped_parts": 25,
+            "core_stamps": 1,
+            "culled": 0,
+            "footprint_cells": 24,
+            "geometry": {
+              "builds": 27,
+              "cache_entries": 27,
+              "cache_hits": 117,
+              "colliders_considered": 2304,
+              "peak_polygons": 1,
+              "relevant_colliders": 0
+            },
+            "optional_limit": 192,
+            "optional_stamps": 0
+          }
+        }
+      ],
+      "reaction_values": [
+        4000,
+        301,
+        1,
+        1,
+        1568000,
+        1280000,
+        1568000,
+        1280000,
+        0,
+        -1000,
+        59,
+        81,
+        456,
+        504,
+        18000,
+        64000,
+        32000,
+        0,
+        -1,
+        1000,
+        1001,
+        1568000,
+        1216000,
+        0,
+        0,
+        0
+      ],
+      "second": {
+        "flux_after": 101600,
+        "flux_before": 103600,
+        "flux_paid": 2000,
+        "slot": 2,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 30,
+        "wire_id": 184
+      },
+      "tick": 60,
+      "trail_count": 0,
+      "world_hash": "6ba47c11aad4acaae239bc8f3e51665ee8afe3f7f50893008fbf1c2f05f593d4"
+    },
+    {
+      "actual_ridge_changed_pixels": 1235,
+      "actual_ridge_strong_pixels": 1143,
+      "champion": "red_baron",
+      "contact_id": 100004000,
+      "contact_position": [
+        1568000,
+        1316000
+      ],
+      "deposits": [],
+      "file": "red_baron-rampart-contact.png",
+      "first": {
+        "flux_after": 103600,
+        "flux_before": 105600,
+        "flux_paid": 2000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 0,
+        "wire_id": 184
+      },
+      "footprint_audit": {
+        "checked_parts": 24,
+        "checked_triangles": 48,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "paid_earth_mirror_lifecycle",
+      "projectiles": [],
+      "reaction_count": 1,
+      "reaction_draws": [
+        {
+          "footprint_cells": 24,
+          "frame_empty": false,
+          "id": 4000,
+          "model_empty": false,
+          "opacity": 0.68,
+          "polygon_count": 1,
+          "stats": {
+            "boundary_loops": 0,
+            "boundary_markers": 0,
+            "clipped_parts": 25,
+            "core_stamps": 1,
+            "culled": 0,
+            "footprint_cells": 24,
+            "geometry": {
+              "builds": 27,
+              "cache_entries": 27,
+              "cache_hits": 120,
+              "colliders_considered": 2352,
+              "peak_polygons": 1,
+              "relevant_colliders": 0
+            },
+            "optional_limit": 192,
+            "optional_stamps": 0
+          }
+        }
+      ],
+      "reaction_values": [
+        4000,
+        301,
+        1,
+        1,
+        1568000,
+        1280000,
+        1568000,
+        1280000,
+        0,
+        -1000,
+        59,
+        81,
+        456,
+        504,
+        18000,
+        64000,
+        32000,
+        0,
+        -1,
+        1000,
+        1001,
+        1568000,
+        1216000,
+        0,
+        0,
+        0
+      ],
+      "second": {
+        "flux_after": 101600,
+        "flux_before": 103600,
+        "flux_paid": 2000,
+        "slot": 2,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 30,
+        "wire_id": 184
+      },
+      "tick": 202,
+      "trail_count": 0,
+      "world_hash": "417ef9aedcfbc9a8ac47e4f08e6c580ee37df5d771c873e6d74f04af9f040a49"
+    },
+    {
+      "actual_ridge_changed_pixels": 1235,
+      "actual_ridge_strong_pixels": 1143,
+      "champion": "red_baron",
+      "contact_id": 100004000,
+      "contact_position": [
+        1568000,
+        1316000
+      ],
+      "deposits": [],
+      "file": "red_baron-rampart-decay.png",
+      "first": {
+        "flux_after": 103600,
+        "flux_before": 105600,
+        "flux_paid": 2000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 0,
+        "wire_id": 184
+      },
+      "footprint_audit": {
+        "checked_parts": 24,
+        "checked_triangles": 48,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "paid_earth_mirror_lifecycle",
+      "projectiles": [],
+      "reaction_count": 1,
+      "reaction_draws": [
+        {
+          "footprint_cells": 24,
+          "frame_empty": false,
+          "id": 4000,
+          "model_empty": false,
+          "opacity": 0.623333333333333,
+          "polygon_count": 1,
+          "stats": {
+            "boundary_loops": 0,
+            "boundary_markers": 0,
+            "clipped_parts": 25,
+            "core_stamps": 1,
+            "culled": 0,
+            "footprint_cells": 24,
+            "geometry": {
+              "builds": 27,
+              "cache_entries": 27,
+              "cache_hits": 123,
+              "colliders_considered": 2400,
+              "peak_polygons": 1,
+              "relevant_colliders": 0
+            },
+            "optional_limit": 192,
+            "optional_stamps": 0
+          }
+        }
+      ],
+      "reaction_values": [
+        4000,
+        301,
+        1,
+        1,
+        1568000,
+        1280000,
+        1568000,
+        1280000,
+        0,
+        -1000,
+        59,
+        81,
+        456,
+        504,
+        18000,
+        64000,
+        32000,
+        0,
+        -1,
+        1000,
+        1001,
+        1568000,
+        1216000,
+        0,
+        0,
+        0
+      ],
+      "second": {
+        "flux_after": 101600,
+        "flux_before": 103600,
+        "flux_paid": 2000,
+        "slot": 2,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 30,
+        "wire_id": 184
+      },
+      "tick": 460,
+      "trail_count": 0,
+      "world_hash": "58a88d65379dccd30e9c2ebfdae994047a188f6c426e8d79a5f7abda7d121040"
+    },
+    {
+      "actual_ridge_changed_pixels": 1235,
+      "actual_ridge_strong_pixels": 1143,
+      "champion": "red_baron",
+      "contact_id": 100004000,
+      "contact_position": [
+        1568000,
+        1316000
+      ],
+      "deposits": [],
+      "file": "red_baron-rampart-expired-passage.png",
+      "first": {
+        "flux_after": 103600,
+        "flux_before": 105600,
+        "flux_paid": 2000,
+        "slot": 1,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 0,
+        "wire_id": 184
+      },
+      "footprint_audit": {
+        "checked_parts": 0,
+        "checked_triangles": 0,
+        "invalid_parts": [],
+        "legacy_world_failures": []
+      },
+      "kind": "paid_earth_mirror_lifecycle",
+      "projectiles": [],
+      "reaction_count": 0,
+      "reaction_draws": [],
+      "reaction_values": [
+        4000,
+        301,
+        1,
+        1,
+        1568000,
+        1280000,
+        1568000,
+        1280000,
+        0,
+        -1000,
+        59,
+        81,
+        456,
+        504,
+        18000,
+        64000,
+        32000,
+        0,
+        -1,
+        1000,
+        1001,
+        1568000,
+        1216000,
+        0,
+        0,
+        0
+      ],
+      "second": {
+        "flux_after": 101600,
+        "flux_before": 103600,
+        "flux_paid": 2000,
+        "slot": 2,
+        "target": [
+          1568000,
+          1280000
+        ],
+        "tick": 30,
+        "wire_id": 184
+      },
+      "tick": 550,
+      "trail_count": 0,
+      "world_hash": "8203f9237d4454abed86b42c7aed94a96a4c86fcb4d01242d8eae30a803f65ec"
+    }
+  ],
+  "ground_style_hash": "82fff297573f942a9fe8d0ed69473008badc45361daacb97a7eacbf5132f31c5",
+  "human_acceptance": "not_run",
+  "map_hash": "9e98cfe69c06deee0e6ed836f8cc6a8a55d9869915f19a6bb97f36edfbf6d726",
+  "method": "fresh_offline_world_per_trial_real_catalog_spells_paid_inputs_production_bootstrap_draw",
+  "network": "not_started",
+  "payments": [
+    {
+      "flux_after": 108400,
+      "flux_before": 114400,
+      "flux_paid": 6000,
+      "slot": 1,
+      "target": [
+        1568000,
+        1220000
+      ],
+      "tick": 0,
+      "wire_id": 159
+    },
+    {
+      "flux_after": 108400,
+      "flux_before": 114400,
+      "flux_paid": 6000,
+      "slot": 1,
+      "target": [
+        1568000,
+        1220000
+      ],
+      "tick": 0,
+      "wire_id": 145
+    },
+    {
+      "flux_after": 108400,
+      "flux_before": 114400,
+      "flux_paid": 6000,
+      "slot": 1,
+      "target": [
+        1568000,
+        1220000
+      ],
+      "tick": 0,
+      "wire_id": 140
+    },
+    {
+      "flux_after": 108400,
+      "flux_before": 114400,
+      "flux_paid": 6000,
+      "slot": 1,
+      "target": [
+        1568000,
+        1220000
+      ],
+      "tick": 0,
+      "wire_id": 163
+    },
+    {
+      "flux_after": 108400,
+      "flux_before": 114400,
+      "flux_paid": 6000,
+      "slot": 1,
+      "target": [
+        1568000,
+        1220000
+      ],
+      "tick": 0,
+      "wire_id": 170
+    },
+    {
+      "flux_after": 108400,
+      "flux_before": 114400,
+      "flux_paid": 6000,
+      "slot": 1,
+      "target": [
+        1568000,
+        1220000
+      ],
+      "tick": 0,
+      "wire_id": 101
+    },
+    {
+      "flux_after": 108400,
+      "flux_before": 114400,
+      "flux_paid": 6000,
+      "slot": 1,
+      "target": [
+        1568000,
+        1220000
+      ],
+      "tick": 0,
+      "wire_id": 173
+    },
+    {
+      "flux_after": 107400,
+      "flux_before": 114400,
+      "flux_paid": 7000,
+      "slot": 1,
+      "target": [
+        1568000,
+        1220000
+      ],
+      "tick": 0,
+      "wire_id": 142
+    },
+    {
+      "flux_after": 112400,
+      "flux_before": 114400,
+      "flux_paid": 2000,
+      "slot": 1,
+      "target": [
+        1568000,
+        1220000
+      ],
+      "tick": 0,
+      "wire_id": 180
+    },
+    {
+      "flux_after": 108400,
+      "flux_before": 114400,
+      "flux_paid": 6000,
+      "slot": 1,
+      "target": [
+        1568000,
+        1140000
+      ],
+      "tick": 0,
+      "wire_id": 145
+    },
+    {
+      "flux_after": 102400,
+      "flux_before": 108400,
+      "flux_paid": 6000,
+      "slot": 2,
+      "target": [
+        1568000,
+        1402720
+      ],
+      "tick": 20,
+      "wire_id": 140
+    },
+    {
+      "flux_after": 121200,
+      "flux_before": 123200,
+      "flux_paid": 2000,
+      "slot": 1,
+      "target": [
+        1568000,
+        1280000
+      ],
+      "tick": 0,
+      "wire_id": 184
+    },
+    {
+      "flux_after": 119200,
+      "flux_before": 121200,
+      "flux_paid": 2000,
+      "slot": 2,
+      "target": [
+        1568000,
+        1280000
+      ],
+      "tick": 30,
+      "wire_id": 184
+    },
+    {
+      "flux_after": 112400,
+      "flux_before": 114400,
+      "flux_paid": 2000,
+      "slot": 1,
+      "target": [
+        1568000,
+        1280000
+      ],
+      "tick": 0,
+      "wire_id": 184
+    },
+    {
+      "flux_after": 110400,
+      "flux_before": 112400,
+      "flux_paid": 2000,
+      "slot": 2,
+      "target": [
+        1568000,
+        1280000
+      ],
+      "tick": 30,
+      "wire_id": 184
+    },
+    {
+      "flux_after": 103600,
+      "flux_before": 105600,
+      "flux_paid": 2000,
+      "slot": 1,
+      "target": [
+        1568000,
+        1280000
+      ],
+      "tick": 0,
+      "wire_id": 184
+    },
+    {
+      "flux_after": 101600,
+      "flux_before": 103600,
+      "flux_paid": 2000,
+      "slot": 2,
+      "target": [
+        1568000,
+        1280000
+      ],
+      "tick": 30,
+      "wire_id": 184
+    }
+  ],
+  "preferences": "transient_fixture_only",
+  "schema_version": 1,
+  "trail_policy": {
+    "cast_reserve": 2,
+    "global_cap": 32,
+    "life_ms": [
+      0,
+      1500,
+      1100,
+      1400,
+      800,
+      1400,
+      800,
+      1200,
+      1300
+    ],
+    "needs_terminal_partner": true,
+    "one_payload_per_cast": true,
+    "own_trail_reclamation": "successful_whole_cast_oldest_created_then_entity_id",
+    "owner_cap": 4,
+    "radius": 16000,
+    "rapid_trails": false,
+    "reclaim_nonexpired_reaction_links": false,
+    "reclaim_terminal": false,
+    "sample_ticks": 8,
+    "spacing": 28000,
+    "strength": 250,
+    "sustain_ratio": 600,
+    "terminal_promotes_same_cell_trail": true,
+    "trail_predates_impact": true,
+    "version": 4
+  }
+}

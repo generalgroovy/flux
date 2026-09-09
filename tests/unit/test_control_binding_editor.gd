@@ -55,8 +55,8 @@ func _test_conflict_swap_unbind_and_reset() -> void:
 	equal(preferences.keyboard_bindings, PlayerPreferences.DEFAULT_KEYBOARD_BINDINGS, "reset restores keyboard defaults")
 	equal(preferences.mouse_bindings, PlayerPreferences.DEFAULT_MOUSE_BINDINGS, "reset restores mouse defaults")
 	equal(preferences.controller_bindings, PlayerPreferences.DEFAULT_CONTROLLER_BINDINGS, "reset restores controller defaults")
-	equal(editor.binding_label(&"evade", ControlBindingEditor.DEVICE_KEYBOARD, preferences), "V", "editor displays the new default evade key")
-	equal(editor.binding_label(&"technique", ControlBindingEditor.DEVICE_KEYBOARD, preferences), "Q", "editor displays Technique's safely swapped default")
+	equal(editor.binding_label(&"evade", ControlBindingEditor.DEVICE_KEYBOARD, preferences), "Q", "editor displays the conflict-free default evade key")
+	equal(editor.binding_label(&"technique", ControlBindingEditor.DEVICE_KEYBOARD, preferences), "V", "editor displays Technique's requested V default")
 	editor.selected_action_index = ControlBindingEditor.ACTIONS.find(&"jump")
 	editor.selected_device = ControlBindingEditor.DEVICE_KEYBOARD
 	editor.begin_capture()

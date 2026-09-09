@@ -4,7 +4,7 @@ extends FluxTestSuite
 func run() -> int:
 	_test_repository_kit()
 	_test_live_coverage()
-	_test_renderer_binding()
+	_test_archive_geometry_helpers()
 	_test_fail_closed_contract()
 	return finish("wellspring-architecture-kit")
 
@@ -47,23 +47,19 @@ func _test_live_coverage() -> void:
 		check(kit.landmark_profiles.has(kind), "live landmark kind %s has a frame" % kind)
 
 
-func _test_renderer_binding() -> void:
-	var language := VisualLanguage.new()
-	check(language.load_from_file(), "visual language loads for campus renderer binding")
-	var layout := SanctumCampusLayout.new()
-	check(layout.load_from_file("res://content/maps/sanctum_campus_g2_v1.json"), "campus loads for renderer binding")
-	var renderer := SanctumCampusRenderer.new()
-	check(renderer.configure(language), "campus renderer accepts the visual language")
-	check(renderer.configure_campus(layout), "campus renderer binds architecture and wayfinding together")
-	check(renderer.architecture_kit.content_hash.length() == 64, "renderer exposes the bound architecture identity")
-	check(renderer.wayfinding.content_hash.length() == 64, "renderer keeps the bound wayfinding identity")
+func _test_archive_geometry_helpers() -> void:
+	# These retained standalone-kit helpers are not live campus startup inputs.
+	var kit := WellspringArchitectureKit.new()
 	var footprint := Rect2(100, 100, 80, 64)
 	var markers := WellspringArchitectureKit.collision_corner_segments(footprint, 12.0, 2.0)
 	equal(markers.size(), 8, "four collision corners expose two exact approach markers each")
 	equal(markers[0], PackedVector2Array([Vector2(102, 100), Vector2(114, 100)]), "north-west marker follows the exact collision edge")
 	equal(markers[7], PackedVector2Array([Vector2(180, 150), Vector2(180, 162)]), "south-east marker follows the exact collision edge")
 	equal(WellspringArchitectureKit.door_threshold_rect(footprint, 34.0, 6.0), Rect2(123, 164, 34, 6), "door threshold begins outside the collision footprint")
-	equal(renderer.architecture_kit.cutaway_amount(footprint, Vector2(140, 100)), 1.0, "configured cutaway fully exposes a near diagonal approach")
+	equal(kit.cutaway_amount(footprint, Vector2(20, 20)), 0.0, "archive cutaway preserves distant architecture")
+	equal(kit.cutaway_amount(footprint, Vector2(140, 100)), 1.0, "archive cutaway exposes a near approach")
+	check(kit.cutaway_amount(footprint, Vector2(140, 58)) > 0.0, "archive cutaway eases at its outer boundary")
+	equal(kit.cutaway_amount(Rect2(), Vector2.ZERO), 0.0, "archive empty footprint cannot create a cutaway")
 
 
 func _test_fail_closed_contract() -> void:

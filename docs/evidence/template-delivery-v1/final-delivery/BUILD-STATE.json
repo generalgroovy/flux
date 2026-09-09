@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "source_kind": "exported_pack",
+  "pack_sha256": "ed7ea726c3dd51516871cf5005d6395641e1d683e59b5f4cd33813b3fe4dd316",
+  "state": {
+    "authority": "derived from validated loaded catalogs; not gameplay configuration",
+    "content": {
+      "abilities_authored": 62,
+      "body_roles": [
+        "small",
+        "middle",
+        "large"
+      ],
+      "champions_playable": 27,
+      "hashes": {
+        "abilities": "51bc4bc17c65f29c788ae64a3889c9214e94932d018114d2cdb82380ad23f493",
+        "champions": "93f980e2a985bfb48013185f9941d591fdde150589a1a3f39dd0b25abf2b123f",
+        "reactions": "175e6438c4fd5b618cb81e95ff13aafa677238b90fd20b4b06b2ee97ebbddcf2"
+      },
+      "playable_champion_ids": [
+        "oh_tipi",
+        "s_wayne",
+        "red_baron",
+        "grace_reava",
+        "wa_bidi",
+        "steezo",
+        "treevor_mason",
+        "oll_i",
+        "fluup",
+        "nico_lai",
+        "spai_si",
+        "leaf_hidden",
+        "ha_rekt",
+        "dr_apex",
+        "haara",
+        "hesus_christo",
+        "grimm_bow",
+        "biggy_bob",
+        "jan_wicked",
+        "ba_djoh",
+        "urzh",
+        "donnok",
+        "djonah_thaan",
+        "luuh_i_zeh",
+        "juul_i_yaina",
+        "faab_i_yaina",
+        "joh_haynes"
+      ],
+      "reaction_mutation_enabled": true,
+      "reactions_defined": 36,
+      "spell_positions": 12,
+      "spells_runtime_selectable": 57
+    },
+    "runtime": {
+      "maximum_players": 8,
+      "preferences_schema": 11,
+      "protocol": 47,
+      "simulation_hz": 120,
+      "snapshot_schema": 18
+    },
+    "schema_version": 1
+  },
+  "provenance": {
+    "full_receipt": "docs/evidence/template-delivery-v1/final-delivery/full/full-receipt.json",
+    "full_receipt_sha256": "ffb1652dd2c3afb31c13e1ca21fd3be4d8a8bcf99566125876e6dd949cd6f801",
+    "full_suites": 91,
+    "full_assertions": 463310,
+    "full_duration_ms": 85390,
+    "source_snapshot_sha256": "fb6fe3f89d6e0ca243408aadca98496b392cce4cac06a8cba8aec4972fee160c",
+    "source_unchanged_across_export": true,
+    "combat_source_sha256": "cdce33b7ee0528c57870cd1a3f5ce8faa52bee9517ec56962bdf8551b6aebd1a",
+    "boundary": "Fresh strict Windows export of accepted source; no new character-art promotion, signing or human/two-PC acceptance."
+  }
+}

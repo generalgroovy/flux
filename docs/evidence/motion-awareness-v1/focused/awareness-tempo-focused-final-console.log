@@ -1,0 +1,14 @@
+OK: Godot 4.7.1.stable.official.a13da4feb and FLUX 2 source foundation are present.
+Export templates: C:\Users\sende\AppData\Roaming\Godot\export_templates\4.7.1.stable
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+character-gallery-integration: 236 assertions, 0 failures
+element-chemistry: 1948 assertions, 0 failures
+chemistry-practice-coach: 4198 assertions, 0 failures
+foundation-spell-presenter: 2957 assertions, 0 failures
+heavy-blast-presenter: 40535 assertions, 0 failures
+burst-projectile-presenter: 16091 assertions, 0 failures
+pixel-magic-library: 42744 assertions, 0 failures
+PASS: 7 selected FLUX2 headless suite(s): element-chemistry,burst-projectile-presenter,foundation-spell-presenter,heavy-blast-presenter,pixel-magic-library,chemistry-practice-coach,character-gallery-integration
+PASS: Windows focused gate completed in 17331 ms; 7 suite(s), 108709 assertions, stderr 0 bytes.
+Receipt: C:\Users\sende\Projects\flux\.godot\awareness-tempo-focused-final.json

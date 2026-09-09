@@ -1,0 +1,36 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+FAIL: headless and capture harnesses begin with active gameplay input (expected=true actual=<null>)
+FAIL: actual focus-out notification suspends local gameplay input (expected=false actual=<null>)
+FAIL: focus loss discards accepted wheel input before it can become a paid jump
+FAIL: actual focus-in notification restores the explicit input latch (expected=true actual=<null>)
+character-gallery-integration: 42 assertions, 4 failures
+FAIL: jump held during a modal cannot buy an action when gameplay resumes
+FAIL: jump held during a modal cannot buy an action when gameplay resumes
+FAIL: jump held during a modal cannot buy an action when gameplay resumes
+FAIL: slide held during a modal cannot buy an action when gameplay resumes
+FAIL: slide held during a modal cannot buy an action when gameplay resumes
+FAIL: slide held during a modal cannot buy an action when gameplay resumes
+FAIL: evade held during a modal cannot buy an action when gameplay resumes
+FAIL: technique held during a modal cannot buy an action when gameplay resumes
+FAIL: active_1 held during a modal cannot buy an action when gameplay resumes
+FAIL: primary held during a modal cannot buy an action when gameplay resumes
+FAIL: primary held during a modal cannot buy an action when gameplay resumes
+FAIL: primary held during a modal cannot buy an action when gameplay resumes
+FAIL: sprint held during a modal cannot buy an action when gameplay resumes
+FAIL: sprint held during a modal cannot buy an action when gameplay resumes
+FAIL: sprint held during a modal cannot buy an action when gameplay resumes
+FAIL: spell_1 held during a modal cannot buy an action when gameplay resumes
+FAIL: spell_1 held during a modal cannot buy an action when gameplay resumes
+FAIL: spell_1 held during a modal cannot buy an action when gameplay resumes
+FAIL: spell_2 held during a modal cannot buy an action when gameplay resumes
+FAIL: spell_2 held during a modal cannot buy an action when gameplay resumes
+FAIL: spell_2 held during a modal cannot buy an action when gameplay resumes
+FAIL: spell_3 held during a modal cannot buy an action when gameplay resumes
+FAIL: spell_3 held during a modal cannot buy an action when gameplay resumes
+FAIL: spell_3 held during a modal cannot buy an action when gameplay resumes
+FAIL: spell_4 held during a modal cannot buy an action when gameplay resumes
+FAIL: spell_4 held during a modal cannot buy an action when gameplay resumes
+FAIL: spell_4 held during a modal cannot buy an action when gameplay resumes
+input-router: 517 assertions, 27 failures
+FAIL: 31 assertion(s) failed

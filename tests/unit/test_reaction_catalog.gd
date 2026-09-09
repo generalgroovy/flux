@@ -97,7 +97,7 @@ func _test_content_change_updates_compatibility_hash() -> void:
 	var changed_table := ReactionDefinitionTable.new()
 	check(changed_table.compile(changed, abilities), "changed reaction table compiles: %s" % changed_table.last_error)
 	equal(int(changed_table.definition("earth", "fire")["authored_profile"]["active_ms"]), 4001, "future authored profile remains explicit design data")
-	equal(int(changed_table.definition("earth", "fire")["active_ms"]), 2200, "first-grade lifecycle cannot silently inherit the longer historical profile")
+	equal(int(changed_table.definition("earth", "fire")["active_ms"]), 2750, "first-grade lifecycle keeps the current explicit sustained duration, not an unrelated historical profile")
 	check(changed_table.content_hash != baseline.content_hash, "authored reaction change updates compatibility hash")
 
 

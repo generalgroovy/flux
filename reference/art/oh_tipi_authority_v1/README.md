@@ -1,12 +1,18 @@
-# Oh Tipi: authoritative character-style reference
+# Oh Tipi: preserved source identity reference
 
-Status: **user-selected visual authority; reference illustration, not a runtime atlas** (2026-09-06).
+Status: **current authoritative character style reference** (restored2026-09-08).
+
+The latest user request supplied this original again as the cast restyling target.
+The [v4 three-size cast](../cast_sheet_v4/README.md) remains identity/color/body
+guidance, but no longer overrides these natural proportions and pixel materials.
+Its pixels and provenance are unchanged. Equipment and spell effects are excluded
+from body sprites; one illustration is not a complete runtime animation atlas.
 
 ![Authoritative Oh Tipi character style](oh-tipi-authoritative-reference.png)
 
 The user supplied this image as `C:\Users\sende\Pictures\oh tipi` and explicitly
-made it the character-design/rework reference. This preserved PNG takes priority
-over earlier champion boards for character styling. It does not change gameplay,
+made it the character-design/rework reference on 2026-09-06. The v4 group-style
+direction was superseded by the renewed original-style request2026-09-08. This preserved PNG does not change gameplay,
 the camera, collision bounds, roster identities, or animation coverage.
 
 | Contract | Apply to production |

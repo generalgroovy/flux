@@ -1,0 +1,28 @@
+{
+  "status": "local_full_export_raw_boot_passed",
+  "full_suites": 92,
+  "full_assertions": 485395,
+  "source_records": 1610,
+  "payloads": [
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-skeleton-motion-p47-20260909\\windows\\flux2.exe",
+      "bytes": 109071360,
+      "sha256": "04baf75cc1d69dd93eb709533ecab4fd7770bb8a530645717017a06a9d9809fc"
+    },
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-skeleton-motion-p47-20260909\\windows\\flux2.pck",
+      "bytes": 66580356,
+      "sha256": "8d81e12c496602aacb15683cee0be1f8501b9daa71f1e4e4c1e7b9273d05fb4d"
+    },
+    {
+      "path": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-skeleton-motion-p47-20260909\\release\\FLUX2-Windows-x86_64.zip",
+      "bytes": 97125871,
+      "sha256": "d04581c6b42d95effc19f7c551d31571fd3e294191ca1d6780435a960d817eaa"
+    }
+  ],
+  "new_installer": "not_attempted_prior_policy_block",
+  "live_visual_mode": "shared_size_skeleton",
+  "playable_profiles": 27,
+  "shared_body_count": 3,
+  "human_animation_acceptance": "pending"
+}

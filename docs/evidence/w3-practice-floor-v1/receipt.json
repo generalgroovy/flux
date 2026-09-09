@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "slice": "W3 practice-floor clarity",
+  "status": "focused_and_corrected_production_renderer_capture_passed",
+  "authority": "presentation_only",
+  "source": {
+    "renderer": "src/presentation/sanctum_campus_renderer.gd",
+    "renderer_sha256": "7088bde6277ab4878d8f5d7a06de856bb295360270110bc0bb3b188da5796fc0",
+    "descriptor": "content/presentation/wellspring_floor_guides_v1.json",
+    "descriptor_sha256": "2076e4da633e3f298763934b6a93b6cb1c11c0478ce3de53a998a2564cb1ad76",
+    "map": "content/maps/sanctum_campus_g2_v1.json",
+    "map_file_sha256": "d69604bc8ef6ec7039ebb02a96752b298672e7fe03a28cabbe5d8eef24c8dd9d",
+    "expected_map_content_hash": "9e98cfe69c06deee0e6ed836f8cc6a8a55d9869915f19a6bb97f36edfbf6d726"
+  },
+  "change": {
+    "stage_order": ["Commons", "Movement", "Crucible", "Sparring"],
+    "stage_emblems": 4,
+    "route_arrows": 10,
+    "short_route_hints": 7,
+    "line_draw_batches": 2,
+    "line_vertex_limit": 384,
+    "geometry_preparation": "once_at_campus_configuration",
+    "removed": "full_activity_rectangle_borders_and_radial_movement_target",
+    "textures_added": 0,
+    "buildings_or_obstacle_art_added": 0
+  },
+  "preserved": ["map_bytes_and_network_map_fingerprint", "worldbone_collision", "map_extents", "routes_and_clearance", "stations_and_commands", "player_and_arena_spawns", "targets_and_respawn_policy", "simulation_and_physics", "normal_reduced_rules"],
+  "checks": {
+    "diff_whitespace": "passed",
+    "source_rectangle_clearance_sanity": "14 anchors, zero approximate wall intersections; not a substitute for production collision tests",
+    "focused_suites": ["sanctum-campus-layout", "wellspring-illustrated-kit", "conservatory-route"],
+    "focused_result": "initial combined seven suites passed71530 assertions; final corrected illustrated-kit rerun passed1781 assertions; zero failures/stderr in each run; totals are separate reruns, not additive distinct coverage",
+    "combined_suites": {"conservatory-route":3902,"visual-accessibility-filter":14,"compact-combat-hud":535,"wellspring-illustrated-kit":1777,"element-chemistry-presenter":18780,"pixel-magic-library":42744,"sanctum-campus-layout":3778},
+    "initial_import_log": ".godot/windows-tests/w3-practice-import-v1.log",
+    "initial_focused_receipt": ".godot/windows-tests/w3-combined-focused-v1.json",
+    "initial_focused_log": ".godot/windows-tests/w3-combined-focused-v1-suite.log",
+    "production_capture": "corrected three production-renderer frames passed with unchanged map hash and zero stderr; both full overviews and native southern view inspected",
+    "initial_capture_log": ".godot/windows-tests/w3-practice-capture-v1.log",
+    "initial_capture_directory": ".godot/south-annex-capture-w3-v1",
+    "correction": "Initial review held the inherited garden title behind Lodge facade. External title anchor moved to clear ground at224,448; final normal/reduced renders now visibly show2 MOVEMENT GARDEN. Earlier images/logs retained.",
+    "final_focused_receipt": ".godot/windows-tests/w3-title-focused-v2.json",
+    "final_focused_receipt_sha256": "d8d771f82eadb8454a7bdf023948d7c3e245b73772704ddffd3e0c059c027529",
+    "final_focused_log": ".godot/windows-tests/w3-title-focused-v2-suite.log",
+    "final_capture_log": ".godot/windows-tests/w3-practice-capture-v2.log",
+    "final_capture_log_sha256": "e0f87d947497a860a1b02e11ef90a0e68a006036538da4dc3cb6ad13556fce15",
+    "final_focus_stderr_bytes": 0,
+    "final_capture_stderr_bytes": 0,
+    "visual_review": "Four stage titles/emblems remain subordinate to architecture; sparse neutral arrows separate ordinary southern bypass, optional wall line and return. No new obstacles or covered play rectangles. These are production campus renderer views, not a paid actor/HUD playthrough.",
+    "human_wayfinding_acceptance": "pending",
+    "rendered_performance_acceptance": "not_measured"
+  },
+  "captures": [
+    {"path":".godot/south-annex-capture-w3-v2/overview-normal.png","dimensions":[3072,2304],"bytes":724639,"sha256":"77393ebc638ea4c7428256ba1b46b1a098fc21da5b79b0f0cabc1fc4d0585655","rgba_sha256":"f4f9de5ea4a08329a5ec0622545d6e6ff28b5b7b0acd4ff1257e3b8a10d5fd97"},
+    {"path":".godot/south-annex-capture-w3-v2/overview-reduced.png","dimensions":[3072,2304],"bytes":723752,"sha256":"0266678799cd2e5c8e038c041b37eba1084472f3265ecb5eb4b8558fc02e480c","rgba_sha256":"639762711bf9a2d6ba01dfb6e22b9c4ecaa6d4a583c842685f2e06db8cff8b66"},
+    {"path":".godot/south-annex-capture-w3-v2/annex-native.png","dimensions":[1280,720],"bytes":71592,"sha256":"47998497dc5cb767f92410837b8a1a9d30b77f8b201cad09e01eb4fc34daaa39","rgba_sha256":"f5d1b99c83093a2008ee18b5cf1ecb7a9160cb7d78ecdc0e9855bb251e7a14dc"}
+  ],
+  "scope": "No bootstrap, gameplay, networking, audio, saved preferences, README or active-queue edits in this slice. No new bitmap generation. Engine lease returned to root after both final processes ended. Full/export integration remains root-owned."
+}

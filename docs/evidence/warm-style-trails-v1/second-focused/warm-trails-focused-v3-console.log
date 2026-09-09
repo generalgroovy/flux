@@ -1,0 +1,30 @@
+OK: Godot 4.7.1.stable.official.a13da4feb and FLUX 2 source foundation are present.
+Export templates: C:\Users\sende\AppData\Roaming\Godot\export_templates\4.7.1.stable
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+player-compendium: 5063 assertions, 0 failures
+projectile-chemistry-integration: 10289 assertions, 0 failures
+element-chemistry: 1948 assertions, 0 failures
+element-trails: 15998 assertions, 0 failures
+FAIL: one real cast leaves one terminal deposit (expected=1 actual=3)
+FAIL: existing clear-line rule detects worldbone between actual Radiance origin and target
+FAIL: worldbone prevents Radiance from applying reveal despite radius overlap (expected=0 actual=2)
+FAIL: Steam remains concealing behind Radiance-blocking worldbone
+chemistry-practice-coach: 4184 assertions, 4 failures
+CHAMPION_ATLAS_SETUP live=27 extensions=2 capacity=24 decoded_payload_bytes=14745600 configure_us=248055
+cartoon-champion-presenter: 42670 assertions, 0 failures
+burst-projectile-presenter: 16539 assertions, 0 failures
+pixel-magic-library: 42744 assertions, 0 failures
+pixel-assets-export: 72 assertions, 0 failures
+chemistry snapshot deposits=0 projectiles=128 reactions=32 raw_bytes=26804 fragments=8 largest_datagram=1296
+chemistry snapshot deposits=64 projectiles=64 reactions=32 raw_bytes=26548 fragments=6 largest_datagram=1296
+chemistry snapshot deposits=128 projectiles=0 reactions=32 raw_bytes=26292 fragments=6 largest_datagram=1296
+session-snapshot: 1456 assertions, 0 failures
+pov-presentation: 882 assertions, 0 failures
+wireframe-body-presenter: 30522 assertions, 0 failures
+FAIL: 4 assertion(s) failed
+Exception: C:\Users\sende\Projects\flux\scripts\flux2-common.ps1:83
+Line |
+  83 |  … -in @($bad)) { throw 'Godot emitted a script/import/runtime error.' }
+     |                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Godot emitted a script/import/runtime error.

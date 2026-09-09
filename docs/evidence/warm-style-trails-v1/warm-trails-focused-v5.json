@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "completed_at_utc": "2026-09-09T13:04:51.5317551Z",
+  "tier": "focused",
+  "result": "passed",
+  "failure": null,
+  "source": {
+    "head": "a1aa02807626823d0fbc1e25e75441ca3b7f4d36",
+    "branch": "main",
+    "dirty": true,
+    "current_state_sha256": "3d7cf0bc4473d4898fa7564482d0f3e89bcf27dda82a49a7067eb95ab8bcdb5e",
+    "asset_inventory_sha256": null
+  },
+  "requested_suite_ids": [
+    "combat,spell-delivery-expansion,character-selection-grid,player-compendium"
+  ],
+  "executed": {
+    "current_state_check": true,
+    "asset_inventory": false,
+    "doctor": true,
+    "import": false,
+    "deterministic_suite_runner": true,
+    "suite_count": 4,
+    "assertion_count": 46070,
+    "suites": [
+      {
+        "id": "character-selection-grid",
+        "assertions": 1097,
+        "failures": 0
+      },
+      {
+        "id": "player-compendium",
+        "assertions": 5063,
+        "failures": 0
+      },
+      {
+        "id": "combat",
+        "assertions": 25408,
+        "failures": 0
+      },
+      {
+        "id": "spell-delivery-expansion",
+        "assertions": 14502,
+        "failures": 0
+      }
+    ],
+    "boot_120_hz": false,
+    "package_and_installer": false
+  },
+  "duration_ms": 26160,
+  "stderr_bytes": 0,
+  "logs": [
+    {
+      "path": ".godot/windows-tests/suite.log",
+      "sha256": "86c5786dc80486ec83896874d6aa73661da5870fcb98e0e91baa349d4a1a2aec",
+      "stderr_bytes": 0
+    }
+  ]
+}

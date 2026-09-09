@@ -1,0 +1,240 @@
+{
+  "audio": "not_started",
+  "authority_unchanged_by_draw": true,
+  "frames": [
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "champion": "s_wayne",
+      "command_ticks": 24,
+      "distance_phase": 0.461314007584549,
+      "file": "s_wayne-walk.png",
+      "gait_bank": "walk",
+      "held_sprint": false,
+      "kind": "actual_world_walk",
+      "stamina": 594000,
+      "tick": 24,
+      "velocity": [
+        394956,
+        0
+      ],
+      "world_hash": "900b9a2ad471fcece8638c40e87a4ae017a6a971fd245b9ef32d178f0b859485"
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "champion": "s_wayne",
+      "command_ticks": 24,
+      "distance_phase": 0.461314007584549,
+      "file": "s_wayne-paid-sprint.png",
+      "flux_unchanged": true,
+      "gait_bank": "sprint",
+      "health_unchanged": true,
+      "held_sprint": true,
+      "kind": "actual_world_paid_walk_to_sprint",
+      "stamina_after": 587201,
+      "stamina_before": 594000,
+      "stamina_paid": 6799,
+      "tick": 48,
+      "velocity": [
+        631929,
+        0
+      ],
+      "walk_velocity_x": 394956,
+      "world_hash": "0d96f50b35a31b64282034d07a71cc73ce085c54de2024c058244c7f3771b708"
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "champion": "oh_tipi",
+      "command_ticks": 24,
+      "distance_phase": 0.437771924049067,
+      "file": "oh_tipi-walk.png",
+      "gait_bank": "walk",
+      "held_sprint": false,
+      "kind": "actual_world_walk",
+      "stamina": 660000,
+      "tick": 72,
+      "velocity": [
+        365148,
+        0
+      ],
+      "world_hash": "00973e7592d8ac36cf42b79bc43d532805f77e0169c610797c8fab619511e8bc"
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "champion": "oh_tipi",
+      "command_ticks": 24,
+      "distance_phase": 0.426681385069052,
+      "file": "oh_tipi-paid-sprint.png",
+      "flux_unchanged": true,
+      "gait_bank": "sprint",
+      "health_unchanged": true,
+      "held_sprint": true,
+      "kind": "actual_world_paid_walk_to_sprint",
+      "stamina_after": 653201,
+      "stamina_before": 660000,
+      "stamina_paid": 6799,
+      "tick": 96,
+      "velocity": [
+        584236,
+        0
+      ],
+      "walk_velocity_x": 365148,
+      "world_hash": "a98bef88a2cd6cef20cc9be29cc345970e4da9e63375bd2b03476467d7a84da7"
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "champion": "red_baron",
+      "command_ticks": 24,
+      "distance_phase": 0.41705440876455,
+      "file": "red_baron-walk.png",
+      "gait_bank": "walk",
+      "held_sprint": false,
+      "kind": "actual_world_walk",
+      "stamina": 792000,
+      "tick": 120,
+      "velocity": [
+        339066,
+        0
+      ],
+      "world_hash": "c9240dab8eb3147e8d5b96527364f3919ea3ef65490a4db6f0581e975bf7f3be"
+    },
+    {
+      "aim": [
+        0,
+        -1000
+      ],
+      "champion": "red_baron",
+      "command_ticks": 24,
+      "distance_phase": 0.370127928369602,
+      "file": "red_baron-paid-sprint.png",
+      "flux_unchanged": true,
+      "gait_bank": "sprint",
+      "health_unchanged": true,
+      "held_sprint": true,
+      "kind": "actual_world_paid_walk_to_sprint",
+      "stamina_after": 785201,
+      "stamina_before": 792000,
+      "stamina_paid": 6799,
+      "tick": 144,
+      "velocity": [
+        542505,
+        0
+      ],
+      "walk_velocity_x": 339066,
+      "world_hash": "8a7be67dd945e8e2a4bdfc6f55250ab97edeae3888dccd2dfcab856c57f5d8df"
+    },
+    {
+      "age_ticks": 0,
+      "authored_duration_ticks": 43,
+      "elements": [
+        {
+          "alive": true,
+          "element": "fire",
+          "imprint_alive": true,
+          "source_sample_age": 0
+        },
+        {
+          "alive": true,
+          "element": "water",
+          "imprint_alive": true,
+          "source_sample_age": 0
+        }
+      ],
+      "file": "fire-water-contact-age-00.png",
+      "kind": "synthetic_age_production_impact_renderer",
+      "production_duration_ticks": 65,
+      "world_hash": "8a7be67dd945e8e2a4bdfc6f55250ab97edeae3888dccd2dfcab856c57f5d8df"
+    },
+    {
+      "age_ticks": 18,
+      "authored_duration_ticks": 43,
+      "elements": [
+        {
+          "alive": true,
+          "element": "fire",
+          "imprint_alive": false,
+          "source_sample_age": 12
+        },
+        {
+          "alive": true,
+          "element": "water",
+          "imprint_alive": false,
+          "source_sample_age": 12
+        }
+      ],
+      "file": "fire-water-contact-age-18.png",
+      "kind": "synthetic_age_production_impact_renderer",
+      "production_duration_ticks": 65,
+      "world_hash": "8a7be67dd945e8e2a4bdfc6f55250ab97edeae3888dccd2dfcab856c57f5d8df"
+    },
+    {
+      "age_ticks": 64,
+      "authored_duration_ticks": 43,
+      "elements": [
+        {
+          "alive": true,
+          "element": "fire",
+          "imprint_alive": false,
+          "source_sample_age": 42
+        },
+        {
+          "alive": true,
+          "element": "water",
+          "imprint_alive": false,
+          "source_sample_age": 42
+        }
+      ],
+      "file": "fire-water-contact-age-64.png",
+      "kind": "synthetic_age_production_impact_renderer",
+      "production_duration_ticks": 65,
+      "world_hash": "8a7be67dd945e8e2a4bdfc6f55250ab97edeae3888dccd2dfcab856c57f5d8df"
+    },
+    {
+      "age_ticks": 65,
+      "authored_duration_ticks": 43,
+      "elements": [
+        {
+          "alive": false,
+          "element": "fire",
+          "imprint_alive": false,
+          "source_sample_age": 43
+        },
+        {
+          "alive": false,
+          "element": "water",
+          "imprint_alive": false,
+          "source_sample_age": 43
+        }
+      ],
+      "file": "fire-water-contact-age-65.png",
+      "kind": "synthetic_age_production_impact_renderer",
+      "production_duration_ticks": 65,
+      "world_hash": "8a7be67dd945e8e2a4bdfc6f55250ab97edeae3888dccd2dfcab856c57f5d8df"
+    }
+  ],
+  "human_acceptance": "not_run",
+  "impact_duration_multiplier": 1.5,
+  "impacts": "synthetic_stationary_contact_ages_drawn_by_production_PixelSpellEffects_no_hit_claim",
+  "movement": "real_simulation_commands_in_offline_production_fixture",
+  "network": "not_started",
+  "preferences": "transient_fixture_only",
+  "schema_version": 1,
+  "size": [
+    1280,
+    720
+  ]
+}

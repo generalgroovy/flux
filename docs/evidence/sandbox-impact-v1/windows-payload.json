@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-09",
+  "status": "local_export_and_isolated_headless_boot_passed",
+  "engine": "4.7.1.stable.official.a13da4feb",
+  "authoritative_hz": 120,
+  "source_head": "a1aa02807626823d0fbc1e25e75441ca3b7f4d36",
+  "source_dirty": true,
+  "export_directory": ".godot/sandbox-impact-export",
+  "isolated_directory": "C:/Users/sende/AppData/Local/FLUX-dev/playtests/sandbox-impact-20260909",
+  "files": [
+    {"path": "flux2.exe", "bytes": 109071360, "sha256": "04baf75cc1d69dd93eb709533ecab4fd7770bb8a530645717017a06a9d9809fc"},
+    {"path": "flux2.pck", "bytes": 66202680, "sha256": "bbd3268bb1c2de012b2283f04b74d42b83a50ee352bf24066fcd7ca13d23c7b7"}
+  ],
+  "boot_arguments": ["--headless", "--quit-after", "8", "--fixed-fps", "120", "--", "--tick-rate=120", "--no-lan-discovery"],
+  "boot_stderr_bytes": 0,
+  "new_installer": false,
+  "published": false,
+  "human_accepted": false,
+  "physical_remote_play_tested": false,
+  "sustained_120fps_accepted": false
+}

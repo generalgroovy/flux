@@ -145,7 +145,7 @@ def main():
     static_sheets();representative_gifs()
     data=dict(manifest=MANIFEST,atlases={p:"data:image/png;base64,"+base64.b64encode((ROOT/p).read_bytes()).decode() for p in ATLAS})
     template=(ROOT/"source/player.html").read_text(encoding="utf-8")
-    (OUT/"index.html").write_text(template.replace("/*PACK_DATA*/", "const PACK="+json.dumps(data,separators=(",",":"))+";"),encoding="utf-8")
+    (OUT/"index.html").write_text(template.replace("/*PACK_DATA*/", "const PACK="+json.dumps(data,separators=(",",":"))+";"),encoding="utf-8",newline="\n")
     print("PREVIEWS: 9 PNG sheets, 4 animated GIFs, standalone interactive atlas player")
 
 if __name__=="__main__":main()

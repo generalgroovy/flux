@@ -7,6 +7,7 @@ func run() -> int:
 	_test_champion_packages()
 	_test_wellspring_identity_and_districts()
 	_test_support_catalogs()
+	_test_archive_subset_boundary()
 	_test_invalid_catalog_fails_closed()
 	return finish("wellspring-visual-catalog")
 
@@ -18,8 +19,8 @@ func _test_repository_catalog() -> void:
 	equal(WellspringVisualCatalog.canonical_body_type("size_1_tiny"), "small", "tiny legacy path migrates to small")
 	equal(WellspringVisualCatalog.canonical_body_type("size_3_medium"), "middle", "medium legacy path migrates to middle")
 	equal(WellspringVisualCatalog.canonical_body_type("size_5_huge"), "large", "huge legacy path migrates to large")
-	equal(catalog.races.size(), 21, "all required race foundations are registered")
-	equal(catalog.champions.size(), 24, "all champion visual packages are registered")
+	equal(catalog.races.size(), 21, "the historical archive retains its twenty-one race foundations")
+	equal(catalog.champions.size(), 24, "the historical archive retains its twenty-four champion packages")
 	equal(catalog.districts.size(), 9, "all Wellspring district packages are registered")
 
 
@@ -57,7 +58,8 @@ func _test_champion_packages() -> void:
 	equal(catalog.champion("s_wayne").get("body_type"), "small", "current authoring exposes a canonical body role")
 	equal(catalog.champion("wa_bidi").get("archive_ancestry"), "sylph", "archived pixels retain their original provenance")
 	equal(catalog.champion("wa_bidi").get("availability"), "playable", "validated goblin kit promotes Wa Bidi independently of archived sylph pixels")
-	equal(catalog.champion("grimm_bow").get("availability"), "planned", "archive existence alone does not promote a champion")
+	equal(catalog.champion("grimm_bow").get("availability"), "playable", "Grimm Bow is promoted by current gameplay data, not archive existence")
+	equal(catalog.champion("grimm_bow").get("asset_authority"), "legacy_visual_archive", "Grimm Bow archive pixels remain explicitly non-authoritative")
 	equal(catalog.champion("grimm_bow").get("elements"), ["earth", "water"], "reserved Chaos is not silently replaced by Dark")
 	equal(str(catalog.champion("unnamed_angel").get("status", "")), "placeholder_unapproved", "legacy unnamed Angel slot remains explicitly unapproved")
 
@@ -104,3 +106,24 @@ func _test_invalid_catalog_fails_closed() -> void:
 	}
 	check(not catalog.validate(), "incomplete Wellspring catalog fails closed")
 	check(not catalog.last_error.is_empty(), "Wellspring catalog failure is diagnosable")
+
+
+func _test_archive_subset_boundary() -> void:
+	var catalog := WellspringVisualCatalog.new()
+	check(catalog.load_from_file(), "historical Wellspring archive accepts an expanded canonical roster")
+	for champion_id: String in ["luuh_i_zeh", "juul_i_yaina", "faab_i_yaina", "joh_haynes"]:
+		check(not catalog.roster_plan.entry(champion_id).is_empty(), "new identity exists canonically: " + champion_id)
+		check(catalog.champion(champion_id).is_empty(), "new identity receives no fabricated archive package: " + champion_id)
+	check(catalog.race("spiderkin").is_empty() and not catalog.race("arachnoid").is_empty(), "canonical Spiderkin does not rewrite historical Arachnoid archive art")
+	for champion_id: String in catalog.champions:
+		var entry := catalog.champion(champion_id)
+		equal(entry["asset_authority"], "legacy_visual_archive", "runtime promotion cannot certify archived pixels: " + champion_id)
+		equal(entry["availability"], catalog.roster_plan.entry(champion_id)["availability"], "availability remains source-derived: " + champion_id)
+	var archive: Dictionary = (catalog.data["champions"] as Dictionary).duplicate(true)
+	var original: Dictionary = archive["grimm_bow"]
+	archive.erase("grimm_bow")
+	archive["unknown_archive_identity"] = original
+	catalog.data["champions"] = archive
+	check(not catalog.validate(), "unknown archived identity fails even while historical package count stays24")
+	check(catalog.last_error.contains("unknown canonical champion ID"), "archive identity refusal is actionable")
+	check(catalog.champions.is_empty(), "failed projection cannot expose a partially canonicalized archive")

@@ -177,15 +177,20 @@ func district(district_id: String) -> Dictionary:
 
 func _apply_canonical_champion_metadata(asset_champions: Dictionary) -> bool:
 	champions.clear()
-	if roster_plan.ordered_ids.size() != REQUIRED_CHAMPION_COUNT:
-		return _fail("canonical champion roster count differs from the visual archive")
-	for champion_id: String in roster_plan.ordered_ids:
-		if not asset_champions.has(champion_id):
-			return _fail("visual archive is missing canonical champion ID: %s" % champion_id)
+	# These are historical packages, not a completeness claim for today's cast.
+	# Preserve the original 24 packages / 21 race foundations without inventing
+	# images for newer identities or promoting archive art to runtime authority.
+	var canonical_champions: Dictionary = {}
+	for champion_id: String in asset_champions:
+		if roster_plan.entry(champion_id).is_empty():
+			return _fail("visual archive contains unknown canonical champion ID: %s" % champion_id)
 		var canonical: Dictionary = roster_plan.visual_metadata(champion_id, asset_champions[champion_id])
-		if not races.has(String(canonical["ancestry"])):
-			return _fail("canonical champion ancestry lacks a visual foundation: %s" % champion_id)
-		champions[champion_id] = canonical
+		if canonical.is_empty():
+			return _fail("visual archive cannot resolve canonical metadata: %s" % champion_id)
+		# Source ancestry was validated against the historical race foundations.
+		# Canonical identity changes do not silently relabel pixels as current art.
+		canonical_champions[champion_id] = canonical
+	champions = canonical_champions
 	return true
 
 

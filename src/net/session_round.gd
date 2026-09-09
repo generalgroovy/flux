@@ -328,10 +328,10 @@ func _enforce_bounds(world: SimWorld) -> void:
 		var state: PlayerState = world.player(entity_id)
 		if state == null or state.health <= 0:
 			continue
-		var minimum_x := arena_bounds.position.x + state.radius
-		var maximum_x := arena_bounds.end.x - state.radius
-		var minimum_y := arena_bounds.position.y + state.radius
-		var maximum_y := arena_bounds.end.y - state.radius
+		var minimum_x := arena_bounds.position.x + MovementTuning.PLAYER_RADIUS
+		var maximum_x := arena_bounds.end.x - MovementTuning.PLAYER_RADIUS
+		var minimum_y := arena_bounds.position.y + MovementTuning.PLAYER_RADIUS
+		var maximum_y := arena_bounds.end.y - MovementTuning.PLAYER_RADIUS
 		var next_x := clampi(state.position_x, minimum_x, maximum_x)
 		var next_y := clampi(state.position_y, minimum_y, maximum_y)
 		if next_x != state.position_x:

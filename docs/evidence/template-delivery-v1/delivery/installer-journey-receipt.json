@@ -1,0 +1,110 @@
+{
+  "schema_version": 2,
+  "passed": true,
+  "installer": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-followup-p47-20260909\\release\\FLUX.exe",
+  "installer_sha256": "4bd03fd6ee50d7161b445bc03e2c8e99477b366a44b63f8fadba084ce31b5121",
+  "baseline_installer": "C:\\Users\\sende\\Projects\\flux\\exports\\windows-cast-gallery-p47-20260908\\release\\FLUX.exe",
+  "baseline_update_tested": true,
+  "protocol": 47,
+  "playable_champions": 27,
+  "test_root": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378",
+  "shortcuts_requested": false,
+  "real_home_install_requested": false,
+  "failure": "",
+  "stages": [
+    {
+      "name": "00-readonly-root",
+      "exit_code": 0,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\00-readonly-root.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\00-readonly-root.stderr.log"
+    },
+    {
+      "name": "01-clean-install",
+      "exit_code": 0,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\01-clean-install.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\01-clean-install.stderr.log"
+    },
+    {
+      "name": "02-stored-root-inference",
+      "exit_code": 0,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\02-stored-root-inference.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\02-stored-root-inference.stderr.log"
+    },
+    {
+      "name": "03-stored-reuse",
+      "exit_code": 0,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\03-stored-reuse.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\03-stored-reuse.stderr.log"
+    },
+    {
+      "name": "04-corrupt-pck-repair",
+      "exit_code": 0,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\04-corrupt-pck-repair.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\04-corrupt-pck-repair.stderr.log"
+    },
+    {
+      "name": "05-truncated-manifest-repair",
+      "exit_code": 0,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\05-truncated-manifest-repair.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\05-truncated-manifest-repair.stderr.log"
+    },
+    {
+      "name": "06-repaired-stored-reuse",
+      "exit_code": 0,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\06-repaired-stored-reuse.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\06-repaired-stored-reuse.stderr.log"
+    },
+    {
+      "name": "07-empty-root-refusal",
+      "exit_code": 2,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\07-empty-root-refusal.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\07-empty-root-refusal.stderr.log"
+    },
+    {
+      "name": "08-unowned-root-refusal",
+      "exit_code": 1,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\08-unowned-root-refusal.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\08-unowned-root-refusal.stderr.log"
+    },
+    {
+      "name": "09-baseline-preflight",
+      "exit_code": 0,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\09-baseline-preflight.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\09-baseline-preflight.stderr.log"
+    },
+    {
+      "name": "10-baseline-install",
+      "exit_code": 0,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\10-baseline-install.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\10-baseline-install.stderr.log"
+    },
+    {
+      "name": "11-baseline-update",
+      "exit_code": 0,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\11-baseline-update.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\11-baseline-update.stderr.log"
+    },
+    {
+      "name": "12-userdata-argv-probe",
+      "exit_code": 0,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\12-userdata-argv-probe.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\12-userdata-argv-probe.stderr.log"
+    },
+    {
+      "name": "13-native-windows-argv-contract",
+      "exit_code": 0
+    },
+    {
+      "name": "14-installed-runtime-state",
+      "exit_code": 0,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\14-installed-runtime-state.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\14-installed-runtime-state.stderr.log"
+    },
+    {
+      "name": "15-actual-launcher-game-boot",
+      "exit_code": 0,
+      "stdout": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\15-actual-launcher-game-boot.stdout.log",
+      "stderr": "C:\\Users\\sende\\Projects\\flux\\.godot\\bootstrap-test\\run 633592f8222244fba64875b4629d1378\\logs\\15-actual-launcher-game-boot.stderr.log"
+    }
+  ]
+}

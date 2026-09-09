@@ -60,6 +60,9 @@ var facing_x: int = 1000
 var facing_y: int = 0
 var aim_x: int = 1000
 var aim_y: int = 0
+# Serialized combat hurt-circle radius; fixed by the selected body profile.
+# Wall movement, spawn clearance and cast origins use MovementTuning.PLAYER_RADIUS
+# instead. Animations and movement modes never resize this combat boundary.
 var radius: int = MovementTuning.PLAYER_RADIUS
 var movement_mode: int = MovementMode.IDLE
 var primary_held: bool = false

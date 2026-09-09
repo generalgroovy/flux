@@ -2,6 +2,84 @@ class_name SightOcclusion
 extends RefCounted
 
 
+const CAMERA_ELEVATION_DEGREES := 55.0
+const GROUND_Y_SCALE := 0.8191520442889918 # sin(55 degrees), matching the art camera.
+const REAR_AWARENESS_RADIUS := 72.0
+const MASK_SEGMENTS := 96
+
+
+static func project_ground(point: Vector2) -> Vector2:
+	return Vector2(point.x, point.y * GROUND_Y_SCALE)
+
+
+static func inverse_project_ground(point: Vector2) -> Vector2:
+	return Vector2(point.x, point.y / GROUND_Y_SCALE)
+
+
+static func ground_aim_angle(screen_aim: Vector2) -> float:
+	return inverse_project_ground(screen_aim).angle() if screen_aim.length_squared() > 0.0 else 0.0
+
+
+static func projected_viewport_cover_radius(origin: Vector2, viewport: Rect2) -> float:
+	return viewport_cover_radius(inverse_project_ground(origin), Rect2(inverse_project_ground(viewport.position), inverse_project_ground(viewport.size)), MASK_SEGMENTS)
+
+
+static func projected_arc(origin: Vector2, radius: float, start: float, end: float, segments: int) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	var count := maxi(1, segments)
+	for index: int in range(count + 1):
+		points.append(origin + project_ground(Vector2.from_angle(lerpf(start, end, float(index) / count)) * radius))
+	return points
+
+
+static func projected_mask_quad(origin: Vector2, inner_radius: float, outer_radius: float, angle_a: float, angle_b: float) -> PackedVector2Array:
+	return PackedVector2Array([
+		origin + project_ground(Vector2.from_angle(angle_a) * inner_radius),
+		origin + project_ground(Vector2.from_angle(angle_a) * outer_radius),
+		origin + project_ground(Vector2.from_angle(angle_b) * outer_radius),
+		origin + project_ground(Vector2.from_angle(angle_b) * inner_radius),
+	])
+
+
+static func point_visible(origin: Vector2, target: Vector2, aim: Vector2, angle_degrees: float, sight_range: float, opaque_bounds: Array[Rect2], rear_radius: float = REAR_AWARENESS_RADIUS) -> bool:
+	# World/collision positions are already screen-cardinal map coordinates.
+	# Invert the SAME projection for aim and distance; never warp map geometry.
+	if not origin.is_finite() or not target.is_finite() or not aim.is_finite() or not is_finite(angle_degrees) or not is_finite(sight_range) or sight_range <= 0.0:
+		return false
+	var delta := inverse_project_ground(target - origin)
+	var distance_squared := delta.length_squared()
+	if distance_squared > sight_range * sight_range:
+		return false
+	var near_radius := clampf(rear_radius, 0.0, sight_range) if is_finite(rear_radius) else 0.0
+	if distance_squared > near_radius * near_radius and angle_degrees < 360.0:
+		var half_angle := deg_to_rad(clampf(angle_degrees, 15.0, 360.0)) * 0.5
+		if absf(wrapf(delta.angle() - ground_aim_angle(aim), -PI, PI)) > half_angle + 0.000001:
+			return false
+	return line_clear(origin, target, opaque_bounds)
+
+
+static func line_clear(origin: Vector2, target: Vector2, opaque_bounds: Array[Rect2]) -> bool:
+	for bounds: Rect2 in opaque_bounds:
+		if not bounds.has_area():
+			continue
+		if bounds.has_point(origin) or bounds.has_point(target):
+			return false
+		var corners := [bounds.position, Vector2(bounds.end.x, bounds.position.y), bounds.end, Vector2(bounds.position.x, bounds.end.y)]
+		for index: int in 4:
+			if Geometry2D.segment_intersects_segment(origin, target, corners[index], corners[(index + 1) % 4]) != null:
+				return false
+	return true
+
+
+static func viewport_cover_radius(origin: Vector2, viewport: Rect2, segment_count: int = 96) -> float:
+	# The polygon's edges, not just its vertices, must cover the furthest corner.
+	var farthest_squared: float = maxf(
+		maxf(origin.distance_squared_to(viewport.position), origin.distance_squared_to(viewport.end)),
+		maxf(origin.distance_squared_to(Vector2(viewport.end.x, viewport.position.y)), origin.distance_squared_to(Vector2(viewport.position.x, viewport.end.y))),
+	)
+	return (sqrt(farthest_squared) + 1.0) / cos(PI / float(maxi(3, segment_count)))
+
+
 static func shadow_polygon(origin: Vector2, occluder: Rect2, outer_distance: float) -> PackedVector2Array:
 	if outer_distance <= 0.0 or occluder.size.x <= 0.0 or occluder.size.y <= 0.0 or occluder.has_point(origin):
 		return PackedVector2Array()

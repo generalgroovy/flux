@@ -129,7 +129,7 @@ def main():
         atlas_pages=len(m["atlases"]),decoded_rgba_bytes=m["budgets"]["decoded_rgba_bytes"],
         loop_seam_metrics=seams,source_scope="asset sources + atlas bytes + reference geometry port; not the production Godot renderer",
         runtime_visual_acceptance=False,user_accepted=False,performance_120fps_accepted=False)
-    (ROOT/"QA-results.json").write_text(json.dumps(report,indent=2)+"\n")
+    (ROOT/"QA-results.json").write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8",newline="\n")
     print(f"{'PASS' if not errors else 'FAIL'}: {count} assertions, {len(errors)} failures; {len(notes)} loop-review notes; {animated} animated sequences")
     for e in errors[:30]:print(e)
     for n in notes[:20]:print(n)

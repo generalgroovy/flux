@@ -1,0 +1,10 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (AMD) - ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001506) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.21045.5002)
+
+RENDERED grounded tick=0 stamina=660000 view={"kind":"grounded","lines":["Walk around walls; Shift adds paid sprint.","Along a wall + V: try a paid wallrun."],"phase":"STAMINA 660/660","title":"SOUTH LOOP / WALK OR WALL"}
+RENDERED wallrun tick=13 stamina=642000 view={"kind":"wallrun","lines":["Fresh Space + away: try a paid wall kick.","Walls do not refill spent Float or air dodge."],"phase":"STAMINA 642/660","title":"SOUTH LOOP / WALLRUN"}
+RENDERED wall-exit tick=25 stamina=611200 view={"kind":"airborne","lines":["V + changed direction: a paid sharp turn.","Release, press + hold Space: try paid Float."],"phase":"STAMINA 611.2/660","title":"SOUTH LOOP / STEER THE EXIT"}
+RENDERED float tick=37 stamina=572400 view={"kind":"float","lines":["Hold Space for height; release to fall.","Paid Float is finite; walls do not refill it."],"phase":"STAMINA 572.4/660","title":"SOUTH LOOP / FLOAT"}
+RENDERED float-controller-75-reduced tick=37 stamina=572400 view={"kind":"float","lines":["Hold R SHOULDER for height; release to fall.","Paid Float is finite; walls do not refill it."],"phase":"STAMINA 572.4/660","title":"SOUTH LOOP / FLOAT"}
+RENDERED float-controller-50-reduced tick=37 stamina=572400 view={"kind":"float","lines":["Hold R SHOULDER for height; release to fall.","Paid Float is finite; walls do not refill it."],"phase":"STAMINA 572.4/660","title":"SOUTH LOOP / FLOAT"}
+PASS: six actual1280x720 views; paid wallrun/kick/Float; shared live draw; no sockets/preferences/audio; human feel remains open

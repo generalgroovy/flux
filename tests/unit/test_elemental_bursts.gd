@@ -42,10 +42,11 @@ func _test_shared_first_eight_contract() -> void:
 
 func _test_readable_projectile_travel_at_120_hz() -> void:
 	var previous_tuning := {
-		"arc-primary": [960_000, 1200], "vector-lance": [850_000, 1500],
-		"rillshot": [900_000, 1150], "cinderbolt": [840_000, 1250],
-		"eclipse-disc": [780_000, 1600],
+		"arc-primary": [768_000, 1500, 7000], "vector-lance": [680_000, 1875, 9000],
+		"rillshot": [720_000, 1440, 8000], "cinderbolt": [672_000, 1565, 9000],
+		"eclipse-disc": [624_000, 2000, 11000],
 	}
+	var previous_families := {"burst": [560_000, 1375, 8000], "heavy": [400_000, 1800, 16000], "rapid": [760_000, 850, 5000]}
 	var catalog := _catalog()
 	var projectile_count := 0
 	for wire_id: int in catalog.runtime_wire_ids:
@@ -55,11 +56,12 @@ func _test_readable_projectile_travel_at_120_hz() -> void:
 		projectile_count += 1
 		var ability := catalog.ability_from_wire(wire_id)
 		var ability_id := String(ability.get("id", ""))
-		var is_burst := String(definition.get("delivery_kernel", "")) == "burst"
-		var before: Array = previous_tuning.get(ability_id, [700_000, 1100] if is_burst else [720_000, 1600])
+		var family := String(ability.get("family", definition.get("delivery_kernel", "")))
+		var before: Array = previous_tuning.get(ability_id, previous_families.get(family, [576_000, 2000, 9000]))
 		var speed := int(definition.get("speed", 0))
 		var lifetime_ms := int(definition.get("lifetime_ms", 0))
 		equal(speed * 5, int(before[0]) * 4, ability_id + " slows travel by exactly 20 percent")
+		equal(int(definition.get("radius", 0)) * 5, int(before[2]) * 6, ability_id + " enlarges the actual collision radius by exactly 20 percent")
 		check(int(ability.get("flux_cost", 0)) > 0, ability_id + " retains a paid attack")
 		var baseline := _sample_projectile_travel(definition, int(before[0]), int(before[1]))
 		var candidate := _sample_projectile_travel(definition, speed, lifetime_ms)
@@ -67,7 +69,7 @@ func _test_readable_projectile_travel_at_120_hz() -> void:
 		check(int(candidate["reaction_ticks"]) > int(baseline["reaction_ticks"]), ability_id + " gives more simulation ticks to react across 300 world units")
 		check(absi(int(candidate["travel"]) - int(baseline["travel"])) <= 5000, ability_id + " preserves terminal reach within five world units after tick rounding")
 		print("PROJECTILE_TUNING %s: speed=%d->%d; flight_ticks=%d->%d; travel=%.3f->%.3f; 300u_ticks=%d->%d" % [ability_id, int(before[0]), speed, int(baseline["flight_ticks"]), int(candidate["flight_ticks"]), int(baseline["travel"]) / 1000.0, int(candidate["travel"]) / 1000.0, int(baseline["reaction_ticks"]), int(candidate["reaction_ticks"])])
-	equal(projectile_count, 17, "all eight Bolts, eight Bursts and Vector Lance receive the same readability pass")
+	equal(projectile_count, 33, "all eight Bolts, eight Bursts, eight Heavies, eight Rapids and Vector Lance receive the same readability pass")
 
 
 func _sample_projectile_travel(definition: Dictionary, speed: int, lifetime_ms: int) -> Dictionary:

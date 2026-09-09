@@ -112,7 +112,7 @@ func walljump_contact(state: PlayerState, config: SimConfig, tick: int, ground_a
 	if normal != Vector2.ZERO and state.wall_memory_ticks == memory and state.wall_contact_id > 0:
 		if not _wall_contacts.has(state.entity_id) and _wall_contacts.size() >= 32:
 			_wall_contacts.erase(_wall_contacts.keys()[0])
-		_wall_contacts[state.entity_id] = {"anchor":ground_anchor-normal*float(state.radius)/1000.0,"tick":tick}
+		_wall_contacts[state.entity_id] = {"anchor":ground_anchor-normal*float(MovementTuning.PLAYER_RADIUS)/1000.0,"tick":tick}
 	if state.hop_mode != PlayerState.MovementMode.WALL_KICK or state.jump_protection_ticks <= 0 or not _wall_contacts.has(state.entity_id):
 		return {}
 	var remembered: Dictionary = _wall_contacts[state.entity_id]
@@ -142,7 +142,8 @@ func protection(canvas: CanvasItem, contract: Dictionary, anchor: Vector2, reduc
 			var frame: Dictionary = library.sample(Library.movement_asset_id("float_wing",reduced),0)
 			_draw_flipped(canvas,frame,center+Vector2(-16,0),true,false)
 			_draw_flipped(canvas,frame,center+Vector2(16,0),false,false)
-			stamp(canvas,"float_budget_tick",center+Vector2(0,-12),0,reduced)
+			# The live three-slot time meter is drawn by the champion presenter;
+			# retain the immutable legacy tick asset, but do not stack its icon.
 	return true
 
 

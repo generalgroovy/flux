@@ -1,0 +1,2 @@
+C:\Users\sende\Projects\flux\exports\windows-cast-gallery-p47-20260908\release\FLUX.exe
+"--quiet" "--install-only" "--no-shortcuts" "--install-root="

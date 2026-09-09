@@ -1,0 +1,40 @@
+{
+  "scope": "Isolated source-launch import-cache probe only; production cache and launcher unchanged",
+  "engine": "4.7.1.stable.official.a13da4feb",
+  "fixture_root": "C:/Users/sende/Projects/flux/.godot/source-launch-import-probe-20260908-1788879731",
+  "cases": [
+    {
+      "id": "missing_import_after_source_update",
+      "cache_nonempty": true,
+      "resource_exists": true,
+      "normal_runtime_exit": 2,
+      "automatic_import": false,
+      "log": "02-existing-cache-runtime.log",
+      "error_log": "02-existing-cache-runtime.log.err"
+    },
+    {
+      "id": "conditional_editor_import_then_runtime",
+      "runtime_exit": 0,
+      "texture_dimensions": [
+        768,
+        960
+      ],
+      "decoded_rgba_sha256": "d977c61a68d19cb5ac1426077fd64789ed940e3bd9166ed8e0168bf419379e0e",
+      "log": "04-after-preflight-runtime.log"
+    },
+    {
+      "id": "changed_source_with_existing_ctex",
+      "source_now": "Exact Steezo PNG copied into owned Jan source slot, original imports retained",
+      "source_sha256": "6871b5fa9357d8c24ed375db3ebcb8e1840dfd61f1ffd87f99fe069a664b4111",
+      "loaded_pixels": "Stale Jan RGBA despite source change",
+      "decoded_rgba_sha256": "d977c61a68d19cb5ac1426077fd64789ed940e3bd9166ed8e0168bf419379e0e",
+      "runtime_exit": 0,
+      "log": "05-changed-source-stale-runtime.log"
+    }
+  ],
+  "production_files_changed": [],
+  "live_cache_deleted": false,
+  "owned_processes_remaining": 0,
+  "cleanup": "Fixture retained; no files deleted",
+  "recommendation": "Conditional declared-resource readiness fingerprint plus imported destination existence; import on changes, not every healthy launch."
+}

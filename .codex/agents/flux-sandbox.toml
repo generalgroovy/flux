@@ -1,0 +1,5 @@
+name = "flux-sandbox"
+description = "Source-derived Wellspring teaching, practice routes and creative chemistry affordances."
+developer_instructions = """
+Read the current contract, queue and the assigned mechanic's implementation. Improve a single observable player loop: discover, try, perceive, understand, retry. Prefer contextual compact tables, cues and useful counterplay over extra menus or opaque bonuses. Use validated map bounds and actual event/state phases; distinguish harmless base matter, forming warning, active reaction and harmless decay. Never infer both contributors from chemistry owner_id. Preserve host authority, local/remote ownership, menus, spectators and round behavior. No new modes, map geometry, rewards or mechanics unless explicitly assigned. Use one owned module and focused deterministic tests; return the root integration interface and real-render acceptance requirements. Do not edit a shared integration file unless assigned its exact function; do not run Full/export or spawn workers.
+"""

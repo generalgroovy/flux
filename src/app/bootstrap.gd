@@ -4,6 +4,14 @@ extends Node2D
 const MAX_CATCH_UP_STEPS: int = 8
 const RuntimeContentSummaryScript = preload("res://src/app/runtime_content_summary.gd")
 const PlayerCompendiumScript = preload("res://src/presentation/player_compendium.gd")
+const CharacterSelectionGridScript = preload("res://src/presentation/character_selection_grid.gd")
+const ChampionAttunementScript = preload("res://src/app/champion_attunement.gd")
+const ChemistryCoach = preload("res://src/presentation/chemistry_practice_coach.gd")
+const MovementCoach = preload("res://src/presentation/movement_practice_coach.gd")
+const ElementAudioScript = preload("res://src/presentation/element_audio.gd")
+const SOUND_DOWN_RECT := Rect2(960, 144, 40, 30)
+const SOUND_UP_RECT := Rect2(1008, 144, 40, 30)
+const SOUND_MUTE_RECT := Rect2(1056, 144, 76, 30)
 const SNAPSHOT_RATE: int = 60
 const EMOTE_COOLDOWN_MS: int = 1200
 const STEWARD_CONFIRMATION_MS: int = 3000
@@ -41,6 +49,7 @@ const POV_MASK_COLOR := Color("090d0be8")
 const POV_EDGE_COLOR := Color("6f8c72a8")
 
 var world: SimWorld
+var element_audio: ElementAudioScript
 var input_router: InputRouter
 var hub_definition: HubDefinition
 var campus_layout: SanctumCampusLayout
@@ -50,8 +59,12 @@ var visual_accessibility_filter: VisualAccessibilityFilter
 var compact_hud: CompactCombatHud
 var interaction_presenter: WellspringInteractionPresenter
 var cartoon_champion_presenter: CartoonChampionPresenter
+var _character_page_preparation_key := ""
+var _character_pages_ready := false
+var _character_page_preparation_error := ""
 var foundation_spell_presenter: FoundationSpellPresenter
 var burst_projectile_presenter: BurstProjectilePresenter
+var heavy_blast_presenter := preload("res://src/presentation/heavy_blast_presenter.gd").new()
 var element_chemistry_presenter: ElementChemistryPresenter
 var ability_catalog: AbilityCatalog
 var runtime_content_summary: Dictionary = {}
@@ -68,6 +81,7 @@ var player_preferences: PlayerPreferences
 var controls_editor: ControlBindingEditor
 var spell_loom_editor: SpellLoomEditor
 var player_compendium: PlayerCompendiumScript
+var character_selection_grid: CharacterSelectionGridScript
 var player_sprite: WellspringCharacterSprite
 var session_transport: SessionTransport
 var session_steward: SessionSteward
@@ -81,6 +95,7 @@ var tick_rate: int = 120
 var accumulator_seconds: float = 0.0
 var previous_position := Vector2.ZERO
 var current_position := Vector2.ZERO
+var previous_prediction_position := Vector2.ZERO
 var previous_air_height: int = 0
 var actor_motion_history := preload("res://src/presentation/actor_motion_history.gd").new()
 var remote_snapshot_age_seconds: float = 0.0
@@ -109,6 +124,8 @@ var expanded_station_id: String = ""
 var station_notice: String = ""
 var station_notice_seconds: float = 0.0
 var selected_champion_id: String = "oh_tipi"
+var station_activation_device := ControlBindingEditor.DEVICE_KEYBOARD
+var movement_practice_device := ControlBindingEditor.DEVICE_KEYBOARD
 var join_address: String = "127.0.0.1"
 var join_address_editor_open: bool = false
 var join_address_editor_text: String = ""
@@ -160,6 +177,7 @@ var safe_quit_smoke_seconds: float = 0.0
 var safe_quit_pending: bool = false
 var safe_quit_deadline_ms: int = 0
 var controls_input_guard_frames: int = 0
+var application_input_active: bool = true
 var show_visual_specimen: bool = false
 var preference_overrides_are_transient: bool = false
 
@@ -178,7 +196,13 @@ func _ready() -> void:
 	controls_editor = ControlBindingEditor.new()
 	spell_loom_editor = SpellLoomEditor.new()
 	player_compendium = PlayerCompendiumScript.new()
+	character_selection_grid = CharacterSelectionGridScript.new()
 	_apply_preference_overrides()
+	if DisplayServer.get_name() != "headless":
+		element_audio = ElementAudioScript.new()
+		add_child(element_audio)
+		element_audio.prepare()
+		element_audio.set_volume(player_preferences.sound_volume_percent)
 	hub_definition = HubDefinition.new()
 	if not hub_definition.load_from_file(HUB_DEFINITION_PATH):
 		push_error(hub_definition.last_error)
@@ -208,17 +232,11 @@ func _ready() -> void:
 		return
 	campus_renderer = SanctumCampusRenderer.new()
 	if not campus_renderer.configure(visual_language):
-		push_error("Wellspring renderer could not bind the visual language")
+		push_error(campus_renderer.last_error)
 		get_tree().quit(1)
 		return
 	if not campus_renderer.configure_campus(campus_layout):
-		var architecture_error := "unavailable"
-		var wayfinding_error := "unavailable"
-		if campus_renderer.architecture_kit != null:
-			architecture_error = campus_renderer.architecture_kit.last_error
-		if campus_renderer.wayfinding != null:
-			wayfinding_error = campus_renderer.wayfinding.last_error
-		push_error("Wellspring renderer could not bind its kits: architecture=%s; wayfinding=%s" % [architecture_error, wayfinding_error])
+		push_error("Wellspring illustrated campus could not load: %s" % campus_renderer.last_error)
 		get_tree().quit(1)
 		return
 	interaction_presenter = WellspringInteractionPresenter.new()
@@ -295,6 +313,10 @@ func _ready() -> void:
 		push_error("Compendium catalog validation failed: %s / %s" % [compendium_roster.last_error, player_compendium.overview.get("error", "")])
 		get_tree().quit(1)
 		return
+	if not character_selection_grid.configure(champion_catalog, compendium_roster, cartoon_champion_presenter):
+		push_error(character_selection_grid.last_error)
+		get_tree().quit(1)
+		return
 	selected_champion_id = _requested_champion_id()
 	runtime_content_summary = RuntimeContentSummaryScript.build(ability_catalog, champion_catalog, reaction_catalog)
 	runtime_content_lines = RuntimeContentSummaryScript.spell_loom_lines(runtime_content_summary)
@@ -347,6 +369,10 @@ func _ready() -> void:
 	if requested_capture_social_bubble:
 		social_bubbles.append({"entity_id": SessionTransport.SERVER_PEER_ID, "text": "HELLO!", "remaining": 120.0, "duration": 120.0})
 	_start_requested_farflow()
+	if not _prepare_active_character_pages():
+		push_error(_character_page_preparation_error)
+		get_tree().quit(1)
+		return
 	if not capture_expanded_station_id.is_empty():
 		focused_station_id = capture_expanded_station_id
 		expanded_station_id = capture_expanded_station_id
@@ -356,13 +382,17 @@ func _ready() -> void:
 			controls_editor.open_editor()
 		elif capture_expanded_station_id == "spell-loom":
 			spell_loom_editor.open_editor(_local_player_state(), ability_catalog)
+		elif capture_expanded_station_id == "champion-loom":
+			_open_character_gallery()
 		elif capture_expanded_station_id == "farflow-join":
 			_open_join_address_editor()
 	for argument: String in OS.get_cmdline_user_args():
 		if argument in ["--capture-compendium=movement", "--capture-compendium=characters"]:
 			_open_player_compendium(PlayerCompendiumScript.CHARACTERS if argument.ends_with("=characters") else PlayerCompendiumScript.MOVEMENT)
+		elif argument == "--capture-compendium=chemistry":
+			_open_player_compendium(PlayerCompendiumScript.CHEMISTRY)
 	print(
-		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, architecture %s, wayfinding %s, spells %s/skeleton %s/directions %s, bursts %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, reactions %s/bounded-level-one, champions %s, build %d/13, materials %s, yard %s"
+		"FLUX2 bootstrap: %d Hz, protocol %d, movement %s, transitions %s, controls %s, POV %s/%d/%d, camera %d%%, visual %s, accessibility %s/%s/%s, HUD %s, interactions %s, spells %s/skeleton %s/directions %s, bursts %s, cartoon recipes %s/atlas %s, Sanctum districts %d, travel nodes %d, campus %s, ability catalog %s, reactions %s/bounded-level-one, champions %s, build %d/13, materials %s, yard %s"
 		% [
 			tick_rate,
 			SimConfig.PROTOCOL_VERSION,
@@ -379,8 +409,6 @@ func _ready() -> void:
 			"reduced" if _reduced_effects_enabled() else "full",
 			compact_hud.content_hash.left(12),
 			interaction_presenter.content_hash.left(12),
-			campus_renderer.architecture_kit.content_hash.left(12),
-			campus_renderer.wayfinding.content_hash.left(12),
 			foundation_spell_presenter.content_hash.left(12),
 			foundation_spell_presenter.animation_skeleton_hash.left(12),
 			foundation_spell_presenter.direction_contract_hash.left(12),
@@ -410,18 +438,40 @@ func _ready() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		_request_safe_quit("window")
-	elif what == NOTIFICATION_APPLICATION_FOCUS_OUT and spell_loom_editor != null:
-		spell_loom_editor.cancel_drag()
+	elif what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		application_input_active = false
+		if element_audio != null:
+			element_audio.silence()
+		if input_router != null:
+			input_router.discard_transient_movement_input()
+		if spell_loom_editor != null:
+			spell_loom_editor.cancel_drag()
+	elif what == NOTIFICATION_APPLICATION_FOCUS_IN:
+		application_input_active = true
+		controls_input_guard_frames = 2
+		if input_router != null:
+			input_router.discard_transient_movement_input()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if world == null:
 		return
+	if input_router != null and _gameplay_input_blocked():
+		input_router.observe_input_event(event)
+		input_router.discard_transient_movement_input()
+	if not application_input_active:
+		return
+	if not _gameplay_input_blocked():
+		_observe_station_activation_device(event)
+		_observe_movement_practice_device(event)
 	if join_address_editor_open:
 		_handle_join_address_input(event)
 		return
 	if spell_loom_editor != null and spell_loom_editor.is_open:
 		_handle_spell_loom_input(event)
+		return
+	if _character_gallery_open():
+		_handle_character_gallery_input(event)
 		return
 	# Binding capture and the other editors retain priority over fixed UI keys.
 	if controls_editor != null and not controls_editor.is_open:
@@ -478,6 +528,12 @@ func _unhandled_input(event: InputEvent) -> void:
 					_toggle_reduced_effects_preference()
 				KEY_H:
 					_toggle_high_contrast_preference()
+				KEY_BRACKETLEFT:
+					_adjust_sound_volume(-10)
+				KEY_BRACKETRIGHT:
+					_adjust_sound_volume(10)
+				KEY_0:
+					_adjust_sound_volume(0, true)
 			handled = true
 		elif event is InputEventMouseButton and event.pressed:
 			var mouse_event := event as InputEventMouseButton
@@ -486,7 +542,15 @@ func _unhandled_input(event: InputEvent) -> void:
 			elif mouse_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 				controls_editor.move_selection(1, 0)
 			elif mouse_event.button_index == MOUSE_BUTTON_LEFT:
-				controls_editor.select_cell(mouse_event.position / _ui_scale())
+				var pointer := mouse_event.position / _ui_scale()
+				if SOUND_DOWN_RECT.has_point(pointer):
+					_adjust_sound_volume(-10)
+				elif SOUND_UP_RECT.has_point(pointer):
+					_adjust_sound_volume(10)
+				elif SOUND_MUTE_RECT.has_point(pointer):
+					_adjust_sound_volume(0, true)
+				else:
+					controls_editor.select_cell(pointer)
 			handled = true
 		elif event is InputEventJoypadButton and event.pressed:
 			var joy_event := event as InputEventJoypadButton
@@ -512,6 +576,12 @@ func _unhandled_input(event: InputEvent) -> void:
 					_toggle_reduced_effects_preference()
 				JOY_BUTTON_RIGHT_STICK:
 					_toggle_high_contrast_preference()
+				JOY_BUTTON_LEFT_SHOULDER:
+					_adjust_sound_volume(-10)
+				JOY_BUTTON_RIGHT_SHOULDER:
+					_adjust_sound_volume(10)
+				JOY_BUTTON_START:
+					_adjust_sound_volume(0, true)
 			handled = true
 	if bindings_changed:
 		_commit_control_bindings()
@@ -635,6 +705,8 @@ func _handle_spell_loom_input(event: InputEvent) -> void:
 
 func _exit_tree() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	if element_audio != null:
+		element_audio.silence()
 	if player_preferences != null and not preference_overrides_are_transient and not player_preferences.save_to_file():
 		push_warning(player_preferences.last_error)
 	if session_transport != null:
@@ -659,7 +731,9 @@ func _process(delta: float) -> void:
 	_update_reconnect_smoke(delta)
 	if player_compendium != null and player_compendium.is_open:
 		player_compendium.refresh_status(_local_player_state())
-	var controls_blocking: bool = join_address_editor_open or (controls_editor != null and controls_editor.is_open) or (spell_loom_editor != null and spell_loom_editor.is_open) or (player_compendium != null and player_compendium.is_open) or controls_input_guard_frames > 0
+	var controls_blocking := _gameplay_input_blocked()
+	if element_audio != null and (controls_blocking or _is_spectating()):
+		element_audio.silence()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if controls_blocking or not get_window().has_focus() else Input.MOUSE_MODE_HIDDEN
 	if controls_input_guard_frames > 0:
 		controls_input_guard_frames -= 1
@@ -701,7 +775,7 @@ func _process(delta: float) -> void:
 		_activate_focused_station()
 		# A station can open a modal during this frame; never sample the same
 		# interaction press as a movement or spell command afterwards.
-		controls_blocking = controls_blocking or controls_editor.is_open or spell_loom_editor.is_open or player_compendium.is_open or join_address_editor_open
+		controls_blocking = controls_blocking or _gameplay_input_blocked()
 	if controls_blocking:
 		input_router.discard_transient_movement_input()
 	if not controls_blocking and Input.is_action_just_pressed(InputRouter.EMOTE_ACTION):
@@ -712,6 +786,8 @@ func _process(delta: float) -> void:
 	var steps: int = 0
 	while accumulator_seconds >= fixed_delta and steps < MAX_CATCH_UP_STEPS:
 		previous_position = current_position
+		if session_transport.is_connected_client() and client_prediction.is_ready():
+			previous_prediction_position = client_prediction.raw_position_pixels()
 		var prior_motion_state: PlayerState = client_prediction.predicted_state if session_transport.is_connected_client() and client_prediction.is_ready() else _local_player_state()
 		previous_air_height = prior_motion_state.air_height if prior_motion_state != null else 0
 		if requested_capture_movement in ["hit", "impact_recovery"] and world.tick == 4 and not session_transport.is_connected_client():
@@ -721,15 +797,7 @@ func _process(delta: float) -> void:
 			)
 		var camera_origin := _camera_origin(_camera_focus_position(current_position))
 		var pointer_world_position := Vector2(capture_pointer_world) if capture_pointer_world.x >= 0 else camera_origin + get_viewport().get_mouse_position() / _camera_zoom_scale()
-		var command: SimCommand
-		if controls_editor.is_open or spell_loom_editor.is_open or controls_blocking:
-			command = SimCommand.new(world.tick, input_router.entity_id, 0, 0, 0, 0, input_router.last_quantized_aim.x, input_router.last_quantized_aim.y)
-		else:
-			command = input_router.sample(
-				world.tick,
-				current_position,
-				pointer_world_position,
-			)
+		var command := _sample_gameplay_command(world.tick, current_position, pointer_world_position, controls_blocking)
 		if not requested_capture_movement.is_empty() and not session_transport.is_connected_client():
 			command = capture_movement_command(requested_capture_movement, world.tick, input_router.entity_id, requested_capture_movement_direction)
 		# Capture-only casts wait for one ordinary command so the requested pointer
@@ -784,6 +852,9 @@ func _process(delta: float) -> void:
 		if session_transport.is_connected_client() and requested_prediction_smoke and last_client_snapshot_tick >= 0 and prediction_smoke_inputs_sent < 18:
 			command = SimCommand.new(world.tick, input_router.entity_id, 1000, 0, 0, 0, 1000, 0)
 			prediction_smoke_inputs_sent += 1
+		# Gallery capture uses the same modal safety as interactive selection;
+		# no diagnostic movement/cast override may leak through its open panel.
+		command = gallery_modal_command(command, _character_gallery_open() or not application_input_active)
 		if session_transport.is_connected_client():
 			if not _is_spectating():
 				client_input_sequence += 1
@@ -861,7 +932,68 @@ func _process(delta: float) -> void:
 	if accumulator_seconds >= fixed_delta:
 		dropped_time_seconds += accumulator_seconds - fmod(accumulator_seconds, fixed_delta)
 		accumulator_seconds = fmod(accumulator_seconds, fixed_delta)
+	_prepare_active_character_pages()
+	_update_character_gaits(delta)
 	queue_redraw()
+
+
+func _update_character_gaits(delta: float) -> void:
+	if world == null or cartoon_champion_presenter == null:
+		return
+	var alpha := clampf(accumulator_seconds * float(tick_rate), 0.0, 1.0)
+	var remote_alpha := clampf(remote_snapshot_age_seconds * 60.0 if session_transport.is_connected_client() else accumulator_seconds * float(tick_rate), 0.0, 1.0)
+	var local := _local_player_state()
+	var states: Array[PlayerState] = []
+	var points: Dictionary = {}
+	var heights: Dictionary = {}
+	var predicted_motion: Dictionary = {}
+	for actor: PlayerState in world.players:
+		if actor.actor_kind != PlayerState.ActorKind.CHAMPION:
+			continue
+		if local != null and actor.entity_id == local.entity_id:
+			if session_transport.is_connected_client() and client_prediction.is_ready():
+				predicted_motion[actor.entity_id] = client_prediction.predicted_state
+				# The visual correction tail is not locomotion. The sprite may
+				# ease back to authority without inventing or suppressing steps.
+				points[actor.entity_id] = previous_prediction_position.lerp(client_prediction.raw_position_pixels(), alpha)
+			else:
+				points[actor.entity_id] = previous_position.lerp(current_position, alpha)
+		else:
+			var point: Vector3 = actor_motion_history.sample(actor, remote_alpha)
+			points[actor.entity_id] = Vector2(point.x, point.y)
+		states.append(actor)
+		var champion_id := champion_catalog.champion_id_from_wire(actor.champion_wire_id)
+		heights[actor.entity_id] = float(cartoon_champion_presenter.champions.get(champion_id, {}).get("height", 68.0))
+	actor_motion_history.capture_gaits(states, points, heights, delta, predicted_motion)
+
+
+func _prepare_active_character_pages() -> bool:
+	if world == null or champion_catalog == null or cartoon_champion_presenter == null:
+		return true
+	var active_ids: Array[String] = []
+	for actor: PlayerState in world.players:
+		if actor.actor_kind != PlayerState.ActorKind.CHAMPION:
+			continue
+		var champion_id := champion_catalog.champion_id_from_wire(actor.champion_wire_id)
+		if not champion_id.is_empty() and champion_id not in active_ids:
+			active_ids.append(champion_id)
+	active_ids.sort()
+	var key := "%d/%d/%s" % [cartoon_champion_presenter.get_instance_id(), cartoon_champion_presenter.configuration_generation, ",".join(active_ids)]
+	if key == _character_page_preparation_key:
+		return _character_pages_ready
+	_character_page_preparation_key = key
+	_character_pages_ready = cartoon_champion_presenter.prepare_override_pages(active_ids)
+	_character_page_preparation_error = "" if _character_pages_ready else cartoon_champion_presenter.last_error
+	if not _character_pages_ready:
+		# Keep the verified old set/fallback and shared simulation running. Do not
+		# retry disk I/O each frame after a failure; identity/reload changes retry.
+		station_notice = "Character art could not be prepared; retaining verified fallback. " + _character_page_preparation_error
+		station_notice_seconds = 8.0
+	return _character_pages_ready
+
+
+func _champion_visual_id(authority: PlayerState) -> String:
+	return champion_catalog.champion_id_from_wire(authority.champion_wire_id) if authority != null and champion_catalog != null else ""
 
 
 func _send_host_reconciliations() -> void:
@@ -916,7 +1048,7 @@ func _draw() -> void:
 	var presentation_state: PlayerState = client_prediction.predicted_state if session_transport.is_connected_client() and client_prediction.is_ready() else state
 	var presentation := JumpPresentation.sample(presentation_state, world.config, alpha, _reduced_effects_enabled(), previous_air_height)
 	var landing := LandingPresentation.sample(presentation_state, world.config, alpha, _reduced_effects_enabled())
-	var player_radius: float = float(presentation_state.radius) / 1000.0
+	var player_radius: float = float(MovementTuning.PLAYER_RADIUS) / 1000.0
 	var shadow_center := rendered_position + Vector2(0.0, player_radius * 0.58)
 	if campus_renderer.natural_kit != null:
 		campus_renderer.natural_kit.draw_actor_contact(self, campus_layout, presentation_state, shadow_center, roundi(visual_tick), _reduced_effects_enabled())
@@ -931,7 +1063,9 @@ func _draw() -> void:
 		_draw_landing_cue(shadow_center, landing)
 	var body_position := rendered_position + Vector2(0.0, -float(presentation.body_lift_pixels))
 	var sprite_drawn: bool = false
-	var presentation_champion_id := champion_catalog.champion_id_from_wire(presentation_state.champion_wire_id)
+	# Movement prediction has no champion identity field; world art and HUD must
+	# resolve the same authoritative identity while motion stays immediate.
+	var presentation_champion_id := _champion_visual_id(state)
 	var sprite_anchor := shadow_center + Vector2(0.0, -float(presentation.body_lift_pixels))
 	if cartoon_champion_presenter != null:
 		sprite_drawn = cartoon_champion_presenter.draw(
@@ -943,8 +1077,9 @@ func _draw() -> void:
 			world.config,
 			_reduced_effects_enabled(),
 			shadow_center,
+			actor_motion_history.gait_phase(presentation_state.entity_id),
 		)
-	if not sprite_drawn and player_sprite != null:
+	if not sprite_drawn and player_sprite != null and not _uses_shared_wireframe_bodies():
 		if player_sprite.sync_from_player(presentation_state, world.config, world.tick, alpha):
 			draw_texture_rect_region(
 				player_sprite.texture,
@@ -960,7 +1095,7 @@ func _draw() -> void:
 		draw_circle(body_position, player_radius, PLAYER_COLOR)
 		draw_arc(body_position, player_radius + 2.0, 0.0, TAU, 24, PARCHMENT_COLOR, 2.0)
 	if show_debug_overlay:
-		_draw_actor_hitbox_diagnostic(body_position, player_radius, presentation_champion_id)
+		_draw_actor_hitbox_diagnostic(body_position, float(presentation_state.radius) / 1000.0, presentation_champion_id)
 	_draw_spell_startup(presentation_state, sprite_anchor, roundi(visual_tick))
 	if state.spawn_protection_ticks > 0:
 		var protection_ratio := clampf(float(state.spawn_protection_ticks) / float(maxi(1, world.config.milliseconds_to_ticks(1200))), 0.0, 1.0)
@@ -968,9 +1103,10 @@ func _draw() -> void:
 	_draw_social_bubbles(camera_origin)
 	_draw_station_bubble(camera_origin)
 	draw_set_transform(Vector2.ZERO)
-	var observed_position := Vector2(float(observed_state.position_x) / SimConfig.FIXED_SCALE, float(observed_state.position_y) / SimConfig.FIXED_SCALE)
-	var pov_position := observed_position if spectating else rendered_position
-	_draw_pov_mask((pov_position - camera_origin) * _camera_zoom_scale(), Vector2(observed_state.aim_x, observed_state.aim_y), camera_origin)
+	var pov_position := _pov_observer_ground_position(observed_state, spectating, rendered_position)
+	var pov_aim_state := observed_state if spectating else presentation_state
+	_draw_pov_mask((pov_position - camera_origin) * _camera_zoom_scale(), Vector2(CartoonChampionPresenter.presentation_facing_vector(pov_aim_state)), camera_origin)
+	_draw_pov_observer_body(camera_origin, visual_tick, alpha)
 	if not spectating and Input.mouse_mode == Input.MOUSE_MODE_HIDDEN:
 		var aim_direction := Vector2(presentation_state.aim_x, presentation_state.aim_y).normalized()
 		var aim_stick := Vector2(Input.get_action_strength(&"aim_right") - Input.get_action_strength(&"aim_left"), Input.get_action_strength(&"aim_down") - Input.get_action_strength(&"aim_up"))
@@ -980,7 +1116,7 @@ func _draw() -> void:
 		if aim_stick.length() >= InputRouter.AIM_DEADZONE:
 			reticle_position = (rendered_position + aim_direction * 320.0 - camera_origin) * _camera_zoom_scale()
 		AimReticlePresenter.draw(self, reticle_position, aim_direction)
-	var observed_champion_id := champion_catalog.champion_id_from_wire(observed_state.champion_wire_id)
+	var observed_champion_id := _champion_visual_id(observed_state)
 	var champion_data: Dictionary = champion_catalog.champion(observed_champion_id)
 	var champion_name := String(champion_data.get("display_name", observed_champion_id))
 	var location_name := "PROVING COURT" if int(_current_round_state().get("phase", SessionRound.Phase.HEARTH)) != SessionRound.Phase.HEARTH else "THE WELLSPRING"
@@ -1001,13 +1137,17 @@ func _draw() -> void:
 			active_layer,
 			world.config.tick_rate,
 			spectating,
+			world.available_cast_offer(observed_state.entity_id),
+			world.transition_policy.cast_gate_reason(observed_state),
+			get_viewport().get_mouse_position() / ui_scale,
 		)
 		draw_set_transform(Vector2.ZERO)
 	if show_debug_overlay and dropped_time_seconds > 0.0:
 		draw_string(ThemeDB.fallback_font, Vector2(32, 132), "BOUNDED CATCH-UP DROPPED %.3fs" % dropped_time_seconds, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 14, FIRE_COLOR)
 	if show_debug_overlay:
 		_draw_material_yard_preview()
-	if player_compendium != null and not player_compendium.is_open and not controls_editor.is_open and not spell_loom_editor.is_open and not join_address_editor_open:
+	_draw_practice_coach()
+	if player_compendium != null and not player_compendium.is_open and not controls_editor.is_open and not spell_loom_editor.is_open and not join_address_editor_open and not _character_gallery_open():
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * _ui_scale())
 		draw_string(ThemeDB.fallback_font, Vector2(20, 68), "F4 / Back  COMPENDIUM", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 13, PARCHMENT_COLOR)
 		draw_set_transform(Vector2.ZERO)
@@ -1027,6 +1167,71 @@ func _draw() -> void:
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * _compendium_scale())
 		player_compendium.draw(self, ThemeDB.fallback_font)
 		draw_set_transform(Vector2.ZERO)
+	if _character_gallery_open():
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * _compendium_scale())
+		character_selection_grid.draw(self, ThemeDB.fallback_font)
+		draw_set_transform(Vector2.ZERO)
+
+
+func _free_practice_actor() -> PlayerState:
+	var state := _local_player_state()
+	if world == null or state == null or campus_layout == null or state.health <= 0:
+		return null
+	# The general HUD can fall back to the host while a guest snapshot arrives;
+	# personal practice feedback must never attribute that fallback to the guest.
+	if session_transport != null and session_transport.is_connected_client():
+		if session_transport.local_entity_id <= 0 or state.entity_id != session_transport.local_entity_id:
+			return null
+	var allowed := not _gameplay_input_blocked() and not _is_spectating() and not show_visual_specimen
+	allowed = allowed and int(_current_round_state().get("phase", SessionRound.Phase.HEARTH)) == SessionRound.Phase.HEARTH
+	return state if allowed else null
+
+
+func _chemistry_practice_view() -> Dictionary:
+	var state := _free_practice_actor()
+	if state == null:
+		return {}
+	var group: Dictionary = campus_layout.practice_groups_by_id.get("crucible-experiment", {})
+	return ChemistryCoach.sample(state.entity_id, Vector2i(state.position_x, state.position_y),
+		world.tick, world.config, group.get("bounds", []), world.deposits, world.reactions)
+
+
+func _movement_practice_view() -> Dictionary:
+	var state := _free_practice_actor()
+	if state == null or player_preferences == null:
+		return {}
+	for activity: Dictionary in campus_layout.data.get("activity_areas", []):
+		if String(activity.get("id", "")) == "south-movement-loop":
+			return MovementCoach.sample(state, player_preferences,
+				SanctumCampusLayout._parse_bounds(activity.get("bounds", [])), movement_practice_device)
+	return {}
+
+
+func _draw_practice_coach() -> void:
+	var view := _chemistry_practice_view()
+	if view.is_empty():
+		view = _movement_practice_view()
+	if view.is_empty():
+		return
+	var scale_factor := _ui_scale()
+	var viewport_size := get_viewport_rect().size / scale_factor
+	var card := PracticeCoachCard.model(view, viewport_size, get_viewport().get_mouse_position() / scale_factor)
+	if card.is_empty():
+		return
+	var lines: PackedStringArray = card.lines
+	var panel: Rect2 = card.panel
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * scale_factor)
+	draw_rect(panel, Color("111b20c8"), true)
+	draw_rect(Rect2(panel.position, Vector2(3.0, panel.size.y)), ATTUNEMENT_COLOR, true)
+	var left := panel.position + Vector2(14.0, 23.0)
+	var text_width := panel.size.x - 28.0
+	draw_string(ThemeDB.fallback_font, left, String(view.title), HORIZONTAL_ALIGNMENT_LEFT, text_width if bool(card.expanded) else text_width - 75.0, 14, PARCHMENT_COLOR)
+	draw_string(ThemeDB.fallback_font, left + Vector2(0, 18), String(view.phase), HORIZONTAL_ALIGNMENT_LEFT, text_width, 11, ATTUNEMENT_COLOR)
+	for index: int in range(lines.size()):
+		draw_string(ThemeDB.fallback_font, left + Vector2(0, 43 + index * 18), lines[index], HORIZONTAL_ALIGNMENT_LEFT, text_width, 12, PALE_STONE_COLOR)
+	if not bool(card.expanded):
+		draw_string(ThemeDB.fallback_font, panel.position + Vector2(panel.size.x - 83, 18), "HOVER / F4", HORIZONTAL_ALIGNMENT_RIGHT, 69, 9, PALE_STONE_COLOR)
+	draw_set_transform(Vector2.ZERO)
 
 
 func _draw_controls_editor() -> void:
@@ -1035,6 +1240,12 @@ func _draw_controls_editor() -> void:
 	draw_rect(panel, Color(PANEL_COLOR, 0.97), true)
 	draw_rect(panel, Color(BRASS_COLOR, 0.92), false, 3.0)
 	draw_string(ThemeDB.fallback_font, panel.position + Vector2(38, 42), "CONTROLS LECTERN", HORIZONTAL_ALIGNMENT_LEFT, 500.0, 25, PARCHMENT_COLOR)
+	draw_string(ThemeDB.fallback_font, Vector2(846, 165), "SOUND %d%%" % player_preferences.sound_volume_percent, HORIZONTAL_ALIGNMENT_LEFT, 110, 12, ATTUNEMENT_COLOR)
+	for button: Rect2 in [SOUND_DOWN_RECT, SOUND_UP_RECT, SOUND_MUTE_RECT]:
+		draw_rect(button, Color("26352fe6"), true)
+		draw_rect(button, Color(BRASS_COLOR, 0.6), false, 1.0)
+		var label := "-" if button == SOUND_DOWN_RECT else ("+" if button == SOUND_UP_RECT else ("UNMUTE" if player_preferences.sound_volume_percent == 0 else "MUTE"))
+		draw_string(ThemeDB.fallback_font, button.position + Vector2(5, 20), label, HORIZONTAL_ALIGNMENT_CENTER, button.size.x - 10.0, 11, PARCHMENT_COLOR)
 	draw_string(ThemeDB.fallback_font, panel.position + Vector2(38, 68), "Bindings stay on this device and are saved immediately.", HORIZONTAL_ALIGNMENT_LEFT, 800.0, 14, PALE_STONE_COLOR)
 	draw_string(
 		ThemeDB.fallback_font,
@@ -1070,6 +1281,8 @@ func _draw_controls_editor() -> void:
 	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 38, footer_y), controls_editor.status_message, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 76.0, 13, ATTUNEMENT_COLOR if controls_editor.capturing else PARCHMENT_COLOR)
 	var help := "PRESS THE CHOSEN INPUT · ESC / BACK CANCELS" if controls_editor.capturing else "ARROWS / DPAD SELECT · ENTER / A BIND · M / L3 EFFECTS · H / R3 CONTRAST · ESC / B CLOSE"
 	draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 38, footer_y + 27), help, HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 76.0, 12, PALE_STONE_COLOR)
+	if not controls_editor.capturing:
+		draw_string(ThemeDB.fallback_font, Vector2(panel.position.x + 38, footer_y + 45), "SOUND: [ / ] or LB / RB adjust  |  0 / START mute  |  Click header buttons", HORIZONTAL_ALIGNMENT_LEFT, panel.size.x - 76.0, 11, PALE_STONE_COLOR)
 
 
 func _draw_spell_loom_editor() -> void:
@@ -1078,6 +1291,7 @@ func _draw_spell_loom_editor() -> void:
 
 func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 	for event: Dictionary in events:
+		_ingest_element_audio(event)
 		_ingest_magic_release(event)
 		var kind := String(event.get("type", ""))
 		if kind not in ["projectile_hit", "beam_fired", "spray_fired", "spray_hit", "field_triggered", "edgeweave", "cast_refused", "cast_blocked", "projectile_bounced"]:
@@ -1085,25 +1299,11 @@ func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 		var anchor := _combat_event_anchor(event)
 		if anchor.is_empty():
 			continue
-		var label: String = ""
-		var color: Color = ATTUNEMENT_COLOR
+		var feedback := preload("res://src/presentation/combat_feedback_model.gd").describe(event, ability_catalog)
+		var label := String(feedback.get("label", ""))
+		var element := String(feedback.get("element", ""))
+		var color: Color = visual_language.element_color(element, "bright") if visual_language != null and visual_language.elements.has(element) else PARCHMENT_COLOR
 		match kind:
-			"projectile_hit":
-				label = "-%d" % (int(event.get("damage", 0)) / 1000)
-				color = FIRE_COLOR
-			"beam_fired":
-				var definition := CombatTuning.cast_definition(int(event.get("source_wire_id", 0)))
-				label = "-%d · SLOW" % (int(definition.get("damage", 0)) / 1000) if int(event.get("target_id", 0)) > 0 else "BEAM"
-				color = PARCHMENT_COLOR
-			"spray_fired":
-				label = "TIDELINE ×%d" % int(event.get("hit_count", 0))
-				color = WATER_HIGHLIGHT_COLOR
-			"spray_hit":
-				label = "-%d · LAUNCH" % (int(event.get("damage", 0)) / 1000)
-				color = WATER_HIGHLIGHT_COLOR
-			"field_triggered":
-				label = "RIME · SLOWED"
-				color = WATER_HIGHLIGHT_COLOR.lightened(0.35)
 			"edgeweave":
 				label = "EDGE +%d" % (int(event.get("stamina", 0)) / 1000)
 				color = ATTUNEMENT_COLOR
@@ -1156,6 +1356,32 @@ func _ingest_combat_cues(events: Array[Dictionary]) -> void:
 		combat_cues.pop_front()
 
 
+func _ingest_element_audio(event: Dictionary) -> void:
+	if element_audio == null or element_audio.volume_percent <= 0 or world == null or _gameplay_input_blocked() or _is_spectating():
+		return
+	var actor := _local_player_state()
+	if actor == null or actor.health <= 0:
+		return
+	if session_transport != null and session_transport.is_connected_client() and actor.entity_id != session_transport.local_entity_id:
+		return
+	# Reject irrelevant/remote events before the more expensive visibility check.
+	if ElementAudioScript.describe(event, actor.entity_id, ability_catalog).is_empty():
+		return
+	if String(event.get("type", "")) != "cast_started":
+		# The optional cone/building mask has no shared point-visibility query.
+		# Fail closed until exact presentation-mask parity is available.
+		if player_preferences == null or player_preferences.pov_mode == PlayerPreferences.POV_CONE:
+			return
+		var target := world.player(int(event.get("target_id", 0)))
+		if target == null or not _chemistry_actor_visible(target):
+			return # No extra information about concealed or absent targets.
+		var target_position := Vector2(target.position_x, target.position_y) / SimConfig.FIXED_SCALE
+		var visible_world := Rect2(_camera_origin(_camera_focus_position(current_position)), get_viewport_rect().size / _camera_zoom_scale())
+		if not visible_world.has_point(target_position):
+			return # Off-screen hits do not become an extra source of information.
+	element_audio.ingest(event, world.tick, actor.entity_id, ability_catalog, true)
+
+
 func _ingest_magic_release(event: Dictionary) -> void:
 	# Field snapshots already carry exact remaining lifetime on host and guest;
 	# their short release cue is drawn from that state instead of an absent RPC.
@@ -1173,7 +1399,7 @@ func _ingest_magic_release(event: Dictionary) -> void:
 			return
 	var lift := JumpPresentation.sample(actor, world.config, 0.0, _reduced_effects_enabled())
 	var body := Vector2(actor.position_x, actor.position_y) / 1000.0 - Vector2(0.0, float(lift.body_lift_pixels))
-	body.y += float(actor.radius) / 1000.0 * 0.58
+	body.y += float(MovementTuning.PLAYER_RADIUS) / 1000.0 * 0.58
 	combat_cues.append({
 		"kind": "pixel_release", "release_key": key,
 		"source_wire_id": int(admission.wire_id),
@@ -1275,7 +1501,7 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visua
 		var position := Vector2(motion_point.x, motion_point.y)
 		var presentation := JumpPresentation.sample(remote_state, world.config, motion_alpha, _reduced_effects_enabled(), actor_motion_history.previous_height(remote_state))
 		var landing := LandingPresentation.sample(remote_state, world.config, 0.0, _reduced_effects_enabled())
-		var radius := float(remote_state.radius) / 1000.0
+		var radius := float(MovementTuning.PLAYER_RADIUS) / 1000.0
 		var shadow_center := position + Vector2(0.0, radius * 0.58)
 		if campus_renderer.natural_kit != null:
 			campus_renderer.natural_kit.draw_actor_contact(self, campus_layout, remote_state, shadow_center, roundi(visual_tick), _reduced_effects_enabled())
@@ -1302,6 +1528,7 @@ func _draw_remote_travellers(camera_origin: Vector2, local_entity_id: int, visua
 				world.config,
 				_reduced_effects_enabled(),
 				shadow_center,
+				actor_motion_history.gait_phase(remote_state.entity_id),
 			)
 		var sprite := _remote_player_sprite(remote_state) if not sprite_drawn else null
 		if not sprite_drawn and sprite != null and sprite.sync_from_player(remote_state, world.config, world.tick, 0.0):
@@ -1379,6 +1606,8 @@ func _draw_actor_hitbox_diagnostic(center: Vector2, radius: float, champion_id: 
 
 
 func _remote_player_sprite(state: PlayerState) -> WellspringCharacterSprite:
+	if _uses_shared_wireframe_bodies():
+		return null
 	var champion_id := champion_catalog.champion_id_from_wire(state.champion_wire_id)
 	if champion_id.is_empty():
 		return null
@@ -1524,12 +1753,10 @@ func _station_lines(station: Dictionary) -> Array:
 		return station.get("lines", [])
 	var current: Dictionary = champion_catalog.champion(selected_champion_id)
 	var stats: Dictionary = current.get("stats", {})
-	var next_id := champion_catalog.next_champion_id(selected_champion_id)
-	var next: Dictionary = champion_catalog.champion(next_id)
 	return [
 		"ATTUNED: %s · %s" % [String(current.get("display_name", "")).to_upper(), String(current.get("ancestry", "")).to_upper()],
 		"HP %d · FLUX %d · STAMINA %d · SPEED %d%%" % [int(stats.get("health_maximum", 0)) / 1000, int(stats.get("flux_maximum", 0)) / 1000, int(stats.get("stamina_maximum", 0)) / 1000, int(stats.get("movement_speed_ratio", 0)) / 10],
-		"F attunes %s" % String(next.get("display_name", next_id)),
+		"Interact opens the race-column Gallery; preview, then choose your champion.",
 	]
 
 
@@ -1627,6 +1854,7 @@ func _sync_session_transport() -> void:
 					if not replicated_champion_id.is_empty() and replicated_champion_id != selected_champion_id:
 						selected_champion_id = replicated_champion_id
 						_load_player_sprite_candidate()
+						character_selection_grid.confirm_equipped(replicated_champion_id)
 					if not client_prediction.is_ready():
 						var replicated_position := _player_position()
 						previous_position = replicated_position if first_snapshot else current_position
@@ -1664,8 +1892,11 @@ func _sync_session_transport() -> void:
 			var local_authority := _local_player_state()
 			var authority_event := local_authority.last_event if local_authority != null else "network_snapshot"
 			if client_prediction.reconcile(reconciliations.back(), authority_event, _reduced_effects_enabled()):
+				if client_prediction.last_correction_pixels > 0.01:
+					actor_motion_history.rebase_gait(client_prediction.predicted_state.entity_id)
 				previous_position = current_position
 				current_position = client_prediction.presented_position_pixels()
+				previous_prediction_position = client_prediction.raw_position_pixels()
 				# Reconciliation is a new authority sample, never a delayed protection
 				# state or a blend from an unrelated pre-respawn airborne arc.
 				previous_air_height = client_prediction.predicted_state.air_height
@@ -1734,6 +1965,8 @@ func _submit_session_request(action: int, value: int = 0) -> void:
 			station_notice = "Request sent through Farflow."
 		else:
 			station_notice = "Farflow could not carry that request."
+			if action == SessionTransport.REQUEST_CHAMPION_SELECT:
+				character_selection_grid.refuse(station_notice)
 		station_notice_seconds = 1.5
 		return
 	_handle_session_requests([{
@@ -1783,14 +2016,17 @@ func _handle_session_requests(requests: Array[Dictionary]) -> void:
 					_publish_session_event({"type": "request_refused", "entity_id": entity_id, "action": action, "reason": SessionRequestPolicy.REFUSED_UNAVAILABLE})
 					continue
 				_publish_session_event({"type": "station_confirmed", "entity_id": entity_id, "action": action})
-			SessionTransport.REQUEST_CHAMPION_NEXT:
-				var current_id := champion_catalog.champion_id_from_wire(state.champion_wire_id)
-				var next_id := champion_catalog.next_champion_id(current_id)
-				if not champion_catalog.apply_to_player(state, next_id, true):
+			SessionTransport.REQUEST_CHAMPION_NEXT, SessionTransport.REQUEST_CHAMPION_SELECT:
+				var requested_wire := request_value
+				if action == SessionTransport.REQUEST_CHAMPION_NEXT:
+					var current_id := champion_catalog.champion_id_from_wire(state.champion_wire_id)
+					requested_wire = int(champion_catalog.champion(champion_catalog.next_champion_id(current_id)).get("wire_id", 0))
+				var attunement := ChampionAttunementScript.apply(champion_catalog, state, requested_wire)
+				if attunement == ChampionAttunementScript.REFUSED:
 					_publish_session_event({"type": "request_refused", "entity_id": entity_id, "action": action, "reason": SessionRequestPolicy.REFUSED_UNAVAILABLE})
 					continue
-				if entity_id == SessionTransport.SERVER_PEER_ID:
-					selected_champion_id = next_id
+				if entity_id == SessionTransport.SERVER_PEER_ID and attunement == ChampionAttunementScript.CHANGED:
+					selected_champion_id = champion_catalog.champion_id_from_wire(state.champion_wire_id)
 					_load_player_sprite_candidate()
 				_publish_session_event({"type": "champion_attuned", "entity_id": entity_id, "champion_wire_id": state.champion_wire_id})
 			SessionTransport.REQUEST_SPELL_EQUIP:
@@ -1863,6 +2099,9 @@ func _ingest_session_feedback(events: Array[Dictionary]) -> void:
 				station_notice_seconds = 2.5
 			"champion_attuned":
 				var champion_id := champion_catalog.champion_id_from_wire(int(event.get("champion_wire_id", 0)))
+				var local_state := _local_player_state()
+				if local_state != null and local_state.entity_id == entity_id:
+					character_selection_grid.confirm_equipped(champion_id)
 				var champion_name := String(champion_catalog.champion(champion_id).get("display_name", champion_id))
 				station_notice = "%s attuned to %s." % [String(session_names_by_entity.get(entity_id, "A traveller")), champion_name]
 				station_notice_seconds = 2.5
@@ -1874,6 +2113,8 @@ func _ingest_session_feedback(events: Array[Dictionary]) -> void:
 					station_notice_seconds = 2.0
 					if int(event.get("action", 0)) == SessionTransport.REQUEST_SPELL_EQUIP and spell_loom_editor != null and spell_loom_editor.is_open:
 						spell_loom_editor.status_message = station_notice
+					if int(event.get("action", 0)) == SessionTransport.REQUEST_CHAMPION_SELECT:
+						character_selection_grid.refuse("Stand beside the Gallery." if reason == SessionRequestPolicy.REFUSED_DISTANCE else "Attune during Wellspring free practice, alive and grounded with no active action.")
 			"ready_changed":
 				station_notice = "%s is %s." % [String(session_names_by_entity.get(entity_id, "A traveller")), "ready" if bool(event.get("ready", false)) else "waiting"]
 				station_notice_seconds = 1.5
@@ -1979,7 +2220,7 @@ func _activate_focused_station() -> void:
 	var station: Dictionary = campus_layout.stations_by_id[focused_station_id]
 	match String(station.get("command", "")):
 		"movement_guide":
-			_open_player_compendium(PlayerCompendiumScript.MOVEMENT)
+			_open_player_compendium(PlayerCompendiumScript.MOVEMENT, station_activation_device)
 		"configure_controls":
 			controls_editor.open_editor()
 			expanded_station_id = focused_station_id
@@ -1991,7 +2232,7 @@ func _activate_focused_station() -> void:
 		"impact_practice":
 			_submit_session_request(SessionTransport.REQUEST_IMPACT_PRACTICE)
 		"champion_switch":
-			_submit_session_request(SessionTransport.REQUEST_CHAMPION_NEXT)
+			_open_character_gallery()
 		"host_session":
 			_toggle_host_session()
 		"join_session":
@@ -2006,12 +2247,81 @@ func _activate_focused_station() -> void:
 			_activate_session_parting()
 
 
+func _observe_station_activation_device(event: InputEvent) -> void:
+	if event == null or not event.is_action_pressed(InputRouter.INTERACT_ACTION) or event.is_echo():
+		return
+	# Follow the actual mapped activation, not the last unrelated stick/mouse
+	# motion. Keyboard and mouse are one play setup; controller has its own binds.
+	station_activation_device = ControlBindingEditor.DEVICE_CONTROLLER if event is InputEventJoypadButton or event is InputEventJoypadMotion else ControlBindingEditor.DEVICE_KEYBOARD
+
+
+func _observe_movement_practice_device(event: InputEvent) -> void:
+	# Hints follow deliberate device activity, not mouse motion, key echoes or
+	# idle stick noise. This only selects labels; it never changes commands/binds.
+	if event is InputEventKey and event.pressed and not event.echo:
+		movement_practice_device = ControlBindingEditor.DEVICE_KEYBOARD
+	elif event is InputEventMouseButton and event.pressed:
+		movement_practice_device = ControlBindingEditor.DEVICE_KEYBOARD
+	elif event is InputEventJoypadButton and event.pressed:
+		movement_practice_device = ControlBindingEditor.DEVICE_CONTROLLER
+	elif event is InputEventJoypadMotion and absf(event.axis_value) >= InputRouter.AIM_DEADZONE:
+		movement_practice_device = ControlBindingEditor.DEVICE_CONTROLLER
+
+
 func _open_player_compendium(selected_tab: int, device: int = ControlBindingEditor.DEVICE_KEYBOARD) -> void:
-	if player_compendium == null or join_address_editor_open or controls_editor.is_open or spell_loom_editor.is_open:
+	if player_compendium == null or join_address_editor_open or controls_editor.is_open or spell_loom_editor.is_open or _character_gallery_open():
 		return
 	player_compendium.open_panel(selected_tab, player_preferences, _local_player_state(), device)
 	expanded_station_id = ""
 	controls_input_guard_frames = 2
+	queue_redraw()
+
+
+func _character_gallery_open() -> bool:
+	return character_selection_grid != null and character_selection_grid.is_open
+
+
+func _gameplay_input_blocked() -> bool:
+	return not application_input_active or join_address_editor_open or (controls_editor != null and controls_editor.is_open) or (spell_loom_editor != null and spell_loom_editor.is_open) or (player_compendium != null and player_compendium.is_open) or _character_gallery_open() or controls_input_guard_frames > 0
+
+
+func _sample_gameplay_command(tick: int, player_position: Vector2, pointer_position: Vector2, controls_blocking: bool) -> SimCommand:
+	if controls_blocking or not application_input_active:
+		input_router.discard_transient_movement_input()
+		return SimCommand.new(tick, input_router.entity_id, 0, 0, 0, 0, input_router.last_quantized_aim.x, input_router.last_quantized_aim.y)
+	return input_router.sample(tick, player_position, pointer_position)
+
+
+static func gallery_modal_command(command: SimCommand, gallery_open: bool) -> SimCommand:
+	if not gallery_open:
+		return command
+	return SimCommand.new(command.tick, command.entity_id, 0, 0, 0, 0, command.aim_x, command.aim_y)
+
+
+func _open_character_gallery() -> void:
+	if character_selection_grid == null or join_address_editor_open or controls_editor.is_open or spell_loom_editor.is_open or player_compendium.is_open:
+		return
+	var state := _local_player_state()
+	if state == null:
+		return
+	character_selection_grid.open_panel(champion_catalog.champion_id_from_wire(state.champion_wire_id))
+	expanded_station_id = ""
+	controls_input_guard_frames = 2
+	input_router.discard_transient_movement_input()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	queue_redraw()
+
+
+func _handle_character_gallery_input(event: InputEvent) -> void:
+	var pointer := get_viewport().get_mouse_position() / _compendium_scale()
+	if event is InputEventMouse:
+		pointer = event.position / _compendium_scale()
+	var requested_wire := character_selection_grid.handle_event(event, ThemeDB.fallback_font, pointer)
+	if requested_wire > 0:
+		_submit_session_request(SessionTransport.REQUEST_CHAMPION_SELECT, requested_wire)
+	controls_input_guard_frames = 2
+	input_router.discard_transient_movement_input()
+	get_viewport().set_input_as_handled()
 	queue_redraw()
 
 
@@ -2060,6 +2370,20 @@ func _commit_control_bindings() -> void:
 	if not _save_player_preferences_if_persistent():
 		controls_editor.status_message = "Binding works now but could not be saved."
 		push_warning(player_preferences.last_error)
+
+
+func _adjust_sound_volume(delta: int, toggle_mute: bool = false) -> void:
+	if player_preferences == null:
+		return
+	var requested := player_preferences.sound_volume_percent + delta
+	if toggle_mute:
+		requested = 30 if player_preferences.sound_volume_percent == 0 else 0
+	player_preferences.sound_volume_percent = clampi(requested, 0, 100)
+	if element_audio != null:
+		element_audio.set_volume(player_preferences.sound_volume_percent)
+	controls_editor.status_message = "Local elemental sound %d%%. No positional enemy audio." % player_preferences.sound_volume_percent
+	if not _save_player_preferences_if_persistent():
+		controls_editor.status_message = "Sound changed now but could not be saved."
 
 
 func _toggle_reduced_effects_preference() -> void:
@@ -2502,29 +2826,33 @@ func _draw_pov_mask(origin: Vector2, aim: Vector2, camera_origin: Vector2) -> vo
 	var zoom := _camera_zoom_scale()
 	var sight_range: float = float(player_preferences.pov_range) * zoom
 	var viewport_size: Vector2 = get_viewport_rect().size
-	var outer_radius: float = maxf(viewport_size.x, viewport_size.y) * 2.25
-	var segment_count: int = 96
-	for segment: int in range(segment_count):
-		var angle_a: float = TAU * float(segment) / float(segment_count)
-		var angle_b: float = TAU * float(segment + 1) / float(segment_count)
-		_draw_mask_quad(origin, sight_range, outer_radius, angle_a, angle_b)
+	var segment_count: int = SightOcclusion.MASK_SEGMENTS
+	var outer_radius: float = SightOcclusion.projected_viewport_cover_radius(origin, get_viewport_rect())
+	# A screen-covering range needs no outer annulus. The chord margin also
+	# prevents tiny corner gaps and avoids reversed inner/outer mask radii.
+	if sight_range < outer_radius:
+		for segment: int in range(segment_count):
+			var angle_a: float = TAU * float(segment) / float(segment_count)
+			var angle_b: float = TAU * float(segment + 1) / float(segment_count)
+			_draw_mask_quad(origin, sight_range, outer_radius, angle_a, angle_b)
 
 	var visible_radians: float = deg_to_rad(float(player_preferences.pov_angle_degrees))
-	var aim_angle: float = aim.angle() if aim.length_squared() > 0.01 else 0.0
+	var aim_angle: float = SightOcclusion.ground_aim_angle(aim)
 	var half_visible: float = visible_radians * 0.5
 	if player_preferences.pov_angle_degrees < PlayerPreferences.MAX_POV_ANGLE_DEGREES:
 		var hidden_span: float = TAU - visible_radians
 		var hidden_segments: int = maxi(1, ceili(float(segment_count) * hidden_span / TAU))
 		var hidden_start: float = aim_angle + half_visible
-		var player_safe_radius: float = 30.0 * zoom
+		var player_safe_radius: float = SightOcclusion.REAR_AWARENESS_RADIUS * zoom
 		for segment: int in range(hidden_segments):
 			var angle_a: float = hidden_start + hidden_span * float(segment) / float(hidden_segments)
 			var angle_b: float = hidden_start + hidden_span * float(segment + 1) / float(hidden_segments)
 			_draw_mask_quad(origin, player_safe_radius, sight_range, angle_a, angle_b)
-		draw_line(origin + Vector2.from_angle(aim_angle - half_visible) * player_safe_radius, origin + Vector2.from_angle(aim_angle - half_visible) * sight_range, POV_EDGE_COLOR, 1.5)
-		draw_line(origin + Vector2.from_angle(aim_angle + half_visible) * player_safe_radius, origin + Vector2.from_angle(aim_angle + half_visible) * sight_range, POV_EDGE_COLOR, 1.5)
-	_draw_building_occlusion_shadows(origin, camera_origin, outer_radius)
-	draw_arc(origin, sight_range, aim_angle - half_visible, aim_angle + half_visible, maxi(12, ceili(48.0 * visible_radians / TAU)), POV_EDGE_COLOR, 1.5)
+		draw_line(origin + SightOcclusion.project_ground(Vector2.from_angle(aim_angle - half_visible) * player_safe_radius), origin + SightOcclusion.project_ground(Vector2.from_angle(aim_angle - half_visible) * sight_range), POV_EDGE_COLOR, 1.5)
+		draw_line(origin + SightOcclusion.project_ground(Vector2.from_angle(aim_angle + half_visible) * player_safe_radius), origin + SightOcclusion.project_ground(Vector2.from_angle(aim_angle + half_visible) * sight_range), POV_EDGE_COLOR, 1.5)
+	# Keep building shadow reach unchanged; distant walls are not radial masks.
+	_draw_building_occlusion_shadows(origin, camera_origin, maxf(outer_radius, maxf(viewport_size.x, viewport_size.y) * 2.25))
+	draw_polyline(SightOcclusion.projected_arc(origin, sight_range, aim_angle - half_visible, aim_angle + half_visible, maxi(12, ceili(48.0 * visible_radians / TAU))), POV_EDGE_COLOR, 1.5)
 
 
 func _draw_building_occlusion_shadows(origin: Vector2, camera_origin: Vector2, outer_distance: float) -> void:
@@ -2544,13 +2872,69 @@ func _draw_building_occlusion_shadows(origin: Vector2, camera_origin: Vector2, o
 
 
 func _draw_mask_quad(origin: Vector2, inner_radius: float, outer_radius: float, angle_a: float, angle_b: float) -> void:
-	var points := PackedVector2Array([
-		origin + Vector2.from_angle(angle_a) * inner_radius,
-		origin + Vector2.from_angle(angle_a) * outer_radius,
-		origin + Vector2.from_angle(angle_b) * outer_radius,
-		origin + Vector2.from_angle(angle_b) * inner_radius,
-	])
+	var points := SightOcclusion.projected_mask_quad(origin, inner_radius, outer_radius, angle_a, angle_b)
 	draw_colored_polygon(points, POV_MASK_COLOR)
+
+
+func _pov_observer_ground_position(observer: PlayerState, spectating: bool, rendered_local: Vector2) -> Vector2:
+	if not spectating:
+		return rendered_local
+	var motion_alpha := clampf(remote_snapshot_age_seconds * 60.0 if session_transport.is_connected_client() else accumulator_seconds * float(tick_rate), 0.0, 1.0)
+	var point := actor_motion_history.sample(observer, motion_alpha)
+	return Vector2(point.x, point.y)
+
+
+func _pov_observer_overlay_frame(visual_tick: float, alpha: float) -> Dictionary:
+	if world == null or player_preferences == null or player_preferences.pov_mode != PlayerPreferences.POV_CONE or cartoon_champion_presenter == null:
+		return {}
+	var spectating := _is_spectating()
+	var observer := _spectator_state() if spectating else _local_player_state()
+	# The exemption belongs only to the living viewpoint owner. Never redraw a
+	# hidden third party or the dead local avatar during spectating.
+	if observer == null or observer.health <= 0 or observer.actor_kind != PlayerState.ActorKind.CHAMPION:
+		return {}
+	var pose_state := observer
+	if not spectating and session_transport.is_connected_client() and client_prediction.is_ready():
+		pose_state = client_prediction.predicted_state
+	var pose_alpha := alpha
+	var previous_height := previous_air_height
+	if spectating:
+		pose_alpha = clampf(remote_snapshot_age_seconds * 60.0 if session_transport.is_connected_client() else accumulator_seconds * float(tick_rate), 0.0, 1.0)
+		previous_height = actor_motion_history.previous_height(observer)
+	var ground := _pov_observer_ground_position(observer, spectating, previous_position.lerp(current_position, alpha))
+	var shadow_center := ground + Vector2(0.0, float(MovementTuning.PLAYER_RADIUS) / 1000.0 * 0.58)
+	var jump := JumpPresentation.sample(pose_state, world.config, pose_alpha, _reduced_effects_enabled(), previous_height)
+	var champion_id := _champion_visual_id(observer)
+	var frame := cartoon_champion_presenter.movement_frame(champion_id, pose_state, visual_tick, world.config, _reduced_effects_enabled(), actor_motion_history.gait_phase(pose_state.entity_id))
+	if frame.is_empty():
+		return {}
+	var texture: Texture2D = frame.get("texture", cartoon_champion_presenter.texture_for_champion(champion_id))
+	if texture == null:
+		return {}
+	var anchor := shadow_center + Vector2(0.0, -float(jump.body_lift_pixels)) + (frame["offset"] as Vector2)
+	return {"texture": texture, "source_region": frame["source_region"], "destination": Rect2(anchor - CartoonChampionPresenter.PIVOT, CartoonChampionPresenter.CELL_SIZE), "observer_id": observer.entity_id}
+
+
+func _draw_pov_observer_body(camera_origin: Vector2, visual_tick: float, alpha: float) -> void:
+	var frame := _pov_observer_overlay_frame(visual_tick, alpha)
+	if frame.is_empty():
+		return
+	# Repaint only the exact binary-alpha owned body pixels. Ground shadows,
+	# afterimages, spells and world objects stay under the cone/obstacle mask.
+	_set_world_transform(camera_origin)
+	draw_texture_rect_region(frame["texture"], frame["destination"], frame["source_region"])
+	draw_set_transform(Vector2.ZERO)
+
+
+func _pov_opaque_bounds() -> Array[Rect2]:
+	var bounds: Array[Rect2] = []
+	if campus_layout == null:
+		return bounds
+	for value: Variant in campus_layout.data.get("buildings", []):
+		var building: Dictionary = value
+		if String(building.get("occlusion_policy", "")) == "los_cutaway":
+			bounds.append(Rect2(SanctumCampusLayout._parse_bounds(building.get("bounds", []))))
+	return bounds
 
 
 func _draw_material_yard_preview() -> void:
@@ -2666,7 +3050,7 @@ func _arrange_hearth_roster() -> bool:
 		var state := ordered[index]
 		var position_values: Array = gather_spawns[index]
 		var gather_position := Vector2i(int(position_values[0]), int(position_values[1])) * SimConfig.FIXED_SCALE
-		if not world.collision.can_occupy(gather_position, state.radius):
+		if not world.collision.can_occupy(gather_position, MovementTuning.PLAYER_RADIUS):
 			return false
 		state.position_x = gather_position.x
 		state.position_y = gather_position.y
@@ -2836,6 +3220,8 @@ func _refresh_material_preview() -> void:
 
 func _load_player_sprite_candidate() -> void:
 	_clear_player_sprite_candidate()
+	if _uses_shared_wireframe_bodies():
+		return
 	if cartoon_champion_presenter != null and cartoon_champion_presenter.can_present(selected_champion_id):
 		return
 	player_sprite = WellspringCharacterSprite.new()
@@ -2845,6 +3231,11 @@ func _load_player_sprite_candidate() -> void:
 	if not player_sprite.load_source():
 		push_warning("%s presentation candidate unavailable: %s; using procedural fallback" % [selected_champion_id, player_sprite.last_error])
 		_clear_player_sprite_candidate()
+
+
+func _uses_shared_wireframe_bodies() -> bool:
+	# A missing/invalid skeleton must not silently resurrect an old race skin.
+	return cartoon_champion_presenter != null and cartoon_champion_presenter.wireframe_mode
 
 
 func _clear_player_sprite_candidate() -> void:
@@ -2883,7 +3274,21 @@ func _material_color(material_id: String) -> Color:
 
 func _chemistry_actor_visible(target: PlayerState) -> bool:
 	var observer := _spectator_state() if _is_spectating() else _local_player_state()
-	if observer == null or target.entity_id == observer.entity_id or target.chemistry_reveal_ticks > 0:
+	if target == null:
+		return false
+	if observer == null or target.entity_id == observer.entity_id:
+		return true
+	if player_preferences != null and player_preferences.pov_mode == PlayerPreferences.POV_CONE:
+		var spectating := _is_spectating()
+		var alpha := clampf(accumulator_seconds * float(tick_rate), 0.0, 1.0)
+		var origin := _pov_observer_ground_position(observer, spectating, previous_position.lerp(current_position, alpha))
+		var aim_state := observer
+		if not spectating and session_transport.is_connected_client() and client_prediction.is_ready():
+			aim_state = client_prediction.predicted_state
+		if not SightOcclusion.point_visible(origin, Vector2(target.position_x, target.position_y) / 1000.0, Vector2(CartoonChampionPresenter.presentation_facing_vector(aim_state)), float(player_preferences.pov_angle_degrees), float(player_preferences.pov_range), _pov_opaque_bounds()):
+			return false
+	# Chemical reveal never bypasses the directional/range/opaque-world test.
+	if target.chemistry_reveal_ticks > 0:
 		return true
 	return not ElementChemistrySystem.blocks_sight(Vector2i(observer.position_x, observer.position_y), Vector2i(target.position_x, target.position_y), world.reactions, world.tick)
 
@@ -2894,9 +3299,11 @@ func _draw_element_chemistry(visual_tick: float, camera_origin: Vector2) -> void
 	element_chemistry_presenter.begin_frame(world.config, world.collision, Rect2(camera_origin, get_viewport_rect().size / _camera_zoom_scale()), world.deposits, _reduced_effects_enabled())
 	for deposit: ElementDepositState in world.deposits:
 		element_chemistry_presenter.draw_deposit(self, deposit, visual_tick, _reduced_effects_enabled())
+		heavy_blast_presenter.draw(self, deposit, world.tick, world.config, world.collision, world.reactions, _reduced_effects_enabled())
 		var age := maxi(0, world.tick - deposit.created_tick)
-		if age < 24:
-			burst_projectile_presenter.draw_impact(self, ElementChemistryPresenter.ELEMENTS[deposit.element_wire_id], Vector2(deposit.position_x, deposit.position_y) / 1000.0, Vector2(deposit.direction_x, deposit.direction_y), age, 24, _reduced_effects_enabled())
+		if age < PixelSpellEffects.TERMINAL_CONTACT_TICKS:
+			var source_radius := float(CombatTuning.projectile_definition(deposit.source_wire_id).get("radius", 8000)) / 1000.0
+			burst_projectile_presenter.draw_impact(self, ElementChemistryPresenter.ELEMENTS[deposit.element_wire_id], Vector2(deposit.position_x, deposit.position_y) / 1000.0, Vector2(deposit.direction_x, deposit.direction_y), age, PixelSpellEffects.TERMINAL_CONTACT_TICKS, _reduced_effects_enabled(), source_radius)
 	for reaction: ElementReactionState in world.reactions:
 		element_chemistry_presenter.draw_reaction(self, reaction, ElementChemistrySystem.recipe(reaction.recipe_wire_id), visual_tick, _reduced_effects_enabled())
 
@@ -2912,7 +3319,7 @@ func _draw_field(field: FieldState) -> void:
 		var owner := world.player(field.owner_id)
 		if owner != null and _chemistry_actor_visible(owner):
 			var lift := JumpPresentation.sample(owner, world.config, 0.0, _reduced_effects_enabled())
-			var body := Vector2(owner.position_x, owner.position_y) / 1000.0 + Vector2(0.0, float(owner.radius) / 1000.0 * 0.58 - float(lift.body_lift_pixels))
+			var body := Vector2(owner.position_x, owner.position_y) / 1000.0 + Vector2(0.0, float(MovementTuning.PLAYER_RADIUS) / 1000.0 * 0.58 - float(lift.body_lift_pixels))
 			var hand := CartoonChampionPresenter.hand_cast_origin(body, Vector2(owner.aim_x, owner.aim_y))
 			foundation_spell_presenter.draw_release(self, field.source_wire_id, hand, release_age, _reduced_effects_enabled())
 	if foundation_spell_presenter != null and foundation_spell_presenter.draw_field(self, field, life_ratio, world.tick, _reduced_effects_enabled()):

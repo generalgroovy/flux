@@ -1,6 +1,12 @@
 # Player controls and point-of-view settings
 
-Status: **canonical current input, movement-facing and POV contract**.
+Status: **historical movement/input design record (September4); not the current contract**.
+
+For current defaults and gameplay use [README](../README.md#controls-and-movement),
+[SPECIFICATION.md](../SPECIFICATION.md) and the in-game F4 movement table. The
+tables below retain earlier timings, map dimensions and double-jump concepts;
+they must not override the current finite Float implementation. The September9
+default layout is Technique V / Roll-Air Dodge Q; customized bindings stay yours.
 
 ## Movement revision: no vaulting (2026-09-04)
 
@@ -222,13 +228,22 @@ aim-facing angle inside the selected range:
 
 - angle: any whole degree from 15 through 360;
 - range/length: 160 through 4096 world units;
-- 360 degrees plus a finite range creates a circular ranged view;
+- 360 degrees plus a finite range creates a ground-projected elliptical view;
 - full view is a distinct mode and has no artificial range boundary.
+
+The 55-degree ground-plane projection scales vertical range by about 0.819.
+Aim, mask geometry and actor tests share this metric; this is not a rotation of
+the map or controls. A 72-ground-unit near-awareness ellipse reveals slightly
+behind the observer while respecting opaque building cover. The living viewpoint
+owner's body alone is drawn above the mask, including during jumps; it creates
+no rectangular reveal and does not repaint hidden opponents, aura or spell VFX.
 
 The current checkpoint is a local presentation/accessibility policy in the
 offline Wellspring. In cone mode every authored `los_cutaway` building projects a
 bounded presentation shadow through its silhouette corners; low practice walls
-remain explicitly non-occluding. It does not yet conceal networked entities. A
+remain explicitly non-occluding. Actor presentation follows the same cone and
+opaque-cover predicate before chemistry reveal/concealment. This is not server
+interest filtering: hidden entities may still exist in a client's snapshot. A
 competitive or PvPvE mode that restricts information must enforce
 visibility on the authoritative host and replicate no hidden actor state; a
 client preference may make that view more restrictive, never less restrictive.

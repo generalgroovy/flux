@@ -27,7 +27,13 @@ PALETTES = {
 }
 INK = "16212a"
 ORDER = ["earth", "fire", "water", "wind", "ice", "charge", "light", "dark"]
-LIFE = dict(zip(ORDER, [600, 360, 480, 240, 480, 240, 360, 360]))
+def read_deposit_lifetimes():
+    source = (REPO / "src/sim/chemistry/element_chemistry_system.gd").read_text(encoding="utf-8")
+    values = json.loads(re.search(r"const ELEMENT_LIFE_MS: Array\[int\] = (\[[^\n]+\])", source).group(1))
+    assert len(values) == 9 and all(0 < value <= 5000 for value in values[1:])
+    return dict(zip(ORDER, [(value * 120 + 999) // 1000 for value in values[1:]]))
+
+LIFE = read_deposit_lifetimes()
 
 # A line in these drawings is one row of logical pixels. '.' = transparent.
 # d / b / h = dark / base / bright. Silhouettes are edited per pose, not filtered.
@@ -656,7 +662,124 @@ hbbbbbbbdbbbbdh
 .....dbdd......
 ......dd......."""
 
+def vapor_lobe(canvas, cx, cy, rx, ry):
+    """Edit logical pixel cells directly: hard stepped edges, no AA/filtering."""
+    for dy in range(-ry, ry + 1):
+        for dx in range(-rx, rx + 1):
+            if dx * dx * ry * ry + dy * dy * rx * rx > rx * rx * ry * ry:
+                continue
+            x, y = cx + dx, cy + dy
+            if not (1 <= x <= 30 and 1 <= y <= 30):
+                continue
+            # Pale upper rolls, shaded lower-right pockets, no rock-like outline
+            # or continuous ground baseline. Opacity remains runtime-owned.
+            color = "h" if dy < -max(1, ry // 3) and dx < rx // 2 else "b"
+            if dy > ry // 2 and dx > 0:
+                color = "d"
+            canvas[y][x] = color
+
+
+def steam_vapor_pose(frame, phase, reduced):
+    canvas = blank()
+    # Each pose exchanges rounded lobes while wisps rise. The fixed (16,26)
+    # registration never follows the visible bounding box or changes coverage.
+    active = [
+        [(10, 21, 5, 3), (18, 19, 7, 4), (14, 13, 5, 5), (22, 9, 3, 2)],
+        [(10, 20, 5, 3), (19, 18, 6, 4), (14, 11, 5, 4), (22, 7, 3, 2)],
+        [(11, 21, 6, 3), (20, 16, 6, 4), (15, 8, 4, 3), (24, 6, 2, 1)],
+        [(10, 22, 5, 3), (19, 19, 7, 4), (16, 13, 5, 5), (8, 9, 3, 2)],
+    ]
+    formation = [
+        [(12, 24, 4, 1), (21, 22, 3, 1)],
+        [(11, 23, 5, 2), (19, 20, 5, 3), (15, 15, 3, 2)],
+        [(10, 22, 5, 3), (18, 19, 6, 4), (14, 13, 4, 4)],
+        active[0],
+    ]
+    decay = [
+        [(11, 20, 5, 2), (20, 15, 5, 3), (14, 9, 4, 3), (25, 5, 2, 1)],
+        [(9, 17, 4, 2), (19, 11, 5, 3), (13, 5, 3, 2)],
+        [(10, 11, 3, 2), (22, 7, 3, 2)],
+        [(11, 5, 2, 1), (23, 3, 2, 1)],
+    ]
+    lobes = {"formation": formation, "active": active, "decay": decay}[phase][frame % 4]
+    for index, (cx, cy, rx, ry) in enumerate(lobes):
+        if reduced and index == 3:
+            continue
+        vapor_lobe(canvas, cx, cy, rx, ry)
+    if phase == "active":
+        # Open lower wisps and small inner pockets prevent a filled boulder.
+        for x, y in [(13, 23), (14, 23), (18, 14), (19, 14)]:
+            if canvas[y][x] != ".":
+                canvas[y][x] = "."
+        if not reduced:
+            line(canvas, (8 + frame % 2, 26), (12 + frame % 2, 26), "d")
+    return canvas
+
+
+def write_steam_only():
+    """Revise six copied source sequences; never regenerate other materials."""
+    for reduced in [False, True]:
+        for phase in ["formation", "active", "decay"]:
+            path = ROOT / "source/frames" / ("magic.reaction.steam.%s.%s.json" % (phase, "reduced" if reduced else "normal"))
+            asset = json.loads(path.read_text(encoding="utf-8"))
+            assert len(asset["frames"]) == 4 and asset["pivot_px"] == [16, 26]
+            for index, frame in enumerate(asset["frames"]):
+                frame["pixels"] = frame_strings(steam_vapor_pose(index, phase, reduced))
+            path.write_text(json.dumps(asset, indent=2) + "\n", encoding="utf-8", newline="\n")
+    # Refresh current source audit hashes only; actual36 recipe parameters and
+    # every non-Steam source remain exactly those of the accepted parent pack.
+    snapshot_path = ROOT / "source/authority_snapshot.json"
+    snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
+    for source in snapshot["source_files"]:
+        source["sha256"] = hashlib.sha256((REPO / source["path"]).read_bytes()).hexdigest()
+    snapshot["candidate_revision"] = "steam-rounded-vapor-v2; only six Steam pixel-row sequences changed"
+    snapshot_path.write_text(json.dumps(snapshot, indent=2) + "\n", encoding="utf-8", newline="\n")
+    print("AUTHORED six Steam-only native-pixel sequences; non-Steam sources untouched")
+
+
+def rampart_pose(f, phase, reduced):
+    """Tileable stone faces, not a sparse pebble standing in for a solid wall."""
+    c = blank()
+    rise = [22, 14, 6, 0][f % 4] if phase == "formation" else 0
+    for y in range(rise, 32):
+        for x in range(32):
+            # Offset masonry courses meet cleanly across repeated 32px cells.
+            joint_x = (x + (8 if (y // 16) % 2 else 0)) % 16
+            joint_y = y % 16
+            ink = "b"
+            if joint_x == 0 or joint_y in [14, 15]:
+                ink = "i"
+            elif joint_y == 0:
+                ink = "h"
+            elif joint_y > 10 or joint_x > 12:
+                ink = "d"
+            elif (x * 7 + y * 3) % 47 == 0:
+                ink = "h" if not reduced else "b"
+            if phase == "decay" and ((x // 4 + y // 4 * 3) % 4 < f % 4):
+                ink = "."
+            c[y][x] = ink
+    return c
+
+
+def write_rampart_only():
+    """Bounded six-sequence revision; preserve every other authored asset."""
+    for reduced in [False, True]:
+        for phase in ["formation", "active", "decay"]:
+            path = ROOT / "source/frames" / ("magic.reaction.fortify.%s.%s.json" % (phase, "reduced" if reduced else "normal"))
+            asset = json.loads(path.read_text(encoding="utf-8"))
+            assert len(asset["frames"]) == 4 and asset["pivot_px"] == [16, 26]
+            asset["palette"].update({"i": "202329ff", "d": "423a32ff", "b": "796c51ff", "h": "dfc991ff"})
+            for index, frame in enumerate(asset["frames"]):
+                frame["pixels"] = frame_strings(rampart_pose(index, phase, reduced))
+            path.write_text(json.dumps(asset, indent=2) + "\n", encoding="utf-8", newline="\n")
+    print("AUTHORED six Rampart-only tileable masonry sequences; other sources untouched")
+
+
 def reaction_pose(r, f, phase, reduced):
+    if r["id"] == "fortify":
+        return rampart_pose(f, phase, reduced)
+    if r["id"] == "steam":
+        return steam_vapor_pose(f, phase, reduced)
     rid=r["id"]; layout=PAIR_LAYOUTS[rid]; a,b=r["elements"]
     c=blank(); remap={"d":"D","b":"B","h":"H"}
     main="steam" if rid=="steam" else a
@@ -912,11 +1035,20 @@ def main():
         (out/(asset["id"]+".json")).write_text(json.dumps(asset,indent=2)+"\n",encoding="utf-8",newline="\n")
     (ROOT/"source/authority_snapshot.json").write_text(json.dumps(dict(
         source_checkpoint="286bd8f",source_files=sources,recipes=recipes,deposit_lifetime_ticks=LIFE,
-        source_not_modified=True,metadata_precedence="live GDScript > catalog legacy prose"),indent=2)+"\n")
+        source_not_modified=True,metadata_precedence="live GDScript > catalog legacy prose"),indent=2)+"\n",encoding="utf-8",newline="\n")
     (ROOT/"source/palette_roles.json").write_text(json.dumps(dict(element_ramps=PALETTES,ink=INK,
         steam="neutral material ramp only; does not redefine Fire or Water",dust="neutral movement dust",
         protection="separate non-element authority information",logical_pixel_world_px=1,terrain_reference_px=32,
-        body_reference_heights_px=[58,68,76]),indent=2)+"\n")
+        body_reference_heights_px=[58,68,76]),indent=2)+"\n",encoding="utf-8",newline="\n")
     print(f"AUTHORED {len(ASSETS)} editable pixel sequences, {sum(len(a['frames']) for a in ASSETS)} frames")
 
-if __name__=="__main__": main()
+if __name__=="__main__":
+    import sys
+    if sys.argv[1:] == ["--steam-only"]:
+        write_steam_only()
+    elif sys.argv[1:] == ["--rampart-only"]:
+        write_rampart_only()
+    elif sys.argv[1:]:
+        raise SystemExit("Use --steam-only or --rampart-only for a bounded revision")
+    else:
+        main()

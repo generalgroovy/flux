@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "completed_at_utc": "2026-09-09T12:50:33.7539102Z",
+  "tier": "focused",
+  "result": "failed",
+  "failure": "Godot emitted a script/import/runtime error.",
+  "source": {
+    "head": "a1aa02807626823d0fbc1e25e75441ca3b7f4d36",
+    "branch": "main",
+    "dirty": true,
+    "current_state_sha256": "f39e1c67ed7e8a60dc8fbc450267f2d437f368cde331dd52a72bfbbb28ba6e4d",
+    "asset_inventory_sha256": null
+  },
+  "requested_suite_ids": [
+    "chemistry-practice-coach,player-compendium"
+  ],
+  "executed": {
+    "current_state_check": true,
+    "asset_inventory": false,
+    "doctor": true,
+    "import": false,
+    "deterministic_suite_runner": true,
+    "suite_count": 2,
+    "assertion_count": 9247,
+    "suites": [
+      {
+        "id": "player-compendium",
+        "assertions": 5063,
+        "failures": 1
+      },
+      {
+        "id": "chemistry-practice-coach",
+        "assertions": 4184,
+        "failures": 0
+      }
+    ],
+    "boot_120_hz": false,
+    "package_and_installer": false
+  },
+  "duration_ms": 13626,
+  "stderr_bytes": 0,
+  "logs": [
+    {
+      "path": ".godot/windows-tests/suite.log",
+      "sha256": "4c5e6a4e93a6a0eb84d96a2c99bc49869976c50a6dd9b26d8e9456847113a5bd",
+      "stderr_bytes": 0
+    }
+  ]
+}

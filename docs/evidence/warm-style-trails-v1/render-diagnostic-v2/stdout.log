@@ -1,0 +1,28 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (AMD) - ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001506) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.21045.5002)
+
+RENDERED res://.godot/warm-style-trails-render-v2/s_wayne-quiet.png
+RENDERED res://.godot/warm-style-trails-render-v2/oh_tipi-quiet.png
+RENDERED res://.godot/warm-style-trails-render-v2/red_baron-quiet.png
+RENDERED res://.godot/warm-style-trails-render-v2/earth-bolt-flight.png
+RENDERED res://.godot/warm-style-trails-render-v2/earth-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-v2/fire-bolt-flight.png
+RENDERED res://.godot/warm-style-trails-render-v2/fire-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-v2/water-bolt-flight.png
+RENDERED res://.godot/warm-style-trails-render-v2/water-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-v2/wind-bolt-flight.png
+RENDERED res://.godot/warm-style-trails-render-v2/wind-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-v2/ice-bolt-flight.png
+RENDERED res://.godot/warm-style-trails-render-v2/ice-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-v2/charge-bolt-flight.png
+INVALID_FOOTPRINT {"cell_anchor":[1592.0,1362.0],"deposit_values":[3002,1000,101,1,1,6,1568000,1322560,0,-1000,16000,250,24,120],"frame":"charge-bolt-terminal","local_origin_triangulates":true,"points":[[1576.0,1336.21997070313],[1576.0,1336.0],[1576.431640625,1336.0]]}
+RENDERED res://.godot/warm-style-trails-render-v2/charge-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-v2/light-bolt-flight.png
+RENDERED res://.godot/warm-style-trails-render-v2/light-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-v2/dark-bolt-flight.png
+RENDERED res://.godot/warm-style-trails-render-v2/dark-bolt-terminal.png
+RENDERED res://.godot/warm-style-trails-render-v2/fire-rapid-flight.png
+RENDERED res://.godot/warm-style-trails-render-v2/fire-rapid-terminal.png
+RENDERED res://.godot/warm-style-trails-render-v2/older-fire-trail-water-impact-steam-active.png
+RENDERED res://.godot/warm-style-trails-render-v2/steam-expired-no-child-matter.png
+PASS:23 integrated actual-game frames;8Bolt flight+terminal,1Rapid flight+terminal,3body sizes,2paid older-trail/new-impact Steam+spent-expiry;no injected deposits;draw world hashes unchanged

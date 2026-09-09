@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "current": {
+    "checkpoint_id": "rampart-m1-p47-20260909",
+    "kind": "current_portable",
+    "build_directory": "exports/windows-rampart-m1-p47-20260909",
+    "evidence_directory": "docs/evidence/windows-rampart-m1-p47-20260909",
+    "payloads": [
+      {
+        "path": "exports/windows-rampart-m1-p47-20260909/windows/flux2.exe",
+        "bytes": 109071360,
+        "sha256": "04baf75cc1d69dd93eb709533ecab4fd7770bb8a530645717017a06a9d9809fc",
+        "role": "game"
+      },
+      {
+        "path": "exports/windows-rampart-m1-p47-20260909/windows/flux2.pck",
+        "bytes": 67188404,
+        "sha256": "23918264334a2c1dd013c0403903c53dda751155f8bd5dea2db27c18d98865b7",
+        "role": "pack"
+      },
+      {
+        "path": "exports/windows-rampart-m1-p47-20260909/release/FLUX2-Windows-x86_64.zip",
+        "bytes": 97707386,
+        "sha256": "1af4d42cc71a9a091ad6e64682e3852b75ead65a297638fe9004e45d3e9a943f",
+        "role": "portable"
+      }
+    ],
+    "evidence": [
+      {
+        "path": "docs/evidence/windows-rampart-m1-p47-20260909/checkpoint.json",
+        "bytes": 2123,
+        "sha256": "0c3f3d09a8632cfd65e3d3956c072efcb3c3bcc959bf33931243c2e6454ad6de",
+        "role": "checkpoint"
+      },
+      {
+        "path": "docs/evidence/windows-rampart-m1-p47-20260909/inputs/full-receipt.json",
+        "bytes": 11734,
+        "sha256": "74fe5f9a8f6a1ca5f0627d87b39f7fd9fd1ec82cffc4c7ea57dea01c6f01b280",
+        "role": "full"
+      },
+      {
+        "path": "docs/evidence/windows-rampart-m1-p47-20260909/inputs/capture/capture-receipt.json",
+        "bytes": 77020,
+        "sha256": "2aa7324ed00c7ebf81797bad92e9d61cbe7c0514615467cba854d49b8b7df4a3",
+        "role": "capture"
+      },
+      {
+        "path": "docs/evidence/windows-rampart-m1-p47-20260909/raw-boot.log",
+        "bytes": 806,
+        "sha256": "3bf580567494099cac12bb000b4dc1b1f264810393f92b034d030759ca470e3d",
+        "role": "boot_log"
+      },
+      {
+        "path": "docs/evidence/windows-rampart-m1-p47-20260909/raw-boot.log.err",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "role": "boot_stderr"
+      }
+    ]
+  },
+  "historical_installer": {
+    "checkpoint_id": "qv-followup-p47-20260909",
+    "kind": "historical_installer",
+    "build_directory": "exports/windows-followup-p47-20260909",
+    "evidence_directory": "docs/evidence/template-delivery-v1/delivery",
+    "payloads": [
+      {
+        "path": "exports/windows-followup-p47-20260909/release/FLUX.exe",
+        "bytes": 96787968,
+        "sha256": "4bd03fd6ee50d7161b445bc03e2c8e99477b366a44b63f8fadba084ce31b5121",
+        "role": "installer"
+      }
+    ],
+    "evidence": [
+      {
+        "path": "docs/evidence/template-delivery-v1/delivery/installer-journey-receipt.json",
+        "bytes": 6594,
+        "sha256": "6ff13a83092ed3b0206406e495872948be258dcc3709d108d7c9a7a2391bf738",
+        "role": "installer_journey"
+      }
+    ]
+  },
+  "boundaries": {
+    "publication": "not_published",
+    "human_acceptance": "pending",
+    "two_pc_acceptance": "pending",
+    "sustained_rendered_120fps": "not_certified",
+    "current_installer": "not_attempted_prior_policy_block"
+  }
+}

@@ -1,16 +1,32 @@
 class_name ElementChemistryPresenter
 extends RefCounted
 
-# Shared native-size material, with authority-owned occupied masks. Exact edges
-# and one identity core never compete with optional decorative density.
+# Shared native-size material, with authority-owned occupied masks. Occupied
+# material itself communicates area; no separate range rings or outlines.
 const ELEMENTS: Array[String] = ["", "earth", "fire", "water", "wind", "ice", "charge", "light", "dark"]
 const LINE_SHAPES: Array[String] = ["corridor", "front", "growing_strip", "pulse_lane", "bands", "reveal_line", "water_path", "frost_path", "branch"]
 const LINK_SHAPES := ["water_path", "frost_path", "branch"]
 const Library = preload("res://src/presentation/pixel_magic_library.gd")
 const Mask = preload("res://src/presentation/pixel_effect_geometry.gd")
 const Reaction = preload("res://src/sim/chemistry/element_reaction_state.gd")
+const Chemistry = preload("res://src/sim/chemistry/element_chemistry_system.gd")
 const INK := Color("16212a")
 const CELL_SIZE := 32.0
+const FOOTPRINT_STEP := 16.0
+const FOOTPRINT_CACHE_LIMIT := 64
+const FOOTPRINT_CELL_LIMIT := 512
+# Compact reusable native-cell compositions, not enlarged material or new
+# occupied geometry. Their stronger centre survives every decoration budget.
+const DEPOSIT_ACCENTS := {
+	1: [Vector2(-7, 3), Vector2(7, 3)], # Earth: low weighted pile.
+	2: [Vector2(-7, 2), Vector2(6, -3)], # Fire: unequal rising tongues.
+	3: [Vector2(-9, 2), Vector2(9, 2)], # Water: broad connected crests.
+	4: [Vector2(-10, 4), Vector2(9, -4)], # Wind: an open diagonal sweep.
+	5: [Vector2(-7, -2), Vector2(7, -2)], # Ice: a quiet facet cluster.
+	6: [Vector2(-8, 5), Vector2(7, -5)], # Charge: stepped contacts.
+	7: [Vector2(-10, 0), Vector2(10, 0)], # Light: measured side glints.
+	8: [Vector2(-7, -4), Vector2(7, 4)], # Dark: offset inward wisps.
+}
 var language: VisualLanguage
 var library: PixelMagicLibrary
 var last_error := ""
@@ -21,8 +37,9 @@ var _viewport := Rect2()
 var _deposits_by_id: Dictionary = {}
 var _reduced := false
 var _optional_limit := 192
+var _footprints: Dictionary = {}
 var _unlinked_proxy := Reaction.new()
-var _stats := {"optional_stamps": 0, "core_stamps": 0, "boundary_loops": 0, "boundary_markers": 0, "clipped_parts": 0, "culled": 0}
+var _stats := {"optional_stamps": 0, "core_stamps": 0, "footprint_cells": 0, "boundary_loops": 0, "boundary_markers": 0, "clipped_parts": 0, "culled": 0}
 
 
 func configure(visual_language: VisualLanguage, shared_library: PixelMagicLibrary = null) -> bool:
@@ -106,6 +123,17 @@ static func hail_position(state: RefCounted, tick: float) -> Vector2:
 	return Vector2(state.position_x, state.position_y) / 1000.0 + Vector2(delta) / 1000.0
 
 
+static func deposit_role_profile(trail: bool, reduced: bool = false) -> Dictionary:
+	# Plain elemental matter is an ingredient, never passive damage or status.
+	# Keep a readable native identity while its tiled ground area is quieter
+	# than active reaction material. Accessibility filters do not change roles.
+	return {"material_role": "optional_trail" if trail else "terminal_ingredient",
+		"deals_damage": false, "applies_status": false,
+		"core_opacity": (0.62 if reduced else 0.68) if trail else (0.82 if reduced else 0.88),
+		"material_opacity": (0.24 if reduced else 0.30) if trail else (0.36 if reduced else 0.50),
+		"accent_limit": 0 if trail else (1 if reduced else 2)}
+
+
 func deposit_model(deposit: RefCounted, tick: float, reduced_effects: bool = false) -> Dictionary:
 	if library == null or deposit == null or not is_finite(tick) or tick < deposit.created_tick or tick >= deposit.expiry_tick or int(deposit.strength) <= 0:
 		return {}
@@ -130,7 +158,8 @@ func deposit_model(deposit: RefCounted, tick: float, reduced_effects: bool = fal
 	if mask.is_empty() or (mask["polygons"] as Array).is_empty():
 		return {}
 	var opacity := clampf((float(deposit.expiry_tick) - tick) / maxf(1.0, float(decay_ticks)), 0.0, 1.0)
-	return {"kind": "deposit", "asset_id": asset_id, "frame": library.sample(asset_id, now - start), "phase": phase, "age_ticks": now - start, "mask": mask, "core_anchor": _core_anchor(mask, position), "opacity": opacity, "material_opacity": opacity * (0.48 if reduced else 0.68), "edge_color": language.element_color(ELEMENTS[element]), "reduced": reduced, "unlinked": false, "socket": false}
+	var role := deposit_role_profile(deposit.is_trail(), reduced)
+	return {"kind": "deposit", "element": element, "asset_id": asset_id, "frame": library.sample(asset_id, now - start), "phase": phase, "age_ticks": now - start, "mask": mask, "core_anchor": _core_anchor(mask, position), "opacity": opacity, "core_opacity": opacity * float(role.core_opacity), "material_opacity": opacity * float(role.material_opacity), "material_role": role.material_role, "deals_damage": role.deals_damage, "applies_status": role.applies_status, "accent_limit": role.accent_limit, "edge_color": language.element_color(ELEMENTS[element]), "reduced": reduced, "unlinked": false, "socket": false}
 
 
 func reaction_model(state: RefCounted, recipe: Dictionary, tick: float, reduced_effects: bool = false) -> Dictionary:
@@ -167,7 +196,11 @@ func reaction_model(state: RefCounted, recipe: Dictionary, tick: float, reduced_
 	if int(state.recipe_wire_id) == 310:
 		edge = Color("becfc7")
 	var opacity := phase_opacity(state, tick)
-	return {"kind": "reaction", "asset_id": asset_id, "frame": library.sample(asset_id, now - start), "phase": phase, "age_ticks": now - start, "mask": mask, "core_anchor": position if socket else _core_anchor(mask, mask["hail_position"] if shape == "pulse_lane" else position), "opacity": opacity, "material_opacity": opacity * float(composition["opacity_cap_reduced" if reduced else "opacity_cap_normal"]), "edge_color": edge, "reduced": reduced, "unlinked": unlinked, "socket": socket}
+	var concealing: bool = state.active(now) and Chemistry._concealing(state, now, _config)
+	# Keep the authored warning/decay phases and exact boundary intact. Only
+	# active Steam thinning / Shadowdraft gaps use a lighter material cue.
+	var veil_multiplier := 0.25 if phase == "active" and int(state.recipe_wire_id) in [310, 326] and not concealing else 1.0
+	return {"kind": "reaction", "recipe_wire_id": int(state.recipe_wire_id), "asset_id": asset_id, "frame": library.sample(asset_id, now - start), "phase": phase, "age_ticks": now - start, "mask": mask, "material_path": _material_path(effective, shape), "core_anchor": position if socket else _core_anchor(mask, mask["hail_position"] if shape == "pulse_lane" else position), "opacity": opacity, "material_opacity": opacity * float(composition["opacity_cap_reduced" if reduced else "opacity_cap_normal"]) * veil_multiplier, "concealing": concealing, "edge_color": edge, "reduced": reduced, "unlinked": unlinked, "socket": socket}
 
 
 func draw_deposit(canvas: CanvasItem, deposit: RefCounted, tick: float, reduced_effects: bool = false) -> bool:
@@ -192,37 +225,114 @@ func _draw_model(canvas: CanvasItem, model: Dictionary) -> bool:
 		return true
 	var frame: Dictionary = model["frame"]
 	if not frame.is_empty():
-		_stats.clipped_parts += Mask.draw_clipped_frame(canvas, frame, core, polygons, float(model["material_opacity"]))
-		_stats.core_stamps += 1
-		var remaining := mini(library.decoration_remaining(), maxi(0, (96 if model["reduced"] else _optional_limit) - int(_stats.optional_stamps)))
-		for anchor: Vector2 in tile_anchors(mask, core, bool(model["reduced"]), remaining):
+		# Native material coverage is essential information, not decorative
+		# admission: normal/reduced/zero-budget modes retain the same cells.
+		var cell_index := 0
+		for cell: Dictionary in footprint_cells(model):
+			var sampled := decoration_frame(model, cell_index)
+			var offset: Vector2 = sampled.region.position / sampled.texture.get_size()
+			for part: Dictionary in cell.parts:
+				Mask.draw_frame_part(canvas, part, sampled.texture, float(model["material_opacity"]), offset)
+				_stats.clipped_parts += 1
+			_stats.footprint_cells += 1
+			cell_index += 1
+		var accent_index := 0
+		for anchor: Vector2 in accent_anchors(model):
 			if not _take_optional(String(model["asset_id"]), bool(model["reduced"])):
 				break
-			_stats.clipped_parts += Mask.draw_clipped_frame(canvas, frame, anchor, polygons, float(model["material_opacity"]))
-	_draw_boundaries(canvas, model)
+			accent_index += 1
+			_stats.clipped_parts += Mask.draw_clipped_frame(canvas, decoration_frame(model, accent_index), anchor, polygons, float(model["material_opacity"]))
+		# One native identity stamp stays stronger than optional ground texture.
+		# Reaction/veil values intentionally retain their separate phase contract.
+		_stats.clipped_parts += Mask.draw_clipped_frame(canvas, frame, core, polygons, float(model.get("core_opacity", model["material_opacity"])))
+		_stats.core_stamps += 1
 	return true
 
 
-func _draw_boundaries(canvas: CanvasItem, model: Dictionary) -> void:
+func accent_anchors(model: Dictionary) -> PackedVector2Array:
+	var result := PackedVector2Array()
+	if model.is_empty() or bool(model.get("socket", false)):
+		return result
+	var offsets: Array = DEPOSIT_ACCENTS.get(int(model.get("element", 0)), []) if model["kind"] == "deposit" else []
+	var count := mini(offsets.size(), int(model.get("accent_limit", 1 if bool(model["reduced"]) else 2)))
+	for index: int in range(count):
+		var anchor: Vector2 = model["core_anchor"] + offsets[index]
+		if Mask.contains_point(model["mask"]["polygons"], anchor):
+			result.append(anchor)
+	return result
+
+
+func decoration_frame(model: Dictionary, index: int) -> Dictionary:
+	# Only looped active material is staggered. Formation/decay still sample
+	# their exact phase age; material can never pre-form or survive expiry.
+	var staggered := int(model.get("element", 0)) == 2 or int(model.get("recipe_wire_id", 0)) == 310
+	if model.get("phase", "") != "active" or not staggered:
+		return model.get("frame", {})
+	return library.sample(String(model["asset_id"]), int(model["age_ticks"]) + maxi(0, index) * 7)
+
+
+func footprint_cells(model: Dictionary) -> Array:
+	if model.is_empty() or bool(model.get("socket", false)) or (model.get("frame", {}) as Dictionary).is_empty():
+		return []
 	var mask: Dictionary = model["mask"]
-	var color: Color = model["edge_color"]
-	var opacity := float(model["opacity"])
-	var marker_id := "magic.geometry.boundary_%s.%s" % [model["phase"], "reduced" if model["reduced"] else "normal"]
-	var frame := library.sample(marker_id, int(model["age_ticks"]))
-	for boundary: PackedVector2Array in mask["boundaries"]:
-		# Thin source geometry is essential information, never optional material
-		# or an invented optical ray. Both safe-annulus edges remain visible.
-		canvas.draw_polyline(boundary, Color(INK, opacity * 0.8), 2.0, false)
-		canvas.draw_polyline(boundary, Color(color, opacity * 0.9), 1.0, false)
-		_stats.boundary_loops += 1
-		if not frame.is_empty() and boundary.size() >= 2:
-			_stats.clipped_parts += Mask.draw_clipped_frame(canvas, frame, boundary[0], mask["polygons"], opacity, (boundary[1] - boundary[0]).angle())
-			_stats.boundary_markers += 1
+	var frame: Dictionary = model["frame"]
+	var bounds: Rect2 = mask["bounds"]
+	if _viewport.has_area():
+		bounds = bounds.intersection(_viewport)
+	if not bounds.has_area():
+		return []
+	var signature := [mask["polygons"], bounds, frame.region.size, frame.pivot, frame.texture.get_size()]
+	var key := hash(signature)
+	if _footprints.has(key) and _footprints[key].signature == signature:
+		return _footprints[key].cells
+	var result: Array = []
+	var step := FOOTPRINT_STEP
+	bounds = bounds.grow(CELL_SIZE * 0.5)
+	while (ceili(bounds.size.x / step) + 2) * (ceili(bounds.size.y / step) + 2) > FOOTPRINT_CELL_LIMIT:
+		if step >= CELL_SIZE:
+			break # Never create uncovered gaps between native32px cells.
+		step += FOOTPRINT_STEP
+	var first := Vector2i(floor(bounds.position.x / step), floor(bounds.position.y / step))
+	var last := Vector2i(ceil(bounds.end.x / step), ceil(bounds.end.y / step))
+	# Cache exact clipped cells with local UVs; phase changes only translate UVs
+	# into the next native atlas frame, never rebuild world clipping geometry.
+	var local_frame := {"texture": frame.texture, "region": Rect2(Vector2.ZERO, frame.region.size), "pivot": frame.pivot}
+	for y: int in range(first.y, last.y):
+		for x: int in range(first.x, last.x):
+			var anchor: Vector2 = (Vector2(x, y) + Vector2(0.5, 0.5)) * step + frame.pivot - frame.region.size * 0.5
+			var parts := Mask.clipped_frame_parts(local_frame, anchor, mask["polygons"])
+			if not parts.is_empty():
+				result.append({"anchor": anchor, "parts": parts})
+	if _footprints.size() >= FOOTPRINT_CACHE_LIMIT:
+		_footprints.erase(_footprints.keys()[0])
+	_footprints[key] = {"signature": signature, "cells": result}
+	return result
 
 
-func tile_anchors(mask: Dictionary, core: Vector2, reduced: bool, maximum: int) -> PackedVector2Array:
+func tile_anchors(mask: Dictionary, core: Vector2, reduced: bool, maximum: int, material_path: PackedVector2Array = PackedVector2Array()) -> PackedVector2Array:
 	var result := PackedVector2Array()
 	if mask.is_empty() or maximum <= 0:
+		return result
+	# Thin strips can fall between every world-grid centre. Place their native
+	# material on the real centreline, then retain the same exact mask clipping.
+	# Reduced mode is a deterministic subset; no link or optical ray is invented.
+	if material_path.size() >= 2:
+		var examined := 0
+		for segment: int in range(material_path.size() - 1):
+			var start := material_path[segment]
+			var lane := material_path[segment + 1] - start
+			var length := lane.length()
+			var direction := lane / length if length > 0.0 else Vector2.ZERO
+			for index: int in range(ceili(length / CELL_SIZE) + 1):
+				examined += 1
+				if examined > 1024 or result.size() >= mini(maximum, 192):
+					return result
+				if reduced and posmod(index, 2) != 0:
+					continue
+				var anchor := start + direction * minf(float(index) * CELL_SIZE, length)
+				if anchor.is_equal_approx(core) or result.has(anchor) or (_viewport.has_area() and not _viewport.has_point(anchor)) or not Mask.contains_point(mask["polygons"], anchor):
+					continue
+				result.append(anchor)
 		return result
 	var bounds: Rect2 = mask["bounds"]
 	if _viewport.has_area():
@@ -241,6 +351,24 @@ func tile_anchors(mask: Dictionary, core: Vector2, reduced: bool, maximum: int) 
 			if anchor.distance_squared_to(core) < CELL_SIZE * CELL_SIZE or not Mask.contains_point(mask["polygons"], anchor):
 				continue
 			result.append(anchor)
+	return result
+
+
+static func _material_path(state: RefCounted, shape: String) -> PackedVector2Array:
+	var result := PackedVector2Array()
+	if int(state.radius) > int(CELL_SIZE * 500.0):
+		return result # Broad regions retain their sparse world-locked interior.
+	if shape in LINK_SHAPES:
+		for index: int in range(0, state.path_points.size() - 1, 2):
+			result.append(Vector2(state.path_points[index], state.path_points[index + 1]) / 1000.0)
+	elif shape in ["corridor", "front", "growing_strip", "bands", "reveal_line"]:
+		result.append(Vector2(state.position_x, state.position_y) / 1000.0)
+		result.append(Vector2(state.endpoint_x, state.endpoint_y) / 1000.0)
+	elif shape in ["cover", "plane", "lens"]:
+		var origin := Vector2(state.position_x, state.position_y) / 1000.0
+		var side := Vector2(-state.direction_y, state.direction_x) * float(state.length) / 2000000.0
+		result.append(origin - side)
+		result.append(origin + side)
 	return result
 
 

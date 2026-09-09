@@ -19,7 +19,8 @@
     "cardinal_navigation_unambiguous": true,
     "collision_footprint_visible": true,
     "door_threshold_visible": true,
-    "foreground_cutaway_required": true,
+    "foreground_cutaway_required": false,
+    "worldbone_opaque": true,
     "forbid_diamond_grid": true,
     "forbid_art_owned_collision": true
   },
@@ -28,13 +29,22 @@
     "head_height_ratio": [0.20, 0.23],
     "grounded_cell": [96, 96],
     "grounded_pivot": [48, 84],
-    "gameplay_height_pixels": [44, 76],
+    "gameplay_height_pixels": [58, 76],
+    "body_heights": {"small": 58, "middle": 68, "large": 76},
     "outline_pixels": [1, 2],
     "material_ramp_colors": [3, 5],
     "separate_ground_shadow": true,
-    "required_silhouette_states": ["south", "east", "north", "jump", "cast", "hit"],
-    "forbid_realistic_anatomy": true,
+    "required_directions": ["south", "south_east", "east", "north_east", "north", "north_west", "west", "south_west"],
+    "required_silhouette_states": ["grounded", "jump", "cast", "hit", "walk", "sprint", "slide", "roll", "walk_b", "sprint_b"],
+    "preserve_sensible_anatomy": true,
+    "preserve_fixed_body_scale": true,
+    "forbid_photorealistic_rendering": true,
+    "portrait_source": "south_grounded_occupied_top_third",
     "forbid_sexualized_design": true
+  },
+  "element_availability": {
+    "active": ["earth", "fire", "water", "wind", "ice", "charge", "light", "dark"],
+    "reserved_style_only": ["spirit", "chaos", "gravity", "time"]
   },
   "layers": [
     "deep_water",

@@ -1,0 +1,8 @@
+{
+  "recorded_date": "2026-09-09",
+  "verification": "Every destination byte length and SHA-256 was compared with its original source after copying. Original files were not modified.",
+  "files": [
+    {"file": "focused-v3.log", "source": ".godot/element-audio-work/focused-v3.log", "bytes": 1345, "sha256": "48cbd80206a16b28b7a054181591d039cb3e8fe476082e5624236043b7aa7f01"},
+    {"file": "focused-v3.log.err", "source": ".godot/element-audio-work/focused-v3.log.err", "bytes": 0, "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}
+  ]
+}

@@ -520,13 +520,15 @@ func _handle_join_address_input(event: InputEvent) -> void:
 			KEY_ENTER, KEY_KP_ENTER:
 				_commit_join_address_and_seek()
 			KEY_BACKSPACE:
+				join_address_editor_text = "" if join_address_editor_replace_on_type else join_address_editor_text.left(maxi(0, join_address_editor_text.length() - 1))
 				join_address_editor_replace_on_type = false
-				join_address_editor_text = join_address_editor_text.left(maxi(0, join_address_editor_text.length() - 1))
 				join_address_editor_error = ""
 			KEY_DELETE:
 				join_address_editor_text = ""
 				join_address_editor_replace_on_type = false
 				join_address_editor_error = ""
+			KEY_A when key_event.ctrl_pressed:
+				join_address_editor_replace_on_type = true
 			KEY_V when key_event.ctrl_pressed:
 				var pasted := DisplayServer.clipboard_get().strip_edges()
 				if PlayerPreferences.is_valid_farflow_join_address(pasted):
@@ -536,9 +538,9 @@ func _handle_join_address_input(event: InputEvent) -> void:
 				else:
 					join_address_editor_error = "Clipboard is not one safe host/IP address."
 			_:
-				if key_event.unicode >= 33 and key_event.unicode <= 126:
+				if not key_event.ctrl_pressed and not key_event.alt_pressed and not key_event.meta_pressed and key_event.unicode >= 33 and key_event.unicode <= 126:
 					var character := String.chr(key_event.unicode)
-					if character not in "/\\" and join_address_editor_text.length() < 255:
+					if character not in "/\\" and (join_address_editor_replace_on_type or join_address_editor_text.length() < 255):
 						if join_address_editor_replace_on_type:
 							join_address_editor_text = ""
 							join_address_editor_replace_on_type = false
@@ -1428,7 +1430,7 @@ func _station_lines(station: Dictionary) -> Array:
 	if command == "join_session":
 		if join_address_editor_open:
 			return [
-				"TYPE OR CTRL+V THE HOST ADDRESS",
+				"TYPE TO REPLACE · CTRL+V PASTES" if join_address_editor_replace_on_type else "TYPE OR CTRL+V THE HOST ADDRESS",
 				"> %s%s" % [join_address_editor_text, "_" if Time.get_ticks_msec() % 1000 < 600 else ""],
 				join_address_editor_error if not join_address_editor_error.is_empty() else "ENTER SEEKS · ESC CANCELS · PORT %d" % session_port,
 				"The address is saved only on this PC",

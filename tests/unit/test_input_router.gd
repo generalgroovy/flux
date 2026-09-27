@@ -4,6 +4,17 @@ extends FluxTestSuite
 const BootstrapScript: Script = preload("res://src/app/bootstrap.gd")
 
 
+class JoinAddressHarness:
+	extends "res://src/app/bootstrap.gd"
+
+	func _ready() -> void:
+		set_process(false)
+		hide()
+
+	func _draw() -> void:
+		pass
+
+
 func run() -> int:
 	for action: StringName in [&"jump", &"primary", &"sprint", &"slide", &"interact", &"emote", &"spell_1", &"spell_2", &"spell_3", &"spell_4", &"spell_layer_ctrl", &"spell_layer_alt", &"adjust_camera_zoom"]:
 		if InputMap.has_action(action):
@@ -48,7 +59,58 @@ func run() -> int:
 	check(InputMap.action_get_events(&"active_1").size() >= 3, "active one supports mouse, keyboard, and controller button")
 	check(InputMap.action_get_events(InputRouter.SPECTATE_NEXT_ACTION).size() >= 2, "spectator focus supports Tab and controller D-pad right")
 	_test_capture_pointer_parser()
+	_test_join_address_editing()
 	return finish("input-router")
+
+
+func _test_join_address_editing() -> void:
+	var editor := JoinAddressHarness.new()
+	editor.preference_overrides_are_transient = true
+	var tree := Engine.get_main_loop() as SceneTree
+	tree.root.add_child(editor)
+	editor.join_address_editor_open = true
+	editor.join_address_editor_text = "a".repeat(255)
+	editor.join_address_editor_replace_on_type = true
+	var letter := InputEventKey.new()
+	letter.pressed = true
+	letter.keycode = KEY_B
+	letter.unicode = "b".unicode_at(0)
+	editor._handle_join_address_input(letter)
+	equal(editor.join_address_editor_text, "b", "typing replaces a selected maximum-length address")
+	check(not editor.join_address_editor_replace_on_type, "replacement clears the selection")
+	editor.join_address_editor_text = "host.example"
+	editor.join_address_editor_replace_on_type = true
+	var backspace := InputEventKey.new()
+	backspace.pressed = true
+	backspace.keycode = KEY_BACKSPACE
+	editor._handle_join_address_input(backspace)
+	equal(editor.join_address_editor_text, "", "Backspace clears the selected address")
+	editor.join_address_editor_text = "host.example"
+	editor._handle_join_address_input(backspace)
+	equal(editor.join_address_editor_text, "host.exampl", "unselected Backspace still deletes one character")
+	var select_all := InputEventKey.new()
+	select_all.pressed = true
+	select_all.keycode = KEY_A
+	select_all.unicode = "a".unicode_at(0)
+	select_all.ctrl_pressed = true
+	editor._handle_join_address_input(select_all)
+	check(editor.join_address_editor_replace_on_type, "Ctrl+A selects the whole address for replacement")
+	equal(editor.join_address_editor_text, "host.exampl", "Ctrl+A does not append an a")
+	editor._handle_join_address_input(letter)
+	equal(editor.join_address_editor_text, "b", "typing after Ctrl+A replaces the address")
+	editor.join_address_editor_text = "a".repeat(255)
+	editor._handle_join_address_input(letter)
+	equal(editor.join_address_editor_text.length(), 255, "unselected typing preserves the length limit")
+	editor.join_address_editor_text = "host.example"
+	letter.ctrl_pressed = true
+	editor._handle_join_address_input(letter)
+	equal(editor.join_address_editor_text, "host.example", "unsupported control shortcuts do not insert letters")
+	letter.ctrl_pressed = false
+	letter.unicode = "/".unicode_at(0)
+	editor.join_address_editor_replace_on_type = true
+	editor._handle_join_address_input(letter)
+	equal(editor.join_address_editor_text, "host.example", "invalid path punctuation does not erase a selected address")
+	editor.free()
 
 
 func _test_eight_direction_command_vectors() -> void:

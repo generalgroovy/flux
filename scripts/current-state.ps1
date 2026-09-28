@@ -53,8 +53,19 @@ function Get-FluxProjectInteger([string]$SettingName) {
 
 function Get-FluxGitValue([string[]]$Arguments) {
     if (-not (Get-Command git -ErrorAction SilentlyContinue)) { return $null }
-    $value = & git -C $repoRoot @Arguments 2>$null
-    if ($LASTEXITCODE -ne 0) { return $null }
+    # Windows PowerShell surfaces native stderr as an error record, even when
+    # redirected. Missing optional refs should return null under the caller's
+    # Stop policy rather than aborting a fresh clone's state check.
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        $value = & git -C $repoRoot @Arguments 2>$null
+        $gitExitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
+    if ($gitExitCode -ne 0) { return $null }
     return (($value | Out-String).Trim())
 }
 

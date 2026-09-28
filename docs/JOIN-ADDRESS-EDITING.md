@@ -1,5 +1,7 @@
 # Farflow address editing refinement
 
+Status: verified bounded source refinement; no installer or checkpoint promotion.
+
 Scope: the published FLUX source at `65373db774ea0837ffa22ad80a6af1621e2d8896`.
 This small change repairs the existing Farflow join-address field. It does not
 promote a build, installer, selected checkpoint, or the separate local overhaul.
